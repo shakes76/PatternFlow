@@ -15,7 +15,7 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     or equivalent).
 
     Args:
-        imp_resp (ndarray): he impulse responses.
+        imp_resp (ndarray/tensor): he impulse responses.
         shape (tuple): A tuple of integer corresponding to the target shape of 
             the transfer function.
         dim (int): The last axis along which to compute the transform. All
@@ -34,7 +34,10 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     irpadded = tf.Variable(tf.zeros(shape))
     init_op = tf.variables_initializer([irpadded])
     sess.run(init_op)
-    imp_shape = tuple(tf.shape(imp_resp).eval())
+    if tf.contrib.framework.is_tensor(imp_resp):
+        imp_shape = tuple(tf.shape(imp_resp).eval())
+    else:
+        imp_shape = imp_resp.shape
     op = tf.assign(irpadded[tuple([slice(0, s) for s in imp_shape])], imp_resp)
     sess.run(op)
     for axis, axis_size in enumerate(imp_shape):
