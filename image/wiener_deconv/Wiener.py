@@ -27,26 +27,22 @@ def _ir2tf(imp_resp, shape, dim=None, is_real=True):
         tensor: The transfer function of shape ``shape``.
     """
     if not dim:
-        dim = imp_resp.ndim
-    irpadded = tf.zeros(shape)
-    irpadded = irpadded.eval()
-    m_shape = imp_resp.shape
-    x_forward = tf.cast(tf.math.ceil(m_shape[0]/2), tf.int32).eval()
-    y_forward = tf.cast(tf.math.ceil(m_shape[1]/2), tf.int32).eval()
-    x_backward = (tf.shape(irpadded)[0] 
-        - tf.cast(tf.math.floor(m_shape[0]/2), tf.int32)).eval()
-    y_backward = (tf.shape(irpadded)[1] 
-        - tf.cast(tf.math.floor(m_shape[1]/2), tf.int32)).eval()
-    for row_f in range(0, x_forward):
-        for col_f in range(0, y_forward):
-            irpadded[row_f, col_f] = 1
-        for col_b in range(y_backward, shape[0]):
-            irpadded[row_f, col_b] = 1
-    for row_b in range(x_backward, shape[0]):
-        for col_f in range(0, y_forward):
-            irpadded[row_b, col_f] = 1
-        for col_b in range(y_backward, shape[1]):
-            irpadded[row_b, col_b] = 1
+        if tf.contrib.framework.is_tensor(imp_resp):
+            dim = len(imp_resp.shape)
+        else:
+            dim = imp_resp.ndim
+    if tf.contrib.framework.is_tensor(imp_resp):
+        m_shape = tf.shape(imp_resp).eval()
+    else:
+        m_shape = imp_resp.shape
+    irpadded = tf.Variable(tf.zeros(shape))
+    tf.global_variables_initializer().run()
+    irpadded = irpadded[tuple([slice(0, s) for s in imp_resp.shape])].assign(imp_resp)
+    for axis, axis_size in enumerate(imp_resp.shape):
+        if axis >= imp_resp.ndim - dim:
+            irpadded = tf.manip.roll(irpadded,
+                               shift=-tf.cast(tf.math.floor(axis_size / 2), tf.int32),
+                               axis=axis)
     if is_real:
         if dim == 1:
             return tf.spectral.rfft(irpadded)
@@ -55,7 +51,7 @@ def _ir2tf(imp_resp, shape, dim=None, is_real=True):
         elif dim == 3:
             return tf.spectral.rfft3d(irpadded)
         else:
-            raise ValueError('Bad dimension value, dim can only be 1, 2 and 3.')
+            raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
     else:
         if dim == 1:
             return tf.fft(irpadded)
@@ -64,10 +60,11 @@ def _ir2tf(imp_resp, shape, dim=None, is_real=True):
         elif dim == 3:
             return tf.fft3d(irpadded)
         else:
-            raise ValueError('Bad dimension value, dim can only be 1, 2 and 3.')
+            raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
 
-def _laplacian():
-    pass
+def _laplacian(ndim, shape, is_real=True):
+    impr = tf.zeros([3] * ndim)
+
 
 def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     """Deconvolution with Wiener filter
@@ -102,4 +99,9 @@ def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     if reg is None:
         reg = _laplacian(image.ndim, image.shape, is_real=is_real)
     if (reg.dtype != tf.complex64) & (reg.dtype != tf.complex128):
-        _ir2tf(reg, image.shape, is_real=is_real)
+        reg = _ir2tf(reg, image.shape, is_real=is_real)
+    if psf.shape != reg.shape:
+        trans_func = _ir2tf(psf, image.shape, is_real=is_real)
+    else:
+        trans_func = psf
+    
