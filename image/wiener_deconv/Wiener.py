@@ -7,10 +7,30 @@ __reference__ = "scikit-image.skimage.restoration.deconvolution"
 
 import tensorflow as tf
 
-def ir2tf(imp_resp, shape, dim=None, is_real=True):
-    pass
+def _ir2tf(imp_resp, shape, dim=None, is_real=True):
+    sess = tf.InteractiveSession()
+    shape = (3,7)
+    zeros = tf.zeros((512,512))
+    tf.global_variables_initializer().run()
+    zeros = zeros.eval()
+    m_shape = zeros.shape
+    x_forward = tf.cast(tf.math.ceil(shape[0]/2), tf.int32).eval()
+    y_forward = tf.cast(tf.math.ceil(shape[1]/2), tf.int32).eval()
+    x_backward = (tf.shape(zeros)[0] - tf.cast(tf.math.floor(shape[0]/2), tf.int32)).eval()
+    y_backward = (tf.shape(zeros)[1] - tf.cast(tf.math.floor(shape[1]/2), tf.int32)).eval()
+    for row_f in range(0, x_forward):
+        for col_f in range(0, y_forward):
+            zeros[row_f, col_f] = 1
+        for col_b in range(y_backward, m_shape[0]):
+            zeros[row_f, col_b] = 1
+    for row_b in range(x_backward, m_shape[0]):
+        for col_f in range(0, y_forward):
+            zeros[row_b, col_f] = 1
+        for col_b in range(y_backward, m_shape[1]):
+            zeros[row_b, col_b] = 1
+    #need to implement the fourier transform function
 
-def laplacian():
+def _laplacian():
     pass
 
 def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
