@@ -7,7 +7,7 @@ __reference__ = ["scikit-image.skimage.restoration.deconvolution", "scikit-image
 
 import tensorflow as tf
 
-def _ir2tf(imp_resp, shape, dim=None, is_real=True):
+def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     """Compute the transfer function of an impulse response (IR).
     This function makes the necessary correct zero-padding, zero
     convention, correct fft2, etc... to compute the transfer function
@@ -31,15 +31,14 @@ def _ir2tf(imp_resp, shape, dim=None, is_real=True):
             dim = len(imp_resp.shape)
         else:
             dim = imp_resp.ndim
-    if tf.contrib.framework.is_tensor(imp_resp):
-        m_shape = tf.shape(imp_resp).eval()
-    else:
-        m_shape = imp_resp.shape
     irpadded = tf.Variable(tf.zeros(shape))
-    tf.global_variables_initializer().run()
-    irpadded = irpadded[tuple([slice(0, s) for s in imp_resp.shape])].assign(imp_resp)
-    for axis, axis_size in enumerate(imp_resp.shape):
-        if axis >= imp_resp.ndim - dim:
+    init_op = tf.variables_initializer([irpadded])
+    sess.run(init_op)
+    imp_shape = tuple(tf.shape(imp_resp).eval())
+    op = tf.assign(irpadded[tuple([slice(0, s) for s in imp_shape])], imp_resp)
+    sess.run(op)
+    for axis, axis_size in enumerate(imp_shape):
+        if axis >= len(imp_resp.shape) - dim:
             irpadded = tf.manip.roll(irpadded,
                                shift=-tf.cast(tf.math.floor(axis_size / 2), tf.int32),
                                axis=axis)
@@ -62,9 +61,19 @@ def _ir2tf(imp_resp, shape, dim=None, is_real=True):
         else:
             raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
 
-def _laplacian(ndim, shape, is_real=True):
-    impr = tf.zeros([3] * ndim)
+def _laplacian(ndim, shape, sess, is_real=True):
+    impr = tf.Variable(tf.zeros([3] * ndim))
+    tf.global_variables_initializer().run()
+    for dim in range(ndim):
+        idx = tuple([slice(1, 2)] * dim +
+                    [slice(None)] +
+                    [slice(1, 2)] * (ndim - dim - 1))
 
+        op = tf.assign(impr[idx], tf.reshape(tf.convert_to_tensor([-1.0,0.0,-1.0]), [-1 if i == dim else 1 for i in range(ndim)]))
+        sess.run(op)
+    op = tf.assign(impr[[1]*ndim], 2.0 * ndim)
+    sess.run(op)
+    return _ir2tf(impr, shape, is_real=is_real), impr
 
 def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     """Deconvolution with Wiener filter
@@ -97,11 +106,11 @@ def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     #TF initialization
     sess = tf.InteractiveSession()
     if reg is None:
-        reg = _laplacian(image.ndim, image.shape, is_real=is_real)
+        reg = _laplacian(image.ndim, image.shape, sess, is_real=is_real)
     if (reg.dtype != tf.complex64) & (reg.dtype != tf.complex128):
-        reg = _ir2tf(reg, image.shape, is_real=is_real)
+        reg = _ir2tf(reg, image.shape, sess, is_real=is_real)
     if psf.shape != reg.shape:
-        trans_func = _ir2tf(psf, image.shape, is_real=is_real)
+        trans_func = _ir2tf(psf, image.shape, sess, is_real=is_real)
     else:
         trans_func = psf
     
