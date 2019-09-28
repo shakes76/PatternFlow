@@ -10,9 +10,9 @@ import wiener
 
 def test_astronaut():
     psf = np.ones((5, 5)) / 25
-    deconvolved = wiener.wiener(np.load('astronaut_nosiy.npy'), psf, 1)
+    deconvolved = wiener.wiener(np.load('astronaut_noise.npy'), psf, 1)
     np.testing.assert_allclose(deconvolved, np.load('astronaut.npy'), rtol=1e-3)
-    deconvolved = wiener.wiener(np.load('astronaut_nosiy.npy'), psf, 1, is_real=False)
+    deconvolved = wiener.wiener(np.load('astronaut_noise.npy'), psf, 1, is_real=False)
     np.testing.assert_allclose(np.real(deconvolved), np.load('astronaut.npy'), rtol=1e-3, atol=1e-3)
 
 def test_ir2tf():
