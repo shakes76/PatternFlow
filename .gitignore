@@ -126,3 +126,6 @@ dmypy.json
 
 # vscode config file
 .vscode/
+
+# no tracking mypy config file
+mypy.ini
