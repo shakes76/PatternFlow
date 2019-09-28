@@ -47,24 +47,14 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
                                shift=-tf.cast(tf.math.floor(axis_size / 2), 
                                tf.int32),
                                axis=axis)
-    if is_real:
-        if dim == 1:
-            return tf.spectral.rfft(irpadded)
-        elif dim == 2:
-            return tf.spectral.rfft2d(irpadded)
-        elif dim == 3:
-            return tf.spectral.rfft3d(irpadded)
-        else:
-            raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
+    if dim == 1:
+        return tf.spectral.rfft(irpadded) if is_real else tf.fft(tf.cast(irpadded, tf.complex64))
+    elif dim == 2:
+        return tf.spectral.rfft2d(irpadded) if is_real else tf.fft2d(tf.cast(irpadded, tf.complex64))
+    elif dim == 3:
+        return tf.spectral.rfft3d(irpadded) if is_real else tf.fft3d(tf.cast(irpadded, tf.complex64))
     else:
-        if dim == 1:
-            return tf.fft(irpadded)
-        elif dim == 2:
-            return tf.fft2d(irpadded)
-        elif dim == 3:
-            return tf.fft3d(irpadded)
-        else:
-            raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
+        raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
 
 def _laplacian(ndim, shape, sess, is_real=True):
     """Return the transfer function of the Laplacian.
