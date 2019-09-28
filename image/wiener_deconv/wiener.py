@@ -3,7 +3,7 @@
 """
 __author__ = "Youwen Mao"
 __email__ = "youwen.mao@uq.net.au"
-__reference__ = ["scikit-image.skimage.restoration.deconvolution", "scikit-image.skimage.restoration.uft.py"]
+__reference__ = ["scikit-image.skimage.restoration.deconvolution", "scikit-image.skimage.restoration.uft"]
 
 import tensorflow as tf
 
@@ -18,6 +18,7 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
         imp_resp (ndarray/tensor): he impulse responses.
         shape (tuple): A tuple of integer corresponding to the target shape of 
             the transfer function.
+        sess (InteractiveSession): Tensorflow session.
         dim (int): The last axis along which to compute the transform. All
             axes by default.
         is_real (boolean): If True (default), imp_resp is supposed real and the
@@ -43,7 +44,8 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     for axis, axis_size in enumerate(imp_shape):
         if axis >= len(imp_resp.shape) - dim:
             irpadded = tf.manip.roll(irpadded,
-                               shift=-tf.cast(tf.math.floor(axis_size / 2), tf.int32),
+                               shift=-tf.cast(tf.math.floor(axis_size / 2), 
+                               tf.int32),
                                axis=axis)
     if is_real:
         if dim == 1:
@@ -65,6 +67,21 @@ def _ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
             raise ValueError('Bad dimension, dim can only be 1, 2 and 3')
 
 def _laplacian(ndim, shape, sess, is_real=True):
+    """Return the transfer function of the Laplacian.
+    Laplacian is the second order difference, on row and column.
+
+    Args:
+        ndim (int): The dimension of the Laplacian.
+        shape (tuple): The support on which to compute the transfer function.
+        sess (InteractiveSession): Tensorflow session.
+        is_real (boolean): If True (default), imp_resp is assumed to be 
+            real-valued and the Hermitian property is used with rfftn Fourier 
+            transform to return the transfer function.
+
+    Returns:
+        ndarray: The transfer function.
+        ndarray: The Laplacian.
+    """
     impr = tf.Variable(tf.zeros([3] * ndim))
     tf.global_variables_initializer().run()
     for dim in range(ndim):
@@ -72,11 +89,13 @@ def _laplacian(ndim, shape, sess, is_real=True):
                     [slice(None)] +
                     [slice(1, 2)] * (ndim - dim - 1))
 
-        op = tf.assign(impr[idx], tf.reshape(tf.convert_to_tensor([-1.0,0.0,-1.0]), [-1 if i == dim else 1 for i in range(ndim)]))
+        op = tf.assign(impr[idx], tf.reshape(
+            tf.convert_to_tensor([-1.0,0.0,-1.0]), 
+            [-1 if i == dim else 1 for i in range(ndim)]))
         sess.run(op)
     op = tf.assign(impr[[1]*ndim], 2.0 * ndim)
     sess.run(op)
-    return _ir2tf(impr, shape, is_real=is_real), impr
+    return _ir2tf(impr, shape, sess, is_real=is_real), impr
 
 def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     """Deconvolution with Wiener filter
@@ -116,4 +135,13 @@ def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
         trans_func = _ir2tf(psf, image.shape, sess, is_real=is_real)
     else:
         trans_func = psf
-    
+    wiener_filter = tf.math.conj(trans_func) / (tf.math.abs(trans_func) ** 2 +
+                                           balance * tf.math.abs(reg) ** 2)
+    if is_real:
+        deconv = tf.spectral.irfft2d(wiener_filter * tf.spectral.rfft2d(image))
+    else:
+        deconv = tf.spectral.ifft2d(wiener_filter * tf.spectral.fft2d(image))
+    if clip:
+        deconv[deconv > 1] = 1
+        deconv[deconv < -1] = -1
+    return deconv
