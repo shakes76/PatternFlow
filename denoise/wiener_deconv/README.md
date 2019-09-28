@@ -20,7 +20,19 @@ Add the module directory to syspath.
 from sys import path
 path.append("PATH/TO/Wiener_deconv")
 ```
-## Example
+## How to use
+This wiener(image, psf, balance, reg, is_real) function requires 3 compulsory parameters and 2 optional parameters.
+
+**image**: The image needs to be process.
+
+**psf**: Point Spread Function.
+
+**balance**: Balance between the data adequacy and the prior adequacy. (fine-tune parameter)
+
+reg: The regularisation operator, The Laplacian by default.
+
+is_real: Specify if ``psf`` and ``reg`` are provided with hermitian hypothesis, True by default. 
+
 Here's an example of how to use wiener deconvolution.
 ```python
 from wiener import wiener
@@ -32,3 +44,4 @@ Another example for 'camera' from [scikit-image](https://scikit-image.org/docs/d
 ```sh
 python PATH/TO/wiener_deconv/main.py
 ```
+![](camera.png)

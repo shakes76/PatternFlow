@@ -92,11 +92,12 @@ def wiener(image, psf, balance, reg=None, is_real=True):
     
     Args:
         image (ndarray): Input degraded image.
-        psf (ndarray): Point Spread Function. This is assumed to be the impulse response (input image 
-            space) if the data-type is real, or the transfer function (Fourier 
-            space) if the data-type is complex. There is no constraints on the
-            shape of the impulse response. The transfer function must be of 
-            shape `(M, N)` if `is_real is True`, `(M, N // 2 + 1)` otherwise
+        psf (ndarray): Point Spread Function. This is assumed to be the impulse 
+            response (input image space) if the data-type is real, or the 
+            transfer function (Fourier space) if the data-type is complex. 
+            There is no constraints on the shape of the impulse response. 
+            The transfer function must be of  shape `(M, N)` if `is_real is 
+            True`, `(M, N // 2 + 1)` otherwise
         balance(float): The regularisation parameter value that tunes the 
             balance between the data adequacy that improve frequency 
             restoration and the prior adequacy that reduce frequency 
