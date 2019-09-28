@@ -1,4 +1,4 @@
-"""Wiener-Hunt Deconvolution Modue
+"""Wiener Deconvolution Modue
 
 """
 __all__ = ["wiener"]

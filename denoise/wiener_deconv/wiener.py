@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Wiener-Hunt Deconvolution, Tensorflow Version
+"""Wiener Deconvolution, Tensorflow Version
 """
 __author__ = "Youwen Mao"
 __email__ = "youwen.mao@uq.net.au"
@@ -92,7 +92,7 @@ def wiener(image, psf, balance, reg=None, is_real=True):
     
     Args:
         image (ndarray): Input degraded image.
-        psf (ndarray): This is assumed to be the impulse response (input image 
+        psf (ndarray): Point Spread Function. This is assumed to be the impulse response (input image 
             space) if the data-type is real, or the transfer function (Fourier 
             space) if the data-type is complex. There is no constraints on the
             shape of the impulse response. The transfer function must be of 

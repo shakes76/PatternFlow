@@ -27,7 +27,8 @@ def main():
     fig.add_subplot(1,3,3)
     plt.title("original")
     plt.imshow(origin)
-    plt.show()
+    #plt.show()
+    plt.savefig('camera.png')
     
 if __name__ == '__main__':
     main()
