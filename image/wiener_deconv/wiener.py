@@ -97,7 +97,7 @@ def _laplacian(ndim, shape, sess, is_real=True):
     sess.run(op)
     return _ir2tf(impr, shape, sess, is_real=is_real), impr
 
-def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
+def wiener(image, psf, balance, reg=None, is_real=True):
     """Deconvolution with Wiener filter
     
     Args:
@@ -119,9 +119,6 @@ def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
             frequency plane is provided (due to the redundancy of Fourier 
             transform of real signal). It's apply only if ``psf`` and/or 
             ``reg`` are provided as transfer function. 
-        clip (boolean): True by default. If True, pixel values of the result 
-            above 1 or under -1 are thresholded for skimage pipeline 
-            compatibility.
     Return:
         ndarray: The predicted original image
     """
