@@ -128,20 +128,17 @@ def wiener(image, psf, balance, reg=None, is_real=True, clip=True):
     #TF initialization
     sess = tf.InteractiveSession()
     if reg is None:
-        reg = _laplacian(image.ndim, image.shape, sess, is_real=is_real)
+        reg, _ = _laplacian(image.ndim, image.shape, sess, is_real=is_real)
     if (reg.dtype != tf.complex64) & (reg.dtype != tf.complex128):
         reg = _ir2tf(reg, image.shape, sess, is_real=is_real)
     if psf.shape != reg.shape:
         trans_func = _ir2tf(psf, image.shape, sess, is_real=is_real)
     else:
         trans_func = psf
-    wiener_filter = tf.math.conj(trans_func) / (tf.math.abs(trans_func) ** 2 +
-                                           balance * tf.math.abs(reg) ** 2)
+    wiener_filter = tf.conj(trans_func) / (tf.cast((tf.abs(trans_func) ** 2), trans_func.dtype) +
+                                           tf.cast((balance * tf.abs(reg) ** 2), trans_func.dtype))
     if is_real:
         deconv = tf.spectral.irfft2d(wiener_filter * tf.spectral.rfft2d(image))
     else:
         deconv = tf.spectral.ifft2d(wiener_filter * tf.spectral.fft2d(image))
-    if clip:
-        deconv[deconv > 1] = 1
-        deconv[deconv < -1] = -1
-    return deconv
+    return deconv.eval()
