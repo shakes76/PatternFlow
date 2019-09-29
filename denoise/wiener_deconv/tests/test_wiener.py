@@ -10,10 +10,12 @@ import wiener
 
 def test_astronaut():
     psf = np.ones((5, 5)) / 25
-    deconvolved = wiener.wiener(np.load('astronaut_noise.npy'), psf, 1)
-    np.testing.assert_allclose(deconvolved, np.load('astronaut.npy'), rtol=1e-3)
-    deconvolved = wiener.wiener(np.load('astronaut_noise.npy'), psf, 1, is_real=False)
-    np.testing.assert_allclose(np.real(deconvolved), np.load('astronaut.npy'), rtol=1e-3, atol=1e-3)
+    image_noise = np.load(dirname(abspath(__file__))+'/astronaut_noise.npy')
+    image_desired = np.load(dirname(abspath(__file__))+'/astronaut.npy')
+    deconvolved = wiener.wiener(image_noise, psf, 1)
+    np.testing.assert_allclose(deconvolved, image_desired, rtol=1e-3)
+    deconvolved = wiener.wiener(image_noise, psf, 1, is_real=False)
+    np.testing.assert_allclose(np.real(deconvolved), image_desired, rtol=1e-3, atol=1e-3)
 
 def test_ir2tf():
     sess = tf.InteractiveSession()
