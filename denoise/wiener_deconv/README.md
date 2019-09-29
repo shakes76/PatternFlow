@@ -1,8 +1,9 @@
-![](https://upload.wikimedia.org/wikipedia/commons/e/e3/Image_restoration_%28motion_blur%2C_Wiener_filtering%29.png)
 # Wiener Deconvolution
+[![Build Status](https://travis-ci.org/microwen/PatternFlow.svg?branch=topic-algorithms)](https://travis-ci.org/microwen/PatternFlow)
 
 Deconvolution is a method of restoring data processed by convolution, it is also a convolution process. It is widely used in signal processing and image processing. For example, Wiener deconvolution is significantly effective for image denoising. Wiener deconvolution processes data by applying the Wiener filter.
 
+![](https://upload.wikimedia.org/wikipedia/commons/e/e3/Image_restoration_%28motion_blur%2C_Wiener_filtering%29.png)
 
 # How it works
 The goal of Wiener Deconvolution is to restore the input image to the original image. The Wiener filter minimizes the mean square error between the original image and the estimate image. The smaller the mean square error, the better the noise filtering effect. In order to minimize the mean square error, the key is to find the impulse response. If the Wiener-Hopf equation can be satisfied, the Wiener filter can be optimized. Once we have obtained the optimized Wiener filter, we can apply the convolution with the Wiener filter to the input image to get an estimated denoised image.
