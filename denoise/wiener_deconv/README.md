@@ -1,10 +1,15 @@
+![](https://upload.wikimedia.org/wikipedia/commons/e/e3/Image_restoration_%28motion_blur%2C_Wiener_filtering%29.png)
 # Wiener Deconvolution
-Deconvolution is a method of restoring data processed by convolution. 
-It is widely used in signal processing and image processing. 
-For example, deconvolution is significantly effective for image denoising. 
-Wiener Deconvolution processes data by applying the Wiener filter, 
-the Wiener filter minimizes the mean square error between the estimated random process and the desired process.
-## Installation
+
+Deconvolution is a method of restoring data processed by convolution, it is also a convolution process. It is widely used in signal processing and image processing. For example, Wiener deconvolution is significantly effective for image denoising. Wiener deconvolution processes data by applying the Wiener filter.
+
+
+# How it works
+The goal of Wiener Deconvolution is to restore the input image to the original image. The Wiener filter minimizes the mean square error between the original image and the estimate image. The smaller the mean square error, the better the noise filtering effect. In order to minimize the mean square error, the key is to find the impulse response. If the Wiener-Hopf equation can be satisfied, the Wiener filter can be optimized. Once we have obtained the optimized Wiener filter, we can apply the convolution with the Wiener filter to the input image to get an estimated denoised image.
+![](equation.png)
+
+# Installation
+
 ##### Dependencies:
 - Python 3.6
 - Tensorflow 1.10
@@ -20,7 +25,9 @@ Add the module directory to syspath.
 from sys import path
 path.append("PATH/TO/Wiener_deconv")
 ```
-## How to use
+
+# How to use
+
 This wiener(image, psf, balance, reg, is_real) function requires 3 compulsory parameters and 2 optional parameters.
 
 **image**: The image needs to be process.
@@ -33,6 +40,8 @@ reg: The regularisation operator, The Laplacian by default.
 
 is_real: Specify if ``psf`` and ``reg`` are provided with hermitian hypothesis, True by default. 
 
+### Examples
+
 Here's an example of how to use wiener deconvolution.
 ```python
 from wiener import wiener
@@ -40,7 +49,7 @@ import numpy as np
 psf = np.ones((5, 5)) / 25 # Point Spread Function
 img_denoised = wiener(img_noise, psf, 2) # Apply wiener deconvolution to 'img_noise'
 ```
-Another example for 'camera' from [scikit-image](https://scikit-image.org/docs/dev/api/skimage.data.html)
+Another example for 'camera' from [scikit-image](https://scikit-image.org/docs/dev/api/skimage.data.html).
 ```sh
 python PATH/TO/wiener_deconv/main.py
 ```
