@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # Author: Antoine DELPLACE
+# Last update: 30/09/2019
 import tensorflow as tf
 
-def gaussian_kernel(size, mean, std):
+def normalized_gaussian_kernel(size, mean, std):
     d = tf.distributions.Normal(mean, std)
     vals = d.prob(tf.cast(tf.range(-size, size+1), tf.float32))
     gauss_kernel = tf.einsum('i,j->ij', vals, vals)
@@ -30,16 +31,26 @@ def conv_padding_symmetric(input, kernel):
     inputbig = tf.pad(input, [[0, 0], [s//2, (s-1)//2], [s//2, (s-1)//2], [0, 0]], "SYMMETRIC")
     return tf.nn.convolution(inputbig, kernel, padding="VALID")
 
-def pbvif(ref, query_tab, max_scale=4, sig=2.0, mode="nearest"):
+def pbvif(ref, query_tab, max_scale=4, var_noise=2.0, mode="nearest"):
     """
     Computes the Pixel-Based Visual Information Fidelity (PB-VIF) using Tensorflow
 
-    max_scale = number of subbands
+    pbvif(ref, query_tab, max_scale=4, sigma_noise=2.0, mode="nearest")
 
-    sig = sigma_n^2/lambda_k
+    Parameters
+    ----------
+    ref       : image reference.
+    query_tab : list containing the images to be compared with.
+    max_scale : Number of subbands to extract information (Default: 4)
+    var_noise : Variance of additive noise (HSV model parameter, Default: 2.0)
+    mode      : mode used for padding convolutions (Default: "nearest")
+        - "nearest"   : the input is extended by replicating the last pixel
+        - "symmetric" : the input is extended by reflecting about the edge of the last pixel
+        - "constant"  : the input is extended by filling all values beyond the edge with zeros
 
-    Note to myself: for convolutions: input=gauss_noise, kernel=image
-
+    Return
+    ----------
+    Pixel-Based Visual Information Fidelity (float between 0 and 1)
     """
     # Get function with right mode
     if mode == "nearest":
@@ -60,36 +71,41 @@ def pbvif(ref, query_tab, max_scale=4, sig=2.0, mode="nearest"):
     total_i_ref = tf.Variable(0.0, tf.float32)
     total_i_query = tf.Variable(0.0, tf.float32)
     for scale in range(0, max_scale):
-        # Compute mu and sigma
-        gk = gaussian_kernel(2**scale, 0.0, tf.cast(2**(scale+1)+1, tf.float32)/5.0)
+        # Compute G field
+        g_filter = normalized_gaussian_kernel(2**scale, 0.0, tf.cast(2**(scale+1)+1, tf.float32)/5.0)
 
+        # Scale if necessary
         if scale < max_scale-1:
-            ref2 = conv(ref, gk)[:, ::2, ::2, :]
-            query2 = conv(query_, gk)[:, ::2, ::2, :]
+            ref2 = conv(ref, g_filter)[:, ::2, ::2, :]
+            query2 = conv(query_, g_filter)[:, ::2, ::2, :]
         else:
             ref2 = ref
             query2 = query_
 
-        mu_ref = conv(ref2, gk)
-        mu_query = conv(query2, gk)
+        # Compute expected matrices
+        E_C = conv(ref2, g_filter)
+        E_D = conv(query2, g_filter)
 
-        sigma_ref2 = conv(tf.multiply(ref2, ref2), gk) - mu_ref*mu_ref
-        sigma_query2 = conv(tf.multiply(query2, query2), gk) - mu_query*mu_query
-        sigma_ref_query = conv(tf.multiply(ref2, query2), gk) - mu_ref*mu_query
+        # Compute covariance matrices
+        cov_C_C = conv(tf.multiply(ref2, ref2), g_filter) - E_C*E_C
+        cov_D_D = conv(tf.multiply(query2, query2), g_filter) - E_D*E_D
+        cov_C_D = conv(tf.multiply(ref2, query2), g_filter) - E_C*E_D
 
-        g = sigma_ref_query/sigma_ref2
-        s = sigma_query2 - g*sigma_ref_query
+        # Compute g_l and var_v_l
+        g_l = cov_C_D/cov_C_C
+        var_v_l = cov_D_D - g_l*cov_C_D
 
         # Compute information extracted by the brain
-        i_ref = tf.math.log(1.0 + sigma_ref2/sig)
-        i_query = tf.math.log(1.0 + g*g*sigma_ref2/(s+sig))
+        i_ref = tf.math.log(1.0 + cov_C_C/var_noise)
+        i_query = tf.math.log(1.0 + g_l*g_l*cov_C_C/(var_v_l+var_noise))
 
         # Add to total
         total_i_ref += tf.reduce_sum(i_ref)
         total_i_query += tf.reduce_sum(i_query)
 
     vif = tf.divide(total_i_query, total_i_ref)
-        
+
+    # Begin session
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 

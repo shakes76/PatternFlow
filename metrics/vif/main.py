@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Author: Antoine DELPLACE
+# Last update: 30/09/2019
 import numpy as np
 import imageio
 
