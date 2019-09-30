@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 # Author: Antoine DELPLACE
 # Last update: 30/09/2019
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Remove Warnings
+
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR) # Remove Warnings
 
 def normalized_gaussian_kernel(size, mean, std):
     d = tf.distributions.Normal(mean, std)
