@@ -37,9 +37,9 @@ def pbvif(ref, query, max_scale=4, sig=2.0):
 
     """
     # Variables
-    ref = tf.Variable(ref.astype(np.float32))
+    ref = tf.Variable(ref, tf.float32)
     ref = tf.expand_dims(tf.expand_dims(ref, 0), 3)
-    query = tf.Variable(query.astype(np.float32))
+    query = tf.Variable(query, tf.float32)
     query = tf.expand_dims(tf.expand_dims(query, 0), 3)
     
     total_i_ref = tf.Variable(0.0, tf.float32)
