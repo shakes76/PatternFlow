@@ -14,19 +14,10 @@ if __name__ == "__main__":
     img4 = imageio.imread("../../../lena_jpeg.jpg", as_gray=True).astype(np.float32)
 
     print("Nearest")
-    print(vif.pbvif(img, img))
-    print(vif.pbvif(img, img2))
-    print(vif.pbvif(img, img3))
-    print(vif.pbvif(img, img4))
+    print(vif.pbvif(img, [img, img2, img3, img4]))
 
     print("Symmetric")
-    print(vif.pbvif(img, img, mode="symmetric"))
-    print(vif.pbvif(img, img2, mode="symmetric"))
-    print(vif.pbvif(img, img3, mode="symmetric"))
-    print(vif.pbvif(img, img4, mode="symmetric"))
+    print(vif.pbvif(img, [img, img2, img3, img4], mode="symmetric"))
 
     print("Constant")
-    print(vif.pbvif(img, img, mode="constant"))
-    print(vif.pbvif(img, img2, mode="constant"))
-    print(vif.pbvif(img, img3, mode="constant"))
-    print(vif.pbvif(img, img4, mode="constant"))
+    print(vif.pbvif(img, [img, img2, img3, img4], mode="constant"))

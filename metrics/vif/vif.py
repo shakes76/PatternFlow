@@ -30,7 +30,7 @@ def conv_padding_symmetric(input, kernel):
     inputbig = tf.pad(input, [[0, 0], [s//2, (s-1)//2], [s//2, (s-1)//2], [0, 0]], "SYMMETRIC")
     return tf.nn.convolution(inputbig, kernel, padding="VALID")
 
-def pbvif(ref, query, max_scale=4, sig=2.0, mode="nearest"):
+def pbvif(ref, query_tab, max_scale=4, sig=2.0, mode="nearest"):
     """
     Computes the Pixel-Based Visual Information Fidelity (PB-VIF) using Tensorflow
 
@@ -54,8 +54,8 @@ def pbvif(ref, query, max_scale=4, sig=2.0, mode="nearest"):
     # Variables
     ref = tf.Variable(ref, tf.float32)
     ref = tf.expand_dims(tf.expand_dims(ref, 0), 3)
-    query = tf.Variable(query, tf.float32)
-    query = tf.expand_dims(tf.expand_dims(query, 0), 3)
+    query = tf.placeholder(tf.float32)
+    query_ = tf.expand_dims(tf.expand_dims(query, 0), 3)
     
     total_i_ref = tf.Variable(0.0, tf.float32)
     total_i_query = tf.Variable(0.0, tf.float32)
@@ -65,10 +65,10 @@ def pbvif(ref, query, max_scale=4, sig=2.0, mode="nearest"):
 
         if scale < max_scale-1:
             ref2 = conv(ref, gk)[:, ::2, ::2, :]
-            query2 = conv(query, gk)[:, ::2, ::2, :]
+            query2 = conv(query_, gk)[:, ::2, ::2, :]
         else:
             ref2 = ref
-            query2 = query
+            query2 = query_
 
         mu_ref = conv(ref2, gk)
         mu_query = conv(query2, gk)
@@ -93,7 +93,7 @@ def pbvif(ref, query, max_scale=4, sig=2.0, mode="nearest"):
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
-    vif_ = sess.run(vif)
+    vif_ = [sess.run(vif, feed_dict={query: query_tab[i]}) for i in range(0, len(query_tab))]
     
     sess.close()
     
