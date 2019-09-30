@@ -25,7 +25,12 @@ def nearest_padding(image, padding_left=[0,1,1,0], padding_right=None):
             image = tf.pad(image, [[0, k==i] for k in range(0, 4)], "SYMMETRIC")
     return image
 
-def pbvif(ref, query, max_scale=4, sig=2.0):
+def conv_padding_symmetric(input, kernel):
+    s = kernel.get_shape().as_list()[0]
+    inputbig = tf.pad(input, [[0, 0], [s//2, (s-1)//2], [s//2, (s-1)//2], [0, 0]], "SYMMETRIC")
+    return tf.nn.convolution(inputbig, kernel, padding="VALID")
+
+def pbvif(ref, query, max_scale=4, sig=2.0, mode="nearest"):
     """
     Computes the Pixel-Based Visual Information Fidelity (PB-VIF) using Tensorflow
 
@@ -36,6 +41,16 @@ def pbvif(ref, query, max_scale=4, sig=2.0):
     Note to myself: for convolutions: input=gauss_noise, kernel=image
 
     """
+    # Get function with right mode
+    if mode == "nearest":
+        conv = conv_padding_nearest
+    elif mode == "symmetric":
+        conv = conv_padding_symmetric
+    elif mode == "constant":
+        conv = lambda input, kernel: tf.nn.convolution(input, kernel, padding="SAME")
+    else:
+        raise NameError('Unknown mode: must be "nearest", "symmetric" or "constant"')
+    
     # Variables
     ref = tf.Variable(ref, tf.float32)
     ref = tf.expand_dims(tf.expand_dims(ref, 0), 3)
@@ -49,18 +64,18 @@ def pbvif(ref, query, max_scale=4, sig=2.0):
         gk = gaussian_kernel(2**scale, 0.0, tf.cast(2**(scale+1)+1, tf.float32)/5.0)
 
         if scale < max_scale-1:
-            ref2 = conv_padding_nearest(ref, gk)[:, ::2, ::2, :]
-            query2 = conv_padding_nearest(query, gk)[:, ::2, ::2, :]
+            ref2 = conv(ref, gk)[:, ::2, ::2, :]
+            query2 = conv(query, gk)[:, ::2, ::2, :]
         else:
             ref2 = ref
             query2 = query
 
-        mu_ref = conv_padding_nearest(ref2, gk)
-        mu_query = conv_padding_nearest(query2, gk)
+        mu_ref = conv(ref2, gk)
+        mu_query = conv(query2, gk)
 
-        sigma_ref2 = conv_padding_nearest(tf.multiply(ref2, ref2), gk) - mu_ref*mu_ref
-        sigma_query2 = conv_padding_nearest(tf.multiply(query2, query2), gk) - mu_query*mu_query
-        sigma_ref_query = conv_padding_nearest(tf.multiply(ref2, query2), gk) - mu_ref*mu_query
+        sigma_ref2 = conv(tf.multiply(ref2, ref2), gk) - mu_ref*mu_ref
+        sigma_query2 = conv(tf.multiply(query2, query2), gk) - mu_query*mu_query
+        sigma_ref_query = conv(tf.multiply(ref2, query2), gk) - mu_ref*mu_query
 
         g = sigma_ref_query/sigma_ref2
         s = sigma_query2 - g*sigma_ref_query
