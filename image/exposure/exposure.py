@@ -1,7 +1,69 @@
 import torch
 from typing import Union, Tuple, Optional, Dict, Any
 import warnings
-from utils import dtype_limits
+from utils import dtype_limits  # type: ignore
+from utils import is_type_integer_family  # type: ignore
+import numpy as np  # type: ignore
+from skimage import exposure, data  # type: ignore
+
+
+def _offset_array(image: torch.Tensor,
+                  low_boundary: int,
+                  high_boundary: int) -> Tuple[torch.Tensor, int]:
+    """Offset the array to get the lowest value at 0 if negative.
+    """
+    if low_boundary < 0:
+        offset = low_boundary
+        length = high_boundary - low_boundary
+
+        image = image - offset
+    else:
+        offset = 0
+    return image, offset
+
+
+def _bin_count_histogram(image: torch.Tensor,
+                         source_range: Optional[str] = 'image') -> Tuple[torch.Tensor, torch.Tensor]:
+    """Efficient histogram calculation for an image of integers.
+
+    This function is significantly more efficient than np.histogram but
+    works only on images of integers. It is based on np.bincount.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        Input image
+    source_range : Optional[str], default 'image'
+        image: determines the range from the input image
+        dtype: determines the range from the expected range of the images
+    of that data type.
+
+    Returns
+    -------
+    Tuple[torch.Tensor, torch.Tensor]
+        hist: The values of the histogram.
+        bin_centers: The values at the center of the bins.
+
+    """
+    if source_range not in ['image', 'dtype']:
+        raise ValueError(
+            'Incorrect value for `source_range` argument: {}'.format(source_range))
+
+    if source_range == 'image':
+        max_v = int(torch.max(image))
+        min_v = int(torch.min(image))
+    elif source_range == 'dtype':
+        max_v, min_v = dtype_limits(image, clip_negative=False)
+
+    image, offset = _offset_array(image, min_v, max_v)
+    hist = torch.bincount(
+        image.flatten(), minlength=int(max_v-min_v+1))
+    bin_centers = torch.arange(min_v, max_v + 1)
+
+    if source_range == 'image':
+        idx = max(min_v, 0)
+        hist = hist[idx:]
+    return hist, bin_centers
 
 
 def histogram(image: torch.Tensor,
@@ -63,17 +125,24 @@ def histogram(image: torch.Tensor,
              computed on the flattened image. You can instead
              apply this function to each color channel.""")
 
-    sr_dict = {'image': (0, 1), 'dtype': dtype_limits(
+    image = image.flatten()
+    min_v = torch.min(image)
+    max_v = torch.max(image)
+
+    sr_dict = {'image': (min_v, max_v), 'dtype': dtype_limits(
         image, clip_negative=False)}
-    try:
-        hist_range: Tuple[int, int] = sr_dict[str(source_range)]
-    except KeyError as e:
-        raise ValueError("Wrong value for the `source_range` argument")
+    if is_type_integer_family(image.dtype):
+        hist, bin_centers = _bin_count_histogram(image, source_range)
+    else:
+        try:
+            hist_range: Tuple[int, int] = sr_dict[str(source_range)]
+        except KeyError as e:
+            raise ValueError("Wrong value for the `source_range` argument")
 
-    hist = torch.histc(
-        image, nbins, min=hist_range[0], max=hist_range[1])
+        hist = torch.histc(
+            image, nbins, min=hist_range[0], max=hist_range[1])
 
-    bin_centers = _calc_bin_centers(hist_range[0], hist_range[1], nbins)
+        bin_centers = _calc_bin_centers(hist_range[0], hist_range[1], nbins)
 
     if normalize:
         hist = hist / torch.sum(hist)
@@ -108,5 +177,13 @@ def _calc_bin_centers(start: Union[int, float] = 0,
     if nbins < 1:
         raise ValueError('the number of bins cannot less than 1')
 
-    length = abs(start) + abs(end)
-    return torch.arange(start, end, step=float(length/nbins)) + float(length/(2*nbins))
+    length = end - start
+    shift = float(length/nbins)/2.0
+    return torch.arange(start, end, step=float(length/nbins)) + shift
+
+
+if __name__ == "__main__":
+    image = data.camera()
+    image = torch.tensor(image).flatten()
+    print(is_type_integer_family(image.dtype))
+    # print(_calc_bin_centers(2, 27, 5))
