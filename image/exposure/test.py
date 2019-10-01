@@ -32,7 +32,6 @@ class TestExposure(unittest.TestCase):
 
     def test_is_type_integer_family(self):
         int_dtypes = [
-            torch.tensor(5, dtype=torch.uint8),
             torch.tensor(5, dtype=torch.int8),
             torch.tensor(5, dtype=torch.int16),
             torch.tensor(5, dtype=torch.int32),

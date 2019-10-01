@@ -4,7 +4,7 @@ import warnings
 from utils import dtype_limits  # type: ignore
 from utils import is_type_integer_family  # type: ignore
 import numpy as np  # type: ignore
-from skimage import exposure, data  # type: ignore
+from skimage import exposure, data, img_as_float  # type: ignore
 
 
 def _offset_array(image: torch.Tensor,
@@ -53,7 +53,7 @@ def _bin_count_histogram(image: torch.Tensor,
         max_v = int(torch.max(image))
         min_v = int(torch.min(image))
     elif source_range == 'dtype':
-        max_v, min_v = dtype_limits(image, clip_negative=False)
+        min_v, max_v = dtype_limits(image, clip_negative=False)
 
     image, offset = _offset_array(image, min_v, max_v)
     hist = torch.bincount(
@@ -109,8 +109,9 @@ def histogram(image: torch.Tensor,
     >>> image = img_as_float(data.camera())
     >>> np.histogram(image, bins=2)
     (array([107432, 154712]), array([ 0. ,  0.5,  1. ]))
+    >>> image = torch.tensor(img_as_float(data.camera()))
     >>> exposure.histogram(image, nbins=2)
-    (array([107432, 154712]), array([ 0.25,  0.75]))
+    (tensor([107432, 154712]), tensor([ 0.2500,  0.7500]))
     """
     if not isinstance(image, torch.Tensor):
         raise ValueError("input type must be pytorch tensor")
@@ -126,28 +127,31 @@ def histogram(image: torch.Tensor,
              apply this function to each color channel.""")
 
     image = image.flatten()
-    min_v = torch.min(image)
-    max_v = torch.max(image)
+    min_v = int(torch.min(image))
+    max_v = int(torch.max(image))
 
-    sr_dict = {'image': (min_v, max_v), 'dtype': dtype_limits(
-        image, clip_negative=False)}
     if is_type_integer_family(image.dtype):
         hist, bin_centers = _bin_count_histogram(image, source_range)
     else:
-        try:
-            hist_range: Tuple[int, int] = sr_dict[str(source_range)]
-        except KeyError as e:
+        if source_range == 'image':
+            hist = torch.histc(
+                image, nbins, min=min_v, max=max_v)
+            bin_centers = _calc_bin_centers(min_v, max_v, nbins)
+        elif source_range == 'dtype':
+            min_v, max_v = dtype_limits(image, clip_negative=False)
+            # since the argument of torch.histc min is inclusive, to make is
+            # exclusive we have to add a tiny value to it
+            hist = torch.histc(
+                image, nbins, min=min_v+0.001, max=max_v)
+            bin_centers = _calc_bin_centers(min_v, max_v, nbins)
+        else:
             raise ValueError("Wrong value for the `source_range` argument")
-
-        hist = torch.histc(
-            image, nbins, min=hist_range[0], max=hist_range[1])
-
-        bin_centers = _calc_bin_centers(hist_range[0], hist_range[1], nbins)
 
     if normalize:
         hist = hist / torch.sum(hist)
+        return (hist, bin_centers)
 
-    return (hist, bin_centers)
+    return (hist.long(), bin_centers)
 
 
 def _calc_bin_centers(start: Union[int, float] = 0,
@@ -183,7 +187,5 @@ def _calc_bin_centers(start: Union[int, float] = 0,
 
 
 if __name__ == "__main__":
-    image = data.camera()
-    image = torch.tensor(image).flatten()
-    print(is_type_integer_family(image.dtype))
-    # print(_calc_bin_centers(2, 27, 5))
+    image = torch.tensor(img_as_float(data.camera()))
+    print(histogram(image, nbins=2))
