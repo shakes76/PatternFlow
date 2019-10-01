@@ -46,7 +46,7 @@ def pbvif(ref, query_tab, max_scale=4, var_noise=2.0, mode="nearest"):
     ref       : image reference.
     query_tab : list containing the images to be compared with.
     max_scale : Number of subbands to extract information (Default: 4)
-    var_noise : Variance of additive noise (HSV model parameter, Default: 2.0)
+    var_noise : Variance of additive noise (HVS model parameter, Default: 2.0)
     mode      : mode used for padding convolutions (Default: "nearest")
         - "nearest"   : the input is extended by replicating the last pixel
         - "symmetric" : the input is extended by reflecting about the edge of the last pixel
