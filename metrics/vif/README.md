@@ -13,6 +13,7 @@ Visual Infomation Fidelity (VIF) is a measure that evaluates the relative qualit
 - Tabulate 0.8.5 -- `main.py`
 
 ### Built-in driver `main.py`
+The `main()` function imports the images, performs a grayscale conversion, calls the function `pbvif()` of the `vif` module and returns a formatted table with the results.
 ```sh
 main.py reference_image_filename query_image_filename1 query_image_filename2 query_image_filename3 ...
 ```
@@ -24,8 +25,8 @@ pbvif(ref, query_tab, max_scale=4, var_noise=2.0, mode='nearest')
 
     Parameters
     ----------
-    ref       : image reference.
-    query_tab : list containing the images to be compared with.
+    ref       : 2-dimension grayscaled image reference.
+    query_tab : list containing the 2-dimension grayscaled images to be compared with.
     max_scale : Number of subbands to extract information (Default: 4)
     var_noise : Variance of additive noise (HVS model parameter, Default: 2.0)
     mode      : mode used for padding convolutions (Default: "nearest")

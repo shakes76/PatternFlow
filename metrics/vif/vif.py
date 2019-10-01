@@ -43,8 +43,8 @@ def pbvif(ref, query_tab, max_scale=4, var_noise=2.0, mode="nearest"):
 
     Parameters
     ----------
-    ref       : image reference.
-    query_tab : list containing the images to be compared with.
+    ref       : 2-dimension grayscaled image reference.
+    query_tab : list containing the 2-dimension grayscaled images to be compared with.
     max_scale : Number of subbands to extract information (Default: 4)
     var_noise : Variance of additive noise (HVS model parameter, Default: 2.0)
     mode      : mode used for padding convolutions (Default: "nearest")
