@@ -5,11 +5,6 @@ dtype_range = {
     torch.float: (-1, 1),
     torch.float16: (-1, 1),
     torch.float32: (-1, 1),
-    torch.int8: (0, 1),
-    torch.uint8: (0, 1),
-    torch.short: (-1, 1),
-    torch.int: (-1, 1),
-    torch.long: (-1, 1),
 }
 
 
@@ -33,12 +28,14 @@ def dtype_limits(image: torch.Tensor,
     imin, imax = (-1, 1)
     if clip_negative:
         imin = 0
-    return (imax, imin)
+    return (imin, imax)
 
 
 def is_type_integer_family(dtype: torch.dtype) -> bool:
-    return (dtype == torch.uint8 or
-            dtype == torch.int8 or
-            dtype == torch.int16 or
-            dtype == torch.int32 or
-            dtype == torch.int64)
+    return (
+        dtype == torch.uint8 or
+        dtype == torch.int8 or
+        dtype == torch.int16 or
+        dtype == torch.int32 or
+        dtype == torch.int64
+    )
