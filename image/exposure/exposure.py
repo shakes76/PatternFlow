@@ -130,7 +130,7 @@ def histogram(image: torch.Tensor,
     min_v = int(torch.min(image))
     max_v = int(torch.max(image))
 
-    if is_type_integer_family(image.dtype):
+    if not torch.is_floating_point(image):
         hist, bin_centers = _bin_count_histogram(image, source_range)
     else:
         if source_range == 'image':
@@ -142,13 +142,13 @@ def histogram(image: torch.Tensor,
             # since the argument of torch.histc min is inclusive, to make is
             # exclusive we have to add a tiny value to it
             hist = torch.histc(
-                image, nbins, min=min_v+0.001, max=max_v)
+                image, nbins, min=min_v, max=max_v)
             bin_centers = _calc_bin_centers(min_v, max_v, nbins)
         else:
             raise ValueError("Wrong value for the `source_range` argument")
 
     if normalize:
-        hist = hist / torch.sum(hist)
+        hist = torch.div(hist.float(), torch.sum(hist))
         return (hist, bin_centers)
 
     return (hist.long(), bin_centers)
@@ -184,8 +184,3 @@ def _calc_bin_centers(start: Union[int, float] = 0,
     length = end - start
     shift = float(length/nbins)/2.0
     return torch.arange(start, end, step=float(length/nbins)) + shift
-
-
-if __name__ == "__main__":
-    image = torch.tensor(img_as_float(data.camera()))
-    print(histogram(image, nbins=2))

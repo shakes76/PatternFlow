@@ -11,4 +11,4 @@ this project is tested in following context:
 -   python: python@3.6
 -   linter: mypy@0.70
 
-Only one external library was used in this project, it is pytorch@1.1.0
+Only one external library was used in this project, it is pytorch@1.2.0
