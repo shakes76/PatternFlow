@@ -1,11 +1,18 @@
 import torch
 from typing import Optional, Tuple
 
+_integer_types = (torch.uint8, torch.int8, torch.int16,
+                  torch.int32, torch.int64)
+_integer_ranges = {t: (torch.iinfo(t).min, torch.iinfo(t).max)
+                   for t in _integer_types}
 dtype_range = {
+    torch.uint8: (0, 1),
     torch.float: (-1, 1),
     torch.float16: (-1, 1),
     torch.float32: (-1, 1),
 }
+
+dtype_range.update(_integer_ranges)
 
 
 def dtype_limits(image: torch.Tensor,
@@ -25,17 +32,7 @@ def dtype_limits(image: torch.Tensor,
     Tuple[int, int]
         lower and upper intensity limits
     """
-    imin, imax = (-1, 1)
+    imin, imax = dtype_range[image.dtype]
     if clip_negative:
         imin = 0
     return (imin, imax)
-
-
-def is_type_integer_family(dtype: torch.dtype) -> bool:
-    return (
-        dtype == torch.uint8 or
-        dtype == torch.int8 or
-        dtype == torch.int16 or
-        dtype == torch.int32 or
-        dtype == torch.int64
-    )
