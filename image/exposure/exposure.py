@@ -2,24 +2,30 @@ import torch
 from typing import Union, Tuple, Optional, Dict, Any
 import warnings
 from utils import dtype_limits  # type: ignore
-from utils import is_type_integer_family  # type: ignore
 import numpy as np  # type: ignore
 from skimage import exposure, data, img_as_float  # type: ignore
 
 
-def _offset_array(image: torch.Tensor,
-                  low_boundary: int,
-                  high_boundary: int) -> Tuple[torch.Tensor, int]:
-    """Offset the array to get the lowest value at 0 if negative.
-    """
-    if low_boundary < 0:
-        offset = low_boundary
-        length = high_boundary - low_boundary
-
-        image = image - offset
+def _update_dtype(dtype: torch.dtype) -> torch.dtype:
+    if dtype == torch.int8:
+        return torch.int16
+    elif dtype == torch.int16:
+        return torch.int32
     else:
-        offset = 0
-    return image, offset
+        return torch.int64
+
+
+def _offset_array(image: torch.Tensor,
+                  lower_boundary: int,
+                  higher_boundary: int) -> torch.Tensor:
+    """Offset the array to get the lowest value at 0 if negative."""
+    if lower_boundary < 0:
+        dyn_range = higher_boundary - lower_boundary
+        # check if the dyn_range is overflow, if so, update dtype
+        if dyn_range > torch.iinfo(image.dtype).max:  # type: ignore
+            image = image.type(_update_dtype(image.dtype))
+        image = torch.sub(image, lower_boundary)
+    return image
 
 
 def _bin_count_histogram(image: torch.Tensor,
@@ -55,9 +61,8 @@ def _bin_count_histogram(image: torch.Tensor,
     elif source_range == 'dtype':
         min_v, max_v = dtype_limits(image, clip_negative=False)
 
-    image, offset = _offset_array(image, min_v, max_v)
-    hist = torch.bincount(
-        image.flatten(), minlength=int(max_v-min_v+1))
+    image = _offset_array(image.flatten(), min_v, max_v)
+    hist = torch.bincount(image, minlength=max_v-min_v+1)
     bin_centers = torch.arange(min_v, max_v + 1)
 
     if source_range == 'image':
@@ -155,7 +160,8 @@ def histogram(image: torch.Tensor,
 
 
 def _calc_bin_centers(start: Union[int, float] = 0,
-                      end: Union[int, float] = 1, nbins: Optional[int] = 2) -> torch.Tensor:
+                      end: Union[int, float] = 1,
+                      nbins: Optional[int] = 2) -> torch.Tensor:
     """calculate the center of bins
 
     Parameters
