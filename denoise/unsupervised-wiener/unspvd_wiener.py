@@ -45,7 +45,7 @@ def ir2tf(imp_resp, shape, dim=None, is_real=True):
     if not dim:
         dim = imp_resp.ndim
     # Zero padding and fill
-    irpadded = tf.zeros(shape)
+    irpadded = tf.Variable(tf.zeros(shape))
     irpadded[tuple([slice(0, s) for s in imp_resp.shape])] = imp_resp
     # Roll for zero convention of the fft to avoid the phase
     # problem. Work with odd and even size.
@@ -73,7 +73,7 @@ def ir2tf(imp_resp, shape, dim=None, is_real=True):
         raise ValueError('Dimension can only be 1, 2 and 3')
 
 
-def laplacian(ndim, shape, is_real=True):
+def laplacian(ndim, shape, sess, is_real=True):
     """Return the transfer function of the Laplacian.
     Laplacian is the second order difference, on row and column.
     Parameters
@@ -100,16 +100,17 @@ def laplacian(ndim, shape, is_real=True):
     >>> np.all(tf == ir2tf(ir, (32, 32)))
     True
     """
-    impr = tf.zeros([3] * ndim)
+    impr = tf.Variable(tf.zeros([3] * ndim))
     for dim in range(ndim):
         idx = tuple([slice(1, 2)] * dim +
                     [slice(None)] +
                     [slice(1, 2)] * (ndim - dim - 1))
-        impr[idx] = tf.array([-1.0,
-                              0.0,
-                              -1.0]).reshape([-1 if i == dim else 1
-                                              for i in range(ndim)])
-    impr[(slice(1, 2), ) * ndim] = 2.0 * ndim
+        assign_op = tf.assign(impr[idx], tf.reshape(
+            tf.convert_to_tensor([-1.0, 0.0, -1.0]),
+            [-1 if i == dim else 1 for i in range(ndim)]))
+        sess.run(assign_op)
+    assign_op = tf.assign(impr[(slice(1, 2),) * ndim], 2.0 * ndim)
+    sess.run(assign_op)
     return ir2tf(impr, shape, is_real=is_real), impr
 
 
@@ -144,13 +145,14 @@ def image_quad_norm(inarray):
 
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
-
+    sess = tf.InteractiveSession()
+    tf.global_variables_initializer().run()
     params = {'threshold': 1e-4, 'max_iter': 200,
               'min_iter': 30, 'burnin': 15, 'callback': None}
     params.update(user_params or {})
 
     if reg is None:
-        reg, _ = laplacian(image.ndim, image.shape, is_real=is_real)
+        reg, _ = laplacian(image.ndim, image.shape, sess, is_real=is_real)
     if not is_real:
         reg = ir2tf(reg, image.shape, is_real=is_real)
 
@@ -160,9 +162,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         trans_fct = psf
 
     # The mean of the object
-    x_postmean = tf.zeros(trans_fct.shape)
+    x_postmean = tf.Variable(tf.zeros(trans_fct.shape))
     # The previous computed mean in the iterative loop
-    prev_x_postmean = tf.zeros(trans_fct.shape)
+    prev_x_postmean = tf.Variable(tf.zeros(trans_fct.shape))
 
     # Difference between two successive mean
     delta = 1e-8
