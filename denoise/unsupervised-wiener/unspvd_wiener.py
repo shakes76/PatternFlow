@@ -113,6 +113,35 @@ def laplacian(ndim, shape, is_real=True):
     return ir2tf(impr, shape, is_real=is_real), impr
 
 
+def image_quad_norm(inarray):
+    """Return the quadratic norm of images in Fourier space.
+    This function detects whether the input image satisfies the
+    Hermitian property.
+    Parameters
+    ----------
+    inarray : ndarray
+        Input image. The image data should reside in the final two
+        axes.
+    Returns
+    -------
+    norm : float
+        The quadratic norm of ``inarray``.
+    Examples
+    --------
+    >>> input = np.ones((5, 5))
+    >>> image_quad_norm(ufft2(input)) == np.sum(np.abs(input)**2)
+    True
+    >>> image_quad_norm(ufft2(input)) == image_quad_norm(urfft2(input))
+    True
+    """
+    # If there is a Hermitian symmetry
+    if inarray.shape[-1] != inarray.shape[-2]:
+        return (2 * tf.sum(tf.sum(tf.abs(inarray) ** 2, axis=-1), axis=-1) -
+                tf.sum(tf.abs(inarray[..., 0]) ** 2, axis=-1))
+    else:
+        return tf.sum(tf.sum(tf.abs(inarray) ** 2, axis=-1), axis=-1)
+
+
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
 
@@ -172,14 +201,14 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             params['callback'](x_sample)
 
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        gn_chain.append(npr.gamma(image.size / 2,
-                                  2 / uft.image_quad_norm(data_spectrum -
-                                                          x_sample *
-                                                          trans_fct)))
+        gn_chain.append(tf.random.gamma(image.size / 2,
+                                        2 / image_quad_norm(data_spectrum -
+                                                            x_sample *
+                                                            trans_fct)))
 
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        gx_chain.append(npr.gamma((image.size - 1) / 2,
-                                  2 / uft.image_quad_norm(x_sample * reg)))
+        gx_chain.append(tf.random.gamma((image.size - 1) / 2,
+                                        2 / image_quad_norm(x_sample * reg)))
 
         # current empirical average
         if iteration > params['burnin']:
@@ -201,9 +230,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # Empirical average \approx POSTMEAN Eq. 44
     x_postmean = x_postmean / (iteration - params['burnin'])
     if is_real:
-        x_postmean = uft.uirfft2(x_postmean, shape=image.shape)
+        x_postmean = tf.signal.irfft2d(x_postmean, shape=image.shape)
     else:
-        x_postmean = uft.uifft2(x_postmean)
+        x_postmean = tf.signal.ifft2d(x_postmean)
 
     if clip:
         x_postmean[x_postmean > 1] = 1
