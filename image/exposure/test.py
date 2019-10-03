@@ -6,7 +6,11 @@ import torch
 from skimage import data  # type: ignore
 
 
-class TestExposure(unittest.TestCase):
+class TestHistogram(unittest.TestCase):
+    def test_input_tensor(self):
+        image = [10, 100]
+        with self.assertRaises(TypeError):
+            _, _ = histogram(image)
 
     def test_wrong_source_range(self):
         image = torch.tensor([-1, 100], dtype=torch.int8)
