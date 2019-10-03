@@ -129,3 +129,84 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         trans_fct = ir2tf(psf, image.shape,  is_real=is_real)
     else:
         trans_fct = psf
+
+    # The mean of the object
+    x_postmean = tf.zeros(trans_fct.shape)
+    # The previous computed mean in the iterative loop
+    prev_x_postmean = tf.zeros(trans_fct.shape)
+
+    # Difference between two successive mean
+    delta = 1e-8
+
+    # Initial state of the chain
+    gn_chain, gx_chain = [1], [1]
+
+    # The correlation of the object in Fourier space (if size is big,
+    # this can reduce computation time in the loop)
+    areg2 = tf.abs(reg) ** 2
+    atf2 = tf.abs(trans_fct) ** 2
+
+    # The Fourier transform may change the image.size attribute, so we
+    # store it.
+    if is_real:
+        data_spectrum = tf.signal.rfft2d(image.astype(tf.float))
+    else:
+        data_spectrum = tf.fft2d(tf.cast(image.astype(tf.float), tf.complex64))
+
+    # Gibbs sampling
+    for iteration in range(params['max_iter']):
+        # Sample of Eq. 27 p(circX^k | gn^k-1, gx^k-1, y).
+
+        # weighting (correlation in direct space)
+        precision = gn_chain[-1] * atf2 + gx_chain[-1] * areg2  # Eq. 29
+        excursion = tf.sqrt(0.5) / tf.sqrt(precision) * (
+            tf.random.standard_normal(data_spectrum.shape) +
+            1j * tf.random.standard_normal(data_spectrum.shape))
+
+        # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
+        wiener_filter = gn_chain[-1] * tf.conj(trans_fct) / precision
+
+        # sample of X in Fourier space
+        x_sample = wiener_filter * data_spectrum + excursion
+        if params['callback']:
+            params['callback'](x_sample)
+
+        # sample of Eq. 31 p(gn | x^k, gx^k, y)
+        gn_chain.append(npr.gamma(image.size / 2,
+                                  2 / uft.image_quad_norm(data_spectrum -
+                                                          x_sample *
+                                                          trans_fct)))
+
+        # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
+        gx_chain.append(npr.gamma((image.size - 1) / 2,
+                                  2 / uft.image_quad_norm(x_sample * reg)))
+
+        # current empirical average
+        if iteration > params['burnin']:
+            x_postmean = prev_x_postmean + x_sample
+
+        if iteration > (params['burnin'] + 1):
+            current = x_postmean / (iteration - params['burnin'])
+            previous = prev_x_postmean / (iteration - params['burnin'] - 1)
+
+            delta = tf.sum(tf.abs(current - previous)) / \
+                tf.sum(tf.abs(x_postmean)) / (iteration - params['burnin'])
+
+        prev_x_postmean = x_postmean
+
+        # stop of the algorithm
+        if (iteration > params['min_iter']) and (delta < params['threshold']):
+            break
+
+    # Empirical average \approx POSTMEAN Eq. 44
+    x_postmean = x_postmean / (iteration - params['burnin'])
+    if is_real:
+        x_postmean = uft.uirfft2(x_postmean, shape=image.shape)
+    else:
+        x_postmean = uft.uifft2(x_postmean)
+
+    if clip:
+        x_postmean[x_postmean > 1] = 1
+        x_postmean[x_postmean < -1] = -1
+
+    return (x_postmean, {'noise': gn_chain, 'prior': gx_chain})
