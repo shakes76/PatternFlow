@@ -4,6 +4,18 @@ import warnings
 from utils import dtype_limits  # type: ignore
 import numpy as np  # type: ignore
 from skimage import exposure, data, img_as_float  # type: ignore
+import functools
+
+
+def tensor_image_checker(func):
+    """a tensor type checker decorator helper function"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if type(args[0]) != torch.Tensor:
+            raise TypeError(
+                "exposure functions only support data type of pytorch tensor.")
+        return func(*args, **kwargs)
+    return wrapper
 
 
 def _update_dtype(dtype: torch.dtype) -> torch.dtype:
@@ -15,6 +27,7 @@ def _update_dtype(dtype: torch.dtype) -> torch.dtype:
         return torch.int64
 
 
+@tensor_image_checker
 def _offset_array(image: torch.Tensor,
                   lower_boundary: int,
                   higher_boundary: int) -> torch.Tensor:
@@ -28,6 +41,7 @@ def _offset_array(image: torch.Tensor,
     return image
 
 
+@tensor_image_checker
 def _bin_count_histogram(image: torch.Tensor,
                          source_range: Optional[str] = 'image') -> Tuple[torch.Tensor, torch.Tensor]:
     """Efficient histogram calculation for an image of integers.
@@ -71,6 +85,7 @@ def _bin_count_histogram(image: torch.Tensor,
     return hist, bin_centers
 
 
+@tensor_image_checker
 def histogram(image: torch.Tensor,
               nbins: Optional[int] = 256,
               source_range: Optional[str] = 'image',
@@ -190,3 +205,48 @@ def _calc_bin_centers(start: Union[int, float] = 0,
     length = end - start
     shift = float(length/nbins)/2.0
     return torch.arange(start, end, step=float(length/nbins)) + shift
+
+
+@tensor_image_checker
+def cumulative_distribution(image: torch.Tensor,
+                            nbins: int = 256) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Return cumulative distribution function (cdf) for the given image.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        Input image
+    nbins : int, default 256
+        Number of bins for image histogram
+
+    Returns
+    -------
+    Tuple[torch.Tensor, torch.Tensor]
+        img_cdf: value of cumulative distribution function.
+        bin_centers: centers of bins
+
+    See Also
+    -----
+    histogram
+
+    References
+    ----------
+    .. [1] https://en.wikipedia.org/wiki/Cumulative_distribution_function
+
+    Examples
+    --------
+    >>> from skimage import data, exposure, img_as_float
+    >>> image = img_as_float(data.camera())
+    >>> hi = exposure.histogram(image)
+    >>> cdf = exposure.cumulative_distribution(image)
+    >>> np.alltrue(cdf[0] == np.cumsum(hi[0])/float(image.size))
+    """
+    hist, bin_centers = histogram(image, nbins)
+    img_cdf = torch.cumsum(hist, dim=0)
+    img_cdf = torch.div(img_cdf.float(), img_cdf[-1])
+    return img_cdf, bin_centers
+
+
+if __name__ == "__main__":
+    image = torch.tensor(img_as_float(data.camera()))
+    print(cumulative_distribution(image))
