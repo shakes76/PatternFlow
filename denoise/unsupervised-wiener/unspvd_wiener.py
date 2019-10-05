@@ -100,7 +100,9 @@ def laplacian(ndim, shape, sess, is_real=True):
     >>> np.all(tf == ir2tf(ir, (32, 32)))
     True
     """
+    #tf.global_variables_initializer().run()
     impr = tf.Variable(tf.zeros([3] * ndim))
+    sess.run(tf.variables_initializer([impr]))
     for dim in range(ndim):
         idx = tuple([slice(1, 2)] * dim +
                     [slice(None)] +
@@ -109,7 +111,7 @@ def laplacian(ndim, shape, sess, is_real=True):
             tf.convert_to_tensor([-1.0, 0.0, -1.0]),
             [-1 if i == dim else 1 for i in range(ndim)]))
         sess.run(assign_op)
-    assign_op = tf.assign(impr[(slice(1, 2),) * ndim], 2.0 * ndim)
+    assign_op = tf.assign(impr[[1]*ndim], 2.0 * ndim)
     sess.run(assign_op)
     return ir2tf(impr, shape, is_real=is_real), impr
 
