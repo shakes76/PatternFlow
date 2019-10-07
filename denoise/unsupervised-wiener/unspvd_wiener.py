@@ -186,9 +186,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # The Fourier transform may change the image.size attribute, so we
     # store it.
     if is_real:
-        data_spectrum = tf.signal.rfft2d(image.astype(tf.float))
+        data_spectrum = tf.signal.rfft2d(tf.cast(image,tf.float32))#image.astype(tf.float64))
     else:
-        data_spectrum = tf.fft2d(tf.cast(image.astype(tf.float), tf.complex64))
+        data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))#tf.cast(image.astype(tf.float64), tf.complex64))
 
     # Gibbs sampling
     for iteration in range(params['max_iter']):
@@ -196,9 +196,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
         # weighting (correlation in direct space)
         precision = gn_chain[-1] * atf2 + gx_chain[-1] * areg2  # Eq. 29
-        excursion = tf.sqrt(0.5) / tf.sqrt(precision) * (
-            tf.random.standard_normal(data_spectrum.shape) +
-            1j * tf.random.standard_normal(data_spectrum.shape))
+        excursion = tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64))
 
         # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
         wiener_filter = gn_chain[-1] * tf.conj(trans_fct) / precision
