@@ -10,6 +10,7 @@ dtype_range = {
     torch.float: (-1, 1),
     torch.float16: (-1, 1),
     torch.float32: (-1, 1),
+    torch.float64: (-1, 1),
 }
 
 dtype_range.update(_integer_ranges)
