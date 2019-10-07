@@ -48,13 +48,15 @@ def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     irpadded = tf.Variable(tf.zeros(shape))
     sess.run(tf.variables_initializer([irpadded]))
     imp_shape = imp_resp.shape
-    irpadded[tuple([slice(0, s) for s in imp_resp.shape])] = imp_resp
+    #irpadded[tuple([slice(0, s) for s in imp_resp.shape])] = imp_resp
+    sess.run(tf.assign(irpadded[tuple([slice(0, s) for s in imp_shape])], imp_resp))
+    
     # Roll for zero convention of the fft to avoid the phase
     # problem. Work with odd and even size.
     for axis, axis_size in enumerate(imp_resp.shape):
-        if axis >= imp_resp.ndim - dim:
+        if axis >= len(imp_resp.shape) - dim:
             irpadded = tf.roll(irpadded,
-                               shift=-int(tf.floor(axis_size / 2)),
+                               shift=-tf.cast(tf.floor(tf.cast(axis_size,tf.int32) / 2),tf.int32),
                                axis=axis)
     if dim == 1:
         if is_real:
@@ -161,7 +163,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         reg = ir2tf(reg, image.shape, is_real=is_real)
 
     if psf.shape != reg.shape:
-        trans_fct = ir2tf(psf, image.shape,  is_real=is_real)
+        trans_fct = ir2tf(psf, image.shape, sess, is_real=is_real)
     else:
         trans_fct = psf
 
