@@ -2,9 +2,14 @@ import torch
 from typing import Union, Tuple, Optional, Dict, Any
 import warnings
 from utils import dtype_limits  # type: ignore
+from utils import interp  # type: ignore
+from utils import dtype_range
 import numpy as np  # type: ignore
 from skimage import exposure, data, img_as_float  # type: ignore
 import functools
+
+
+DTYPE_RANGE = dtype_range.copy()
 
 
 def tensor_image_checker(func):
@@ -36,7 +41,7 @@ def _offset_array(image: torch.Tensor,
         dyn_range = higher_boundary - lower_boundary
         # check if the dyn_range is overflow, if so, update dtype
         if dyn_range > torch.iinfo(image.dtype).max:  # type: ignore
-            image = image.type(_update_dtype(image.dtype))
+            image = image.type(_update_dtype(image.dtype))  # type: ignore
         image = torch.sub(image, lower_boundary)
     return image
 
@@ -133,9 +138,6 @@ def histogram(image: torch.Tensor,
     >>> exposure.histogram(image, nbins=2)
     (tensor([107432, 154712]), tensor([ 0.2500,  0.7500]))
     """
-    if not isinstance(image, torch.Tensor):
-        raise ValueError("input type must be pytorch tensor")
-
     if not isinstance(nbins, int):
         raise ValueError("given bin must be a integer number")
 
@@ -147,8 +149,8 @@ def histogram(image: torch.Tensor,
              apply this function to each color channel.""")
 
     image = image.flatten()
-    min_v = int(torch.min(image))
-    max_v = int(torch.max(image))
+    min_v = float(torch.min(image))
+    max_v = float(torch.max(image))
 
     if not torch.is_floating_point(image):
         hist, bin_centers = _bin_count_histogram(image, source_range)
@@ -243,10 +245,94 @@ def cumulative_distribution(image: torch.Tensor,
     """
     hist, bin_centers = histogram(image, nbins)
     img_cdf = torch.cumsum(hist, dim=0)
-    img_cdf = torch.div(img_cdf.float(), img_cdf[-1])
+    img_cdf = torch.div(img_cdf.double(), img_cdf[-1])
     return img_cdf, bin_centers
 
 
-if __name__ == "__main__":
-    image = torch.tensor(img_as_float(data.camera()))
-    print(cumulative_distribution(image))
+@tensor_image_checker
+def equalize_hist(image: torch.Tensor,
+                  nbins: int = 256,
+                  mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    """Return image after histogram equalization.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        Input image
+    nbins : int, default 256
+        Number of bins for image histogram. Note: this argument is
+        ignored for integer images, for which each integer is its own
+        bin.
+    mask : [type], default None
+        Array of same shape as `image`. Only points at which mask == True
+        are used for the equalization, which is applied to the whole image.
+
+    Returns
+    -------
+    torch.Tensor
+        Image array after histogram equalization
+
+    Notes
+    -----
+    This function is adapted from [1]_ with the author's permission.
+
+    References
+    ----------
+    .. [1] http://www.janeriksolem.net/histogram-equalization-with-python-and.html
+    .. [2] https://en.wikipedia.org/wiki/Histogram_equalization
+    """
+    if mask is not None:
+        cdf, bin_centers = cumulative_distribution(image[mask], nbins)
+    else:
+        cdf, bin_centers = cumulative_distribution(image, nbins)
+    out = interp(image.flatten(), bin_centers, cdf)
+    return out.reshape(image.shape)
+
+
+def intensity_range(image: torch.Tensor,
+                    range_values: Optional[Union[Tuple[float, float], str]] = 'image',
+                    clip_negative: Optional[bool] = False) -> Tuple[float, float]:
+    """Return image intensity range (min, max) based on desired value type.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        Input image
+    range_values : Optional[str], default 'image'
+        The image intensity range is configured by this parameter.
+        The possible values for this parameter are enumerated below.
+
+        'image'
+            Return image min/max as the range.
+        'dtype'
+            Return min/max of the image's dtype as the range.
+        dtype-name
+            Return intensity range based on desired `dtype`. Must be valid key
+            in `DTYPE_RANGE`. Note: `image` is ignored for this range type.
+        2-tuple
+            Return `range_values` as min/max intensities. Note that there's no
+            reason to use this function if you just want to specify the
+            intensity range explicitly. This option is included for functions
+            that use `intensity_range` to support all desired range types.
+
+    clip_negative : Optional[bool], default False
+        If True, clip the negative range (i.e. return 0 for min intensity)
+        even if the image dtype allows negative values.
+    """
+    dtype: torch.dtype
+    if range_values == 'dtype':
+        dtype = image.dtype
+
+    if range_values == 'image':
+        i_min = torch.min(image).item()
+        i_max = torch.max(image).item()
+    elif dtype in DTYPE_RANGE:
+        i_min, i_max = DTYPE_RANGE[dtype]
+        if clip_negative:
+            i_min = 0
+    else:
+        if isinstance(range_values, tuple):
+            i_min, i_max = range_values
+        else:
+            raise ValueError("range_values must be a tuple")
+    return i_min, i_max
