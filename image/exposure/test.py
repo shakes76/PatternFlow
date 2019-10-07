@@ -2,11 +2,37 @@ from exposure import _calc_bin_centers  # type: ignore
 from exposure import histogram  # type: ignore
 from exposure import equalize_hist  # type: ignore
 from exposure import cumulative_distribution  # type: ignore
+from exposure import intensity_range  # type: ignore
 # from exposure import _calc_histogram
 import unittest
 import torch
 from skimage import data, img_as_float, exposure, img_as_ubyte  # type: ignore
 import numpy as np
+
+
+class TestIntensityRange(unittest.TestCase):
+    def test_intensity_range_uint8(self):
+        args = ['image', 'dtype', (10, 20)]
+        expects = [(0, 1), (0, 255), (10, 20)]
+        image = torch.tensor([0, 1], dtype=torch.uint8)
+        for arg, expect in zip(args, expects):
+            with self.subTest(arg=arg, expect=expect):
+                out = intensity_range(image, range_values=arg)
+                self.assertEqual(out, expect)
+
+    def test_intensity_range_float(self):
+        args = ['image', 'dtype', (0.3, 0.4)]
+        expects = [(0.1, 0.2), (-1, 1), (0.3, 0.4)]
+        image = torch.tensor([0.1, 0.2], dtype=torch.double)
+        for arg, expect in zip(args, expects):
+            with self.subTest(arg=arg, expect=expect):
+                out = intensity_range(image, range_values=arg)
+                self.assertEqual(out, expect)
+
+    def test_intensity_range_clipped_float(self):
+        image = torch.tensor([0.1, 0.2], dtype=torch.double)
+        out = intensity_range(image, range_values='dtype', clip_negative=True)
+        self.assertEqual(out, (0, 1))
 
 
 class TestEqualization(unittest.TestCase):
