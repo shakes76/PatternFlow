@@ -2,11 +2,13 @@ from scipy.signal import convolve2d as conv2
 import numpy as np
 import matplotlib.pyplot as plt
 from unspvd_wiener import unsupervised_wiener
-from skimage import color, data
+from skimage import color
+from PIL import Image
 
 
 def main():
-    astro = color.rgb2gray(data.astronaut())
+    astro = np.asarray(Image.open("resources/astronaut.jpg"))
+    astro = color.rgb2gray(astro)
     psf = np.ones((5, 5)) / 25
     astro = conv2(astro, psf, 'same')
     astro += 0.1 * astro.std() * np.random.standard_normal(astro.shape)
