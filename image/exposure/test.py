@@ -1,9 +1,60 @@
 from exposure import _calc_bin_centers  # type: ignore
 from exposure import histogram  # type: ignore
+from exposure import equalize_hist  # type: ignore
+from exposure import cumulative_distribution  # type: ignore
 # from exposure import _calc_histogram
 import unittest
 import torch
-from skimage import data  # type: ignore
+from skimage import data, img_as_float, exposure, img_as_ubyte  # type: ignore
+import numpy as np
+
+
+class TestEqualization(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestEqualization, self).__init__(*args, **kwargs)
+        torch.manual_seed(0)
+        self.test_img_int = torch.tensor(data.camera())
+        self.test_img = img_as_float(self.test_img_int)
+        self.test_img = exposure.rescale_intensity(self.test_img / 5. + 100)
+
+    def test_equalize_uint8_approx(self):
+        """Check integer bins used for uint8 images."""
+        img_eq0 = equalize_hist(self.test_img_int)
+        img_eq1 = equalize_hist(self.test_img_int, nbins=3)
+        self.assertTrue(torch.allclose(img_eq0, img_eq1))
+
+    def test_equalize_ubyte(self):
+        with self.assertWarns(UserWarning):
+            img = torch.tensor(img_as_ubyte(self.test_img))
+        img_eq = equalize_hist(img)
+
+        cdf, bin_edges = cumulative_distribution(img_eq)
+        self.check_cdf_slope(cdf)
+
+    def test_equalize_float(self):
+        img = torch.tensor(img_as_float(self.test_img))
+        img_eq = equalize_hist(img)
+
+        cdf, bin_edges = cumulative_distribution(img_eq)
+        self.check_cdf_slope(cdf)
+
+    def test_equalize_masked(self):
+        img = torch.tensor(img_as_float(self.test_img))
+        mask = torch.zeros(self.test_img.shape, dtype=torch.bool)
+        mask[50:150, 50:250] = 1
+        img_mask_eq = equalize_hist(img, mask=mask)
+        img_eq = equalize_hist(img)
+
+        cdf, bin_edges = cumulative_distribution(img_mask_eq)
+        self.check_cdf_slope(cdf)
+
+        self.assertFalse(torch.equal(img_eq, img_mask_eq))
+
+    def check_cdf_slope(self, cdf):
+        """Slope of cdf which should equal 1 for an equalized histogram."""
+        norm_intensity = torch.linspace(0, 1, len(cdf))
+        slope, intercept = np.polyfit(norm_intensity.numpy(), cdf.numpy(), 1)
+        assert 0.9 < slope < 1.1
 
 
 class TestHistogram(unittest.TestCase):
