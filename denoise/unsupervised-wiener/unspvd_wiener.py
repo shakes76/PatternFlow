@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def ir2tf(imp_resp, shape, dim=None, is_real=True):
+def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     """Compute the transfer function of an impulse response (IR).
     This function makes the necessary correct zero-padding, zero
     convention, correct fft2, etc... to compute the transfer function
@@ -43,9 +43,11 @@ def ir2tf(imp_resp, shape, dim=None, is_real=True):
     definition.
     """
     if not dim:
-        dim = imp_resp.ndim
+        dim = len(imp_resp.shape)
     # Zero padding and fill
     irpadded = tf.Variable(tf.zeros(shape))
+    sess.run(tf.variables_initializer([irpadded]))
+    imp_shape = imp_resp.shape
     irpadded[tuple([slice(0, s) for s in imp_resp.shape])] = imp_resp
     # Roll for zero convention of the fft to avoid the phase
     # problem. Work with odd and even size.
@@ -113,7 +115,7 @@ def laplacian(ndim, shape, sess, is_real=True):
         sess.run(assign_op)
     assign_op = tf.assign(impr[[1]*ndim], 2.0 * ndim)
     sess.run(assign_op)
-    return ir2tf(impr, shape, is_real=is_real), impr
+    return ir2tf(impr, shape, sess, is_real=is_real), impr
 
 
 def image_quad_norm(inarray):
