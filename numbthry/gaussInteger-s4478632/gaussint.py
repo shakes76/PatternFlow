@@ -7,7 +7,7 @@ class GaussInteger():
         # Check input type.
         if (type(real) is not int or type(imag) is not int):
             raise TypeError("Inputs a and b of GaussInteger(a, b) must be"
-                            + " ints.:)
+                            + " ints.")
 
         # Cast variables to create complex number.
         self.real = tf.dtypes.cast(tf.constant([real]), tf.float32)
