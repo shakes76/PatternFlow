@@ -1,8 +1,24 @@
 # Tony Meng, Student No: 443298999
 # ported from https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/radon_transform.py#L12
 # helper method https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/_warps_cy.pyx
+# more from https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/_shared/interpolation.pxd
 
 import tensorflow as tf
+
+def get_pixel2d(image, rows, cols, r, c, mode, cval):
+    pass
+
+def inline void bilinear_interpolation(image, rows, cols, r, c, mode, cval, out):
+    pass
+
+def _transform_metric(x, y, H, x_, y_):
+    pass
+
+def _transform_affine(x, y, H, x_, y_):
+    pass
+
+def _transform_projective(x, y, H, x_, y_):
+    pass
 
 def _warp_fast(image, H):
     #output_shape = None
