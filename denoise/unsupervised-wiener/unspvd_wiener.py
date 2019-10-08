@@ -143,16 +143,17 @@ def image_quad_norm(inarray):
     """
     # If there is a Hermitian symmetry
     if inarray.shape[-1] != inarray.shape[-2]:
-        return (2 * tf.sum(tf.sum(tf.abs(inarray) ** 2, axis=-1), axis=-1) -
-                tf.sum(tf.abs(inarray[..., 0]) ** 2, axis=-1))
+        return (2 * tf.reduce_sum(tf.reduce_sum(tf.abs(inarray) ** 2, axis=-1), axis=-1) -
+                tf.reduce_sum(tf.abs(inarray[..., 0]) ** 2, axis=-1))
     else:
-        return tf.sum(tf.sum(tf.abs(inarray) ** 2, axis=-1), axis=-1)
+        return tf.reduce_sum(tf.reduce_sum(tf.abs(inarray) ** 2, axis=-1), axis=-1)
 
 
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
     sess = tf.InteractiveSession()
-    tf.global_variables_initializer().run()
+    sess.run(tf.global_variables_initializer())
+    #sess.run(tf.global_variables_initializer())
     params = {'threshold': 1e-4, 'max_iter': 200,
               'min_iter': 30, 'burnin': 15, 'callback': None}
     params.update(user_params or {})
@@ -169,14 +170,17 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
     # The mean of the object
     x_postmean = tf.Variable(tf.zeros(trans_fct.shape))
+    sess.run(tf.variables_initializer([x_postmean]))
     # The previous computed mean in the iterative loop
     prev_x_postmean = tf.Variable(tf.zeros(trans_fct.shape))
+    sess.run(tf.variables_initializer([prev_x_postmean]))
 
     # Difference between two successive mean
-    delta = 1e-8
+    delta = tf.constant(1e-8)
+    #sess.run(tf.variables_initializer([delta]))
 
     # Initial state of the chain
-    gn_chain, gx_chain = [1], [1]
+    gn_chain, gx_chain = [tf.constant(1.0)], [tf.constant(1.0)]
 
     # The correlation of the object in Fourier space (if size is big,
     # this can reduce computation time in the loop)
@@ -199,7 +203,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         excursion = tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64))
 
         # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
-        wiener_filter = gn_chain[-1] * tf.conj(trans_fct) / precision
+        wiener_filter = tf.cast(gn_chain[-1],tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64)
 
         # sample of X in Fourier space
         x_sample = wiener_filter * data_spectrum + excursion
@@ -207,30 +211,32 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             params['callback'](x_sample)
 
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        gn_chain.append(tf.random.gamma(image.size / 2,
-                                        2 / image_quad_norm(data_spectrum -
-                                                            x_sample *
-                                                            trans_fct)))
+        gn_chain.append(tf.random.gamma(shape=[1],alpha=[int(image.size / 2)], beta=image_quad_norm(data_spectrum - x_sample * trans_fct)))
 
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        gx_chain.append(tf.random.gamma((image.size - 1) / 2,
-                                        2 / image_quad_norm(x_sample * reg)))
+        gx_chain.append(tf.random.gamma(shape=[1],alpha=[int(image.size / 2)],
+                                        beta=image_quad_norm(x_sample * reg)))
 
         # current empirical average
         if iteration > params['burnin']:
-            x_postmean = prev_x_postmean + x_sample
+            x_postmean = tf.cast(prev_x_postmean, tf.complex64) + x_sample
 
         if iteration > (params['burnin'] + 1):
             current = x_postmean / (iteration - params['burnin'])
             previous = prev_x_postmean / (iteration - params['burnin'] - 1)
 
-            delta = tf.sum(tf.abs(current - previous)) / \
-                tf.sum(tf.abs(x_postmean)) / (iteration - params['burnin'])
+            delta = (tf.reduce_sum(tf.abs(current - previous)) / \
+                tf.reduce_sum(tf.abs(x_postmean)) / (iteration - params['burnin']))
 
         prev_x_postmean = x_postmean
-
+        bool_op = tf.cond(delta<params['threshold'],lambda:True,lambda:False)
+        result = sess.run(bool_op)
+        #sess.run(result)
+        #sess.run(tf.initialize_all_variables())
+        #result.eval()
         # stop of the algorithm
-        if (iteration > params['min_iter']) and (delta < params['threshold']):
+        print(iteration)
+        if (iteration > params['min_iter']) and result:
             break
 
     # Empirical average \approx POSTMEAN Eq. 44
