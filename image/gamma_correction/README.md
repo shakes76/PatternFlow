@@ -41,3 +41,9 @@ python main.py
 ![Input](input.png)
 ![Output](output.png)
 
+
+## Author
+
+Name: Lawrence Hu
+ID: 45702024
+
