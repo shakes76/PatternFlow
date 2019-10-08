@@ -77,14 +77,14 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
     bottom = (1 - dc) * bottom_left + dc * bottom_right
     return ((1 - dr) * top + dr * bottom)
 
-def _transform_metric(x, y, H, x_, y_):
-    pass
+def _transform_metric(x, y, H):
+    return (0,0)
 
-def _transform_affine(x, y, H, x_, y_):
-    pass
+def _transform_affine(x, y, H):
+    return (0,0)
 
-def _transform_projective(x, y, H, x_, y_):
-    pass
+def _transform_projective(x, y, H):
+    return (0,0)
 
 def _warp_fast(image, H):
     #output_shape = None
@@ -98,12 +98,30 @@ def _warp_fast(image, H):
 
     rows = image.shape.as_list()[0]
     columns = image.shape.as_list()[1]
-    out = tf.zeros([rows, columns], tf.float64)
+    #out = tf.Variable(tf.zeros([rows, columns], tf.float64))
     
-    # bunch of function pointer code written in cython
-    # assign functions to variables
+    if H[2][0] == 0 and H[2][1] == 0 and H[2][2] == 1:
+        if H[0][1] == 0 and H[1][0] == 0:
+            transform_func = _transform_metric
+        else:
+            transform_func = _transform_affine
+    else:
+        transform_func = _transform_projective
     
-    return image
+    row_slices = []
+    for tfr in range(rows):
+        col = []
+        for tfc in range(columns):
+            c, r = transform_func(tfc, tfr, H)
+            val = bilinear_interpolation(image, rows, columns, r, c, 0)
+            col.append(tf.expand_dims(val, 0))
+            #out[tfr, tfc].assign(bilinear_interpolation(image, rows, columns, r, c, 0))
+        col = tf.concat(col, 0)
+        col = tf.expand_dims(col, 1)
+        row_slices.append(col)
+    out = tf.concat(row_slices, 1)
+    
+    return out
 
 def radon(image, theta = None, circle = True):
     # tf.rank does not return the correct value if eager execution is off
