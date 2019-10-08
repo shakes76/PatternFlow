@@ -4,12 +4,71 @@
 # more from https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/_shared/interpolation.pxd
 
 import tensorflow as tf
+import math
 
-def get_pixel2d(image, rows, cols, r, c, mode, cval):
-    pass
+def get_pixel2d(image, rows, cols, r, c, cval):
+    """
+    Get a pixel from the image, using Constant wrapping mode.
+    
+    Parameters
+    ----------
+    image :
+        Input image.
+    rows, cols :
+        Shape of image.
+    r, c :
+        Position at which to get the pixel.
+    cval :
+        Constant value to use for constant mode.
+    
+    Returns
+    -------
+    value :
+        Pixel value at given position.
+    """
+    # mode = 'C' (constant)
+    if (r < 0) or (r >= rows) or (c < 0) or (c >= cols):
+        return cval
+    else:
+        return image[r][c] # will return a scalar tensor
 
-def inline void bilinear_interpolation(image, rows, cols, r, c, mode, cval, out):
-    pass
+def bilinear_interpolation(image, rows, cols, r, c, cval):
+    """
+    Bilinear interpolation at a given position in the image.
+    
+    Parameters
+    ----------
+    image :
+        Input image.
+    rows, cols :
+        Shape of image.
+    r, c :
+        Position at which to interpolate.
+    cval : numeric
+        Constant value to use for constant mode.
+    
+    Returns
+    -------
+    value :
+        Interpolated value.
+    """
+    # mode = 'C' (constant)
+    minr = math.floor(r)
+    minc = math.floor(c)
+    maxr = math.ceil(r)
+    maxc = math.ceil(c)
+    dr = r - minr
+    dc = c - minc
+    
+    top_left = get_pixel2d(image, rows, cols, minr, minc, cval)
+    top_right = get_pixel2d(image, rows, cols, minr, maxc, cval)
+    bottom_left = get_pixel2d(image, rows, cols, maxr, minc, cval)
+    bottom_right = get_pixel2d(image, rows, cols, maxr, maxc, cval)
+    
+    top = (1 - dc) * top_left + dc * top_right
+    bottom = (1 - dc) * bottom_left + dc * bottom_right
+    return ((1 - dr) * top + dr * bottom)
+
 
 def _transform_metric(x, y, H, x_, y_):
     pass
@@ -40,7 +99,8 @@ def _warp_fast(image, H):
     pass
 
 def radon(image, theta = None, circle = True):
-    if tf.rank(image) != 2:
+    # tf.rank does not return the correct value if eager execution is off
+    if len(image.shape.as_list()) != 2:
         raise ValueError('The input image must be 2D')
     if theta is None:
         theta = list(range(180))
