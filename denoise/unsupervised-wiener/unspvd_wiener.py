@@ -173,13 +173,13 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
     # Sample of Eq. 27 p(circX^k | gn^k-1, gx^k-1, y).
         
         # weighting (correlation in direct space)
-        precision = gn_chain[-1] * atf2 + gx_chain[-1] * areg2  # Eq. 29
+        precision = gn_chain.read(iteration) * atf2 + gx_chain.read(iteration) * areg2  # Eq. 29
         excursion = tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),
                 tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),
                                  tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64))
 
         # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
-        wiener_filter = tf.cast(gn_chain[-1],tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64)
+        wiener_filter = tf.cast(gn_chain.read(iteration),tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64)
 
         # sample of X in Fourier space
         x_sample = wiener_filter * data_spectrum + excursion
@@ -188,11 +188,12 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         new_gn_chain = tf.random.gamma(shape=[1],
                                         alpha=[tf.size(image) / 2], 
                                         beta = image_quad_norm(data_spectrum - x_sample * trans_fct))
-        #gn_chain.append()
+        #gn_chain = 
 
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
         new_gx_chain = tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
                                         beta=image_quad_norm(x_sample * reg))
+        #gx_chain = 
         #gx_chain.append()
 
         # current empirical average
@@ -211,7 +212,7 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         prev_x_postmean = x_postmean
         
         #iteration + 1
-        return [x_postmean, prev_x_postmean, delta, gn_chain+[new_gn_chain], gx_chain+[new_gx_chain], 
+        return [x_postmean, prev_x_postmean, delta, gn_chain.write(iteration+1, new_gn_chain), gx_chain.write(iteration+1, new_gx_chain), 
               iteration+1, min_iter, threshold, burnin, areg2, atf2, data_spectrum, trans_fct, 
               image, reg]
         
@@ -242,8 +243,10 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # Difference between two successive mean
     delta = tf.Variable(1e-8)
     # Initial state of the chain
-    gn_chain, gx_chain = [tf.constant(1.0)], [tf.constant(1.0)]
-
+    gn_chain = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)#[tf.constant(1.0)]
+    gx_chain = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)#[tf.constant(1.0)]
+    gn_chain = gn_chain.write(0, tf.constant(1.0))
+    gx_chain = gn_chain.write(0, tf.constant(1.0))
     # The correlation of the object in Fourier space (if size is big,
     # this can reduce computation time in the loop)
     areg2 = tf.abs(reg) ** 2
@@ -267,7 +270,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     loop = tf.while_loop(condition, 
                          loop_body, 
                          loop_vars=loop_vars, 
-                         
+                         #shape_invariants=[18],
                          maximum_iterations = params['max_iter'], 
                          parallel_iterations = 1,
                          return_same_structure = True)
