@@ -48,7 +48,6 @@ def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     irpadded = tf.Variable(tf.zeros(shape))
     sess.run(tf.variables_initializer([irpadded]))
     imp_shape = imp_resp.shape
-    #irpadded[tuple([slice(0, s) for s in imp_resp.shape])] = imp_resp
     sess.run(tf.assign(irpadded[tuple([slice(0, s) for s in imp_shape])], imp_resp))
     
     # Roll for zero convention of the fft to avoid the phase
@@ -104,7 +103,6 @@ def laplacian(ndim, shape, sess, is_real=True):
     >>> np.all(tf == ir2tf(ir, (32, 32)))
     True
     """
-    #tf.global_variables_initializer().run()
     impr = tf.Variable(tf.zeros([3] * ndim))
     sess.run(tf.variables_initializer([impr]))
     for dim in range(ndim):
@@ -153,7 +151,6 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
     sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
-    #sess.run(tf.global_variables_initializer())
     params = {'threshold': 1e-4, 'max_iter': 200,
               'min_iter': 30, 'burnin': 15, 'callback': None}
     params.update(user_params or {})
@@ -177,7 +174,6 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
     # Difference between two successive mean
     delta = tf.constant(1e-8)
-    #sess.run(tf.variables_initializer([delta]))
 
     # Initial state of the chain
     gn_chain, gx_chain = [tf.constant(1.0)], [tf.constant(1.0)]
@@ -190,9 +186,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # The Fourier transform may change the image.size attribute, so we
     # store it.
     if is_real:
-        data_spectrum = tf.signal.rfft2d(tf.cast(image,tf.float32))#image.astype(tf.float64))
+        data_spectrum = tf.signal.rfft2d(tf.cast(image,tf.float32))
     else:
-        data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))#tf.cast(image.astype(tf.float64), tf.complex64))
+        data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))
 
     # Gibbs sampling
     bool_op = tf.cond(delta<params['threshold'],lambda:True,lambda:False)
@@ -230,13 +226,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                 tf.reduce_sum(tf.abs(x_postmean)) / (iteration - params['burnin']))
 
         prev_x_postmean = x_postmean
-        
         result = sess.run(bool_op)
-        #sess.run(result)
-        #sess.run(tf.initialize_all_variables())
-        #result.eval()
-        # stop of the algorithm
-        #print(iteration)
         if (iteration > params['min_iter']) and result:
             break
 
