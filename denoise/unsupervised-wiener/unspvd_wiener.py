@@ -243,12 +243,12 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # Empirical average \approx POSTMEAN Eq. 44
     x_postmean = x_postmean / (iteration - params['burnin'])
     if is_real:
-        x_postmean = tf.signal.irfft2d(x_postmean, shape=image.shape)
+        x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
-
+    """
     if clip:
         x_postmean[x_postmean > 1] = 1
         x_postmean[x_postmean < -1] = -1
-
+    """
     return (x_postmean, {'noise': gn_chain, 'prior': gx_chain})
