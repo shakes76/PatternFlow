@@ -12,6 +12,12 @@ def radon(image, theta = None, circle = True):
     
     if circle:
         radius = min(image.shape.as_list()) // 2
+        c = [list(range(image.shape.as_list()[0]))]
+        c0 = tf.transpose(tf.constant(c))
+        c1 = tf.constant(c)
+        reconstruction_circle = ((c0 - image.shape.as_list()[0] // 2) ** 2
+                                 + (c1 - image.shape.as_list()[1] // 2) ** 2)
+        reconstruction_circle = reconstruction_circle <= radius ** 2
         pass
     else:
         pass
