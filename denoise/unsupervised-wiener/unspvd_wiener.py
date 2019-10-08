@@ -236,7 +236,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         #sess.run(tf.initialize_all_variables())
         #result.eval()
         # stop of the algorithm
-        print(iteration)
+        #print(iteration)
         if (iteration > params['min_iter']) and result:
             break
 
@@ -251,4 +251,4 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         x_postmean[x_postmean > 1] = 1
         x_postmean[x_postmean < -1] = -1
     """
-    return (x_postmean, {'noise': gn_chain, 'prior': gx_chain})
+    return (x_postmean.eval(), {'noise': gn_chain, 'prior': gx_chain})
