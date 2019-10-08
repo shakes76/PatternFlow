@@ -23,3 +23,15 @@ class GaussInteger():
         """
         with tf.Session() as sess:
             return complex(self.num.eval()[0])
+
+    def conjugate(self):
+        """
+        Computes and returns a class of the complex conjugate.
+        """
+        result = tf.math.conj(self.num)
+
+        with tf.Session() as sess:
+            real = tf.math.real(result).eval()
+            imag = tf.math.imag(result).eval()
+
+        return GaussInteger(int(real), int(imag))
