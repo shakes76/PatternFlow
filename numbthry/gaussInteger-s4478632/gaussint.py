@@ -30,8 +30,18 @@ class GaussInteger():
         """
         result = tf.math.conj(self.num)
 
+        # Retrieve and evaluate the components
         with tf.Session() as sess:
             real = tf.math.real(result).eval()
             imag = tf.math.imag(result).eval()
 
         return GaussInteger(int(real), int(imag))
+
+    def norm(self):
+        """
+        Calculates and returns the norm
+        """
+        conj = self.conjugate()
+
+        with tf.Session() as sess:
+            return tf.math.multiply(self.num, conj.num).eval()
