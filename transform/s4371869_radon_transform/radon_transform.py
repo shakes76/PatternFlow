@@ -12,8 +12,8 @@ __author__ = "Ting-Chen Shang"
 __email__ = "tingchen.shang@uq.net.au"
 
 import numpy as np
-import tensorflow as tf
 
+import tensorflow as tf
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
     """
