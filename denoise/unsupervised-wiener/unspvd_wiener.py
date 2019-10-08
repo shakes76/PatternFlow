@@ -195,6 +195,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))#tf.cast(image.astype(tf.float64), tf.complex64))
 
     # Gibbs sampling
+    bool_op = tf.cond(delta<params['threshold'],lambda:True,lambda:False)
     for iteration in range(params['max_iter']):
         # Sample of Eq. 27 p(circX^k | gn^k-1, gx^k-1, y).
 
@@ -229,7 +230,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                 tf.reduce_sum(tf.abs(x_postmean)) / (iteration - params['burnin']))
 
         prev_x_postmean = x_postmean
-        bool_op = tf.cond(delta<params['threshold'],lambda:True,lambda:False)
+        
         result = sess.run(bool_op)
         #sess.run(result)
         #sess.run(tf.initialize_all_variables())
