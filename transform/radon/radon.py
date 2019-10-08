@@ -6,6 +6,14 @@
 import tensorflow as tf
 import math
 
+def matrix_multiply(X, Y):
+    result = [[0,0,0],[0,0,0],[0,0,0]]
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
+                result[i][j] += X[i][k] * Y[k][j]
+    return result
+
 def get_pixel2d(image, rows, cols, r, c, cval):
     """
     Get a pixel from the image, using Constant wrapping mode.
@@ -69,7 +77,6 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
     bottom = (1 - dc) * bottom_left + dc * bottom_right
     return ((1 - dr) * top + dr * bottom)
 
-
 def _transform_metric(x, y, H, x_, y_):
     pass
 
@@ -96,27 +103,64 @@ def _warp_fast(image, H):
     # bunch of function pointer code written in cython
     # assign functions to variables
     
-    pass
+    return image
 
 def radon(image, theta = None, circle = True):
     # tf.rank does not return the correct value if eager execution is off
-    if len(image.shape.as_list()) != 2:
+    imageShape = image.shape.as_list()
+    if len(imageShape) != 2:
         raise ValueError('The input image must be 2D')
     if theta is None:
         theta = list(range(180))
         #theta = tf.range(0, 180, 1)
     
     if circle:
-        radius = min(image.shape.as_list()) // 2
-        c = [list(range(image.shape.as_list()[0]))]
+        radius = min(imageShape) // 2
+        c = [list(range(imageShape[0]))]
         c0 = tf.transpose(tf.constant(c))
         c1 = tf.constant(c)
-        reconstruction_circle = ((c0 - image.shape.as_list()[0] // 2) ** 2
-                                 + (c1 - image.shape.as_list()[1] // 2) ** 2)
+        reconstruction_circle = ((c0 - imageShape[0] // 2) ** 2
+                                 + (c1 - imageShape[1] // 2) ** 2)
         reconstruction_circle = reconstruction_circle <= radius ** 2
-        pass
+        slices = []
+        for d in (0, 1):
+            if imageShape[d] > min(imageShape):
+                excess = imageShape[d] - min(imageShape)
+                slices.append(slice(math.ceil(excess / 2),
+                                    math.ceil(excess / 2) + min(imageShape)))
+            else:
+                slices.append(slice(None))
+        slices = tuple(slices)
+        padded_image = image[slices]
     else:
+        # TODO
         pass
     
-    #placeholder return
-    return image
+    #print(padded_image.shape)
+    radon_image = tf.zeros([padded_image.shape.as_list()[0], len(theta)])
+    center = padded_image.shape.as_list()[0] // 2
+    
+    shift0 = [[1, 0, -center],
+              [0, 1, -center],
+              [0, 0, 1]]
+    shift1 = [[1, 0, center],
+              [0, 1, center],
+              [0, 0, 1]]
+    
+    def build_rotation(theta):
+        T = math.radians(theta)
+        R = [[math.cos(T), math.sin(T), 0],
+             [-math.sin(T), math.cos(T), 0],
+             [0, 0, 1]]
+        # return shift1 * R * shift0
+        return matrix_multiply(matrix_multiply(shift1, R), shift0)
+    
+    radon_image_cols = []
+    for i in range(len(theta)):
+        rotated = _warp_fast(padded_image, build_rotation(theta[i]))
+        col = tf.reduce_sum(rotated, 0)
+        col = tf.expand_dims(col, 1)
+        radon_image_cols.append(col)
+        
+    radon_image = tf.concat(radon_image_cols, 1)
+    return radon_image
