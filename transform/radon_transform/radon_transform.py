@@ -61,15 +61,9 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     if image.ndim != 2:
         raise ValueError('The input image must be 2-D')
     if theta is None:
-        theta = np.arange(180)
+        theta = tf.range(180)
 
     if preserve_range is None and np.issubdtype(image.dtype, np.integer):
-        warn('Image dtype is not float. By default radon will assume '
-             'you want to preserve the range of your image '
-             '(preserve_range=True). In scikit-image 0.18 this behavior will '
-             'change to preserve_range=False. To avoid this warning, '
-             'explictiely specify the preserve_range parameter.',
-             stacklevel=2)
         preserve_range = True
 
     image = convert_to_float(image, preserve_range)
@@ -114,3 +108,34 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         rotated = warp(padded_image, R, clip=False)
         radon_image[:, i] = rotated.sum(0)
     return radon_image
+
+def convert_to_float(image, preserve_range):
+    """Convert input image to float image with the appropriate range.
+
+    Parameters
+    ----------
+    image : ndarray
+        Input image.
+    preserve_range : bool
+        Determines if the range of the image should be kept or transformed
+        using img_as_float. Also see
+        https://scikit-image.org/docs/dev/user_guide/data_types.html
+
+    Notes:
+    ------
+    * Input images with `float32` data type are not upcast.
+
+    Returns
+    -------
+    image : ndarray
+        Transformed version of the input.
+
+    """
+    if preserve_range:
+        # Convert image to double only if it is not single or double
+        # precision float
+        if image.dtype.char not in 'df':
+            image = image.astype(float)
+    else:
+        image = img_as_float(image)
+    return image
