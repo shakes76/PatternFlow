@@ -61,6 +61,7 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
         Interpolated value.
     """
     # mode = 'C' (constant)
+    
     minr = math.floor(r)
     minc = math.floor(c)
     maxr = math.ceil(r)
@@ -75,6 +76,14 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
     
     top = (1 - dc) * top_left + dc * top_right
     bottom = (1 - dc) * bottom_left + dc * bottom_right
+    '''
+    print(top_left)
+    print(top_right)
+    print(bottom_left)
+    print(bottom_right)
+    print(top)
+    print(bottom)
+    quit()'''
     return ((1 - dr) * top + dr * bottom)
 
 def _transform_metric(x, y, H):
@@ -83,14 +92,14 @@ def _transform_metric(x, y, H):
     return (x_, y_)
 
 def _transform_affine(x, y, H):
-    x_ = H[0][0] * x + H[0][1] * y + H[0][2]
-    y_ = H[1][0] * x + H[1][1] * y + H[1][2]
+    x_ = (H[0][0] * x) + (H[0][1] * y) + H[0][2]
+    y_ = (H[1][0] * x) + (H[1][1] * y) + H[1][2]
     return (x_, y_)
 
 def _transform_projective(x, y, H):
     z_ = H[2][0] * x + H[2][1] * y + H[2][2]
     x_ = (H[0][0] * x + H[0][1] * y + H[0][2]) / z_
-    y_ = (H[0][0] * x + H[0][1] * y + H[0][2]) / z_
+    y_ = (H[1][0] * x + H[1][1] * y + H[1][2]) / z_
     return (x_, y_)
 
 def _warp_fast(image, H):
@@ -134,7 +143,7 @@ def radon(image, theta = None, circle = True):
     if len(imageShape) != 2:
         raise ValueError('The input image must be 2D')
     if theta is None:
-        theta = list(range(30))
+        theta = list(range(180))
     
     if circle:
         radius = min(imageShape) // 2
@@ -180,7 +189,7 @@ def radon(image, theta = None, circle = True):
     radon_image_cols = []
     for i in range(len(theta)):
         rotated = _warp_fast(padded_image, build_rotation(theta[i]))
-        col = tf.reduce_sum(rotated, 0)
+        col = tf.reduce_sum(rotated, 1)
         col = tf.expand_dims(col, 1)
         radon_image_cols.append(col)
         
