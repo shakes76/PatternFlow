@@ -36,9 +36,9 @@ def get_pixel2d(image, rows, cols, r, c, cval):
     """
     # mode = 'C' (constant)
     if (r < 0) or (r >= rows) or (c < 0) or (c >= cols):
-        return cval
+        return tf.constant(cval, tf.float64)
     else:
-        return image[r][c] # will return a scalar tensor
+        return tf.cast(image[r][c], tf.float64) # will return a scalar tensor
 
 def bilinear_interpolation(image, rows, cols, r, c, cval):
     """
@@ -78,13 +78,20 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
     return ((1 - dr) * top + dr * bottom)
 
 def _transform_metric(x, y, H):
-    return (0,0)
+    x_ = H[0][0] * x + H[0][2]
+    y_ = H[1][1] * y + H[1][2]
+    return (x_, y_)
 
 def _transform_affine(x, y, H):
-    return (0,0)
+    x_ = H[0][0] * x + H[0][1] * y + H[0][2]
+    y_ = H[1][0] * x + H[1][1] * y + H[1][2]
+    return (x_, y_)
 
 def _transform_projective(x, y, H):
-    return (0,0)
+    z_ = H[2][0] * x + H[2][1] * y + H[2][2]
+    x_ = (H[0][0] * x + H[0][1] * y + H[0][2]) / z_
+    y_ = (H[0][0] * x + H[0][1] * y + H[0][2]) / z_
+    return (x_, y_)
 
 def _warp_fast(image, H):
     #output_shape = None
@@ -95,10 +102,9 @@ def _warp_fast(image, H):
     #img = image
     #M = H
     #mode_c = 'C'
-
+    
     rows = image.shape.as_list()[0]
     columns = image.shape.as_list()[1]
-    #out = tf.Variable(tf.zeros([rows, columns], tf.float64))
     
     if H[2][0] == 0 and H[2][1] == 0 and H[2][2] == 1:
         if H[0][1] == 0 and H[1][0] == 0:
@@ -115,7 +121,6 @@ def _warp_fast(image, H):
             c, r = transform_func(tfc, tfr, H)
             val = bilinear_interpolation(image, rows, columns, r, c, 0)
             col.append(tf.expand_dims(val, 0))
-            #out[tfr, tfc].assign(bilinear_interpolation(image, rows, columns, r, c, 0))
         col = tf.concat(col, 0)
         col = tf.expand_dims(col, 1)
         row_slices.append(col)
@@ -129,8 +134,7 @@ def radon(image, theta = None, circle = True):
     if len(imageShape) != 2:
         raise ValueError('The input image must be 2D')
     if theta is None:
-        theta = list(range(180))
-        #theta = tf.range(0, 180, 1)
+        theta = list(range(30))
     
     if circle:
         radius = min(imageShape) // 2
