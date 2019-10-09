@@ -2,26 +2,29 @@ from scipy.signal import convolve2d as conv2
 import numpy as np
 import matplotlib.pyplot as plt
 from unspvd_wiener import unsupervised_wiener
-from skimage import color, restoration
+from skimage import color
 from PIL import Image
 
 
 def main():
-    astro = color.rgb2gray(np.asarray(Image.open("resources/astronaut.jpg")))
+    img = color.rgb2gray(np.asarray(Image.open("resources/astronaut.jpg")))
     psf = np.ones((5, 5)) / 25
-    astro = conv2(astro, psf, 'same')
-    astro += 0.1 * astro.std() * np.random.standard_normal(astro.shape)
-    deconvolved, _ = unsupervised_wiener(astro, psf)
-    #deconvolved, _ = restoration.unsupervised_wiener(astro, psf)
-    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 5),
+    noised_img = conv2(img, psf, 'same')
+    noised_img += 0.5 * noised_img.std() * np.random.standard_normal(noised_img.shape)
+    deconvolved, _ = unsupervised_wiener(img, psf)
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 5),
                            sharex=True, sharey=True)
     plt.gray()
-    ax[0].imshow(astro, vmin=deconvolved.min(), vmax=deconvolved.max())
+    ax[0].imshow(img)
     ax[0].axis('off')
-    ax[0].set_title('Data')
-    ax[1].imshow(deconvolved)
+    ax[0].set_title('Original')
+    ax[1].imshow(noised_img, vmin=deconvolved.min(), vmax=deconvolved.max())
     ax[1].axis('off')
-    ax[1].set_title('Self tuned restoration')
+    ax[1].set_title('Noised')
+    ax[2].imshow(deconvolved)
+    ax[2].axis('off')
+    ax[2].set_title('Denoised')
+    
     fig.tight_layout()
     plt.show()
 

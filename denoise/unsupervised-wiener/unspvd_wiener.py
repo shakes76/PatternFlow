@@ -137,7 +137,6 @@ def image_quad_norm(inarray):
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
     sess = tf.InteractiveSession()
-    #sess.run(tf.global_variables_initializer())
     params = {'threshold': 1e-4, 'max_iter': 200,
               'min_iter': 30, 'burnin': 15, 'callback': None}
     params.update(user_params or {})
@@ -238,7 +237,6 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         
         sess.run(update_prev_x_postmean_op)
         result = sess.run(bool_op)
-        print(iteration)
         if (iteration > params['min_iter']) and result:
             break
 
