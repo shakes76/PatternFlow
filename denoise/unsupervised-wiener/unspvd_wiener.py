@@ -162,9 +162,9 @@ def update_x_postmean(x_postmean, prev_x_postmean, x_sample):
 def update_delta(x_postmean, prev_x_postmean, iteration, burnin):
     current = x_postmean / tf.cast((iteration - burnin), tf.complex64)
     previous = tf.cast(prev_x_postmean, tf.complex64) / tf.cast((iteration - burnin - 1), tf.complex64)
-    return tf.cast(tf.reduce_sum(tf.abs(current - previous)), tf.complex64) / \
-            tf.cast(tf.reduce_sum(tf.abs(x_postmean)), tf.complex64) /\
-            tf.cast((iteration - burnin), tf.complex64)
+    return tf.cast(tf.reduce_sum(tf.abs(current - previous)), tf.float32) / \
+            tf.cast(tf.reduce_sum(tf.abs(x_postmean)), tf.float32) /\
+            tf.cast((iteration - burnin), tf.float32)
 
 
 def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain, 
@@ -173,49 +173,71 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
     # Sample of Eq. 27 p(circX^k | gn^k-1, gx^k-1, y).
         
         # weighting (correlation in direct space)
-        precision = gn_chain.read(iteration) * atf2 + gx_chain.read(iteration) * areg2  # Eq. 29
-        excursion = tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),
+        precision = tf.identity(gn_chain[-1] * atf2 + gx_chain[-1] * areg2)  # Eq. 29
+        excursion = tf.identity(tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),
                 tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),
-                                 tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64))
+                                 tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64)))
 
         # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
-        wiener_filter = tf.cast(gn_chain.read(iteration),tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64)
+        wiener_filter = tf.identity(tf.cast(gn_chain[-1],tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64))
 
         # sample of X in Fourier space
-        x_sample = wiener_filter * data_spectrum + excursion
-
+        x_sample = tf.identity(wiener_filter * data_spectrum + excursion)
+        
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        new_gn_chain = lambda: tf.Variable(tf.random.gamma(shape=[],
+        update_gn_op = gn_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],
                                         alpha=[tf.size(image) / 2], 
-                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct)),dtype=tf.float32)
-        #gn_chain = 
+                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct))))
 
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        new_gx_chain = lambda: tf.Variable(tf.random.gamma(shape=[],alpha=[tf.size(image) / 2],
-                                        beta=image_quad_norm(x_sample * reg)),dtype=tf.float32)
+        update_gx_op = gx_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
+                                        beta=image_quad_norm(x_sample * reg))))
+        #new_gn = tf.control_dependencies([update_gn_op])
+        #new_gx = tf.control_dependencies([update_gx_op])
+        
+        
         #gx_chain = 
         #gx_chain.append()
-
-        # current empirical average
         
-        x_postmean = tf.cond(tf.math.greater(iteration, burnin), 
+        # current empirical average
+        """
+        x_postmean_cond_op = tf.cond(tf.math.greater(iteration, burnin), 
                             lambda: update_x_postmean(
                                     x_postmean, prev_x_postmean, x_sample), 
                                     lambda: tf.cast(x_postmean, tf.complex64))
-
-        delta = tf.cond(tf.math.greater(iteration, (burnin + 1)), 
+        
+        delta_cond_op = tf.cond(tf.math.greater(iteration, (burnin + 1)), 
                          lambda: update_delta(x_postmean, 
                                               prev_x_postmean, 
                                               iteration, burnin), 
                                               lambda: tf.cast(delta, 
                                                               tf.complex64))
-        prev_x_postmean = x_postmean
+        new_x_postmean = x_postmean_cond_op
+        new_delta = delta_cond_op
+        """
+        x_postmean = tf.cond(tf.math.greater(iteration, burnin), 
+                            lambda: update_x_postmean(
+                                    x_postmean, prev_x_postmean, x_sample), 
+                                    lambda: x_postmean)
+        #x_postmean = tf.control_dependencies([update_x_postmean_op])
         
-        #iteration + 1
-        return [x_postmean, prev_x_postmean, delta, gn_chain.write(iteration+1, tf.cast(new_gn_chain, tf.float32)), gx_chain.write(iteration+1, tf.cast(new_gx_chain, tf.float32)), 
-              iteration+1, min_iter, threshold, burnin, areg2, atf2, data_spectrum, trans_fct, 
-              image, reg]
         
+        
+        delta = tf.cond(tf.math.greater(iteration, (burnin + 1)), 
+                         lambda: update_delta(x_postmean, 
+                                              prev_x_postmean, 
+                                              iteration, burnin), 
+                                              lambda: delta)
+        #delta = tf.control_dependencies([update_delta_op])
+        
+        
+        
+        
+        with tf.control_dependencies([update_gn_op,update_gx_op]):
+            prev_x_postmean = x_postmean
+            return [x_postmean, prev_x_postmean, delta, gn_chain, gx_chain, 
+                    image, reg]
+            
     
 
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
@@ -236,17 +258,14 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         trans_fct = psf
 
     # The mean of the object
-    x_postmean = tf.cast(tf.Variable(tf.zeros(trans_fct.shape)), tf.complex64)
+    x_postmean = tf.Variable(tf.cast(tf.zeros(trans_fct.shape), tf.complex64))
     # The previous computed mean in the iterative loop
-    prev_x_postmean = tf.cast(tf.Variable(tf.zeros(trans_fct.shape)), tf.complex64)
+    prev_x_postmean = tf.Variable(tf.cast(tf.zeros(trans_fct.shape), tf.complex64))
 
     # Difference between two successive mean
     delta = tf.Variable(1e-8)
     # Initial state of the chain
-    gn_chain = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)#[tf.constant(1.0)]
-    gx_chain = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)#[tf.constant(1.0)]
-    gn_chain = gn_chain.write(0, tf.constant(1.0))
-    gx_chain = gn_chain.write(0, tf.constant(1.0))
+    gn_chain, gx_chain = [tf.constant(1.0)], [tf.constant(1.0)]
     # The correlation of the object in Fourier space (if size is big,
     # this can reduce computation time in the loop)
     areg2 = tf.abs(reg) ** 2
@@ -283,5 +302,5 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
-    sess.close()
+    #sess.close()
     return (x_postmean.eval(), {'noise': result[3].eval(), 'prior': result[4].eval()})
