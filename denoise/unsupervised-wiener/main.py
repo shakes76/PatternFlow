@@ -7,6 +7,8 @@ from PIL import Image
 
 
 def main():
+    """Test script for unsupervised_wiener
+    """
     img = color.rgb2gray(np.asarray(Image.open("resources/chelsea.png")))
     psf = np.ones((5, 5)) / 25
     noised_img = conv2(img, psf, 'same')
@@ -24,7 +26,7 @@ def main():
     ax[2].imshow(deconvolved)
     ax[2].axis('off')
     ax[2].set_title('Denoised')
-    
+
     fig.tight_layout()
     plt.show()
 
