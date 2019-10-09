@@ -185,19 +185,25 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         x_sample = tf.identity(wiener_filter * data_spectrum + excursion)
         
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        update_gn_op = gn_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],
+        #update_gn_op = gn_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],
+        #                                alpha=[tf.size(image) / 2], 
+        #                                beta = image_quad_norm(data_spectrum - x_sample * trans_fct))))
+        
+        new_gn = tf.identity(tf.random.gamma(shape=[1],
                                         alpha=[tf.size(image) / 2], 
-                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct))))
-
+                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct)))
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        update_gx_op = gx_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
-                                        beta=image_quad_norm(x_sample * reg))))
-        #new_gn = tf.control_dependencies([update_gn_op])
+        #update_gx_op = gx_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
+        #                                beta=image_quad_norm(x_sample * reg))))
+        new_gx = tf.identity(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
+                                        beta=image_quad_norm(x_sample * reg)))
+        #tf.control_dependencies([new_gn, new_gx])
         #new_gx = tf.control_dependencies([update_gx_op])
         
         
         #gx_chain = 
-        #gx_chain.append()
+        #gn_chain.append(new_gn)
+        #gx_chain.append(new_gx)
         
         # current empirical average
         """
@@ -233,10 +239,11 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         
         
         
-        with tf.control_dependencies([update_gn_op,update_gx_op]):
-            prev_x_postmean = x_postmean
-            return [x_postmean, prev_x_postmean, delta, gn_chain, gx_chain, 
-                    image, reg]
+        #with tf.control_dependencies([update_gn_op,update_gx_op]):
+        prev_x_postmean = x_postmean
+        return [x_postmean, prev_x_postmean, delta, gn_chain.append(new_gn), gx_chain.append(new_gx), 
+              iteration+1, min_iter, threshold, burnin, areg2, atf2, data_spectrum, trans_fct, 
+              image, reg]
             
     
 
@@ -289,10 +296,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     loop = tf.while_loop(condition, 
                          loop_body, 
                          loop_vars=loop_vars, 
-                         #shape_invariants=[18],
+                         shape_invariants=[None,None,None,[None],[None],None,None,None,None,None,None,None,None,None,None],
                          maximum_iterations = params['max_iter'], 
-                         parallel_iterations = 1,
-                         return_same_structure = True)
+                         parallel_iterations = 1)
     sess.run(tf.global_variables_initializer())
     result = sess.run(loop)
     
