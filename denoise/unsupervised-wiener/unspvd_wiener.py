@@ -185,61 +185,24 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         x_sample = tf.identity(wiener_filter * data_spectrum + excursion)
         
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        #update_gn_op = gn_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],
-        #                                alpha=[tf.size(image) / 2], 
-        #                                beta = image_quad_norm(data_spectrum - x_sample * trans_fct))))
-        
         new_gn = tf.identity(tf.random.gamma(shape=[1],
                                         alpha=[tf.size(image) / 2], 
                                         beta = image_quad_norm(data_spectrum - x_sample * trans_fct)))
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        #update_gx_op = gx_chain.append(lambda: tf.Variable(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
-        #                                beta=image_quad_norm(x_sample * reg))))
         new_gx = tf.identity(tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
                                         beta=image_quad_norm(x_sample * reg)))
-        #tf.control_dependencies([new_gn, new_gx])
-        #new_gx = tf.control_dependencies([update_gx_op])
-        
-        
-        #gx_chain = 
-        #gn_chain.append(new_gn)
-        #gx_chain.append(new_gx)
-        
+       
         # current empirical average
-        """
-        x_postmean_cond_op = tf.cond(tf.math.greater(iteration, burnin), 
-                            lambda: update_x_postmean(
-                                    x_postmean, prev_x_postmean, x_sample), 
-                                    lambda: tf.cast(x_postmean, tf.complex64))
-        
-        delta_cond_op = tf.cond(tf.math.greater(iteration, (burnin + 1)), 
-                         lambda: update_delta(x_postmean, 
-                                              prev_x_postmean, 
-                                              iteration, burnin), 
-                                              lambda: tf.cast(delta, 
-                                                              tf.complex64))
-        new_x_postmean = x_postmean_cond_op
-        new_delta = delta_cond_op
-        """
         x_postmean = tf.cond(tf.math.greater(iteration, burnin), 
                             lambda: update_x_postmean(
                                     x_postmean, prev_x_postmean, x_sample), 
                                     lambda: x_postmean)
-        #x_postmean = tf.control_dependencies([update_x_postmean_op])
-        
-        
-        
         delta = tf.cond(tf.math.greater(iteration, (burnin + 1)), 
                          lambda: update_delta(x_postmean, 
                                               prev_x_postmean, 
                                               iteration, burnin), 
                                               lambda: delta)
-        #delta = tf.control_dependencies([update_delta_op])
         
-        
-        
-        
-        #with tf.control_dependencies([update_gn_op,update_gx_op]):
         prev_x_postmean = x_postmean
         return [x_postmean, prev_x_postmean, delta, gn_chain.append(new_gn), gx_chain.append(new_gx), 
               iteration+1, min_iter, threshold, burnin, areg2, atf2, data_spectrum, trans_fct, 
@@ -250,8 +213,9 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
                         clip=True):
     sess = tf.InteractiveSession()
-    params = {'threshold': tf.constant(1e-4), 'max_iter': 200,
-              'min_iter': 30, 'burnin': 15, 'callback': None}
+    #image = tf.constant(image)
+    params = {'threshold': tf.constant(1e-4), 'max_iter': tf.constant(200),
+              'min_iter': tf.constant(30), 'burnin': tf.constant(15), 'callback': None}
     params.update(user_params or {})
 
     if reg is None:
@@ -284,19 +248,43 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         data_spectrum = tf.signal.rfft2d(tf.cast(image,tf.float32))
     else:
         data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))
-    iteration = 0
-    
+    iteration = tf.Variable(0)
+    vars_shape = [x_postmean.get_shape(),
+                  prev_x_postmean.get_shape(),
+                  delta.get_shape(),
+                  [tf.TensorShape(None)],
+                  [tf.TensorShape(None)],
+                  iteration.get_shape(),
+                  params['min_iter'].get_shape(), 
+                  params['threshold'].get_shape(), 
+                  params['burnin'].get_shape(),
+                  areg2.get_shape(),
+                  atf2.get_shape(),
+                  data_spectrum.get_shape(), 
+                  trans_fct.get_shape(), 
+                  tf.TensorShape(None), 
+                  reg.get_shape()]
     # Gibbs sampling
-    loop_vars = [x_postmean, prev_x_postmean, delta, gn_chain, 
-                         gx_chain, iteration, params['min_iter'], params['threshold'], 
-                         params['burnin'], areg2, atf2, 
-                         data_spectrum, trans_fct, image, reg]
-    #vars_shape = tf.shape(tf.constant(loop_vars))
+    loop_vars = [x_postmean, 
+                 prev_x_postmean, 
+                 delta, 
+                 gn_chain, 
+                 gx_chain, 
+                 iteration, 
+                 params['min_iter'], 
+                 params['threshold'], 
+                 params['burnin'], 
+                 areg2, 
+                 atf2, 
+                 data_spectrum, 
+                 trans_fct, 
+                 image, 
+                 reg]
     
     loop = tf.while_loop(condition, 
                          loop_body, 
                          loop_vars=loop_vars, 
-                         shape_invariants=[None,None,None,[None],[None],None,None,None,None,None,None,None,None,None,None],
+                         shape_invariants=vars_shape,
                          maximum_iterations = params['max_iter'], 
                          parallel_iterations = 1)
     sess.run(tf.global_variables_initializer())
@@ -308,5 +296,5 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
-    #sess.close()
+    
     return (x_postmean.eval(), {'noise': result[3].eval(), 'prior': result[4].eval()})
