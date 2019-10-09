@@ -1,5 +1,6 @@
 import sys
 from image_histogram import ImageHistogram 
+from matplotlib import pyplot as plt
 
 # only to open the image
 from PIL import Image
@@ -15,10 +16,8 @@ def main(args):
 	fileName = args[0]
 	img = Image.open(fileName)
 	hist = ImageHistogram(img)
-
-	#TODO: get input variables
-	#TODO: create ImageHistogram instance	
-	#TODO: get output and plot maybe?
+	plt.plot(hist.hist)
+	plt.show()
 
 
 
