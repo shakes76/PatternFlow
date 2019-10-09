@@ -1,12 +1,29 @@
-# Tony Meng, Student No: 443298999
-# ported from https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/radon_transform.py#L12
-# helper method https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/_warps_cy.pyx
-# more from https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/_shared/interpolation.pxd
+"""
+Tony Meng, Student No: 443298999
+Ported to tensorflow from the scikit-image implementation using numpy.
+
+https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/radon_transform.py#L12
+https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/transform/_warps_cy.pyx
+https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/_shared/interpolation.pxd
+"""
 
 import tensorflow as tf
 import math
 
 def matrix_multiply(X, Y):
+    """
+    Does matrix multiplication on two 3x3 integer arrays
+    
+    Parameters
+    ----------
+    X, Y :
+        3x3 integer arrays
+    
+    Returns
+    -------
+    result :
+        3x3 integer array equal to XY
+    """
     result = [[0,0,0],[0,0,0],[0,0,0]]
     for i in range(3):
         for j in range(3):
@@ -76,41 +93,110 @@ def bilinear_interpolation(image, rows, cols, r, c, cval):
     
     top = (1 - dc) * top_left + dc * top_right
     bottom = (1 - dc) * bottom_left + dc * bottom_right
-    '''
-    print(top_left)
-    print(top_right)
-    print(bottom_left)
-    print(bottom_right)
-    print(top)
-    print(bottom)
-    quit()'''
+    
     return ((1 - dr) * top + dr * bottom)
 
 def _transform_metric(x, y, H):
+    """
+    Apply a metric transformation to a coordinate.
+    
+    Parameters
+    ----------
+    x, y :
+        Input coordinate.
+    H :
+        3x3 transformation matrix.
+    
+    Returns
+    -------
+    (x_, y_) :
+        Tuple of output coordinates
+    """
     x_ = H[0][0] * x + H[0][2]
     y_ = H[1][1] * y + H[1][2]
     return (x_, y_)
 
 def _transform_affine(x, y, H):
+    """
+    Apply an affine transformation to a coordinate.
+    
+    Parameters
+    ----------
+    x, y :
+        Input coordinate.
+    H :
+        3x3 transformation matrix.
+    
+    Returns
+    -------
+    (x_, y_) :
+        Tuple of output coordinates
+    """
     x_ = (H[0][0] * x) + (H[0][1] * y) + H[0][2]
     y_ = (H[1][0] * x) + (H[1][1] * y) + H[1][2]
     return (x_, y_)
 
 def _transform_projective(x, y, H):
+    """
+    Apply a homography to a coordinate.
+    
+    Parameters
+    ----------
+    x, y :
+        Input coordinate.
+    H :
+        3x3 transformation matrix.
+    
+    Returns
+    -------
+    (x_, y_) :
+        Tuple of output coordinates
+    """
     z_ = H[2][0] * x + H[2][1] * y + H[2][2]
     x_ = (H[0][0] * x + H[0][1] * y + H[0][2]) / z_
     y_ = (H[1][0] * x + H[1][1] * y + H[1][2]) / z_
     return (x_, y_)
 
 def _warp_fast(image, H):
-    #output_shape = None
-    #order = 1
-    #mode = 'constant'
-    #cval = 0
+    """
+    Projective transformation (homography).
     
-    #img = image
-    #M = H
-    #mode_c = 'C'
+    Perform a projective transformation (homography) of a
+    floating point image, using interpolation.
+    
+    For each pixel, given its homogeneous coordinate :math:`\mathbf{x}
+    = [x, y, 1]^T`, its target position is calculated by multiplying
+    with the given matrix, :math:`H`, to give :math:`H \mathbf{x}`.
+    E.g., to rotate by theta degrees clockwise, the matrix should be::
+    
+      [[cos(theta) -sin(theta) 0]
+       [sin(theta)  cos(theta) 0]
+       [0            0         1]]
+    
+    or, to translate x by 10 and y by 20::
+    
+      [[1 0 10]
+       [0 1 20]
+       [0 0 1 ]].
+    
+    Parameters
+    ----------
+    image : 2-D tensor
+        Input image.
+    H : 3x3 array
+        transformation matrix H that defines the homography.
+    
+    Notes
+    -----
+    output_shape = None
+    order = 1
+    mode = 'constant'
+    cval = 0
+    
+    img = image
+    M = H
+    mode_c = 'C'
+    """
     
     rows = image.shape.as_list()[0]
     columns = image.shape.as_list()[1]
@@ -138,6 +224,30 @@ def _warp_fast(image, H):
     return out
 
 def radon(image, theta = None, circle = True):
+    """
+    Calculates the radon transform of an image given specified
+    projection angles.
+    
+    Parameters
+    ----------
+    image : array_like, dtype=float
+        Input image. The rotation axis will be located in the pixel with
+        indices ``(image.shape[0] // 2, image.shape[1] // 2)``.
+    theta : array_like, dtype=float, optional
+        Projection angles (in degrees). If `None`, the value is set to
+        np.arange(180).
+    circle : boolean, optional
+        Assume image is zero outside the inscribed circle, making the
+        width of each projection (the first dimension of the sinogram)
+        equal to ``min(image.shape)``.
+    
+    Returns
+    -------
+    radon_image : ndarray
+        Radon transform (sinogram).  The tomography rotation axis will lie
+        at the pixel index ``radon_image.shape[0] // 2`` along the 0th
+        dimension of ``radon_image``.
+    """
     # tf.rank does not return the correct value if eager execution is off
     imageShape = image.shape.as_list()
     if len(imageShape) != 2:
@@ -164,8 +274,13 @@ def radon(image, theta = None, circle = True):
         slices = tuple(slices)
         padded_image = image[slices]
     else:
-        # TODO
-        pass
+        diagonal = math.sqrt(2) * max(imageShape)
+        pad = [math.ceil(diagonal - s) for s in imageShape]
+        new_center = [(s + p) // 2 for s, p in zip(imageShape, pad)]
+        old_center = [s // 2 for s in imageShape]
+        pad_before = [nc - oc for oc, nc in zip(old_center, new_center)]
+        pad_width = [(pb, p - pb) for pb, p in zip(pad_before, pad)]
+        padded_image = tf.pad(image, pad_width)
     
     #print(padded_image.shape)
     radon_image = tf.zeros([padded_image.shape.as_list()[0], len(theta)])
