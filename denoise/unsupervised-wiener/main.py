@@ -7,7 +7,7 @@ from PIL import Image
 
 
 def main():
-    img = color.rgb2gray(np.asarray(Image.open("resources/astronaut.jpg")))
+    img = color.rgb2gray(np.asarray(Image.open("resources/chelsea.png")))
     psf = np.ones((5, 5)) / 25
     noised_img = conv2(img, psf, 'same')
     noised_img += 0.5 * noised_img.std() * np.random.standard_normal(noised_img.shape)
