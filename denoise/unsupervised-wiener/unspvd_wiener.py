@@ -47,9 +47,9 @@ def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     # Zero padding and fill
     irpadded = tf.Variable(tf.zeros(shape))
     sess.run(tf.variables_initializer([irpadded]))
-    imp_shape = imp_resp.shape
-    sess.run(tf.assign(irpadded[tuple([slice(0, s) for s in imp_shape])], imp_resp))
-    
+    #imp_shape = imp_resp.shape
+    sess.run(tf.assign(irpadded[tuple([slice(0, s) for s in imp_resp.shape])], imp_resp))
+
     # Roll for zero convention of the fft to avoid the phase
     # problem. Work with odd and even size.
     for axis, axis_size in enumerate(imp_resp.shape):
@@ -57,23 +57,10 @@ def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
             irpadded = tf.roll(irpadded,
                                shift=-tf.cast(tf.floor(tf.cast(axis_size,tf.int32) / 2),tf.int32),
                                axis=axis)
-    if dim == 1:
-        if is_real:
-            return tf.signal.rfft(irpadded)
-        else:
-            return tf.fft(tf.cast(irpadded, tf.complex64))
-    elif dim == 2:
-        if is_real:
-            return tf.signal.rfft2d(irpadded)
-        else:
-            return tf.fft2d(tf.cast(irpadded, tf.complex64))
-    elif dim == 3:
-        if is_real:
-            return tf.signal.rfft3d(irpadded)
-        else:
-            return tf.fft3d(tf.cast(irpadded, tf.complex64))
+    if is_real:
+        return tf.signal.rfft2d(irpadded)
     else:
-        raise ValueError('Dimension can only be 1, 2 and 3')
+        return tf.fft2d(tf.cast(irpadded, tf.complex64))
 
 
 def laplacian(ndim, shape, sess, is_real=True):
@@ -157,8 +144,8 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
     if reg is None:
         reg, _ = laplacian(image.ndim, image.shape, sess, is_real=is_real)
-    if not is_real:
-        reg = ir2tf(reg, image.shape, is_real=is_real)
+    if reg.dtype != tf.complex64:
+        reg = ir2tf(reg, image.shape, sess, is_real=is_real)
 
     if psf.shape != reg.shape:
         trans_fct = ir2tf(psf, image.shape, sess, is_real=is_real)
@@ -166,10 +153,10 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         trans_fct = psf
 
     # The mean of the object
-    x_postmean = tf.Variable(tf.zeros(trans_fct.shape), dtype=tf.float32)
+    x_postmean = tf.Variable(tf.cast(tf.zeros(trans_fct.shape), tf.complex64))
     sess.run(tf.variables_initializer([x_postmean]))
     # The previous computed mean in the iterative loop
-    prev_x_postmean = tf.Variable(tf.zeros(trans_fct.shape))
+    prev_x_postmean = tf.Variable(tf.cast(tf.zeros(trans_fct.shape), tf.complex64))
     sess.run(tf.variables_initializer([prev_x_postmean]))
 
     # Difference between two successive mean
@@ -188,29 +175,34 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     if is_real:
         data_spectrum = tf.signal.rfft2d(tf.cast(image,tf.float32))
     else:
-        data_spectrum = tf.fft2d(tf.cast(image,tf.complex64))
+        data_spectrum = tf.fft2d(tf.cast(image,tf.float32))
 
     # Gibbs sampling
     update_prev_x_postmean_op = tf.assign(prev_x_postmean, x_postmean)
     
     bool_op = tf.cond(delta<params['threshold'],lambda:True,lambda:False)
     
-    precision = tf.Variable(tf.cast(gn_chain[-1] * atf2 + gx_chain[-1] * areg2, dtype=tf.complex64))
+    precision = tf.Variable(gn_chain[-1] * atf2 + gx_chain[-1] * areg2)
     sess.run(tf.variables_initializer([precision]))
-    excursion = tf.Variable(tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64)),dtype=tf.complex64)
+    
+    
+    excursion = tf.Variable(tf.cast(tf.sqrt(0.5) / tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape), tf.complex64)))
     sess.run(tf.variables_initializer([excursion]))
-    wiener_filter = tf.Variable(tf.cast(gn_chain[-1],tf.complex64) *\
-    tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64),dtype=tf.complex64)
+    
+    
+    wiener_filter = tf.Variable(tf.cast(gn_chain[-1],tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64))
     sess.run(tf.variables_initializer([wiener_filter]))
-    x_sample = tf.Variable(wiener_filter * data_spectrum + excursion,dtype=tf.complex64)
+    
+    
+    x_sample = tf.Variable(wiener_filter * data_spectrum + excursion)
     sess.run(tf.variables_initializer([x_sample]))
     
-    update_precision_op = tf.assign(precision, tf.cast(gn_chain[-1] * atf2 + gx_chain[-1] * areg2, tf.complex64))
+    update_precision_op = tf.assign(precision, gn_chain[-1] * atf2 + gx_chain[-1] * areg2)
     
-    update_excursion_op = tf.assign(excursion, tf.cast(tf.sqrt(0.5),tf.complex64) / tf.cast(tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64)))
+    update_excursion_op = tf.assign(excursion, tf.cast(tf.sqrt(0.5) / tf.sqrt(precision),tf.complex64) * (tf.cast(tf.random.normal(data_spectrum.shape),tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape), tf.complex64)))
     
-    update_wiener_filter_op = tf.assign( wiener_filter, tf.cast(gn_chain[-1],tf.complex64) *\
-    tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64))
+    update_wiener_filter_op = tf.assign(wiener_filter, tf.cast(gn_chain[-1],tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision,tf.complex64))
+    sess.run(tf.variables_initializer([wiener_filter]))
     
     update_x_sample_op = tf.assign(x_sample, wiener_filter * data_spectrum + excursion)
     
@@ -234,7 +226,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
         # current empirical average
         if iteration > params['burnin']:
-            update_x_postmean_op = tf.assign(x_postmean, prev_x_postmean + tf.cast(x_sample, tf.float32))
+            update_x_postmean_op = tf.assign(x_postmean, prev_x_postmean + x_sample)
             sess.run(update_x_postmean_op)
 
         if iteration > (params['burnin'] + 1):
@@ -253,7 +245,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # Empirical average \approx POSTMEAN Eq. 44
     x_postmean = x_postmean / (iteration - params['burnin'])
     if is_real:
-        x_postmean = tf.signal.irfft2d(tf.cast(x_postmean,tf.complex64))
+        x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
     
