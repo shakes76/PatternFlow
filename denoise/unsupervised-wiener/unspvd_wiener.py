@@ -185,14 +185,14 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         x_sample = wiener_filter * data_spectrum + excursion
 
         # sample of Eq. 31 p(gn | x^k, gx^k, y)
-        new_gn_chain = tf.random.gamma(shape=[1],
+        new_gn_chain = lambda: tf.Variable(tf.random.gamma(shape=[],
                                         alpha=[tf.size(image) / 2], 
-                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct))
+                                        beta = image_quad_norm(data_spectrum - x_sample * trans_fct)),dtype=tf.float32)
         #gn_chain = 
 
         # sample of Eq. 31 p(gx | x^k, gn^k-1, y)
-        new_gx_chain = tf.random.gamma(shape=[1],alpha=[tf.size(image) / 2],
-                                        beta=image_quad_norm(x_sample * reg))
+        new_gx_chain = lambda: tf.Variable(tf.random.gamma(shape=[],alpha=[tf.size(image) / 2],
+                                        beta=image_quad_norm(x_sample * reg)),dtype=tf.float32)
         #gx_chain = 
         #gx_chain.append()
 
@@ -212,7 +212,7 @@ def loop_body(x_postmean, prev_x_postmean, delta, gn_chain, gx_chain,
         prev_x_postmean = x_postmean
         
         #iteration + 1
-        return [x_postmean, prev_x_postmean, delta, gn_chain.write(iteration+1, new_gn_chain), gx_chain.write(iteration+1, new_gx_chain), 
+        return [x_postmean, prev_x_postmean, delta, gn_chain.write(iteration+1, tf.cast(new_gn_chain, tf.float32)), gx_chain.write(iteration+1, tf.cast(new_gx_chain, tf.float32)), 
               iteration+1, min_iter, threshold, burnin, areg2, atf2, data_spectrum, trans_fct, 
               image, reg]
         
@@ -284,4 +284,4 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
     sess.close()
-    return (x_postmean.eval(), {'noise': result[3], 'prior': result[4]})
+    return (x_postmean.eval(), {'noise': result[3].eval(), 'prior': result[4].eval()})
