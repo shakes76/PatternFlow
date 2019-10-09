@@ -2,7 +2,7 @@ from scipy.signal import convolve2d as conv2
 import numpy as np
 import matplotlib.pyplot as plt
 from unspvd_wiener import unsupervised_wiener
-from skimage import color
+from skimage import color, restoration
 from PIL import Image
 
 
@@ -12,6 +12,7 @@ def main():
     astro = conv2(astro, psf, 'same')
     astro += 0.1 * astro.std() * np.random.standard_normal(astro.shape)
     deconvolved, _ = unsupervised_wiener(astro, psf)
+    #deconvolved, _ = restoration.unsupervised_wiener(astro, psf)
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 5),
                            sharex=True, sharey=True)
     plt.gray()
