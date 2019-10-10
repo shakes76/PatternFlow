@@ -53,3 +53,7 @@ deconvolved, _ = unsupervised_wiener(img, psf)
 [Wikipedia](https://en.wikipedia.org/wiki/Wiener_deconvolution)
 
 [scikit-image](https://scikit-image.org/docs/dev/api/skimage.restoration.html#skimage.restoration.unsupervised_wiener)
+
+[image_quad_norm, ir2tf and laplacian](https://github.com/scikit-image/scikit-image/blob/master/skimage/restoration/uft.py)
+
+[unsupervised_wiener](https://github.com/scikit-image/scikit-image/blob/master/skimage/restoration/deconvolution.py)
