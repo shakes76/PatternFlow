@@ -11,6 +11,7 @@ Wiener deconvolution is named after Norbert Wiener.
 
 # Dependencies:
 Python 3.7.3
+
 Tensorflow 1.14.0
 
 
@@ -18,15 +19,19 @@ Tensorflow 1.14.0
 ### unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True, clip=True)
 
 **image : (M, N) ndarray**
+
 The input degraded image.
 
 **psf : ndarray**
+
 The impulse response (input image's space) or the transfer function (Fourier space). Both are accepted. The transfer function is automatically recognized as being complex.
 
 **reg : ndarray, optional**
+
 The regularisation operator. The Laplacian by default. It can be an impulse response or a transfer function, as for the psf. user_params : dict, optional Dictionary of parameters for the Gibbs sampler.
 
 **clip : boolean, optional**
+
 True by default. If true, pixel values of the result above 1 or under -1 are thresholded for skimage pipeline compatibility.
 
 ### Example
@@ -46,4 +51,5 @@ deconvolved, _ = unsupervised_wiener(img, psf)
 ```
 # References
 [Wikipedia](https://en.wikipedia.org/wiki/Wiener_deconvolution)
+
 [scikit-image](https://scikit-image.org/docs/dev/api/skimage.restoration.html#skimage.restoration.unsupervised_wiener)
