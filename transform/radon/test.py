@@ -1,4 +1,5 @@
 import sys
+import time
 import radon
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -35,14 +36,26 @@ def main(arglist):
     tensorimage = tf.constant(image)
     
     # calculate radon transforms
+    start = time.time()
     transformed = radon.radon(tensorimage, list(range(start_angle, end_angle)), circle)
+    transformed = transformed.eval(session=sess)
+    end = time.time()
+    port_runtime = end - start
+    
+    start = time.time()
     check = sk.radon(image, list(range(start_angle, end_angle)), circle)
+    end = time.time()
+    orig_runtime = end - start
+    
+    # print runtimes
+    print("Port Runtime: " + str(port_runtime))
+    print("Orig Runtime: " + str(orig_runtime))
     
     # plot images
     plt.subplot(1, 3, 1)
     plt.imshow(image)
     plt.subplot(1, 3, 2)
-    plt.imshow(transformed.eval(session=sess))
+    plt.imshow(transformed)
     plt.subplot(1, 3, 3)
     plt.imshow(check)
     plt.show()
