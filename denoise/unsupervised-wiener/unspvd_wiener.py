@@ -32,7 +32,6 @@ def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
     # Zero padding and fill
     irpadded = tf.Variable(tf.zeros(shape))
     sess.run(tf.variables_initializer([irpadded]))
-    #imp_shape = imp_resp.shape
     sess.run(tf.assign(irpadded[tuple([slice(0, s)
                                        for s in imp_resp.shape])], imp_resp))
 
