@@ -129,7 +129,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
        The regularisation operator. The Laplacian by default. It can
        be an impulse response or a transfer function, as for the psf.
     user_params : dict, optional
-       Dictionary of parameters for the Gibbs sampler. See below.
+       Dictionary of parameters for the Gibbs sampler.
     clip : boolean, optional
        True by default. If true, pixel values of the result above 1 or
        under -1 are thresholded for skimage pipeline compatibility.
