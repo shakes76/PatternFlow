@@ -112,22 +112,35 @@ class GaussInteger():
 
     def __iadd__(self, other):
         """
-        Overloads the "+=" unary operator
+        Overloads the "+=" operator.
         """
         self = self + other;
         return self
 
     def __neg__(self):
         """
-        Overloads the "-" unary operator
+        Overloads the "-" unary operator.
         """
         with tf.Session() as sess:
             return GaussInteger(-int(self.re.eval()), -int(self.im.eval()))
 
     def __sub__(self, other):
         """
-        Overloads the "-" binary operator
+        Overloads the "-" binary operator.
         """
         return self + (-other)
 
-    #def __rsub__
+    def __rsub__(self, other):
+        """
+        Overloads the "-" binary operator.
+        """
+        return (-self) + other
+
+    def __isub__(self, other):
+        """
+        Overloads the "-=" operator.
+        """
+        self = self - other
+        return self
+
+    
