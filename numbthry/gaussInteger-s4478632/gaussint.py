@@ -24,9 +24,25 @@ class GaussInteger():
         return str(self.getNum())[1:-1]
 
     def __repr__(self):
+        """
+        Return a representation of the instance.
+        """
         with tf.Session() as sess:
             return "GaussInteger(" + str(int(self.real.eval()[0])) + \
                     ", " + str(int(self.imag.eval()[0])) + ")"
+
+    def __eq__(self, other):
+        """
+        Returns the equality of the two objects. Two instances of this
+        class are equivalent if both the real and imaginary parts are
+        equal.
+        """
+        if type(other) is not GaussInteger:
+            return False
+        else:
+            with tf.Session() as sess:
+                return (self.real.eval() == other.real.eval() and \
+                        self.imag.eval() == other.imag.eval())[0]
 
     def getNum(self):
         """
