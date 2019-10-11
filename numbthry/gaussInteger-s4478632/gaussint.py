@@ -44,6 +44,9 @@ class GaussInteger():
                 return (self.real.eval() == other.real.eval() and \
                         self.imag.eval() == other.imag.eval())[0]
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def getNum(self):
         """
         Returns the complex number as a python complex type.
