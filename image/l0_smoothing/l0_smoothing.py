@@ -1,44 +1,61 @@
+from typing import Callable
+
 import tensorflow as tf
 
 
-def _circulant2_dx(xs, dir):
-    stack = [xs[:, dir:], xs[:, :dir]] if dir > 0 else [xs[:, dir:], xs[:, :dir]]
-    shift = tf.concat(stack, axis=1)
-    return shift - xs
-
-
-def _circulant2_dy(xs, dir):
-    stack = [xs[dir:, :], xs[:dir, :]] if dir > 0 else [xs[dir:, :], xs[:dir, :]]
-    shift = tf.concat(stack, axis=0)
-    return shift - xs
-
-
-def _apply_to_channel(image, function):
-    # Apply the function to each channel and then re-stack and return
+def _apply_to_channel(image: tf.Tensor, function: Callable[[tf.Tensor], tf.Tensor]) -> tf.Tensor:
+    """Apply a function to each channel in an image (assumes channel last)"""
     channels = tf.unstack(image, axis=-1)
     results = [function(channel) for channel in channels]
     return tf.stack(results, -1)
 
 
-def _fft_channel(image):
+def _fft_channel(image: tf.Tensor) -> tf.Tensor:
+    """Returns the fast fourier transform of the given image applied individually to each channel"""
     # Ensure the input is complex
     image = tf.cast(image, tf.complex64)
-
     return _apply_to_channel(image, tf.signal.fft2d)
 
 
-def _ifft_channel(image):
+def _ifft_channel(image: tf.Tensor) -> tf.Tensor:
+    """Returns the inverse fast fourier transform of the given image applied individually to each channel"""
     # Ensure the input is complex
     image = tf.cast(image, tf.complex64)
-
     return _apply_to_channel(image, tf.signal.ifft2d)
 
 
-def l0_smoothing(image, lmd=0.01, beta_max=10000, beta_rate=2., max_iterations=30):
+def _circulant2_dx(xs: tf.Tensor, dir: int) -> tf.Tensor:
+    """Get the next circulant matrix for the dx in the specified direction"""
+    stack = [xs[:, dir:], xs[:, :dir]] if dir > 0 else [xs[:, dir:], xs[:, :dir]]
+    shift = tf.concat(stack, axis=1)
+    return shift - xs
+
+
+def _circulant2_dy(xs: tf.Tensor, dir: int) -> tf.Tensor:
+    """Get the next circulant matrix for the dy in the specified direction"""
+    stack = [xs[dir:, :], xs[:dir, :]] if dir > 0 else [xs[dir:, :], xs[:dir, :]]
+    shift = tf.concat(stack, axis=0)
+    return shift - xs
+
+
+def l0_gradient_smoothing(image, lmd: float=0.01, beta_max: int=10000, beta_rate: float=2., max_iterations: int=30) -> tf.Tensor:
+    """
+    Performs l0 gradient smoothing on the given input data.
+
+    :param image: Input image or data where the last dimension corresponds to the channels.
+                  An arbitrary number of channels is supported.
+                  Input should be in the range [0, 1].
+    :param lmd: The smoothing parameter
+    :param beta_max: Termination parameter
+    :param beta_rate: The rate at which to grow beta
+    :param max_iterations: The maximum number of iterations
+    :return: Smoothed result
+    """
     # Ensure that the image is a Tensor
     image = tf.convert_to_tensor(image, tf.float32)
     image = tf.complex(image, tf.zeros_like(image))
-    assert len(image.shape) == 2 or len(image.shape) == 3, f'Image should be either rank 2 or rank 3 not rank {len(image.shape)}'
+    assert len(image.shape) == 2 or len(image.shape) == 3, \
+        f'Image should be either rank 2 or rank 3 not rank {len(image.shape)}'
 
     # If the image has no channel dimension so add one
     if len(image.shape) == 2:
@@ -46,7 +63,6 @@ def l0_smoothing(image, lmd=0.01, beta_max=10000, beta_rate=2., max_iterations=3
 
     rows, cols, channels = image.shape
 
-    #Ny = rows, Nx = cols, D = channels
     # Create the optical transfer function
     dx, dy = tf.zeros((rows, cols), dtype=tf.complex64), tf.zeros((rows, cols), dtype=tf.complex64)
     dx = tf.tensor_scatter_nd_update(dx, [[rows//2, cols//2 - 1], [rows//2, cols//2]], [-1, 1])
@@ -62,7 +78,6 @@ def l0_smoothing(image, lmd=0.01, beta_max=10000, beta_rate=2., max_iterations=3
     # Start the optimisation process
     S = tf.math.real(image)
     beta = lmd * 2.0
-    hp, vp = tf.zeros_like(image), tf.zeros_like(image)
     for i in range(max_iterations):
         # With S, solve for hp and vp
         hp, vp = _circulant2_dx(S, 1), _circulant2_dy(S, 1)
@@ -83,6 +98,7 @@ def l0_smoothing(image, lmd=0.01, beta_max=10000, beta_rate=2., max_iterations=3
 
         # Iteration step
         beta *= beta_rate
-        if beta > beta_max: break
+        if beta > beta_max:
+            break
 
     return S
