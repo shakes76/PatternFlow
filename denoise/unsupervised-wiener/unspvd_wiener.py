@@ -103,8 +103,7 @@ def image_quad_norm(inarray):
         return (2 * tf.reduce_sum(tf.reduce_sum(tf.abs(inarray) ** 2, axis=-1),
                                   axis=-1) - tf.reduce_sum(tf.abs(inarray[..., 0]) ** 2, axis=-1))
     else:
-        return tf.reduce_sum(tf.reduce_sum(
-            tf.abs(inarray) ** 2, axis=-1), axis=-1)
+        return tf.reduce_sum(tf.reduce_sum(tf.abs(inarray) ** 2, axis=-1), axis=-1)
 
 
 def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
@@ -202,15 +201,15 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             tf.zeros(
                 trans_fct.shape),
             tf.complex64))
-    sess.run(tf.variables_initializer([x_postmean]))
     # The previous computed mean in the iterative loop
     prev_x_postmean = tf.Variable(
         tf.cast(tf.zeros(trans_fct.shape), tf.complex64))
-    sess.run(tf.variables_initializer([prev_x_postmean]))
 
     # Difference between two successive mean
     delta = tf.Variable(1e-8)
-    sess.run(tf.variables_initializer([delta]))
+    
+    
+    
     # Initial state of the chain
     gn_chain, gx_chain = [
         tf.constant(1.0)], [
@@ -242,24 +241,21 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # weighting (correlation in direct space)
     precision = tf.Variable(
         gn_chain[-1] * atf2 + gx_chain[-1] * areg2)  # Eq. 29
-    sess.run(tf.variables_initializer([precision]))
 
     excursion = tf.Variable(tf.cast(tf.sqrt(0.5) / tf.sqrt(precision), tf.complex64) * (tf.cast(tf.random.normal(
         data_spectrum.shape), tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape), tf.complex64)))
-    sess.run(tf.variables_initializer([excursion]))
 
     # mean Eq. 30 (RLS for fixed gn, gamma0 and gamma1 ...)
     wiener_filter = tf.Variable(tf.cast(
         gn_chain[-1], tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision, tf.complex64))
-    sess.run(tf.variables_initializer([wiener_filter]))
 
     # sample of X in Fourier space
     x_sample = tf.Variable(
         wiener_filter *
         data_spectrum +
         excursion)
-    sess.run(tf.variables_initializer([x_sample]))
 
+    # Define oprator for updating variables
     update_precision_op = tf.assign(
         precision, gn_chain[-1] * atf2 + gx_chain[-1] * areg2)
 
@@ -268,13 +264,18 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
     update_wiener_filter_op = tf.assign(wiener_filter, tf.cast(
         gn_chain[-1], tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision, tf.complex64))
-    sess.run(tf.variables_initializer([wiener_filter]))
 
     update_x_sample_op = tf.assign(
         x_sample, wiener_filter * data_spectrum + excursion)
 
     update_group = tf.group(
         [update_precision_op, update_excursion_op, update_wiener_filter_op, update_x_sample_op])
+
+    # Initialize variables
+    variable_set_1 = [x_postmean, prev_x_postmean, delta, precision]
+    sess.run(tf.variables_initializer(variable_set_1))
+    variable_set_2 = [excursion, wiener_filter, x_sample]
+    sess.run(tf.variables_initializer(variable_set_2))
 
     for iteration in range(params['max_iter']):
         # Sample of Eq. 27 p(circX^k | gn^k-1, gx^k-1, y).
@@ -299,10 +300,8 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             sess.run(update_x_postmean_op)
 
         if iteration > (params['burnin'] + 1):
-            current = x_postmean / \
-                (iteration - params['burnin'])
-            previous = prev_x_postmean / \
-                (iteration - params['burnin'] - 1)
+            current = x_postmean / (iteration - params['burnin'])
+            previous = prev_x_postmean / (iteration - params['burnin'] - 1)
             update_delta_op = tf.assign(delta, (tf.reduce_sum(tf.abs(current - previous)) /
                                                 tf.reduce_sum(tf.abs(x_postmean)) / (iteration - params['burnin'])))
             sess.run(update_delta_op)
@@ -314,12 +313,10 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             break
 
     # Empirical average \approx POSTMEAN Eq. 44
-    x_postmean = x_postmean / \
-        (iteration - params['burnin'])
+    x_postmean = x_postmean / (iteration - params['burnin'])
     if is_real:
         x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
 
-    return (x_postmean.eval(), {
-            'noise': gn_chain, 'prior': gx_chain})
+    return (x_postmean.eval(), {'noise': gn_chain, 'prior': gx_chain})
