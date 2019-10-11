@@ -23,6 +23,11 @@ class GaussInteger():
         """
         return str(self.getNum())[1:-1]
 
+    def __repr__(self):
+        with tf.Session() as sess:
+            return "GaussInteger(" + str(int(self.real.eval()[0])) + \
+                    ", " + str(int(self.imag.eval()[0])) + ")"
+
     def getNum(self):
         """
         Returns the complex number as a python complex type.
