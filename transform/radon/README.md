@@ -2,7 +2,7 @@
 A port of the radon transform from scikit image (skimage.transform.radon()) into tensorflow. This implementation works with both eager execution and computational graphs.
 
 ## Algorithm Description
-TODO
+This function takes an image as a tensor and calculates its radon transform (also known as sinogram) for the provided angles. The transformed data for each angle represents a projection along an angle of the input image. This is often used for image processing and reconstruction, for example edge detection.
 
 ## Dependencies
 The implementation itself (radon.py) requires:
@@ -31,11 +31,14 @@ from skimage.io import imread   # for loading the image
 import matplotlib.pyplot as plt # for visualising the image and its transform
 
 sess = tf.compat.v1.Session()
-image = imread("image.png", as_gray = True)
+image = imread("test.png", as_gray = True)
 image = tf.constant(image)
-transformed = radon.radon(image, angles = list(range(60)), circle = True)
+transformed = radon.radon(image, angles = list(range(20, 60)), circle = True)
 transformed = transformed.eval(session=sess)
 
 plt.imshow(transformed)
 plt.show()
 ```
+
+## Note
+This implementation ports all of the original code into python using tensorflow. The original implementation used Cython to compile backend code to C. As the major cost of this algorithm is doing hundreds of thousands of memory accesses, this significantly improves performance. As this port does everything in python, it is approximately 50000x slower than the original.
