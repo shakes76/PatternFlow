@@ -21,7 +21,8 @@ class GaussInteger():
         """
         Return a string representation of the number.
         """
-        return str(self.getNum())[1:-1]
+        return str(self.getNum())[1:-1] if \
+                str(self.getNum())[0] == '(' else str(self.getNum())
 
     def __repr__(self):
         """
@@ -78,3 +79,13 @@ class GaussInteger():
 
         with tf.Session() as sess:
             return complex(tf.math.multiply(self.num, conj.num).eval())
+
+    def add(self, other):
+        """
+        Adds two instances of this class together.
+        """
+        with tf.Session() as sess:
+            sum_real = int((self.real + other.real).eval())
+            sum_imag = int((self.imag + other.imag).eval())
+
+        return GaussInteger(sum_real, sum_imag)
