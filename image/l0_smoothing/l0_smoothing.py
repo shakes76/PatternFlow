@@ -38,14 +38,14 @@ def _circulant2_dy(xs: tf.Tensor, dir: int) -> tf.Tensor:
     return shift - xs
 
 
-def l0_gradient_smoothing(image, lmd: float=0.01, beta_max: int=10000, beta_rate: float=2., max_iterations: int=30) -> tf.Tensor:
+def l0_gradient_smoothing(image, smoothing_factor: float=0.01, beta_max: int=10000, beta_rate: float=2., max_iterations: int=30) -> tf.Tensor:
     """
     Performs l0 gradient smoothing on the given input data.
 
     :param image: Input image or data where the last dimension corresponds to the channels.
                   An arbitrary number of channels is supported.
                   Input should be in the range [0, 1].
-    :param lmd: The smoothing parameter
+    :param smoothing_factor: Increasing this value will make the result smoother
     :param beta_max: Termination parameter
     :param beta_rate: The rate at which to grow beta
     :param max_iterations: The maximum number of iterations
@@ -77,11 +77,11 @@ def l0_gradient_smoothing(image, lmd: float=0.01, beta_max: int=10000, beta_rate
 
     # Start the optimisation process
     S = tf.math.real(image)
-    beta = lmd * 2.0
+    beta = smoothing_factor * 2.0
     for i in range(max_iterations):
         # With S, solve for hp and vp
         hp, vp = _circulant2_dx(S, 1), _circulant2_dy(S, 1)
-        mask = tf.greater_equal(tf.reduce_sum(hp ** 2. + vp ** 2., axis=2), lmd/beta * tf.ones([rows, cols]))
+        mask = tf.greater_equal(tf.reduce_sum(hp ** 2. + vp ** 2., axis=2), smoothing_factor / beta * tf.ones([rows, cols]))
 
         # Set the values in hp and vp to 0 according to the mask
         mask_values = tf.cast(mask, tf.float32)
