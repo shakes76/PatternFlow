@@ -56,26 +56,29 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
              "apply this function to each color channel.")
 
     flat_image = tf.reshape(image,[-1])
-    min = tf.math.reduce_min(flat_image)
-    max = tf.math.reduce_max(flat_image)
     # For integer types, histogramming with bincount is more efficient.
     if flat_image.dtype.is_integer:
         hist, bin_centers = _bincount_histogram(flat_image, source_range)
     else:
         if source_range == 'image':
+            min = tf.math.reduce_min(flat_image)
+            max = tf.math.reduce_max(flat_image)
+            print(min.dtype)
             hist_range = [min, max]
         elif source_range == 'dtype':
             hist_range = dtype_limits(flat_image, clip_negative=False)
         else:
             ValueError('Wrong value for the `source_range` argument')
-        #hist, bin_edges = np.histogram(flat_image, bins=nbins, range=hist_range)
+       
         hist = tf.histogram_fixed_width(flat_image, hist_range, nbins=nbins)
+        min,max = hist_range
+        print(min,max)
         bin_edges = tf.linspace(min,max,nbins+1)
 
         #https://www.tensorflow.org/api_docs/python/tf/histogram_fixed_width
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.
         
-        tf.global_variables_initializer().run()
+        tf.compat.v1.global_variables_initializer()
 
     if normalize:
         hist = hist / tf.math.reduce_sum(hist)
@@ -99,29 +102,20 @@ def dtype_limits(image, clip_negative=False):
         Lower and upper intensity limits.
     """
 
-#     tf.int8: 8-bit signed integer.
-# tf.uint8: 8-bit unsigned integer.
-# tf.uint16: 16-bit unsigned integer.
-# tf.uint32: 32-bit unsigned integer.
-# tf.uint64: 64-bit unsigned integer.
-# tf.int16: 16-bit signed integer.
-# tf.int32: 32-bit signed integer.
-# tf.int64: 64-bit signed integer.
-    _integer_types = (np.byte, np.ubyte,          # 8 bits
-                  np.short, np.ushort,        # 16 bits
-                  np.intc, np.uintc,          # 16 or 32 or 64 bits
-                  np.int_, np.uint,           # 32 or 64 bits
-                  np.longlong, np.ulonglong)  # 64 bits
-    _integer_ranges = {t: (np.iinfo(t).min, np.iinfo(t).max)
+    _integer_types = (tf.int8, tf.uint8,          # 8 bits
+                  tf.int16, tf.uint16,        # 16 bits
+                  tf.int32, tf.uint32,          #32 bits
+                  tf.int64, tf.uint64)  # 64 bits
+
+    _integer_ranges = {t: (t.min, t.max)
                    for t in _integer_types}
-    dtype_range = {np.bool_: (False, True),
-               np.bool8: (False, True),
-               np.float16: (-1, 1),
-               np.float32: (-1, 1),
-               np.float64: (-1, 1)}
+    dtype_range = {tf.bool: (False, True),
+               tf.float16: (-1.0, 1.0),
+               tf.float32: (-1.0, 1.0),
+               tf.float64: (-1.0, 1.0)}
     dtype_range.update(_integer_ranges)
 
-    imin, imax = dtype_range[image.dtype.type]
+    imin, imax = dtype_range[image.dtype]
     if clip_negative:
         imin = 0
     return imin, imax
