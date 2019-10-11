@@ -208,8 +208,6 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
     # Difference between two successive mean
     delta = tf.Variable(1e-8)
     
-    
-    
     # Initial state of the chain
     gn_chain, gx_chain = [
         tf.constant(1.0)], [
