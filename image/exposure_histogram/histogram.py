@@ -1,5 +1,6 @@
-import numpy as np
+#import numpy as np
 from warnings import warn
+import tensorflow as tf
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
     """Return histogram of image.
@@ -40,30 +41,47 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
     >>> exposure.histogram(image, nbins=2)
     (array([107432, 154712]), array([ 0.25,  0.75]))
     """
+
+    
+    sess = tf.compat.v1.InteractiveSession()
+
+    image = tf.convert_to_tensor(image)
+    print(image.shape)
+    
+
     sh = image.shape
     if len(sh) == 3 and sh[-1] < 4:
         warn("This might be a color image. The histogram will be "
              "computed on the flattened image. You can instead "
              "apply this function to each color channel.")
 
-    image = image.flatten()
+    flat_image = tf.reshape(image,[-1])
+    min = tf.math.reduce_min(flat_image)
+    max = tf.math.reduce_max(flat_image)
     # For integer types, histogramming with bincount is more efficient.
-    if np.issubdtype(image.dtype, np.integer):
-        hist, bin_centers = _bincount_histogram(image, source_range)
+    if flat_image.dtype.is_integer:
+        hist, bin_centers = _bincount_histogram(flat_image, source_range)
     else:
         if source_range == 'image':
-            hist_range = None
+            hist_range = [min, max]
         elif source_range == 'dtype':
-            hist_range = dtype_limits(image, clip_negative=False)
+            hist_range = dtype_limits(flat_image, clip_negative=False)
         else:
             ValueError('Wrong value for the `source_range` argument')
-        hist, bin_edges = np.histogram(image, bins=nbins, range=hist_range)
+        #hist, bin_edges = np.histogram(flat_image, bins=nbins, range=hist_range)
+        hist = tf.histogram_fixed_width(flat_image, hist_range, nbins=nbins)
+        bin_edges = tf.linspace(min,max,nbins+1)
+
         #https://www.tensorflow.org/api_docs/python/tf/histogram_fixed_width
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.
+        
+        tf.global_variables_initializer().run()
 
     if normalize:
-        hist = hist / np.sum(hist)
-    return hist, bin_centers
+        hist = hist / tf.math.reduce_sum(hist)
+    return sess.run(hist), sess.run(bin_centers)
+
+
 
 
 def dtype_limits(image, clip_negative=False):
@@ -137,6 +155,7 @@ def _bincount_histogram(image, source_range):
         image_min, image_max = dtype_limits(image, clip_negative=False)
     image, offset = _offset_array(image, image_min, image_max)
     hist = np.bincount(image.ravel(), minlength=image_max - image_min + 1)
+    #https://www.tensorflow.org/api_docs/python/tf/math/bincount
     bin_centers = np.arange(image_min, image_max + 1)
     if source_range == 'image':
         idx = max(image_min, 0)
