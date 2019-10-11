@@ -1,4 +1,4 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
 def ir2tf(imp_resp, shape, sess, dim=None, is_real=True):
@@ -258,13 +258,17 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         precision, gn_chain[-1] * atf2 + gx_chain[-1] * areg2)
 
     update_excursion_op = tf.assign(excursion, tf.cast(tf.sqrt(0.5) / tf.sqrt(precision), tf.complex64) * (tf.cast(
-        tf.random.normal(data_spectrum.shape), tf.complex64) + 1j * tf.cast(tf.random.normal(data_spectrum.shape), tf.complex64)))
+        tf.random.normal(data_spectrum.shape), tf.complex64) + \
+        1j * tf.cast(tf.random.normal(data_spectrum.shape), tf.complex64)))
 
     update_wiener_filter_op = tf.assign(wiener_filter, tf.cast(
         gn_chain[-1], tf.complex64) * tf.math.conj(trans_fct) / tf.cast(precision, tf.complex64))
 
     update_x_sample_op = tf.assign(
         x_sample, wiener_filter * data_spectrum + excursion)
+
+    update_x_postmean_op = tf.assign(
+                x_postmean, prev_x_postmean + x_sample)
 
     update_group = tf.group(
         [update_precision_op, update_excursion_op, update_wiener_filter_op, update_x_sample_op])
@@ -293,8 +297,6 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
 
         # current empirical average
         if iteration > params['burnin']:
-            update_x_postmean_op = tf.assign(
-                x_postmean, prev_x_postmean + x_sample)
             sess.run(update_x_postmean_op)
 
         if iteration > (params['burnin'] + 1):
@@ -305,9 +307,9 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
             sess.run(update_delta_op)
 
         sess.run(update_prev_x_postmean_op)
-        result = sess.run(bool_op)
+        result_is_found = sess.run(bool_op)
         # stop of the algorithm
-        if (iteration > params['min_iter']) and result:
+        if (iteration > params['min_iter']) and result_is_found:
             break
 
     # Empirical average \approx POSTMEAN Eq. 44
@@ -316,5 +318,7 @@ def unsupervised_wiener(image, psf, reg=None, user_params=None, is_real=True,
         x_postmean = tf.signal.irfft2d(x_postmean)
     else:
         x_postmean = tf.signal.ifft2d(x_postmean)
-
-    return (x_postmean.eval(), {'noise': gn_chain, 'prior': gx_chain})
+    x_postmean = x_postmean.eval()
+    sess.close()
+    
+    return (x_postmean, {'noise': gn_chain, 'prior': gx_chain})
