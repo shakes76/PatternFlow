@@ -7,7 +7,8 @@ import numpy as np
 
 
 if __name__ == "__main__":
-    image = img_as_float(data.camera())
+    #image = img_as_float(data.camera())
+    image = data.camera()
     # print(image.shape)
 
     ##ORIGINAL IMAGE

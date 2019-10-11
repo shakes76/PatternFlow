@@ -1,4 +1,4 @@
-#import numpy as np
+import numpy as np
 from warnings import warn
 import tensorflow as tf
 
@@ -47,9 +47,11 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
 
     image = tf.convert_to_tensor(image)
     print(image.shape)
+    print(image.dtype)
     
 
     sh = image.shape
+
     if len(sh) == 3 and sh[-1] < 4:
         warn("This might be a color image. The histogram will be "
              "computed on the flattened image. You can instead "
@@ -63,7 +65,6 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         if source_range == 'image':
             min = tf.math.reduce_min(flat_image)
             max = tf.math.reduce_max(flat_image)
-            print(min.dtype)
             hist_range = [min, max]
         elif source_range == 'dtype':
             hist_range = dtype_limits(flat_image, clip_negative=False)
@@ -72,7 +73,6 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
        
         hist = tf.histogram_fixed_width(flat_image, hist_range, nbins=nbins)
         min,max = hist_range
-        print(min,max)
         bin_edges = tf.linspace(min,max,nbins+1)
 
         #https://www.tensorflow.org/api_docs/python/tf/histogram_fixed_width
@@ -140,36 +140,60 @@ def _bincount_histogram(image, source_range):
     bin_centers : array
         The values at the center of the bins.
     """
+
+  
+
     if source_range not in ['image', 'dtype']:
         raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
     if source_range == 'image':
-        image_min = np.min(image).astype(np.int64)
-        image_max = np.max(image).astype(np.int64)
+        image_min = tf.math.reduce_min(image)
+        image_max = tf.math.reduce_max(image)
+
     elif source_range == 'dtype':
         image_min, image_max = dtype_limits(image, clip_negative=False)
-    image, offset = _offset_array(image, image_min, image_max)
-    hist = np.bincount(image.ravel(), minlength=image_max - image_min + 1)
+
+    min = tf.dtypes.cast(image_min, tf.int32)
+    max = tf.dtypes.cast(image_max, tf.int32)
+    image_to_int = tf.dtypes.cast(image, tf.int32)
+    image_2 = _offset_array(image_to_int, min, max)
+    flat_image = tf.reshape(image_2,[-1])
+    
+
+    
+    leng = tf.math.subtract(max,min)
+    
+    hist = tf.math.bincount(image_to_int, minlength=leng + 1)
     #https://www.tensorflow.org/api_docs/python/tf/math/bincount
-    bin_centers = np.arange(image_min, image_max + 1)
+    
+    tf.compat.v1.global_variables_initializer()
+    bin_centers = tf.range(min, max + 1)
+
+    
     if source_range == 'image':
-        idx = max(image_min, 0)
+        idx = tf.math.maximum(min, 0)
         hist = hist[idx:]
     return hist, bin_centers
 
 def _offset_array(arr, low_boundary, high_boundary):
 
+
     """Offset the array to get the lowest value at 0 if negative.
     """
-    if low_boundary < 0:
+    def true_cond(arr,low_boundary,high_boundary):
         offset = low_boundary
-        dyn_range = high_boundary - low_boundary
-        # get smallest dtype that can hold both minimum and offset maximum
-        offset_dtype = np.promote_types(np.min_scalar_type(dyn_range),
-                                        np.min_scalar_type(low_boundary))
-        if arr.dtype != offset_dtype:
-            # prevent overflow errors when offsetting
-            arr = arr.astype(offset_dtype)
-        arr = arr - offset
-    else:
-        offset = 0
-    return arr, offset
+        # dyn_range = high_boundary - low_boundary
+        # # get smallest dtype that can hold both minimum and offset maximum
+        # offset_dtype = np.promote_types(np.min_scalar_type(dyn_range),
+        #                                 np.min_scalar_type(low_boundary))
+        # if arr.dtype != offset_dtype:
+        #     # prevent overflow errors when offsetting
+        #     arr = arr.astype(offset_dtype)
+        s_arr = tf.math.subtract(arr,offset)
+        return s_arr
+    def false_cond(arr):
+        offset = tf.constant([0])
+        return arr
+
+    res = tf.cond(low_boundary < 0,lambda: true_cond(arr,low_boundary,high_boundary),lambda: false_cond(arr))
+
+    return res
