@@ -29,6 +29,141 @@ def body(a,b):
     b = tep
     return a, b
 
+a1 = tf.constant(2040)
+b2 = tf.constant(1071)
+h = gcd(a1,b2)
+
+
+print (h.eval())
+
+def xgcd(a,b):
+    """xgcd(a,b) returns a tuple of form (g,x,y), where g is gcd(a,b) and
+    x,y satisfy the equation g = ax + by."""
+    a1=1; b1=0; a2=0; b2=1; aneg=1; bneg=1; flag=1
+    a, aneg = tf.cond(tf.less(a, 0),true_fn= lambda: (tf.math.negative(a), -1), false_fn=lambda:(a, aneg))
+    b, bneg = tf.cond(tf.less(b, 0),true_fn=lambda: (tf.math.negative(b), -1), false_fn=lambda:(b, bneg))
+    
+    a,b,a1,b1,a2,b2,aneg,bneg,flag = tf.while_loop(
+        lambda a,b,a1,b1,a2,b2,aneg,bneg,flag: tf.greater(flag,0),
+        body_1,
+        [a,b,a1,b1,a2,b2,aneg,bneg,flag]
+    )
+    res1, res2, res3 = tf.cond(
+        tf.math.equal(a, 0),
+        true_fn = lambda: (tf.identity(b), tf.math.multiply(a2,aneg), tf.math.multiply(b2,bneg)),
+        false_fn = lambda: (tf.identity(a), tf.math.multiply(a1,aneg), tf.math.multiply(b1,bneg))
+    )
+    return res1, res2, res3
+
+def body_1(a,b,a1,b1,a2,b2,aneg,bneg,flag): 
+    quot = tf.math.negative(tf.math.floordiv(a,b))
+    a = tf.math.floormod(a, b)
+    a1 = tf.math.add(a1, tf.math.multiply(quot,a2))
+    b1 = tf.math.add(b1, tf.math.multiply(quot,b2))
+    a,b,a1,b1,a2,b2,aneg,bneg,flag = tf.cond(
+        tf.math.equal(a, 0),
+        true_fn = lambda:(a,b,a1,b1,a2,b2,aneg,bneg,0),
+        false_fn = lambda:(a,b,a1,b1,a2,b2,aneg,bneg,flag)
+    )
+    a,b,a1,b1,a2,b2,aneg,bneg,flag = tf.cond(
+        tf.math.not_equal(a,0),
+        true_fn = lambda: body_2(a,b,a1,b1,a2,b2,aneg,bneg,flag),
+        false_fn = lambda:(a,b,a1,b1,a2,b2,aneg,bneg,flag)
+    )
+    return a,b,a1,b1,a2,b2,aneg,bneg,flag
+    
+def body_2(a,b,a1,b1,a2,b2,aneg,bneg,flag):
+    quot = tf.math.negative(tf.math.floordiv(b,a))
+    b = tf.math.floormod(b, a)
+    a2 = tf.math.add(a2, tf.math.multiply(quot,a1))
+    b2 = tf.math.add(b2, tf.math.multiply(quot,b1))
+    a,b,a1,b1,a2,b2,aneg,bneg,flag = tf.cond(
+        tf.math.equal(b, 0),
+        true_fn = lambda:(a,b,a1,b1,a2,b2,aneg,bneg,0),
+        false_fn = lambda:(a,b,a1,b1,a2,b2,aneg,bneg,flag)
+    )
+    return a,b,a1,b1,a2,b2,aneg,bneg,flag
+
+a1 = tf.constant(65)
+b2 = tf.constant(78)
+a1 = tf.constant(4)
+b2 = tf.constant(2)
+h,v,f = xgcd(a1,b2)
+print(h.eval(),v.eval(),f.eval())
+
+l = tf.bitwise.right_shift(3,1)
+print(l.eval())
+p = ((4>>1) & 1)
+print(p)
+j = tf.bitwise.bitwise_and(2,9)
+print(j.eval())
+
+def power_mod(b,e,n):
+    accum,i,bpow2 = tf.cond(
+        tf.math.less(e,0),
+        true_fn = lambda: (inverse_mod(b, n), tf.math.negative(e), n),
+        false_fn = lambda: con_body(b,e,n)
+    )
+    return accum
+
+def con_body(b,e,n):
+    accum = 1; i = 0; bpow2 = b
+    b,e,n,accum,i,bpow2 = tf.while_loop(
+        lambda b,e,n,accum,i,bpow2: tf.greater(tf.bitwise.right_shift(e,i),0),
+        while_body_,
+        [b,e,n,accum,i,bpow2]
+    )
+    return accum,i,bpow2
+
+def while_body_(b,e,n,accum,i,bpow2):
+    b,e,n,accum,i,bpow2 = tf.cond(
+        tf.math.equal(tf.bitwise.bitwise_and(tf.bitwise.right_shift(e,i),1),1),
+        true_fn = lambda: con_body_1(b,e,n,accum,i,bpow2),
+        false_fn = lambda: (b,e,n,accum,i,bpow2)
+    )
+    bpow2 = tf.math.floormod(tf.math.multiply(bpow2,bpow2),n)
+    i = tf.math.add(i,1)
+    return b,e,n,accum,i,bpow2
+
+def con_body_1(b,e,n,accum,i,bpow2):
+    accum = tf.math.floormod(tf.math.multiply(accum,bpow2),n)
+    return b,e,n,accum,i,bpow2
+
+def inverse_mod(a,n):
+    (g,xa,xb) = xgcd(a,n)
+    result = tf.cond(
+        tf.math.not_equal(g,1),
+        true_fn = lambda: -1,
+        false_fn = lambda: tf.math.floormod(xa,n)
+    )
+    return result
+
+a = inverse_mod(4,7)
+print(a.eval())
+
+print(power_mod(4,3,2).eval())
+print(power_mod(4,7,9).eval())
+
+print(power_mod(1,6,4).eval())
+print(power_mod(9,15,3).eval())
+
+def is_prime(n):
+    pass
+
+def factor(n):
+    n = tf.math.abs(n)
+    tf.cond(
+        tf.math.logical_or(tf.math.equal(n,1), tf.math.equal(n,0)),
+        lambda: n, #ValueError,
+        lambda: cond_body_()
+    )
+
+def cond_body_():
+    factspow = tf.stack()
+    pass
+
+k = tf.math.logical_not(True)
+print(k.eval())
 
 ################ Internally used functions #########################################
 
@@ -41,34 +176,59 @@ def isprimeF(n,b):
     return tf.math.equal(num,1)
 
 def isprimeE(n,b):
-    return tf.cond(isprimeF(n,b), lambda: tf.math.equal(1,1), lambda: cond_body_1(n,b))
-
-print(isprimeE(2,3).eval())
-
-def cond_body_1(n,b):
-    r = tf.math.subtract(n,1)
-    r = tf.while_loop(lambda r: tf.math.equal(tf.math.floormod(r,2), 0),lambda r:tf.math.floordiv(r,2),[r])
-    c = tf.math.floormod(tf.math.pow(b, n-1),n)
-    result = tf.cond(tf.math.equal(c, 1), lambda: tf.math.equal(1,1), lambda: cond_body_2(c,n))
-    
-    print(result)
+    result = 1; flag = 1; c = 0
+    print(tf.math.logical_not(isprimeF(n,b)).eval())
+    n,b,c,result,flag =  tf.cond(tf.math.logical_not(isprimeF(n,b)), lambda:(6,b,c,0,flag), lambda:(n,5,c,0,flag))
+    print(tf.math.logical_not(isprimeF(n,b)).eval())
+    print(n.eval())
+    print(b.eval())
+    print(c.eval())
+    print(result.eval())
+    print("flag",flag.eval())
     return result
 
-print(cond_body_1(55,5).eval())
 
-def while_cond(c,n):
-    def cond_body_2(c,n):
-        re = tf.cond(
-            tf.math.equal(c,1),
-            lambda: tf.math.equal(1,0),
-            lambda: cond_body_3(c,n)
-            )
-        return re
-    def cond_body_3(c,n):
-        re = tf.cond(
-            tf.math.equal(c,n-1),
-            lambda: tf.math.equal(1,1),
-            lambda: tf.math.floormod(tf.math.pow(c, 2),n)
-            )
-        return re
-print(cond_body_2(1,1).eval())
+def cond_body(n,b,c,result,flag):
+    print("here")
+    r = tf.math.subtract(n,1)
+    r = tf.while_loop(lambda r: tf.math.equal(tf.math.floormod(r,2), 0),lambda r:tf.math.floordiv(r,2),[r])
+    c = tf.math.floormod(tf.math.pow(b, r),n)
+    n,b,c,result,flag = tf.cond(
+        tf.math.equal(c, 1), 
+        true_fn = lambda:(n,b,c,1,flag), 
+        false_fn = lambda: while_loop(n,b,c,result,flag)
+        )
+    return n,b,c,result,flag
+
+def while_loop(n,b,c,result,flag):
+    print("-------")
+    n,b,c,result,flag = tf.while_loop(
+        lambda n,b,c,result,flag: tf.greater(flag,0),
+        while_body,
+        [n,b,c,result,flag]
+    )
+    print('33333333')
+    return n,b,c,result,flag
+
+def while_body(n,b,c,result,flag):
+    print("fffffff")
+    n,b,c,result,flag = tf.cond(
+        tf.math.equal(c,1),
+        true_fn = lambda: (n,b,c,0,0),
+        false_fn = lambda: while_body_1(n,b,c,result,flag)
+        )
+    print("lllllll")
+    return n,b,c,result,flag
+
+def while_body_1(n,b,c,result,flag):
+    print("pppppp")
+    n,b,c,result,flag = tf.cond(
+        tf.math.equal(c,n-1),
+        true_fn = lambda: (n,b,c,1,0),
+        false_fn = lambda: (n,b,(tf.math.floormod(tf.math.pow(c, 2),n)),result,flag)
+        )
+    print("999999999")
+    return n,b,c,result,flag
+
+a = isprimeE(25,32)
+print(a.eval())
