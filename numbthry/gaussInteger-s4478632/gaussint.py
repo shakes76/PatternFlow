@@ -45,6 +45,9 @@ class GaussInteger():
                         self.imag.eval() == other.imag.eval())[0]
 
     def __ne__(self, other):
+        """
+        Returns the negation of the __eq__ method.
+        """
         return not self.__eq__(other)
 
     def getNum(self):
