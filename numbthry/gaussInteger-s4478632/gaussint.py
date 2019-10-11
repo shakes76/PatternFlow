@@ -17,6 +17,12 @@ class GaussInteger():
         self.imag = tf.dtypes.cast(tf.constant([imag]), tf.float32)
         self.num = tf.complex(self.real, self.imag)
 
+    def __str__(self):
+        """
+        Return a string representation of the number.
+        """
+        return str(self.getNum())[1:-1]
+
     def getNum(self):
         """
         Returns the complex number as a python complex type.
