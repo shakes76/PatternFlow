@@ -67,26 +67,54 @@ def _bincount_histogram(image, source_range):
 
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
+    """Return histogram of image.
+    Unlike `numpy.histogram`, this function returns the centers of bins and
+    does not rebin integer arrays. For integer arrays, each integer value has
+    its own bin, which improves speed and intensity-resolution.
+    The histogram is computed on the flattened image: for color images, the
+    function should be used separately on each channel to obtain a histogram
+    for each color channel.
+    Parameters
+    ----------
+    image : array
+        Input image.
+    nbins : int, optional
+        Number of bins used to calculate histogram. This value is ignored for
+        integer arrays.
+    source_range : string, optional
+        'image' (default) determines the range from the input image.
+        'dtype' determines the range from the expected range of the images
+        of that data type.
+    normalize : bool, optional
+        If True, normalize the histogram by the sum of its values.
+    Returns
+    -------
+    hist : array
+        The values of the histogram.
+    bin_centers : array
+        The values at the center of the bins.
+    """
     sh = image.shape
     if len(sh) == 3 and sh[-1] < 4:
+        # This function doesn't directly return the histograms for colored images
         warn("This might be a color image. The histogram will be "
              "computed on the flattened image. You can instead "
              "apply this function to each color channel.")
-
+    # The image dtype has already been converted as tf.int32 in the main.py file
     image = image.flatten()
-    # For integer types, histogramming with bincount is more efficient.
-    if np.issubdtype(image.dtype, np.integer):
-        hist, bin_centers = _bincount_histogram(image, source_range)
+    if source_range == 'image':
+        hist_range = None
+    elif source_range == 'dtype':
+        hist_range = dtype_limits(image, clip_negative=False)
     else:
-        if source_range == 'image':
-            hist_range = None
-        elif source_range == 'dtype':
-            hist_range = dtype_limits(image, clip_negative=False)
-        else:
-            ValueError('Wrong value for the `source_range` argument')
-        hist, bin_edges = np.histogram(image, bins=nbins, range=hist_range)
-        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.
+        ValueError('Wrong value for the `source_range` argument')
+    hist, bin_centers = _bincount_histogram(image, source_range)
 
     if normalize:
-        hist = hist / np.sum(hist)
+        # Use tf.reduce_sum to represent numpy.sum()
+        hist_sum = tf.reduce_sum(hist)
+        with tf.Session() as sess:
+            hist = sess.run(hist_sum)
+        hist = hist / hist_sum
+        
     return hist, bin_centers
