@@ -1,24 +1,56 @@
 import tensorflow as tf
 
-tf.compat.v1.enable_eager_execution()
+tf.compat.v1.enable_eager_execution() # Make eager execution available
 
+# Function1 -- unique_inverse
 def unique_inverse(image):
+    """
+    Find the indices of the unique tensor that reconstruct the input image.
+
+    Parameters
+    ----------
+    image : tensor
+            Input a tesnor(image) which has already be flatten(1-D)
+
+    Returns
+    -------
+    inv_idx: tensor
+           The indices to reconstruct the original value from the
+        unique value of image(tensor).
+
+    Examples
+    --------
+    >>> A = [1,4,5,5,2,10,2,3,4,3,9]
+    >>> A = tf.convert_to_tensor(A)
+    >>> print(unique_inverse(A))
+    tf.Tensor([0 3 4 4 1 6 1 2 3 2 5], shape=(11,), dtype=int32)
+    """
+    
+    # convert data type to tf.int32 (tf.uint8(Most common) --> tf.int32)
     image = tf.cast(image,dtype = tf.int32)
+    # Sort the values in tensor and return index
     perm = tf.argsort(image)
-    C = perm.numpy()
-    b = image.numpy()
-    aux = b[C]
+    # get the value of tensor
+    perm = perm.numpy()
+    image = image.numpy()
+    #array operation
+    aux = image[perm]
+    #create a zero tensor
     mask = tf.zeros(aux.shape, dtype=tf.bool)
     mask = mask.numpy()
     mask[:1] = True
     mask[1:] = aux[1:] != aux[:-1]
+    # dtype convert to tf.int32
     k = tf.cast(mask,dtype = tf.int32)
+    # Compute the cumulative sum of the tensor
     imask = tf.cumsum(k) - 1
     inv_idx = tf.zeros(mask.shape, dtype=tf.int32)
     inv_idx = inv_idx.numpy()
-    inv_idx[C] = imask
+    inv_idx[perm] = imask
+    # reconvert to tensor to return 
     inv_idx = tf.convert_to_tensor(inv_idx)
     return inv_idx
+   
 
 def _interpolate( dx_T, dy_T, x, name='interpolate' ):
     
