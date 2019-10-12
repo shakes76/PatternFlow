@@ -13,22 +13,58 @@ def _offset_array(arr, low_boundary, high_boundary):
         offset = 0
     return arr, offset
 
-    
+
 def _bincount_histogram(image, source_range):
+    """
+    Efficient histogram calculation for an image of integers.
+    This function is significantly more efficient than np.histogram but
+    works only on images of integers. It is based on np.bincount.
+    Parameters
+    ----------
+    image : array
+        Input image.
+    source_range : string
+        'image' determines the range from the input image.
+        'dtype' determines the range from the expected range of the images
+        of that data type.
+    Returns
+    -------
+    hist : array
+        The values of the histogram.
+    bin_centers : array
+        The values at the center of the bins.
+    """
     if source_range not in ['image', 'dtype']:
         raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
     if source_range == 'image':
-        image_min = np.min(image).astype(np.int64)
-        image_max = np.max(image).astype(np.int64)
-    elif source_range == 'dtype':
-        image_min, image_max = dtype_limits(image, clip_negative=False)
-    image, offset = _offset_array(image, image_min, image_max)
-    hist = np.bincount(image.ravel(), minlength=image_max - image_min + 1)
-    bin_centers = np.arange(image_min, image_max + 1)
+        image_min = tf.reduce_min(image)
+        image_max = tf.reduce_max(image)
+        with tf.Session() as sess:
+            image_min = sess.run(image_min)
+            image_max = sess.run(image_max)
+#     elif source_range == 'dtype':
+#         image_min, image_max = dtype_limits(image, clip_negative=False)
+    image, offset = _offset_array(image, image_min, image_max)#image has already been offset at this moment
+    values = tf.constant(image.ravel())
+    with tf.Session() as sess:
+        values = sess.run(values)
+    hist = tf.math.bincount(values) 
+    with tf.Session() as sess:
+        hist = sess.run(hist)
+#     hist = np.bincount(image.ravel(), minlength=image_max - image_min + 1)
+#     bin_centers = np.arange(image_min, image_max + 1)
+    start = int(image_min)
+    limit = int(image_max+1)
+    delta = 1
+    # use tf.range() to represent np.arange()
+    bin_centers = tf.range(start, limit, delta) 
+    with tf.Session() as sess:
+        bin_centers = sess.run(bin_centers)
     if source_range == 'image':
         idx = max(image_min, 0)
         hist = hist[idx:]
     return hist, bin_centers
+
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
     sh = image.shape
