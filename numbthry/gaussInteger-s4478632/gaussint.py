@@ -84,13 +84,18 @@ class GaussInteger():
         """
         Adds two instances of this class together.
         """
-        if type(other) is not GaussInteger:
+        if type(other) is not GaussInteger and type(other) is not int:
             raise TypeError("Operand must be int or GaussInteger")
+
+        if type(other) is GaussInteger:        
+            with tf.Session() as sess:
+                sum_re = int((self.re + other.re).eval())
+                sum_im = int((self.im + other.im).eval())
+            return GaussInteger(sum_re, sum_im)
         
         with tf.Session() as sess:
-            sum_re = int((self.re + other.re).eval())
-            sum_im = int((self.im + other.im).eval())
-
+            sum_re = int(self.re.eval() + other)
+            sum_im = int(self.im.eval())
         return GaussInteger(sum_re, sum_im)
 
     def __add__(self, other):
@@ -142,5 +147,3 @@ class GaussInteger():
         """
         self = self - other
         return self
-
-    
