@@ -82,7 +82,7 @@ class GaussInteger():
 
     def add(self, other):
         """
-        Adds two instances of this class together.
+        Adds two instances of this class together (or an int).
         """
         if type(other) is not GaussInteger and type(other) is not int:
             raise TypeError("Operand must be int or GaussInteger")
@@ -147,3 +147,46 @@ class GaussInteger():
         """
         self = self - other
         return self
+
+    def mul(self, other):
+        """
+        Multiplies two instances of this class together.
+        """
+        if type(other) is not GaussInteger:
+            raise TypeError("Operand must be GaussInteger")
+        
+        with tf.Session() as sess:
+            sum_re = int((self.re * other.re).eval())
+            sum_im = int((self.im * other.im).eval())
+        return GaussInteger(sum_re, sum_im)
+
+    def __mul__(self, other):
+        """
+        Overload the "*" operator.
+        """
+        if type(other) is int:
+            with tf.Session() as sess:
+                real = int(self.re.eval() * other)
+                imag = int(self.im.eval() * other)
+                return GaussInteger(real, imag)
+        return self.mul(other)
+
+    def __rmul__(self, other):
+        """
+        Overload the "*" operator.
+        """
+        if type(other) is int:
+            with tf.Session() as sess:
+                real = int(self.re.eval() * other)
+                imag = int(self.im.eval() * other)
+                return GaussInteger(real, imag)
+        return self.mul(other)
+
+    def __imul__(self, other):
+        """
+        Overloads the "*=" operator.
+        """
+        self = self * other
+        return self
+
+    
