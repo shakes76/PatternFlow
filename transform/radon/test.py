@@ -27,9 +27,9 @@ def main(arglist):
         return
     
     # tensorflow eager execution setting
-    tf.compat.v1.disable_eager_execution()
-    sess = tf.compat.v1.Session()
-    #tf.executing_eagerly()
+    #tf.compat.v1.disable_eager_execution()
+    #sess = tf.compat.v1.Session()
+    tf.executing_eagerly()
     
     # read image and convert to tensor
     image = imread(file_name, as_gray = True)
@@ -38,7 +38,7 @@ def main(arglist):
     # calculate radon transforms
     start = time.time()
     transformed = radon.radon(tensorimage, list(range(start_angle, end_angle)), circle)
-    transformed = transformed.eval(session=sess)
+    #transformed = transformed.eval(session=sess)
     end = time.time()
     port_runtime = end - start
     
@@ -54,10 +54,13 @@ def main(arglist):
     # plot images
     plt.subplot(1, 3, 1)
     plt.imshow(image)
+    plt.title("Original Image")
     plt.subplot(1, 3, 2)
     plt.imshow(transformed)
+    plt.title("Port Radon Transform")
     plt.subplot(1, 3, 3)
     plt.imshow(check)
+    plt.title("Original Radon Transform")
     plt.show()
 
 if __name__ == '__main__':
