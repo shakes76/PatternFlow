@@ -156,9 +156,9 @@ class GaussInteger():
             raise TypeError("Operand must be GaussInteger")
         
         with tf.Session() as sess:
-            sum_re = int((self.re * other.re).eval())
-            sum_im = int((self.im * other.im).eval())
-        return GaussInteger(sum_re, sum_im)
+            re = int((self.re * other.re).eval() - (self.im * other.im).eval())
+            im = int((self.im * other.re).eval() + (self.re * other.im).eval())
+        return GaussInteger(re, im)
 
     def __mul__(self, other):
         """
@@ -175,12 +175,7 @@ class GaussInteger():
         """
         Overload the "*" operator.
         """
-        if type(other) is int:
-            with tf.Session() as sess:
-                real = int(self.re.eval() * other)
-                imag = int(self.im.eval() * other)
-                return GaussInteger(real, imag)
-        return self.mul(other)
+        return self.__mul__(other)
 
     def __imul__(self, other):
         """
@@ -257,8 +252,48 @@ class GaussInteger():
         """
         Returns a tuple of (divisor, remainder).
         """
-        quotient = (self // other).getNum()
-        remainder = (self.mod(other)).getNum()
+        quotient = (self // other)
+        remainder = (self.mod(other))
         return quotient, remainder
 
-    
+    def gcd(self, other):
+        """
+        Calculates the gcd of two gaussian integers.
+        """
+        if self.norm().real < other.norm().real:
+            return other.gcd(self)
+
+        while True:
+            if other.norm() == 0:
+                break
+            q, r = self.divmod(other)
+            self, other = other, r
+        
+        return self
+
+    def __pos__(self):
+        return self
+
+    def xgcd(self, other):
+        """
+        Performs the extended euclidean algorithm on the input.
+        """
+        a1 = GaussInteger(1, 0)
+        b1 = GaussInteger(0, 0)
+        a2 = GaussInteger(0, 0)
+        b2 = GaussInteger(1, 0)
+
+        a = self
+        b = other
+
+        if b.norm().real > a.norm().real:
+            a, b = b, a
+            a1, b1, a2, b2 = a2, b2, a1, b1
+
+        while a.norm().real != 0:
+            q, r = b // a, b % a
+            m, n = b1 - a1 * q, b2 - a2 * q
+            b, a, b1, b2, a1, a2 = a, r, a1, a2, m, n
+
+        return b, b1, b2
+            
