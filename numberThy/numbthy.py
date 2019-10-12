@@ -11,6 +11,8 @@ import tensorflow as tf
 sess = tf.InteractiveSession()
 tf.global_variables_initializer()
 
+####################-- gcd function --################
+
 def gcd(a,b):
     '''gcd(a,b) return the greatest common divisor 
     of tensor constant a and b.'''
@@ -35,6 +37,8 @@ h = gcd(a1,b2)
 
 
 print (h.eval())
+
+####################-- xgcd function --################
 
 def xgcd(a,b):
     """xgcd(a,b) returns a tuple of form (g,x,y), where g is gcd(a,b) and
@@ -98,6 +102,8 @@ print(p)
 j = tf.bitwise.bitwise_and(2,9)
 print(j.eval())
 
+####################-- power_mod function --################
+
 def power_mod(b,e,n):
     accum,i,bpow2 = tf.cond(
         tf.math.less(e,0),
@@ -129,6 +135,8 @@ def con_body_1(b,e,n,accum,i,bpow2):
     accum = tf.math.floormod(tf.math.multiply(accum,bpow2),n)
     return b,e,n,accum,i,bpow2
 
+####################-- inverse_mod function --################
+
 def inverse_mod(a,n):
     (g,xa,xb) = xgcd(a,n)
     result = tf.cond(
@@ -147,8 +155,36 @@ print(power_mod(4,7,9).eval())
 print(power_mod(1,6,4).eval())
 print(power_mod(9,15,3).eval())
 
+####################-- is_prime function --################
+
 def is_prime(n):
-    pass
+    result = 1; 
+    n = tf.cond(tf.math.less(n,0), lambda:tf.math.negative(n), lambda: n)
+    result = tf.cond(
+        tf.math.less(n,2), 
+        lambda: tf.math.subtract(result,1), 
+        lambda :is_prime_cond_body(n)
+        )
+    result = tf.math.equal(result, 1)
+    return result
+
+def is_prime_cond_body(n):
+    check_list = tf.math.equal(n,(2,3,5,7,11,13,17,19,23,29))
+    has_true, id_check_list = tf.unique(check_list)
+    size = tf.size(has_true)
+    result = tf.cond(tf.math.equal(size,2), lambda: 1, lambda: check_isprimeE(n))
+    return result
+    
+def check_isprimeE(n):
+    result = tf.logical_and(tf.logical_and(isprimeE(n,2), isprimeE(n,3)),isprimeE(n,5))
+    result = tf.cond(tf.math.equal(result, True),lambda:1, lambda:0)
+    return result
+
+print(is_prime(2).eval())
+print(is_prime(15).eval())
+print(is_prime(27).eval())
+
+####################-- factor function --################
 
 def factor(n):
     n = tf.math.abs(n)
@@ -160,12 +196,11 @@ def factor(n):
 
 def cond_body_():
     factspow = tf.stack()
-    pass
-
-k = tf.math.logical_not(True)
-print(k.eval())
+    currfact = None
 
 ################ Internally used functions #########################################
+
+####################-- isprimeF function --################
 
 def isprimeF(n,b):
     """
@@ -175,23 +210,28 @@ def isprimeF(n,b):
     num = tf.math.floormod(tf.math.pow(b, n-1),n)
     return tf.math.equal(num,1)
 
+a = isprimeF(25,3)
+print(a.eval())
+l = isprimeF(3,4)
+print(l.eval())
+
+####################-- isprimeE function --################
+
 def isprimeE(n,b):
     result = 1; flag = 1; c = 0
-    print(tf.math.logical_not(isprimeF(n,b)).eval())
-    n,b,c,result,flag =  tf.cond(tf.math.logical_not(isprimeF(n,b)), lambda:(6,b,c,0,flag), lambda:(n,5,c,0,flag))
-    print(tf.math.logical_not(isprimeF(n,b)).eval())
-    print(n.eval())
-    print(b.eval())
-    print(c.eval())
-    print(result.eval())
-    print("flag",flag.eval())
+    n,b,c,result,flag =  tf.cond(
+        tf.math.logical_not(isprimeF(n,b)), 
+        lambda:(n,b,c,0,flag), 
+        lambda:cond_body(n,b,c,result,flag)
+        )
+    result = tf.math.equal(result, 1)
     return result
 
-
 def cond_body(n,b,c,result,flag):
-    print("here")
     r = tf.math.subtract(n,1)
-    r = tf.while_loop(lambda r: tf.math.equal(tf.math.floormod(r,2), 0),lambda r:tf.math.floordiv(r,2),[r])
+    r = tf.while_loop(lambda r: tf.math.equal(tf.math.floormod(r,2), 0),
+                      lambda r:tf.math.floordiv(r,2),
+                      [r])
     c = tf.math.floormod(tf.math.pow(b, r),n)
     n,b,c,result,flag = tf.cond(
         tf.math.equal(c, 1), 
@@ -201,34 +241,141 @@ def cond_body(n,b,c,result,flag):
     return n,b,c,result,flag
 
 def while_loop(n,b,c,result,flag):
-    print("-------")
     n,b,c,result,flag = tf.while_loop(
         lambda n,b,c,result,flag: tf.greater(flag,0),
         while_body,
         [n,b,c,result,flag]
     )
-    print('33333333')
     return n,b,c,result,flag
 
 def while_body(n,b,c,result,flag):
-    print("fffffff")
     n,b,c,result,flag = tf.cond(
         tf.math.equal(c,1),
         true_fn = lambda: (n,b,c,0,0),
         false_fn = lambda: while_body_1(n,b,c,result,flag)
         )
-    print("lllllll")
     return n,b,c,result,flag
 
 def while_body_1(n,b,c,result,flag):
-    print("pppppp")
     n,b,c,result,flag = tf.cond(
         tf.math.equal(c,n-1),
         true_fn = lambda: (n,b,c,1,0),
         false_fn = lambda: (n,b,(tf.math.floormod(tf.math.pow(c, 2),n)),result,flag)
         )
-    print("999999999")
     return n,b,c,result,flag
 
-a = isprimeE(25,32)
+a = isprimeE(25,3)
 print(a.eval())
+a = isprimeE(15,4)
+print(a.eval())
+a = isprimeE(3,4)
+print(a.eval())
+
+####################-- factorone function --################
+
+def factorone(n):
+    fact = -1
+    n, fact= tf.cond(is_prime(n), lambda:(n, n), lambda:factorone_cond_body(n,fact))
+    fact = tf.cond(tf.math.equal(0,tf.math.mod(n,fact)),lambda:fact,lambda:factorPR(n))
+    return fact
+
+def factorone_cond_body(n,fact):
+    fact_list = [2,3,5,7,11,13,17,19,23,29]
+    size = len(fact_list)
+    index = 0
+    n,fact,index,size,fact_list = tf.while_loop(
+        lambda n,fact,index,size,fact_list: tf.math.less(index,10),
+        factorone_while_body,
+        [n,fact,index,size,fact_list]
+        )
+    return n,fact
+    
+def factorone_while_body(n,fact,index,size,fact_list):
+    n,fact,index,size,fact_list = tf.cond(
+        tf.math.equal(tf.math.mod(n,tf.gather(fact_list,index)),0),
+        lambda: (n,tf.gather(fact_list,index),size,size,fact_list),
+        lambda: (n,fact,tf.math.add(index,1),size,fact_list)
+        )
+    return n,fact,index,size,fact_list
+
+print(factorone(75).eval())
+
+####################-- factors function --################
+
+def factors(n):
+    n = tf.cond(tf.math.less(n,0),lambda:tf.math.negative(n), lambda:n)
+    n = tf.cond(tf.logical_not(is_prime(n)), lambda:factors_body(n), lambda:n)
+    print("777777777777",n.eval())
+    return n
+
+def factors_body(n):
+    n = tf.cond(is_prime(n), lambda:n, lambda:n)
+    fact = factorone(n)
+    facts = tf.cond(
+        tf.math.logical_or(tf.math.equal(tf.math.abs(n),1),tf.math.equal(n,0)),
+        lambda: 9999999, #raise ValueError('Unable to factor \"{0}\"'.format(n))
+        lambda: factors_inside_body(n,fact)
+        )
+    return facts
+
+def factors_inside_body(n,fact):
+    facts = factors(tf.math.floordiv(n,fact)) + factors(fact)
+    pritn("facts", facts)
+    facts = tf.tuple(factors(tf.math.floordiv(n,fact))) + tf.tuple(factors(fact))
+    facts = tf.sort(facts)
+    return facts
+
+print(factors(2))
+
+a = tf.tuple([1,6,5])
+b = tf.tuple([9])
+c = a+b
+c = tf.sort(c)
+#print(c[0].eval())
+#print(c[1].eval())
+#print(c[2].eval())
+#print(c[3].eval())
+print(c.eval())
+
+####################-- factorPR function --################
+
+def factorPR(n):
+    numsteps = tf.math.multiply(2.,tf.math.floor(tf.math.sqrt(tf.math.sqrt(tf.dtypes.cast(n,tf.float32)))))
+    numsteps = tf.dtypes.cast(numsteps,tf.int32)
+    additive = 1; g = -1; result = 0;
+    n,numsteps,additive,g = tf.while_loop(
+        lambda n,numsteps,additive,g: tf.math.less(additive,5),
+        factorPR_while_body,
+        [n,numsteps,additive,g]
+    )
+    result = tf.cond(tf.math.equal(additive,4),lambda:1,lambda:g)
+    return result
+
+def factorPR_while_body(n,numsteps,additive,g):
+    fast=slow=1; i=1; 
+    n,numsteps,fast,slow,i,additive,g = tf.while_loop(
+        lambda n,numsteps,fast,slow,i,additive,g: tf.math.less(i,numsteps),
+        inside_while_body,
+        [n,numsteps,fast,slow,i,additive,g]
+    )
+    return n,numsteps,additive,g
+
+def inside_while_body(n,numsteps,fast,slow,i,additive,g):
+    slow = tf.math.mod(tf.math.add(tf.math.multiply(slow,slow),additive),n)
+    i = tf.math.add(i,1)
+    fast = tf.math.mod(tf.math.add(tf.math.multiply(fast,fast),additive),n)
+    fast = tf.math.mod(tf.math.add(tf.math.multiply(fast,fast),additive),n)
+    g = gcd(tf.math.subtract(fast,slow),n)
+    n,numsteps,i,additive,g = tf.cond(
+        tf.math.not_equal(g,1),
+        lambda: factorPR_if_body(n,numsteps,i,additive,g),
+        lambda: (n,numsteps,i,additive,g)
+    )
+    return n,numsteps,fast,slow,i,additive,g
+def factorPR_if_body(n,numsteps,i,additive,g):
+    n,numsteps,i,additive,g = tf.cond(tf.math.equal(g,n),
+                                              lambda:(n,numsteps,numsteps,(tf.math.add(additive,1)),g),
+                                              lambda:(n,numsteps,numsteps,5,g)
+                                              )
+    return n,numsteps,i,additive,g
+
