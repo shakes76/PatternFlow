@@ -58,13 +58,21 @@ reaches the right-bottom corner of the image.
 	
 ## Performace of evalution
 original image :
+
 ![Image of Wally](https://github.com/Lynn-Dai/PatternFlow/blob/master/image/sigmoid/Wally.jpg)
+
 adjusted image :
+
 ![Image of Adjusted_Wally](https://github.com/Lynn-Dai/PatternFlow/blob/master/image/sigmoid/adjust_wally.jpg)
+
 original grey image :
+
 ![Grey image](https://github.com/Lynn-Dai/PatternFlow/blob/master/image/sigmoid/dark_origin.jpg)
+
 adjusted grey image :
+
 ![Adjusted grey image](https://github.com/Lynn-Dai/PatternFlow/blob/master/image/sigmoid/adjust_dark.png)
+
 
 ## Conclusion
 
