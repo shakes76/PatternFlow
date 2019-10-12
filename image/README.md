@@ -1,14 +1,6 @@
-# Imaging
-Various image processing algorthms implemented for Tensorflow
+# Histogram using tensorflow
+Basically this function will help to plot a histogram for a grey image. If the image is colored and has multiple channels, the user should separate the image into different channels and then perform the function. 
+Suppose the shape of one grey image is (500, 500), the value for each pixel varies from 0 to 255, which means each pixel has 256 possibilities. The histogram function will return the distribution of each value, telling the user how the color varies in a directed way.
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
-
-## Contributing
-* Fork the dedicated 'topic-algorithms' branch
-* Create a directory for your algorithm and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save results
-* Add a README.md file as described by the report assessment
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your fractal directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+## An example of its use
+The original image: built-in image Camera
