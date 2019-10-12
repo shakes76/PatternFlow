@@ -50,9 +50,17 @@ def _interpolate( dx_T, dy_T, x, name='interpolate' ):
 
 def _match_cumulative_cdf(source, template):
     source_flatten = tf.reshape(source,[-1])
-
     template_flatten = tf.reshape(template,[-1])
-    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten)
+    #sort the tensor
+    source_flatten_sort = tf.cast(source_flatten ,dtype =tf.int32)
+    source_flatten_sort = tf.sort(source_flatten_sort)
+    template_flatten = tf.cast(template_flatten ,dtype =tf.int32)
+    template_flatten = tf.sort(template_flatten)
+
+    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten_sort)
+    #bianhua
+    src_indice = unique_inverse(source_flatten)
+    #
     tmpl_values,tmpl_unique_indices,tmpl_counts = tf.unique_with_counts(template_flatten)
     tmpl_values = tf.cast(tmpl_values,dtype=tf.float64)
     source_size = tf.size(source_flatten)
@@ -65,7 +73,7 @@ def _match_cumulative_cdf(source, template):
 
         interp_a_values.append(_interpolate(tmpl_quantiles, tmpl_values, tf.constant([i])))
     interp_a_values = tf.convert_to_tensor(interp_a_values).numpy()
-    guodu = interp_a_values[src_unique_indices]
+    guodu = interp_a_values[src_indice]
     #convert_to_tensor
     guodu = tf.convert_to_tensor(guodu)
     result = tf.reshape(guodu,tf.shape(source))
