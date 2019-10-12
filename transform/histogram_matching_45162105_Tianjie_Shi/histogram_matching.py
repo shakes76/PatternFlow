@@ -2,7 +2,23 @@ import tensorflow as tf
 
 tf.compat.v1.enable_eager_execution()
 
-
+def unique_inverse(image):
+    image = tf.cast(image,dtype = tf.int32)
+    perm = tf.argsort(image)
+    C = perm.numpy()
+    b = image.numpy()
+    aux = b[C]
+    mask = tf.zeros(aux.shape, dtype=tf.bool)
+    mask = mask.numpy()
+    mask[:1] = True
+    mask[1:] = aux[1:] != aux[:-1]
+    k = tf.cast(mask,dtype = tf.int32)
+    imask = tf.cumsum(k) - 1
+    inv_idx = tf.zeros(mask.shape, dtype=tf.int32)
+    inv_idx = inv_idx.numpy()
+    inv_idx[C] = imask
+    inv_idx = tf.convert_to_tensor(inv_idx)
+    return inv_idx
 
 def _interpolate( dx_T, dy_T, x, name='interpolate' ):
     
@@ -31,7 +47,7 @@ def _interpolate( dx_T, dy_T, x, name='interpolate' ):
         result = tf.multiply(value[0], 1, name='y')
 
     return result
-'''
+
 def _match_cumulative_cdf(source, template):
     source_flatten = tf.reshape(source,[-1])
 
@@ -46,7 +62,7 @@ def _match_cumulative_cdf(source, template):
     #interpolate
     interp_a_values = []
     for i in src_quantiles.numpy():
-        
+
         interp_a_values.append(_interpolate(tmpl_quantiles, tmpl_values, tf.constant([i])))
     interp_a_values = tf.convert_to_tensor(interp_a_values).numpy()
     guodu = interp_a_values[src_unique_indices]
@@ -79,4 +95,3 @@ def match_histograms(image, reference, multichannel=False):
         matched = _match_cumulative_cdf(image, reference)
         matched = matched/255.
     return matched
-'''
