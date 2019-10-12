@@ -23,6 +23,7 @@ Tensorflow, version 1.13.1
 
 ### Example usage
 hist = ImageHistogram(image, nbins=256, source_range='image', normalize=False)
+
 values = hist.hist
 
 ### Parameters
