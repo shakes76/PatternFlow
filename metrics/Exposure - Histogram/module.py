@@ -35,3 +35,30 @@ def tf_dtype_limits(image, clip_negative = False):
     if clip_negative:
         image_min = 0
     return image_max, image_min
+
+def _tf_bincount_histogram(image, source_range, as_tensor=False):
+    sess = tf.InteractiveSession()
+    tf_image = tf.constant(image)
+    if source_range not in ['image', 'dtype']:
+        raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
+    if source_range == 'image':
+        image_min = tf.cast(tf.math.reduce_min(tf_image), tf.int64).eval()
+        image_max = tf.cast(tf.math.reduce_max(tf_image), tf.int64).eval()
+    elif source_range == 'dtype':
+        image_min, image_max = dtype_limits(image, clip_negative=False)
+        
+    image, offset = _tf_offset_array(array=image, low_boundary=image_min, high_boundary=image_max, as_tensor=True)
+    tf_image = tf.cast(tf.reshape(tensor=tf_image, shape=[-1]), dtype=tf.int32)
+    hist = tf.bincount(arr=tf_image, minlength=image_max - image_min + 1, dtype=tf.int32)
+    bin_centers = tf.range(start=image_min, limit=image_max + 1)
+    if source_range == 'image':
+        idx = tf.maximum(image_min, 0)
+        hist = hist[idx:]
+    
+    if as_tensor:
+        sess.close()
+        return hist, bin_centers
+    else:
+        hist, bin_centers = hist.eval(), bin_centers.eval()
+        sess.close()
+        return hist, bin_centers
