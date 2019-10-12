@@ -1,4 +1,4 @@
-from histogram.py import *
+from histogram import *
 
 noisy_image = img_as_ubyte(data.camera())
 tf.dtypes.cast(noisy_image, tf.int32)
