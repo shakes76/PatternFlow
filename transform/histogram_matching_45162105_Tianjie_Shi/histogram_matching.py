@@ -3,6 +3,7 @@ import tensorflow as tf
 tf.compat.v1.enable_eager_execution()
 
 
+
 def _interpolate( dx_T, dy_T, x, name='interpolate' ):
     
     
@@ -30,7 +31,7 @@ def _interpolate( dx_T, dy_T, x, name='interpolate' ):
         result = tf.multiply(value[0], 1, name='y')
 
     return result
-
+'''
 def _match_cumulative_cdf(source, template):
     source_flatten = tf.reshape(source,[-1])
 
@@ -45,6 +46,7 @@ def _match_cumulative_cdf(source, template):
     #interpolate
     interp_a_values = []
     for i in src_quantiles.numpy():
+        
         interp_a_values.append(_interpolate(tmpl_quantiles, tmpl_values, tf.constant([i])))
     interp_a_values = tf.convert_to_tensor(interp_a_values).numpy()
     guodu = interp_a_values[src_unique_indices]
@@ -77,3 +79,4 @@ def match_histograms(image, reference, multichannel=False):
         matched = _match_cumulative_cdf(image, reference)
         matched = matched/255.
     return matched
+'''
