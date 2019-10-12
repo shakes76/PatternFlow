@@ -66,8 +66,8 @@ class GaussInteger():
 
         # Retrieve and evaluate the components.
         with tf.Session() as sess:
-            re = tf.math.re(result).eval()
-            im = tf.math.im(result).eval()
+            re = tf.math.real(result).eval()
+            im = tf.math.imag(result).eval()
 
         return GaussInteger(int(re), int(im))
 
@@ -189,4 +189,38 @@ class GaussInteger():
         self = self * other
         return self
 
-    
+    def floordiv(self, other):
+        """
+        Performs the floor division of two numbers.
+        """
+        if type(other) is not int and type(other) is not GaussInteger:
+            raise TypeError("Operand must be int or GaussInteger")
+
+        # Normal integer floor division
+        if type(other) is int:
+
+            if other == 0:
+                raise ZeroDivisionError("Denominator must be non-zero")
+            
+            with tf.Session() as sess:
+                re = int(self.re.eval() // other)
+                im = int(self.im.eval() // other)
+
+            return GaussInteger(re, im)
+
+        # GaussianInteger floor division
+        with tf.Session() as sess:
+            if other.re.eval() == 0 and other.im.eval() == 0:
+                raise ZeroDivisionError("Denominator must be non-zero")
+
+            numerator = (self * other.conjugate()).getNum()
+            denominator = int(other.norm().real)
+
+            print(numerator)
+            print(denominator)
+
+            re = numerator.real // denominator
+            im = numerator.imag // denominator
+
+            return GaussInteger(int(re), int(im))
+        
