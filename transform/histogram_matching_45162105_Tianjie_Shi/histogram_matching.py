@@ -52,24 +52,55 @@ def unique_inverse(image):
     return inv_idx
    
 
-def _interpolate( dx_T, dy_T, x, name='interpolate' ):
+# Function2 -- _interpolate
+def _interpolate( dx_T, dy_T, x, name='interpolate'):
+    """
+    One-dimensional linear interpolation.(same as numpy.interp), but only can 
+    interpolate one value each time
+
+    Parameters
+    ----------
+    dx_T: 1-D sequence of floats
+         The x-coordinates of the data points, 
+
+    dy_T: 1-D sequence of floats
+         The y-coordinates of the data points, same length as `dx_T`
     
+    x: singe value array -- such as [3]...
+    The x-coordinate at which to evaluate the interpolated value.
+
+    Returns
+    -------
+    result: float or complex (corresponding to fp) or ndarray
+        The interpolated values, same shape is equal to  1.
+
+    Examples
+    --------
+    >>> x = np.linspace(0, 2 * np.pi, 10)
+    >>> y = np.sin(x)
+    >>> o = [3]
+    >>> interpolate(x,y,o)
+    <tf.Tensor: id=432, shape=(), dtype=float64, numpy=0.13873468177796913>
+
+    """
     
     with tf.compat.v1.variable_scope(name):
-
+        
+        #create a new variable
         with tf.compat.v1.variable_scope('neighbors'):
-
+             
             delVals = tf.subtract(dx_T, x)
             ind_1   = tf.argmax(tf.sign( delVals ))
             ind_0   = ind_1 - 1
 
         with tf.compat.v1.variable_scope('calculation'):
-
+            # get the value 
             value   = tf.cond( x[0] <= dx_T[0], 
                               lambda : dy_T[:1], 
                               lambda : tf.cond( 
                                      x[0] >= dx_T[-1], 
                                      lambda : dy_T[-1:],
+
                                      lambda : (dy_T[ind_0] +                
                                                (dy_T[ind_1] - dy_T[ind_0])  
                                                *(x-dx_T[ind_0])/            
