@@ -53,3 +53,27 @@ def _match_cumulative_cdf(source, template):
     result = tf.reshape(guodu,tf.shape(source))
     return result
 
+    
+def match_histograms(image, reference, multichannel=False):
+     
+    if tf.rank(image).numpy() != tf.rank(reference).numpy():
+        raise ValueError('Image and reference must have the same number of channels.')
+    if multichannel:
+        if image.shape[-1] != reference.shape[-1]:
+            raise ValueError('Number of channels in the input image and reference '
+                             'image must match!')
+
+        
+        matched_channel = []
+    
+        for channel in range(image.shape[-1]):
+            matched_channel.append(_match_cumulative_cdf(image[..., channel], reference[..., channel]))
+            
+        matched = tf.stack([matched_channel[0],matched_channel[1],matched_channel[2]], axis=2)
+
+        matched = matched/255.
+    
+    else:
+        matched = _match_cumulative_cdf(image, reference)
+        matched = matched/255.
+    return matched
