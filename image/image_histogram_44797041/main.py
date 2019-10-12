@@ -9,6 +9,15 @@ from PIL import Image
 
 """
 Driver script for ImageHistogram module
+
+Usage:
+
+python3 main.py <image>
+OR python main.py <image>
+
+e.g python3 main.py coins.png
+
+
 """
 
 
@@ -20,7 +29,8 @@ def main(args):
 	#open image
 	fileName = args[0]
 	img = Image.open(fileName)
-	#hist = ImageHistogram(img)
+	
+	#use implemented algorithm to get histogram and plot
 	hist = ImageHistogram(img, nbins = 256, source_range = 'dtype')
 	fig, axs = plt.subplots(1,2, figsize = (15,7))
 	axs[0].set_title('Original Image')
