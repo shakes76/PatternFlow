@@ -28,6 +28,7 @@ def main(args):
 	axs[1].set_title('Image histogram values')
 	axs[1].plot(hist.hist)
 	plt.show()
+	plt.savefig('example_output.png')
 
 
 

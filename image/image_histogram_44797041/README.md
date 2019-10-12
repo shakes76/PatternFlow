@@ -10,4 +10,9 @@ based on the input parameter `source_range`. The flattened image is casted to fl
 and input into Tensorflow's histogram value and bin functions. The bin centres are then 
 computed from the bin edges. Lastly, if the `normalize` parameter is set True, then each value is  normalized by the sum of the all the values. 
 
- 
+# Example Output
+![Tensorflow output](example_output.png) 
+
+## Comparison to skimage histogram algorithm:
+![skimage output](skimage_output.png) 
+
