@@ -223,4 +223,17 @@ class GaussInteger():
             im = numerator.imag // denominator
 
             return GaussInteger(int(re), int(im))
+
+    def __floordiv__(self, other):
+        """
+        Overload the "//" operator.
+        """
+        return self.floordiv(other)
+
+    def __ifloor__(self, other):
+        """
+        Overload the //= operator.
+        """
+        self = self // other
+        return self
         
