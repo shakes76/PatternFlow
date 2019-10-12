@@ -216,9 +216,6 @@ class GaussInteger():
             numerator = (self * other.conjugate()).getNum()
             denominator = int(other.norm().real)
 
-            print(numerator)
-            print(denominator)
-
             re = numerator.real // denominator
             im = numerator.imag // denominator
 
@@ -236,5 +233,32 @@ class GaussInteger():
         """
         self = self // other
         return self
+
+    def mod(self, other):
+        """
+        Calculates the value of self % other.
+        """
+        return self - other * (self // other)
+
+    def __mod__(self, other):
+        """
+        Overloads the % operator.
+        """
+        return self.mod(other)
+
+    def __imod__(self, other):
+        """
+        Overloads the %= operator.
+        """
+        self = self % other
+        return self
+
+    def divmod(self, other):
+        """
+        Returns a tuple of (divisor, remainder).
+        """
+        quotient = (self // other).getNum()
+        remainder = (self.mod(other)).getNum()
+        return quotient, remainder
 
     
