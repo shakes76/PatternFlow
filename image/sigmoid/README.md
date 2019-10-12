@@ -2,23 +2,23 @@
 Implementation of sigmoid correction from the exposure module of Scikit-Image
 
 ## Description of algorithm
-  Known as Contrast Adjustment. This function transforms the input image pixelwise according to the equation **O = 1/(1 + exp*(gain*(cutoff - I)))** after scaling each pixel to the range 0 to 1.
+Known as Contrast Adjustment. This function transforms the input image pixelwise according to the equation **O = 1/(1 + exp*(gain*(cutoff - I)))** after scaling each pixel to the range 0 to 1.
   
-*Parameters:
-  *input_img : _ndarry_
-	  input image
-  *cutoff : _float optional_
-		Cutoff of the sigmoid function that shifts the characteristic curve in horizontal direction.
-		Default value is 0.5.
-  *gain : _float optional_
-		The constant multiplier in exponential’s power of sigmoid function.
-		Default value is 10.
-  *inv : _bool optional_
-		If True, returns the negative sigmoid correction. 
-		Defaults to False.
-*Returns:
-  *out : _ndarray_
-		Sigmoid corrected output image.
+-Parameters:
+	1.input_img : _ndarry_  
+				input image
+	2.cutoff : _float optional_ 
+			Cutoff of the sigmoid function that shifts the characteristic curve in horizontal direction.
+			Default value is 0.5.
+	3.gain : _float optional_
+			The constant multiplier in exponential’s power of sigmoid function.
+			Default value is 10.
+	4.inv : _bool optional_
+			If True, returns the negative sigmoid correction. 
+			Defaults to False.
+-Returns:
+	1.out : _ndarray_
+			Sigmoid corrected output image.
 		
 The function begins by importing the tensorflow library, then I transform the input_img to a tensor and normalize it.
 After that preparation, I calculate according to the equation to get the result, and turn it back to original mode. Then we 
@@ -82,9 +82,12 @@ classification can be powerfully accomplished from the resulting images. For the
 in the smooth areas to perform the image in the better condition.
 	
 ## Reference
+
 [1] Naglaa Hassan and Nario Akamatsu, "A New Approach for Constrast Enhancement Using Sigmoid Function", '<The International Arab Journal of Information
 Technology, Vol.1, No.2, July 2004'>
+
 [2] Hui Zhu, Francis H. Y. Chan, and F. K. Lam,” Image Contrast Enhancement by Constrained Local Histogram Equalization”, Computer Vision and Image 
 Understanding Vol. 73, No. 2, February, pp. 281–290, 1999.
+
 [3] Saruchi, "Adaptive Sigmoid Function to Enhance Low Contrast Images", International Journal of Computer Applications (0975 – 8887) Volume 55– No.4, 
 October 2012
