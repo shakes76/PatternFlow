@@ -30,9 +30,10 @@ def _interpolate( dx_T, dy_T, x, name='interpolate' ):
         result = tf.multiply(value[0], 1, name='y')
 
     return result
-'''
+
 def _match_cumulative_cdf(source, template):
-    	source_flatten = tf.reshape(source,[-1])
+    source_flatten = tf.reshape(source,[-1])
+    
     template_flatten = tf.reshape(template,[-1])
     src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten)
     tmpl_values,tmpl_unique_indices,tmpl_counts = tf.unique_with_counts(template_flatten)
@@ -41,4 +42,14 @@ def _match_cumulative_cdf(source, template):
     template_size = tf.size(template_flatten)
     src_quantiles = tf.cumsum(src_counts) / source_size
     tmpl_quantiles = tf.cumsum(tmpl_counts) / template_size
-'''
+    #interpolate
+    interp_a_values = []
+    for i in src_quantiles.numpy():
+        interp_a_values.append(_interpolate(tmpl_quantiles, tmpl_values, tf.constant([i])))
+    interp_a_values = tf.convert_to_tensor(interp_a_values).numpy()
+    guodu = interp_a_values[src_indice]
+    #convert_to_tensor
+    guodu = tf.convert_to_tensor(guodu)
+    result = tf.reshape(guodu,tf.shape(source))
+    return result
+
