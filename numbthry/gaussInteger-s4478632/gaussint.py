@@ -296,4 +296,13 @@ class GaussInteger():
             b, a, b1, b2, a1, a2 = a, r, a1, a2, m, n
 
         return b, b1, b2
+
+    def __pow__(self, power):
+        with tf.Session() as sess:
+            result = tf.math.pow(self.getNum(), power).eval()
+        return result
+
+    def isprime(self):
+        
+        
             
