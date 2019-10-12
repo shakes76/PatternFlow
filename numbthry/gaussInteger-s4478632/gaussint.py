@@ -303,6 +303,45 @@ class GaussInteger():
         return result
 
     def isprime(self):
-        
+        with tf.Session() as sess:
+            real = abs(int(self.re.eval()))
+            imag = abs(int(self.im.eval()))
+
+        if real == 0 and imag != 0:
+            if imag == 1:
+                return False
+
+            for i in range(2, imag // 2):
+                if (imag % i) == 0:
+                    return False
+
+            if (imag - 3) % 4 != 0:
+                return False
+
+            return True
+            
+        elif real != 0 and imag == 0:
+            if real == 1:
+                return False
+
+            for i in range(2, real // 2):
+                if (real % i) == 0:
+                    return False
+
+            if (real - 3) % 4 != 0:
+                return False
+            
+            return True
+
+        elif real != 0 and imag != 0:
+            with tf.Session() as sess:
+                norm = int(self.norm().real)
+
+                for i in range(2, norm // 2):
+                    if (norm % i) == 0:
+                        return False
+            return True
+
+        return False
         
             
