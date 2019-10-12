@@ -1,42 +1,36 @@
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from skimage import img_as_ubyte
+from skimage import data
+
+def _offset_array(arr, low_boundary, high_boundary):
+    """Offset the array to get the lowest value at 0 if negative."""
+    if low_boundary < 0:
+        offset = low_boundary
+        dyn_range = high_boundary - low_boundary
+        arr = arr - offset
+    else:
+        offset = 0
+    return arr, offset
+
+    
+def _bincount_histogram(image, source_range):
+    if source_range not in ['image', 'dtype']:
+        raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
+    if source_range == 'image':
+        image_min = np.min(image).astype(np.int64)
+        image_max = np.max(image).astype(np.int64)
+    elif source_range == 'dtype':
+        image_min, image_max = dtype_limits(image, clip_negative=False)
+    image, offset = _offset_array(image, image_min, image_max)
+    hist = np.bincount(image.ravel(), minlength=image_max - image_min + 1)
+    bin_centers = np.arange(image_min, image_max + 1)
+    if source_range == 'image':
+        idx = max(image_min, 0)
+        hist = hist[idx:]
+    return hist, bin_centers
+
 def histogram(image, nbins=256, source_range='image', normalize=False):
-    """Return histogram of image.
-    Unlike `numpy.histogram`, this function returns the centers of bins and
-    does not rebin integer arrays. For integer arrays, each integer value has
-    its own bin, which improves speed and intensity-resolution.
-    The histogram is computed on the flattened image: for color images, the
-    function should be used separately on each channel to obtain a histogram
-    for each color channel.
-    Parameters
-    ----------
-    image : array
-        Input image.
-    nbins : int, optional
-        Number of bins used to calculate histogram. This value is ignored for
-        integer arrays.
-    source_range : string, optional
-        'image' (default) determines the range from the input image.
-        'dtype' determines the range from the expected range of the images
-        of that data type.
-    normalize : bool, optional
-        If True, normalize the histogram by the sum of its values.
-    Returns
-    -------
-    hist : array
-        The values of the histogram.
-    bin_centers : array
-        The values at the center of the bins.
-    See Also
-    --------
-    cumulative_distribution
-    Examples
-    --------
-    >>> from skimage import data, exposure, img_as_float
-    >>> image = img_as_float(data.camera())
-    >>> np.histogram(image, bins=2)
-    (array([107432, 154712]), array([ 0. ,  0.5,  1. ]))
-    >>> exposure.histogram(image, nbins=2)
-    (array([107432, 154712]), array([ 0.25,  0.75]))
-    """
     sh = image.shape
     if len(sh) == 3 and sh[-1] < 4:
         warn("This might be a color image. The histogram will be "
