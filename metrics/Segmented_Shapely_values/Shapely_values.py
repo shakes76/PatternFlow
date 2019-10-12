@@ -1,29 +1,50 @@
-import keras
+import tensorflow as tf
+import tensorflow.keras as keras
 from keras.datasets import cifar10
 import matplotlib.pyplot as plt
 import skimage.segmentation as seg
-import intertool
+import itertools
+from math import factorial
 
 def Shapely_values(segnumb = 15,segchoice =None,model=None,data=None,groundtruth = None):
     if not (Model and Data and groundtruth):
         model,data,groundtruth = defult_model()
     if not segchoice:
         image_slic = seg.slic(data[0],n_segments=segnumb)
-    patches = np.arange(np.max(image_slic))
+    patches = tf.range(max(image_slic))
 
-    for i in patches
-       it = intertool.comob(patches,i)
-    for i in patches:
+
+    def shapely_step(ele):
+        elements = patches[tf.range(mex(patches))!=ele]
         result = 0
-        for j in it:
-            if not i in j:
-                factor = (len(j)! + (len(it) - len(j) - 1)!)/len(it)!
-                resultwithoutp = model.predict(data)
-                result = model.predict(data)
+        i = 1
+        while i < max(patches):
+            it = intertool.combinations(elements,i)
+            for j in it:
+                factor = (factorial(len(j)) + factorial(nCk(patches,i) - len(j) - 1))/factorial(nCk(patches,i))
+                resultwithoutp = model.predict(data[data in j.extend(i)])
+                result = model.predict(data[data in j])
                 result += factor*(resultwithoutp-result)
-        ret[i] = result
+        
+        return result
 
-    
+    f = tf.function(shapely_step)
+
+    ret = tf.zeros_like(patches)
+    ret = tf.map_fn(f, patches, axis=1)
+    print(ret)
+
+#         def image_show(image, nrows=1, ncols=1, cmap='gray'):
+#             fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(14, 14))
+#             ax.imshow(image, cmap='gray')
+#             ax.axis('off')
+#             return fig, ax
+
+# #need to change the alpha and create a colour list as well
+#     image_show(color.label2rgb(image_slic, image, kind='overlay'))
+
+def nCk(n,k): 
+    return int(reduce(lambda x,y:x*y, ((n-i)/(i+1) for i in range(k)), 1)) 
     
 
 def defult_model():
@@ -96,24 +117,10 @@ def defult_model():
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
 
-    # model_json = model.to_json()
-    # with open("cifar10model.json", "w") as json_file:
-    #     json_file.write(model_json)
+    model_json = model.to_json()
+    with open("cifar10model.json", "w") as json_file:
+        json_file.write(model_json)
 
-    # model.save_weights("cifar10model.h5")
-    # print("Saved model to disk")
-    return model,x_test,y_test
-
-# load json and create model
-# from tensorflow.keras.models import model_from_json
-# json_file = open('cifar10model.json', 'r')
-# loaded_model_json = json_file.read()
-# json_file.close()
-# loaded_model = model_from_json(loaded_model_json)
-# # load weights into new model
-# loaded_model.load_weights("cifar10model.h5")
-# print("Loaded model from disk")
-# loaded_model.compile(loss=keras.losses.categorical_crossentropy,
-#               optimizer=keras.optimizers.Adam(lr=0.001),
-#               metrics=['accuracy'])
-# score = model.evaluate(x_test, y_test, verbose=1)
+    model.save_weights("cifar10model.h5")
+    print("Saved model to disk")
+    return model,x_test[0],ytest[0]
