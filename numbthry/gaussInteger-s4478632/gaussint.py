@@ -236,4 +236,5 @@ class GaussInteger():
         """
         self = self // other
         return self
-        
+
+    
