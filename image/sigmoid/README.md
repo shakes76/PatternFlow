@@ -4,7 +4,7 @@ Implementation of sigmoid correction from the exposure module of Scikit-Image
 ## Description of algorithm
 Known as Contrast Adjustment. This function transforms the input image pixelwise according to the equation 
 
-**O = 1/(1 + exp*(gain*(cutoff - I)))** after scaling each pixel to the range 0 to 1.
+__ O = 1/(1 + exp*(gain*(cutoff - I))) __ after scaling each pixel to the range 0 to 1.
   
 - Parameters:
 	1. input_img : _ndarry_  
@@ -14,19 +14,16 @@ Known as Contrast Adjustment. This function transforms the input image pixelwise
 	2. cutoff : _float optional_ 
 	
 			Cutoff of the sigmoid function that shifts the characteristic curve in horizontal direction.
-			
 			Default value is 0.5.
 			
 	3. gain : _float optional_
 	
 			The constant multiplier in exponential’s power of sigmoid function.
-			
 			Default value is 10.
 			
 	4. inv : _bool optional_
 	
 			If True, returns the negative sigmoid correction. 
-			
 			Defaults to False.
 			
 - Returns:
