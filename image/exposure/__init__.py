@@ -2,7 +2,6 @@ from exposure import (  # type: ignore
     histogram,
     equalize_hist,
     cumulative_distribution,
-    intensity_range,
     adjust_gamma,
 )
 
