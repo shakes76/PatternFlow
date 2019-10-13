@@ -8,22 +8,23 @@ import numpy as np
 from math import factorial
 import tensorflow_probability as tfp
 from functools import reduce
+import copy
 
 class histogram_mertics:
     
     
-    def __init__(self,pictures,nbins=256):
+    def __init__(self,pictures,nbins=32):
         self.pictures = pictures.astype(np.float64)
         self.histogram = None
         self.cdf = None
         self.nbins = nbins
+        self.sess = tf.Session()
     
     
     def image_histogram(self, normalize=False):
         ret_histgrams = []
         for i in range(self.pictures.shape[-1]):
-            print(i)
-            image = tf.reshape(self.pictures[0,:,:,:], [-1])
+            image = tf.reshape(self.pictures[0,:,:,i], [-1])
                 
             maxvalue = tf.math.reduce_max(image)
             minvalue = tf.math.reduce_min(image)
@@ -31,15 +32,15 @@ class histogram_mertics:
             ret = tf.histogram_fixed_width(image, [minvalue,maxvalue],nbins=self.nbins)
             if normalize:
                 ret = ret / tf.reduce_sum(ret)
-            for x in self.pictures[1:,:,:,:]:
+            for x in range(1,self.pictures.shape[0]):
             
-                image = tf.reshape(x, [-1])
+                image = tf.reshape(self.pictures[x,:,:,i], [-1])
                 
                 maxvalue = tf.math.reduce_max(image)
                 minvalue = tf.math.reduce_min(image)
                 
                 hist = tf.histogram_fixed_width(image, [minvalue,maxvalue],nbins=self.nbins)
-            
+
                 if normalize:
                     hist = hist / tf.reduce_sum(hist)
                 ret = tf.add(ret,hist)
@@ -87,11 +88,38 @@ class histogram_mertics:
             self.cdf.append(img_cdf)
         return self.cdf
     
+    def plot_histogram(self):
+        if self.histogram:
+            gram = self.histogram
+        else:
+            gram = self.image_histogram()
+        col = ["r","g","b"]
+        for i,x in enumerate(gram):
+#            bins=self.nbins
+            ind = np.arange(self.nbins)
+            width = 0.7
+            plt.bar(ind - width/(i+1), self.sess.run(x),width,color = col[i])
+        plt.show()
+    
+    def plot_cdf(self):
+        if self.cdf:
+            cdf = self.cdf
+        else:
+            cdf = self.cumulative_distribution()
+        col = ["r","g","b"]
+        for i,x in enumerate(cdf):
+#            bins=self.nbins
+            ind = np.arange(self.nbins)
+            width = 0.7
+            plt.bar(ind - width/(i+1), self.sess.run(x),width,color = col[i])
+        plt.show()
+
+
 (x_train, y_train), (x_eval, y_eval) = cifar10.load_data()
-x_eval = x_eval[:11]
+x_eval = x_eval[:200]
 print(x_eval.shape)
 x = histogram_mertics(x_eval)
 print(x)
-x.image_histogram()
-x.cumulative_distribution()
-print(x.equalize_hist_by_index(0))
+print(x.image_histogram())
+x.plot_histogram()
+x.plot_cdf()
