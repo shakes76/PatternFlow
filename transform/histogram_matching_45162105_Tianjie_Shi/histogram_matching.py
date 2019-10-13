@@ -1,5 +1,8 @@
-import tensorflow as tf
+# -*- coding: utf-8 -*-
+# Author: Tianjie Shi 
+# Last update: 13/10/2019
 
+import tensorflow as tf
 tf.compat.v1.enable_eager_execution() # Make eager execution available
 
 # Function1 -- unique_inverse
