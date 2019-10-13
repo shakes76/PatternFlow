@@ -25,5 +25,19 @@ def equalize_hist(image, nbins=256, mask=None):
     #
     # return im2.reshape(im.shape), cdf
 
-    with tf.Session as sess:
+    with tf.Session() as sess:
+        image_tf = tf.Variable(image)
+        values_range = tf.constant([0., 255.])
+        sess.run(tf.global_variables_initializer())
+
+        # flatten image
+        image_tf = tf.reshape(image_tf, [-1])
+
+        # calculate cumulative distribution
+        histogram = tf.histogram_fixed_width(image_tf, values_range, nbins)
+        cdf = tf.cumsum(histogram)
+
+        cdf = sess.run(cdf)
         sess.close()
+
+        return cdf
