@@ -4,20 +4,25 @@ Tensorflow version of the Histogram algorithm belonging to Skimage Exposure modu
 
 https://scikit-image.org/docs/stable/api/skimage.exposure.html#skimage.exposure.histogram
 
-This function returns the histogram of an image.
-[HISTOGRAM DESCRIPTION]
+This function returns the histogram of an image. An  histogram as a graph or plot, which gives you an overall idea about the intensity distribution of an image. It is a plot with pixel values (ranging from 0 to 255, not always) in X-axis and corresponding number of pixels in the image on Y-axis.
+
 Unlike numpy.histogram, this function returns the centers of bins and does not rebin integer arrays. For integer arrays, each integer value has its own bin, which improves speed and intensity-resolution.
 
-
 ## Run the algorithm
+
+It is possible to test the algorithm by running the main.py script without any arguments.
 
 ```
 python3 main.py
 ```
 
-### Result
+## Results
 
-![Exposure histogram](exposure-histogram.png)
+The driver script load an image and generates its histogram first using numpy histogram function and then also with the tensorflow version.
+
+Eventually, the two obtained histograms are plotted and is possible to see that they are equal.
+
+![Exposure histogram](resources/exposure-histogram.png)
 
 
 ## Authors

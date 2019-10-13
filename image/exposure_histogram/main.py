@@ -49,7 +49,7 @@ if __name__ == "__main__":
     
     fig.tight_layout()
     plt.show(block=True)
-    fig.savefig('exposure-histogram.png')
+    fig.savefig('resources/exposure-histogram.png')
 
 
         
