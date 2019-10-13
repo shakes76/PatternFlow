@@ -1,20 +1,13 @@
 import tensorflow as tf
-from tensorflow import keras
-from keras.datasets import cifar10
+from tensorflow.keras.datasets import cifar10
 import matplotlib.pyplot as plt
-import skimage.segmentation as seg
-import itertools
-import numpy as np
-from math import factorial
 import tensorflow_probability as tfp
-from functools import reduce
-import copy
 
 class histogram_mertics:
     
     
     def __init__(self,pictures,nbins=32):
-        self.pictures = pictures.astype(np.float64)
+        self.pictures = pictures.astype(tf.float64)
         self.histogram = None
         self.cdf = None
         self.nbins = nbins
@@ -96,8 +89,8 @@ class histogram_mertics:
         col = ["r","g","b"]
         for i,x in enumerate(gram):
 #            bins=self.nbins
-            ind = np.arange(self.nbins)
-            width = 0.7
+            ind = self.sess.run(tf.range(self.nbins))
+            width = 0.5
             plt.bar(ind - width/(i+1), self.sess.run(x),width,color = col[i])
         plt.show()
     
@@ -108,10 +101,9 @@ class histogram_mertics:
             cdf = self.cumulative_distribution()
         col = ["r","g","b"]
         for i,x in enumerate(cdf):
-#            bins=self.nbins
-            ind = np.arange(self.nbins)
-            width = 0.7
-            plt.bar(ind - width/(i+1), self.sess.run(x),width,color = col[i])
+            ind = self.sess.run(tf.range(self.nbins))
+            width = 0.5
+            plt.bar(ind - width/(i+2), self.sess.run(x),width,color = col[i])
         plt.show()
 
 
