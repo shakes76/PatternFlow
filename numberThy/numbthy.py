@@ -302,30 +302,36 @@ print(factorone(75).eval())
 
 ####################-- factors function --################
 
+@tf.function
 def factors(n):
-    n = tf.cond(tf.math.less(n,0),lambda:tf.math.negative(n), lambda:n)
-    n = tf.cond(tf.logical_not(is_prime(n)), lambda:factors_body(n), lambda:n)
-    print("777777777777",n.eval())
-    return n
+    i = 2
+    factors = []
+    while i * i <= n:
+        if n % i:
+            i += 1
+        else:
+            n //= i
+            factors.append(i)
+    if n > 1:
+        factors.append(n)
+    return factors
 
-def factors_body(n):
-    n = tf.cond(is_prime(n), lambda:n, lambda:n)
-    fact = factorone(n)
-    facts = tf.cond(
-        tf.math.logical_or(tf.math.equal(tf.math.abs(n),1),tf.math.equal(n,0)),
-        lambda: 9999999, #raise ValueError('Unable to factor \"{0}\"'.format(n))
-        lambda: factors_inside_body(n,fact)
-        )
-    return facts
+print(factors(4))
+print()
+l = prime_factors(56)
+print(l)
+print(l[0].eval())
+print(l[1].eval())
+print(l[2].eval())
+print(l[3].eval())
 
-def factors_inside_body(n,fact):
-    facts = factors(tf.math.floordiv(n,fact)) + factors(fact)
-    pritn("facts", facts)
-    facts = tf.tuple(factors(tf.math.floordiv(n,fact))) + tf.tuple(factors(fact))
-    facts = tf.sort(facts)
-    return facts
-
-print(factors(2))
+fact = [-1];
+fact =tf.convert_to_tensor(fact,tf.int32)
+a = [fact]+[[tf.constant(5)]]+[[tf.constant(4)]]
+a = tf.convert_to_tensor(a)
+print(a.shape)
+a = tf.reshape(a,[1,3])
+print(a.eval())
 
 a = tf.tuple([1,6,5])
 b = tf.tuple([9])
@@ -374,8 +380,7 @@ def inside_while_body(n,numsteps,fast,slow,i,additive,g):
     return n,numsteps,fast,slow,i,additive,g
 def factorPR_if_body(n,numsteps,i,additive,g):
     n,numsteps,i,additive,g = tf.cond(tf.math.equal(g,n),
-                                              lambda:(n,numsteps,numsteps,(tf.math.add(additive,1)),g),
-                                              lambda:(n,numsteps,numsteps,5,g)
-                                              )
+        lambda:(n,numsteps,numsteps,(tf.math.add(additive,1)),g),
+        lambda:(n,numsteps,numsteps,5,g)
+        )
     return n,numsteps,i,additive,g
-
