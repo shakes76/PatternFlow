@@ -16,17 +16,4 @@ This module implements a class representation of Gaussian integers which are of 
 </ul>
 <p>Other methods were implemented for the prime factorisation of Gaussian integers but were ported from incomplete/possibly malfunctioning code provided in the original. Therefore these methods are exactly the same as the original and were included for completeness in the assessment piece.</p>
 </br></br>
-![numbers](/
-
-Normal text
-**bold text**
-# This is an <h1> tag
-## This is an <h2> tag
-###### This is an <h6> tag
-*This text will be italic*
-_This will also be italic_
-
-**This text will be bold**
-__This will also be bold__
-
-_You **can** combine them_
+<img src="https://github.com/SoloKwansy/PatternFlow/blob/topic-algorithms/numbthry/gaussInteger-s4478632/gaussint.png"></img>
