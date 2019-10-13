@@ -8,6 +8,7 @@ Original file is located at
 """
 
 import tensorflow as tf
+import functools
 sess = tf.InteractiveSession()
 tf.global_variables_initializer()
 
@@ -186,17 +187,43 @@ print(is_prime(27).eval())
 
 ####################-- factor function --################
 
+@tf.function
 def factor(n):
-    n = tf.math.abs(n)
-    tf.cond(
-        tf.math.logical_or(tf.math.equal(n,1), tf.math.equal(n,0)),
-        lambda: n, #ValueError,
-        lambda: cond_body_()
-    )
+	"""factor(n) - Return a sorted list of the prime factors of n with exponents."""
+	# Rewritten to align with SAGE.  Previous semantics available as factors(n).
+	if ((abs(n) == 1) or (n == 0)): raise ValueError('Unable to factor {0}'.format(n))
+	factspow = []
+	currfact = None
+	for thefact in factors(n):
+		if thefact != currfact:
+			if currfact != None:
+				factspow += [(currfact,thecount)]
+			currfact = thefact
+			thecount = 1
+		else:
+			thecount += 1
+	factspow += [(thefact,thecount)]
+	return tuple(factspow)
 
-def cond_body_():
-    factspow = tf.stack()
-    currfact = None
+print(factor(6)[0][0].eval())
+
+####################-- prime_divisors function --################
+
+def prime_divisors(n):
+    return tuple(set(factors(n)))
+
+####################-- euler_phi function --################
+
+def euler_phi(n):
+    n = tf.cond(tf.math.less_equal(n,0),lambda:0,lambda:n)
+    n = tf.cond(tf.math.equal(n,1),lambda:1,lambda:n)
+    return functools.reduce(lambda a,x:tf.math.multiply(tf.math.multiply(a,tf.math.pow(x[0],tf.math.subtract(x[1],1))),tf.math.multiply(tf.math.subtract(x[0],1))),factor(n),1)
+
+
+
+print(euler_phi(4))
+
+####################-- prime_divisors function --################
 
 ################ Internally used functions #########################################
 
