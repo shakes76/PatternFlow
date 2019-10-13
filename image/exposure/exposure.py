@@ -1,11 +1,7 @@
 import torch
 from typing import Union, Tuple, Optional, Dict, Any
 import warnings
-from utils import dtype_limits  # type: ignore
-from utils import interp  # type: ignore
-from utils import dtype_range
-import numpy as np  # type: ignore
-from skimage import exposure, data, img_as_float  # type: ignore
+from utils import dtype_limits, interp, dtype_range
 import functools
 
 
@@ -13,7 +9,7 @@ DTYPE_RANGE = dtype_range.copy()
 
 
 def tensor_image_checker(func):
-    """a tensor type checker decorator helper function"""
+    """a tensor type checker decorator"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if type(args[0]) != torch.Tensor:
@@ -21,73 +17,6 @@ def tensor_image_checker(func):
                 "exposure functions only support data type of pytorch tensor.")
         return func(*args, **kwargs)
     return wrapper
-
-
-def _update_dtype(dtype: torch.dtype) -> torch.dtype:
-    if dtype == torch.int8:
-        return torch.int16
-    elif dtype == torch.int16:
-        return torch.int32
-    else:
-        return torch.int64
-
-
-@tensor_image_checker
-def _offset_array(image: torch.Tensor,
-                  lower_boundary: int,
-                  higher_boundary: int) -> torch.Tensor:
-    """Offset the array to get the lowest value at 0 if negative."""
-    if lower_boundary < 0:
-        dyn_range = higher_boundary - lower_boundary
-        # check if the dyn_range is overflow, if so, update dtype
-        if dyn_range > torch.iinfo(image.dtype).max:  # type: ignore
-            image = image.type(_update_dtype(image.dtype))  # type: ignore
-        image = torch.sub(image, lower_boundary)
-    return image
-
-
-@tensor_image_checker
-def _bin_count_histogram(image: torch.Tensor,
-                         source_range: Optional[str] = 'image') -> Tuple[torch.Tensor, torch.Tensor]:
-    """Efficient histogram calculation for an image of integers.
-
-    This function is significantly more efficient than np.histogram but
-    works only on images of integers. It is based on np.bincount.
-
-    Parameters
-    ----------
-    image : torch.Tensor
-        Input image
-    source_range : Optional[str], default 'image'
-        image: determines the range from the input image
-        dtype: determines the range from the expected range of the images
-    of that data type.
-
-    Returns
-    -------
-    Tuple[torch.Tensor, torch.Tensor]
-        hist: The values of the histogram.
-        bin_centers: The values at the center of the bins.
-
-    """
-    if source_range not in ['image', 'dtype']:
-        raise ValueError(
-            'Incorrect value for `source_range` argument: {}'.format(source_range))
-
-    if source_range == 'image':
-        max_v = int(torch.max(image))
-        min_v = int(torch.min(image))
-    elif source_range == 'dtype':
-        min_v, max_v = dtype_limits(image, clip_negative=False)
-
-    image = _offset_array(image.flatten(), min_v, max_v)
-    hist = torch.bincount(image, minlength=max_v-min_v+1)
-    bin_centers = torch.arange(min_v, max_v + 1)
-
-    if source_range == 'image':
-        idx = max(min_v, 0)
-        hist = hist[idx:]
-    return hist, bin_centers
 
 
 @tensor_image_checker
@@ -139,7 +68,7 @@ def histogram(image: torch.Tensor,
     (tensor([107432, 154712]), tensor([ 0.2500,  0.7500]))
     """
     if not isinstance(nbins, int):
-        raise ValueError("given bin must be a integer number")
+        raise ValueError("Given bin cannot be non integer type")
 
     shape = image.size()
 
@@ -149,9 +78,12 @@ def histogram(image: torch.Tensor,
              apply this function to each color channel.""")
 
     image = image.flatten()
-    min_v = float(torch.min(image))
-    max_v = float(torch.max(image))
+    min_v = torch.min(image).item()
+    max_v = torch.max(image).item()
 
+    # if the input image is normal integer type
+    # like gray scale from 0-255, we implement fast histogram calculation
+    # by returning bin count for each pixel value
     if not torch.is_floating_point(image):
         hist, bin_centers = _bin_count_histogram(image, source_range)
     else:
@@ -161,8 +93,6 @@ def histogram(image: torch.Tensor,
             bin_centers = _calc_bin_centers(min_v, max_v, nbins)
         elif source_range == 'dtype':
             min_v, max_v = dtype_limits(image, clip_negative=False)
-            # since the argument of torch.histc min is inclusive, to make is
-            # exclusive we have to add a tiny value to it
             hist = torch.histc(
                 image, nbins, min=min_v, max=max_v)
             bin_centers = _calc_bin_centers(min_v, max_v, nbins)
@@ -170,43 +100,10 @@ def histogram(image: torch.Tensor,
             raise ValueError("Wrong value for the `source_range` argument")
 
     if normalize:
-        hist = torch.div(hist.float(), torch.sum(hist))
+        hist = torch.div(hist, float(torch.sum(hist).item()))
         return (hist, bin_centers)
 
     return (hist.long(), bin_centers)
-
-
-def _calc_bin_centers(start: Union[int, float] = 0,
-                      end: Union[int, float] = 1,
-                      nbins: Optional[int] = 2) -> torch.Tensor:
-    """calculate the center of bins
-
-    Parameters
-    ----------
-    start : Union[int, float], default 0
-        the starting number of the range
-    end : Union[int, float], default 1
-        the ending point of the range
-    nbins : Optional[int], default 200
-        the number of bins that needed
-
-    Returns
-    -------
-    torch.Tensor
-        bin_centers: calculated center of bins
-    """
-    if not isinstance(nbins, int):
-        raise ValueError('number of bins must be integer')
-
-    if start >= end:
-        raise ValueError('start cannot greater or equal to end value')
-
-    if nbins < 1:
-        raise ValueError('the number of bins cannot less than 1')
-
-    length = end - start
-    shift = float(length/nbins)/2.0
-    return torch.arange(start, end, step=float(length/nbins)) + shift
 
 
 @tensor_image_checker
@@ -289,6 +186,7 @@ def equalize_hist(image: torch.Tensor,
     return out.reshape(image.shape)
 
 
+@tensor_image_checker
 def intensity_range(image: torch.Tensor,
                     range_values: Optional[Union[Tuple[float, float], str]] = 'image',
                     clip_negative: Optional[bool] = False) -> Tuple[float, float]:
@@ -341,85 +239,159 @@ def intensity_range(image: torch.Tensor,
     return i_min, i_max
 
 
-def rescale_intensity(image: torch.Tensor,
-                      in_range: Union[Tuple[float, float], str] = 'image',
-                      out_range: Union[Tuple[float, float], str] = 'dtype') -> torch.Tensor:
-    """Return image after stretching or shrinking its intensity levels.
+@tensor_image_checker
+def adjust_gamma(image: torch.Tensor,
+                 gamma: float = 1.0,
+                 gain: float = 1.0) -> torch.Tensor:
+    """Performs Gamma Correction on the input image.
 
-    The desired intensity range of the input and output, `in_range` and
-    `out_range` respectively, are used to stretch or shrink the intensity range
-    of the input image. See examples below.
+    Also known as Power Law Transform.
+    This function transforms the input image pixelwise according to the
+    equation ``O = I**gamma`` after scaling each pixel to the range 0 to 1.
 
     Parameters
     ----------
     image : torch.Tensor
         Input image
-    in_range, out_range : Optional[Union[Tuple[float, float], str]], default 'image'
-        Min and max intensity values of input and output image.
-        The possible values for this parameter are enumerated below.
-        'image'
-        Use image min/max as the intensity range.
-        'dtype'
-        Use min/max of the image's dtype as the intensity range.
-        dtype-name
-        Use intensity range based on desired `dtype`. Must be valid key
-        in `DTYPE_RANGE`.
-        2-tuple
-        Use `range_values` as explicit min/max intensities.
+    gamma : float, default 1.0
+        Non negative real number. Default value is 1.
+    gain : float, default 1.0
+        The constant multiplier. Default value is 1.
 
     Returns
     -------
     torch.Tensor
-        out: Image tensor after rescaling its intensity. This image is the same dtype
-        as the input image.
+        Gamma corrected output image.    
 
     See also
     -----
-    equalize_hist
+    adjust_log
+
+    Notes
+    --------
+    For gamma greater than 1, the histogram will shift towards left and
+    the output image will be darker than the input image.
+    For gamma less than 1, the histogram will shift towards right and
+    the output image will be brighter than the input image.
+
+    References
+    ----------
+    .. [1] https://en.wikipedia.org/wiki/Gamma_correction
 
     Examples
     --------
-    By default, the min/max intensities of the input image are stretched to
-    the limits allowed by the image's dtype, since `in_range` defaults to
-    'image' and `out_range` defaults to 'dtype':
-        >>> image = np.array([51, 102, 153], dtype=np.uint8)
-    >>> rescale_intensity(image)
-    array([  0, 127, 255], dtype=uint8)
-    It's easy to accidentally convert an image dtype from uint8 to float:
-    >>> 1.0 * image
-    array([  51.,  102.,  153.])
-    Use `rescale_intensity` to rescale to the proper range for float dtypes:
-    >>> image_float = 1.0 * image
-    >>> rescale_intensity(image_float)
-    array([ 0. ,  0.5,  1. ])
-    To maintain the low contrast of the original, use the `in_range` parameter:
-    >>> rescale_intensity(image_float, in_range=(0, 255))
-    array([ 0.2,  0.4,  0.6])
-    If the min/max value of `in_range` is more/less than the min/max image
-    intensity, then the intensity levels are clipped:
-    >>> rescale_intensity(image_float, in_range=(0, 102))
-    array([ 0.5,  1. ,  1. ])
-    If you have an image with signed integers but want to rescale the image to
-    just the positive range, use the `out_range` parameter:
-    >>> image = np.array([-10, 0, 10], dtype=np.int8)
-    >>> rescale_intensity(image, out_range=(0, 127))
-    array([  0,  63, 127], dtype=int8)
+    >>> from skimage import data, exposure, img_as_float
+    >>> image = img_as_float(data.moon())
+    >>> gamma_corrected = exposure.adjust_gamma(image, 2)
+    >>> # Output is darker for gamma > 1
+    >>> image.mean() > gamma_corrected.mean()
+    True
     """
-    dtype = image.dtype
+    dtype: torch.dtype = image.dtype
 
-    imin, imax = intensity_range(image, in_range)
-    omin, omax = intensity_range(image, out_range, clip_negative=(imin >= 0))
+    if gamma < 0:
+        raise ValueError("Gamma should be a non-negative real number.")
 
-    image = torch.clamp(image, imin, imax)
+    scale = float(dtype_limits(image, True)[1] - dtype_limits(image, True)[0])
 
-    image = (image - imin) / float(imax-imin)
-    return torch.tensor(image * (omax-omin) + omin, dtype=dtype)
+    out = ((image / scale) ** gamma) * scale * gain
+
+    return out.type(dtype)
 
 
-if __name__ == "__main__":
-    args = ['image', 'dtype', (0.3, 0.4)]
-    expects = [(0.1, 0.2), (-1, 1), (0.3, 0.4)]
-    image = torch.tensor([0.1, 0.2], dtype=torch.double)
-    for arg, expect in zip(args, expects):
-        out = intensity_range(image, range_values=arg)
-        print(out)
+def _calc_bin_centers(start: Union[int, float] = 0,
+                      end: Union[int, float] = 1,
+                      nbins: Optional[int] = 2) -> torch.Tensor:
+    """calculate the center of bins
+
+    Parameters
+    ----------
+    start : Union[int, float], default 0
+        the starting number of the range
+    end : Union[int, float], default 1
+        the ending point of the range
+    nbins : Optional[int], default 200
+        the number of bins that needed
+
+    Returns
+    -------
+    torch.Tensor
+        bin_centers: calculated center of bins
+    """
+    if not isinstance(nbins, int):
+        raise ValueError('number of bins is not integer')
+
+    if start >= end:
+        raise ValueError('start cannot greater or equal to end value')
+
+    if nbins < 1:
+        raise ValueError('the number of bins cannot less than 1')
+
+    width = end - start
+    shift = float(width/nbins)/2.0
+    return torch.arange(start, end, step=float(width/nbins)) + shift
+
+
+def _update_dtype(dtype: torch.dtype) -> torch.dtype:
+    if dtype == torch.int8:
+        return torch.int16
+    elif dtype == torch.int16:
+        return torch.int32
+    else:
+        return torch.int64
+
+
+def _offset_array(image: torch.Tensor,
+                  lower_boundary: float,
+                  higher_boundary: float) -> torch.Tensor:
+    """Offset the array to get the lowest value at 0 if negative."""
+    if lower_boundary < 0:
+        dyn_range = higher_boundary - lower_boundary
+        # check if the dyn_range is overflow, if so, update dtype
+        if dyn_range > torch.iinfo(image.dtype).max:  # type: ignore
+            image = image.type(_update_dtype(image.dtype))  # type: ignore
+        image = torch.sub(image, lower_boundary)
+    return image
+
+
+def _bin_count_histogram(image: torch.Tensor,
+                         source_range: Optional[str] = 'image') -> Tuple[torch.Tensor, torch.Tensor]:
+    """Efficient histogram calculation for an image of integers.
+
+    This function is significantly more efficient than np.histogram but
+    works only on images of integers. It is based on np.bincount.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        Input image
+    source_range : Optional[str], default 'image'
+        image: determines the range from the input image
+        dtype: determines the range from the expected range of the images
+    of that data type.
+
+    Returns
+    -------
+    Tuple[torch.Tensor, torch.Tensor]
+        hist: The values of the histogram.
+        bin_centers: The values at the center of the bins.
+
+    """
+    if source_range not in ['image', 'dtype']:
+        raise ValueError(
+            f'Incorrect value for `source_range` argument: {source_range}')
+
+    if source_range == 'image':
+        max_v = int(torch.max(image))
+        min_v = int(torch.min(image))
+    elif source_range == 'dtype':
+        min_v, max_v = dtype_limits(image, clip_negative=False)
+
+    image = _offset_array(image.flatten(), min_v, max_v)
+    hist = torch.bincount(image, minlength=max_v-min_v+1)
+    bin_centers = torch.arange(min_v, max_v + 1)
+
+    if source_range == 'image':
+        idx = max(min_v, 0)
+        hist = hist[idx:]
+    return hist, bin_centers
