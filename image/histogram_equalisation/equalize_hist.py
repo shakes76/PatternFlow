@@ -42,6 +42,8 @@ def equalize_hist(image, nbins=256, mask=None):
         # Calculate cumulative distribution
         histogram = tf.histogram_fixed_width(image_tf, values_range, nbins)
         cdf = tf.cumsum(histogram)
+        # cdf = tf.divide(tf.multiply(cdf, 255), tf.gather(cdf, 255))
+        cdf = tf.divide(cdf, tf.gather(cdf, nbins-1))
 
 
         # Calculate equalised image
