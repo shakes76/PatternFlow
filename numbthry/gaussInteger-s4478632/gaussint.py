@@ -271,9 +271,6 @@ class GaussInteger():
         
         return self
 
-    def __pos__(self):
-        return self
-
     def xgcd(self, other):
         """
         Performs the extended euclidean algorithm on the input.
@@ -298,15 +295,28 @@ class GaussInteger():
         return b, b1, b2
 
     def __pow__(self, power):
+        """
+        Overloads the ** operator.
+        """
         with tf.Session() as sess:
             result = tf.math.pow(self.getNum(), power).eval()
         return result
 
     def isprime(self):
+        """
+        Tests whether a given Gaussian integer is a Gaussian Prime. The number
+        a + bi is a Gaussian Prime if either:
+            1 - One of a or b is zero and the absolute value of the non-zero
+                side is a prime of the form 4n + 3 for some non-negative
+                integer n.
+            2 - Both are non-zero and a^2 + b^2 is prime.
+        """
+        # Retrieve components
         with tf.Session() as sess:
             real = abs(int(self.re.eval()))
             imag = abs(int(self.im.eval()))
 
+        # Check if abs(imag) is prime of correct form
         if real == 0 and imag != 0:
             if imag == 1:
                 return False
@@ -319,7 +329,8 @@ class GaussInteger():
                 return False
 
             return True
-            
+
+        # Check if abs(real) is prime of correct form
         elif real != 0 and imag == 0:
             if real == 1:
                 return False
@@ -333,6 +344,7 @@ class GaussInteger():
             
             return True
 
+        # Check if norm if a prime.
         elif real != 0 and imag != 0:
             with tf.Session() as sess:
                 norm = int(self.norm().real)
@@ -343,5 +355,55 @@ class GaussInteger():
             return True
 
         return False
+
+    def factor(self):
+        """
+        Attempts to find a prime factor of n. Not guaranteed to work.
+        """
+        if (self.isprime()):
+            return self
+        for fact in [GaussInteger(1,1), GaussInteger(2,1), GaussInteger(1,2), 
+			     GaussInteger(3,0), GaussInteger(3,2), GaussInteger(2,3)]:
+            if self % fact == 0:
+                return fact
+        return self.factorPR()
+
+    def factors(self):
+        """
+        Returns a list of factors of n.
+        """
+        if (self.isprime()):
+            return [self]
+        fact = self.factor()
+
+        if (fact == 1):
+            return "Unable to factor"
+        facts = (self / fact).factors() + fact.factors()
+
+        return facts
+
+    def factorPR(self):
+        """
+        Finds a factor of n using Pollard Rho Method. Not sure of the correctness.
+        """
+        for num in [2, 3, 4, 6]:
+            numsteps = 2 * tf.math.floor(tf.math.sqrt(tf.math.sqrt(self.norm())))
+            fast=slow
+            i=1
+            
+            while i < numsteps:
+                slow = (slow * slow + 1) % self
+                i = i + 1
+                fast = (fast * fast + 1) % self
+                fast = (fast * fast + 1) % self
+                g = gcd(fast - slow, self)
+                
+                if (g != 1):
+                    if (g == self):
+                        break
+                    else:
+                        return g
+                    
+            return 1
         
             
