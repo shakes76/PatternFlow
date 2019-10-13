@@ -8,7 +8,6 @@ from exposure import (  # type: ignore
     histogram,
     equalize_hist,
     cumulative_distribution,
-    intensity_range,
     adjust_gamma,
 )
 
@@ -61,31 +60,6 @@ class TestGammaCorrection(unittest.TestCase):
 
         result = adjust_gamma(image, 2)
         self.assertTrue(torch.equal(result, expected))
-
-
-class TestIntensityRange(unittest.TestCase):
-    def test_intensity_range_uint8(self):
-        args = ['image', 'dtype', (10, 20)]
-        expects = [(0, 1), (0, 255), (10, 20)]
-        image = torch.tensor([0, 1], dtype=torch.uint8)
-        for arg, expect in zip(args, expects):
-            with self.subTest(arg=arg, expect=expect):
-                out = intensity_range(image, range_values=arg)
-                self.assertEqual(out, expect)
-
-    def test_intensity_range_float(self):
-        args = ['image', 'dtype', (0.3, 0.4)]
-        expects = [(0.1, 0.2), (-1, 1), (0.3, 0.4)]
-        image = torch.tensor([0.1, 0.2], dtype=torch.double)
-        for arg, expect in zip(args, expects):
-            with self.subTest(arg=arg, expect=expect):
-                out = intensity_range(image, range_values=arg)
-                self.assertEqual(out, expect)
-
-    def test_intensity_range_clipped_float(self):
-        image = torch.tensor([0.1, 0.2], dtype=torch.double)
-        out = intensity_range(image, range_values='dtype', clip_negative=True)
-        self.assertEqual(out, (0, 1))
 
 
 class TestEqualization(unittest.TestCase):
