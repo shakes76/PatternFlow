@@ -4,6 +4,9 @@ This module implements a class representing the Gaussian Integers.
 Ported from https://github.com/Robert-Campbell-256/Number-Theory-Python/blob/master/gaussint.py
 to utilise the tensorflow library.
 
+The methods implemented are the ones mentioned in the class docstring of
+the original module by Robert-Campbell-256.
+
 Student: s4478632
 Course: COMP3710
 
@@ -313,7 +316,10 @@ class GaussInteger():
         Overloads the ** operator.
         """
         with tf.Session() as sess:
-            result = tf.math.pow(self.getNum(), power).eval()
+            if type(power) is not GaussInteger:
+                result = tf.math.pow(self.getNum(), power).eval()
+            else:
+                result = tf.math.pow(self.getNum(), power.getNum()).eval()
         return result
 
     def isprime(self):
