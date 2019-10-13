@@ -10,7 +10,7 @@ matplotlib.rcParams['font.size'] = 9
 gray_img = data.moon()
 colour_img = data.astronaut()
 
-# Global equalize
+# Apply histogram equalisation
 gray_img_eq = exposure.equalize_hist(gray_img)
 colour_img_eq = exposure.equalize_hist(colour_img)
 
