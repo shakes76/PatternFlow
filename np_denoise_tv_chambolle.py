@@ -22,6 +22,9 @@ plt.imshow(theHat)
 theHat_denoise = denoise_tv_chambolle(theHat)
 plt.imshow(theHat_denoise)
 
+
+
+        
 #%%
 def _denoise_tv_chambolle_nd(image, weight=0.1, eps=2.e-4, n_iter_max=200):
     """Perform total-variation denoising on n-dimensional images.
