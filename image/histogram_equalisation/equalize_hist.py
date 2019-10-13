@@ -2,58 +2,61 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 def equalize_hist(image, nbins=256, mask=None):
+    """Returns an image after histogram equalisation
 
-    # Scikit Implementation
-    # https://github.com/scikit-image/scikit-image/blob/master/skimage/exposure/exposure.py#L187
+    Parameters
+    -----------
+    image : array
+        Image to be equalised
+    nbins : int optional
+        Number of bins for the histogram
+    mask: array optional
+        Array of bools (as 1s & 0s) which restricts the areas used
+        to calculate the histogram
 
-    # if mask is not None:
-    #     mask = np.array(mask, dtype=bool)
-    #     cdf, bin_centers = cumulative_distribution(image[mask], nbins)
-    # else:
-    #     cdf, bin_centers = cumulative_distribution(image, nbins)
-    # out = np.interp(image.flat, bin_centers, cdf)
-    # return out.reshape(image.shape)
+    Returns:
+    -----------
+    output : array
+        Float32 array representing the equalised image
 
-    # Jan Erik Solem's Implementation
-    # http://www.janeriksolem.net/histogram-equalization-with-python-and.html
+    [References]
+    https://github.com/scikit-image/scikit-image/blob/master/skimage/exposure/exposure.py#L187
+    http://www.janeriksolem.net/histogram-equalization-with-python-and.html
 
-    # imhist, bins = histogram(im.flatten(), nbr_bins, normed=True)
-    # cdf = imhist.cumsum()  # cumulative distribution function
-    # cdf = 255 * cdf / cdf[-1]  # normalize
-    #
-    # # use linear interpolation of cdf to find new pixel values
-    # im2 = interp(im.flatten(), bins[:-1], cdf)
-    #
-    # return im2.reshape(im.shape), cdf
+    """
 
     dims = image.shape
 
     with tf.Session() as sess:
-        # Initialise variables
-        image_tf = tf.Variable(image, dtype=tf.float32)
-        values_range = tf.constant([0., 255.], dtype=tf.float32)
+
+        # Create and initialise variables
+        image_tensor = tf.Variable(image, dtype=tf.float32)
         x_min = tf.constant(0, dtype=tf.float32)
         x_max = tf.constant(255, dtype=tf.float32)
+        values_range = tf.constant([0., 255.], dtype=tf.float32)
+
+        if mask is not None:
+            mask_tensor = tf.Variable(mask)
+
         sess.run(tf.global_variables_initializer())
 
         # Flatten image
-        image_tf = tf.reshape(image_tf, [-1])
+        image_tensor = tf.reshape(image_tensor, [-1])
 
-        # Calculate cumulative distribution
-        histogram = tf.histogram_fixed_width(image_tf, values_range, nbins)
+        # Calculate histogram and cumulative distribution
+        if mask is not None:
+            mask_tensor = tf.reshape(mask_tensor, [-1])
+            histogram = tf.histogram_fixed_width(tf.boolean_mask(image_tensor, mask_tensor), values_range, nbins)
+        else:
+            histogram = tf.histogram_fixed_width(image_tensor, values_range, nbins)
+
         cdf = tf.cumsum(histogram)
-        # cdf = tf.divide(tf.multiply(cdf, 255), tf.gather(cdf, 255))
+
+        # Normalise cumulative distribution
         cdf = tf.divide(cdf, tf.gather(cdf, nbins-1))
 
-
         # Calculate equalised image
-        image_eq = tfp.math.interp_regular_1d_grid(tf.cast(image_tf, tf.float32), x_min, x_max, tf.cast(cdf, tf.float32))
-
-        # if dims[2]:
-        #     image_eq = tf.reshape(image_eq, [dims[0], dims[1], dims[2]])
-        # else:
-        #     image_eq = tf.reshape(image_eq, [dims[0], dims[1]])
-
+        image_eq = tfp.math.interp_regular_1d_grid(image_tensor, x_min, x_max, tf.cast(cdf, tf.float32))
         image_eq = tf.reshape(image_eq, dims)
         image_eq = sess.run(image_eq)
 
