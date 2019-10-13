@@ -51,7 +51,13 @@ def atleast_3d(image):
         image :
             image that at least 3 dimensions
     """
-    pass
+    dim = list(image.shape)
+
+    if len(dim) >= 3:
+        return image
+    else:
+        dim.append(1)
+        return image.view(dim)
 
 
 def reflect_image(image):
