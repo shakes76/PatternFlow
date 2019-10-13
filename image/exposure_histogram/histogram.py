@@ -1,6 +1,17 @@
-import numpy as np
+
 from warnings import warn
 import tensorflow as tf
+
+
+"""
+    COMP3710 Report - Algorithm Implementation
+
+    Student: Umberto Pietroni 45981427
+
+    Porting of skimage.exposure.histogram algorithm to Tensorflow
+    https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/exposure/exposure.py#L77
+
+"""
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
     """Return histogram of image.
@@ -46,10 +57,7 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
     sess = tf.compat.v1.InteractiveSession()
 
     image = tf.convert_to_tensor(image)
-    print(image.shape)
-    print(image.dtype)
     
-
     sh = image.shape
 
     if len(sh) == 3 and sh[-1] < 4:
@@ -57,7 +65,8 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
              "computed on the flattened image. You can instead "
              "apply this function to each color channel.")
 
-    flat_image = tf.reshape(image,[-1])
+    flat_image = tf.reshape(image,[-1])     #flat the image
+
     # For integer types, histogramming with bincount is more efficient.
     if flat_image.dtype.is_integer:
         hist, bin_centers = _bincount_histogram(flat_image, source_range)
@@ -71,11 +80,13 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         else:
             ValueError('Wrong value for the `source_range` argument')
        
+        #https://www.tensorflow.org/api_docs/python/tf/histogram_fixed_width
         hist = tf.histogram_fixed_width(flat_image, hist_range, nbins=nbins)
         min,max = hist_range
+        #bins of tf.histogram_fixed_width are equal width and determined by the arguments hist_range and nbins
         bin_edges = tf.linspace(min,max,nbins+1)
 
-        #https://www.tensorflow.org/api_docs/python/tf/histogram_fixed_width
+        #compute the centers of bin
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.
         
         tf.compat.v1.global_variables_initializer()
@@ -100,6 +111,8 @@ def dtype_limits(image, clip_negative=False):
     -------
     imin, imax : tuple
         Lower and upper intensity limits.
+
+    https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/util/dtype.py#L35
     """
 
     _integer_types = (tf.int8, tf.uint8,          # 8 bits
@@ -139,10 +152,11 @@ def _bincount_histogram(image, source_range):
         The values of the histogram.
     bin_centers : array
         The values at the center of the bins.
+
+    https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/exposure/exposure.py#L38
     """
 
   
-
     if source_range not in ['image', 'dtype']:
         raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
     if source_range == 'image':
@@ -152,21 +166,21 @@ def _bincount_histogram(image, source_range):
     elif source_range == 'dtype':
         image_min, image_max = dtype_limits(image, clip_negative=False)
 
+    #cast to int32 for tf.math.bincount
     min = tf.dtypes.cast(image_min, tf.int32)
     max = tf.dtypes.cast(image_max, tf.int32)
     image_to_int = tf.dtypes.cast(image, tf.int32)
+
     image_2 = _offset_array(image_to_int, min, max)
     flat_image = tf.reshape(image_2,[-1])
-    
-
-    
+       
     leng = tf.math.subtract(max,min)
-    
-    hist = tf.math.bincount(image_to_int, minlength=leng + 1)
+    hist = tf.math.bincount(flat_image, minlength=leng + 1)
     #https://www.tensorflow.org/api_docs/python/tf/math/bincount
     
-    tf.compat.v1.global_variables_initializer()
+    
     bin_centers = tf.range(min, max + 1)
+    tf.compat.v1.global_variables_initializer()
 
     
     if source_range == 'image':
@@ -176,18 +190,17 @@ def _bincount_histogram(image, source_range):
 
 def _offset_array(arr, low_boundary, high_boundary):
 
-
     """Offset the array to get the lowest value at 0 if negative.
+
+    https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/exposure/exposure.py#L38
     """
     def true_cond(arr,low_boundary,high_boundary):
         offset = low_boundary
-        # dyn_range = high_boundary - low_boundary
-        # # get smallest dtype that can hold both minimum and offset maximum
-        # offset_dtype = np.promote_types(np.min_scalar_type(dyn_range),
-        #                                 np.min_scalar_type(low_boundary))
-        # if arr.dtype != offset_dtype:
-        #     # prevent overflow errors when offsetting
-        #     arr = arr.astype(offset_dtype)
+        dyn_range = high_boundary - low_boundary
+
+        # prevent overflow errors when offsetting
+        if not arr.dtype.is_compatible_with(dyn_range.dtype):
+            tf.dtypes.cast(arr,dyn_range.dtype)
         s_arr = tf.math.subtract(arr,offset)
         return s_arr
     def false_cond(arr):
