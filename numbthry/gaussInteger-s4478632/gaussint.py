@@ -1,7 +1,21 @@
 
+"""
+This module implements a class representing the Gaussian Integers.
+Ported from https://github.com/Robert-Campbell-256/Number-Theory-Python/blob/master/gaussint.py
+to utilise the tensorflow library.
+
+Student: s4478632
+Course: COMP3710
+
+"""
+
 import tensorflow as tf
 
 class GaussInteger():
+    """
+    A class represnting a Gaussian Integer with various functions and methods.
+    """
+    
     def __init__(self, re, im):
         """
         Initialises the class. real is the real part and imag is the
