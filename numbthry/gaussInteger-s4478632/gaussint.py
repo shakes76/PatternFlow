@@ -90,7 +90,8 @@ class GaussInteger():
 
     def norm(self):
         """
-        Calculates and returns the norm as type python complex.
+        Calculates and returns the norm as type python complex. The same as
+        multiplying itself by its conjugate.
         """
         conj = self.conjugate()
 
@@ -104,12 +105,14 @@ class GaussInteger():
         if type(other) is not GaussInteger and type(other) is not int:
             raise TypeError("Operand must be int or GaussInteger")
 
+        # Other is GaussInteger
         if type(other) is GaussInteger:        
             with tf.Session() as sess:
                 sum_re = int((self.re + other.re).eval())
                 sum_im = int((self.im + other.im).eval())
             return GaussInteger(sum_re, sum_im)
         
+        # Other is int
         with tf.Session() as sess:
             sum_re = int(self.re.eval() + other)
             sum_im = int(self.im.eval())
@@ -167,7 +170,8 @@ class GaussInteger():
 
     def mul(self, other):
         """
-        Multiplies two instances of this class together.
+        Multiplies two instances of this class together. The product of a + bi
+        and c + di is the same as ac - bd + (ad + bc)i.
         """
         if type(other) is not GaussInteger:
             raise TypeError("Operand must be GaussInteger")
@@ -426,4 +430,4 @@ class GaussInteger():
                     
             return 1
         
-            
+
