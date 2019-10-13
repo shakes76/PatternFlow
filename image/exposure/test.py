@@ -1,13 +1,66 @@
-from exposure import _calc_bin_centers  # type: ignore
-from exposure import histogram  # type: ignore
-from exposure import equalize_hist  # type: ignore
-from exposure import cumulative_distribution  # type: ignore
-from exposure import intensity_range  # type: ignore
-# from exposure import _calc_histogram
 import unittest
 import torch
-from skimage import data, img_as_float, exposure, img_as_ubyte  # type: ignore
+from skimage import data, img_as_float, exposure, img_as_ubyte
 import numpy as np
+from utils import dtype_range
+from exposure import (  # type: ignore
+    _calc_bin_centers,
+    histogram,
+    equalize_hist,
+    cumulative_distribution,
+    intensity_range,
+    adjust_gamma,
+)
+
+
+class TestGammaCorrection(unittest.TestCase):
+    def test_adjust_gamma_one(self):
+        """Same image should be returned for gamma equal to one"""
+        image = torch.FloatTensor(8, 8).uniform_(0, 255)
+        result = adjust_gamma(image, 1)
+        self.assertTrue(torch.equal(result, image))
+
+    def test_adjust_gamma_zero(self):
+        """White image should be returned for gamma equal to zero"""
+        image = torch.FloatTensor(8, 8).uniform_(0, 255)
+        result = adjust_gamma(image, 0)
+        dtype = image.dtype
+        self.assertTrue(torch.all(result == torch.tensor(
+            dtype_range[dtype][1], dtype=result.dtype)))
+
+    def test_adjust_gamma_less_one(self):
+        """Verifying the output with expected results for gamma
+        correction with gamma equal to half"""
+        image = torch.arange(0, 255, 4).reshape((8, 8)).type(torch.uint8)
+        expected = torch.tensor([
+            [0,  31,  45,  55,  63,  71,  78,  84],
+            [90,  95, 100, 105, 110, 115, 119, 123],
+            [127, 131, 135, 139, 142, 146, 149, 153],
+            [156, 159, 162, 165, 168, 171, 174, 177],
+            [180, 183, 186, 188, 191, 194, 196, 199],
+            [201, 204, 206, 209, 211, 214, 216, 218],
+            [221, 223, 225, 228, 230, 232, 234, 236],
+            [238, 241, 243, 245, 247, 249, 251, 253]], dtype=torch.uint8)
+
+        result = adjust_gamma(image, 0.5)
+        self.assertTrue(torch.equal(result, expected))
+
+    def test_adjust_gamma_greater_one(self):
+        """Verifying the output with expected results for gamma
+        correction with gamma equal to two"""
+        image = torch.arange(0, 255, 4).reshape((8, 8)).type(torch.uint8)
+        expected = torch.tensor([
+            [0,   0,   0,   0,   1,   1,   2,   3],
+            [4,   5,   6,   7,   9,  10,  12,  14],
+            [16,  18,  20,  22,  25,  27,  30,  33],
+            [36,  39,  42,  45,  49,  52,  56,  60],
+            [64,  68,  72,  76,  81,  85,  90,  95],
+            [100, 105, 110, 116, 121, 127, 132, 138],
+            [144, 150, 156, 163, 169, 176, 182, 189],
+            [196, 203, 211, 218, 225, 233, 241, 249]], dtype=torch.uint8)
+
+        result = adjust_gamma(image, 2)
+        self.assertTrue(torch.equal(result, expected))
 
 
 class TestIntensityRange(unittest.TestCase):
