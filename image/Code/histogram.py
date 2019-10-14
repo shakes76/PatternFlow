@@ -1,11 +1,14 @@
 from skimage import data, exposure, img_as_float
 from skimage import img_as_ubyte
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 image = img_as_ubyte(data.camera())
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
-  sh = image.shape
+  image = tf.convert_to_tensor(image, dtype = tf.float32) # Change image to tensorflow
+  with tf.Session() as sess:
+      sh = sess.run(tf.shape(image))
   if len(sh) == 3 and sh[-1] < 4:
       warn("This might be a color image. The histogram will be "
             "computed on the flattened image. You can instead "
@@ -30,6 +33,5 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
       hist = hist / np.sum(hist)
   return hist, bin_centers
 
-hist, hist_centers = histogram(image, nbins=256, source_range='image', normalize=False)
 
 
