@@ -35,7 +35,7 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
         scale = float(dtype.limits[1] - dtype.limits[0])
         image_tensor = tf.cast(image_tensor, tf.float32)
 
-        # equation: O = 1/(1 + exp*(gain*(cutoff - I)))
+        # equation: 1/(1 + exp*(gain*(cutoff - I)))
         if inv:
             out = (1 - 1 / (1 + tf.math.exp(
                 gain * (cutoff - tf.div(image_tensor, scale))))) * scale
