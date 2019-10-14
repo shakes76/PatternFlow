@@ -94,3 +94,26 @@ def xgcd(a,b):
 """end of xgcd function"""
 
 #################################################
+
+"""start of inverse_mod function"""
+
+def tru_cond_inverse_mod(xa, n):
+    """An auxiliary function for inverse_mod
+    
+    return a tuple, (the inverse result, and OK message)
+    """
+    return tf.math.floormod(xa, n), tf.constant("OK")
+    
+def inverse_mod(a,n):
+    """This function computes Compute 1/b mod n.
+    
+    return a tuple. The second element of the tuple is a string
+    that tells whether or not the inverse_mod exists "OK" means
+    it exists, otherwise it does not
+    """
+    (g,xa,xb) = xgcd(a,n)
+    result = tf.cond(tf.equal(g,1), lambda: tru_cond_inverse_mod(xa, n), 
+            lambda: (tf.constant(0), 
+            tf.constant("***** Error *****: value a has no" 
+                        "inverse (mod n) as their gcd is g, not 1.")))
+    return result
