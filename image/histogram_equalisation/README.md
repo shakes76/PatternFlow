@@ -6,8 +6,25 @@ This directory contains a Tensorflow implementation of the histogram equalisatio
 Histogram equalisation is an image processing technique used to enhance contrast in images.
 It is most commonly used when image data is represented by close contrast values.
 
-It works by first calculating the histogram of a given image, which is essentially a distribution
-representing tonal intensity. 
+A histogram of an image is the distribution of its tonal intensity. 
+Images with close contrast values will produce a histogram with a high narrow peaks.
+You can see this quite clearly in the image of the moon's surface below. 
+
+The goal of equalisation is to effectively spread out this histogram so that a wider
+range of pixel intensities are present. Notice the difference between the histograms below, before
+and after equalisation. 
+
+This technique has a variety of applications, although it can sometimes produce unrealistic image qualities.
+Some example applications are:
+* Improving medical images
+* Adjusting under/over-exposed photographs
+* Improving thermal and satellite images
+
+![image histogram comparison](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/hist.png)
+
+#### Algorithm
+* Calculate the histogram of a given image
+* 
 
 ## Implementation
 equalize_hist(image, nbins=256, mask=None)
@@ -107,3 +124,10 @@ equalize_hist(image, nbins=256, mask=None)
     plt.show()
     
 ![equalised gray image w/ mask](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/mask.png)
+
+
+## References
+
+* https://github.com/scikit-image/scikit-image/blob/master/skimage/exposure/exposure.py#L187
+* http://www.janeriksolem.net/histogram-equalization-with-python-and.html
+* https://en.wikipedia.org/wiki/Histogram_equalization#Implementation
