@@ -37,9 +37,11 @@ equalize_hist(image, nbins=256, mask=None)
 * Tensorflow-probability 0.7
 
 #### Installation
+
 * git clone https://github.com/drussell13/PatternFlow.git
 
 #### Simple Example
+    
     from skimage import data
     import matplotlib.pyplot as plt
     from equalize_hist import equalize_hist
@@ -47,13 +49,22 @@ equalize_hist(image, nbins=256, mask=None)
     img = data.moon()
     img_eq = equalize_hist(img)
     
-    plt.imshow(img_eq)
+    fig = plt.figure()
+    axl = fig.add_subplot(1, 2, 1)
+    axl.imshow(img)
+    axl.title.set_text('original')
+    axl = fig.add_subplot(1, 2, 2)
+    axl.imshow(img_eq)
+    axl.title.set_text('equalised')
+    
     plt.show()
     
+![equalised gray image](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/simple.png)
 
 ## Examples
 
 #### Colour Images
+
     from skimage import data
     import matplotlib.pyplot as plt
     from equalize_hist import equalize_hist
@@ -61,16 +72,38 @@ equalize_hist(image, nbins=256, mask=None)
     img = data.astronaut()
     img_eq = equalize_hist(img)
     
-    plt.imshow(img_eq)
+    fig = plt.figure()
+    axl = fig.add_subplot(1, 2, 1)
+    axl.imshow(img)
+    axl.title.set_text('original')
+    axl = fig.add_subplot(1, 2, 2)
+    axl.imshow(img_eq)
+    axl.title.set_text('equalised')
+    
     plt.show()
     
+![equalised colour image](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/colour.png)
+    
 #### Applying a Mask
+    
     from skimage import data
+    import numpy as np
     import matplotlib.pyplot as plt
     from equalize_hist import equalize_hist
     
     img = data.moon()
-    img_eq = equalize_hist(img)
+    image_mask = np.zeros(img.shape)
+    image_mask[256:, 0:] = 1
+    img_eq = equalize_hist(img, mask=image_mask)
     
-    plt.imshow(img_eq)
+    fig = plt.figure()
+    axl = fig.add_subplot(1, 2, 1)
+    axl.imshow(img)
+    axl.title.set_text('original')
+    axl = fig.add_subplot(1, 2, 2)
+    axl.imshow(img_eq)
+    axl.title.set_text('equalised')
+    
     plt.show()
+    
+![equalised gray image w/ mask](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/mask.png)
