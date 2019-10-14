@@ -16,6 +16,19 @@ It is possible to test the algorithm by running the main.py script without any a
 python3 main.py
 ```
 
+### Example
+```
+from skimage import data, img_as_float
+from histogram import histogram
+import numpy as np
+
+image = img_as_float(data.camera())
+np.histogram(image, bins=2)
+>>> (array([107432, 154712]), array([ 0. ,  0.5,  1. ]))
+histogram(image, nbins=2)
+>>> (array([107432, 154712]), array([ 0.25,  0.75]))
+```
+
 ## Results
 
 The driver script load an image and generates its histogram first using numpy histogram function and then also with the tensorflow version.
