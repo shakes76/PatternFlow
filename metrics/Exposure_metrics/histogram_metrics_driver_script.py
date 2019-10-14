@@ -1,4 +1,4 @@
-from histogram_mertics import histogram_mertics
+from histogram_metrics import histogram_mertics
 import tensorflow as tf 
 from tensorflow.keras.datasets import cifar10, mnist 
 import matplotlib.pyplot as plt
