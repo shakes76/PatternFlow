@@ -20,11 +20,15 @@ Some example applications are:
 * Adjusting under/over-exposed photographs
 * Improving thermal and satellite images
 
+
 ![image histogram comparison](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/hist.png)
+
 
 #### Algorithm
 * Calculate the histogram of a given image
-* 
+* Calculate the cumulative distribution function (cdf) of the histogram
+* Normalise the cdf
+* Use the cdf as an intensity transformation function and interpolate a new set of pixel values 
 
 ## Implementation
 equalize_hist(image, nbins=256, mask=None)
