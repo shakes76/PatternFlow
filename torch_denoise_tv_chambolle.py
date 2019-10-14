@@ -13,12 +13,20 @@ import matplotlib.image as img
 
 #%%
 def diff(image, axis):
-    if axis == 0:
-        return image[1:,:,:] - image[:-1,:,:]
-    elif axis == 1:
-        return image[:,1:,:] - image[:,:-1,:]
-    elif axis == 2:
-        return image[:,:,1:] - image[:,:,:-1]
+
+    ndim = image.ndim
+    if ndim == 3:    
+        if axis == 0:
+            return image[1:,:,:] - image[:-1,:,:]
+        elif axis == 1:
+            return image[:,1:,:] - image[:,:-1,:]
+        elif axis == 2:
+            return image[:,:,1:] - image[:,:,:-1]
+    elif ndim == 2: 
+        if axis == 0:
+            return image[1:,:] - image[:-1,:]
+        elif axis == 1:
+            return image[:,1:] - image[:,:-1]
 #%%                    ]
 def _denoise_tv_chambolle_nd_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200):
     
@@ -68,3 +76,18 @@ def _denoise_tv_chambolle_nd_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200):
                 E_previous = Et
         i += 1
         return outt
+#%%
+def denoise_tv_chambolle_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200,
+                         multichannel=False):
+    
+    imageType = ttt.dtype
+    if imageType is not torch.float32:
+        ttt = torch.FloatTensor(ttt)
+    if multichannel:
+        outt = torch.zeros_like(ttt)
+        for c in range(ttt.shape[-1]):
+            outt[...,c] = _denoise_tv_chambolle_nd_torch(ttt[..., c], weight, eps, n_iter_max)
+    else:
+        outt = _denoise_tv_chambolle_nd_torch(ttt, weight, eps, n_iter_max)
+    
+    return outt
