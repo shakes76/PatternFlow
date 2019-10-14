@@ -21,3 +21,11 @@ if __name__ == '__main__':
     assert_array_equal(result, expected)
     print("The output is equal to the expected results")
 
+    # try to test a real image
+    img = cv2.imread('uni.jpg')
+    # Call the sigmoid function.
+    result = adjust_sigmoid(img)
+    # Display the result.
+    cv2.imwrite('sigmoid_uni_img.jpg', result)
+    cv2.imshow("sigmoid_uni_img", result)
+    cv2.waitKey()
