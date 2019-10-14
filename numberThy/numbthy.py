@@ -205,7 +205,12 @@ def factor(n):
 	factspow += [(thefact,thecount)]
 	return tuple(factspow)
 
-print(factor(6)[0][0].eval())
+print(factors(4)[0].eval())
+print(factors(4)[1].eval())
+print(factor(4)[0][0].eval())
+print(factor(4)[0][1].eval())
+print(factor(4)[1][0].eval())
+print(factor(4)[1][1].eval())
 
 ####################-- prime_divisors function --################
 
@@ -215,15 +220,40 @@ def prime_divisors(n):
 ####################-- euler_phi function --################
 
 def euler_phi(n):
-    n = tf.cond(tf.math.less_equal(n,0),lambda:0,lambda:n)
-    n = tf.cond(tf.math.equal(n,1),lambda:1,lambda:n)
-    return functools.reduce(lambda a,x:tf.math.multiply(tf.math.multiply(a,tf.math.pow(x[0],tf.math.subtract(x[1],1))),tf.math.multiply(tf.math.subtract(x[0],1))),factor(n),1)
+    result = 1
+    for i in range(2,n):
+        result = tf.cond(tf.math.equal(gcd(i,n),1),lambda:tf.math.add(result,1),lambda: tf.math.add(result,0))
+    return result
 
+print(euler_phi(9).eval())
 
+####################-- def carmichael_lambda function --################
 
-print(euler_phi(4))
+def carmichael_lambda(n):
+    f = [-1]
+    f = tf.tuple(f)
+    i = 1
+    i, f, n = tf.while_loop(
+        lambda i,f,n: tf.math.less(i,n),
+        body1,
+        [i,f,n]
+    )
+    return f
+def body1(i,f,n):
+    i,f,n = tf.cond(tf.math.equal(gcd(i,n),1), lambda:bbb(i,f,n),lambda:(i,f,n))  
+    return i,f,n
 
-####################-- prime_divisors function --################
+def bbb(i,f,n):
+    print(f)
+    t = f.append(i)
+    i = tf.math.add(i,1)
+    return i,f,n
+
+g = carmichael_lambda(5)
+print(g[0].eval())
+print(g[1].eval())
+print(g[2].eval())
+print(g[3].eval())
 
 ################ Internally used functions #########################################
 
