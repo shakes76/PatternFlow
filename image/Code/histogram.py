@@ -1,7 +1,6 @@
 from skimage import data, exposure, img_as_float
 from skimage import img_as_ubyte
 import tensorflow as tf
-import numpy as np
 import matplotlib.pyplot as plt
 
 
