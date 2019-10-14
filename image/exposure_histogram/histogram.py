@@ -64,8 +64,8 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         warn("This might be a color image. The histogram will be "
              "computed on the flattened image. You can instead "
              "apply this function to each color channel.")
-
-    flat_image = tf.reshape(image,[-1])     #flat the image
+    #flat the image
+    flat_image = tf.reshape(image,[-1])     
 
     # For integer types, histogramming with bincount is more efficient.
     if flat_image.dtype.is_integer:
@@ -93,7 +93,11 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
 
     if normalize:
         hist = hist / tf.math.reduce_sum(hist)
-    return sess.run(hist), sess.run(bin_centers)
+    
+    ret_hist =  sess.run(hist)
+    ret_bin_centers = sess.run(bin_centers)
+    sess.close()
+    return ret_hist, ret_bin_centers
 
 
 
