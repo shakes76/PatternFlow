@@ -16,18 +16,10 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
 
   with tf.Session() as sess:
     image = tf.reshape(image,[-1,1]) # 512**2 ==> (262144,)
-  # For integer types, histogramming with bincount is more efficient.
-  if np.issubdtype(image.dtype, np.integer) == False:
-      hist, bin_centers = _bincount_histogram(image, source_range)
-  else:
-      if source_range == 'image':     ###
-          hist_range = None
-      elif source_range == 'dtype':
-          hist_range = dtype_limits(image, clip_negative=False)
-      else:
-          ValueError('Wrong value for the `source_range` argument')
-      hist, bin_edges = np.histogram(image, bins=nbins, range=hist_range)  # nbins = 256
-      bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.         # hist: 数量。 bin_centers: 刻度。
+  value_range = [0.0, 256.0] 
+  new_values = image
+  hist, bin_edges = np.histogram(image, bins=nbins, range=hist_range)  # nbins = 256
+  bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.         # hist: 数量。 bin_centers: 刻度。
       #print(bin_centers)
   if normalize:
       hist = hist / np.sum(hist)
