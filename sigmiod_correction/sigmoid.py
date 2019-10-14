@@ -27,19 +27,27 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
     # Transform the ndarray to a tensor
     image_tensor = tf.constant(image)
 
-    # scale pixel values to [0, 1], which support a variety of data types.
-    scale = 255.0
+    # raising InvalidArgumentError unless image_tensor is all non-negative
+    with tf.control_dependencies([tf.assert_non_negative(image_tensor)]):
+        dtype = image_tensor.dtype
 
-    # equation: O = 1/(1 + exp*(gain*(cutoff - I)))
-    if inv:
-        out = (1 - 1 / (1 + tf.math.exp(
-            gain * (cutoff - image_tensor / scale)))) * scale
-    else:
-        out = (1 / (1 + tf.math.exp(
-            gain * (cutoff - image_tensor / scale)))) * scale
+        # scale pixel values to [0, 1], which support a variety of data types.
+        scale = float(dtype.limits[1] - dtype.limits[0])
+        image_tensor = tf.cast(image_tensor, tf.float32)
 
-    with tf.Session() as sess:
-        return sess.run(out)
+        # equation: O = 1/(1 + exp*(gain*(cutoff - I)))
+        if inv:
+            out = (1 - 1 / (1 + tf.math.exp(
+                gain * (cutoff - tf.div(image_tensor, scale))))) * scale
+        else:
+            out = (1 / (1 + tf.math.exp(
+                gain * (cutoff - tf.div(image_tensor, scale))))) * scale
+
+        #  convert to original type
+        out = tf.cast(out, dtype)
+
+        with tf.Session() as sess:
+            return sess.run(out)
 
 
 
