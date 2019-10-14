@@ -14,8 +14,8 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
             "computed on the flattened image. You can instead "
             "apply this function to each color channel.")
 
-  image = image.flatten() # 512**2 = (262144,)
-  print(type(image))
+  with tf.Session() as sess:
+    image = tf.reshape(image,[-1,1]) # 512**2 ==> (262144,)
   # For integer types, histogramming with bincount is more efficient.
   if np.issubdtype(image.dtype, np.integer) == False:
       hist, bin_centers = _bincount_histogram(image, source_range)
