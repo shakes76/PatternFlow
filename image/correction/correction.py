@@ -14,25 +14,25 @@ def adjust_log(image, gain=1, inv=False):
     For inverse logarithmic correction, the equation is
     ``O = gain*(2**I - 1)``.
 
-    :param image: (Tensor) Input image
+    :param image: (ndarray) Input image
     :param gain: (float) The constant multiplier. Default value is 1.
     :param inv: (bool) If False, it performs logarithmic correction,
                         else correction will be inverse logarithmic. Defaults to False.
     :return: (ndarray) Logarithm corrected output image.
     """
-    # TF Session initialization
-    sess = tf.InteractiveSession()
-    # check the input image are all non negative
-    tf.debugging.assert_non_negative(image).mark_used()
     dtype = image.dtype
-
+    image = tf.constant(image, tf.float32)
+    # check the input image are all non negative
+    tf.debugging.assert_non_negative(image)
+    norm = image / 256
     if inv:
-        base = tf.constant(2, dtype=dtype)
-        out = (tf.pow(base, image) - 1) * gain
-        return out.eval()
-
-    out = tf.math.log(1 + image) * gain
-    return out.eval()
+        base = tf.constant(2.0)
+        out = (tf.pow(base, norm) - 1) * gain
+    else:
+        out = tf.math.log1p(norm) * gain / tf.math.log(2.0)
+    inv_norm = out * 256
+    out = tf.dtypes.cast(inv_norm, dtype)
+    return out.numpy()
 
 
 def adjust_gamma(image, gamma=1, gain=1):
@@ -45,8 +45,7 @@ def adjust_gamma(image, gamma=1, gain=1):
     :param gain: (float) The constant multiplier. Default value is 1
     :return: (ndarray) Gamma corrected output image.
     """
-    # TF Session initialization
-    sess = tf.InteractiveSession()
+    image = tf.constant(image)
     # check the input image are all non negative
     tf.debugging.assert_non_negative(image).mark_used()
     dtype = image.dtype
@@ -56,7 +55,7 @@ def adjust_gamma(image, gamma=1, gain=1):
 
     gamma = tf.constant(gamma, dtype=dtype)
     out = tf.pow(image, gamma) * gain
-    return out.eval()
+    return out.numpy()
 
 
 def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
@@ -74,8 +73,7 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
                     Defaults to False.
     :return: (ndarray) Sigmoid corrected output image.
     """
-    # TF Session initialization
-    sess = tf.InteractiveSession()
+    image = tf.constant(image)
     # check the input image are all non negative
     tf.debugging.assert_non_negative(image).mark_used()
     dtype = image.dtype
@@ -85,4 +83,6 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
     out = 1 / (1 + tf.exp(gain * (cutoff - image)))
     if inv:
         out = 1 - out
-    return out.eval()
+    with tf.Session() as sess:
+        out = sess.run(out)
+    return out
