@@ -1,4 +1,5 @@
 # Tensorflow impletmention of skimage.exposure algorithms
+Implements image equalization via histogram, which means the image histogram and cumulative distribution also need to be calculated. 
 
 ## Depends:
 * Tensorflow
@@ -7,31 +8,37 @@
 
 ## Usage
 Example usage can but found in histogram_mertics_driver_scripte.py.
-Note all funcations return either nothing (for plotting funcations) or a list of tensors that excute the required computation (for image_histogram and cumulative_distribution) or a singal tensor (for equalize_hist_by_index and equalize_hist_by_image).
-These tensors need to be evulated just like other tensorflow tensors in order to get the data.
+Note all functions return either nothing (for plotting functions) or a list of tensors that execute the required computation (for image_histogram and cumulative_distribution) or a single tensor (for equalize_hist_by_index and equalize_hist_by_image).
+These tensors need to be evaluated just like other tensorflow tensors in order to get the data.
 ### Quickstart guide
 * pass a list of pictures to the histogram_mertics object
-* you can now call the funcations plot_histogram and plot_cdf to plot the images colour channel historgram and cdf
+* you can now call the functions plot_histogram and plot_cdf to plot the images colour channel histogram and cdf
 * you can equalize an image passed in in the init if you know the index via equalize_hist_by_index(index)
 * you can equalize any other image by passing it in via equalize_hist_by_image
 
-Note all following examples can be recreated by simply runnning histogram_mertics_driver_script.py
+# Funcations
+
+##Driver script
+Note all following examples can be recreated by simply running 
+python histogram_mertics_driver_script.py
 
 ## histogram
 
-For each colour channel in all the images passed in the image histgram is calculated. The funcation doing most of the work is the inbuilt tensorflow funcation tf.histogram_fixed_width.
+For each colour channel in all the images passed in the image histogram is calculated. The function doing most of the work is the inbuilt tensorflow function tf.histogram_fixed_width. The function returns a list of tensors that calculate the result for each colour channel. It also saves the result in the object for later use
 Example run on cifar10 data
+
 ![histogram example](https://i.imgur.com/37RaCVq.png)
 
 ## cumulative distribution
 
-For each colour channel the cummulative distributions of that colours histgramm can be calculated rather simiply with tf.math.cumsum and normalizition
+For each colour channel the cumulative distributions of that colours histogram can be calculated rather simply with tf.math.cumsum and normalization. The function returns a list of tensors that calculate the result for each colour channel. It also saves the result in the object for later use
 Example run on cifar10 data
-![Cummlative distrubution example](https://i.imgur.com/E2dCTJK.png)
+
+![Cumulative distribution example](https://i.imgur.com/E2dCTJK.png)
 
 ## equalize hist
 
-in order to equalize images a funcation from tensorflow probability needs to be used. tfp.amth.interp_regular_1d_grid always the interpational needed to equalize the image with respect to the cumulative distribution
+in order to equalize images a function from tensorflow probability needs to be used. tfp.amth.interp_regular_1d_grid does the interpolation needed to equalize the image with respect to the cumulative distribution. The function returns a tensor that calculate the result for the chosen image.
 
 Example run on images passed in during init:
 
