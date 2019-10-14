@@ -26,8 +26,8 @@ def plot(image1,image2):
     ax3.set_title('Matched')
     plt.tight_layout()
     plt.show()
-##Driver script
 
+##Driver script
 if __name__ == "__main__":
     #load the images
     reference = data.coffee()
