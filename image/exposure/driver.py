@@ -19,7 +19,7 @@ def histogram_demo():
     hist, bins = histogram(image)
     ax2.set_title("histogram of image")
     ax2.hist(hist, bins=bins)
-    plt.show()
+    f.show()
 
 
 def cumulative_distribution_demo():
@@ -32,7 +32,7 @@ def cumulative_distribution_demo():
     hist, bins = cumulative_distribution(image)
     ax2.plot(bins, hist, 'b-')
     ax2.set_title("cdf of image")
-    plt.show()
+    f.show()
 
 
 def equalize_hist_demo():
@@ -47,7 +47,7 @@ def equalize_hist_demo():
     ax2.get_xaxis().set_visible(False)
     ax2.get_yaxis().set_visible(False)
     ax2.imshow(equ_image)
-    plt.show()
+    f.show()
 
 
 def adjust_gamma_demo():
@@ -67,11 +67,15 @@ def adjust_gamma_demo():
     ax3.get_xaxis().set_visible(False)
     ax3.get_yaxis().set_visible(False)
     ax3.imshow(shift_right_img)
-    plt.show()
+    f.show()
 
 
 def main():
+    histogram_demo()
+    cumulative_distribution_demo()
+    equalize_hist_demo()
     adjust_gamma_demo()
+    plt.show()
 
 
 if __name__ == "__main__":
