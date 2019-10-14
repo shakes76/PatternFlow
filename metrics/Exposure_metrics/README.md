@@ -44,10 +44,10 @@ Example run on images passed in during init:
 
 ![Equalize hist by index before](https://i.imgur.com/NjCblSV.png)
 
-![Equalize hist by index after](https://i.imgur.com/2n364ZI.png)
+![Equalize hist by index after](https://i.imgur.com/fUejoj7.png)
 
 Example on passing in new images (note new dims are from needed padding):
 
 ![Equalize hist on new image before](https://i.imgur.com/FbS9sBR.png)
 
-![Equalize hist on new image after](https://i.imgur.com/48RaVme.png)
+![Equalize hist on new image after](https://i.imgur.com/zkJEIKo.png)

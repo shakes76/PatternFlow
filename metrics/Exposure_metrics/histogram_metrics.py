@@ -81,15 +81,16 @@ class histogram_mertics:
             self.cumulative_distribution()
         cdf = self.cdf[0]
         reshaped = tf.reshape(self.pictures[index,:,:,0],[-1])
-        interresult = tfp.math.interp_regular_1d_grid(reshaped,0,255,cdf)
-        output = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2],1])
+        interresult = tfp.math.interp_regular_1d_grid(tf.dtypes.cast(reshaped,tf.float64),0,255,cdf)
+        output = tf.reshape(reshaped,[self.pictures.shape[1],self.pictures.shape[2],1])
         for i in range(1,self.pictures.shape[-1]):
             cdf = self.cdf[i]
             reshaped = tf.reshape(self.pictures[index,:,:,i],[-1])
-            interresult = tfp.math.interp_regular_1d_grid(reshaped,0,255,cdf)
+            interresult = tfp.math.interp_regular_1d_grid(tf.dtypes.cast(reshaped,tf.float64),0,255,cdf)
             out = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2],1])
             output = tf.concat([output, out],axis=2)
-        return output
+        #note will be in the range 0-1 for constency times it by 255 to get into the right range
+        return tf.dtypes.cast(output*255, tf.int8)
     
     def equalize_hist_by_image(self,inimage):
         """equalizes an image passed in, uses the hisograms martics
@@ -104,23 +105,26 @@ class histogram_mertics:
         if len(inimage.shape) < 3:
             inimage = inimage.reshape(inimage.shape[0],inimage.shape[1],1)
         imshape = inimage.shape
+        print(imshape)
         tfimage = tf.constant(inimage)
         reimage = tf.image.resize_image_with_pad(tfimage,self.pictures.shape[1],self.pictures.shape[2])
         reshaped = tf.reshape(reimage[:,:,0],[-1])
         interresult = tfp.math.interp_regular_1d_grid(tf.dtypes.cast(reshaped,tf.float64),0,255,cdf)
         output = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2],1])
+        print(output)
         try:
             for i in range(1,imshape[-1]):
                 cdf = self.cdf[i]
                 reshaped = tf.reshape(reimage[:,:,i],[-1])
-                interresult = tfp.math.interp_regular_1d_grid(reshaped,0,255,cdf)
-                out = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2,1]])
+                interresult = tfp.math.interp_regular_1d_grid(tf.dtypes.cast(reshaped,tf.float64),0,255,cdf)
+                out = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2], 1])
                 output = tf.concat([output, out],axis=2)
         except:
             #note will only get here if init images have less colour channels then inimage
             #we just return whatever channels have been equalized so far
             return output
-        return output
+        #note will be in the range 0-1 for constency times it by 255 to get into the right range
+        return tf.dtypes.cast(output*255, tf.int8)
     
     def plot_histogram(self):
         """plots the histgrams
