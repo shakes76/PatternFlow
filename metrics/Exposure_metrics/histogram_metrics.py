@@ -1,7 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow_probability as tfp
-import numpy as np
 
 class histogram_mertics:
     
@@ -9,7 +8,8 @@ class histogram_mertics:
     def __init__(self,pictures,nbins=32):
         """creates a histogram mertics class
         Args:
-            pictures: A list of images to caculate historgram mertics on
+            pictures: A list of images to caculate historgram mertics on 
+            assumes all images have the same shape
             nbins: The number of bins to create the histgram with
         Returns:
             A histogram_mertics object
@@ -109,12 +109,17 @@ class histogram_mertics:
         reshaped = tf.reshape(reimage[:,:,0],[-1])
         interresult = tfp.math.interp_regular_1d_grid(tf.dtypes.cast(reshaped,tf.float64),0,255,cdf)
         output = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2],1])
-        for i in range(1,imshape[-1]):
-            cdf = self.cdf[i]
-            reshaped = tf.reshape(reimage[:,:,i],[-1])
-            interresult = tfp.math.interp_regular_1d_grid(reshaped,0,255,cdf)
-            out = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2,1]])
-            output = tf.concat([output, out],axis=2)
+        try:
+            for i in range(1,imshape[-1]):
+                cdf = self.cdf[i]
+                reshaped = tf.reshape(reimage[:,:,i],[-1])
+                interresult = tfp.math.interp_regular_1d_grid(reshaped,0,255,cdf)
+                out = tf.reshape(interresult,[self.pictures.shape[1],self.pictures.shape[2,1]])
+                output = tf.concat([output, out],axis=2)
+        except:
+            #note will only get here if init images have less colour channels then inimage
+            #we just return whatever channels have been equalized so far
+            return output
         return output
     
     def plot_histogram(self):
@@ -126,7 +131,6 @@ class histogram_mertics:
             gram = self.image_histogram()
         col = ["r","g","b"]
         for i,x in enumerate(gram):
-#            bins=self.nbins
             ind = self.sess.run(tf.range(self.nbins))
             width = 0.3
             plt.bar(ind - width*(i), self.sess.run(x),width,color = col[i])
