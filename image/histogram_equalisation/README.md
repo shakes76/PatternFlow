@@ -24,7 +24,7 @@ Some example applications are:
 ![image histogram comparison](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/hist.png)
 
 
-#### Algorithm
+## Algorithm
 * Calculate the histogram of a given image
 * Calculate the cumulative distribution function (cdf) of the histogram
 * Normalise the cdf
