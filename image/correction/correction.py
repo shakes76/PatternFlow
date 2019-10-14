@@ -24,13 +24,13 @@ def adjust_log(image, gain=1, inv=False):
     image = tf.constant(image, tf.float32)
     # check the input image are all non negative
     tf.debugging.assert_non_negative(image)
-    norm = image / 256
+    norm = image / 255
     if inv:
         base = tf.constant(2.0)
         out = (tf.pow(base, norm) - 1) * gain
     else:
         out = tf.math.log1p(norm) * gain / tf.math.log(2.0)
-    inv_norm = out * 256
+    inv_norm = out * 255
     out = tf.dtypes.cast(inv_norm, dtype)
     return out.numpy()
 

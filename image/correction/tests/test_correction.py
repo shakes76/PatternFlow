@@ -24,10 +24,25 @@ class TestCorrection(unittest.TestCase):
             [179, 182, 186, 189, 193, 196, 199, 203],
             [206, 209, 213, 216, 219, 222, 225, 228],
             [231, 234, 238, 241, 244, 246, 249, 252]], dtype=np.uint8)
-        expected = exposure.adjust_log(image, 1)
         result = correction.adjust_log(image, 1)
         np.testing.assert_almost_equal(result, expected)
 
+    def test_adjust_inv_log(self):
+        """Verifying the output with expected results for inverse logarithmic
+        correction with multiplier constant multiplier equal to unity"""
+        image = np.arange(0, 255, 4, np.uint8).reshape((8, 8))
+        expected = np.array([
+            [  0,   2,   5,   8,  11,  14,  17,  20],
+            [ 23,  26,  29,  32,  35,  38,  41,  45],
+            [ 48,  51,  55,  58,  61,  65,  68,  72],
+            [ 76,  79,  83,  87,  90,  94,  98, 102],
+            [106, 110, 114, 118, 122, 126, 130, 134],
+            [138, 143, 147, 151, 156, 160, 165, 170],
+            [174, 179, 184, 188, 193, 198, 203, 208],
+            [213, 218, 224, 229, 234, 239, 245, 250]], dtype=np.uint8)
+
+        result = correction.adjust_log(image, 1, True)
+        np.testing.assert_almost_equal(result, expected)
 
 
 
