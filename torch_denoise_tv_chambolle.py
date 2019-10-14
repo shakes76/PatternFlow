@@ -27,7 +27,7 @@ def diff(image, axis):
             return image[1:,:] - image[:-1,:]
         elif axis == 1:
             return image[:,1:] - image[:,:-1]
-#%%                    ]
+#%%                    
 def _denoise_tv_chambolle_nd_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200):
     
      ndimt = ttt.ndim
@@ -50,7 +50,7 @@ def _denoise_tv_chambolle_nd_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200):
             outt = ttt + dt
         else:
             outt = ttt
-        Et = (dt ** 2).sum()
+        Et = torch.mul(dt,dt).sum()
         
         slices_gt = [slice(None), ] * (ndimt + 1)
         for ax in range(ndimt):
@@ -75,7 +75,8 @@ def _denoise_tv_chambolle_nd_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200):
             else:
                 E_previous = Et
         i += 1
-        return outt
+        
+     return outt
 #%%
 def denoise_tv_chambolle_torch(ttt, weight=0.1, eps=2.e-4, n_iter_max=200,
                          multichannel=False):

@@ -12,19 +12,21 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 document = os.path.join(os.path.expanduser("~"), "/Users/s4503302/Documents/LLD_DCGAN")
-loadPath_2x = os.path.join(document, "hat.png")
+loadPath_2x = os.path.join(document, "3colors.png")
 image = img.imread(loadPath_2x)
-img_test=image.copy()
-plt.imshow(img_test)
+
 theHat=image.copy()
 
 plt.imshow(theHat)
-theHat_denoise = denoise_tv_chambolle(theHat)
+theHat_denoise = denoise_tv_chambolle(theHat,multichannel=True)
 plt.imshow(theHat_denoise)
+#%%
 
-
-ttt = torch.from_numpy(image)
-        
+ttt = torch.Tensor(image)
+plt.imshow(ttt)
+ttt_denoise = denoise_tv_chambolle_torch(ttt,weight = 0.1, eps = 2.e-4,multichannel=False)
+plt.imshow(ttt_denoise)  
+ 
 #%%
 def _denoise_tv_chambolle_nd(image, weight=0.1, eps=2.e-4, n_iter_max=200):
     """Perform total-variation denoising on n-dimensional images.
