@@ -16,6 +16,10 @@ These tensors need to be evaluated just like other tensorflow tensors in order t
 * you can equalize an image passed in in the init if you know the index via equalize_hist_by_index(index)
 * you can equalize any other image by passing it in via equalize_hist_by_image
 
+# Theory
+
+Histogram equalization is a method in increase the global contrast of an image. In a nutshell it works via spreading out the most frequent intensity values. It does this via binning the flattened image data from each colour channel to create the image histogram. This histograms are then used to created a cumulative distribution function (CDF) via a cumulative sum with normalization. This CDF is then used to interperal from the image histogram, the result of which is the equalized image. This has the best effect in images with constant brightness. It is commonly used on scientific imaging such as X-rays, thermal imaging or satellite imaging due to it’s advantage of very low computational overhead, making it useful it you need to equalize images in real time or equalize a large amount of images.
+
 # Funcations
 
 ##Driver script
