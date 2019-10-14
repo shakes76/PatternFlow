@@ -1,1 +1,1 @@
-from module import histogram
+from Histogram import histogram

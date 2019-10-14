@@ -1,4 +1,4 @@
-from module import histogram
+from Histogram import histogram
 from skimage import data
 from skimage import data, img_as_float
 import matplotlib.pyplot as plt
