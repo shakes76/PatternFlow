@@ -9,6 +9,8 @@ information. Only four algorithms were implemented from this module.
 
 return the histogram of an image with bins centered.
 ```python
+from skimage import data
+import torch
 image = torch.tensor(data.camera())
 f, (ax1, ax2) = plt.subplots(1, 2)
 ax1.imshow(image)
@@ -26,6 +28,8 @@ ax2.hist(hist, bins=bins)
 return image after histogram equalization
 
 ```python
+from skimage import data
+import torch
 image = torch.tensor(data.camera())
 equ_image = equalize_hist(image)
 f, (ax1, ax2) = plt.subplots(1, 2)
@@ -45,6 +49,8 @@ plt.show()
 
 return cumulative distribution function (cdf) for the given image
 ```python
+from skimage import data
+import torch
 image = torch.tensor(data.coffee())
 f, (ax1, ax2) = plt.subplots(1, 2)
 ax1.imshow(image)
@@ -65,6 +71,8 @@ performs gamma correction on the input image. For gamma greater than 1, the
 output image will be darker than the original one. However, when gamma less
 than 1, the output image will be brighter than the original one.
 ```python
+from skimage import data
+import torch
 image = torch.tensor(data.astronaut())
 shift_left_img = adjust_gamma(image, 1.5)
 shift_right_img = adjust_gamma(image, 0.5)
