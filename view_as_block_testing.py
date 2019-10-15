@@ -35,13 +35,11 @@ except (ValueError):
     print("ValueError")     
     
     
-
 # Forth - if the block shape not divisible
 try: 
     test4  = view_as_blocks(A,(10, 2, 2)) 
 except (ValueError): 
     print("ValueError") 
-    
     
 
 # Fifth - if the block shape not tuple
