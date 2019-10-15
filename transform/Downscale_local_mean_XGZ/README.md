@@ -40,38 +40,6 @@ There are three important functions of **Downscale_local_mean algorithm** algort
 * view_as_blocks function
 * as_strided function
 
-This algorithm use block_reduce function to down-sample input image by applying function to local blocks. And this algorithm use view_as_blocks function and as_strided function to get the blocks. In each block by using view_as_blocks function, this algorithm calculate the mean of this block and return the result of this block.
-
-## Example:
-```
-The original image is:
-
-([[ 0,  1,  2,  3,  4],
-  [ 5,  6,  7,  8,  9],
-  [10, 11, 12, 13, 14]])
-
-The blocks with the blcok size is (2,3) are:
-
-[[[[ 0.  1.  2.]
-   [ 5.  6.  7.]]
-
-  [[ 3.  4.  0.]
-   [ 8.  9.  0.]]]
-
-
- [[[10. 11. 12.]
-   [ 0.  0.  0.]]
-
-  [[13. 14.  0.]
-   [ 0.  0.  0.]]]]
-
-The result after calculating the mean:
-
-array([[3.5, 4. ],
-       [5.5, 4.5]])
-
-```
-
 ### **block_reduce function**
 Down-sample image by applying function to local blocks
 ```
@@ -92,5 +60,48 @@ Create a view into the array with the given shape and strides.
 ```
 def as_strided(x, shape=None, strides=None, writeable=True)
 ```
+
+
+### **The process:**
+This algorithm use block_reduce function to down-sample input image by applying function to local blocks. And this algorithm use view_as_blocks function and as_strided function to get the blocks. In each block by using view_as_blocks function, this algorithm calculate the mean of this block and return the result of this block.
+
+#### Example for the process of the algorithm:
+```
+The original image is:
+
+([[ 0,  1,  2,  3,  4],
+  [ 5,  6,  7,  8,  9],
+  [10, 11, 12, 13, 14]])
+
+Padding in block_reduce function:
+
+  [[ 0  1  2  3  4  0]
+   [ 5  6  7  8  9  0]
+   [10 11 12 13 14  0]
+   [ 0  0  0  0  0  0]]
+
+The blocks with the blcok size is (2,3) by using view_as_blocks function and as_strided function are:
+
+[[[[ 0.  1.  2.]
+   [ 5.  6.  7.]]
+
+  [[ 3.  4.  0.]
+   [ 8.  9.  0.]]]
+
+
+ [[[10. 11. 12.]
+   [ 0.  0.  0.]]
+
+  [[13. 14.  0.]
+   [ 0.  0.  0.]]]]
+
+The result after calculating the mean in block_reduce function:
+
+array([[3.5, 4. ],
+       [5.5, 4.5]])
+
+```
+
+
 
 
