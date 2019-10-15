@@ -29,7 +29,7 @@ def main():
 
     ax[0].set_xlim(0, 630)
     ax[0].set_ylim(400, 0)
-    plt.tight_layout()
+    fig.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
