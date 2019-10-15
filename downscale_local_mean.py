@@ -17,6 +17,10 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
     # Check if input is tensor 
     if not tf.is_tensor(image):
         raise TypeError('input needs to be a Tensorflow')  
+    # All block
+    if not all(i >= 1 for i in factors): 
+        raise ValueError("factors elements must be strictly positive and greater than 1") 
+        
     # Check the shape of block_size and image 
     if len(factors) != tf.shape(image).shape:
         raise ValueError("`block_size` must have the same length "
@@ -24,8 +28,8 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
     # Padding width    
     pad_width = [] 
     for i in range(len(factors)): 
-        if (image.shape[i] % factors[i] ) != 0:
-            after_width = factors[i] - (image.shape[i] % factors[i]) 
+        if (image.shape[i] % abs(factors[i])) != 0:
+            after_width = abs(factors[i]) - (image.shape[i] % abs(factors[i])) 
         else:
             after_width = tf.constant(0)
         pad_width.append((0, after_width))    
