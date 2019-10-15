@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
+tf.InteractiveSession()
 
 from skimage import data, color
 from downscale_local_mean import downscale_local_mean
@@ -13,8 +15,13 @@ def main():
     #get image
     image = color.rgb2gray(data.rocket())
 
-    #downscaled the image
-    image_downscaled = downscale_local_mean(image, (4, 3))
+    #downscaled the image(if the image is ndarray)
+    #image_downscaled = downscale_local_mean(image, (4, 3))
+
+    #downscaled the image(if the image is nd tensor)
+    image_tf = tf.convert_to_tensor(image)
+
+    image_downscaled = downscale_local_mean(image_tf, (4, 3))
 
     fig, axes = plt.subplots(nrows=1, ncols=2)
 
