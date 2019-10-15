@@ -1,5 +1,3 @@
-__reference__ = "scikit-image.skimage.exposure.text_exposure"
-
 import unittest
 import numpy as np
 from PatternFlow.image.correction import correction
@@ -7,6 +5,9 @@ from skimage.exposure import exposure
 
 
 class TestCorrection(unittest.TestCase):
+    """
+    reference: https://github.com/scikit-image/scikit-image/blob/v0.16.1/skimage/exposure/tests/test_exposure.py
+    """
 
     def test_log_correction_1x1_shape(self):
         img = np.ones([1, 1])

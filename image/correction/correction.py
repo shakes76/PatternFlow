@@ -2,13 +2,15 @@
 """
 __author__ = "Yufeng Liu"
 __email__ = "yufeng.liu1@uq.net.au"
-__reference__ = "scikit-image.skimage.exposure.exposure"
 
 import tensorflow as tf
 
 
 def adjust_log(image, gain=1, inv=False):
-    """Applies Logarithmic correction on the input image.
+    """
+    reference: https://scikit-image.org/docs/stable/api/skimage.exposure.html#skimage.exposure.adjust_log
+
+    Applies Logarithmic correction on the input image.
     This function adjust the input image according to the
     equation ``O = gain*log(1 + I)``
     For inverse logarithmic correction, the equation is

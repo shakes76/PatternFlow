@@ -1,10 +1,10 @@
-Logarithmic Correction algorithm from scikit-image exposure module
+## Logarithmic Correction algorithm from scikit-image exposure module
 
 ### Dependencies:
 - Python 3.7
 - Tensorflow 2.0
 
-## How it works
+### How it works
 Applies Logarithmic correction on the input image.
 
 The algorithm firstly convert the ndarray into Tensor 
@@ -32,6 +32,7 @@ gain The constant multiplier. Default value is 1
 
 inv Specify whether performs inverse logarithmic correction. Default is False
 
+
 ### Examples
 Here's an example of how to use ``adjust_log`` function
 ```python
@@ -53,3 +54,7 @@ Or use command line to run the main.py script
 python main.py
 ```
 ![](correction_result.png)
+
+
+### Author
+- Yufeng Liu
