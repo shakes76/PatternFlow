@@ -77,3 +77,11 @@ def test_denoise_tv_chambolle_1d():
     resT = denoise_tv_chambolle_torch(xT.type(torch.uint8), weight=0.1)
     assert_(resT.dtype == torch.float)
     assert_(resT.std() * 255 < x.std())
+
+def test_denoise_tv_chambolle_4d():
+    """ TV denoising for a 4D input."""
+    im = 255 * np.random.rand(8, 8, 8, 8)
+    imT = torch.tensor(im)
+    resT = denoise_tv_chambolle_torch(imT.type(torch.uint8), weight=0.1)
+    assert_(resT.dtype == torch.float)
+    assert_(resT.std() * 255 < im.std())
