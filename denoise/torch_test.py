@@ -67,3 +67,13 @@ def test_denoise_tv_chambolle_3d():
     resT = denoise_tv_chambolle_torch(maskT.type(torch.uint8), weight=0.1)
     assert_(resT.dtype == torch.float)
     assert_(resT.std() * 255 < mask.std())
+    
+def test_denoise_tv_chambolle_1d():
+    """Apply the TV denoising algorithm on a 1D sinusoid."""
+    x = 125 + 100*np.sin(np.linspace(0, 8*np.pi, 1000))
+    x += 20 * np.random.rand(x.size)
+    x = np.clip(x, 0, 255)
+    xT = torch.tensor(x)
+    resT = denoise_tv_chambolle_torch(xT.type(torch.uint8), weight=0.1)
+    assert_(resT.dtype == torch.float)
+    assert_(resT.std() * 255 < x.std())
