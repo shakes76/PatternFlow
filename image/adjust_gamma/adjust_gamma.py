@@ -26,4 +26,13 @@ def adjust_gamma(image, gamma=1, gain=1):
   This function transforms the input image pixelwise according to the
   equation ``O = I**gamma`` after scaling each pixel to the range 0 to 1.
   """
-  return image
+  
+  if gamma < 0:
+    raise ValueError("Gamma should be a non-negative real number.")
+  
+  dtype = image.dtype
+
+  scale = float(dtype_limits(image, True)[1] - dtype_limits(image, True)[0])
+
+  out = ((image / scale) ** gamma) * scale * gain
+  return tf.cast(out, dtype)
