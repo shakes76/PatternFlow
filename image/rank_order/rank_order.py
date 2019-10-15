@@ -15,6 +15,7 @@ def rank_order(file_path):
     try: 
         img = tf.io.read_file(file_path)
         decoded = tf.image.decode_jpeg(img)
+        # flattening file, to use tf.unique
         decoded_flat = tf.reshape(decoded, [-1])
         ranks, idx = tf.unique(decoded_flat)
         with tf.Session() as sess:
