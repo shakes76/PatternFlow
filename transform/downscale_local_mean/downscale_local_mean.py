@@ -159,4 +159,25 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     :return: ndarray
         The created view of the given input array.
     """
-    return x
+    # first convert input to array, possibly keeping subclass
+    x = tf.convert_to_tensor(x)
+    session = tf.Session()
+    x = session.run(x)
+    interface = dict(x.__array_interface__)
+    # give the given shape and strides information to interface
+    if shape is not None:
+        interface['shape'] = tuple(shape)
+    if strides is not None:
+        interface['strides'] = tuple(strides)
+
+    array = session.run(tf.convert_to_tensor(DummyArray(interface, base=x)))
+    # The route via interface does not preserve structured dtypes. Since dtype should remain unchanged,
+    # we set it explicitly.
+    array.dtype = x.dtype
+
+    view = _maybe_view_as_subclass(x, array)
+
+    if view.flags.writeable and not writeable:
+        view.flags.writeable = False
+
+    return view
