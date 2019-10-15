@@ -1,8 +1,8 @@
 # Histogram
 ### Description:
-Histogram module is a part of the Patternflow library containing the tensorflow port of the histogram algorithm from the exposure module of scikit-image. The module contains a 'histogram' function which calulates and returns the histogram for a given image. The function returns the centers of the bin and does not rebin integer arrays. This algorthim focuses to improve speed and intensity resolution over a regular histogram implementation for images with integer color values by assigning each integer value it's own bin.
+Histogram module is a part of the Patternflow library containing the tensorflow port of the histogram algorithm from the exposure module of scikit-image. The module contains a 'histogram' function which calulates and returns the histogram for the color values in a given image. The function returns the centers of the bin and does not rebin integer arrays. This algorthim focuses to improve speed and intensity resolution over a regular histogram implementation for images with integer color values by assigning each integer value it's own bin.
 ### Dependencies:
-Tensorflow >= 1.12
+Tensorflow >= 1.10
 ### Usage:
 The histogram function takes 5 arguments, where 4 out 5 arguments are optional
   - Image: The input image array.
