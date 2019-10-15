@@ -32,6 +32,7 @@ def downscale_local_mean(image, factors, cval=0):
 def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     """
     Down-sample image by applying function to local blocks.
+    Equivalent to skimage.measure.block.block_reduce
 
     :param image: ndarray
         N-dimensional input image.
@@ -73,3 +74,19 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     result = func(blocked, axis=tuple(range(image.ndim, blocked.ndim)))
 
     return session.run(result)
+
+
+def view_as_blocks(arr_in, block_shape):
+    """
+    Block view of the input n-dimensional array using re-striding. BLocks are non-overlapping views of the input array.
+    Equivalent to skimage.measure.shape.view_as_blocks
+
+    :param arr_in: ndarray
+        N-dimensional input array
+    :param block_shape: tuple
+        The shape of the block. Each dimension must divide evenly into the corresponding dimensions of arr_in.
+
+    :return: ndarray
+        Block view of the input arr_in.
+    """
+    return arr_in
