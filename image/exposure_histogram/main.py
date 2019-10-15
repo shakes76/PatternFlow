@@ -6,12 +6,12 @@ from impl import histogram
 
 def get_greyscale_face():
     face = scipy.misc.face()
-    grey = tf.cast(tf.image.rgb_to_grayscale(face), tf.int32)
+    grey = tf.image.rgb_to_grayscale(face)
     return grey[:,:,0]
 
 def show_histogram():
     face = get_greyscale_face()
-    values, centers = histogram(face)
+    values, centers = histogram(face, normalize=True)
     
     fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
 

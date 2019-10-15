@@ -5,6 +5,7 @@ from typing import Tuple, TypeVar
 
 import tensorflow as tf
 
+
 __all__ = [
     'histogram'
 ]
@@ -12,10 +13,16 @@ __all__ = [
 # Type variable
 T = TypeVar('T')
 
+# Constants
 ALLOWABLE_SOURCE_RANGES = ['image', 'dtype']
 DEFAULT_NBINS = 256
 
 def get_limits(image: tf.Tensor, source_range: str) -> Tuple[T, T]:
+    """
+    Given an image and a source range, return a tuple of limits.
+    
+    source_range: 'image' | 'dtype'
+    """
     if source_range == 'image':
         return (tf.reduce_min(image), tf.reduce_max(image))
     elif source_range == 'dtype':
@@ -64,9 +71,6 @@ def normalize_tensor(tensor: tf.Tensor) -> tf.Tensor:
     return tensor / tf.math.reduce_sum(tensor)
 
 def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='image', normalize: bool=False):
-    # TODO - normalize, normalizes the value
-    # TODO - cast to int32 and reshape
-    
     # Check image
     if not isinstance(image, tf.Tensor):
         raise TypeError("image must be of type tf.Tensor")
@@ -90,11 +94,18 @@ def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='ima
     
     image_shape = image.shape
     image = tf.reshape(image, (functools.reduce(operator.mul, image_shape),))
-    limits = get_limits(image, source_range)
     if image.dtype.is_integer:
+        image = tf.cast(image, tf.int32)
+        limits = get_limits(image, source_range)
         centers = get_int_centers(limits)
         values = tf.histogram_fixed_width(image, limits, limits[1] - limits[0], dtype=image.dtype)
     else:
+        image = tf.cast(image, tf.float32)
+        limits = get_limits(image, source_range)
         centers = get_float_centers(limits, nbins)
         values = tf.histogram_fixed_width(image, limits, nbins, dtype=image.dtype)
+    
+    if normalize:
+        values = normalize_tensor(values)
+
     return values, centers
