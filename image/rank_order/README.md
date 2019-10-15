@@ -9,6 +9,7 @@ is the number of unique values in original image.
 ## Usage:
 `from rank_order import rank_order`<br>
 `processed_file = rank_order(<path_to_jpeg_image>)`
+returns a tuple, containing filtered image and the original image.
 
 ## Example
 run the main.py script as following: `python main.py`<br>
