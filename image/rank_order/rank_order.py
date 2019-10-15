@@ -14,7 +14,7 @@ def rank_order(file_path):
     originals - 3-D array of [width, height, channels] shape"""
     try: 
         img = tf.io.read_file(file_path)
-        decoded = tf.image.decode_image(img, expand_animations=False)
+        decoded = tf.image.decode_jpeg(img)
         decoded_flat = tf.reshape(decoded, [-1])
         ranks, idx = tf.unique(decoded_flat)
         with tf.Session() as sess:
