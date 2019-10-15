@@ -12,6 +12,8 @@ import functools
 sess = tf.InteractiveSession()
 tf.global_variables_initializer()
 
+print(tf.math.pow(32,34).eval())
+
 ####################-- gcd function --################
 
 def gcd(a,b):
@@ -109,30 +111,30 @@ def power_mod(b,e,n):
     accum,i,bpow2 = tf.cond(
         tf.math.less(e,0),
         true_fn = lambda: (inverse_mod(b, n), tf.math.negative(e), n),
-        false_fn = lambda: con_body(b,e,n)
+        false_fn = lambda: power_mod_cond_body(b,e,n)
     )
     return accum
 
-def con_body(b,e,n):
+def power_mod_cond_body(b,e,n):
     accum = 1; i = 0; bpow2 = b
     b,e,n,accum,i,bpow2 = tf.while_loop(
         lambda b,e,n,accum,i,bpow2: tf.greater(tf.bitwise.right_shift(e,i),0),
-        while_body_,
+        power_mod_while_body,
         [b,e,n,accum,i,bpow2]
     )
     return accum,i,bpow2
 
-def while_body_(b,e,n,accum,i,bpow2):
+def power_mod_while_body(b,e,n,accum,i,bpow2):
     b,e,n,accum,i,bpow2 = tf.cond(
         tf.math.equal(tf.bitwise.bitwise_and(tf.bitwise.right_shift(e,i),1),1),
-        true_fn = lambda: con_body_1(b,e,n,accum,i,bpow2),
+        true_fn = lambda: power_mod_cond_body_1(b,e,n,accum,i,bpow2),
         false_fn = lambda: (b,e,n,accum,i,bpow2)
     )
     bpow2 = tf.math.floormod(tf.math.multiply(bpow2,bpow2),n)
     i = tf.math.add(i,1)
     return b,e,n,accum,i,bpow2
 
-def con_body_1(b,e,n,accum,i,bpow2):
+def power_mod_cond_body_1(b,e,n,accum,i,bpow2):
     accum = tf.math.floormod(tf.math.multiply(accum,bpow2),n)
     return b,e,n,accum,i,bpow2
 
@@ -233,27 +235,95 @@ def carmichael_lambda(n):
     f = [-1]
     f = tf.tuple(f)
     i = 1
-    i, f, n = tf.while_loop(
+    f,i,n= tf.while_loop(
         lambda i,f,n: tf.math.less(i,n),
         body1,
-        [i,f,n]
+        [f,i,n]
     )
     return f
-def body1(i,f,n):
-    i,f,n = tf.cond(tf.math.equal(gcd(i,n),1), lambda:bbb(i,f,n),lambda:(i,f,n))  
-    return i,f,n
+def body1(f,i,n):
+    f,i,n = tf.cond(tf.math.equal(gcd(i,n),1), lambda:bbb(f,i,n),lambda:(f,i,n))  
+    return f,i,n
 
-def bbb(i,f,n):
+def bbb(f,i,n):
+    print("here")
     print(f)
-    t = f.append(i)
+    f.append(i)
     i = tf.math.add(i,1)
-    return i,f,n
+    return f,i,n
 
 g = carmichael_lambda(5)
 print(g[0].eval())
 print(g[1].eval())
 print(g[2].eval())
 print(g[3].eval())
+
+####################-- is_primitive_root function --################
+
+
+
+####################-- sqrtmod function --################
+
+def sqrtmod(a,n):
+	"""sqrtmod(a,n) - Compute sqrt(a) mod n using various algorithms.
+	Currently n must be prime, but will be extended to general n (when I get the time)."""
+	# SAGE equivalent is mod(g,n).sqrt() in IntegerMod class
+	if(not isprime(n)): raise ValueError("*** Error ***:  Currently can only compute sqrtmod(a,n) for prime n.")
+	if(pow(a,(n-1)//2,n)!=1): raise ValueError("*** Error ***:  a is not quadratic residue, so sqrtmod(a,n) has no answer.")
+	return TSRsqrtmod(a,n-1,n)
+
+####################-- TSRsqrtmod function --################
+
+def TSRsqrtmod(a,grpord,p):
+    ordpow2=0; non2=grpord; temp_g=0; one = 1
+    ordpow2,non2 = tf.while_loop(
+        lambda ordpow2,non2: tf.math.logical_not(tf.math.equal(tf.bitwise.bitwise_and(non2,0x01),1)),
+        TSRsqrtmod_while,
+        [ordpow2,non2]
+    )
+    for g in range(2,grpord-1):
+        g, grpord, p,temp_g,one = tf.cond(
+            tf.math.not_equal(tf.math.mod(tf.math.pow(g,tf.math.floordiv(grpord,2)),p),one),
+            lambda:save_temp(g,grpord,p,temp_g,one),
+            lambda:(g,grpord,p,temp_g,one)
+            )
+    
+    g = tf.math.mod(tf.math.pow(g,tf.math.floordiv(non2,2)),p)
+    gpow=0; atweak=a
+    #tf.math.add(ordpow2,1)
+    for pow2 in range(0,ordpow2.eval()-1):
+        
+        g,gpow,pow2,atweak,p = tf.cond(
+            tf.math.not_equal(tf.math.mod(tf.math.pow(atweak,tf.math.multiply(tf.math.pow(2,tf.math.subtract(ordpow2,pow2)),non2)),p),1),
+            lambda:TSRsqrtmod_true(g,gpow,pow2,atweak,p),
+            lambda:(g,gpow,pow2,atweak,p)
+        )
+
+    d = inverse_mod(2,non2)
+    tmp = tf.math.mod(tf.math.pow(g,gpow),p)
+    tmp = tf.math.mod(tf.math.pow(tf.math.multiply(a,tmp),d),p)
+    result = tf.math.floormod(tf.math.multiply(tmp,inverse_mod(tf.math.floormod(tf.math.pow(g,tf.math.floordiv(gpow,2)),p),p)),p)
+    return result
+
+def TSRsqrtmod_while(ordpow2,non2):
+    ordpow2 = tf.math.add(ordpow2,1)
+    non2 = tf.math.floordiv(non2,2)
+    return ordpow2,non2
+
+def save_temp(g,grpord,p,temp_g,one):
+    temp_g = g;
+    return g,grpord,p,temp_g,(tf.math.mod(tf.math.pow(g,tf.math.floordiv(grpord,2)),p))
+
+def TSRsqrtmod_true(g,gpow,pow2,atweak,p):
+    gpow = tf.math.add(gpow,tf.math.pow(tf.math.subtract(pow2,1),2))
+    atweak = tf.math.multiply(atweak,tf.math.mod(tf.math.pow(g,tf.math.pow(2,tf.math.subtract(pow2,1))),p))
+    return g,gpow,pow2,atweak,p
+
+print(TSRsqrtmod(9,4,5).eval())
+print(pow(3,8000//2,2))
+
+f = range(2,6)
+print(f[0])
 
 ################ Internally used functions #########################################
 
@@ -359,12 +429,13 @@ print(factorone(75).eval())
 
 ####################-- factors function --################
 
-@tf.function
 def factors(n):
     i = 2
     factors = []
     while i * i <= n:
+        
         if n % i:
+            print(n%i)
             i += 1
         else:
             n //= i
@@ -373,14 +444,44 @@ def factors(n):
         factors.append(n)
     return factors
 
+print(factors(98))
+
+def factors(n):
+    i = 2
+    factors = tf.tuple([-1])
+    tf.while_loop(
+        lambda i,n,factars: tf.math.less_equal(tf.math.multiply(i,i),n),
+        factors_while_body,
+        [i,n,factors]
+    )
+    i, n, factors = tf.cond(tf.math.greater(n,1), lambda:facts_cond_body(i,n,factors),lambda:(i,n,factors))
+    return factors
+
+def factors_while_body(i,n,factors):
+    print(factors)
+    i,n,factors = tf.cond(tf.math.greater_equal(tf.math.floormod(n,i),1), lambda:cccc(i,n,factors),lambda:while_cond_body(i,n,factors))
+    print("kkkkk")
+    return i,n,factors
+
+def cccc(i,n,factors):
+    i = tf.math.add(i,1)
+    
+    return i,n,factors
+    
+def while_cond_body(i,n,factors):
+    print(factors)
+    factors.append(i)
+    n = tf.math.floordiv(n,i)
+    #
+    print(factors)
+    return i,n,factors
+
+def facts_cond_body(i,n,factors):
+    factors.append(n)
+    print(factors)
+    return i, n, factors
+
 print(factors(4))
-print()
-l = prime_factors(56)
-print(l)
-print(l[0].eval())
-print(l[1].eval())
-print(l[2].eval())
-print(l[3].eval())
 
 fact = [-1];
 fact =tf.convert_to_tensor(fact,tf.int32)
@@ -441,3 +542,4 @@ def factorPR_if_body(n,numsteps,i,additive,g):
         lambda:(n,numsteps,numsteps,5,g)
         )
     return n,numsteps,i,additive,g
+
