@@ -175,16 +175,21 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
             after_width = 0
         pad_width.append((0, after_width)) 
    
+    #get the padding image
     t = tf.convert_to_tensor(image)
     image = tf.pad(t, pad_width, "CONSTANT")
-  
+    
+    #get the blocked by view as block function
     blocked = view_as_blocks(image, block_size)
 
     session = tf.Session()
     image = session.run(image)
-  
+    
+    #change the type of elements of tensor to float64
     blocked = tf.convert_to_tensor(blocked)
     blocked = tf.cast(blocked, tf.float64)
+
+    #get the mean(func = mean function)
     result =  func(blocked, axis=tuple(range(image.ndim, tf.rank(blocked).eval())))
 
     session = tf.Session()
@@ -224,7 +229,8 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
             For integer inputs, the output dtype will be ``float64``. 
     """ 
     tf.InteractiveSession()
-    
+
+    #check the type of input image, if tensor change the tensor to the ndarray, then call block_reduce function
     if tf.is_tensor(image):
         print("tensor")
         session = tf.Session()
