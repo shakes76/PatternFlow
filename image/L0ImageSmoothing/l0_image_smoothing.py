@@ -1,14 +1,33 @@
+################################################################################
+# L0 Gradient Norm Image Smoothing Algorithm
+# Implemented in: Tensorflow 2.0
+#
+# Author: Jameson Nguyen (JNRuan)
+################################################################################
+# ATTRIBUTIONS
+#
+# [2]. Alexandre Boucaud, “pypher: Python PSF Homogenization kERnels”. Zenodo, 02-Sep-2016.
+#
+################################################################################
 from imageio import imread
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
-def _pad_fxy_psf(psf, shape):
+def _zero_pad_fxypsf(psf, shape):
     """
     Pads point spread function (psf) Fx or Fy with zeroes up to target shape.
     The target shape is the shape of the image we want to smooth.
 
+    Keeps original psf functions in the initial positions of the tensor and pads
+    the rest of the tensor indices with zeroes.
+
     This method is a pre-processing step prior to conversion to an optical
     transfer function (OTF).
+
+    Expects one of two psf functions:
+    Fx = [[-1, 1]]
+    Fy = [[-1]. [1]]
 
     :param psf: Tensor containing a point spread function for padding.
     :param shape tuple(int, int): Target shape from image we are smoothing.
@@ -26,31 +45,74 @@ def _pad_fxy_psf(psf, shape):
         psf_padded = tf.sparse.to_dense(psf_padded, default_value=0)
     return psf_padded
 
-def _fxy_psf2otf(psf, target):
+def _fxypsf_to_otf(psf, target):
     """
+    _fxy_psf2otf is an adapted function specifically for the L0 norm algorithm
+    which originally made use of a matlab psf2otf function. This function is
+    therefore a port to tensorflow based off the matlab psf2otf function via a
+    python port [2], but specifically adapted for the image smoothing algorithm.
 
-    :return:
+    Converts point spread function (psf) to optical transfer function (otf). Using
+    the fast fourier transform on a padded psf.
+
+    Expects to work with psf of either:
+    Fx = [[-1, 1]], or
+    Fy = [[-1], [1]]
+    ============================================================================
+    Attribution:
+    Original function was a numpy port of a matlab psf2otf function. For a general
+    use psf2otf function, recommend using the original numpy port.
+
+    Original python implementation: https://github.com/aboucaud/pypher [2]
+
+    :param psf: Tensor containing a point spread function for padding.
+    :param shape tuple(int, int): Target shape from image we are smoothing.
+    :return: otf of original provided psf functions Fx or Fy.
     """
     target_shape = (target.shape[0], target.shape[1])
-    # Zero Pad template, we want psf to be padded first with zeroes.
-    psf_padded = _pad_fxy_psf(psf, target_shape)
+    psf_padded = _zero_pad_fxypsf(psf, target_shape)
 
-    return psf_padded
+    # Per matlab implementation, to ensure off-center psf does not later otf,
+    # circular shift psf until central pixel is in (0, 0) position.
+    for axis, axis_sz in enumerate(psf.shape):
+        psf_padded = tf.roll(psf_padded, shift=tf.constant(-axis_sz // 2), axis=axis)
+
+    # Calculate otf
+    # Cast psf to complex number per tensorflow spec for 2d fast fourier transform.
+    psf_padded = tf.cast(psf_padded, dtype=tf.complex64)
+    otf = tf.signal.fft2d(psf_padded)
+    return otf
 
 
-def l0_image_smoothing():
+def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     """
+    Applies L0 Image Smoothing [1] on target img.
 
+    Lambda is a hyperparameter to tune degree of smoothing.
+    By default this is 2e-2, authors recommend a range of [1e-3, 1e-1] [1].
+
+    Kappa is the scaling factor that scales rate of smoothing,
+    smaller kappa scalar results in more iterations and sharper edges.
+    Authors recommend range (1, 2].
+
+    Iterations of smoothing based on beta < beta_max.
+    With beta initialised as 2 * lambda.
+    In addition, beta is incremented at rate beta * kappa each iteration.
+
+    :param img: Input image, read in as numpy array.
+    :param _lambda: Smoothing parameter for degree of smoothness [1]. Default 2e-2.
+    :param kappa: Scale rate of smoothing. Default 2.0
+    :param beta_max: Parameter to scale max iterations, each iteration increments beta * kappa.
     :return:
     """
     return
 
 if __name__ == '__main__':
-    img = imread('D:\Code\comp3710\L0smoothing\code\pflower.jpg')
+    img = imread('./bengalcat.jpg')
     print(f'img shape: {img.shape}')
     psf = tf.constant([[-1, 1]], tf.int8)
-    otf = _fxy_psf2otf(psf, img)
+    otf = _fxypsf_to_otf(psf, img)
     psf2 = tf.constant([[-1], [1]], tf.int8)
-    otf2 = _fxy_psf2otf(psf2, img)
+    otf2 = _fxypsf_to_otf(psf2, img)
     print(otf.numpy(), otf.shape)
     print(otf2.numpy(), otf2.shape)
