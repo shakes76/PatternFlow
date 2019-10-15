@@ -89,6 +89,39 @@ def as_strided(x, shape=None, strides=None, writeable=True):
 
     return view
 
+def view_as_blocks(arr_in, block_shape): 
+  if not isinstance(block_shape, tuple): 
+    raise TypeError('block needs to be a tuple') 
+  
+  block_shape = tf.convert_to_tensor(block_shape)
+  session = tf.Session()
+  block_shape = session.run(block_shape)
+  
+  session = tf.Session()
+  arr_in = session.run(arr_in)
+
+  arr_shape = tf.convert_to_tensor(arr_in.shape)
+  session = tf.Session()
+  arr_shape = session.run(arr_shape)
+  
+  if (block_shape <= 0).any(): 
+    raise ValueError("'block_shape' elements must be strictly positive") 
+  if block_shape.size != arr_in.ndim: 
+    raise ValueError("'block_shape' must have the same length " 
+                     "as 'arr_in.shape'")
+  
+  if (arr_shape % block_shape).sum() != 0: 
+    raise ValueError("'block_shape' is not compatible with 'arr_in'") 
+
+  # -- restride the array to build the block view     
+  new_shape = tuple(arr_shape // block_shape) + tuple(block_shape) 
+  new_strides = tuple(arr_in.strides * block_shape) + arr_in.strides
+  
+  arr_in = tf.convert_to_tensor(arr_in)
+  arr_out = as_strided(arr_in, shape=new_shape, strides=new_strides) 
+  
+  return arr_out 
+
 def downscale_local_mean(image, factors, cval=0, clip=True):
   if tf.is_tensor(image):
     print("tensor")
