@@ -110,22 +110,22 @@ def view_as_blocks(arr_in, block_shape):
     if not isinstance(block_shape, tuple): 
         raise TypeError('block needs to be a tuple') 
   
+    #change the tuple to ndarray
     block_shape = tf.convert_to_tensor(block_shape)
     session = tf.Session()
     block_shape = session.run(block_shape)
   
+    #get the shape of the input tensor
+    arr_shape = arr_in.shape
+    
+    #change the input tensor to ndarray
     session = tf.Session()
     arr_in = session.run(arr_in)
 
-    arr_shape = tf.convert_to_tensor(arr_in.shape)
-    session = tf.Session()
-    arr_shape = session.run(arr_shape)
-  
     if (block_shape <= 0).any(): 
         raise ValueError("'block_shape' elements must be strictly positive") 
     if block_shape.size != arr_in.ndim: 
-        raise ValueError("'block_shape' must have the same length " 
-    "as 'arr_in.shape'")
+        raise ValueError("'block_shape' must have the same length " "as 'arr_in.shape'")
   
     if (arr_shape % block_shape).sum() != 0: 
         raise ValueError("'block_shape' is not compatible with 'arr_in'") 
@@ -160,6 +160,10 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     image : ndarray 
             Down-sampled image with same number of dimensions as input image.    
     """ 
+    #convert tensor to ndarray
+    session = tf.Session()
+    image = session.run(image)
+
     if len(block_size) != image.ndim: 
         raise ValueError("`block_size` must have the same length "
                          "as `image.shape`.") 
@@ -233,8 +237,7 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
     #check the type of input image, if tensor change the tensor to the ndarray, then call block_reduce function
     if tf.is_tensor(image):
         print("tensor")
-        session = tf.Session()
-        image = session.run(image)
     else:
-        print("array")
+        print("This is an array and convert to tensor")
+        image = tf.convert_to_tensor(image)
     return block_reduce(image, factors, tf.reduce_mean, cval)
