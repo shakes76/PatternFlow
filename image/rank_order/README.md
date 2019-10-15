@@ -18,7 +18,7 @@ image file to convert (eg. "images/raw.jpg")<br>
 the resulting image will be saved as "image/example_output.jpg" file.
 
 ## Example outputs
-original image: ![raw_image](images/raw.jpg)
+original image: ![raw_image](images/raw.jpg)<br>
 rank_order image: ![processed_image](images/example_output.jpg)
 
 *(Photo by Colin Horn on Unsplash)*
