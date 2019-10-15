@@ -161,25 +161,25 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
             Down-sampled image with same number of dimensions as input image.    
     """ 
     if len(block_size) != image.ndim: 
-        raise ValueError("`block_size` must have the same length " 
-                        "as `image.shape`.") 
+        raise ValueError("`block_size` must have the same length "
+                         "as `image.shape`.") 
     pad_width = [] 
     for i in range(len(block_size)): 
-        if block_size[i] < 1: 
-            raise ValueError("Down-sampling factors must be >= 1. Use "
+        if block_size[i] < 1:
+            raise ValueError("Down-sampling factors must be >= 1. Use " 
                              "`skimage.transform.resize` to up-sample an " 
                              "image.") 
-    if image.shape[i] % block_size[i] != 0: 
-        after_width = block_size[i] - (image.shape[i] % block_size[i]) 
-    else: 
-        after_width = 0
-    pad_width.append((0, after_width)) 
+        if image.shape[i] % block_size[i] != 0:
+            after_width = block_size[i] - (image.shape[i] % block_size[i]) 
+        else:
+            after_width = 0
+        pad_width.append((0, after_width)) 
    
     t = tf.convert_to_tensor(image)
     image = tf.pad(t, pad_width, "CONSTANT")
   
     blocked = view_as_blocks(image, block_size)
-  
+
     session = tf.Session()
     image = session.run(image)
   
@@ -223,7 +223,7 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
             Down-sampled image with same number of dimensions as input image. 
             For integer inputs, the output dtype will be ``float64``. 
     """ 
-    
+
     if tf.is_tensor(image):
         print("tensor")
         session = tf.Session()
