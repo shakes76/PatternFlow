@@ -19,7 +19,7 @@ the resulting image will be saved as "image/example_output.jpg" file.
 
 ## Example outputs
 original image: ![raw_image](images/raw.jpg)
-rank_order image: ![processed_image](images/ranked.jpg)
+rank_order image: ![processed_image](images/example_output.jpg)
 
 *(Photo by Colin Horn on Unsplash)*
 
