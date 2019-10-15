@@ -4,7 +4,7 @@ __all__ = [
     'histogram'
 ]
 
-# TODO - tensorflowify
+
 def get_centers(image, nbins):
     """
     Given an image and a number of bins, return the histogram centers.
@@ -17,10 +17,12 @@ def get_centers(image, nbins):
     lower = image.min()
     upper = image.max()
     range_ = upper - lower
+    
+    # Amount to increase each value by
     increment = range_ / nbins
     # We need to offset the value to get the cneters
     offset_for_center = increment / 2
-    return [lower + increment * i + offset_for_center for i in range(nbins)]
+    return tf.range(start=lower + offset_for_center, limit=upper, delta=increment)
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
     # h = tf.histogram_fixed_width(uimage, [0, 256], nbins=nbins, dtype=tf.dtypes.int64)
