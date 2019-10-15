@@ -19,4 +19,4 @@ if __name__ == "__main__":
         converted_img.save("rank_ordered_image.jpeg")
         converted_img.show()
     else:
-        print("only jpeg type files are supported")
+        print("only jpeg type files are supported! exiting module.")
