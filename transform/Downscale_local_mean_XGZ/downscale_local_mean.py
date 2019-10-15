@@ -139,8 +139,8 @@ def view_as_blocks(arr_in, block_shape):
   
     return arr_out 
 
-def block_reduce(image, block_size, func=tf.reduce_sum, cval=0): 
-      """Down-sample image by applying function to local blocks. 
+def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
+    """Down-sample image by applying function to local blocks. 
  
     Parameters 
     ---------- 
