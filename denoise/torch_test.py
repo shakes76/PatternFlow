@@ -43,4 +43,13 @@ def test_denoise_tv_chambolle_2d():
     assert_(grad_denoised.dtype == np.float32)
     assert_(np.sqrt((grad_denoised**2).sum()) < np.sqrt((grad**2).sum()))
 
-
+def test_denoise_tv_chambolle_float_result_range():
+    # astronaut image
+    img = astro_grayT
+    int_astroT = torch.mul(img, 255).type(torch.uint8)
+    assert_(torch.max(int_astroT) > 1)
+    denoised_int_astroT = denoise_tv_chambolle_torch(int_astroT, weight=0.1)
+    # test if the value range of output float data is within [0.0:1.0]
+    assert_(denoised_int_astroT.dtype == torch.float)
+    assert_(torch.max(denoised_int_astroT) <= 1.0)
+    assert_(torch.min(denoised_int_astroT) >= 0.0)
