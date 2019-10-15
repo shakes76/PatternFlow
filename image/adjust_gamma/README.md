@@ -2,7 +2,7 @@
 
 This is a Tensorflow porting of the scikit-image [adjust_gamma](https://scikit-image.org/docs/stable/api/skimage.exposure.html#skimage.exposure.adjust_gamma) function.
 
-## Description
+## Description
 
 This algorithm performs Gamma correction on the input image.
 From Wikipedia: "Gamma correction, or often simply gamma, is a nonlinear operation used to encode and decode luminance or tristimulus values in video or still image systems"[1].
@@ -21,7 +21,7 @@ adjusted = adjust_gamma(tf.cast(image, tf.float64), gamma=2)
 
 Result:
 
-![Gamma correction - Example](./figures/example.png)
+<img src="figures/example.png" alt="Gamma correction - Example" width="600"/>
 
 
 ## References
