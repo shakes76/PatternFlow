@@ -1,5 +1,4 @@
 import tensorflow as tf
-print("TF Version: ", tf.__version__)
 tf.InteractiveSession()
 
 class DummyArray(object):
@@ -44,7 +43,7 @@ def as_strided(x, shape=None, strides=None, writeable=True):
         view.flags.writeable = False
 
     return view
-    
+
 def downscale_local_mean(image, factors, cval=0, clip=True):
   if tf.is_tensor(image):
     print("tensor")
