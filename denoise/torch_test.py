@@ -103,3 +103,25 @@ def test_denoise_tv_chambolle_weighting():
     denoised_4d = denoise_tv_chambolle_torch(img4dT, weight=w)
     assert_(measure.compare_ssim(denoised_2d.numpy(),
                                 denoised_4d[:, :, 0, 0].numpy()) > 0.99)
+    
+
+def main():
+    astro = img_as_float(data.astronaut()[:128, :128])
+    astro_gray = color.rgb2gray(astro)
+    astroT = torch.tensor(astro,dtype = torch.float32)
+    astro_grayT = torch.tensor(astro_gray,dtype = torch.float32)
+    checkerboard = img_as_float(data.checkerboard())
+    checkerboard_gray = color.gray2rgb(checkerboard)
+    astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
+    checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
+    
+    test_denoise_tv_chambolle_2d()
+    test_denoise_tv_chambolle_multichannel()
+    test_denoise_tv_chambolle_float_result_range()
+    test_denoise_tv_chambolle_3d()
+    test_denoise_tv_chambolle_1d()
+    test_denoise_tv_chambolle_4d()
+    test_denoise_tv_chambolle_weighting()
+
+if __name__ ==main:
+    main()
