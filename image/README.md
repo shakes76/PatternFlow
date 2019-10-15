@@ -1,2 +1,2 @@
-                                            **Algorithm of skimage.exposure.histogram**
+#Algorithm of skimage.exposure.histogram
                                             
