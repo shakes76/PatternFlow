@@ -18,3 +18,5 @@ if __name__ == "__main__":
         converted_img = Image.fromarray(rank_order(user_input)[0], 'RGB')
         converted_img.save("rank_ordered_image.jpeg")
         converted_img.show()
+    else:
+        print("only jpeg type files are supported")
