@@ -22,6 +22,33 @@ def _maybe_view_as_subclass(original_array, new_array):
     return new_array
 
 def as_strided(x, shape=None, strides=None, writeable=True):
+    """
+    Create a view into the array with the given shape and strides.
+    
+    Parameters
+    ----------
+    x : tensor
+        A new tensor
+    shape : sequence of int, optional
+        The shape of the new array. Defaults to ``x.shape``.
+    strides : sequence of int, optional
+        The strides of the new array. Defaults to ``x.strides``.
+    subok : bool, optional
+        .. versionadded:: 1.10
+        If True, subclasses are preserved.
+    writeable : bool, optional
+        .. versionadded:: 1.12
+        If set to False, the returned array will always be readonly.
+        Otherwise it will be writable if the original array was. It
+        is advisable to set this to False if possible (see Notes).
+    Returns
+    -------
+    view : ndarray
+    See also
+    --------
+    broadcast_to: broadcast an array to a given shape.
+    reshape : reshape an array.
+    """
     # first convert input to array, possibly keeping subclass
     session = tf.Session()
     x = session.run(x)
