@@ -1,8 +1,8 @@
 # Tensorflow implementation of gaining a histogram of an image
 
 The histogram produced is a representation of the tonal distribution of the flattened image.
-For each tonal value, the count of the number of pixels for this tonal value is computed. By
-viewing the histogram, the entire tonal distribution is given at a glance. Note that for colour images, each channel should be independently input to gain a histogram for each colour channel. 
+For each tonal value, the count of the number of pixels for this tonal value is computed.  
+Note that for colour images, each channel should be independently input to gain a histogram for each colour channel. 
 
 The algorithm works by first flattening the image to a one dimensional array of values. For
 colour images, this is applied to a given channel. Next, the range of values is determined
@@ -29,11 +29,11 @@ values = hist.hist
 ### Parameters
 img (array) - Input image.
 
-nbins (int, optional) - Number of bins used to calculate histogram
+nbins (int, optional) - Number of bins for the histogram
 
 source_range (string, optional)- ‘image’ (default) determines the range from the input image. ‘dtype’ determines the range from the expected range of the images of that data type.
 
-normalize (bool, optional) - If True, normalize the histogram by the sum of its values.
+normalize (bool, optional) - normalize the histogram if True (by the sum of values)
 
 ### Return
 hist (ImageHistogram class instance) - The generated histogram. Use values = hist.hist to get values of histogram.
