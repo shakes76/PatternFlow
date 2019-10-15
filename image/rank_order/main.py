@@ -19,8 +19,7 @@ if __name__ == "__main__":
         converted = rank_order(user_input)
         # convert the array to image
         converted_img = Image.fromarray(rank_order(user_input)[0], 'RGB')
-        converted_img.save("rank_ordered_image.jpeg")
-        print("converted file saved as rank_ordered_image.jpeg")
-        converted_img.show()
+        converted_img.save("images/example_output.jpeg")
+        print("converted file in the ./images directory")
     else:
         print("only jpeg type files are supported! exiting module.")
