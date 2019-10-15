@@ -40,49 +40,23 @@ def adjust_gamma(image, gamma=1, gain=1):
     This function adjust the input image according to the
     equation ``O = I**gamma``.
 
-    :param image: (Tensor) Input image
+    :param image: (ndarray) Input image
     :param gamma: (float) Non negative real number. Default value is 1
     :param gain: (float) The constant multiplier. Default value is 1
     :return: (ndarray) Gamma corrected output image.
     """
-    image = tf.constant(image)
-    # check the input image are all non negative
-    tf.debugging.assert_non_negative(image).mark_used()
     dtype = image.dtype
-
+    image = tf.constant(image, tf.float32)
+    # check the input image are all non negative
+    tf.debugging.assert_non_negative(image)
+    norm = image / 255
+    # norm = image
     if gamma < 0:
         raise ValueError("Gamma should be a non-negative real number.")
 
-    gamma = tf.constant(gamma, dtype=dtype)
-    out = tf.pow(image, gamma) * gain
+    gamma = tf.constant(gamma, tf.float32)
+    out = tf.pow(norm, gamma) * gain
+    inv_norm = out * 255
+    # inv_norm = out
+    out = tf.dtypes.cast(inv_norm, dtype)
     return out.numpy()
-
-
-def adjust_sigmoid(image, cutoff=0.5, gain=10, inv=False):
-    """Applies Sigmoid Correction on the input image.
-    This function adjust the input image according to the
-    equation ``O = 1/(1 + exp*(gain*(cutoff - I)))``
-
-    :param image: (Tensor) Input image
-    :param cutoff: (float) Cutoff of the sigmoid function that shifts the
-                    characteristic curve in horizontal direction.
-                    Default value is 0.5.
-    :param gain: (float) The constant multiplier in exponential's power of
-                    sigmoid function. Default value is 10.
-    :param inv: (bool) If True, returns the negative sigmoid correction.
-                    Defaults to False.
-    :return: (ndarray) Sigmoid corrected output image.
-    """
-    image = tf.constant(image)
-    # check the input image are all non negative
-    tf.debugging.assert_non_negative(image).mark_used()
-    dtype = image.dtype
-
-    # cutoff = tf.constant(cutoff, dtype=dtype)
-
-    out = 1 / (1 + tf.exp(gain * (cutoff - image)))
-    if inv:
-        out = 1 - out
-    with tf.Session() as sess:
-        out = sess.run(out)
-    return out
