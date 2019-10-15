@@ -20,6 +20,6 @@ if __name__ == "__main__":
         # convert the array to image
         converted_img = Image.fromarray(rank_order(user_input)[0], 'RGB')
         converted_img.save("images/example_output.jpeg")
-        print("converted file in the ./images directory")
+        print("converted file in the ./images/example_output.jpeg")
     else:
         print("only jpeg type files are supported! exiting module.")
