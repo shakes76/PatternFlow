@@ -22,6 +22,35 @@ def _maybe_view_as_subclass(original_array, new_array):
             new_array.__array_finalize__(original_array)
     return new_array
 
+def as_strided(x, shape=None, strides=None, writeable=True):
+    # first convert input to array, possibly keeping subclass
+    x = tf.convert_to_tensor(x)
+    session = tf.Session()
+    x = session.run(x)
+
+    interface = dict(x.__array_interface__)
+    if shape is not None:
+        interface['shape'] = tuple(shape)
+    if strides is not None:
+        interface['strides'] = tuple(strides)
+
+    array = session.run(tf.convert_to_tensor(DummyArray(interface, base=x)))
+    # The route via `__interface__` does not preserve structured
+    # dtypes. Since dtype should remain unchanged, we set it explicitly.
+    array.dtype = x.dtype
+
+    view = _maybe_view_as_subclass(x, array)
+
+    if view.flags.writeable and not writeable:
+        view.flags.writeable = False
+
+    return view
+
 def downscale_local_mean(image, factors, cval=0, clip=True):
-  
+  if tf.is_tensor(image):
+    print("tensor")
+    session = tf.Session()
+    image = session.run(image)
+  else:
+    print("array")
   return block_reduce(image, factors, tf.reduce_mean, cval)
