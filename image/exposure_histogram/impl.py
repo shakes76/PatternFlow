@@ -68,9 +68,24 @@ def get_int_centers(limits: Tuple[T, T]) -> tf.Tensor:
     return tf.range(start=lower, limit=upper, delta=tf.constant(1))
 
 def normalize_tensor(tensor: tf.Tensor) -> tf.Tensor:
+    """
+    Given a tensor, normalize it
+    """
     return tensor / tf.math.reduce_sum(tensor)
 
-def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='image', normalize: bool=False):
+def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='image', normalize: bool=False) -> Tuple[tf.Tensor, tf.Tensor]:
+    """
+    Return histogram of image.
+    
+    Based on https://scikit-image.org/docs/stable/api/skimage.exposure.html#skimage.exposure.histogram
+    
+    Params:
+     - image: input image
+     - nbins: Number of bins used to calculate histogram. This value is ignored for integer arrays.
+     - source_range: 'image' (default) determines the range from the input image.
+                     'dtype' determines the range from the expected range of the images of that data type.
+     - normalize: If True, normalize the histogram by the sum of its values.
+    """
     # Check image
     if not isinstance(image, tf.Tensor):
         raise TypeError("image must be of type tf.Tensor")
