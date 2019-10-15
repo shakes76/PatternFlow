@@ -24,7 +24,6 @@ def _maybe_view_as_subclass(original_array, new_array):
 
 def as_strided(x, shape=None, strides=None, writeable=True):
     # first convert input to array, possibly keeping subclass
-    x = tf.convert_to_tensor(x)
     session = tf.Session()
     x = session.run(x)
 
@@ -45,7 +44,7 @@ def as_strided(x, shape=None, strides=None, writeable=True):
         view.flags.writeable = False
 
     return view
-
+    
 def downscale_local_mean(image, factors, cval=0, clip=True):
   if tf.is_tensor(image):
     print("tensor")
