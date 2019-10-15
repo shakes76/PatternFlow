@@ -1,14 +1,15 @@
-Transform module 
-====
+# Transform module 
+
 match_histograms function implementation in Tensorflow
--------
-# Description of the algorithm
-The function of this algorithm is: Adjust an image so that its cumulative histogram matches that of another iamge. Specifically, firstly, after giving the reference image and the source image. By calculating the cumulative distribution of the reference figure, the probability distribution of each pixel value of the figure can be obtained. Secondly, for each channel, give the information of the reference figure, and use the interpolation function to get the value corresponding to a series of source pictures. Finally, the results of each channel are reconstructed into a figure to achieve the effect of color migration.
 
-# How it works
-You can run run main.py directly to see the effect of the image color style migration. If you want to use your own image, you need to replace the reference and source in main.py with the path to your image. If you want to see how the specific function is written, you can open match_histograms.py to view it.
 
-# Example 
+## Description of the algorithm
+In image processing, histogram matching is the transformation of an image so that its  cumulative histogrammatches a specified histogram(from an anohter image). Specifically,algorithmthe Given two images, the reference and the target images, we compute their histograms. Following, we calculate the cumulative distribution functions of the two images' histograms – F1()for the reference image and F2() for the target image. Then for each gray level G1 in [0,255], we find the gray level G2, for which F1(G1) = F2(G2), and this is the result of histogram matching function: M(G1) = G2 Finally, we apply the function M() on each pixel of the reference image.
+
+## How it works
+Specifically, firstly, after giving the reference image and the source image. By calculating the cumulative distribution of the reference figure, the probability distribution of each pixel value of the figure can be obtained. Secondly, for each channel, give the information of the reference figure, and use the interpolation function to get the value corresponding to a series of source pictures. Finally, the results of each channel are reconstructed into a figure to achieve the effect of color migration. In addition, You can run run main.py directly to see the effect of the image histogram matching. If you want to use your own image, you need to replace the reference and source in main.py with the path to your image. If you want to see how the specific function is written, you can open match_histograms.py to view it.
+
+## Example 
 ```python
 reference = data.coffee()
 source = data.astronaut()
@@ -28,17 +29,20 @@ ax3.imshow(matched)
 ax3.set_title('Matched')
 plt.tight_layout()
 plt.show()
-The example of completing color migration of astronaut image
 ```
+
+The example of completing color migration of astronaut image
+
 
 ![example](./img-storage/Example.png)
 
-# Dependencies
+## Dependencies
 
 This project is tested in following context:
 
 - macOS Catalina 10.15
-- python 3.7.3
+- python 3.7.3 64-bit('base": conda)
 
 
-Author: Tianjie Shi 
+Author: Tianjie Shi
+Last update: 15/10/2019
