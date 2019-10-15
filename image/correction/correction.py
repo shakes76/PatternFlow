@@ -35,30 +35,3 @@ def adjust_log(image, gain=1, inv=False):
     inv_norm = out * 255
     out = tf.dtypes.cast(inv_norm, dtype)
     return out.numpy()
-
-
-def adjust_gamma(image, gamma=1, gain=1):
-    """Applies Gamma Correction on the input image.
-    This function adjust the input image according to the
-    equation ``O = I**gamma``.
-
-    :param image: (ndarray) Input image
-    :param gamma: (float) Non negative real number. Default value is 1
-    :param gain: (float) The constant multiplier. Default value is 1
-    :return: (ndarray) Gamma corrected output image.
-    """
-    dtype = image.dtype
-    image = tf.constant(image, tf.float32)
-    # check the input image are all non negative
-    tf.debugging.assert_non_negative(image)
-    norm = image / 255
-    # norm = image
-    if gamma < 0:
-        raise ValueError("Gamma should be a non-negative real number.")
-
-    gamma = tf.constant(gamma, tf.float32)
-    out = tf.pow(norm, gamma) * gain
-    inv_norm = out * 255
-    # inv_norm = out
-    out = tf.dtypes.cast(inv_norm, dtype)
-    return out.numpy()
