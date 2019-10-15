@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
-tf.InteractiveSession()
 
 from skimage import data, color
 from downscale_local_mean import downscale_local_mean
@@ -14,6 +13,9 @@ def main():
     """
     #get image
     image = color.rgb2gray(data.rocket())
+    
+    #for the version, we can use tf.compat.v1.Session to ignore the warning 
+    tf.InteractiveSession()
 
     #downscaled the image(if the image is ndarray)
     #image_downscaled = downscale_local_mean(image, (4, 3))
