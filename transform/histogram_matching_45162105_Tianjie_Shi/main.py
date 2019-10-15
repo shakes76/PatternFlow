@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Author: Tianjie Shi 
-# Last update: 13/10/2019
+# Last update: 16/10/2019
 import match_histograms as mh
 import matplotlib.pyplot as plt
 from skimage import data
@@ -26,12 +26,34 @@ def plot(image1,image2):
     ax3.set_title('Matched')
     plt.tight_layout()
     plt.show()
+    plt.close()
 
 ##Driver script
 if __name__ == "__main__":
-    #load the images
+    #test 2 3channels figures
+    
     reference = data.coffee()
     source = data.astronaut()
     #plot 
     plot(source,reference)
+    
+    #test 2  1channels figures
+    '''
+    It will rasie ValueError('Number of channels in the input image and reference' 
+    (same as orginal function in skimage)
+    '''
+    reference2 = data.camera()
+    source2 = data.horse()
+    plot(source2,reference2)
+
+    #test 3  2 different channels figures
+    '''
+    It will rasie ValueError: Number of channels in the input image and reference image must match!
+    '''
+    reference3 = data.coffee()
+    source3 = data.horse()
+    plot(source3,reference3)
+
+
+
     

@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 # Transform module 
 
 match_histograms function implementation in Tensorflow
@@ -42,7 +47,10 @@ This project is tested in following context:
 
 - macOS Catalina 10.15
 - python 3.7.3 64-bit('base": conda)
+- Tensorflow version: 1.14.0
+
+The implementation of the entire function is done in the eager_execution mode of tensorflow. If your tensorflow version does not support this feature, please update the tensorflow version to 1.14.0 or more.
 
 
 Author: Tianjie Shi
-Last update: 15/10/2019
+Last update: 16/10/2019
