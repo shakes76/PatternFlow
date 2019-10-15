@@ -5,13 +5,17 @@ class GCD:
     def __init__(self, a, b):
         self.a = tf.Variable(a)
         self.b = tf.Variable(b)
+        self.gcd = None
         
-        loop = tf.while_loop(self.cond, self.body, [self.a, self.b])   
+        loop = tf.while_loop(self.cond, self.body, [self.a, self.b])  
         
         with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
             result = sess.run(loop)
-            gcd = result[1]
-            return gcd
+            print(type(result[1]))
+            self.gcd = result[1]
+            
+            print('Greatest Common Divisior of', a, ' and ', b, ' is: ', self.gcd)
         
     def cond(self, a, b):
         return tf.greater(a, tf.constant(0))
@@ -22,3 +26,6 @@ class GCD:
         a = b
         b = temp
         return a, b
+    
+    def getGCD(self):
+        return self.gcd
