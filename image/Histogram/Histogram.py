@@ -1,5 +1,13 @@
 import tensorflow as tf
 
+"""
+        COMP3710 Open source project
+        Name: Chrisbin James
+        Student Number: 45431780
+        
+        Tensorflow port of skimage.exposure.histogram
+"""
+
 # List of integer tensorflow datatypes
 tf_int_dtypes = [tf.uint8, tf.uint16, tf.uint32, tf.uint64, tf.int8, tf.int16, tf.int32, tf.int64]
 
