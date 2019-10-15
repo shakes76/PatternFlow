@@ -30,9 +30,9 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     x : tensor
         A new tensor
     shape : sequence of int, optional
-        The shape of the new array. Defaults to ``x.shape``.
+        The shape of the new tensor(conver to narray at begining). Defaults to ``x.shape``.
     strides : sequence of int, optional
-        The strides of the new array. Defaults to ``x.strides``.
+        The strides of the new tensor(conver to narray at begining). Defaults to ``x.strides``.
     subok : bool, optional
         .. versionadded:: 1.10
         If True, subclasses are preserved.
@@ -48,6 +48,24 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     --------
     broadcast_to: broadcast an array to a given shape.
     reshape : reshape an array.
+    Notes
+    -----
+    ``as_strided`` creates a view into the tensor given the exact strides
+    and shape. At the begining of as_strided funciton. I use session.run() 
+    function to convert the tensor to the numpy arrays.Then we can do some
+    operations on such arrays. 
+    It is advisable to always use the original ``x.strides`` when
+    calculating new strides to avoid reliance on a contiguous memory
+    layout.
+    Vectorized write operations on such arrays will typically be unpredictable.
+    They may even give different results for small, large, or transposed arrays. 
+    Furthermore, arrays created with this function often contain self
+    overlapping memory, so that two elements are identical.
+    Since writing to these arrays has to be tested and done with great
+    care, you may want to use ``writeable=False`` to avoid accidental write
+    operations.
+    For these reasons it is advisable to avoid ``as_strided`` when
+    possible.
     """
     # first convert input to array, possibly keeping subclass
     session = tf.Session()
