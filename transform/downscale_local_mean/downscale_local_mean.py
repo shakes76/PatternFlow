@@ -64,7 +64,7 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     image = tf.convert_to_tensor(image)
     image = tf.pad(image, pad_width, "CONSTANT")
 
-    # compute the block view of image 
+    # compute the block view of image
     blocked = view_as_blocks(image, block_size)
     blocked = tf.cast(blocked, tf.float64)
     session = tf.Session()
@@ -119,3 +119,22 @@ def view_as_blocks(arr_in, block_shape):
     return arr_out
 
 
+def as_strided(x, shape=None, strides=None, writeable=True):
+    """
+    Create a view into the array with the given shape and strides.
+    Equivalent to numpy.lib.stride_tricks.as_strided
+
+    :param x: ndarray
+        Array used to create a view.
+    :param shape: sequence of int, optional
+        The shape of the new array. Defaults to x.shape.
+    :param strides: sequence of int, optional
+        The strides of the new array. Defaults to x.strides.
+    :param writeable: bool, optional
+        If set to False, the returned array will always be readonly. Otherwise it will be writable if the original
+        array was. It is advisable to set this to False if possible.
+
+    :return: ndarray
+        The created view of the given input array.
+    """
+    return x
