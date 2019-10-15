@@ -46,4 +46,30 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     :return: ndarray
         Down-sampled image with same number of dimensions as input image.
     """
-    return image
+    # if the dimension of block_size and image is not the same, raise error
+    if len(block_size) != image.ndim:
+        raise ValueError("`block_size` must have the same length as `image.shape`.")
+
+    # apply the pad operation on image
+    pad_width = []
+    for i in range(len(block_size)):
+        if block_size[i] < 1:
+            raise ValueError("Down-sampling factors must be >= 1.")
+        if image.shape[i] % block_size[i] != 0:
+            after_width = block_size[i] - (image.shape[i] % block_size[i])
+        else:
+            after_width = 0
+        pad_width.append((0, after_width))
+    image = tf.convert_to_tensor(image)
+    image = tf.pad(image, pad_width, "CONSTANT")
+
+    # compute the block view of image 
+    blocked = view_as_blocks(image, block_size)
+    blocked = tf.cast(blocked, tf.float64)
+    session = tf.Session()
+    image = session.run(image)
+    blocked = session.run(blocked)
+    # apply the given func on blocked
+    result = func(blocked, axis=tuple(range(image.ndim, blocked.ndim)))
+
+    return session.run(result)
