@@ -139,11 +139,44 @@ def view_as_blocks(arr_in, block_shape):
   
     return arr_out 
 
-def downscale_local_mean(image, factors, cval=0, clip=True):
-  if tf.is_tensor(image):
-    print("tensor")
+def block_reduce(image, block_size, func=tf.reduce_sum, cval=0): 
+    if len(block_size) != image.ndim: 
+        raise ValueError("`block_size` must have the same length " 
+                        "as `image.shape`.") 
+    pad_width = [] 
+    for i in range(len(block_size)): 
+        if block_size[i] < 1: 
+            raise ValueError("Down-sampling factors must be >= 1. Use "
+                             "`skimage.transform.resize` to up-sample an " 
+                             "image.") 
+    if image.shape[i] % block_size[i] != 0: 
+        after_width = block_size[i] - (image.shape[i] % block_size[i]) 
+    else: 
+        after_width = 0
+    pad_width.append((0, after_width)) 
+   
+    t = tf.convert_to_tensor(image)
+    image = tf.pad(t, pad_width, "CONSTANT")
+  
+    blocked = view_as_blocks(image, block_size)
+  
     session = tf.Session()
     image = session.run(image)
-  else:
-    print("array")
-  return block_reduce(image, factors, tf.reduce_mean, cval)
+  
+    blocked = tf.convert_to_tensor(blocked)
+    blocked = tf.cast(blocked, tf.float64)
+    result =  func(blocked, axis=tuple(range(image.ndim, tf.rank(blocked).eval())))
+
+    session = tf.Session()
+    result =session.run(result)
+ 
+    return result
+
+def downscale_local_mean(image, factors, cval=0, clip=True):
+    if tf.is_tensor(image):
+        print("tensor")
+        session = tf.Session()
+        image = session.run(image)
+    else:
+        print("array")
+    return block_reduce(image, factors, tf.reduce_mean, cval)
