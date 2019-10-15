@@ -53,3 +53,17 @@ def test_denoise_tv_chambolle_float_result_range():
     assert_(denoised_int_astroT.dtype == torch.float)
     assert_(torch.max(denoised_int_astroT) <= 1.0)
     assert_(torch.min(denoised_int_astroT) >= 0.0)
+
+def test_denoise_tv_chambolle_3d():
+    """Apply the TV denoising algorithm on a 3D image representing a sphere."""
+    x, y, z = np.ogrid[0:40, 0:40, 0:40]
+    mask = (x - 22)**2 + (y - 20)**2 + (z - 17)**2 < 8**2
+    mask = 100 * mask.astype(np.float)
+    mask += 60
+    mask += 20 * np.random.rand(*mask.shape)
+    mask[mask < 0] = 0
+    mask[mask > 255] = 255
+    maskT= torch.tensor(mask,dtype = torch.float32)
+    resT = denoise_tv_chambolle_torch(maskT.type(torch.uint8), weight=0.1)
+    assert_(resT.dtype == torch.float)
+    assert_(resT.std() * 255 < mask.std())
