@@ -1,5 +1,5 @@
 import tensorflow as tf
-tf.InteractiveSession()
+
 
 class DummyArray(object):
     """Dummy object that just exists to hang __array_interface__ dictionaries
@@ -223,7 +223,8 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
             Down-sampled image with same number of dimensions as input image. 
             For integer inputs, the output dtype will be ``float64``. 
     """ 
-
+    tf.InteractiveSession()
+    
     if tf.is_tensor(image):
         print("tensor")
         session = tf.Session()
