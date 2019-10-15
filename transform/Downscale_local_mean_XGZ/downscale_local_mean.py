@@ -193,6 +193,37 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     return result
 
 def downscale_local_mean(image, factors, cval=0, clip=True):
+    """Down-sample N-dimensional image by local averaging. 
+
+    The image is padded with `cval` if it is not perfectly divisible by the 
+    integer factors. 
+
+    This function calculates the local mean of elements in each block
+    of size `factors` in the input image. 
+
+    Parameters 
+    ---------- 
+    image : tensor or ndarray 
+            There are two situation about the input image
+            This function can recieve ndarray and N-dimensional imput tensor image 
+    factors : array
+            Array containing down-sampling integer factor along each axis. 
+    cval : float, optional 
+            Constant padding value if image is not perfectly divisible by the 
+            integer factors. 
+    clip : bool, optional 
+            Unused, but kept here for API consistency with the other transforms 
+            in this module. (The local mean will never fall outside the range 
+            of values in the input image, assuming the provided `cval` also 
+            falls within that range.) 
+  
+    Returns 
+    ------- 
+    image : ndarray 
+            Down-sampled image with same number of dimensions as input image. 
+            For integer inputs, the output dtype will be ``float64``. 
+    """ 
+    
     if tf.is_tensor(image):
         print("tensor")
         session = tf.Session()
