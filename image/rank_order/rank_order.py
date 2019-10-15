@@ -1,3 +1,5 @@
+# Author: Askar Jaboldinov
+
 import tensorflow as tf
 
 def rank_order(file_path):
