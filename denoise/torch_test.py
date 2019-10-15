@@ -85,3 +85,21 @@ def test_denoise_tv_chambolle_4d():
     resT = denoise_tv_chambolle_torch(imT.type(torch.uint8), weight=0.1)
     assert_(resT.dtype == torch.float)
     assert_(resT.std() * 255 < im.std())
+    
+def test_denoise_tv_chambolle_weighting():
+    # make sure a specified weight gives consistent results regardless of
+    # the number of input image dimensions
+    rstate = np.random.RandomState(1234)
+    img2d = astro_gray.copy()
+    img2d += 0.15 * rstate.standard_normal(img2d.shape)
+    img2d = np.clip(img2d, 0, 1)
+
+    # generate 4D image by tiling
+    img4d = np.tile(img2d[..., None, None], (1, 1, 2, 2))
+    img2dT = torch.tensor(img2d)
+    img4dT = torch.tensor(img4d)
+    w = 0.2
+    denoised_2d = denoise_tv_chambolle_torch(img2dT, weight=w)
+    denoised_4d = denoise_tv_chambolle_torch(img4dT, weight=w)
+    assert_(measure.compare_ssim(denoised_2d.numpy(),
+                                denoised_4d[:, :, 0, 0].numpy()) > 0.99)
