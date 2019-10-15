@@ -105,7 +105,7 @@ def view_as_blocks(arr_in, block_shape):
      Returns 
      ------- 
      arr_out : ndarray 
-       Block view of the input array. 
+       Block view of the input tensor. 
     """
     if not isinstance(block_shape, tuple): 
         raise TypeError('block needs to be a tuple') 
