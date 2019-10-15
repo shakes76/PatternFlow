@@ -140,6 +140,26 @@ def view_as_blocks(arr_in, block_shape):
     return arr_out 
 
 def block_reduce(image, block_size, func=tf.reduce_sum, cval=0): 
+      """Down-sample image by applying function to local blocks. 
+ 
+    Parameters 
+    ---------- 
+    image : tensor
+            N-dimensional input tensor(image) 
+    block_size : array 
+                Array containing down-sampling integer factor along each axis. 
+    func : callable 
+            Function object which is used to calculate the return value for each 
+            local block. This function must implement an ``axis`` parameter such 
+            as ``tf.reduce_sum`` or ``tf.reduce_mean``. 
+    cval : float 
+            Constant padding value if image is not perfectly divisible by the 
+            block size. 
+    Returns 
+    ------- 
+    image : ndarray 
+            Down-sampled image with same number of dimensions as input image.    
+    """ 
     if len(block_size) != image.ndim: 
         raise ValueError("`block_size` must have the same length " 
                         "as `image.shape`.") 
