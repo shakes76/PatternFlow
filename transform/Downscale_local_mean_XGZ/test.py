@@ -13,7 +13,8 @@ def main():
     """
     #get image
     image = color.rgb2gray(data.rocket())
-    
+    
+
     #for the version, we can use tf.compat.v1.Session to ignore the warning 
     tf.InteractiveSession()
 
