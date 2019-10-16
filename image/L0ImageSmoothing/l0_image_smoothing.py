@@ -199,26 +199,26 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
             v = tf.convert_to_tensor(v_temp, dtype=v.dtype)
 
         # S SUB-PROBLEM per [1]
-        # Compute numer2, which is the sum of the h and v slices in reverse.
-        numer2 = tf.zeros_like(S)
-        numer2_h1 = h[:, M-1:M, :] - h[:, 0:1, :]
-        numer2_h2 = h[:, 1:] - h[:, :-1]
-        numer2_h = tf.concat([
-            numer2_h1,
-            -numer2_h2
+        # Compute normin2, which is the sum of the h and v slices in reverse.
+        normin2 = tf.zeros_like(S)
+        normin2_h1 = h[:, M-1:M, :] - h[:, 0:1, :]
+        normin2_h2 = h[:, 1:] - h[:, :-1]
+        normin_h = tf.concat([
+            normin2_h1,
+            -normin2_h2
         ], axis=1)
-        numer2 += numer2_h
+        normin2 += normin_h
 
-        numer2_v1 = v[N-1:N, :, :] - v[0:1, :, :]
-        numer2_v2 = v[1:] - v[:-1]
-        numer2_v = tf.concat([
-            numer2_v1,
-            -numer2_v2
+        normin2_v1 = v[N-1:N, :, :] - v[0:1, :, :]
+        normin2_v1 = v[1:] - v[:-1]
+        normin2_v = tf.concat([
+            normin2_v1,
+            -normin2_v1
         ], axis=0)
-        numer2 += numer2_v
+        normin2 += normin2_v
 
         # Compute FS function [1], matlab code: FS = (Normin1 + beta*fft2(Normin2))./Denormin;
-        fft_numer2 = tf.signal.fft3d(tf.cast(numer2, dtype=tf.complex64))
+        fft_numer2 = tf.signal.fft3d(tf.cast(normin2, dtype=tf.complex64))
         fs = (tf.cast(normin1, dtype=tf.complex64) + beta * fft_numer2) / tf.cast(denorm, dtype=tf.complex64)
 
         # Safety net, might not be necessary.
