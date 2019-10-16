@@ -12,8 +12,6 @@
 # [2]. Alexandre Boucaud, “pypher: Python PSF Homogenization kERnels”. Zenodo, 02-Sep-2016.
 #
 ################################################################################
-from imageio import imread
-import matplotlib.pyplot as plt
 
 # Disable TF logging for INFO and WARN, keep ERROR.
 import os
