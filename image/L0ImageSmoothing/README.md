@@ -58,7 +58,7 @@ The image will be saved in the current directory.
 Alternatively use the provided driver script:
 
 ```
-    python -m driver.py -img bengalcat.jpg
+    python -m driver.py -img corgi.jpg
 ```
 
 By default parameters lambda=2e-2, kappa=2.0, beta_max=1e5. These can be set manually:
@@ -69,7 +69,7 @@ By default parameters lambda=2e-2, kappa=2.0, beta_max=1e5. These can be set man
 Example:
 
 ```
-    python -m driver.py -img bengalcat.jpg -l 1e-2 -k 1.5 -b 1e4
+    python -m driver.py -img corgi.jpg -l 1e-2 -k 1.5 -b 1e4
 ```
 
 
