@@ -66,7 +66,7 @@ def _fxypsf_to_otf(psf, target):
     Original python implementation: https://github.com/aboucaud/pypher [2]
 
     :param psf: Tensor containing a point spread function for padding.
-    :param shape tuple(int, int): Target shape from image we are smoothing.
+    :param target: Target img for smoothing to compute otf up to target dimensions.
     :return: otf of original provided psf functions Fx or Fy.
     """
     target_shape = (target.shape[0], target.shape[1])
@@ -90,6 +90,7 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
 
     Lambda is a hyperparameter to tune degree of smoothing.
     By default this is 2e-2, authors recommend a range of [1e-3, 1e-1] [1].
+    Usage note: Smaller lambda results in retaining of more of the original details of image.
 
     Kappa is the scaling factor that scales rate of smoothing,
     smaller kappa scalar results in more iterations and sharper edges.
@@ -105,14 +106,18 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     :param beta_max: Parameter to scale max iterations, each iteration increments beta * kappa.
     :return:
     """
+    # Image needs to be complex64 or complex128 for tensorflows fourier transform.
+    img = tf.convert_to_tensor(img, dtype=tf.complex64)
+    psf_fx = tf.constant([[1, -1]], dtype=tf.uint8)
+    psf_fy = tf.constant([[1], [-1]], dtype=tf.uint8)
+    otf_fx = _fxypsf_to_otf(psf_fx, img)
+    otf_fy = _fxypsf_to_otf(psf_fy, img)
     return
 
 if __name__ == '__main__':
     img = imread('./bengalcat.jpg')
-    print(f'img shape: {img.shape}')
     psf = tf.constant([[-1, 1]], tf.int8)
     otf = _fxypsf_to_otf(psf, img)
     psf2 = tf.constant([[-1], [1]], tf.int8)
     otf2 = _fxypsf_to_otf(psf2, img)
-    print(otf.numpy(), otf.shape)
-    print(otf2.numpy(), otf2.shape)
+    l0_image_smoothing(img)
