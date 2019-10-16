@@ -6,11 +6,18 @@
 ################################################################################
 # ATTRIBUTIONS
 #
+# [1]. L. Xu, C. Lu, Y. Xu, and J. Jia, "Image Smoothing via L0 Gradient Minimization",
+#      ACM Transactions on Graphics, Vol. 30, No. 5 (SIGGRAPH Asia 2011), Dec 2011
+#
 # [2]. Alexandre Boucaud, “pypher: Python PSF Homogenization kERnels”. Zenodo, 02-Sep-2016.
 #
 ################################################################################
 from imageio import imread
 import matplotlib.pyplot as plt
+
+# Disable TF logging for INFO and WARN, keep ERROR.
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
 
@@ -47,7 +54,7 @@ def _zero_pad_fxypsf(psf, shape):
 
 def _fxypsf_to_otf(psf, target):
     """
-    _fxy_psf2otf is an adapted function specifically for the L0 norm algorithm
+    _fxypsf_to_otf is an adapted function specifically for the L0 norm algorithm
     which originally made use of a matlab psf2otf function. This function is
     therefore a port to tensorflow based off the matlab psf2otf function via a
     python port [2], but specifically adapted for the image smoothing algorithm.
@@ -56,8 +63,8 @@ def _fxypsf_to_otf(psf, target):
     the fast fourier transform on a padded psf.
 
     Expects to work with psf of either:
-    Fx = [[-1, 1]], or
-    Fy = [[-1], [1]]
+    Fx = [[1, -1]], or
+    Fy = [[1], [-1]]
     ============================================================================
     Attribution:
     Original function was a numpy port of a matlab psf2otf function. For a general
@@ -99,6 +106,12 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     Iterations of smoothing based on beta < beta_max.
     With beta initialised as 2 * lambda.
     In addition, beta is incremented at rate beta * kappa each iteration.
+    Furthermore, beta is used as a scaling factor for weight per iteration.
+
+    ============================================================================
+    Attribution:
+    Original code written in matlab kindly provided by authors of algorithm [1].
+    Matlab code can be found at authors website: http://www.cse.cuhk.edu.hk/~leojia/projects/L0smoothing/
 
     :param img: Input image, read in as numpy array.
     :param _lambda: Smoothing parameter for degree of smoothness [1]. Default 2e-2.
@@ -219,8 +232,12 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
 
         beta = beta * kappa
 
+        # Visual indicator that algorithm is working.
+        print(".", end="", flush=True)
+
     # Rescale
     S = S.numpy()
+    print()
     return S
 
 
