@@ -48,11 +48,13 @@ Output (default parameters):
 
 Output (smoothing_factor = 0.1):
 
-![](resources/wonka_result2.png)
+![](resources/wonka_result2.png)  
      
 # References
 
 The implementation in this module is based heavily on the code available here:
 https://github.com/t-suzuki/l0_gradient_minimization_test
+
+Student Number: 44303394   
 
 [1] Xu, L., Lu, C., Xu, Y. and Jia, J. (2011). Image smoothing via L0 gradient minimization. *Proceedings of the 2011 SIGGRAPH Asia Conference on - SA '11.*
