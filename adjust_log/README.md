@@ -19,17 +19,21 @@ Besides, before calculating the logarithm values, this function check the will c
 #### Parameters
 
 >**image**: ndarray
+
 > Input image.
 
 >**gain**: float, optional
+
 > A constant multiplier. Defalt value is 1.
 
 >**inv**: bool, optional
+
 > If inv is set to be True, it performs inverse logarithmic correction, else 
 correction will be logarithmic. Defaults to False.
 
 #### Returns
 >**out**: ndarray
+
 > Logarithm corrected output image.
 
 
