@@ -33,11 +33,12 @@ def plot_edges(option):
   else:
     print('Please choose a number from 1,2,3 only.')
 
+#Driver Script
 if __name__ == "__main__":
-  #tf.reset_default_graph()
 
   print('Choose the number corresponding to the image transformation you want')
   print('1. Horizontal edges of an image using Sobel Transform\n2. Vertical edges of an image using Sobel Transform\n3. Edge Magnitiude using Sobel Transform')
   number = input()
 
   plot_edges(number)
+
