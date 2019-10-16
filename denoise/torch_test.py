@@ -11,8 +11,6 @@ import torch
 import unittest
 from skimage import data, img_as_float, exposure, img_as_ubyte
 from skimage import restoration, data, color, img_as_float, measure
-
-
 import sys
 sys.path.append('/PatternFlow/denoise/')
 from torch_denoise_tv_chambolle import denoise_tv_chambolle_torch
@@ -21,7 +19,7 @@ from skimage._shared.testing import (assert_equal, assert_almost_equal,
 import torchvision.transforms.functional as F  
 from torchvision import transforms
 import numpy as np 
-
+import matplotlib.pyplot as plt
 
 #%% 
 
@@ -104,24 +102,53 @@ def test_denoise_tv_chambolle_weighting():
     assert_(measure.compare_ssim(denoised_2d.numpy(),
                                 denoised_4d[:, :, 0, 0].numpy()) > 0.99)
     
+def test_denoise_tv_chambolle_multichannel():
+    denoised0 = denoise_tv_chambolle_torch(astroT[..., 0], weight=0.1)
+    denoised = denoise_tv_chambolle_torch(astroT, weight=0.1,
+                                                multichannel=True)
+    assert_equal(denoised[..., 0].numpy(), denoised0.numpy())
 
-def main():
-    astro = img_as_float(data.astronaut()[:128, :128])
-    astro_gray = color.rgb2gray(astro)
-    astroT = torch.tensor(astro,dtype = torch.float32)
-    astro_grayT = torch.tensor(astro_gray,dtype = torch.float32)
-    checkerboard = img_as_float(data.checkerboard())
-    checkerboard_gray = color.gray2rgb(checkerboard)
-    astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
-    checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
+    # tile astronaut subset to generate 3D+channels data
+    astro3 = np.tile(astro[:64, :64, np.newaxis, :], [1, 1, 2, 1])
+    # modify along tiled dimension to give non-zero gradient on 3rd axis
+    astro3[:, :, 0, :] = 2*astro3[:, :, 0, :]
+    astro3T = torch.tensor(astro3)
+    denoised0 = denoise_tv_chambolle_torch(astro3T[..., 0], weight=0.1)
+    denoised = denoise_tv_chambolle_torch(astro3T, weight=0.1,
+                                                multichannel=True)
+    assert_equal(denoised[..., 0].numpy(), denoised0.numpy())
+
+
+astro = img_as_float(data.astronaut()[:128, :128])
+astro_gray = color.rgb2gray(astro)
+astroT = torch.tensor(astro,dtype = torch.float32)
+astro_grayT = torch.tensor(astro_gray,dtype = torch.float32)
+checkerboard = img_as_float(data.checkerboard())
+checkerboard_gray = color.gray2rgb(checkerboard)
+astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
+checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
+
+test_denoise_tv_chambolle_2d()
+test_denoise_tv_chambolle_multichannel()
+test_denoise_tv_chambolle_float_result_range()
+test_denoise_tv_chambolle_3d()
+test_denoise_tv_chambolle_1d()
+test_denoise_tv_chambolle_4d()
+test_denoise_tv_chambolle_weighting()
+
+
     
-    test_denoise_tv_chambolle_2d()
-    test_denoise_tv_chambolle_multichannel()
-    test_denoise_tv_chambolle_float_result_range()
-    test_denoise_tv_chambolle_3d()
-    test_denoise_tv_chambolle_1d()
-    test_denoise_tv_chambolle_4d()
-    test_denoise_tv_chambolle_weighting()
-
-if __name__ ==main:
-    main()
+#%%
+    
+coffee = img_as_float(data.coffee())
+coffeeT = torch.tensor(coffee)
+fig, (ax1, ax2, ax3) = plt.subplots(1,3)
+ax1.imshow(coffee)
+ax1.set_title('Original Image')
+ax2.imshow(denoise_tv_chambolle_torch(coffeeT))
+ax2.set_title('Denoised(torch)')
+ax3.imshow(restoration.denoise_tv_chambolle(coffee))
+ax3.set_title('Denoised(numpy)')
+#plt.savefig(Kmeans_savePath)
+plt.show()    
+    

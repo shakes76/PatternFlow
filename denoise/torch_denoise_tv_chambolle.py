@@ -85,6 +85,7 @@ def _denoise_tv_chambolle_nd_torch(image, weight=0.1, eps=2.e-4, n_iter_max=200)
        else:
            out = image
        Et = torch.mul(dt,dt).sum()
+       
        # gt stores the gradients of out along each axis
        # e.g. gt[0] is the first order finite difference along axis 0
        slices_gt = [slice(None), ] * (ndim + 1)
@@ -144,9 +145,9 @@ def denoise_tv_chambolle_torch(image, weight=0.1, eps=2.e-4, n_iter_max=200,
         Denoised image.
     """
     imageType = image.dtype
-    if imageType is not torch.float32:
+    if imageType is not torch.float:
         image = image.type("torch.FloatTensor")
-        image = (image-image.min())/(image.max()-image.min())/2.0
+        image = (image-image.min())/(image.max()-image.min())
     if multichannel:
         out = torch.zeros_like(image)
         for c in range(image.shape[-1]):
