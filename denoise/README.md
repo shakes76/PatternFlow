@@ -12,3 +12,15 @@ This library is created and maintained by The University of Queensland [COMP3710
 * You may upload a low res image (< 2 MB) into a folder called 'resources' in your fractal directory for displaying on the README.md file
 * You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
 * Then put in a pull request for the repository owner to approve and that's it!
+
+## Environment 
+* torch version : 1.2.0
+* mac os version: 10.14.6
+
+## Algorithm developed
+* denoise_tv_chambolle
+
+## Result 
+
+* Comparisons between the original image and denoised image in torch and numpy \
+![result](https://i.imgur.com/5rJt22s.png)
