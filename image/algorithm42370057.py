@@ -1,9 +1,11 @@
+
+"""
 try:
   # %tensorflow_version only exists in Colab.
   %tensorflow_version 2.x
 except Exception:
   pass
-
+"""
 import tensorflow as tf 
 
 print(tf.version)
