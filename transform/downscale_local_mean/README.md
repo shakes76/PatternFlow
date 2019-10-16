@@ -1,29 +1,32 @@
 # Transforms: _**downscale_local_mean**_
 
-<span style= "color:red">_**downscale_local_mean(image, factors, cval=0)**_
+<font color=#F08080>_**downscale_local_mean(image, factors, cval=0)**_</font>
 
-Down_sample N-dimensional image by local averaging.
+## **Description**
+This function is used to down_sample N-dimensional image by local averaging. It calculates the local mean of elelments n each block of size _factors_ in the input image.
 
 The image is padded with _cval_ if it is not perfectly dividible by the integer factors.
 
-This function calculates the local mean of elements in each block of size _factors_ in the input image.
+This function is equvalent to <font color=#FF6347>_skimage.transform.downscale_local_mean_</font> function.
 
-## **Parameters**
->  
-> **image**: ndarray\
-> &emsp; N-dimensional input image.\
-> **factor**: array_like\
-> &emsp; Array containing down-sampling integer factor along each axis.\
-> **cval**: float, optional\
+#### Parameters
+> **image**: ndarray   
+> &emsp; N-dimensional input image.   
+> **factor**: array_like   
+> &emsp; Array containing down-sampling integer factor along each axis.   
+> **cval**: float, optional   
 > &emsp; Constant padding value if image is not perfectly divisible by the integer factors.
 
-## **Returns**
-> **image**: ndarray\
+#### Returns
+> **image**: ndarray   
 > &emsp; Down-sampled image with same number of dimensions as input image. 
+
+# TODO: principle of the function with dependencies
 
 ## **Examples**
 #### Example1
-```
+# TODO: explanation of the example
+```python
 >>> a = np.arrage(15).reshape(3, 5)
 >>> a
 array([[  0,  1,  2,  3,  4],
@@ -34,6 +37,7 @@ array([[ 3.5, 4. ],
        [ 5.5, 4,5]])
 ```
 #### Example2
+# TODO: explanation of the example
 ```python
 import matplotlib.pyplot as plt
 
@@ -57,5 +61,5 @@ ax[0].set_ylim(400, 0)
 plt.tight_layout()
 plt.show()
 ```
-!()
+![](image/Figure_1.png)
 
