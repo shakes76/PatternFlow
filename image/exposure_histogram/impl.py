@@ -1,5 +1,4 @@
 import warnings
-import functools
 import operator
 from typing import Tuple, TypeVar
 
@@ -108,17 +107,17 @@ def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='ima
     # Don't need to check normalize, as a user could want to pass in a boolean-like
     
     image_shape = image.shape
-    image = tf.reshape(image, (functools.reduce(operator.mul, image_shape),))
+    image = tf.reshape(image, [-1])
     if image.dtype.is_integer:
         image = tf.cast(image, tf.int32)
         limits = get_limits(image, source_range)
         centers = get_int_centers(limits)
-        values = tf.histogram_fixed_width(image, limits, limits[1] - limits[0], dtype=image.dtype)
+        values = tf.histogram_fixed_width(image, limits, limits[1] - limits[0])
     else:
         image = tf.cast(image, tf.float32)
         limits = get_limits(image, source_range)
         centers = get_float_centers(limits, nbins)
-        values = tf.histogram_fixed_width(image, limits, nbins, dtype=image.dtype)
+        values = tf.histogram_fixed_width(image, limits, nbins)
     
     if normalize:
         values = normalize_tensor(values)
