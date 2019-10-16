@@ -130,17 +130,17 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     img_tensor = tf.cast(S, dtype=tf.complex64)
     # Pre-compute numerator and denominator for sub-problems per matlab
     # implementation [1], used for the two subproblems (h-v, S) [1].
-    numer1 = tf.signal.fft3d(img_tensor)
-    denom2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
+    normin1 = tf.signal.fft3d(img_tensor)
+    denorm2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
 
     # Convert denominator to 3 channels for colour:
     if C > 1:
-        denom2 = tf.tile(tf.expand_dims(denom2, 2), [1, 1, C])
+        denorm2 = tf.tile(tf.expand_dims(denorm2, 2), [1, 1, C])
 
     # Initial beta, smooth until beta > beta_max
     beta = 2 * _lambda
     while beta < beta_max:
-        denom = 1 + beta * denom2
+        denorm = 1 + beta * denorm2
 
         # H-V SUBPROBLEM per [1]
         # To do this we need to build tensors to add to the base h tensor of zeroes,
@@ -219,7 +219,7 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
 
         # Compute FS function [1], matlab code: FS = (Normin1 + beta*fft2(Normin2))./Denormin;
         fft_numer2 = tf.signal.fft3d(tf.cast(numer2, dtype=tf.complex64))
-        fs = (tf.cast(numer1, dtype=tf.complex64) + beta * fft_numer2) / tf.cast(denom, dtype=tf.complex64)
+        fs = (tf.cast(normin1, dtype=tf.complex64) + beta * fft_numer2) / tf.cast(denorm, dtype=tf.complex64)
 
         # Safety net, might not be necessary.
         if tf.reduce_any(tf.math.is_nan(tf.math.real(fs))):
