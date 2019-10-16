@@ -22,5 +22,5 @@ This library is created and maintained by The University of Queensland [COMP3710
 
 ## Result 
 
-* Comparisons between the original image and denoised image in torch and numpy
-![result](https://imgur.com/5rJt22s)
+* Comparisons between the original image and denoised image in torch and numpy \
+![result](https://i.imgur.com/5rJt22s.png)
