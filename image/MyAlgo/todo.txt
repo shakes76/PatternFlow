@@ -1,0 +1,3 @@
+To Do/ questions and bugs
+- how to init and fill values inside function with tf.session.run??
+- how to multiply two matrices to get 2D kernel?
