@@ -1,5 +1,6 @@
 # **Downscale_local_mean algorithm** in transform module of PatternFlow 
 
+
 ## **The description of the algorithm:**
 
 The downscale_local_mean algorithm could down-sample N-dimensional image by local averaging.  The downscale_local_mean algorithm calculate the local mean of elements in each block of size factors in the input image.
@@ -23,6 +24,8 @@ Unused, but kept here for API consistency with the other transforms in this modu
 #### image : ndarray
 Down-sampled image with same number of dimensions as input image. For integer inputs, the output dtype will be float64. 
 
+
+***
 
 ## **How it works:**
 In the downscale_local_mean function, people can input two types of image. The first type of image is ndarray and the second type of image is tensor. This function can convert the ndarray image to tensor image.
@@ -102,8 +105,12 @@ array([[3.5, 4. ],
 
 ```
 
+***
 #### Example for an input image:
+Downscale serves the purpose of down-sampling an n-dimensional image by integer factors using the local mean on the elements of each block of the size factors given as a parameter to the function.
+
 The original image is:
+![Rocketgray](https://user-images.githubusercontent.com/41613728/66882185-c6f92000-f00c-11e9-8589-c7721f5ed025.png)
 
 The test file is:
 
@@ -158,7 +165,7 @@ if __name__ == '__main__':
 ```
 
 The result is:
-
+![Result_1](https://user-images.githubusercontent.com/41613728/66882252-07589e00-f00d-11e9-9f43-27cf14a27a5e.png)
 
 
 
