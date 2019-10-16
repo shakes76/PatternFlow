@@ -45,7 +45,7 @@ def main():
     img = imageio.imread(args.img)
     _lambda = float(args.l)
     kappa = float(args.k)
-    beta_max = int(args.b)
+    beta_max = float(args.b)
 
     print("L0 Smoothing algorithm started!")
     start = time.time()
