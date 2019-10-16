@@ -21,7 +21,12 @@ This function is equvalent to <font color=#FF6347>_skimage.transform.downscale_l
 > **image**: ndarray   
 > &emsp; Down-sampled image with same number of dimensions as input image. 
 
-# TODO: principle of the function with dependencies
+## **Principles**
+_Downscale_local_mean_ serves the purpose of down-sampling an n-dimensional image by integer factors using the local mean on the elements of each block of the size factors given as a parameter to the function.
+
+The following picture displays how the _downscale_local_mean_ function works in the situations '_image_ is perfectly divided by _factors_' and '_image_ is not perfectly divded by _factors_ (with _cval_ being 0)'.
+
+![](image/algorithm_principle.jpg)
 
 ## **Examples**
 #### Example1
@@ -61,5 +66,5 @@ ax[0].set_ylim(400, 0)
 plt.tight_layout()
 plt.show()
 ```
-![](image/Figure_1.png)
+![](image/example.png)
 
