@@ -38,17 +38,9 @@ TensorFlow >= 2.0.0
     ```
     
 ## Example Output
-Input:
-
-![](resources/wonka.png)
-
-Output (default parameters):
-
-![](resources/wonka_result.png)
-
-Output (smoothing_factor = 0.1):
-
-![](resources/wonka_result2.png)  
+Input                      |  Output (default parameters)     | Output (smoothing_factor = 0.1)
+:-------------------------:|:--------------------------------:|:---------------------------------:
+![](resources/wonka.png)   |  ![](resources/wonka_result.png) | ![](resources/wonka_result2.png) 
      
 # References
 
