@@ -1,10 +1,16 @@
 # L0 Gradient Smoothing
 
 L0 gradient smoothing is a way to smooth images by limiting the number of non-zero gradients. It stands out 
-from other smoothing methods thanks to its edge preserving properties. 
+from other smoothing methods thanks to its edge preserving properties which makes it useful for applications
+such as edge extraction and JPEG artifact removal [1].
+
+The process works by restricting the number of non-zero gradients that the image can contain. It does this
+by removing low amplitude structures in the image. Gradients are calculated as the colour difference between
+neighbouring pixels. The minimisation of the L0 gradients is essentially an optimisation problem and thus 
+it is possible to control the amount of smoothing by stopping the optimisation at a specified point.
 
 ## Dependencies
-Tensorflow >= 2.0.0
+TensorFlow >= 2.0.0
 
 ## Example Usage
 
@@ -29,7 +35,7 @@ Tensorflow >= 2.0.0
     smoothed_result = l0_gradient_smoothing(image_data, smoothing_factor=0.015)
     ```
     
-### Example Output
+## Example Output
 Input:
 
 ![](resources/wonka.png)
@@ -43,5 +49,8 @@ Output (smoothing_factor = 0.1):
 ![](resources/wonka_result2.png)
      
 # References
+
+The implementation in this module is based heavily on the code available here:
+https://github.com/t-suzuki/l0_gradient_minimization_test
 
 [1] Xu, L., Lu, C., Xu, Y. and Jia, J. (2011). Image smoothing via L0 gradient minimization. *Proceedings of the 2011 SIGGRAPH Asia Conference on - SA '11.*

@@ -41,6 +41,7 @@ def _circulant2_dy(xs: tf.Tensor, dir: int) -> tf.Tensor:
 def l0_gradient_smoothing(image, smoothing_factor: float=0.01, beta_max: int=10000, beta_rate: float=2., max_iterations: int=30) -> tf.Tensor:
     """
     Performs l0 gradient smoothing on the given input data.
+    This is essentially a tensorflow port of the code found here: https://github.com/t-suzuki/l0_gradient_minimization_test
 
     :param image: Input image or data where the last dimension corresponds to the channels.
                   An arbitrary number of channels is supported.
