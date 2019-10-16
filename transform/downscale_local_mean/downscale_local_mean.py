@@ -24,6 +24,7 @@ def downscale_local_mean(image, factors, cval=0):
     # if the input is a tensor, convert it to an ndarray
     if tf.is_tensor(image):
         image = session.run(image)
+    session.close()
     image_downscaled = block_reduce(image, factors, tf.reduce_mean, cval)
 
     return tf.convert_to_tensor(image_downscaled)
@@ -72,8 +73,10 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     blocked = session.run(blocked)
     # apply the given func on blocked
     result = func(blocked, axis=tuple(range(image.ndim, blocked.ndim)))
+    resutl = session.run(result)
+    session.close()
 
-    return session.run(result)
+    return result
 
 
 def view_as_blocks(arr_in, block_shape):
@@ -100,6 +103,7 @@ def view_as_blocks(arr_in, block_shape):
     if (block_shape <= 0).any():
         raise ValueError("'block_shape' elements must be strictly positive")
     arr_in = session.run(arr_in)
+    session.close()
     if block_shape.size != arr_in.ndim:
         raise ValueError("'block_shape' must have the same length "
                          "as 'arr_in.shape'")
@@ -171,6 +175,7 @@ def as_strided(x, shape=None, strides=None, writeable=True):
         interface['strides'] = tuple(strides)
 
     array = session.run(tf.convert_to_tensor(DummyArray(interface, base=x)))
+    session.close()
     # The route via interface does not preserve structured dtypes. Since dtype should remain unchanged,
     # we set it explicitly.
     array.dtype = x.dtype
