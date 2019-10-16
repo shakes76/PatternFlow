@@ -1,5 +1,6 @@
+# Python built-ins, required for purely nicety reasons like raising warnings
+# and providing type-hints
 import warnings
-import operator
 from typing import Tuple, TypeVar
 
 import tensorflow as tf
