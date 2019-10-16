@@ -27,8 +27,8 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     
     Parameters
     ----------
-    x : tensor
-        A new tensor
+    x : ndarray
+        A new ndarray
     shape : sequence of int, optional
         The shape of the new tensor(conver to narray at begining). Defaults to ``x.shape``.
     strides : sequence of int, optional
@@ -69,8 +69,7 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     """
     # first convert input to array, possibly keeping subclass
     session = tf.Session()
-    x = session.run(x)
-
+    
     interface = dict(x.__array_interface__)
     if shape is not None:
         interface['shape'] = tuple(shape)
@@ -87,6 +86,7 @@ def as_strided(x, shape=None, strides=None, writeable=True):
     if view.flags.writeable and not writeable:
         view.flags.writeable = False
 
+    session.close()
     return view
 
 def view_as_blocks(arr_in, block_shape): 
@@ -96,8 +96,8 @@ def view_as_blocks(arr_in, block_shape):
   
      Parameters 
      ---------- 
-     arr_in : tensor 
-         N-d input tensor. 
+     arr_in : ndarray 
+         N-d input ndarray . 
      block_shape : tuple 
          The shape of the block. Each dimension must divide evenly into the 
          corresponding dimensions of `arr_in`. 
@@ -118,10 +118,6 @@ def view_as_blocks(arr_in, block_shape):
     #get the shape of the input tensor
     arr_shape = arr_in.shape
     
-    #change the input tensor to ndarray
-    session = tf.Session()
-    arr_in = session.run(arr_in)
-
     if (block_shape <= 0).any(): 
         raise ValueError("'block_shape' elements must be strictly positive") 
     if block_shape.size != arr_in.ndim: 
@@ -134,9 +130,10 @@ def view_as_blocks(arr_in, block_shape):
     new_shape = tuple(arr_shape // block_shape) + tuple(block_shape) 
     new_strides = tuple(arr_in.strides * block_shape) + arr_in.strides
 
-    arr_in = tf.convert_to_tensor(arr_in)
     arr_out = as_strided(arr_in, shape=new_shape, strides=new_strides) 
-  
+    
+    session.close()   
+
     return arr_out 
 
 def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
@@ -160,8 +157,9 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     image : ndarray 
             Down-sampled image with same number of dimensions as input image.    
     """ 
+    session = tf.InteractiveSession()
+    
     #convert tensor to ndarray
-    session = tf.Session()
     image = session.run(image)
 
     if len(block_size) != image.ndim: 
@@ -182,12 +180,10 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
     #get the padding image
     t = tf.convert_to_tensor(image)
     image = tf.pad(t, pad_width, "CONSTANT")
+    image = session.run(image)
     
     #get the blocked by view as block function
     blocked = view_as_blocks(image, block_size)
-
-    session = tf.Session()
-    image = session.run(image)
     
     #change the type of elements of tensor to float64
     blocked = tf.convert_to_tensor(blocked)
@@ -195,9 +191,10 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0):
 
     #get the mean(func = mean function)
     result =  func(blocked, axis=tuple(range(image.ndim, tf.rank(blocked).eval())))
-
-    session = tf.Session()
     result =session.run(result)
+
+    #close the InteractiveSession
+    session.close()   
  
     return result
 
@@ -232,7 +229,6 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
             Down-sampled image with same number of dimensions as input image. 
             For integer inputs, the output dtype will be ``float64``. 
     """ 
-    tf.InteractiveSession()
 
     #check the type of input image, if tensor change the tensor to the ndarray, then call block_reduce function
     if tf.is_tensor(image):

@@ -50,8 +50,8 @@ def block_reduce(image, block_size, func=tf.reduce_sum, cval=0)
 ```
 
 ### **view_as_blocks function**
-Block view of the input n-dimensional tensor (using re-striding). 
-Blocks are non-overlapping views of the input tensor. 
+Block view of the input n-dimensional array (using re-striding). 
+Blocks are non-overlapping views of the input array. 
 
 ```
 def view_as_blocks(arr_in, block_shape)
@@ -130,10 +130,6 @@ def main():
     """
     #get image
     image = color.rgb2gray(data.rocket())
-    
-
-    #for the version, we can use tf.compat.v1.Session to ignore the warning 
-    tf.InteractiveSession()
 
     #downscaled the image(if the image is ndarray)
     #image_downscaled = downscale_local_mean(image, (4, 3))
