@@ -48,3 +48,4 @@ correction will be logarithmic. Defaults to False.
 
 
 ## Example results
+![Image of output](https://github.com/qg007110/PatternFlow/edit/master/adjust_log/output.png)
