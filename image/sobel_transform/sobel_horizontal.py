@@ -10,20 +10,20 @@ Original file is located at
 #Author : Vaibhavi Itkyal
 #Student ID : s4596970
 
-import numpy as np
 import tensorflow as tf
 
 def sobel_horizontal(image):
   #Kernel weights as a 2D array. 
-  kernel_h = np.array([3, 3])
   kernel_h = [[1,2,1], [0,0,0], [-1,-2,-1]]
 
-  input_placeholder = tf.placeholder(dtype=tf.float32, shape=(1, image.shape[0], image.shape[1], 1))
+  input_tensor = tf.convert_to_tensor(image, dtype=tf.float32)
+  image_processed = tf.expand_dims(tf.expand_dims(input_tensor, 0), 3)
+
   with tf.name_scope('convolution'):
       conv_h = tf.constant(kernel_h, dtype=tf.float32, shape=(3, 3, 1, 1))
-      filtered_h = tf.nn.conv2d(input=input_placeholder, filter=conv_h, strides=[1, 1, 1, 1], padding='SAME')
+      filtered_h = tf.nn.conv2d(input=image_processed, filter=conv_h, strides=[1, 1, 1, 1], padding='SAME')
 
   with tf.Session() as sess:
-      result_h = sess.run(filtered_h, feed_dict={input_placeholder: image[np.newaxis, :, :, np.newaxis]})
+      result_h = sess.run(filtered_h)
       
   return result_h
