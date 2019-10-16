@@ -11,12 +11,18 @@
 This algorithm is ported using tensorflow 2.0 functions.
 
 L0 Gradient Minimization applies the aforementioned technique on an image, using 
-fast fourier transforms to solve sub-problems towards identify structures in an image [1]. 
+fast fourier transforms to solve sub-problems towards finding structures in an image [1]. 
 The algorithm itself globally controls the number of non-zero gradients 
 "resulted to approximate prominent structures in a structure sparsity 
 management manner" (Xu et al, [1]). According to the authors, the method 
-does not depend on local features and can globally locate important edges [1]. The
-technique is highly effective in smoothing images but preserving important edge structures.
+does not depend on local features and can globally locate important edges [1]. 
+
+The technique is highly effective in smoothing images but preserving important edge structures.
+In short - the gardients of the image are minimised (which is a convex optimsation problem) 
+such that non-major structures are smoothed out depending on the intensity of the smoothing
+factor [1]. It is very possible to smooth out the entire image too much, however this can be
+balanced with a lambda hyper parameter which allows for a nice smoothing effect on images while 
+preserving the main features (see examples).
 
 The implementation presented is applied on 2D 3-channel images, an example has been
 provided in the image called bengalcat.jpg.
@@ -81,8 +87,9 @@ Original authors of algorithm and provided matlab code:
 ACM Transactions on Graphics, Vol. 30, No. 5 (SIGGRAPH Asia 2011), Dec 2011
 
 Numpy version of matlabs psf2otf function which was adapted specifically for this algorithm.
+
 [2]. Alexandre Boucaud, “pypher: Python PSF Homogenization kERnels”. Zenodo, 02-Sep-2016.
 
-Image used of cat:
+Images:
 <p style="font-size: 0.9rem;font-style: italic;"><a href="https://www.flickr.com/photos/19888921@N00/9294248537">"Medusa"</a><span>by <a href="https://www.flickr.com/photos/19888921@N00">ReflectedSerendipity</a></span> is licensed under <a href="https://creativecommons.org/licenses/by-sa/2.0/?ref=ccsearch&atype=html" style="margin-right: 5px;">CC BY-SA 2.0</a><a href="https://creativecommons.org/licenses/by-sa/2.0/?ref=ccsearch&atype=html" target="_blank" rel="noopener noreferrer" style="display: inline-block;white-space: none;opacity: .7;margin-top: 2px;margin-left: 3px;height: 22px !important;"><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-by_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-sa_icon.svg" /></a></p>
 
