@@ -21,4 +21,3 @@ Sobel Edges Magnitude
 
 # References
 https://scikit-image.org/docs/stable/api/skimage.filters.html#skimage.filters.sobel
-https://github.com/scikit-image/scikit-image/blob/v0.16.1/skimage/filters/edges.py#L69
