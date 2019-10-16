@@ -113,14 +113,14 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     otf_fx = _fxypsf_to_otf(psf_fx, img_tensor)
     otf_fy = _fxypsf_to_otf(psf_fy, img_tensor)
 
-    # Norm and Denorm of input per matlab implementation [1], used for the two
-    # subproblems (h-v, S) [1].
-    norm_input1 = tf.signal.fft2d(img_tensor)
-    denorm_input2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
+    # Pre-compute numerator and denominator for sub-problems per matlab
+    # implementation [1], used for the two subproblems (h-v, S) [1].
+    numer1 = tf.signal.fft2d(img_tensor)
+    denom2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
 
-    # Convert denorm to 3 channels for colour:
+    # Convert denominator to 3 channels for colour:
     if img.shape[2] > 1:
-        denorm_input2 = tf.tile(tf.expand_dims(denorm_input2, 2), [1, 1, 3])
+        denom2 = tf.tile(tf.expand_dims(denom2, 2), [1, 1, 3])
 
     return
 
