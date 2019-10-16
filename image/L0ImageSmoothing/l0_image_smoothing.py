@@ -10,7 +10,7 @@
 #
 ################################################################################
 from imageio import imread
-import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
@@ -84,7 +84,7 @@ def _fxypsf_to_otf(psf, target):
     return otf
 
 
-def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
+def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     """
     Applies L0 Image Smoothing [1] on target img.
 
@@ -109,17 +109,17 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     # Store image dimensions for convenience, C is the number of channels
     N, M, C = img.shape
     # Initialise S as float32 of image
-    S = tf.cast(img, dtype=tf.float32) / 255
+    S = img / 255
     # Image needs to be complex64 or complex128 for tensorflows fourier transform.
-    img_tensor = tf.convert_to_tensor(img, dtype=tf.complex64)
     psf_fx = tf.constant([[1, -1]], dtype=tf.int8)
     psf_fy = tf.constant([[1], [-1]], dtype=tf.int8)
-    otf_fx = _fxypsf_to_otf(psf_fx, img_tensor)
-    otf_fy = _fxypsf_to_otf(psf_fy, img_tensor)
+    otf_fx = _fxypsf_to_otf(psf_fx, S)
+    otf_fy = _fxypsf_to_otf(psf_fy, S)
 
+    img_tensor = tf.cast(S, dtype=tf.complex64)
     # Pre-compute numerator and denominator for sub-problems per matlab
     # implementation [1], used for the two subproblems (h-v, S) [1].
-    numer1 = tf.signal.fft2d(img_tensor)
+    numer1 = tf.signal.fft3d(img_tensor)
     denom2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
 
     # Convert denominator to 3 channels for colour:
@@ -172,19 +172,20 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
         values = [True for i in range(indices_true.shape[0])]
 
         # Mask t with binary 1 if < threshold, and 0.
-        t_masked = tf.SparseTensor(indices, values, dense_shape=t.shape)
-        t_masked = tf.sparse.to_dense(t_masked, default_value=False)
-        t_masked = tf.tile(tf.expand_dims(t_masked, 2), [1, 1, C])
+        if not len(indices) == 0:
+            t_masked = tf.SparseTensor(indices, values, dense_shape=t.shape)
+            t_masked = tf.sparse.to_dense(t_masked, default_value=False)
+            t_masked = tf.tile(tf.expand_dims(t_masked, 2), [1, 1, C])
 
-        # Piecewise solution for h, v [1]. Set to 0 if < _lambda/beta
-        # Using tensorflow's numpy conversion, to simplify the masking,
-        # as tensorflow does not have a clean way of doing this.
-        h_temp = h.numpy()
-        h_temp[t_masked.numpy()] = 0
-        h = tf.convert_to_tensor(h_temp, dtype=h.dtype)
-        v_temp = v.numpy()
-        v_temp[t_masked.numpy()] = 0
-        v = tf.convert_to_tensor(v_temp, dtype=v.dtype)
+            # Piecewise solution for h, v [1]. Set to 0 if < _lambda/beta
+            # Using tensorflow's numpy conversion, to simplify the masking,
+            # as tensorflow does not have a clean way of doing this.
+            h_temp = h.numpy()
+            h_temp[t_masked.numpy()] = 0
+            h = tf.convert_to_tensor(h_temp, dtype=h.dtype)
+            v_temp = v.numpy()
+            v_temp[t_masked.numpy()] = 0
+            v = tf.convert_to_tensor(v_temp, dtype=v.dtype)
 
         # S SUB-PROBLEM per [1]
         # Compute numer2, which is the sum of the h and v slices in reverse.
@@ -205,9 +206,21 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
         ], axis=0)
         numer2 += numer2_v
 
-        beta = beta_max
-    return
+        # Compute FS function [1], matlab code: FS = (Normin1 + beta*fft2(Normin2))./Denormin;
+        fft_numer2 = tf.signal.fft3d(tf.cast(numer2, dtype=tf.complex64))
+        fs = (tf.cast(numer1, dtype=tf.complex64) + beta * fft_numer2) / tf.cast(denom, dtype=tf.complex64)
 
-if __name__ == '__main__':
-    img = imread('./bengalcat.jpg')
-    l0_image_smoothing(img)
+        # Safety net, might not be necessary.
+        if tf.reduce_any(tf.math.is_nan(tf.math.real(fs))):
+            break
+        # Inverse 2D Fast Fourier Transform to restore image based on current smoothing step
+        S = tf.signal.ifft3d(fs)
+        S = tf.math.real(S)
+
+        beta = beta * kappa
+
+    # Rescale
+    S = S.numpy()
+    return S
+
+
