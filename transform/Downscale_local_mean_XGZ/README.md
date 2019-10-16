@@ -11,24 +11,25 @@ def downscale_local_mean(image, factors, cval=0, clip=True)
 ```
 
 ### **Parameters**
-#### image : tensor or ndarray
-N-dimensional input image.
-#### factors : array
-Array containing down-sampling integer factor along each axis.
-#### cval : float, optional
-Constant padding value if image is not perfectly divisible by the integer factors.
-#### clip : bool, optional
-Unused, but kept here for API consistency with the other transforms in this module. (The local mean will never fall outside the range of values in the input image, assuming the provided cval also falls within that range.)
+### <span style="color:Indigo">image : tensor or ndarray</span>
+&emsp; N-dimensional input image.
+### <span style="color:Indigo">factors : array</span>
+&emsp; Array containing down-sampling integer factor along each axis.
+### <span style="color:Indigo">cval : float, optional</span>
+&emsp; Constant padding value if image is not perfectly divisible by the integer factors.
+### <span style="color:Indigo">clip : bool, optional</span>
+&emsp; Unused, but kept here for API consistency with the other transforms in this module. (The local mean will never fall outside the range of values in the input image, assuming the provided cval also falls within that range.)
 
 ### **Returns**
-#### image : ndarray
-Down-sampled image with same number of dimensions as input image. For integer inputs, the output dtype will be float64. 
+### <span style="color:Indigo">image : ndarray</span>
+&emsp; Down-sampled image with same number of dimensions as input image. For integer inputs, the output dtype will be float64. 
 
 
 ***
 
 ## **How it works:**
-In the downscale_local_mean function, people can input two types of image. The first type of image is ndarray and the second type of image is tensor. This function can convert the ndarray image to tensor image.
+In the downscale_local_mean function, people can input two types of image. The first type of image is ndarray and the second type of image is tensor. This function can convert the ndarray image to tensor image.<br>
+
 ```
 if tf.is_tensor(image):
     print("tensor")
