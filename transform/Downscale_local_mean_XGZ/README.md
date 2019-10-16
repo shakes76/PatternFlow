@@ -1,4 +1,4 @@
-# **Downscale_local_mean algorithm** in transform module of PatternFlow 
+# **Downscale_local_mean algorithm in transform module of PatternFlow**
 
 
 ## **The description of the algorithm:**
