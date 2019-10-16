@@ -131,7 +131,7 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     while beta < beta_max:
         denom = 1 + beta * denom2
 
-        # h-v subproblem per [1]
+        # H-V SUBPROBLEM per [1]
         # To do this we need to build tensors to add to the base h tensor of zeroes,
         # as the matlab operation in code provided by authors [1] is not possible.
         # Matlab: h = [diff(S,1,2), S(:,1,:) - S(:,end,:)]; where S is the image.
@@ -177,7 +177,8 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
         t_masked = tf.tile(tf.expand_dims(t_masked, 2), [1, 1, C])
 
         # Piecewise solution for h, v [1]. Set to 0 if < _lambda/beta
-        # Using tensorflow's numpy conversion, to simplify the masking.
+        # Using tensorflow's numpy conversion, to simplify the masking,
+        # as tensorflow does not have a clean way of doing this.
         h_temp = h.numpy()
         h_temp[t_masked.numpy()] = 0
         h = tf.convert_to_tensor(h_temp, dtype=h.dtype)
@@ -185,6 +186,24 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
         v_temp[t_masked.numpy()] = 0
         v = tf.convert_to_tensor(v_temp, dtype=v.dtype)
 
+        # S SUB-PROBLEM per [1]
+        # Compute numer2, which is the sum of the h and v slices in reverse.
+        numer2 = tf.zeros_like(S)
+        numer2_h1 = h[:, M-1:M, :] - h[:, 0:1, :]
+        numer2_h2 = h[:, 1:] - h[:, :-1]
+        numer2_h = tf.concat([
+            numer2_h1,
+            -numer2_h2
+        ], axis=1)
+        numer2 += numer2_h
+
+        numer2_v1 = v[N-1:N, :, :] - v[0:1, :, :]
+        numer2_v2 = v[1:] - v[:-1]
+        numer2_v = tf.concat([
+            numer2_v1,
+            -numer2_v2
+        ], axis=0)
+        numer2 += numer2_v
 
         beta = beta_max
     return
