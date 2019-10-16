@@ -75,7 +75,7 @@ Example:
 
 ## Example Result
 <p align="center">
-  <img src="./bengalcat.jpg" width="480" alt="Original bengal cat image.">
+  <img src="./corgi.jpg" width="480" alt="Original bengal cat image.">
   <img src="./smoothed.png" width="480" alt="Smoothed bengal cat image.">
 </p>
 
@@ -91,5 +91,5 @@ Numpy version of matlabs psf2otf function which was adapted specifically for thi
 [2]. Alexandre Boucaud, “pypher: Python PSF Homogenization kERnels”. Zenodo, 02-Sep-2016.
 
 Images:
-<p style="font-size: 0.9rem;font-style: italic;"><a href="https://www.flickr.com/photos/19888921@N00/9294248537">"Medusa"</a><span>by <a href="https://www.flickr.com/photos/19888921@N00">ReflectedSerendipity</a></span> is licensed under <a href="https://creativecommons.org/licenses/by-sa/2.0/?ref=ccsearch&atype=html" style="margin-right: 5px;">CC BY-SA 2.0</a><a href="https://creativecommons.org/licenses/by-sa/2.0/?ref=ccsearch&atype=html" target="_blank" rel="noopener noreferrer" style="display: inline-block;white-space: none;opacity: .7;margin-top: 2px;margin-left: 3px;height: 22px !important;"><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-by_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-sa_icon.svg" /></a></p>
+<p style="font-size: 0.9rem;font-style: italic;"><a href="https://www.flickr.com/photos/13101664@N03/11127631543">"Corgi"</a><span>by <a href="https://www.flickr.com/photos/13101664@N03">camknows</a></span> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=html" style="margin-right: 5px;">CC BY-NC-SA 2.0</a><a href="https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=html" target="_blank" rel="noopener noreferrer" style="display: inline-block;white-space: none;opacity: .7;margin-top: 2px;margin-left: 3px;height: 22px !important;"><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-by_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-nc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-sa_icon.svg" /></a></p>
 

@@ -115,7 +115,7 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     :param _lambda: Smoothing parameter for degree of smoothness [1]. Default 2e-2.
     :param kappa: Scale rate of smoothing. Default 2.0
     :param beta_max: Parameter to scale max iterations, each iteration increments beta * kappa.
-    :return:
+    :return: Numpy array representing the smoothed image.
     """
     # Store image dimensions for convenience, C is the number of channels
     N, M, C = img.shape
