@@ -107,17 +107,23 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     :return:
     """
     # Image needs to be complex64 or complex128 for tensorflows fourier transform.
-    img = tf.convert_to_tensor(img, dtype=tf.complex64)
-    psf_fx = tf.constant([[1, -1]], dtype=tf.uint8)
-    psf_fy = tf.constant([[1], [-1]], dtype=tf.uint8)
-    otf_fx = _fxypsf_to_otf(psf_fx, img)
-    otf_fy = _fxypsf_to_otf(psf_fy, img)
+    img_tensor = tf.convert_to_tensor(img, dtype=tf.complex64)
+    psf_fx = tf.constant([[1, -1]], dtype=tf.int8)
+    psf_fy = tf.constant([[1], [-1]], dtype=tf.int8)
+    otf_fx = _fxypsf_to_otf(psf_fx, img_tensor)
+    otf_fy = _fxypsf_to_otf(psf_fy, img_tensor)
+
+    # Norm and Denorm of input per matlab implementation [1], used for the two
+    # subproblems (h-v, S) [1].
+    norm_input1 = tf.signal.fft2d(img_tensor)
+    denorm_input2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
+
+    # Convert denorm to 3 channels for colour:
+    if img.shape[2] > 1:
+        denorm_input2 = tf.tile(tf.expand_dims(denorm_input2, 2), [1, 1, 3])
+
     return
 
 if __name__ == '__main__':
     img = imread('./bengalcat.jpg')
-    psf = tf.constant([[-1, 1]], tf.int8)
-    otf = _fxypsf_to_otf(psf, img)
-    psf2 = tf.constant([[-1], [1]], tf.int8)
-    otf2 = _fxypsf_to_otf(psf2, img)
     l0_image_smoothing(img)
