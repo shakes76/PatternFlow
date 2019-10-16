@@ -13,7 +13,7 @@ def main():
     psf = np.ones((5, 5)) / 25
     noised_img = conv2(img, psf, 'same')
     noised_img += 0.7 * noised_img.std() * np.random.standard_normal(noised_img.shape)
-    deconvolved, _ = unsupervised_wiener(img, psf)
+    deconvolved, _ = unsupervised_wiener(noised_img, psf)
     fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 5),
                            sharex=True, sharey=True)
     plt.gray()
