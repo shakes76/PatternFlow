@@ -210,10 +210,10 @@ def l0_image_smoother(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
         normin2 += normin_h
 
         normin2_v1 = v[N-1:N, :, :] - v[0:1, :, :]
-        normin2_v1 = v[1:] - v[:-1]
+        normin2_v2 = v[1:] - v[:-1]
         normin2_v = tf.concat([
             normin2_v1,
-            -normin2_v1
+            -normin2_v2
         ], axis=0)
         normin2 += normin2_v
 
