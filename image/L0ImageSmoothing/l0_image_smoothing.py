@@ -10,7 +10,7 @@
 #
 ################################################################################
 from imageio import imread
-import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
 
 
@@ -26,8 +26,8 @@ def _zero_pad_fxypsf(psf, shape):
     transfer function (OTF).
 
     Expects one of two psf functions:
-    Fx = [[-1, 1]]
-    Fy = [[-1]. [1]]
+    Fx = [[1, -1]]
+    Fy = [[1]. [-1]]
 
     :param psf: Tensor containing a point spread function for padding.
     :param shape tuple(int, int): Target shape from image we are smoothing.
@@ -106,6 +106,10 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     :param beta_max: Parameter to scale max iterations, each iteration increments beta * kappa.
     :return:
     """
+    # Store image dimensions for convenience, C is the number of channels
+    N, M, C = img.shape
+    # Initialise S as float32 of image
+    S = tf.cast(img, dtype=tf.float32) / 255
     # Image needs to be complex64 or complex128 for tensorflows fourier transform.
     img_tensor = tf.convert_to_tensor(img, dtype=tf.complex64)
     psf_fx = tf.constant([[1, -1]], dtype=tf.int8)
@@ -119,9 +123,70 @@ def l0_image_smoothing(img, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     denom2 = tf.abs(otf_fx)**2 + tf.abs(otf_fy)**2
 
     # Convert denominator to 3 channels for colour:
-    if img.shape[2] > 1:
-        denom2 = tf.tile(tf.expand_dims(denom2, 2), [1, 1, 3])
+    if C > 1:
+        denom2 = tf.tile(tf.expand_dims(denom2, 2), [1, 1, C])
 
+    # Initial beta, smooth until beta > beta_max
+    beta = 2 * _lambda
+    while beta < beta_max:
+        denom = 1 + beta * denom2
+
+        # h-v subproblem per [1]
+        # To do this we need to build tensors to add to the base h tensor of zeroes,
+        # as the matlab operation in code provided by authors [1] is not possible.
+        # Matlab: h = [diff(S,1,2), S(:,1,:) - S(:,end,:)]; where S is the image.
+
+        # Compute h
+        h = tf.zeros_like(S)
+        # First M-1 columns (axis 1)
+        first_hdiff = S[:, 1:] - S[:, :-1]
+        # Last Mth column (axis 1)
+        last_hdiff = S[:, 0:1, :] - S[:, M-1:M, :]
+        h_diff = tf.concat([
+            first_hdiff,
+            last_hdiff
+        ], axis=1)
+        h += h_diff
+
+        # Compute v
+        # Matlab: v = [diff(S,1,1); S(1,:,:) - S(end,:,:)]; where S is the image.
+        v = tf.zeros_like(S)
+        # First N-1 columns (axis 0)
+        first_vdiff = S[1:] - S[:-1]
+        # Last Nth column (axis 0)
+        last_vdiff = S[0:1, :, :] - S[N-1:N, :, :]
+        v_diff = tf.concat([
+            first_vdiff,
+            last_vdiff
+        ], axis=0)
+        v += v_diff
+
+        # Reduce sum on channel dimension
+        hv = tf.math.pow(h, 2) + tf.math.pow(v, 2)
+        t = tf.math.reduce_sum(hv, axis=2)
+        threshold = _lambda/beta
+
+        # Find indices where t < threshold
+        indices_true = tf.where(t < threshold)
+        indices = [indices_true[i] for i in range(indices_true.shape[0])]
+        values = [True for i in range(indices_true.shape[0])]
+
+        # Mask t with binary 1 if < threshold, and 0.
+        t_masked = tf.SparseTensor(indices, values, dense_shape=t.shape)
+        t_masked = tf.sparse.to_dense(t_masked, default_value=False)
+        t_masked = tf.tile(tf.expand_dims(t_masked, 2), [1, 1, C])
+
+        # Piecewise solution for h, v [1]. Set to 0 if < _lambda/beta
+        # Using tensorflow's numpy conversion, to simplify the masking.
+        h_temp = h.numpy()
+        h_temp[t_masked.numpy()] = 0
+        h = tf.convert_to_tensor(h_temp, dtype=h.dtype)
+        v_temp = v.numpy()
+        v_temp[t_masked.numpy()] = 0
+        v = tf.convert_to_tensor(v_temp, dtype=v.dtype)
+
+
+        beta = beta_max
     return
 
 if __name__ == '__main__':
