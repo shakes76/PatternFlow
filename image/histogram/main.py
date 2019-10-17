@@ -11,3 +11,12 @@ def image_histogram(IMAGE_PATH):
   image_shape_original = list(image_array.shape) 
   print(image_shape_original) 
   image_flattened_shape = [image_shape_original[0]*image_shape_original[1],1]
+
+  image_placeholder = tf.sort(image_placeholder)
+  count = tf.math.bincount(image_placeholder)
+  init = tf.global_variables_initializer()
+  S = tf.Session()
+  S.run(init)
+  fd = {image_placeholder:image_array}
+  count = S.run(count,feed_dict = fd)
+  int_list = []
