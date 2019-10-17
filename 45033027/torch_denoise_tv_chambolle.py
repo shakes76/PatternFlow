@@ -11,7 +11,7 @@ import torch
 #%%
 def diff(image, axis):
     '''
-    Take the difference of different dimension of images
+    Take the difference of different dimension(1~4) of images
     '''
     ndim = image.ndim
     if ndim == 3:    

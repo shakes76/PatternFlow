@@ -128,6 +128,7 @@ if __name__ == '__main__':
     astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
     checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
     
+    #test the all test cases from skimage package
     test_denoise_tv_chambolle_2d()
     test_denoise_tv_chambolle_multichannel()
     test_denoise_tv_chambolle_float_result_range()
@@ -136,19 +137,18 @@ if __name__ == '__main__':
     test_denoise_tv_chambolle_4d()
     test_denoise_tv_chambolle_weighting()
     
-    
-        
-    #%%
         
     coffee = img_as_float(data.coffee())
-    
     coffeeT = torch.tensor(coffee)
-    noise  = torch.randn(coffeeT.size(),dtype = coffeeT.dtype)*0.1
+    #add noise to the original image to test the denoising effect
+    noise  = torch.randn(coffeeT.size(),dtype = coffeeT.dtype)*0.15
     fig, (ax1, ax2, ax3) = plt.subplots(1,3,figsize=(8,8))
     ax1.imshow(coffee+noise.numpy())
     ax1.set_title('Original Image')
+    #result of torch
     ax2.imshow(denoise_tv_chambolle_torch(coffeeT+noise))
     ax2.set_title('Denoised(torch)')
+    #result of numpy
     ax3.imshow(restoration.denoise_tv_chambolle(coffee+noise.numpy()))
     ax3.set_title('Denoised(numpy)')
     plt.show()    
