@@ -1,6 +1,15 @@
-# PatternFlow
-Pattern recognition and image processing library for Tensorflow
+# Module: Scikit- Image  - Transform  
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+## Downscale Local mean downscale_local_mean 
 
-The library includes a branch for fractal algorithms implemented in Tensorflow
+
+
+Requirements
+1. The read me file should contain a title, a description of the algorithm (approximately a paragraph), how it works in a paragraph and a figure/visualisation.
+2. It should also list any dependencies required
+3. provide example usage of your algorithm code
+4. The read me file should be properly formatted using GitHub markdown.
+Marking Criteria
+1. description and explanation of the working principles of the algorithm implemented (2 Marks)
+2. description of usage and comments throughout scripts (2 Marks)
+3. proper formatting using GitHub markdown (1 Mark) 
