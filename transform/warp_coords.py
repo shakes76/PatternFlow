@@ -1,6 +1,5 @@
 # In[1]: Import
 import tensorflow as tf
-
 # In[2]: wrap_ coords
 def warp_coords(coord_map, shape, dtype=tf.float64):
     """Build the source coordinates for the output of a 2-D image warp.
@@ -51,36 +50,48 @@ def warp_coords(coord_map, shape, dtype=tf.float64):
     >>> warped_image = map_coordinates(image, coords)
 
     """
-#    sess = tf.InteractiveSession()
-#    shape = tf.constant(shape, tf.int32)
-#    rows, cols = shape.eval()[0], shape.eval()[1]
-#    coords_shape = [len(shape), rows, cols]
-#    
-#    if len(shape) == 3:
-#        coords_shape.append(shape[2])
-#        
-#    coords = np.empty(coords_shape, dtype=dtype)
-#
-#    # Reshape grid coordinates into a (P, 2) array of (row, col) pairs
-#    tf_coords = np.indices((cols, rows), dtype=dtype).reshape(2, -1).T
-#
-#    # Map each (row, col) pair to the source image according to
-#    # the user-provided mapping
-#    tf_coords = coord_map(tf_coords)
-#
-#    # Reshape back to a (2, M, N) coordinate grid
-#    tf_coords = tf_coords.T.reshape((-1, cols, rows)).swapaxes(1, 2)
-#
-#    # Place the y-coordinate mapping
-#    _stackcopy(coords[1, ...], tf_coords[0, ...])
-#
-#    # Place the x-coordinate mapping
-#    _stackcopy(coords[0, ...], tf_coords[1, ...])
-#
-#    if len(shape) == 3:
-#        coords[2, ...] = range(shape[2])
-#
-#    return coords
+    sess = tf.Session()
+    with sess.as_default():
+        shape = tf.constant(shape, tf.int32)
+        rows, cols = shape.eval()[0], shape.eval()[1]
+        coords_shape = [len(shape.eval()), rows, cols]
+        if len(shape.eval()) == 3:
+            coords_shape.append(shape[2])
+            
+        coords = tf.zeros(coords_shape, dtype=dtype)
+        
+        # Reshape grid coordinates into a (P, 2) array of (row, col) pairs
+        x, y = tf.meshgrid(tf.range(cols), tf.range(rows))
+        x = tf.cast(x, dtype)
+        y = tf.cast(y, dtype)
+        tf_coords = tf.stack([y, x])
+        tf_coords = tf.reshape(tf_coords, [2, -1])
+        tf_coords = tf.transpose(tf_coords)
+        
+        # Map each (row, col) pair to the source image according to
+        # the user-provided mapping
+        tf_coords = coord_map(tf_coords.eval())
+        
+        
+    
+        # Reshape back to a (2, M, N) coordinate grid
+        tf_coords = tf.constant(tf_coords)
+        tf_coords = tf.transpose(tf_coords)
+        tf_coords = tf.reshape(tf_coords, [-1, cols, rows])
+        tf_coords = tf.transpose(tf_coords, [0, 2, 1])
+        
+        
+        coords = coords.eval()
+        tf_coords = tf_coords.eval()
+    
+        # Place the y-coordinate mapping
+        _stackcopy(coords[1, ...], tf_coords[0, ...])
+        # Place the x-coordinate mapping
+        _stackcopy(coords[0, ...], tf_coords[1, ...])
+    
+        if len(shape.eval()) == 3:
+            coords[2, ...] = range(shape.eval()[2])
+        return coords
 
 
 # In[3]: stack copy
