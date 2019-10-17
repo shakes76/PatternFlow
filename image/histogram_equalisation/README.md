@@ -25,10 +25,12 @@ Some example applications are:
 
 
 ## Algorithm
-* Calculate the histogram of a given image
-* Calculate the cumulative distribution function (cdf) of the histogram
-* Normalise the cdf
-* Use the cdf as an intensity transformation function and interpolate a new set of pixel values 
+
+The algorithm works by first producing a histogram of the provided image. This histogram, by default,
+has 256 bins and represents the density of pixel intensities. From this histogram, the algorithm
+produces a cumulative distribution function (cdf), and normalises it. Following this, the cdf is used
+as an intensity transformation function and a new set of pixel values are interpolated. These new 
+interpolated pixel values are then reshaped and returned as an equalised image.  
 
 ## Implementation
 equalize_hist(image, nbins=256, mask=None)
