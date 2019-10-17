@@ -40,8 +40,8 @@ Functions implemented in numbthy.py are:
 ![Result_3_Tensor](ResultImage/Result_3_Tensor.png)
 
 * Image of source code
-![Result_1_SC](ResultImage/Result_1_SC.png)
-![Result_2_SC](ResultImage/Result_2_SC.png)
+![Result_1_SC](ResultImage/Result_2_SC.png)
+![Result_2_SC](ResultImage/Result_1_SC.png)
 
 # Author
 * Xuannan Huang (45047257)
