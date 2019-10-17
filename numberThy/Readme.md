@@ -49,4 +49,3 @@ Functions implemented in numbthy.py are:
 # Acknowledgments 
 * Source code: 
 	* [Number-Theory-Python -- Robert-Campbell-256](https://github.com/Robert-Campbell-256/Number-Theory-Python/blob/master/numbthy.py)
-	* [tonelli(n,p) function source:](https://rosettacode.org/wiki/Tonelli-Shanks_algorithm#Python) 
