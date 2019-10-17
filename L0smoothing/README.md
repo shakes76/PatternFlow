@@ -43,9 +43,9 @@ Below is the input `dahlia.png` for the example usage (left) and the output of t
 
 ![Dahlia](dahlia_smol.png)  ![Dahlia_output](dahlia_out_smol.png)
 
-Otherwise, the method `l0_calc` takes in a numpy array of the loaded image to compute the smoothed image output array, as well as the relevant parameters: 
+Otherwise, the method `l0_calc` (found in `L0_gradient_smoothing_tf.py`) takes in a numpy array of the loaded image to compute the smoothed image output array, as well as the relevant parameters: 
 
-* `image_array`
+* `image_array` loaded image array
 * `lambda` determines how 'fine' the smoothing is. Smaller values of lambda give a more detailed image
 * `kappa` multiplying factor for the initial beta value, used determine the number of iterations in combination with `beta_max`. 
 * `beta_max` max value for beta to reach before reaching the end of the algorithm. 
