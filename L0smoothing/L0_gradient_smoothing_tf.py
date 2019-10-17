@@ -146,6 +146,14 @@ def main(imdir, outdir, _lambda, kappa, beta_max):
     im = Image.fromarray(out_img)
     im.save(outdir)
 
+    for l in [0.5, 0.2, 0.1, 0.05, 0.02, 0.002, 0.0025, 0.0002]:
+        out_img = l0_calc(img_arr, l, kappa, beta_max)
+        # save image from output array 
+        im = Image.fromarray(out_img)
+        # img = im.resize((int(im.width*0.3), int(im.height*0.3)), Image.ANTIALIAS)
+        im.save('dahlia_out_l{}.png'.format(l))
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="L0 Gradient Smoothing")
