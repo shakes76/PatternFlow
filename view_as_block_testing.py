@@ -42,14 +42,13 @@ except (ValueError):
 
 # Fifth - if the block shape not tuple
 try: 
-    test4  = view_as_blocks(A,[1, 2, 2]) 
+    test5  = view_as_blocks(A,[1, 2, 2]) 
 except (TypeError): 
     print("ValueError")      
-    
+ 
 
-# Sixth - if inpiut not tensorflow 
-try: 
-    test4  = view_as_blocks(A.eval(),[1, 2, 2]) 
-except (TypeError): 
-    print("ValueError")      
-         
+# Fifth - increasing the size of the  block shape not tuple
+B = np.arange(4*4*6*10*20*30).reshape(4,4,6,10,20,30)  
+test6  = view_as_blocks(B,(1, 2, 2, 5 , 5 , 5))
+      
+
