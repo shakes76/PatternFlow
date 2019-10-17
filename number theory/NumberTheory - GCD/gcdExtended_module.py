@@ -1,11 +1,41 @@
 import tensorflow as tf
 
 def cond(a, b, quotients):
-    # Any oter variable but a is not used here
-    # They are only parsed because of structure of tf.while_loop
+    '''
+    Condition of while loop
+    
+    Will check if a is greater than 0
+    
+    Args: 
+        param 1 (Tensor int):        First value, a
+        param 2 (Tensor int):        Second value, b
+        param 3 (list<Tensor int>):  Quotient values,
+        
+    Returns:
+        Tensor bool:  True for succes, False otherwise
+    '''
+    # Any oter variable but a is not used here...
+    # They are only parsed because of the structure of tf.while_loop requires so
+    
     return tf.greater(a, tf.constant(0))
     
 def body(a, b, quotients):
+    '''
+    Body of while loop
+    
+    Will update values of a, b and quotients
+    
+    Args: 
+        param 1 (Tensor int):        First value, a
+        param 2 (Tensor int):        Second value, b
+        param 3 (list<Tensor int>):  Quotient values,
+        
+    Returns:
+        Tensor int:        Updated value of a
+        Tensor int:        Updated value of b
+        list<Tensor int>:  Updated values of Quotients
+    '''
+    
     quotient = tf.floor_div(b, a)
     _temp = a
     a = tf.mod(b, a)
@@ -31,9 +61,19 @@ def body(a, b, quotients):
 
 def extended_gcd(a, b):
     '''
-    Return the Greatest Common Divisior of two interger values (a and b)
-    as well as the quotiens needed to satisfy ax + by = gcd(a, b)
+    Determine the Greatest Common Divisior of two interger values (a and b)
+    as well as the quotients needed to satisfy ax + by = gcd(a, b)
+    
+    Args: 
+        param 1 (Tensor int):        First value, a
+        param 2 (Tensor int):        Second value, b
+        param 3 (list<Tensor int>):  Quotient values,
+        
+    Returns:
+        int:        The value of the Greatest Common Divisior of a and b
+        list<int>:  The values of the quotients that satisfies ax + by = gcd(a, b)
     '''
+    
     # Only whole numbers 
     a = abs(a)
     b = abs(b)
