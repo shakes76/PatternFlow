@@ -7,6 +7,7 @@ class GCD:
         self.b = tf.Variable(b)
         self.gcd = None
         
+        # While a is greater than 0 find gcd(a, b)
         loop = tf.while_loop(self.cond, self.body, [self.a, self.b])  
         
         with tf.Session() as sess:

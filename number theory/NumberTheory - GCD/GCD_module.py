@@ -27,7 +27,7 @@ def gcd(a, b):
     a = tf.Variable(a)
     b = tf.Variable(b)
     
-    # While a
+    # While a is greater than 0 find gcd(a, b)
     loop = tf.while_loop(cond, body, [a, b])  
         
     with tf.Session() as sess:

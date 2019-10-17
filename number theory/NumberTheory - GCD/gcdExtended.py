@@ -1,6 +1,10 @@
 import tensorflow as tf
 
 class GCDExtended:
+    '''
+    Find the Greatest Common Divisior of two interger values (a and b)
+    as well as the quotiens needed to satisfy ax + by = gcd(a, b)
+    '''
     
     def __init__(self, a, b):
         self.a = tf.Variable(a)
@@ -11,6 +15,7 @@ class GCDExtended:
         self.x1 = 1
         self.y1 = 0
         
+        # While a is greater than 0 find gcd(a, b) as well as quotients
         loop = tf.while_loop(self.cond, self.body, [self.a, self.b, (self.x, self.y, self.x1, self.y1)])  
         
         with tf.Session() as sess:

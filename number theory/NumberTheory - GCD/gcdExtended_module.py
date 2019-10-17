@@ -32,6 +32,7 @@ def body(a, b, quotients):
 def extended_gcd(a, b):
     '''
     Return the Greatest Common Divisior of two interger values (a and b)
+    as well as the quotiens needed to satisfy ax + by = gcd(a, b)
     '''
     # Only whole numbers 
     a = abs(a)
@@ -48,7 +49,7 @@ def extended_gcd(a, b):
     y1 = tf.Variable(0)
 
     
-    # While a
+    # While a is greater than 0 find gcd(a, b) as well as quotients
     loop = tf.while_loop(cond, body, [a, b, (x0, y0, x1, y1)])
         
     with tf.Session() as sess:
