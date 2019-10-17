@@ -1,5 +1,5 @@
 # Denoising - denoise_tv_chambolle
-Various denoise algorthms implemented for Tensorflow
+Denoise algorthm implemented for Pytorch
 
 ## Description
 In signal processing , total variation denoising, also know as total variation regularization is a process often used in digital image processing. It has applications in noise removal. However, many packages does not support the data type tensor. This function implement the denoise_tv_chambolle of skimage in torch.tensor format. The code and the testing results are shown in this repository. 
