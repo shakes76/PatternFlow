@@ -11,11 +11,14 @@ References:
 __author__ = "Ting-Chen Shang"
 __email__ = "tingchen.shang@uq.net.au"
 
+import math
 import numpy as np
 import tensorflow as tf
 
 from warnings import warn
 from skimage._shared.utils import convert_to_float # TODO - only use tf
+
+apply_affine_transform = tf.keras.preprocessing.image.apply_affine_transform
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
     """
@@ -164,6 +167,21 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
                       [-sin_a, cos_a, -center * (cos_a - sin_a - 1)],
                       [0, 0, 1]])
         rotated = warp(padded_image, R, clip=False)
+        radon_image[:, i] = rotated.sum(0)
+
+
+    # padded_image is always square
+    if padded_image.shape[0] != padded_image.shape[1]:
+        raise ValueError('padded_image must be a square')
+    center = padded_image.shape[0] // 2
+    radon_image = tf.zeros((padded_image.shape[0], len(theta)))
+
+    theta = theta * (math.pi / 180.0)
+    for i, angle in enumerate(theta):
+        cos_a, sin_a = tf.math.cos(tf.cast(angle)), tf.math.sin(tf.cast(angle))
+        rotated = apply_affine_transform(padded_image, tx=-center, ty=-center)
+        rotated = apply_affine_transform(rotated, theta=angle)
+        rotated = apply_affine_transform(rotated, tx=center, ty=center)
         radon_image[:, i] = rotated.sum(0)
     return radon_image
 
