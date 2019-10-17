@@ -122,7 +122,15 @@ print("w.shape: ", w.shape)
 print("x.shape: ", x.shape)
 
 
+# expand its dimensionality to fit into conv2d
+tensor_expand = tf.expand_dims(tensor, 0)
+tensor_expand = tf.expand_dims(tensor_expand, 0)
+tensor_expand = tf.expand_dims(tensor_expand, -1)
+print(tensor_expand.get_shape()) # => (1, 1, 100, 1)
 
+# do the same in one line with reshape
+tensor_reshape = tf.reshape(tensor, [1, 1, tensor.get_shape().as_list()[0],1])
+print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
 
 
 
