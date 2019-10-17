@@ -11,7 +11,6 @@ def body(a, b, quotients):
     a = tf.mod(b, a)
     b = _temp
 
-    
     x0 = quotients[0]
     y0 = quotients[1]
     x1 = quotients[2]
@@ -55,7 +54,7 @@ def extended_gcd(a, b):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         result = sess.run(loop)
-        print(result)
         gcd = result[1]
+        quotients = (result[2][0],result[2][1])
         
-        return gcd
+        return gcd, quotients
