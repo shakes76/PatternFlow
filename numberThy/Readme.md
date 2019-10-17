@@ -32,7 +32,17 @@ Functions implemented in numbthy.py are:
 * factors(n) - Return a list of the prime factors of n. 
 * factorPR(n) - Find and return a factor of n using the Pollard Rho method. 
 * tonelli(n, p) - Using Tonelli-Shanks-RESSOL algorithm to compute sqrt(n) mod p. 
-	
+
+### Sample result Image 
+* Image of Tensorflow code 
+![Result_1_Tensor](ResultImage/Result_1_Tensor.png)
+![Result_2_Tensor](ResultImage/Result_2_Tensor.png)
+![Result_3_Tensor](ResultImage/Result_3_Tensor.png)
+
+* Image of source code
+![Result_1_SC](ResultImage/Result_2_SC.png)
+![Result_2_SC](ResultImage/Result_1_SC.png)
+
 # Author
 * Xuannan Huang (45047257)
 	
