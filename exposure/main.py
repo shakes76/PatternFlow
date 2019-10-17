@@ -9,21 +9,32 @@ COMP3710
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mping
-import skimage.exposure as espo
+import tensorflow as tf
 import exposureTF as etf
+from skimage import exposure
 
-from skimage import data, exposure, img_as_float
+
+import cv2
 
 ## Driver scrit
 if __name__ == "__main__":
-    etf.ex("hihi")
-    image = mping.imread('dog1.jpg')
-    ##print(image.shape)
-    ##imgplot = plt.imshow(image)
-    his = espo.histogram(image)
-    print(his)
-    #plt.show()
-    #np.histogram(image, bins=2)
-    #exposure.histogram(image, nbins = 2)
+    image_ph = tf.placeholder(tf.uint8, shape = [None, None, 1])
+    image_eq_hist = etf.tf_equalize_histogram(image_ph)
+    
+    image = cv2.imread("dog1.jpg", 0)
+    image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+    with tf.Session() as sess:
+       sess.run(tf.global_variables_initializer())
+       tf_image = sess.run(image_eq_hist, feed_dict = {image_ph : image})
+       
+    print ("Ski dimension")
+    print(exposure.equalize_hist(image).shape)
+    
+    print ("EXposure TF dimension")
+    print(tf_image.shape)
+    
+    
+    cv2.imshow("SKI ", exposure.equalize_hist(image))
+    cv2.imshow("TF", tf_image)
+    cv2.waitKey()
+    print("finish")

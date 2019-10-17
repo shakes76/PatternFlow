@@ -56,4 +56,29 @@ def tf_cummulative_distribution(image, nbins = 256):
 
 
 
+def tf_equalize_histogram(image, nbins = 256): 
+    """
+    ---------------
+    input:  image - array
+            nbins - optional, 256 by default
+            
+            
+    ---------------
+    return: tensor
+    
+    """
+    
+    hist = tf_histogram(image, nbins)
+    cdf = tf.cumsum(hist)
+    cdf_min = tf_cummulative_distribution(image, nbins)
+    
+    im_shape = tf.shape(image)
+    pixel_count = im_shape[-3] * im_shape[-2]
+    pixel_layout = tf.round(tf.to_float(cdf - cdf_min) * 255. /tf.to_float(pixel_count - 1))
+    pixel_layout = tf.cast(pixel_layout, tf.uint8)
+    
+    
+    
+    return tf.expand_dims(tf.gather_nd(pixel_layout, tf.cast(image, tf.int32)), 2)
+
 
