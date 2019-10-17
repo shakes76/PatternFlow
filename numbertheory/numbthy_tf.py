@@ -1,3 +1,20 @@
+"""
+numbthy_tf.py contains the following functions
+
+    gcd(a,b)            - Compute the greatest common divisor of a and b.
+    xgcd(a,b)           - Find [g,x,y] such that g=gcd(a,b) and g = ax + by.
+    power_mod(b,e,n)    - Compute b^e mod n efficiently.
+    inverse_mod(b,n)    - Compute 1/b mod n.
+    is_prime(n)         - Test whether n is prime using a variety of pseudoprime tests.
+    isprimeF(n,b)       - Test whether n is prime or a Fermat pseudoprime to base b.
+    isprimeE(n,b)       - Test whether n is prime or an Euler pseudoprime to base b.
+    factorone(n)        - Find a factor of n using a variety of methods.
+    factorPR(n)         - Find a factor of n using the Pollard Rho method.
+
+This is a tensorflow implementation of Robert-Campbell-256/Number-Theory-Python/numbthy.py
+The non-tensorflow version of the above functions can be found here:
+https://github.com/Robert-Campbell-256/Number-Theory-Python/blob/master/numbthy.py
+"""
 
 #####################################################################################
 ##############################  gcd(n)  #############################################
