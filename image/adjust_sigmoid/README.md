@@ -4,20 +4,28 @@ The adjust_sigmoid function performs sigmoid correction on the inputted image. T
 
 # Example
 
-'''python
-    # Get the moon image from skimage
-    image = data.moon()
+Below is an example of how the module can be used to perform sigmoid correction on a real image.
 
-    # Adjust the image with the sigmoid correction
-    adjusted = adjust_sigmoid(image)
+```python
+import matplotlib.pyplot as plt
+from skimage import data
+from adjust_sigmoid import adjust_sigmoid
 
-    # Plot the original and adjusted for comparision
-    fig = plt.figure()
-    fig.add_subplot(1, 2, 1)
-    plt.imshow(image, cmap=plt.cm.gray)
-    plt.title("Original")
-    fig.add_subplot(1, 2, 2)
-    plt.imshow(adjusted, cmap=plt.cm.gray)
-    plt.title("Adjusted")
-    plt.show()
-'''
+# Get the moon image from skimage
+image = data.moon()
+
+# Adjust the image with the sigmoid correction
+adjusted = adjust_sigmoid(image)
+
+# Plot the original and adjusted for comparision
+fig = plt.figure()
+fig.add_subplot(1, 2, 1)
+plt.imshow(image, cmap=plt.cm.gray)
+plt.title("Original")
+fig.add_subplot(1, 2, 2)
+plt.imshow(adjusted, cmap=plt.cm.gray)
+plt.title("Adjusted")
+plt.show()
+```
+
+![alt text](https://github.com/FaydSpeare/PatternFlow/tree/topic-algorithms/image/adjust_sigmoid/example.png)
