@@ -54,4 +54,4 @@ correction will be logarithmic. Defaults to False.
 ## Example results
 After using the adjust_log function, I got the results like: 
 
-![](/home/guan/PycharmProjects/test3/output.png) 
+![](https://github.com/qg007110/PatternFlow/blob/topic-algorithms/image/adjust_log/output.png) 
