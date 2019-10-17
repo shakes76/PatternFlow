@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from warnings import warn
-from skimage._shared.utils import convert_to_float
+from skimage._shared.utils import convert_to_float # TODO - only use tf
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
     """
@@ -122,25 +122,16 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     if circle:
         shape_min = tf.reduce_min(img_shape)
         radius = shape_min // 2
-        coords = tf.convert_to_tensor() # TODO - Get me from home version
-        dist = dist # TODO - Get me from home version
-
-        # TODO - resolve this
-        image_shape_tensor = tf.convert_to_tensor(image.shape, dtype=tf.int64)
-        shape_min_tensor = tf.math.reduce_min(image_shape_tensor)
-        radius_tensor = shape_min_tensor // 2
-        coords_tensor = tf.convert_to_tensor(np.ogrid[:image.shape[0],
-                :image.shape[1]])
-        dist_tensor = tf.math.reduce_sum((coords_tensor - image_shape_tensor // 2) ** 2, axis=0)
-        # TODO
-
+        xs, ys = tf.meshgrid(tf.range(img_shape[1]), tf.range(img_shape[0]))
+        dist = (xs - img_shape[1] // 2) ** 2 + (ys - img_shape[0] // 2) ** 2
         outside_reconstruction_circle = dist > radius ** 2
-        if tf.math.reduce_any(image_tf[outside_reconstruction_circle]):
+        if tf.math.reduce_any(image[outside_reconstruction_circle]):
             warn('Radon transform: image must be zero outside the '
                  'reconstruction circle')
         # Crop image to make it square
-        slices = tuple(slice(int(np.ceil(excess / 2)),
-                             int(np.ceil(excess / 2) + shape_min))
+        slices = tuple(slice(tf.cast(tf.math.ceil(excess / 2), tf.int32),
+                             tf.cast(tf.math.ceil(excess / 2), tf.int32) \
+                                    + shape_min)
                        if excess > 0 else slice(None)
                        for excess in (img_shape - shape_min))
         padded_image = image[slices]
@@ -153,8 +144,13 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         new_center = tf.map_fn(lambda z: tf.math.reduce_sum(z) // 2,
             tf.stack([image.shape, pad], axis=1))   # stack on axis 1 is zip
         old_center = tf.map_fn(lambda s: s // 2, image.shape)
-        # pad_before = 
-
+        pad_before = tf.map_fn(lambda cs: tf.reduce_sum(cs),
+            tf.stack([-old_center, new_center], axis=1))
+        pad_width_fn = lambda ps: tf.convert_to_tensor((ps[0], ps[1] - ps[0]))
+        pad_width = tf.map_fn(pad_width_fn,
+            tf.stack([pad_before, pad], axis=1))
+        padded_image = tf.pad(image, pad_width, mode='constant',
+                              constant_values=0)
 
     # padded_image is always square
     if padded_image.shape[0] != padded_image.shape[1]:
