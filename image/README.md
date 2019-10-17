@@ -1,11 +1,22 @@
 **Sobel Transform in tensorflow**
+
 Based on skimage.filters.sobel(image)
 
+**Pre-requisites**
+
+Tensorflow
+Numpy
+skimage.io
+
 **Demo**
+
 Tensorflow implementation of sobel transform. 
 It outputs the edge map of the given image. 
 Given below is a picture of katy perry and the corresponding edge detection image.
 
+![](test_images/katy_1channel.png)    ![](test_images/katy_sobel.png)
+
+Here we are considering only 1 of the channel of the input image to do edge detection, because the edges associated with all the channels will be same.
 
 
 **Sobel Transform**
@@ -15,7 +26,8 @@ It creates an edge map from it's corresponding input image.
 It is based on convolution of the image with the appropriate kernels (called Sobel kernels), to give the resultant edge maps.
 
 **Kernels used**
-Here we have used 2 kernels, one for horizontal edge detection and the other for vertical edge detection.
+
+Here we have used 2 kernels, one for horizontal edges and the other for vertical edges.
 
 **Sobel_h (detects horizontal edges) = [ [1,2,1], [0,0,0], [-1,-2,-1] ] ** 
 
