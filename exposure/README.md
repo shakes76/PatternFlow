@@ -44,7 +44,7 @@ Gray Scale Image
 ![grey image]()
 
 Equalised Histogram
-![etf image]()
+![etf image](https://github.com/ethanphan3993/PatternFlow/blob/topic-algorithms/exposure/source/etf_dog.jpg)
 
 
 
