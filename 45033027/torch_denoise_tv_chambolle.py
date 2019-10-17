@@ -8,8 +8,7 @@ Created on Sun Oct 13 14:30:46 2019
 
 import torch
 
-
-
+#%%
 def diff(image, axis):
     '''
     Take the difference of different dimension of images
@@ -143,12 +142,13 @@ def denoise_tv_chambolle_torch(image, weight=0.1, eps=2.e-4, n_iter_max=200,
     -------
     out : torch.tensor
         Denoised image.
+    
     """
-    torch.set_printoptions(precision=8)
-    imageType = image.dtype
-    if imageType is not torch.float:
-        image = image.type("torch.FloatTensor")
-        image = (image-image.min())/(image.max()-image.min())
+    im_type = (image.numpy()).dtype
+    if not im_type.kind == 'f':
+        image = image.type(torch.float64)
+        image = image/torch.abs(image.max()+image.min())
+        
     if multichannel:
         out = torch.zeros_like(image)
         for c in range(image.shape[-1]):

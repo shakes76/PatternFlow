@@ -21,7 +21,6 @@ from torchvision import transforms
 import numpy as np 
 import matplotlib.pyplot as plt
 
-#%% 
 
 def test_denoise_tv_chambolle_2d():
     # astronaut image
@@ -48,7 +47,7 @@ def test_denoise_tv_chambolle_float_result_range():
     assert_(torch.max(int_astroT) > 1)
     denoised_int_astroT = denoise_tv_chambolle_torch(int_astroT, weight=0.1)
     # test if the value range of output float data is within [0.0:1.0]
-    assert_(denoised_int_astroT.dtype == torch.float)
+    assert_((denoised_int_astroT.numpy()).dtype == np.float)
     assert_(torch.max(denoised_int_astroT) <= 1.0)
     assert_(torch.min(denoised_int_astroT) >= 0.0)
 
@@ -63,7 +62,7 @@ def test_denoise_tv_chambolle_3d():
     mask[mask > 255] = 255
     maskT= torch.tensor(mask,dtype = torch.float32)
     resT = denoise_tv_chambolle_torch(maskT.type(torch.uint8), weight=0.1)
-    assert_(resT.dtype == torch.float)
+    assert_((resT.numpy()).dtype == np.float)
     assert_(resT.std() * 255 < mask.std())
     
 def test_denoise_tv_chambolle_1d():
@@ -72,8 +71,8 @@ def test_denoise_tv_chambolle_1d():
     x += 20 * np.random.rand(x.size)
     x = np.clip(x, 0, 255)
     xT = torch.tensor(x)
-    resT = denoise_tv_chambolle_torch(xT.type(torch.uint8), weight=0.1)
-    assert_(resT.dtype == torch.float)
+    resT = denoise_tv_chambolle_torch(xT.type(torch.uint8), weight=0.1)    
+    assert_((resT.numpy()).dtype == np.float)
     assert_(resT.std() * 255 < x.std())
 
 def test_denoise_tv_chambolle_4d():
@@ -81,7 +80,7 @@ def test_denoise_tv_chambolle_4d():
     im = 255 * np.random.rand(8, 8, 8, 8)
     imT = torch.tensor(im)
     resT = denoise_tv_chambolle_torch(imT.type(torch.uint8), weight=0.1)
-    assert_(resT.dtype == torch.float)
+    assert_((resT.numpy()).dtype == np.float)
     assert_(resT.std() * 255 < im.std())
     
 def test_denoise_tv_chambolle_weighting():
@@ -118,37 +117,39 @@ def test_denoise_tv_chambolle_multichannel():
                                                 multichannel=True)
     assert_equal(denoised[..., 0].numpy(), denoised0.numpy())
 
-
-astro = img_as_float(data.astronaut()[:128, :128])
-astro_gray = color.rgb2gray(astro)
-astroT = torch.tensor(astro,dtype = torch.float32)
-astro_grayT = torch.tensor(astro_gray,dtype = torch.float32)
-checkerboard = img_as_float(data.checkerboard())
-checkerboard_gray = color.gray2rgb(checkerboard)
-astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
-checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
-
-test_denoise_tv_chambolle_2d()
-test_denoise_tv_chambolle_multichannel()
-test_denoise_tv_chambolle_float_result_range()
-test_denoise_tv_chambolle_3d()
-test_denoise_tv_chambolle_1d()
-test_denoise_tv_chambolle_4d()
-test_denoise_tv_chambolle_weighting()
-
-
+if __name__ == '__main__':
+    torch.set_printoptions(precision=8)
+    astro = img_as_float(data.astronaut()[:128, :128])
+    astro_gray = color.rgb2gray(astro)
+    astroT = torch.tensor(astro,dtype = torch.float32)
+    astro_grayT = torch.tensor(astro_gray,dtype = torch.float32)
+    checkerboard = img_as_float(data.checkerboard())
+    checkerboard_gray = color.gray2rgb(checkerboard)
+    astcheckerboardroT = torch.tensor(checkerboard,dtype = torch.float32)
+    checkerboard_grayT = torch.tensor(checkerboard_gray,dtype = torch.float32)
     
-#%%
+    test_denoise_tv_chambolle_2d()
+    test_denoise_tv_chambolle_multichannel()
+    test_denoise_tv_chambolle_float_result_range()
+    test_denoise_tv_chambolle_3d()
+    test_denoise_tv_chambolle_1d()
+    test_denoise_tv_chambolle_4d()
+    test_denoise_tv_chambolle_weighting()
     
-coffee = img_as_float(data.coffee())
-coffeeT = torch.tensor(coffee)
-fig, (ax1, ax2, ax3) = plt.subplots(1,3)
-ax1.imshow(coffee)
-ax1.set_title('Original Image')
-ax2.imshow(denoise_tv_chambolle_torch(coffeeT))
-ax2.set_title('Denoised(torch)')
-ax3.imshow(restoration.denoise_tv_chambolle(coffee))
-ax3.set_title('Denoised(numpy)')
-#plt.savefig(Kmeans_savePath)
-plt.show()    
     
+        
+    #%%
+        
+    coffee = img_as_float(data.coffee())
+    
+    coffeeT = torch.tensor(coffee)
+    noise  = torch.randn(coffeeT.size(),dtype = coffeeT.dtype)*0.1
+    fig, (ax1, ax2, ax3) = plt.subplots(1,3,figsize=(8,8))
+    ax1.imshow(coffee+noise.numpy())
+    ax1.set_title('Original Image')
+    ax2.imshow(denoise_tv_chambolle_torch(coffeeT+noise))
+    ax2.set_title('Denoised(torch)')
+    ax3.imshow(restoration.denoise_tv_chambolle(coffee+noise.numpy()))
+    ax3.set_title('Denoised(numpy)')
+    plt.show()    
+        

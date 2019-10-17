@@ -12,4 +12,4 @@ In signal, total variation denoising, also know as total variation regularizatio
 ## Result 
 
 * Comparisons between the original image and denoised image in torch and numpy \
-![result](https://i.imgur.com/5rJt22s.png)
+![result](https://i.imgur.com/7iWrsR9.png)
