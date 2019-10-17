@@ -12,8 +12,9 @@ __author__ = "Ting-Chen Shang"
 __email__ = "tingchen.shang@uq.net.au"
 
 import numpy as np
-
 import tensorflow as tf
+
+from skimage._shared.utils import convert_to_float
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
     """
@@ -58,6 +59,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     (https://github.com/scikit-image/scikit-image/blob/de42b4cf11b2a5b5a9e77c54f90bff539947ef0d/skimage/transform/radon_transform.py)
 
     """
+
     if image.ndim != 2:
         raise ValueError('The input image must be 2-D')
     if theta is None:
@@ -67,6 +69,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         preserve_range = True
 
     image = convert_to_float(image, preserve_range)
+    image_tensor = tf.convert_to_tensor(image, dtype=tf.float64)
 
     if circle:
         shape_min = min(image.shape)
@@ -94,6 +97,17 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         padded_image = np.pad(image, pad_width, mode='constant',
                               constant_values=0)
 
+    if circle:
+        image_shape_tensor = tf.convert_to_tensor(image.shape, dtype=tf.int64)
+        shape_min_tensor = tf.math.reduce_min(image_shape_tensor)
+        radius_tensor = shape_min_tensor // 2
+        coords_tensor = tf.convert_to_tensor(np.ogrid[:image.shape[0],
+                :image.shape[1]])
+        dist_tensor = tf.math.reduce_sum((coords_tensor - image_shape_tensor // 2) ** 2, axis=0)
+        
+
+
+
     # padded_image is always square
     if padded_image.shape[0] != padded_image.shape[1]:
         raise ValueError('padded_image must be a square')
@@ -109,33 +123,3 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         radon_image[:, i] = rotated.sum(0)
     return radon_image
 
-def convert_to_float(image, preserve_range):
-    """Convert input image to float image with the appropriate range.
-
-    Parameters
-    ----------
-    image : ndarray
-        Input image.
-    preserve_range : bool
-        Determines if the range of the image should be kept or transformed
-        using img_as_float. Also see
-        https://scikit-image.org/docs/dev/user_guide/data_types.html
-
-    Notes:
-    ------
-    * Input images with `float32` data type are not upcast.
-
-    Returns
-    -------
-    image : ndarray
-        Transformed version of the input.
-
-    """
-    if preserve_range:
-        # Convert image to double only if it is not single or double
-        # precision float
-        if image.dtype.char not in 'df':
-            image = image.astype(float)
-    else:
-        image = img_as_float(image)
-    return image
