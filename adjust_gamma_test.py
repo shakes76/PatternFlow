@@ -8,6 +8,7 @@ Created on Fri Oct 18 02:02:27 2019
 
 
 from  adjust_gamma import adjust_gamma
+from skimage import data, exposure, img_as_float
 
 # First - Test a normal 
 image = img_as_float(data.moon()) 
