@@ -15,28 +15,29 @@ In signal processing , total variation denoising, also know as total variation r
 * __Parameters:__
 	1. __input_img : torch.tensor__ 
 	
-	n-D input data to be denoised.
+		n-D input data to be denoised.
 				
 	2. __weight : float optional__ 
 	
-	Denoising weight. The greater 'weight', the more denoising (aT the expense of fidelity to 'input').
+		Denoising weight. The greater 'weight', the more denoising (aT the expense of fidelity to 'input').
 			
 	3. __eps : float optional__
-	Relative difference of the value of the cost function that determines the stop criterion. The algorithm stops when:
+		
+		Relative difference of the value of the cost function that determines the stop criterion. The algorithm stops when:
 	(E_(n-1) - E_n) < eps * E_0
 			
 	4. __n_iter_max : int optional__
 	
-	Maximal number of iterations used for the optimization.
+		Maximal number of iterations used for the optimization.
 	5. __multichannel : bool optional__
 	
-	Apply total-variation denoising separately for each channel. This option should be true for color images, otherwise the denoising is also applied in the channels dimension.
+		Apply total-variation denoising separately for each channel. This option should be true for color images, otherwise the denoising is also applied in the channels dimension.
 			
 * __Returns:__
 
 	1. __out : torch.tensor__
 	
-	Denoised image.
+		Denoised image.
 
 ## Example 
 * Comparisons between the original image and denoised image in torch and numpy
