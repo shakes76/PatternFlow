@@ -1,14 +1,23 @@
-# Imaging
-Various image processing algorthms implemented for Tensorflow
+**Sobel Transform in tensorflow**
+Based on skimage.filters.sobel(image)
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+**Demo**
+Tensorflow implementation of sobel transform. 
+It outputs the edge map of the given image. 
+Given below is a picture of katy perry and the corresponding edge detection image.
 
-## Contributing
-* Fork the dedicated 'topic-algorithms' branch
-* Create a directory for your algorithm and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save results
-* Add a README.md file as described by the report assessment
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your fractal directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+
+
+**Sobel Transform**
+
+Sobel Transform is a edge detection algorithm used mainly in the fields of computer vision and image processing.
+It creates an edge map from it's corresponding input image.
+It is based on convolution of the image with the appropriate kernels (called Sobel kernels), to give the resultant edge maps.
+
+**Kernels used**
+Here we have used 2 kernels, one for horizontal edge detection and the other for vertical edge detection.
+
+**Sobel_h (detects horizontal edges) = [ [1,2,1], [0,0,0], [-1,-2,-1] ] ** 
+
+**Sobel_v (detects vertical edges) = [ [1,0,-1], [2,0,-2], [1,0,-1] ] ** 
+
