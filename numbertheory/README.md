@@ -1,5 +1,5 @@
 # Number Theoretic Functions implemented in Tensorflow
-##### COMP3170 Pattern Recognition and Analysis (Final Project)
+#### COMP3170 Pattern Recognition and Analysis (Final Project)
 
 numbthy\_tf.py module requires tensorflow 2.0 to run
 
@@ -31,3 +31,20 @@ integer_2 = tf.constant(24)
 result = nm.gcd(integer_1, integer_2)
 print(result.eval())    #it will print 3
 ```
+###Important Note
+There are several functions which work differently from Robert-Campbell-256:
+
+isprimeF(n, b):
+
+It will not work as intended if integer n and b get too large (probably maximum up to int32),
+as overflow will occur. I tried isprimeF(31,3) and it should return True, but this function does not ( shame :( )
+Shakes (our lecturer) suggested using power\_mod, instead of tf.pow to prevent overflow. 
+
+inverse\_mod(a, n):
+
+If the integer a has no inverse (mod n), the function should raise a ValueError. However, tensorflow does not seem to support
+raising an error. So, how this module does is that it returns a tuple with two integers: if the second integer is 0, then the inverse_mod does not exist and should disregard the first integer; if the second integer is 1, then the first integer will be the result.
+
+power\_mod(b, e, n):
+
+Same as inverse\_mod. disregard the first integer if the second is a 0.
