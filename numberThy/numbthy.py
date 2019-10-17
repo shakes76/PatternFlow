@@ -8,9 +8,6 @@ Original file is located at
 """
 
 import tensorflow as tf
-import functools
-sess = tf.InteractiveSession()
-tf.global_variables_initializer()
 
 ####################-- euler_criterion function --################
 
@@ -45,13 +42,6 @@ def gcd_body(a,b):
     a = b
     b = tep
     return a, b
-
-a1 = tf.constant(2040)
-b2 = tf.constant(1071)
-h = gcd(a1,b2)
-
-
-print (h.eval())
 
 ####################-- xgcd function --################
 
@@ -107,21 +97,13 @@ def body_2(a,b,a1,b1,a2,b2,aneg,bneg,flag):
     )
     return a,b,a1,b1,a2,b2,aneg,bneg,flag
 
-a1 = tf.constant(65)
-b2 = tf.constant(78)
-a1 = tf.constant(4)
-b2 = tf.constant(2)
-h,v,f = xgcd(a1,b2)
-
-print(h.eval(),v.eval(),f.eval())
-
 ####################-- power_mod function --################
 
 def power_mod(b,e,n):
     """
     function power_mod computes the eth power of b mod n
     input: integer b, e, n
-    ouput: return the eth power of b mod d (data type: tensor)
+    ouput: return the eth power of b mod n (data type: tensor)
     """
     accum,i,bpow2 = tf.cond(
         tf.math.less(e,0), # Negative powers can be computed if gcd(b,n)=1
@@ -169,15 +151,6 @@ def inverse_mod(a,n):
     )
     return result
 
-a = inverse_mod(4,7)
-print(a.eval())
-
-print(power_mod(4,3,2).eval())
-print(power_mod(4,7,9).eval())
-
-print(power_mod(1,6,4).eval())
-print(power_mod(9,15,3).eval())
-
 ####################-- is_prime function --################
 
 def is_prime(n):
@@ -208,10 +181,6 @@ def check_isprimeE(n):
     result = tf.cond(tf.math.equal(result, True),lambda:1, lambda:0)
     return result
 
-print(is_prime(2).eval())
-print(is_prime(15).eval())
-print(is_prime(27).eval())
-
 ####################-- factor function --################
 
 @tf.function
@@ -219,7 +188,7 @@ def factor(n):
 	"""
 	function factor() find the factor of a integer n
 	input: integer n
-	output: Return a sorted tensor list of the prime factors of n with exponents.
+	output: Return a tuple of the prime factors of n with exponents.
 	"""
 	# Rewritten to align with SAGE.  Previous semantics available as factors(n).
 	if ((abs(n) == 1) or (n == 0)): raise ValueError('Unable to factor {0}'.format(n))
@@ -245,7 +214,8 @@ def prime_divisors(n):
     input: integer n
     output: returns a sorted tensor list of the prime divisors of n.
     """
-    return tuple(set(factors(n)))
+    result,idx = tf.unique(factors(n))
+    return result
 
 ####################-- euler_phi function --################
 
@@ -261,15 +231,13 @@ def euler_phi(n):
         result = tf.cond(tf.math.equal(gcd(i,n),1),lambda:tf.math.add(result,1),lambda: tf.math.add(result,0))
     return result
 
-print(euler_phi(8).eval())
-
-####################-- def carmichael_lambda function --################
+####################-- carmichael_lambda function --################
 
 def carmichael_lambda(n):
     """
-    Compute Carmichael's Lambda function
-	of n - the smallest exponent e such that b**e = 1 for all b coprime to n.
-	Otherwise defined as the exponent of the group of integers mod n.
+    the Carmichael function λ takes a positive integer n and 
+    returns the least positive integer k so that the k-th power 
+    of each integer coprime to n equals 1 modulo n.
     """
     coprimes = []; count = 1; list_len = 0; index = 0
     for x in range(1,n):
@@ -297,9 +265,6 @@ def carmichael_while_body(coprimes,count,n,index):
     )
     return coprimes,count,n,index
 
-r = carmichael_lambda(13)
-print(r.eval())
-
 ####################-- is_primitive_root function --################
 
 sess = tf.InteractiveSession()
@@ -312,45 +277,58 @@ def is_primitive_root(g,n):
     output: boolean
     """
     result = 1; size = 0; index = 0
-    result = tf.cond(
+    result = tf.cond(           # Not in the group of units
         tf.math.not_equal(gcd(g,n),1),
         lambda: 0,
         lambda: 1
         )
     order = euler_phi(n)
-    print(order.eval())
-    result = tf.cond(
+    result = tf.cond(           # Group of units isn't cyclic
         tf.math.not_equal(carmichael_lambda(n), order),
         lambda: 0,
-        lambda: 1        
+        lambda: 1       
         )
-    orderfacts = prime_divisors(order.eval())
+    orderfacts = tuple(set(factors(order.eval())))
     for fact in orderfacts:
         fact = tf.dtypes.cast(fact,tf.int32)
         result = tf.cond(
             tf.math.equal(g**(order//fact)%n,1),
             lambda: 0,
-            lambda: result
+            lambda: 1
         )
     return tf.math.equal(result,1)
-print(is_primitive_root(23,11).eval())
 
 ####################-- sqrtmod function --################
 
-@tf.function
 def sqrtmod(a,n):
-	"""ompute sqrt(a) mod n using various algorithms.
+	"""
+	ompute sqrt(a) mod n 
 	Currently n must be prime,
-	but will be extended to general n (when I get the time)."""
-	# SAGE equivalent is mod(g,n).sqrt() in IntegerMod class
-	if(not isprime(n)): raise ValueError("*** Error ***:  Currently can only compute sqrtmod(a,n) for prime n.")
-	if(pow(a,(n-1)//2,n)!=1): raise ValueError("*** Error ***:  a is not quadratic residue, so sqrtmod(a,n) has no answer.")
-	return tonelli(a,n) #Bacause the TSRsqrtmod function cannot return a correct answer,so I use another function for helping
+	but here still have bug of this function, 
+	because function  TSRsqrtmod(a,grpord,p) cannot return a result
+	"""
+	result = 1; 
+	mess1 = tf.constant("*** Error ***:  Currently can only compute sqrtmod(a,n) for prime n.")
+	mess2 = tf.constant("*** Error ***:  a is not quadratic residue, so sqrtmod(a,n) has no answer.")
+
+	result,mess1 = tf.cond(
+		  tf.math.logical_not(is_prime(n)),
+		  lambda: (0,mess1),
+		  lambda: (1,mess1)
+	)
+	result,mess2 = tf.cond(
+		  tf.math.not_equal((a**((n-1)//2) % n),1),
+		  lambda: (0,mess2),
+		  lambda: (1,mess2)
+	)
+	result = tf.cond(
+		  tf.math.equal(result,1),
+		  lambda:TSRsqrtmod(a,n-1,n),
+		  lambda:result
+	)
+	return result
 
 ####################-- TSRsqrtmod function --################
-
-g =tf.range(2,7,1)
-print(g.eval())
 
 def TSRsqrtmod(a,grpord,p):
     """
@@ -420,9 +398,6 @@ def TSRsqrtmod_true(pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2):
     pow2 = temp
     return pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2
 
-print(TSRsqrtmod(9,4,5).eval())
-print(pow(3,8000//2,2))
-
 ################ Internally used functions #########################################
 
 ####################-- isprimeF function --################
@@ -434,11 +409,6 @@ def isprimeF(n,b):
     """
     num = tf.math.floormod(tf.math.pow(b, n-1),n)
     return tf.math.equal(num,1)
-
-a = isprimeF(25,3)
-print(a.eval())
-l = isprimeF(3,4)
-print(l.eval())
 
 ####################-- isprimeE function --################
 
@@ -494,13 +464,6 @@ def while_body_1(n,b,c,result,flag):
         )
     return n,b,c,result,flag
 
-a = isprimeE(25,3)
-print(a.eval())
-a = isprimeE(15,4)
-print(a.eval())
-a = isprimeE(3,4)
-print(a.eval())
-
 ####################-- factorone function --################
 
 def factorone(n):
@@ -533,14 +496,12 @@ def factorone_while_body(n,fact,index,size,fact_list):
         )
     return n,fact,index,size,fact_list
 
-print(factorone(75).eval())
-
 ####################-- factors function --################
 
 @tf.function
 def factors(n):
     """
-    Return a sorted list of the prime factors of n.
+    Return a list of the prime factors of n.
     input: integer n
     output: list of prime factors of n
     """
@@ -555,8 +516,6 @@ def factors(n):
     if n > 1:
         factors.append(n)
     return factors
-
-print(factors(6))
 
 ####################-- factorPR function --################
 
@@ -602,40 +561,3 @@ def factorPR_if_body(n,numsteps,i,additive,g):
         lambda:(n,numsteps,numsteps,5,g)
         )
     return n,numsteps,i,additive,g
-
-####################-- helper function --################
-
-@tf.function
-def legendre(a, p):
-    return pow(a, (p - 1) // 2, p)
-
-@tf.function
-def tonelli(n, p):
-    assert legendre(n, p) == 1, "not a square (mod p)"
-    q = p - 1
-    s = 0
-    while q % 2 == 0:
-        q //= 2
-        s += 1
-    if s == 1:
-        return pow(n, (p + 1) // 4, p)
-    for z in range(2, p):
-        if p - 1 == legendre(z, p):
-            break
-    c = pow(z, q, p)
-    r = pow(n, (q + 1) // 2, p)
-    t = pow(n, q, p)
-    m = s
-    t2 = 0
-    while (t - 1) % p != 0:
-        t2 = (t * t) % p
-        for i in range(1, m):
-            if (t2 - 1) % p == 0:
-                break
-            t2 = (t2 * t2) % p
-        b = pow(c, 1 << (m - i - 1), p)
-        r = (r * b) % p
-        c = (b * b) % p
-        t = (t * c) % p
-        m = i
-    return r
