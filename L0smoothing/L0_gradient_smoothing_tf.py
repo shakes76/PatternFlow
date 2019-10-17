@@ -1,13 +1,12 @@
-#!/usr/bin/env python
-# coding: utf-8
+# Chosen algorithm: L0 norm smoothing of images
+# author: naziah siddique 
 
 from PIL import Image
 import tensorflow as tf 
-import time
 import numpy as np
 import argparse 
 
-# Need tensorflow version >=2.0
+# Require tensorflow version >=2.0 to run
 print(tf.__version__)
 
 def psf2otf(psf, outSize):
@@ -28,6 +27,7 @@ def psf2otf(psf, outSize):
 def l0_calc(img_arr, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     N = img_arr.shape[0]
     M = img_arr.shape[1]
+    D = img_arr.shape[2]
 
     rows = N
     cols = M
@@ -54,7 +54,7 @@ def l0_calc(img_arr, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     S_complex = tf.cast(S_complex, dtype=tf.complex128)
     S_complex = tf.Variable(S_complex)
 
-    FI = tf.Variable(tf.complex(tf.zeros((rows, cols, 3)), tf.zeros((rows, cols, 3))))
+    FI = tf.Variable(tf.complex(tf.zeros((rows, cols, D)), tf.zeros((rows, cols, 3))))
 
     FI = tf.cast(FI, dtype=tf.complex128)
     FI = tf.Variable(FI)
@@ -66,76 +66,85 @@ def l0_calc(img_arr, _lambda=2e-2, kappa=2.0, beta_max=1e5):
     MTF = tf.stack([MTF, MTF, MTF], axis=2)
 
 
-    h = tf.Variable(tf.zeros((rows, cols, 3), dtype=tf.float64))
-    v = tf.Variable(tf.zeros((rows, cols, 3), dtype=tf.float64))
-    dxhp = tf.Variable(tf.zeros((rows, cols, 3), dtype=tf.float64))
-    dyvp = tf.Variable(tf.zeros((rows, cols, 3), dtype=tf.float64))
-    FS = tf.Variable(tf.complex(tf.zeros((rows, cols, 3), dtype=tf.float64), 
-                                tf.zeros((rows, cols, 3), dtype=tf.float64) ))
+    h = tf.Variable(tf.zeros((rows, cols, D), dtype=tf.float64))
+    v = tf.Variable(tf.zeros((rows, cols, D), dtype=tf.float64))
+    dxhp = tf.Variable(tf.zeros((rows, cols, D), dtype=tf.float64))
+    dyvp = tf.Variable(tf.zeros((rows, cols, D), dtype=tf.float64))
+    FS = tf.Variable(tf.complex(tf.zeros((rows, cols, D), dtype=tf.float64), 
+                                tf.zeros((rows, cols, D), dtype=tf.float64) ))
     FS = tf.cast(FS, dtype=tf.complex128)
 
-    beta = 2 * _lambda
-    iteration = 0
-
-    print(beta, beta_max)
+    beta = 2 * _lambda  # set initial beta value
+    iterations = 0               # used to track number of iterations 
 
     while beta < beta_max:
         h = tf.Variable(h)
         v = tf.Variable(v)
 
-        h = h[:,0:M-1,:].assign(tf.cast(tf.math.real(S_complex[:,1:]-S_complex[:,:-1]), dtype=tf.float64))
-        h = h[:,M-1:M,:].assign(tf.cast(tf.math.real(S_complex[:,0:1,:] - S_complex[:,M-1:M,:]), dtype=tf.float64))
+        h = h[:,0:cols-1,:].assign(
+            tf.cast(tf.math.real(S_complex[:,1:]-S_complex[:,:-1]), dtype=tf.float64))
+        h = h[:,cols-1:cols,:].assign(
+            tf.cast(tf.math.real(S_complex[:,0:1,:]-S_complex[:,cols-1:cols,:]), dtype=tf.float64))
 
-        v = v[0:N-1,:,:].assign(tf.cast(tf.math.real(S_complex[1:]-S_complex[:-1]), dtype=tf.float64))
-        v = v[N-1:N,:,:].assign(tf.cast(tf.math.real(S_complex[0:1,:,:] - S_complex[N-1:N,:,:]), dtype=tf.float64))
+        v = v[0:rows-1,:,:].assign(
+            tf.cast(tf.math.real(S_complex[1:]-S_complex[:-1]), dtype=tf.float64))
+        v = v[rows-1:rows,:,:].assign(
+            tf.cast(tf.math.real(S_complex[0:1,:,:] - S_complex[rows-1:rows,:,:]), dtype=tf.float64))
         
-        t = tf.reduce_sum(tf.math.square(h) + tf.math.square(v), axis=2) < _lambda / beta
+        t = tf.reduce_sum(
+            tf.math.square(h) + tf.math.square(v), axis=2) < _lambda / beta
         t = tf.stack([t, t, t], axis=2)
 
         idx = tf.where(t)
         h = tf.tensor_scatter_nd_update(h, idx, tf.zeros(idx.shape[0], dtype=tf.float64))
         v = tf.tensor_scatter_nd_update(v, idx, tf.zeros(idx.shape[0], dtype=tf.float64))
 
-        dxhp = dxhp[:,0:1,:].assign(h[:,M-1:M,:] - h[:,0:1,:])
-        dxhp = dxhp[:,1:M,:].assign(-(h[:,1:]-h[:,:-1]))
-        dyvp = dyvp[0:1,:,:].assign(v[N-1:N,:,:] - v[0:1,:,:])
-        dyvp = dyvp[1:N,:,:].assign(-(v[1:]-v[:-1]))
+        dxhp = dxhp[:,0:1,:].assign(h[:,cols-1:cols,:] - h[:,0:1,:])
+        dxhp = dxhp[:,1:cols,:].assign(-(h[:,1:]-h[:,:-1]))
+        dyvp = dyvp[0:1,:,:].assign(v[rows-1:rows,:,:] - v[0:1,:,:])
+        dyvp = dyvp[1:rows,:,:].assign(-(v[1:]-v[:-1]))
         normin = dxhp + dyvp
         
-        normin = tf.complex(normin, tf.constant(tf.zeros(normin.shape, dtype=tf.float64)))
+        normin = tf.complex(
+            normin, tf.constant(tf.zeros(normin.shape, dtype=tf.float64)))
+
         for i in range(S.shape[2]):
             FS = FS[:,:,i].assign(tf.signal.fft2d(normin[:,:,i]))
         
         denorm = tf.cast(1 + beta * MTF, dtype=tf.complex128)
         FS = FS[:,:,:].assign((FI + beta * FS) / denorm)
         
+        # compute inverse fourier transform 
         for i in range(S.shape[2]):
             S_complex = tf.Variable(S_complex) 
             S_complex = S_complex[:,:,i].assign(tf.signal.ifft2d(FS[:,:,i]))
 
-        beta *= kappa
-        iteration += 1
+        beta *= kappa           # increase beta value kappa times 
+        iterations += 1
 
     # Rescale image
     S_complex = S_complex * 256
 
-    print("Iterations made: %d" % (iteration))
+    print("Iterations made: %d" % (iterations))
 
-    return tf.math.real(S_complex).numpy().astype(np.uint8)
+    # convert real S values to array
+    output_arr = tf.math.real(S_complex).numpy().astype(np.uint8)
+
+    return output_arr
 
 
 def main(imdir, outdir, _lambda, kappa, beta_max):
 
+    # load image into array 
     tf_img = tf.keras.preprocessing.image.load_img(imdir)
-    tf_img.show()
-    cols, rows = tf_img.size
     img_arr = np.array(tf_img)
 
+    # pass image and calculate and output gradient smoothing 
     out_img = l0_calc(img_arr, _lambda, kappa, beta_max)
     
+    # save image from output array 
     im = Image.fromarray(out_img)
     im.save(outdir)
-    im.show()
 
 
 if __name__ == '__main__':
@@ -144,7 +153,7 @@ if __name__ == '__main__':
                         help="Directory path for input image",
                         metavar="FILE", default='data/dahlia.png')
     parser.add_argument("-o", "--outdir", dest="outdir",
-                        help="limit to parent set size",
+                        help="Directory path for output image",
                         metavar="FILE", default="out.png")
     parser.add_argument("-l", "--lamdaval", dest="lamdaval",
                         help="lambda parameter",
@@ -158,7 +167,12 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    main(args.imgdir, args.outdir, float(args.lamdaval), float(args.kappa), float(args.beta_max))
+
+    main(args.imgdir, 
+        args.outdir, 
+        float(args.lamdaval), 
+        float(args.kappa), 
+        float(args.beta_max))
 
 
 
