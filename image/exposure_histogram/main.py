@@ -13,6 +13,7 @@ def get_channel_of_image(image: tf.Tensor, channel: str) -> tf.Tensor:
     """
     channel: grey | r | g | b
     """
+    # Used as a lookup for the index of each channel
     colours = ['r', 'g', 'b']
     if channel == 'grey':
         return tf.image.rgb_to_grayscale(image)[:,:,0]
@@ -31,6 +32,7 @@ def show_histogram(image: tf.Tensor, channel: str, nbins: int, source_range: str
     
     fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
 
+    # Lookup table so that matplotlib displays the channel aswell
     cmap = dict(
         grey=plt.cm.gray,
         r=plt.cm.Reds,
@@ -41,6 +43,7 @@ def show_histogram(image: tf.Tensor, channel: str, nbins: int, source_range: str
     ax[0].axis('off')
 
     ax[1].plot(centers.eval(), values.eval(), lw=2)
+    # Lookup table for nice titles
     names = dict(
         grey="grey",
         r="red",
@@ -53,6 +56,7 @@ def show_histogram(image: tf.Tensor, channel: str, nbins: int, source_range: str
 
 
 if __name__ == '__main__':
+    # Parse arguments
     parser = argparse.ArgumentParser(description='Show the histogram for an image')
     parser.add_argument('image', type=str, nargs='?', help='an image path, if none is specified a raccoon face is used')
     parser.add_argument('--channel', type=str, default='grey', help='channel of the image, grey/r/g/b')
@@ -68,6 +72,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
+    # Show histogram
     with tf.compat.v1.Session() as sess:
         if args.image:
             with open(args.image, 'rb') as f:
@@ -78,4 +83,5 @@ if __name__ == '__main__':
         image_tensor = get_channel_of_image(image_tensor, args.channel)
         show_histogram(image_tensor, channel=args.channel, nbins=args.nbins, source_range=args.source_range, normalize=args.normalize)
     
+    # Save
     plt.savefig(args.out)

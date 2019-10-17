@@ -113,6 +113,7 @@ def histogram(image: tf.Tensor, nbins: int=DEFAULT_NBINS, source_range: str='ima
         image = tf.cast(image, tf.int32)
         limits = get_limits(image, source_range)
         centers = get_int_centers(limits)
+        # Integer doesn't use nbins, so use the difference between the limits
         values = tf.histogram_fixed_width(image, limits, limits[1] - limits[0])
     else:
         image = tf.cast(image, tf.float32)
