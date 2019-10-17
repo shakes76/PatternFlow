@@ -4,22 +4,24 @@
 # steps
     # make 2D gaussian kernel
     # convolve kernel with image
-    # done!
+    # done! haha
     # add multiple dim if time
+    
 import tensorflow as tf
-from keras.layers import Conv2D
+#from tensorflow import keras
+#from keras.layers import Conv2D
 
-def make_gaussian_kernel(mean, std):
+def make_gaussian_kernel(mean, std, size):
     """
     Returns a 2D Gaussian kernel
     """
+    print("Running make_gaussian_kernel")
     #create normal distribution
     mean = float(mean)
     std = float(std)
     dist = tf.distributions.Normal(mean, std)
     
-    # testing values
-    start_pt = -10
+    start_pt = -size
     stop_pt = abs(start_pt) +1
     leng = abs(start_pt) + stop_pt
     value_range = tf.linspace(float(start_pt), float(stop_pt-1), leng, name="linspace")
@@ -47,13 +49,49 @@ def make_gaussian_kernel(mean, std):
     matrix = sess.run(matrix)
     gaussian_kernel = sess.run(gaussian_kernel)
     
-    print(values.shape)
-    print(gaussian_kernel)
+    #print(values.shape)
+    #print(gaussian_kernel)
+    print("Gaussian kernel made")
     return gaussian_kernel
 
 # test run
 m = 10
 s = 2
-make_gaussian_kernel(m, s)
+size = 10
+gaussian = make_gaussian_kernel(m, s, size)
+
+
+def convolve(img, kernel):
+    """
+    Returns image convolved with a gaussian kernel.
+    """
+#   x = tf.expand_dims(w, 2)
+#   x = tf.expand_dims(x, 3)
+    kernel_3D = tf.expand_dims(kernel, 2)
+    kernel_4D = tf.expand_dims(kernel_3D, 3)
+    strides = [1,1,1,1] #list of ints
+    #tf.nn.conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None, name=None)
+#   filter must be A 4-D tensor of shape [filter_height, filter_width, in_channels, out_channels]!!
+    
+    convolved = tf.nn.conv2d(img, kernel_4D, strides, padding = 'SAME', data_format='NHWC', dilations=None, name=None)
+    return convolved
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
