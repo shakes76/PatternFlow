@@ -14,6 +14,7 @@ __email__ = "tingchen.shang@uq.net.au"
 import numpy as np
 import tensorflow as tf
 
+from warnings import warn
 from skimage._shared.utils import convert_to_float
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
@@ -59,13 +60,31 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     (https://github.com/scikit-image/scikit-image/blob/de42b4cf11b2a5b5a9e77c54f90bff539947ef0d/skimage/transform/radon_transform.py)
 
     """
-
+    # Verify image dimension
     if image.ndim != 2:
         raise ValueError('The input image must be 2-D')
+    
+    # Type checking theta
     if theta is None:
         theta = tf.range(180)
+    elif tf.is_tensor(theta):
+        pass
+    elif type(theta) is np.ndarray:
+        theta = tf.convert_to_tensor(theta, dtype=theta.dtype)
+    else:
+        try:
+            theta = tf.convert_to_tensor(theta, dtype=theta.dtype)
+        except:
+            raise TypeError('The input theta must be a tensor or tensor-like')
 
+    # Set default behavior for preserve_range
     if preserve_range is None and np.issubdtype(image.dtype, np.integer):
+        warn('Image dtype is not float. By default radon will assume '
+             'you want to preserve the range of your image '
+             '(preserve_range=True). In scikit-image 0.18 this behavior will '
+             'change to preserve_range=False. To avoid this warning, '
+             'explictiely specify the preserve_range parameter.',
+             stacklevel=2)
         preserve_range = True
 
     image = convert_to_float(image, preserve_range)
@@ -97,15 +116,44 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         padded_image = np.pad(image, pad_width, mode='constant',
                               constant_values=0)
 
+    image = tf.convert_to_tensor(image, dtype=image.dtype)
+    img_shape = tf.convert_to_tensor(image.shape, dtype=tf.int32)
+
     if circle:
+        shape_min = tf.reduce_min(img_shape)
+        radius = shape_min // 2
+        coords = tf.convert_to_tensor() # TODO - Get me from home version
+        dist = dist # TODO - Get me from home version
+
+        # TODO - resolve this
         image_shape_tensor = tf.convert_to_tensor(image.shape, dtype=tf.int64)
         shape_min_tensor = tf.math.reduce_min(image_shape_tensor)
         radius_tensor = shape_min_tensor // 2
         coords_tensor = tf.convert_to_tensor(np.ogrid[:image.shape[0],
                 :image.shape[1]])
         dist_tensor = tf.math.reduce_sum((coords_tensor - image_shape_tensor // 2) ** 2, axis=0)
-        
+        # TODO
 
+        outside_reconstruction_circle = dist > radius ** 2
+        if tf.math.reduce_any(image_tf[outside_reconstruction_circle]):
+            warn('Radon transform: image must be zero outside the '
+                 'reconstruction circle')
+        # Crop image to make it square
+        slices = tuple(slice(int(np.ceil(excess / 2)),
+                             int(np.ceil(excess / 2) + shape_min))
+                       if excess > 0 else slice(None)
+                       for excess in (img_shape - shape_min))
+        padded_image = image[slices]
+    else:
+        diagonal = tf.math.sqrt(2.0) \
+            * tf.cast(tf.reduce_max(img_shape), tf.float32)
+        pad_fn = lambda s: \
+            tf.cast(tf.math.ceil(diagonal - tf.cast(s, tf.float32)), tf.int32)
+        pad = tf.map_fn(pad_fn, image.shape)
+        new_center = tf.map_fn(lambda z: tf.math.reduce_sum(z) // 2,
+            tf.stack([image.shape, pad], axis=1))   # stack on axis 1 is zip
+        old_center = tf.map_fn(lambda s: s // 2, image.shape)
+        # pad_before = 
 
 
     # padded_image is always square
