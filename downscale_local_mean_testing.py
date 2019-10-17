@@ -16,8 +16,8 @@ from downscale_local_mean import downscale_local_mean
  
 
 sess = tf.InteractiveSession()  
-a = np.arange(15).reshape(3, 5)
-image = tf.convert_to_tensor(a)
+image = np.arange(15).reshape(3, 5)
+
 
 
 # Try first normal test  
@@ -52,11 +52,9 @@ except (TypeError):
     
 
 # Sixth - if inpiut not tensorflow 
-try: 
-    test6  =  downscale_local_mean(image.eval(),[2,3]) 
-except (TypeError): 
-    print("ValueError")      
-          
+image = np.arange(200).reshape(2, 2,5,10)
+test6  =  downscale_local_mean(image,(2,3,2,2)) 
+
     
 
 

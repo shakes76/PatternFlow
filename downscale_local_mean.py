@@ -22,7 +22,6 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
     sess = tf.InteractiveSession()  
     # Convert array into tensor
     image = tf.convert_to_tensor(image)  
-
     # All block
     if not all(i >= 1 for i in factors): 
         raise ValueError("factors elements must be strictly positive and greater than 1") 
@@ -39,7 +38,7 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
             after_width = tf.constant(0)
         pad_width.append((0, after_width))    
     image = tf.pad(image,paddings =pad_width ,mode='CONSTANT',constant_values=cval)
-    blocked = view_as_blocks(image, factors)  
+    blocked = view_as_blocks(image.eval(), factors)  
     re = tf.math.reduce_mean( tf.dtypes.cast(blocked, 'float64',) , axis=tuple(range(tf.shape(image).shape[0], tf.shape(blocked).shape[0])))
-    return re
+    return re.eval()
  
