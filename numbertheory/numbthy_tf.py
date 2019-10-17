@@ -10,11 +10,9 @@ numbthy_tf.py contains the following functions
     isprimeE(n,b)       - Test whether n is prime or an Euler pseudoprime to base b.
     factorone(n)        - Find a factor of n using a variety of methods.
     factorPR(n)         - Find a factor of n using the Pollard Rho method.
-
-This is a tensorflow implementation of Robert-Campbell-256/Number-Theory-Python/numbthy.py
-The non-tensorflow version of the above functions can be found here:
-https://github.com/Robert-Campbell-256/Number-Theory-Python/blob/master/numbthy.py
 """
+
+import tensorflow as tf
 
 #####################################################################################
 ##############################  gcd(n)  #############################################

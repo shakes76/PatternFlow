@@ -31,7 +31,9 @@ integer_2 = tf.constant(24)
 result = nm.gcd(integer_1, integer_2)
 print(result.eval())    #it will print 3
 ```
+
 ###Important Note
+
 There are several functions which work differently from Robert-Campbell-256:
 
 isprimeF(n, b):
