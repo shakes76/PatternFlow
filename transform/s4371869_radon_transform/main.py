@@ -1,3 +1,5 @@
+# Standard imports
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -5,6 +7,12 @@ from skimage.io import imread
 from skimage import data_dir
 from skimage.transform import rescale
 
+try:
+    os.chdir(os.path.join("transform", "s4371869_radon_transform"))
+except OSError:
+    pass
+
+# Custom imports
 from radon_transform import radon
 
 def main():
@@ -26,6 +34,7 @@ def main():
 
     fig.tight_layout()
     plt.show()
+
 
 if __name__ == '__main__':
     main()
