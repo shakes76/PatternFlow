@@ -22,9 +22,9 @@ def Sobel(image):
 	#Horizontal Sobel kernel
 
 	#Horizontal Sobel kernel
-	Sobel_h = np.array([1,2,1], [0,0,0], [-1,-2,-1])
+	Sobel_h = [[1,2,1], [0,0,0], [-1,-2,-1]]
 	#Vertical Sobel kernel
-	Sobel_v = np.array([1,0,-1], [2,0,-2], [1,0,-1])
+	Sobel_v = [[1,0,-1], [2,0,-2], [1,0,-1]]
 
 	input_placeholder = tf.input_placeholder(dtype=tf.float32, shape=(1, image.shape[0], image.shape[1], 1))
 
