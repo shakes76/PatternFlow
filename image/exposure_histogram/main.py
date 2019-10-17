@@ -54,7 +54,7 @@ def show_histogram(image: tf.Tensor, channel: str, nbins: int, source_range: str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Show the histogram for an image')
-    parser.add_argument('image', type=str, nargs='?', help='an image path')
+    parser.add_argument('image', type=str, nargs='?', help='an image path, if none is specified a raccoon face is used')
     parser.add_argument('--channel', type=str, default='grey', help='channel of the image, grey/r/g/b')
     parser.add_argument('-o', '--out', type=str, default='histogram.png', help='path of the output file')
     parser.add_argument('-n', '--nbins', type=int, default=256, help='number of bins for histogram')
