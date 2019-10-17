@@ -16,20 +16,11 @@ def tf_histogram(image, nbins = 256):
             nbins: optional, 256 by default
             
     ------------------
-    return: a tensor
+    return: a tensor represeting the histogram of the image input
     """
     
-    
-    
-    """
-    # Read the image file, this has approved by the the course coordinator
-    np_im = np.array(Image.open(image_file), dtype='float32')
-    tf_im = tf.constant(np_im.astype(np.float32))
-    """
     value_range = tf.constant([0., 255.], dtype = tf.float32)
     histogram = tf.histogram_fixed_width(tf.to_float(image), value_range, nbins)
-    
-    #For this method we always flatten the image  
     
     
     return histogram
@@ -40,10 +31,10 @@ def tf_cummulative_distribution(image, nbins = 256):
     ---------------
     input:  image - array
             nbins - optional, 256 by default
-            
+            the image is required to be gray scale
             
     ---------------
-    return: tensor
+    return: a tensor that presents the cummulative distribution value
     
     """
     histogram = tf_histogram(image, nbins)
@@ -61,10 +52,11 @@ def tf_equalize_histogram(image, nbins = 256):
     ---------------
     input:  image - array
             nbins - optional, 256 by default
-            
+            the image is grey scale 
             
     ---------------
-    return: tensor
+    return: Float array
+            Image array after histogram equalization.
     
     """
     
