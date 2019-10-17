@@ -13,17 +13,17 @@ Original file is located at
 import tensorflow as tf
 
 def sobel_vertical(image):
-  #Kernel weights as a 2D array
+  #Kernel weights 
   kernel_v = [[1,0,-1], [2,0,-2], [1,0,-1]]
 
   input_tensor = tf.convert_to_tensor(image, dtype=tf.float32)
   image_processed = tf.expand_dims(tf.expand_dims(input_tensor, 0), 3)
 
-  with tf.name_scope('convolution'):
+  with tf.name_scope('convolution'):    #Convolution of kernel onto the image
       conv_v = tf.constant(kernel_v, dtype=tf.float32, shape=(3, 3, 1, 1)) 
       filtered_v = tf.nn.conv2d(input=image_processed, filter=conv_v, strides=[1, 1, 1, 1], padding='SAME')
 
-  with tf.Session() as sess:
-      result_v = sess.run(filtered_v)
+  with tf.Session() as sess:    #Activation of the tensorflow session
+      result_v = sess.run(filtered_v)   
 
   return result_v
