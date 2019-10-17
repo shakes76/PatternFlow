@@ -46,4 +46,5 @@ def tf_sobel_h(image, mask=None):
         result = result[:, -1].assign(0)
         return result
 
+
 #hshshsh
