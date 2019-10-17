@@ -38,7 +38,7 @@ This is example code, that can be found in the driver script.
 ### Result
 
 Original Image
-![orinal image]()
+![orinal image](https://github.com/ethanphan3993/PatternFlow/blob/topic-algorithms/exposure/source/dog1.jpg)
 
 Gray Scale Image
 ![grey image]()
