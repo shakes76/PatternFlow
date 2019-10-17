@@ -1,7 +1,7 @@
 # EQUALIZED HISTOGRAM
 
 _Author: Duc Minh Phan_ 
-
+_ID: 44040505_
 _Last update:17/10/2019_
 
 The presented module computes the skimage exposure equalizer histogram function using pure-tensorflow library. 
