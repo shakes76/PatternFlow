@@ -12,7 +12,7 @@ import unittest
 from skimage import data, img_as_float, exposure, img_as_ubyte
 from skimage import restoration, data, color, img_as_float, measure
 import sys
-sys.path.append('/PatternFlow/denoise/')
+sys.path.append('/PatternFlow/45033027/')
 from torch_denoise_tv_chambolle import denoise_tv_chambolle_torch
 from skimage._shared.testing import (assert_equal, assert_almost_equal,
                                      assert_warns, assert_)

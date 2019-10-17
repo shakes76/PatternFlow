@@ -144,6 +144,7 @@ def denoise_tv_chambolle_torch(image, weight=0.1, eps=2.e-4, n_iter_max=200,
     out : torch.tensor
         Denoised image.
     """
+    torch.set_printoptions(precision=8)
     imageType = image.dtype
     if imageType is not torch.float:
         image = image.type("torch.FloatTensor")
