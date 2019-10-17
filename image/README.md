@@ -4,9 +4,11 @@ Based on skimage.filters.sobel(image)
 
 **Pre-requisites**
 
-Tensorflow
-Numpy
-skimage.io
+* Tensorflow
+
+* Numpy
+
+* skimage
 
 **Demo**
 
