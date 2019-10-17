@@ -9,14 +9,14 @@ This is useful for image processing and yadeeyadeeya
 ## How it works 
 //insert brainfreeze math
 
-![Dahlia_output](dahlia_out_l0.5.png) 
-![Dahlia_output](dahlia_out_l0.2.png) 
-![Dahlia_output](dahlia_out_l0.1.png) 
-![Dahlia_output](dahlia_out_l0.05.png) 
-![Dahlia_output](dahlia_out_l0.02.png) 
-![Dahlia_output](dahlia_out_l0.002.png)
-![Dahlia_output](dahlia_out_l0.0025.png)
-![Dahlia_output](dahlia_out_l0.0002.png)
+![Dahlia_output](0_dahlia_out_l0.5.png) 
+![Dahlia_output](1_dahlia_out_l0.2.png) 
+![Dahlia_output](2_dahlia_out_l0.1.png) 
+![Dahlia_output](3_dahlia_out_l0.05.png) 
+![Dahlia_output](4_dahlia_out_l0.02.png) 
+![Dahlia_output](5_dahlia_out_l0.002.png)
+![Dahlia_output](6_dahlia_out_l0.0025.png)
+![Dahlia_output](7_dahlia_out_l0.0002.png)
 
 # Usage 
 ## Dependencies 
@@ -50,7 +50,7 @@ The commandline arguments are described as such:
 
 Below is the input `dahlia.png` for the example usage (left) and the output of the L0 Norm Gradient Smoothing algorithm (right): 
 
-![Dahlia](dahlia_smol.png)  
+![Dahlia](dahlia_smol.png) 
 ![Dahlia_output](dahlia_out_smol.png)
 
 Otherwise, the method `l0_calc` (found in `L0_gradient_smoothing_tf.py`) takes in a numpy array of the loaded image to compute the smoothed image output array, as well as the relevant parameters: 
