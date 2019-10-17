@@ -7,7 +7,6 @@ Created on Sun Oct 13 18:24:27 2019
 """
 
 import tensorflow as tf 
-import numpy as np
 from view_as_blocks import view_as_blocks
  
 
@@ -51,9 +50,7 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
            [ 5.5,  4.5]])
     """ 
     
-    # Check if input is a numpy or not, if not through type error
-    if not isinstance(image,(np.ndarray)):
-        raise TypeError('Input needs to be a numpy array')   
+
     # Check the instance of factors , if not through type error 
     if not isinstance(factors, tuple):
         raise TypeError('Factors needs to be a tuple')  
@@ -63,7 +60,7 @@ def downscale_local_mean(image, factors, cval=0, clip=True):
     # Convert array into tensor
     image = tf.convert_to_tensor(image)
     
-    # All factors needs to be greater then zero, or else through value error 
+    # All factors needs to be greater then one, or else through value error 
     if not all(i >= 1 for i in factors): 
         raise ValueError("factors elements must be strictly positive and greater than 1") 
     # Check the shape of block_size and image, or else through value error 
