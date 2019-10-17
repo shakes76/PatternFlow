@@ -47,7 +47,7 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3):
     total = rows * cols * dims
     shape_extend = (rows2, cols2, dims)
     # out is zeros-like tensor with size as shape_extend
-    out = torch.zeros(shape_extend, dtype=torch.double)
+    out = torch.zeros(shape_extend, dtype=torch.float)
 
     dx = out.clone().detach()
     dy = out.clone().detach()
@@ -64,61 +64,53 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3):
     out = fill_extend(image, out)
 
     i = 0
+    regularization = torch.mul(image, weight)
     # iterative optimization method
     # the Gauss-Seidel method
     while i < max_iter and rmse > eps:
+        uprev = out[1:-1, 1:-1, :]
 
-        rmse = 0
+        ux = out[1:-1, 2:, :] - uprev
+        uy = out[2:, 1:-1, :] - uprev
 
-        # doing pixel by pixel
-        for r in range(1, rows + 1):
-            for c in range(1, cols + 1):
-                for k in range(dims):
+        unew = torch.div(
+            (torch.mul((out[2:, 1:-1, :]
+                    + out[0:-2, 1:-1, :]
+                    + out[1:-1, 2:, :]
+                    + out[1:-1, 0:-2, :]
 
-                    uprev = out[r, c, k]
+                    + dx[1:-1, 0:-2, :]
+                    - dx[1:-1, 1:-1, :]
+                    + dy[0:-2, 1:-1, :]
+                    - dy[1:-1, 1:-1, :]
 
-                    ux = out[r, c + 1, k] - uprev
-                    uy = out[r + 1, c, k] - uprev
+                    - bx[1:-1, 0:-2, :]
+                    + bx[1:-1, 1:-1, :]
+                    - by[0:-2, 1:-1, :]
+                    + by[1:-1, 1:-1, :]), lam) + regularization),
+             norm)
+        out[1:-1, 1:-1, :] = unew.clone().detach()
 
-                    # the regularization term
-                    # to keep the denoised image more like original
-                    regularization = weight * image[r - 1, c - 1, k]
+        rmse = torch.norm(unew-uprev, p=2)
 
-                    unew = (
-                        lam * (
-                            out[r + 1, c, k]
-                            + out[r - 1, c, k]
-                            + out[r, c + 1, k]
-                            + out[r, c - 1, k]
+        bxx = bx[1:-1, 1:-1, :].clone().detach()
+        byy = by[1:-1, 1:-1, :].clone().detach()
 
-                            + dx[r, c - 1, k]
-                            - dx[r, c, k]
-                            + dy[r - 1, c, k]
-                            - dy[r, c, k]
+        tx = ux + bxx
+        ty = uy + byy
+        s = torch.sqrt(torch.pow(tx, 2)+torch.pow(ty, 2))
+        dxx = torch.div(torch.addcmul(torch.zeros(s.shape, dtype=torch.float), lam, s, tx),
+                        torch.add(torch.mul(s, lam), 1))
+        dyy = torch.div(torch.addcmul(torch.zeros(s.shape, dtype=torch.float), lam, s, ty),
+                        torch.add(torch.mul(s, lam), 1))
 
-                            - bx[r, c - 1, k]
-                            + bx[r, c, k]
-                            - by[r - 1, c, k]
-                            + by[r, c, k]
-                        ) + regularization
-                    ) / norm
-                    out[r, c, k] = unew
+        dx[1:-1, 1:-1, :] = dxx.clone().detach()
+        dy[1:-1, 1:-1, :] = dyy.clone().detach()
 
-                    # sum up ||u-f||^2
-                    rmse += (unew - uprev)**2
+        bx[1:-1, 1:-1, :] += ux - dxx
+        by[1:-1, 1:-1, :] += uy - dyy
 
-                    bxx = bx[r, c, k]
-                    byy = by[r, c, k]
-
-                    tx = ux + bxx
-                    ty = uy + byy
-                    s = math.sqrt(tx * tx + ty * ty)
-                    dxx = s * lam * tx / (s * lam + 1)
-                    dyy = s * lam * ty / (s * lam + 1)
-
-        rmse = math.sqrt(rmse / total)
         i += 1
-
     # return the denoised image excluding the extended area
     return out[1:-1, 1:-1]
 
