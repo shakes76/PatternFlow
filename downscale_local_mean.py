@@ -7,20 +7,25 @@ Created on Sun Oct 13 18:24:27 2019
 """
 
 import tensorflow as tf 
+import numpy as np
 from view_as_blocks import view_as_blocks
  
 
 def downscale_local_mean(image, factors, cval=0, clip=True):
+    # Check if input is a numpy or not 
+    if not isinstance(image,(np.ndarray)):
+        raise TypeError('Input needs to be a numpy array')   
     # check the instance of factors 
     if not isinstance(factors, tuple):
         raise TypeError('factors needs to be a tuple')  
-    # Check if input is tensor 
-    if not tf.is_tensor(image):
-        raise TypeError('input needs to be a Tensorflow')  
+    # start a session 
+    sess = tf.InteractiveSession()  
+    # Convert array into tensor
+    image = tf.convert_to_tensor(image)  
+
     # All block
     if not all(i >= 1 for i in factors): 
         raise ValueError("factors elements must be strictly positive and greater than 1") 
-        
     # Check the shape of block_size and image 
     if len(factors) != tf.shape(image).shape:
         raise ValueError("`block_size` must have the same length "

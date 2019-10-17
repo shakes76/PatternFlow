@@ -18,10 +18,6 @@ def view_as_blocks(arr_in, block_shape):
     if not isinstance(block_shape, tuple):
         raise TypeError('block needs to be a tuple')  
     # start a session 
-    # sdjksdks  
-    # skdskd 
-    # sjdhj c 
-    # kdjskd 
     sess = tf.InteractiveSession()  
     # Convert array into tensor
     arr_in = tf.convert_to_tensor(arr_in) 
