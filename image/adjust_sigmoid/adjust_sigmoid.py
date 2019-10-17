@@ -2,6 +2,8 @@ import tensorflow as tf
 
 def adjust_sigmoid(image, cutoff=0.5, gain=10.0, inv=False):
     '''
+    Applies sigmoid correction (also known as contrast adjustment) to the input image.
+
     Parameters:
 
         image: ndarray
@@ -18,6 +20,11 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10.0, inv=False):
         inv: bool
             If True, the negative sigmoid correction is used.
             Defaults to False
+
+    Returns:
+
+        adjusted_image: ndarray
+            The resultant image when sigmoid correction is applied to the input image.
     '''
 
     # Convert the image to tf constant
@@ -61,6 +68,3 @@ def adjust_sigmoid(image, cutoff=0.5, gain=10.0, inv=False):
 
         # Return adjusted image
         return adjusted_image
-
-
-
