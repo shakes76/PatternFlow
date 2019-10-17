@@ -266,6 +266,11 @@ print(euler_phi(8).eval())
 ####################-- def carmichael_lambda function --################
 
 def carmichael_lambda(n):
+    """
+    Compute Carmichael's Lambda function
+	of n - the smallest exponent e such that b**e = 1 for all b coprime to n.
+	Otherwise defined as the exponent of the group of integers mod n.
+    """
     coprimes = []; count = 1; list_len = 0; index = 0
     for x in range(1,n):
         result = tf.cond(
@@ -292,23 +297,55 @@ def carmichael_while_body(coprimes,count,n,index):
     )
     return coprimes,count,n,index
 
-r = carmichael_lambda(50)
+r = carmichael_lambda(13)
 print(r.eval())
 
 ####################-- is_primitive_root function --################
 
-
+sess = tf.InteractiveSession()
+tf.global_variables_initializer()# call a tensorflow function should use a number
+                                 #otherwise, it will raise error
+def is_primitive_root(g,n):
+    """
+    Test whether g is primitive - generates the group of units mod n
+    input: integer g
+    output: boolean
+    """
+    result = 1; size = 0; index = 0
+    result = tf.cond(
+        tf.math.not_equal(gcd(g,n),1),
+        lambda: 0,
+        lambda: 1
+        )
+    order = euler_phi(n)
+    print(order.eval())
+    result = tf.cond(
+        tf.math.not_equal(carmichael_lambda(n), order),
+        lambda: 0,
+        lambda: 1        
+        )
+    orderfacts = prime_divisors(order.eval())
+    for fact in orderfacts:
+        fact = tf.dtypes.cast(fact,tf.int32)
+        result = tf.cond(
+            tf.math.equal(g**(order//fact)%n,1),
+            lambda: 0,
+            lambda: result
+        )
+    return tf.math.equal(result,1)
+print(is_primitive_root(23,11).eval())
 
 ####################-- sqrtmod function --################
 
 @tf.function
 def sqrtmod(a,n):
-	"""sqrtmod(a,n) - Compute sqrt(a) mod n using various algorithms.
-	Currently n must be prime, but will be extended to general n (when I get the time)."""
+	"""ompute sqrt(a) mod n using various algorithms.
+	Currently n must be prime,
+	but will be extended to general n (when I get the time)."""
 	# SAGE equivalent is mod(g,n).sqrt() in IntegerMod class
 	if(not isprime(n)): raise ValueError("*** Error ***:  Currently can only compute sqrtmod(a,n) for prime n.")
 	if(pow(a,(n-1)//2,n)!=1): raise ValueError("*** Error ***:  a is not quadratic residue, so sqrtmod(a,n) has no answer.")
-	return TSRsqrtmod(a,n-1,n)
+	return tonelli(a,n) #Bacause the TSRsqrtmod function cannot return a correct answer,so I use another function for helping
 
 ####################-- TSRsqrtmod function --################
 
@@ -316,6 +353,13 @@ g =tf.range(2,7,1)
 print(g.eval())
 
 def TSRsqrtmod(a,grpord,p):
+    """
+    Compute sqrt(a) mod n using Tonelli-Shanks-RESSOL algorithm.
+	Here integers mod n must form a cyclic group of order grpord.
+    However, tensorflow cannot calculate nagetive power 2^(-1)
+    also, the data type is int32, therefore, the result of 2^(-1) is not 0.5, is 0
+    hence, this function cannot return a correct answer
+    """
     ordpow2=0; non2=grpord; temp_g=0; 
     range1_len = 0; index1 = 1; range2_len=0; index2 = 1
     ordpow2,non2 = tf.while_loop(
@@ -327,49 +371,28 @@ def TSRsqrtmod(a,grpord,p):
     range1 = tf.range(2,grpord-1,1)
     range1_len = tf.size(range1)
     g = tf.gather(range1,0)
-    print("g1",g.eval())
     g,grpord,p,index1,range1_len,range1= tf.while_loop(
         lambda g,grpord,p,index1,range1_len,range1: tf.math.less(index1,range1_len),
         save_temp_g,
         [g,grpord,p,index1,range1_len,range1]
     )
-    print("range1",range1.eval())
     g = tf.math.mod(tf.math.pow(g,non2),p)
-    print("g2",g.eval())
 
     gpow=0; atweak=a
     range2 = tf.range(0,tf.math.add(ordpow2,1),1)
     range2_len = tf.size(range2)
-    print("range2_len",range2_len.eval())
-    print("range2",range2.eval())
     pow2 = tf.gather(range2,0)
-    print("pow21",pow2.eval())
-    gpow = gpow + neg_power(2,pow2-1)
-    print("qianm atweak",gpow.eval())
 
     pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2= tf.while_loop(
         lambda pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2:tf.math.less(index2,range2_len),
         TSRsqrtmod_true,
         [pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2]
     )
-    print("pow22",pow2.eval())
-    print("atweak",atweak.eval())
-    print("non2",non2.eval())
-    print("ordpow2",ordpow2.eval())
-    print("g",g.eval())
-    print("p",p.eval())
-    print("gpow",gpow.eval())
 
     d = inverse_mod(2,non2)
-    print("d",d.eval())
     tmp = tf.math.mod(tf.math.pow(g,gpow),p)
     tmp = tf.math.mod(tf.math.pow(tf.math.multiply(a,tmp),d),p)
-    print("temp",tmp.eval())
     result = tf.math.floormod(tf.math.multiply(tmp,inverse_mod(tf.math.floormod(tf.math.pow(g,tf.math.floordiv(gpow,2)),p),p)),p)
-    print("result1",result.eval())
-    uio = g**(gpow//2)%p
-    result = (tmp*inverse_mod(uio,p)) % p 
-    print("result2",result.eval())
     return result
 
 def TSRsqrtmod_while(ordpow2,non2):
@@ -389,25 +412,13 @@ def save_temp_g(g,grpord,p,index1,range1_len,range1):
 
 def TSRsqrtmod_true(pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2):
     temp = tf.gather(range2,index2)
-    print("gggggggggggggggggggggggggggggg")
     pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2 = tf.cond(
             tf.math.not_equal((atweak**(non2*2**(ordpow2-pow2))%p),1),
-            lambda:(pow2,((atweak * (g**(2**pow2-1)%p)) % p),non2,ordpow2,p,(gpow + neg_power(2,pow2-1)),g,tf.math.add(index2,1),range2),
+            lambda:(pow2,((atweak * (g**(2**pow2-1)%p)) % p),non2,ordpow2,p,(gpow + (2**(pow2-1))),g,tf.math.add(index2,1),range2),
             lambda:(pow2,atweak,non2,ordpow2,p,gpow,g,tf.math.add(index2,1),range2)
         )
     pow2 = temp
     return pow2,atweak,non2,ordpow2,p,gpow,g,index2,range2
-
-@tf.function
-def neg_power(x,y):
-    result = 0
-    if y < 0:
-        y = abs(y)
-        result = (1/(pow(x,y)))
-        result = int(result)
-    else:
-        result = pow(x,y)
-    return result
 
 print(TSRsqrtmod(9,4,5).eval())
 print(pow(3,8000//2,2))
@@ -432,6 +443,11 @@ print(l.eval())
 ####################-- isprimeE function --################
 
 def isprimeE(n,b):
+    """
+    Test whether n is prime or an Euler pseudoprime to base b
+    input: integer n, b
+    output: boolean
+    """
     result = 1; flag = 1; c = 0
     n,b,c,result,flag =  tf.cond(
         tf.math.logical_not(isprimeF(n,b)), 
@@ -488,6 +504,11 @@ print(a.eval())
 ####################-- factorone function --################
 
 def factorone(n):
+    """
+    Find a prime factor of n using a variety of methods
+    input: integer n
+    output: a prime factor of n
+    """
     fact = -1
     n, fact= tf.cond(is_prime(n), lambda:(n, n), lambda:factorone_cond_body(n,fact))
     fact = tf.cond(tf.math.equal(0,tf.math.mod(n,fact)),lambda:fact,lambda:factorPR(n))
@@ -518,6 +539,11 @@ print(factorone(75).eval())
 
 @tf.function
 def factors(n):
+    """
+    Return a sorted list of the prime factors of n.
+    input: integer n
+    output: list of prime factors of n
+    """
     i = 2
     factors = []
     while i * i <= n:
@@ -535,6 +561,9 @@ print(factors(6))
 ####################-- factorPR function --################
 
 def factorPR(n):
+    """
+    Find a factor of n using the Pollard Rho method
+    """
     numsteps = tf.math.multiply(2.,tf.math.floor(tf.math.sqrt(tf.math.sqrt(tf.dtypes.cast(n,tf.float32)))))
     numsteps = tf.dtypes.cast(numsteps,tf.int32)
     additive = 1; g = -1; result = 0;
@@ -574,51 +603,39 @@ def factorPR_if_body(n,numsteps,i,additive,g):
         )
     return n,numsteps,i,additive,g
 
+####################-- helper function --################
 
+@tf.function
+def legendre(a, p):
+    return pow(a, (p - 1) // 2, p)
 
-####################-- factors function --################
-
-"""This function has a bug, I can't fix it, if you know, please tell me.
-    Now I knew the error is at step 'facts.append(i)'
-"""
-def factorss(n):
-    i = 2
-    facts = tf.tuple([-1])
-    facts.pop(0)
-    i,n,facts = tf.while_loop(
-        lambda i,n,factars: tf.math.less_equal(tf.math.multiply(i,i),n),
-        factors_while_body,
-        [i,n,facts]
-    )
-    print(i, n)
-    print(facts)
-    i, n, facts = tf.cond(tf.math.greater(n,1), lambda:facts_cond_body(i,n,facts),lambda:(i,n,facts))
-    return facts
-def factors_while_body(i,n,facts):
-    print("123")
-    i,n,facts = tf.cond(
-        tf.math.greater_equal(tf.math.floormod(n,i),1), 
-        lambda:(tf.math.add(i,1),n,facts),
-        lambda:while_cond_body(i,n,facts)
-        )
-    
-    return i,n,facts
-
-def while_cond_body(i,n,facts):
-    print("ssssss",facts)
-    print(facts)
-    facts = tf.concat([facts,[i]],-1)
-    
-    
-    print("ggg",facts)
-    n = tf.math.floordiv(n,i)
-    
-    return i,n,facts
-
-def facts_cond_body(i,n,factors):
-    factors.append(n)
-    facts = tf.stack(facts)
-    print(factors)
-    return i, n, factors
-
-print(factorss(6))
+@tf.function
+def tonelli(n, p):
+    assert legendre(n, p) == 1, "not a square (mod p)"
+    q = p - 1
+    s = 0
+    while q % 2 == 0:
+        q //= 2
+        s += 1
+    if s == 1:
+        return pow(n, (p + 1) // 4, p)
+    for z in range(2, p):
+        if p - 1 == legendre(z, p):
+            break
+    c = pow(z, q, p)
+    r = pow(n, (q + 1) // 2, p)
+    t = pow(n, q, p)
+    m = s
+    t2 = 0
+    while (t - 1) % p != 0:
+        t2 = (t * t) % p
+        for i in range(1, m):
+            if (t2 - 1) % p == 0:
+                break
+            t2 = (t2 * t2) % p
+        b = pow(c, 1 << (m - i - 1), p)
+        r = (r * b) % p
+        c = (b * b) % p
+        t = (t * c) % p
+        m = i
+    return r
