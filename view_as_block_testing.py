@@ -7,17 +7,15 @@ Created on Sun Oct 13 18:08:45 2019
 """
 
 import os 
-os.chdir('/Users/khadekirti/Desktop/Pattern Recognistion/Project')
+os.chdir('/Users/khadekirti/Desktop/PRP/PatternFlow')
  
 import tensorflow as tf
 import numpy as np 
 from view_as_blocks import view_as_blocks
 
 
-sess = tf.InteractiveSession()  
 
 A = np.arange(4*4*6).reshape(4,4,6)  
-A = tf.convert_to_tensor(A)
 
 # Try first normal test  
 test1 = view_as_blocks(A,(1, 2, 2)) 
