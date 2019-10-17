@@ -40,8 +40,8 @@ This is example code, that can be found in the driver script.
 Original Image
 ![orinal image](https://github.com/ethanphan3993/PatternFlow/blob/topic-algorithms/exposure/source/dog1.jpg)
 
-Gray Scale Image
-![grey image]()
+Grey Scale Image
+![grey image](https://github.com/ethanphan3993/PatternFlow/blob/topic-algorithms/exposure/source/original_grey.jpg)
 
 Equalised Histogram
 ![etf image](https://github.com/ethanphan3993/PatternFlow/blob/topic-algorithms/exposure/source/etf_dog.jpg)
