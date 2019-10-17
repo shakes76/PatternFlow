@@ -1,5 +1,4 @@
 # Test Sigmoid Correction according to the original adjust_sigmoid function result
-# It should pop an error if the array is not equal.
 # =======================
 import numpy as np
 
