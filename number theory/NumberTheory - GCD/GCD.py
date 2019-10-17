@@ -12,7 +12,6 @@ class GCD:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             result = sess.run(loop)
-            print(type(result[1]))
             self.gcd = result[1]
             
             print('Greatest Common Divisior of', a, ' and ', b, ' is: ', self.gcd)
@@ -27,5 +26,3 @@ class GCD:
         b = temp
         return a, b
     
-    def getGCD(self):
-        return self.gcd
