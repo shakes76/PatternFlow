@@ -20,6 +20,9 @@ def Sobel(image):
 	Square root of the squares of the horizontal and vertical edges are taken
 	to get a magnitude i.e. somewhat insensitive to direction.
 
+	The Sobel function expects a 2-D image, so if you give images with more than 1 channel it will not gonna work.
+	If you have more than 1 channel image, first convert it to 1 channel or grayscale image.
+
 
 	"""
 
