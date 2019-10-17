@@ -5,13 +5,13 @@ The L0 Norm Gradient Smoothing algorithm takes images to produce a smoother vers
 ## How it works 
 L0 gradient smoothing is applied to an input signal (or image in this module) to control non-zero gradients by reducing signal noise by minimizing small gradients and preserving important signal features by retaining larger gradients. 
 
-The λ parameter in the algorithm equation 
+The following equation is the objective function for the algorithm: 
 
-F = minimise(S)||S − I||² + λ||∇S||ₒ
+`F = minimise(S)||S − I||² + λ||∇S||ₒ`
 
-where ||.||² denotes the L2 norm and ||.||ₒ indicates the L0 norm and λ controls the level of coarseness of the signal, where a larger λ produces a less distinguished image. 
+where `||.||²` denotes the L2 norm and `||.||ₒ` indicates the L0 norm and `λ` controls the level of coarseness of the signal, where a larger `λ` produces a less distinguished image. 
 
-This can be seen below with varying values for λ:
+This can be seen below with varying values for `λ`:
 
 ![Dahlia_output](example/0_dahlia_out_l0.5.png) 
 ![Dahlia_output](example/1_dahlia_out_l0.2.png) 
@@ -22,7 +22,7 @@ This can be seen below with varying values for λ:
 ![Dahlia_output](example/6_dahlia_out_l0.0025.png)
 ![Dahlia_output](example/7_dahlia_out_l0.0002.png)
 
-From left to right, top to bottom `λ = 0.5, 0.2, 0.1, 0.05, 0.02, 0.002, 0.0025, 0.0002` respectivetely. 
+From left to right, top to bottom `λ = 0.5, 0.2, 0.1, 0.05, 0.02, 0.002, 0.0025, 0.0002` respectively. Note how the dahlia becomes more an more refined as the value of `λ` becomes smaller. 
 
 # Usage 
 ## Dependencies 
