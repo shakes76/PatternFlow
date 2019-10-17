@@ -1,3 +1,15 @@
 To Do/ questions and bugs
 - how to init and fill values inside function with tf.session.run??
-- how to multiply two matrices to get 2D kernel?
+- fix make_gaussian_kernel so it works for all sizes!
+- create convolving function
+    - build model?
+    
+# From lab 2
+from keras.layers import Dense, Activation, Conv2D, Flatten
+
+# Create model
+model = Sequential()
+
+# Adding model layers
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(50,37,1)))
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu'))

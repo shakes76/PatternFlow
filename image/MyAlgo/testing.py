@@ -28,22 +28,22 @@ import tensorflow as tf
 # or more invocations of tf.matmul() (although in some special cases
 # tf.einsum() can reduce to the simpler elementwise tf.multiply())
 # ---------------------------------------------------------------------
-#EXAMPLE EINSUM
-u = tf.ones(4, tf.int32)
-w = tf.einsum('i,j->ij', u, u)
-tf.math.reduce_sum(
-    input_tensor,
-    axis=None,
-    keepdims=False,
-    name=None
-)
-
-sess = tf.Session()
-sess.run(tf.global_variables_initializer())
-
-u = sess.run(u)
-w = sess.run(w)
-
-print("u.shape: ", u.shape)
-print("w.shape: ", w.shape)
-
+# EXAMPLE EINSUM
+#u = tf.ones(4, tf.int32)
+#w = tf.einsum('i,j->ij', u, u)
+#tf.math.reduce_sum(
+#    input_tensor,
+#    axis=None,
+#    keepdims=False,
+#    name=None
+#)
+#
+#sess = tf.Session()
+#sess.run(tf.global_variables_initializer())
+#
+#u = sess.run(u)
+#w = sess.run(w)
+#
+#print("u.shape: ", u.shape)
+#print("w.shape: ", w.shape)
+# ---------------------------------------------------------------------

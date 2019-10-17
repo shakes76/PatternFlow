@@ -7,9 +7,12 @@
     # done!
     # add multiple dim if time
 import tensorflow as tf
+from keras.layers import Conv2D
 
 def make_gaussian_kernel(mean, std):
-    """Returns a 2D Gaussian kernel"""
+    """
+    Returns a 2D Gaussian kernel
+    """
     #create normal distribution
     mean = float(mean)
     std = float(std)
@@ -32,22 +35,25 @@ def make_gaussian_kernel(mean, std):
     # syntax: einsum('i,j->ij', u, v)  # output[i,j] = u[i]*v[j]
     matrix = tf.einsum('i,j -> ij', values, values )
     
-    summm = 0
-    #normalize
-    for i in matrix:
-        if i < 3:
-            print("Inside for loop, i: ", i)
+    # normalizing
+    sum_of_matrix = tf.math.reduce_sum(matrix, axis=None, keepdims=False, name=None)
+    gaussian_kernel = matrix/sum_of_matrix
+    
     # Printing
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
     value_range = sess.run(value_range)
     values= sess.run(values)
     matrix = sess.run(matrix)
+    gaussian_kernel = sess.run(gaussian_kernel)
+    
     print(values.shape)
-    print(matrix.shape)
-    return
+    print(gaussian_kernel)
+    return gaussian_kernel
 
 # test run
 m = 10
 s = 2
 make_gaussian_kernel(m, s)
+
+
