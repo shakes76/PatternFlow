@@ -7,13 +7,20 @@ Created on Wed Oct 16 15:13:49 2019
 """
 
 import tensorflow as tf
-import numpy as np #only use to read 
-
-
 
 
 def tf_histogram(image, nbins = 256):
-
+    """
+    -----------------
+    input: image array
+            nbins: optional, 256 by default
+            
+    ------------------
+    return: a tensor
+    """
+    
+    
+    
     """
     # Read the image file, this has approved by the the course coordinator
     np_im = np.array(Image.open(image_file), dtype='float32')
@@ -24,13 +31,29 @@ def tf_histogram(image, nbins = 256):
     
     #For this method we always flatten the image  
     
-    """
-    sh = image.shape
-    if len(sh == 3) and sh[-1] < 4: 
-        print("his might be a color image. The histogram will be "
-             "computed on the flattened image. You can instead "
-             "apply this function to each color channel.")
-    """
     
-    return 
+    return histogram
+
+    
+def tf_cummulative_distribution(image, nbins = 256): 
+    """
+    ---------------
+    input:  image - array
+            nbins - optional, 256 by default
+            
+            
+    ---------------
+    return: tensor
+    
+    """
+    histogram = tf_histogram(image, nbins)
+    cummulative_distribution = tf.cumsum(histogram)
+    
+    
+    
+    
+    return cummulative_distribution[tf.reduce_min(tf.where(tf.greater(cummulative_distribution, 0)))]
+
+
+
 
