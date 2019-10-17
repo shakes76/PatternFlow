@@ -55,25 +55,34 @@ def make_gaussian_kernel(mean, std, size):
     return gaussian_kernel
 
 # test run
-m = 10
-s = 2
-size = 10
-gaussian = make_gaussian_kernel(m, s, size)
+#m = 10
+#s = 2
+#size = 10
+#gaussian = make_gaussian_kernel(m, s, size)
 
 
 def convolve(img, kernel):
     """
     Returns image convolved with a gaussian kernel.
     """
+    print("Running convolve")
+    
 #   x = tf.expand_dims(w, 2)
 #   x = tf.expand_dims(x, 3)
     kernel_3D = tf.expand_dims(kernel, 2)
     kernel_4D = tf.expand_dims(kernel_3D, 3)
+    img_4D = tf.expand_dims(img, 3)
+    
+#    print("kernel_4D.shape: ", kernel_4D.shape)
+#    print("img_4D.shape: ", img_4D.shape)
+    
     strides = [1,1,1,1] #list of ints
     #tf.nn.conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None, name=None)
 #   filter must be A 4-D tensor of shape [filter_height, filter_width, in_channels, out_channels]!!
     
-    convolved = tf.nn.conv2d(img, kernel_4D, strides, padding = 'SAME', data_format='NHWC', dilations=None, name=None)
+    convolved = tf.nn.conv2d(img_4D, kernel_4D, strides, padding = 'SAME', data_format='NHWC')
+    print("Done convolving")
+    
     return convolved
 
 
