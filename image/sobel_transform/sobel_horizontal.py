@@ -13,17 +13,17 @@ Original file is located at
 import tensorflow as tf
 
 def sobel_horizontal(image):
-  #Kernel weights as a 2D array. 
+  #Kernel weights  
   kernel_h = [[1,2,1], [0,0,0], [-1,-2,-1]]
 
   input_tensor = tf.convert_to_tensor(image, dtype=tf.float32)
   image_processed = tf.expand_dims(tf.expand_dims(input_tensor, 0), 3)
 
-  with tf.name_scope('convolution'):
+  with tf.name_scope('convolution'):    #Convolution of the kernel onto the image
       conv_h = tf.constant(kernel_h, dtype=tf.float32, shape=(3, 3, 1, 1))
       filtered_h = tf.nn.conv2d(input=image_processed, filter=conv_h, strides=[1, 1, 1, 1], padding='SAME')
 
-  with tf.Session() as sess:
+  with tf.Session() as sess:    #Activating the tensorflow session
       result_h = sess.run(filtered_h)
       
   return result_h
