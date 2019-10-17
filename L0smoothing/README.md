@@ -22,8 +22,9 @@ The script may be run through commandline as such:
 python3 L0_gradient_smoothing_tf.py -d dahlia.png -o out.png  -l 2e-3 -k 2.0 -b 10000
 ```
 
-Below is the input `dahlia.png` for the example usage (left) and the output of the L0 Norm Gradient Smoothing algorithm: 
-![Dahlia](dahlia.png) ![Dahlia_output](dahlia_out.png)
+Below is the input `dahlia.png` for the example usage (left) and the output of the L0 Norm Gradient Smoothing algorithm (right): 
+
+![Dahlia](dahlia_smol.png)  ![Dahlia_output](dahlia_out_smol.png)
 
 Otherwise, the method `l0_calc` takes in a numpy array of the loaded image to compute the smoothed image output array, as well as the relevant parameters: 
 
