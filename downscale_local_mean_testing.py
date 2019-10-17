@@ -9,18 +9,14 @@ Created on Sun Oct 13 18:24:54 2019
 import os 
 os.chdir('/Users/khadekirti/Desktop/PRP/PatternFlow')
  
-
-import numpy as np
-import tensorflow as tf 
+import numpy as np 
 from downscale_local_mean import downscale_local_mean 
  
 
-sess = tf.InteractiveSession()  
 image = np.arange(15).reshape(3, 5)
 
 
-
-# Try first normal test  
+# First - normal test, as per example  
 test1 =  downscale_local_mean(image,  (2,3) ,cval = 0)
 
 # Second - if the factor is negative 
@@ -37,23 +33,24 @@ except (ValueError):
     print("ValueError")     
     
     
-
 # Forth - if the block shape not divisible
 test4  =  downscale_local_mean(image,(10,2)) 
 
     
-    
-
 # Fifth - if the block shape not tuple
 try: 
     test5 = downscale_local_mean(image,[2,3]) 
 except (TypeError): 
     print("ValueError")      
     
+ 
+# Sixth - change the cval
+test6 =  downscale_local_mean(image,  (2,3) ,cval = 2)
+      
 
-# Sixth - if inpiut not tensorflow 
+# seveth - large image 
 image = np.arange(200).reshape(2, 2,5,10)
-test6  =  downscale_local_mean(image,(2,3,2,2)) 
+test7  =  downscale_local_mean(image,(2,3,2,2)) 
 
     
 
