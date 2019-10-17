@@ -6,14 +6,12 @@ Created on Sun Oct 13 18:24:54 2019
 @author: khadekirti
 """
 
-import os 
-os.chdir('/Users/khadekirti/Desktop/PRP/PatternFlow')
- 
 import numpy as np 
 from downscale_local_mean import downscale_local_mean 
  
 
 image = np.arange(15).reshape(3, 5)
+downscale_local_mean(a, (2, 3)) 
 
 
 # First - normal test, as per example  
