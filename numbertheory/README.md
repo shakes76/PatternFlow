@@ -1,5 +1,5 @@
 # Number Theoretic Functions implemented in Tensorflow
-### COMP3170 Pattern Recognition and Analysis (Final Project)
+##### COMP3170 Pattern Recognition and Analysis (Final Project)
 
 numbthy\_tf.py module requires tensorflow 2.0 to run
 
@@ -18,8 +18,9 @@ Whereas, this module uses the same algorithmns, but in tensorflow version of the
 this module, users are required to import tensorflow and run a session in it. 
 
 E.g.
-```pythonscript
+```python
 import tensorflow as tf
+import numbthy_tf as nm
 
 sess = tf.InteractiveSession()
 
@@ -27,6 +28,6 @@ tf.global_variable_initializer().run()
 
 integer_1 = tf.constant(123)
 integer_2 = tf.constant(24)
-result = gcd(integer_1, integer_2)
+result = nm.gcd(integer_1, integer_2)
 print(result.eval())    #it will print 3
 ```
