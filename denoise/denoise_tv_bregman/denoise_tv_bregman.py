@@ -23,15 +23,15 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3):
         image (torch.Tensor):
             Input data to be denoised.
         weight (float):
-            Denoising weight. The smaller the `weight`, the more denoising (at
-            the expense of less similarity to the `input`).
+            Denoising weight. The smaller the 'weight', the more denoising (at
+            the expense of less similarity to the 'input').
+        max_iter (int):
+            Optional
+            Maximal number of iterations used for the optimization.
         eps (float):
             Optional
             The threshold of distance between denoised image in iterations
             The algorithm stops when image distance is smaller than eps
-        max_iter (int):
-            Optional
-            Maximal number of iterations used for the optimization.
 
     Returns:
         out (torch.Tensor): denoised image
@@ -46,7 +46,7 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3):
     dims = img_shape[2]
     total = rows * cols * dims
     shape_extend = (rows2, cols2, dims)
-    # out is zeros-like tensor with size as shape_extend
+    # out is firstly created as zeros-like tensor with size as shape_extend
     out = torch.zeros(shape_extend, dtype=torch.float)
 
     dx = out.clone().detach()
@@ -66,7 +66,7 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3):
     i = 0
     regularization = torch.mul(image, weight)
     # iterative optimization method
-    # the Gauss-Seidel method
+    # split-Bregman iteration
     while i < max_iter and rmse > eps:
         uprev = out[1:-1, 1:-1, :]
 
@@ -126,8 +126,8 @@ def atleast_3d(image):
             input image
 
     Return:
-        image :
-            image that at least 3 dimensions
+        image (torch.Tensor):
+            image that has at least 3 dimensions
     """
     dim = list(image.shape)
 
