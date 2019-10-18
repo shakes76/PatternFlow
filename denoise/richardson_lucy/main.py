@@ -5,6 +5,7 @@ if __name__ == "__main__":
     import tensorflow as tf
     camera = color.rgb2gray(data.camera())
     from scipy.signal import convolve2d
+    import matplotlib.pyplot as plt
 
     psf = np.ones((5, 5)) / 25
     camera = convolve2d(camera, psf, 'same')
@@ -12,4 +13,5 @@ if __name__ == "__main__":
     camera = tf.convert_to_tensor(camera)
     psf = tf.convert_to_tensor(psf)
     deconvolved = rl.richardson_lucy(camera, psf, 5)
-    print(deconvolved)
+    plt.imshow(deconvolved)
+    plt.show()

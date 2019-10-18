@@ -18,6 +18,7 @@ def richardson_lucy(image, psf, iterations=50, clip=True):
     else:
         convolve_method = convolve
 
+    # Calculates the convolution according to the number of times specified in the args
     for _ in range(iterations):
         relative_blur = image / convolve_method(im_deconv, psf, 'same')
         im_deconv *= convolve_method(relative_blur, psf_mirror, 'same')
