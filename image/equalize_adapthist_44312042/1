@@ -94,36 +94,37 @@ def tfhist(image, nbins=12, normalize=False):
     current_min = tf.dtypes.cast(tf.reduce_min(img), tf.float32)
     current_max = tf.dtypes.cast(tf.reduce_max(img), tf.float32)
     
+    target_min = 0
+    target_max = nbins
+
     bins = tf.linspace(current_min, current_max, nbins+1)
+    print((img > 7).eval())
+    #for i in range(nbins):
+    #    less_mask = tf.dtypes.cast(tf.math.less_equal(img, bins[i+1]), tf.float32)
+    #    less_mask = tf.math.multiply(img, less_mask)
+    #    greater_mask = tf.dtypes.cast(tf.math.greater(img, bins[i+1]), tf.float32)
+    #    print(less_mask.eval().sum())
+    #    print(img > 7)
+    #    count = tf.math.count_nonzero(less_mask)
+    #    hist = hist[i].assign(i)
+
+    img = (img - current_min) / (current_max - current_min)
+    img = img * (target_max - target_min) + target_min
+    img = tf.math.round(img)
+    img = tf.dtypes.cast(img, tf.int32)
     
     y, idx, count = tf.unique_with_counts(img)
 
-    for i in range(nbins):
-        if i==nbins-1:
-            mask = (img <= bins[i+1]) 
-            lim = tf.boolean_mask(img, mask)
 
-        else:
-            mask = (img < bins[i+1]) 
-            lim = tf.boolean_mask(img, mask)
-        mask = (lim >= bins[i]) 
-        lim = tf.boolean_mask(img, mask)
+    print(bins.eval())
+    print("count")
+    print(count.eval())
+    #print(y.eval())
 
-        vals = tf.dtypes.cast(mask, tf.int32)
-        count = tf.count_nonzero(vals)
 
-        idx = tf.dtypes.cast(tf.one_hot(i, nbins), tf.int64)  # output: [3 x 3]
-        idx = tf.math.scalar_mul(count, idx)
-        hist = hist + idx
-
-    mids = (bins[:-1] + bins[1:]) / 2
+    #print(img.eval())
+     
     
-    h = hist.eval()
-    bin_centers = mids.eval()
-    sess.close()
-    return h, bin_centers
-
-
     
 
 

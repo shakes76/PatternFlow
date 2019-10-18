@@ -79,9 +79,17 @@ def compare(expected, actual):
 test_image = data.moon()
 expected_result = exposure.equalize_adapthist(test_image, clip_limit=0.03)
 
-plot_comparison(test_image, expected_result, expected_result)
+#plot_comparison(test_image, expected_result, expected_result)
 print(compare(expected_result, expected_result))
-plt.show()
+#plt.show()
+import equalize_adapthist
+
+a, b = equalize_adapthist.histogram(test_image)
+
+equalize_adapthist.tfhist(test_image)
+print(a)
+print(b)
+
 
 # get equalization 
 
