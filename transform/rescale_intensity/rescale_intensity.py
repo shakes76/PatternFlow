@@ -68,7 +68,7 @@ def intensity_range(image,dtype, range_values='image', clip_negative=False):
 
 
 
-def rescale_tf(input_image,in_range='image', out_range='dtype'):
+def rescale_intensity(input_image,in_range='image', out_range='dtype'):
   """
 
   :param input_image(np_array): Input array to be rescaled
@@ -112,9 +112,10 @@ def rescale_tf(input_image,in_range='image', out_range='dtype'):
   image=tf.clip_by_value(input_image,imin,imax,name=None)
   if imin!=imax:
     image=(image-imin)/float(imax-imin)
-  output=(image * (omax - omin) + omin).eval()
-  output=np.array(output,dtype=dtype)
-  InteractiveSession.close()
+
+  output=(image * (omax - omin) + omin)
+  output = tf.cast(output, dtype=str(dtype))
+  output=output.eval()
   sess.close()
   return output
 
