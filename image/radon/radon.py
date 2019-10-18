@@ -64,6 +64,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         width, height = padded_image.shape
         flattened_image = tf.reshape(padded_image, [-1])
         print(coords, coords.shape)
+        print('sparse', tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape)
         print('sparse', tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape))
         rotated = tf.sparse.to_dense(
             tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape)
