@@ -71,42 +71,55 @@ def make_gaussian_kernel(mean, std, size):
 #tensor_reshape = tf.reshape(tensor, [1, 1, tensor.get_shape().as_list()[0],1])
 #print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
 
-def convolve(img, kernel):
+def convolve(img, kernel, rgb = True):
     """
+    img = tensor
     Returns image convolved with a gaussian kernel.
     """
     print("Running convolve")
-    with tf.Graph().as_default():
+    #with tf.Graph().as_default():      
+
+    #if rgb:
+        #num_maps = 3
+    #else:
+        #num_maps = 1
+
     
-        # normalise
-        img = img / 255.0
-      
-        #reshape
-        #print("kernel_4D.shape: ", kernel_4D.shape)
-        #print("img_4D.shape: ", img_4D.shape)
-        kernel_4D = tf.reshape(kernel, [kernel.shape[0], kernel.shape[1], 1 ,1])
-        img_4D = tf.reshape(img, [img.shape[0], img.shape[1], img.shape[2], 1])
-        
-        strides = [1,1,1,1] #list of ints
-        # tf.nn.conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None, name=None)
-        # filter must be A 4-D tensor of shape [filter_height, filter_width, in_channels, out_channels]!!
-        
-        x = tf.placeholder('float32')
-        w = tf.get_variable('w', initializer = tf.to_float(kernel_4D))
-        
-        print("so far, so good")
+    strides = [1,1,1,1] #list of ints
+    print("so far, so good")
+    #x = tf.placeholder('float32', [None, None, None, num_maps])
+    #w = tf.get_variable('w', initializer = tf.to_float(kernel))
+    
+    
+    #print("x.shape: ", x.shape)
+    #print("w.shape: ", w.shape)
+    
+    # Operation 
+    convolved = tf.nn.conv2d(img, kernel, strides = strides, padding = 'SAME')
+    
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+    convolved_op = sess.run(convolved)
+#    x = tf.placeholder('float32', [None, None, None, num_maps])
+#    w = tf.get_variable('w', initializer = tf.to_float(kernel))
+#    
+#    
+#    print("x.shape: ", x.shape)
+#    print("w.shape: ", w.shape)
+#    
+#    # Operation 
+#    convolved = tf.nn.conv2d(x, w, strides = strides, padding = 'SAME')
+#    
+#    sess = tf.Session()
+#    sess.run(tf.global_variables_initializer())
+#    convolved_op = sess.run(convolved, feed_dict={x: img})
+   
   
     
-        #convolved = tf.nn.conv2d(img_4D, kernel_4D, strides, padding = 'SAME', data_format='NHWC')
-        convolved = tf.nn.conv2d(x, w, strides = strides, padding = 'SAME')
-        #init = tf.initialize_all_variables()
-        #with tf.Session() as sess:
-        #    sess.run(init)
-        #    conv_op = sess.run(convolved, feed_dict={x: img_4D})
-    #    
-    #    print("Done convolving")
-#    
-#    return conv_op
+    
+    
+    print("Done convolving")
+    return conv_op
 
 
 

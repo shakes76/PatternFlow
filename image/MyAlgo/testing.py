@@ -105,34 +105,32 @@ import tensorflow as tf
 #dilations: An int or list of ints that has length 1, 2 or 4, defaults to 1. The dilation factor for each dimension ofinput. If a single value is given it is replicated in the H and W dimension. By default the N and C dimensions are set to 1. If set to k > 1, there will be k-1 skipped cells between each filter element on that dimension. The dimension order is determined by the value of data_format, see above for details. Dilations in the batch and depth dimensions if a 4-d tensor must be 1.
 #name: A name for the operation (optional).
 
-u = tf.ones(10, tf.int32)
-w = tf.einsum('i,j->ij', u, u)
-v = w[:,1]
-x = tf.expand_dims(w, 2)
-x = tf.expand_dims(x, 3)
-sess = tf.Session()
-sess.run(tf.global_variables_initializer())
-
-u = sess.run(u)
-v = sess.run(v)
-w = sess.run(w)
-x = sess.run(x)
-
-print("w.shape: ", w.shape)
-print("x.shape: ", x.shape)
-
-
-# expand its dimensionality to fit into conv2d
-tensor_expand = tf.expand_dims(tensor, 0)
-tensor_expand = tf.expand_dims(tensor_expand, 0)
-tensor_expand = tf.expand_dims(tensor_expand, -1)
-print(tensor_expand.get_shape()) # => (1, 1, 100, 1)
-
-# do the same in one line with reshape
-tensor_reshape = tf.reshape(tensor, [1, 1, tensor.get_shape().as_list()[0],1])
-print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
-
-
+#u = tf.ones(10, tf.int32)
+#w = tf.einsum('i,j->ij', u, u)
+#v = w[:,1]
+#x = tf.expand_dims(w, 2)
+#x = tf.expand_dims(x, 3)
+#sess = tf.Session()
+#sess.run(tf.global_variables_initializer())
+#
+#u = sess.run(u)
+#v = sess.run(v)
+#w = sess.run(w)
+#x = sess.run(x)
+#
+#print("w.shape: ", w.shape)
+#print("x.shape: ", x.shape)
+#
+#
+## expand its dimensionality to fit into conv2d
+#tensor_expand = tf.expand_dims(tensor, 0)
+#tensor_expand = tf.expand_dims(tensor_expand, 0)
+#tensor_expand = tf.expand_dims(tensor_expand, -1)
+#print(tensor_expand.get_shape()) # => (1, 1, 100, 1)
+#
+## do the same in one line with reshape
+#tensor_reshape = tf.reshape(tensor, [1, 1, tensor.get_shape().as_list()[0],1])
+#print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
 
 
 
@@ -143,6 +141,12 @@ print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
 
 
 
+rgb = False
+
+if not rgb:
+    print("Entered if statement")
+else:
+    print("Entered else statement")
 
 
 
