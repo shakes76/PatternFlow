@@ -28,4 +28,4 @@ plt.title("Adjusted")
 plt.show()
 ```
 #Comparision
-![Comparision](https://github.com/FaydSpeare/PatternFlow/tree/topic-algorithms/image/adjust_sigmoid/example.jpg)
+![Comparision](example.jpg)
