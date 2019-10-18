@@ -10,10 +10,13 @@ def _match_cumulative_cdf(source, template):
     source_flatten = tf.reshape(source,[-1])
     template_flatten = tf.reshape(template,[-1])
     #convert type to int 64
-    source_flatten = tf.constant(source_flatten ,dtype =tf.int64)
-    template_flatten = tf.constant(template_flatten ,dtype =tf.int64)
+    source_flatten1 = tf.cast(source_flatten ,dtype =tf.int64)
+    source_flatten1 = tf.sort(source_flatten1)
+    template_flatten = tf.cast(template_flatten ,dtype =tf.int64)
+    template_flatten = tf.sort(template_flatten)
 
-    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten)
+    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten)1
+    src_indice = unique(source_flatten)
     tmpl_values, tmpl_counts = tf.unique_with_counts(template_flatten)
 
     # change to tensor 
@@ -45,6 +48,7 @@ def  interpolate( dx, dy, x, name='interpolate' ):
         result = tf.multiply(value[0], 1, name='y')
 
     return result
+
 
 def match_histograms(image, reference, *, multichannel=False):
     """Adjust an image so that its cumulative histogram matches that of another.
