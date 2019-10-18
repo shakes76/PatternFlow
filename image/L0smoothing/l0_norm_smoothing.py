@@ -1,5 +1,8 @@
 # L0 Gradient Image Norm Algorithm
-
+#
+# author: naziah siddique (44315203)
+#
+# References:
 # [1]   Xu, L., Lu, C., Xu, Y., & Jia, J. (2011, December).
 #       Image smoothing via L 0 gradient minimization.
 #       In ACM Transactions on Graphics (TOG) (Vol. 30, No. 6, p. 174). ACM.

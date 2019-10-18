@@ -1,5 +1,6 @@
 # Chosen algorithm: L0 norm smoothing of images
-# author: naziah siddique 
+#
+# author: naziah siddique (44315203)
 
 from PIL import Image
 import tensorflow as tf 
