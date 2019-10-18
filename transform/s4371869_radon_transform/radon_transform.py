@@ -11,12 +11,47 @@ References:
 __author__ = "Ting-Chen Shang"
 __email__ = "tingchen.shang@uq.net.au"
 
-# __all__ = ['radon']
-
 import math
 import tensorflow as tf
 
 from warnings import warn
+
+def _convert_to_float(image, preserve_range):
+    """Convert input image to float image with the appropriate range.
+
+    Parameters
+    ----------
+    image : ndarray
+        Input image.
+    preserve_range : bool
+        Determines if the range of the image should be kept or transformed
+        using img_as_float. Also see
+        https://scikit-image.org/docs/dev/user_guide/data_types.html
+
+    Notes:
+    ------
+    * Input images with `float32` data type are not upcast.
+
+    Returns
+    -------
+    image : ndarray
+        Transformed version of the input.
+
+    """
+    if preserve_range:
+        # Convert image to double only if it is not single or double
+        # precision float
+        if image.dtype.char not in 'df':
+            image = tf.convert_to_tensor(image, dtype=tf.float32)
+        else:
+            image = tf.convert_to_tensor(image, dtype=tf.float64)
+    else:
+        image = tf.convert_to_tensor(image, dtype=tf.float64)
+        maxv = tf.reduce_max(image)
+        if maxv >= 1.0:
+            image /= maxv
+
+    return image
 
 def _coord_map(dim, coord, mode):
     """Wrap a coordinate, according to a given mode.
@@ -90,12 +125,13 @@ def _get_pixel2d_tf(image, rows, cols, r, c, mode, cval):
     """
     if mode == 'C':
         if (r < 0) or (r >= rows) or (c < 0) or (c >= cols):
-            return cval
+            return tf.constant(cval)
         else:
-            return image[tf.cast(r * cols + c, tf.int32)]
+            return image[r, c]
     else:
-        return image[tf.cast(_coord_map(rows, r, mode) * cols \
-                     + _coord_map(cols, c, mode), tf.int32)]
+        r_ = _coord_map(rows, r, mode)
+        c_ = _coord_map(cols, c, mode)
+        return image[r_, c_]
 
 def _transform_metric(x, y, H):
     """Apply a metric transformation to a coordinate.
@@ -174,8 +210,8 @@ def _nearest_neighbour_interpolation_tf(image, rows, cols, r, c, mode, cval):
         Interpolated value.
 
     """
-    return _get_pixel2d_tf(image, rows, cols, tf.math.round(r), tf.math.round(c),
-                       mode, cval)
+    return _get_pixel2d_tf(image, rows, cols, math.round(r), math.round(c),
+                           mode, cval)
 
 def _bilinear_interpolation_tf(image, rows, cols, r, c, mode, cval):
     """Bilinear interpolation at a given position in the image.
@@ -199,10 +235,10 @@ def _bilinear_interpolation_tf(image, rows, cols, r, c, mode, cval):
         Interpolated value.
 
     """
-    minr = tf.math.floor(r)
-    minc = tf.math.floor(c)
-    maxr = tf.math.ceil(r)
-    maxc = tf.math.ceil(c)
+    minr = math.floor(r)
+    minc = math.floor(c)
+    maxr = math.ceil(r)
+    maxc = math.ceil(c)
     dr = r - minr
     dc = c - minc
 
@@ -280,15 +316,15 @@ def _bicubic_interpolation_tf(image, rows, cols, r, c, mode, cval):
     r0 -= 1
     c0 -= 1
     
-    fc = [None] * 4
-    fr = [None] * 4
+    fr = []
 
     # row-wise cubic interpolation
     for pr in range(4):
+        fc = []
         for pc in range(4):
-            fc[pc] = _get_pixel2d_tf(image, rows, cols, pr + r0,
-                                     pc + c0, mode, cval)
-        fr[pr] = _cubic_interpolation(xc, tf.convert_to_tensor(fc))
+            fc.append(_get_pixel2d_tf(image, rows, cols, pr + r0,
+                                      pc + c0, mode, cval))
+        fr.append(_cubic_interpolation(xc, fc))
 
     return _cubic_interpolation(xr, tf.convert_to_tensor(fr))
 
@@ -343,9 +379,8 @@ def _warp_fast_tf(image, H, output_shape=None, order=1, mode='constant', cval=0)
     would be [0, 1, 2, 1, 0, 1, 2].
 
     """
-    M = tf.reshape(H, (-1,))
-
-    dtype = tf.int32 if image.dtype == tf.int32 else tf.int64
+    img = image.numpy()
+    M = tf.reshape(H, (-1,)).numpy()
 
     if mode not in ('constant', 'wrap', 'symmetric', 'reflect', 'edge'):
         raise ValueError("Invalid mode specified.  Please use `constant`, "
@@ -353,13 +388,14 @@ def _warp_fast_tf(image, H, output_shape=None, order=1, mode='constant', cval=0)
     mode_c = mode[0].upper()
 
     if output_shape is None:
-        out_r = int(image.shape[0])
-        out_c = int(image.shape[1])
+        out_r = image.shape[0]
+        out_c = image.shape[1]
     else:
-        out_r = int(output_shape[0])
-        out_c = int(output_shape[1])
+        out_r = output_shape[0]
+        out_c = output_shape[1]
 
-    out = tf.zeros((out_r, out_c), dtype=dtype)
+    # out = tf.zeros((out_r, out_c), dtype=dtype)
+    out = [[None] * out_c] * out_r
 
     rows = image.shape[0]
     cols = image.shape[1]
@@ -383,12 +419,15 @@ def _warp_fast_tf(image, H, output_shape=None, order=1, mode='constant', cval=0)
     else:
         raise ValueError("Unsupported interpolation order", order)
 
+    out = []
     for tfr in range(out_r):
+        col = []
         for tfc in range(out_c):
             c, r = transform_func(tfc, tfr, M)
-            out[tfr, tfc] = interp_func(image, rows, cols, r, c, mode_c, cval)
+            col.append(interp_func(img, rows, cols, r, c, mode_c, cval))
+        out.append(col)
 
-    return out
+    return tf.convert_to_tensor(out, dtype=image.dtype)
 
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
@@ -458,12 +497,14 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
              'you want to preserve the range of your image '
              '(preserve_range=True). In scikit-image 0.18 this behavior will '
              'change to preserve_range=False. To avoid this warning, '
-             'explictiely specify the preserve_range parameter.',
+             'explicitly specify the preserve_range parameter.',
              stacklevel=2)
         preserve_range = True
 
-    image = tf.convert_to_tensor(image, dtype=image.dtype)
-    img_shape = tf.convert_to_tensor(image.shape, dtype=tf.int32)
+    dtype = tf.float32 if image.dtype.char in 'lf' else tf.float64
+    image = tf.convert_to_tensor(_convert_to_float(image, preserve_range),
+                                 dtype=dtype)
+    img_shape = image.shape
 
     if circle:
         shape_min = tf.reduce_min(img_shape)
@@ -475,7 +516,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
             warn('Radon transform: image must be zero outside the '
                  'reconstruction circle')
         # Crop image to make it square
-        slices = tuple(slice(tf.cast(tf.math.ceil(excess / 2), tf.int32),
+        slices = tuple(slice(tf.cast(tf.math.ceil(excess / 2), dtype),
                              tf.cast(tf.math.ceil(excess / 2), tf.int32) \
                                     + shape_min)
                        if excess > 0 else slice(None)
@@ -483,17 +524,16 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         padded_image = image[slices]
     else:
         diagonal = tf.math.sqrt(2.0) \
-            * tf.cast(tf.reduce_max(img_shape), tf.float32)
+            * tf.cast(tf.reduce_max(img_shape), dtype)
         pad_fn = lambda s: \
-            tf.cast(tf.math.ceil(diagonal - tf.cast(s, tf.float32)), tf.int32)
+            tf.cast(tf.math.ceil(diagonal - tf.cast(s, dtype)), tf.int32)
         pad = tf.map_fn(pad_fn, image.shape)
         new_center = tf.map_fn(lambda z: tf.math.reduce_sum(z) // 2,
             tf.stack([image.shape, pad], axis=1))   # stack on axis 1 is zip
         old_center = tf.map_fn(lambda s: s // 2, image.shape)
         pad_before = tf.map_fn(lambda cs: tf.reduce_sum(cs),
             tf.stack([-old_center, new_center], axis=1))
-        pad_width_fn = lambda ps: tf.convert_to_tensor((ps[0], ps[1] - ps[0]))
-        pad_width = tf.map_fn(pad_width_fn,
+        pad_width = tf.map_fn(lambda ps: (ps[0], ps[1] - ps[0]),
             tf.stack([pad_before, pad], axis=1))
         padded_image = tf.pad(image, pad_width, mode='constant',
                               constant_values=0)
@@ -502,17 +542,21 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     if padded_image.shape[0] != padded_image.shape[1]:
         raise ValueError('padded_image must be a square')
     center = padded_image.shape[0] // 2
-    radon_image = tf.zeros((padded_image.shape[0], len(theta)))
+    cols = []
 
     for i, angle in enumerate(theta):
-        _angle = tf.cast(angle, tf.float32)
+
+        _angle = tf.cast(angle, image.dtype)
         cos_a, sin_a = tf.math.cos(_angle), tf.math.sin(_angle)
-        R = tf.convert_to_tensor([
+        R = tf.stack([
             [cos_a, sin_a, -center * (cos_a + sin_a - 1)],
             [-sin_a, cos_a, -center * (cos_a - sin_a - 1)],
             [0, 0, 1]
         ])
         rotated = _warp_fast_tf(padded_image, R)
-        radon[:, i] = tf.reduce_sum(rotated, axis=0)
+        cols.append(tf.reduce_sum(rotated, axis=0))
+
+    radon_image = tf.stack(cols, axis=1).numpy()
+
     return radon_image
 
