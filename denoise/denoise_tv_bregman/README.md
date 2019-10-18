@@ -10,13 +10,13 @@ Total-variation denoising is a process, most often used in digital image process
 
 Total-variation denoising is proposed to estimate the denoised image $u$ as the solution to the following minimise optimisation problem
 
-![](http://latex.codecogs.com/gif.latex?\underset{u}{\operatorname{argmin}} ||u|| + \frac {\lambda} {2} \int (f(x) - u(x))^2 dx)
+$$\underset{u}{\operatorname{argmin}} ||u|| + \frac {\lambda} {2} \int (f(x) - u(x))^2 dx$$
 
-, where \lambda is a positive parameter and f is the noisy image.
+, where $\lambda$ is a positive parameter and f is the noisy image.
 
 The objective function is designed to minimise the total variation of the denoised image while keeping the differnece between denoised image and noisy image small, making the denoised image more alike the noisy image.
 
-The split-Bregman method is a optimisation technique for solving non-differentiable convex minimization problems, and it is especially efficient for problems with L1 or TV regularization. 
+The split-Bregman method is a optimisation technique for solving non-differentiable convex minimization problems, and it is especially efficient for problems with L1 or TV regularization.
 
 
 # Dependencies
