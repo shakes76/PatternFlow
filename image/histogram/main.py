@@ -20,3 +20,14 @@ def image_histogram(IMAGE_PATH):
   fd = {image_placeholder:image_array}
   count = S.run(count,feed_dict = fd)
   int_list = []
+  for i in range(0,len(count)):
+    int_list.append(i)
+    
+    
+  plt.bar(int_list,count)
+  plt.xlabel('image_intensities')
+  plt.ylabel('intensity-frequencies')
+  plt.show()
+
+  
+image_histogram('./lighthouse.jpg')
