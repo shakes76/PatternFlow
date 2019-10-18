@@ -7,7 +7,6 @@ def prewitt_filter(image):
     horizontal = tf.constant([[1,1,1],[0,0,0],[-1,-1,-1]],dtype=tf.float32)
     horizontal = tf.reshape(horizontal,[3,3,1,1])
 
-    print(tf.shape(image)[0])
     expand_img = tf.reshape(image,[1,tf.shape(image)[0],tf.shape(image)[1],1])
     v_grad = tf.nn.conv2d(expand_img,vertical, strides=[1,1,1,1], padding="SAME")
     h_grad = tf.nn.conv2d(expand_img,horizontal, strides=[1,1,1,1], padding="SAME")
