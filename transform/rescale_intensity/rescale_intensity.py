@@ -3,7 +3,7 @@ import tensorflow as tf
 
 
 
-#Building the dictionary of supported data types and the range they supported by each type
+#Building the dictionary of supported data types and the range supported by each type
 
 
 DTYPE_RANGE =  {'bool': (False, True),
