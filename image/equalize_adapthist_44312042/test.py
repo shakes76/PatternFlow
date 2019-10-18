@@ -43,44 +43,45 @@ def plot_img_and_hist(image, axes, bins=256):
 
     return ax_img, ax_hist, ax_cdf
 
+def plot_comparison(image, expected, actual):
+    fig = plt.figure(figsize=(8, 5))
+    axes = np.zeros((2, 3), dtype=np.object)
+    axes[0, 0] = fig.add_subplot(2, 3, 1)
+    for i in range(1, 3):
+        axes[0, i] = fig.add_subplot(2, 3, 1+i, sharex=axes[0,0], sharey=axes[0,0])
+    for i in range(0, 3):
+        axes[1, i] = fig.add_subplot(2, 3, 4+i)
+
+    ax_img, ax_hist, ax_cdf = plot_img_and_hist(image, axes[:, 0])
+    ax_img.set_title('Original Image')
+
+    y_min, y_max = ax_hist.get_ylim()
+    ax_hist.set_ylabel('Number of pixels')
+    ax_hist.set_yticks(np.linspace(0, y_max, 5))
+
+    ax_img, ax_hist, ax_cdf = plot_img_and_hist(expected, axes[:, 1])
+    ax_img.set_title('Skimage CLAHE')
+
+    ax_img, ax_hist, ax_cdf = plot_img_and_hist(actual, axes[:, 2])
+    ax_img.set_title('Tensorflow CLAHE')
+
+    ax_cdf.set_ylabel('Fraction of total intensity')
+    ax_cdf.set_yticks(np.linspace(0, 1, 5))
+
+    # prevent overlap of y-axis labels
+    fig.tight_layout()
+
+
+def compare(expected, actual):
+    return (expected==actual).all()
+    
 # Load an image to use for testing
 test_image = data.moon()
 expected_result = exposure.equalize_adapthist(test_image, clip_limit=0.03)
 
-fig = plt.figure(figsize=(8, 5))
-axes = np.zeros((2, 3), dtype=np.object)
-axes[0, 0] = fig.add_subplot(2, 3, 1)
-for i in range(1, 3):
-    axes[0, i] = fig.add_subplot(2, 3, 1+i, sharex=axes[0,0], sharey=axes[0,0])
-for i in range(0, 3):
-    axes[1, i] = fig.add_subplot(2, 3, 4+i)
-
-ax_img, ax_hist, ax_cdf = plot_img_and_hist(test_image, axes[:, 0])
-ax_img.set_title('Original Image')
-
-y_min, y_max = ax_hist.get_ylim()
-ax_hist.set_ylabel('Number of pixels')
-ax_hist.set_yticks(np.linspace(0, y_max, 5))
-
-ax_img, ax_hist, ax_cdf = plot_img_and_hist(expected_result, axes[:, 1])
-ax_img.set_title('Skimage CLAHE')
-
-
-ax_img, ax_hist, ax_cdf = plot_img_and_hist(expected_result, axes[:, 2])
-ax_img.set_title('Tensorflow CLAHE')
-
-ax_cdf.set_ylabel('Fraction of total intensity')
-ax_cdf.set_yticks(np.linspace(0, 1, 5))
-
-
-# prevent overlap of y-axis labels
-fig.tight_layout()
+plot_comparison(test_image, expected_result, expected_result)
+print(compare(expected_result, expected_result))
 plt.show()
 
 # get equalization 
 
-def compare(image, kernel_size, clip_limit, nbins):
-
-    expected_result = exposure.equalize_adapthist(image, kernel_size=kernel_size, clip_limit=clip_limit, nbins=nbins)
-    
-    return 
