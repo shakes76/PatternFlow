@@ -1,6 +1,11 @@
 import tensorflow as tf
+import math
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
+    """
+    Calculates the radon transform of an image given specified
+    projection angles.
+    """
     if circle:
         shape_min = min(image.shape)
         radius = shape_min // 2
@@ -30,3 +35,20 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         pad_width = [(pb, p - pb) for pb, p in zip(pad_before, pad)]
         padded_image = tf.pad(image, pad_width, mode='constant',
             constant_values=0)
+    # padded_image is always square
+    if padded_image.shape[0] != padded_image.shape[1]:
+        raise ValueError('padded_image must be a square')
+    center = padded_image.shape[0] // 2
+    radon_image = np.zeros((padded_image.shape[0], len(theta)))
+
+    for i, angle in enumerate(theta * math.pi / 180):
+        cos_a, sin_a = tf.math.cos(angle), tf.math.sin(angle)
+        R = tf.convert_to_tensor([
+            [[cos_a, sin_a, -center * (cos_a + sin_a - 1)],
+            [-sin_a, cos_a, -center * (cos_a - sin_a - 1)],
+            [0, 0, 1]]
+        ])
+        # TODO: warp. we don't need full warp though, just this specific case
+        rotated = warp(padded_image, R, clip=False)
+        radon_image[:, i] = tf.math.reduce_sum(rotated, 0)
+    return radon_image
