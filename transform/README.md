@@ -1,7 +1,8 @@
 
 # Histogram matching
 
-match_histograms function belongs to skimage.exposure module. 
+Rewrite match_histograms function from skimage.exposure module in Tensorflow.
+Aurthor: Yao
 
 
 ## Description
@@ -31,7 +32,8 @@ ax3.set_title('Matched')
 plt.tight_layout()
 plt.show()
 ```
-
+![example](./Resources/Figure_1.png)
 
 
 ## Dependencies
+Tensorflow verison: 2.0
