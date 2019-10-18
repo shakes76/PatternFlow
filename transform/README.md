@@ -1,14 +1,64 @@
-# Transforms
-Various transforms implemented for Tensorflow
+# Transforms: _**warp_coords**_
+Ported the skimage.transform.warp_coords to Tensorflow
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+**warp_coords(coord_map, shape, dtype=<class 'tensorflow.float64'>)**
 
-## Contributing
-* Fork the dedicated 'topic-algorithms' branch
-* Create a directory for your algorithm and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save results
-* Add a README.md file as described by the report assessment
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your fractal directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+##**Description**
+This function build a source coordinates for the output of a 2-D image warp.
+
+##**Parameters**
+----------
+**coord_map** : callable like GeometricTransform.inverse
+    Return input coordinates for given output coordinates.
+    Coordinates are in the shape (P, 2), where P is the number
+    of coordinates and each element is a ``(row, col)`` pair.
+**shape** : tuple
+    Shape of output image ``(rows, cols[, bands])``.
+**dtype** : tensorflow.dtype or string
+    dtype for return value (sane choices: float32 or float64).
+
+##**Returns**
+-------
+**coords** : (ndim, rows, cols[, bands]) array of dtype `dtype`
+        Coordinates for `scipy.ndimage.map_coordinates`, that will yield
+        an image of shape (orows, ocols, bands) by drawing from source
+        points according to the `coord_transform_fn`.
+
+##**Notes**
+-----
+
+This is a lower-level routine that produces the source coordinates for 2-D
+images used by `warp()`.
+
+It is provided separately from `warp` to give additional flexibility to
+users who would like, for example, to re-use a particular coordinate
+mapping, to use specific dtypes at various points along the the
+image-warping process, or to implement different post-processing logic
+than `warp` performs after the call to `ndi.map_coordinates`.
+
+
+##**Examples**
+--------
+    
+def shift_down10_left20(xy):
+    return xy - np.array([-20, 10])[None, :]
+    
+def test_warp_coords_example():
+    ##
+    image = data.astronaut().astype(np.float32)
+    coords = warp_coords(shift_down10_left20, image.shape, dtype=tf.float32)
+    warped_image = map_coordinates(image, coords)
+    
+    plot_result(image, warped_image)
+        
+    
+def plot_result(original, result):
+    from matplotlib import pyplot as plt
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+    ax = axes.ravel()
+    ax[0].imshow(original)
+    ax[0].set_title("Original image")
+    ax[1].imshow(result)
+    ax[1].set_title("Shifted Image by 20 Left and 10 Down")
+    plt.tight_layout()
+    plt.show()
