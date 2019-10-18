@@ -223,15 +223,10 @@ def power_mod(b,e,n):
 def isprimeF(n, b):
   
   """return true if n is a prime or a Fermat pseudoprime to base b
-  return false otherwise
+  return false otherwise"""
   
-  small numbers can be used but if n and b get too large value
-  overflow may occur the author tried n = 31, b = 3 and
-  it doesn't work as intended"""
-  
-  m = tf.math.pow(b, n-1)
-  result = tf.math.floormod(m, n)
-  return tf.equal(result, 1)
+  m = power_mod(b, n-1, n)
+  return tf.equal(m[0], 1)
 
 #####################################################################################
 ##############################  isprimeE(n)  ########################################
