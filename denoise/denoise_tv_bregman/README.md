@@ -8,11 +8,11 @@ Total-variation denoising is a process, most often used in digital image process
 
 # How it Works
 
-Total-variation denoising is proposed to estimate the denoised image $u$ as the solution to the following minimise optimisation problem
+Total-variation denoising is proposed to estimate the denoised image u as the solution to the following minimise optimisation problem
 
 ![](objective_function.png)
 
-, where \lambda is a positive parameter and f is the noisy image.
+, where lambda is a positive parameter and f is the noisy image.
 
 The objective function is designed to minimise the total variation of the denoised image while keeping the differnece between denoised image and noisy image small, making the denoised image more alike the noisy image.
 
