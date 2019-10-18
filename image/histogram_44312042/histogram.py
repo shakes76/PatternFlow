@@ -12,7 +12,7 @@ import tensorflow as tf
 import numpy as np
 
 
-def histogram(image, nbins=256, normalize=True):
+def histogram(image, nbins=128, normalize=True):
     sess = tf.InteractiveSession()
     
     img = tf.constant(image.astype(np.float32))

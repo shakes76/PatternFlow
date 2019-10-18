@@ -1,9 +1,11 @@
-# Contrast Limited Adaptive Histogram Equalization (CLAHE)
+# Image Histogram
 
-Tensorflow implementation of the sci-kitequalize_adapthist method in the skimage.exposure module
+Tensorflow implementation of the histogra method in the skimage.exposure module
 
-https://github.com/scikit-image/scikit-image/blob/v0.15.0/skimage/color/adapt_rgb.py#L35
 
-http://www.realtimerendering.com/resources/GraphicsGems/
+The hisogram mehod written in tensorflow, bins the image based on nbins and then 
+returns the mids and the distribution.  
+
+
 
 
