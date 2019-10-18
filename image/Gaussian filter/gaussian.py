@@ -38,17 +38,20 @@ def make_gaussian_kernel(mean, sd, size):
     gaussian_kernel = matrix/sum_of_matrix
     return gaussian_kernel
 
-def convolve(img, kernel):
+def convolve(img, m, s, sz):
     """
     Convolves image img with a gaussian kernel specified by kernel. 
     Arguments:
         img:    an image represented by a 4D tensor
         kernel: the gaussian kernel represented as a 4D tensor
     """
+    
+    kernel = make_gaussian_kernel(m, s, sz)
+    kernel_4D = tf.reshape(kernel, [kernel.shape[0], kernel.shape[1], 1 ,1])
     strides = [1,1,1,1]
     
     # Operation 
-    convolved = tf.nn.conv2d(img, kernel, strides = strides, padding = 'SAME')
+    convolved = tf.nn.depthwise_conv2d(img, kernel_4D, strides = strides, padding = 'SAME')
 
     return convolved
 

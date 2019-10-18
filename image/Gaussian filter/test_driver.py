@@ -9,18 +9,17 @@ Created on Fri Oct 18 10:35:55 2019
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian import make_gaussian_kernel, convolve
+from gaussian import convolve
 import tensorflow as tf
 
 tf.enable_eager_execution()
 
 
-def reshape_to_fit_convolve(img, kernel):
+def reshape_image(img):
     """
-    Reshaping the image and the filter kernel to make it compatible with convolve(). 
+    Reshaping the image to make it compatible with convolve(). 
     Arguments:
         img: an image object from the PIL Image module
-        kernel: a 2D tensor
     """
     # saving image object as normalized numpy array
     np_img = np.array(img, dtype='float32') / 255. 
@@ -28,19 +27,18 @@ def reshape_to_fit_convolve(img, kernel):
     tf_img = tf.constant(np_img.astype(np.float32))
     
     # reshaping
+    #img_4D = tf.reshape(tf_img, [1, tf_img.shape[0], tf_img.shape[1], 3])
     img_4D = tf.reshape(tf_img, [tf_img.shape[0], tf_img.shape[1], tf_img.shape[2], 1])
-    kernel_4D = tf.reshape(kernel, [kernel.shape[0], kernel.shape[1], 1 ,1])
-    return img_4D, kernel_4D
+    
+    return img_4D
 
 
 imgage = Image.open('resources/gray_kitten.jpg')
 plt.imshow(imgage)
+img_reshaped = reshape_image(imgage)
 
-gauss_kernel = make_gaussian_kernel(0.0, 0.1, 100)
+c = convolve(img_reshaped, 0.0, 0.2, 10)
 
-img_reshaped, kernel_reshaped = reshape_to_fit_convolve(imgage, gauss_kernel)
-
-c = convolve(img_reshaped, kernel_reshaped)
 c_img = tf.reshape(c, [c.shape[0],c.shape[1], c.shape[2]])
 
 plt.figure()
