@@ -21,13 +21,13 @@ def make_gaussian_kernel_two(mean, sd, size):
     start_pt = - size
     stop_pt = abs(start_pt)
     length = tf.to_int32(abs(start_pt) + stop_pt + 1)
-    value_range = tf.linspace(start_pt, stop_pt, length, name="linspace")
+    value_range = tf.linspace(start_pt, stop_pt, length)
 
     # find values by probability density function
     values = dist.prob(value_range)
     
     # make it 2D -> 2D[i,j] = values[i]*values[j]
-    matrix = tf.einsum('i,j -> ij', values, values )
+    matrix = tf.einsum('i,j -> ij', values, values)
     
     # normalizing
     sum_of_matrix = tf.reduce_sum(matrix)
