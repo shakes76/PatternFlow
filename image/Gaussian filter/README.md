@@ -1,8 +1,7 @@
 # A 2D Gaussian filter function for Tensorflow
 
-This project is an attempt to port the Gaussian filter algorithm from the filtering module of Scikit-Image to Tensorflow. The source code of skimage.filters.gaussian(image[, sigma, …]) can be found here [here](https://github.com/scikit-image/scikit-image/blob/v0.16.1/skimage/filters/_gaussian.py#L12).
+This project is an attempt to port the Gaussian filter algorithm from the [filtering module of Scikit-Image](https://scikit-image.org/docs/stable/api/skimage.filters.html) to Tensorflow. The source code of skimage.filters.gaussian(image[, sigma, …]) can be found [here](https://github.com/scikit-image/scikit-image/blob/v0.16.1/skimage/filters/_gaussian.py#L12). The algorithm is used to apply a multidimensional Gaussian filter to an image. This has the effect of blurring the image relative to the specifications of the Gaussian kernel. 
 
-Multi-dimensional Gaussian filter.
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
