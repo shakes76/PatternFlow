@@ -12,17 +12,21 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
             warn('Radon transform: image must be zero outside the '
                  'reconstruction circle')
         # Crop image to make it square
-        slices = tuple(slice(int(np.ceil(excess / 2)),
-                             int(np.ceil(excess / 2) + shape_min))
-                       if excess > 0 else slice(None)
-                       for excess in (img_shape - shape_min))
+        slices = tuple(
+            slice(int(tf.math.ceil(excess / 2)),
+            (
+                int(tf.math.ceil(excess / 2) + shape_min))
+                if excess > 0 else
+                slice(None)
+            ) for excess in (img_shape - shape_min)
+        )
         padded_image = image[slices]
     else:
         diagonal = tf.math.sqrt(2) * max(image.shape)
-        pad = [int(np.ceil(diagonal - s)) for s in image.shape]
+        pad = [int(tf.math.ceil(diagonal - s)) for s in image.shape]
         new_center = [(s + p) // 2 for s, p in zip(image.shape, pad)]
         old_center = [s // 2 for s in image.shape]
         pad_before = [nc - oc for oc, nc in zip(old_center, new_center)]
         pad_width = [(pb, p - pb) for pb, p in zip(pad_before, pad)]
-        padded_image = np.pad(image, pad_width, mode='constant',
-                              constant_values=0)
+        padded_image = tf.pad(image, pad_width, mode='constant',
+            constant_values=0)
