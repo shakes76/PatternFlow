@@ -1,6 +1,15 @@
 import tensorflow as tf
 import warnings
 
+def _offset_array(arr, low_boundary, high_boundary):
+    """Offset the array to get the lowest value at 0 if negative."""
+    if low_boundary < 0:
+        offset = low_boundary
+        arr = arr - offset
+    else:
+        offset = 0
+    return arr, offset
+
 def _bincount_histogram(image, source_range):
     
     if source_range not in ['image']:
@@ -15,8 +24,8 @@ def _bincount_histogram(image, source_range):
         
     image, offset = _offset_array(image, image_min, image_max)
     minlength=image_max - image_min + 1
+    
     hist = tf.math.bincount(image.ravel(), minlength)
-
     bin_centers = tf.range(image_min,minlength)
     
     if source_range == 'image':
