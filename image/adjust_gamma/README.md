@@ -36,13 +36,18 @@ The following libraries are used:
 from adjust_gamma import adjust_gamma 
 from skimage import data, exposure, img_as_float 
 
-image = img_as_float(data.moon()) 
+'''
+image = img_as_float(data.moon())
 output = adjust_gamma(image, 2)  
 print(output)
+'''
 
 
-![Actual Imafe](https://i.ibb.co/592wp2X/image.png) 
-![Gamma adjust greater than 1](https://i.ibb.co/qkfFNbZ/output-gamma.png)
-![Gamma adjust lesser than 1](https://i.ibb.co/xmnb1V0/3.png) 
+![Actual Imge]
+(https://i.ibb.co/592wp2X/image.png) 
+![Gamma adjust greater than 1]
+(https://i.ibb.co/qkfFNbZ/output-gamma.png)
+![Gamma adjust lesser than 1]
+(https://i.ibb.co/xmnb1V0/3.png) 
 
 
