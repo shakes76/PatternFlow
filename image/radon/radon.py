@@ -21,7 +21,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         center_x, center_y = tf.math.floordiv(img_shape, 2)
         dist = (x - center_x) ** 2 + (y - center_y) ** 2
         outside_reconstruction_circle = dist > radius ** 2
-        if tf.math.reduce_any(image[outside_reconstruction_circle] > 0):
+        if tf.math.reduce_any(image[outside_reconstruction_circle] != 0):
             warn('Radon transform: image must be zero outside the '
                  'reconstruction circle')
         # Crop image to make it square
@@ -45,14 +45,15 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     # padded_image is always square
     if padded_image.shape[0] != padded_image.shape[1]:
         raise ValueError('padded_image must be a square')
-    center = tf.cast(tf.math.floordiv(padded_image.shape[0], 2), tf.float64)
+    center = tf.cast(tf.math.floordiv(padded_image.shape[0], 2), tf.float32)
     radon_image = tf.zeros((padded_image.shape[0], len(theta)))
     
-    x, y = tf.meshgrid(range(padded_image.shape[0]), range(padded_image.shape[1]))
+    x, y = tf.meshgrid(tf.range(padded_image.shape[0], dtype=tf.int64), tf.range(padded_image.shape[1], dtype=tf.int64))
     x = tf.reshape(x, [-1])
     y = tf.reshape(y, [-1])
     coords = tf.stack([x, y], 1)
-    for i, angle in enumerate(tf.cast(theta, tf.float64) * math.pi / 180):
+    result = []
+    for i, angle in enumerate(tf.cast(theta, tf.float32) * math.pi / 180):
         cos_a, sin_a = tf.math.cos(angle), tf.math.sin(angle)
         R = tf.convert_to_tensor([
             [[cos_a, sin_a, -center * (cos_a + sin_a - 1)],
@@ -63,11 +64,12 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         # rotated = warp(padded_image, R, clip=False)
         width, height = padded_image.shape
         flattened_image = tf.reshape(padded_image, [-1])
-        print(coords, coords.shape)
-        print('sparse', tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape)
-        print('sparse', tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape))
+        #print(coords, coords.shape)
+        #print('sparse', tf.map_fn(transformer(R), (flattened_image, coords))[1], flattened_image, padded_image.shape)
+        #print('sparse', tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords))[1], flattened_image, padded_image.shape))
         rotated = tf.sparse.to_dense(
-            tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape)
+            tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords))[1], flattened_image, padded_image.shape),
+            validate_indices=False
         )
         # for x in range(width):
             # for y in range(height):
@@ -75,8 +77,8 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
                 # x2, y2 = int(multiplied[0][0][0].numpy()), int(multiplied[0][1][0].numpy())
                 # print(x2, y2, x, y)
                 # rotated[x2, y2] += padded_image[x, y]
-        radon_image[:, i] = tf.math.reduce_sum(rotated, 0)
-    return radon_image
+        result.append(tf.math.reduce_sum(rotated, 0))
+    return tf.stack(result, 1)
 
 def transformer(R):
     #@tf.function
@@ -84,9 +86,10 @@ def transformer(R):
         value, coords = args
         x = coords[0]
         y = coords[1]
-        multiplied = tf.linalg.matmul(R, tf.convert_to_tensor([[x], [y], [1]], tf.float64))
-        if x == 0: print(int(y.numpy())) #float(multiplied[0][0][0].numpy()), float(multiplied[0][1][0].numpy()))
-        return (value, tf.cast(multiplied[0, :1, 0], tf.int32))
+        multiplied = tf.linalg.matmul(R, tf.convert_to_tensor([[x], [y], [1]], tf.float32))
+        print(multiplied[0, :2, 0], end=' ')
+        # if x == 0: print(tf.cast(multiplied[0, :2, 0], tf.int32), int(y.numpy())) #float(multiplied[0][0][0].numpy()), float(multiplied[0][1][0].numpy()))
+        return (value, tf.cast(multiplied[0, :2, 0], tf.int64))
     return fn
 
 import tensorflow as tf; image = tf.image.decode_png(tf.io.read_file('test/phantom.png')); radon(tf.image.resize(image, (40, 40)))
