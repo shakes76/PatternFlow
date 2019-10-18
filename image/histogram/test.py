@@ -13,13 +13,13 @@ from skimage import data
 
 
 if __name__ =='__main__':
-    noisy_image = img_as_ubyte(data.camera())
-    hist, hist_centers = histogram(noisy_image)
+    noisy_image = img_as_ubyte(data.camera())#import image as ubyte
+    hist, hist_centers = histogram(noisy_image)#apply the function
 
-    fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
+    fig, ax = plt.subplots(ncols=2, figsize=(10, 5))#plot the image and histogram
 
     ax[0].imshow(noisy_image, cmap=plt.cm.gray)
-    ax[0].axis('off')
-
+    ax[0].axis('off')#adjust original image plot
+    
     ax[1].plot(hist_centers, hist, lw=2)
-    ax[1].set_title('Histogram of grey values')
+    ax[1].set_title('Histogram of grey values')#adjust histogram plot

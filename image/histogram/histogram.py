@@ -8,13 +8,42 @@ dtype_range = {tf.bool: (False, True),
 
 def dtype_limits(image, clip_negative=False):
     
+    """Return intensity limits, i.e. (min, max) tuple, of the image's dtype.
+    Parameters
+    ----------
+    image : ndarray
+        Input image.
+    clip_negative : bool, optional
+        If True, clip the negative range (i.e. return 0 for min intensity)
+        even if the image dtype allows negative values.
+    Returns
+    -------
+    imin, imax : tuple
+        Lower and upper intensity limits.
+    """
+    
     imin, imax = dtype_range[image.dtype.type]
     if clip_negative:
         imin = 0
     return imin, imax
 
 def _offset_array(arr, low_boundary, high_boundary):
-    """Offset the array to get the lowest value at 0 if negative."""
+    
+    """Offset the array to get the lowest value at 0 if negative.
+    Parameters
+    ----------
+    arr : ndarray
+        Input image or array.
+    low_boundary : integer
+        The lower boundary intensity limit of the input image.
+    high_boundary : integer
+        The lower boundary intensity limit of the input image.
+    Returns
+    -------
+    arr, offset : tuple
+        Original input array and offset array to origin.
+    """
+    
     if low_boundary < 0:
         offset = low_boundary
         arr = arr - offset
@@ -23,6 +52,25 @@ def _offset_array(arr, low_boundary, high_boundary):
     return arr, offset
 
 def _bincount_histogram(image, source_range):
+    
+    """Efficient histogram calculation for an image of integers.
+    This function is significantly more efficient than self built histogram 
+    but works only on images of integers. It is based on self built bincount.
+    Parameters
+    ----------
+    image : array
+        Input image.
+    source_range : string
+        'image' determines the range from the input image.
+        'dtype' determines the range from the expected range of the images
+        of that data type.
+    Returns
+    -------
+    hist : array
+        The values of the histogram.
+    bin_centers : array
+        The values at the center of the bins.
+    """
     
     if source_range not in ['image']:
         raise ValueError('Incorrect value for `source_range` argument: {}'.format(source_range))
@@ -38,15 +86,44 @@ def _bincount_histogram(image, source_range):
     minlength=image_max - image_min + 1
     
     hist = tf.math.bincount(image.ravel(), minlength)
-    bin_centers = tf.range(image_min,minlength)
+    hist_centers = tf.range(image_min,minlength)
     
     if source_range == 'image':
         idx = max(image_min, 0)
         hist = hist[idx:]
         
-    return hist, bin_centers
+    return hist, hist_centers
 
 def histogram(image, nbins=256, source_range='image', normalize=False):
+    
+    """Return histogram of image.
+    This function returns the centers of bins and does not rebin integer 
+    arrays. For integer arrays, each integer value has
+    its own bin, which improves speed and intensity-resolution with self built
+    bincount_histogram function.
+    The histogram is computed on the flattened image: for color images, the
+    function should be used separately on each channel to obtain a histogram
+    for each color channel.
+    Parameters
+    ----------
+    image : array
+        Input image.
+    nbins : int, optional
+        Number of bins used to calculate histogram. This value is ignored for
+        integer arrays.
+    source_range : string, optional
+        'image' (default) determines the range from the input image.
+        'dtype' determines the range from the expected range of the images
+        of that data type.
+    normalize : bool, optional
+        If True, normalize the histogram by the sum of its values.
+    Returns
+    -------
+    hist : array
+        The values of the histogram.
+    hist_centers : array
+        The values at the center of the bins.
+    """
    
     sh = tf.shape(image)
     
