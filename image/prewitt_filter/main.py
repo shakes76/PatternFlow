@@ -1,10 +1,6 @@
 import glob,os
 import pathlib
 import tensorflow as tf
-
-import IPython.display as display
-from PIL import Image
-import numpy as np
 import matplotlib.pyplot as plt
 
 from prewitt import prewitt_filter
@@ -14,4 +10,16 @@ image_paths = list(data_dir.glob('./*'))
 
 dataset = tf.data.Dataset.list_files(str(data_dir/'*'))
 
+def load_img(file_path):
+  img = tf.io.read_file(file_path)
+  img = tf.image.decode_jpeg(img, channels=1)
+  img = tf.cast(img, tf.float32)
+  return img
 
+images = dataset.map(load_img) 
+filtered_imgs = images.map(prewitt_filter)
+filtered_imgs = filtered_imgs.map(tf.squeeze)
+
+for img in filtered_imgs:
+    plt.imshow(img, cmap="gray")
+    plt.show()

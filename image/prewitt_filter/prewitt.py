@@ -1,9 +1,5 @@
 import tensorflow as tf
-import IPython.display as display
-from PIL import Image
-import matplotlib.pyplot as plt
 
-#input as tf tensor
 def prewitt_filter(image):
     vertical = tf.constant([[1,0,-1],[1,0,-1],[1,0,-1]],dtype=tf.float32)
     vertical = tf.reshape(vertical,[3,3,1,1])
