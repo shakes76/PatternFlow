@@ -41,6 +41,11 @@ python3 L0_gradient_smoothing_tf.py -d example/dahlia.png -o example/out.png  -l
 
 The commandline arguments are described as such: 
 ```
+usage: driver.py [-h] [-d FILE] [-o FILE] [-l FLOAT] [-k FLOAT] [-b FLOAT]
+
+L0 Gradient Smoothing
+
+optional arguments:
   -h, --help            show this help message and exit
   -d FILE, --inputimgdir FILE
                         Directory path for input image
@@ -54,7 +59,27 @@ The commandline arguments are described as such:
                         beta max parameter
 ```
 
-Below is the input `dahlia.png` for the example usage (left) and the output of the L0 Norm Gradient Smoothing algorithm (right): 
+Alternatively, the algorithm script `l0_norm_smoothing.py` method `l0_calc` may be run 
+with desired values for `_lamnda`, `kappa`, `beta_max`  as such: 
+
+```
+import tensorflow as tf 
+import numpy as np 
+from PIL import image 
+
+# load image into array 
+tf_img = tf.keras.preprocessing.image.load_img(imdir)
+img_arr = np.array(tf_img)
+
+# pass image and calculate and output gradient smoothing 
+out_img = l0_calc(img_arr, _lambda, kappa, beta_max)
+
+# save image from output array 
+im = Image.fromarray(out_img.astype(np.uint8))
+im.save(outdir)
+```
+
+Below is the input `dahlia.png` for the example usage command (left) and the output of the L0 Norm Gradient Smoothing algorithm (right): 
 
 ![Dahlia](example/dahlia_smol.png) 
 ![Dahlia_output](example/dahlia_out_smol.png)
@@ -65,3 +90,11 @@ Otherwise, the method `l0_calc` (found in `L0_gradient_smoothing_tf.py`) takes i
 * `lambda` determines how 'fine' the smoothing is. Smaller values of lambda give a more detailed image
 * `kappa` multiplying factor for the initial beta value, used determine the number of iterations in combination with `beta_max`. 
 * `beta_max` max value for beta to reach before reaching the end of the algorithm. 
+
+
+## Acknowledgements: 
+Original authors of the algorithm and MATLAB implementation
+ [1]   Xu, L., Lu, C., Xu, Y., & Jia, J. (2011, December). Image smoothing via L 0 gradient minimization. In ACM Transactions on Graphics (TOG) (Vol. 30, No. 6, p. 174). ACM.
+ 
+Sample Image: 
+ [2]  [Dahlia](https://pixnio.com/flora-plants/flowers/dahlia-flowers/huge-peachy-dahlia-courtesy-of-roger-gibbons)
