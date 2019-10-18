@@ -31,7 +31,7 @@ plt.show()
 ![Comparision](example.jpg)
 
 # Dependencies
-Tensorflow 1.14
-Python 3.6
-Matplotlib
-Skimage
+* Tensorflow 1.14
+* Python 3.6
+* Matplotlib (for example)
+* Skimage (for example)
