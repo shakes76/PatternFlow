@@ -33,10 +33,10 @@ The following libraries are used:
     * Tensorflow 
 
 ### Example of uses  
-from adjust_gamma import adjust_gamma 
-from skimage import data, exposure, img_as_float 
 
 ```
+from adjust_gamma import adjust_gamma 
+from skimage import data, exposure, img_as_float 
 image = img_as_float(data.moon())
 output = adjust_gamma(image, 2)  
 print(output)
