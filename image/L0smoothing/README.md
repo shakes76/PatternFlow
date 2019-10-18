@@ -37,7 +37,7 @@ The algorithm is implemented in python version 3. The following python libraries
 The script may be run through commandline as such for example:
 
 ```
-python3 L0_gradient_smoothing_tf.py -d example/dahlia.png -o example/dahlia_out.png  -l 2e-3 -k 2.0 -b 10000
+python3 driver.py -d example/dahlia.png -o example/dahlia_out.png  -l 2e-3 -k 2.0 -b 10000
 ```
 
 The commandline arguments are described as such: 
