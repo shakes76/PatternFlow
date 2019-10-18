@@ -18,17 +18,17 @@ A comparison of the scikit image implementation and the ported algorithm is show
 
 ![fig:radon_results](./resources/images/radon_results.png)
 
-To verify the algorithm has been successfully ported, the inverse radon transform is performed on both implementations to reconstruct the original image. The error is also calculated for each reconstruction. 
+To verify the algorithm has been successfully ported, the [inverse radon transform](https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/radon_transform.py#L191) is performed on both implementations to reconstruct the original image. The error is also calculated for each reconstruction. 
 
 ![fig:radon_results](./resources/images/radon_reconstruction_results.png)
 
-As a result, it is no noticable difference with exact same value for error indicates the radon transformation algorithm has successfully being ported to Tensorflow.
+As a result, there is no noticable difference (and exact same error term) indicates the radon transformation algorithm has successfully being ported to Tensorflow.
 
 ## Requirements
 
 The dependencies of this algorithm is listed below (and in the `requirements.txt` file).
 
-```python
+```
 tensorflow==2.0.0
 ```
 
@@ -38,6 +38,53 @@ To install the dependencies, run the following commands,
 pip install -r requirements.txt
 ```
 
+## Usage
+
+```python
+def radon(image, theta=None, circle=True, *, preserve_range=None):
+    """
+    Calculates the radon transform of an image given specified
+    projection angles.
+
+    Parameters
+    ----------
+    image : array_like
+        Input image. The rotation axis will be located in the pixel with
+        indices ``(image.shape[0] // 2, image.shape[1] // 2)``.
+    theta : array_like, optional
+        Projection angles (in degrees). If `None`, the value is set to
+        np.arange(180).
+    circle : boolean, optional
+        Assume image is zero outside the inscribed circle, making the
+        width of each projection (the first dimension of the sinogram)
+        equal to ``min(image.shape)``.
+    preserve_range : bool, optional
+        Whether to keep the original range of values. Otherwise, the input
+        image is converted according to the conventions of `img_as_float`.
+        Also see https://scikit-image.org/docs/dev/user_guide/data_types.html
+
+    Returns
+    -------
+    radon_image : ndarray
+        Radon transform (sinogram).  The tomography rotation axis will lie
+        at the pixel index ``radon_image.shape[0] // 2`` along the 0th
+        dimension of ``radon_image``.
+
+    References
+    ----------
+    .. [1] AC Kak, M Slaney, "Principles of Computerized Tomographic
+           Imaging", IEEE Press 1988.
+    .. [2] B.R. Ramesh, N. Srinivasa, K. Rajgopal, "An Algorithm for Computing
+           the Discrete Radon Transform With Some Applications", Proceedings of
+           the Fourth IEEE Region 10 International Conference, TENCON '89, 1989
+
+    Notes
+    -----
+    Based on code of scikit-image
+    (https://github.com/scikit-image/scikit-image/blob/de42b4cf11b2a5b5a9e77c54f90bff539947ef0d/skimage/transform/radon_transform.py)
+
+    """
+```
 
 ## Example Usage
 
@@ -92,7 +139,7 @@ plt.show()
 
 ### Future Work
 
-It is noticed that the performance of the ported algorithm is significantly worse than the original algorithm in scikit-image. Upon profiling on the algorithm,
+It is noticed that the performance of the ported algorithm is significantly worse than the original algorithm in scikit-image. Upon [`cProfile`](https://docs.python.org/2/library/profile.html) to profile on the algorithm,
 
 ```
   my_sinogram = my_radon(image, theta=theta, circle=True)
@@ -127,4 +174,4 @@ It is noticed that the performance of the ported algorithm is significantly wors
 
 It is found that `_warp_fast_tf` (at the second row of the profile) function takes the majority of the cumulative time (`cumtime`). The warping is needed for the rotation of the image in radon transformation; yet, this is not a problem for the scikit-image algorthm because they `Cython` is used for optimsed performance. 
 
-This performance issue can be resolved by either porting the warping function to `Cython` or other optimsed libraries to perform the image rotation. 
+This performance issue can be resolved by either porting the warping function to `Cython` (see [here](https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/_warps_cy.pyx#L70)) or other optimsed libraries to perform the image rotation. 
