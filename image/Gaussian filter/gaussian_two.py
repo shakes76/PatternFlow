@@ -31,32 +31,23 @@ def make_gaussian_kernel_two(mean, std, size):
     # normalizing
     sum_of_matrix = tf.math.reduce_sum(matrix, axis=None, keepdims=False, name=None)
     gaussian_kernel = matrix/sum_of_matrix
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    gaussian_kernel = sess.run(gaussian_kernel)
-    
     return gaussian_kernel
 
 
 def convolve_two(img, kernel):
     """
-    img = tensor
-    kernel = 2D
+    img = 4D tensor
+    kernel = 4D tensor
     Returns image convolved with a gaussian kernel.
     """
     print("Running convolve")
-
     strides = [1,1,1,1] #list of ints
     
     # Operation 
     convolved = tf.nn.conv2d(img, kernel, strides = strides, padding = 'SAME')
-    
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    convolved_op = sess.run(convolved)
 
     print("Done convolving")
-    return convolved_op
+    return convolved
 
 
 
