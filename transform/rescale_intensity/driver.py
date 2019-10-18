@@ -1,4 +1,9 @@
-from numpy_imp import rescale_tf
+import os
+
+os.chdir('/Users/khadekirti/Desktop/PatternFlow-topic-algorithms/transform/rescale_intensity')
+
+
+from rescale_intensity import rescale_intensity
 import numpy as np
 from  skimage.exposure import rescale_intensity as rescale_intensity_numpy
 import matplotlib.pyplot as plt
@@ -7,23 +12,23 @@ from skimage import data
 
 def test_function(array, in_range=None, out_range=None):
     if in_range == None and out_range == None:
-        tf_output = rescale_tf(array)
-        np_output = rescale_intensity(array)
+        tf_output = rescale_intensity(array)
+        np_output = rescale_intensity_numpy(array)
         result = np.array_equal(np_output, tf_output)
 
     if in_range != None and out_range == None:
-        tf_output = rescale_tf(array, in_range=in_range)
-        np_output = rescale_intensity(array, in_range=in_range)
+        tf_output = rescale_intensity(array, in_range=in_range)
+        np_output = rescale_intensity_numpy(array, in_range=in_range)
         result = np.array_equal(np_output, tf_output)
 
     if in_range == None and out_range != None:
-        tf_output = rescale_tf(array, out_range=out_range)
-        np_output = rescale_intensity(array, out_range=out_range)
+        tf_output = rescale_intensity(array, out_range=out_range)
+        np_output = rescale_intensity_numpy(array, out_range=out_range)
         result = np.array_equal(np_output, tf_output)
 
     if in_range != None and out_range != None:
-        tf_output = rescale_tf(array, in_range=in_range, out_range=out_range)
-        np_output = rescale_intensity(array, in_range=in_range, out_range=out_range)
+        tf_output = rescale_intensity(array, in_range=in_range, out_range=out_range)
+        np_output = rescale_intensity_numpy(array, in_range=in_range, out_range=out_range)
         result = np.array_equal(np_output, tf_output)
 
     if result == True:
