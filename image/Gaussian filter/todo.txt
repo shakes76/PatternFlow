@@ -1,8 +1,13 @@
 To Do/ questions and bugs
-- how to init and fill values inside function with tf.session.run??
-- fix make_gaussian_kernel so it works for all sizes!
-- load images correctly, convolve does not work
-- CLEAN CODE
+- clean code
+    - put testing in seperat test_driver
+    - rename files
+    - add comments and function explanations
+- Finish README
+    - add example of usage
+    - why it is not working properly
+- add images to resources file
+    
     
 
 
