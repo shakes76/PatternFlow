@@ -10,11 +10,12 @@ The algorithm works by creating a Gaussian kernel with desired specifications in
 
 
 ### Figures
-
+![Alt Text](resources/green_kitten.png)
 
 
 ### Example usage
 
-
+An example of how to use the filter can be found in the tester_drive.py file. 
 
 ### Comments
+Plot twist: it does not work. It does instead apply a colour filter on the image. I have so far not a good explanation for this, but managed to achieve both yellow and green colours by varying the mean and standard deviation of the gaussian kernel. 

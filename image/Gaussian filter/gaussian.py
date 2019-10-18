@@ -51,7 +51,7 @@ def convolve(img, m, s, sz):
     strides = [1,1,1,1]
     
     # Operation 
-    convolved = tf.nn.depthwise_conv2d(img, kernel_4D, strides = strides, padding = 'SAME')
+    convolved = tf.nn.conv2d(img, kernel_4D, strides = strides, padding = 'SAME')
 
     return convolved
 
