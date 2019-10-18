@@ -12,6 +12,6 @@ if __name__ == "__main__":
     camera += 0.1 * camera.std() * np.random.standard_normal(camera.shape)
     camera = tf.convert_to_tensor(camera)
     psf = tf.convert_to_tensor(psf)
-    deconvolved = rl.richardson_lucy(camera, psf, 5)
+    deconvolved = rl.richardson_lucy(camera, psf, 5, False)
     plt.imshow(deconvolved)
     plt.show()
