@@ -29,3 +29,9 @@ plt.show()
 ```
 
 ![Comparision](example.jpg)
+
+# Dependencies
+Tensorflow 1.14
+Python 3.6
+Matplotlib
+Skimage
