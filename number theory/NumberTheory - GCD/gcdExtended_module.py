@@ -37,6 +37,8 @@ def body(a, b, quotients):
     '''
     
     quotient = tf.floor_div(b, a)
+    
+    # Update values of a and b
     _temp = a
     a = tf.mod(b, a)
     b = _temp
@@ -46,10 +48,12 @@ def body(a, b, quotients):
     x1 = quotients[2]
     y1 = quotients[3]    
     
+    # Update values of x quotient
     _temp = x1
     x1 = tf.subtract(x0, tf.multiply(quotient, x1))
     x0 = _temp
     
+    # Update values of y quotient
     _temp = y1
     y1 = tf.subtract(y0, tf.multiply(quotient, y1))
     y0 = _temp
@@ -78,7 +82,7 @@ def extended_gcd(a, b):
     a = abs(a)
     b = abs(b)
     
-    ### Initialize tensors ###
+    # Initialize tensors
     a = tf.Variable(a)
     b = tf.Variable(b)
     
@@ -91,7 +95,8 @@ def extended_gcd(a, b):
     
     # While a is greater than 0 find gcd(a, b) as well as quotients
     loop = tf.while_loop(cond, body, [a, b, (x0, y0, x1, y1)])
-        
+    
+    # Initialize tensor session
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         result = sess.run(loop)
