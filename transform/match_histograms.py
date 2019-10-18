@@ -1,4 +1,5 @@
 import tensorflow as tf 
+import cProfile
 
 def _match_cumulative_cdf(source, template):
     """
@@ -70,7 +71,7 @@ def match_histograms(image, reference, *, multichannel=False):
     ----------
     .. [1] http://paulbourke.net/miscellaneous/equalisation/
     """
-    if image.ndim != reference.ndim:
+    if tf.rank(image) != tf.rank(reference):
         raise ValueError('Image and reference must have the same number '
                          'of channels.')
 
@@ -79,7 +80,7 @@ def match_histograms(image, reference, *, multichannel=False):
             raise ValueError('Number of channels in the input image and '
                              'reference image must match!')
 
-        matched = tf.stack(image.shape, dtype=image.dtype)
+        matched = tf.zeros(image.shape, dtype=image.dtype)
         for channel in range(image.shape[-1]):
             matched_channel = _match_cumulative_cdf(image[..., channel],
                                                     reference[..., channel])
@@ -88,7 +89,3 @@ def match_histograms(image, reference, *, multichannel=False):
         matched = _match_cumulative_cdf(image, reference)
 
     return matched
-
-
-
-
