@@ -1,5 +1,6 @@
 import tensorflow as tf
 import math
+from time import time
 
 def radon(image, theta=None, circle=True, *, preserve_range=None):
     """
@@ -46,7 +47,11 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         raise ValueError('padded_image must be a square')
     center = tf.cast(tf.math.floordiv(padded_image.shape[0], 2), tf.float64)
     radon_image = tf.zeros((padded_image.shape[0], len(theta)))
-
+    
+    x, y = tf.meshgrid(range(padded_image.shape[0]), range(padded_image.shape[1]))
+    x = tf.reshape(x, [-1])
+    y = tf.reshape(y, [-1])
+    coords = tf.stack([x, y], 1)
     for i, angle in enumerate(tf.cast(theta, tf.float64) * math.pi / 180):
         cos_a, sin_a = tf.math.cos(angle), tf.math.sin(angle)
         R = tf.convert_to_tensor([
@@ -56,13 +61,31 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
         ])
         # TODO: warp. we don't need full warp though, just this specific case
         # rotated = warp(padded_image, R, clip=False)
-        rotated = tf.zeros_like(padded_image)
         width, height = padded_image.shape
-        for x in range(width):
-            for y in range(height):
-                multiplied = tf.linalg.matmul(R, tf.convert_to_tensor([[x], [y], [1]], tf.float64))
-                x2, y2 = multiplied[0][0][0], multiplied[0][1][0]
-                print(x2, y2, x, y)
-                rotated[x2, y2] += padded_image[x, y]
+        flattened_image = tf.reshape(padded_image, [-1])
+        print(coords, coords.shape)
+        print('sparse', tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape))
+        rotated = tf.sparse.to_dense(
+            tf.sparse.SparseTensor(tf.map_fn(transformer(R), (flattened_image, coords)), flattened_image, padded_image.shape)
+        )
+        # for x in range(width):
+            # for y in range(height):
+                # multiplied = tf.linalg.matmul(R, tf.convert_to_tensor([[x], [y], [1]], tf.float64))
+                # x2, y2 = int(multiplied[0][0][0].numpy()), int(multiplied[0][1][0].numpy())
+                # print(x2, y2, x, y)
+                # rotated[x2, y2] += padded_image[x, y]
         radon_image[:, i] = tf.math.reduce_sum(rotated, 0)
     return radon_image
+
+def transformer(R):
+    #@tf.function
+    def fn(args):
+        value, coords = args
+        x = coords[0]
+        y = coords[1]
+        multiplied = tf.linalg.matmul(R, tf.convert_to_tensor([[x], [y], [1]], tf.float64))
+        if x == 0: print(int(y.numpy())) #float(multiplied[0][0][0].numpy()), float(multiplied[0][1][0].numpy()))
+        return (value, tf.cast(multiplied[0, :1, 0], tf.int32))
+    return fn
+
+import tensorflow as tf; image = tf.image.decode_png(tf.io.read_file('test/phantom.png')); radon(tf.image.resize(image, (40, 40)))
