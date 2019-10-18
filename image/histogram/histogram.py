@@ -1,6 +1,18 @@
 import tensorflow as tf
 import warnings
 
+dtype_range = {tf.bool: (False, True),
+               tf.float16: (-1, 1),
+               tf.float32: (-1, 1),
+               tf.float64: (-1, 1)}
+
+def dtype_limits(image, clip_negative=False):
+
+    imin, imax = dtype_range[image.dtype.type]
+    if clip_negative:
+        imin = 0
+    return imin, imax
+
 def _offset_array(arr, low_boundary, high_boundary):
     """Offset the array to get the lowest value at 0 if negative."""
     if low_boundary < 0:
