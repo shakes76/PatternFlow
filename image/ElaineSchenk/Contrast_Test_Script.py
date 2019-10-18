@@ -15,25 +15,43 @@ adjustment to a poorly contrasted image.'''
 array = cv2.imread("test_image.png")
 #sensible defaults:
 cutoff = 0.5
-gain = 3
-inv = False
+gain = 5
+inv = False 
 #print out the adjust_sigmoid applied to image result. 
-
+sk_array = adjust_sigmoid(array,cutoff,gain,inv) #skimage implementation for reference
+sk_array_inv = adjust_sigmoid(array,cutoff,gain,True) #skimage implementation for reference
 
 
 #Now run the tensorflow implemenation in a session. 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     corrected_array = Contrast_Sigmoid(array,cutoff,gain,inv).eval()
+    corrected_array_inv = Contrast_Sigmoid(array,cutoff,gain,True).eval()
 
-#plot tensorflow result
-plt.subplot(1,3,1)
+#plot results
+plt.subplot(1,5,1)
 plt.imshow(array)
 plt.title("Original Image")
+plt.axis('off')
 
-plt.subplot(1,3,2)
+plt.subplot(1,5,2)
 plt.imshow(corrected_array)
-plt.title("Tensorflow Corrected")
+plt.title("Tensorflow")
+plt.axis('off')
 
+plt.subplot(1,5,3)
+plt.imshow(corrected_array_inv)
+plt.title("Tensorflow\nInverse")
+plt.axis('off')
+
+plt.subplot(1,5,4)
+plt.imshow(sk_array)
+plt.title("SciKit")
+plt.axis('off')
+
+plt.subplot(1,5,5)
+plt.imshow(sk_array_inv)
+plt.title("SciKit\nInverse")
+plt.axis('off')
 
 plt.show()
