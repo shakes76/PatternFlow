@@ -57,7 +57,7 @@ As soon as the module is called, it builds the dictionary with supported data ty
 6. rescale_intensity(np.array([51, 102, 153], dtype=np.unit8),out_range=(0,102)) --> [0, 51, 102]
 
 
-## Visualisation 
+## Visualisations 
 
 camera = data.camera()
 
