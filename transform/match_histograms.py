@@ -22,8 +22,28 @@ def _match_cumulative_cdf(source, template):
     src_quantiles = tf.cumsum(src_counts) / source_size
     tmpl_quantiles = tf.cumsum(tmpl_counts) / template_size
 
-    interp_a_values = tf.interp(src_quantiles, tmpl_quantiles, tmpl_values)
+    interp_a_values = interpolate(src_quantiles, tmpl_quantiles, tmpl_values)
     return interp_a_values[src_unique_indices].reshape(source.shape)
+
+def  interpolate( dx, dy, x, name='interpolate' ):
+
+    with tf.variable_scope(name):
+
+        with tf.variable_scope('neighbors'):
+
+            delVals = dx - x
+            ind_1   = tf.argmax(tf.sign( delVals ))
+            ind_0   = ind_1 - 1
+
+        with tf.variable_scope('calculation'):
+
+            value   = tf.cond( x[0] <= dx[0], lambda : dy[:1], lambda : tf.cond( x[0] >= dx[-1], 
+                                     lambda : dy[-1:], lambda : (dy[ind_0] + 
+                                     (dy[ind_1] - dy[ind_0]) *(x-dx[ind_0])/ (dx[ind_1]-dx[ind_0]))
+                             ))
+        result = tf.multiply(value[0], 1, name='y')
+
+    return result
 
 def match_histograms(image, reference, *, multichannel=False):
     """Adjust an image so that its cumulative histogram matches that of another.
