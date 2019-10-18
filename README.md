@@ -29,7 +29,7 @@ equation ``Output = Input**gamma`` after scaling each pixel to the range 0 to 1.
     * Calculate the output as ((image / scale) ** gamma) * scale * gain
     
 ### Dependencies 
-The following libraries are used: 
+The following libraries are used: x
     * Tensorflow 
 
 ### Example of uses  
