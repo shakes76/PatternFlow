@@ -25,12 +25,13 @@ This can be seen below with varying values for `λ`:
 From left to right, top to bottom `λ = 0.5, 0.2, 0.1, 0.05, 0.02, 0.002, 0.0025, 0.0002` respectively. Note how the dahlia becomes more an more refined as the value of `λ` becomes smaller. 
 
 # Usage 
+
 ## Dependencies 
 The algorithm is implemented in python version 3. The following python libraries are required to run the module: 
 
-* `tensorflow 2.0` version 2.0 is required for fourier transform calculations. 
-* `numpy` for I\O uses, to load and save arrays to and from images 
-* `PIL` the image library, for image loading and saving 
+* `tensorflow >= 2.0.0` for tensor calculations, version 2.0 is required for fourier transform calculations. 
+* `numpy >= 1.17.2` for I\O uses, to load and save arrays to and from images 
+* `PIL >= 5.3.0` the image library, for image loading and saving 
 
 ## How to run
 The script may be run through commandline as such for example:
@@ -60,7 +61,7 @@ optional arguments:
 ```
 
 Alternatively, the algorithm script `l0_norm_smoothing.py` method `l0_calc` may be run 
-with desired values for `_lamnda`, `kappa`, `beta_max`  as such: 
+with desired values for `_lambda`, `kappa`, `beta_max`  as such: 
 
 ```
 import tensorflow as tf 
