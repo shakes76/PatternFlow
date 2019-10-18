@@ -27,5 +27,5 @@ plt.imshow(adjusted, cmap=plt.cm.gray)
 plt.title("Adjusted")
 plt.show()
 ```
-#Comparision
+
 ![Comparision](example.jpg)
