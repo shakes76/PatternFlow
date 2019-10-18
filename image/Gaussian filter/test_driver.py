@@ -37,7 +37,7 @@ imgage = Image.open('resources/gray_kitten.jpg')
 plt.imshow(imgage)
 img_reshaped = reshape_image(imgage)
 
-c = convolve(img_reshaped, 0.0, 0.7, 10)
+c = convolve(img_reshaped, 0.5, 0.3, 10)
 
 c_img = tf.reshape(c, [c.shape[0],c.shape[1], c.shape[2]])
 

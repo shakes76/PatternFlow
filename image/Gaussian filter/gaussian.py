@@ -42,8 +42,9 @@ def convolve(img, m, s, sz):
     """
     Convolves image img with a gaussian kernel specified by kernel. 
     Arguments:
-        img:    an image represented by a 4D tensor
-        kernel: the gaussian kernel represented as a 4D tensor
+        img:       an image represented by a 4D tensor
+        m, s, sz:  the values specifying the gaussian distribution to be created,
+                   m is the mean, s is the standerd deviation and sz is the size
     """
     
     kernel = make_gaussian_kernel(m, s, sz)
