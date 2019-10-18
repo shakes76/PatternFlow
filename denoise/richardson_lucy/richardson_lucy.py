@@ -1,6 +1,5 @@
 import tensorflow as tf
-#import numpy as np
-import scipy as sp
+from scipy.signal import fftconvolve, convolve
 
 def richardson_lucy(image, psf, iterations=50, clip=True):
     # Check for Complexity as in original original skimage function
@@ -8,18 +7,23 @@ def richardson_lucy(image, psf, iterations=50, clip=True):
     fft_complexity = tf.math.reduce_sum([tf.cast(n, tf.float32)*tf.math.log(tf.cast(n, tf.float32)) for n in image.shape + psf.shape])
     ratio = 40.032 * fft_complexity / regular_complexity
 
+    # Cast tensors to float32 so they can be properly convolved
     image = tf.dtypes.cast(image, tf.float32)
     psf = tf.dtypes.cast(psf, tf.float32)
     im_deconv = tf.dtypes.cast(tf.fill(image.shape, 0.5), tf.float32)
     psf_mirror = psf[::-1, ::-1]
 
     if ratio <= 1 or len(image.shape) > 2:
-        convolve_method = sp.signal.fftconvolve
+        convolve_method = fftconvolve
     else:
-        convolve_method = sp.signal.convolve
+        convolve_method = convolve
 
     for _ in range(iterations):
         relative_blur = image / convolve_method(im_deconv, psf, 'same')
         im_deconv *= convolve_method(relative_blur, psf_mirror, 'same')
+
+    if clip:
+        #Clips any values above 1 to 1 and below -1 to -1
+        im_deconv = tf.clip_by_value(im_deconv, 1, -1)
 
     return im_deconv
