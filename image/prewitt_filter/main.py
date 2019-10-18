@@ -17,7 +17,9 @@ def load_img(file_path):
   return img
 
 images = dataset.map(load_img) 
+#apply the prewitt filter to all images in resources
 filtered_imgs = images.map(prewitt_filter)
+#reshape tensor for visualisation
 filtered_imgs = filtered_imgs.map(tf.squeeze)
 
 for img in filtered_imgs:

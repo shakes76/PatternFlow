@@ -3,9 +3,13 @@
 
  Tensorflow implementation of the prewitt operator and accompanying short demonstration.
 
- The prewitt operator performs gradient approximation through a combination of convolutional filters. The gradient approximation of both horizontal and vertical components is used to approximate the gradient of the image intensity. The resultant approximation serves as a simple edge detection algorithm. Input image must be a 2-Dimensional single channel grayscale image.
+ The prewitt operator performs gradient approximation through a combination of convolutional filters. The gradient approximation of both horizontal and vertical components is used to approximate the gradient of the image intensity. The resultant approximation serves as a simple edge detection algorithm. 
 
 ## Usage
+Image must be a 2-Dimensional single channel grayscale image.
+
+>Input:  2D Float32 Tensor  
+>Output: 2D Float32 Tensor.
 
 ``` 
 prewitt_filter(image)
