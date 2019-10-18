@@ -1,14 +1,37 @@
-# Transforms
-Various transforms implemented for Tensorflow
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+# Histogram matching
 
-## Contributing
-* Fork the dedicated 'topic-algorithms' branch
-* Create a directory for your algorithm and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save results
-* Add a README.md file as described by the report assessment
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your fractal directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+match_histograms function belongs to skimage.exposure module. 
+
+
+## Description
+Adjust an image so that its cumulative histogram matches that of another.
+The adjustment is applied separately for each channel.
+
+## How it works
+For two given images, reference image and target image. The match_cumulative_cdf function will calculate the cumulative distribution and probability distribution of reference image. Devide two images into many bins. Use interpolation funtion to match two images by their corresponding bins. Use ths probability distribution of reference to redraw the target image.
+
+## Example 
+This example demonstrates the feature of histogram matching. It manipulates the pixels of an input image so that its histogram matches the histogram of the reference image. If the images have multiple channels, the matching is done independently for each channel, as long as the number of channels is equal in the input image and the reference.
+
+```python
+image = tf.convert_to_tensor(data.chelsea())
+reference = tf.convert_to_tensor(data.coffee())
+matched = mh.match_histograms(image, reference, multichannel=True)
+fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3),
+                                    sharex=True, sharey=True)
+for aa in (ax1, ax2, ax3):
+        aa.set_axis_off()
+ax1.imshow(image1)
+ax1.set_title('Source')
+ax2.imshow(image2)
+ax2.set_title('Reference')
+ax3.imshow(matched)
+ax3.set_title('Matched')
+plt.tight_layout()
+plt.show()
+```
+
+
+
+## Dependencies

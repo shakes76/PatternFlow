@@ -79,7 +79,7 @@ def match_histograms(image, reference, *, multichannel=False):
             raise ValueError('Number of channels in the input image and '
                              'reference image must match!')
 
-        matched = tf.empty(image.shape, dtype=image.dtype)
+        matched = tf.stack(image.shape, dtype=image.dtype)
         for channel in range(image.shape[-1]):
             matched_channel = _match_cumulative_cdf(image[..., channel],
                                                     reference[..., channel])
@@ -88,3 +88,7 @@ def match_histograms(image, reference, *, multichannel=False):
         matched = _match_cumulative_cdf(image, reference)
 
     return matched
+
+
+
+

@@ -25,6 +25,6 @@ def cumulative(image, reference):
 
 if __name__ == "__main__":
     reference = data.coffee()
-    source = data.astronaut()
+    source = data.chelsea()
 
     cumulative(source,reference)
