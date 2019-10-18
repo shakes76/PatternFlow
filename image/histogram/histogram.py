@@ -147,7 +147,7 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         else:
             ValueError('Wrong value for the `source_range` argument')
             
-        hist_centers = [i for i in range(256)]
+        hist_centers = [i for i in range(int(hist_range[1]))]
         
         tensor = tf.convert_to_tensor(image, dtype=tf.float32)
         hist = tf.histogram_fixed_width(tensor, hist_range, nbins)

@@ -23,3 +23,5 @@ if __name__ =='__main__':
     
     ax[1].plot(hist_centers, hist, lw=2)
     ax[1].set_title('Histogram of grey values')#adjust histogram plot
+    
+    plt.tight_layout()
