@@ -25,6 +25,9 @@ def _match_cumulative_cdf(source, template):
     interp_a_values = tf.interp(src_quantiles, tmpl_quantiles, tmpl_values)
     return interp_a_values[src_unique_indices].reshape(source.shape)
 
+def unique(x, return_index)
+
+
 def match_histograms(image, reference, *, multichannel=False):
     """Adjust an image so that its cumulative histogram matches that of another.
     The adjustment is applied separately for each channel.
