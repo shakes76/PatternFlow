@@ -36,11 +36,13 @@ The following libraries are used:
         * as_strided (from numpy)
 
 ### Example of uses  
+
+```
 import numpy as np 
 from downscale_local_mean import downscale_local_mean 
 image = np.arange(15).reshape(3, 5)
 downscale_local_mean(a, (2, 3))  
- 
+``` 
 
 
 
