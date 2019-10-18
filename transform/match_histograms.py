@@ -20,7 +20,7 @@ def _match_cumulative_cdf(source, template):
     template_flatten = tf.cast(template_flatten ,dtype =tf.int64)
     template_flatten = tf.sort(template_flatten)
 
-    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten)1
+    src_values, src_unique_indices, src_counts = tf.unique_with_counts(source_flatten1)
     src_indice = unique(source_flatten)
     tmpl_values, tmpl_counts = tf.unique_with_counts(template_flatten)
 
@@ -53,6 +53,25 @@ def  interpolate( dx, dy, x, name='interpolate' ):
 
     return result
 
+def unique(x):
+    """ 
+    A funtion to replace np.unique
+    function can return to the index of list with unique value from huge to small.
+    """
+    x = tf.cast(x,dtype = tf.int64)
+    # sort the tensor
+    y = tf.argsort(x,stable = None)
+    #create array
+    array = x[y]
+    tensor = tf.zeros(array.shape, dtype=tf.bool)
+    # change it to tensor
+    k = tf.cast(tensor, dtype = tf.int64)
+    # sum
+    index = tf.zeros(tensor.shape, dtype=tf.int64)
+    index[y] = tf.cumsum(k) - 1
+    # convert to tensor
+    index = tf.convert_to_tensor(index)
+    return index
 
 def match_histograms(image, reference, *, multichannel=False):
     """Adjust an image so that its cumulative histogram matches that of another.
