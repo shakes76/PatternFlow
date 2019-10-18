@@ -35,3 +35,7 @@ plt.show()
 * Python 3.6
 * Matplotlib (for example)
 * Skimage (for example)
+
+# Author
+* Name: Fayd Speare
+* Student Number: 4479962
