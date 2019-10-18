@@ -24,7 +24,7 @@ This can be seen below with varying values for `λ`:
 
 From left to right, top to bottom `λ = 0.5, 0.2, 0.1, 0.05, 0.02, 0.002, 0.0025, 0.0002` respectively. Note how the dahlia becomes more an more refined as the value of `λ` becomes smaller. 
 
-# Usage 
+# Usage
 
 ## Dependencies 
 The algorithm is implemented in python version 3. The following python libraries are required to run the module: 
@@ -37,7 +37,7 @@ The algorithm is implemented in python version 3. The following python libraries
 The script may be run through commandline as such for example:
 
 ```
-python3 L0_gradient_smoothing_tf.py -d example/dahlia.png -o example/out.png  -l 2e-3 -k 2.0 -b 10000
+python3 L0_gradient_smoothing_tf.py -d example/dahlia.png -o example/dahlia_out.png  -l 2e-3 -k 2.0 -b 10000
 ```
 
 The commandline arguments are described as such: 
@@ -94,8 +94,8 @@ Otherwise, the method `l0_calc` (found in `L0_gradient_smoothing_tf.py`) takes i
 
 
 ## Acknowledgements: 
-Original authors of the algorithm and MATLAB implementation
- [1]   Xu, L., Lu, C., Xu, Y., & Jia, J. (2011, December). Image smoothing via L 0 gradient minimization. In ACM Transactions on Graphics (TOG) (Vol. 30, No. 6, p. 174). ACM.
+Original authors of the algorithm and MATLAB implementation:
+- [1]   Xu, L., Lu, C., Xu, Y., & Jia, J. (2011, December). Image smoothing via L 0 gradient minimization. In ACM Transactions on Graphics (TOG) (Vol. 30, No. 6, p. 174). ACM.
  
 Sample Image: 
- [2]  [Dahlia](https://pixnio.com/flora-plants/flowers/dahlia-flowers/huge-peachy-dahlia-courtesy-of-roger-gibbons)
+- [2]  [Dahlia](https://pixnio.com/flora-plants/flowers/dahlia-flowers/huge-peachy-dahlia-courtesy-of-roger-gibbons)
