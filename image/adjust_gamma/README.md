@@ -36,11 +36,11 @@ The following libraries are used:
 from adjust_gamma import adjust_gamma 
 from skimage import data, exposure, img_as_float 
 
-'''
+```
 image = img_as_float(data.moon())
 output = adjust_gamma(image, 2)  
 print(output)
-'''
+```
 
 
 ![Actual Imge](https://i.ibb.co/592wp2X/image.png) 
