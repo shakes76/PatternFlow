@@ -172,17 +172,52 @@ def factorPR_function():
         
 def factorone_function():
     print("Testing -- factorone function --")
-    print("Using numpy.random generating {0} numbers".format(testnumber))
-    for n in range(testnumber):
-        a = rd.randint(minimum,maximum)
-        tf1 = nmtf.factorone(tf.constant(a))
-        nm1 = nm.factorone(a)
-        print("Test {0}------------------------------".format(n+1))
-        print("nmtf.factorone({0}) = {1}".format(
-                a,tf1.eval()))
-        print("  nm.factorone({0}) = {1}".format(
-                a,nm1))
-        print("")
+    print("Using 5 different numbers to check")
+    a = 50
+    tf1 = nmtf.factorone(tf.constant(a))
+    nm1 = nm.factorone(a)
+    print("Test 1------------------------------")
+    print("nmtf.factorone({0}) = {1}".format(
+            a,tf1.eval()))
+    print("  nm.factorone({0}) = {1}".format(
+            a,nm1))
+    print("")
+    a = 77
+    tf1 = nmtf.factorone(tf.constant(a))
+    nm1 = nm.factorone(a)
+    print("Test 2------------------------------")
+    print("nmtf.factorone({0}) = {1}".format(
+            a,tf1.eval()))
+    print("  nm.factorone({0}) = {1}".format(
+            a,nm1))
+    print("")
+    a = 23
+    tf1 = nmtf.factorone(tf.constant(a))
+    nm1 = nm.factorone(a)
+    print("Test 3------------------------------")
+    print("nmtf.factorone({0}) = {1}".format(
+            a,tf1.eval()))
+    print("  nm.factorone({0}) = {1}".format(
+            a,nm1))
+    print("")
+    a = 12
+    tf1 = nmtf.factorone(tf.constant(a))
+    nm1 = nm.factorone(a)
+    print("Test 4------------------------------")
+    print("nmtf.factorone({0}) = {1}".format(
+            a,tf1.eval()))
+    print("  nm.factorone({0}) = {1}".format(
+            a,nm1))
+    print("")
+    a = 39
+    tf1 = nmtf.factorone(tf.constant(a))
+    nm1 = nm.factorone(a)
+    print("Test 5------------------------------")
+    print("nmtf.factorone({0}) = {1}".format(
+            a,tf1.eval()))
+    print("  nm.factorone({0}) = {1}".format(
+            a,nm1))
+    print("")
 
 with tf.compat.v1.Session() as sess:
     print("nmtf stands for numbthy_tf module (my own module)");
