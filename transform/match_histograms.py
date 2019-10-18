@@ -5,6 +5,11 @@ def _match_cumulative_cdf(source, template):
     """
     Return modified source array so that the cumulative density function of
     its values matches the cumulative density function of the template.
+    parameters:
+    ----------
+    source: tensor
+    template: tensor
+
     """
     #reshape the data 
     source_flatten = tf.reshape(source,[-1])
@@ -30,21 +35,20 @@ def _match_cumulative_cdf(source, template):
     return interp_a_values[src_unique_indices].reshape(source.shape)
 
 def  interpolate( dx, dy, x, name='interpolate' ):
-
+    
+    # get the tensor varaiable
     with tf.variable_scope(name):
-
         with tf.variable_scope('neighbors'):
-
             delVals = dx - x
             ind_1   = tf.argmax(tf.sign( delVals ))
             ind_0   = ind_1 - 1
 
         with tf.variable_scope('calculation'):
-
             value   = tf.cond( x[0] <= dx[0], lambda : dy[:1], lambda : tf.cond( x[0] >= dx[-1], 
                                      lambda : dy[-1:], lambda : (dy[ind_0] + 
                                      (dy[ind_1] - dy[ind_0]) *(x-dx[ind_0])/ (dx[ind_1]-dx[ind_0]))
                              ))
+        #interpolate result                  
         result = tf.multiply(value[0], 1, name='y')
 
     return result
@@ -55,16 +59,16 @@ def match_histograms(image, reference, *, multichannel=False):
     The adjustment is applied separately for each channel.
     Parameters
     ----------
-    image : ndarray
+    image : tensor
         Input image. Can be gray-scale or in color.
-    reference : ndarray
+    reference : tensor
         Image to match histogram of. Must have the same number of channels as
         image.
     multichannel : bool, optional
         Apply the matching separately for each channel.
     Returns
     -------
-    matched : ndarray
+    matched : tensor
         Transformed input image.
     Raises
     ------
@@ -75,10 +79,11 @@ def match_histograms(image, reference, *, multichannel=False):
     ----------
     .. [1] http://paulbourke.net/miscellaneous/equalisation/
     """
+    # make sure two image has same channels.
     if tf.rank(image) != tf.rank(reference):
         raise ValueError('Image and reference must have the same number '
                          'of channels.')
-
+    # when channel multiply
     if multichannel:
         if image.shape[-1] != reference.shape[-1]:
             raise ValueError('Number of channels in the input image and '
@@ -90,6 +95,7 @@ def match_histograms(image, reference, *, multichannel=False):
                                                     reference[..., channel])
             matched[..., channel] = matched_channel
     else:
+        # redraw the image
         matched = _match_cumulative_cdf(image, reference)
 
     return matched

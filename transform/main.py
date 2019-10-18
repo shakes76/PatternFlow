@@ -4,6 +4,10 @@ import tensorflow as tf
 from skimage import data
 
 def cumulative(image, reference):
+    '''
+    Use this function to cumulative two image together. 
+    Redraw a new image according to reference.
+    '''
     image = tf.convert_to_tensor(image)
     reference = tf.convert_to_tensor(reference)
 
