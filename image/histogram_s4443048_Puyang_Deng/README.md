@@ -40,3 +40,7 @@ The function works with the following examlpe using skimage data:
 
         plt.tight_layout()
         
+## Output
+
+  ![Dapr overview](https://github.com/craigdeng/PatternFlow/blob/topic-algorithms/image/histogram/output.png)
+        
