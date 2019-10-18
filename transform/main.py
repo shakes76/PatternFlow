@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import match_histograms as hist
 import tensorflow as tf
 from skimage import data
-from skimage import exposure
-from skimage.exposure import match_histograms
 
 def cumulative(image, reference):
     image = tf.convert_to_tensor(image)
@@ -28,5 +26,5 @@ def cumulative(image, reference):
 if __name__ == "__main__":
     reference = data.coffee()
     source = data.astronaut()
-    
+
     cumulative(source,reference)
