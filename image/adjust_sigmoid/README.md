@@ -27,5 +27,5 @@ plt.imshow(adjusted, cmap=plt.cm.gray)
 plt.title("Adjusted")
 plt.show()
 ```
-
-![alt text](https://github.com/FaydSpeare/PatternFlow/tree/topic-algorithms/image/adjust_sigmoid/example.png)
+#Comparision
+![Comparision](https://github.com/FaydSpeare/PatternFlow/tree/topic-algorithms/image/adjust_sigmoid/example.jpg)
