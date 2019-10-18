@@ -10,7 +10,9 @@ The algorithm works by creating a Gaussian kernel with desired specifications in
 
 
 ### Figures
-![Alt Text](resources/green_kitten.png)
+![Gray kitten](resources/gray_kitten.png)
+![Yellow kitten](resources/yellow_kitten.png)
+![Green kitten](resources/green_kitten.png)
 
 
 ### Example usage
