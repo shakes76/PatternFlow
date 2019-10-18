@@ -7,14 +7,11 @@ Created on Fri Oct 18 10:35:11 2019
 """
 
 import tensorflow as tf
-#from tensorflow import keras
-#from keras.layers import Conv2D
 
-def make_gaussian_kernel(mean, std, size):
+def make_gaussian_kernel_two(mean, std, size):
     """
     Returns a 2D Gaussian kernel
     """
-    print("Running make_gaussian_kernel")
     #create normal distribution
     mean = tf.to_float(mean)
     std = tf.to_float(std)
@@ -34,14 +31,17 @@ def make_gaussian_kernel(mean, std, size):
     # normalizing
     sum_of_matrix = tf.math.reduce_sum(matrix, axis=None, keepdims=False, name=None)
     gaussian_kernel = matrix/sum_of_matrix
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+    gaussian_kernel = sess.run(gaussian_kernel)
     
-    print("Gaussian kernel made")
     return gaussian_kernel
 
 
-def convolve(img, kernel, rgb = True):
+def convolve_two(img, kernel):
     """
     img = tensor
+    kernel = 2D
     Returns image convolved with a gaussian kernel.
     """
     print("Running convolve")
@@ -56,7 +56,7 @@ def convolve(img, kernel, rgb = True):
     convolved_op = sess.run(convolved)
 
     print("Done convolving")
-    return conv_op
+    return convolved_op
 
 
 
