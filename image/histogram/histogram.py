@@ -76,6 +76,6 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         hist = tf.histogram_fixed_width(tensor, hist_range, nbins)
             
     if normalize:
-        hist = hist / np.sum(hist)
+        hist = hist / tf.reduce_sum(hist)
         
-    return hist, bin_centers
+    return hist, hist_centers
