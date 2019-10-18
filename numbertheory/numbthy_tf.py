@@ -161,16 +161,16 @@ def true_condition_1_power_mod(e, i, accum, bpow2, n):
   This function will be called if conditional_if_power_mod return true"""
   
   accum = tf.math.floormod(tf.math.multiply(accum,bpow2), n)
-  return e, i, accum, bpow2, n
+  return (e, i, accum, bpow2, n)
 
 def while_loop_power_mod(e, i, accum, bpow2, n):
   
   """This function will return the actual result if the inverse_mod is valid
   otherwise this result will never be the return of power_mod"""
   
-  result = tf.while_loop(conditional_while_power_mod, 
-                         while_body_power_mod, [e,i,accum,bpow2,n])
-  return result
+  e,i,accum,bpow2,n = tf.while_loop(conditional_while_power_mod, 
+                         while_body_power_mod, (e,i,accum,bpow2,n))
+  return e,i,accum,bpow2,tf.constant(1)
 
 def while_body_power_mod(e, i, accum, bpow2, n):
   
@@ -194,7 +194,7 @@ def conditional_if_power_mod(e, i, accum, bpow2, n):
   
   """An auxiliary function for power_mod that return true of false"""
   
-  a = tf.bitwise.right_shift(e, i)
+  a = tf.bitwise.right_shift(e,i)
   a = tf.bitwise.bitwise_and(a,1)
   return tf.equal(a,0)
 
