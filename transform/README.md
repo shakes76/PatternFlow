@@ -3,7 +3,7 @@
 
 Rewrite match_histograms function from skimage.exposure module in Tensorflow.
 
-Aurthor: Yao
+Author: Yao Chen
 
 ## Description
 Histogram matching is a process where a time series, image, or higher dimension scalar data is modified such that its histogram matches that of another (reference) dataset. A common application of this is to match the images from two sensors with slightly different responses, or from a sensor whose response changes over time. In this function,
@@ -37,10 +37,9 @@ plt.show()
 ```
 ![example](./Resources/Figure_1.png)
 
-
 ### Dependencies
-Tensorflow verison: 2.0
-python 3.6.9 64-bit
+Tensorflow verison: 2.0  
+Python version: 3.6.9 64-bit
 
 ### Reference
  http://scikit-image.org
