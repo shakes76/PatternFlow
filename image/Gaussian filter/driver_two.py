@@ -25,15 +25,13 @@ def reshape_to_fit_convolve(img, kernel):
 imgage = Image.open('gray_kitten.jpg')
 plt.imshow(imgage)
 
-gauss_kernel = make_gaussian_kernel_two(0.0, 0.1, 20)
+gauss_kernel = make_gaussian_kernel_two(0.5, 0.1, 20)
 
 img_reshaped, kernel_reshaped = reshape_to_fit_convolve(imgage, gauss_kernel)
 
 
 c = convolve_two(img_reshaped, kernel_reshaped)
 c_img = tf.reshape(c, [c.shape[0],c.shape[1], c.shape[2]])
-print(c.shape)
-print(c_img.shape)
 
 plt.figure()
 plt.imshow(c_img)

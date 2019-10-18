@@ -132,21 +132,20 @@ import tensorflow as tf
 #tensor_reshape = tf.reshape(tensor, [1, 1, tensor.get_shape().as_list()[0],1])
 #print(tensor_reshape.get_shape()) # => (1, 1, 100, 1)
 
+start_pt = - 5.0
+stop_pt = 5.0
+leng = tf.to_int32(abs(start_pt) + stop_pt +1)
+value_range = tf.linspace(start_pt, stop_pt, leng, name="linspace")
 
 
 
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+value_range_op = sess.run(value_range)
 
 
+print(value_range_op)
 
-
-
-
-rgb = False
-
-if not rgb:
-    print("Entered if statement")
-else:
-    print("Entered else statement")
 
 
 
