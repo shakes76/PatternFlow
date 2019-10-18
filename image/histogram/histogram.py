@@ -7,7 +7,7 @@ dtype_range = {tf.bool: (False, True),
                tf.float64: (-1, 1)}
 
 def dtype_limits(image, clip_negative=False):
-
+    
     imin, imax = dtype_range[image.dtype.type]
     if clip_negative:
         imin = 0
@@ -70,9 +70,12 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         else:
             ValueError('Wrong value for the `source_range` argument')
             
-        hist, bin_edges = np.histogram(image, bins=nbins, range=hist_range)
-        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.
-
+        hist_centers = [i for i in range(256)]
+        
+        tensor = tf.convert_to_tensor(image, dtype=tf.float32)
+        hist = tf.histogram_fixed_width(tensor, hist_range, nbins)
+            
     if normalize:
         hist = hist / np.sum(hist)
+        
     return hist, bin_centers
