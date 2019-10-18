@@ -28,7 +28,6 @@ if sum(sum(acual_value2)) == sum(sum(test2)):
     print( "Test Passed")
  
 
-
 # Third  - if negative 
 image = img_as_float(data.moon()) 
 image[0] = -1

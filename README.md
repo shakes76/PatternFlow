@@ -29,7 +29,7 @@ equation ``Output = Input**gamma`` after scaling each pixel to the range 0 to 1.
     * Calculate the output as ((image / scale) ** gamma) * scale * gain
     
 ### Dependencies 
-The following libraries are used: x
+The following libraries are used: 
     * Tensorflow 
 
 ### Example of uses  
@@ -39,9 +39,13 @@ from skimage import data, exposure, img_as_float
 image = img_as_float(data.moon()) 
 output = adjust_gamma(image, 2)  
 print(output)
-  
-  
-  
+
+
+![Before gamma adjusted](https://i.ibb.co/592wp2X/image.png) 
+![After gamma adjusted](https://i.ibb.co/qkfFNbZ/output-gamma.png) 
+
+
+
 # Module: Scikit- Image  - Transform  
 
 
