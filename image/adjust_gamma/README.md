@@ -43,11 +43,8 @@ print(output)
 '''
 
 
-![Actual Imge]
-(https://i.ibb.co/592wp2X/image.png) 
-![Gamma adjust greater than 1]
-(https://i.ibb.co/qkfFNbZ/output-gamma.png)
-![Gamma adjust lesser than 1]
-(https://i.ibb.co/xmnb1V0/3.png) 
+![Actual Imge](https://i.ibb.co/592wp2X/image.png) 
+![Gamma adjust greater than 1](https://i.ibb.co/qkfFNbZ/output-gamma.png)
+![Gamma adjust lesser than 1](https://i.ibb.co/xmnb1V0/3.png) 
 
 
