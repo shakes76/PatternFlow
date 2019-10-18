@@ -54,9 +54,6 @@ def warp_coords(coord_map, shape, dtype=tf.float64):
         
     
     def plot_result(original, result):
-        """
-            plot images 
-        """
         from matplotlib import pyplot as plt
         fig, axes = plt.subplots(nrows=1, ncols=2)
         ax = axes.ravel()
@@ -66,7 +63,6 @@ def warp_coords(coord_map, shape, dtype=tf.float64):
         ax[1].set_title("Shifted Image by 20 Left and 10 Down")
         plt.tight_layout()
         plt.show()
-
     """
     sess = tf.Session()
     with sess.as_default():
@@ -112,16 +108,16 @@ def warp_coords(coord_map, shape, dtype=tf.float64):
 
 
 # In[3]: stack copy
-def _stackcopy(a, b):
-    """Copy b into each color layer of a, such that::
+def _stackcopy(target, source):
+    """Copy source into each color layer of target, such that::
 
-      a[:,:,0] = a[:,:,1] = ... = b
+      target[:,:,0] = target[:,:,1] = ... = source
 
     Parameters
     ----------
-    a : (M, N) or (M, N, P) ndarray
+    target : (M, N) or (M, N, P) ndarray
         Target array.
-    b : (M, N)
+    source : (M, N)
         Source array.
 
     Notes
@@ -129,7 +125,7 @@ def _stackcopy(a, b):
     Color images are stored as an ``(M, N, 3)`` or ``(M, N, 4)`` arrays.
 
     """
-    if a.ndim == 3:
-        a[:] = b[:, :, tf.newaxis]
+    if target.ndim == 3:
+        target[:] = source[:, :, tf.newaxis]
     else:
-        a[:] = b
+        target[:] = source

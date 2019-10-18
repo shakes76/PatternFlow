@@ -1,30 +1,32 @@
 # Transforms: _**warp_coords**_
+
 Ported the skimage.transform.warp_coords to Tensorflow
+see: https://scikit-image.org/docs/stable/api/skimage.transform.html#skimage.transform.warp_coords
 
 **warp_coords(coord_map, shape, dtype=<class 'tensorflow.float64'>)**
 
 ##**Description**
 This function build a source coordinates for the output of a 2-D image warp.
 
-##**Parameters**
+**Parameters**
 ----------
-**coord_map** : callable like GeometricTransform.inverse
+coord_map : callable like GeometricTransform.inverse
     Return input coordinates for given output coordinates.
     Coordinates are in the shape (P, 2), where P is the number
     of coordinates and each element is a ``(row, col)`` pair.
-**shape** : tuple
+shape : tuple
     Shape of output image ``(rows, cols[, bands])``.
-**dtype** : tensorflow.dtype or string
+dtype : tensorflow.dtype or string
     dtype for return value (sane choices: float32 or float64).
 
-##**Returns**
+**Returns**
 -------
-**coords** : (ndim, rows, cols[, bands]) array of dtype `dtype`
+coords : (ndim, rows, cols[, bands]) array of dtype `dtype`
         Coordinates for `scipy.ndimage.map_coordinates`, that will yield
         an image of shape (orows, ocols, bands) by drawing from source
         points according to the `coord_transform_fn`.
 
-##**Notes**
+**Notes**
 -----
 
 This is a lower-level routine that produces the source coordinates for 2-D
@@ -37,7 +39,7 @@ image-warping process, or to implement different post-processing logic
 than `warp` performs after the call to `ndi.map_coordinates`.
 
 
-##**Examples**
+**Examples**
 --------
     
 def shift_down10_left20(xy):
@@ -62,3 +64,22 @@ def plot_result(original, result):
     ax[1].set_title("Shifted Image by 20 Left and 10 Down")
     plt.tight_layout()
     plt.show()
+
+##**Dependencies**
+
+**_stackcopy(target, source)**
+Copy source into each color layer of target, such that::
+
+target[:,:,0] = target[:,:,1] = ... = source
+
+**Parameters**
+----------
+target : (M, N) or (M, N, P) ndarray
+    Target array.
+source : (M, N)
+    Source array.
+
+**Notes**
+-----
+Color images are stored as an ``(M, N, 3)`` or ``(M, N, 4)`` arrays.
+

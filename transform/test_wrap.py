@@ -18,7 +18,6 @@ def shift_down10_left20(xy):
     return xy - np.array([-20, 10])[None, :]
 
 def test_warp_coords_example():
-    ##
     image = data.astronaut().astype(np.float32)
     tf_coords = tf_wrap.warp_coords(shift_down10_left20, image.shape, dtype=tf.float32)
     tf_warped_image = map_coordinates(image, tf_coords)
