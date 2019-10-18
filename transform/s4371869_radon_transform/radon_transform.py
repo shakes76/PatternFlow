@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Tensorflow version of the Radom Transform. 
+Tensorflow version of the Radom Transform (ported from scikit-image). 
 
 References:
 [1] https://scikit-image.org/docs/stable/auto_examples/transform/plot_radon_transform.html#sphx-glr-auto-examples-transform-plot-radon-transform-py
-[2] https://www.clear.rice.edu/elec431/projects96/DSP/bpanalysis.html
 """
 
 __author__ = "Ting-Chen Shang"
@@ -37,6 +36,9 @@ def _convert_to_float(image, preserve_range):
     image : ndarray
         Transformed version of the input.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/v0.16.0/skimage/_shared/utils.py#L228
+
     """
     if preserve_range:
         # Convert image to double only if it is not single or double
@@ -65,6 +67,10 @@ def _coord_map(dim, coord, mode):
     mode : {'W', 'S', 'R', 'E'}
         Whether to wrap, symmetric reflect, reflect or use the nearest
         coordinate if `coord` falls outside [0, dim).
+
+    References:
+    1. https://github.com/siraferradans/scikit-image-temp/blob/db3b97aec1824d8f49116b8918ff95639af441d4/skimage/_shared/interpolation.pxd#L320
+
     """
     cmax = dim - 1
     if mode == 'S': # symmetric
@@ -101,7 +107,7 @@ def _coord_map(dim, coord, mode):
                 return coord % cmax
     return coord
 
-def _get_pixel2d_tf(image, rows, cols, r, c, mode, cval):
+def _get_pixel2d(image, rows, cols, r, c, mode, cval):
     """Get a pixel from the image, taking wrapping mode into consideration.
 
     Parameters
@@ -121,6 +127,9 @@ def _get_pixel2d_tf(image, rows, cols, r, c, mode, cval):
     -------
     value : numeric
         Pixel value at given position.
+
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/_shared/interpolation.pxd#L306
 
     """
     if mode == 'C':
@@ -145,6 +154,9 @@ def _transform_metric(x, y, H):
     x_, y_ : *np_floats
         Output coordinate.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/_warps_cy.pyx#L14
+
     """
     x_ = H[0] * x + H[2]
     y_ = H[4] * y + H[5]
@@ -162,6 +174,9 @@ def _transform_affine(x, y, H):
         Transformation matrix.
     x_, y_ : *np_floats
         Output coordinate.
+
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/_warps_cy.pyx#L32
 
     """
     x_ = H[0] * x + H[1] * y + H[2]
@@ -181,6 +196,9 @@ def _transform_projective(x, y, H):
     x_, y_ : *np_floats
         Output coordinate.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/_warps_cy.pyx#L50
+
     """
     z_ = H[6] * x + H[7] * y + H[8]
     x_ = (H[0] * x + H[1] * y + H[2]) / z_
@@ -188,7 +206,7 @@ def _transform_projective(x, y, H):
 
     return (x_, y_)
 
-def _nearest_neighbour_interpolation_tf(image, rows, cols, r, c, mode, cval):
+def _nearest_neighbour_interpolation(image, rows, cols, r, c, mode, cval):
     """Nearest neighbour interpolation at a given position in the image.
 
     Parameters
@@ -209,11 +227,14 @@ def _nearest_neighbour_interpolation_tf(image, rows, cols, r, c, mode, cval):
     value : np_float
         Interpolated value.
 
-    """
-    return _get_pixel2d_tf(image, rows, cols, math.round(r), math.round(c),
-                           mode, cval)
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/bde5a9bc3106d68ab9a4ca3dfed4f866fdd6a129/skimage/_shared/interpolation.pxd#L40
 
-def _bilinear_interpolation_tf(image, rows, cols, r, c, mode, cval):
+    """
+    return _get_pixel2d(image, rows, cols, math.round(r), math.round(c),
+                        mode, cval)
+
+def _bilinear_interpolation(image, rows, cols, r, c, mode, cval):
     """Bilinear interpolation at a given position in the image.
 
     Parameters
@@ -234,6 +255,9 @@ def _bilinear_interpolation_tf(image, rows, cols, r, c, mode, cval):
     value : numeric
         Interpolated value.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/bde5a9bc3106d68ab9a4ca3dfed4f866fdd6a129/skimage/_shared/interpolation.pxd#L70
+
     """
     minr = math.floor(r)
     minc = math.floor(c)
@@ -242,10 +266,10 @@ def _bilinear_interpolation_tf(image, rows, cols, r, c, mode, cval):
     dr = r - minr
     dc = c - minc
 
-    top_left = _get_pixel2d_tf(image, rows, cols, minr, minc, mode, cval)
-    top_right = _get_pixel2d_tf(image, rows, cols, minr, maxc, mode, cval)
-    bottom_left = _get_pixel2d_tf(image, rows, cols, maxr, minc, mode, cval)
-    bottom_right = _get_pixel2d_tf(image, rows, cols, maxr, maxc, mode, cval)
+    top_left = _get_pixel2d(image, rows, cols, minr, minc, mode, cval)
+    top_right = _get_pixel2d(image, rows, cols, minr, maxc, mode, cval)
+    bottom_left = _get_pixel2d(image, rows, cols, maxr, minc, mode, cval)
+    bottom_right = _get_pixel2d(image, rows, cols, maxr, maxc, mode, cval)
 
     top = (1 - dc) * top_left + dc * top_right
     bottom = (1 - dc) * bottom_left + dc * bottom_right
@@ -267,6 +291,9 @@ def _cubic_interpolation(x, f):
     value : np_float
         Interpolated value to be used in bicubic_interpolation.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/bde5a9bc3106d68ab9a4ca3dfed4f866fdd6a129/skimage/_shared/interpolation.pxd#L190
+
     """
     return (\
         f[1] + 0.5 * x * \
@@ -274,7 +301,7 @@ def _cubic_interpolation(x, f):
                 (2.0 * f[0] - 5.0 * f[1] + 4.0 * f[2] - f[3] + x * \
                     (3.0 * (f[1] - f[2]) + f[3] - f[0]))))
 
-def _bicubic_interpolation_tf(image, rows, cols, r, c, mode, cval):
+def _bicubic_interpolation(image, rows, cols, r, c, mode, cval):
     """Bicubic interpolation at a given position in the image.
 
     Interpolation using Catmull-Rom splines, based on the bicubic convolution
@@ -304,6 +331,9 @@ def _bicubic_interpolation_tf(image, rows, cols, r, c, mode, cval):
            processing". IEEE Transactions on Signal Processing, Acoustics,
            Speech, and Signal Processing 29 (6): 1153–1160.
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/bde5a9bc3106d68ab9a4ca3dfed4f866fdd6a129/skimage/_shared/interpolation.pxd#L213
+
     """
 
     r0 = tf.math.floor(r)
@@ -322,8 +352,8 @@ def _bicubic_interpolation_tf(image, rows, cols, r, c, mode, cval):
     for pr in range(4):
         fc = []
         for pc in range(4):
-            fc.append(_get_pixel2d_tf(image, rows, cols, pr + r0,
-                                      pc + c0, mode, cval))
+            fc.append(_get_pixel2d(image, rows, cols, pr + r0,
+                                   pc + c0, mode, cval))
         fr.append(_cubic_interpolation(xc, fc))
 
     return _cubic_interpolation(xr, tf.convert_to_tensor(fr))
@@ -378,6 +408,8 @@ def _warp_fast_tf(image, H, output_shape=None, order=1, mode='constant', cval=0)
     symmetric, the result would be [0, 1, 2, 2, 1, 0, 0], while for reflect it
     would be [0, 1, 2, 1, 0, 1, 2].
 
+    References:
+    1. https://github.com/scikit-image/scikit-image/blob/c221d982e493a1e39881feb5510bd26659a89a3f/skimage/transform/_warps_cy.pyx#L70
     """
     img = image.numpy()
     M = tf.reshape(H, (-1,)).numpy()
@@ -409,13 +441,13 @@ def _warp_fast_tf(image, H, output_shape=None, order=1, mode='constant', cval=0)
         transform_func = _transform_projective
 
     if order == 0:
-        interp_func = _nearest_neighbour_interpolation_tf
+        interp_func = _nearest_neighbour_interpolation
     elif order == 1:
-        interp_func = _bilinear_interpolation_tf
+        interp_func = _bilinear_interpolation
     elif order == 2:
         raise ValueError("Unsupported interpolation order", order)
     elif order == 3:
-        interp_func = _bilinear_interpolation_tf
+        interp_func = _bilinear_interpolation
     else:
         raise ValueError("Unsupported interpolation order", order)
 
@@ -506,6 +538,7 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
                                  dtype=dtype)
     img_shape = image.shape
 
+    # Pad image based on circle flag
     if circle:
         shape_min = tf.reduce_min(img_shape)
         radius = shape_min // 2
@@ -545,8 +578,11 @@ def radon(image, theta=None, circle=True, *, preserve_range=None):
     cols = []
 
     for i, angle in enumerate(theta):
-
         _angle = tf.cast(angle, image.dtype)
+        # Construct rotation matrix. This rotation matrix is formed of
+        # 1. translation in (-center, -center)
+        # 2. rotation by angle
+        # 3. translation in (center, center))
         cos_a, sin_a = tf.math.cos(_angle), tf.math.sin(_angle)
         R = tf.stack([
             [cos_a, sin_a, -center * (cos_a + sin_a - 1)],
