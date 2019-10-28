@@ -7,7 +7,7 @@ The implementation contains modules of Euclidean algorithm (number\_theory\_gcd.
 ### Algorithm description
 The Euclidean algorithm in number theory is an efficient method for computing the greatest common divisor (gcd) of two integers a and b. If gcd(a, b) = 1, then a and b are said to be coprime. The gcd(a,b) can be calculated by keeping divide one number by another and updating two numbers with the new remainder until the remainder becomes 0. For example, to compute gcd(48, 18), divide 48 by 18 to get a quotient of 2 and a remainder of 12. Then divide 18 by 12 to get a quotient of 1 and a remainder of 6. Then divide 12 by 6 to get a remainder of 0, which means that 6 is the gcd. 
 
-The extended Euclidean algorithm computes gcd of two integers a and b as well as the coefficients of Bézout's identity, which are integers x and y such that ax + by = gcd(a,b). For the extended algorithm, it keeps computing a sequence of quotients and a sequence of remainders until the terminal condition (remainder equals 0) is reached.Details of Euclidean algorithm and extended Euclidean algorithm can be found here:
+The extended Euclidean algorithm computes gcd of two integers a and b as well as the coefficients of Bézout's identity, which are integers x and y such that ax + by = gcd(a,b). For the extended algorithm, it keeps computing a sequence of quotients and a sequence of remainders until the terminal condition (remainder equals 0) is reached. Details of Euclidean algorithm and extended Euclidean algorithm can be found here as well as the psudocode referred:
 [Euclidean-algorithm-wikipedia](https://en.wikipedia.org/wiki/Euclidean_algorithm)
 and [extended-Euclidean-algorithm-wikipedia](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)
 
