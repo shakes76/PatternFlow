@@ -1,3 +1,13 @@
+"""
+Author: Lewis Bobbermen
+October 2019
+
+BSD-3 Clause License
+
+The "histogram" function is the main export of this file.
+It allows you to get a histogram of an image using Tensorflow with extra configuration options
+"""
+
 # Python built-ins, required for purely nicety reasons like raising warnings
 # and providing type-hints
 import warnings
