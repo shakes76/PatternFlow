@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Yuzhe Jie
+# Last update: 18/10/2019
+
 import tensorflow as tf
 
 def tf_sobel_h(image):

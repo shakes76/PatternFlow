@@ -22,6 +22,7 @@ highlighting the horizontal edges.
 ## Result Figure
 ![sobel_h filter](figure.png)
 
+
 ## Dependencies
 The function tf_sobel_h, it does not use any dependencies
 except tensorflow. However in test driver the resulting 

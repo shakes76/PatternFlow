@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Yuzhe Jie
+# Last update: 18/10/2019
+
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
