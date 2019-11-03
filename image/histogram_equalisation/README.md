@@ -21,7 +21,7 @@ Some example applications are:
 * Improving thermal and satellite images
 
 
-![image histogram comparison](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/hist.png)
+![image histogram comparison](hist.png)
 
 
 ## Algorithm
@@ -82,7 +82,7 @@ equalize_hist(image, nbins=256, mask=None)
     
     plt.show()
     
-![equalised gray image](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/simple.png)
+![equalised gray image](simple.png)
 
 ## Examples
 
@@ -105,7 +105,7 @@ equalize_hist(image, nbins=256, mask=None)
     
     plt.show()
     
-![equalised colour image](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/colour.png)
+![equalised colour image](colour.png)
     
 #### Applying a Mask
     
@@ -129,7 +129,7 @@ equalize_hist(image, nbins=256, mask=None)
     
     plt.show()
     
-![equalised gray image w/ mask](https://github.com/drussell13/PatternFlow/blob/histogram-equalisation/image/histogram_equalisation/mask.png)
+![equalised gray image w/ mask](mask.png)
 
 
 ## References
