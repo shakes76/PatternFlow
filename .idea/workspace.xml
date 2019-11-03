@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fce8a40d-75ac-4559-8609-74ce0f3b9ecf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/fractals/44575986_yuzhe/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/fractals/44575986_yuzhe/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,13 +29,16 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/lyapunov.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
+            <state relative-caret-position="105">
               <caret line="7" column="21" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="21" />
+              <folding>
+                <element signature="e#77#100#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fractals/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
@@ -48,8 +51,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/my_sobel_h.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
-              <caret line="34" column="29" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+            <state relative-caret-position="225">
+              <caret line="15" column="2" selection-start-line="15" selection-start-column="2" selection-end-line="15" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -57,8 +60,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="16" selection-start-line="16" selection-end-line="16" />
+            <state>
+              <caret selection-end-line="2" selection-end-column="25" />
               <folding>
                 <element signature="e#77#95#0" expanded="true" />
               </folding>
@@ -66,11 +69,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
+            <state>
+              <caret selection-end-line="2" selection-end-column="25" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -129,9 +135,9 @@
         <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/finite_radon_transform_2D.py" />
         <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/histogram_matching.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/my_sobel_h.py" />
-        <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/main.py" />
         <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/README.md" />
+        <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/main.py" />
+        <option value="$PROJECT_DIR$/fractals/44575986_yuzhe/my_sobel_h.py" />
       </list>
     </option>
   </component>
@@ -146,8 +152,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="215" />
-    <option name="y" value="24" />
+    <option name="x" value="507" />
+    <option name="y" value="114" />
     <option name="width" value="1400" />
     <option name="height" value="829" />
   </component>
@@ -168,18 +174,6 @@
               <item name="PatternFlow" type="462c0819:PsiDirectoryNode" />
               <item name="fractals" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="PatternFlow" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PatternFlow" type="462c0819:PsiDirectoryNode" />
-              <item name="fractals" type="462c0819:PsiDirectoryNode" />
-              <item name="44575986_yuzhe" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="PatternFlow" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PatternFlow" type="462c0819:PsiDirectoryNode" />
-              <item name="fractals" type="462c0819:PsiDirectoryNode" />
-              <item name="lyapunov_fractal" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -188,7 +182,9 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/filtering" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -296,15 +292,15 @@
       <option name="presentableId" value="Default" />
       <updated>1570603160965</updated>
       <workItem from="1570603166732" duration="70629000" />
-      <workItem from="1572762179331" duration="708000" />
+      <workItem from="1572762179331" duration="2969000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="71337000" />
+    <option name="totallyTimeSpent" value="73598000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="217" y="27" width="1400" height="829" extended-state="0" />
+    <frame x="507" y="114" width="1400" height="829" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2533137" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -373,38 +369,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/lyapunov.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="7" column="21" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fractals/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/my_sobel_h.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="34" column="29" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="16" selection-start-line="16" selection-end-line="16" />
-          <folding>
-            <element signature="e#77#95#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/figure.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -431,10 +395,48 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/main.py">
+    <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/lyapunov.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
-          <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
+          <caret line="7" column="21" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="21" />
+          <folding>
+            <element signature="e#77#100#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fractals/lyapunov_fractal/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="2" selection-end-column="25" />
+          <folding>
+            <element signature="e#77#95#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="2" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fractals/44575986_yuzhe/my_sobel_h.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="2" selection-start-line="15" selection-start-column="2" selection-end-line="15" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fractals/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
         </state>
       </provider>
     </entry>
