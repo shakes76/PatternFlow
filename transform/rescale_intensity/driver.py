@@ -1,8 +1,4 @@
 import os
-
-os.chdir('/Users/khadekirti/Desktop/PatternFlow-topic-algorithms/transform/rescale_intensity')
-
-
 from rescale_intensity import rescale_intensity
 import numpy as np
 from  skimage.exposure import rescale_intensity as rescale_intensity_numpy
