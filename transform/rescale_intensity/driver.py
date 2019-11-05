@@ -1,15 +1,12 @@
 __author__ = "Vikram Rayakottai Niranjanvel (45484450)"
-__date__ = "03/05/2019"
+__date__ = "05/11/2019"
 
 """
 Driver script to test the working of tensorflow implementation of the rescale_intensity module.
 Licensing: Modeule was devloped for the Pattern recognition and image processing library. 
-You are free to use the library in any implementations. 
+You are free to use the rescale_intensity modeule in any implementations. 
 """
 
-
-
-import os
 from rescale_intensity import rescale_intensity
 import numpy as np
 from  skimage.exposure import rescale_intensity as rescale_intensity_numpy
