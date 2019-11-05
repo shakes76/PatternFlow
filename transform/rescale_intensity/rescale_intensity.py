@@ -1,10 +1,14 @@
+"""
+Tensor flow implementation of rescale_intensity. Rescales the input np array based on the passed parameters
+
+"""
+
+
 import tensorflow as tf
 
 
 
-
 #Building the dictionary of supported data types and the range supported by each type
-
 
 DTYPE_RANGE =  {'bool': (False, True),
  'bool_': (False, True),
@@ -48,9 +52,13 @@ def intensity_range(image,dtype, range_values='image', clip_negative=False):
 
     """
 
-
+    #Using the input to decide the action to perform
+   
+    # if dtype is used, assign dtype tp reuse
     if range_values == 'dtype':
         range_values = dtype
+    
+    #Based on the paramter return min and max values of the images  
     if str(range_values) == 'image':
         i_min = tf.reduce_min(image).eval()
         i_max = tf.reduce_max(image).eval()
@@ -89,6 +97,7 @@ def rescale_intensity(input_image,in_range='image', out_range='dtype'):
     rescale_intensity(np.array([51, 102, 153], dtype=np.unit8),in_range=(0,102)) --> [127, 255, 255]
     rescale_intensity(np.array([51, 102, 153], dtype=np.unit8),out_range=(0,102)) --> [0, 51, 102]
   """
+  #Run baisc checks to avoid unsupported paramters
   dtype = input_image.dtype
   if in_range == "image" or in_range == 'dtype' or (len(in_range) == 2 and type(in_range) == tuple):
       pass
@@ -103,20 +112,28 @@ def rescale_intensity(input_image,in_range='image', out_range='dtype'):
       pass
   else:
       raise ValueError('Unsupported input to out_range', out_range)
+    
+  #Create tensors and session
   input_image = tf.constant(input_image)
   sess = tf.InteractiveSession()
   tf.global_variables_initializer().run()
+  
+  #Get the min and max value for input and output based on the parameters
   imin, imax = intensity_range(input_image,dtype, in_range)
   omin, omax = intensity_range(input_image,dtype,out_range,clip_negative=(imin >= 0))
   input_image = tf.dtypes.cast(input_image,"float",name=None)
+  
+  #clip values based on the input image's min and max values
   image=tf.clip_by_value(input_image,imin,imax,name=None)
   if imin!=imax:
     image=(image-imin)/float(imax-imin)
-
+  #rescle the image based on the chosen output min and max values
   output=(image * (omax - omin) + omin)
   output = tf.cast(output, dtype=str(dtype))
   output=output.eval()
+  #Close existing sessions
   sess.close()
+  
   return output
 
 
