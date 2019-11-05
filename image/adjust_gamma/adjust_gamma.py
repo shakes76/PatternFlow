@@ -9,7 +9,8 @@ Created on Fri Oct 18 00:51:17 2019
 import tensorflow as tf 
 
 def adjust_gamma(image, gamma=1, gain=1):
-    """Performs Gamma Correction on the input image.
+    """
+    Performs Gamma Correction on the input image.
     Also known as Power Law Transform.
     This function transforms the input image pixelwise according to the
     equation ``O = I**gamma`` after scaling each pixel to the range 0 to 1.

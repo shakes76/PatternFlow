@@ -4,6 +4,17 @@
 Created on Sun Oct 13 18:24:54 2019
 
 @author: khadekirti
+
+
+For Downscale Local mean, things that needs to check are
+- Check if the function is working
+- Check if the the function throws a error for negative factor
+- Check if the the funtion throws an error if the shape of downscale is different from inout size
+- Check if block shape is not divisable
+- Check if the block shape is not tuple
+- Test with cval
+- Test with large image
+
 """
 
 import numpy as np 
