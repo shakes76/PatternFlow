@@ -3,13 +3,10 @@ Tensor flow implementation of rescale_intensity. Rescales the input np array bas
 
 """
 
-
 import tensorflow as tf
 
-
-
 #Building the dictionary of supported data types and the range supported by each type
-
+#hard coded using the support types from numpy 
 DTYPE_RANGE =  {'bool': (False, True),
  'bool_': (False, True),
  'float': (-1, 1),
@@ -60,17 +57,21 @@ def intensity_range(image,dtype, range_values='image', clip_negative=False):
     
     #Based on the paramter return min and max values of the images  
     if str(range_values) == 'image':
+        #Pushes values to imin and imax
         i_min = tf.reduce_min(image).eval()
         i_max = tf.reduce_max(image).eval()
     elif  str(range_values) in DTYPE_RANGE:
+        #Uses dictionary to assign values
         i_min, i_max = DTYPE_RANGE[str(range_values)]
         if clip_negative==True:
             i_min = 0
     elif  range_values in DTYPE_RANGE:
+        #Uses dictionary to assign values
         i_min, i_max = DTYPE_RANGE[range_values]
         if clip_negative==True:
             i_min = 0
     else:
+        #use paramters which are passed
         i_min, i_max = range_values
     return i_min, i_max
 
