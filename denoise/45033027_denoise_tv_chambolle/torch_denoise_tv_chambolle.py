@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Oct 13 14:30:46 2019
+Last edited on 06/ Nov/ 2019
 
-@author: s4503302
+author: Wei-Chung
+
+description: this is the denoise function "denoise_tv_chambolle" in skimage.
+It only supports numpy array, this function transfer it and it support torch.tensor.
 """
 
 import torch

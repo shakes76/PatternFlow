@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 14 17:08:43 2019
+Last edited on 06/ Nov/ 2019
 
-@author: s4503302
+author: Wei-Chung
+
+description: this is the test function for the denoise function "denoise_tv_chambolle"
+in torch version. It supports data structure "torch.tensor". 
+
 """
 
 
