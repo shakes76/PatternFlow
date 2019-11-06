@@ -36,7 +36,7 @@ def tf_intensity_range(image,range_values='image',clip_negative=False):
 
 
     tf_dtype =tf.as_dtype(image.dtype) 
-    tf_image = tf.convert_to_tensor(image,dtype=tf_dtype) 
+    tf_image = tf.convert_to_tensor(image,dtype=tf_dtype) # converts to tensor for tensorflow conversions 
     
     if range_values == 'dtype': 
         i_min, i_max = tf_dtype.limits 
@@ -78,17 +78,17 @@ def tf_rescale_intensity(image,in_range='image',out_range='dtype'):
     """
 
     tf_dtype = tf.as_dtype(image.dtype) 
-    tf_image = tf.convert_to_tensor(image,dtype=tf_dtype) 
+    tf_image = tf.convert_to_tensor(image,dtype=tf_dtype) # converts to tensor for tf conversions 
     
     imin, imax = tf_intensity_range(image,in_range) 
 
-    omin, omax = tf_intensity_range(image,out_range,clip_negative=imin>0)
+    omin, omax = tf_intensity_range(image,out_range,clip_negative=imin>0) # sets range for rescaling 
 
     imin = tf.cast(imin,tf.float32)
     imax = tf.cast(imax,tf.float32)
     omin = tf.cast(omin,tf.float32)
     omax = tf.cast(omax,tf.float32)
-    tf_image = tf.cast(tf_image,tf.float32)
+    tf_image = tf.cast(tf_image,tf.float32) # type cast required for output 
 
     image = tf.clip_by_value(tf_image,clip_value_min=imin,clip_value_max=imax)
 
