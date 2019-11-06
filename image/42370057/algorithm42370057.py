@@ -1,11 +1,19 @@
 
 """
-try:
-  # %tensorflow_version only exists in Colab.
-  %tensorflow_version 2.x
-except Exception:
-  pass
-"""
+Author: Cameron Gordon, 42370057 
+Licence: GNU General Public Licence v3.0
+File provided free of copyright 
+Date: 6 Nov 2019
+
+Two algorithms from the Scikit Exposure module implemented in Tensorflow.
+
+tf_intensity_range implements the intensity_range function
+tf_rescale_intensity implements the rescale_intensity function
+The algorithms are contained in the algorithm42370057.py file. 
+
+A separate driver is contained within driver42370057.py. 
+It calls an example image face and performs the tf_rescale_intenstiy function, plotting the output. """
+
 import tensorflow as tf 
 
 print(tf.version)
