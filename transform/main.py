@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# last updated:2019-11-07
+__author__ = "Yao Chen"
+
 import matplotlib.pyplot as plt
 import match_histograms as hist
 import tensorflow as tf

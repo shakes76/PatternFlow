@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# last updated:2019-11-07
+"""
+Algorithm from skimage.exposure model in Tensorflow.
+"""
+__author__ = "Yao Chen"
+
 import tensorflow as tf 
 import cProfile
 
