@@ -115,7 +115,7 @@ def match_histograms(image, reference, *, multichannel=False):
         if image.shape[-1] != reference.shape[-1]:
             raise ValueError('Number of channels in the input image and '
                              'reference image must match!')
-
+        # define a tensor
         matched = tf.zeros(image.shape, dtype=image.dtype)
         for channel in range(image.shape[-1]):
             matched_channel = _match_cumulative_cdf(image[..., channel],
