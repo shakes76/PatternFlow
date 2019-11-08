@@ -6,6 +6,6 @@ The function **histogram** has four parameters, includes image, nbins, source_ra
 
 The below is the output of the algorithm:
 
-![Image text](https://github.com/QijiangYao/PatternFlow/raw/topic-algorithms/image/output.PNG)
+![Image text](https://github.com/QijiangYao/PatternFlow/raw/topic-algorithms/Histogram_yqj/output.PNG)
 
 Example usage: image quality enhancement such as image smoothing, which is used to Reduce or eliminate mutations, edges, and noise in the image.
