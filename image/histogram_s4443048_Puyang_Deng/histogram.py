@@ -1,3 +1,10 @@
+"""
+        COMP3710 Open source project
+        Name: Puyang Deng
+        Student Number: s44430487
+        
+        Tensorflow port of skimage.exposure.histogram
+"""
 import tensorflow as tf
 import warnings
 
@@ -80,7 +87,7 @@ def _bincount_histogram(image, source_range):
         image_max = int(image.max().astype(tf.int64))
         
     elif source_range == 'dtype':
-        image_min, image_max = dtype_limits(image, clip_negative=False)
+        image_min, image_max = dtype_limits(image, clip_negative=False)#define the data max and min range
         
     image, offset = _offset_array(image, image_min, image_max)
     minlength=image_max - image_min + 1
@@ -141,9 +148,9 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
     else:
         
         if source_range == 'image':
-            hist_range = [0.0, 256.0]
+            hist_range = [0.0, 256.0]#modify the historgram range as image RGB 256   
         elif source_range == 'dtype':
-            hist_range = dtype_limits(image, clip_negative=False)
+            hist_range = dtype_limits(image, clip_negative=False)#modify the histogram range as datype case
         else:
             ValueError('Wrong value for the `source_range` argument')
             
