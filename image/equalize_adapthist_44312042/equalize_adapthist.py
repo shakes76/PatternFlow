@@ -97,16 +97,18 @@ def tfhist(image, nbins=12, normalize=False):
     bins = tf.linspace(current_min, current_max, nbins+1)
     
     y, idx, count = tf.unique_with_counts(img)
-
+    
+    
     for i in range(nbins):
         if i==nbins-1:
+            # if last bin cut off at less than or equal to the bin limit
             mask = (img <= bins[i+1]) 
             lim = tf.boolean_mask(img, mask)
-
-        else:
+            
+        else: # cut off bin at less than upper bound 
             mask = (img < bins[i+1]) 
             lim = tf.boolean_mask(img, mask)
-        mask = (lim >= bins[i]) 
+        mask = (lim >= bins[i]) # all bins are greater than or equal to lower bound
         lim = tf.boolean_mask(img, mask)
 
         vals = tf.dtypes.cast(mask, tf.int32)
