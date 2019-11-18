@@ -1,3 +1,6 @@
+# Simple test code to implement the adjust_sigmoid correction
+# Use openCV to show the adjusted image
+# ==========================================================
 import cv2
 from google.colab.patches import cv2_imshow
 
