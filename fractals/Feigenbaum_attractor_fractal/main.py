@@ -1,4 +1,7 @@
-https://en.wikipedia.org/wiki/Logistic_mapimport tensorflow as tf
+# -*- coding: utf-8 -*-
+# Author: Chen Xu
+# Last update: 11/10/2020
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 def logistic(r, x):
@@ -22,7 +25,7 @@ fig = plt.figure(figsize=(8,6))
 
 for t in T:
     x = logistic(Lambdas, x)
-    
+
     #Display the plot
     if t >= (N - last):
         plt.plot(Lambdas, x, ',k', alpha=.25)
