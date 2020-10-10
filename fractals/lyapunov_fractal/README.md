@@ -1,11 +1,11 @@
-# Lyapunov fractal
-_Author: Antoine DELPLACE_
-_Last update: 19/09/2019_
+# 	Feigenbaum attractor fractal
+_Author: Chen Xu_
+_Last update: 11/10/2020_
 
-The presented module computes and prints the Lyapunov exponent in the **AB sequence** configuration.
+The presented module computes and prints the 	Feigenbaum attractor exponent in the **AB sequence** configuration.
 
 ## Result Figure
-![Lyapunov fractal](figure.png)
+![	Feigenbaum attractor fractal](figure.png)
 
 ## References
-[https://en.wikipedia.org/wiki/Lyapunov_fractal](https://en.wikipedia.org/wiki/Lyapunov_fractal) - Visited on 19/09/2019
+[https://en.wikipedia.org/wiki/Logistic_map](https://en.wikipedia.org/wiki/Logistic_map) - Visited on 11/10/2020
