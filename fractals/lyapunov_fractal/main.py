@@ -1,35 +1,28 @@
-# -*- coding: utf-8 -*-
-# Author: Antoine DELPLACE
-# Last update: 19/09/2019
+https://en.wikipedia.org/wiki/Logistic_mapimport tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
+def logistic(r, x):
+    '''
+    The logistic equation
+    '''
+    return r * x * (1 - x)
 
-import lyapunov
-
-def plot(Efinal, vmin, vcenter, vmax, extent):
-    fig = plt.figure(figsize=(10,10))
-    offset = mcolors.DivergingNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
-    Efinal = offset(Efinal)
-    plt.imshow(Efinal, extent=extent, cmap="OrRd")
-    plt.colorbar()
-    plt.show()
+N = 1000
+T = np.arange(N)
+T = tf.constant(T.astype(np.float32))
 
 
-##Driver script
-if __name__ == "__main__":
-    # Parameters
-    P0 = 0.5
-    a, b = np.mgrid[2:4:0.002, 2:4:0.002]
-    nb_iters = 500
+last = 100
+deltaLambda = 1000
+x0 = 0.5
+Lambdas = np.linspace(0.6, 6.5, deltaLambda)
+x = x0 * np.ones_like(Lambdas)
+
+fig = plt.figure(figsize=(8,6))
+
+for t in T:
+    x = logistic(Lambdas, x)
     
-    Efinal = lyapunov.lyapunov_exponent(P0, a, b, nb_iters)
-    #print(Efinal.min(), Efinal.max())
-
-    # Plot parameters
-    vmin = -10
-    vcenter = 0.
-    vmax = Efinal.max()
-    extent = [2,4,2,4]
-    
-    plot(Efinal, vmin, vcenter, vmax, extent)
+    #Display the plot
+    if t >= (N - last):
+        plt.plot(Lambdas, x, ',k', alpha=.25)
