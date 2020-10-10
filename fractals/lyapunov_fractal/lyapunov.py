@@ -1,40 +1,31 @@
 # -*- coding: utf-8 -*-
-# Author: Antoine DELPLACE
-# Last update: 19/09/2019
+# Author: Chen Xu
+# Last update: 11/10/2020
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+def logistic(r, x):
+    '''
+    The logistic equation
+    '''
+    return r * x * (1 - x)
 
-##Lyapunov fractal
-def lyapunov_exponent(P0, a, b, nb_iters):
-    sess = tf.InteractiveSession()
+N = 1000
+T = np.arange(N)
+T = tf.constant(T.astype(np.float32))
 
-    atf = tf.Variable(a.astype(np.float32))
-    btf = tf.Variable(b.astype(np.float32))
-    Pn = tf.Variable(tf.fill(tf.shape(a), P0))
-    n = tf.Variable([0.])
-    E = tf.Variable(tf.zeros_like(Pn, tf.float32))
 
-    tf.global_variables_initializer().run() #init variables
+last = 100
+deltaLambda = 1000
+x0 = 0.5
+Lambdas = np.linspace(0.6, 6.5, deltaLambda)
+x = x0 * np.ones_like(Lambdas)
 
-    # The chosen sequence is: AB
-    Pn_ = atf*Pn*(1-Pn) #A
-    Pnp_ = btf*(1-2*Pn_)
-    Pn_2 = btf*Pn_*(1-Pn_) #B
-    Pnp_2 = atf*(1-2*Pn_2)
+fig = plt.figure(figsize=(8,6))
 
-    # Computing Lyapunov exponent
-    n_ = n+2
-    E_ = 1/n_*(E*n+tf.log(tf.abs(Pnp_))+tf.log(tf.abs(Pnp_2)))
-
-    step = tf.group(n.assign(n_),
-                    E.assign(E_),
-                    Pn.assign(Pn_2))
-
-    for i in range(nb_iters):
-        step.run()
-
-    Efinal = E.eval()
-
-    sess.close()
-
-    return Efinal
+for t in T:
+    x = logistic(Lambdas, x)
+    
+    #Display the plot
+    if t >= (N - last):
+        plt.plot(Lambdas, x, ',k', alpha=.25)
