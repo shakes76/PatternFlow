@@ -14,4 +14,4 @@ This library is created and maintained by The University of Queensland [COMP3710
 * Then put in a pull request for the repository owner to approve and that's it!
 
 ## Fractals Available
-* Lyapunov fractal
+* Feigenbaum attractor fractal
