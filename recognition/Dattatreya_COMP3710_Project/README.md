@@ -1,0 +1,1 @@
+This project deals with implementing one of the projects as a part of COMP-3710 final report
