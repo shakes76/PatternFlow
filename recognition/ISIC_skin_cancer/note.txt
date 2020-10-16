@@ -1,0 +1,2 @@
+dice(A,B) = 2 * | intersection(A,B) | / ( | A | + | B | )
+jaccard(A,B) = | intersection(A,B) | / | union(A,B) |
