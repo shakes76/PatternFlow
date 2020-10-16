@@ -1,5 +1,7 @@
-import tf
+import tensorflow as tf
 
 
 class LateralityClassifier:
-    pass
+
+    def build_model(self):
+        pass
