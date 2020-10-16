@@ -9,20 +9,10 @@ import random
 
 def process_dataset(dir_data, N_train, N_test):
     all_image_names = os.listdir(data_dir)
+    random.shuffle(all_image_names)
     # num_total: 18680
     # num left found: 7,760
-    # num_right found: 10,080
-
-    print(len(all_image_names))
-    print(len([name for name in all_image_names if "Left" in name]))
-    print(len([name for name in all_image_names if "LEFT" in name]))
-    print(len([name for name in all_image_names if "L_E_F_T" in name]))
-    print(len([name for name in all_image_names if "left" in name]))
-
-    print(len([name for name in all_image_names if "right" in name]))
-    print(len([name for name in all_image_names if "RIGHT" in name]))
-    print(len([name for name in all_image_names if "R_I_G_H_T" in name]))
-    print(len([name for name in all_image_names if "right" in name]))
+    # num_right found: 10,920
 
     train_image_names = all_image_names[:N_train]
 
@@ -32,16 +22,16 @@ def process_dataset(dir_data, N_train, N_test):
     def get_data(image_names):
         X_set = []
         y_set = []
-        for i, myid in enumerate(image_names):
-            image = load_img(dir_data + "/" + myid,
+        for i, name in enumerate(image_names):
+            image = load_img(dir_data + "/" + name,
                              target_size=img_shape[:2])
 
             # normalise image pixels
             image = img_to_array(image) / 255.0
 
             X_set.append(image)
-            if "LEFT" in image_names or "L_E_F_T" in image_names or \
-                    "Left" in image_names or "left" in image_names:
+            if "LEFT" in name or "L_E_F_T" in name or \
+                    "Left" in name or "left" in name:
                 label = 0
             else:
                 label = 1
