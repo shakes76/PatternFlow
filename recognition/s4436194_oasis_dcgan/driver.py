@@ -14,8 +14,12 @@ from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
 
 
 def run_dcgan_training():
+
+    batch_size = 4
+    epochs = 3
+
     framework = DCGANModelFramework()
-    framework.train_dcgan(batch_size=32, epochs=3)
+    framework.train_dcgan(batch_size=batch_size, epochs=epochs)
 
 
 def run_dcgan_tests():
