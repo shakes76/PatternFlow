@@ -7,9 +7,12 @@ class Dataset:
     Class used to read raw data and return in a batch format.
     """
 
-    def __init__(self, data_files):
+    def __init__(self, data_files, image_width, image_height):
         self.data_files = data_files
         self.n_files = len(data_files)
+
+        self.image_width = image_width
+        self.image_height = image_height
 
     def get_batches(self, batch_size: int) -> np.ndarray:
         idx = 0
@@ -19,7 +22,6 @@ class Dataset:
             yield batch
 
     def _get_batch(self, image_files: list) -> np.ndarray:
-
         images = [self._get_image(sample_file) for sample_file in image_files]
         batch = np.array(images).astype(np.float32)
 
@@ -28,8 +30,8 @@ class Dataset:
 
         return batch
 
-    @staticmethod
-    def _get_image(image_path: str) -> np.ndarray:
-
+    def _get_image(self, image_path: str) -> np.ndarray:
         image = Image.open(image_path)
+        assert image.size == (self.image_width, self.image_height), f"Inconsistent image size: {image.size}"
+
         return np.array(image.convert(mode="L"))
