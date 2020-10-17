@@ -18,7 +18,7 @@ DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_s
 DATA_TEST_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_test"
 DATA_VALIDATE_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_validate"
 
-CHECKPOINT_DIR = "/training_checkpoints"
+CHECKPOINT_DIR = "./training_checkpoints"
 
 IMAGE_WIDTH, IMAGE_HEIGHT = 256, 256
 N_EPOCH_SAMPLES = 16
@@ -30,6 +30,10 @@ tf.random.set_seed(3710)
 class DCGANModelFramework:
 
     def __init__(self):
+
+        self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}"
+        os.makedirs(f"output/{self.save_name}/", exist_ok=True)
+        os.makedirs(f"training_checkpoints/{self.save_name}/", exist_ok=True)
 
         # Instantiate discriminator and generator objects
         self.discriminator = make_discriminator_model(IMAGE_WIDTH, IMAGE_HEIGHT)
@@ -60,8 +64,7 @@ class DCGANModelFramework:
         dataset = Dataset(glob.glob(f"{DATA_TRAIN_DIR}/*.png"), IMAGE_WIDTH, IMAGE_HEIGHT)
 
         # Set up checkpoints
-        save_name = f"{datetime.now().strftime('%Y-%m-%d')}"
-        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"checkpoint-{save_name}")
+        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/ckpt")
         checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
                                          discriminator_optimizer=self.discriminator_optimizer,
                                          generator=self.generator,
@@ -69,7 +72,6 @@ class DCGANModelFramework:
 
         # Set the seed for all saved images, so we consistently get the same images
         seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
-        os.makedirs(f"output/{save_name}", exist_ok=True)
 
         # Check for existing checkpoint, restore if possible
         if os.path.exists(checkpoint_prefix):
@@ -108,7 +110,7 @@ class DCGANModelFramework:
 
         # Main epoch loop
         total_batches = int((dataset.n_files / batch_size) + 1)
-        self.generate_and_save_images(0, seed, f"output/{save_name}")
+        self.generate_and_save_images(0, seed)
 
         for e in range(epochs):
             start = time.time()
@@ -177,14 +179,13 @@ class DCGANModelFramework:
         """
         return self.generator_loss(tf.ones_like(fake_output), fake_output)
 
-    def generate_and_save_images(self, epoch, test_input, save_dir):
+    def generate_and_save_images(self, epoch, test_input):
         """
         Create a set of test images, designed to do this at each epoch
 
         Args:
             epoch: Number of epochs completed
             test_input: Array of noise to generate image from
-            save_dir:
         """
 
         predictions = self.generator(test_input, training=False)
@@ -199,7 +200,7 @@ class DCGANModelFramework:
             plt.imshow(image, cmap="Greys")
             plt.axis('off')
 
-        plt.savefig("{}/image_at_epoch_{:04d}.png".format(save_dir, epoch))
+        plt.savefig("output/{}/image_at_epoch_{:04d}.png".format(self.save_name, epoch))
         plt.close()
 
     def test_dcgan(self):

@@ -105,8 +105,6 @@ def make_generator_model_basic(input_shape):
     model.add(layers.LeakyReLU())
     assert model.output_shape == (None, 256, 256, 1)
 
-    print(model.output_shape)
-
     return model
 
 

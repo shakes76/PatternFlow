@@ -3,6 +3,7 @@ import unittest
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
 from recognition.s4436194_oasis_dcgan.data_helper import Dataset
 from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
@@ -11,11 +12,12 @@ from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
     IMAGE_WIDTH,
     IMAGE_HEIGHT,
 )
+from recognition.s4436194_oasis_dcgan.models_helper import make_generator_model_basic, make_discriminator_model
 
 
 def run_dcgan_training():
 
-    batch_size = 4
+    batch_size = 8
     epochs = 3
 
     framework = DCGANModelFramework()
@@ -33,7 +35,12 @@ class DriverTests(unittest.TestCase):
     """
 
     def test_get_batches(self):
-        """Test the get batches method"""
+        """
+        Test the get batches method
+
+        Get batches yields images as numpy arrays that are then used as training batches. We can get
+        one of these batches and check the images are correct/the output has the correct format
+        """
 
         test_batch_size = 16
         dataset = Dataset(glob.glob(f"{DATA_TRAIN_DIR}/*.png"), IMAGE_WIDTH, IMAGE_HEIGHT)
@@ -57,9 +64,34 @@ class DriverTests(unittest.TestCase):
 
         print("Done")
 
+    def test_generator_model(self):
+        """
+        Output of the generator should be a 256 x 256 image
+        """
+        model = make_generator_model_basic(100)
+        input_ = tf.random.normal([1, 100])
+        output = model(input_)
+
+        # Check the output is correct
+        self.assertIsInstance(output, tf.Tensor)
+        self.assertEquals(output.shape, tf.TensorShape((1, 256, 256, 1)))
+
+    def test_discriminator_model(self):
+        """
+        Output of the generator should be a single value tensor
+        """
+
+        model = make_discriminator_model(256, 256)
+        input_ = tf.random.normal([1, 256, 256, 1])
+        output = model(input_)
+
+        # Check the output is correct
+        self.assertIsInstance(output, tf.Tensor)
+        self.assertEquals(output.shape, tf.TensorShape((1, 1)))
+
 
 if __name__ == '__main__':
-    run_dcgan_training()
+    # run_dcgan_training()
     # run_dcgan_tests()
 
     unittest.main()

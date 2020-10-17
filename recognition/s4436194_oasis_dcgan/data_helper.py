@@ -8,6 +8,7 @@ class Dataset:
     """
 
     def __init__(self, data_files, image_width, image_height):
+
         self.data_files = data_files
         self.n_files = len(data_files)
 
@@ -15,6 +16,15 @@ class Dataset:
         self.image_height = image_height
 
     def get_batches(self, batch_size: int) -> np.ndarray:
+        """
+        Serve data batches, yield so this can be called as a loop
+
+        Args:
+            batch_size:
+
+        Returns:
+
+        """
         idx = 0
         while idx + batch_size <= self.n_files:
             batch = self._get_batch(self.data_files[idx: idx + batch_size])
@@ -22,6 +32,15 @@ class Dataset:
             yield batch
 
     def _get_batch(self, image_files: list) -> np.ndarray:
+        """
+        Return an array of images in the form of a batch
+
+        Args:
+            image_files:
+
+        Returns:
+
+        """
         images = [self._get_image(sample_file) for sample_file in image_files]
         batch = np.array(images).astype(np.float32)
 
@@ -31,6 +50,15 @@ class Dataset:
         return batch
 
     def _get_image(self, image_path: str) -> np.ndarray:
+        """
+        Returns the numpy array of a single image
+
+        Args:
+            image_path:
+
+        Returns:
+
+        """
         image = Image.open(image_path)
         assert image.size == (self.image_width, self.image_height), f"Inconsistent image size: {image.size}"
 
