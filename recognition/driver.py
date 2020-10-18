@@ -46,6 +46,7 @@ def dsc(label, pred_label, layer):
     print(label.shape)
     print("pred_label")
     tf.print(tf.unique(tf.reshape(pred_label, [-1])))
+    print(pred_label.shape)
     print(pred_label[0][0])
     print(pred_label[0][0] == 0)
     print(pred_label[0][0] == 1)
@@ -107,7 +108,7 @@ def main():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(10), epochs=1, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(32), epochs=3, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
     print("Layer 0: ", dsc(labels[0], labels[1], 0))
