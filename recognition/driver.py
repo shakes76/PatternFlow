@@ -6,6 +6,31 @@ import pathlib
 from PIL import Image
 import zipfile
 
+def decode_png(file_path):
+    png = tf.io.read_file(file_path)
+    png = tf.image.decode_png(png, channels=1)
+    png = tf.image.resize(png, (256, 256))
+    return png
+
+def process_path(scan_fp, label_fp):
+    #Process the MRI scan
+    scan = decode_png(scan_fp)
+    scan = tf.cast(scan, tf.float32) / 255.0
+
+    #Process the Label image
+    label = decode_png(label_fp)
+    label = label == [0, 85, 170, 255]
+    #tf.print(tf.unique(tf.reshape(label, [-1])))
+    return scan, label
+
+def display(display_list):
+    plt.figure(figsize=(10,10))
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.imshow(display_list[i], cmap='gray')
+        plt.axis('off')
+    plt.show()
+
 def main():
     #Get the file location of where the data is stored.
     data_dir = pathlib.Path('H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/keras_png_slices_data/keras_png_slices_data')
@@ -33,7 +58,17 @@ def main():
     val_dataset = val_dataset.shuffle(len(val_scans))
     test_dataset = test_dataset.shuffle(len(test_scans))
 
+    train_dataset = train_dataset.map(process_path)
+    val_dataset = val_dataset.map(process_path)
+    test_dataset = test_dataset.map(process_path)
+
+    for scan, label in train_dataset.take(1):
+        display([tf.squeeze(scan), tf.argmax(label, axis=-1)])
+        print(scan.shape)
+        print(label.shape)
     
+    
+
     
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
