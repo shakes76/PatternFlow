@@ -32,13 +32,39 @@ def display(display_list):
         plt.axis('off')
     plt.show()
 
-def show_predictions(dataset, num, model):
+def show_predictions(dataset, model):
+    num = 1
     for scan, label in dataset.take(1):
         pred_label = model.predict(scan[tf.newaxis, ...])
         pred_label = tf.argmax(pred_label[0], axis=-1)
         display([tf.squeeze(scan), tf.argmax(label, axis=-1), pred_label])
+    return (label, pred_label)
 
-def dsc(label, pred_label):
+def dsc(label, pred_label, layer):
+    print("Label: ")
+    tf.print(tf.unique(tf.reshape(label, [-1])))
+    print(label.shape)
+    print("pred_label")
+    tf.print(tf.unique(tf.reshape(pred_label, [-1])))
+    print(pred_label[0][0])
+    print(pred_label[0][0] == 0)
+    print(pred_label[0][0] == 1)
+    print(pred_label[0][0] == 2)
+    print(pred_label[0][0] == 3)
+    image_size = 256
+    denominator = 0
+    label_card = 0
+    pred_label_card = 0
+    for i in range(0, 256):
+        for j in range(0, 256):
+            if np.argmax(label[i][j]) == layer:
+                if pred_label[i][j] == layer:
+                    denominator += 1
+                label_card += 1
+            if pred_label[i][j] == layer:
+                pred_label_card += 1
+    numerator = label_card + pred_label_card
+    return (2 * denominator) / (numerator)
 
 
 def main():
@@ -76,14 +102,19 @@ def main():
         display([tf.squeeze(scan), tf.argmax(label, axis=-1)])
         print(scan.shape)
         print(label.shape)
-    
+
     model = improved_unet(4)
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     loss_accuracy = model.fit(train_dataset.batch(10), epochs=1, validation_data=val_dataset.batch(10))
 
-    show_predictions(test_dataset, 1, model)
+    labels = show_predictions(test_dataset, model)
+    print("Layer 0: ", dsc(labels[0], labels[1], 0))
+    print("Layer 1: ", dsc(labels[0], labels[1], 1))
+    print("Layer 2: ", dsc(labels[0], labels[1], 2))
+    print("Layer 3: ", dsc(labels[0], labels[1], 3))
+
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
 ##    print(test_brain.shape)
