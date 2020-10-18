@@ -29,7 +29,7 @@ class Dataset:
         while idx + batch_size <= self.n_files:
             batch = self._get_batch(self.data_files[idx: idx + batch_size])
             idx += batch_size
-            yield batch
+            yield batch / 255.0
 
     def _get_batch(self, image_files: list) -> np.ndarray:
         """

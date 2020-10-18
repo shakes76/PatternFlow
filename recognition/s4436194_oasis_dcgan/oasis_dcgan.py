@@ -203,6 +203,34 @@ class DCGANModelFramework:
         plt.savefig("output/{}/image_at_epoch_{:04d}.png".format(self.save_name, epoch))
         plt.close()
 
-    def test_dcgan(self):
-        # TODO implement this
-        pass
+    def test_dcgan(self, save_dir=None):
+        """
+        Generate and show a generated image.
+
+        A model checkpoint must be saved locally, either under the instantiated framework save name or
+        through the supplied kwarg
+
+        Returns:
+        """
+
+        save_name = save_dir if save_dir is not None else self.save_name
+        assert os.path.exists(os.path.join(CHECKPOINT_DIR, f"{save_name}")), f"Directory does not exist: {save_name}"
+
+        # Load checkpoints
+        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/ckpt")
+        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
+                                         discriminator_optimizer=self.discriminator_optimizer,
+                                         generator=self.generator,
+                                         discriminator=self.discriminator)
+        status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_prefix))
+
+        # Set the seed for all saved images, so we consistently get the same images
+        input_ = tf.random.normal([1, 100])
+        output = self.generator(input_)
+
+        # Plot the generated image
+        plt.imshow(output.numpy()[0, :, :, 0], cmap="Greys")
+        plt.show()
+
+        print("Done")
+

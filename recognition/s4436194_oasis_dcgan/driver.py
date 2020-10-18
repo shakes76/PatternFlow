@@ -66,7 +66,8 @@ class DriverTests(unittest.TestCase):
 
     def test_generator_model(self):
         """
-        Output of the generator should be a 256 x 256 image
+        Output of the generator should be a 256 x 256 image. Only testing an untrained model, so separate to
+        the run_dcgan_tests method above
         """
         model = make_generator_model_basic(100)
         input_ = tf.random.normal([1, 100])
