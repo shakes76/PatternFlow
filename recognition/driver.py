@@ -5,6 +5,7 @@ import glob
 import pathlib
 from PIL import Image
 import zipfile
+from model import improved_unet
 
 def decode_png(file_path):
     png = tf.io.read_file(file_path)
@@ -30,6 +31,15 @@ def display(display_list):
         plt.imshow(display_list[i], cmap='gray')
         plt.axis('off')
     plt.show()
+
+def show_predictions(dataset, num, model):
+    for scan, label in dataset.take(1):
+        pred_label = model.predict(scan[tf.newaxis, ...])
+        pred_label = tf.argmax(pred_label[0], axis=-1)
+        display([tf.squeeze(scan), tf.argmax(label, axis=-1), pred_label])
+
+def dsc(label, pred_label):
+
 
 def main():
     #Get the file location of where the data is stored.
@@ -67,9 +77,13 @@ def main():
         print(scan.shape)
         print(label.shape)
     
-    
+    model = improved_unet(4)
 
-    
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    loss_accuracy = model.fit(train_dataset.batch(10), epochs=1, validation_data=val_dataset.batch(10))
+
+    show_predictions(test_dataset, 1, model)
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
 ##    print(test_brain.shape)
