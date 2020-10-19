@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
 
 
 class Dataset:
@@ -59,7 +60,7 @@ class Dataset:
         Returns:
 
         """
-        image = Image.open(image_path)
+        image = Image.open(image_path).resize((self.image_width, self.image_height))
         assert image.size == (self.image_width, self.image_height), f"Inconsistent image size: {image.size}"
 
         return np.array(image.convert(mode="L"))

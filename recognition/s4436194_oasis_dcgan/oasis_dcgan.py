@@ -9,9 +9,7 @@ from tqdm import tqdm
 
 from recognition.s4436194_oasis_dcgan.data_helper import Dataset
 from recognition.s4436194_oasis_dcgan.models_helper import (
-    make_generator_model,
-    make_discriminator_model,
-    make_generator_model_basic
+    make_models_28
 )
 
 DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_train"
@@ -20,7 +18,6 @@ DATA_VALIDATE_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slice
 
 CHECKPOINT_DIR = "./training_checkpoints"
 
-IMAGE_WIDTH, IMAGE_HEIGHT = 256, 256
 N_EPOCH_SAMPLES = 16
 NOISE_DIMENSION = 100
 
@@ -31,42 +28,34 @@ class DCGANModelFramework:
 
     def __init__(self):
 
-        self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}"
+        # Instantiate discriminator and generator objects
+        self.discriminator, self.generator, self.size = make_models_28()
+
+        # Set uo save name and required directories
+        self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}-{self.size}x{self.size}"
         os.makedirs(f"output/{self.save_name}/", exist_ok=True)
         os.makedirs(f"training_checkpoints/{self.save_name}/", exist_ok=True)
 
-        # Instantiate discriminator and generator objects
-        self.discriminator = make_discriminator_model(IMAGE_WIDTH, IMAGE_HEIGHT)
-        self.generator = make_generator_model_basic(NOISE_DIMENSION)
-
-        # Instantiate loss function
-        self.generator_loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        self.discriminator_loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-
-        # Instantiate
-        self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
-        self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
-
-    def train_dcgan(self, batch_size, epochs, verbose_iter=100):
+    def train_dcgan(self, batch_size, epochs):
         """
         Method for training the dcgan on the OASIS MRI images
 
         Args:
             batch_size:
             epochs:
-            verbose_iter:
 
         Returns:
 
         """
 
         # Prepare dataset object
-        dataset = Dataset(glob.glob(f"{DATA_TRAIN_DIR}/*.png"), IMAGE_WIDTH, IMAGE_HEIGHT)
+        dataset = Dataset(glob.glob(f"{DATA_TRAIN_DIR}/*.png"), self.size, self.size)
 
         # Set up checkpoints
-        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/ckpt")
-        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
-                                         discriminator_optimizer=self.discriminator_optimizer,
+        checkpoint_path = os.path.join(CHECKPOINT_DIR, self.save_name)
+        checkpoint_prefix = f"{checkpoint_path}/ckpt"
+        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator.optimizer,
+                                         discriminator_optimizer=self.discriminator.optimizer,
                                          generator=self.generator,
                                          discriminator=self.discriminator)
 
@@ -74,8 +63,12 @@ class DCGANModelFramework:
         seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
 
         # Check for existing checkpoint, restore if possible
-        if os.path.exists(checkpoint_prefix):
-            status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_prefix))
+        if os.path.exists(checkpoint_path):
+            status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_path))
+            checkpoint_epoch = max(int(i[-7]) for i in glob.glob(f"{checkpoint_path}/*.index"))
+            print(f"Reverted to checkpoint: {checkpoint_prefix}, epoch: {checkpoint_epoch}")
+        else:
+            checkpoint_epoch = 0
 
         @tf.function
         def train_step(images):
@@ -103,25 +96,22 @@ class DCGANModelFramework:
             gradients_of_discriminator = disc_tape.gradient(disc_loss, self.discriminator.trainable_variables)
 
             # Apply gradients
-            self.generator_optimizer.apply_gradients(
+            self.generator.optimizer.apply_gradients(
                 zip(gradients_of_generator, self.generator.trainable_variables))
-            self.discriminator_optimizer.apply_gradients(
+            self.discriminator.optimizer.apply_gradients(
                 zip(gradients_of_discriminator, self.discriminator.trainable_variables))
 
         # Main epoch loop
         total_batches = int((dataset.n_files / batch_size) + 1)
         self.generate_and_save_images(0, seed)
 
-        for e in range(epochs):
+        # Start from existing epochs
+        for e in range(checkpoint_epoch, epochs + checkpoint_epoch):
             start = time.time()
 
             # Main training loop
             for i, batch_images in tqdm(enumerate(dataset.get_batches(batch_size)), total=total_batches):
                 train_step(batch_images)
-
-                if i % verbose_iter == 0:
-                    g_loss, d_loss = self._get_current_loss(batch_size, batch_images)
-                    print(f"\nEpoch {e}/{epochs}, Batch {i}/{total_batches} completed, Loss {g_loss} / {d_loss}\n")
 
             # Save the model every epoch
             self.generate_and_save_images(e + 1, seed)
@@ -162,8 +152,8 @@ class DCGANModelFramework:
         Returns:
 
         """
-        real_loss = self.discriminator_loss(tf.ones_like(real_output), real_output)
-        fake_loss = self.discriminator_loss(tf.zeros_like(fake_output), fake_output)
+        real_loss = self.discriminator.loss(tf.ones_like(real_output), real_output)
+        fake_loss = self.discriminator.loss(tf.zeros_like(fake_output), fake_output)
         total_loss = real_loss + fake_loss
         return total_loss
 
@@ -177,7 +167,7 @@ class DCGANModelFramework:
         Returns:
 
         """
-        return self.generator_loss(tf.ones_like(fake_output), fake_output)
+        return self.generator.loss(tf.ones_like(fake_output), fake_output)
 
     def generate_and_save_images(self, epoch, test_input):
         """
@@ -217,9 +207,9 @@ class DCGANModelFramework:
         assert os.path.exists(os.path.join(CHECKPOINT_DIR, f"{save_name}")), f"Directory does not exist: {save_name}"
 
         # Load checkpoints
-        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/ckpt")
-        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
-                                         discriminator_optimizer=self.discriminator_optimizer,
+        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/")
+        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator.optimizer,
+                                         discriminator_optimizer=self.discriminator.optimizer,
                                          generator=self.generator,
                                          discriminator=self.discriminator)
         status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_prefix))
