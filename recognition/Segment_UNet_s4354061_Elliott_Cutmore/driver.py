@@ -3,12 +3,12 @@
 import sys
 import os
 # sys.path.append("H:\\COMP3710\\PatternFlow\\recognition\\Segment_UNet_s4354061_Elliott_Cutmore")
-sys.path.append("C:\\Windows\\System32")
+# sys.path.append("C:\\Windows\\System32")
 from segment import *
 
 if __name__ == "__main__":
 
-    option = 1
+    option = 2
     inspect_image_sizes = False
     subset=False
 
@@ -24,9 +24,9 @@ if __name__ == "__main__":
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
     # Where to save trained model and checkpoints to from training
-    save_model_path = ".\\model_2"
-    save_checkpoint_path = ".\\training_2\\cp.ckpt"
-    save_history_path = ".\\history_2_pickle"
+    save_model_path = ".\\model_1"
+    save_checkpoint_path = ".\\training_1\\cp.ckpt"
+    save_history_path = ".\\history_1_pickle"
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
         get_img_target_paths(img_dir, seg_dir)
@@ -108,20 +108,14 @@ if __name__ == "__main__":
 
     """ Option 2 - load pre-trained net: """
     if option == 2:
-        # Use input images of (width, height) = (256, 256)
-        # and 3 colour channels (RGB)
-        # Model 1 was trained using (256 x 256) sized images
 
-        # load_path = os.path.abspath(os.path.join(os.sep, os.getcwd(), "\model_1"))
         load_path = ".\\model_2"
-        # history_load_path = os.path.abspath(os.path.join(os.sep, os.getcwd(), "\history_1_pickle"))
         history_load_path = ".\\history_2_pickle"
-        print("Loading model from path %s" % load_path)
         model = load_model(load_path)
-        # history = load_history(history_load_path)
+        history = load_history(history_load_path)
 
-        # print("Plotting training history...")
-        # training_plot(history)
+        print("Plotting training history...")
+        training_plot(history)
         print("Evaluating a test set/generator")
         test_preds, test_loss, test_acc = evaluate(test_gen, model)
         print("Test set size: ", len(test_preds))
@@ -129,6 +123,5 @@ if __name__ == "__main__":
         print("Test accuracy: ", test_acc, '\n')
 
         print("Collating results...")
-        print(test_input)
-        results(test_input, test_target, test_preds, len(test_preds), img_dims, num_classes, visualise=True)
+        results(test_input, test_target, test_preds, 5, img_dims, num_classes, visualise=True)
 

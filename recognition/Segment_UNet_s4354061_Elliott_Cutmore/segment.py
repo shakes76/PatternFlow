@@ -18,7 +18,18 @@ import random
 import pickle
 import math
 
+
 def get_img_target_paths(img_dir, seg_dir):
+    """
+    This function retrieves the input and segmented images from img_dir and
+    seg_dir, respectively. Input images are in .jpg format and segmented
+    images are in .png format
+    :param img_dir: (str) Image directory for input images to CNN
+    :param seg_dir: (str) Image directory for segmented images to CNN
+    :return: 2 (list)'s: The first list being the input images filename's found
+    in img_dir and the second list is the segmented image filename's found
+    in seg_dir
+    """
     input_img_paths = sorted(
         [
             os.path.join(img_dir, fname)
@@ -37,11 +48,28 @@ def get_img_target_paths(img_dir, seg_dir):
 
 
 def get_img_sizes(input_paths):
+    """
+    This function stores all the images sizes for the image input_paths
+    given to it. Helpful for visualising the occurrence/frequency of images
+    sizes to be analysed
+    :param input_paths: (list) filename's corresponding to images
+    :return: (list) of (tuple) tuples are in the form (width, height)
+    """
     sizes = [Image.open(f, 'r').size for f in input_paths]
     return sizes
 
 
 def inspect_images(sizes, range_w=[510, 520], range_h=[380, 390]):
+    """
+    This function is used to graph the results of the get_img_sizes function.
+    The range given is used to zoom into specific parts of the 3d histogram.
+    :param sizes: (list) of (tuple) each tuple of the form (width, height)
+    :param range_w: (list) [min_width, max_width] of width axis of 3d plot to
+     zoom into.
+    :param range_h: (list) [min_height, max_height] of height axis of 3d plot
+     to zoom into.
+    :return: None
+    """
     w = [i[0] for i in sizes]
     h = [i[1] for i in sizes]
     w = np.array(w)
@@ -71,23 +99,41 @@ def inspect_images(sizes, range_w=[510, 520], range_h=[380, 390]):
     bin_size = 20
     c += 1
     plt.figure(c, figsize=(10, 5))
-    ax = plt.subplot(1, 2, 1)
+    plt.subplot(1, 2, 1)
     plt.hist(w.reshape(len(sizes)), bins=bin_size)
-    plt.title("histogram width")
-    ax = plt.subplot(1, 2, 2)
+    plt.title("Histogram width")
+    plt.subplot(1, 2, 2)
     plt.hist(h.reshape(len(sizes)), bins=bin_size)
-    plt.title("histogram height")
+    plt.title("Histogram height")
 
     plt.show()
 
 
-def train_val_test_split(val_split, input_img_paths, target_img_paths, test_split=0.05, seed=1337):
+def train_val_test_split(val_split, input_img_paths,
+                         target_img_paths, test_split=0.05, seed=1337):
+    """
+    This function is used to split up a single dataset of images into a
+    training, validation and testing set to be used for training and
+    evaluating a CNN.
+    :param val_split: (float) [0 to 1] Percentage of the set (after test set
+    removed) of images to be used for validating a model when training
+    :param input_img_paths: (list) filename's corresponding to the input
+    images of the data set
+    :param target_img_paths: (list) filename's corresponding to the target
+    images of the data set
+    :param test_split: (float) [0 to <1] Percentage of the data set to become
+    images for testing/evaluating
+    :param seed: (int) The seeding number to random number generated shuffling of
+    the data set images
+    :return: 6 (list)'s 1=training input image filename's, 2=training target
+     image filename's, 3=validation input image filename's, 4=validation target
+     image filename's, 5=Testing input image filename's, 6=Testing input image
+     filename's
+    """
     # Split our img paths into a training and a validation set
     test_samples = int(test_split * len(input_img_paths))
     val_samples = int(val_split * (len(input_img_paths) - test_samples))
     train_samples = len(input_img_paths) - test_samples - val_samples
-    # print("\nTrain: ", str(train_samples), "\nTest: ", str(test_samples),
-    #       "\nVal: ", str(val_samples))
 
     random.Random(seed).shuffle(input_img_paths)
     random.Random(seed).shuffle(target_img_paths)
@@ -102,8 +148,13 @@ def train_val_test_split(val_split, input_img_paths, target_img_paths, test_spli
 
 
 def create_model(img_dims, num_classes):
-    # Free up RAM in case the model definition cells were run multiple times
-    # keras.backend.clear_session()
+    """
+    This function creates a typical UNet which is used to segment color (RGB)
+    images into binary black and white output segmentation maps.
+    :param img_dims: (tuple) (height, width, channels)
+    :param num_classes: (int) number of output segmentation tones (2 for binary)
+    :return: (tensorflow.keras.Model) instance of a model
+    """
 
     act = 'relu'
     kern = 'he_uniform'
@@ -178,24 +229,47 @@ def create_model(img_dims, num_classes):
 
 
 def load_input_image(path, img_dims):
+    """
+    This function is used to load a single input image of shape/dimensions
+    (img_dims) from a given filename (path)
+    :param path: (str) filename for image
+    :param img_dims: (tuple) (height, width, channels)
+    :return: (Tensor) input image data
+    """
     img = img_to_array(load_img(path, color_mode='rgb'))
     img = tf.multiply(img, 1 / 255.)
-    img = tf.image.resize(img, [img_dims[0], img_dims[1]], preserve_aspect_ratio=True)
+    img = tf.image.resize(img, [img_dims[0], img_dims[1]],
+                          preserve_aspect_ratio=True)
     img = tf.image.resize_with_crop_or_pad(img, img_dims[0], img_dims[1])
 
     return img
 
 
 def load_segmented_image(path, img_dims):
+    """
+    This function is used to load a single target image of shape/dimensions
+     (img_dims) from a given filename (path)
+    :param path: (str) filename for image
+    :param img_dims: (tuple) (height, width, channels)
+    :return: (Tensor) shape=[height, width, channel] of target image data
+    """
     img = img_to_array(load_img(path, color_mode="grayscale"))
     img = tf.multiply(img, 1 / 255)
-    img = tf.image.resize(img, [img_dims[0], img_dims[1]], preserve_aspect_ratio=True)
+    img = tf.image.resize(img, [img_dims[0], img_dims[1]],
+                          preserve_aspect_ratio=True)
     img = tf.image.resize_with_crop_or_pad(img, img_dims[0], img_dims[1])
 
     return img
 
 
 def load_input_images_from_path_list(batch_input_img_paths, img_dims):
+    """
+    This function is used to load a batch of input images from storage
+    :param batch_input_img_paths: (list) input image filename's
+    :param img_dims: (tuple): (height, width, channels)
+    :return: (Tensor) of shape=[batch_size, height, width, channel] of input
+    image data
+    """
     for j, path in enumerate(batch_input_img_paths):
         img = load_input_image(path, img_dims)
         img = tf.reshape(img, [img_dims[0] * img_dims[1] * img_dims[2]])
@@ -204,10 +278,19 @@ def load_input_images_from_path_list(batch_input_img_paths, img_dims):
             x = img
         else:
             x = tf.concat([x, img], axis=0)
-    return tf.reshape(x, [len(batch_input_img_paths), img_dims[0], img_dims[1], img_dims[2]])
+    return tf.reshape(x, [len(batch_input_img_paths), img_dims[0],
+                          img_dims[1], img_dims[2]])
 
 
 def load_target_images_from_path_list(batch_target_img_paths, img_dims, num_classes):
+    """
+    This function is used to load a batch of target images from storage
+    :param batch_target_img_paths: (list) input image filename's
+    :param img_dims: (tuple) of (height, width, channels)
+    :param num_classes: (int) Number of output channels for segmented images
+    :return: (Tensor) of shape=[batch_size, height, width, channel] of input
+    image data
+    """
     for j, path in enumerate(batch_target_img_paths):
         img = load_segmented_image(path, img_dims)
         img = tf.reshape(img, [img_dims[0] * img_dims[1]])
@@ -218,13 +301,25 @@ def load_target_images_from_path_list(batch_target_img_paths, img_dims, num_clas
             y = img
         else:
             y = tf.concat([y, img], axis=0)
-    return tf.reshape(y, [len(batch_target_img_paths), img_dims[0], img_dims[1], num_classes])
+    return tf.reshape(y, [len(batch_target_img_paths), img_dims[0],
+                          img_dims[1], num_classes])
 
 
 class CustomSequence(Sequence):
-    """Helper to iterate over the data (as TensorFlow arrays)."""
+    """
+    This class is used to generate images for the training and evaluation of
+    the UNet CNN model.
+    """
 
     def __init__(self, input_img_paths, target_img_paths, img_dims, batch_size, num_classes):
+        """
+        CustomSequence init function
+        :param input_img_paths: (list) filename's to input images
+        :param target_img_paths: (list) filename's to input images
+        :param img_dims: (tuple) (height, width, channels)
+        :param batch_size: (int) number of images to use for a batch
+        :param num_classes: (int) number of segmentation channels
+        """
         self.batch_size = batch_size
         self.img_dims = img_dims
         self.input_img_paths = input_img_paths
@@ -232,11 +327,20 @@ class CustomSequence(Sequence):
         self.num_classes = num_classes
 
     def __len__(self):
+        """
+        Returns length of generator
+        :return: (int) number of batches for this generator
+        """
         # return int(math.ceil(len(self.target_img_paths) / self.batch_size))
         return len(self.target_img_paths) // self.batch_size
 
     def __getitem__(self, idx):
-        """Returns tuple (input, target) correspond to batch #idx."""
+        """
+        Returns a batch of images from this generator
+        :param idx: (int) index of batch
+        :return: 2 (Tensor)'s: x=batch of input images, y=batch of target
+         images
+        """
         i = idx * self.batch_size
         end_index = (i + self.batch_size)
         # if end_index >= self.__len__():
@@ -245,18 +349,43 @@ class CustomSequence(Sequence):
         batch_target_img_paths = self.target_img_paths[i: end_index]
 
         x = load_input_images_from_path_list(batch_input_img_paths, self.img_dims)
-        y = load_target_images_from_path_list(batch_target_img_paths, self.img_dims, self.num_classes)
+        y = load_target_images_from_path_list(batch_target_img_paths,
+                                              self.img_dims, self.num_classes)
 
         return x, y
 
 
 def create_generator(img_paths, target_paths, img_dims, batch_size, num_classes):
-    # Instantiate data Sequences for each split
+    """
+    This function is used to create a generator instance of a CustomSequence
+    to load batches of images into a model for training of evaluating.
+    :param img_paths: (list) input image paths
+    :param target_paths: (list) target image paths
+    :param img_dims: (tuple) of (height, width, channels) for input images
+    :param batch_size: (int) number of images to receive
+    :param num_classes: (int) number of output segmentation channels
+    :return: (CustomSequence) image generator
+    """
     return CustomSequence(img_paths, target_paths, img_dims, batch_size, num_classes)
 
 
 def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
                 save_checkpoint_path=None, save_history_path=None):
+    """
+    This function is used to train a tensorflow keras model
+    :param train_gen: (CustomSequence) generator of training input and
+    target images
+    :param val_gen: (CustomSequence) generator of validation input and
+    target images
+    :param model: (tensorflow.keras.Model) instance
+    :param epochs: (int) number of epochs to train the model
+    :param save_model_path: (str) filename to save trained model to
+    :param save_checkpoint_path: (str) filename to save checkpoints to during
+    training
+    :param save_history_path: (str) filename to save the model's history during
+     training to
+    :return: (dict) history of model's training
+    """
 
     if save_checkpoint_path:
         print("Saving checkpoints to %s" % save_checkpoint_path)
@@ -291,6 +420,11 @@ def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
 
 
 def load_model(load_path):
+    """
+    Function used to load a pre-trained model
+    :param load_path: (str) filename of model to load
+    :return: (tensorflow.keras.Model) instance
+    """
     if os.path.exists(load_path):
         return tf.keras.models.load_model(load_path)
     else:
@@ -299,15 +433,33 @@ def load_model(load_path):
 
 
 def save_model(model, save_model_path):
+    """
+    Function to save a tensorflow.keras.Model instance to storage
+    :param model: (tensorflow.keras.Model) instance
+    :param save_model_path: (str) filename to save model
+    :return: None
+    """
     model.save(save_model_path)
 
 
 def save_history(history, history_save_path):
+    """
+    Function to save history of training a model as a pickle object
+    :param history: (dict) history generated by Model.fit(...) in train_model
+    :param history_save_path: filename to save history dictionary
+    :return: None
+    """
     with open(history_save_path, 'wb') as output_file:
         pickle.dump(history, output_file)
 
 
 def load_history(history_load_path):
+    """
+    Function to load the history of a pre-trained tensorflow.keras.Model
+    from a pickle object
+    :param history_load_path: (str)
+    :return: (dict) history of model training
+    """
     if os.path.exists(history_load_path):
         with open(history_load_path, "rb") as input_file:
             return pickle.load(input_file)
@@ -317,7 +469,18 @@ def load_history(history_load_path):
 
 
 def check_generator(generator, img_dims, batch_size, num_classes, visualise=False):
-
+    """
+    Function used to check if a generator has been created correctly. A
+    collection of conditionals and asserts to validate the instance given.
+    Also the option to visualise the first batch of images in the generator
+    for a sanity check.
+    :param generator: (CustomSequence) instance of a generator
+    :param img_dims: (tuple) (heigh, width, channel)
+    :param batch_size: (int) batch size of images
+    :param num_classes: (int) output segmentation channels
+    :param visualise: (bool) "True" will show the first batch of images
+    :return:
+    """
     if not isinstance(generator, CustomSequence):
         print("Generator given is not of type CustomSequence")
         return 0
@@ -373,6 +536,13 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
 
 
 def dice_coefficient(y_true, y_pred, smooth=0.):
+    """
+    Function used to evaluate the similarity of two images
+    :param y_true: (Tensor) image_1
+    :param y_pred: (Tensor) image_2
+    :param smooth: (float)
+    :return: (float) dice coefficient similarity of two images
+    """
     y_true = tf.cast(y_true, dtype=tf.float32)
     y_pred = tf.cast(y_pred, dtype=tf.float32)
     y_true_f = K.flatten(y_true)
@@ -382,6 +552,12 @@ def dice_coefficient(y_true, y_pred, smooth=0.):
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth).numpy()
 
 def training_plot(history):
+    """
+    Function used to plot the training accuracy and loss of a model when it
+     was trained
+    :param history: (dict) training history
+    :return: None
+    """
     length = len(history['val_accuracy'])
     ## ACCURACY
     plt.figure(1)
@@ -413,13 +589,33 @@ def training_plot(history):
     plt.show()
 
 def evaluate(test_gen, model):
+    """
+    Function to evaluate a tensorflow.keras.Model with a set of test images
+    :param test_gen: (CustomSequence) image generator
+    :param model: (tensorflow.keras.Model) instance (trained)
+    :return: test_preds=(Tensor) of shape (n, height, width, channels),
+    test_loss=(float), test_acc=(float)
+    """
     test_loss, test_acc = model.evaluate(test_gen)
     test_preds = model.predict(test_gen)
     return test_preds, test_loss, test_acc
 
 
 def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img_dims, num_classes, visualise=False):
-
+    """
+    Function used to plot the results of a model evaluation for a given test set.
+    In addition calculates the dice scores for all test images.
+    :param test_input_img_path: (list) of (str) filename's of test input images
+    :param test_target_img_path: (list) of (str) filename's of test target images
+    :param test_preds: (Numpy.Array) of output images from
+     tensorflow.keras.Model.evaluate()
+    :param num_imgs: (int) images to plot
+    :param img_dims: (tuple) (height, width, channels)
+    :param num_classes: output segmentation channels
+    :param visualise: (bool) "True" then input, target and predictions are
+     plotted
+    :return: None
+    """
     test_input_set = test_input_img_path[0:num_imgs]
     test_target_set = test_target_img_path[0:num_imgs]
     x = load_input_images_from_path_list(test_input_set, img_dims)
