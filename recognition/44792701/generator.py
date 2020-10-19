@@ -60,7 +60,13 @@ class Generator(tf.keras.Model):
         self.drop4 = Dropout(self.dropout)
         
         # Use sigmoid activation for final layer
-        self.conv5 = Conv2DTranspose(64, (3, 3), strides=(2, 2),
+        self.conv5 = Conv2DTranspose(64, (3, 3), strides=(2, 2), 
+                                     padding=self.padding, use_bias=self.bias)
+        self.bnorm5 = BatchNormalization()
+        self.lrelu5 = LeakyReLU()
+        self.drop5 = Dropout(self.dropout)
+
+        self.conv6 = Conv2DTranspose(3, (3, 3), strides=(2, 2),
                                      activation='sigmoid', 
                                      padding=self.padding, 
                                      use_bias=self.bias)
@@ -90,5 +96,10 @@ class Generator(tf.keras.Model):
         x = self.drop4(x)
 
         x = self.conv5(x)
+        x = self.bnorm5(x)
+        x = self.lrelu5(x)
+        x = self.drop5(x)
+
+        x = self.conv6(x)
 
         return x
