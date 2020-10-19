@@ -16,6 +16,7 @@ import numpy as np
 import glob
 import random
 import pickle
+import math
 
 def get_img_target_paths(img_dir, seg_dir):
     input_img_paths = sorted(
@@ -223,7 +224,7 @@ def load_target_images_from_path_list(batch_target_img_paths, img_dims, num_clas
 class CustomSequence(Sequence):
     """Helper to iterate over the data (as TensorFlow arrays)."""
 
-    def __init__(self, input_img_paths, target_img_paths, batch_size, img_dims, num_classes):
+    def __init__(self, input_img_paths, target_img_paths, img_dims, batch_size, num_classes):
         self.batch_size = batch_size
         self.img_dims = img_dims
         self.input_img_paths = input_img_paths
@@ -231,13 +232,17 @@ class CustomSequence(Sequence):
         self.num_classes = num_classes
 
     def __len__(self):
+        # return int(math.ceil(len(self.target_img_paths) / self.batch_size))
         return len(self.target_img_paths) // self.batch_size
 
     def __getitem__(self, idx):
         """Returns tuple (input, target) correspond to batch #idx."""
         i = idx * self.batch_size
-        batch_input_img_paths = self.input_img_paths[i: (i + self.batch_size)]
-        batch_target_img_paths = self.target_img_paths[i: (i + self.batch_size)]
+        end_index = (i + self.batch_size)
+        # if end_index >= self.__len__():
+        #     end_index = self.__len__()-1
+        batch_input_img_paths = self.input_img_paths[i: end_index]
+        batch_target_img_paths = self.target_img_paths[i: end_index]
 
         x = load_input_images_from_path_list(batch_input_img_paths, self.img_dims)
         y = load_target_images_from_path_list(batch_target_img_paths, self.img_dims, self.num_classes)
@@ -245,9 +250,9 @@ class CustomSequence(Sequence):
         return x, y
 
 
-def create_generator(img_dims, batch_size, img_paths, target_paths, num_classes):
+def create_generator(img_paths, target_paths, img_dims, batch_size, num_classes):
     # Instantiate data Sequences for each split
-    return CustomSequence(batch_size, img_dims, img_paths, target_paths, num_classes)
+    return CustomSequence(img_paths, target_paths, img_dims, batch_size, num_classes)
 
 
 def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
@@ -271,20 +276,22 @@ def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
 
     # Train the model, doing validation at the end of each epoch.
     history = model.fit(train_gen, epochs=epochs, validation_data=val_gen, callbacks=callbacks)
+    history = history.history
 
     # save the model if a filename was given
     if save_model_path:
-        print("Saving model to %s" % (save_model_path))
+        print("Saving model to %s" % save_model_path)
         save_model(model, save_model_path)
 
     if save_history_path:
+        print("Saving history to %s" % save_history_path)
         save_history(history, save_history_path)
 
     return history
 
 
 def load_model(load_path):
-    if os._exists(load_path):
+    if os.path.exists(load_path):
         return tf.keras.models.load_model(load_path)
     else:
         print("File %s not found" % load_path)
@@ -297,11 +304,11 @@ def save_model(model, save_model_path):
 
 def save_history(history, history_save_path):
     with open(history_save_path, 'wb') as output_file:
-        pickle.dump(history.history, output_file)
+        pickle.dump(history, output_file)
 
 
 def load_history(history_load_path):
-    if os._exists(history_load_path):
+    if os.path.exists(history_load_path):
         with open(history_load_path, "rb") as input_file:
             return pickle.load(input_file)
     else:
@@ -326,25 +333,29 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
         print("items retrieved from generator are not of type Tensor")
         return 0
 
-    shape_x = tf.shape(x).numpy()
+    shape_x = tf.shape(x)
+    shape_x = tf.cast(shape_x, dtype=tf.float32)
     true_shape_x = [batch_size]
     true_shape_x.extend(list(img_dims))
-    shape_y = tf.shape(x).numpy()
+    true_shape_x = tf.convert_to_tensor(true_shape_x)
+    true_shape_x = tf.cast(true_shape_x, dtype=tf.float32)
+
+    shape_y = tf.shape(y)
+    shape_y = tf.cast(shape_y, dtype=tf.uint8)
     true_shape_y = [batch_size]
     true_shape_y.extend(list(img_dims)[:-1])
     true_shape_y.append(num_classes)
+    true_shape_y = tf.convert_to_tensor(true_shape_y)
+    true_shape_y = tf.cast(true_shape_y, dtype=tf.uint8)
 
-    if not (np.equals(shape_x, true_shape_x)):
-        print("shape_x: ", shape_x, " not the same as true_shape_x: ", true_shape_x)
-
-    if not (np.equals(shape_y, true_shape_y)):
-        print("shape_y: ", shape_y, " not the same as true_shape_y ", true_shape_y)
+    tf.assert_equal(shape_x, true_shape_x)
+    tf.assert_equal(shape_y, true_shape_y)
 
     if visualise:
 
         xn = np.array(x)
-        yn = np.array(y)
-        yn = np.argmax(yn, axis=3)
+        print(np.shape(xn))
+        yn = np.argmax(np.array(y), axis=3)
         num_imgs = batch_size
         plt.figure(figsize=(10, 10))
         j = 1
@@ -371,15 +382,15 @@ def dice_coefficient(y_true, y_pred, smooth=0.):
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth).numpy()
 
 def training_plot(history):
-    length = len(history.history['val_accuracy'])
+    length = len(history['val_accuracy'])
     ## ACCURACY
     plt.figure(1)
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.plot(history['accuracy'], label='accuracy')
+    plt.plot(history['val_accuracy'], label = 'val_accuracy')
     plt.plot([0, length], [0.8, 0.8], 'r', linewidth=0.2)
     plt.gca().annotate("80%", xy=(0, 0.80), xytext=(0, 0.80))
-    y_max = max(history.history["val_accuracy"])
-    x_max = history.history["val_accuracy"].index(y_max)
+    y_max = max(history["val_accuracy"])
+    x_max = history["val_accuracy"].index(y_max)
     plt.gca().annotate(str(round(y_max, 5)), xy=(x_max, y_max), xytext=(x_max, y_max))
     plt.title("Accuracy")
     plt.xlabel('Epoch')
@@ -389,10 +400,10 @@ def training_plot(history):
 
     ## LOSS
     plt.figure(2)
-    plt.plot(history.history['loss'], label='loss')
-    plt.plot(history.history['val_loss'], label = 'val_loss')
-    y_max = min(history.history["val_loss"])
-    x_max = history.history["val_loss"].index(y_max)
+    plt.plot(history['loss'], label='loss')
+    plt.plot(history['val_loss'], label = 'val_loss')
+    y_max = min(history["val_loss"])
+    x_max = history["val_loss"].index(y_max)
     plt.gca().annotate(str(round(y_max, 5)), xy=(x_max, y_max), xytext=(x_max, y_max))
     plt.title("Loss")
     plt.xlabel('Epoch')
@@ -413,6 +424,7 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
     test_target_set = test_target_img_path[0:num_imgs]
     x = load_input_images_from_path_list(test_input_set, img_dims)
     y = load_target_images_from_path_list(test_target_set, img_dims, num_classes)
+    dice_targets = np.argmax(np.array(load_target_images_from_path_list(test_target_img_path, img_dims, num_classes)), axis=3)
 
     xn = np.array(x)
     yn = np.argmax(np.array(y), axis=3)
@@ -420,9 +432,13 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
 
     # for all images in test set
     dice_sim = []
+    # print(len(output), len(test_target_img_path))
     for i in range(len(output)):
-        y1 = np.array(load_target_images_from_path_list(test_target_img_path[i], img_dims, num_classes))
-        dice_sim[i] = dice_coefficient(y1[i], test_preds[i])
+        dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])))
+
+    print("Dice Coeffiecient Scores: ")
+    for i in range(len(dice_sim)):
+        print("Image: ", test_target_img_path[i], "Dice CoEff:", dice_sim[i])
 
     if visualise:
         plt.figure(figsize=(10, 10))
@@ -442,8 +458,4 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
             j = j+1
         plt.tight_layout()
         plt.show()
-
-    print("Dice Coeffiecient Scores: ")
-    for i in range(dice_sim):
-        print("Image: ", test_target_img_path[i], "Dice CoEff:", dice_sim[i])
 
