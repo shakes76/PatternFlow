@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 from recognition.s4436194_oasis_dcgan.data_helper import Dataset
 from recognition.s4436194_oasis_dcgan.models_helper import (
-    make_models_28
+    make_models_28,
+    make_models_64,
 )
 
 DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_train"
@@ -29,7 +30,15 @@ class DCGANModelFramework:
     def __init__(self):
 
         # Instantiate discriminator and generator objects
-        self.discriminator, self.generator, self.size = make_models_28()
+        self.discriminator, self.generator, self.size = make_models_64()
+
+        # Set the seed for all saved images, so we consistently get the same images
+        self.seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
+
+        # Need to pass an example through first
+        _ = self.discriminator(self.generator(self.seed))
+        self.generator.summary()
+        self.discriminator.summary()
 
         # Set uo save name and required directories
         self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}-{self.size}x{self.size}"
@@ -59,11 +68,8 @@ class DCGANModelFramework:
                                          generator=self.generator,
                                          discriminator=self.discriminator)
 
-        # Set the seed for all saved images, so we consistently get the same images
-        seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
-
         # Check for existing checkpoint, restore if possible
-        if os.path.exists(checkpoint_path):
+        if glob.glob(f"{checkpoint_path}/*.index"):
             status = checkpoint.restore(tf.train.latest_checkpoint(checkpoint_path))
             checkpoint_epoch = max(int(i[-7]) for i in glob.glob(f"{checkpoint_path}/*.index"))
             print(f"Reverted to checkpoint: {checkpoint_prefix}, epoch: {checkpoint_epoch}")
@@ -103,7 +109,7 @@ class DCGANModelFramework:
 
         # Main epoch loop
         total_batches = int((dataset.n_files / batch_size) + 1)
-        self.generate_and_save_images(0, seed)
+        self.generate_and_save_images(0)
 
         # Start from existing epochs
         for e in range(checkpoint_epoch, epochs + checkpoint_epoch):
@@ -114,7 +120,7 @@ class DCGANModelFramework:
                 train_step(batch_images)
 
             # Save the model every epoch
-            self.generate_and_save_images(e + 1, seed)
+            self.generate_and_save_images(e + 1)
             checkpoint.save(file_prefix=checkpoint_prefix)
 
             print(f"\nTime for epoch {e + 1} is {(time.time() - start) / 60} minutes\n")
@@ -169,16 +175,15 @@ class DCGANModelFramework:
         """
         return self.generator.loss(tf.ones_like(fake_output), fake_output)
 
-    def generate_and_save_images(self, epoch, test_input):
+    def generate_and_save_images(self, epoch):
         """
         Create a set of test images, designed to do this at each epoch
 
         Args:
             epoch: Number of epochs completed
-            test_input: Array of noise to generate image from
         """
 
-        predictions = self.generator(test_input, training=False)
+        predictions = self.generator(self.seed, training=False)
 
         fig = plt.figure(figsize=(4, 4))
 

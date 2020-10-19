@@ -8,10 +8,17 @@ def make_models_28() -> Tuple[Model, Model, int]:
     return Discriminator28(), Generator28(), 28
 
 
+def make_models_64() -> Tuple[Model, Model, int]:
+    return Discriminator64(), Generator64(), 64
+
+##########################################################################################################
+# 28 x 28 models
+##########################################################################################################
+
+
 class Discriminator28(Model):
 
     def __init__(self):
-
         super(Discriminator28, self).__init__()
 
         self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -49,7 +56,8 @@ class Generator28(Model):
         self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.optimizer = tf.keras.optimizers.Adam(1e-4)
 
-        self.layer_dense_0 = layers.Dense(7*7*256, use_bias=False, input_shape=(100,))
+        self.layer_input = tf.keras.Input(shape=7 * 7 * 256)
+        self.layer_dense_0 = layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(100,))
         self.layer_batch_norm_0 = layers.BatchNormalization()
         self.layer_lrelu_0 = layers.LeakyReLU()
 
@@ -81,6 +89,180 @@ class Generator28(Model):
 
         return self.layer_conv2d_2(x)
 
+##########################################################################################################
+# 64 x 64 models
+##########################################################################################################
+
+
+class Discriminator64(Model):
+
+    def __init__(self):
+        super(Discriminator64, self).__init__()
+
+        self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+
+        self.layer_conv_0 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[64, 64, 1])
+        self.layer_lrelu_0 = layers.LeakyReLU()
+        self.layer_dropout_0 = layers.Dropout(0.3)
+
+        self.layer_conv_1 = layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same')
+        self.layer_lrelu_1 = layers.LeakyReLU()
+        self.layer_dropout_1 = layers.Dropout(0.3)
+
+        self.layer_conv_2 = layers.Conv2D(256, (5, 5), strides=(2, 2), padding='same')
+        self.layer_lrelu_2 = layers.LeakyReLU()
+        self.layer_dropout_2 = layers.Dropout(0.3)
+
+        self.layer_flatten = layers.Flatten()
+        self.layer_output = layers.Dense(1)
+
+    def call(self, x):
+        x = self.layer_conv_0(x)
+        x = self.layer_lrelu_0(x)
+        x = self.layer_dropout_0(x)
+
+        x = self.layer_conv_1(x)
+        x = self.layer_lrelu_1(x)
+        x = self.layer_dropout_1(x)
+
+        x = self.layer_conv_2(x)
+        x = self.layer_lrelu_2(x)
+        x = self.layer_dropout_2(x)
+
+        x = self.layer_flatten(x)
+        return self.layer_output(x)
+
+
+class Generator64(Model):
+
+    def __init__(self):
+        super(Generator64, self).__init__()
+
+        # Test the model architecture
+        # self.network_check()
+
+        self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+
+        self.layer_input = tf.keras.Input(shape=8 * 8 * 256)
+        self.layer_dense_0 = layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100,))
+        self.layer_batch_norm_0 = layers.BatchNormalization()
+        self.layer_lrelu_0 = layers.LeakyReLU()
+
+        self.layer_reshape_0 = layers.Reshape((8, 8, 256))
+
+        self.layer_conv2d_1 = layers.Conv2DTranspose(256, (5, 5), strides=(1, 1), padding='same', use_bias=False)
+        self.layer_batch_norm_1 = layers.BatchNormalization()
+        self.layer_lrelu_1 = layers.LeakyReLU()
+
+        self.layer_conv2d_2 = layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False)
+        self.layer_batch_norm_2 = layers.BatchNormalization()
+        self.layer_lrelu_2 = layers.LeakyReLU()
+
+        self.layer_conv2d_3 = layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False)
+        self.layer_batch_norm_3 = layers.BatchNormalization()
+        self.layer_lrelu_3 = layers.LeakyReLU()
+
+        self.layer_conv2d_4 = layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same',
+                                                     use_bias=False, activation='tanh')
+
+    def call(self, x):
+        x = self.layer_dense_0(x)
+        x = self.layer_batch_norm_0(x)
+        x = self.layer_lrelu_0(x)
+
+        x = self.layer_reshape_0(x)
+
+        x = self.layer_conv2d_1(x)
+        x = self.layer_batch_norm_1(x)
+        x = self.layer_lrelu_1(x)
+
+        x = self.layer_conv2d_2(x)
+        x = self.layer_batch_norm_2(x)
+        x = self.layer_lrelu_2(x)
+
+        x = self.layer_conv2d_3(x)
+        x = self.layer_batch_norm_3(x)
+        x = self.layer_lrelu_3(x)
+
+        return self.layer_conv2d_4(x)
+
+    @staticmethod
+    def network_check():
+        """Create a replica model and test structure"""
+
+        model = tf.keras.Sequential(name="keras_sequential_generator")
+        model.add(layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100,)))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU())
+        print(model.output_shape)
+
+        model.add(layers.Reshape((8, 8, 256)))
+        print(model.output_shape)
+
+        model.add(layers.Conv2DTranspose(256, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU())
+        print(model.output_shape)
+
+        model.add(layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU())
+        print(model.output_shape)
+
+        model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU())
+        print(model.output_shape)
+
+        model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+        print(model.output_shape)
+
+        return
+
+
+def make_generator_model_64_64(input_shape):
+    """
+
+    Args:
+        input_shape:
+
+    Returns:
+
+    """
+
+    model = tf.keras.Sequential(name="keras_sequential_generator")
+    model.add(layers.Dense(4 * 4 * 10, use_bias=False, input_shape=(100,)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    print(model.output_shape)
+
+    model.add(layers.Reshape((4, 4, 10)))
+    print(model.output_shape)
+
+    model.add(layers.Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    print(model.output_shape)
+
+    model.add(layers.Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    print(model.output_shape)
+
+    model.add(layers.Conv2DTranspose(16, (2, 2), strides=(2, 2), padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    print(model.output_shape)
+
+    model.add(layers.Conv2DTranspose(1, (2, 2), strides=(2, 2), padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    print(model.output_shape)
+
+    return model
+
 
 def make_generator_model_255_255(input_shape):
     """
@@ -93,7 +275,7 @@ def make_generator_model_255_255(input_shape):
     """
 
     model = tf.keras.Sequential(name="keras_sequential_generator")
-    model.add(layers.Dense(8*8*512, use_bias=False, input_shape=(100,)))
+    model.add(layers.Dense(8 * 8 * 512, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
     assert model.output_shape == (None, 8 * 8 * 512)
@@ -173,54 +355,6 @@ def make_discriminator_model_255_255(image_width, image_height):
     return model
 
 
-def make_generator_model_64_64(input_shape):
-    """
-
-    Args:
-        input_shape:
-
-    Returns:
-
-    """
-
-    model = tf.keras.Sequential(name="keras_sequential_generator")
-    model.add(layers.Dense(4*4*10, use_bias=False, input_shape=(100,)))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
-    # assert model.output_shape == (None, 8 * 8 * 512)
-    print(model.output_shape)
-
-    model.add(layers.Reshape((4, 4, 10)))
-    # assert model.output_shape == (None, 8, 8, 512)
-    print(model.output_shape)
-
-    model.add(layers.Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same', use_bias=False))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
-    # assert model.output_shape == (None, 16, 16, 256)
-    print(model.output_shape)
-
-    model.add(layers.Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same', use_bias=False))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
-    # assert model.output_shape == (None, 32, 32, 128)
-    print(model.output_shape)
-
-    model.add(layers.Conv2DTranspose(16, (2, 2), strides=(2, 2), padding='same', use_bias=False))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
-    # assert model.output_shape == (None, 64, 64, 64)
-    print(model.output_shape)
-
-    model.add(layers.Conv2DTranspose(1, (2, 2), strides=(2, 2), padding='same', use_bias=False))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
-    assert model.output_shape == (None, 64, 64, 1)
-    print(model.output_shape)
-
-    return model
-
-
 def make_discriminator_model_64_64(image_width, image_height):
     """
 
@@ -268,4 +402,3 @@ def make_discriminator_model_64_64(image_width, image_height):
     print(model.output_shape)
 
     return model
-
