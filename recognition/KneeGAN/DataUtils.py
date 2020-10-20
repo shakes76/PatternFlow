@@ -1,6 +1,7 @@
 import tensorflow as tf
 from PIL import Image
 import glob
+import numpy as np
 
 def load_data(filepath, batch_size):
     image_files = glob.glob(filepath + '*')

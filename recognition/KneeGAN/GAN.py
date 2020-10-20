@@ -1,5 +1,7 @@
 import tensorflow as tf
+import sys
 from DataUtils import load_data
+import numpy as np
 
 
 ### Define Model:
