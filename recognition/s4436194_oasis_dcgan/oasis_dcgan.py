@@ -1,3 +1,13 @@
+"""
+Questions for tutorial
+- What's the difference between the project and demo 2? wrt gans
+- What do we need to consider wrt model design
+- How do we calculate SSIM for a single image?
+- How can I run jobs through the uq server to save time?
+
+https://medium.com/deep-dimension/gans-a-modern-perspective-83ed64b42f5c
+"""
+
 import matplotlib.pyplot as plt
 import glob
 import os
@@ -11,11 +21,12 @@ from recognition.s4436194_oasis_dcgan.data_helper import Dataset
 from recognition.s4436194_oasis_dcgan.models_helper import (
     make_models_28,
     make_models_64,
+    make_models_128,
 )
 
-DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_train"
-DATA_TEST_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_test"
-DATA_VALIDATE_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_validate"
+DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
+DATA_TEST_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_test"
+DATA_VALIDATE_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate"
 
 CHECKPOINT_DIR = "./training_checkpoints"
 
@@ -30,7 +41,7 @@ class DCGANModelFramework:
     def __init__(self):
 
         # Instantiate discriminator and generator objects
-        self.discriminator, self.generator, self.size = make_models_64()
+        self.discriminator, self.generator, self.size = make_models_128()
 
         # Set the seed for all saved images, so we consistently get the same images
         self.seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
