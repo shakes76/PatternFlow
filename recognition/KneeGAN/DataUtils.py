@@ -4,7 +4,8 @@ import glob
 
 def load_data(filepath, batch_size):
     image_files = glob.glob(filepath + '*')
-    images = np.array([np.array(Image.open(i)) for i in image_files])
+    #images = np.array([np.array(Image.open(i)) for i in image_files])
+    images = np.array([np.array((Image.open(i).crop(crop)).resize((64,64))) for i in image_files])
 
     discriminator_input_dim = images.shape[1:]
     dataset_size = images.shape[0]

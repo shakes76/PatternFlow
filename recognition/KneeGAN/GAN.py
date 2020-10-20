@@ -1,19 +1,12 @@
 import tensorflow as tf
-
-### Variables
-batch_size = 128
-learning_rate_discriminator = 0.0002
-learning_rate_generator = 0.0002
-generator_input_dim = 8 # 4x4
-latent_dim = 256
-epochs = 30
+from DataUtils import load_data
 
 
 ### Define Model:
 
 ## Generator:
 
-def generator(input_dim, num_blocks, latent_dim):
+def generator(input_dim, latent_dim):
     
     input_layer = tf.keras.Input(latent_dim)
 
@@ -41,7 +34,7 @@ def generator(input_dim, num_blocks, latent_dim):
     return model
 
 
-def discriminator(input_dim, num_blocks):
+def discriminator(input_dim):
 
     input_layer = tf.keras.Input(input_dim)
     net = input_layer
@@ -85,3 +78,85 @@ def generator_loss(fake_outputs):
 
 
 
+### Main Training Function
+
+def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, generator_input_dim=8, learning_rate_generator=0.0002, learning_rate_discriminator=0.0002):
+
+    ### Load Data
+    image_iter, discriminator_input_dim, dataset_size = load_data(filepath, batch_size)
+
+
+    ### Construct Models
+    disc = discriminator(discriminator_input_dim, discriminator_blocks)
+    gen = generator(generator_input_dim, generator_blocks, latent_dim)
+
+
+    ### Define Optimisers
+    discriminator_optimiser = tf.keras.optimizers.Adam(learning_rate=learning_rate_discriminator, beta_1=0.5)
+    generator_optimiser = tf.keras.optimizers.Adam(learning_rate=learning_rate_generator, beta_1=0.5)
+
+
+    ### Training
+    gen_hist = list()
+    disc_hist = list()
+
+    for i in range(epochs):        
+        data = image_iter.get_next()
+
+        gen_hist_temp = list()
+        disc_hist_temp = list()
+
+        for k in range(5):
+            tf.keras.preprocessing.image.save_img(output_dir + 'TrainImages/Epoch{}_{}.png'.format(i, k), data[k])
+
+
+        for j in range(dataset_size//batch_size):
+            # Obtain data for this batch:
+            latent_data = tf.random.normal(shape=(batch_size, latent_dim))
+            image_data = image_iter.get_next()
+
+            # Train Discriminator
+            with tf.GradientTape() as tape:
+                fake_image = gen(latent_data)
+                fake_output = disc(fake_image)
+                real_output = disc(image_data)
+                disc_loss = discriminator_loss(fake_output, real_output)
+            gradients = tape.gradient(disc_loss, disc.trainable_variables)
+            discriminator_optimiser.apply_gradients(zip(gradients, disc.trainable_variables))
+            disc_hist_temp.append(disc_loss)
+
+            # Train Generator
+            with tf.GradientTape() as tape:
+                fake_image = gen(latent_data)
+                fake_output = disc(fake_image)
+                gen_loss = generator_loss(fake_output)
+            gradients = tape.gradient(gen_loss, gen.trainable_variables)
+            generator_optimiser.apply_gradients(zip(gradients, gen.trainable_variables))
+            gen_hist_temp.append(gen_loss)
+
+
+        # Print output
+        print("Epoch: {}".format(i))
+        print("Gen Loss: {:.5f}".format(tf.reduce_mean(gen_loss).numpy()))
+        print("Disc Loss: {:.5f}".format(tf.reduce_mean(disc_loss).numpy()))
+        sys.stdout.flush()
+
+        # Save example images
+        latent_data = tf.random.normal(shape=(5, latent_dim))
+        fake_images = gen(latent_data).numpy() * 255
+        mins = np.min(fake_images, axis=(1,2,3))[:,None,None,None]
+        maxs = np.max(fake_images, axis=(1,2,3))[:,None,None,None]
+        fake_images = (fake_images - mins)/(maxs-mins)
+        for k in range(5):
+            tf.keras.preprocessing.image.save_img(output_dir + 'Intermediate/Epoch{}_{}.png'.format(i, k), fake_images[k])
+
+        # Save Model
+        gen.save(output_dir + "Models/gen{}.h5".format(i))
+        disc.save(output_dir + "Models/disc{}.h5".format(i))
+
+        gen_hist.append(np.mean(gen_hist_temp))
+        disc_hist.append(np.mean(disc_hist_temp))
+
+    print("Training Complete")
+
+    return gen_hist, disc_hist
