@@ -1,5 +1,14 @@
 import tensorflow as tf
 
+### Variables
+batch_size = 128
+learning_rate_discriminator = 0.0002
+learning_rate_generator = 0.0002
+generator_input_dim = 8 # 4x4
+latent_dim = 256
+epochs = 30
+
+
 ### Define Model:
 
 ## Generator:
@@ -73,3 +82,6 @@ def discriminator_loss(fake_outputs, real_outputs):
 def generator_loss(fake_outputs):
     generator_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_outputs, labels=tf.ones((batch_size, 1))))
     return generator_fake
+
+
+
