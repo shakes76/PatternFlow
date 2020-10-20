@@ -1,38 +1,54 @@
 # import necessary modules
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import layers
 
-
-def solution(h, w, n_classes):
-    """
-    Creates and return the UNET model to be used by the driver_script.py script
+def unet_model(output_channels, f=6):
+    """Creates and returns a UNET model"""
     
-    This is where I will implement my solution to the problem.
-    Must only use tensorflow
-    My function simply creates and compiles the UNET model to be used by
-    the driver_script.py file.
-    """
+    inputs = tf.keras.layers.Input()
     
-    # create model
-    model = models.Sequential()
+    # Downsampling throughthe model...
+    d1 = layers.Conv2D(f, 3, padding='same', activation='relu')
+    d1 = layers.Conv2D(f, 3, padding='same', activation='relu')
     
-    # add convolution layers    
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(h, w, 1)))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+    d2 = layers.MaxPooling2D()(d1)
+    d2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')
+    d2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')
     
-    # add dense layers
-    model.add(layers.Flatten(input_shape=(h, w, 1)))
-    model.add(layers.Dense(1000, activation='relu'))
-    model.add(layers.Dense(400, activation='relu'))
-    model.add(layers.Dense(150, activation='relu'))
-    model.add(layers.Dense(50, activation='relu'))
-    model.add(layers.Dense(20, activation='relu'))
-    model.add(layers.Dense(n_classes, activation='softmax'))
+    d3 = layers.MaxPooling2D()(d2)
+    d3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')
+    d3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')
+                                
+    d4 = layers.MaxPooling2D()(d3)
+    d4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')
+    d4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')
+                                
+    d5 = layers.MaxPooling2D()(d4)
+    d5 = layers.Conv2D(16*f, 3, padding='same', activation='relu')
+    d5 = layers.Conv2D(16*f, 3, padding='same', activation='relu')
     
-    # compile the model
-    model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
+    # Upsampling and establishing the skip connections
+    u4 = layers.UpSampling2D()(d5)
+    u4 = layers.concatenate([u4, d4])
+    u4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')
+    u4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')
     
-    # return the model
-    return model
+    u3 = layers.UpSampling2D()(d4)
+    u3 = layers.concatenate([u3, d3])
+    u3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')
+    u3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')
     
+    u2 = layers.UpSampling2D()(d3)
+    u2 = layers.concatenate([u2, d2])
+    u2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')
+    u2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')
+    
+    u1 = layers.UpSampling2D()(d2)
+    u1 = layers.concatenate([u1, d1])
+    u1 = layers.Conv2D(f, 3, padding='same', activation='relu')
+    u1 = layers.Conv2D(f, 3, padding='same', activation='relu')
+    
+    # This is the last layer of the model.
+    outputs = layers.Conv2D(output_channels, 1, activation='softmax')(u1)
+    
+    return tf.keras.Model(inputs=inputs, outputs=outputs)
