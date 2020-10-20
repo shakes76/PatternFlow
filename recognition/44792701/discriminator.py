@@ -23,29 +23,29 @@ class Discriminator(tf.keras.Model):
 
         super(Discriminator, self).__init__()
 
-        self.conv1 = Conv2D(256, (3, 3), strides=(2, 2), padding=self.padding)
+        self.conv1 = Conv2D(64, (3, 3), strides=(2, 2), padding=self.padding)
         self.bnorm1 = BatchNormalization()
         self.drop1 = Dropout(self.dropout)
         self.lrelu1 = LeakyReLU()
 
-        self.conv2 = Conv2D(512, (3, 3), strides=(2, 2), padding=self.padding)
+        self.conv2 = Conv2D(128, (3, 3), strides=(2, 2), padding=self.padding)
         self.bnorm2 = BatchNormalization()
         self.drop2 = Dropout(self.dropout)
         self.lrelu2 = LeakyReLU()
 
-        self.conv3 = Conv2D(1028, (3, 3), strides=(2, 2), padding=self.padding)
+        self.conv3 = Conv2D(256, (3, 3), strides=(2, 2), padding=self.padding)
         self.bnorm3 = BatchNormalization()
         self.drop3 = Dropout(self.dropout)
         self.lrelu3 = LeakyReLU()
 
-        self.conv4 = Conv2D(2048, (3, 3), strides=(2, 2), padding=self.padding)
+        self.conv4 = Conv2D(512, (3, 3), strides=(2, 2), padding=self.padding)
         self.bnorm4 = BatchNormalization()
         self.drop4 = Dropout(self.dropout)
         self.lrelu4 = LeakyReLU()
 
         # Now flatten and use Dense layers for the output
         self.flat = Flatten()
-        self.dense1 = Dense(2048)
+        self.dense1 = Dense(512)
         self.dropd1 = Dropout(self.dropout)
         self.lrelud1 = LeakyReLU()
 

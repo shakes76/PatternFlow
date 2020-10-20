@@ -26,7 +26,7 @@ class Generator(tf.keras.Model):
         # The input is an array of 100 random numbers from a Gaussian
         # distribution. The number of filters is based on the reduced
         # resolution.
-        self.dense = Dense(16*16*512, use_bias=self.bias)
+        self.dense = Dense(4*4*512, use_bias=self.bias)
 
         # Use BatchNormalization to reduce impacts of poor initialisation
         self.bnorm1 = BatchNormalization()
@@ -37,7 +37,7 @@ class Generator(tf.keras.Model):
 
 
         # Reshape from 1D to the reduced image dimensions
-        self.reshape = Reshape((16, 16, 512))
+        self.reshape = Reshape((4, 4, 512))
 
 
         # The main convolutional layers
@@ -59,14 +59,14 @@ class Generator(tf.keras.Model):
         self.lrelu4 = LeakyReLU()
         self.drop4 = Dropout(self.dropout)
         
-        # Use sigmoid activation for final layer
         self.conv5 = Conv2DTranspose(64, (3, 3), strides=(2, 2), 
                                      padding=self.padding, use_bias=self.bias)
         self.bnorm5 = BatchNormalization()
         self.lrelu5 = LeakyReLU()
         self.drop5 = Dropout(self.dropout)
 
-        self.conv6 = Conv2DTranspose(3, (3, 3), strides=(2, 2),
+        # Use sigmoid activation for final layer
+        self.conv6 = Conv2DTranspose(1, (3, 3), strides=(1, 1),
                                      activation='sigmoid', 
                                      padding=self.padding, 
                                      use_bias=self.bias)

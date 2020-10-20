@@ -42,6 +42,9 @@ def load_images(filenames):
     for i in range(len(filenames)):
         # Load the images
         image = Image.open(filenames[i])
+
+        # Resize the images
+        image = image.resize((64, 64))
         
         # Cast to an array
         image = np.array(image)
