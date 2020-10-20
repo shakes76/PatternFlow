@@ -1,32 +1,25 @@
-
-""" Uncomment if segment.py not module not found: """
-import sys
-import os
-# sys.path.append("H:\\COMP3710\\PatternFlow\\recognition\\Segment_UNet_s4354061_Elliott_Cutmore")
-# sys.path.append("C:\\Windows\\System32")
 from segment import *
 
 if __name__ == "__main__":
 
+    # There are two options to run the driver:
+    # 1) option = 1 runs the training of a new model, saves it and evaluates it
+    # 2) option = 2 runs the loading of a pre-trained model and evaluates it
     option = 2
+    # How histograms of image size data used to make judgement on CNN image size
     inspect_image_sizes = False
-    subset=False
-
-
-    # Black and white Binary segmentation
+    # Use a subset of the 2594 images to only 100 for compuational speed up
+    subset = False
+    # Black and white Binary segmentation channels
     num_classes = 2
     # how many images to run through net:
     batch_size = 4
-    # How many cycles to train the net for:
+    # How many cycles to train the net for: only in option=1
     epochs = 100
     # where to load images from (input and targets)
-    # data_dir = "H:\\COMP3710\\PatternFlow\\recognition/Segment_UNet_s4354061_Elliott_Cutmore"
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
-    # Where to save trained model and checkpoints to from training
-    save_model_path = ".\\model_1"
-    save_checkpoint_path = ".\\training_1\\cp.ckpt"
-    save_history_path = ".\\history_1_pickle"
+
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
         get_img_target_paths(img_dir, seg_dir)
@@ -82,6 +75,11 @@ if __name__ == "__main__":
 
     """ Option 1 - train a new net: """
     if option == 1:
+        # Where to save trained model and checkpoints to from training
+        save_model_path = ".\\model_1"
+        save_checkpoint_path = ".\\training_1\\cp.ckpt"
+        save_history_path = ".\\history_1_pickle"
+
         # Create a UNet model instance:
         print("Creating a model...")
         model = create_model(img_dims, num_classes)
@@ -112,10 +110,10 @@ if __name__ == "__main__":
         load_path = ".\\model_2"
         history_load_path = ".\\history_2_pickle"
         model = load_model(load_path)
-        history = load_history(history_load_path)
-
-        print("Plotting training history...")
-        training_plot(history)
+        # history = load_history(history_load_path)
+        #
+        # print("Plotting training history...")
+        # training_plot(history)
         print("Evaluating a test set/generator")
         test_preds, test_loss, test_acc = evaluate(test_gen, model)
         print("Test set size: ", len(test_preds))
@@ -123,5 +121,5 @@ if __name__ == "__main__":
         print("Test accuracy: ", test_acc, '\n')
 
         print("Collating results...")
-        results(test_input, test_target, test_preds, 5, img_dims, num_classes, visualise=True)
+        results(test_input, test_target, test_preds, 4, img_dims, num_classes, visualise=True)
 

@@ -632,26 +632,48 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
     for i in range(len(output)):
         dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])))
 
-    print("Dice Coeffiecient Scores: ")
+    print("Dice Coeffiecient Scores:\nAverage Dice Coefficient: %2.4f" % tf.math.reduce_mean(dice_sim))
     for i in range(len(dice_sim)):
-        print("Image: ", test_target_img_path[i], "Dice CoEff:", dice_sim[i])
+        print("Image: %s | Dice: %2.4f" % (test_target_img_path[i].split(os.sep)[-1].split("_")[1], dice_sim[i]))
 
     if visualise:
-        plt.figure(figsize=(10, 10))
+        fig, big_axes = plt.subplots( figsize=(10, 3*num_imgs) , nrows=num_imgs, ncols=1)
+
+        for row, big_ax in enumerate(big_axes, start=1):
+            big_ax.set_title("Image: %s | Dice: %2.4f" % (test_target_img_path[row-1].split(os.sep)[-1].split("_")[1], dice_sim[row-1]))
+            big_ax.axis("off")
+            # # Turn off axis lines and ticks of the big subplot
+            # # obs alpha is 0 in RGBA string!
+            # big_ax.tick_params(labelcolor=(0, 0, 0, 0.0), top='off', bottom='off', left='off', right='off')
+            # # removes the white frame
+            # big_ax._frameon = False
+
         j=1
         for i in range(num_imgs):
-            plt.subplot(num_imgs, 3, j)
-            plt.imshow(xn[i])  # [:, :, 0], cmap='gray') #
-            plt.axis("off")
-            j = j+1
-            plt.subplot(num_imgs, 3, j)
-            plt.imshow(yn[i], cmap='gray')  # [:, :, 0], cmap='gray') #
-            plt.axis("off")
-            j = j+1
-            plt.subplot(num_imgs, 3, j)
-            plt.imshow(output[i], cmap='gray')  # [:, :, 0], cmap='gray') #
-            plt.axis("off")
-            j = j+1
+            ax = fig.add_subplot(num_imgs, 3, j)
+            ax.imshow(xn[i])  # [:, :, 0], cmap='gray') #
+            # ax.tick_params(labelcolor=(0, 0, 0, 0.0), top='off', bottom='off', left='off', right='off')
+            ax.set_xlabel('Input')
+            # Turn off tick labels
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
+            j=j+1
+            ax = fig.add_subplot(num_imgs, 3, j)
+            ax.imshow(yn[i], cmap='gray')
+            # ax.tick_params(labelcolor=(0, 0, 0 , 0.0), top='off', bottom='off', left='off', right='off')
+            # Turn off tick labels
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
+            j=j+1
+            ax = fig.add_subplot(num_imgs, 3, j)
+            ax.imshow(output[i], cmap='gray') #
+            # ax.tick_params(labelcolor=(0, 0, 0 , 0.0), top='off', bottom='off', left='off', right='off')
+            ax.set_xlabel("Predicted")
+            # Turn off tick labels
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
+            j=j+1
+
         plt.tight_layout()
         plt.show()
 
