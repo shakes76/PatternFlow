@@ -1,4 +1,4 @@
-
+import tensorflow as tf
 
 ### Define Model:
 
@@ -61,3 +61,15 @@ def discriminator(input_dim, num_blocks):
     return model
 
     
+
+### Losses
+
+def discriminator_loss(fake_outputs, real_outputs):
+    discriminator_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_outputs, labels=tf.ones((batch_size, 1))))
+    discriminator_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_outputs, labels=tf.zeros((batch_size, 1))))
+    total_discriminator_loss = discriminator_real + discriminator_fake
+    return total_discriminator_loss
+
+def generator_loss(fake_outputs):
+    generator_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_outputs, labels=tf.ones((batch_size, 1))))
+    return generator_fake
