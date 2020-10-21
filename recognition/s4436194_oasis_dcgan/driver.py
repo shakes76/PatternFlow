@@ -89,7 +89,7 @@ def run_dcgan_tests():
 
 
 if __name__ == '__main__':
-    # run_dcgan_training()
-    run_dcgan_tests()
+    run_dcgan_training()
+    # run_dcgan_tests()
 
     # unittest.main()

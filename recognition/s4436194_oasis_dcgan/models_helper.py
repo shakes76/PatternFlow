@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras import layers, Model
-from tensorflow.keras.regularizers import l1_l2
 from typing import Tuple
 
 
@@ -14,6 +13,11 @@ def make_models_64() -> Tuple[Model, Model, int]:
 
 def make_models_128() -> Tuple[Model, Model, int]:
     return Discriminator128(), Generator128(), 128
+
+
+def make_models_mitchell() -> Tuple[Model, Model, int]:
+    return DiscriminatorMitchell(), GeneratorMitchell(), 256
+
 
 ##########################################################################################################
 # 28 x 28 models
@@ -92,6 +96,7 @@ class Generator28(Model):
         x = self.layer_lrelu_2(x)
 
         return self.layer_conv2d_2(x)
+
 
 ##########################################################################################################
 # 64 x 64 models
@@ -237,7 +242,7 @@ class Discriminator128(Model):
         super(Discriminator128, self).__init__()
 
         self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+        self.optimizer = tf.keras.optimizers.SGD()
 
         self.layer_conv_0 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[128, 128, 1])
         self.layer_lrelu_0 = layers.LeakyReLU()
@@ -291,7 +296,7 @@ class Generator128(Model):
         self.optimizer = tf.keras.optimizers.Adam(1e-4)
 
         self.layer_input = tf.keras.Input(shape=100)
-        self.layer_dense_0 = layers.Dense(8 * 8 * 512, use_bias=False, input_shape=(100,))
+        self.layer_dense_0 = layers.Dense(8 * 8 * 512, use_bias=False, input_shape=(256,))
         self.layer_batch_norm_0 = layers.BatchNormalization()
         self.layer_lrelu_0 = layers.LeakyReLU()
 
@@ -378,3 +383,159 @@ class Generator128(Model):
         print(model.output_shape)
 
         return
+
+
+##########################################################################################################
+# Mithcell Models
+# https://github.com/mitchelljy/DCGAN-Keras/blob/master/DCGAN.py
+##########################################################################################################
+
+
+class DiscriminatorMitchell(Model):
+
+    def __init__(self):
+        super(DiscriminatorMitchell, self).__init__()
+
+        self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.SGD()
+
+        self.layer_conv_0 = layers.Conv2D(32, (2, 2), strides=(2, 2), padding='same', input_shape=[256, 256, 1])
+        self.layer_lrelu_0 = layers.LeakyReLU(alpha=0.25)
+        self.layer_dropout_0 = layers.Dropout(0.25)
+
+        self.layer_conv_1 = layers.Conv2D(64, (2, 2), strides=(2, 2), padding='same')
+        self.layer_padding_1 = layers.ZeroPadding2D(padding=((0, 1), (0, 1)))
+        self.layer_lrelu_1 = layers.LeakyReLU(alpha=0.2)
+        self.layer_dropout_1 = layers.Dropout(0.25)
+        self.layer_batch_norm_1 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_conv_2 = layers.Conv2D(128, (2, 2), strides=(1, 1), padding='same')
+        self.layer_lrelu_2 = layers.LeakyReLU(alpha=0.2)
+        self.layer_dropout_2 = layers.Dropout(0.25)
+        self.layer_batch_norm_2 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_conv_3 = layers.Conv2D(256, (2, 2), strides=(1, 1), padding='same')
+        self.layer_lrelu_3 = layers.LeakyReLU(alpha=0.2)
+        self.layer_dropout_3 = layers.Dropout(0.25)
+
+        self.layer_conv_4 = layers.Conv2D(512, (2, 2), strides=(1, 1), padding='same')
+        self.layer_lrelu_4 = layers.LeakyReLU(alpha=0.2)
+        self.layer_dropout_4 = layers.Dropout(0.25)
+
+        self.layer_flatten = layers.Flatten()
+        self.layer_output = layers.Dense(1, activation="sigmoid")
+
+    def call(self, x):
+
+        x = self.layer_conv_0(x)
+        x = self.layer_lrelu_0(x)
+        x = self.layer_dropout_0(x)
+
+        x = self.layer_conv_1(x)
+        x = self.layer_padding_1(x)
+        x = self.layer_lrelu_1(x)
+        x = self.layer_dropout_1(x)
+        x = self.layer_batch_norm_1(x)
+
+        x = self.layer_conv_2(x)
+        x = self.layer_lrelu_2(x)
+        x = self.layer_dropout_2(x)
+        x = self.layer_batch_norm_2(x)
+
+        x = self.layer_conv_3(x)
+        x = self.layer_lrelu_3(x)
+        x = self.layer_dropout_3(x)
+
+        x = self.layer_conv_4(x)
+        x = self.layer_lrelu_4(x)
+        x = self.layer_dropout_4(x)
+
+        x = self.layer_flatten(x)
+        return self.layer_output(x)
+
+
+class GeneratorMitchell(Model):
+
+    def __init__(self):
+        super(GeneratorMitchell, self).__init__()
+
+        # Test the model architecture
+        # self.network_check()
+
+        self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+
+        self.layer_dense_0 = layers.Dense(8 * 8 * 2048, activation="relu", input_shape=(100,))
+        self.layer_reshape_0 = layers.Reshape((8, 8, 2048))
+        self.layer_batch_norm_0 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_upsampling_1 = layers.UpSampling2D()
+        self.layer_conv2d_1 = layers.Conv2D(1024, (3, 3), padding='same')
+        self.layer_lrelu_1 = layers.ReLU()
+        self.layer_batch_norm_1 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_upsampling_2 = layers.UpSampling2D()
+        self.layer_conv2d_2 = layers.Conv2D(512, (3, 3), padding='same')
+        self.layer_lrelu_2 = layers.ReLU()
+        self.layer_batch_norm_2 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_upsampling_3 = layers.UpSampling2D()
+        self.layer_conv2d_3 = layers.Conv2D(256, (3, 3), padding='same')
+        self.layer_lrelu_3 = layers.ReLU()
+        self.layer_batch_norm_3 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_upsampling_4 = layers.UpSampling2D()
+        self.layer_conv2d_4 = layers.Conv2D(128, (3, 3), padding='same')
+        self.layer_lrelu_4 = layers.ReLU()
+        self.layer_batch_norm_4 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_upsampling_5 = layers.UpSampling2D()
+        self.layer_conv2d_5 = layers.Conv2D(64, (3, 3), padding='same')
+        self.layer_lrelu_5 = layers.ReLU()
+        self.layer_batch_norm_5 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_conv2d_6 = layers.Conv2D(32, (3, 3), padding='same')
+        self.layer_lrelu_6 = layers.ReLU()
+        self.layer_batch_norm_6 = layers.BatchNormalization(momentum=0.8)
+
+        self.layer_conv2d_7 = layers.Conv2D(1, (3, 3), padding='same')
+        self.layer_tanh_7 = layers.Activation("tanh")
+
+    def call(self, x):
+
+        x = self.layer_dense_0(x)
+        x = self.layer_reshape_0(x)
+        x = self.layer_batch_norm_0(x)
+
+        x = self.layer_upsampling_1(x)
+        x = self.layer_conv2d_1(x)
+        x = self.layer_lrelu_1(x)
+        x = self.layer_batch_norm_1(x)
+
+        x = self.layer_upsampling_2(x)
+        x = self.layer_conv2d_2(x)
+        x = self.layer_lrelu_2(x)
+        x = self.layer_batch_norm_2(x)
+
+        x = self.layer_upsampling_3(x)
+        x = self.layer_conv2d_3(x)
+        x = self.layer_lrelu_3(x)
+        x = self.layer_batch_norm_3(x)
+
+        x = self.layer_upsampling_4(x)
+        x = self.layer_conv2d_4(x)
+        x = self.layer_lrelu_4(x)
+        x = self.layer_batch_norm_4(x)
+
+        x = self.layer_upsampling_5(x)
+        x = self.layer_conv2d_5(x)
+        x = self.layer_lrelu_5(x)
+        x = self.layer_batch_norm_5(x)
+
+        x = self.layer_conv2d_6(x)
+        x = self.layer_lrelu_6(x)
+        x = self.layer_batch_norm_6(x)
+
+        x = self.layer_conv2d_7(x)
+        return self.layer_tanh_7(x)
+
