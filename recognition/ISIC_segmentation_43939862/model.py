@@ -70,7 +70,7 @@ def ImprovedUnet(h, w, n_channels):
     b6_m_c1 = tf.keras.layers.Conv2D(128, (3,3), padding = 'same')(b6_con)
     b6_m_c1n = tf.keras.layers.BatchNormalization()(b6_m_c1)
     b6_m_c1a = tf.keras.layers.LeakyReLU(alpha=0.01)(b6_m_c1n)
-    b6_m_c2 = tf.keras.layers.Conv2D(128, (1,1), padding = 'same')(b6_m_c1a)
+    b6_m_c2 = tf.keras.layers.Conv2D(128, (1,1))(b6_m_c1a)
     b6_m_c2n = tf.keras.layers.BatchNormalization()(b6_m_c2)
     b6_m_c2a = tf.keras.layers.LeakyReLU(alpha=0.01)(b6_m_c2n)
     
@@ -80,7 +80,8 @@ def ImprovedUnet(h, w, n_channels):
     b7_m_c1 = tf.keras.layers.Conv2D(64, (3,3), padding = 'same')(b7_con)
     b7_m_c1n = tf.keras.layers.BatchNormalization()(b7_m_c1)
     b7_m_c1a = tf.keras.layers.LeakyReLU(alpha=0.01)(b7_m_c1n)
-    b7_m_c2 = tf.keras.layers.Conv2D(64, (1,1), padding = 'same')(b7_m_c1a)
+    b7_seg = b7_m_c1a
+    b7_m_c2 = tf.keras.layers.Conv2D(64, (1,1))(b7_m_c1a)
     b7_m_c2n = tf.keras.layers.BatchNormalization()(b7_m_c2)
     b7_m_c2a = tf.keras.layers.LeakyReLU(alpha=0.01)(b7_m_c2n)
 
@@ -90,16 +91,26 @@ def ImprovedUnet(h, w, n_channels):
     b8_m_c1 = tf.keras.layers.Conv2D(32, (3,3), padding = 'same')(b8_con)
     b8_m_c1n = tf.keras.layers.BatchNormalization()(b8_m_c1)
     b8_m_c1a = tf.keras.layers.LeakyReLU(alpha=0.01)(b8_m_c1n)
-    b8_m_c2 = tf.keras.layers.Conv2D(32, (1,1), padding = 'same')(b8_m_c1a)
+    b8_seg = b8_m_c1a
+    b8_m_c2 = tf.keras.layers.Conv2D(32, (1,1))(b8_m_c1a)
     b8_m_c2n = tf.keras.layers.BatchNormalization()(b8_m_c2)
     b8_m_c2a = tf.keras.layers.LeakyReLU(alpha=0.01)(b8_m_c2n)
     
     #Block 9 (Localization)
     b9_us = tf.keras.layers.Conv2DTranspose(16, (3,3), strides = (2,2), padding = 'same')(b8_m_c2a)
     b9_con = tf.keras.layers.concatenate([b9_us,b1_out])
-    b9_m_c1 = tf.keras.layers.Conv2D(32, (3,3), padding = 'same')(b9_con)
+    b9_m_c1 = tf.keras.layers.Conv2D(16, (3,3), padding = 'same')(b9_con)
     b9_m_c1n = tf.keras.layers.BatchNormalization()(b9_m_c1)
     b9_m_c1a = tf.keras.layers.LeakyReLU(alpha=0.01)(b9_m_c1n)
-
-    output_layer = tf.keras.layers.Conv2D(2, (1,1), activation = 'softmax')(b9_m_c1a)
+    b9_seg = tf.keras.layers.Conv2D(2, (1,1))(b9_m_c1a)
+    
+    #Block 10 (Segmentations)
+    b7_seg = tf.keras.layers.Conv2D(2, (1,1))(b7_seg)
+    b7_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b7_seg)
+    b8_seg = tf.keras.layers.Conv2D(2, (1,1))(b8_seg)
+    b78_seg = b7_seg + b8_seg
+    b78_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b78_seg)
+    b789_seg = b78_seg + b9_seg
+    
+    output_layer = tf.keras.layers.Conv2D(2, (1,1), activation = 'softmax')(b789_seg)
     return (input_layer, output_layer)
