@@ -27,9 +27,9 @@ def process_dataset(dir_data, N_train, N_test):
                              target_size=img_shape[:2])
 
             # normalise image pixels
-            image = img_to_array(image) / 255.0
+            image = img_to_array(image)
 
-            X_set.append(image)
+            X_set.append(image[:, :, 0])
             if "LEFT" in name or "L_E_F_T" in name or \
                     "Left" in name or "left" in name:
                 label = 0
@@ -38,10 +38,11 @@ def process_dataset(dir_data, N_train, N_test):
 
             y_set.append(label)
 
-        X_set = np.array(X_set)
+        X_set = tf.convert_to_tensor(np.array(X_set, dtype=np.uint8))
+        X_set = tf.cast(X_set, tf.float16) / 255.0
 
-        return tf.image.rgb_to_grayscale(tf.convert_to_tensor(X_set))[:, :, :, 0], \
-               tf.convert_to_tensor(y_set)
+
+        return X_set, tf.convert_to_tensor(y_set)
 
     X_train, y_train = get_data(train_image_names)
     X_test, y_test = get_data(test_image_names)
@@ -54,25 +55,31 @@ def visualise_images(X, y):
     for i in range(9):
         index = random.randint(0, 1000)
         plt.subplot(3, 3, i + 1)
-        plt.imshow(X[index], cmap='gray')
+        # cast back to float32 for visualisation
+        plt.imshow(tf.cast(X[index], tf.float32), cmap='gray')
         label = y[index]
         plt.title("left" if label == 0 else "right")
         plt.axis('off')
+
+    plt.suptitle("Visualisation of training set")
     plt.show()
 
 
 if __name__ == "__main__":
     # data_dir = "H:/Desktop/AKOA_Analysis/"
 
+    # load up dataset, download if necessary
     url = "https://cloudstor.aarnet.edu.au/sender/download.php?token=d82346d9-f3ca-48bf-825f-327a622bfaca&files_ids=9881639"
     data_dir = tf.keras.utils.get_file(origin=url,
                                        fname='AKOA_Analysis',
                                        untar=True)
 
-    X_train, y_train, X_test, y_test = process_dataset(data_dir, 1000, 10)
+    # split up dataset, 12000 images for training, 3000 for testing
+    X_train, y_train, X_test, y_test = process_dataset(data_dir, 1200, 300)
 
     print(len([x for x in y_train if x == 1]), len(y_train))
 
+    # visualise some of training set
     visualise_images(X_train, y_train)
 
     classifier = LateralityClassifier
