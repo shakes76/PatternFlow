@@ -3,6 +3,7 @@ import tensorflow as tf
 from model import *
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import TensorBoard
 
 #Load data
 image_files = glob.glob('../../../ISIC2018_Data/ISIC2018_Images/*.jpg')
@@ -10,25 +11,29 @@ label_files = glob.glob('../../../ISIC2018_Data/ISIC2018_Labels/*.png')
 
 split_ratio = 0.8
 split_size = int(len(image_files)*split_ratio)
+data_split_size = int(len(image_files)*split_ratio*split_ratio)
 
 #Shuffle before splitting?
-train_ds = tf.data.Dataset.from_tensor_slices((image_files[:split_size], 
-                                               label_files[:split_size]))
+train_ds = tf.data.Dataset.from_tensor_slices((image_files[:data_split_size], 
+                                               label_files[:data_split_size]))
+validate_ds = tf.data.Dataset.from_tensor_slices((image_files[data_split_size:split_size], 
+                                               label_files[data_split_size:split_size]))
 test_ds = tf.data.Dataset.from_tensor_slices((image_files[split_size:], 
                                                label_files[split_size:]))
 
 #Pre-process data
-train_ds = train_ds.shuffle(split_size)
+train_ds = train_ds.shuffle(data_split_size)
+validate_ds = validate_ds.shuffle(split_size-data_split_size)
 test_ds = test_ds.shuffle(len(image_files)-split_size)
 
 def map_fn(image, label):
     img = tf.io.read_file(image)
-    img = tf.io.decode_jpeg(img, channels = 0)
+    img = tf.io.decode_jpeg(img, channels = 1)
     img = tf.image.resize(img, (256,256))
     img = tf.cast(img, tf.float32) / 255.0
     
     lbl = tf.io.read_file(label)
-    lbl = tf.io.decode_png(lbl, channels = 0)
+    lbl = tf.io.decode_png(lbl, channels = 1)
     lbl = tf.image.resize(lbl, (256,256))
     lbl = tf.cast(lbl, tf.uint8)
     lbl = tf.one_hot(lbl, depth = 2, axis = 2)
@@ -37,6 +42,7 @@ def map_fn(image, label):
     return img, lbl
 
 train_ds = train_ds.map(map_fn)
+validate_ds = validate_ds.map(map_fn)
 test_ds = test_ds.map(map_fn)
 
 #Check batching is working
@@ -70,6 +76,7 @@ model.summary()
 
 
 #Evaluate model
+
 
 
 #Predictions

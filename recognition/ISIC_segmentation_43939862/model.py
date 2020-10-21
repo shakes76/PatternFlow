@@ -52,6 +52,6 @@ def ImprovedUnet(h, w, n_channels):
     c9 = tf.keras.layers.Conv2D(64, (3,3), activation = 'relu', padding = 'same')(c9)
     b9 = tf.keras.layers.BatchNormalization()(c9)
     
-    output_layer = tf.keras.layers.Conv2D(4, (1,1), activation = 'softmax')(b9)
+    output_layer = tf.keras.layers.Conv2D(2, (1,1), activation = 'softmax')(b9)
     
     return (input_layer, output_layer)
