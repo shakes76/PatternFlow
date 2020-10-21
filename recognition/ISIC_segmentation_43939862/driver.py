@@ -28,15 +28,16 @@ test_ds = test_ds.shuffle(len(image_files)-split_size)
 
 def map_fn(image, label):
     img = tf.io.read_file(image)
-    img = tf.io.decode_jpeg(img, channels = 1)
+    img = tf.io.decode_jpeg(img, channels = 3)
     img = tf.image.resize(img, (256,256))
     img = tf.cast(img, tf.float32) / 255.0
     
     lbl = tf.io.read_file(label)
-    lbl = tf.io.decode_png(lbl, channels = 1)
+    lbl = tf.io.decode_png(lbl, channels = 0)
     lbl = tf.image.resize(lbl, (256,256))
+    lbl = tf.keras.backend.round(lbl / 255.0) #Is this fine?
     lbl = tf.cast(lbl, tf.uint8)
-    lbl = tf.one_hot(lbl, depth = 2, axis = 2)
+    lbl = tf.one_hot(lbl, depth = 2, axis = 2) #Is one-hot encoding needed for only 2 classes?
     lbl = tf.cast(lbl, tf.float32)
     lbl = tf.squeeze(lbl)
     return img, lbl
@@ -58,11 +59,11 @@ print("width: %d" % w)
 print("channels: %d" % n_channels)
 
 image_batch, label_batch = next(iter(train_ds.batch(1)))
-test_image = np.asarray(image_batch[0][:,:,0])
-test_label = np.asarray(label_batch[0][:,:,0])
+test_image = np.asarray(image_batch[0])
+test_label = np.asarray(label_batch[0][:,:,1])
 plt.figure(figsize = (20,20))
-plt.subplot(1,2,1); plt.imshow(test_image); plt.title('Full image'); plt.axis('off')
-plt.subplot(1,2,2); plt.imshow(test_label); plt.title('Background mask'); plt.axis('off')
+plt.subplot(1,2,1); plt.imshow(test_image); plt.title('Image'); plt.axis('off')
+plt.subplot(1,2,2); plt.imshow(test_label); plt.title('Label'); plt.axis('off')
 
 #Build model
 input_layer, output_layer = ImprovedUnet(h, w, n_channels)
