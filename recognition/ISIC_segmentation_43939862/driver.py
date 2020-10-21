@@ -31,6 +31,7 @@ def map_fn(image, label):
     img = tf.io.decode_jpeg(img, channels = 3)
     img = tf.image.resize(img, (256,256))
     img = tf.cast(img, tf.float32) / 255.0
+    img.set_shape([256,256,3])
     
     lbl = tf.io.read_file(label)
     lbl = tf.io.decode_png(lbl, channels = 0)
@@ -40,6 +41,7 @@ def map_fn(image, label):
     lbl = tf.one_hot(lbl, depth = 2, axis = 2) #Is one-hot encoding needed for only 2 classes?
     lbl = tf.cast(lbl, tf.float32)
     lbl = tf.squeeze(lbl)
+    lbl.set_shape([256,256,2])
     return img, lbl
 
 train_ds = train_ds.map(map_fn)
@@ -77,7 +79,6 @@ model.summary()
 
 
 #Evaluate model
-
 
 
 #Predictions
