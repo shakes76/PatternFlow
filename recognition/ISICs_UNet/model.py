@@ -2,7 +2,7 @@ from tensorflow.keras import models, layers, Model, Input
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Dropout, UpSampling2D, MaxPooling2D, concatenate
 
 ## Model for the UNet from https://arxiv.org/abs/1505.04597
-def unet(input_size=(256,256,1)):
+def unet(class_num, input_size=(256,256,3)):
     INIT_FILTER = 32
     hn = 'he_normal'
     dropout = 0.2
@@ -50,12 +50,11 @@ def unet(input_size=(256,256,1)):
     conv9 = Conv2D(INIT_FILTER * 1, (3,3), activation = 'relu', padding = 'same', kernel_initializer=hn)(concat9)
     conv9 = Conv2D(INIT_FILTER * 1, (3,3), activation = 'relu', padding = 'same', kernel_initializer=hn)(conv9)
 
-    outputs = Conv2D(4, (1,1), activation = 'softmax')(conv9)
-
+    if class_num > 2:
+        outputs = Conv2D(class_num, (1,1), activation = 'softmax', padding = 'same')(conv9)
+    else:
+        outputs = Conv2D(class_num, (1,1), activation = 'sigmoid', padding = 'same')(conv9) 
     model = Model(inputs = inputs, outputs = outputs)
-
-    model.compile(optimizer='adam', loss="categorical_crossentropy", metrics=['accuracy'])
-
     # model.summary()
 
     return model
