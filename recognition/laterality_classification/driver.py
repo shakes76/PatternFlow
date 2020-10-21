@@ -75,8 +75,8 @@ def visualise_images(X, y, set_size, title):
     plt.show()
 
 
-def build_train_model(classifier, X_train, X_test, y_train, y_test):
-    model = classifier.build_model()
+def build_train_model(classifier, X_train, y_train, X_test, y_test):
+    model = classifier.build_simple_model()
 
     model.summary()
 
@@ -102,7 +102,7 @@ def build_train_model(classifier, X_train, X_test, y_train, y_test):
     acc = len([i for i in range(len(y_test)) if test_predictions[i] == y_test[i]]) / len(y_test)
     print(f"validation acc = {acc}")
 
-    visualise_images(X_test, test_predictions, 100, "Model predictions on validation set")
+    visualise_images(X_test[:, :, :, 0], test_predictions, 100, "Model predictions on validation set")
 
 
 if __name__ == "__main__":
@@ -117,11 +117,13 @@ if __name__ == "__main__":
     # split up dataset, 12000 images for training, 3000 for testing
     X_train, y_train, X_test, y_test = process_dataset(data_dir, 1200, 300)
 
-    print(len([x for x in y_train if x == 1]), len(y_train))
-    print(X_train, X_test)
+    print("proportion of right knee in training set:", len([x for x in y_train if x == 1]), len(y_train))
+    print("proportion of right knee in test set:", len([x for x in y_test if x == 1]), len(y_test))
+
     # visualise some of training set
     visualise_images(X_train, y_train, 1200, "visualisation of training set")
+    visualise_images(X_test, y_test, 300, "visualisation of testing set")
 
     classifier = LateralityClassifier((228, 260, 1))
 
-    build_train_model(classifier, X_train, X_test, y_train, y_test)
+    build_train_model(classifier, X_train, y_train, X_test, y_test)
