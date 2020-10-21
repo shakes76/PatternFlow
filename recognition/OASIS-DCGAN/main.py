@@ -6,12 +6,12 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 print("Imports done")
 
-train_dir = "keras_png_slices_train/"
-test_dir = "keras_png_slices_test/"
+train_dir = "H:/keras_png_slices_train/"
+test_dir = "H:/keras_png_slices_test/"
 
 train_size = 9665
 test_size = 545
-img_size = (64, 64, 3)  # 256x256, grayscale
+img_size = (128, 128, 3)  # 256x256, grayscale
 
 # get the filenames of all the images, then split them into training and testing sets 
 import os
@@ -41,12 +41,12 @@ print("X_test.shape =", X_test.shape)
 print("Images got")
 
 # lookie code: remove for final version
-fig = plt.figure(figsize=(30, 10))
-nplot = 7
-for num in range(1, nplot):
-    ax = fig.add_subplot(1,nplot,num)
-    ax.imshow(X_train[num])
-plt.show()
+#fig = plt.figure(figsize=(30, 10))
+#nplot = 7
+#for num in range(1, nplot):
+#    ax = fig.add_subplot(1,nplot,num)
+#    ax.imshow(X_train[num])
+#plt.show()
     
 #(X_train, X_test) = 
 
@@ -65,6 +65,9 @@ def build_generator(noise_shape=(100,)):
     l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
     
     l = layers.Conv2DTranspose(32, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
+    l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
+    
+    l = layers.Conv2DTranspose(16, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
     
     img = layers.Conv2D(3, (1, 1), activation="sigmoid", padding="same")(l)
@@ -103,7 +106,7 @@ def plot_generated_images(noise, path_save=None ,title=""):
         
 nsample = 4
 noise = get_noise(nsample=nsample, latent_dim=100)
-plot_generated_images(noise)
+#plot_generated_images(noise)
 
 def build_discriminator(image_shape, noutput=1):
     input_img = layers.Input(shape=image_shape)
@@ -193,9 +196,9 @@ def train(models, X_train, noise, result="result/", epochs=20000, batch_size=128
             plot_generated_images(noise,
                                   path_save=result+"/image_{:05.0f}.png".format(epoch),
                                   title="Epoch {}".format(epoch))
-        if epoch % 1000 == 0:
-            plot_generated_images(noise,
-                                  title="Epoch {}".format(epoch))
+        #if epoch % 1000 == 0:
+            #plot_generated_images(noise,
+            #                      title="Epoch {}".format(epoch))
 
         
         #if epoch % int(epochs/100) == 0:
@@ -207,4 +210,4 @@ def train(models, X_train, noise, result="result/", epochs=20000, batch_size=128
 
 noise = get_noise(nsample=4, latent_dim=100)
 
-history = train((combo, discriminator, generator), X_train, noise=noise, epochs=20000, batch_size=128)
+history = train((combo, discriminator, generator), X_train, noise=noise, epochs=10000, batch_size=128)
