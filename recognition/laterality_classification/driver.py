@@ -7,6 +7,16 @@ import matplotlib.pyplot as plt
 import random
 
 
+def proof_no_set_overlap(train_image_names, test_image_names):
+    matches = 0
+
+    for name in train_image_names:
+        if name in test_image_names:
+            matches += 1
+
+    print("num images with same name (indicating training set and test set overlap): ", matches)
+
+
 def process_dataset(dir_data, N_train, N_test):
     all_image_names = os.listdir(data_dir)
     random.shuffle(all_image_names)
@@ -15,8 +25,9 @@ def process_dataset(dir_data, N_train, N_test):
     # num_right found: 10,920
 
     train_image_names = all_image_names[:N_train]
-
     test_image_names = all_image_names[N_train:N_train + N_test]
+    proof_no_set_overlap(train_image_names, test_image_names)
+
     img_shape = (228, 260, 3)
 
     def get_data(image_names):
@@ -49,10 +60,10 @@ def process_dataset(dir_data, N_train, N_test):
     return X_train, y_train, X_test, y_test
 
 
-def visualise_images(X, y):
+def visualise_images(X, y, set_size, title):
     plt.figure(figsize=(10, 10))
     for i in range(9):
-        index = random.randint(0, 100)
+        index = random.randint(0, set_size)
         plt.subplot(3, 3, i + 1)
         # cast back to float32 for visualisation
         plt.imshow(tf.cast(X[index], tf.float32), cmap='gray')
@@ -60,11 +71,11 @@ def visualise_images(X, y):
         plt.title("left" if label == 0 else "right")
         plt.axis('off')
 
-    plt.suptitle("Visualisation of training set")
+    plt.suptitle(title)
     plt.show()
 
 
-def build_train_model(classifier, X_train, X_test):
+def build_train_model(classifier, X_train, X_test, y_train, y_test):
     model = classifier.build_model()
 
     model.summary()
@@ -77,7 +88,7 @@ def build_train_model(classifier, X_train, X_test):
     X_test = X_test[:, :, :, np.newaxis]
 
     model_history = model.fit(x=X_train, y=y_train, validation_data=(X_test, y_test),
-                              epochs=50)
+                              epochs=3)
     plt.plot(model_history.history['accuracy'])
     plt.plot(model_history.history['val_accuracy'])
     plt.title('accurary over epoch')
@@ -85,6 +96,13 @@ def build_train_model(classifier, X_train, X_test):
     plt.xlabel('Epoch')
     plt.legend(['training', 'validation'])
     plt.show()
+
+    test_predictions = tf.cast(tf.round(model.predict(X_test)), tf.int32)[:, 0]
+
+    acc = len([i for i in range(len(y_test)) if test_predictions[i] == y_test[i]]) / len(y_test)
+    print(f"validation acc = {acc}")
+
+    visualise_images(X_test, test_predictions, 100, "Model predictions on validation set")
 
 
 if __name__ == "__main__":
@@ -102,8 +120,8 @@ if __name__ == "__main__":
     print(len([x for x in y_train if x == 1]), len(y_train))
     print(X_train, X_test)
     # visualise some of training set
-    visualise_images(X_train, y_train)
+    visualise_images(X_train, y_train, 1200, "visualisation of training set")
 
     classifier = LateralityClassifier((228, 260, 1))
 
-    build_train_model(classifier, X_train, X_test)
+    build_train_model(classifier, X_train, X_test, y_train, y_test)
