@@ -82,7 +82,7 @@ def generate_samples(generator, epoch):
         plt.subplot(3, 3, i)
 
         # Generate the image
-        image = generator(seed)
+        image = generator(seed, training=True)
 
         # Display the image
         plt.imshow(image[i-1])
