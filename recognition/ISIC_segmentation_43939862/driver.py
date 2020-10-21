@@ -66,6 +66,7 @@ test_label = np.asarray(label_batch[0][:,:,1])
 plt.figure(figsize = (20,20))
 plt.subplot(1,2,1); plt.imshow(test_image); plt.title('Image'); plt.axis('off')
 plt.subplot(1,2,2); plt.imshow(test_label); plt.title('Label'); plt.axis('off')
+plt.show()
 
 #Build model
 input_layer, output_layer = ImprovedUnet(h, w, n_channels)
@@ -73,12 +74,41 @@ model = tf.keras.Model(inputs = input_layer, outputs = output_layer)
 model.summary()
 
 #Compile model
+def dice(lbl_gt, lbl_pred):
+    lbl_gt = tf.keras.backend.flatten(lbl_gt)
+    lbl_pred = tf.keras.backend.flatten(lbl_pred)
+    intersection = tf.keras.backend.sum(lbl_gt * lbl_pred)
+    return (2.0 * intersection + 1) / (tf.keras.backend.sum(lbl_gt) + tf.keras.backend.sum(lbl_pred) + 1)
 
+def dice_loss(lbl_gt, lbl_pred):
+    return -dice(lbl_gt, lbl_pred)
+
+model.compile(optimizer = 'Adam', loss=dice_loss, metrics=[dice]) 
 
 #Train model
-
+history = model.fit(train_ds.batch(16), epochs=50, validation_data = validate_ds.batch(16), 
+                callbacks = [TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000)])
 
 #Evaluate model
-
+plt.figure(1)
+plt.plot(history.history['dice'])
+plt.plot(history.history['val_dice'])
+plt.title('Model Accuracy (DICE) vs Epoch')
+plt.ylabel('Accuracy (DICE)')
+plt.xlabel('Epoch')
+plt.legend(['Training set', 'Validation set'], loc='upper left')
+plt.show()
+print('Test set summary:\n')
+model.evaluate(test_ds.batch(16), verbose=2)
 
 #Predictions
+image_batch, label_batch = next(iter(test_ds.batch(3)))
+pred = model.predict(image_batch)
+plt.figure(figsize = (20,20))
+
+for i in range(3):
+    pred_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(tf.argmax(pred[i], axis = 2), tf.float32), 2))
+    gt_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(tf.argmax(label_batch[i], axis = 2), tf.float32), 2))
+    plt.subplot(3,2,2*i+1); plt.imshow(pred_im); plt.title('Prediction'); plt.axis('off')
+    plt.subplot(3,2,2*i+2); plt.imshow(gt_im); plt.title('Ground truth'); plt.axis('off')
+plt.show()
