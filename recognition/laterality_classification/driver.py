@@ -41,7 +41,6 @@ def process_dataset(dir_data, N_train, N_test):
         X_set = tf.convert_to_tensor(np.array(X_set, dtype=np.uint8))
         X_set = tf.cast(X_set, tf.float16) / 255.0
 
-
         return X_set, tf.convert_to_tensor(y_set)
 
     X_train, y_train = get_data(train_image_names)
@@ -53,7 +52,7 @@ def process_dataset(dir_data, N_train, N_test):
 def visualise_images(X, y):
     plt.figure(figsize=(10, 10))
     for i in range(9):
-        index = random.randint(0, 1000)
+        index = random.randint(0, 100)
         plt.subplot(3, 3, i + 1)
         # cast back to float32 for visualisation
         plt.imshow(tf.cast(X[index], tf.float32), cmap='gray')
@@ -62,6 +61,29 @@ def visualise_images(X, y):
         plt.axis('off')
 
     plt.suptitle("Visualisation of training set")
+    plt.show()
+
+
+def build_train_model(classifier, X_train, X_test):
+    model = classifier.build_model()
+
+    model.summary()
+
+    model.compile(optimizer="adam", loss="binary_crossentropy",
+                  metrics=["accuracy"])
+
+    # format input to 4 dims
+    X_train = X_train[:, :, :, np.newaxis]
+    X_test = X_test[:, :, :, np.newaxis]
+
+    model_history = model.fit(x=X_train, y=y_train, validation_data=(X_test, y_test),
+                              epochs=50)
+    plt.plot(model_history.history['accuracy'])
+    plt.plot(model_history.history['val_accuracy'])
+    plt.title('accurary over epoch')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['training', 'validation'])
     plt.show()
 
 
@@ -78,8 +100,10 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test = process_dataset(data_dir, 1200, 300)
 
     print(len([x for x in y_train if x == 1]), len(y_train))
-
+    print(X_train, X_test)
     # visualise some of training set
     visualise_images(X_train, y_train)
 
-    classifier = LateralityClassifier
+    classifier = LateralityClassifier((228, 260, 1))
+
+    build_train_model(classifier, X_train, X_test)
