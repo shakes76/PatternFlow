@@ -17,7 +17,7 @@ import layers
 print('TensorFlow version:', tf.__version__)
 
 #parameters
-epochs = 2 #multiple of 3 + 1
+epochs = 5 #multiple of 3 + 1
 batch_size = 64
 depth = 32
 kernel = 3
@@ -202,9 +202,13 @@ def save_images(epoch, test_input):
 #train
 convergence = train(train_dataset, epochs)
 
-#test
-
+#predict
+#reconstruct test set
+test_set = x_test[0:num_examples,...]
+save_images(0, test_set)
+generate_and_save_images(vae, -1, test_set)
 
 #plot
+plt.plot(np.arange(epochs), convergence)
 
 print('END')
