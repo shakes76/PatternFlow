@@ -7,7 +7,7 @@ def load_data(filepath, batch_size):
     image_files = glob.glob(filepath + '*')
     #images = np.array([np.array(Image.open(i)) for i in image_files])
     crop = (30, 55, 150, 175)
-    images = np.array([np.array((Image.open(i).crop(crop)).resize((64,64))) for i in image_files[:500]])
+    images = np.array([np.array(Image.open(i).resize((64,64))) for i in image_files])
 
     discriminator_input_dim = images.shape[1:]
     dataset_size = images.shape[0]
