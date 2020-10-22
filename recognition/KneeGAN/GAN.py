@@ -68,13 +68,13 @@ def discriminator(input_dim):
 
 ### Losses
 
-def discriminator_loss(fake_outputs, real_outputs):
+def discriminator_loss(fake_outputs, real_outputs, batch_size):
     discriminator_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_outputs, labels=tf.ones((batch_size, 1))))
     discriminator_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_outputs, labels=tf.zeros((batch_size, 1))))
     total_discriminator_loss = discriminator_real + discriminator_fake
     return total_discriminator_loss
 
-def generator_loss(fake_outputs):
+def generator_loss(fake_outputs, batch_size):
     generator_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_outputs, labels=tf.ones((batch_size, 1))))
     return generator_fake
 
@@ -89,8 +89,8 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
 
 
     ### Construct Models
-    disc = discriminator(discriminator_input_dim, discriminator_blocks)
-    gen = generator(generator_input_dim, generator_blocks, latent_dim)
+    disc = discriminator(discriminator_input_dim)
+    gen = generator(generator_input_dim, latent_dim)
 
 
     ### Define Optimisers
@@ -122,7 +122,7 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
                 fake_image = gen(latent_data)
                 fake_output = disc(fake_image)
                 real_output = disc(image_data)
-                disc_loss = discriminator_loss(fake_output, real_output)
+                disc_loss = discriminator_loss(fake_output, real_output, batch_size)
             gradients = tape.gradient(disc_loss, disc.trainable_variables)
             discriminator_optimiser.apply_gradients(zip(gradients, disc.trainable_variables))
             disc_hist_temp.append(disc_loss)
@@ -131,7 +131,7 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
             with tf.GradientTape() as tape:
                 fake_image = gen(latent_data)
                 fake_output = disc(fake_image)
-                gen_loss = generator_loss(fake_output)
+                gen_loss = generator_loss(fake_output, batch_size)
             gradients = tape.gradient(gen_loss, gen.trainable_variables)
             generator_optimiser.apply_gradients(zip(gradients, gen.trainable_variables))
             gen_hist_temp.append(gen_loss)
