@@ -13,7 +13,6 @@ split_ratio = 0.8
 split_size = int(len(image_files)*split_ratio)
 data_split_size = int(len(image_files)*split_ratio*split_ratio)
 
-#Shuffle before splitting?
 train_ds = tf.data.Dataset.from_tensor_slices((image_files[:data_split_size], 
                                                label_files[:data_split_size]))
 validate_ds = tf.data.Dataset.from_tensor_slices((image_files[data_split_size:split_size], 
@@ -36,12 +35,9 @@ def map_fn(image, label):
     lbl = tf.io.read_file(label)
     lbl = tf.io.decode_png(lbl, channels = 0)
     lbl = tf.image.resize(lbl, (256,256))
-    lbl = tf.keras.backend.round(lbl / 255.0) #Is this fine?
-    lbl = tf.cast(lbl, tf.uint8)
-    lbl = tf.one_hot(lbl, depth = 2, axis = 2) #Is one-hot encoding needed for only 2 classes?
-    lbl = tf.cast(lbl, tf.float32)
+    lbl = tf.keras.backend.round(lbl / 255.0)
     lbl = tf.squeeze(lbl)
-    lbl.set_shape([256,256,2])
+    lbl.set_shape([256,256])
     return img, lbl
 
 train_ds = train_ds.map(map_fn)
@@ -62,15 +58,14 @@ print("channels: %d" % n_channels)
 
 image_batch, label_batch = next(iter(train_ds.batch(1)))
 test_image = np.asarray(image_batch[0])
-test_label = np.asarray(label_batch[0][:,:,1])
+test_label = np.asarray(label_batch[0])
 plt.figure(figsize = (20,20))
 plt.subplot(1,2,1); plt.imshow(test_image); plt.title('Image'); plt.axis('off')
 plt.subplot(1,2,2); plt.imshow(test_label); plt.title('Label'); plt.axis('off')
 plt.show()
 
 #Build model
-input_layer, output_layer = ImprovedUnet(h, w, n_channels)
-model = tf.keras.Model(inputs = input_layer, outputs = output_layer)
+model = ImprovedUnet(h, w, n_channels)
 model.summary()
 
 #Compile model
@@ -86,7 +81,7 @@ def dice_loss(lbl_gt, lbl_pred):
 model.compile(optimizer = 'Adam', loss=dice_loss, metrics=[dice]) 
 
 #Train model
-history = model.fit(train_ds.batch(16), epochs=100, validation_data = validate_ds.batch(16), 
+history = model.fit(train_ds.batch(16), epochs=1, validation_data = validate_ds.batch(16), 
                 callbacks = [TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000)])
 
 #Evaluate model
@@ -103,12 +98,12 @@ model.evaluate(test_ds.batch(16), verbose=2)
 
 #Predictions
 image_batch, label_batch = next(iter(test_ds.batch(3)))
-pred = model.predict(image_batch)
+pred = model.predict(image_batch) #Predict test set and get avg. dice score
 plt.figure(figsize = (20,20))
 
 for i in range(3):
-    pred_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(tf.argmax(pred[i], axis = 2), tf.float32), 2))
-    gt_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(tf.argmax(label_batch[i], axis = 2), tf.float32), 2))
+    pred_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.cast(pred[i], tf.float32))
+    gt_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(label_batch[i], tf.float32), 2))
     plt.subplot(3,2,2*i+1); plt.imshow(gt_im); plt.title('Ground truth'); plt.axis('off')
     plt.subplot(3,2,2*i+2); plt.imshow(pred_im); plt.title('Prediction'); plt.axis('off')
 plt.show()

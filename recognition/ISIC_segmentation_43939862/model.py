@@ -1,6 +1,21 @@
 import tensorflow as tf
 
 #Improved U-net model
+# =============================================================================
+# Layer naming:
+# b# = block #
+# ds = downsample
+# res = residual
+# m = module (context or localization)
+# c# = convolution # in module
+# c#n = normalization of conv #
+# c#a = activation function of conv #
+# do = dropout
+# out = output (with res)
+# us = upsample
+# con = concatenation
+# seg = segmentation
+# =============================================================================
 def ImprovedUnet(h, w, n_channels):
     input_layer = tf.keras.layers.Input(shape = (h,w,n_channels))
     
@@ -112,5 +127,5 @@ def ImprovedUnet(h, w, n_channels):
     b78_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b78_seg)
     b789_seg = b78_seg + b9_seg
     
-    output_layer = tf.keras.layers.Conv2D(2, (1,1), activation = 'softmax')(b789_seg)
-    return (input_layer, output_layer)
+    output_layer = tf.keras.layers.Conv2D(1, (1,1), activation = 'softmax')(b789_seg)
+    return tf.keras.Model(inputs = input_layer, outputs = output_layer)
