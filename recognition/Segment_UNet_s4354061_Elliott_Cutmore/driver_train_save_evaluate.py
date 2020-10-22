@@ -2,23 +2,23 @@ from segment import *
 
 if __name__ == "__main__":
 
-    # There are two options to run the driver:
-    # 1) option = 1 runs the training of a new model, saves it and evaluates it
-    # 2) option = 2 runs the loading of a pre-trained model and evaluates it
-    option = 2
     # How histograms of image size data used to make judgement on CNN image size
     inspect_image_sizes = False
     # Use a subset of the 2594 images to only 100 for compuational speed up
-    subset = False
+    subset = True
     # Black and white Binary segmentation channels
     num_classes = 2
     # how many images to run through net:
     batch_size = 4
     # How many cycles to train the net for: only in option=1
-    epochs = 100
+    epochs = 3
     # where to load images from (input and targets)
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
+    # Where to save trained model and checkpoints to from training
+    save_model_path = ".\\model_1"
+    save_checkpoint_path = ".\\training_1\\cp.ckpt"
+    save_history_path = ".\\history_1_pickle"
 
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
@@ -45,7 +45,6 @@ if __name__ == "__main__":
     # and 3 colour channels (RGB)
     img_dims = (256, 256, 3)
 
-    # ## CHANGE THIS LATER!!!!!
     if subset:
         input_img_paths = input_img_paths[0:100]
         target_img_paths = target_img_paths[0:100]
@@ -73,53 +72,29 @@ if __name__ == "__main__":
     check_generator(val_gen, img_dims, batch_size, num_classes, visualise=False)
     check_generator(test_gen, img_dims, batch_size, num_classes, visualise=False)
 
-    """ Option 1 - train a new net: """
-    if option == 1:
-        # Where to save trained model and checkpoints to from training
-        save_model_path = ".\\model_1"
-        save_checkpoint_path = ".\\training_1\\cp.ckpt"
-        save_history_path = ".\\history_1_pickle"
+    # Create a UNet model instance:
+    print("Creating a model...")
+    model = create_model(img_dims, num_classes)
+    model.summary()
 
-        # Create a UNet model instance:
-        print("Creating a model...")
-        model = create_model(img_dims, num_classes)
-        model.summary()
+    # Train the new UNet model and check where its going to be saved:
+    print("save_path: %s" % save_checkpoint_path)
+    print("save_model_filename: %s" % save_model_path)
+    history = train_model(train_gen, val_gen, model, epochs=epochs,
+                          save_model_path=save_model_path,
+                          save_checkpoint_path=save_checkpoint_path,
+                          save_history_path=save_history_path)
 
-        # Train the new UNet model and check where its going to be saved:
-        print("save_path: %s" % save_checkpoint_path)
-        print("save_model_filename: %s" % save_model_path)
-        history = train_model(train_gen, val_gen, model, epochs=epochs,
-                              save_model_path=save_model_path,
-                              save_checkpoint_path=save_checkpoint_path,
-                              save_history_path=save_history_path)
+    print("Plotting training history...")
+    training_plot(history)
+    print("Evaluating a test set/generator")
+    test_preds, test_loss, test_acc = evaluate(test_gen, model)
+    print("Test set size: ", len(test_input))
+    print("Test loss: ", test_loss)
+    print("Test accuracy: ", test_acc, '\n')
 
-        print("Plotting training history...")
-        training_plot(history)
-        print("Evaluating a test set/generator")
-        test_preds, test_loss, test_acc = evaluate(test_gen, model)
-        print("Test set size: ", len(test_input))
-        print("Test loss: ", test_loss)
-        print("Test accuracy: ", test_acc, '\n')
+    print("Collating results...")
+    results(test_input, test_target, test_preds, 5, img_dims, num_classes, visualise=True)
 
-        print("Collating results...")
-        results(test_input, test_target, test_preds, 5, img_dims, num_classes, visualise=True)
 
-    """ Option 2 - load pre-trained net: """
-    if option == 2:
-
-        load_path = ".\\model_2"
-        history_load_path = ".\\history_2_pickle"
-        model = load_model(load_path)
-        # history = load_history(history_load_path)
-        #
-        # print("Plotting training history...")
-        # training_plot(history)
-        print("Evaluating a test set/generator")
-        test_preds, test_loss, test_acc = evaluate(test_gen, model)
-        print("Test set size: ", len(test_preds))
-        print("Test loss: ", test_loss)
-        print("Test accuracy: ", test_acc, '\n')
-
-        print("Collating results...")
-        results(test_input, test_target, test_preds, 4, img_dims, num_classes, visualise=True)
 

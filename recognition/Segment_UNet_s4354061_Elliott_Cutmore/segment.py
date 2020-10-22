@@ -270,6 +270,7 @@ def load_input_images_from_path_list(batch_input_img_paths, img_dims):
     :return: (Tensor) of shape=[batch_size, height, width, channel] of input
     image data
     """
+    print("Length input: %d" % len(batch_input_img_paths))
     for j, path in enumerate(batch_input_img_paths):
         img = load_input_image(path, img_dims)
         img = tf.reshape(img, [img_dims[0] * img_dims[1] * img_dims[2]])
@@ -332,8 +333,10 @@ class CustomSequence(Sequence):
         :return: (int) number of batches for this generator
         """
         # return int(math.ceil(len(self.target_img_paths) / self.batch_size))
-        return len(self.target_img_paths) // self.batch_size
-
+        # return len(self.target_img_paths) // self.batch_size
+        print("length: ", (len(self.target_img_paths) + self.batch_size - 1) // self.batch_size)
+        return (len(self.target_img_paths) + self.batch_size - 1) // self.batch_size
+    #
     def __getitem__(self, idx):
         """
         Returns a batch of images from this generator
@@ -343,8 +346,9 @@ class CustomSequence(Sequence):
         """
         i = idx * self.batch_size
         end_index = (i + self.batch_size)
-        # if end_index >= self.__len__():
-        #     end_index = self.__len__()-1
+        if end_index > len(self.target_img_paths):
+            end_index = len(self.target_img_paths)
+        print("images: %d, index %i" % (end_index-i, idx))
         batch_input_img_paths = self.input_img_paths[i: end_index]
         batch_target_img_paths = self.target_img_paths[i: end_index]
 
@@ -632,7 +636,7 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
     for i in range(len(output)):
         dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])))
 
-    print("Dice Coeffiecient Scores:\nAverage Dice Coefficient: %2.4f" % tf.math.reduce_mean(dice_sim))
+    print("Dice Coeffiecient Scores: %d images\nAverage Dice Coefficient: %2.4f" % (len(dice_sim), tf.math.reduce_mean(dice_sim)))
     for i in range(len(dice_sim)):
         print("Image: %s | Dice: %2.4f" % (test_target_img_path[i].split(os.sep)[-1].split("_")[1], dice_sim[i]))
 
