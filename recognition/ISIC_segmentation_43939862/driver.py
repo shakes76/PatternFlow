@@ -86,7 +86,7 @@ def dice_loss(lbl_gt, lbl_pred):
 model.compile(optimizer = 'Adam', loss=dice_loss, metrics=[dice]) 
 
 #Train model
-history = model.fit(train_ds.batch(16), epochs=50, validation_data = validate_ds.batch(16), 
+history = model.fit(train_ds.batch(16), epochs=100, validation_data = validate_ds.batch(16), 
                 callbacks = [TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000)])
 
 #Evaluate model
