@@ -12,21 +12,16 @@ https://github.com/soumith/ganhacks
 
 import glob
 
+import itertools
 import matplotlib.pyplot as plt
 import os
 import tensorflow as tf
 import time
 from datetime import datetime
 from tqdm import tqdm
-import itertools
 
 from recognition.s4436194_oasis_dcgan.data_helper import Dataset
-from recognition.s4436194_oasis_dcgan.models_helper import (
-    make_models_28,
-    make_models_64,
-    make_models_128,
-    make_models_mitchell
-)
+from recognition.s4436194_oasis_dcgan.models_helper import *
 
 DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
 DATA_TEST_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_test"
@@ -45,7 +40,7 @@ class DCGANModelFramework:
     def __init__(self):
 
         # Instantiate discriminator and generator objects
-        self.discriminator, self.generator, self.size = make_models_28()
+        self.discriminator, self.generator, self.size = make_models_256()
 
         # Set the seed for all saved images, so we consistently get the same images
         self.seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
@@ -226,7 +221,7 @@ class DCGANModelFramework:
 
         predictions = self.generator(self.seed, training=False)
 
-        fig = plt.figure(figsize=(4, 4))
+        fig = plt.figure(figsize=(8, 8), dpi=150)
 
         for i in range(predictions.shape[0]):
             plt.subplot(4, 4, i + 1)
