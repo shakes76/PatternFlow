@@ -1,3 +1,9 @@
+"""
+Holds the Generator model for the GAN, see README.md for more information on
+it's architecture. train.py imports this file.
+
+@author Theo Duval
+"""
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, BatchNormalization, LeakyReLU
 from tensorflow.keras.layers import Reshape, Conv2DTranspose, Dropout

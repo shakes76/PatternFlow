@@ -1,3 +1,10 @@
+"""
+A program to train a generative adversarial network on the OASIS dataset. 
+Handles importing the data, initialising the model and training steps and
+saves weights and images at each epoch.
+
+@author Theo Duval
+"""
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -165,17 +172,24 @@ def train_step(real_images):
 loss = []
 
 for epoch in range(EPOCHS): 
-        
+
+    # Clear loss for this epoch    
     d_loss.reset_states()
     g_loss.reset_states()
     
+    # Iterate through the dataset in batches of size BATCH_SIZE
     start_time = time.time()
     for i in range(0, len(IMAGE_NAMES), BATCH_SIZE):
+        # Load the images
         images = load_images(IMAGE_NAMES[i:i+BATCH_SIZE])
+
+        # Train
         (d_loss_step, g_loss_step) = train_step(images)
-            
+    
+    # Save some samples
     generate_samples(generator, epoch)
-        
+    
+    # Keep track of the loss for each model
     loss.append((d_loss.result(), g_loss.result()))
         
     # Print update messages

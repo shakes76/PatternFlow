@@ -1,3 +1,9 @@
+"""
+Holds the Discriminator model for the GAN, see README.md for more information
+on it's architecture. train.py imports this file.
+
+@author Theo Duval
+"""
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Dropout
 from tensorflow.keras.layers import LeakyReLU, Flatten, Dense
