@@ -117,14 +117,14 @@ def ImprovedUnet(h, w, n_channels):
     b9_m_c1 = tf.keras.layers.Conv2D(16, (3,3), padding = 'same')(b9_con)
     b9_m_c1n = tf.keras.layers.BatchNormalization()(b9_m_c1)
     b9_m_c1a = tf.keras.layers.LeakyReLU(alpha=0.01)(b9_m_c1n)
-    b9_seg = tf.keras.layers.Conv2D(2, (1,1))(b9_m_c1a)
+    b9_seg = tf.keras.layers.Conv2D(1, (1,1))(b9_m_c1a)
     
     #Block 10 (Segmentations)
-    b7_seg = tf.keras.layers.Conv2D(2, (1,1))(b7_seg)
+    b7_seg = tf.keras.layers.Conv2D(1, (1,1))(b7_seg)
     b7_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b7_seg)
-    b8_seg = tf.keras.layers.Conv2D(2, (1,1))(b8_seg)
+    b8_seg = tf.keras.layers.Conv2D(1, (1,1))(b8_seg)
     b78_seg = b7_seg + b8_seg
-    b78_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b78_seg)
+    b78_seg = tf.keras.layers.Conv2DTranspose(1, (3,3), strides = (2,2), padding = 'same')(b78_seg)
     b789_seg = b78_seg + b9_seg
     
     output_layer = tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(b789_seg)
