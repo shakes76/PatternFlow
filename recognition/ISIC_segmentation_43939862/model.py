@@ -127,5 +127,5 @@ def ImprovedUnet(h, w, n_channels):
     b78_seg = tf.keras.layers.Conv2DTranspose(2, (3,3), strides = (2,2), padding = 'same')(b78_seg)
     b789_seg = b78_seg + b9_seg
     
-    output_layer = tf.keras.layers.Conv2D(1, (1,1), activation = 'softmax')(b789_seg)
+    output_layer = tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(b789_seg)
     return tf.keras.Model(inputs = input_layer, outputs = output_layer)
