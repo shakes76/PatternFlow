@@ -60,15 +60,9 @@ class LateralityClassifier:
         in_shape = self.in_shape
         input_layer = layers.Input(shape=in_shape)
 
-        conv1 = layers.Conv2D(8, (4, 4), padding='same')(input_layer)
+        flatten = layers.Flatten()(input_layer)
 
-        pool2 = layers.MaxPooling2D((4, 4))(conv1)
-
-        flatten = layers.Flatten()(pool2)
-
-        dense3 = layers.Dense(64, activation="relu")(flatten)
-
-        output = layers.Dense(1, activation="sigmoid")(dense3)
+        output = layers.Dense(1, activation="sigmoid")(flatten)
         model = tf.keras.Model(inputs=input_layer, outputs=output)
 
         return model

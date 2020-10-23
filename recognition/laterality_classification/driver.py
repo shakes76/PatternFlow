@@ -26,6 +26,7 @@ def process_dataset(dir_data, N_train, N_test):
 
     train_image_names = all_image_names[:N_train]
     test_image_names = all_image_names[N_train:N_train + N_test]
+
     proof_no_set_overlap(train_image_names, test_image_names)
 
     img_shape = (228, 260, 3)
@@ -63,7 +64,7 @@ def process_dataset(dir_data, N_train, N_test):
 def visualise_images(X, y, set_size, title):
     plt.figure(figsize=(10, 10))
     for i in range(9):
-        index = random.randint(0, set_size)
+        index = random.randint(0, set_size-1)
         plt.subplot(3, 3, i + 1)
         # cast back to float32 for visualisation
         plt.imshow(tf.cast(X[index], tf.float32), cmap='gray')
@@ -87,7 +88,11 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     X_train = X_train[:, :, :, np.newaxis]
     X_test = X_test[:, :, :, np.newaxis]
 
-    model_history = model.fit(x=X_train, y=y_train, validation_data=(X_test, y_test),
+    print(f"DEBUG: \nX SETS\t{X_train}\n\t{X_test}")
+    print(f"DEBUG: \nY SETS\t{y_train[:300]}\n\t{y_test}")
+
+    model_history = model.fit(x=X_train, y=y_train,
+                              validation_data=(X_test, y_test),
                               epochs=3)
     plt.plot(model_history.history['accuracy'])
     plt.plot(model_history.history['val_accuracy'])
@@ -99,10 +104,12 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
 
     test_predictions = tf.cast(tf.round(model.predict(X_test)), tf.int32)[:, 0]
 
-    acc = len([i for i in range(len(y_test)) if test_predictions[i] == y_test[i]]) / len(y_test)
+    acc = len([i for i in range(len(y_test))
+               if test_predictions[i] == y_test[i]]) / len(y_test)
     print(f"validation acc = {acc}")
 
-    visualise_images(X_test[:, :, :, 0], test_predictions, 100, "Model predictions on validation set")
+    visualise_images(X_test[:, :, :, 0], test_predictions,
+                     100, "Model predictions on validation set")
 
 
 if __name__ == "__main__":
@@ -117,8 +124,10 @@ if __name__ == "__main__":
     # split up dataset, 12000 images for training, 3000 for testing
     X_train, y_train, X_test, y_test = process_dataset(data_dir, 1200, 300)
 
-    print("proportion of right knee in training set:", len([x for x in y_train if x == 1]), len(y_train))
-    print("proportion of right knee in test set:", len([x for x in y_test if x == 1]), len(y_test))
+    print("proportion of right knee in training set:",
+          len([x for x in y_train if x == 1]), len(y_train))
+    print("proportion of right knee in test set:",
+          len([x for x in y_test if x == 1]), len(y_test))
 
     # visualise some of training set
     visualise_images(X_train, y_train, 1200, "visualisation of training set")
