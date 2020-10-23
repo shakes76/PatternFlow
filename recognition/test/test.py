@@ -4,7 +4,7 @@ test infor
 
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
-#print(tf.__version__) 
+print(tf.__version__) 
 
 #parameters
 epoches = 2 # multiple of 3 +1
@@ -25,6 +25,6 @@ total_training, xSize, ySize, c = x_train.shape
 print(x_train.shape)
 
 #layers
-
+train_dataset = tf.data.Dataset.from_tensor_slices(x_train).shuffle(total_training).batch(batch_size)
 
 #build networks
