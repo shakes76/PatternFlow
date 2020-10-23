@@ -117,13 +117,6 @@ def get_gen_loss(output):
 generator = Generator()
 discriminator = Discriminator()
 
-# Save checkpoints
-checkpoint = tf.train.Checkpoint(generator=generator,
-                                 discriminator=discriminator,
-                                 gen_opt=generator.optimiser,
-                                 dis_opt=discriminator.optimiser)
-
-
 d_loss = tf.keras.metrics.Mean(name="discrim_loss")
 g_loss = tf.keras.metrics.Mean(name="gen_loss")
 
@@ -189,6 +182,7 @@ for epoch in range(EPOCHS):
     print("Epoch {} computed in {} seconds".format(epoch+1, time.time()-start_time))
     print("Discriminator loss: {}".format(d_loss.result()))
     print("Generator loss: {}".format(g_loss.result()))
-    
-    checkpoint.save(file_prefix="./checkpoints/checkpoint{}".format(epoch+1))
-  
+
+    # Save the weights of both models
+    generator.save_weights("./saved_weights/gen_epoch{}".format(epoch + 1))
+    discriminator.save_weights("./saved_weights/dis_epoch{}".format(epoch + 1))
