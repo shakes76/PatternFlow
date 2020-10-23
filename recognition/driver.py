@@ -13,6 +13,12 @@ def decode_png(file_path):
     png = tf.image.resize(png, (256, 256))
     return png
 
+def decode_jpeg(file_path):
+    jpeg = tf.io.read_file(file_path)
+    jpeg = tf.image.decode_jpeg(jpeg, channels=1)
+    jpeg = tf.image.resize(jpeg, (256, 256))
+    return jpeg
+
 def process_path(scan_fp, label_fp):
     #Process the MRI scan
     scan = decode_png(scan_fp)
@@ -71,22 +77,31 @@ def dsc(label, pred_label, layer):
 
 def main():
     #Get the file location of where the data is stored.
-    data_dir = pathlib.Path('H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/keras_png_slices_data/keras_png_slices_data')
+    data_dir = pathlib.Path('H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/ISIC2018_Task1-2_Training_Data')
     #The following 5 lines were used to download and unzip the data, these have been commented out for faster debugging.
     #However, they have been left in to show how the files were retreived.
-    #data_dir_tf = tf.keras.utils.get_file(origin='https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download',
-    #                                      fname='H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/keras_png_slices_data.zip')
+    #data_dir_tf = tf.keras.utils.get_file(origin='https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34',
+    #                                      fname='H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/ISIC2018_Task1-2_Training_Data.zip')
 
     #with zipfile.ZipFile(data_dir_tf) as zf:
-    #    zf.extractall()
+    #   zf.extractall()
 
     #List the file paths of the data
-    test_scans = sorted(glob.glob('keras_png_slices_data/keras_png_slices_test/*.png'))
-    test_labels = sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_test/*.png'))
-    train_scans = sorted(glob.glob('keras_png_slices_data/keras_png_slices_train/*.png'))
-    train_labels = sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_train/*.png'))
-    val_scans = sorted(glob.glob('keras_png_slices_data/keras_png_slices_validate/*png'))
-    val_labels = sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_validate/*.png'))
+    skin_scans = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
+    labels = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
+
+    print(len(skin_scans))
+    print(len(labels))
+
+    #Split the data into train, validate and test sets
+    train_ds_size = 2204
+    val_ds_size = 260
+    train_scans = skin_scans[:train_ds_size]
+    train_labels = labels[:train_ds_size]
+    val_scans = skin_scans[train_ds_size:train_ds_size + val_ds_size]
+    val_labels = labels[train_ds_size:train_ds_size + val_ds_size]
+    test_scans = skin_scans[train_ds_size + val_ds_size:]
+    test_labels = labels[train_ds_size + val_ds_size:]
 
     train_dataset = tf.data.Dataset.from_tensor_slices((train_scans, train_labels))
     val_dataset = tf.data.Dataset.from_tensor_slices((val_scans, val_labels))
@@ -96,10 +111,12 @@ def main():
     val_dataset = val_dataset.shuffle(len(val_scans))
     test_dataset = test_dataset.shuffle(len(test_scans))
 
+    """
     train_dataset = train_dataset.map(process_path)
     val_dataset = val_dataset.map(process_path)
     test_dataset = test_dataset.map(process_path)
-
+    """
+    """
     for scan, label in train_dataset.take(1):
         display([tf.squeeze(scan), tf.argmax(label, axis=-1)])
         print(scan.shape)
@@ -120,6 +137,7 @@ def main():
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
 ##    print(test_brain.shape)
+"""
 
 if __name__ == "__main__":
     main()
