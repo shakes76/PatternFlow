@@ -2,41 +2,49 @@ import tensorflow as tf
 import numpy as np
 
 def context_layer(input, channels):
-    context_1 = tf.keras.layers.Conv2D(channels, (3, 3), activation="relu", padding="same")(input)
-    context_dropout = tf.keras.layers.Dropout(0.3)(context_1)
-    context_2 = tf.keras.layers.Conv2D(channels, (3, 3), activation="relu", padding="same")(context_dropout)
-    return context_2
+    context_1 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(context_1)
+    context_dropout = tf.keras.layers.Dropout(0.3)(activation1)
+    context_2 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(context_dropout)
+    activation2 = tf.keras.layers.LeakyReLU(alpha=0.1)(context_2)
+    return activation2
 
 def decode_layer(input, channels):
-    decode_1 = tf.keras.layers.Conv2D(channels, (3, 3), strides=(2,2), activation="relu", padding="same")(input)
-    context = context_layer(decode_1, channels)
+    decode_1 = tf.keras.layers.Conv2D(channels, (3, 3), strides=(2,2), padding="same")(input)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(decode_1)
+    context = context_layer(activation1, channels)
     elem_wise_sum = decode_1 + context
     return elem_wise_sum
 
 def upsampling_module(input, channels):
     up = tf.keras.layers.UpSampling2D()(input)
-    conv2d = tf.keras.layers.Conv2D(channels, (3, 3), activation="relu", padding="same")(up)
-    return conv2d
+    conv2d = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(up)
+    activation = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d)
+    return activation
 
 def localization_layer(input, channels):
-    conv2D_3 = tf.keras.layers.Conv2D(channels, (3, 3), activation="relu", padding="same")(input)
-    conv2D_1 = tf.keras.layers.Conv2D(channels, (1, 1), activation="relu", padding="same")(conv2D_3)
-    return conv2D_1
+    conv2D_3 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D_3)
+    conv2D_1 = tf.keras.layers.Conv2D(channels, (1, 1), padding="same")(conv2D_3)
+    activation2 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D_1)
+    return activation2
 
 def segmentation_layer(input, channels):
-    return tf.keras.layers.Conv2D(channels, (1, 1), activation="relu", padding="same")(input)
+    conv2d = tf.keras.layers.Conv2D(channels, (1, 1), padding="same")(input)
+    return tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d)
 
 
 def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
     modelInput = tf.keras.layers.Input(shape=(256, 256, 1))
 
-    conv2D16_1 = tf.keras.layers.Conv2D(f, (3, 3), activation="relu", padding="same")(modelInput)
+    conv2D16_1 = tf.keras.layers.Conv2D(f, (3, 3), padding="same")(modelInput)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D16_1)
 
     #1st Context Layer
-    context_16 = context_layer(conv2D16_1, f)
+    context_16 = context_layer(activation1, f)
 
     #Element wise sum
-    elem_wise_sum_16 = conv2D16_1 + context_16
+    elem_wise_sum_16 = activation1 + context_16
 
     d1 = decode_layer(elem_wise_sum_16, 2*f)
 
@@ -72,9 +80,11 @@ def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
 
     concat4 = tf.keras.layers.Concatenate()([u16, elem_wise_sum_16])
 
-    conv2d_32 = tf.keras.layers.Conv2D(2*f, (3, 3), activation="relu", padding="same")(concat4)
+    conv2d_32 = tf.keras.layers.Conv2D(2*f, (3, 3), padding="same")(concat4)
 
-    seg32_1 = segmentation_layer(conv2d_32, output_channels)
+    activation32 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d_32)
+
+    seg32_1 = segmentation_layer(activation32, output_channels)
 
     seg64_upscaled = tf.keras.layers.UpSampling2D()(seg64)
 
