@@ -1,7 +1,6 @@
 import tensorflow as tf
 import sys
 from DataUtils import load_data
-import numpy as np
 
 
 ### Define Model:
@@ -17,12 +16,16 @@ def generator(input_dim, latent_dim):
     net = tf.keras.layers.Reshape((input_dim,input_dim,64))(net)
     net = tf.keras.layers.ReLU()(net)
 
-    net = tf.keras.layers.Conv2DTranspose(64, (3,3), strides=(2,2), padding='same')(net)
-    net = tf.keras.layers.Conv2D(64, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
+    net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
     net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.ReLU()(net)
+
+    net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
+    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
@@ -105,9 +108,6 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
     for i in range(epochs):        
         data = image_iter.get_next()
 
-        gen_hist_temp = list()
-        disc_hist_temp = list()
-
         for k in range(5):
             tf.keras.preprocessing.image.save_img(output_dir + 'TrainImages/Epoch{}_{}.png'.format(i, k), data[k])
 
@@ -125,7 +125,7 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
                 disc_loss = discriminator_loss(fake_output, real_output, batch_size)
             gradients = tape.gradient(disc_loss, disc.trainable_variables)
             discriminator_optimiser.apply_gradients(zip(gradients, disc.trainable_variables))
-            disc_hist_temp.append(disc_loss)
+            disc_hist.append(disc_loss)
 
             # Train Generator
             with tf.GradientTape() as tape:
@@ -134,7 +134,7 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
                 gen_loss = generator_loss(fake_output, batch_size)
             gradients = tape.gradient(gen_loss, gen.trainable_variables)
             generator_optimiser.apply_gradients(zip(gradients, gen.trainable_variables))
-            gen_hist_temp.append(gen_loss)
+            gen_hist.append(gen_loss)
 
 
         # Print output
@@ -146,8 +146,8 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
         # Save example images
         latent_data = tf.random.normal(shape=(5, latent_dim))
         fake_images = gen(latent_data).numpy() * 255
-        mins = np.min(fake_images, axis=(1,2,3))[:,None,None,None]
-        maxs = np.max(fake_images, axis=(1,2,3))[:,None,None,None]
+        mins = tf.math.reduce_min(fake_images, axis=(1,2,3))[:,None,None,None]
+        maxs = tf.math.reduce_max(fake_images, axis=(1,2,3))[:,None,None,None]
         fake_images = (fake_images - mins)/(maxs-mins)
         for k in range(5):
             tf.keras.preprocessing.image.save_img(output_dir + 'Intermediate/Epoch{}_{}.png'.format(i, k), fake_images[k])
@@ -156,9 +156,6 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
         gen.save(output_dir + "Models/gen{}.h5".format(i))
         disc.save(output_dir + "Models/disc{}.h5".format(i))
 
-        gen_hist.append(np.mean(gen_hist_temp))
-        disc_hist.append(np.mean(disc_hist_temp))
-
     print("Training Complete")
 
-    return gen_hist, disc_hist
+    return gen_hist, disc_hist, fake_images.numpy()
