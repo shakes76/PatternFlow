@@ -8,6 +8,9 @@ Questions for tutorial
 https://medium.com/deep-dimension/gans-a-modern-perspective-83ed64b42f5c
 
 https://github.com/soumith/ganhacks
+
+Original GAN paper: https://arxiv.org/pdf/1511.06434.pdf
+Heaps of model examples: https://github.com/wiseodd/generative-models/tree/master/GAN
 """
 
 import glob
@@ -109,7 +112,7 @@ class DCGANModelFramework:
 
         # Main epoch loop
         total_batches = int((dataset.n_files / batch_size) + 1)
-        self.generate_and_save_images(0)
+        self.generate_and_save_images(checkpoint_epoch)
 
         # Start from existing epochs
         for e in range(checkpoint_epoch, epochs + checkpoint_epoch):
