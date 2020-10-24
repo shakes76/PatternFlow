@@ -138,9 +138,12 @@ def main():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(10), epochs=2, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(10), epochs=5, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
+    print("Old DSC Calculations: ")
+    print("Layer 0: ", dsc(labels[0], labels[1], 0))
+    print("Layer 1: ", dsc(labels[0], labels[1], 1))
     print("------------------------------")
     print("New DSC Calculations:")
     print("Layer 0: ", newDSC(labels[0], labels[1], 0))
@@ -150,6 +153,8 @@ def main():
     - need to show more predictions
     - Improve the efficiency of DSC to caclulcate the DSC on all test images.
     - Include the plots for loss and accuracy.
+    - Calculate the Dice Coefficient for each test Image and Display them and 
+      find the average.
     """
 
 ##    test_brain = Image.open(str(test_scans[0]))
