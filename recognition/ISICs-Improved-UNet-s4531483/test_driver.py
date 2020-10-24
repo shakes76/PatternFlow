@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
+import layers_model as layers
 
 PATH_ORIGINAL_DATA = "data/image"
 PATH_SEG_DATA = "data/mask"
@@ -8,6 +9,9 @@ PATH_SEG_DATA = "data/mask"
 # IMAGE_WIDTH = 32
 SEED = 45
 BATCH_SIZE = 32
+EPOCHS = 50
+STEPS_PER_EPOCH_TRAIN = 2076
+STEPS_PER_EPOCH_TEST = 518
 DATA_GEN_ARGS = dict(
     rescale=1.0/255,
     shear_range=0.1,
@@ -58,3 +62,18 @@ if __name__ == "__main__":
 
     train_gen = ImageMaskSequence(image_train_gen, mask_train_gen)
     test_gen = ImageMaskSequence(image_test_gen, mask_test_gen)
+
+    layers.model.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
+
+    track = layers.model.fit(
+        train_gen,
+        steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
+        epochs=EPOCHS,
+        shuffle=True,
+        use_multiprocessing=True)
+
+    test_loss, test_accuracy = layers.model.evaluate(
+        test_gen,
+        use_multiprocessing=True)
+
+    print("COMPLETED.")
