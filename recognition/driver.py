@@ -85,7 +85,7 @@ def main():
 
     #with zipfile.ZipFile(data_dir_tf) as zf:
     #   zf.extractall()
-    number_Of_output_channels = 4
+    number_Of_output_channels = 2
     #List the file paths of the data
     skin_scans = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
     labels = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
@@ -121,17 +121,17 @@ def main():
         print(label.shape)
 
     
-    model = improved_unet(number_Of_output_channels)
+    model = improved_unet(number_Of_output_channels, f=8)
 
     model.summary()
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    #loss_accuracy = model.fit(train_dataset.batch(20), epochs=1, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(10), epochs=5, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
-    #print("Layer 0: ", dsc(labels[0], labels[1], 0))
-    #print("Layer 1: ", dsc(labels[0], labels[1], 1))
+    print("Layer 0: ", dsc(labels[0], labels[1], 0))
+    print("Layer 1: ", dsc(labels[0], labels[1], 1))
 
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
