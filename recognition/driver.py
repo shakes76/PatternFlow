@@ -40,7 +40,7 @@ def display(display_list):
 
 def show_predictions(dataset, model):
     num = 1
-    for scan, label in dataset.take(1):
+    for scan, label in dataset.take(num):
         pred_label = model.predict(scan[tf.newaxis, ...])
         pred_label = tf.argmax(pred_label[0], axis=-1)
         display([tf.squeeze(scan), tf.argmax(label, axis=-1), pred_label])
@@ -53,12 +53,6 @@ def dsc(label, pred_label, layer):
     print("pred_label")
     tf.print(tf.unique(tf.reshape(pred_label, [-1])))
     print(pred_label.shape)
-
-    print(pred_label[0][0])
-    print(pred_label[0][0] == 0)
-    print(pred_label[0][0] == 1)
-    print(pred_label[0][0] == 2)
-    print(pred_label[0][0] == 3)
     image_size = 256
     denominator = 0
     label_card = 0
@@ -73,6 +67,23 @@ def dsc(label, pred_label, layer):
                 pred_label_card += 1
     numerator = label_card + pred_label_card
     return (2 * denominator) / (numerator)
+
+def newDSC(label, pred_label, layer):
+    label = np.argmax(label, axis=-1)
+    label = tf.reshape(label, [-1])
+    pred_label = tf.reshape(pred_label, [-1])
+    label = label.numpy()
+    pred_label = pred_label.numpy()
+    label = label == layer
+    pred_label = pred_label == layer
+    intersection = np.sum(label * pred_label)
+    label_card = np.sum(label)
+    pred_label_card = np.sum(pred_label)
+    numerator = 2 * intersection
+    demonimator = label_card + pred_label_card
+    return numerator / demonimator
+
+
 
 
 def main():
@@ -127,11 +138,19 @@ def main():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(10), epochs=5, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(10), epochs=2, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
-    print("Layer 0: ", dsc(labels[0], labels[1], 0))
-    print("Layer 1: ", dsc(labels[0], labels[1], 1))
+    print("------------------------------")
+    print("New DSC Calculations:")
+    print("Layer 0: ", newDSC(labels[0], labels[1], 0))
+    print("Layer 1: ", newDSC(labels[0], labels[1], 1))
+    """
+    To add: 
+    - need to show more predictions
+    - Improve the efficiency of DSC to caclulcate the DSC on all test images.
+    - Include the plots for loss and accuracy.
+    """
 
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
