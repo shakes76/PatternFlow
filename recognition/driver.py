@@ -20,13 +20,13 @@ def decode_jpeg(file_path):
     return jpeg
 
 def process_path(scan_fp, label_fp):
-    #Process the MRI scan
-    scan = decode_png(scan_fp)
+    #Process the Skin scan
+    scan = decode_jpeg(scan_fp)
     scan = tf.cast(scan, tf.float32) / 255.0
 
     #Process the Label image
     label = decode_png(label_fp)
-    label = label == [0, 85, 170, 255]
+    label = label == [0, 255]
     #tf.print(tf.unique(tf.reshape(label, [-1])))
     return scan, label
 
@@ -85,7 +85,7 @@ def main():
 
     #with zipfile.ZipFile(data_dir_tf) as zf:
     #   zf.extractall()
-
+    number_Of_output_channels = 4
     #List the file paths of the data
     skin_scans = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
     labels = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
@@ -111,33 +111,32 @@ def main():
     val_dataset = val_dataset.shuffle(len(val_scans))
     test_dataset = test_dataset.shuffle(len(test_scans))
 
-    """
     train_dataset = train_dataset.map(process_path)
     val_dataset = val_dataset.map(process_path)
     test_dataset = test_dataset.map(process_path)
-    """
-    """
+
     for scan, label in train_dataset.take(1):
         display([tf.squeeze(scan), tf.argmax(label, axis=-1)])
         print(scan.shape)
         print(label.shape)
 
-    model = improved_unet(4)
+    
+    model = improved_unet(number_Of_output_channels)
+
+    model.summary()
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(32), epochs=2, validation_data=val_dataset.batch(10))
+    #loss_accuracy = model.fit(train_dataset.batch(20), epochs=1, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
-    print("Layer 0: ", dsc(labels[0], labels[1], 0))
-    print("Layer 1: ", dsc(labels[0], labels[1], 1))
-    print("Layer 2: ", dsc(labels[0], labels[1], 2))
-    print("Layer 3: ", dsc(labels[0], labels[1], 3))
+    #print("Layer 0: ", dsc(labels[0], labels[1], 0))
+    #print("Layer 1: ", dsc(labels[0], labels[1], 1))
 
 ##    test_brain = Image.open(str(test_scans[0]))
 ##    test_brain = np.asarray(test_brain, dtype=np.uint8)
 ##    print(test_brain.shape)
-"""
+
 
 if __name__ == "__main__":
     main()

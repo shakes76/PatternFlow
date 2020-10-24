@@ -94,8 +94,7 @@ def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
 
     segment = seg32_1 + seg32_upscaled
 
-    output = tf.keras.layers.Conv2D(4, (1, 1), activation="softmax", padding="same")(segment)
+    output = tf.keras.layers.Conv2D(output_channels, (1, 1), activation="softmax", padding="same")(segment)
 
     model = tf.keras.Model(inputs=modelInput, outputs=output)
     return model
-
