@@ -59,7 +59,7 @@ print("channels: %d" % n_channels)
 
 image_batch, label_batch = next(iter(train_ds.batch(1)))
 test_image = np.asarray(image_batch[0])
-test_label = np.asarray(label_batch[0])
+test_label = np.asarray(label_batch[0][:,:,0])
 plt.figure(figsize = (20,20))
 plt.subplot(1,2,1); plt.imshow(test_image); plt.title('Image'); plt.axis('off')
 plt.subplot(1,2,2); plt.imshow(test_label); plt.title('Label'); plt.axis('off')
@@ -67,6 +67,9 @@ plt.show()
 
 #Build model
 model = ImprovedUnet(h, w, n_channels)
+for layer in model.layers:
+    if isinstance(layer, tf.keras.layers.Conv2D):
+        layer.add_loss(lambda: tf.keras.regularizers.l2(0.001)(layer.kernel))
 model.summary()
 
 #Compile model
@@ -74,15 +77,16 @@ def dice(lbl_gt, lbl_pred):
     lbl_gt = tf.keras.backend.flatten(lbl_gt)
     lbl_pred = tf.keras.backend.flatten(lbl_pred)
     intersection = tf.keras.backend.sum(lbl_gt * lbl_pred)
-    return (2.0 * intersection + 1) / (tf.keras.backend.sum(lbl_gt) + tf.keras.backend.sum(lbl_pred) + 1)
+    union = tf.keras.backend.sum(lbl_gt) + tf.keras.backend.sum(lbl_pred)
+    return (2.0 * intersection + 1.0) / (union + 1.0)
 
 def dice_loss(lbl_gt, lbl_pred):
-    return -dice(lbl_gt, lbl_pred)
+    return 1-dice(lbl_gt, lbl_pred)
 
 model.compile(optimizer = 'Adam', loss=dice_loss, metrics=[dice]) 
 
 #Train model
-history = model.fit(train_ds.batch(16), epochs=50, validation_data = validate_ds.batch(16), 
+history = model.fit(train_ds.batch(16), epochs=100, validation_data = validate_ds.batch(16), 
                 callbacks = [TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000)])
 
 #Evaluate model
@@ -103,13 +107,13 @@ dice_scores = [dice(labels[i],preds[i]).numpy() for i in range(len(preds))]
 print('Test set prediction mean DICE: ', sum(dice_scores)/len(dice_scores))
 
 #Predictions
-image_batch, label_batch = next(iter(test_ds.batch(16)))
+image_batch, label_batch = next(iter(test_ds.batch(3)))
 pred = model.predict(image_batch)
 plt.figure(figsize = (20,20))
 
 for i in range(3):
     pred_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.cast(pred[i], tf.float32))
-    gt_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.expand_dims(tf.cast(label_batch[i], tf.float32), 2))
+    gt_im = tf.cast(image_batch[i], tf.float32) + tf.image.grayscale_to_rgb(tf.cast(label_batch[i], tf.float32))
     plt.subplot(3,2,2*i+1); plt.imshow(gt_im); plt.title('Ground truth'); plt.axis('off')
     plt.subplot(3,2,2*i+2); plt.imshow(pred_im); plt.title('Prediction'); plt.axis('off')
 plt.show()
