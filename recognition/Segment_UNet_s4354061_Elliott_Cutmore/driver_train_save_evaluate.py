@@ -5,20 +5,20 @@ if __name__ == "__main__":
     # How histograms of image size data used to make judgement on CNN image size
     inspect_image_sizes = False
     # Use a subset of the 2594 images to only 100 for compuational speed up
-    subset = True
+    subset = False
     # Black and white Binary segmentation channels
     num_classes = 2
     # how many images to run through net:
     batch_size = 4
     # How many cycles to train the net for: only in option=1
-    epochs = 3
+    epochs = 200
     # where to load images from (input and targets)
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
     # Where to save trained model and checkpoints to from training
-    save_model_path = ".\\model_1"
-    save_checkpoint_path = ".\\training_1\\cp.ckpt"
-    save_history_path = ".\\history_1_pickle"
+    save_model_path = ".\\model_3"
+    # save_checkpoint_path = ".\\training_3\\cp.ckpt"
+    save_history_path = ".\\history_3_pickle"
 
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     print("Getting a train, validation and testing split from data...")
     # Get a training, validation and test split of the data:
     train_input, train_target, val_input, val_target, test_input, test_target = \
-        train_val_test_split(0.2, input_img_paths, target_img_paths)
+        train_val_test_split(0.2, input_img_paths, target_img_paths, test_split=0.03)
     # print the size of each set:
     print("Array lengths:\nTrain: ", str(len(train_input)),
           "\nTest: ", str(len(test_input)), "\nVal: ", str(len(val_input)))
@@ -78,11 +78,9 @@ if __name__ == "__main__":
     model.summary()
 
     # Train the new UNet model and check where its going to be saved:
-    print("save_path: %s" % save_checkpoint_path)
-    print("save_model_filename: %s" % save_model_path)
     history = train_model(train_gen, val_gen, model, epochs=epochs,
                           save_model_path=save_model_path,
-                          save_checkpoint_path=save_checkpoint_path,
+                          # save_checkpoint_path=save_checkpoint_path,
                           save_history_path=save_history_path)
 
     print("Plotting training history...")

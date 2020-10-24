@@ -5,13 +5,11 @@ if __name__ == "__main__":
     # How histograms of image size data used to make judgement on CNN image size
     inspect_image_sizes = False
     # Use a subset of the 2594 images to only 100 for compuational speed up
-    subset = False
+    subset = True
     # Black and white Binary segmentation channels
     num_classes = 2
     # how many images to run through net:
     batch_size = 4
-    # How many cycles to train the net for: only in option=1
-    epochs = 100
     # where to load images from (input and targets)
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"

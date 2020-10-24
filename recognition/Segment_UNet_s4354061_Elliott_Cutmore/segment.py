@@ -1,6 +1,12 @@
 import tensorflow as tf
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
+# from tensorflow.compat.v1 import ConfigProto
+# from tensorflow.compat.v1 import InteractiveSession
+# config = ConfigProto()
+# config.gpu_options.allow_growth = True
+# sess = InteractiveSession(config=config)
+# Free up RAM in case the model definition cells were run multiple times
+tf.keras.backend.clear_session()
+
 import tensorflow.keras.backend as K
 from tensorflow.keras import datasets, Model
 from tensorflow.keras.utils import Sequence
@@ -270,7 +276,6 @@ def load_input_images_from_path_list(batch_input_img_paths, img_dims):
     :return: (Tensor) of shape=[batch_size, height, width, channel] of input
     image data
     """
-    print("Length input: %d" % len(batch_input_img_paths))
     for j, path in enumerate(batch_input_img_paths):
         img = load_input_image(path, img_dims)
         img = tf.reshape(img, [img_dims[0] * img_dims[1] * img_dims[2]])
@@ -332,11 +337,10 @@ class CustomSequence(Sequence):
         Returns length of generator
         :return: (int) number of batches for this generator
         """
-        # return int(math.ceil(len(self.target_img_paths) / self.batch_size))
-        # return len(self.target_img_paths) // self.batch_size
-        print("length: ", (len(self.target_img_paths) + self.batch_size - 1) // self.batch_size)
         return (len(self.target_img_paths) + self.batch_size - 1) // self.batch_size
-    #
+        # return len(self.target_img_paths) // self.batch_size
+
+
     def __getitem__(self, idx):
         """
         Returns a batch of images from this generator
@@ -348,7 +352,6 @@ class CustomSequence(Sequence):
         end_index = (i + self.batch_size)
         if end_index > len(self.target_img_paths):
             end_index = len(self.target_img_paths)
-        print("images: %d, index %i" % (end_index-i, idx))
         batch_input_img_paths = self.input_img_paths[i: end_index]
         batch_target_img_paths = self.target_img_paths[i: end_index]
 
@@ -371,6 +374,27 @@ def create_generator(img_paths, target_paths, img_dims, batch_size, num_classes)
     :return: (CustomSequence) image generator
     """
     return CustomSequence(img_paths, target_paths, img_dims, batch_size, num_classes)
+
+
+def dice_coefficient(y_true, y_pred, smooth=0.):
+    """
+    Function used to evaluate the similarity of two images
+    :param y_true: (Tensor) image_1
+    :param y_pred: (Tensor) image_2
+    :param smooth: (float)
+    :return: (float) dice coefficient similarity of two images
+    """
+    y_true = tf.cast(y_true, dtype=tf.float32)
+    y_pred = tf.cast(y_pred, dtype=tf.float32)
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+
+def dice_coefficient_loss(y_true, y_pred):
+    return 1. - dice_coefficient(y_true, y_pred)
 
 
 def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
@@ -403,8 +427,9 @@ def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
 
     # Compile the model:
     loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
+    # loss = dice_coefficient_loss
     metrics = ['accuracy']
-    opt = Adam(lr=1e-5)
+    opt = Adam(lr=1e-6)
     model.compile(loss=loss, optimizer=opt, metrics=metrics)
 
     # Train the model, doing validation at the end of each epoch.
@@ -501,11 +526,13 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
         return 0
 
     shape_x = tf.shape(x)
-    shape_x = tf.cast(shape_x, dtype=tf.float32)
+    if shape_x[0].numpy() < batch_size:
+        batch_size = shape_x[0].numpy()
+    shape_x = tf.cast(shape_x, dtype=tf.uint8)
     true_shape_x = [batch_size]
     true_shape_x.extend(list(img_dims))
     true_shape_x = tf.convert_to_tensor(true_shape_x)
-    true_shape_x = tf.cast(true_shape_x, dtype=tf.float32)
+    true_shape_x = tf.cast(true_shape_x, dtype=tf.uint8)
 
     shape_y = tf.shape(y)
     shape_y = tf.cast(shape_y, dtype=tf.uint8)
@@ -517,6 +544,8 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
 
     tf.assert_equal(shape_x, true_shape_x)
     tf.assert_equal(shape_y, true_shape_y)
+    # shape_y = tf.cast(shape_y, dtype=tf.float)
+    tf.assert_equal(shape_x[:-1], shape_y[:-1])
 
     if visualise:
 
@@ -539,22 +568,6 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
         plt.show()
 
 
-def dice_coefficient(y_true, y_pred, smooth=0.):
-    """
-    Function used to evaluate the similarity of two images
-    :param y_true: (Tensor) image_1
-    :param y_pred: (Tensor) image_2
-    :param smooth: (float)
-    :return: (float) dice coefficient similarity of two images
-    """
-    y_true = tf.cast(y_true, dtype=tf.float32)
-    y_pred = tf.cast(y_pred, dtype=tf.float32)
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-
-    intersection = K.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth).numpy()
-
 def training_plot(history):
     """
     Function used to plot the training accuracy and loss of a model when it
@@ -564,7 +577,8 @@ def training_plot(history):
     """
     length = len(history['val_accuracy'])
     ## ACCURACY
-    plt.figure(1)
+    plt.figure(1, figsize=(10, 5))
+    plt.subplot(1, 2, 1)
     plt.plot(history['accuracy'], label='accuracy')
     plt.plot(history['val_accuracy'], label = 'val_accuracy')
     plt.plot([0, length], [0.8, 0.8], 'r', linewidth=0.2)
@@ -575,11 +589,11 @@ def training_plot(history):
     plt.title("Accuracy")
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.ylim([0.9, 1])
+    # plt.ylim([0.9, 1])
     plt.legend(loc='lower right')
 
     ## LOSS
-    plt.figure(2)
+    plt.subplot(1, 2, 2)
     plt.plot(history['loss'], label='loss')
     plt.plot(history['val_loss'], label = 'val_loss')
     y_max = min(history["val_loss"])
@@ -620,6 +634,13 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
      plotted
     :return: None
     """
+
+    max_len = tf.shape(test_preds).numpy()[0]
+    if num_imgs > max_len:
+        num_imgs = max_len
+
+    print("num_imgs: ", num_imgs)
+
     test_input_set = test_input_img_path[0:num_imgs]
     test_target_set = test_target_img_path[0:num_imgs]
     x = load_input_images_from_path_list(test_input_set, img_dims)
@@ -634,14 +655,14 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
     dice_sim = []
     # print(len(output), len(test_target_img_path))
     for i in range(len(output)):
-        dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])))
+        dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])).numpy())
 
     print("Dice Coeffiecient Scores: %d images\nAverage Dice Coefficient: %2.4f" % (len(dice_sim), tf.math.reduce_mean(dice_sim)))
     for i in range(len(dice_sim)):
         print("Image: %s | Dice: %2.4f" % (test_target_img_path[i].split(os.sep)[-1].split("_")[1], dice_sim[i]))
 
     if visualise:
-        fig, big_axes = plt.subplots( figsize=(10, 3*num_imgs) , nrows=num_imgs, ncols=1)
+        fig, big_axes = plt.subplots(figsize=(10, 3*num_imgs), nrows=num_imgs, ncols=1)
 
         for row, big_ax in enumerate(big_axes, start=1):
             big_ax.set_title("Image: %s | Dice: %2.4f" % (test_target_img_path[row-1].split(os.sep)[-1].split("_")[1], dice_sim[row-1]))
@@ -653,6 +674,7 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
             # big_ax._frameon = False
 
         j=1
+        c=1
         for i in range(num_imgs):
             ax = fig.add_subplot(num_imgs, 3, j)
             ax.imshow(xn[i])  # [:, :, 0], cmap='gray') #
@@ -678,6 +700,12 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
             ax.set_xticklabels([])
             j=j+1
 
+
+        c+=1
+        bin_size = 20
+        plt.figure(c, figsize=(10, 5))
+        plt.hist(dice_sim, bins=bin_size)
+        plt.title("Histogram Dice Similarity Coefficient")
+
         plt.tight_layout()
         plt.show()
-
