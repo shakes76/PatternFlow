@@ -4,7 +4,7 @@ from tensorflow.keras.regularizers import l2
 
 LEAKY_RELU_ALPHA = 0.01
 DROPOUT = 0.35
-L2_WEIGHT_DECAY = 0.00005
+L2_WEIGHT_DECAY = 0.0005
 CONV_PROPERTIES = dict(
     kernel_regularizer=l2(L2_WEIGHT_DECAY),
     bias_regularizer=l2(L2_WEIGHT_DECAY),
@@ -66,7 +66,7 @@ def improvedUNet(width, height, channels):
     u2 = upsamplingModule(s1, 32)
     s2 = keras.layers.Add()([u2, x39])
 
-    output = keras.layers.Activation("sigmoid")(s2)
+    output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
     unet = keras.Model(inputs=[input], outputs=[output])
     return unet
 
