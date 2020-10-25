@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 import matplotlib.pyplot as plt
 import layers_model as layers
 
@@ -11,8 +12,8 @@ CHANNELS = 3
 SEED = 45
 BATCH_SIZE = 32
 EPOCHS = 50
-STEPS_PER_EPOCH_TRAIN = 2076
-STEPS_PER_EPOCH_TEST = 518
+STEPS_PER_EPOCH_TRAIN = int(np.ceil(2076 / BATCH_SIZE))
+STEPS_PER_EPOCH_TEST = int(np.ceil(518 / BATCH_SIZE))
 DATA_GEN_ARGS = dict(
     rescale=1.0/255,
     shear_range=0.1,
