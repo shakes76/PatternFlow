@@ -6,6 +6,7 @@ import pathlib
 from PIL import Image
 import zipfile
 from model import improved_unet
+from sklearn.utils import shuffle
 
 def decode_png(file_path):
     png = tf.io.read_file(file_path)
@@ -104,7 +105,11 @@ def main():
     print(len(skin_scans))
     print(len(labels))
 
+    skin_scans, labels = shuffle(skin_scans, labels)
+
+
     #Split the data into train, validate and test sets
+    #Note that we did a 85% train, 15% val and 5% test split
     train_ds_size = 2204
     val_ds_size = 260
     train_scans = skin_scans[:train_ds_size]
@@ -132,7 +137,7 @@ def main():
         print(label.shape)
 
     
-    model = improved_unet(number_Of_output_channels, f=8)
+    model = improved_unet(number_Of_output_channels, f=4)
 
     model.summary()
 
@@ -141,13 +146,33 @@ def main():
     loss_accuracy = model.fit(train_dataset.batch(10), epochs=5, validation_data=val_dataset.batch(10))
 
     labels = show_predictions(test_dataset, model)
-    print("Old DSC Calculations: ")
-    print("Layer 0: ", dsc(labels[0], labels[1], 0))
-    print("Layer 1: ", dsc(labels[0], labels[1], 1))
     print("------------------------------")
     print("New DSC Calculations:")
     print("Layer 0: ", newDSC(labels[0], labels[1], 0))
     print("Layer 1: ", newDSC(labels[0], labels[1], 1))
+
+    num_of_tests = 130
+    i = 1
+    layer_0_average = 0
+    layer_1_average = 0
+    for scan, label in test_dataset.take(num_of_tests):
+        pred_label = model.predict(scan[tf.newaxis, ...])
+        pred_label = tf.argmax(pred_label[0], axis=-1)
+        print("Displaying Dice Coefficient for test: ", i)
+        layer_0_dsc = newDSC(label, pred_label, 0)
+        layer_1_dsc = newDSC(label, pred_label, 1)
+        print("Layer 0: ", layer_0_dsc)
+        print("Layer 1: ", layer_1_dsc)
+        i += 1
+        layer_0_average += layer_0_dsc
+        layer_1_average += layer_1_dsc
+        display([tf.squeeze(scan), tf.argmax(label, axis=-1), pred_label])
+    layer_0_average = layer_0_average / 130
+    layer_1_average = layer_1_average / 130
+    print("Average Layer 0 DSC: ", layer_0_average)
+    print("Average Later 1 DSC: ", layer_1_average)
+
+
     """
     To add: 
     - need to show more predictions
