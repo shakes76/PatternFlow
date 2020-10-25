@@ -1,3 +1,5 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
@@ -11,8 +13,9 @@ IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 CHANNELS = 3
 SEED = 45
-BATCH_SIZE = 32
-EPOCHS = 50
+BATCH_SIZE = 16
+EPOCHS = 2
+LEARNING_RATE = 0.0005
 STEPS_PER_EPOCH_TRAIN = math.ceil(2076 / BATCH_SIZE)
 STEPS_PER_EPOCH_TEST = math.ceil(518 / BATCH_SIZE)
 DATA_GEN_ARGS = dict(
@@ -58,7 +61,9 @@ if __name__ == "__main__":
         color_mode='grayscale')
 
     model = layers.improvedUNet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
-    model.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
+    model.summary()
+    model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
+                  loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
 
     train_gen = zip(image_train_gen, mask_train_gen)
     test_gen = zip(image_test_gen, mask_test_gen)
@@ -67,7 +72,7 @@ if __name__ == "__main__":
         train_gen,
         steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
         epochs=EPOCHS,
-        # shuffle=True,
+        shuffle=True,
         verbose=1)
 
     test_loss, test_accuracy = model.evaluate(test_gen)
