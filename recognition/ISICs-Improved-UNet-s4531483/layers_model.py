@@ -1,5 +1,12 @@
 import tensorflow as tf
 from tensorflow import keras
 
-model = keras.Sequential()
-model.add(keras.layers.Activation("relu"))
+
+def improvedUNet(width, height, channels, classes=2):
+    input = keras.Input(shape=(width, height, channels))
+    x1 = keras.layers.Conv2D(32, (3, 3), padding="same", input_shape=(width, height, channels))(input)
+    x2 = keras.layers.Activation("relu")(x1)
+    x3 = keras.layers.Flatten()(x2)
+    x4 = keras.layers.Dense(classes)(x3)
+    out = keras.layers.Activation("softmax")(x4)
+    return out
