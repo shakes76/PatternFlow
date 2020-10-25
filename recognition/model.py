@@ -3,15 +3,15 @@ import numpy as np
 
 def context_layer(input, channels):
     context_1 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
-    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(context_1)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(context_1)
     context_dropout = tf.keras.layers.Dropout(0.3)(activation1)
     context_2 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(context_dropout)
-    activation2 = tf.keras.layers.LeakyReLU(alpha=0.1)(context_2)
+    activation2 = tf.keras.layers.LeakyReLU(alpha=0.3)(context_2)
     return activation2
 
 def decode_layer(input, channels):
     decode_1 = tf.keras.layers.Conv2D(channels, (3, 3), strides=(2,2), padding="same")(input)
-    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(decode_1)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(decode_1)
     context = context_layer(activation1, channels)
     elem_wise_sum = decode_1 + context
     return elem_wise_sum
@@ -19,26 +19,26 @@ def decode_layer(input, channels):
 def upsampling_module(input, channels):
     up = tf.keras.layers.UpSampling2D()(input)
     conv2d = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(up)
-    activation = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d)
+    activation = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d)
     return activation
 
 def localization_layer(input, channels):
     conv2D_3 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
-    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D_3)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2D_3)
     conv2D_1 = tf.keras.layers.Conv2D(channels, (1, 1), padding="same")(conv2D_3)
-    activation2 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D_1)
+    activation2 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2D_1)
     return activation2
 
 def segmentation_layer(input, channels):
     conv2d = tf.keras.layers.Conv2D(channels, (1, 1), padding="same")(input)
-    return tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d)
+    return tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d)
 
 
 def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
     modelInput = tf.keras.layers.Input(shape=(256, 256, 1))
 
     conv2D16_1 = tf.keras.layers.Conv2D(f, (3, 3), padding="same")(modelInput)
-    activation1 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2D16_1)
+    activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2D16_1)
 
     #1st Context Layer
     context_16 = context_layer(activation1, f)
@@ -82,7 +82,7 @@ def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
 
     conv2d_32 = tf.keras.layers.Conv2D(2*f, (3, 3), padding="same")(concat4)
 
-    activation32 = tf.keras.layers.LeakyReLU(alpha=0.1)(conv2d_32)
+    activation32 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d_32)
 
     seg32_1 = segmentation_layer(activation32, output_channels)
 

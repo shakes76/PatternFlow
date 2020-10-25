@@ -137,7 +137,7 @@ def main():
         print(label.shape)
 
     
-    model = improved_unet(number_Of_output_channels, f=4)
+    model = improved_unet(number_Of_output_channels, f=8)
 
     model.summary()
 
