@@ -86,4 +86,24 @@ def combiner(noise_shape):
     combined.compile(loss='binary_crossentropy', optimizer=Adam(0.00007, 0.5))
     return combined
 
+#noise generator
+def get_noise(nsample=1, nlatent_dim=100):
+    noise = np.random.normal(0, 1, (nsample,nlatent_dim))
+    return(noise)
 
+#random image plotter:
+def plot_generated_images(noise,generator,nsample,path_save=None,titleadd=""):
+    imgs = generator.predict(noise)
+    fig = plt.figure(figsize=(40,10))
+    for i, img in enumerate(imgs):
+        ax = fig.add_subplot(1,nsample,i+1)
+        ax.imshow(img)
+    fig.suptitle("Generated images "+titleadd,fontsize=30)
+    
+    if path_save is not None:
+        plt.savefig(path_save,
+                    bbox_inches='tight',
+                    pad_inches=0)
+        plt.close()
+    else:
+        plt.show()
