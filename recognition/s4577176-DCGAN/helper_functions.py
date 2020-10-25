@@ -1,4 +1,4 @@
-from library import *
+from libraries import *
 
 #generator:
 
@@ -70,7 +70,7 @@ def build_discriminator(img_shape):
 
 #combiner:
 
-def combiner(noise_shape):
+def combiner(noise_shape,generator,discriminator):
     z = layers.Input(shape=noise_shape)
     img = generator(z)
 
