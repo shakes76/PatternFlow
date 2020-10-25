@@ -80,6 +80,13 @@ def dice(lbl_gt, lbl_pred):
     union = tf.keras.backend.sum(lbl_gt) + tf.keras.backend.sum(lbl_pred)
     return (2.0 * intersection + 1.0) / (union + 1.0)
 
+def dice_np(lbl_gt, lbl_pred):
+    lbl_gt = lbl_gt.flatten()
+    lbl_pred = lbl_pred.flatten()
+    intersection = np.sum(lbl_gt * lbl_pred)
+    union = np.sum(lbl_gt) + np.sum(lbl_pred)
+    return (2.0 * intersection + 1.0) / (union + 1.0)
+
 def dice_loss(lbl_gt, lbl_pred):
     return 1-dice(lbl_gt, lbl_pred)
 
@@ -101,12 +108,14 @@ plt.show()
 print('Test set evaluation:\n')
 model.evaluate(test_ds.batch(16), verbose=2)
 
-preds = model.predict(test_ds.batch(16))
-labels = [lb for im, lb in list(test_ds.as_numpy_iterator())]
-dice_scores = [dice(labels[i],preds[i]).numpy() for i in range(len(preds))]
+#Predictions
+dice_scores = []
+for i in range(len(image_files)-split_size):
+    image, label = next(iter(test_ds.batch(1)))
+    pred = model.predict(image)
+    dice_scores.append(dice_np(label.numpy(),pred[0]))
 print('Test set prediction mean DICE: ', sum(dice_scores)/len(dice_scores))
 
-#Predictions
 image_batch, label_batch = next(iter(test_ds.batch(3)))
 pred = model.predict(image_batch)
 plt.figure(figsize = (20,20))
