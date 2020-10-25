@@ -24,7 +24,6 @@ from datetime import datetime
 from tqdm import tqdm
 
 from recognition.s4436194_oasis_dcgan.data_helper import Dataset
-from recognition.s4436194_oasis_dcgan.models_helper import *
 
 DATA_TRAIN_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
 DATA_TEST_DIR = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_test"
@@ -40,10 +39,12 @@ tf.random.set_seed(3710)
 
 class DCGANModelFramework:
 
-    def __init__(self):
+    def __init__(self, discriminator, generator, size):
 
         # Instantiate discriminator and generator objects
-        self.discriminator, self.generator, self.size = make_models_256()
+        self.discriminator = discriminator
+        self.generator = generator
+        self.size = size
 
         # Set the seed for all saved images, so we consistently get the same images
         self.seed = tf.random.normal([N_EPOCH_SAMPLES, NOISE_DIMENSION])
@@ -262,6 +263,9 @@ class DCGANModelFramework:
         # Set the seed for all saved images, so we consistently get the same images
         input_ = tf.random.normal([1, 100])
         output = self.generator(input_)
+
+        # Rescale tensor to 0 - 255 integer range
+        output = tf.math.round((output - tf.reduce_min(output)) / (tf.reduce_max(output) - tf.reduce_min(output)) * 255)
 
         # Plot the generated image
         plt.imshow(output.numpy()[0, :, :, 0], cmap="Greys")
