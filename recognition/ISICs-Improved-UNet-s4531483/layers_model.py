@@ -1,38 +1,43 @@
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.regularizers import l2
 
 LEAKY_RELU_ALPHA = 0.01
-L2_WEIGHT_DECAY = 0.00001
+DROPOUT = 0.35
+L2_WEIGHT_DECAY = 0.00005
+CONV_PROPERTIES = dict(
+    kernel_regularizer=l2(L2_WEIGHT_DECAY),
+    bias_regularizer=l2(L2_WEIGHT_DECAY),
+    padding="same")
 
-
-def improvedUNet(width, height, channels, classes=2):
+def improvedUNet(width, height, channels):
     input = keras.Input(shape=(width, height, channels))
 
-    x1 = keras.layers.Conv2D(16, (3, 3), padding="same", input_shape=(width, height, channels))(input)
+    x1 = keras.layers.Conv2D(16, (3, 3), **CONV_PROPERTIES, input_shape=(width, height, channels))(input)
     x2 = keras.layers.BatchNormalization()(x1)
     x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
     x4 = contextModule(x3, 16)
     x5 = keras.layers.Add()([x3, x4])
 
-    x6 = keras.layers.Conv2D(32, (3, 3), strides=2, padding="same")(x5)
+    x6 = keras.layers.Conv2D(32, (3, 3), **CONV_PROPERTIES, strides=2)(x5)
     x7 = keras.layers.BatchNormalization()(x6)
     x8 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x7)
     x9 = contextModule(x8, 32)
     x10 = keras.layers.Add()([x8, x9])
 
-    x11 = keras.layers.Conv2D(64, (3, 3), strides=2, padding="same")(x10)
+    x11 = keras.layers.Conv2D(64, (3, 3), **CONV_PROPERTIES, strides=2)(x10)
     x12 = keras.layers.BatchNormalization()(x11)
     x13 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x12)
     x14 = contextModule(x13, 64)
     x15 = keras.layers.Add()([x13, x14])
 
-    x16 = keras.layers.Conv2D(128, (3, 3), strides=2, padding="same")(x15)
+    x16 = keras.layers.Conv2D(128, (3, 3), **CONV_PROPERTIES, strides=2)(x15)
     x17 = keras.layers.BatchNormalization()(x16)
     x18 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x17)
     x19 = contextModule(x18, 128)
     x20 = keras.layers.Add()([x18, x19])
 
-    x21 = keras.layers.Conv2D(256, (3, 3), strides=2, padding="same")(x20)
+    x21 = keras.layers.Conv2D(256, (3, 3), **CONV_PROPERTIES, strides=2)(x20)
     x22 = keras.layers.BatchNormalization()(x21)
     x23 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x22)
     x24 = contextModule(x23, 256)
@@ -52,7 +57,7 @@ def improvedUNet(width, height, channels, classes=2):
     x35 = upsamplingModule(x34, 16)
 
     x36 = keras.layers.Concatenate()([x5, x35])
-    x37 = keras.layers.Conv2D(32, (3, 3), padding="same")(x36)
+    x37 = keras.layers.Conv2D(32, (3, 3), **CONV_PROPERTIES)(x36)
     x38 = keras.layers.BatchNormalization()(x37)
     x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
 
@@ -66,27 +71,27 @@ def improvedUNet(width, height, channels, classes=2):
     return unet
 
 def contextModule(input, out_filter):
-    x1 = keras.layers.Conv2D(out_filter, (3, 3), padding="same")(input)
+    x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     x2 = keras.layers.BatchNormalization()(x1)
     x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x4 = keras.layers.Dropout(0.3)(x3)
-    x5 = keras.layers.Conv2D(out_filter, (3, 3), padding="same")(x4)
+    x4 = keras.layers.Dropout(DROPOUT)(x3)
+    x5 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x4)
     x6 = keras.layers.BatchNormalization()(x5)
     x7 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x6)
     return x7
 
 def upsamplingModule(input, out_filter):
     x1 = keras.layers.UpSampling2D(size=(2, 2))(input)
-    x2 = keras.layers.Conv2D(out_filter, (3, 3), padding="same")(x1)
+    x2 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x1)
     x3 = keras.layers.BatchNormalization()(x2)
     x4 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x3)
     return x4
 
 def localisationModule(input, out_filter):
-    x1 = keras.layers.Conv2D(out_filter, (3, 3), padding="same")(input)
+    x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     x2 = keras.layers.BatchNormalization()(x1)
     x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x4 = keras.layers.Conv2D(out_filter, (1, 1), padding="same")(x3)
+    x4 = keras.layers.Conv2D(out_filter, (1, 1), **CONV_PROPERTIES)(x3)
     x5 = keras.layers.BatchNormalization()(x4)
     x6 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x5)
     return x6

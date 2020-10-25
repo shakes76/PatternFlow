@@ -13,22 +13,24 @@ IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 CHANNELS = 3
 SEED = 45
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 EPOCHS = 2
 LEARNING_RATE = 0.0005
 STEPS_PER_EPOCH_TRAIN = math.ceil(2076 / BATCH_SIZE)
 STEPS_PER_EPOCH_TEST = math.ceil(518 / BATCH_SIZE)
 DATA_GEN_ARGS = dict(
     rescale=1.0/255,
-    shear_range=0.1,
-    zoom_range=0.1,
+    shear_range=0.15,
+    zoom_range=0.15,
     horizontal_flip=True,
+    vertical_flip=True,
     fill_mode='nearest',
     validation_split=0.2)
 TEST_TRAIN_GEN_ARGS = dict(
     seed=SEED,
     class_mode=None,
     batch_size=BATCH_SIZE,
+    interpolation="nearest",
     target_size=(IMAGE_HEIGHT, IMAGE_WIDTH))
 
 
@@ -61,7 +63,6 @@ if __name__ == "__main__":
         color_mode='grayscale')
 
     model = layers.improvedUNet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
-    model.summary()
     model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
                   loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
 
@@ -73,8 +74,17 @@ if __name__ == "__main__":
         steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
         epochs=EPOCHS,
         shuffle=True,
-        verbose=1)
+        verbose=1,
+    )
 
-    test_loss, test_accuracy = model.evaluate(test_gen)
+    print("\nTest Accuracy:")
+    test_loss, test_accuracy = model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2)
+
+    plt.plot(track.history['accuracy'])
+    plt.plot(track.history['loss'])
+    plt.title('Loss & Accuracy Curves')
+    plt.xlabel('Epoch')
+    plt.legend(['Accuracy', 'Loss'])
+    plt.show()
 
     print("COMPLETED.")

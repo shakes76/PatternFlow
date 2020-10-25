@@ -129,5 +129,3 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
-
-recognition/ISICs-Improved-UNet-s4531483/data/
