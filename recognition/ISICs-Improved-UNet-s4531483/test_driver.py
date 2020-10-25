@@ -3,6 +3,7 @@ from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 import layers_model as layers
+import math
 
 PATH_ORIGINAL_DATA = "data/image"
 PATH_SEG_DATA = "data/mask"
@@ -12,8 +13,8 @@ CHANNELS = 3
 SEED = 45
 BATCH_SIZE = 32
 EPOCHS = 50
-STEPS_PER_EPOCH_TRAIN = int(np.ceil(2076 / BATCH_SIZE))
-STEPS_PER_EPOCH_TEST = int(np.ceil(518 / BATCH_SIZE))
+STEPS_PER_EPOCH_TRAIN = math.ceil(2076 / BATCH_SIZE)
+STEPS_PER_EPOCH_TEST = math.ceil(518 / BATCH_SIZE)
 DATA_GEN_ARGS = dict(
     rescale=1.0/255,
     shear_range=0.1,
@@ -26,17 +27,6 @@ TEST_TRAIN_GEN_ARGS = dict(
     class_mode=None,
     batch_size=BATCH_SIZE,
     target_size=(IMAGE_HEIGHT, IMAGE_WIDTH))
-
-
-class ImageMaskSequence(keras.utils.Sequence):
-    def __init__(self, image_gen, mask_gen):
-        self.generators = [image_gen, mask_gen]
-
-    def __len__(self):
-        return len(self.generators[1])
-
-    def __getitem__(self, item):
-        return [generator[item] for generator in self.generators]
 
 
 if __name__ == "__main__":
@@ -67,18 +57,18 @@ if __name__ == "__main__":
         subset='validation',
         color_mode='grayscale')
 
-    train_gen = ImageMaskSequence(image_train_gen, mask_train_gen)
-    test_gen = ImageMaskSequence(image_test_gen, mask_test_gen)
-
     model = layers.improvedUNet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
+
+    train_gen = zip(image_train_gen, mask_train_gen)
+    test_gen = zip(image_test_gen, mask_test_gen)
 
     track = model.fit(
         train_gen,
         steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
         epochs=EPOCHS,
-        shuffle=True,
-        verbose=2)
+        # shuffle=True,
+        verbose=1)
 
     test_loss, test_accuracy = model.evaluate(test_gen)
 
