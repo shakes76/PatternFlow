@@ -1,0 +1,67 @@
+import tensorflow as tf
+import glob
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+
+print('TensorFlow version:', tf.__version__)
+
+images = sorted(glob.glob("C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2\*.jpg"))
+masks = sorted(glob.glob("C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2\*.png"))
+
+X_train, X_test, y_train, y_test = train_test_split(images, masks, test_size = 0.3, random_state = 42)
+X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size = 0.5, random_state = 42)
+
+train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test))
+val_ds = tf.data.Dataset.from_tensor_slices((X_val, y_val))
+
+train_ds = train_ds.shuffle(len(X_train))
+test_ds = test_ds.shuffle(len(X_test))
+val_ds = val_ds.shuffle(len(X_val))
+
+print(train_ds)
+print(test_ds)
+print(val_ds)
+
+def decode_image(path):
+    img = tf.io.read_file(path)
+    return tf.image.decode_jpeg(img)
+
+def decode_mask(path):
+    img = tf.io.read_file(path)
+    img = tf.image.decode_png(img)
+    mask = tf.one_hot(img, depth=2, dtype=tf.uint8)
+    return tf.squeeze(mask)
+
+def process_path(image_path, mask_path):
+    # check correct input for decode
+    image = decode_image(image_path)
+    image = tf.cast(image, tf.float32) / 255.0
+    image = tf.reshape(image, (256, 256, 1))
+
+    mask = decode_mask(mask_path)
+    mask = tf.reshape(mask, (256, 256, 2))
+
+    return image, mask
+
+train_ds = train_ds.map(process_path)
+test_ds = test_ds.map(process_path)
+val_ds = val_ds.map(process_path)
+
+print(train_ds)
+print(test_ds)
+print(val_ds)
+
+def display(display_list):
+    plt.figure(figsize=(10,10))
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.imshow(display_list[i], cmap='gray')
+        plt.axis('off')
+    plt.show()
+
+#for image, mask in train_ds.take(1):
+
+
+   # display([tf.squeeze(image)])
+
