@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
+"""
+Spyder Editor
 
-# In[1]:
-
+This is a temporary script file.
+"""
 
 import os
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
@@ -12,11 +13,7 @@ from itertools import chain
 from skimage.io import imread, imshow, concatenate_images
 from skimage.transform import resize
 
-
-# In[2]:
-
-
-# Loading the lesion images for ISIC data set
+# Loading lesion images for ISIC data set
 def loading_img(img_path,img_width,img_height):
     ids_all = next(os.walk(img_path))[2]
     ids_all_sort = sorted(ids_all)
@@ -30,11 +27,7 @@ def loading_img(img_path,img_width,img_height):
         
     return X
 
-
-# In[3]:
-
-
-# Loading the segmentation images ISIC data set
+# Loading segmentation images for ISIC data set
 def loading_seg(seg_path,img_width,img_height):
     ids_all = next(os.walk(seg_path))[2]
     ids_all_sort = sorted(ids_all)
@@ -47,4 +40,3 @@ def loading_seg(seg_path,img_width,img_height):
         X[n] = x_img
         
     return X
-
