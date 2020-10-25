@@ -70,10 +70,8 @@ if __name__ == "__main__":
         steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
         epochs=EPOCHS,
         shuffle=True,
-        use_multiprocessing=True)
+        verbose=2)
 
-    test_loss, test_accuracy = layers.model.evaluate(
-        test_gen,
-        use_multiprocessing=True)
+    test_loss, test_accuracy = layers.model.evaluate(test_gen)
 
     print("COMPLETED.")
