@@ -21,14 +21,26 @@ def generator(img_shape, noise_shape = (100,)):
     d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
     d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d) 
     
-    d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
-    d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d) 
-    
-    d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
-    d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d) 
-    
-    d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
-    d = layers.Conv2D(32,(1,1),activation='relu',padding='same')(d) 
+    if img_shape == 64:
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d) 
+        
+    if img_shape == 128:
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d)
+        
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d)
+        
+    if img_shape == 256:
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d)
+        
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d)
+        
+        d = layers.Conv2DTranspose(32,kernel_size=(2,2),strides=(2,2),use_bias=False)(d)
+        d = layers.Conv2D(64,(1,1),activation='relu',padding='same')(d)
     
     
     img = layers.Conv2D(3,(1,1),activation='sigmoid',padding='same')(d)
