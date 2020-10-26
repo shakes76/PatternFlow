@@ -16,14 +16,14 @@ def downsample(input, filters, kernel_size=(3, 3), padding="same", strides=(1, 1
     """
     # Convolutional layer 1
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(input)
-    norm = BatchNormalization(conv)
+    norm = BatchNormalization()(conv)
 
     # Convolutional layer 2
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(norm)
-    norm = BatchNormalization(conv)
+    norm = BatchNormalization()(conv)
 
     # Pooling layer
-    pooling = MaxPooling2D((2, 2), strides=(2, 2))
+    pooling = MaxPooling2D((2, 2), (2, 2))(norm)
     return norm, pooling
 
 
@@ -37,11 +37,11 @@ def upsample(input, skip, filters, kernel_size=(3, 3), padding="same", strides=(
 
     # Convolutional layer 1
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(concatenate)
-    norm = BatchNormalization(conv)
+    norm = BatchNormalization()(conv)
 
     # Convolutional layer 2
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(norm)
-    norm = BatchNormalization(conv)
+    norm = BatchNormalization()(conv)
     return norm
 
 
@@ -51,9 +51,9 @@ def bottleneck(input, filters, kernel_size=(3, 3), padding="same", strides=(1, 1
     """
     # Convolutional layer 1 
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(input)
-    norm = BatchNormalization(conv) # normalize between layers
+    norm = BatchNormalization()(conv) # normalize between layers
     # Convolutional layer 2
     conv = Conv2D(filters, kernel_size=kernel_size, padding=padding, strides=strides, activation="relu", kernel_initializer=kernel_initializer)(norm)
-    norm = BatchNormalization(conv) # normalize between layers
+    norm = BatchNormalization()(conv) # normalize between layers
 
     return norm
