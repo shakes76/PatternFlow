@@ -4,6 +4,11 @@ COMP3710 Report
 @author Huizhen 
 """
 
+#%%
+import os
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
     Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose
@@ -86,10 +91,42 @@ def improved_unet():
     network = tf.keras.Model(inputs = [inputs], outputs = [outputs])
     return network
 
+#model = improved_unet()
+#model.summary()
+
+def resize_image(image, h=128, w=128, divide255 = True):
+    # /225 is neccessary for input images due to non-integer value after resize
+    new_image = tf.image.resize(image, [h, w]).numpy()/(255 if divide255 else 1)  
+    return new_image
+
+def load_batch(input_folder: str, output_folder: str, batch_size=8):
+    """
+    input_images : folder name
+    output_images : folder name
+    """
+    input_files = sorted([file for file in os.listdir(input_folder) if file.endswith('jpg')])
+    output_files = sorted([file for file in os.listdir(output_folder) if file.endswith('png')])
+
+    idx = 0
+    while 1:
+        i = []
+        o = []
+        while idx==0 or idx%batch_size!=0:
+            i.append(resize_image(mpimg.imread(input_folder + '/' + input_files[idx])))
+            o.append(resize_image(mpimg.imread(output_folder + '/' + output_files[idx])[:,:,np.newaxis], divide255 = False))
+            idx += 1
+        yield (np.array(i), np.array(o))
+        
 
 
-model = improved_unet()
-model.summary()
+# load data
+Input = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
+Output = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
+
+generator = load_batch(Input, Output)
+b1 = next(generator)
+
+
 # parameters
 
 # layers
@@ -103,3 +140,4 @@ model.summary()
 # test
 
 # plot
+# %%
