@@ -7,8 +7,8 @@ Example results for the pre-trained models provided :
 
 Input Image            |  Original Segmentation Image|  Output Segmentation Image
 :-------------------------:|:-------------------------:|:-------------------------:
-![](sample_images/1_input.jpg)  |  ![](sample_images/1_output.png)|  ![](sample_images/1_output.png)
-![](sample_images/3_input.jpg)  |  ![](sample_images/3_output.png)|  ![](sample_images/3_output.png)
+![](resources/x_train_11.png)  |  ![](resources/y_train_11.png)|  ![](resources/preds_train_11.png)
+![](resources/x_train_12.png)  |  ![](resources/y_train_12.png)|  ![](resources/preds_train_12.png)
 
 ## Getting Started
 
@@ -23,6 +23,15 @@ Input Image            |  Original Segmentation Image|  Output Segmentation Imag
 if you have not already install any package, you can use command 
 pip install [package name]
 
+### Preparing the data for training
+
+You need to make two folders
+
+* Images Folder - For all the training images
+* Masks Folder - For the corresponding ground truth segmentation images
+
+The filenames of the mask images should have the id which is same as the filenames of the RGB images with "_segmentation" ending.
+The size of the mask image for the corresponding RGB image should be same.
 Even our preprocessed dataset have 2,594 train images and its corresponding segmentation mask, which is quite large dataset.
 
 and you will see that during the training phase, data is generated in parallel by the CPU and then directly fed to the GPU.
