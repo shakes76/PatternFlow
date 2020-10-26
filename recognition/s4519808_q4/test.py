@@ -99,25 +99,30 @@ def resize_image(image, h=128, w=128, divide255 = True):
     new_image = tf.image.resize(image, [h, w]).numpy()/(255 if divide255 else 1)  
     return new_image
 
-def load_batch(input_folder: str, output_folder: str, batch_size=8):
+def load_batch(input_folder: str, output_folder: str, batch_size=16):
     """
     input_images : folder name
     output_images : folder name
     """
     input_files = sorted([file for file in os.listdir(input_folder) if file.endswith('jpg')])
     output_files = sorted([file for file in os.listdir(output_folder) if file.endswith('png')])
-
+    #print(output_files)
+    
     idx = 0
+    i = []
+    o = []
     while 1:
-        i = []
-        o = []
-        while idx==0 or idx%batch_size!=0:
+        while 1:
             i.append(resize_image(mpimg.imread(input_folder + '/' + input_files[idx])))
             o.append(resize_image(mpimg.imread(output_folder + '/' + output_files[idx])[:,:,np.newaxis], divide255 = False))
             idx += 1
-        yield (np.array(i), np.array(o))
-        
-
+            if len(i) == batch_size: 
+                yield (np.array(i), np.array(o))
+                i = []
+                o = []
+            if idx == len(input_files):
+                idx = 0
+                
 
 # load data
 Input = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
