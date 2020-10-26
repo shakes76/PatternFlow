@@ -1,10 +1,14 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
+import matplotlib.pyplot as plt
+from .model import KneeClassifier
 
 # Constants
 IMAGE_DIR = './data'
 BATCH_SIZE = 32
 IMG_SIZE = (260, 228)
+IMG_SHAPE = IMG_SIZE + (3,)
+LEARNING_RATE = 0.0001
 
 """
 Dataset creation function
@@ -54,3 +58,42 @@ if __name__ == "__main__":
     print('Number of Train batches: %d' % tf.data.experimental.cardinality(training_set))
     print('Number of validation batches: %d' % tf.data.experimental.cardinality(validation_set))
     print('Number of test batches: %d' % tf.data.experimental.cardinality(test_set))
+
+    # Initialize the model
+    knee_model = KneeClassifier(img_shape=IMG_SHAPE, no_epochs=10, train_dataset=training_set,
+                                validation_dataset=validation_set, test_dataset=test_set, learning_rate=LEARNING_RATE)
+
+    # Train the model
+    history_data = knee_model.train_knee_classifier()
+
+    # Test set evaluation
+    knee_model.model_evaluation(eval_type='final')
+
+    # View model summary
+    knee_model.get_model_summary(model_type='complete')
+
+    # Plotting the Learning curves
+    acc = history_data.history['accuracy']
+    val_acc = history_data.history['val_accuracy']
+
+    loss = history_data.history['loss']
+    val_loss = history_data.history['val_loss']
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(acc, label='Training Accuracy')
+    plt.plot(val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.ylabel('Accuracy')
+    plt.ylim([min(plt.ylim()), 1])
+    plt.title('Training and Validation Accuracy')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(loss, label='Training Loss')
+    plt.plot(val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.ylabel('Cross Entropy')
+    plt.ylim([0, 1.0])
+    plt.title('Training and Validation Loss')
+    plt.xlabel('epoch')
+    plt.show()
