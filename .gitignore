@@ -129,3 +129,4 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+recognition/laterality_cnn/training/

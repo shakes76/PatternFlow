@@ -37,6 +37,7 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
 )
 
 class_names = train_ds.class_names
+num_classes = len(class_names)
 
 # #Visualise data
 # plt.figure(figsize=(10, 10))
@@ -54,81 +55,70 @@ class_names = train_ds.class_names
 #     print(labels_batch.shape)
 #     break
 
-#Standardize the data
-normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1./255)
-
 #Configure dataset for performance
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-# checkpoint_path = "training/ckpt01.ckpt"
-# checkpoint_dir = os.path.dirname(checkpoint_path)
+checkpoint_path = "training/ckpt01.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
 
-# n_epochs = 200
+n_epochs = 5
 
-# cp_callback = tf.keras.callbacks.ModelCheckpoint(
-#     filepath=checkpoint_path,
-#     save_weights_only=True,
-#     verbose=1,
-#     save_freq=n_epochs*X_train.shape[0]
-# )
+cp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_path,
+    save_weights_only=True,
+    verbose=1,
+    save_freq='epoch'
+)
 
-# #Specify directory of data
-# data_dir = os.path.join("C:", "Users", "delic", ".keras", "datasets", "AKOA_Analysis")
+model = tf.keras.models.Sequential([
+    tf.keras.layers.experimental.preprocessing.Rescaling(1./255, input_shape= (img_height, img_width, 1)),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(num_classes, activation='softmax')
+])
 
-# #Load all the filenames
-# filenames = glob.glob(data_dir + '/*/*.png')
-# image_count = len(filenames)
+model.summary()
 
-# #Split the dataset - 20% validation, 80% training
-# batch_size = 32
-# img_height = 228
-# img_width = 260
-# random.shuffle(filenames)
-# val_size = int(image_count * 0.2)
-# val_images = filenames[:val_size]
-# train_images = filenames [val_size:]
+loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)
 
-# #Extract labels
-# train_labels = [fn.split(os.path.sep)[-2] for fn in train_images]
-# val_labels = [fn.split(os.path.sep)[-2] for fn in val_images]
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=1E-3),
+    loss=loss_fn,
+    metrics=['accuracy']
+)
 
-# class_names = sorted(set(train_labels))
+# results = model.load_weights(checkpoint_path)
 
-# #Create tensorflow datasets
-# train_ds = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
-# val_ds = tf.data.Dataset.from_tensor_slices((val_images, val_labels))
+results = model.fit(train_ds, epochs=n_epochs, callbacks=[cp_callback], validation_data=val_ds)
 
-# train_ds = train_ds.shuffle(len(train_images))
-# val_ds = val_ds.shuffle(len(val_images))
+model.evaluate(val_ds, verbose=2)
+model.evaluate(train_ds, verbose=2)
 
-# #Map filenames and labels to data arrays
-# def map_fn(filename, label):
-#     # Load the raw data from the file as a string.
-#     img = tf.io.read_file(filename)
-#     # Convert the compressed string to a 3D uint8 tensor.
-#     img = tf.image.decode_jpeg(img, channels=1) # channels=3 for RGB, channels=1 for grayscale
-#     # Resize the image to the desired size.
-#     img = tf.image.resize(img, (img_height, img_width))
-#     # Standardise values to be in the [0, 1] range.
-#     img = tf.cast(img, tf.float32) / 255.0
-#     # One-hot encode the label.
-#     one_hot = tf.cast(label == class_names, tf.uint8)
-#     # Return the processed image and label.
-#     return img, one_hot
+plt.plot(results.history['accuracy'], label='accuracy')
+plt.plot(results.history['val_accuracy'], label='val_accuracy')
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.ylim(0.5, 1.0)
+plt.legend()
+# plt.savefig('accuracy.png')
+plt.show()
 
-# train_ds = train_ds.map(map_fn)
-# val_ds = val_ds.map(map_fn)
-
-# #Visualise data
-# image_batch, label_batch = next(iter(train_ds.batch(9)))
-
-# plt.figure(figsize=(10, 10))
-# for i in range(9):
-#     plt.subplot(3, 3, i+1)
-#     plt.imshow(image_batch[i][:,:,0])
-#     label = tf.argmax(label_batch[i])
-#     plt.title(class_names[label])
-#     plt.axis('off')
-# plt.show()
+plt.plot(results.history['loss'], label="loss")
+plt.plot(results.history['val_loss'], label="val_loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.ylim(0.0, 0.5)
+plt.legend()
+# plt.savefig('loss.png')
+plt.show()
