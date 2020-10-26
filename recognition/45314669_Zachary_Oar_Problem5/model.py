@@ -57,6 +57,7 @@ train_gen = SequenceGenerator(x_train, y_train, 4)
 val_gen = SequenceGenerator(x_val, y_val, 4)
 test_gen = SequenceGenerator(x_test, y_test, 4)
 
+"""
 # show some of the images as a sanity check
 sanity_check_x, sanity_check_y = train_gen.__getitem__(0)
 plt.figure(figsize=(10, 10))
@@ -71,10 +72,28 @@ for i in (0, 2):
 plt.show()
 del sanity_check_x
 del sanity_check_y
+"""
+
+def dice_similarity(exp, pred):
+    expected = keras.backend.batch_flatten(exp)
+    predicted = keras.backend.batch_flatten(pred)
+    predicted = keras.backend.round(predicted)
+
+    expected_positive = keras.backend.sum(expected, axis=-1)
+    predicted_positive = keras.backend.sum(predicted, axis=-1)
+    true_positive = keras.backend.sum(expected * predicted, axis=-1)
+    false_negative =  expected_positive - true_positive
+
+    false_positive = predicted_positive - true_positive
+    false_positive = tf.nn.relu(false_positive)
+
+    numerator = 2 * true_positive + keras.backend.epsilon()
+    denominator = 2 * true_positive + false_positive + false_negative + keras.backend.epsilon()
+
+    return numerator / denominator
 
 # standard unet model, as per lecture slides
 def make_model():
-
     # the input shape after resizing is (batch_size, 192, 256, 3)
     input_layer = keras.layers.Input(shape=(192, 256, 3))
 
@@ -121,10 +140,11 @@ def make_model():
 
     model = tf.keras.Model(inputs=input_layer, outputs=conv_out)
     model.compile(optimizer = keras.optimizers.Adam(),
-              loss = 'categorical_crossentropy',
-              metrics=['accuracy'])
+              loss='categorical_crossentropy',
+              metrics=[dice_similarity])
 
     return model
+
 
 # train the model
 model = make_model()
@@ -138,12 +158,39 @@ test_images_x, test_images_y = test_gen.__getitem__(0)
 prediction = model.predict(test_images_x)
 
 plt.figure(figsize=(10, 10))
-plt.subplot(1, 2, 1)
+plt.subplot(4, 2, 1)
 plt.imshow(tf.argmax(prediction[0], axis=2))
 plt.axis('off')
 plt.title("Predicted output of model", size=14)
-plt.subplot(1, 2, 2)
+
+plt.subplot(4, 2, 2)
 plt.imshow(tf.argmax(test_images_y[0], axis=2))
 plt.axis('off')
 plt.title("Expected output (y label) for the prediction", size=14)
+
+plt.subplot(4, 2, 3)
+plt.imshow(tf.argmax(prediction[1], axis=2))
+plt.axis('off')
+
+plt.subplot(4, 2, 4)
+plt.imshow(tf.argmax(test_images_y[1], axis=2))
+plt.axis('off')
+
+plt.subplot(4, 2, 5)
+plt.imshow(tf.argmax(prediction[2], axis=2))
+plt.axis('off')
+
+plt.subplot(4, 2, 6)
+plt.imshow(tf.argmax(test_images_y[2], axis=2))
+plt.axis('off')
+
+plt.subplot(4, 2, 7)
+plt.imshow(tf.argmax(prediction[3], axis=2))
+plt.axis('off')
+
+plt.subplot(4, 2, 8)
+plt.imshow(tf.argmax(test_images_y[3], axis=2))
+plt.axis('off')
+
+
 plt.show()
