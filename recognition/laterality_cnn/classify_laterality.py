@@ -19,7 +19,7 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     labels = 'inferred',
     validation_split=0.2,
     subset='training',
-    seed=111,
+    seed=123,
     image_size = (img_height, img_width),
     batch_size = batch_size,
     color_mode = 'grayscale'
@@ -30,7 +30,7 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     labels = 'inferred',
     validation_split=0.2,
     subset='validation',
-    seed=111,
+    seed=123,
     image_size = (img_height, img_width),
     batch_size = batch_size,
     color_mode = 'grayscale'
@@ -78,8 +78,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
     tf.keras.layers.MaxPooling2D((2, 2)),
     tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
     tf.keras.layers.MaxPooling2D((2, 2)),
     tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Flatten(),
@@ -111,7 +111,7 @@ plt.xlabel("Epoch")
 plt.ylabel("Accuracy")
 plt.ylim(0.5, 1.0)
 plt.legend()
-# plt.savefig('accuracy.png')
+plt.savefig('accuracy.png')
 plt.show()
 
 plt.plot(results.history['loss'], label="loss")
@@ -120,5 +120,5 @@ plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.ylim(0.0, 0.5)
 plt.legend()
-# plt.savefig('loss.png')
+plt.savefig('loss.png')
 plt.show()
