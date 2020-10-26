@@ -10,11 +10,26 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
+from random import shuffle
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
     Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose
 
 
 print("TensorFlow Version: ", tf.__version__) 
+
+# Define DSC loss function
+def dsc(x, y):
+    """
+    Parameters:
+        x , y (numpy.array): Prediction and Grouptruth images.
+
+    Return:
+        dsc (float): The DSC value.
+    """
+    TP = tf.reduce_sum(tf.math.multiply(x,y))
+    FP_FN = tf.reduce_sum(tf.cast(tf.math.logical_xor(x,y),tf.float32))
+    dsc = 2*TP / (2*TP + FP_FN)
+    return dsc.numpy()
 
 # Define Block Functions
 def context_module(inputs, filters, dropout_rate):
@@ -99,22 +114,20 @@ def resize_image(image, h=128, w=128, divide255 = True):
     new_image = tf.image.resize(image, [h, w]).numpy()/(255 if divide255 else 1)  
     return new_image
 
-def load_batch(input_folder: str, output_folder: str, batch_size=16):
+def load_batch(input_images: list, output_images: list, input_folder: str, output_folder: str, batch_size=16):
     """
-    input_images : folder name
-    output_images : folder name
+    input_images : image name list
+    output_images : image name list
+    input_folder : folder name
+    output_folder : folder name
     """
-    input_files = sorted([file for file in os.listdir(input_folder) if file.endswith('jpg')])
-    output_files = sorted([file for file in os.listdir(output_folder) if file.endswith('png')])
-    #print(output_files)
-    
     idx = 0
     i = []
     o = []
     while 1:
         while 1:
-            i.append(resize_image(mpimg.imread(input_folder + '/' + input_files[idx])))
-            o.append(resize_image(mpimg.imread(output_folder + '/' + output_files[idx])[:,:,np.newaxis], divide255 = False))
+            i.append(resize_image(mpimg.imread(input_folder + '/' + input_images[idx])))
+            o.append(resize_image(mpimg.imread(output_folder + '/' + output_images[idx])[:,:,np.newaxis], divide255 = False))
             idx += 1
             if len(i) == batch_size: 
                 yield (np.array(i), np.array(o))
@@ -124,12 +137,35 @@ def load_batch(input_folder: str, output_folder: str, batch_size=16):
                 idx = 0
                 
 
-# load data
-Input = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
-Output = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
+# data path
+input_folder = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
+output_folder = '/Users/taamsmac/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
 
-generator = load_batch(Input, Output)
-b1 = next(generator)
+# image files name
+input_images = sorted([file for file in os.listdir(input_folder) if file.endswith('jpg')])
+output_images = sorted([file for file in os.listdir(output_folder) if file.endswith('png')])
+assert len(input_images)==len(output_images), 'input and output lists have different length'
+
+# split into train, validatate and test
+idx = list(range(len(input_images)))
+shuffle(idx)
+train_idx = idx[:1800]
+validate_idx = idx[1800:2200]
+test_idx = idx[2200:]
+print(f'train, validate, test set have length: {len(train_idx)}, {len(validate_idx)}, {len(test_idx)}')
+
+# train, test, validate images file name
+train_input_images = [input_images[i] for i in train_idx]
+train_output_images = [output_images[i] for i in train_idx]
+validate_input_images = [input_images[i] for i in validate_idx]
+validate_output_images = [output_images[i] for i in validate_idx]
+test_input_images = [input_images[i] for i in test_idx]
+test_output_images = [output_images[i] for i in test_idx]
+
+
+
+#generator = load_batch(Input, Output)
+#b1 = next(generator)
 
 
 # parameters
