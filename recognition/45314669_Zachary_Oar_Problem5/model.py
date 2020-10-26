@@ -132,3 +132,18 @@ model.fit(train_gen, validation_data=val_gen, epochs=1)
 
 # evaluate the model on the test set
 model.evaluate(test_gen)
+
+# show a generated image from the test set and compare with expected output
+test_images_x, test_images_y = test_gen.__getitem__(0)
+prediction = model.predict(test_images_x)
+
+plt.figure(figsize=(10, 10))
+plt.subplot(1, 2, 1)
+plt.imshow(tf.argmax(prediction[0], axis=2))
+plt.axis('off')
+plt.title("Predicted output of model", size=14)
+plt.subplot(1, 2, 2)
+plt.imshow(tf.argmax(test_images_y[0], axis=2))
+plt.axis('off')
+plt.title("Expected output (y label) for the prediction", size=14)
+plt.show()
