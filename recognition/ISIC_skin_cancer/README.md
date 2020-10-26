@@ -21,7 +21,9 @@ Input Image            |  Original Segmentation Image|  Output Segmentation Imag
 * Skimage 0.16.2
 
 if you have not already install any package, you can use command 
+```shell
 pip install [package name]
+```
 
 ### Preparing the data for training
 
