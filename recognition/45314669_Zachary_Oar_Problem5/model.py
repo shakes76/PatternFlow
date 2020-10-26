@@ -53,17 +53,82 @@ x_train_val, x_test, y_train_val, y_test = train_test_split(x_names, y_names, te
 # 17% of the non-test images are set aside as the validation set
 x_train, x_val, y_train, y_val = train_test_split(x_train_val, y_train_val, test_size=0.17, random_state=42)
 
-train_gen = SequenceGenerator(x_train, y_train, 9)
-sanity_check_x, sanity_check_y = train_gen.__getitem__(0)
+train_gen = SequenceGenerator(x_train, y_train, 4)
+val_gen = SequenceGenerator(x_val, y_val, 4)
+test_gen = SequenceGenerator(x_test, y_test, 4)
 
 # show some of the images as a sanity check
+sanity_check_x, sanity_check_y = train_gen.__getitem__(0)
 plt.figure(figsize=(10, 10))
-for i in (0, 2, 4):
-    plt.subplot(3, 2, i + 1)
+for i in (0, 2):
+    plt.subplot(2, 2, i + 1)
     plt.imshow(sanity_check_x[i])
     plt.axis('off')
 
-    plt.subplot(3, 2, i + 2)
+    plt.subplot(2, 2, i + 2)
     plt.imshow(tf.argmax(sanity_check_y[i], axis=2))
     plt.axis('off')
 plt.show()
+del sanity_check_x
+del sanity_check_y
+
+# standard unet model, as per lecture slides
+def make_model():
+
+    # the input shape after resizing is (batch_size, 192, 256, 3)
+    input_layer = keras.layers.Input(shape=(192, 256, 3))
+
+    conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(input_layer)
+    conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(conv1)
+    pool1 = keras.layers.MaxPooling2D((2, 2))(conv1)
+
+    conv2 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(pool1)
+    conv2 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(conv2)
+    pool2 = keras.layers.MaxPooling2D((2, 2))(conv2)
+    
+    conv3 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(pool2)
+    conv3 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(conv3)
+    pool3 = keras.layers.MaxPooling2D((2, 2))(conv3)
+    
+    conv4 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(pool3)
+    conv4 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(conv4)
+    pool4 = keras.layers.MaxPooling2D((2, 2))(conv4)
+
+    conv_mid = keras.layers.Conv2D(512, (3, 3), activation="relu", padding="same")(pool4)
+    conv_mid = keras.layers.Conv2D(512, (3, 3), activation="relu", padding="same")(conv_mid)
+    upsamp1 = keras.layers.UpSampling2D((2, 2))(conv_mid)
+
+    upconv1 = keras.layers.concatenate([upsamp1, conv4])
+    upconv1 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(upconv1)
+    upconv1 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(upconv1)
+    upsamp2 = keras.layers.UpSampling2D((2, 2))(upconv1)
+
+    upconv2 = keras.layers.concatenate([upsamp2, conv3])
+    upconv2 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(upconv2)
+    upconv2 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(upconv2)
+    upsamp3 = keras.layers.UpSampling2D((2, 2))(upconv2)
+
+    upconv3 = keras.layers.concatenate([upsamp3, conv2])
+    upconv3 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(upconv3)
+    upconv3 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(upconv3)
+    upsamp4 = keras.layers.UpSampling2D((2, 2))(upconv3)
+
+    upconv4 = keras.layers.concatenate([upsamp4, conv1])
+    upconv4 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(upconv4)
+    upconv4 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(upconv4)
+
+    conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(upconv4)
+
+    model = tf.keras.Model(inputs=input_layer, outputs=conv_out)
+    model.compile(optimizer = keras.optimizers.Adam(),
+              loss = 'categorical_crossentropy',
+              metrics=['accuracy'])
+
+    return model
+
+# train the model
+model = make_model()
+model.fit(train_gen, validation_data=val_gen, epochs=1)
+
+# evaluate the model on the test set
+model.evaluate(test_gen)
