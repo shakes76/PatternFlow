@@ -55,6 +55,9 @@ if __name__ == "__main__":
     # generate dataset
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, BATCH_SIZE, IMG_SIZE)
 
+    # Class names
+    class_names = training_set.class_names
+
     print('Number of Train batches: %d' % tf.data.experimental.cardinality(training_set))
     print('Number of validation batches: %d' % tf.data.experimental.cardinality(validation_set))
     print('Number of test batches: %d' % tf.data.experimental.cardinality(test_set))
@@ -97,3 +100,25 @@ if __name__ == "__main__":
     plt.title('Training and Validation Loss')
     plt.xlabel('epoch')
     plt.show()
+
+    # Compare predicted and class labels
+
+    # Retrieve a batch of images from the test set
+    image_batch, label_batch = test_set.as_numpy_iterator().next()
+    predictions = knee_model.complete_model.predict_on_batch(image_batch).flatten()
+
+    # Apply a sigmoid since our model returns logits
+    predictions = tf.nn.sigmoid(predictions)
+    predictions = tf.where(predictions < 0.5, 0, 1)
+
+    print('Predictions:\n', predictions.numpy())
+    print('Labels:\n', label_batch)
+
+    plt.figure(figsize=(10, 10))
+    for i in range(9):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(image_batch[i].astype("uint8"))
+        plt.title(class_names[predictions[i]])
+        plt.axis("off")
+
+
