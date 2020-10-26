@@ -6,20 +6,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import layers_model as layers
 import math
+from itertools import islice
 
 PATH_ORIGINAL_DATA = "data/image"
 PATH_SEG_DATA = "data/mask"
-IMAGE_HEIGHT = 256
-IMAGE_WIDTH = 256
+IMAGE_HEIGHT = 512
+IMAGE_WIDTH = 512
 CHANNELS = 3
 SEED = 45
-BATCH_SIZE = 8
+BATCH_SIZE = 2
 EPOCHS = 1
 LEARNING_RATE = 0.0004
 STEPS_PER_EPOCH_TRAIN = math.floor(2076 / BATCH_SIZE)
 STEPS_PER_EPOCH_TEST = math.floor(519 / BATCH_SIZE)
 IMAGE_MODE = "rgb"
 MASK_MODE = "grayscale"
+NUMBER_SHOW_TEST_PREDICTIONS = 3
 DATA_TRAIN_GEN_ARGS = dict(
     rescale=1.0/255,
     shear_range=0.15,
@@ -48,23 +50,23 @@ def pre_process_data():
 
     image_train_gen = train_image_data_generator.flow_from_directory(
         PATH_ORIGINAL_DATA,
-        **TEST_TRAIN_GEN_ARGS,
-        color_mode=IMAGE_MODE)
+        color_mode=IMAGE_MODE,
+        **TEST_TRAIN_GEN_ARGS)
 
     image_test_gen = test_image_data_generator.flow_from_directory(
         PATH_ORIGINAL_DATA,
-        **TEST_TRAIN_GEN_ARGS,
-        color_mode=IMAGE_MODE)
+        color_mode=IMAGE_MODE,
+        **TEST_TRAIN_GEN_ARGS)
 
     mask_train_gen = train_mask_data_generator.flow_from_directory(
         PATH_SEG_DATA,
-        **TEST_TRAIN_GEN_ARGS,
-        color_mode=MASK_MODE)
+        color_mode=MASK_MODE,
+        **TEST_TRAIN_GEN_ARGS)
 
     mask_test_gen = test_mask_data_generator.flow_from_directory(
         PATH_SEG_DATA,
-        **TEST_TRAIN_GEN_ARGS,
-        color_mode=MASK_MODE)
+        color_mode=MASK_MODE,
+        **TEST_TRAIN_GEN_ARGS)
 
     return zip(image_train_gen, mask_train_gen), zip(image_test_gen, mask_test_gen)
 
@@ -91,34 +93,52 @@ def train_model_check_accuracy(train_gen, test_gen):
         epochs=EPOCHS,
         shuffle=True,
         verbose=1,
-    )
-    plot_accuracy_loss(track)
+        use_multiprocessing = False)
+    # plot_accuracy_loss(track)
 
     print("\nEvaluating test images...")
-    test_loss, test_accuracy = model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2)
+    test_loss, test_accuracy = model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2, use_multiprocessing=False)
     print("Test Accuracy: " +  str(test_accuracy))
     print("Test Loss: " + str(test_loss) + "\n")
     return model
 
 
 def test_visualise_model_predictions(model, test_gen):
-    test_pred = model.predict(test_gen, steps=STEPS_PER_EPOCH_TEST)
-
-    mask = keras.preprocessing.image.img_to_array(test_pred[10])
-    ones = mask >= 0.5
-    zeroes = mask < 0.5
-    mask[ones] = 1
-    mask[zeroes] = 0
-
-    plt.figure(1)
-    plt.imshow(mask, cmap='gray', vmin=0.0, vmax=1.0)
+    test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
+    test_gen_subset = np.zeros(test_range.shape)
+    for i in test_range:
+        current = next(islice(test_gen, i, None))
+        test_pred = model.predict(current, steps=1, use_multiprocessing=False)[0]
+        truth = current[1][0]
+        original = current[0][0]
+        probabilities = keras.preprocessing.image.img_to_array(test_pred)
+        ones = probabilities >= 0.5
+        zeroes = probabilities < 0.5
+        thresholded = probabilities
+        thresholded[ones] = 1
+        thresholded[zeroes] = 0
+        figure, axes = plt.subplots(1, 4)
+        axes[0].title.set_text('Output')
+        axes[0].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
+        axes[1].title.set_text('Thresholded')
+        axes[1].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
+        axes[2].title.set_text('Input')
+        axes[2].imshow(original, vmin=0.0, vmax=1.0)
+        axes[3].title.set_text('Model Output')
+        axes[3].imshow(truth, cmap='gray',vmin=0.0, vmax=1.0)
+        plt.show()
 
 
 def main():
+    print("\nPREPROCESSING IMAGES")
     train_gen, test_gen = pre_process_data()
+    print("\nTRAINING MODEL")
     model = train_model_check_accuracy(train_gen, test_gen)
+    print("\nVISUALISING PREDICTIONS")
     test_visualise_model_predictions(model, test_gen)
-    print("COMPLETED.")
+
+    print("COMPLETED")
+    return 0
 
 
 if __name__ == "__main__":
