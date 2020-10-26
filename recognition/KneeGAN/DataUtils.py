@@ -33,20 +33,21 @@ def load_test_data(filepath):
     print(images.shape)
 
     images = tf.data.Dataset.from_tensor_slices(images)
+    images = images.repeat()
     image_iter = iter(images)
 
     return image_iter, dataset_size
 
 
-def plot_history(disc_hist, gen_hist):
+def plot_history(disc_hist, gen_hist, output_path):
 	# plot history
-	pyplot.plot(disc_hist, label='loss_real')
+	pyplot.plot(disc_hist, label='loss_disc')
 	pyplot.plot(gen_hist, label='loss_gen')
 	pyplot.legend()
-	pyplot.savefig('plot_line_plot_loss.png')
+	pyplot.savefig(output_path + 'plot_line_plot_loss.png')
 	pyplot.close()
 
-def plot_examples(example_images):
+def plot_examples(example_images, output_path):
     print("Example Dim: ")
     print(example_images.shape)
     dim = 4
@@ -54,28 +55,38 @@ def plot_examples(example_images):
     for i in range(dim):
         for j in range(dim):
             axarr[i,j].imshow(example_images[dim * i + j])
-    pyplot.savefig('example_output.png')
+    pyplot.savefig(output_path + 'example_output.png')
     pyplot.close()
 
 
-def ssim(test_filepath, example_images):
+def calculate_ssim(test_filepath, example_images):
     test_dataset, dataset_size = load_test_data(test_filepath)
 
-    iterations = min(dataset_size, example_images.shape[0])
+    #iterations = min(dataset_size, example_images.shape[0])
 
     ssims = []
 
-    for i in range(iterations):
-        ssims.append(tf.image.ssim(test_dataset.next(), example_images[i]))
+    
 
-    ssims = np.ndarray(ssims)
+    for i in range(example_images.shape[0]):
+        for j in range(dataset_size):
+            ssims.append(tf.image.ssim(test_dataset.get_next(), example_images[i], max_val=255))
+
+    ssims = np.asarray(ssims)
+    real = test_dataset.get_next()
+
+    tf.keras.preprocessing.image.save_img('real.png', real)
+    tf.keras.preprocessing.image.save_img('fake.png', example_images[0])
+
 
     return np.mean(ssims)
 
-def generate_example_images(gen, num_examples):
+def generate_example_images(gen, num_examples, latent_dim):
     latent_data = tf.random.normal(shape=(num_examples, latent_dim))
-    fake_images = gen(latent_data).numpy() * 255
+    fake_images = gen(latent_data)
     mins = tf.math.reduce_min(fake_images, axis=(1,2,3))[:,None,None,None]
     maxs = tf.math.reduce_max(fake_images, axis=(1,2,3))[:,None,None,None]
     fake_images = (fake_images - mins)/(maxs-mins)
+    fake_images = fake_images*255
+    fake_images = tf.cast(fake_images, dtype=tf.uint8)
     return fake_images
