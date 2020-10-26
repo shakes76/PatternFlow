@@ -16,20 +16,20 @@ def generator(input_dim, latent_dim):
     net = tf.keras.layers.Reshape((input_dim,input_dim,64))(net)
     net = tf.keras.layers.ReLU()(net)
 
-    net = tf.keras.layers.Conv2DTranspose(64, (3,3), strides=(2,2), padding='same')(net)
-    #net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
-    net = tf.keras.layers.ReLU()(net)
-
-    net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
-    #net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
-    net = tf.keras.layers.ReLU()(net)
-
-    net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
-    #net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
+    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
-    #net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.ReLU()(net)
+
+    net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
+    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.ReLU()(net)
+
+    net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
+    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2D(3, (3,3), strides=(1,1), padding='same')(net)
