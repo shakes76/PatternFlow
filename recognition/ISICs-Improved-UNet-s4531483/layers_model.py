@@ -1,8 +1,19 @@
 import tensorflow as tf
 from tensorflow import keras
-import tensorflow_addons as tfa
 from tensorflow.keras.regularizers import l2
+import tensorflow_addons as tfa
+# 'tensorflow-addons' is currently not available through Conda - after environment is set up/imported pip must be used
+# to install it to the environment. Use:
+# ********************************************
+# pip install tensorflow-addons==0.9.1
+# ********************************************
+# within the anaconda prompt with the activated environment to install the correct version (for TF v2.1).
+# TFA allows for an InstanceNormalization layer (rather than a BatchNormalization layer), as was implemented in the
+# referenced 'improved UNet'. This layer is necessary due to the usage of my small batch-size of 2.
 
+# --------------------------------------------
+# GLOBAL CONSTANTS
+# --------------------------------------------
 LEAKY_RELU_ALPHA = 0.01
 DROPOUT = 0.35
 L2_WEIGHT_DECAY = 0.0005
@@ -17,8 +28,13 @@ I_NORMALIZATION_PROPERTIES = dict(
     beta_initializer="random_uniform",
     gamma_initializer="random_uniform")
 
+
+# --------------------------------------------
+# IMPROVED UNET MODEL
+# --------------------------------------------
+# Implementation based off the 'improved UNet': https://arxiv.org/abs/1802.10508v1.
 def improved_unet(width, height, channels):
-    input = keras.Input(shape=(width, height, channels))
+    input = keras.Input(shape=(width, height, channels))  # Set input shape
 
     x1 = keras.layers.Conv2D(16, (3, 3), input_shape=(width, height, channels), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
@@ -84,6 +100,7 @@ def improved_unet(width, height, channels):
     return u_net
 
 
+# A 'Context Module', based off the 'improved UNet'.
 def context_module(input, out_filter):
     x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
@@ -97,6 +114,7 @@ def context_module(input, out_filter):
     return x7
 
 
+# An 'Upsampling Module', based off the 'improved UNet'.
 def upsampling_module(input, out_filter):
     x1 = keras.layers.UpSampling2D(size=(2, 2))(input)
     x2 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x1)
@@ -106,6 +124,7 @@ def upsampling_module(input, out_filter):
     return x4
 
 
+# A 'Localisation Module', based off the 'improved UNet'.
 def localisation_module(input, out_filter):
     x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)

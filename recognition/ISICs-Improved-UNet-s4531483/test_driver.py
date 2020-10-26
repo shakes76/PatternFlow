@@ -1,5 +1,4 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
@@ -7,21 +6,32 @@ import matplotlib.pyplot as plt
 import layers_model as layers
 import math
 from itertools import islice
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # only print TF warnings and errors
 
-PATH_ORIGINAL_DATA = "data/image"
-PATH_SEG_DATA = "data/mask"
-IMAGE_HEIGHT = 512
-IMAGE_WIDTH = 512
-CHANNELS = 3
-SEED = 45
-BATCH_SIZE = 2
-EPOCHS = 1
-LEARNING_RATE = 0.0004
-STEPS_PER_EPOCH_TRAIN = math.floor(2076 / BATCH_SIZE)
-STEPS_PER_EPOCH_TEST = math.floor(519 / BATCH_SIZE)
-IMAGE_MODE = "rgb"
-MASK_MODE = "grayscale"
-NUMBER_SHOW_TEST_PREDICTIONS = 3
+# --------------------------------------------
+# GLOBAL CONSTANTS
+# --------------------------------------------
+
+# Set the paths to data locations. The respective files for images/masks should be WITHIN A FOLDER WITHIN the below
+# directories. For example, using the given ISICs data from
+# https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34, folder structure would
+# be \data\image\ISIC2018_Task1-2_Training_Input_x2 containing inputs, and
+# \data\mask\ISIC2018_Task1_Training_GroundTruth_x2 containing ground truths.
+PATH_ORIGINAL_DATA = "data/image"  # directory that contains folder containing input images
+PATH_SEG_DATA = "data/mask"  # directory that contains folder containing ground truth images
+IMAGE_HEIGHT = 512  # the height input images are scaled to
+IMAGE_WIDTH = 512  # the width input images are scaled to
+CHANNELS = 3  # the number of channels of the input image
+SEED = 45  # set a seed so the different generators will work together properly, and match training/testing sets
+BATCH_SIZE = 2  # set the batch_size
+EPOCHS = 1  # set the number of epochs for training
+LEARNING_RATE = 0.0004  # set the training learning rate
+STEPS_PER_EPOCH_TRAIN = math.floor(2076 / BATCH_SIZE)  # set the number of steps per epoch for training samples
+STEPS_PER_EPOCH_TEST = math.floor(519 / BATCH_SIZE)  # set the number of steps per epoch for testing samples
+IMAGE_MODE = "rgb"  # image mode of input images (they are coloured rgb)
+MASK_MODE = "grayscale"  # image mode of ground truth marks (they are binary black/white)
+NUMBER_SHOW_TEST_PREDICTIONS = 3  # number of example test predictions to visualise after model has been trained
+# Set the properties for the image generators for training images. Images transformed to help training generalisation.
 DATA_TRAIN_GEN_ARGS = dict(
     rescale=1.0/255,
     shear_range=0.15,
@@ -29,19 +39,26 @@ DATA_TRAIN_GEN_ARGS = dict(
     horizontal_flip=True,
     vertical_flip=True,
     fill_mode='nearest',
-    validation_split=0.2)
+    validation_split=0.2)  # 0.2 used to have training set take the first 80% of images
+# Set the properties for the image generators for testing images. No image transformations.
 DATA_TEST_GEN_ARGS = dict(
     rescale=1.0/255,
-    validation_split=0.8)
+    validation_split=0.8)  # 0.8 used to have test set take the final 20% of images (keep train/test data separated)
+# Set the shared properties for generator flows - scale all images to given dimensions.
 TEST_TRAIN_GEN_ARGS = dict(
     seed=SEED,
     class_mode=None,
     batch_size=BATCH_SIZE,
     interpolation="nearest",
-    subset='training',
+    subset='training',  # all subsets are set to training - this corresponds to the first 80% and last 20% for each
     target_size=(IMAGE_HEIGHT, IMAGE_WIDTH))
 
 
+# --------------------------------------------
+# MAIN FUNCTIONS
+# --------------------------------------------
+
+# Preprocess data forming the generators.
 def pre_process_data():
     train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(**DATA_TRAIN_GEN_ARGS)
     train_mask_data_generator = keras.preprocessing.image.ImageDataGenerator(**DATA_TRAIN_GEN_ARGS)
@@ -68,9 +85,12 @@ def pre_process_data():
         color_mode=MASK_MODE,
         **TEST_TRAIN_GEN_ARGS)
 
+    # Ideally this would be a Sequence joining the two generators instead of zipping them together to keep everything
+    # thread-safe, allowing for multiprocessing - but if it ain't broke.
     return zip(image_train_gen, mask_train_gen), zip(image_test_gen, mask_test_gen)
 
 
+# Plot the accuracy and loss curves of model training.
 def plot_accuracy_loss(track):
     plt.figure(0)
     plt.plot(track.history['accuracy'])
@@ -81,6 +101,7 @@ def plot_accuracy_loss(track):
     plt.show()
 
 
+# Compile and train the model, evaluate test loss and accuracy.
 def train_model_check_accuracy(train_gen, test_gen):
     model = layers.improved_unet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.summary()
@@ -103,9 +124,9 @@ def train_model_check_accuracy(train_gen, test_gen):
     return model
 
 
+# Test and visualise model predictions with a set amount of test inputs.
 def test_visualise_model_predictions(model, test_gen):
     test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
-    test_gen_subset = np.zeros(test_range.shape)
     for i in test_range:
         current = next(islice(test_gen, i, None))
         test_pred = model.predict(current, steps=1, use_multiprocessing=False)[0]
@@ -125,10 +146,11 @@ def test_visualise_model_predictions(model, test_gen):
         axes[2].title.set_text('Input')
         axes[2].imshow(original, vmin=0.0, vmax=1.0)
         axes[3].title.set_text('Model Output')
-        axes[3].imshow(truth, cmap='gray',vmin=0.0, vmax=1.0)
+        axes[3].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
         plt.show()
 
 
+# Run the test driver.
 def main():
     print("\nPREPROCESSING IMAGES")
     train_gen, test_gen = pre_process_data()
