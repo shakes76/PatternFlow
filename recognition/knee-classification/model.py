@@ -51,6 +51,7 @@ class KneeClassifier:
                                             loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
                                             metrics=['accuracy'])
 
+    # This function can be used to evaluate the DL model in the beginning and the after the training.
     def model_evaluation(self, eval_type):
         dataset = None
         if eval_type == "initial":
@@ -66,4 +67,15 @@ class KneeClassifier:
             elif eval_type == "final":
                 print("Test loss: {:.2f}".format(loss))
                 print("Test accuracy: {:.2f}".format(accuracy))
+
+    # Train the knee classifier
+    def train_knee_classifier(self):
+
+        self.create_complete_model()
+        self.model_evaluation(eval_type='initial')
+
+        history = self.complete_model.fit(self.train_dataset, epochs=self.no_epochs,
+                                          validation_data=self.validation_dataset)
+
+        return history
 
