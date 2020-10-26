@@ -1,14 +1,32 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
-
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
+
+def shuffle_map_data(images, masks):
+    data = tf.data.Dataset.from_tensor_slices((images, masks))
+    data = data.shuffle(len(images))
+    data = data.map(map_fn)
+    return data
+
+
+def split_data(files, masks, ratio1, ratio2):
+    num_images = len(masks)
+
+    val_test_size = int(num_images*ratio1)
+
+    val_test_images = files[:val_test_size]
+    train_images = files[val_test_size:]
+    val_test_masks = masks[:val_test_size]
+    train_masks = masks[val_test_size:]
+
+    split = int(len(val_test_masks)*ratio2)
+    val_masks = val_test_masks[split:]
+    val_images = val_test_images[split:]
+    test_masks = val_test_masks[:split]
+    test_images = val_test_images[:split]
+    return train_images, train_masks, val_masks, val_images, test_masks, test_images
+
 
 def map_fn(image_fp, mask_fp):
     image = tf.io.read_file(image_fp)
