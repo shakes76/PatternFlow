@@ -172,3 +172,36 @@ model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
 model.summary()
 model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics=['accuracy'])
 results = model.fit(X_train, y_train, validation_data= (X_val, y_val), batch_size=16, epochs=5)
+
+#Prediction
+preds_test = model.predict(X_test, verbose=1)
+preds_test = tf.math.argmax(preds_test, -1)
+fig, axs = plt.subplots(2,2,figsize=(10,10))
+#fig.suptitle('Predicion, Ground Truth, Original Image')
+axs[0,0].imshow(X_test[2])
+axs[0,1].imshow(y_test[2],cmap='gray')
+axs[1,0].imshow(preds_test[2],cmap='gray')
+axs[-1, -1].axis('off')
+
+axs[0,0].title.set_text('Original Image')
+axs[0,1].title.set_text('Ground Truth')
+axs[1,0].title.set_text('Predicion')
+
+#Evaluation: Dice similarity coefficient on the test set
+y_test = y_test.reshape([519,256,256])
+def dice_similar_coef(y_true, y_pred):
+    
+    smooth = 1e-15
+    y_true = tf.keras.layers.Flatten()(y_true)
+    y_pred = tf.keras.layers.Flatten()(y_pred)
+    y_pred = tf.cast(y_pred, tf.float32)
+    intersection = tf.reduce_sum(y_true * y_pred)
+    return (2 * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
+sum_Dice = 0
+avg_Dice = 0
+for i in range(y_test.shape[0]):
+    dice = dice_similar_coef(y_test[i], preds_test[i])
+    sum_Dice += dice
+avg_Dice = sum_Dice / 519
+#avg_Dice is the average Dice similarity coefficient on the test set.
+avg_Dice
