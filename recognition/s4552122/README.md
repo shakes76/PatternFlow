@@ -51,11 +51,40 @@ The difference is that images in ISICs data set are 2D dimensions, and so all $3
 
 The whole model is implemented as a method called “improvedUnet” in model.py.
 
+##  Dependencies required
+
+**Requirement:**
+
+- Python 3.7
+- Tensorflow 2.3.0
+- Keras
+- Tensorflow_addons (to use Instance Nomalization)
+- Opencv (just using to resize images)
+
 ## Workflow
 
 ![WorkFlow](images/WorkFlow.jpg)
 
-##  Dependencies required
+```python
+from model.py import improvedUnet
+
+#Load model
+model = improvedUnet()
+results = model.fit(X_train, y_train, validation_data= (X_val, y_val), batch_size=16, epochs=5)
+preds_test = model.predict(X_test, verbose=1)
+preds_test = tf.math.argmax(preds_test, -1)
+
+#Plot the result
+fig, axs = plt.subplots(2,2,figsize=(10,10))
+#fig.suptitle('Predicion, Ground Truth, Original Image')
+axs[0,0].imshow(X_test[2])
+axs[0,1].imshow(y_test[2],cmap='gray')
+axs[1,0].imshow(preds_test[2],cmap='gray')
+axs[-1, -1].axis('off')
+axs[0,0].title.set_text('Original Image')
+axs[0,1].title.set_text('Ground Truth')
+axs[1,0].title.set_text('Predicion')
+```
 
 ## Example outputs and plots
 
