@@ -32,6 +32,19 @@ You need to make two folders
 * Images Folder - For all the training images
 * Masks Folder - For the corresponding ground truth segmentation images
 
+after you download the dataset, you can use command 
+```shell
+mkdir dataset
+cd dataset
+mkdir images
+mkdir masks
+cd folder_contain_train_images
+cp * dataset/images
+cd folder_contain_mask_images
+cp * dataset/masks
+```
+Then you are good to load the dataset images!
+
 The filenames of the mask images should have the id which is same as the filenames of the RGB images with "_segmentation" ending.
 The size of the mask image for the corresponding RGB image should be same.
 Even our preprocessed dataset have 2,594 train images and its corresponding segmentation mask, which is quite large dataset.
