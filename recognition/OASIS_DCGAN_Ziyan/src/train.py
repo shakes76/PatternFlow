@@ -6,3 +6,4 @@ train_dataset = img_loader.load_to_tensor(0)
 
 dcgan = DCGAN(64)
 dcgan.train(train_dataset, 100)
+

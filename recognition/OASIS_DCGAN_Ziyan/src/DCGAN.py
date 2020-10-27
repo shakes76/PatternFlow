@@ -11,21 +11,38 @@ from IPython import display
 class DCGAN:
 
     def __init__(self, img_size, input_shape=256, batch_size=256, noise_dim=256):
+        """
+        A DCGAN object that can create DCGAN structure and train. The object is flexible to different output size
+        :param img_size: output size
+        :param input_shape: The input shape usually equals to noise_dim
+        :param batch_size: The batch size for training, default is 256
+        :param noise_dim: the noise dimension. Default is 256
+        """
+        # Parameter initialize
         self.img_size = img_size
         self.batch_size = batch_size
         self.input_shape = input_shape
         self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.noise_dim = noise_dim
+        # Model initialize
         self.generator = self.generator_model()
         self.discriminator = self.discriminator_model()
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
+        # Checkpoint initialize
+        self.checkpoint_dir = '../models/training_checkpoints'
+        self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "ckpt")
+        self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
+                                              discriminator_optimizer=self.discriminator_optimizer,
+                                              generator=self.generator,
+                                              discriminator=self.discriminator)
 
     def generator_model(self):
         """
         A function that constructs the generator model
         :return: A generator follows DCGAN standard
         """
+        # The Scale of up sampling is defined as 1/8, 1/2, 1 of the output image size
         starter = int(self.img_size / 8)
 
         model = tf.keras.Sequential()
@@ -126,7 +143,7 @@ class DCGAN:
         fig = plt.figure(figsize=(4, 4))
         for i in range(predictions.shape[0]):
             plt.subplot(4, 4, i + 1)
-            plt.imshow(np.array((predictions[i, :, :, :] * 127.5 + 127.5)).astype(np.uint8))
+            plt.imshow(np.array((predictions[i, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
             plt.axis('off')
         plt.savefig('../images/image_at_epoch_{:04d}.png'.format(epoch))
         plt.show()
@@ -136,15 +153,8 @@ class DCGAN:
         A function that handles main part of training.
         :param dataset: The training dataset
         :param epochs: The epoch of training
-        :return:
+        :return: nothing
         """
-
-        checkpoint_dir = '../models/training_checkpoints'
-        checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-        checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
-                                         discriminator_optimizer=self.discriminator_optimizer,
-                                         generator=self.generator,
-                                         discriminator=self.discriminator)
 
         num_examples_to_generate = 16
         seed = tf.random.normal([num_examples_to_generate, self.noise_dim])
@@ -154,13 +164,33 @@ class DCGAN:
             for image_batch in dataset:
                 self.train_step(image_batch)
 
+            display.clear_output(wait=True)
             self.generate_and_save_images(epoch + 1, seed)
             # Save the model every 200 epoch
 
             if (epoch + 1) % 200 == 0:
-                checkpoint.save(file_prefix=checkpoint_prefix)
+                self.checkpoint.save(file_prefix=self.checkpoint_prefix)
 
             print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
         display.clear_output(wait=True)
-        self.generate_and_save_images(self.generator, epochs)
+        self.generate_and_save_images(epochs, seed)
+
+    def load_model(self):
+        """
+        Load model from latest check point
+        :return:
+        """
+        self.checkpoint.restore(tf.train.latest_checkpoint(self.checkpoint_dir))
+
+    def generate_images(self, num=1):
+        """
+
+        :param num: The number of fake images needs to generate
+        :return: A series of fake images
+        """
+        noise = tf.random.normal([num, self.noise_dim])
+        generated_image = self.generator(noise, training=False)
+        plt.imshow(np.array((generated_image[0, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
+        return generated_image
+
