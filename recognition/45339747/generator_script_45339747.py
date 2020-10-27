@@ -126,7 +126,7 @@ def loadLabels(train_images_y, validate_images_y, test_images_y):
 
     return train_images_y, validate_images_y, test_images_y
 
-def formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y):
+def formatData(train_images, validate_images, test_images, train_images_y, validate_images_y, test_images_y):
     """
     Formats the data.
     Normalises the X_test sets.
@@ -153,17 +153,27 @@ def formatData(train_images_src, validate_images_src, test_images_src, train_ima
     validate_images_y = tf.convert_to_tensor(validate_images_y)
     test_images_y = tf.convert_to_tensor(test_images_y)
 
+def buildModel():
+    """
+    Builds a model for the given OASIS OKOA knee dataset.
+    Format returned: model to be trained.
+    """
+    input_shape = 
+
+
+
 def main():
     train_images_src = [] # Lists containing loaded data for corresponding training, testing and validation sets.
     validate_images_src = []
     test_images_src = []
     train_images_src, validate_images_src, test_images_src = generate_paths()
-    loadData(train_images_src, validate_images_src, test_images_src)
-    train_images_y = [] # Lists containing Y labels for corresponding images.
-    validate_images_y = []
-    test_images_y = []
-    loadLabels(train_images_y, validate_images_y, test_images_y)
-    formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y)
+    #loadData(train_images_src, validate_images_src, test_images_src)
+    #train_images_y = [] # Lists containing Y labels for corresponding images.
+    #validate_images_y = []
+    #test_images_y = []
+    #loadLabels(train_images_y, validate_images_y, test_images_y)
+    #formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y)
+
 
 if __name__ == "__main__":
     main()
