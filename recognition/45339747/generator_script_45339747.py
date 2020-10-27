@@ -96,12 +96,47 @@ def loadData(train_images_src, validate_images_src, test_images_src):
     print("Test images loaded.")
     return train_images, validate_images, test_images
 
+def loadLabels(train_images_y, validate_images_y, test_images_y):
+    """
+    Loads the corresponding Y labels for the images in each of the three sets.
+    Very basic idea, if image name has "Right" or "Left" add 0 or 1 respectively.
+    """
+    # Set up our labels.
+    train_images_y = []
+    for file in train_images_src:
+        if ("RIGHT" in file):
+            train_images_y.append(1)
+        else:
+            train_images_y.append(0)
+        
+    validate_images_y = []
+    for file in validate_images_src:
+        if ("RIGHT" in file):
+            validate_images_y.append(1)
+        else:
+            validate_images_y.append(0)
+        
+    test_images_y = []
+    for file in test_images_src:
+        if ("RIGHT" in file):
+            test_images_y.append(1)
+        else:
+            test_images_y.append(0) 
+
+    return train_images_y, validate_images_y, test_images_y
+
+
+
 def main():
-    train_images_src = []
+    train_images_src = [] # Lists containing loaded data for corresponding training, testing and validation sets.
     validate_images_src = []
     test_images_src = []
     train_images_src, validate_images_src, test_images_src = generate_paths()
     loadData(train_images_src, validate_images_src, test_images_src)
+    train_images_y = [] # Lists containing Y labels for corresponding images.
+    validate_images_y = []
+    test_images_y = []
+    loadLabels(train_images_y, validate_images_y, test_images_y)
 
 if __name__ == "__main__":
     main()
