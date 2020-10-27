@@ -13,23 +13,35 @@ Here is a exmaple of the original Skin Lesion image and its Ground Truth segment
   Figure 1. Left is original Skin Lesion image and the right is its ground truth image.
 </center>
 
+To conclusion, the aim of this project is to create the segmentation image like the above right one from an input image like the above left one by a kine of uNet model.
 
+## uNet Structure
 
+The uNet Structure is almostly from the structure in [[1]](#References).
 
+![uNetStructure](images/uNetStructure.jpg)
 
+<center>
+  Figure 2. The structure of the improved uNet 
+</center>
 
+The difference is that images in ISICs data set are 2D dimensions, and so all $3\times 3\times 3$ convolution layers have been changed to $3\times 3$ convolution layers.
 
+**Context module**: InstanceNormalization, ReLu, $3\times 3$ convolution, InstanceNormalization, ReLu, $3\times 3$ convolution, Dropout(0.3).
 
+**Upsampling module**: UpSampling2D(), $3\times 3$ convolution
 
+**Localization model**: $3\times 3$ convolution, $1\times 1$ convolution
 
+**Segmentation layer**: $1\times 1$ convolution by 2 output filters
 
+**Upscale**: UpSampling2D() by bilinear interpolation
 
+**Optimizer**: Adam
 
+**Loss**: sparse_categorical_crossentropy
 
-
-
-
-
+**Metrics**: accuracy
 
 ## References
 
