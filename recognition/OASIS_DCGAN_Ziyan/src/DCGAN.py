@@ -42,7 +42,7 @@ class DCGAN:
         A function that constructs the generator model
         :return: A generator follows DCGAN standard
         """
-        # The Scale of up sampling is defined as 1/8, 1/2, 1 of the output image size
+        # The Scale of up sampling is defined as 1/8, 1/4, 1/2, 1 of the output image size
         starter = int(self.img_size / 8)
 
         model = tf.keras.Sequential()
@@ -57,8 +57,13 @@ class DCGAN:
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(64, (6, 6), strides=(4, 4), padding='same', use_bias=False))
-        assert model.output_shape == (None, 4 * starter, 4 * starter, 64)
+        model.add(layers.Conv2DTranspose(64, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, 2 * starter, 2 * starter, 64)
+        model.add(layers.BatchNormalization())
+        model.add(layers.ReLU())
+
+        model.add(layers.Conv2DTranspose(32, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, 4 * starter, 4 * starter, 32)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
@@ -72,13 +77,18 @@ class DCGAN:
         :return: A discriminator follows DCGAN standard
         """
         model = tf.keras.Sequential()
-        model.add(layers.Conv2D(64, (6, 6), strides=(2, 2), padding='same',
-                                input_shape=[self.img_size, self.img_size, 1]))
+        model.add(
+            layers.Conv2D(32, (6, 6), strides=(2, 2), padding='same', input_shape=[self.img_size, self.img_size, 1]))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU())
         model.add(layers.Dropout(0.3))
 
-        model.add(layers.Conv2D(128, (6, 6), strides=(4, 4), padding='same'))
+        model.add(layers.Conv2D(64, (6, 6), strides=(2, 2), padding='same'))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU())
+        model.add(layers.Dropout(0.3))
+
+        model.add(layers.Conv2D(128, (6, 6), strides=(2, 2), padding='same'))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU())
         model.add(layers.Dropout(0.3))
@@ -145,7 +155,8 @@ class DCGAN:
             plt.subplot(4, 4, i + 1)
             plt.imshow(np.array((predictions[i, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
             plt.axis('off')
-        plt.savefig('../images/image_at_epoch_{:04d}.png'.format(epoch))
+        if (epoch + 1) % 50 == 0:
+            plt.savefig('../images/image_at_epoch_{:04d}.png'.format(epoch))
         plt.show()
 
     def train(self, dataset, epochs):
@@ -166,9 +177,9 @@ class DCGAN:
 
             display.clear_output(wait=True)
             self.generate_and_save_images(epoch + 1, seed)
-            # Save the model every 200 epoch
 
-            if (epoch + 1) % 200 == 0:
+            # Save the model every 500 epoch
+            if (epoch + 1) % 500 == 0:
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
 
             print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
@@ -193,4 +204,3 @@ class DCGAN:
         generated_image = self.generator(noise, training=False)
         plt.imshow(np.array((generated_image[0, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
         return generated_image
-
