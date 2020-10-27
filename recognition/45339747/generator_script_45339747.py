@@ -45,14 +45,41 @@ def generate_paths():
     test_list = []
     counter = 0
     for i in unique_list:
+        # 70 unique ID's for training.
         if (counter <= 70):
             train_list.append(i)
             counter += 1
     elif (counter > 70 and counter <= 90):
+        # 20 unique ID's to validate.
         validate_list.append(i)
         counter += 1
     else:
+        # 21 unique ID's to validate.
         test_list.append(i)
         counter += 1
+    return generate_sets(subset_path_AKOA, train_list, validate_list, test_list)
 
-    return(subset_path_AKOA, train_list, validate_list, test_list)
+def generate_sets(train_list, validate_list, test_list, subset_path_AKOA):
+    """
+    Prepare the file names for the test, train and validation sets.
+    Format returned: three lists of separate sets containing each file name that corresponds to that set.
+    """
+    train_images_src = []
+    for i in train_list:
+        for j in subset_path_AKOA:
+            if (i in j):
+                train_images_src.append(j)
+            
+    validate_images_src = []
+    for i in validate_list:
+        for j in subset_path_AKOA:
+            if (i in j):
+                validate_images_src.append(j)
+            
+    test_images_src = []
+    for i in test_list:
+        for j in subset_path_AKOA:
+            if (i in j):
+                test_images_src.append(j)
+
+    return train_images_src, validate_images_src, test_images_src
