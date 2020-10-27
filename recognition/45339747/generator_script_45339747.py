@@ -100,6 +100,7 @@ def loadLabels(train_images_y, validate_images_y, test_images_y):
     """
     Loads the corresponding Y labels for the images in each of the three sets.
     Very basic idea, if image name has "Right" or "Left" add 0 or 1 respectively.
+    Format returned: three lists which contain the labels for each of the sets.
     """
     # Set up our labels.
     train_images_y = []
@@ -125,7 +126,32 @@ def loadLabels(train_images_y, validate_images_y, test_images_y):
 
     return train_images_y, validate_images_y, test_images_y
 
+def formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y):
+    """
+    Formats the data.
+    Normalises the X_test sets.
+    Converts the Y-labels from lists to NumPy arrays.
+    Converts all data into tensors.
+    Format returned: Three tensors of X-lables, and three tensorts of Y-labels.
+    """
+    # Normalise our data.
+    train_images = train_images/255
+    validate_images = validate_images/255
+    test_images = test_images/255
 
+    # Set the Y-Labels.
+    train_images_y = np.array(train_images_y)
+    validate_images_y = np.array(validate_images_y)
+    test_images_y = np.array(test_images_y)
+
+    # Transfer all data into tensorflow.
+    train_images = tf.convert_to_tensor(train_images)
+    validate_images = tf.convert_to_tensor(validate_images)
+    test_images = tf.convert_to_tensor(test_images)
+
+    train_images_y = tf.convert_to_tensor(train_images_y)
+    validate_images_y = tf.convert_to_tensor(validate_images_y)
+    test_images_y = tf.convert_to_tensor(test_images_y)
 
 def main():
     train_images_src = [] # Lists containing loaded data for corresponding training, testing and validation sets.
@@ -137,6 +163,7 @@ def main():
     validate_images_y = []
     test_images_y = []
     loadLabels(train_images_y, validate_images_y, test_images_y)
+    formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y)
 
 if __name__ == "__main__":
     main()
