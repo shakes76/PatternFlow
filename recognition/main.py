@@ -8,6 +8,7 @@ import numpy as np
 from model import *
 import matplotlib.pyplot as plt
 from tensorflow.keras import models
+from sklearn.metrics import classification_report
 
 
 # split data, preprocess the data
@@ -56,6 +57,7 @@ def data_split():
             new_file_path = os.path.join(test_left_dir, file)
         shutil.copy(old_file_path, new_file_path)
 
+
 # plot and visualize the detail
 
 def visualise(model):
@@ -77,9 +79,25 @@ def visualise(model):
     plt.show()
 
 
+# predict and show the precision and recall
+def predict(model):
+    data_generator = preprocessing.image.ImageDataGenerator(rescale=1. / 255)
+    test_generator = data_generator.flow_from_directory(
+        model.test_path,
+        target_size=(model.image_height, model.image_width),
+        batch_size=1,
+        seed=0)
+
+    pred = model.model.predict_generator(test_generator)
+    predicted_class_indices = np.argmax(pred, axis=1)
+    true_label = test_generator.classes
+    print(classification_report(true_label, predicted_class_indices))
+
+
 if __name__ == '__main__':
     data_split()
     kneeModel = KneeModel("train", "val", "test")
     kneeModel.fit()
+    kneeModel.evaluate()
     visualise(kneeModel)
-
+    predict(kneeModel)
