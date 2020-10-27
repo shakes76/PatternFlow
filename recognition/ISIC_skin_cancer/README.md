@@ -54,7 +54,10 @@ and you will see that during the training phase, data is generated in parallel b
 For more detailed reference of implementation of data generation part, check this tutorial:
 [A detailed example of how to use data generators with Keras](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
 
-### Evaluation Metrics
+## Improved Unet Structure
+[](resources/Improved_UNET.png)
+
+## Evaluation Metrics
 
 Predicted responses are scored using a threshold [Dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) metric.
 
