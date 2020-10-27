@@ -83,3 +83,25 @@ def generate_sets(train_list, validate_list, test_list, subset_path_AKOA):
                 test_images_src.append(j)
 
     return train_images_src, validate_images_src, test_images_src
+
+def loadData(train_images_src, validate_images_src, test_images_src):
+    """
+    Load images as numpy arrays.
+    """
+    train_images = [np.array((Image.open(path))) for path in train_images_src]
+    print("Training images loaded.")
+    validate_images = [np.array((Image.open(path))) for path in validate_images_src]
+    print("Validation images loaded.")
+    test_images = [np.array((Image.open(path))) for path in test_images_src]
+    print("Test images loaded.")
+    return train_images, validate_images, test_images
+
+def main():
+    train_images_src = []
+    validate_images_src = []
+    test_images_src = []
+    train_images_src, validate_images_src, test_images_src = generate_paths()
+    loadData(train_images_src, validate_images_src, test_images_src)
+
+if __name__ == "__main__":
+    main()
