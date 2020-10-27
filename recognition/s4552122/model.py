@@ -4,7 +4,15 @@ ISICs dataset by an improved Unet to make image segment.
 @author Xiaoqi Zhuang
 @email x.zhuang@uqconnect.edu.au
 """
-
+import tensorflow as tf
+from tensorflow import keras
+import keras
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation
+from keras.layers import Conv2D, Flatten, MaxPooling2D, BatchNormalization, Conv2DTranspose
+from keras.optimizers import SGD, Adam
+tf.random.Generator = None
+import tensorflow_addons as tfa
 #The activation function is "leaky ReLe" which the alpha is 1e-2.
 leakyRELU =tf.keras.layers.LeakyReLU(alpha=1e-2)
 
@@ -109,5 +117,6 @@ def improvedUnet():
 
     outputs = tf.keras.activations.sigmoid(s5)
     model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
+    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics=['accuracy'])
     
     return model
