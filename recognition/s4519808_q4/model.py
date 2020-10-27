@@ -49,7 +49,7 @@ def improved_unet(h, w):
     inputs = Input((h,w,3))
     
     conv1 = Conv2D(16, (3,3), padding='same')(inputs)
-    cm1 = context_module(c1, 16)
+    cm1 = context_module(conv1, 16)
     add1 = Add()([conv1, cm1]) # concat later
     
     conv2_stride = Conv2D(32, (3,3), strides=2, padding='same')(add1)
