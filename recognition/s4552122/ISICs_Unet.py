@@ -140,6 +140,7 @@ c12 = tf.keras.layers.Add()([c10, c11])
 c13 = tf.keras.layers.Conv2D(256, (3, 3),activation = leakyRELU, strides = 2, padding="same")(c12)
 c14 = context_modules(c13, 256)
 c15 = tf.keras.layers.Add()([c13, c14])
+..
 
 #Decode path
 c16 = upSampling(c15, 128)
