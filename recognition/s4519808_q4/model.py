@@ -1,7 +1,7 @@
 """
 COMP3710 Report 
 
-This file contains functions to build the imporved unet and the dice similarity coefficient function.
+This file contains functions to build the imporved unet.
 
 @author Huizhen 
 """
@@ -97,45 +97,9 @@ def improved_unet(h, w):
     return network
 
 
-def resize_image(image, h, w):
-    """ resize the image to (h, w, channel)"""
-    new_image = tf.image.resize(image, [h, w]).numpy()  
-    return new_image
-
-
-# Define Dice Similarity Coefficient
-def dsc(y_true, y_pred):
-    """
-    y_true, y_pred : groundtruth and prediction images in numpy array format.
-    """
-    intersection = tf.reduce_sum(tf.math.multiply(y_true, y_pred))
-    dsc = 2*intersection / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
-    return dsc
-
-def dsc_loss(y_true, y_pred):
-    return 1.0 - dsc(y_true, y_pred)
 
 
 
 
-############################# Not used batch data generator function #########################
 
-def load_batch(input_images: list, output_images: list, h, w, batch_size=1):
-    """
-    input_images : image name list (str)
-    output_images : image name list (str)
-    """
-    idx = 0
-    i = []
-    o = []
-    while 1:
-        while 1:
-            i.append(resize_image(mpimg.imread(input_images[idx])/255,h,w))
-            o.append(resize_image(mpimg.imread(output_images[idx])[:,:,np.newaxis],h,w))
-            idx += 1
-            if len(i) == batch_size: 
-                yield (np.array(i), np.array(o))
-                i = []
-                o = []
-            if idx == len(input_images):
-                idx = 0
+
