@@ -50,11 +50,11 @@ class KneeModel:
         # full connection
         full = layers.Dropout(0.5)(layers.Dense(64, activation='relu')(flatten))
         # softmax output
-        output = layers.Dense(2, activation='sigmoid')(full)
+        output = layers.Dense(2, activation='softmax')(full)
 
         model_ = models.Model(input_image, output)
         # model compile
-        model_.compile(optimizer=optimizers.Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+        model_.compile(optimizer=optimizers.Adam(lr=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
         model_.summary()
         return model_
 
@@ -82,4 +82,19 @@ class KneeModel:
         # save the model
         self.model.save('model.h5')
 
+    def evaluate(self):
+        data_generator = preprocessing.image.ImageDataGenerator(rescale=1. / 255)
+        test_generator = data_generator.flow_from_directory(
+            self.test_path,
+            target_size=(self.image_height, self.image_width),
+            batch_size=self.batch_size,
+            seed=0)
+        # score is a list, list[0] is loss, list[1] is accuracy
+        score = self.model.evaluate_generator(test_generator)
+        print("The accuracy of knee model on test data set: {:.2f}".format(score[1]))
+        print("The loss of knee model on test data set: {:.2f}".format(score[0]))
+
+    def load_model(self, model_path):
+        self.model = models.load_model(model_path)
+        self.history = self.model.history
 
