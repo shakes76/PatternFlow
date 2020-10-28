@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import models
 from sklearn.metrics import classification_report
 
+# parameters
+
+image_height = 224
+image_width = 224
+batch_size = 32
 
 # split data, preprocess the data
 def data_split():
@@ -98,6 +103,7 @@ if __name__ == '__main__':
     data_split()
     kneeModel = KneeModel("train", "val", "test")
     kneeModel.fit()
+    # kneeModel.load_model('model.h5')
     kneeModel.evaluate()
     visualise(kneeModel)
     predict(kneeModel)
