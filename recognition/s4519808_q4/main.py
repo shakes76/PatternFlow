@@ -68,15 +68,18 @@ model = improved_unet(H, W)
 #model.summary()
 
 #### Compile Model
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[dsc, 'accuracy'])
 
 #### Train
-model.fit(x = X_train, y=y_train, epochs=20, verbose=1, validation_data=(X_val, y_val), batch_size = batch_size)
+model_callback=tf.keras.callbacks.ModelCheckpoint(filepath='best_checkpoint',
+                                              save_best_only= True,
+                                              save_weights_only=True,
+                                              monitor = 'val_accuracy',
+                                              mode='max')
+           
+history = model.fit(x = X_train, y=y_train, epochs=30, verbose=1,
+                    validation_data=(X_val, y_val), batch_size = batch_size, callbacks=[model_callback])
 
-# model.fit(x = load_batch(train_input_images, train_output_images, H, W, batch_size=batch_size), \
-#     epochs=20, verbose=1, validation_data=load_batch(validate_input_images, validate_output_images, H, W), \
-#         steps_per_epoch=int(1800/batch_size), validation_steps=400)
-#callbacks=[tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_batch=1000000)])
 
 #### Test: Calculate Average Dice Similarity
 image_dsc = []
@@ -85,7 +88,7 @@ for i in range(len(test_input_images)):
         img = X_test[i][np.newaxis,:,:,:]
         pred = model.predict(img)
         predd = tf.math.round(pred)
-        i_dsc = dsc(predd[0], y_test[i])
+        i_dsc = dsc(predd[0], y_test[i]).numpy()
         s += i_dsc
         image_dsc.append((i_dsc, i))
 avg = s/len(test_input_images)
@@ -94,13 +97,16 @@ print('Average DSC: ',avg)
 #### Plot
 image_dsc.sort()
 
-a, b = 0, 0
+# good predictions
+a = 100 
 high_dsc_images_X = [X_test[idx] for dsc,idx in image_dsc[-a:(-a-7):-1]]
 high_dsc_images_y = [y_test[idx] for dsc,idx in image_dsc[-a:(-a-7):-1]]
 high_dsc = [dsc for dsc,idx in image_dsc[-a:(-a-7):-1]]
+plot_segment(model, high_dsc_images_X, high_dsc_images_y, high_dsc)
+
+# bad predictions
+b = 10
 low_dsc_images_X = [X_test[idx] for dsc,idx in image_dsc[b:(b+7)]]
 low_dsc_images_y = [y_test[idx] for dsc,idx in image_dsc[b:(b+7)]]
 low_dsc = [dsc for dsc,idx in image_dsc[b:(b+7)]]
-
-plot_segment(model, high_dsc_images_X, high_dsc_images_y, high_dsc)
 plot_segment(model, low_dsc_images_X, low_dsc_images_y, low_dsc)

@@ -102,11 +102,27 @@ Noted that images from the given data are not in the same shape. So I use tensor
 ![dice](./images/dice_similarity.png)
 We use DSC to measure the performance of the predicted segments. 
 
-### Average DSC
-After 20 epochs of training, the predictions on test set reaches an average dice similarity of **82%**. To be more specific, we can look into some prediction segments.
+### Trainnig Process and Average DSC
+![training_process](./images/training_process.png)
+This plot shows how metrics changes during the training process. 
+After 30 epochs of training, the predictions on test set reaches an average dice similarity of **83.9%**. To be more specific, we can look into some prediction segments. 
 
 ### Good Predictions
-![good](./images/good_predictions.png)
+![good1](./images/good1.png)
+
+![good2](./images/good2.png)
 
 ### Bad Predictions
-![bad](./images/bad_predictions.png)
+![bad1](./images/bad1.png)
+
+![bad2](./images/bad2.png)
+
+### Discussion
+In the above figures, the first row is the input, the second row is the ground truth segment (actually I don't know if it's really the ground truth or just some output given by the lecturer's segmentation network), and the third row is the segment given by this model. We can have some conclusions based on these figures.
+- The model can give good segmentation if the input image is clear and have same style as in the examples.
+- Too much hair will affect the performance of segmentation.
+- The model is hard to notice the skin lesion if the color looks similar to the healthy skin.
+
+
+## Reference
+- [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)
