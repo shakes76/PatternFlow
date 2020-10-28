@@ -11,14 +11,14 @@ This project here, is to try to **segment** original skin **RGB images into mono
 
 The improved UNet is developed by F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein. [[1]](https://arxiv.org/abs/1802.10508v1) This deep learning net work is used to handle Brain Tumor Segmentation problem and deal with 3D images in the paper. But here I borrow this structure to cope with my **2D image segmentation problem**. 
 
+### Improved UNet Structure
 ![image_unet](./images/unet.png)
-
-Figure above shows the structure of the improved UNet. 
+The figure above shows the structure of the improved UNet. 
 - The *context module* is a pre-activation residual block, with two 3x3 convolutional layers and a dropout layer with p=0.3 in the middle. Noted that, the activation layer uses Leaky ReLU, and batch normalization is changed to instance normalization.
 - The *upsampling module* is simply a upsampling2D layer followed by a 3x3 convolution that halves the number of feature map.
 - The *localization module* contains a 3x3 convolution and then a 1x1 convolution which halves the number of feature maps.
 
-Here is the code to generate the network.
+### Python Code to Build the network
 ```python
 def  context_module(inputs, filters):
 """ filters is the output size of the module"""
@@ -86,32 +86,27 @@ def  improved_unet(h, w):
 	return network
 ```
 
-## Switch to another file
+## Data
 
-All your files and folders are presented as a tree in the file explorer. You can switch from one to another by clicking a file in the tree.
+The given data located in two different folders, one contains the input images (original skin RGB images), the other contains the output images (segment images). There are **2594 images in total**.
 
-## Rename a file
+### Train, Validation, Test Sets
+I sort these images by their names, shuffle them using a random seed, and take the first 1600 images as training data, the next 500 as validation data and the remains as testing data.
 
-You can rename the current file by clicking the file name in the navigation bar or by clicking the **Rename** button in the file explorer.
+### Image Resize
+Noted that images from the given data are not in the same shape. So I use tensorflow built in function to resize these images to **(256, 256)**.
 
-## Delete a file
+## Result
 
-You can delete the current file by clicking the **Remove** button in the file explorer. The file will be moved into the **Trash** folder and automatically deleted after 7 days of inactivity.
+### Dice Similarity Coefficient
+![dice](./images/dice_similarity.png)
+We use DSC to measure the performance of the predicted segments. 
 
-## Export a file
+### Average DSC
+After 20 epochs of training, the predictions on test set reaches an average dice similarity of **82%**. To be more specific, we can look into some prediction segments.
 
-You can export the current file by clicking **Export to disk** in the menu. You can choose to export the file as plain Markdown, as HTML using a Handlebars template or as a PDF.
+### Good Predictions
+![good](./images/good_predictions.png)
 
-
-# Synchronization
-
-Synchronization is one of the biggest features of StackEdit. It enables you to synchronize any file in your workspace with other files stored in your **Google Drive**, your **Dropbox** and your **GitHub** accounts. This allows you to keep writing on other devices, collaborate with people you share the file with, integrate easily into your workflow... The synchronization mechanism takes place every minute in the background, downloading, merging, and uploading file modifications.
-
-There are two types of synchronization and they can complement each other:
-
-- The workspace synchronization will sync all your files, folders and settings automatically. This will allow you to fetch your workspace on any other device.
-	> To start syncing your workspace, just sign in with Google in the menu.
-
-- The file synchronization will keep one file of the workspace synced with one or multiple files in **Google Drive**, **Dropbox** or **GitHub**.
-	> Before starting to sync files, you must link an account in the **Synchronize** sub-menu.
-
+### Bad Predictions
+![bad](./images/bad_predictions.png)
