@@ -1,4 +1,25 @@
-print("Running...")
+"""
+Laterality classification of the OAI AKOA knee data set. This is a possible solution to Task 2.
+Run this code as the driver script.
+
+Input assisted by:
+    - layers_script_45339747.py
+    - generator_script_45339747.py
+
+@author Jonathan Godbold, s4533974.
+
+Usage of this file is strictly for The University of Queensland.
+Date: 27/10/2020.
+
+Description:
+Generates the data from the OKOA knee dataset.
+Split the data set by patient ID's.
+70 patients for training, 21 for validation and 20 for testing (101 total).
+Generate the labels from the file names.
+Build and train the model (should have approximately 93.23% accuracy). 
+Further details can be found in the README.md file.
+"""
+
 from generator_script_45339747 import *
 
 # Generate the paths for each file in each section (train, validate, test).
