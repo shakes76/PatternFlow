@@ -49,7 +49,7 @@ __Fig1: Architecture__
 
 __Fig2: Context Module__
 
-![fig2](resources/context.png = 200x100)
+![fig2](resources/context.png){:height="700px" width="400px"}
 
 
 __Fig3: Upsampling Module__
