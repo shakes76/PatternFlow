@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
-from random import shuffle
+from random import shuffle, seed
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
     Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose
 
@@ -19,7 +19,7 @@ print("TensorFlow Version: ", tf.__version__)
 
 #### Parameters
 H = W = 256
-batch_size = 16
+batch_size = 8
 
 
 #### Data Process
