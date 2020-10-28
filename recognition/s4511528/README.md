@@ -81,6 +81,7 @@ __2. The dataset will be split to train:val:test with the rario `6:2:2`.__
 __3. The value of ground truth and output should be converted to `0 or 1`.__
 
 
+
 ```Python
 
 import tensorflow as tf
