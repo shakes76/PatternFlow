@@ -8,6 +8,7 @@ This file contains helper functions such as dice similarity, image resize, ....
 
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 def resize_image(image, h, w):
     """ resize the image to (h, w, channel)"""
@@ -43,7 +44,7 @@ def plot_segment(model, X_test, y_test, dsc):
         ax[2][i].imshow(tf.math.round(model.predict(X_test[i][np.newaxis,:,:,:]))[0])
         ax[2][i].get_xaxis().set_visible(False)
         ax[2][i].get_yaxis().set_visible(False)
-        ax[2][i].set_title(f'dsc: {round(dsc[i],2)}')
+        ax[2][i].set_title('dsc: '+str(round(dsc[i],2)))
 
 
 
