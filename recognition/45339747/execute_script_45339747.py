@@ -13,9 +13,6 @@ from generator_script_45339747 import *
 
 # Import Libraries.
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import Input, Conv2D, Dense, Activation, Flatten, Dropout, MaxPooling2D, BatchNormalization
-from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras import regularizers, optimizers
-from tensorflow.keras.callbacks import EarlyStopping
+from layers_script_45339747 import *
+
+model = buildNetwork()
