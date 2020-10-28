@@ -72,7 +72,8 @@ or via Jupyter Notebook `COMP3710_Project_Final.ipynb`
 Import the model and use in Python script.
 
 
-__Note:__ 
+__Note:__
+
 __1. The input image to model should be normalized and resized.__
 
 __2. The dataset will be split to train:val:test with the rario `6:2:2`.__
