@@ -99,7 +99,7 @@ Noted that images from the given data are not in the same shape. So I use tensor
 ## Result
 
 ### Dice Similarity Coefficient
-![dice](./images/dice_similarity.png)
+![dice](./images/dice_similarity.png = 200x200)
 We use DSC to measure the performance of the predicted segments. 
 
 ### Trainnig Process and Average DSC
