@@ -108,7 +108,7 @@ plt.figure(figsize=(30, 10))
 for i in range(1, n+1):
     ax = plt.subplot(1, n, i)
     plt.imshow(predictions[i])
-    plt.gray()
+    plt.gray() 
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 
