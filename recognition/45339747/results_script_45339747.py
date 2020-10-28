@@ -23,6 +23,7 @@ from tensorflow.keras import regularizers, optimizers
 from tensorflow.keras.callbacks import EarlyStopping
 
 def plotResults(model, test_images, test_images_y):
+    # Plot a graph accuracy vs validation accuracy.
     plt.plot(history.history['accuracy'], label='accuracy')
     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
     plt.xlabel('Epoch')
@@ -38,9 +39,11 @@ def plotResults(model, test_images, test_images_y):
     plt.legend(['train', 'validate'], loc='upper left')
     plt.show()
 
+    # Demo a test group.
     demo_images_1 = test_images[0:10]
     demo_labels_1 = test_images_y[0:10]
 
+    # Plot the images of the knee.
     plt.figure(figsize=(30,30))
     fig,ax=plt.subplots(3,3)
     lister = list(unique_list) # List[91] is the first person in the test group.
@@ -60,6 +63,7 @@ def plotResults(model, test_images, test_images_y):
 
     # Multiple different images (left and right)
     print(test_images_y[1000:1010])
+    # This time we have 2 patients, one with a left knee, one with a right.
     demo_images_2 = test_images[1000:1010]
     demo_labels_2 = test_images_y[1000:1010]
 
