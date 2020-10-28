@@ -42,7 +42,7 @@ The decoder is the right part in the architecture, which semantically projects t
 Two lables image data with resized height, weight and channels as `(None, 256, 256, 1)`
 
 
-__Fig1: Architecture__
+__Fig1: Architecture: Improved UNet__
 
 ![fig1](resources/architecture.png)
 
@@ -54,15 +54,6 @@ Context Module | Upsampling Module | Localization Module
 <img src="resources/context.png" width="200" height="300"> | <img src="resources/upsampling.png" width="200" height="300"> | <img src="resources/localization.png" width="200" height="300">
 
 
-__Fig3: Upsampling Module__
-
-![fig3](resources/upsampling.png = 200x100)
-
-
-__Fig4: Localization Module__
-
-![fig4](resources/localization.png = 200x100)
-
 
 # Dependencies
 
@@ -70,6 +61,7 @@ __Requirement:__
 
 * Python 3.7
 * TensorFlow 2.0
+* GPU
 
 or via Jupyter Notebook `COMP3710_Project_Final.ipynb`
 
@@ -77,32 +69,75 @@ or via Jupyter Notebook `COMP3710_Project_Final.ipynb`
 
 # Example Usage
 
-Import the algorithm and use in Python script.
+Import the model and use in Python script.
 
 
-__Note: The input image to algorithm should be converted into pytorch tensor__
+__Note: 1. The input image to model should be normalized and resized.
+        2. The dataset will be split to train:val:test with the rario `6:2:2`.
+        3. The value of ground truth and output should be converted to `0 or 1`.__
 
 
 ```Python
 
-import torch
+import tensorflow as tf
+from model import build_model
 
+# prepocessing image data
 
-from PatternFlow.denoise.denoise_tv_bregman.denoise_tv_bregman import denoise_tv_bregman
+width = 256
+height = 256
+channels = 3
 
+X = np.zeros([2594, height, width, channels])
+y = np.zeros([2594, height, width])
 
-# noisy_img is the noised input image
+# process image
+for i in range(len(images)):
+    images[i] = cv2.resize(images[i],(height,width))
+    images[i] = images[i]/255
+    X[i] = images[i]
 
-# convert to torch tensor
+# process mask
+for i in range(len(masks)):
+    masks[i] = cv2.resize(masks[i],(height,width))
+    masks[i] = masks[i]/255
+    masks[i][masks[i] > 0.5] = 1
+    masks[i][masks[i] <= 0.5] = 0
+    y[i] = masks[i]      
+y = y[:, :, :, np.newaxis]
 
-input_img = torch.FloatTensor(noisy_img)
+# predict mask
+predictions = model.predict(X_test)
+for i in range(len(predictions)):
+    predictions[i][predictions[i] > 0.5] = 1
+    predictions[i][predictions[i] <= 0.5] = 0
+    
+    
+# plot original image, ground truth, segmentation
+n = 10 
+plt.figure(figsize=(30, 10))
+for i in range(1, n+1):
+    ax = plt.subplot(1, n, i)
+    plt.imshow(X_test[i])
+    plt.gray()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
 
-# pass the input image to algorithm
+plt.figure(figsize=(30, 10))
+for i in range(1, n+1):
+    ax = plt.subplot(1, n, i)
+    plt.imshow(y_test[i])
+    plt.gray()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
 
-# convert the return image to numpy array for later plotting
-
-denoised_img = denoise_tv_bregman(input_img, weight=0.1).numpy()
-
+plt.figure(figsize=(30, 10))
+for i in range(1, n+1):
+    ax = plt.subplot(1, n, i)
+    plt.imshow(predictions[i])
+    plt.gray()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
 ```
 
 # Example Result
