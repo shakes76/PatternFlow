@@ -49,7 +49,10 @@ __Fig1: Architecture__
 
 __Fig2: Context Module__
 
-<img src="resources/context.png" width="200" height="100">
+First Header | Second Header | Third Header
+------------ | ------------- | -------------
+
+<img src="resources/context.png" width="400" height="500"> | <img src="resources/upsampling.png" width="400" height="500"> | <img src="resources/localization.png" width="400" height="500">
 
 
 __Fig3: Upsampling Module__
