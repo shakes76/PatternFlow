@@ -8,6 +8,7 @@ Date: 27/10/2020.
 
 Description:
 Imports the OASIS dataset and cleans the data for the driver script.
+Formats the data in the form of 3 tensors of images, 3 tensors of labels.
 
 """
 
@@ -72,6 +73,7 @@ def generate_sets(train_list, validate_list, test_list, subset_path_AKOA):
     Prepare the file names for the test, train and validation sets.
     Format returned: three lists of separate sets containing each file name that corresponds to that set.
     """
+    # Create a list for all the paths of each type of image.
     train_images_src = []
     for i in train_list:
         for j in subset_path_AKOA:
@@ -95,6 +97,7 @@ def generate_sets(train_list, validate_list, test_list, subset_path_AKOA):
 def loadData(train_images_src, validate_images_src, test_images_src):
     """
     Load images as numpy arrays.
+    Format returned: three lists containing training images, validation images, and testing images.
     """
     train_images = [np.array((Image.open(path))) for path in train_images_src]
     print("Training images loaded.")
