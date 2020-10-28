@@ -40,7 +40,7 @@ def load_img_from_dir(data_dir, img_format = 'png', imagecount = 0, tensor = Tru
             if tensor == True:
                 im = tf.image.convert_image_dtype(
                 im, tf.int64, saturate=False, name=None)
-                im = tensorflow.keras.preprocessing.image.img_to_array(im)
+                im = tf.keras.preprocessing.image.img_to_array(im)
 
             
             image_list.append(im)
@@ -59,7 +59,7 @@ def load_img_from_dir(data_dir, img_format = 'png', imagecount = 0, tensor = Tru
             
             image_list.append(im)
             
-    return image_list
+    return np.asarray(image_list)
     
 
 
