@@ -4,17 +4,9 @@ Applying U-NET architecture on ISIC data set to predict segmentation responses o
 
 **Data Set**
 
-**Input**  **–** The input data set consists of dermascopic lesion images in JPEG format. The lesion images are annotated with the following naming schema: -
+**Input**  **–** The input data set consists of dermascopic lesion images in JPEG format. The lesion images were extracted from a variety of dermatoscope types, from all anatomic sites, historical sample of patients presented for skin cancer screening and several institutions.
 
-_ISIC\_\&lt;image\_id\&gt;.jpg_where _\&lt;image\_id\&gt;_is a 7 digit unique identifier
-
-The lesion images were extracted from a variety of dermatoscope types, from all anatomic sites, historical sample of patients presented for skin cancer screening and several institutions.
-
-**Response Data** – It comprises of binary mask images in PNG format which indicates the location of the primary skin lesion within each input lesion image. The corresponding mask images for each lesion images have been assigned the following nomenclature: -
-
-_ISIC\_\&lt;image\_id\&gt;\_segmentation.png_where the _\&lt;image\_id\&gt;_ corresponds to the lesion image of that particular mask.
-
-Mask images are encoded as single channel (grayscale) 8-bit PNGs where each pixel is either of the two cases mentioned below: -
+**Response Data** – It comprises of binary mask images in PNG format which indicates the location of the primary skin lesion within each input lesion image. Mask images are encoded as single channel (grayscale) 8-bit PNGs where each pixel is either of the two cases mentioned below: -
 
 1. 0: Which represents the background of the image, or areas outside the primary lesion
 2. 255: Which represents the foreground of the image, or areas inside the primary lesion
@@ -23,11 +15,13 @@ Mask images are encoded as single channel (grayscale) 8-bit PNGs where each pixe
 
 The predicted segmentation responses based on the U-NET model on the ISIC test data set should have an overall minimum dice score of 0.7. Dice score can be mathematically expressed using the following formula in case of images: -
 
+_Dice Score = (2\*Area of Overlap between the Images)/(Total number of pixels on both images)_
+
 **U-NET Architecture**
 
 The U-Net is a convolutional network architecture designed for fast and precise segmentation of images. The algorithm has outperformed the prior best method of sliding-window convolutional network and won various international challenges. The network architecture is U-shaped which is symmetrically designed and consists of two major parts – the left part is called the contracting path which comprises of the general convolutional processes while the right part is expansive path which is constituted by transposed 2d convolutional layers. The U-NET architecture is shown below: -
 
-![](RackMultipart20201028-4-bkz42x_html_daf5461bb760b411.png)
+![](C:\Users\s4558632\Downloads\UNET.png)
 
 **Documentation of Python Code Files**
 
