@@ -43,16 +43,23 @@ Two lables image data with resized height, weight and channels as `(None, 256, 2
 
 
 __Fig1: Architecture__
+
 ![fig1](resources/architecture.png)
 
+
 __Fig2: Context Module__
-![fig2](resources/context.png)
+
+![fig2](resources/context.png = 200*100)
+
 
 __Fig3: Upsampling Module__
-![fig3](resources/upsampling.png)
+
+![fig3](resources/upsampling.png = 200*100)
+
 
 __Fig4: Localization Module__
-![fig4](resources/localization.png)
+
+![fig4](resources/localization.png = 200*100)
 
 
 # Dependencies
