@@ -1,8 +1,9 @@
 # Improved UNet for ISIC2018 Segmentation
 
-
+Improved UNet model of image segmentation implemented for Tensorflow
 
 # Description
+
 
 
 
@@ -64,15 +65,12 @@ denoised_img = denoise_tv_bregman(input_img, weight=0.1).numpy()
 
 # Reference
 
-- [1] <a href="https://www.investopedia.com/articles/basics/04/100804.asp" target="_blank">Forces That Move Stock Prices</a>
+* [1] [Fabian Isensee et al., "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge"](https://arxiv.org/pdf/1802.10508v1.pdf)
 
-[wikipedia - total variation denoising](https://en.wikipedia.org/wiki/Total_variation_denoising)
+* [2] [Wikipedia - Sørensen Dice coefficient](https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient)
 
+* [3] [Dataset - SICI2018 Challenge](https://challenge2018.isic-archive.com)
 
-[scikit-image - denoise bregman](https://scikit-image.org/docs/stable/api/skimage.restoration.html#skimage.restoration.denoise_tv_bregman)
-
-
-[Tom Goldstein and Stanley Osher, “The Split Bregman Method For L1 Regularized Problems”](ftp://ftp.math.ucla.edu/pub/camreport/cam08-29.pdf)
 
 
 
