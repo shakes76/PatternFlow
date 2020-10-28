@@ -7,6 +7,7 @@ This is the last assignment from Course COMP3710 Pattern Recognition in the Univ
 ISICs stands for International Skin Imaging Collaboration, and the goal of this is to help participants develop image analysis tools to automatically diagnose melanoma from dermoscopic images. 
 This project here, is to try to **segment** original skin **RGB images into monochrome images** which represents the possible area of skin lesions, in order to assist cutaneous melanoma diagnosis.
 
+
 ## Algorithm --- Improved UNet 
 
 The improved UNet is developed by F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein. [[1]](https://arxiv.org/abs/1802.10508v1) This deep learning net work is used to handle Brain Tumor Segmentation problem and deal with 3D images in the paper. But here I borrow this structure to cope with my **2D image segmentation problem**. 
@@ -85,6 +86,10 @@ def  improved_unet(h, w):
 	network = tf.keras.Model(inputs = [inputs], outputs = [outputs])
 	return network
 ```
+## Dependency
+- Python = 3.7
+- Tensorflow = 2.1.0
+- Tensorflow-Addons
 
 ## Data
 
