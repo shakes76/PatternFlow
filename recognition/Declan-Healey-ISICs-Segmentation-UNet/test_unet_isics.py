@@ -19,38 +19,31 @@ train_ds = train_ds.shuffle(len(X_train))
 test_ds = test_ds.shuffle(len(X_test))
 val_ds = val_ds.shuffle(len(X_val))
 
-print(train_ds)
-print(test_ds)
-print(val_ds)
-
 def decode_image(path):
     img = tf.io.read_file(path)
-    return tf.image.decode_jpeg(img)
+    img = tf.image.decode_jpeg(img, channels = 3)
+    img = tf.image.resize(img, [256, 256])
+    img = tf.cast(img, tf.float32) / 255.0
+    return img
 
 def decode_mask(path):
     img = tf.io.read_file(path)
-    img = tf.image.decode_png(img)
-    mask = tf.one_hot(img, depth=2, dtype=tf.uint8)
+    img = tf.image.decode_png(img, channels = 1)
+    img = tf.image.resize(img, [256, 256])
+    img = tf.image.convert_image_dtype(img, dtype=tf.uint8, saturate=False, name=None)
+    mask = tf.one_hot(img, depth=1, dtype=tf.uint8)
     return tf.squeeze(mask)
 
 def process_path(image_path, mask_path):
-    # check correct input for decode
     image = decode_image(image_path)
-    image = tf.cast(image, tf.float32) / 255.0
-    image = tf.reshape(image, (256, 256, 1))
-
     mask = decode_mask(mask_path)
-    mask = tf.reshape(mask, (256, 256, 2))
-
+    image = tf.reshape(image, (256, 256, 3))
+    mask = tf.reshape(mask, (256, 256, 1))
     return image, mask
 
 train_ds = train_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 val_ds = val_ds.map(process_path)
-
-print(train_ds)
-print(test_ds)
-print(val_ds)
 
 def display(display_list):
     plt.figure(figsize=(10,10))
@@ -60,8 +53,5 @@ def display(display_list):
         plt.axis('off')
     plt.show()
 
-#for image, mask in train_ds.take(1):
-
-
-   # display([tf.squeeze(image)])
-
+for image, mask in train_ds.take(1):
+    display([tf.squeeze(image), tf.argmax(mask, axis = -1)])
