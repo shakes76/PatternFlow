@@ -115,7 +115,7 @@ def mod_comp(img_path, seg_path, img_height, img_width):
     ModelCheckpoint('model-ISIC.h5', verbose=1, save_best_only=True, save_weights_only=True)]
     
     # Fitting the U-NET model
-    results = model.fit(XISIC_train, yISIC_train_cat, batch_size=32, epochs=10, callbacks=callbacks,validation_data=(XISIC_val, yISIC_val_cat))
+    results = model.fit(XISIC_train, yISIC_train_cat, batch_size=32, epochs=30, callbacks=callbacks,validation_data=(XISIC_val, yISIC_val_cat))
     
     # Loading the model with the best performance
     model.load_weights('model-ISIC.h5')
@@ -123,8 +123,8 @@ def mod_comp(img_path, seg_path, img_height, img_width):
     # Generating the predicted segmentation arrays of the ISIC Test data set
     ISIC_test_preds = model.predict(XISIC_test, verbose=1)
     
-    print("The dice coefficient of the ISIC test data\n")
-    print(dice_coeff(yISIC_test_cat,ISIC_test_preds))
+    print("The dice coefficient of the ISIC test data\n",dice_coeff(yISIC_test_cat,ISIC_test_preds).numpy())
+    
     
     # Creating a dataframe for the individual dice coefficients of the segmentation images of the test data set
     test_data_dc = dice_coefflabelwise(yISIC_test_cat,ISIC_test_preds).numpy()
