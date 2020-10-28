@@ -12,8 +12,8 @@ This project here, is to try to **segment** original skin **RGB images into mono
 The improved UNet is developed by F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein. [[1]](https://arxiv.org/abs/1802.10508v1) This deep learning net work is used to handle Brain Tumor Segmentation problem and deal with 3D images in the paper. But here I borrow this structure to cope with my **2D image segmentation problem**. 
 
 ### Improved UNet Structure
-![image_unet](./images/unet.png)
-The figure above shows the structure of the improved UNet. 
+![image_unet](./images/unet.png)  
+The figure above shows the structure of the improved UNet.  
 - The *context module* is a pre-activation residual block, with two 3x3 convolutional layers and a dropout layer with p=0.3 in the middle. Noted that, the activation layer uses Leaky ReLU, and batch normalization is changed to instance normalization.
 - The *upsampling module* is simply a upsampling2D layer followed by a 3x3 convolution that halves the number of feature map.
 - The *localization module* contains a 3x3 convolution and then a 1x1 convolution which halves the number of feature maps.
@@ -99,24 +99,19 @@ Noted that images from the given data are not in the same shape. So I use tensor
 ## Result
 
 ### Dice Similarity Coefficient
-![dice](./images/dice_similarity.png =200x200)
-
+![dice](./images/dice_similarity.png)  
 We use DSC to measure the performance of the predicted segments. 
 
 ### Trainnig Process and Average DSC
 ![training_process](./images/training_process.png)
-This plot shows how metrics changes during the training process. 
+This plot shows how metrics changes during the training process. It seems the DSC in validation set only slightly higher than 80% during the training process.  
 After 30 epochs of training, the predictions on test set reaches an average dice similarity of **83.9%**. To be more specific, we can look into some prediction segments. 
 
 ### Good Predictions
-![good1](./images/good1.png)
-
-![good2](./images/good2.png)
+![good2](./images/good2.png)  
 
 ### Bad Predictions
-![bad1](./images/bad1.png)
-
-![bad2](./images/bad2.png)
+![bad2](./images/bad2.png)  
 
 ### Discussion
 In the above figures, the first row is the input, the second row is the ground truth segment (actually I don't know if it's really the ground truth or just some output given by the lecturer's segmentation network), and the third row is the segment given by this model. We can have some conclusions based on these figures.
