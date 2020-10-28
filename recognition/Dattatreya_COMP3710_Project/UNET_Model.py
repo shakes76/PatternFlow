@@ -74,6 +74,6 @@ def unet_gen(inp_img, n_fil = 16, drop = 0.1, batch = True):
     u9 = Dropout(drop)(u9)
     c9 = conv2d_block(u9, n_fil * 1, kernel_size = 3, batchnorm = batch)
     
-    outputs = Conv2D(2, (1, 1), activation='softmax')(c9)
+    outputs = Conv2D(2, (1, 1), activation='sigmoid')(c9)
     model = Model(inputs=[inp_img], outputs=[outputs])
     return model
