@@ -72,9 +72,12 @@ or via Jupyter Notebook `COMP3710_Project_Final.ipynb`
 Import the model and use in Python script.
 
 
-__Note: 1. The input image to model should be normalized and resized.
-        2. The dataset will be split to train:val:test with the rario `6:2:2`.
-        3. The value of ground truth and output should be converted to `0 or 1`.__
+__Note:__ 
+__1. The input image to model should be normalized and resized.__
+
+__2. The dataset will be split to train:val:test with the rario `6:2:2`.__
+
+__3. The value of ground truth and output should be converted to `0 or 1`.__
 
 
 ```Python
@@ -142,7 +145,7 @@ for i in range(1, n+1):
 
 # Example Result
 
-![result](resources/1.png)
+![result](resources/result.png)
 
 __Note: Test Dice Coefficient:  0.8451062__
 
