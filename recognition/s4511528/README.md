@@ -47,12 +47,11 @@ __Fig1: Architecture__
 ![fig1](resources/architecture.png)
 
 
-__Fig2: Context Module__
+__Fig2: Modules__
 
-First Header | Second Header | Third Header
+Context Module | Upsampling Module | Localization Module
 ------------ | ------------- | -------------
-
-<img src="resources/context.png" width="400" height="500"> | <img src="resources/upsampling.png" width="400" height="500"> | <img src="resources/localization.png" width="400" height="500">
+<img src="resources/context.png" width="200" height="300"> | <img src="resources/upsampling.png" width="200" height="300"> | <img src="resources/localization.png" width="200" height="300">
 
 
 __Fig3: Upsampling Module__
