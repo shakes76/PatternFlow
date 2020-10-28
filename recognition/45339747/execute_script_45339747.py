@@ -5,6 +5,7 @@ Run this code as the driver script.
 Input assisted by:
     - layers_script_45339747.py
     - generator_script_45339747.py
+    - results_script_45339747.py
 
 @author Jonathan Godbold, s4533974.
 
@@ -48,5 +49,9 @@ model = buildNetwork(train_images[0].shape)
 
 # Compile and run the model, print the final metric.
 compile_and_run(model, 5, 20, train_images, train_images_y, validate_images, validate_images_y)
+
+# Plot and show results.
+from results_script_45339747 import *
+plotResults(model, test_images, test_images_y)
 
 # End of script. Please see involved scripts for more information regarding the methods.
