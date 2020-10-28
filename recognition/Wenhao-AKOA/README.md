@@ -25,4 +25,7 @@
     use evaluate_generator to evaluate the accuracy and loss for the model
 * load_model<br>
     load the save model
+## result
+* accuracy plot
+![](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/accuracy_visu.png)
 
