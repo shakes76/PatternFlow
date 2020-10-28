@@ -21,7 +21,7 @@ _Dice Score = (2\*Area of Overlap between the Images)/(Total number of pixels on
 
 The U-Net is a convolutional network architecture designed for fast and precise segmentation of images. The algorithm has outperformed the prior best method of sliding-window convolutional network and won various international challenges. The network architecture is U-shaped which is symmetrically designed and consists of two major parts – the left part is called the contracting path which comprises of the general convolutional processes while the right part is expansive path which is constituted by transposed 2d convolutional layers. The U-NET architecture is shown below: -
 
-![UNET Image](C:/Users/s4558632/Downloads/UNET.png)
+![UNET Image](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/UNET.png)
 
 **Documentation of Python Code Files**
 
