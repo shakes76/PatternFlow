@@ -10,7 +10,7 @@ from IPython import display
 
 class DCGAN:
 
-    def __init__(self, img_size, input_shape=256, batch_size=256, noise_dim=256):
+    def __init__(self, img_size, input_shape=256, batch_size=128, noise_dim=256):
         """
         A DCGAN object that can create DCGAN structure and train. The object is flexible to different output size
         :param img_size: output size
@@ -164,9 +164,9 @@ class DCGAN:
         A function that handles main part of training.
         :param dataset: The training dataset
         :param epochs: The epoch of training
-        :return: nothing
+        :return: hist_ssim: the history of ssim
         """
-
+        hist_ssim = []
         num_examples_to_generate = 4
         seed = tf.random.normal([num_examples_to_generate, self.noise_dim])
         for epoch in range(epochs):
@@ -178,6 +178,12 @@ class DCGAN:
             display.clear_output(wait=True)
             self.generate_and_save_images(epoch + 1, seed)
 
+            # Calculate SSIM every 100 epoch
+            if (epoch + 1) % 100 == 0:
+                ssim = self.cal_ssim(dataset)
+                print('ssim: ', str(ssim))
+                hist_ssim.append(ssim)
+
             # Save the model every 500 epoch
             if (epoch + 1) % 500 == 0:
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
@@ -186,6 +192,7 @@ class DCGAN:
 
         display.clear_output(wait=True)
         self.generate_and_save_images(epochs, seed)
+        return hist_ssim
 
     def load_model(self):
         """
@@ -194,13 +201,25 @@ class DCGAN:
         """
         self.checkpoint.restore(tf.train.latest_checkpoint(self.checkpoint_dir))
 
-    def generate_images(self, num=1):
+    def generate_images(self, num=1, training=False):
         """
-
+        A function that plot and return a number of fake images by the generator.
+        :param training: If True, the function will not plot the image
         :param num: The number of fake images needs to generate
         :return: A series of fake images
         """
         noise = tf.random.normal([num, self.noise_dim])
         generated_image = self.generator(noise, training=False)
-        plt.imshow(generated_image[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
-        return generated_image
+        if not training:
+            plt.imshow(generated_image[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
+        return generated_image.numpy() * 127.5 + 127.5
+
+    def cal_ssim(self, real):
+        """
+        A function calculate the ssim between 256 fake and real images
+        :param real: The real image tensor or dataset.
+        :return: the mean SSIM between batch size number of fake and real images
+        """
+        fake = self.generate_images(self.batch_size, training=True)
+        return tf.image.ssim(fake, next(iter(real)).numpy().astype('float32')[0:self.batch_size] * 127.5 + 127.5,
+                             255).numpy().mean()
