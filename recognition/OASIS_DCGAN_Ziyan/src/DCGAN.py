@@ -42,28 +42,27 @@ class DCGAN:
         A function that constructs the generator model
         :return: A generator follows DCGAN standard
         """
-        # The Scale of up sampling is defined as 1/8, 1/4, 1/2, 1 of the output image size
-        starter = int(self.img_size / 8)
 
         model = tf.keras.Sequential()
-        model.add(layers.Dense(starter * starter * self.batch_size, use_bias=False, input_shape=(self.input_shape,)))
+        model.add(layers.Dense(int(self.img_size / 8) * int(self.img_size / 8) * self.batch_size, use_bias=False,
+                               input_shape=(self.input_shape,)))
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
-        model.add(layers.Reshape((starter, starter, self.batch_size)))
-        assert model.output_shape == (None, starter, starter, self.batch_size)
+        model.add(layers.Reshape((int(self.img_size / 8), int(self.img_size / 8), self.batch_size)))
+        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), self.batch_size)
 
-        model.add(layers.Conv2DTranspose(128, (6, 6), strides=(1, 1), padding='same', use_bias=False))
-        assert model.output_shape == (None, starter, starter, 128)
-        model.add(layers.BatchNormalization())
-        model.add(layers.ReLU())
-
-        model.add(layers.Conv2DTranspose(64, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, 2 * starter, 2 * starter, 64)
+        model.add(layers.Conv2DTranspose(512, (6, 6), strides=(1, 1), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), 512)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(32, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, 4 * starter, 4 * starter, 32)
+        model.add(layers.Conv2DTranspose(256, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 4), int(self.img_size / 4), 256)
+        model.add(layers.BatchNormalization())
+        model.add(layers.ReLU())
+
+        model.add(layers.Conv2DTranspose(128, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 2), int(self.img_size / 2), 128)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
@@ -78,17 +77,18 @@ class DCGAN:
         """
         model = tf.keras.Sequential()
         model.add(
-            layers.Conv2D(32, (6, 6), strides=(2, 2), padding='same', input_shape=[self.img_size, self.img_size, 1]))
+            layers.Conv2D(128, (6, 6), strides=(2, 2), padding='same',
+                          input_shape=[self.img_size, self.img_size, 1]))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU())
         model.add(layers.Dropout(0.3))
 
-        model.add(layers.Conv2D(64, (6, 6), strides=(2, 2), padding='same'))
+        model.add(layers.Conv2D(256, (6, 6), strides=(2, 2), padding='same'))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU())
         model.add(layers.Dropout(0.3))
 
-        model.add(layers.Conv2D(128, (6, 6), strides=(2, 2), padding='same'))
+        model.add(layers.Conv2D(512, (6, 6), strides=(2, 2), padding='same'))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU())
         model.add(layers.Dropout(0.3))
@@ -150,10 +150,10 @@ class DCGAN:
         :return: Nothing
         """
         predictions = self.generator(test_input, training=False)
-        fig = plt.figure(figsize=(4, 4))
+        fig = plt.figure(figsize=(2, 2))
         for i in range(predictions.shape[0]):
-            plt.subplot(4, 4, i + 1)
-            plt.imshow(np.array((predictions[i, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
+            plt.subplot(2, 2, i + 1)
+            plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
             plt.axis('off')
         if (epoch + 1) % 50 == 0:
             plt.savefig('../images/image_at_epoch_{:04d}.png'.format(epoch))
@@ -167,7 +167,7 @@ class DCGAN:
         :return: nothing
         """
 
-        num_examples_to_generate = 16
+        num_examples_to_generate = 4
         seed = tf.random.normal([num_examples_to_generate, self.noise_dim])
         for epoch in range(epochs):
             start = time.time()
@@ -202,5 +202,5 @@ class DCGAN:
         """
         noise = tf.random.normal([num, self.noise_dim])
         generated_image = self.generator(noise, training=False)
-        plt.imshow(np.array((generated_image[0, :, :, 0] * 127.5 + 127.5)).astype(np.uint8), cmap='gray')
+        plt.imshow(generated_image[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
         return generated_image

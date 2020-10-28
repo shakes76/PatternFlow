@@ -15,7 +15,7 @@ class ImgLoader:
         self.all_image_paths = list(data_root.glob('*.png'))
         self.all_image_paths = [str(path) for path in self.all_image_paths]
 
-    def load_to_tensor(self, buffer_size=0, target_slice=None, batch_size=256, img_size=64):
+    def load_to_tensor(self, buffer_size=0, target_slice=None, batch_size=128, img_size=64):
         """
         Transfer the dataset to tensor.
         :param target_slice: The target slices for the model training
@@ -31,7 +31,6 @@ class ImgLoader:
                 current_slice = int(path_add.split('_')[-1].split('.')[0])
                 if current_slice in target_slice:
                     target_add.append(path_add)
-        print(len(target_add))
 
         if buffer_size == 0:
             buffer_size = len(target_add)
