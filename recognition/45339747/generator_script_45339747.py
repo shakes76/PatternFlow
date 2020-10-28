@@ -11,12 +11,20 @@ Imports the OASIS dataset and cleans the data for the driver script.
 
 """
 
-# Import Libraries.
-import tensorflow as tf
+# Import data passing Libraries.
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from PIL import *
+
+# Import model building Libraries.
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import Input, Conv2D, Dense, Activation, Flatten, Dropout, MaxPooling2D, BatchNormalization
+from tensorflow.keras.models import Sequential, Model, load_model
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras import regularizers, optimizers
+from tensorflow.keras.callbacks import EarlyStopping
 
 def generate_paths():
     """
@@ -154,3 +162,40 @@ def formatData(train_images, validate_images, test_images, train_images_y, valid
     test_images_y = tf.convert_to_tensor(test_images_y)
 
     return train_images, validate_images, test_images, train_images_y, validate_images_y, test_images_y
+
+def buildModel(shape, loss, act_function):
+    model = Sequential() # Declare a model.
+    weight_decay = 1e-4
+    reg = regularizers.l2(weight_decay)
+    input_shape = shape
+    kernel_size = 32
+    dropout = 0.2
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout))
+    kernel_size = 64
+    dropout = 0.3
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout))
+    kernel_size = 128
+    dropout = 0.4
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Conv2D(kernel_size, (3,3), padding='same', kernel_regularizer=reg, input_shape=input_shape))
+    model.add(Activation(act_function))
+    model.add(BatchNormalization())
+    model.add(Dropout(dropout))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))
+    print(model.summary())
+    return model

@@ -19,3 +19,8 @@ from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras import regularizers, optimizers
 from tensorflow.keras.callbacks import EarlyStopping
+
+model = buildModel((228, 260, 1), "L2", "relu")
+print(model.summary())
+print("DONE")
+
