@@ -43,7 +43,7 @@ def plot_segment(model, X_test, y_test, dsc):
         ax[2][i].imshow(tf.math.round(model.predict(X_test[i][np.newaxis,:,:,:]))[0])
         ax[2][i].get_xaxis().set_visible(False)
         ax[2][i].get_yaxis().set_visible(False)
-        ax[2][i].set_xlabel('dsc: ', dsc[i])
+        ax[2][i].set_title(f'dsc: {round(dsc[i],2)}')
 
 
 
