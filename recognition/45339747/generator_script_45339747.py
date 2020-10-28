@@ -25,7 +25,7 @@ def generate_paths():
     """
     unique_list = []
     subset_path_AKOA = []
-    train_path_AKOA = os.path.expanduser("H:/Desktop/AKOA_Analysis/")
+    train_path_AKOA = os.path.expanduser("/Users/jonathan/Desktop/2020 S2/COMP3710/AKOA_Analysis/")
     for path in os.listdir(train_path_AKOA):
         if '.png' in path:
             # Format the string to extract the ID for the patient.
@@ -49,15 +49,15 @@ def generate_paths():
         if (counter <= 70):
             train_list.append(i)
             counter += 1
-    elif (counter > 70 and counter <= 90):
+        elif (counter > 70 and counter <= 90):
         # 20 unique ID's to validate.
-        validate_list.append(i)
-        counter += 1
-    else:
-        # 21 unique ID's to validate.
-        test_list.append(i)
-        counter += 1
-    return generate_sets(subset_path_AKOA, train_list, validate_list, test_list)
+            validate_list.append(i)
+            counter += 1
+        else:
+            # 21 unique ID's to validate.
+            test_list.append(i)
+            counter += 1
+    return subset_path_AKOA, train_list, validate_list, test_list
 
 def generate_sets(train_list, validate_list, test_list, subset_path_AKOA):
     """
@@ -96,7 +96,7 @@ def loadData(train_images_src, validate_images_src, test_images_src):
     print("Test images loaded.")
     return train_images, validate_images, test_images
 
-def loadLabels(train_images_y, validate_images_y, test_images_y):
+def loadLabels(train_images_src, validate_images_src, test_images_src):
     """
     Loads the corresponding Y labels for the images in each of the three sets.
     Very basic idea, if image name has "Right" or "Left" add 0 or 1 respectively.
@@ -135,9 +135,9 @@ def formatData(train_images, validate_images, test_images, train_images_y, valid
     Format returned: Three tensors of X-lables, and three tensorts of Y-labels.
     """
     # Normalise our data.
-    train_images = train_images/255
-    validate_images = validate_images/255
-    test_images = test_images/255
+    train_images = [x / 255 for x in train_images]
+    validate_images = [x / 255 for x in validate_images]
+    test_images = [x / 255 for x in test_images]
 
     # Set the Y-Labels.
     train_images_y = np.array(train_images_y)
@@ -153,27 +153,4 @@ def formatData(train_images, validate_images, test_images, train_images_y, valid
     validate_images_y = tf.convert_to_tensor(validate_images_y)
     test_images_y = tf.convert_to_tensor(test_images_y)
 
-def buildModel():
-    """
-    Builds a model for the given OASIS OKOA knee dataset.
-    Format returned: model to be trained.
-    """
-    input_shape = 
-
-
-
-def main():
-    train_images_src = [] # Lists containing loaded data for corresponding training, testing and validation sets.
-    validate_images_src = []
-    test_images_src = []
-    train_images_src, validate_images_src, test_images_src = generate_paths()
-    #loadData(train_images_src, validate_images_src, test_images_src)
-    #train_images_y = [] # Lists containing Y labels for corresponding images.
-    #validate_images_y = []
-    #test_images_y = []
-    #loadLabels(train_images_y, validate_images_y, test_images_y)
-    #formatData(train_images_src, validate_images_src, test_images_src, train_images_y, validate_images_y, test_images_y)
-
-
-if __name__ == "__main__":
-    main()
+    return train_images, validate_images, test_images, train_images_y, validate_images_y, test_images_y
