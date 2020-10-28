@@ -49,17 +49,17 @@ __Fig1: Architecture__
 
 __Fig2: Context Module__
 
-![fig2](resources/context.png = 200*100)
+![fig2](resources/context.png = 200x100)
 
 
 __Fig3: Upsampling Module__
 
-![fig3](resources/upsampling.png = 200*100)
+![fig3](resources/upsampling.png = 200x100)
 
 
 __Fig4: Localization Module__
 
-![fig4](resources/localization.png = 200*100)
+![fig4](resources/localization.png = 200x100)
 
 
 # Dependencies
