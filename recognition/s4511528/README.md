@@ -13,16 +13,17 @@ Image segmentation technology can be widely used in various fields. For example,
 Normalized image data with resized height, weight and channels as `(None, 256, 256, 3)`
 - __Encoder:__
 The encoder is the left part in the architecture, which encodes the input image into feature representations at multiple different levels.
-  - __context module:__
-  A pre-activation residual block, which deepens the UNet's depth and allows for more features while descending down the aggregation pathway.
+    - __context module:__
+
+    A pre-activation residual block, which deepens the UNet's depth and allows for more features while descending down the aggregation pathway.
 - __Bridge:__
 The bridge is the middle part in the architecture, which connects the encoder and decoder.
-  - __upsampling module:__
-  Consists of one upscale and one convolutional layer, which upsamples the low resolution feature maps and reduces the number of feature maps.
+    - __upsampling module:__
+    Consists of one upscale and one convolutional layer, which upsamples the low resolution feature maps and reduces the number of feature maps.
 - __Decoder:__
 The decoder is the right part in the architecture, which semantically projects the discriminative features (lower resolution) learnt by the encoder onto the pixel space (higher resolution) to get a dense classification.
-  - __localization module:__
-  Consists of two convolutional layers, which takes features from lower levels of the network that encode contextual information at low spa- tial resolution and transfer that information to a higher spatial resolution.
+    - __localization module:__
+    Consists of two convolutional layers, which takes features from lower levels of the network that encode contextual information at low spa- tial resolution and transfer that information to a higher spatial resolution.
 - __Output:__
 Two lables image data with resized height, weight and channels as `(None, 256, 256, 1)`
 
