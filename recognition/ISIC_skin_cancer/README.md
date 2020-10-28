@@ -54,7 +54,10 @@ and you will see that during the training phase, data is generated in parallel b
 For more detailed reference of implementation of data generation part, check this tutorial:
 [A detailed example of how to use data generators with Keras](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
 
-## Improved Unet Structure
+## [Basic Unet Structure](https://arxiv.org/pdf/1505.04597.pdf)
+![](resources/UNET.png)
+
+## [Improved Unet Structure](https://arxiv.org/abs/1802.10508v1)
 ![](resources/Improved_UNET.png)
 
 ## Evaluation Metrics
