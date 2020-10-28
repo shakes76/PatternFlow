@@ -58,9 +58,9 @@ denoised_img = denoise_tv_bregman(input_img, weight=0.1).numpy()
 
 # Example Result
 
-![resoures](resources/1.png)
+![result](resources/1.png)
 
-<img src="./resoures/1.png" style="width:90%;" alt="Tesla Trading History" />
+
 
 # Reference
 
