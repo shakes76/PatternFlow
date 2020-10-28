@@ -159,7 +159,11 @@ __Note: Test Dice Coefficient:  0.8451062__
 
 * [3] [Dataset - SICI2018 Challenge](https://challenge2018.isic-archive.com)
 
+# Author
 
+Name: Jiamin Li
+
+Student ID: 45115286
 
 
 
