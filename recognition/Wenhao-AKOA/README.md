@@ -27,5 +27,5 @@
     load the save model
 ## result
 * accuracy plot
-![](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/accuracy_visu.png)
+![Image of accuray](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/accuracy_visu.png)
 
