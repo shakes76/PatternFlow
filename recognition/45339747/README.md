@@ -29,3 +29,7 @@ The script execute_script_45339747.py is the driver script and executes the abov
 * layers_script_45339747.py requires no extra libraries.
 * results_script_45339747.py requires NumPy and Matplotlib to display results.
 
+# Example Outputs
+Output from model.summary():
+
+
