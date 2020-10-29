@@ -88,6 +88,7 @@ def plot_ISIC_all(X, y, y_pred, ix=None):
     ax[2].imshow(y_pred[ix,...,0],cmap='gray')
     ax[2].contour(y_pred[ix].squeeze(), colors='k', levels=[0.5])
     ax[2].set_title('Predicted Segmentation')
+    plt.show()
     
 # Creating the model, predicting the test data, evaluating Dice Coefficients and displaying random lesion
 # actual segmentation and predicted segmentation images
@@ -123,15 +124,15 @@ def mod_comp(img_path, seg_path, img_height, img_width):
     # Generating the predicted segmentation arrays of the ISIC Test data set
     ISIC_test_preds = model.predict(XISIC_test, verbose=1)
     
-    print("The dice coefficient of the ISIC test data\n",dice_coeff(yISIC_test_cat,ISIC_test_preds).numpy())
+    print("The dice coefficient of the ISIC test data : ",dice_coeff(yISIC_test_cat,ISIC_test_preds).numpy())
     
     
     # Creating a dataframe for the individual dice coefficients of the segmentation images of the test data set
     test_data_dc = dice_coefflabelwise(yISIC_test_cat,ISIC_test_preds).numpy()
     test_data_img_files = np.array(img_test_fn(seg_path))
     test_fn_dc = pd.DataFrame({'ISIC_Test_Img': test_data_img_files, 'Dice_Coefficient': list(test_data_dc)}, columns=['ISIC_Test_Img', 'Dice_Coefficient'])
-    print("The individual dice coefficients of the segmentation images of the test data set\n")
-    print(test_fn_dc)
+    print("Storing the individual dice coefficients of the segmentation images of the test data set\n")
+    test_fn_dc.to_csv('Dice_Coefficients_Test.csv')
     
     # Randomly generating images for the predicted segmentations and comparing them with the actual segmentation of the lesion images
     ISIC_test_preds_max = np.argmax(ISIC_test_preds, axis = -1)
