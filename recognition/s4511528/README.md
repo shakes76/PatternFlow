@@ -76,7 +76,7 @@ __Note:__
 
 __1. The input image to model should be normalized and resized.__
 
-__2. The dataset will be split to train:val:test with the rario `6:2:2`.__
+__2. The dataset will be split to train:val:test with the ratio `6:2:2`.__
 
 __3. The value of ground truth and output should be converted to `0 or 1`.__
 
