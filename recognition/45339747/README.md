@@ -40,7 +40,7 @@ The script execute_script_45339747.py is the driver script and executes the abov
 <img src="data/model_test.png">
 
 * Accuracy plotted against validation accuracy with respect to epoch:
-<img src="data/acc_valacc.png" width="300" height="300">
+<img src="data/acc_valacc.png" width="250" height="250">
 
 * Training loss against validation loss with respect to each epoch:
 <img src="data/trainvalidate.png" width="300" height="300">
@@ -50,3 +50,6 @@ The script execute_script_45339747.py is the driver script and executes the abov
 
 * Example 2: Two patients chosen at random from the test set. Patient 1 with images of the left knee, Patient 2 with images of the right knee. 
 <img src="data/ex2.png">
+
+# Justification of Data Split
+The data consisted of approximately 18 000 images with 101 different patients. To avoid data leakage (a common issue in classification tasks in medical imaging), the data was split into three groups: training, validation and testing. Training consisted of 70 patients, validation consisted of 20 patients and testing consisted of 21 patients. Their respective labels were loaded into the respective sets based on the keywords RIGHT or LEFT in the image file for each patient. This was a very successful split of the data as the model did not over-or-underfit the data and finished with 93.23% accuracy after training, and 93.32% accuracy when testing. This means the model is performing successfully. 
