@@ -39,17 +39,17 @@ def unet_model(output_channels, f=6):
     u4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
     u4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
     
-    u3 = layers.UpSampling2D()(d4)
+    u3 = layers.UpSampling2D()(u4)
     u3 = layers.concatenate([u3, d3])
     u3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
     u3 = layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
     
-    u2 = layers.UpSampling2D()(d3)
+    u2 = layers.UpSampling2D()(u3)
     u2 = layers.concatenate([u2, d2])
     u2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
     u2 = layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
     
-    u1 = layers.UpSampling2D()(d2)
+    u1 = layers.UpSampling2D()(u2)
     u1 = layers.concatenate([u1, d1])
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
