@@ -22,7 +22,7 @@ val_ds = val_ds.shuffle(len(X_val))
 
 def decode_image(path):
     img = tf.io.read_file(path)
-    img = tf.image.decode_jpeg(img, channels = 3)
+    img = tf.image.decode_jpeg(img, channels = 1)
     img = tf.image.resize(img, [256, 256])
     img = tf.cast(img, tf.float32) / 255.0
     return img
@@ -31,14 +31,17 @@ def decode_mask(path):
     img = tf.io.read_file(path)
     img = tf.image.decode_png(img, channels = 1)
     img = tf.image.resize(img, [256, 256])
-    img = tf.image.convert_image_dtype(img, dtype=tf.uint8, saturate=False, name=None)
-    mask = tf.one_hot(img, depth=1, dtype=tf.uint8)
-    return tf.squeeze(mask)
+    img = tf.cast(img, tf.float32) / 255.0
+    img = tf.math.round(img)
+    img = tf.cast(img, tf.uint8)
+    return img
 
 def process_path(image_path, mask_path):
+    print(image_path)
+    print(mask_path)
     image = decode_image(image_path)
     mask = decode_mask(mask_path)
-    image = tf.reshape(image, (256, 256, 3))
+    image = tf.reshape(image, (256, 256, 1))
     mask = tf.reshape(mask, (256, 256, 1))
     return image, mask
 
@@ -46,24 +49,17 @@ train_ds = train_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 val_ds = val_ds.map(process_path)
 
-# def display(display_list):
-#     plt.figure(figsize=(10,10))
-#     for i in range(len(display_list)):
-#         plt.subplot(1, len(display_list), i+1)
-#         plt.imshow(display_list[i], cmap='gray')
-#         plt.axis('off')
-#     plt.show()
+def display(display_list):
+    plt.figure(figsize=(10,10))
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.imshow(display_list[i], cmap='gray')
+        plt.axis('off')
+    plt.show()
 
-# for image, mask in train_ds.take(1):
-#     display([tf.squeeze(image), tf.argmax(mask, axis = -1)])
+for image, mask in train_ds.take(1):
+    display([tf.squeeze(image), tf.squeeze(mask)])
 
 model = unet()
-
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-
-# class DisplayCallback(tf.keras.callbacks.Callback):
-#     def on_epoch_end(self, epoch, logs = None):
-#         clear_output(wait = True)
-#         sho
-
 history = model.fit(train_ds.batch(3), epochs = 3, validation_data = val_ds.batch(32))
