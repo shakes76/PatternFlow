@@ -58,3 +58,11 @@ Or in other words the syntax is: -
 - matplotlib
 - random
 - sys
+
+**Expected Output**
+
+- Overall Dice Score of the ISIC test data set
+- CSV file with individual dice scores for all predicted segmentation images for the test data set (will be saved in the path where the code is executed, Sample Provided)
+- Plot of a random ISIC test sample with lesion image, actual segmentation image and predicted segmentation image (Sample shown below)
+
+![UNET Image](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Sample_ISIC_Predicted_Plot.png)
