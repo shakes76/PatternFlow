@@ -123,6 +123,11 @@ of time in the larger models).
 Notably, since a GAN was developed for this project, there was no need to rely on train/test/validation splits, or
 the labelled-segmented data. For this project, each epoch was only trained on the provided OASIS training image data.
 
+To run this project, in `driver.py`, set the resolution to 28, and run the script. This will run the training process 
+for a new model, which should train each epoch in roughly a minute each. One each epoch completion, a set of images will 
+be generated in the `output/` folder, and SSIM values will be printed periodically throughout the training process.
+If you stop the process, simply re-running the script (granted it is on the same day) will pick training back up
+where you left off.
 
 ## Project Results
 

@@ -56,8 +56,8 @@ class DriverTests(unittest.TestCase):
 
         plt.show()
 
-        self.assertIsInstance(batch, np.ndarray)
-        self.assertEquals(batch.shape, (test_batch_size, image_width, image_height, 1))
+        self.assertIsInstance(batch, tf.Tensor)
+        self.assertEquals(batch.shape, tf.TensorShape((test_batch_size, image_width, image_height, 1)))
 
         print("Done")
 

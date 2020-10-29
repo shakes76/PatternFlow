@@ -120,7 +120,6 @@ class DCGANModelFramework:
 
         # Set uo save name and required directories
         self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}-{self.size}x{self.size}"
-        self.save_name = "2020-10-25-256x256"
         os.makedirs(f"output/{self.save_name}/", exist_ok=True)
         os.makedirs(f"training_checkpoints/{self.save_name}/", exist_ok=True)
 
