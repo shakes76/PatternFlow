@@ -9,23 +9,65 @@ import random
 
 def proof_no_set_overlap(train_image_names, test_image_names):
     matches = 0
+    unique_patients = []
 
-    for name in train_image_names:
-        if name in test_image_names:
-            matches += 1
+    for train_name in train_image_names:
+        if train_name[:10] not in unique_patients:
+            for test_name in test_image_names:
+                if train_name[:10] == test_name[:10]:
+                    matches += 1
 
-    print("num images with same name (indicating training set and test set overlap): ", matches)
+        unique_patients.append(train_name[:10])
+
+    print("num of images with patient set overlap", matches)
+
+
+def split_by_patients(image_names, N_train, N_test):
+    patient_batches = dict()
+    train_image_names = []
+    test_image_names = []
+
+    for name in image_names:
+        patient_id = name.split('_')[0]
+        if patient_id in patient_batches:
+            patient_batches[patient_id].append(name)
+        else:
+            patient_batches[patient_id] = [name]
+
+    building_train = True
+    for patient_batch in patient_batches.values():
+        for name in patient_batch:
+            if building_train:  # first step: building training set
+                if len(train_image_names) < N_train:
+                    train_image_names.append(name)
+                else:
+                    building_train = False  # start building test set now
+                    break
+            else:  # second step: building testing set
+                if len(test_image_names) < N_test:
+                    test_image_names.append(name)
+                else:
+                    break  # done building test set
+
+        if len(test_image_names) >= N_test:
+            break
+
+    return train_image_names, test_image_names
 
 
 def process_dataset(dir_data, N_train, N_test):
     all_image_names = os.listdir(data_dir)
-    random.shuffle(all_image_names)
     # num_total: 18680
     # num left found: 7,760
     # num_right found: 10,920
 
-    train_image_names = all_image_names[:N_train]
-    test_image_names = all_image_names[N_train:N_train + N_test]
+    random.shuffle(all_image_names)
+
+    train_image_names, test_image_names = split_by_patients(all_image_names,
+                                                            N_train, N_test)
+
+    random.shuffle(train_image_names)
+    random.shuffle(test_image_names)
 
     proof_no_set_overlap(train_image_names, test_image_names)
 
@@ -61,10 +103,12 @@ def process_dataset(dir_data, N_train, N_test):
     return X_train, y_train, X_test, y_test
 
 
-def visualise_images(X, y, set_size, title):
+def visualise_images(X, y, set_size, title, seed=0):
+    random.seed(seed)
+
     plt.figure(figsize=(10, 10))
     for i in range(9):
-        index = random.randint(0, set_size-1)
+        index = random.randint(0, set_size - 1)
         plt.subplot(3, 3, i + 1)
         # cast back to float32 for visualisation
         plt.imshow(tf.cast(X[index], tf.float32), cmap='gray')
@@ -109,7 +153,10 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     print(f"validation acc = {acc}")
 
     visualise_images(X_test[:, :, :, 0], test_predictions,
-                     100, "Model predictions on validation set")
+                     100, "Model predictions on validation set", seed=69)
+
+    visualise_images(X_test[:, :, :, 0], y_test,
+                     100, "Actual labels of validation set", seed=69)
 
 
 if __name__ == "__main__":
@@ -121,8 +168,11 @@ if __name__ == "__main__":
                                        fname='AKOA_Analysis',
                                        untar=True)
 
+    train_size = 6000
+    test_size = 1500
+
     # split up dataset, 12000 images for training, 3000 for testing
-    X_train, y_train, X_test, y_test = process_dataset(data_dir, 1200, 300)
+    X_train, y_train, X_test, y_test = process_dataset(data_dir, train_size, test_size)
 
     print("proportion of right knee in training set:",
           len([x for x in y_train if x == 1]), len(y_train))
@@ -130,8 +180,8 @@ if __name__ == "__main__":
           len([x for x in y_test if x == 1]), len(y_test))
 
     # visualise some of training set
-    visualise_images(X_train, y_train, 1200, "visualisation of training set")
-    visualise_images(X_test, y_test, 300, "visualisation of testing set")
+    visualise_images(X_train, y_train, train_size, "visualisation of training set")
+    visualise_images(X_test, y_test, test_size, "visualisation of testing set")
 
     classifier = LateralityClassifier((228, 260, 1))
 
