@@ -1,23 +1,15 @@
 """
-Questions for tutorial
-- What's the difference between the project and demo 2? wrt gans
-- What do we need to consider wrt model design
-- How do we calculate SSIM for a single image?
-- How can I run jobs through the uq server to save time?
+OASIS DCGAN Implementation framework
 
-https://medium.com/deep-dimension/gans-a-modern-perspective-83ed64b42f5c
-
-https://github.com/soumith/ganhacks
+@author nthompson97
 
 Original GAN paper: https://arxiv.org/pdf/1511.06434.pdf
-Heaps of model examples: https://github.com/wiseodd/generative-models/tree/master/GAN
 """
 
 import glob
 
 import itertools
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import tensorflow as tf
 import time
@@ -50,7 +42,7 @@ class Dataset:
         self.image_width = image_width
         self.image_height = image_height
 
-    def get_batches(self, batch_size: int) -> np.ndarray:
+    def get_batches(self, batch_size: int) -> tf.Tensor:
         """
         Serve data batches, yield so this can be called as a loop
 
@@ -64,9 +56,9 @@ class Dataset:
         while idx + batch_size <= self.n_files:
             batch = self._get_batch(self.data_files[idx: idx + batch_size])
             idx += batch_size
-            yield -1 + (batch - batch.min()) / (batch.max() - batch.min()) * 2
+            yield -1 + 2 * (batch - tf.reduce_min(batch)) / (tf.reduce_max(batch) - tf.reduce_min(batch))
 
-    def _get_batch(self, image_files: List[str]) -> np.ndarray:
+    def _get_batch(self, image_files: List[str]) -> tf.Tensor:
         """
         Return an array of images in the form of a batch
 
@@ -78,14 +70,14 @@ class Dataset:
         """
 
         images = [self._get_image(sample_file) for sample_file in image_files]
-        batch = np.array(images).astype(np.float32)
+        batch = tf.cast(tf.stack(images), dtype=tf.float32)
 
         # Add channel dimension
-        batch = batch.reshape(batch.shape + (1,))
+        batch = tf.reshape(batch, batch.shape + (1,))
 
         return batch
 
-    def _get_image(self, image_path: str) -> np.ndarray:
+    def _get_image(self, image_path: str) -> tf.Tensor:
         """
         Returns the numpy array of a single image. Also responsible for resizing the image appropriately
         using PIL image resize
@@ -100,7 +92,7 @@ class Dataset:
         image = Image.open(image_path).resize((self.image_width, self.image_height))
         assert image.size == (self.image_width, self.image_height), f"Inconsistent image size: {image.size}"
 
-        return np.array(image.convert(mode="L"))
+        return tf.reshape(tf.constant(image.convert(mode="L").getdata()), (self.image_width, self.image_height))
 
 
 class DCGANModelFramework:
@@ -117,6 +109,7 @@ class DCGANModelFramework:
 
         # Set uo save name and required directories
         self.save_name = f"{datetime.now().strftime('%Y-%m-%d')}-{self.size}x{self.size}"
+        self.save_name = "2020-10-25-256x256"
         os.makedirs(f"output/{self.save_name}/", exist_ok=True)
         os.makedirs(f"training_checkpoints/{self.save_name}/", exist_ok=True)
 
@@ -319,7 +312,7 @@ class DCGANModelFramework:
         assert os.path.exists(os.path.join(CHECKPOINT_DIR, f"{save_name}")), f"Directory does not exist: {save_name}"
 
         # Load checkpoints
-        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{self.save_name}/")
+        checkpoint_prefix = os.path.join(CHECKPOINT_DIR, f"{save_name}/")
         checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator.optimizer,
                                          discriminator_optimizer=self.discriminator.optimizer,
                                          generator=self.generator,
@@ -334,5 +327,8 @@ class DCGANModelFramework:
         output = tf.math.round((output - tf.reduce_min(output)) / (tf.reduce_max(output) - tf.reduce_min(output)) * 255)
 
         # Plot the generated image
-        plt.imshow(output.numpy()[0, :, :, 0], cmap="Greys")
+        plt.imshow(output.numpy()[0, :, :, 0], cmap="gray")
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(False)
         plt.show()

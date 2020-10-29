@@ -1,3 +1,9 @@
+"""
+OASIS DCGAN Driver tests
+
+@author nthompson97
+"""
+
 import glob
 
 import matplotlib.pyplot as plt
@@ -5,12 +11,11 @@ import numpy as np
 import tensorflow as tf
 import unittest
 
-from recognition.s4436194_oasis_dcgan.data_helper import Dataset
-from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
-    DATA_TRAIN_DIR,
-)
 from recognition.s4436194_oasis_dcgan.models_helper import (
     make_models_64
+)
+from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
+    DATA_TRAIN_DIR,
 )
 
 

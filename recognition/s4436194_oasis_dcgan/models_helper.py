@@ -1,3 +1,11 @@
+"""
+OASIS DCGAN Models
+
+@author nthompson97
+
+Original GAN paper: https://arxiv.org/pdf/1511.06434.pdf
+"""
+
 import tensorflow as tf
 from tensorflow.keras import layers, Model
 from typing import Tuple
@@ -113,18 +121,18 @@ class Discriminator64(Model):
         super(Discriminator64, self).__init__()
 
         self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+        self.optimizer = tf.keras.optimizers.Adam(0.0002, 0.5)
 
         self.layer_conv_0 = layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[64, 64, 1])
-        self.layer_lrelu_0 = layers.LeakyReLU()
+        self.layer_lrelu_0 = layers.LeakyReLU(0.2)
         self.layer_dropout_0 = layers.Dropout(0.3)
 
         self.layer_conv_1 = layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same')
-        self.layer_lrelu_1 = layers.LeakyReLU()
+        self.layer_lrelu_1 = layers.LeakyReLU(0.2)
         self.layer_dropout_1 = layers.Dropout(0.3)
 
         self.layer_conv_2 = layers.Conv2D(256, (5, 5), strides=(2, 2), padding='same')
-        self.layer_lrelu_2 = layers.LeakyReLU()
+        self.layer_lrelu_2 = layers.LeakyReLU(0.2)
         self.layer_dropout_2 = layers.Dropout(0.3)
 
         self.layer_flatten = layers.Flatten()
@@ -156,26 +164,26 @@ class Generator64(Model):
         # self.network_check()
 
         self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        self.optimizer = tf.keras.optimizers.Adam(1e-4)
+        self.optimizer = tf.keras.optimizers.Adam(0.0002, 0.5)
 
         self.layer_input = tf.keras.Input(shape=100)
         self.layer_dense_0 = layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100,))
         self.layer_batch_norm_0 = layers.BatchNormalization()
-        self.layer_lrelu_0 = layers.LeakyReLU()
+        self.layer_lrelu_0 = layers.ReLU()
 
         self.layer_reshape_0 = layers.Reshape((8, 8, 256))
 
         self.layer_conv2d_1 = layers.Conv2DTranspose(256, (5, 5), strides=(1, 1), padding='same', use_bias=False)
         self.layer_batch_norm_1 = layers.BatchNormalization()
-        self.layer_lrelu_1 = layers.LeakyReLU()
+        self.layer_lrelu_1 = layers.ReLU()
 
         self.layer_conv2d_2 = layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False)
         self.layer_batch_norm_2 = layers.BatchNormalization()
-        self.layer_lrelu_2 = layers.LeakyReLU()
+        self.layer_lrelu_2 = layers.ReLU()
 
         self.layer_conv2d_3 = layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False)
         self.layer_batch_norm_3 = layers.BatchNormalization()
-        self.layer_lrelu_3 = layers.LeakyReLU()
+        self.layer_lrelu_3 = layers.ReLU()
 
         self.layer_conv2d_4 = layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same',
                                                      use_bias=False, activation='tanh')

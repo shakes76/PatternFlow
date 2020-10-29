@@ -1,8 +1,19 @@
-from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
-    DCGANModelFramework,
-    Dataset,
+"""
+OASIS DCGAN Driver script
+
+Runs training and testing for the main DCGAN implementation in this project. In the main run statement, ensure
+that the model size is correctly selected. The model size can only be one of 28, 64, 128, or 256.
+
+@author nthompson97
+"""
+
+from recognition.s4436194_oasis_dcgan.models_helper import (
+    make_models_28,
+    make_models_64,
+    make_models_128,
+    make_models_256
 )
-from recognition.s4436194_oasis_dcgan.models_helper import *
+from recognition.s4436194_oasis_dcgan.oasis_dcgan import DCGANModelFramework
 
 MODELS_MAP = {
     28: make_models_28(),
@@ -12,40 +23,41 @@ MODELS_MAP = {
 }
 
 
-def run_dcgan_training(res):
+def run_dcgan_training(resolution):
+    """
+    Performs training for the DCGAN models. The number of epochs and batch size can be controlled from this
+    top level.
+
+    Args:
+        resolution: The size of the output image
     """
 
-    Returns:
-
-    """
-
-    assert res in MODELS_MAP, f"Resolution must be either 28, 64, 128, or 256: {res}"
+    assert resolution in MODELS_MAP, f"Resolution must be either 28, 64, 128, or 256: {resolution}"
+    discriminator, generator, resolution = MODELS_MAP[resolution]
 
     batch_size = 16
     epochs = 10
 
-    discriminator, generator, size = MODELS_MAP[res]
-
-    framework = DCGANModelFramework(discriminator, generator, size)
+    framework = DCGANModelFramework(discriminator, generator, resolution)
     framework.train_dcgan(batch_size=batch_size, epochs=epochs)
 
 
-def run_dcgan_tests(res):
+def run_dcgan_tests(resolution):
     """
+    Builds a model and displays an image displayed from that model's generator. This must be a preexisting model.
 
-    Returns:
-
+    Args:
+        resolution: The size of the output image
     """
-    assert res in MODELS_MAP, f"Resolution must be either 28, 64, 128, or 256: {res}"
-    discriminator, generator, size = MODELS_MAP[res]
+    assert resolution in MODELS_MAP, f"Resolution must be either 28, 64, 128, or 256: {resolution}"
+    discriminator, generator, resolution = MODELS_MAP[resolution]
 
-    framework = DCGANModelFramework(discriminator, generator, size)
-    framework.test_dcgan()
+    framework = DCGANModelFramework(discriminator, generator, resolution)
+    framework.test_dcgan(save_dir="2020-10-27-64x64")
 
 
 if __name__ == '__main__':
+    size = 256
 
-    res = 28
-
-    run_dcgan_training(res)
-    # run_dcgan_tests(res)
+    run_dcgan_training(size)
+    run_dcgan_tests(size)
