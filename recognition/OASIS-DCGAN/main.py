@@ -74,7 +74,7 @@ def build_generator(noise_shape=(100,)):
 
     return model
 
-opt = tf.keras.optimizers.Adam(0.0002, 0.5)
+opt = tf.keras.optimizers.Adam(0.0001, 0.5)
 
 generator = build_generator()
 generator.compile(loss='binary_crossentropy', optimizer=opt)
