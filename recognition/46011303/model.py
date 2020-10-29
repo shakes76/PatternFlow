@@ -8,13 +8,16 @@ from tensorflow.keras.layers import Dense, Flatten
 
 
 def model():
+    # taking input
     inputs = tensorflow.keras.Input(shape=(256, 256, 3))
     conv_layer = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(inputs)
+    #context module
     conv_layer1 = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(conv_layer)
     pool1 = Dropout(0.3)(conv_layer1)
     conv_layer1 = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(pool1)
+    #element wise summation
     conv_layer1 = Add()([conv_layer, conv_layer1])
-
+    #downsampling layer between two context modules
     conv_layer_1s = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same', strides=(2, 2))(conv_layer1)
 
     conv_layer2 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(conv_layer_1s)
@@ -44,7 +47,7 @@ def model():
     conv_layer5 = Add()([conv_layer_4s, conv_layer5])
 
     layer_6 = UpSampling2D()(conv_layer5)
-
+     #concatenating with corresponding downsampling layer
     con1 = concatenate([layer_6, conv_layer4])
 
     up1 = Conv2D(128, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(con1)
@@ -77,6 +80,7 @@ def model():
 
     seg3 = Conv2D(4, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(layer_10)
 
+    #element wise summation of segmented layers
     added_seg12 = Add()([seg1, seg2])
     added_seg12 = UpSampling2D()(added_seg12)
     added_seg123 = Add()([added_seg12, seg3])
