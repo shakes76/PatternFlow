@@ -11,7 +11,7 @@ test_dir = "H:/keras_png_slices_test/"
 
 train_size = 9665
 test_size = 545
-img_size = (128, 128, 3)  # 256x256, grayscale
+img_size = (128, 128, 1)  # 256x256, grayscale
 
 # get the filenames of all the images, then split them into training and testing sets 
 import os
@@ -26,7 +26,7 @@ def get_images(img_dir, img_names):
         if name == "Thumbs.db":
             continue
         # print("Getting {}".format(img_dir+name))
-        image = load_img(img_dir + name, target_size=img_size)
+        image = load_img(img_dir + name, target_size=img_size, color_mode="grayscale")
         # convert to array and normalise
         image = img_to_array(image)/255.0
         images.append(image)
@@ -52,25 +52,23 @@ print("Images got")
 
 def build_generator(noise_shape=(100,)):
     input_noise = layers.Input(shape=noise_shape)
-    
-    l = layers.Dense(1024, activation="relu")(input_noise)
-    l = layers.Dense(1024, activation="relu")(input_noise)
-    l = layers.Dense(128*8*8, activation="relu")(l)
+
+    l = layers.Dense(128*8*8, activation="relu")(input_noise)
     l = layers.Reshape((8, 8, 128))(l)
     
     l = layers.Conv2DTranspose(128, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
-    l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
+    l = layers.Conv2D(128, (1, 1), activation="relu", padding="same")(l)
     
     l = layers.Conv2DTranspose(64, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
     
     l = layers.Conv2DTranspose(32, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
-    l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
+    l = layers.Conv2D(32 , (1, 1), activation="relu", padding="same")(l)
     
     l = layers.Conv2DTranspose(16, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
-    l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
+    l = layers.Conv2D(16 , (1, 1), activation="relu", padding="same")(l)
     
-    img = layers.Conv2D(3, (1, 1), activation="sigmoid", padding="same")(l)
+    img = layers.Conv2D(1, (1, 1), activation="sigmoid", padding="same")(l)
     
     model = models.Model(input_noise, img)
 
@@ -93,7 +91,7 @@ def plot_generated_images(noise, path_save=None ,title=""):
     fig = plt.figure(figsize=(40,10))
     for i, img in enumerate(images):
         ax = fig.add_subplot(1,4,i+1)
-        ax.imshow(img)
+        ax.imshow(img.squeeze(), cmap="gray")
     fig.suptitle("Generated images "+title,fontsize=30)
     
     if path_save is not None:
