@@ -33,7 +33,7 @@
 * loss plot<br>
 ![Image of loss](loss_visu.png)
 * evaluation<br>
-[Image of evaluation](evaluation.jpg)
+[evaluation](evaluation.jpg)
 * predict<br>
-[Image of predict](predict.png)
+[predict](predict.png)
 
