@@ -45,10 +45,24 @@ According to it-
 
 ## Model Result Evaluation 
 1. The first thing, that I did to see the results of the model was to make predictions on the test set.
-2. 
-dice
-images
-plots
+2. To determine the dice similarity coefficient, I implemented a simple logical function to check for overlapping of melonoma patches in the skin images, and got the value to be 0.815-
+
+![Dice_coeff](Resources/dice_result.PNG)
+
+3. The accuracy of the model is 94.65%
+4. For comaprision below attached are a sample predicted output and its ground truth-
+4.1. predicted image-
+
+![Predicted image](Resources/Predicted.PNG)
+
+4.2. Actual image-
+
+![actual image](Resources/actual.png)
+
+5. visualisation of loss and accuracy plots during training-
+
+![plots](Resources/plots.png)
+
 
 ## Implementation timeline
 ## Reference
