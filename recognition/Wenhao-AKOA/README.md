@@ -27,7 +27,7 @@
     load the save model
 ## result
 * accuracy plot
-![Image of accuray](/accuracy_visu.png)
+![Image of accuray](accuracy_visu.png)
 * loss plot
 ![Image of loss](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/loss_visu.png)
 * evaluation
