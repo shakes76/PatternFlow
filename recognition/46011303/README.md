@@ -66,9 +66,13 @@ here the orange lines denote the validation accuracy and loss, while the blue li
 
 ## Implementation timeline
 1. To start with, I implemented the improved u-net structure.
+
 2.After that, I fit the model into Brain OASIS images
+
 3. Once the model was running fine, I used ISIC images instead of brain images.
+
 4. All my functions were in a single jupyter notebook, hence, I segregated them into two files- model.py and driverscript.ipynb
+
 5. stimulated and visualised model performance
 
 ## Reference
