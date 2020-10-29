@@ -4,7 +4,6 @@ import tensorflow as tf
 from tensorflow.keras import layers
 import time
 import matplotlib.pyplot as plt
-import numpy as np
 from IPython import display
 
 
@@ -30,7 +29,7 @@ class DCGAN:
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
         # Checkpoint initialize
-        self.checkpoint_dir = '../models/training_checkpoints'
+        self.checkpoint_dir = '../models/' + str(img_size) + '_training_checkpoints'
         self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "ckpt")
         self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
                                               discriminator_optimizer=self.discriminator_optimizer,
