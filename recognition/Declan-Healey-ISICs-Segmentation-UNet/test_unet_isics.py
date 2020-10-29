@@ -2,6 +2,7 @@ import tensorflow as tf
 import glob
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from layers import *
 
 print('TensorFlow version:', tf.__version__)
 
@@ -45,13 +46,24 @@ train_ds = train_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 val_ds = val_ds.map(process_path)
 
-def display(display_list):
-    plt.figure(figsize=(10,10))
-    for i in range(len(display_list)):
-        plt.subplot(1, len(display_list), i+1)
-        plt.imshow(display_list[i], cmap='gray')
-        plt.axis('off')
-    plt.show()
+# def display(display_list):
+#     plt.figure(figsize=(10,10))
+#     for i in range(len(display_list)):
+#         plt.subplot(1, len(display_list), i+1)
+#         plt.imshow(display_list[i], cmap='gray')
+#         plt.axis('off')
+#     plt.show()
 
-for image, mask in train_ds.take(1):
-    display([tf.squeeze(image), tf.argmax(mask, axis = -1)])
+# for image, mask in train_ds.take(1):
+#     display([tf.squeeze(image), tf.argmax(mask, axis = -1)])
+
+model = unet()
+
+model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+
+# class DisplayCallback(tf.keras.callbacks.Callback):
+#     def on_epoch_end(self, epoch, logs = None):
+#         clear_output(wait = True)
+#         sho
+
+history = model.fit(train_ds.batch(3), epochs = 3, validation_data = val_ds.batch(32))
