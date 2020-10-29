@@ -61,24 +61,6 @@ def buildNetwork(train_images):
     print(model.summary())
     return model
 
-
-class MyThresholdCallback(tf.keras.callbacks.Callback):
-    """
-    Threshold function to stop training when a specific threshold of
-    validation accuracy has been reached to prevent overfitting.
-    This code is not my own. Source: https://stackoverflow.com/questions/59563085/how-to-stop-training-when-it-hits-a-specific-validation-accuracy
-    Author: StackOverflow user sebastian-ez.
-    Code could be removed since this threshold was only reached on the 5th (last) epoch.
-    """
-    def __init__(self, threshold):
-        super(MyThresholdCallback, self).__init__()
-        self.threshold = threshold
-    
-    def on_epoch_end(self, epoch, logs=None):
-        val_acc = logs["val_accuracy"]
-        if val_acc >= self.threshold:
-            self.model.stop_training = True
-
 def compile_and_run(model, epochs, batch):
     """
     Compiles and runs the model.
@@ -86,7 +68,6 @@ def compile_and_run(model, epochs, batch):
     - Loss function is binary_crossentropy.
     """
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    my_callback = MyThresholdCallback(threshold=0.9)
-    history = model.fit(train_images, train_images_y, epochs, validation_data=(validate_images, validate_images_y), callbacks=[my_callback], batch_size = batch)
+    history = model.fit(train_images, train_images_y, epochs, validation_data=(validate_images, validate_images_y), batch_size = batch)
 
 print("Model successfully built and tested. Application exiting...")
