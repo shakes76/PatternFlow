@@ -8,18 +8,23 @@ import random
 
 
 def proof_no_set_overlap(train_image_names, test_image_names):
-    matches = 0
-    unique_patients = []
+    unique_train_patients = []
+    unique_test_patients = []
 
     for train_name in train_image_names:
-        if train_name[:10] not in unique_patients:
-            for test_name in test_image_names:
-                if train_name[:10] == test_name[:10]:
-                    matches += 1
+        if train_name[:10] not in unique_train_patients:
+            unique_train_patients.append(train_name[:10])
+    for test_name in test_image_names:
+        if test_name[:10] not in unique_test_patients:
+            unique_test_patients.append(test_name[:10])
 
-        unique_patients.append(train_name[:10])
+    print("unique patients in training set: ", len(unique_train_patients))
+    print("unique patients in testing set: ", len(unique_test_patients))
 
-    print("num of images with patient set overlap", matches)
+    matches = len([x for x in unique_train_patients
+                   if x in unique_test_patients])
+
+    print("number of patients in training and testing: ", matches)
 
 
 def split_by_patients(image_names, N_train, N_test):
@@ -33,6 +38,7 @@ def split_by_patients(image_names, N_train, N_test):
             patient_batches[patient_id].append(name)
         else:
             patient_batches[patient_id] = [name]
+    print("unique patients in entire dataset: ", len(patient_batches))
 
     building_train = True
     for patient_batch in patient_batches.values():
@@ -136,9 +142,6 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     # format input to 4 dims
     X_train = X_train[:, :, :, np.newaxis]
     X_test = X_test[:, :, :, np.newaxis]
-
-    print(f"DEBUG: \nX SETS\t{X_train}\n\t{X_test}")
-    print(f"DEBUG: \nY SETS\t{y_train[:300]}\n\t{y_test}")
 
     model_history = model.fit(x=X_train, y=y_train,
                               validation_data=(X_test, y_test),
