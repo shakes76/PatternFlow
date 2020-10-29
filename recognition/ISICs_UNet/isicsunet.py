@@ -16,6 +16,31 @@ class IsicsUnet:
         self.train_ds = None
         self.val_ds = None
 
+    @staticmethod
+    def map_fn(image, mask):
+        """
+        Helper function to map dataset filenames to the actual image data arrays
+        """
+
+        # load image
+        img = tf.io.read_file(image)
+        img = tf.image.decode_jpeg(img, channels=3)
+        # img = tf.resize(img, (180,80))
+
+        # normalize image to [0,1]
+        img = tf.cast(img, tf.float32) / 255.0
+
+        # load mask
+        m = tf.io.read_file(mask)
+        m = tf.image.decode_png(m, channels=1)
+
+        # normalize mask to [0,1]
+        m = tf.cast(m, tf.float32) / 255.0
+
+        # do we need to one-hot encode the mask?
+
+        return img, m
+
     def load_data(self):
         """
         Downloads and prepares the data set for use in the model
@@ -36,7 +61,7 @@ class IsicsUnet:
         image_filenames = glob.glob(data_dir + 'ISIC2018_Task1-2_Training_Input_x2/*.jpg')
         mask_filenames = [f.replace('ISIC2018_Task1-2_Training_Input_x2',
                                     'ISIC2018_Task1_Training_GroundTruth_x2')
-                          .replace('jpg', 'png') for f in image_filenames]
+                          .replace('.jpg', '_segmentation.png') for f in image_filenames]
 
         # expected number of images is 2594
         image_count = len(image_filenames)
@@ -59,3 +84,12 @@ class IsicsUnet:
         self.train_ds = self.train_ds.shuffle(len(train_images))
         self.val_ds = self.val_ds.shuffle(len(val_images))
 
+        # map filenames to data arrays
+        self.train_ds = self.train_ds.map(IsicsUnet.map_fn)
+        self.val_ds = self.val_ds.map(IsicsUnet.map_fn)
+
+        for image, mask in self.train_ds.take(1):
+            print('Image shape:', image.numpy().shape)
+            print('Mask shape:', mask.numpy().shape)
+
+        # visualise data
