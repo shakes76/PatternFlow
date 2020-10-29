@@ -120,6 +120,11 @@ def visualise_images(X, y, set_size, title, seed=0):
     plt.show()
 
 
+def mean_square_error(predictions, actual):
+    return sum([(y - yhat) ** 2 for (y, yhat) in (actual, predictions)]) \
+           / len(actual)
+
+
 def build_train_model(classifier, X_train, y_train, X_test, y_test):
     model = classifier.build_simple_model()
 

@@ -43,9 +43,6 @@ class LateralityClassifier:
         dense1 = layers.Dense(128, activation="relu")(drop0)
 
         drop1 = layers.Dropout(droprate)(dense1)
-        # dense2 = layers.Dense(128, activation = "relu") (drop1)
-
-        # drop2 = layers.Dropout(droprate) (dense2)
         dense3 = layers.Dense(64, activation="relu")(drop1)
 
         drop3 = layers.Dropout(droprate)(dense3)
