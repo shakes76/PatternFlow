@@ -40,7 +40,7 @@ The script execute_script_45339747.py is the driver script and executes the abov
 <img src="data/model_test.png">
 
 * Accuracy plotted against validation accuracy with respect to epoch:
-<img src="data/acc_valacc.png" width="250" height="250">
+<img src="data/acc_valacc.png">
 
 * Training loss against validation loss with respect to each epoch:
 <img src="data/trainvalidate.png" width="300" height="300">
