@@ -40,10 +40,10 @@ The script execute_script_45339747.py is the driver script and executes the abov
 <img src="data/model_test.png">
 
 * Accuracy plotted against validation accuracy with respect to epoch:
-<img src="data/acc_valacc.png">
+<img src="data/acc_valacc.png" width="200" height="200">
 
 * Training loss against validation loss with respect to each epoch:
-<img src="data/trainvalidate.png">
+<img src="data/trainvalidate.png" width="200" height="200">
 
 * Example 1: Patient ID 9766889 had 10 images (9 displayed) from the testing set. When we pull the corresponding labels for these images we see that they are all left knees, so we would expect our model to get approximately 93% of the images labelled accurately. From below, our model got each image correct which is very close to how we expected it to perform.
 <img src="data/ex1.png">
