@@ -31,6 +31,6 @@ The script execute_script_45339747.py is the driver script and executes the abov
 
 # Example Outputs
 Example output from model.summary():
-![Alt text](data/model_summary.png?raw=true "Title")
-<img src="data/model_summary.png" width="48">
+
+<img src="data/model_summary.png" width="200" height="200">
 
