@@ -31,25 +31,25 @@ The script execute_script_45339747.py is the driver script and executes the abov
 
 # Example Outputs
 * Example output from model.summary():
-<img src="data/model_summary.png" width="400" height="400">
+<img src="resources/model_summary.png" width="400" height="400">
 
 * Example output from training the model:
-<img src="data/model_train.png">
+<img src="resources/model_train.png">
 
 * Example output from testing the model:
-<img src="data/model_test.png">
+<img src="resources/model_test.png">
 
 * Accuracy plotted against validation accuracy with respect to epoch:
-<img src="data/acc_valacc.png" width="220" height="220">
+<img src="resources/acc_valacc.png" width="220" height="220">
 
 * Training loss against validation loss with respect to each epoch:
-<img src="data/trainvalidate.png" width="200" height="200">
+<img src="resources/trainvalidate.png" width="200" height="200">
 
 * Example 1: Patient ID 9766889 had 10 images (9 displayed) from the testing set. When we pull the corresponding labels for these images we see that they are all left knees, so we would expect our model to get approximately 93% of the images labelled accurately. From below, our model got each image correct which is very close to how we expected it to perform.
-<img src="data/ex1.png">
+<img src="resources/ex1.png">
 
 * Example 2: Two patients chosen at random from the test set. Patient 1 with images of the left knee, Patient 2 with images of the right knee. 
-<img src="data/ex2.png">
+<img src="resources/ex2.png">
 
 # Justification of Data Split
 The data consisted of approximately 18 000 images with 101 different patients. To avoid data leakage (a common issue in classification tasks in medical imaging), the data was split into three groups: training, validation and testing. Training consisted of 70 patients, validation consisted of 20 patients and testing consisted of 21 patients. Their respective labels were loaded into the respective sets based on the keywords RIGHT or LEFT in the image file for each patient. This was a very successful split of the data as the model did not over-or-underfit the data and finished with 99.99% accuracy after training, and 93.32% accuracy when testing and 93.23% accuracy on the validation set. This means the model is performing successfully. 
