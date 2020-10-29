@@ -1,6 +1,7 @@
+import tensorflow as tf
+tf.random.Generator = None
 from tensorflow_addons.layers import InstanceNormalization
 from tensorflow.keras.layers import Add, Activation, concatenate, Conv2D, Dropout, LeakyReLU, Input, UpSampling2D
-from tensorflow.keras import Model
 
 
 # define each module
@@ -78,5 +79,5 @@ def improved_u_net(img_size):
     sum2 = Add()([sum1, seg3])
 
     outputs = Activation('sigmoid')(sum2)
-    network = Model(inputs=[inputs], outputs=[outputs])
+    network = tf.keras.Model(inputs=[inputs], outputs=[outputs])
     return network
