@@ -5,6 +5,9 @@ Created by Christopher Bailey (45576430) for COMP3710 Report.
 
 Data is extracted from the Preprocessed ISIC 2018 Melanoma Dermoscopy Dataset
 provided on course blackboard.
+
+Segments of code in this file are based on code from COMP3710-demo-code.ipynb
+from COMP3710 Guest Lecture and code from TensorFlow tutorial pages.
 """
 
 
@@ -20,6 +23,8 @@ class IsicsUnet:
     def map_fn(image, mask):
         """
         Helper function to map dataset filenames to the actual image data arrays
+
+        Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
         """
 
         # load image
@@ -41,6 +46,36 @@ class IsicsUnet:
         # do we need to one-hot encode the mask?
 
         return img, m
+
+    def visualise_loaded_data(self):
+        """
+        Helper function to visualise loaded image and mask data
+
+        Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
+        """
+        image_batch, mask_batch = next(iter(self.train_ds.batch(3)))
+        print("Image batch shape:", image_batch.numpy().shape)
+
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 10))
+        for i in range(3):
+            plt.subplot(3, 2, 2 * i + 1)
+            plt.imshow(image_batch[i])
+            plt.title("Input Image")
+            plt.axis('off')
+            plt.subplot(3, 2, 2 * i + 2)
+            plt.imshow(mask_batch[i])
+            plt.title("True mask")
+            plt.axis('off')
+        plt.show()
+
+    def visualise_segmentation(self):
+        """
+        Helper function to visualise loaded image and mask data
+
+        Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
+        """
+        pass
 
     def load_data(self):
         """
@@ -93,19 +128,23 @@ class IsicsUnet:
             print('Image shape:', image.numpy().shape)
             print('Mask shape:', mask.numpy().shape)
 
-        # visualise data
-        image_batch, mask_batch = next(iter(self.train_ds.batch(3)))
-        print("Image batch shape:", image_batch.numpy().shape)
+        # visualise (sanity check) loaded image and mask data
+        self.visualise_loaded_data()
 
-        import matplotlib.pyplot as plt
-        plt.figure(figsize=(10, 10))
-        for i in range(3):
-            plt.subplot(3, 2, 2*i+1)
-            plt.imshow(image_batch[i])
-            plt.title("Input Image")
-            plt.axis('off')
-            plt.subplot(3, 2, 2*i+2)
-            plt.imshow(mask_batch[i])
-            plt.title("True mask")
-            plt.axis('off')
-        plt.show()
+    def build_model(self):
+        """
+        Build the model
+        """
+        pass
+
+    def train_model(self):
+        """
+        Train the model
+        """
+        pass
+
+    def predict(self):
+        """
+        Perform prediction on validation set and report performance
+        """
+        pass
