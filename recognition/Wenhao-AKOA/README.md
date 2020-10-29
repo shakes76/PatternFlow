@@ -1,4 +1,6 @@
 # Classify laterality  of the OAI AKOA knee data set in a minimum accuracy of 0.9 with CNN
+* author:Wang Wenhao(46039941)
+* date:2020.10.29
 * libraries in main.py
 1. os, shutil, numpy (used for data split)
 2. matplotlib.pyplot (used for result visualize)
@@ -26,12 +28,12 @@
 * load_model<br>
     load the save model
 ## result
-* accuracy plot
+* accuracy plot<br>
 ![Image of accuray](accuracy_visu.png)
-* loss plot
-![Image of loss](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/loss_visu.png)
-* evaluation
-[Image of evaluation](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/evaluation.jpg)
-* predict
-[Image of predict](https://github.com/Wen-Hao-18/PatternFlow/tree/topic-recognition/recognition/Wenhao-AKOA/predict.png)
+* loss plot<br>
+![Image of loss](loss_visu.png)
+* evaluation<br>
+[Image of evaluation](evaluation.jpg)
+* predict<br>
+[Image of predict](predict.png)
 
