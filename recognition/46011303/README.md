@@ -39,20 +39,46 @@ According to it-
 ## Model Parameters and tuning
 1. While compiling the model, the loss function used is "binary_crossentropy" 
 2. I used adam optimiser with a small learning rate of 5(e^-4) to avoid converging to any local minimas.
-3. Epochs- This refers to the total to and fro iterations through the network during the training phase. In this model, I used 40 epochs because anything more than that did not reduce the validation loss any further suggesting that the model has started overtraining.
+3. Epochs- This refers to the total to and fro iterations through the network during the training phase. In this model, I used 50 epochs because anything more than that did not reduce the validation loss any further suggesting that the model has started overtraining.
 4. Batchsize- I used batches of 8 in the model.
  
 
 ## Model Result Evaluation 
 1. The first thing, that I did to see the results of the model was to make predictions on the test set.
-2. 
-dice
-images
-plots
+2. To determine the dice similarity coefficient, I implemented a simple logical function to check for overlapping of melonoma patches in the skin images, and got the value to be approx 0.815
+3. The accuracy of the model is 94.65%
+4. For comaprision below attached are a sample predicted output and its ground truth-
+
+4.1. predicted image-
+
+![predicted](Resources/predicted.PNG)
+
+4.2. Actual image-
+
+![actual](Resources/actual.PNG)
+
+5. visualisation of loss and accuracy plots during training-
+
+here the orange lines denote the validation accuracy and loss, while the blue lines denote training
+
+![plots](Resources/plots.PNG)
+
 
 ## Implementation timeline
+1. To start with, I implemented the improved u-net structure.
+
+2.After that, I fit the model into Brain OASIS images
+
+3. Once the model was running fine, I used ISIC images instead of brain images.
+
+4. All my functions were in a single jupyter notebook, hence, I segregated them into two files- model.py and driverscript.ipynb
+
+5. stimulated and visualised model performance
+
 ## Reference
-F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
+1. F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
 Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
 https://arxiv.org/abs/1802.10508v1
+2."SKLEARN.model_selection.Train_test_split".Available:
+https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
