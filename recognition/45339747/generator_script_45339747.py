@@ -14,7 +14,6 @@ Formats the data in the form of 3 tensors of images, 3 tensors of labels.
 
 # Import data passing Libraries.
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 from PIL import *
 
