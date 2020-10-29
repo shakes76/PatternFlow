@@ -1,6 +1,9 @@
 """
 OASIS DCGAN Driver tests
 
+Used for testing the DCGAN model framework, namely the get batches methods and models. This is done in a
+UnitTests framework for convenience.
+
 @author nthompson97
 """
 
@@ -16,6 +19,7 @@ from recognition.s4436194_oasis_dcgan.models_helper import (
 )
 from recognition.s4436194_oasis_dcgan.oasis_dcgan import (
     DATA_TRAIN_DIR,
+    Dataset
 )
 
 
@@ -45,9 +49,9 @@ class DriverTests(unittest.TestCase):
         for i in range(batch.shape[0]):
             plt.subplot(4, 4, i + 1)
 
-            image = batch[i, :, :, 0]
+            image = batch[i, :, :, 0].numpy()
             image = (((image - image.min()) * 255) / (image.max() - image.min())).astype(np.uint8)
-            plt.imshow(image, cmap="Greys")
+            plt.imshow(image, cmap="gray")
             plt.axis('off')
 
         plt.show()

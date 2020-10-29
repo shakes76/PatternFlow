@@ -4,6 +4,8 @@ OASIS DCGAN Driver script
 Runs training and testing for the main DCGAN implementation in this project. In the main run statement, ensure
 that the model size is correctly selected. The model size can only be one of 28, 64, 128, or 256.
 
+NOTE: Running this relies on the data files being in the same folder. If data is not present, the structure will fail
+
 @author nthompson97
 """
 

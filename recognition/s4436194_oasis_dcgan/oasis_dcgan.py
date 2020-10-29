@@ -1,6 +1,14 @@
 """
 OASIS DCGAN Implementation framework
 
+Framework for training and testing a DCGAN model. Two core classes are specified in this file,
+  * Dataset: handles importing data and dealing it out in batches to mitigate large memory requirements
+  * DCGANModelFramework: handles training and testing (creating images) for an input generator and
+      discriminator model
+
+Note that this automatically creates saving folders for output images (at each epoch), and model checkpoints. This
+naming convention depends on the date being run and the size of the model.
+
 @author nthompson97
 
 Original GAN paper: https://arxiv.org/pdf/1511.06434.pdf
@@ -96,6 +104,9 @@ class Dataset:
 
 
 class DCGANModelFramework:
+    """
+    Class used to train and test a GAN framework using tensorflow
+    """
 
     def __init__(self, discriminator, generator, size):
 
@@ -172,7 +183,7 @@ class DCGANModelFramework:
 
         # Main epoch loop
         total_batches = int((dataset.n_files / batch_size) + 1)
-        self.generate_and_save_images(checkpoint_epoch)
+        self.generate_and_image_subplot(checkpoint_epoch)
 
         # Start from existing epochs
         for e in range(checkpoint_epoch, epochs + checkpoint_epoch):
@@ -186,7 +197,7 @@ class DCGANModelFramework:
                     self.evaluate_ssim(dataset)
 
             # Save the model every epoch
-            self.generate_and_save_images(e + 1)
+            self.generate_and_image_subplot(e + 1)
             checkpoint.save(file_prefix=checkpoint_prefix)
 
             print(f"\nTime for epoch {e + 1} is {(time.time() - start) / 60} minutes\n")
@@ -274,7 +285,7 @@ class DCGANModelFramework:
         ssim = ((2 * mu_12 + c1) * (2.0 * sigma_12 + c2)) / ((mu_11 + mu_22 + c1) * (sigma_11 + sigma_22 + c2))
         return tf.reduce_mean(ssim).numpy()
 
-    def generate_and_save_images(self, epoch):
+    def generate_and_image_subplot(self, epoch):
         """
         Create a set of test images, designed to do this at each epoch
 

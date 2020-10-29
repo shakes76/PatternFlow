@@ -19,7 +19,8 @@ This project relies on various packages native to Python. Namely, this project r
 * tensorflow 2.1.0 +
 * matplotlib
 * tqdm
-* PIL (Descendant of the Pillow package)
+* PIL (i.e. the Pillow package)
+* numpy (only for driver tests)
 
 Furthermore, this module relies on the following built in Python packages,
 
@@ -118,6 +119,9 @@ to be done on the same day. This is facilitated through TensorFlows checkpoint c
 * SSIM is calculated regularly through a training epoch. This is particulary to help woith developing large models,
 to infer early on whether a model is converging on a solution, and whether to continue training (can take large periods
 of time in the larger models).
+
+Notably, since a GAN was developed for this project, there was no need to rely on train/test/validation splits, or
+the labelled-segmented data. For this project, each epoch was only trained on the provided OASIS training image data.
 
 
 ## Project Results
