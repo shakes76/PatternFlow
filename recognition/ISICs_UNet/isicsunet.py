@@ -25,7 +25,7 @@ class IsicsUnet:
         # load image
         img = tf.io.read_file(image)
         img = tf.image.decode_jpeg(img, channels=3)
-        # img = tf.resize(img, (180,80))
+        img = tf.image.resize(img, (512, 384))  # size arbitrarily chosen
 
         # normalize image to [0,1]
         img = tf.cast(img, tf.float32) / 255.0
@@ -33,6 +33,7 @@ class IsicsUnet:
         # load mask
         m = tf.io.read_file(mask)
         m = tf.image.decode_png(m, channels=1)
+        m = tf.image.resize(m, (512, 384))  # size arbitrarily chosen
 
         # normalize mask to [0,1]
         m = tf.cast(m, tf.float32) / 255.0
@@ -93,3 +94,18 @@ class IsicsUnet:
             print('Mask shape:', mask.numpy().shape)
 
         # visualise data
+        image_batch, mask_batch = next(iter(self.train_ds.batch(3)))
+        print("Image batch shape:", image_batch.numpy().shape)
+
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 10))
+        for i in range(3):
+            plt.subplot(3, 2, 2*i+1)
+            plt.imshow(image_batch[i])
+            plt.title("Input Image")
+            plt.axis('off')
+            plt.subplot(3, 2, 2*i+2)
+            plt.imshow(mask_batch[i])
+            plt.title("True mask")
+            plt.axis('off')
+        plt.show()
