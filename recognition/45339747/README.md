@@ -30,7 +30,23 @@ The script execute_script_45339747.py is the driver script and executes the abov
 * results_script_45339747.py requires NumPy and Matplotlib to display results.
 
 # Example Outputs
-Example output from model.summary():
+* Example output from model.summary():
+<img src="data/model_summary.png" width="400" height="400">
 
-<img src="data/model_summary.png" width="200" height="200">
+* Example output from training the model:
+<img src="data/model_train.png" width="400" height="400">
 
+* Example output from testing the model:
+<img src="data/model_test.png" width="400" height="400">
+
+* Accuracy plotted against validation accuracy with respect to epoch:
+<img src="data/acc_valacc.png" width="400" height="400">
+
+* Training loss against validation loss with respect to each epoch:
+<img src="data/train_validate.png" width="400" height="400">
+
+* Example 1: Patient ID 9766889 had 10 images (9 displayed) from the testing set. When we pull the corresponding labels for these images we see that they are all left knees, so we would expect our model to get approximately 93% of the images labelled accurately. From below, our model got each image correct which is very close to how we expected it to perform.
+<img src="data/ex1.png" width="400" height="400">
+
+* Example 2: Two patients chosen at random from the test set. Patient 1 with images of the left knee, Patient 2 with images of the right knee. 
+<img src="data/ex2.png" width="400" height="400">
