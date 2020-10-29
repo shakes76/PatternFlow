@@ -16,7 +16,7 @@ The dataset contains both segmented and raw images of skin patches to detect are
 ## ModelArchitecture
 The model used for this classification is an improved u-net structure taken from the research paper as cited in the *reference* section at the end.
 The architecture image is as follows-
-![Screenshot](architecture.png)
+![Screenshot](architecture.PNG)
 
 ## Model Parameters
 
