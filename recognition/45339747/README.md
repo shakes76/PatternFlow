@@ -30,6 +30,6 @@ The script execute_script_45339747.py is the driver script and executes the abov
 * results_script_45339747.py requires NumPy and Matplotlib to display results.
 
 # Example Outputs
-Output from model.summary():
-
+Example output from model.summary():
+![Alt text](data/model_summary.png?raw=true "Title")
 
