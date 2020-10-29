@@ -55,10 +55,14 @@ For more detailed reference of implementation of data generation part, check thi
 [A detailed example of how to use data generators with Keras](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
 
 ## [Basic Unet Structure](https://arxiv.org/pdf/1505.04597.pdf)
-![](resources/UNET.png)
+<p align="center">
+  <img width="700" src="resources/UNET.png" />
+</p>
 
 ## [Improved Unet Structure](https://arxiv.org/abs/1802.10508v1)
-![](resources/Improved_UNET.png)
+<p align="center">
+  <img width="700" src="resources/Improved_UNET.png" />
+</p>
 
 ## Evaluation Metrics
 
@@ -69,3 +73,11 @@ By nature, usually these problems are highly unbalanced, so these classification
 Therefore, if the datasets or the images are unbalanced, the pixel wise accuracy which we usually use to evaluate classification problems will no longer be valid or proper matrix to use. The reason is that if you for example predict every pixels as background then your accurary will already be 90% which is too high, it is biased. So what we want to do is instead use matrix that specifically target the pixels in the foreground classes.  
 The Sorensen-Dice coefficient is used as a similairty metric and is commonly used as a metric for segmentation algorithms.  
 The original formula was intended to be applied to binary data. Given two sets, X and Y, it is defined as 2|X||Y|/|X|+|Y|, where |X| and |Y| are the cardinalities of the two sets.
+
+## Result
+By training our model through the improved unet structure, we got final average dice similarity coefficiency 0.8285 on test set.  
+Below is the dice-accuracy-loss plot while training our model:
+<p align="center">
+  <img width="500" img src="resources/acc_loss_improved_unet.png" />
+</p>
+
