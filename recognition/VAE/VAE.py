@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, InputLayer, Flatten, Dense, Reshape, BatchNormalization
 from skimage import img_as_float
 from skimage.metrics import structural_similarity as ssim
@@ -7,40 +8,11 @@ import math
 
 
 class VAE(tf.keras.Model):
-    def __init__(self, latent_dimsion, kernel_size=3, strides=2):
+    def __init__(self, latent_dimension, kernel_size=3, strides=2):
         super(VAE, self).__init__()
-        self.latent_dim = latent_dimsion
-        self.encoder = tf.keras.Sequential(
-            [
-                InputLayer(input_shape=(256, 256, 1)),
-                Conv2D(filters=16, kernel_size=kernel_size, strides=strides, activation='relu'),
-                BatchNormalization(),
-                Conv2D(filters=32, kernel_size=kernel_size, strides=strides, activation='relu'),
-                BatchNormalization(),
-                Conv2D(filters=64, kernel_size=kernel_size, strides=strides, activation='relu'),
-                BatchNormalization(),
-                Flatten(),
-                # No activation
-                Dense(latent_dimsion * 2),
-            ]
-        )
-
-        self.decoder = tf.keras.Sequential(
-            [
-                InputLayer(input_shape=(latent_dimsion,)),
-                Dense(units=32 * 32 * 32, activation=tf.nn.relu),
-                BatchNormalization(),
-                Reshape(target_shape=(32, 32, 32)),
-                Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'),
-                BatchNormalization(),
-                Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'),
-                BatchNormalization(),
-                Conv2DTranspose(filters=16, kernel_size=3, strides=2, padding='same', activation='relu'),
-                BatchNormalization(),
-                # No activation
-                Conv2DTranspose(filters=1, kernel_size=3, strides=1, padding='same'),
-            ]
-        )
+        self.latent_dim = latent_dimension
+        self.encoder = self.define_encoder(latent_dimension, kernel_size, strides)
+        self.decoder = self.define_decoder(latent_dimension, kernel_size, strides)
 
     @tf.function
     # sample a point from the latent distribution and decode it
@@ -76,6 +48,36 @@ class VAE(tf.keras.Model):
         # decode the points sampled from the latent distribution to generate images
         predictions = model.sample(z)
         return predictions
+
+    def define_encoder(self, latent_dimension, kernel_size, strides):
+        e = Sequential()
+        e.add(InputLayer(input_shape=(256, 256, 1)))
+        e.add(Conv2D(filters=16, kernel_size=kernel_size, strides=strides, activation='relu'))
+        e.add(BatchNormalization())
+        e.add(Conv2D(filters=32, kernel_size=kernel_size, strides=strides, activation='relu'))
+        e.add(BatchNormalization())
+        e.add(Conv2D(filters=64, kernel_size=kernel_size, strides=strides, activation='relu'))
+        e.add(BatchNormalization())
+        e.add(Flatten())
+        e.add(Dense(latent_dimension * 2))
+        return e
+
+    def define_decoder(self, latent_dimension, kernel_size, strides):
+        d = Sequential()
+        d.add(InputLayer(input_shape=(latent_dimension,)))
+        d.add(Dense(units=32 * 32 * 32, activation=tf.nn.relu))
+        d.add(BatchNormalization())
+        d.add(Reshape(target_shape=(32, 32, 32)))
+        d.add(Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'))
+        d.add(BatchNormalization())
+        d.add(Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'))
+        d.add(BatchNormalization)
+        d.add(Conv2DTranspose(filters=16, kernel_size=3, strides=2, padding='same', activation='relu'))
+        d.add(BatchNormalization())
+        d.add(Conv2DTranspose(filters=1, kernel_size=3, strides=1, padding='same'))
+        return d
+
+
 
 
 # Calculate the similarity between the original test images and the generated images.
