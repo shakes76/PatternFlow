@@ -37,9 +37,6 @@ The U-Net is a convolutional network architecture designed for fast and precise 
 - The execution should be carried out in the environment where all the packages are installed
 - The driver script needs to be executed in the following way in the command terminal after setting up the environment: -
 
-**python Driver\_Script.py H:/45586327/ISIC2018\_Task1-2\_Training\_Data/ISIC2018\_Task1-2\_Training\_Input\_x2/ H:/45586327/ISIC2018\_Task1-2\_Training\_Data/ISIC2018\_Task1\_Training\_GroundTruth\_x2/**
-
-Or in other words the syntax is: -
 
 **python Driver\_Script.py Input\_Image\_Path Response\_Segmentation\_Path**
 
