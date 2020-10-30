@@ -30,7 +30,7 @@ class IsicsUnet:
         # load image
         img = tf.io.read_file(image)
         img = tf.image.decode_jpeg(img, channels=3)
-        img = tf.image.resize(img, (512, 384))  # resize all images to min size
+        img = tf.image.resize(img, (256, 192))  # resize all images to min size
 
         # normalize image to [0,1]
         img = tf.cast(img, tf.float32) / 255.0
@@ -38,7 +38,7 @@ class IsicsUnet:
         # load mask
         m = tf.io.read_file(mask)
         m = tf.image.decode_png(m, channels=1)
-        m = tf.image.resize(m, (512, 384))  # resize all masks to min size
+        m = tf.image.resize(m, (256, 192))  # resize all masks to min size
 
         # normalize mask to [0,1]
         m = tf.cast(m, tf.float32) / 255.0
@@ -46,9 +46,6 @@ class IsicsUnet:
         # do we need to one-hot encode the mask?
 
         return img, m
-
-    @staticmethod
-    def dsc_loss
 
     def visualise_loaded_data(self):
         """
@@ -140,7 +137,7 @@ class IsicsUnet:
         """
 
         # encoder/downsampling
-        input_size = (512, 384, 1)
+        input_size = (256, 192, 3)
         inputs = tf.keras.Input(input_size)
         conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(inputs)
         conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv1)
@@ -223,3 +220,5 @@ class IsicsUnet:
             plt.subplot(3,3,3*i+3)
             plt.imshow(predictions[i])
             plt.axis('off')
+
+        plt.show()

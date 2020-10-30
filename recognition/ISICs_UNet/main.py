@@ -21,8 +21,13 @@ def main():
 
     model.show_predictions()
 
-    model.model.compile(optimizer='', loss='', metrics='', )
-    history = model.fit(x=model.train_ds, epochs=3, validation_data=model.val_ds)
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+                        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+                        metrics=['accuracy'])
+
+    history = model.fit(x=model.train_ds,
+                        validation_data=model.val_ds,
+                        epochs=3)
 
     model.show_predictions()
 
