@@ -84,6 +84,41 @@ class VAE(tf.keras.Model):
         return predictions
 
 
+# Calculate the similarity between the original test images and the generated images.
+def calculate_ssim(predictions, test_sample):
+    ssim_total = 0
+    #
+    size = predictions.shape[0]
+    for i in range(size):
+        generated_img = predictions[i, :, :, 0]
+        reference_img = test_sample[i, :, :, 0]
+        generated_img = img_as_float(generated_img)
+        reference_img = img_as_float(reference_img)
+        ssim_total += ssim(reference_img, generated_img, data_range=generated_img.max() - generated_img.min())
+    # return the average structural similarity
+    return ssim_total/size
+
+
+def log_normal_pdf(sample, mean, log_var, raxis=1):
+    log2pi = tf.math.log(2. * math.pi)
+    return tf.reduce_sum(-.5 * ((sample - mean) ** 2. * tf.exp(-log_var) + log_var + log2pi), axis=raxis)
+
+
+def compute_loss(model, x):
+    # get the parameters (mean and var) from the latent posterior distribution P(z|x)
+    mean, log_var = model.encode(x)
+    # genereate z from the latent distribution P(z|x) through the reparameter trick
+    z = model.reparameterize(mean, log_var)
+    # generate x through decoding z
+    x_logit = model.decode(z)
+    # calculate the cross entropy between the decoded x and the real x
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
+    logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logpz = log_normal_pdf(z, 0., 0.)
+    logqz_x = log_normal_pdf(z, mean, log_var)
+    return -tf.reduce_mean(logpx_z + logpz - logqz_x)
+
+
 def get_test_sample(test_dataset):
     for test_batch in test_dataset.take(1):
         test_sample = test_batch[0:batch_size, :, :, :]
