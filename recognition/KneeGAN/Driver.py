@@ -7,7 +7,7 @@ learning_rate_discriminator = 0.0002
 learning_rate_generator = 0.0002
 generator_input_dim = 8
 latent_dim = 256
-epochs = 30
+epochs = 35
 data_path = 'D:\\comp3710\\AKOA_Analysis\\'
 test_data_path = 'D:\\comp3710\\AKOA_Analysis_test\\'
 output_path = 'Resources/'
@@ -23,6 +23,10 @@ def main():
 
     ssim = calculate_ssim(test_data_path, example_images)
     print("SSIM: " + str(ssim))
+
+    f = open("SSIM.txt", 'w')
+    f.write("SSIM: " + str(ssim))
+    f.close()
 
     print('okseeyou')
 

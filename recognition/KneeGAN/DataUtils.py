@@ -6,8 +6,9 @@ from matplotlib import pyplot
 
 def load_data(filepath, batch_size):
     image_files = glob.glob(filepath + '*')
-    images = np.array([np.array(Image.open(i).resize((128,128))) for i in image_files])
+    images = np.array([np.array(Image.open(i).convert('L').resize((128,128))) for i in image_files])
 
+    images = images[:,:,:,np.newaxis]
     discriminator_input_dim = images.shape[1:]
     dataset_size = images.shape[0]
 
@@ -25,8 +26,9 @@ def load_data(filepath, batch_size):
 
 def load_test_data(filepath):
     image_files = glob.glob(filepath + '*')
-    images = np.array([np.array(Image.open(i).resize((128,128))) for i in image_files])
+    images = np.array([np.array(Image.open(i).convert('L').resize((128,128))) for i in image_files])
 
+    images = images[:,:,:,np.newaxis]
     dataset_size = images.shape[0]
 
     print("Test Data Shape:")
@@ -44,7 +46,7 @@ def plot_history(disc_hist, gen_hist, output_path):
 	pyplot.plot(disc_hist, label='loss_disc')
 	pyplot.plot(gen_hist, label='loss_gen')
 	pyplot.legend()
-	pyplot.savefig(output_path + 'plot_line_plot_loss.png')
+	pyplot.savefig(output_path + 'loss_plot.png')
 	pyplot.close()
 
 def plot_examples(example_images, output_path):
@@ -54,7 +56,7 @@ def plot_examples(example_images, output_path):
     f, axarr = pyplot.subplots(dim,dim)
     for i in range(dim):
         for j in range(dim):
-            axarr[i,j].imshow(example_images[dim * i + j])
+            axarr[i,j].imshow(example_images[dim * i + j], cmap='gray', vmin=0, vmax=255)
     pyplot.savefig(output_path + 'example_output.png')
     pyplot.close()
 
@@ -62,11 +64,7 @@ def plot_examples(example_images, output_path):
 def calculate_ssim(test_filepath, example_images):
     test_dataset, dataset_size = load_test_data(test_filepath)
 
-    #iterations = min(dataset_size, example_images.shape[0])
-
     ssims = []
-
-    
 
     for i in range(example_images.shape[0]):
         for j in range(dataset_size):
@@ -77,6 +75,13 @@ def calculate_ssim(test_filepath, example_images):
 
     tf.keras.preprocessing.image.save_img('real.png', real)
     tf.keras.preprocessing.image.save_img('fake.png', example_images[0])
+
+    real, _ = tf.unique(tf.reshape(real, [-1]))
+    fake, _ = tf.unique(tf.reshape(example_images[0], [-1]))
+
+    print(real.numpy())
+    print('FAKE')
+    print(fake.numpy())
 
 
     return np.mean(ssims)
