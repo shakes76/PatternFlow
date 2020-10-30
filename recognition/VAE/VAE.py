@@ -82,3 +82,33 @@ class VAE(tf.keras.Model):
         z = model.reparameterize(mean, log_var)
         predictions = model.sample(z)
         return predictions
+
+
+def get_test_sample(test_dataset):
+    for test_batch in test_dataset.take(1):
+        test_sample = test_batch[0:batch_size, :, :, :]
+        return test_sample
+
+
+def load_img_to_tensor(ds, crop_ratio):
+    list_of_batches = list(ds.as_numpy_iterator())
+    brains = list()
+    for batch in list_of_batches:
+        for images in batch:
+            for i in range(images.shape[0]):
+                if (len(images[i].shape) == 3):
+                    image = tf.image.central_crop(images[i], crop_ratio)/255
+                    brains.append(image)
+    brain_images = tf.convert_to_tensor(brains, dtype=tf.float32)
+    return brain_images
+
+
+def get_dataset(train_dir, test_dir, batch_size, crop_ratio=1):
+    # load the images to BatchDataset
+    train_dataset = tf.keras.preprocessing.image_dataset_from_directory(train_dir, color_mode='grayscale')
+    test_dataset = tf.keras.preprocessing.image_dataset_from_directory(test_dir, color_mode='grayscale')
+    train_dataset = load_img_to_tensor(train_dataset, crop_ratio)
+    test_dataset = load_img_to_tensor(test_dataset, crop_ratio)
+    train_size = train_dataset.shape[0]
+    train_dataset = (tf.data.Dataset.from_tensor_slices(train_dataset).shuffle(train_size).batch(batch_size))
+    return train_dataset, test_dataset
