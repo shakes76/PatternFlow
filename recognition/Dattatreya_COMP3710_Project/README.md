@@ -51,7 +51,7 @@ The U-Net is a convolutional network architecture designed for fast and precise 
 - pandas
 - itertools
 - tqdm
-- skimage
+- scikit-image
 - matplotlib
 - random
 - sys
