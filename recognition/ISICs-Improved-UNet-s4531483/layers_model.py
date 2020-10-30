@@ -102,7 +102,8 @@ def improved_unet(width, height, channels):
 
     # Softmax used as final activation layer
     # output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
-    output = keras.layers.Softmax()(s2)
+    dense = keras.layers.Dense(2)(s2)
+    output = keras.layers.Softmax()(dense)
     u_net = keras.Model(inputs=[input], outputs=[output])
     return u_net
 

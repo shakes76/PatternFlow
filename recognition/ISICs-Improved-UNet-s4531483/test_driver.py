@@ -35,8 +35,8 @@ NUMBER_SHOW_TEST_PREDICTIONS = 3  # number of example test predictions to visual
 # Set the properties for the image generators for training images. Images transformed to help training generalisation.
 DATA_TRAIN_GEN_ARGS = dict(
     rescale=1.0/255,
-    shear_range=0.15,
-    zoom_range=0.15,
+    shear_range=0.1,
+    zoom_range=0.1,
     horizontal_flip=True,
     vertical_flip=True,
     fill_mode='nearest',
@@ -88,8 +88,7 @@ def pre_process_data():
 
     # Ideally this would be a Sequence joining the two generators instead of zipping them together to keep everything
     # thread-safe, allowing for multiprocessing - but if it ain't broke.
-    return zip(image_train_gen, keras.to_categorical(mask_train_gen)), \
-           zip(image_test_gen, keras.to_categorical(mask_test_gen))
+    return zip(image_train_gen, mask_train_gen), zip(image_test_gen, mask_test_gen)
 
 
 # Plot the accuracy and loss curves of model training.
@@ -108,7 +107,7 @@ def train_model_check_accuracy(train_gen, test_gen):
     model = layers.improved_unet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.summary()
     model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
-                  loss='categorical_crossentropy', metrics=['accuracy'])
+                  loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     track = model.fit(
         train_gen,
@@ -131,24 +130,24 @@ def test_visualise_model_predictions(model, test_gen):
     test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
     for i in test_range:
         current = next(islice(test_gen, i, None))
-        test_pred = model.predict(current, steps=1, use_multiprocessing=False)[0]
+        test_pred = np.argmax(model.predict(current, steps=1, use_multiprocessing=False)[0], axis=-1)
         truth = current[1][0]
         original = current[0][0]
         probabilities = keras.preprocessing.image.img_to_array(test_pred)
-        ones = probabilities >= 0.5
-        zeroes = probabilities < 0.5
-        thresholded = probabilities
-        thresholded[ones] = 1
-        thresholded[zeroes] = 0
-        figure, axes = plt.subplots(1, 4)
+        # ones = probabilities >= 0.5
+        # zeroes = probabilities < 0.5
+        # thresholded = probabilities
+        # thresholded[ones] = 1
+        # thresholded[zeroes] = 0
+        figure, axes = plt.subplots(1, 3)
         axes[0].title.set_text('Output')
         axes[0].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
-        axes[1].title.set_text('Thresholded')
-        axes[1].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
-        axes[2].title.set_text('Input')
-        axes[2].imshow(original, vmin=0.0, vmax=1.0)
-        axes[3].title.set_text('Model Output')
-        axes[3].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
+        # axes[1].title.set_text('Thresholded')
+        # axes[1].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
+        axes[1].title.set_text('Input')
+        axes[1].imshow(original, vmin=0.0, vmax=1.0)
+        axes[2].title.set_text('Model Output')
+        axes[2].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
         plt.show()
 
 
