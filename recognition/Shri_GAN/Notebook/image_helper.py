@@ -94,7 +94,7 @@ def tf_load_img_from_dir(dir_data, img_shape = (128, 128, 1), img_format = 'png'
         im = tf.keras.preprocessing.image.img_to_array(im)
         image = tf.image.rgb_to_grayscale(im)
         X_train.append(image)
-    X_train = np.array(X_train)
+    X_train = tf.convert_to_tensor(X_train)
     return(X_train)
    
 
