@@ -10,7 +10,6 @@ Segments of code in this file are based on code from COMP3710-demo-code.ipynb
 from COMP3710 Guest Lecture and code from TensorFlow tutorial pages.
 """
 
-
 import tensorflow as tf
 
 
@@ -18,6 +17,7 @@ class IsicsUnet:
     def __init__(self):
         self.train_ds = None
         self.val_ds = None
+        self.model = None
 
     @staticmethod
     def map_fn(image, mask):
@@ -30,7 +30,7 @@ class IsicsUnet:
         # load image
         img = tf.io.read_file(image)
         img = tf.image.decode_jpeg(img, channels=3)
-        img = tf.image.resize(img, (512, 384))  # size arbitrarily chosen
+        img = tf.image.resize(img, (512, 384))  # resize all images to min size
 
         # normalize image to [0,1]
         img = tf.cast(img, tf.float32) / 255.0
@@ -38,7 +38,7 @@ class IsicsUnet:
         # load mask
         m = tf.io.read_file(mask)
         m = tf.image.decode_png(m, channels=1)
-        m = tf.image.resize(m, (512, 384))  # size arbitrarily chosen
+        m = tf.image.resize(m, (512, 384))  # resize all masks to min size
 
         # normalize mask to [0,1]
         m = tf.cast(m, tf.float32) / 255.0
@@ -46,6 +46,9 @@ class IsicsUnet:
         # do we need to one-hot encode the mask?
 
         return img, m
+
+    @staticmethod
+    def dsc_loss
 
     def visualise_loaded_data(self):
         """
@@ -133,9 +136,59 @@ class IsicsUnet:
 
     def build_model(self):
         """
-        Build the model
+        Build the U-Net model using TensorFlow functional API
         """
-        pass
+
+        # encoder/downsampling
+        input_size = (512, 384, 1)
+        inputs = tf.keras.Input(input_size)
+        conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(inputs)
+        conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv1)
+        pool1 = tf.keras.layers.MaxPooling2D()(conv1)
+
+        conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu')(pool1)
+        conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv2)
+        pool2 = tf.keras.layers.MaxPooling2D()(conv2)
+
+        conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu')(pool2)
+        conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv3)
+        pool3 = tf.keras.layers.MaxPooling2D()(conv3)
+
+        conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(pool3)
+        conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv4)
+        pool4 = tf.keras.layers.MaxPooling2D()(conv4)
+
+        # middle/bottleneck
+        conv5 = tf.keras.layers.Conv2D(256, 3, activation='relu')(pool4)
+        conv5 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv5)
+
+        # decoder/upsampling
+        up6 = tf.keras.layers.UpSampling2D()(conv5)
+        # TODO: copy and crop required here?
+        conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(up6)
+        conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv6)
+
+        up7 = tf.keras.layers.UpSampling2D()(conv6)
+        # TODO: copy and crop required here?
+        conv7 = tf.keras.layers.Conv2D(256, 3, activation='relu')(up7)
+        conv7 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv7)
+
+        up8 = tf.keras.layers.UpSampling2D()(conv7)
+        # TODO: copy and crop required here?
+        conv8 = tf.keras.layers.Conv2D(128, 3, activation='relu')(up8)
+        conv8 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv8)
+
+        up9 = tf.keras.layers.UpSampling2D()(conv8)
+        # TODO: copy and crop required here?
+        conv9 = tf.keras.layers.Conv2D(64, 3, activation='relu')(up9)
+        conv9 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv9)
+
+        # segmentation (output) layer
+        outputs = tf.keras.layers.Conv2D(1, 1, activation='softmax')(conv9)
+
+        self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
+
+        self.model.summary()
 
     def train_model(self):
         """
@@ -143,8 +196,30 @@ class IsicsUnet:
         """
         pass
 
-    def predict(self):
+    def show_predictions(self):
         """
         Perform prediction on validation set and report performance
+
+        Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
         """
-        pass
+        image_batch, mask_batch = next(iter(self.val_ds.batch(3)))
+        predictions = self.model.predict(image_batch)
+        # TODO: is it required to convert to predicted masks?
+
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(20,10))
+        for i in range(3):
+            # show base image
+            plt.subplot(3,3,3*i+1)
+            plt.imshow(image_batch[i])
+            plt.axis('off')
+
+            # show true mask
+            plt.subplot(3,3,3*i+2)
+            plt.imshow(mask_batch[i])
+            plt.axis('off')
+
+            # show predicted mask
+            plt.subplot(3,3,3*i+3)
+            plt.imshow(predictions[i])
+            plt.axis('off')
