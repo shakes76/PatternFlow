@@ -6,6 +6,8 @@ And finally the structure similarity is over 0.6
 @time : 30/10/2020
 """
 
+from model import * 
+
 # libraries used in the project 
 
 import glob,cv2,time
