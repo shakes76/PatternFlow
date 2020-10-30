@@ -8,12 +8,13 @@ import math
 from itertools import islice
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # only print TF warnings and errors
 
+
 # --------------------------------------------
 # GLOBAL CONSTANTS
 # --------------------------------------------
 
 # Set the paths to data locations. The respective files for images/masks should be WITHIN A FOLDER WITHIN the below
-# directories. For example, using the given ISICs data from
+# directories for the generators to work properly. For example, using the given ISICs data from
 # https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34, folder structure would
 # be \data\image\ISIC2018_Task1-2_Training_Input_x2 containing inputs, and
 # \data\mask\ISIC2018_Task1_Training_GroundTruth_x2 containing ground truths.
@@ -87,7 +88,8 @@ def pre_process_data():
 
     # Ideally this would be a Sequence joining the two generators instead of zipping them together to keep everything
     # thread-safe, allowing for multiprocessing - but if it ain't broke.
-    return zip(image_train_gen, mask_train_gen), zip(image_test_gen, mask_test_gen)
+    return zip(image_train_gen, keras.to_categorical(mask_train_gen)), \
+           zip(image_test_gen, keras.to_categorical(mask_test_gen))
 
 
 # Plot the accuracy and loss curves of model training.
@@ -106,7 +108,7 @@ def train_model_check_accuracy(train_gen, test_gen):
     model = layers.improved_unet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.summary()
     model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
-                  loss=keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
+                  loss='categorical_crossentropy', metrics=['accuracy'])
 
     track = model.fit(
         train_gen,
@@ -119,7 +121,7 @@ def train_model_check_accuracy(train_gen, test_gen):
 
     print("\nEvaluating test images...")
     test_loss, test_accuracy = model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2, use_multiprocessing=False)
-    print("Test Accuracy: " +  str(test_accuracy))
+    print("Test Accuracy: " + str(test_accuracy))
     print("Test Loss: " + str(test_loss) + "\n")
     return model
 

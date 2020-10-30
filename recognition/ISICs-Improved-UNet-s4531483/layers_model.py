@@ -14,6 +14,7 @@ import tensorflow_addons as tfa
 # --------------------------------------------
 # GLOBAL CONSTANTS
 # --------------------------------------------
+
 LEAKY_RELU_ALPHA = 0.01
 DROPOUT = 0.35
 L2_WEIGHT_DECAY = 0.0005
@@ -30,8 +31,9 @@ I_NORMALIZATION_PROPERTIES = dict(
 
 
 # --------------------------------------------
-# IMPROVED UNET MODEL
+# IMPROVED UNET MODEL FOR ISICS BINARY SEGMENTATION
 # --------------------------------------------
+
 # Implementation based off the 'improved UNet': https://arxiv.org/abs/1802.10508v1.
 def improved_unet(width, height, channels):
     input = keras.Input(shape=(width, height, channels))  # Set input shape
@@ -90,15 +92,24 @@ def improved_unet(width, height, channels):
     x38 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x37)
     x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
 
-    u1 = upsampling_module(x31, 32)
-    s1 = keras.layers.Add()([u1, x34])
+    seg_layer1 = keras.layers.Softmax()(x31)
+    u1 = upsampling_module(seg_layer1, 32)
+    seg_layer2 = keras.layers.Softmax()(x34)
+    s1 = keras.layers.Add()([u1, seg_layer2])
     u2 = upsampling_module(s1, 32)
-    s2 = keras.layers.Add()([u2, x39])
+    seg_layer3 = keras.layers.Softmax()(x39)
+    s2 = keras.layers.Add()([u2, seg_layer3])
 
-    output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
+    # Softmax used as final activation layer
+    # output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
+    output = keras.layers.Softmax()(s2)
     u_net = keras.Model(inputs=[input], outputs=[output])
     return u_net
 
+
+# --------------------------------------------
+# MODULES
+# --------------------------------------------
 
 # A 'Context Module', based off the 'improved UNet'.
 def context_module(input, out_filter):
