@@ -53,3 +53,8 @@ def make_discriminator_model():
     model.add(layers.Dense(1))
 
     return model
+
+# test if the discriminator model works
+discriminator = make_discriminator_model()
+decision = discriminator(generated_image)
+print (decision)
