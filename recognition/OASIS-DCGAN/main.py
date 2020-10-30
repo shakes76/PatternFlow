@@ -71,9 +71,9 @@ def build_generator(noise_shape=(100,)):
     l = layers.BatchNormalization()(l)
     
     l = layers.Conv2DTranspose(16, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
-    l = layers.Conv2D(16 , (1, 1), activation="relu", padding="same")(l)
+    #l = layers.Conv2D(16 , (1, 1), activation="relu", padding="same")(l)
     
-    img = layers.Conv2D(1, (1, 1), activation="sigmoid", padding="same")(l)
+    img = layers.Conv2D(1, (1, 1), activation="tanh", padding="same")(l)
     
     model = models.Model(input_noise, img)
 
