@@ -1,10 +1,11 @@
+import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow.keras import layers, models
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
-print("Imports done")
+#print("Imports done")
 
 train_dir = "H:/keras_png_slices_train/"
 test_dir = "H:/keras_png_slices_test/"
@@ -14,31 +15,32 @@ test_size = 545
 img_size = (128, 128, 1)  # 256x256, grayscale
 
 # get the filenames of all the images, then split them into training and testing sets 
-import os
 train_image_names = os.listdir(train_dir)
 test_image_names = os.listdir(test_dir)
 
-print("Filenames collected")
+#print("Filenames collected")
 
 def get_images(img_dir, img_names):
     images = []
+    end_count = len(img_names)
     for i, name in enumerate(img_names):
         if name == "Thumbs.db":
             continue
-        # print("Getting {}".format(img_dir+name))
+        #print("Getting {}".format(img_dir+name))
+        print("{:.0f}% of files gathered".format(i*100/end_count), end="\r")
         image = load_img(img_dir + name, target_size=img_size, color_mode="grayscale")
         # convert to array and normalise
         image = img_to_array(image)/255.0
         images.append(image)
     return np.array(images)
 
+print("TRAINING SET")
 X_train = get_images(train_dir, train_image_names)
-print("X_train.shape =", X_train.shape)
+print("\n")
 
+print("TESTING SET")
 X_test = get_images(test_dir, test_image_names)
-print("X_test.shape =", X_test.shape)
-
-print("Images got")
+print("\n")
 
 # lookie code: remove for final version
 #fig = plt.figure(figsize=(30, 10))
@@ -58,12 +60,15 @@ def build_generator(noise_shape=(100,)):
     
     l = layers.Conv2DTranspose(128, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(128, (1, 1), activation="relu", padding="same")(l)
+    l = layers.BatchNormalization()(l)
     
     l = layers.Conv2DTranspose(64, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(64 , (1, 1), activation="relu", padding="same")(l)
+    l = layers.BatchNormalization()(l)
     
     l = layers.Conv2DTranspose(32, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(32 , (1, 1), activation="relu", padding="same")(l)
+    l = layers.BatchNormalization()(l)
     
     l = layers.Conv2DTranspose(16, kernel_size=(2, 2), strides=(2,2), use_bias=False)(l)
     l = layers.Conv2D(16 , (1, 1), activation="relu", padding="same")(l)
@@ -186,14 +191,17 @@ def train(models, X_train, noise, result="result/", epochs=20000, batch_size=128
         
         history.append({"D":disc_loss[0], "G":combo_loss})
         
-        if epoch % 100 == 0:
-            # Plot the progress
-            print ("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%] [G loss: {:4.3f}]".format(
-                    epoch, disc_loss[0], 100*disc_loss[1], combo_loss))
+
+        # Plot the progress
         if epoch % int(epochs/100) == 0:
             plot_generated_images(noise,
                                   path_save=result+"/image_{:05.0f}.png".format(epoch),
                                   title="Epoch {}".format(epoch))
+            print ("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%] [G loss: {:4.3f}]".format(
+                    epoch, disc_loss[0], 100*disc_loss[1], combo_loss))
+        else:
+            print ("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%] [G loss: {:4.3f}]".format(
+                    epoch, disc_loss[0], 100*disc_loss[1], combo_loss), end="\r")
         #if epoch % 1000 == 0:
             #plot_generated_images(noise,
             #                      title="Epoch {}".format(epoch))
