@@ -10,10 +10,36 @@ import math
 
 
 def get_filenames_from_dir(directory):
+    """
+    Returns a list of all file names within a given directory.
+
+    Parameters
+    ----------
+    directory: string
+        The name of the directory having its file names returned.
+
+    Returns
+    ----------
+    A list of all file names within the directory with the given name.
+    """
     return [f for f in listdir(directory) if isfile(join(directory, f))]
 
 
 def encode_y(y):
+    """
+    One-hot encodes a label image's numpy array to prepare for
+    binary cross-entropy.
+
+    Parameters
+    ----------
+    y: numpy array of floats
+        The numpy array of a label image to be encoded.
+
+    Returns
+    ----------
+    y: numpy array of floats
+        The input array, now one-hot encoded for binary cross-entropy.
+    """
     y = np.where(y < 0.5, 0, y)
     y = np.where(y > 0.5, 1, y)
 
@@ -22,13 +48,52 @@ def encode_y(y):
 
 
 class SequenceGenerator(keras.utils.Sequence):
+    """
+    A keras Sequence to be used as an image generator for the model.
+    """
+
     def __init__(self, x, y, batchsize):
+        """
+        Creates a new SequenceGenerator instance.
+
+        Parameters
+        ----------
+        x: list of strings
+            A list of file names for preprocessed images.
+        y: list of strings
+            A list of file names for corresponding label images.
+        batchsize: int
+            The set batch size for this generator.
+        """
         self.x, self.y, self.batchsize = x, y, batchsize
 
     def __len__(self):
+        """
+        Returns the total number of unique batches that can be generated.
+
+        Returns
+        ----------
+        The total number of unique batches that can be generated.
+        """
         return math.ceil(len(self.x) / self.batchsize)
 
     def __getitem__(self, idx):
+        """
+        Returns a batch preprocessed image data and label image data, 
+        corresponding to the given id.
+
+        Parameters
+        ----------
+        idx: int
+            The id of the batch to be returned.
+
+        Returns
+        ----------
+        batch_x: numpy array of image data
+            A batch of image data for preprocessed images.
+        batch_x: numpy array of image data
+            A batch of image data for corresponding label images.
+        """
         x_names = self.x[idx * self.batchsize:(idx + 1) * self.batchsize]
         y_names = self.y[idx * self.batchsize:(idx + 1) * self.batchsize]
         
@@ -57,6 +122,7 @@ train_gen = SequenceGenerator(x_train, y_train, 4)
 val_gen = SequenceGenerator(x_val, y_val, 4)
 test_gen = SequenceGenerator(x_test, y_test, 4)
 
+# a sanity check of the generated images and their labels
 """
 # show some of the images as a sanity check
 sanity_check_x, sanity_check_y = train_gen.__getitem__(0)
@@ -75,26 +141,55 @@ del sanity_check_y
 """
 
 def dice_similarity(exp, pred):
+    """
+    Returns the Dice Similarity Coefficient between an image predicted by the
+    model and its expected result.  Uses the formula:
+    DSC = 2TP / (2TP + FP + FN)
+    Where TP, FP and FN mean "true positive", "false positive" and 
+    "false negative", respectively.
+
+    Parameters
+    ----------
+    exp: numpy array of image data
+        Data from the expected image.
+    pred: numpy array of image data
+        Data from the predicted image.
+
+    Returns
+    ----------
+    The DSC between the two images.
+    """
+    # flatten to 1D arrays
     expected = keras.backend.batch_flatten(exp)
     predicted = keras.backend.batch_flatten(pred)
     predicted = keras.backend.round(predicted)
 
     expected_positive = keras.backend.sum(expected, axis=-1)
     predicted_positive = keras.backend.sum(predicted, axis=-1)
-    true_positive = keras.backend.sum(expected * predicted, axis=-1)
-    false_negative =  expected_positive - true_positive
 
+    # TP when both arrays share a positive at the index
+    true_positive = keras.backend.sum(expected * predicted, axis=-1)
+
+    # FN is any expected positives not guessed in TP
+    false_negative = expected_positive - true_positive
+
+    # FP is any predicted positive not part of TP
     false_positive = predicted_positive - true_positive
-    false_positive = tf.nn.relu(false_positive)
 
     numerator = 2 * true_positive + keras.backend.epsilon()
     denominator = 2 * true_positive + false_positive + false_negative + keras.backend.epsilon()
-
     return numerator / denominator
 
-# standard unet model, as per lecture slides
+
 def make_model():
-    # the input shape after resizing is (batch_size, 192, 256, 3)
+    """
+    Makes a standard UNET model as per the given lecture slides.
+    Has an input shape of (batch_size, 192, 256, 3) and outputs
+    one-hot encoded images of shape (192, 256, 2).  Uses the Adam
+    optimiser, a binary cross-entropy loss function and provides
+    dice similarity as a metric.
+    """
+    
     input_layer = keras.layers.Input(shape=(192, 256, 3))
 
     conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(input_layer)
@@ -140,7 +235,7 @@ def make_model():
 
     model = tf.keras.Model(inputs=input_layer, outputs=conv_out)
     model.compile(optimizer = keras.optimizers.Adam(),
-              loss='categorical_crossentropy',
+              loss='binary_crossentropy',
               metrics=[dice_similarity])
 
     return model
@@ -153,44 +248,34 @@ model.fit(train_gen, validation_data=val_gen, epochs=1)
 # evaluate the model on the test set
 model.evaluate(test_gen)
 
-# show a generated image from the test set and compare with expected output
+# show 4 generated images from the test set and compare with expected output
 test_images_x, test_images_y = test_gen.__getitem__(0)
 prediction = model.predict(test_images_x)
-
 plt.figure(figsize=(10, 10))
 plt.subplot(4, 2, 1)
 plt.imshow(tf.argmax(prediction[0], axis=2))
 plt.axis('off')
 plt.title("Predicted output of model", size=14)
-
 plt.subplot(4, 2, 2)
 plt.imshow(tf.argmax(test_images_y[0], axis=2))
 plt.axis('off')
 plt.title("Expected output (y label) for the prediction", size=14)
-
 plt.subplot(4, 2, 3)
 plt.imshow(tf.argmax(prediction[1], axis=2))
 plt.axis('off')
-
 plt.subplot(4, 2, 4)
 plt.imshow(tf.argmax(test_images_y[1], axis=2))
 plt.axis('off')
-
 plt.subplot(4, 2, 5)
 plt.imshow(tf.argmax(prediction[2], axis=2))
 plt.axis('off')
-
 plt.subplot(4, 2, 6)
 plt.imshow(tf.argmax(test_images_y[2], axis=2))
 plt.axis('off')
-
 plt.subplot(4, 2, 7)
 plt.imshow(tf.argmax(prediction[3], axis=2))
 plt.axis('off')
-
 plt.subplot(4, 2, 8)
 plt.imshow(tf.argmax(test_images_y[3], axis=2))
 plt.axis('off')
-
-
 plt.show()
