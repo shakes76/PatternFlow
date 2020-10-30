@@ -27,3 +27,12 @@ def make_generator_model():
     assert model.output_shape == (None, 64, 64, 1)
     
     return model
+
+# This is a part to show the sturcture (layer) of generator
+generator = make_generator_model()
+generator.summary()
+
+# test if the generator model works
+noise = tf.random.normal([1, 100])
+generated_image = generator(noise, training=False)
+plt.imshow(generated_image[0, :, :, 0], cmap='gray')
