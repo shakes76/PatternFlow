@@ -53,3 +53,32 @@ class VAE(tf.keras.Model):
                 Conv2DTranspose(filters=1, kernel_size=3, strides=1, padding='same'),
             ]
         )
+
+    @tf.function
+    def sample(self, eps=None):
+        if eps is None:
+            eps = tf.random.normal(shape=(100, self.latent_dim))
+        return self.decode(eps, sigmoid=True)
+
+    def encode(self, x):
+        parameters = self.encoder(x)
+        mean, log_var = tf.split(parameters, num_or_size_splits=2, axis=1)
+        return mean, log_var
+
+    def reparameterize(self, mean, log_var):
+        # generate epsilon from a standard normal distribution
+        eps = tf.random.normal(shape=mean.shape)
+        return eps * tf.exp(log_var * .5) + mean
+
+    def decode(self, z, sigmoid=False):
+        logits = self.decoder(z)
+        if sigmoid:
+            probs = tf.sigmoid(logits)
+            return probs
+        return logits
+
+    def generate_images(self, test_sample):
+        mean, log_var = model.encode(tf.expand_dims(test_sample, axis=-1))
+        z = model.reparameterize(mean, log_var)
+        predictions = model.sample(z)
+        return predictions
