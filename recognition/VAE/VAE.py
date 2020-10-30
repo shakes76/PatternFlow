@@ -1,33 +1,23 @@
 import tensorflow as tf
-import tensorflow.keras
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, InputLayer, Flatten, Dense, Reshape, BatchNormalization
-from tensorflow.keras.layers.experimental.preprocessing import Rescaling
-from tensorflow.keras.models import Model
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras import backend as K
-from tensorflow.keras import layers
-from skimage import data, img_as_float
+from skimage import img_as_float
 from skimage.metrics import structural_similarity as ssim
-from skimage.metrics import mean_squared_error
-import os
 from tensorflow.keras.models import load_model
 import math
 
 
 class VAE(tf.keras.Model):
-    def __init__(self, latent_dimsion):
+    def __init__(self, latent_dimsion, kernel_size=3, strides=2):
         super(VAE, self).__init__()
         self.latent_dim = latent_dimsion
         self.encoder = tf.keras.Sequential(
             [
                 InputLayer(input_shape=(256, 256, 1)),
-                Conv2D(filters=16, kernel_size=3, strides=(2, 2), activation='relu'),
+                Conv2D(filters=16, kernel_size=kernel_size, strides=strides, activation='relu'),
                 BatchNormalization(),
-                Conv2D(filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+                Conv2D(filters=32, kernel_size=kernel_size, strides=strides, activation='relu'),
                 BatchNormalization(),
-                Conv2D(filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
-                BatchNormalization(),
-                Conv2D(filters=128, kernel_size=3, strides=(2, 2), activation='relu'),
+                Conv2D(filters=64, kernel_size=kernel_size, strides=strides, activation='relu'),
                 BatchNormalization(),
                 Flatten(),
                 # No activation
@@ -41,8 +31,6 @@ class VAE(tf.keras.Model):
                 Dense(units=32 * 32 * 32, activation=tf.nn.relu),
                 BatchNormalization(),
                 Reshape(target_shape=(32, 32, 32)),
-                Conv2DTranspose(filters=128, kernel_size=3, strides=2, padding='same', activation='relu'),
-                BatchNormalization(),
                 Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'),
                 BatchNormalization(),
                 Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'),
@@ -55,6 +43,7 @@ class VAE(tf.keras.Model):
         )
 
     @tf.function
+    # sample a point from the latent distribution and decode it
     def sample(self, eps=None):
         if eps is None:
             eps = tf.random.normal(shape=(100, self.latent_dim))
@@ -65,6 +54,7 @@ class VAE(tf.keras.Model):
         mean, log_var = tf.split(parameters, num_or_size_splits=2, axis=1)
         return mean, log_var
 
+    # implement the reparameterize trick
     def reparameterize(self, mean, log_var):
         # generate epsilon from a standard normal distribution
         eps = tf.random.normal(shape=mean.shape)
@@ -77,9 +67,13 @@ class VAE(tf.keras.Model):
             return probs
         return logits
 
+    # generate images by encoding and decoding the test samples
     def generate_images(self, test_sample):
+        # encode the test samples and get the parameters of the latent distribution
         mean, log_var = model.encode(tf.expand_dims(test_sample, axis=-1))
+        # reparameter trick
         z = model.reparameterize(mean, log_var)
+        # decode the points sampled from the latent distribution to generate images
         predictions = model.sample(z)
         return predictions
 
@@ -119,10 +113,14 @@ def compute_loss(model, x):
     return -tf.reduce_mean(logpx_z + logpz - logqz_x)
 
 
-def get_test_sample(test_dataset):
-    for test_batch in test_dataset.take(1):
-        test_sample = test_batch[0:batch_size, :, :, :]
-        return test_sample
+@tf.function
+def train_step(model, x, optimizer):
+    with tf.GradientTape() as tape:
+        # compute loss
+        loss = compute_loss(model, x)
+        # apply gradient descents to search for the optima
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 
 def load_img_to_tensor(ds, crop_ratio):
@@ -149,12 +147,19 @@ def get_dataset(train_dir, test_dir, batch_size, crop_ratio=1):
     return train_dataset, test_dataset
 
 
-# save the trained models
-def save_model(model, encoder_name, decoder_name):
-    # save the encoder
-    model.encoder.save(encoder_name)
-    # save the decoder
-    model.decoder.save(decoder_name)
+# function to train the model
+def train(model, train_dataset, test_sample, epochs, optimizer):
+    # iterate over all epochs
+    for epoch in range(0, epochs + 1):
+        # iterate over train_dataset containing training images
+        for x_train in train_dataset:
+            train_step(model, x_train, optimizer)
+        # feed the network test samples to generate new images
+        predictions = model.generate_images(test_sample)
+        # evaluate the model using Structural Similarity between generated images and test samples
+        print("> " + str(epoch) + ": SSIM = " + str(calculate_ssim(predictions, test_sample)))
+    # return the trained model
+    return model
 
 
 # load pre-trained models
@@ -167,3 +172,42 @@ def load_pretrained_model(latent_dimension, encoder_name, decoder_name):
     model.decoder = load_model(decoder_name)
     # return the loaded model
     return model
+
+
+# save the trained models
+def save_model(model, encoder_name, decoder_name):
+    # save the encoder
+    model.encoder.save(encoder_name)
+    # save the decoder
+    model.decoder.save(decoder_name)
+
+
+if __name__ == '__main__':
+    # define constants
+    epochs = 10
+    latent_dimension = 2
+    batch_size = 32
+    train_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/directory'
+    test_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/test directory'
+
+    # use an Adam optimiser
+    optimizer = tf.keras.optimizers.Adam(1e-4)
+    # load training and test datasets
+    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, batch_size)
+    # load pre-trained model or train a new model
+    load_or_train = input('Load existing model or train a new model? T/L:')
+    if load_or_train == 'L':
+        # load pre-trained model
+        model = load_pretrained_model(latent_dimension, 'encoder669.h5', 'decoder669.h5')
+        predictions = model.generate_images(test_dataset)
+        print("> SSIM = " + str(calculate_ssim(predictions, test_dataset)))
+        print(model.encoder.summary())
+    else:
+        # initialize a new VAE model
+        model = VAE(latent_dimension)
+        # train a new model
+        print('Start training')
+        model = train(model, train_dataset, test_dataset, epochs, optimizer)
+        save_model(model, 'new_encoder.h5', 'new_decoder.h5')
+
+
