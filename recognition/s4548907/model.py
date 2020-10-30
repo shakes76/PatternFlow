@@ -36,3 +36,20 @@ generator.summary()
 noise = tf.random.normal([1, 100])
 generated_image = generator(noise, training=False)
 plt.imshow(generated_image[0, :, :, 0], cmap='gray')
+
+# Build discriminator model
+def make_discriminator_model():
+    model = tf.keras.Sequential()
+    model.add(layers.Conv2D(64, (3, 3), strides=(2, 2), padding='same',input_shape=[64, 64, 1]))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
+
+    model.add(layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
+
+    # fully connected
+    model.add(layers.Flatten())
+    model.add(layers.Dense(1))
+
+    return model
