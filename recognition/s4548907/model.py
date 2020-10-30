@@ -135,7 +135,18 @@ def generate_and_save_images(model, epoch, test_input, path_save=None):
     else:
         plt.show()
 
-        
+def get_ssim(model):
+    
+    fake_imgs = model(test_seed, training=False)
+    real_imgs =  tf.image.convert_image_dtype(tf_train[0:50], dtype =tf.float32)
+    
+    all_ssim = tf.image.ssim(fake_imgs, real_imgs, max_val=2)
+    mean = tf.math.reduce_mean(all_ssim)
+    ssim = mean.numpy()
+    
+    return ssim
+
+
 def train(dataset, epochs):
     ssim =[]
     for epoch in range(epochs):
