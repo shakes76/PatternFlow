@@ -112,3 +112,23 @@ def get_dataset(train_dir, test_dir, batch_size, crop_ratio=1):
     train_size = train_dataset.shape[0]
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_dataset).shuffle(train_size).batch(batch_size))
     return train_dataset, test_dataset
+
+
+# save the trained models
+def save_model(model, encoder_name, decoder_name):
+    # save the encoder
+    model.encoder.save(encoder_name)
+    # save the decoder
+    model.decoder.save(decoder_name)
+
+
+# load pre-trained models
+def load_pretrained_model(latent_dimension, encoder_name, decoder_name):
+    # initialize a new VAE model
+    model = VAE(latent_dimension)
+    # load encoder
+    model.encoder = load_model(encoder_name)
+    # load decoder
+    model.decoder = load_model(decoder_name)
+    # return the loaded model
+    return model
