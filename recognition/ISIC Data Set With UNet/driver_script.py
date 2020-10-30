@@ -10,12 +10,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 import math
 
-import zipfile
+#import zipfile
 import glob
 from IPython.display import clear_output
 
 from solution import unet_model
-
 
 
 ###############################################################################
@@ -47,7 +46,7 @@ def display(display_list):
     plt.figure(figsize=(10, 6))
     for i in range(len(display_list)):
         plt.subplot(1, len(display_list), i+1)
-        plt.imshow(display_list[i], cmap='gray')
+        plt.imshow(display_list[i])#, cmap='gray')
         plt.axis('off')
     plt.show()
 
@@ -55,15 +54,13 @@ def display(display_list):
 def make_predictions(model, ds, n=1):
     """"Make n predictions using the model and the given dataset"""
     
-    #model.predict(ds.batch(n))
-    
     predictions = []
     for image, mask in ds.take(n):
-        #pred_mask = model.predict(image[tf.newaxis, ...])
-        #pred_mask = tf.argmax(pred_mask[0], axis=-1)
-        #display([tf.squeeze(image), tf.argmax(mask, axis=1), pred_mask])        
-        #predictions = model.predict(test_ds.batch(test_batch_size))
-        #predictions = np.argmax(predictions, axis=1)        
+    #    #pred_mask = model.predict(image[tf.newaxis, ...])
+    #    #pred_mask = tf.argmax(pred_mask[0], axis=-1)
+    #    #display([tf.squeeze(image), tf.argmax(mask, axis=1), pred_mask])        
+    #    #predictions = model.predict(test_ds.batch(test_batch_size))
+    #    #predictions = np.argmax(predictions, axis=1)
         pred_mask = model.predict(image[tf.newaxis, ...])
         predictions.append([image, mask, pred_mask])
     return predictions
@@ -73,12 +70,12 @@ class DisplayCallback(tf.keras.callbacks.Callback):
     
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
-        predictions = make_predictions(model, val_ds, 1)
+        predictions = make_predictions(model, val_ds, n=1)
         for prediction in predictions:
             image, mask, pred_mask = prediction
-            print(tf.squeeze(image))
-            print(tf.squeeze(mask))
-            print(tf.squeeze(pred_mask))
+            #print(tf.squeeze(image))
+            #print(tf.squeeze(mask))
+            #print(tf.squeeze(pred_mask))
             display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
 
 
@@ -104,7 +101,8 @@ def process_path(image_fp, mask_fp):
     image = tf.cast(image, tf.float32) / 255.0
 
     mask = decode_png(mask_fp)
-    #mask = mask == [0, 85, 170, 255]
+    mask = tf.cast(mask, tf.float32) / 255.0
+    mask = tf.math.round(mask)
     
     return image, mask
 
@@ -113,8 +111,8 @@ def import_ISIC_data():
     """ Download the dataset """
     
     # Get images and masks
-    images = sorted(glob.glob("C:/Users/Mchor/OneDrive/Desktop/All/Personal/UQ/COMP3710/Laboratory Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg"))
-    masks = sorted(glob.glob("C:/Users/Mchor/OneDrive/Desktop/All/Personal/UQ/COMP3710/Laboratory Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png"))
+    images = sorted(glob.glob("C:/Users/Mchor/OneDrive/Desktop/All/Personal/UQ/COMP3710/Assessment/Laboratory Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg"))
+    masks = sorted(glob.glob("C:/Users/Mchor/OneDrive/Desktop/All/Personal/UQ/COMP3710/Assessment/Laboratory Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png"))
 
     # choose number of training, validate and test images to use
     num_images = len(images)
@@ -150,19 +148,19 @@ def import_ISIC_data():
     # return training, validation and testing datasets
     return train_ds, val_ds, test_ds
 
+##############################################################################
 
 # import the data
 train_ds, val_ds, test_ds = import_ISIC_data()
    
  
 # plot example image
-#for image, mask in train_ds.take(1):
-    #display([tf.squeeze(image), tf.argmax(mask, axis=-1)])
-#    display([tf.squeeze(image), tf.squeeze(mask)])
+for image, mask in train_ds.take(1):    
+    display([tf.squeeze(image), tf.squeeze(mask)])
 
    
 # create the model
-model = unet_model(4, f=4)
+model = unet_model(1, f=4)
     
 
 # show a summary of the model
@@ -173,6 +171,8 @@ print(model.summary())
 model.compile(optimizer='adam',
               loss='binary_crossentropy', # dice_coefficient_loss categorical_crossentropy binary_crossentropy
               metrics=['accuracy']) # accuracy dice_coefficient_loss categorical_crossentropy
+
+# tf.keras.losses.SparseCategoricalCrossentropy()
 
 
 # specify batch sizes
@@ -187,19 +187,19 @@ num_epochs = 2
 # train the model
 history = model.fit(train_ds.batch(train_batch_size), 
                     epochs=num_epochs,
-                    validation_data=val_ds.batch(val_batch_size),
-                    callbacks=[DisplayCallback()])
+                    validation_data=val_ds.batch(val_batch_size))#,
+                    #callbacks=[DisplayCallback()])
 
 
 # analyse history of training the model
-#analyse_training_history(history)
+analyse_training_history(history)
 
 
 # make some predictions
-#predictions = make_predictions(model, test_ds, n=3)
+predictions = make_predictions(model, test_ds, n=3)
 
 
 # plot those predictions
-#for prediction in predictions:
-#    image, mask, pred_mask = prediction
-#    display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+for prediction in predictions:
+    image, mask, pred_mask = prediction
+    display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])

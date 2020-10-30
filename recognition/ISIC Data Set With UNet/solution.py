@@ -4,7 +4,6 @@ Unet Model
 @author Max Hornigold
 """
 
-
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -55,7 +54,7 @@ def unet_model(output_channels, f=6):
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
     
     # This is the last layer of the model.
-    outputs = layers.Conv2D(output_channels, 1, activation='softmax')(u1)
+    outputs = layers.Conv2D(output_channels, 1, activation='sigmoid')(u1)
     
     # Create model using the layers
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
