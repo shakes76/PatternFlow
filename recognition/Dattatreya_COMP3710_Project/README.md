@@ -71,6 +71,10 @@ The developed UNET model is trained on the ISIC training data set and the best m
 
 **But make sure you add the &quot;/&quot; after each of the paths for the code to execute**
 
+The code execution command line snippet is provided below for reference: -
+
+![Code Execution](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Code_Exec.PNG)
+
 **List of Packages Required**
 
 - os (pre-installed)
