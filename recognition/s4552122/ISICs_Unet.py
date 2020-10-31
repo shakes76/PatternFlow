@@ -98,6 +98,7 @@ preds_test = preds_test.reshape([519,256,256])
 preds_test_real = []
 for i in range(len(y_test_real)):
     preds_test_real.append(cv2.resize(preds_test[i], (y_test_real[i].shape[1],y_test_real[i].shape[0])))
+#Calculate the average dice similarity coefficients
 sum_Dice = 0
 avg_Dice = 0
 for i in range(len(y_test_real)):
