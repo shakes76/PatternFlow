@@ -1,7 +1,10 @@
 """
 ISICs dataset by an improved Unet to make image segment.
+ISICs data set concludes thousands of Skin Lesion images. 
+This recognition algorithm aims to automatically do Lesion Segmentation through an improved unet model
 
 @author Xiaoqi Zhuang
+@email x.zhuang@uqconnect.edu.au
 """
 
 #Import 

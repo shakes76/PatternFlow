@@ -1,5 +1,7 @@
 """
 ISICs dataset by an improved Unet to make image segment.
+ISICs data set concludes thousands of Skin Lesion images. 
+This recognition algorithm aims to automatically do Lesion Segmentation through an improved unet model
 
 @author Xiaoqi Zhuang
 @email x.zhuang@uqconnect.edu.au
@@ -13,6 +15,7 @@ from keras.layers import Conv2D, Flatten, MaxPooling2D, BatchNormalization, Conv
 from keras.optimizers import SGD, Adam
 tf.random.Generator = None
 import tensorflow_addons as tfa
+
 #The activation function is "leaky ReLe" which the alpha is 1e-2.
 leakyRELU =tf.keras.layers.LeakyReLU(alpha=1e-2)
 
@@ -98,13 +101,13 @@ def improvedUnet():
     c20 = tf.keras.layers.concatenate([c19, c9])
 
     c21 = localization(c20, 64)
-    s1 = tf.keras.layers.Conv2D(2, (1, 1), activation = leakyRELU, padding="same")(c21)
+    s1 = tf.keras.layers.Conv2D(1, (1, 1), activation = leakyRELU, padding="same")(c21)
     s1 = tf.keras.layers.UpSampling2D(interpolation = "bilinear")(s1)
 
     c23 = upSampling(c21, 32)
     c24 = tf.keras.layers.concatenate([c23, c6])
     c25 = localization(c24, 32)
-    s2 = s1 = tf.keras.layers.Conv2D(2, (1, 1), activation = leakyRELU, padding="same")(c25)
+    s2 = s1 = tf.keras.layers.Conv2D(1, (1, 1), activation = leakyRELU, padding="same")(c25)
     s3 = tf.keras.layers.Add()([s1, s2])
     s3 = tf.keras.layers.UpSampling2D(interpolation = "bilinear")(s2)
 
@@ -112,11 +115,11 @@ def improvedUnet():
     c28 = tf.keras.layers.concatenate([c27, c3])
 
     c29 = tf.keras.layers.Conv2D(32, (3, 3), activation = leakyRELU, padding='same')(c28)
-    s4 = tf.keras.layers.Conv2D(2, (1, 1), activation = leakyRELU, padding="same")(c29) 
+    s4 = tf.keras.layers.Conv2D(1, (1, 1), activation = leakyRELU, padding="same")(c29) 
     s5 = tf.keras.layers.Add()([s3, s4])
 
     outputs = tf.keras.activations.sigmoid(s5)
     model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
-    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics=['accuracy'])
     
     return model
