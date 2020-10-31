@@ -172,3 +172,8 @@ with specific hyperparameters should yield a similar result.
 Note that the 256 x 256 model was significantly larger than the others. This is because initially a simple model could
 perform quite well, but scaling up the model proved incapable of generating successful results. The 256 x 256 is 
 slightly different in structure, and instead based more off the papers specified models than the smaller models were.
+Out of interest, the output at the final epoch in the 256 x 256 model produced the following images,
+
+![256 by 256](final_images/image_at_epoch_0012.PNG)
+
+Note that in these images, a different colormap is used to better represent the generated images.
