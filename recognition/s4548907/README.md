@@ -37,5 +37,5 @@ The generator model of the DCGAN will create a reasonably fake images and the st
 
 ### The sturcture of Generator model
 
-![Generator structure](images/Generator structure.png)
+<img src="images/Generator sturcture.png" alt="Generator sturcture" style="zoom:50%;" />
 
