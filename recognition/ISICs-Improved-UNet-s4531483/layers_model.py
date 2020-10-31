@@ -40,10 +40,10 @@ def improved_unet(width, height, channels):
 
     x1 = keras.layers.Conv2D(16, (3, 3), input_shape=(width, height, channels), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
-    x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
-    x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x4 = context_module(x3, 16)
-    x5 = keras.layers.Add()([x3, x4])
+    # x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
+    #x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
+    x4 = context_module(x1, 16)
+    x5 = keras.layers.Add()([x1, x4])
 
     x6 = keras.layers.Conv2D(32, (3, 3), strides=2, **CONV_PROPERTIES)(x5)
     # x7 = keras.layers.BatchNormalization()(x6)
@@ -89,15 +89,15 @@ def improved_unet(width, height, channels):
     x36 = keras.layers.Concatenate()([x5, x35])
     x37 = keras.layers.Conv2D(32, (3, 3), **CONV_PROPERTIES)(x36)
     # x38 = keras.layers.BatchNormalization()(x37)
-    x38 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x37)
-    x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
+    # x38 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x37)
+    # x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
 
     seg_layer1 = keras.layers.Softmax()(x31)
     u1 = upsampling_module(seg_layer1, 32)
     seg_layer2 = keras.layers.Softmax()(x34)
     s1 = keras.layers.Add()([u1, seg_layer2])
     u2 = upsampling_module(s1, 32)
-    seg_layer3 = keras.layers.Softmax()(x39)
+    seg_layer3 = keras.layers.Softmax()(x37)
     s2 = keras.layers.Add()([u2, seg_layer3])
 
     # Softmax used as final activation layer
@@ -116,14 +116,14 @@ def improved_unet(width, height, channels):
 def context_module(input, out_filter):
     x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
-    x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
-    x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x4 = keras.layers.Dropout(DROPOUT)(x3)
-    x5 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x4)
-    x6 = keras.layers.BatchNormalization()(x5)
-    # x6 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x5)
-    x7 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x6)
-    return x7
+    # x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
+    #x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
+    x2 = keras.layers.Dropout(DROPOUT)(x1)
+    x3 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x2)
+    #x6 = keras.layers.BatchNormalization()(x5)
+    x4 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x3)
+    x5 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x4)
+    return x5
 
 
 # An 'Upsampling Module', based off the 'improved UNet'.
@@ -150,5 +150,5 @@ def localisation_module(input, out_filter):
 
 
 if __name__ == "__main__":
-    print("Please run 'test_driver.py', not 'layers_model.py'.'")
+    print("Please run 'test_driver.py', not 'layers_model.py'.")
     exit(1)

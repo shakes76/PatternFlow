@@ -59,6 +59,12 @@ TEST_TRAIN_GEN_ARGS = dict(
 # MAIN FUNCTIONS
 # --------------------------------------------
 
+# def dice_coefficient(y_true, y_pred):
+    # pred_arr =
+    # numerator = 2 * (ker)
+    # denominator = 2 * IMAGE_WIDTH * IMAGE_HEIGHT
+
+
 # Preprocess data forming the generators.
 def pre_process_data():
     train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(**DATA_TRAIN_GEN_ARGS)
@@ -107,7 +113,7 @@ def train_model_check_accuracy(train_gen, test_gen):
     model = layers.improved_unet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.summary()
     model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
-                  loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+                  loss=keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
 
     track = model.fit(
         train_gen,
@@ -128,6 +134,7 @@ def train_model_check_accuracy(train_gen, test_gen):
 # Test and visualise model predictions with a set amount of test inputs.
 def test_visualise_model_predictions(model, test_gen):
     test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
+    figure, axes = plt.subplots(NUMBER_SHOW_TEST_PREDICTIONS, 3)
     for i in test_range:
         current = next(islice(test_gen, i, None))
         test_pred = np.argmax(model.predict(current, steps=1, use_multiprocessing=False)[0], axis=-1)
@@ -139,16 +146,16 @@ def test_visualise_model_predictions(model, test_gen):
         # thresholded = probabilities
         # thresholded[ones] = 1
         # thresholded[zeroes] = 0
-        figure, axes = plt.subplots(1, 3)
-        axes[0].title.set_text('Output')
-        axes[0].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
+        # figure, axes = plt.subplots(1, 3)
+        axes[i][0].title.set_text('Input')
+        axes[i][0].imshow(original, vmin=0.0, vmax=1.0)
+        axes[i][1].title.set_text('Output')
+        axes[i][1].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
         # axes[1].title.set_text('Thresholded')
         # axes[1].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
-        axes[1].title.set_text('Input')
-        axes[1].imshow(original, vmin=0.0, vmax=1.0)
-        axes[2].title.set_text('Model Output')
-        axes[2].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
-        plt.show()
+        axes[i][2].title.set_text('Ground Truth')
+        axes[i][2].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
+    plt.show()
 
 
 # Run the test driver.
