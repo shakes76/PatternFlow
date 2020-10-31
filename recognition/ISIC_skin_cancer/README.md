@@ -45,6 +45,8 @@ cp * dataset/masks
 ```
 Then you are good to load the dataset images!
 
+After the loading process of data preparation, we then ***split the images set into training, validating and testing set by ratio of 0.8:0.1:0.1***, the reason behind this decision is our whole dataset is size of 2,594, which 80% is sufficient to train the model.
+
 ### Data Generator
 The filenames of the mask images should have the id which is same as the filenames of the RGB images with "_segmentation" ending.
 The size of the mask image for the corresponding RGB image should be same.
