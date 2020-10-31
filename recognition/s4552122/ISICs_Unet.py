@@ -29,17 +29,6 @@ Path = "ISIC2018_Task1-2_Training_Input_x2"
 for img in os.listdir(Path):
     im = image.imread("ISIC2018_Task1-2_Training_Input_x2/" + img) 
     X.append(im)
-X = np.array(X)
-plt.imshow(X[0])
-#Since images have different shapes, I resize them to 256*256 images.
-for i in range(len(X)):
-    X[i] = cv2.resize(X[i],(256,256))
-plt.imshow(cv2.resize(X[0],(256,256)))
-#Reshape the image to be (number of images, 256, 256, 3)
-images = np.zeros([2594,256,256,3])
-for i in range(len(X)):
-    images[i] = X[i]
-images = images/255
 
 #Loading segmentation images
 Y = []
@@ -47,23 +36,43 @@ Path = "ISIC2018_Task1_Training_GroundTruth_x2"
 for img in os.listdir(Path):
     im = image.imread("ISIC2018_Task1_Training_GroundTruth_x2/" + img) 
     Y.append(im)
+
+#Remeber the original images size for inversing them into the evluating step.
+X_, X_test_real, y_, y_test_real = train_test_split(X, Y, test_size = 0.2, random_state = 33)
+#Reducing unnessary variabls'smemory usage
+del X_
+del y_
+
+#Data processing
+X = np.array(X)
+#Since images have different shapes, I resize them to 256*256 images.
+for i in range(len(X)):
+    X[i] = cv2.resize(X[i],(256,256))
+#Reshape the image to be (number of images, 256, 256, 3)
+images = np.zeros([2594,256,256,3])
+for i in range(len(X)):
+    images[i] = X[i]
+images = images/255
+del X
+
 for i in range(len(Y)):
     Y[i] = cv2.resize(Y[i],(256,256))
-Y = np.array(Y)[:, :, :, np.newaxis]
+#Reshape the image to be (number of images, 256, 256, 3)
+Y = np.array(Y)[:,:,:,np.newaxis]
 #Make the segmentation images' labels just be 0 and 1.
 Y = np.around(Y)
-plt.imshow(images[1])
-plt.imshow(Y[1],cmap="gray")
 
 #Split training set, validation set, testing set.
 X_tv, X_test, y_tv, y_test = train_test_split(images, Y, test_size = 0.2, random_state = 33)
-X_train, X_val, y_train, y_val = train_test_split(X_tv, y_tv, test_size = 0.2, random_state = 33)
+X_train, X_val, y_train, y_val = train_test_split(X_tv, y_tv, test_size = 0.25, random_state = 33)
 print("X_train shape: ", X_train.shape)
 print("X_val shape: ", X_val.shape)
 print("X_test shape: ", X_test.shape)
 print("y_train shape: ", y_train.shape)
 print("y_val shape: ", y_val.shape)
 print("y_test shape: ", y_test.shape)
+del X_tv
+del y_tv
 
 #Building the improved uNet model
 model = improvedUnet()
@@ -72,20 +81,10 @@ results = model.fit(X_train, y_train, validation_data= (X_val, y_val), batch_siz
 
 #Prediction
 preds_test = model.predict(X_test, verbose=1)
-preds_test = tf.math.argmax(preds_test, -1)
-fig, axs = plt.subplots(2,2,figsize=(10,10))
-#fig.suptitle('Predicion, Ground Truth, Original Image')
-axs[0,0].imshow(X_test[2])
-axs[0,1].imshow(y_test[2],cmap='gray')
-axs[1,0].imshow(preds_test[2],cmap='gray')
-axs[-1, -1].axis('off')
-
-axs[0,0].title.set_text('Original Image')
-axs[0,1].title.set_text('Ground Truth')
-axs[1,0].title.set_text('Predicion')
+#Nomorlization the results into [0,1]
+preds_test = np.around(preds_test)
 
 #Evaluation: Dice similarity coefficient on the test set
-y_test = y_test.reshape([519,256,256])
 def dice_similar_coef(y_true, y_pred):
     
     smooth = 1e-15
@@ -94,11 +93,38 @@ def dice_similar_coef(y_true, y_pred):
     y_pred = tf.cast(y_pred, tf.float32)
     intersection = tf.reduce_sum(y_true * y_pred)
     return (2 * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
+#inverse the image size
+preds_test = preds_test.reshape([519,256,256])
+preds_test_real = []
+for i in range(len(y_test_real)):
+    preds_test_real.append(cv2.resize(preds_test[i], (y_test_real[i].shape[1],y_test_real[i].shape[0])))
 sum_Dice = 0
 avg_Dice = 0
-for i in range(y_test.shape[0]):
-    dice = dice_similar_coef(y_test[i], preds_test[i])
+for i in range(len(y_test_real)):
+    dice = dice_similar_coef(y_test_real[i], preds_test_real[i])
     sum_Dice += dice
 avg_Dice = sum_Dice / 519
-#avg_Dice is the average Dice similarity coefficient on the test set.
-avg_Dice
+#The final average dice similarity coefficients on the test size
+print(avg_Dice)
+
+#Visualization for different size images
+fig, axs = plt.subplots(3,3,figsize=(10,10))
+fig.suptitle('Image Segmentation on different size images')
+axs[0,0].imshow(X_test_real[2])
+axs[0,1].imshow(y_test_real[2],cmap='gray')
+axs[0,2].imshow(preds_test_real[2],cmap='gray')
+
+axs[1,0].imshow(X_test_real[5])
+axs[1,1].imshow(y_test_real[5],cmap='gray')
+axs[1,2].imshow(preds_test_real[5],cmap='gray')
+
+axs[2,0].imshow(X_test_real[12])
+axs[2,1].imshow(y_test_real[12],cmap='gray')
+axs[2,2].imshow(preds_test_real[12],cmap='gray')
+
+
+axs[0,0].title.set_text('Original Image')
+axs[0,1].title.set_text('Ground Truth')
+axs[0,2].title.set_text('Predicion')
+
+#Visualization for interesting findins
