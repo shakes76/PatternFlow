@@ -22,7 +22,7 @@ from itertools import chain
 from skimage.io import imread, imshow, concatenate_images
 from skimage.transform import resize
 from skimage.morphology import label
-from sklearn.model_selection import train_test_split
+
 
 import tensorflow as tf
 
@@ -117,6 +117,26 @@ def mod_comp(img_path, seg_path, img_height, img_width):
     
     # Fitting the U-NET model
     results = model.fit(XISIC_train, yISIC_train_cat, batch_size=32, epochs=30, callbacks=callbacks,validation_data=(XISIC_val, yISIC_val_cat))
+    
+    # Plotting the training and validation loss with respect to epochs
+    plt.figure(figsize=(8, 8))
+    plt.title("Dice Loss")
+    plt.plot(results.history["loss"], label="training_loss")
+    plt.plot(results.history["val_loss"], label="validation_loss")
+    plt.plot( np.argmin(results.history["val_loss"]), np.min(results.history["val_loss"]), marker="x", color="r", label="best model")
+    plt.xlabel("Epochs")
+    plt.legend();
+    plt.show()
+    
+    # Plotting the training and validation accuracy with respect to epochs
+    plt.figure(figsize=(8, 8))
+    plt.title("Classification Accuracy")
+    plt.plot(results.history["accuracy"], label="training_accuracy")
+    plt.plot(results.history["val_accuracy"], label="validation_accuracy")
+    plt.plot( np.argmax(results.history["val_accuracy"]), np.max(results.history["val_accuracy"]), marker="x", color="r", label="best model")
+    plt.xlabel("Epochs")
+    plt.legend();
+    plt.show()
     
     # Loading the model with the best performance
     model.load_weights('model-ISIC.h5')
