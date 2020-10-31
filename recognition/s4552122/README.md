@@ -23,23 +23,23 @@ The model structure is almostly from the structure in [[1]](#References).
 <p align="center">Figure 2. The structure of the improved uNet</p>  
 
 
-The difference is that images in ISICs data set are 2D dimensions, and so all $3\times 3\times 3$ convolution layers have been changed to $3\times 3$ convolution layers.
+The difference is that images in ISICs data set are 2D dimensions, and so all 3×3×3 convolution layers have been changed to 3×3  convolution layers.
 
-**Context module**: InstanceNormalization, leaky RELU, $3\times 3$ convolution, 
+**Context module**: InstanceNormalization, leaky RELU, 3×3 convolution, 
 
-​							     InstanceNormalization, leaky RELU, $3\times 3$ convolution, Dropout(0.3). 
+​							     InstanceNormalization, leaky RELU, 3×3 convolution, Dropout(0.3). 
 
 ​                                 It is implemented as a method called “context_modules” in model.py.
 
-**Upsampling module**: UpSampling2D(), $3\times 3$ convolution
+**Upsampling module**: UpSampling2D(), 3×3 convolution
 
 ​										 It is implemented as a method called “upSampling” in model.py.
 
-**Localization model**: $3\times 3$ convolution, $1\times 1$ convolution
+**Localization model**: 3×3 convolution, 1×1 convolution
 
 ​									   It is implemented as a method called “localization” in model.py.
 
-**Segmentation layer**: $1\times 1$ convolution by 1 output filters
+**Segmentation layer**: 1×1 convolution by 1 output filters
 
 **Upscale**: UpSampling2D() by bilinear interpolation
 
