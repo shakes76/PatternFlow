@@ -71,13 +71,13 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 
 
-<img src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:15%;" />
+<img src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:5%;" />
 
 
 
 
 
- <img src="images/image_at_epoch_1350.png" alt="image_at_epoch_1350" style="zoom:15%;" />
+ <img src="images/image_at_epoch_1350.png" alt="image_at_epoch_1350" style="zoom:5%;" />
 
 
 
