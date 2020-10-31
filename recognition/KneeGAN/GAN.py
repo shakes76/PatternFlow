@@ -1,3 +1,18 @@
+'''
+DCGAN for generating fake MRI based on the OAI AKOA Knee dataset.
+
+This file defines the GAN, including the network itself, the loss functions, and the optimisers.
+It also provides a training function, train(), which can be called by a driver script.
+This function constructs and trains the network.
+
+Requirements:
+- TensorFlow
+- sys
+- DataUtils
+
+Author: Erik Brand
+'''
+
 import tensorflow as tf
 import sys
 from DataUtils import load_data
@@ -16,20 +31,20 @@ def generator(input_dim, latent_dim):
     net = tf.keras.layers.Reshape((input_dim,input_dim,64))(net)
     net = tf.keras.layers.ReLU()(net)
 
-    net = tf.keras.layers.Conv2DTranspose(64, (3,3), strides=(2,2), padding='same')(net)
-    net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
+    net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
+    #net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
-    net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
+    #net = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(32, (3,3), strides=(2,2), padding='same')(net)
-    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    #net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2DTranspose(16, (3,3), strides=(2,2), padding='same')(net)
-    net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
+    #net = tf.keras.layers.Conv2D(16, (3,3), strides=(1,1), padding='same')(net)
     net = tf.keras.layers.ReLU()(net)
 
     net = tf.keras.layers.Conv2D(1, (3,3), strides=(1,1), padding='same')(net)
@@ -38,6 +53,7 @@ def generator(input_dim, latent_dim):
 
     return model
 
+## Discriminator:
 
 def discriminator(input_dim):
 
@@ -105,13 +121,13 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
     gen_hist = list()
     disc_hist = list()
 
-    for i in range(epochs):        
+    for i in range(epochs):     
+        # Output some training data for debugging 
         data = image_iter.get_next()
-
         for k in range(5):
             tf.keras.preprocessing.image.save_img(output_dir + 'TrainImages/Epoch{}_{}.png'.format(i, k), data[k])
 
-
+        # Training Step
         for j in range(dataset_size//batch_size):
             # Obtain data for this batch:
             latent_data = tf.random.normal(shape=(batch_size, latent_dim))
@@ -143,12 +159,13 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
         print("Disc Loss: {:.5f}".format(tf.reduce_mean(disc_loss).numpy()))
         sys.stdout.flush()
 
-        # Save example images
+        # Save example images for debugging
         latent_data = tf.random.normal(shape=(5, latent_dim))
-        fake_images = gen(latent_data).numpy() * 255
+        fake_images = gen(latent_data).numpy()
         mins = tf.math.reduce_min(fake_images, axis=(1,2,3))[:,None,None,None]
         maxs = tf.math.reduce_max(fake_images, axis=(1,2,3))[:,None,None,None]
         fake_images = (fake_images - mins)/(maxs-mins)
+        fake_images = fake_images * 255
         for k in range(5):
             tf.keras.preprocessing.image.save_img(output_dir + 'Intermediate/Epoch{}_{}.png'.format(i, k), fake_images[k])
 
