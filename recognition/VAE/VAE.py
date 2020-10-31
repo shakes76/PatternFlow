@@ -1,5 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import Sequential
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.preprocessing import image_dataset_from_directory
+from tensorflow.keras.layers.experimental.preprocessing import Rescaling
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, InputLayer, Flatten, Dense, Reshape, BatchNormalization
 from skimage import img_as_float
 from skimage.metrics import structural_similarity as ssim
@@ -10,8 +13,11 @@ import math
 class VAE(tf.keras.Model):
     def __init__(self, latent_dimension, kernel_size=3, strides=2):
         super(VAE, self).__init__()
+        # number of dimensions of the latent distribution
         self.latent_dim = latent_dimension
+        # the encoder 
         self.encoder = self.define_encoder(latent_dimension, kernel_size, strides)
+        # the decoder
         self.decoder = self.define_decoder(latent_dimension, kernel_size, strides)
 
     @tf.function
@@ -41,14 +47,16 @@ class VAE(tf.keras.Model):
 
     # generate images by encoding and decoding the test samples
     def generate_images(self, test_sample):
-        # encode the test samples and get the parameters of the latent distribution
-        mean, log_var = model.encode(tf.expand_dims(test_sample, axis=-1))
-        # reparameter trick
-        z = model.reparameterize(mean, log_var)
-        # decode the points sampled from the latent distribution to generate images
-        predictions = model.sample(z)
-        return predictions
+        for x_test in test_sample:
+            # encode the test samples and get the parameters of the latent distribution
+            mean, log_var = model.encode(tf.expand_dims(x_test, axis=-1))
+            # reparameter trick
+            z = model.reparameterize(mean, log_var)
+            # decode the points sampled from the latent distribution to generate images
+            predictions = model.sample(z)
+            return predictions
 
+    # defining the encoder
     def define_encoder(self, latent_dimension, kernel_size, strides):
         e = Sequential()
         e.add(InputLayer(input_shape=(256, 256, 1)))
@@ -62,37 +70,34 @@ class VAE(tf.keras.Model):
         e.add(Dense(latent_dimension * 2))
         return e
 
+    # defining the decoder
     def define_decoder(self, latent_dimension, kernel_size, strides):
         d = Sequential()
         d.add(InputLayer(input_shape=(latent_dimension,)))
         d.add(Dense(units=32 * 32 * 32, activation=tf.nn.relu))
         d.add(BatchNormalization())
         d.add(Reshape(target_shape=(32, 32, 32)))
-        d.add(Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'))
+        d.add(Conv2DTranspose(filters=64, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
         d.add(BatchNormalization())
-        d.add(Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'))
-        d.add(BatchNormalization)
-        d.add(Conv2DTranspose(filters=16, kernel_size=3, strides=2, padding='same', activation='relu'))
+        d.add(Conv2DTranspose(filters=32, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
         d.add(BatchNormalization())
-        d.add(Conv2DTranspose(filters=1, kernel_size=3, strides=1, padding='same'))
+        d.add(Conv2DTranspose(filters=16, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
+        d.add(BatchNormalization())
+        d.add(Conv2DTranspose(filters=1, kernel_size=kernel_size, strides=1, padding='same'))
         return d
-
-
 
 
 # Calculate the similarity between the original test images and the generated images.
 def calculate_ssim(predictions, test_sample):
     ssim_total = 0
-    #
     size = predictions.shape[0]
-    for i in range(size):
-        generated_img = predictions[i, :, :, 0]
-        reference_img = test_sample[i, :, :, 0]
-        generated_img = img_as_float(generated_img)
-        reference_img = img_as_float(reference_img)
-        ssim_total += ssim(reference_img, generated_img, data_range=generated_img.max() - generated_img.min())
-    # return the average structural similarity
-    return ssim_total/size
+    for x_test in test_sample:
+        for i in range(size):
+            generated_img = img_as_float(tf.squeeze(predictions[i]))
+            reference_img = img_as_float((tf.squeeze(x_test[i])))
+            ssim_total += ssim(reference_img, generated_img, data_range=generated_img.max() - generated_img.min())
+        # return the average structural similarity
+        return ssim_total / size
 
 
 def log_normal_pdf(sample, mean, log_var, raxis=1):
@@ -125,28 +130,31 @@ def train_step(model, x, optimizer):
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 
-def load_img_to_tensor(ds, crop_ratio):
-    list_of_batches = list(ds.as_numpy_iterator())
-    brains = list()
-    for batch in list_of_batches:
-        for images in batch:
-            for i in range(images.shape[0]):
-                if (len(images[i].shape) == 3):
-                    image = tf.image.central_crop(images[i], crop_ratio)/255
-                    brains.append(image)
-    brain_images = tf.convert_to_tensor(brains, dtype=tf.float32)
-    return brain_images
+# load the training and testing image datasets
+def get_dataset(train_dir, test_dir, test_size=32):
+    # a normalisation layer
+    normalization_layer = Rescaling(1./255)
+    # load the training images with the default batch size(i.e., 32)
+    train_dataset = image_dataset_from_directory(train_dir, color_mode='grayscale', label_mode=None)
+    # load the testing images with a specified batch size
+    test_dataset = image_dataset_from_directory(test_dir, color_mode='grayscale', label_mode=None, batch_size=test_size)
+    # normalise the training images
+    normalized_train = train_dataset.map(lambda x: (normalization_layer(x)))
+    # normalise the testing images
+    normalized_test = test_dataset.map(lambda x: (normalization_layer(x)))
+    # return the training and testing datasets
+    return normalized_train, normalized_test
 
 
-def get_dataset(train_dir, test_dir, batch_size, crop_ratio=1):
-    # load the images to BatchDataset
-    train_dataset = tf.keras.preprocessing.image_dataset_from_directory(train_dir, color_mode='grayscale')
-    test_dataset = tf.keras.preprocessing.image_dataset_from_directory(test_dir, color_mode='grayscale')
-    train_dataset = load_img_to_tensor(train_dataset, crop_ratio)
-    test_dataset = load_img_to_tensor(test_dataset, crop_ratio)
-    train_size = train_dataset.shape[0]
-    train_dataset = (tf.data.Dataset.from_tensor_slices(train_dataset).shuffle(train_size).batch(batch_size))
-    return train_dataset, test_dataset
+# plot the generated images 
+def display_result(predictions):
+    fig = plt.figure(figsize=(9, 9))
+    for i in range(9):
+        plt.subplot(3, 3, i + 1)
+        img = predictions[i]
+        plt.imshow(tf.squeeze(img), cmap='gray')
+        plt.axis('off')
+    plt.show()
 
 
 # function to train the model
@@ -158,6 +166,8 @@ def train(model, train_dataset, test_sample, epochs, optimizer):
             train_step(model, x_train, optimizer)
         # feed the network test samples to generate new images
         predictions = model.generate_images(test_sample)
+        # display the results
+        display_result(predictions)
         # evaluate the model using Structural Similarity between generated images and test samples
         print("> " + str(epoch) + ": SSIM = " + str(calculate_ssim(predictions, test_sample)))
     # return the trained model
@@ -188,28 +198,17 @@ if __name__ == '__main__':
     # define constants
     epochs = 10
     latent_dimension = 2
-    batch_size = 32
     train_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/directory'
     test_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/test directory'
 
     # use an Adam optimiser
-    optimizer = tf.keras.optimizers.Adam(1e-4)
+    optimizer = Adam(1e-4)
     # load training and test datasets
-    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, batch_size)
-    # load pre-trained model or train a new model
-    load_or_train = input('Load existing model or train a new model? T/L:')
-    if load_or_train == 'L':
-        # load pre-trained model
-        model = load_pretrained_model(latent_dimension, 'encoder669.h5', 'decoder669.h5')
-        predictions = model.generate_images(test_dataset)
-        print("> SSIM = " + str(calculate_ssim(predictions, test_dataset)))
-        print(model.encoder.summary())
-    else:
-        # initialize a new VAE model
-        model = VAE(latent_dimension)
-        # train a new model
-        print('Start training')
-        model = train(model, train_dataset, test_dataset, epochs, optimizer)
-        save_model(model, 'new_encoder.h5', 'new_decoder.h5')
+    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=64)
 
-
+    # initialize a new VAE model
+    model = VAE(latent_dimension)
+    # train a new model
+    print('Start training')
+    model = train(model, train_dataset, test_dataset, epochs, optimizer)
+    save_model(model, 'encoder.h5', 'decoder.h5')
