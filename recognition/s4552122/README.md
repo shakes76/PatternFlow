@@ -88,13 +88,21 @@ axs[1,0].title.set_text('Predicion')
 
 ## Example outputs and plots
 
-![Example_Output](images/Example_Output.png)
+![output](images/output.png)
+
+<center>
+  Figure 3. Image Segmentation on different size images
+</center>
 
 In most cases, the pridiction is almose the same as the ground truth segmentation image and can segment Skin Lesion correctly.
 
 ## Interesting finding
 
-![interests](images/interests.png)
+![interesting](images/interesting.png)
+
+<center>
+  Figure 4. The condition which the ground truth image seems to be wrong
+</center>
 
 The above plots show that sometimes the prediction image is better than the ground truth image. The ground truth image may be wrong due to human negligence.
 
