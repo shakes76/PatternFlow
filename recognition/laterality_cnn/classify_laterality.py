@@ -12,10 +12,32 @@ data_dir = os.path.join("C:", "Users", "delic", ".keras", "datasets", "AKOA_Anal
 #Load all the filenames
 filenames = glob.glob(os.path.join(data_dir, '*', '*.png'))
 image_count = len(filenames)
-
-#Split the dataset - 20% validation, 20% test, 60% training
 random.seed(123)
 random.shuffle(filenames)
+
+# patient_ids = [fn.split(os.path.sep)[-1].split('_')[0] for fn in filenames]
+# patient_ids = list(dict.fromkeys(patient_ids))
+# patient_cound = len(patient_ids)
+
+# left_pid = []
+# right_pid = []
+
+# for fn in filenames:
+#     split_fn = fn.split(os.path.sep)
+#     if split_fn[-2] == 'left':
+#         left_pid.append(split_fn[-1].split('_')[0])
+#     else:
+#         right_pid.append(split_fn[-1].split('_')[0])
+
+# left_pid = list(dict.fromkeys(left_pid))
+# right_pid = list(dict.fromkeys(right_pid))
+
+# for pid in left_pid:
+#     if pid in right_pid:
+#         print('BOTH')
+    
+#Split the dataset - 20% validation, 20% test, 60% training
+
 val_size = int(image_count * 0.2)
 test_size = int(image_count * 0.4)
 val_images = filenames[:val_size]
@@ -96,20 +118,57 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(img_height, img_width, 1)),
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.20),
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.20),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(num_classes, activation='softmax')
-])
+class ConvBlock(tf.keras.layers.Layer):
+    def __init__(self, filters=32):
+        super(ConvBlock, self).__init__()
+        self.conv1 = tf.keras.layers.Conv2D(filters, (3, 3), activation='relu')
+        self.conv2 = tf.keras.layers.Conv2D(filters, (3, 3), activation='relu')
+        self.pool = tf.keras.layers.MaxPooling2D((2, 2))
+        self.drop = tf.keras.layers.Dropout(0.2)
+
+    def call(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.pool(x)
+        return self.drop(x)
+
+class ConvModel(tf.keras.Model):
+    def __init__(self, num_classes=2):
+        super(ConvModel, self).__init__()
+        self.block1 = ConvBlock(32)
+        self.block2 = ConvBlock(64)
+        self.flatten = tf.keras.layers.Flatten()
+        self.d1 = tf.keras.layers.Dense(64, activation='relu')
+        self.drop = tf.keras.layers.Dropout(0.5)
+        self.d2sm = tf.keras.layers.Dense(num_classes, activation='softmax')
+
+    def call(self, x):
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.flatten(x)
+        x = self.d1(x)
+        x = self.drop(x)
+        return self.d2sm(x)
+
+# model = tf.keras.models.Sequential([
+#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(img_height, img_width, 1)),
+#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+#     tf.keras.layers.MaxPooling2D((2, 2)),
+#     tf.keras.layers.Dropout(0.20),
+#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+#     tf.keras.layers.MaxPooling2D((2, 2)),
+#     tf.keras.layers.Dropout(0.20),
+#     tf.keras.layers.Flatten(),
+#     tf.keras.layers.Dense(32, activation='relu'),
+#     tf.keras.layers.Dropout(0.5),
+#     tf.keras.layers.Dense(num_classes, activation='softmax')
+# ])
+
+model = ConvModel(num_classes=num_classes)
+
+image_batch, label_batch = next(iter(val_ds))
+predictions = model.predict(image_batch)
 
 model.summary()
 
