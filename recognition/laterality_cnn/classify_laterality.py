@@ -12,43 +12,68 @@ data_dir = os.path.join("C:", "Users", "delic", ".keras", "datasets", "AKOA_Anal
 #Load all the filenames
 filenames = glob.glob(os.path.join(data_dir, '*', '*.png'))
 image_count = len(filenames)
+
+patient_files = dict()
+for fn in filenames:
+    pid = fn.split(os.path.sep)[-1].split('_')[0]
+    if pid not in patient_files:
+        patient_files[pid] = [fn]
+    else:
+        patient_files[pid].append(fn)
+
+patient_ids = list(patient_files.keys())
+patient_count = len(patient_ids)
+
 random.seed(123)
-random.shuffle(filenames)
+not_valid = True
+while not_valid:
+    random.shuffle(patient_ids)
 
-# patient_ids = [fn.split(os.path.sep)[-1].split('_')[0] for fn in filenames]
-# patient_ids = list(dict.fromkeys(patient_ids))
-# patient_cound = len(patient_ids)
+    #Split the dataset - 20% validation, 20% test, 60% training (of PATIENTS)
+    val_count = int(patient_count * 0.2)
+    test_count = int(patient_count * 0.4)
+    val_patients = patient_ids[:val_count]
+    test_patients = patient_ids[val_count:test_count]
+    train_patients = patient_ids[test_count:]
 
-# left_pid = []
-# right_pid = []
+    val_images = []
+    test_images = []
+    train_images = []
 
-# for fn in filenames:
-#     split_fn = fn.split(os.path.sep)
-#     if split_fn[-2] == 'left':
-#         left_pid.append(split_fn[-1].split('_')[0])
-#     else:
-#         right_pid.append(split_fn[-1].split('_')[0])
+    for pid in val_patients:
+        val_images.extend(patient_files[pid])
+    for pid in test_patients:
+        test_images.extend(patient_files[pid])
+    for pid in train_patients:
+        train_images.extend(patient_files[pid])
 
-# left_pid = list(dict.fromkeys(left_pid))
-# right_pid = list(dict.fromkeys(right_pid))
+    #Extract labels
+    train_labels = [fn.split(os.path.sep)[-2] for fn in train_images]
+    val_labels = [fn.split(os.path.sep)[-2] for fn in val_images]
+    test_labels = [fn.split(os.path.sep)[-2] for fn in test_images]
+    not_valid = False
 
-# for pid in left_pid:
-#     if pid in right_pid:
-#         print('BOTH')
-    
-#Split the dataset - 20% validation, 20% test, 60% training
+    train_right_count = 0
+    for label in train_labels:
+        if label == 'right':
+            train_right_count += 1
 
-val_size = int(image_count * 0.2)
-test_size = int(image_count * 0.4)
-val_images = filenames[:val_size]
-test_images = filenames[val_size:test_size]
-train_images = filenames[test_size:]
+    val_right_count = 0
+    for label in val_labels:
+        if label == 'right':
+            val_right_count += 1
 
-#Extract labels
-train_labels = [fn.split(os.path.sep)[-2] for fn in train_images]
-val_labels = [fn.split(os.path.sep)[-2] for fn in val_images]
-test_labels = [fn.split(os.path.sep)[-2] for fn in test_images]
+    test_right_count = 0
+    for label in test_labels:
+        if label == 'right':
+            test_right_count += 1
 
+    right_ratios = [train_right_count/len(train_labels), val_right_count/len(val_labels), test_right_count/len(test_labels)]
+    for ratio in right_ratios:
+        if ratio > 0.7 or ratio < 0.3:
+            print("Re-shuffling")
+            not_valid = True
+  
 class_names = sorted(set(train_labels))
 num_classes = len(class_names)
 
@@ -79,7 +104,8 @@ val_ds = val_ds.map(map_fn)
 test_ds = test_ds.map(map_fn)
 
 # #Visualise data
-# image_batch, label_batch = next(iter(train_ds.batch(9)))
+# val_ds = val_ds.shuffle(len(val_images))
+# image_batch, label_batch = next(iter(val_ds.batch(9)))
 
 # plt.figure(figsize=(10, 10))
 # for i in range(9):
@@ -109,7 +135,7 @@ test_ds = test_ds.prefetch(buffer_size=AUTOTUNE)
 checkpoint_path = "training/ckpt01.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
-n_epochs = 5
+n_epochs = 10
 
 cp_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
@@ -137,33 +163,20 @@ class ConvModel(tf.keras.Model):
         super(ConvModel, self).__init__()
         self.block1 = ConvBlock(32)
         self.block2 = ConvBlock(64)
+        self.block3 = ConvBlock(128)
         self.flatten = tf.keras.layers.Flatten()
-        self.d1 = tf.keras.layers.Dense(64, activation='relu')
+        self.d1 = tf.keras.layers.Dense(128, activation='relu')
         self.drop = tf.keras.layers.Dropout(0.5)
         self.d2sm = tf.keras.layers.Dense(num_classes, activation='softmax')
 
     def call(self, x):
         x = self.block1(x)
         x = self.block2(x)
+        x = self.block3(x)
         x = self.flatten(x)
         x = self.d1(x)
         x = self.drop(x)
         return self.d2sm(x)
-
-# model = tf.keras.models.Sequential([
-#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(img_height, img_width, 1)),
-#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-#     tf.keras.layers.MaxPooling2D((2, 2)),
-#     tf.keras.layers.Dropout(0.20),
-#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-#     tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-#     tf.keras.layers.MaxPooling2D((2, 2)),
-#     tf.keras.layers.Dropout(0.20),
-#     tf.keras.layers.Flatten(),
-#     tf.keras.layers.Dense(32, activation='relu'),
-#     tf.keras.layers.Dropout(0.5),
-#     tf.keras.layers.Dense(num_classes, activation='softmax')
-# ])
 
 model = ConvModel(num_classes=num_classes)
 
@@ -180,9 +193,9 @@ model.compile(
     metrics=['accuracy']
 )
 
-# results = model.load_weights(checkpoint_path)
+results = model.load_weights(checkpoint_path)
 
-results = model.fit(train_ds, epochs=n_epochs, callbacks=[cp_callback], validation_data=val_ds)
+# results = model.fit(train_ds, epochs=n_epochs, callbacks=[cp_callback], validation_data=val_ds)
 
 print("Training set: ")
 model.evaluate(train_ds, verbose=2)
