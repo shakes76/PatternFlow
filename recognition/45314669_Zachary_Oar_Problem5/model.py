@@ -1,144 +1,5 @@
-from sklearn.model_selection import train_test_split
-import numpy as np
-import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt
-from PIL import Image
-from os import listdir
-from os.path import isfile, join
-import math
 
-
-def get_filenames_from_dir(directory):
-    """
-    Returns a list of all file names within a given directory.
-
-    Parameters
-    ----------
-    directory: string
-        The name of the directory having its file names returned.
-
-    Returns
-    ----------
-    A list of all file names within the directory with the given name.
-    """
-    return [f for f in listdir(directory) if isfile(join(directory, f))]
-
-
-def encode_y(y):
-    """
-    One-hot encodes a label image's numpy array to prepare for
-    binary cross-entropy.
-
-    Parameters
-    ----------
-    y: numpy array of floats
-        The numpy array of a label image to be encoded.
-
-    Returns
-    ----------
-    y: numpy array of floats
-        The input array, now one-hot encoded for binary cross-entropy.
-    """
-    y = np.where(y < 0.5, 0, y)
-    y = np.where(y > 0.5, 1, y)
-
-    y = keras.utils.to_categorical(y, num_classes=2)
-    return y
-
-
-class SequenceGenerator(keras.utils.Sequence):
-    """
-    A keras Sequence to be used as an image generator for the model.
-    """
-
-    def __init__(self, x, y, batchsize):
-        """
-        Creates a new SequenceGenerator instance.
-
-        Parameters
-        ----------
-        x: list of strings
-            A list of file names for preprocessed images.
-        y: list of strings
-            A list of file names for corresponding label images.
-        batchsize: int
-            The set batch size for this generator.
-        """
-        self.x, self.y, self.batchsize = x, y, batchsize
-
-    def __len__(self):
-        """
-        Returns the total number of unique batches that can be generated.
-
-        Returns
-        ----------
-        The total number of unique batches that can be generated.
-        """
-        return math.ceil(len(self.x) / self.batchsize)
-
-    def __getitem__(self, idx):
-        """
-        Returns a batch preprocessed image data and label image data, 
-        corresponding to the given id.
-
-        Parameters
-        ----------
-        idx: int
-            The id of the batch to be returned.
-
-        Returns
-        ----------
-        batch_x: numpy array of image data
-            A batch of image data for preprocessed images.
-        batch_x: numpy array of image data
-            A batch of image data for corresponding label images.
-        """
-        x_names = self.x[idx * self.batchsize:(idx + 1) * self.batchsize]
-        y_names = self.y[idx * self.batchsize:(idx + 1) * self.batchsize]
-        
-        # open x image names, resize, normalise and make a numpy array
-        batch_x = np.array([np.asarray(Image.open("ISIC2018_Task1-2_Training_Input_x2/" 
-                + file_name).resize((256, 192))) for file_name in x_names]) / 255.0
-
-        # open y image names, resize, normalise, encode to one-hot and make a numpy array
-        batch_y = np.array([np.asarray(Image.open("ISIC2018_Task1_Training_GroundTruth_x2/" 
-                + file_name).resize((256, 192))) for file_name in y_names]) / 255.0
-        batch_y = encode_y(batch_y)
-
-        return batch_x, batch_y
-
-
-x_names = get_filenames_from_dir("ISIC2018_Task1-2_Training_Input_x2")
-y_names = get_filenames_from_dir("ISIC2018_Task1_Training_GroundTruth_x2")
-
-# 15% of all the images are set aside as the test set
-x_train_val, x_test, y_train_val, y_test = train_test_split(x_names, y_names, test_size=0.15, random_state=42)
-
-# 17% of the non-test images are set aside as the validation set
-x_train, x_val, y_train, y_val = train_test_split(x_train_val, y_train_val, test_size=0.17, random_state=42)
-
-train_gen = SequenceGenerator(x_train, y_train, 4)
-val_gen = SequenceGenerator(x_val, y_val, 4)
-test_gen = SequenceGenerator(x_test, y_test, 4)
-
-# a sanity check of the generated images and their labels
-"""
-# show some of the images as a sanity check
-sanity_check_x, sanity_check_y = train_gen.__getitem__(0)
-plt.figure(figsize=(10, 10))
-for i in (0, 2):
-    plt.subplot(2, 2, i + 1)
-    plt.imshow(sanity_check_x[i])
-    plt.axis('off')
-
-    plt.subplot(2, 2, i + 2)
-    plt.imshow(tf.argmax(sanity_check_y[i], axis=2))
-    plt.axis('off')
-plt.show()
-del sanity_check_x
-del sanity_check_y
-"""
 
 def dice_similarity(exp, pred):
     """
@@ -184,12 +45,12 @@ def dice_similarity(exp, pred):
 def make_model():
     """
     Makes a standard UNET model as per the given lecture slides.
+
     Has an input shape of (batch_size, 192, 256, 3) and outputs
-    one-hot encoded images of shape (192, 256, 2).  Uses the Adam
+    one-hot encoded binary images of shape (192, 256, 2).  Uses the Adam
     optimiser, a binary cross-entropy loss function and provides
     dice similarity as a metric.
     """
-    
     input_layer = keras.layers.Input(shape=(192, 256, 3))
 
     conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(input_layer)
@@ -233,49 +94,10 @@ def make_model():
 
     conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(upconv4)
 
-    model = tf.keras.Model(inputs=input_layer, outputs=conv_out)
+    model = keras.Model(inputs=input_layer, outputs=conv_out)
     model.compile(optimizer = keras.optimizers.Adam(),
               loss='binary_crossentropy',
               metrics=[dice_similarity])
 
     return model
-
-
-# train the model
-model = make_model()
-model.fit(train_gen, validation_data=val_gen, epochs=1)
-
-# evaluate the model on the test set
-model.evaluate(test_gen)
-
-# show 4 generated images from the test set and compare with expected output
-test_images_x, test_images_y = test_gen.__getitem__(0)
-prediction = model.predict(test_images_x)
-plt.figure(figsize=(10, 10))
-plt.subplot(4, 2, 1)
-plt.imshow(tf.argmax(prediction[0], axis=2))
-plt.axis('off')
-plt.title("Predicted output of model", size=14)
-plt.subplot(4, 2, 2)
-plt.imshow(tf.argmax(test_images_y[0], axis=2))
-plt.axis('off')
-plt.title("Expected output (y label) for the prediction", size=14)
-plt.subplot(4, 2, 3)
-plt.imshow(tf.argmax(prediction[1], axis=2))
-plt.axis('off')
-plt.subplot(4, 2, 4)
-plt.imshow(tf.argmax(test_images_y[1], axis=2))
-plt.axis('off')
-plt.subplot(4, 2, 5)
-plt.imshow(tf.argmax(prediction[2], axis=2))
-plt.axis('off')
-plt.subplot(4, 2, 6)
-plt.imshow(tf.argmax(test_images_y[2], axis=2))
-plt.axis('off')
-plt.subplot(4, 2, 7)
-plt.imshow(tf.argmax(prediction[3], axis=2))
-plt.axis('off')
-plt.subplot(4, 2, 8)
-plt.imshow(tf.argmax(test_images_y[3], axis=2))
-plt.axis('off')
-plt.show()
+    
