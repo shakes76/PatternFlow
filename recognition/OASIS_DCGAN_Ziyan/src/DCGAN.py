@@ -9,10 +9,12 @@ from IPython import display
 
 class DCGAN:
 
-    def __init__(self, img_size, input_shape=256, batch_size=128, noise_dim=256):
+    def __init__(self, img_size, target_slice=None, input_shape=256, batch_size=256, noise_dim=256):
         """
         A DCGAN object that can create DCGAN structure and train. The object is flexible to different output size
         :param img_size: output size
+        :param target_slice: Same as the parameter in imageLoader, the purpose here is when the slice is exist, the
+            SSIM is using the mean value of between 256 comparisons. Else (Whole slices) the SSIM is using the max value
         :param input_shape: The input shape usually equals to noise_dim
         :param batch_size: The batch size for training, default is 256
         :param noise_dim: the noise dimension. Default is 256
@@ -23,13 +25,18 @@ class DCGAN:
         self.input_shape = input_shape
         self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.noise_dim = noise_dim
+        self.target_slice = target_slice
         # Model initialize
         self.generator = self.generator_model()
         self.discriminator = self.discriminator_model()
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
         # Checkpoint initialize
-        self.checkpoint_dir = '../models/' + str(img_size) + '_training_checkpoints'
+        if target_slice:
+            self.checkpoint_dir = './models/' + 'chosen_' + str(len(target_slice)) + '_' + str(
+                img_size) + '_training_checkpoints'
+        else:
+            self.checkpoint_dir = './models/' + 'chosen_whole_' + str(img_size) + '_training_checkpoints'
         self.checkpoint_prefix = os.path.join(self.checkpoint_dir, "ckpt")
         self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
                                               discriminator_optimizer=self.discriminator_optimizer,
@@ -50,18 +57,18 @@ class DCGAN:
         model.add(layers.Reshape((int(self.img_size / 8), int(self.img_size / 8), self.batch_size)))
         assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), self.batch_size)
 
-        model.add(layers.Conv2DTranspose(512, (6, 6), strides=(1, 1), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), 512)
+        model.add(layers.Conv2DTranspose(8 * self.img_size, (6, 6), strides=(1, 1), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), 8 * self.img_size)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(256, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 4), int(self.img_size / 4), 256)
+        model.add(layers.Conv2DTranspose(4 * self.img_size, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 4), int(self.img_size / 4), 4 * self.img_size)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(128, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 2), int(self.img_size / 2), 128)
+        model.add(layers.Conv2DTranspose(2 * self.img_size, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 2), int(self.img_size / 2), 2 * self.img_size)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
@@ -149,25 +156,25 @@ class DCGAN:
         :return: Nothing
         """
         predictions = self.generator(test_input, training=False)
-        fig = plt.figure(figsize=(2, 2))
+        plt.figure(figsize=(2, 2))
         for i in range(predictions.shape[0]):
             plt.subplot(2, 2, i + 1)
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
             plt.axis('off')
-        if (epoch + 1) % 50 == 0:
-            plt.savefig('../images/image_at_epoch_{:04d}.png'.format(epoch))
         plt.show()
 
-    def train(self, dataset, epochs):
+    def train(self, dataset, epochs, patience=3):
         """
         A function that handles main part of training.
         :param dataset: The training dataset
         :param epochs: The epoch of training
+        :param patience: Number of epochs achieves 0.6 SSIM after which training will be stopped.
         :return: hist_ssim: the history of ssim
         """
         hist_ssim = []
         num_examples_to_generate = 4
         seed = tf.random.normal([num_examples_to_generate, self.noise_dim])
+        achieve_count = 0
         for epoch in range(epochs):
             start = time.time()
 
@@ -177,17 +184,26 @@ class DCGAN:
             display.clear_output(wait=True)
             self.generate_and_save_images(epoch + 1, seed)
 
-            # Calculate SSIM every 100 epoch
-            if (epoch + 1) % 100 == 0:
-                ssim = self.cal_ssim(dataset)
-                print('ssim: ', str(ssim))
-                hist_ssim.append(ssim)
+            ssim = self.cal_ssim(dataset)
+            print('SSIM: ', str(ssim))
+            hist_ssim.append(ssim)
 
-            # Save the model every 500 epoch
-            if (epoch + 1) % 500 == 0:
+            # To get a reasonably clear image, SSIM test start after at least 500 epoch
+            if epoch >= 500:
+                if ssim > 0.6:
+                    achieve_count += 1
+                    print(achieve_count)
+                else:
+                    achieve_count = 0
+
+            # Save the model every 100 epoch
+            if (epoch + 1) % 100 == 0:
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
 
             print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
+            if achieve_count == patience:
+                self.checkpoint.save(file_prefix=self.checkpoint_prefix)
+                break
 
         display.clear_output(wait=True)
         self.generate_and_save_images(epochs, seed)
@@ -217,8 +233,12 @@ class DCGAN:
         """
         A function calculate the ssim between 256 fake and real images
         :param real: The real image tensor or dataset.
-        :return: the mean SSIM between batch size number of fake and real images
+        :return: The mean SSIM between batch size number of fake and real images, if is the whole dataset the maximum
         """
         fake = self.generate_images(self.batch_size, training=True)
-        return tf.image.ssim(fake, next(iter(real)).numpy().astype('float32')[0:self.batch_size] * 127.5 + 127.5,
-                             255).numpy().mean()
+        if self.target_slice:
+            return tf.image.ssim(fake, next(iter(real)).numpy().astype('float32')[0:self.batch_size] * 127.5 + 127.5,
+                                 255).numpy().mean()
+        else:
+            return tf.image.ssim(fake, next(iter(real)).numpy().astype('float32')[0:self.batch_size] * 127.5 + 127.5,
+                                 255).numpy().max()

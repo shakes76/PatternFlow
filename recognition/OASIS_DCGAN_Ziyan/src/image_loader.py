@@ -15,11 +15,10 @@ class ImgLoader:
         self.all_image_paths = list(data_root.glob('*.png'))
         self.all_image_paths = [str(path) for path in self.all_image_paths]
 
-    def load_to_tensor(self, buffer_size=0, target_slice=None, batch_size=128, img_size=64):
+    def load_to_tensor(self, target_slice=None, batch_size=256, img_size=64):
         """
         Transfer the dataset to tensor.
         :param target_slice: The target slices for the model training
-        :param buffer_size: The buffer size for the tensor. When 0 is the length of whole dataset
         :param batch_size: The batch size for the tensor. Default value is 256
         :param img_size: Compress images to img_size x img_size. Default value = 64
         :return: A Tensor of the dataset.
@@ -31,10 +30,7 @@ class ImgLoader:
                 current_slice = int(path_add.split('_')[-1].split('.')[0])
                 if current_slice in target_slice:
                     target_add.append(path_add)
-
-        if buffer_size == 0:
-            buffer_size = len(target_add)
-
+        buffer_size = len(target_add)
         train_images = np.ones((buffer_size, img_size, img_size), dtype='float16')
         for i in range(buffer_size):
             img = PIL.Image.open(target_add[i]).resize((img_size, img_size))
@@ -46,5 +42,5 @@ class ImgLoader:
 
 
 if __name__ == '__main__':
-    tester = ImgLoader('E:\Datasets\keras_png_slices_data\keras_png_slices_train')
+    tester = ImgLoader('D:\Datasets\keras_png_slices_data\keras_png_slices_train')
     tester.load_to_tensor()
