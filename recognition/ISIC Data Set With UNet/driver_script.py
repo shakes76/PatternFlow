@@ -17,14 +17,6 @@ from IPython.display import clear_output
 from solution import unet_model
 
 
-###############################################################################
-def analyse_training_history(history):
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.ylim([0, 1])
-    plt.legend(loc='lower right')
 ##############################################################################
 def dice_coefficient(y_true, y_pred, smooth = 0.):
     
@@ -51,32 +43,40 @@ def display(display_list):
     plt.show()
 
 
-def make_predictions(model, ds, n=1):
-    """"Make n predictions using the model and the given dataset"""
-    
-    predictions = []
+def display_data(ds, n=1):
+    """Display the image and mask from a given dataset"""
     for image, mask in ds.take(n):
-    #    #pred_mask = model.predict(image[tf.newaxis, ...])
-    #    #pred_mask = tf.argmax(pred_mask[0], axis=-1)
-    #    #display([tf.squeeze(image), tf.argmax(mask, axis=1), pred_mask])        
-    #    #predictions = model.predict(test_ds.batch(test_batch_size))
-    #    #predictions = np.argmax(predictions, axis=1)
+        display([tf.squeeze(image), tf.squeeze(mask)])
+
+
+def display_predictions(model, ds, n=1):
+    """"Make n predictions using the model and the given dataset"""
+    for image, mask in ds.take(n):
+        #pred_mask = tf.argmax(pred_mask[0], axis=-1)
+        #display([tf.squeeze(image), tf.argmax(mask, axis=1), pred_mask])        
+        #predictions = model.predict(test_ds.batch(test_batch_size))
+        #predictions = np.argmax(predictions, axis=1)
         pred_mask = model.predict(image[tf.newaxis, ...])
-        predictions.append([image, mask, pred_mask])
-    return predictions
+        display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+
+
+def analyse_training_history(history):
+    """Plot the acuraccy and val accuracy of the model as it trains"""
+    plt.figure(figsize=(10, 6))
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.ylim([0, 1])
+    plt.legend(loc='lower right')
+    plt.show()
 
 
 class DisplayCallback(tf.keras.callbacks.Callback):
     
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
-        predictions = make_predictions(model, val_ds, n=1)
-        for prediction in predictions:
-            image, mask, pred_mask = prediction
-            #print(tf.squeeze(image))
-            #print(tf.squeeze(mask))
-            #print(tf.squeeze(pred_mask))
-            display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+        display_predictions(model, val_ds, n=1)
 
 
 def decode_png(file_path):
@@ -148,58 +148,42 @@ def import_ISIC_data():
     # return training, validation and testing datasets
     return train_ds, val_ds, test_ds
 
-##############################################################################
+
 
 # import the data
 train_ds, val_ds, test_ds = import_ISIC_data()
    
- 
 # plot example image
-for image, mask in train_ds.take(1):    
-    display([tf.squeeze(image), tf.squeeze(mask)])
-
+display_data(train_ds, n=1)
    
 # create the model
-model = unet_model(1, f=4)
+model = unet_model(1, f=6)
     
-
 # show a summary of the model
 print(model.summary())
 
-
 # compile the model
 model.compile(optimizer='adam',
-              loss='binary_crossentropy', # dice_coefficient_loss categorical_crossentropy binary_crossentropy
-              metrics=['accuracy']) # accuracy dice_coefficient_loss categorical_crossentropy
+              loss='binary_crossentropy', # dice_coefficient_loss binary_crossentropy
+              metrics=['accuracy']) # accuracy dice_coefficient_loss binary_crossentropy
 
 # tf.keras.losses.SparseCategoricalCrossentropy()
-
 
 # specify batch sizes
 train_batch_size = 32
 val_batch_size = 32
 
-
 # specify number of epochs
-num_epochs = 2
-
+num_epochs = 4
 
 # train the model
 history = model.fit(train_ds.batch(train_batch_size), 
                     epochs=num_epochs,
-                    validation_data=val_ds.batch(val_batch_size))#,
-                    #callbacks=[DisplayCallback()])
-
+                    validation_data=val_ds.batch(val_batch_size),
+                    callbacks=[DisplayCallback()])
 
 # analyse history of training the model
 analyse_training_history(history)
 
-
-# make some predictions
-predictions = make_predictions(model, test_ds, n=3)
-
-
-# plot those predictions
-for prediction in predictions:
-    image, mask, pred_mask = prediction
-    display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+# plot some predictions
+display_predictions(model, test_ds, n=1)
