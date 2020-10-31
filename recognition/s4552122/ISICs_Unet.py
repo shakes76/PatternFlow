@@ -128,3 +128,13 @@ axs[0,1].title.set_text('Ground Truth')
 axs[0,2].title.set_text('Predicion')
 
 #Visualization for interesting findins
+fig, axs = plt.subplots(3,figsize=(10,10),constrained_layout = True)
+fig.suptitle('Wrong Ground Truth')
+
+axs[0].imshow(X_test_real[0])
+axs[1].imshow(y_test_real[0],cmap='gray')
+axs[2].imshow(preds_test_real[0],cmap='gray')
+
+axs[0].title.set_text('Original Image')
+axs[1].title.set_text('Ground Truth')
+axs[2].title.set_text('Predicion')
