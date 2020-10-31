@@ -29,7 +29,16 @@ The generator model of the DCGAN will create a reasonably fake images and the st
 
 ## How the model works
 
+### The flowchart of the  process
+
+<img src="images/Flowchat.png" alt="Flowchat" />
+
+[1][#The sturcture of Generator model]
+
+### The sturcture of Generator model
 
 
 
 
+
+[#The sturcture of Generator model]: 
