@@ -23,7 +23,9 @@ The uniqueness of DCGAN (compared with GAN) :
 
 Use OASIS brain data set to build a DCGAN model. 
 
-The generator model of the DCGAN will create a reasonably fake images and the structured similarity of over 0.6 
+The generator model of the DCGAN will create a reasonably fake images and ensure the structured similarity is 0.6 
+
+
 
 
 
@@ -31,7 +33,7 @@ The generator model of the DCGAN will create a reasonably fake images and the st
 
 ### The flowchart of the  process
 
-<img src="images/Flowchat.png" alt="Flowchat" style="zoom:50%;" />
+<img src="images/Flowchat.png" alt="Flowchat" style="zoom: 33%;" />
 
 
 
@@ -39,23 +41,49 @@ The generator model of the DCGAN will create a reasonably fake images and the st
 
 ### Details : The structure of generator
 
-<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 50%;" />
-
-
+<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 35%;" />
 
 
 
 ### Details : The structure of discriminator 
 
-<img src="images/Descriminator.png" alt="Descriminator" style="zoom:50%;" />
+<img src="images/Descriminator.png" alt="Descriminator" style="zoom:38%;" />
 
 
+
+## Dependencies required
+
+### Requirements:
+
+  1. Python 3.7 
+
+  2. Tensorflow-gpu 2.1.0
+
+  3. Keras
+
+  4. OpenCv
+
+  5. IPython
+
+     
+
+## Example outputs
+
+
+
+<img src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:15%;" />
+
+
+
+
+
+ <img src="images/image_at_epoch_1350.png" alt="image_at_epoch_1350" style="zoom:15%;" />
 
 
 
 ## Results
 
-The model will be trained use 9664 images. 
+The model will be trained use 9664 images (shape 64*64)
 
 The model will be tested by generating 32 images and compare it with 32 real images. (since the nmber of slice is 32)
 
