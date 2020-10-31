@@ -75,3 +75,11 @@ BATCH_SIZE = 256
 
 # Batch and shuffle the data
 train_dataset = tf.data.Dataset.from_tensor_slices(tf_train).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+
+#train the model and return the max ssim for each epoch
+ssim = train(train_dataset, EPOCHS)
+
+plt.plot(range(len(ssim)), ssim)
+plt.title('Struture Similarity vs Epochs')
+plt.xlabel('Epochs')
+plt.ylabel('Max Ssim ')
