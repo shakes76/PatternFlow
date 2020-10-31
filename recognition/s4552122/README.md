@@ -7,11 +7,10 @@ ISICs data set concludes thousands of Skin Lesion images. This recognition algor
 
 Here is a exmaple of the original Skin Lesion image and its Ground Truth segmentation image.
 
-​                                 <img src="images/ISIC_0000000.jpg" alt="ISIC_0000000" style="zoom:50%;" />                                    <img src="images/ISIC_0000000_segmentation.png" alt="ISIC_0000000_segmentation" style="zoom:50%;" />  
+​                         <img src="images/ISIC_0000000.jpg" alt="ISIC_0000000" width="30%" height="30%"/>                                    <img src="images/ISIC_0000000_segmentation.png" alt="ISIC_0000000_segmentation" width="30%" height="30%" />  
 
-<center>
-  Figure 1. Left is original Skin Lesion image and the right is its ground truth image.
-</center>
+<p align="center">Figure 1. Left is original Skin Lesion image and the right is its ground truth image.</p>  
+
 
 To conclusion, the aim of this project is to create the segmentation image like the above right one from an input image like the above left one by a spicified model inspired by uNet.
 
@@ -21,9 +20,8 @@ The model structure is almostly from the structure in [[1]](#References).
 
 ![uNetStructure](images/uNetStructure.jpg)
 
-<center>
-  Figure 2. The structure of the improved uNet 
-</center>
+<p align="center">Figure 2. The structure of the improved uNet</p>  
+
 
 The difference is that images in ISICs data set are 2D dimensions, and so all $3\times 3\times 3$ convolution layers have been changed to $3\times 3$ convolution layers.
 
@@ -120,9 +118,7 @@ axs[0,2].title.set_text('Predicion')
 
 ![output](images/output.png)
 
-<center>
-  Figure 3. Image Segmentation on different size images
-</center>
+<p align="center">Figure 3. Image Segmentation on different size images</p>  
 
 In most cases, the pridiction is almose the same as the ground truth segmentation image and can segment Skin Lesion correctly.
 
@@ -134,9 +130,7 @@ The final average Dice similarity coefficient on the test set is 0.84.
 
 ![interesting](images/interesting.png)
 
-<center>
-  Figure 4. The condition which the ground truth image seems to be wrong
-</center>
+<p align="center">Figure 4. The condition which the ground truth image seems to be wrong</p>  
 
 The above plots show that sometimes the prediction image is better than the ground truth image. The ground truth image may be wrong due to human negligence. Hence, for this kind of easy segmentation job, AI may be better than manual work in terms of the cost and accuracy.
 
