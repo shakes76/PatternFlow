@@ -114,17 +114,20 @@ noise = get_noise(nsample=nsample, latent_dim=100)
 def build_discriminator(image_shape, noutput=1):
     input_img = layers.Input(shape=image_shape)
     
-    l = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(input_img)
-    l = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(l)
-    l = layers.MaxPooling2D((2, 2), strides=(2, 2))(l)
+    l = layers.Conv2D(32, kernel_size=(3, 3), strides=(2,2), padding='same')(input_img)
+    l = layers.LeakyReLU()(l)
+    l = layers.Conv2D(32, kernel_size=(3, 3), strides=(2,2), padding='same')(l)
+    l = layers.LeakyReLU()(l)
     
-    l = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(l)
-    l = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(l)
-    l = layers.MaxPooling2D((2, 2), strides=(2, 2))(l)
+    l = layers.Conv2D(64, kernel_size=(3, 3), strides=(2,2), padding='same')(input_img)
+    l = layers.LeakyReLU()(l)
+    l = layers.Conv2D(64, kernel_size=(3, 3), strides=(2,2), padding='same')(l)
+    l = layers.LeakyReLU()(l)
     
-    l = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(l)
-    l = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(l)
-    l = layers.MaxPooling2D((2, 2), strides=(1, 1))(l)
+    l = layers.Conv2D(128, kernel_size=(3, 3), strides=(2,2), padding='same')(input_img)
+    l = layers.LeakyReLU()(l)
+    l = layers.Conv2D(128, kernel_size=(3, 3), strides=(2,2), padding='same')(l)
+    l = layers.LeakyReLU()(l)
     
     l = layers.Flatten()(l)
     l = layers.Dense(1024, activation="relu")(l)
@@ -195,7 +198,7 @@ def train(models, X_train, noise, result="result/", epochs=20000, batch_size=128
         # Plot the progress
         if epoch % int(epochs/100) == 0:
             plot_generated_images(noise,
-                                  path_save=result+"/image_{:05.0f}.png".format(epoch),
+                                  path_save=result+"/image.png",
                                   title="Epoch {}".format(epoch))
             print ("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%] [G loss: {:4.3f}]".format(
                     epoch, disc_loss[0], 100*disc_loss[1], combo_loss))
