@@ -35,7 +35,36 @@ The generator model of the DCGAN will create a reasonably fake images and the st
 
 
 
-### The sturcture of Generator model
 
-<img src="images/Generator sturcture.png" alt="Generator sturcture" style="zoom:50%;" />
+
+### Details : The structure of generator
+
+<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 50%;" />
+
+
+
+
+
+### Details : The structure of discriminator 
+
+<img src="images/Descriminator.png" alt="Descriminator" style="zoom:50%;" />
+
+
+
+
+
+## Results
+
+The model will be trained use 9664 images. 
+
+The model will be tested by generating 32 images and compare it with 32 real images. (since the nmber of slice is 32)
+
+Structural Similarity(SSIM) Index will be used to validate the generated images. Our purpose is to get the  SSIM is over 0.6
+
+The plot below show how the  structure similariy changes 
+
+<img src="images/ssim.png" alt="ssim" style="zoom:50%;" />
+
+1. The  SSIM changes up and down around 0.6 after 50 epochs.
+2. During the whole training process, the max value of ssim is 0.727
 

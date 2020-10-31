@@ -141,7 +141,7 @@ def get_ssim(model):
     real_imgs =  tf.image.convert_image_dtype(tf_train[0:50], dtype =tf.float32)
     
     all_ssim = tf.image.ssim(fake_imgs, real_imgs, max_val=2)
-    mean = tf.math.reduce_max(all_ssim)
+    mean = tf.math.reduce_max(all_ssim) # take the maximum value of the ssim
     ssim = mean.numpy()
     
     return ssim

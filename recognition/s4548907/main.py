@@ -50,6 +50,7 @@ print("the maximum of train_images ",tf.reduce_max(tf_train).numpy())
 print("the minimum of test_images ",tf.reduce_min(tf_test).numpy())
 print("the maximum of test_images ",tf.reduce_max(tf_test).numpy())
 
+# Normalise the data into -1 and 1
 # the formula is data-127.5/127.5
 half_max1 = tf.math.scalar_mul(127.5, tf.ones_like(tf_test,dtype=tf.float32))
 temp_test = tf.math.subtract(tf_test, half_max1)
@@ -82,4 +83,5 @@ ssim = train(train_dataset, EPOCHS)
 plt.plot(range(len(ssim)), ssim)
 plt.title('Struture Similarity vs Epochs')
 plt.xlabel('Epochs')
-plt.ylabel('Max Ssim ')
+plt.ylabel('Ssim ')
+plt.savefig("ssim.png",dpi = 700)
