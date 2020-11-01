@@ -30,7 +30,7 @@ def localization_layer(input, channels):
     return activation2
 
 def segmentation_layer(input, channels):
-    conv2d = tf.keras.layers.Conv2D(channels, (1, 1), padding="same")(input)
+    conv2d = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
     return tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d)
 
 
@@ -94,7 +94,7 @@ def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
 
     segment = seg32_1 + seg32_upscaled
 
-    output = tf.keras.layers.Conv2D(output_channels, (1, 1), activation="softmax", padding="same")(segment)
+    output = tf.keras.layers.Conv2D(output_channels, (3, 3), activation="softmax", padding="same")(segment)
 
     model = tf.keras.Model(inputs=modelInput, outputs=output)
     return model

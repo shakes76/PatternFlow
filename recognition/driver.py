@@ -28,7 +28,6 @@ def process_path(scan_fp, label_fp):
     #Process the Label image
     label = decode_png(label_fp)
     label = label == [0, 255]
-    #tf.print(tf.unique(tf.reshape(label, [-1])))
     return scan, label
 
 def display(display_list):
@@ -84,20 +83,29 @@ def newDSC(label, pred_label, layer):
     demonimator = label_card + pred_label_card
     return numerator / demonimator
 
+def show_loss_and_accuracy(metrics):
+    plt.figure(figsize=(16, 8))
+    plt.subplot(1, 2, 1)
+    plt.plot(metrics.history['loss'], label='Training Loss')
+    plt.plot(metrics.history['val_loss'], label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Loss Graph')
+    plt.subplot(1, 2, 2)
+    plt.plot(metrics.history['accuracy'], label='Training Accuracy')
+    plt.plot(metrics.history['val_accuracy'], label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy Graph')
+    plt.show()
 
 
 
 def main():
-    #Get the file location of where the data is stored.
-    data_dir = pathlib.Path('H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/ISIC2018_Task1-2_Training_Data')
-    #The following 5 lines were used to download and unzip the data, these have been commented out for faster debugging.
-    #However, they have been left in to show how the files were retreived.
-    #data_dir_tf = tf.keras.utils.get_file(origin='https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34',
-    #                                      fname='H:/Year 3/Sem 2/COMP3710/Report/PatternFlow/recognition/ISIC2018_Task1-2_Training_Data.zip')
-
-    #with zipfile.ZipFile(data_dir_tf) as zf:
-    #   zf.extractall()
     number_Of_output_channels = 2
+    number_of_training_epochs = 50
     #List the file paths of the data
     skin_scans = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
     labels = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
@@ -123,10 +131,6 @@ def main():
     val_dataset = tf.data.Dataset.from_tensor_slices((val_scans, val_labels))
     test_dataset = tf.data.Dataset.from_tensor_slices((test_scans, test_labels))
 
-    train_dataset = train_dataset.shuffle(len(train_scans))
-    val_dataset = val_dataset.shuffle(len(val_scans))
-    test_dataset = test_dataset.shuffle(len(test_scans))
-
     train_dataset = train_dataset.map(process_path)
     val_dataset = val_dataset.map(process_path)
     test_dataset = test_dataset.map(process_path)
@@ -137,20 +141,16 @@ def main():
         print(label.shape)
 
     
-    model = improved_unet(number_Of_output_channels, f=8)
+    model = improved_unet(number_Of_output_channels, f=4)
 
     model.summary()
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(10), epochs=5, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(10), epochs=number_of_training_epochs, validation_data=val_dataset.batch(10))
 
-    labels = show_predictions(test_dataset, model)
-    print("------------------------------")
-    print("New DSC Calculations:")
-    print("Layer 0: ", newDSC(labels[0], labels[1], 0))
-    print("Layer 1: ", newDSC(labels[0], labels[1], 1))
-
+    show_loss_and_accuracy(loss_accuracy)
+    
     num_of_tests = 130
     i = 1
     layer_0_average = 0
@@ -171,21 +171,6 @@ def main():
     layer_1_average = layer_1_average / 130
     print("Average Layer 0 DSC: ", layer_0_average)
     print("Average Later 1 DSC: ", layer_1_average)
-
-
-    """
-    To add: 
-    - need to show more predictions
-    - Improve the efficiency of DSC to caclulcate the DSC on all test images.
-    - Include the plots for loss and accuracy.
-    - Calculate the Dice Coefficient for each test Image and Display them and 
-      find the average.
-    """
-
-##    test_brain = Image.open(str(test_scans[0]))
-##    test_brain = np.asarray(test_brain, dtype=np.uint8)
-##    print(test_brain.shape)
-
 
 if __name__ == "__main__":
     main()
