@@ -16,9 +16,9 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 from IPython.display import clear_output
 
+# data processing, save the images to the corresponding dataset
 train_images = sorted(glob.glob("/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/keras_png_slices_data/keras_png_slices_train/*.png"))
 train_masks = sorted(glob.glob("/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/keras_png_slices_data/keras_png_slices_seg_train/*.png"))
-#print(len(train_masks))
 test_images = sorted(glob.glob("/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/keras_png_slices_data/keras_png_slices_test/*.png"))
 test_masks = sorted(glob.glob("/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/keras_png_slices_data/keras_png_slices_seg_test/*.png"))
 val_images = sorted(glob.glob("/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/keras_png_slices_data/keras_png_slices_validate/*.png"))
@@ -28,10 +28,12 @@ train_ds = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
 val_ds = tf.data.Dataset.from_tensor_slices((val_images, val_masks))
 test_ds = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
 
+#shuffle the dataset
 train_ds = train_ds.shuffle(len(train_images))
 val_ds = val_ds.shuffle(len(val_images))
 test_ds = test_ds.shuffle(len(test_images))
 
+#decode and reshape the images to 256*256
 def decode_png(file_path):
     png = tf.io.read_file(file_path)
     png = tf.image.decode_png(png, channels=1)
@@ -51,6 +53,7 @@ train_ds = train_ds.map(process_path)
 val_ds = val_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 
+#display images
 def display(display_list):
     plt.figure(figsize=(10, 10))
     for i in range(len(display_list)):
@@ -59,59 +62,75 @@ def display(display_list):
         plt.axis('off')
     plt.show()
 
+#show one image for example
 for image, mask in train_ds.take(1):
     display([tf.squeeze(image), tf.argmax(mask, axis=-1)])
 
+#develop the unet model according to the paper(just change the 3D structure to 2D)
+#use leakReLu(0.01) according to the paper mentioned
 def unet_model(output_channels, f=64):
     inputs = tf.keras.layers.Input(shape=(256,256,1))
-
     d1_conv = tf.keras.layers.Conv2D(f, 3, padding='same')(inputs)
     d1_conv = tf.keras.layers.LeakyReLU(0.01)(d1_conv)
+
+    #context modules with two 3*3 convolutional layers and a dropout layers in between
     d1 = tf.keras.layers.Conv2D(f, 3, padding='same')(d1_conv)
     d1 = tf.keras.layers.LeakyReLU(0.01)(d1)
     d1 = tf.keras.layers.Dropout(0.3)(d1)
     d1 = tf.keras.layers.Conv2D(f, 3, padding='same')(d1)
     d1 = tf.keras.layers.LeakyReLU(0.01)(d1)
-    d1 = tf.keras.layers.add([d1_conv, d1])
     #d1 = d1_conv + d1
+    d1 = tf.keras.layers.add([d1_conv, d1])
 
+    #stride two convolutional layer to reduce the resolution
     d2_conv = tf.keras.layers.Conv2D(2*f, 3, 2, padding='same')(d1)
     d2_conv = tf.keras.layers.LeakyReLU(0.01)(d2_conv)
+    #context modules
     d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same')(d2_conv)
     d2 = tf.keras.layers.LeakyReLU(0.01)(d2)
     d2 = tf.keras.layers.Dropout(0.3)(d2)
     d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same')(d2)
     d2 = tf.keras.layers.LeakyReLU(0.01)(d2)
+    #element-wise sum
     d2 = tf.keras.layers.add([d2_conv, d2])
-    
+
+    #stride two convolutional layer to reduce the resolution
     d3_conv = tf.keras.layers.Conv2D(4*f, 3, 2, padding='same')(d2)
     d3_conv = tf.keras.layers.LeakyReLU(0.01)(d3_conv)
+    #context modules
     d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same')(d3_conv)
     d3 = tf.keras.layers.LeakyReLU(0.01)(d3)
     d3 = tf.keras.layers.Dropout(0.3)(d3)
     d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same')(d3)
     d3 = tf.keras.layers.LeakyReLU(0.01)(d3)
+    #element-wise sum
     d3 = tf.keras.layers.add([d3_conv, d3])
     
+    #stride two convolutional layer to reduce the resolution
     d4_conv = tf.keras.layers.Conv2D(8*f, 3, 2, padding='same')(d3)
     d4_conv = tf.keras.layers.LeakyReLU(0.01)(d4_conv)
+    #context modules
     d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same')(d4_conv)
     d4 = tf.keras.layers.LeakyReLU(0.01)(d4)
     d4 = tf.keras.layers.Dropout(0.3)(d4)
     d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same')(d4)
     d4 = tf.keras.layers.LeakyReLU(0.01)(d4)
+    #element-wise sum
     d4 = tf.keras.layers.add([d4_conv, d4])
     
+    #stride two convolutional layer to reduce the resolution
     d5_conv = tf.keras.layers.Conv2D(16*f, 3, 2, padding='same')(d4)
     d5_conv = tf.keras.layers.LeakyReLU(0.01)(d5_conv)
+    #context modules
     d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same')(d5_conv)
     d5 = tf.keras.layers.LeakyReLU(0.01)(d5)
     d5 = tf.keras.layers.Dropout(0.3)(d5)
     d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same')(d5)
     d5 = tf.keras.layers.LeakyReLU(0.01)(d5)
+    #element-wise sum
     d5 = tf.keras.layers.add([d5_conv, d5])
 
-    #upsampling-u4
+    #upsampling module-u4
     u4 = tf.keras.layers.UpSampling2D()(d5)
     u4 = tf.keras.layers.Conv2D(8*f, 3, padding='same')(u4)
     u4 = tf.keras.layers.LeakyReLU(0.01)(u4)
@@ -210,4 +229,5 @@ def prediction(ds):
 
 pred, true = prediction(test_ds)
 dice = dice_coefficient(true, pred)
-print("Dice similarity coefficient is: ", dice)
+print("Dice similarity coefficient is: ", dice) 
+show_predictions(test_ds, 3)
