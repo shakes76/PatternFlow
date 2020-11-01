@@ -1,0 +1,1 @@
+This directory contains example images pulled from the training set for debugging purposes.

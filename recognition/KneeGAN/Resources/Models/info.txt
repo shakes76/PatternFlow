@@ -1,0 +1,1 @@
+This directory contains the saved generator and discriminator models after each epoch.
