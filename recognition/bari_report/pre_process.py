@@ -39,16 +39,27 @@ def load_image(image_path=None):
         X[n] = x_img
     return X
 
+
 def data_part_normal(test_ratio=0.10, val_ratio=0.20):
     """splits the whole dataset into test, validattion and test sets 
     and normalize pixel values.
+    
+    Parameters:
+        test_ratio (float): data proportion for testing model performance
+        val_ratio (float): data proportion for tuning model hyperparameters
+    
+    Return: 
+        train-validation-test sets {dict}: partitioned and normalized data sets
     """
-    input_path = input("\nProvide directory path for 'Input' images: ")
-    gt_path = input("\nProvide directory path for Ground Truth images: ")
-    print("\nThanks :)\nNow loading images for training UNET...\n")
+    input_path = input("\nProvide directory path for 'INPUT' images: ")
+    gt_path = input("\nProvide directory path for GROUND TRUTH images: ")
+    print("\nMany Thanks :))")
+    print("Now loading images to be followed by model training")
+    print("This might take a bit longer (depending on your system)\n")
     X = load_image(image_path=input_path)
     y = load_image(image_path=gt_path)
-    
+    val_size = int(X.shape[0] * val_ratio)
+    # partitioning test test from others
     X_tr_full, X_test_, y_tr_full, y_test_ = train_test_split(X, y, 
                                                           test_size=test_ratio,
                                                           random_state=42)
@@ -56,8 +67,12 @@ def data_part_normal(test_ratio=0.10, val_ratio=0.20):
     X_test, y_test = X_test_ / 255.0, (y_test_ // 255).astype("uint8")
     X_tr_norm, y_tr_norm = X_tr_full / 255.0, (y_tr_full // 255).astype("uint8")
     # split the remaining images into train and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X_tr_norm, y_tr_norm, 
-                                                      test_size=val_ratio, 
-                                                        random_state=42)
+    X_val, X_train = X_tr_norm[:val_size], X_tr_norm[val_size:]
+    y_val, y_train = y_tr_norm[:val_size], y_tr_norm[val_size:]
     return {"train":(X_train, y_train), "validation":(X_val, y_val),
             "test": (X_test, y_test)}  
+
+
+if __name__ == "__main__":
+    print("This module provides utility functions training and testing UNET",
+          "and is not meant to be executed on its own.")
