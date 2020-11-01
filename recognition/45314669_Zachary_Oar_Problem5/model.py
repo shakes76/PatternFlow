@@ -44,7 +44,7 @@ def dice_similarity(exp, pred):
 
 def make_model():
     """
-    Makes a standard UNET model as per the given lecture slides.
+    Returns a standard UNET model as per the given lecture slides.
 
     Has an input shape of (batch_size, 192, 256, 3) and outputs
     one-hot encoded binary images of shape (192, 256, 2).  Uses the Adam
