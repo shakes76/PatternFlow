@@ -69,8 +69,6 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ## Example outputs
 
-
-
 <img align="left" src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100" style="zoom:110%;border:10px;margin:20px">
 
 
@@ -101,9 +99,7 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 
 
-
-
-## Results
+## Result
 
 The model will be trained use 9664 images (shape 64*64)
 
