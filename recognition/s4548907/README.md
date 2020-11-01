@@ -153,7 +153,9 @@ Our purpose is to get the  SSIM is over 0.6
 
 The plot below show how the  structure similariy changes 
 
-![ssim](/Users/amanda/Desktop/PatternFlow/recognition/s4548907/images/ssim.png)
+<img src="images/ssim.png" alt="ssim" style="zoom: 100%;" />
+
+
 
 
 

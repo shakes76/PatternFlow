@@ -4,6 +4,9 @@ Main function of the DCGAN:
     Discriminator
     trian setp (generate images and save, compute ssim)
 """
+import tensorflow as tf
+from tensorflow.keras import layers
+import os
 
 # Build generator model
 def make_generator_model():
