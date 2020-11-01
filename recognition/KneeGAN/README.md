@@ -1,5 +1,6 @@
 # Pattern Recognition: Generative Adversarial Network for MRI Generation
-## Dataset: OAI AKOA Knee
+## Author: Erik Brand
+### Dataset: OAI AKOA Knee
 
 ## Description
 A Deep Convolutional Generative Adversarial Network is a generative model that is able to generate images from a latent space. It consists of two individual convolutional networks: a generator and a discriminator. These components are coupled such that they compete against each other during training; the generator attempts to generate a realistic image from the latent space, while the discriminator learns to distinguish between generated images fed from the generator and actual training data. In this particular application, the generator-discriminator network is trained on Knee MRI data such that the generator is able to create realistic 128x128 MRI images from a latent space. 
@@ -13,7 +14,7 @@ There are three files required to run this algorithm:
 * DataUtils.py - Defines auxiliary functions for loading and visualising data
 * Driver.py - Driver script for running the training function
 
-The file Driver.py demonstrates how to run the algorithm. To run the algorithm, specify the required hyperparameters, then call the train() method: `train(data_path, output_path, epochs, batch_size, latent_dim, generator_input_dim, learning_rate_generator, learning_rate_discriminator)` 
+The file Driver.py demonstrates how to run the algorithm. To run the algorithm, specify the required hyperparameters, then call the train() method: `train(data_path, output_path, epochs, batch_size, latent_dim, generator_input_dim, learning_rate_generator, learning_rate_discriminator, debug)` 
 
 Parameter | Description
 --------- | -----------
@@ -25,8 +26,14 @@ latent_dim | The size of the latent dimension
 generator_input_dim | The side length of the square input size for the generator
 learning_rate_generator | The learning rate of the generator
 learning_rate_discriminator | The learning rate of the discriminator
+debug | Whether to output training images, generated images, saved models after each epoch for debugging
 
-The generator and discriminator loss will be output after each epoch. Once training is complete, a plot of the loss over the training process is prodcued (example_output.png), along with some example images generated from the latent space with the final version of the generator (loss_plot.png), and finally the SSIM score of the generated images compared to some test images is recorded in the file SSIM.txt. By default, models, example generated images, and a small sample of the training images are saved after each epoch in the /Resources folder.
+The generator and discriminator loss will be output after each epoch. Once training is complete, a plot of the loss over the training process is prodcued (example_output.png), along with some example images generated from the latent space with the final version of the generator (loss_plot.png), and finally the SSIM score of the generated images compared to some test images is recorded in the file SSIM.txt. If debug = True, models, example generated images, and a small sample of the training images are saved after each epoch in the /Resources folder.
+
+NOTE: To use debug = True, please create the following folders in the /Resources directory:
+* TrainImages
+* Intermediate
+* Models
 
 
 ## Dependencies

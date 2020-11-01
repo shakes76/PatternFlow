@@ -12,6 +12,8 @@ Requirements:
 - matplotlib
 
 Author: Erik Brand
+Date: 01/11/2020
+License: Open Source
 '''
 
 import tensorflow as tf

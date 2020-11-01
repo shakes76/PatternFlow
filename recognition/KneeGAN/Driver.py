@@ -8,6 +8,8 @@ Requirements:
 - DataUtils
 
 Author: Erik Brand
+Date: 01/11/2020
+License: Open Source
 '''
 
 from GAN import train
@@ -27,7 +29,7 @@ output_path = 'Resources/'
 # Main Driver Function
 def main():
     # Train the model
-    gen_history, disc_history, gen = train(data_path, output_path, epochs=epochs, batch_size=batch_size, latent_dim=latent_dim, generator_input_dim=generator_input_dim, learning_rate_generator=learning_rate_generator, learning_rate_discriminator=learning_rate_discriminator)
+    gen_history, disc_history, gen = train(data_path, output_path, epochs=epochs, batch_size=batch_size, latent_dim=latent_dim, generator_input_dim=generator_input_dim, learning_rate_generator=learning_rate_generator, learning_rate_discriminator=learning_rate_discriminator, debug=False)
     
     # Construct Output
     plot_history(disc_history, gen_history, output_path)

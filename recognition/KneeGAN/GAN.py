@@ -11,6 +11,8 @@ Requirements:
 - DataUtils
 
 Author: Erik Brand
+Date: 01/11/2020
+License: Open Source
 '''
 
 import tensorflow as tf
@@ -103,8 +105,13 @@ def generator_loss(fake_outputs, batch_size):
 
 
 ### Main Training Function
-
-def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, generator_input_dim=8, learning_rate_generator=0.0002, learning_rate_discriminator=0.0002):
+'''
+This is the main training function for the algorithm. 
+It requires a training data filepath, and an output filepath, along with any combination of hyperparameters.
+The function will output the generator and discriminator loss history, along with the final generator model
+(which can then be saved, used to generate example output, etc).
+'''
+def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, generator_input_dim=8, learning_rate_generator=0.0002, learning_rate_discriminator=0.0002, debug=False):
 
     ### Load Data
     image_iter, discriminator_input_dim, dataset_size = load_data(filepath, batch_size)
@@ -126,9 +133,10 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
 
     for i in range(epochs):     
         # Output some training data for debugging 
-        data = image_iter.get_next()
-        for k in range(5):
-            tf.keras.preprocessing.image.save_img(output_dir + 'TrainImages/Epoch{}_{}.png'.format(i, k), data[k])
+        if debug:
+            data = image_iter.get_next()
+            for k in range(5):
+                tf.keras.preprocessing.image.save_img(output_dir + 'TrainImages/Epoch{}_{}.png'.format(i, k), data[k])
 
         # Training Step
         for j in range(dataset_size//batch_size):
@@ -163,18 +171,19 @@ def train(filepath, output_dir, epochs=30, batch_size=128, latent_dim=256, gener
         sys.stdout.flush()
 
         # Save example images for debugging
-        latent_data = tf.random.normal(shape=(5, latent_dim))
-        fake_images = gen(latent_data).numpy()
-        mins = tf.math.reduce_min(fake_images, axis=(1,2,3))[:,None,None,None]
-        maxs = tf.math.reduce_max(fake_images, axis=(1,2,3))[:,None,None,None]
-        fake_images = (fake_images - mins)/(maxs-mins)
-        fake_images = fake_images * 255
-        for k in range(5):
-            tf.keras.preprocessing.image.save_img(output_dir + 'Intermediate/Epoch{}_{}.png'.format(i, k), fake_images[k])
+        if debug:
+            latent_data = tf.random.normal(shape=(5, latent_dim))
+            fake_images = gen(latent_data).numpy()
+            mins = tf.math.reduce_min(fake_images, axis=(1,2,3))[:,None,None,None]
+            maxs = tf.math.reduce_max(fake_images, axis=(1,2,3))[:,None,None,None]
+            fake_images = (fake_images - mins)/(maxs-mins)
+            fake_images = fake_images * 255
+            for k in range(5):
+                tf.keras.preprocessing.image.save_img(output_dir + 'Intermediate/Epoch{}_{}.png'.format(i, k), fake_images[k])
 
-        # Save Model
-        gen.save(output_dir + "Models/gen{}.h5".format(i))
-        disc.save(output_dir + "Models/disc{}.h5".format(i))
+            # Save Model
+            gen.save(output_dir + "Models/gen{}.h5".format(i))
+            disc.save(output_dir + "Models/disc{}.h5".format(i))
 
     print("Training Complete")
 
