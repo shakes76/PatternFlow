@@ -23,7 +23,8 @@ def get_filenames_from_dir(directory):
     ----------
     A list of all file names within the directory with the given name.
     """
-    return [f for f in listdir(directory) if isfile(join(directory, f))]
+    return [f for f in listdir(directory) 
+    if isfile(join(directory, f)) and f not in ("ATTRIBUTION.txt", "LICENSE.txt")]
 
 
 def encode_y(y):
