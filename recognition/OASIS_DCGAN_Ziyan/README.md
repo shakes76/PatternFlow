@@ -1,6 +1,10 @@
 # DCGAN On OASIS - Ziyan Wang
 This project is an assignment of [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) from 
-The University of Queensland. The whole readme will contains 5 parts.
+The University of Queensland. The chosen topic is No.6
+
+![Image of Gan Structure](./resources/chosen_question.png)
+
+The whole README will contains 4 parts: Algorithms, Problems, Implementation, and Dependencies.
 
 ## Algorithms
 In this part, I will introduce the algorithm structure used in the project. 
@@ -24,7 +28,7 @@ DCGAN applies extra constraints on the layers of generator and discriminator.
 To achieve the experiment aims and reasonable computation cost, in my solution, the architecture of my DCGAN is responsive. 
 The relationship between output shape (n) and middle layers shapes of the generator is as the following plot. 
 
-![Generator Structure](./resources/My_generator.png)
+![my Structure](./resources/My_generator.png)
 
 ### SSIM
 To evaluate the DCGAN model. SSIM is a good choice which is basically calculate the similarity between fake images and
