@@ -33,7 +33,9 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ### The flowchart of the  process
 
-<img src="images/Flowchat.png" alt="Flowchat" style="zoom: 33%;" />
+<img src="images/Flowchat.png" alt="Flowchat" style="zoom: 67%;" />
+
+
 
 
 
@@ -41,13 +43,17 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ### Details : The structure of generator
 
-<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 35%;" />
+<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 70%;" />
+
+
+
+
 
 
 
 ### Details : The structure of discriminator 
 
-<img src="images/Descriminator.png" alt="Descriminator" style="zoom:30%;" />
+<img src="images/Descriminator.png" alt="Descriminator" style="zoom:60%;" />
 
 
 
@@ -84,6 +90,8 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 
 <img align="left" src="images/image_at_epoch_0150.png" alt="image_at_epoch_0150" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950" style="zoom:110%;border:10px;margin:20px">
+
+
 
 
 
