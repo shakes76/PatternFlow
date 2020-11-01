@@ -29,9 +29,9 @@ not_valid = True
 while not_valid:
     random.shuffle(patient_ids)
 
-    #Split the dataset - 20% validation, 20% test, 60% training (of PATIENTS)
-    val_count = int(patient_count * 0.2)
-    test_count = int(patient_count * 0.4)
+    #Split the dataset - 16% validation, 20% test, 64% training (of PATIENTS)
+    val_count = int(patient_count * 0.16)
+    test_count = int(patient_count * 0.36)
     val_patients = patient_ids[:val_count]
     test_patients = patient_ids[val_count:test_count]
     train_patients = patient_ids[test_count:]
@@ -46,6 +46,9 @@ while not_valid:
         test_images.extend(patient_files[pid])
     for pid in train_patients:
         train_images.extend(patient_files[pid])
+
+    print(len(val_patients), len(test_patients), len(train_patients))
+    print(len(val_images), len(test_images), len(train_images))
 
     #Extract labels
     train_labels = [fn.split(os.path.sep)[-2] for fn in train_images]
@@ -69,6 +72,8 @@ while not_valid:
             test_right_count += 1
 
     right_ratios = [train_right_count/len(train_labels), val_right_count/len(val_labels), test_right_count/len(test_labels)]
+    print(right_ratios)
+
     for ratio in right_ratios:
         if ratio > 0.7 or ratio < 0.3:
             print("Re-shuffling")
@@ -135,7 +140,6 @@ test_ds = test_ds.prefetch(buffer_size=AUTOTUNE)
 checkpoint_path = "training/ckpt01.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
-n_epochs = 10
 
 cp_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
@@ -195,6 +199,7 @@ model.compile(
 
 results = model.load_weights(checkpoint_path)
 
+n_epochs = 10
 # results = model.fit(train_ds, epochs=n_epochs, callbacks=[cp_callback], validation_data=val_ds)
 
 print("Training set: ")
@@ -204,20 +209,20 @@ model.evaluate(val_ds, verbose=2)
 print("Test set: ")
 model.evaluate(test_ds, verbose=2)
 
-plt.plot(results.history['accuracy'], label='accuracy')
-plt.plot(results.history['val_accuracy'], label='val_accuracy')
-plt.xlabel("Epoch")
-plt.ylabel("Accuracy")
-plt.ylim(0.5, 1.0)
-plt.legend()
-plt.savefig('accuracy.png')
-plt.show()
+# plt.plot(results.history['accuracy'], label='accuracy')
+# plt.plot(results.history['val_accuracy'], label='val_accuracy')
+# plt.xlabel("Epoch")
+# plt.ylabel("Accuracy")
+# plt.ylim(0.5, 1.0)
+# plt.legend()
+# plt.savefig('accuracy.png')
+# plt.show()
 
-plt.plot(results.history['loss'], label="loss")
-plt.plot(results.history['val_loss'], label="val_loss")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.ylim(0.0, 0.5)
-plt.legend()
-plt.savefig('loss.png')
-plt.show()
+# plt.plot(results.history['loss'], label="loss")
+# plt.plot(results.history['val_loss'], label="val_loss")
+# plt.xlabel("Epoch")
+# plt.ylabel("Loss")
+# plt.ylim(0.0, 0.5)
+# plt.legend()
+# plt.savefig('loss.png')
+# plt.show()
