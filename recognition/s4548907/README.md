@@ -31,48 +31,103 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ## How the model works
 
-### The flowchart of the  process
-
 <div align="center">
-  <img src= "images/Flowchat.png" alt="Flowchat.png"
+  <h3>The flowchart of the  process</h3>
+  <img src= "images/Flowchat.png" alt="Flowchart"
+       style="zoom:67%;border:10px;margin:20px">
+  <br><br><br><br>
+  <h3>The Structure of Generator</h3>
+  <img src="images/Generator structure.png" alt="Generator"
        style="zoom:70%;border:10px;margin:20px">
-</div><br><br>
-
-
-
-### Details : The structure of generator
-
-<div align="center">
-  <img src= "images/Generator structure.png" alt="Generator structure.png"
-       style="zoom:70%;border:10px;margin:20px">
-</div><br><br>
-
-### Details : The structure of discriminator
-
-<div align="center">
-  <img src= "images/Descriminator.png" alt="Descriminator.png"
+  <br><br><br><br>
+  <h3>The Structure of Descriminator</h3>
+  <img src="images/Descriminator.png" alt="Descriminator"
        style="zoom:60%;border:10px;margin:20px">
-</div><br><br><br>
+</div>
 
 
 
+Three figuers above show the sturcture of generator and descriminator. 
 
+The generator model has :
+
+​	one dense layer (conver input noise(100) into (8*8*256) and reshape it into size 8 x 8 x 256)
+
+​	three transpose convolutional layers (2 x 2 kernel size) asociated with LeakyReLU and BatchNormalization layers
+
+The descriminator model has:
+
+​	two 3x3 convolutional layers, LeakyReLU layers and dropout layers with p=0.3.
+
+
+
+## Python code to Build two models
+
+```python
+def make_generator_model():
+  """The output is image """
+    model = tf.keras.Sequential()
+    model.add(layers.Dense(8*8*256, use_bias=False, input_shape=(100,)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    
+    model.add(layers.Reshape((8, 8, 256)))
+
+    model.add(layers.Conv2DTranspose(128, (2,2), strides=(2, 2), 
+                                     padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    
+    model.add(layers.Conv2DTranspose(64, (2, 2), strides=(2, 2), 
+                                     padding='same', use_bias=False))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
+    
+    # in DCGAN the activation function is tanh
+    model.add(layers.Conv2DTranspose(1, (2, 2), strides=(2, 2), 
+                                     padding='same', use_bias=False, activation='tanh'))
+    assert model.output_shape == (None, 64, 64, 1)
+    
+    return model
+
+
+def make_discriminator_model():
+  """The output is a float indicate if the picture is real or fake """
+    model = tf.keras.Sequential()
+    model.add(layers.Conv2D(64, (3, 3), strides=(2, 2), padding='same',input_shape=[64, 64, 1]))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
+
+    model.add(layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
+
+    # fully connected
+    model.add(layers.Flatten())
+    model.add(layers.Dense(1))
+
+    return model
+```
+
+​	
 
 ## Dependencies required
 
-### Requirements:
+  		1. Python 3.7 
+  		2. Tensorflow-gpu 2.1.0
+  		3. Keras
+  		4. OpenCv
+  		5. IPython
 
-  1. Python 3.7 
+## Data
 
-  2. Tensorflow-gpu 2.1.0
+1. The given train data is 9664 brain images. Before training the model, The training dataset will be shuffled and all
 
-  3. Keras
+   images will be resized into shape (64,64) and changes into gray scale.
 
-  4. OpenCv
+2. The model will be tested by generating 32 images and compare it with 32 real images. (since the nmber of slice is 32)
 
-  5. IPython
 
-     
 
 ## Example outputs
 
@@ -100,11 +155,9 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ## Result
 
-The model will be trained use 9664 images (shape 64*64)
+Structural Similarity(SSIM) Index will be used to validate the generated images. 
 
-The model will be tested by generating 32 images and compare it with 32 real images. (since the nmber of slice is 32)
-
-Structural Similarity(SSIM) Index will be used to validate the generated images. Our purpose is to get the  SSIM is over 0.6
+Our purpose is to get the  SSIM is over 0.6
 
 The plot below show how the  structure similariy changes 
 
