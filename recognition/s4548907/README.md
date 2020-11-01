@@ -35,11 +35,11 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
   <h3>The flowchart of the  process</h3>
   <img src= "images/Flowchat.png" alt="Flowchart"
        style="zoom:67%;border:10px;margin:20px">
-  <br><br><br><br>
+  <br><br><br>
   <h3>The Structure of Generator</h3>
   <img src="images/Generator structure.png" alt="Generator"
        style="zoom:70%;border:10px;margin:20px">
-  <br><br><br><br>
+  <br><br><br>
   <h3>The Structure of Descriminator</h3>
   <img src="images/Descriminator.png" alt="Descriminator"
        style="zoom:60%;border:10px;margin:20px">
@@ -113,11 +113,17 @@ def make_discriminator_model():
 
 ## Dependencies required
 
-  		1. Python 3.7 
-  		2. Tensorflow-gpu 2.1.0
-  		3. Keras
-  		4. OpenCv
-  		5. IPython
+  1. Python 3.7 
+
+  2. Tensorflow-gpu 2.1.0
+
+  3. Keras
+
+  4. OpenCv
+
+  5. IPython
+
+     
 
 ## Data
 
@@ -133,22 +139,22 @@ def make_discriminator_model():
 
 
 
-<div align="left">
+<div align="center">
   <img src= "images/image_at_epoch_0000.png" alt="image_at_epoch_0000"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
   <img src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
   <img src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
 </div>
 
-<div align="left">
+<div align="center">
   <img src= "images/image_at_epoch_0150.png" alt="image_at_epoch_0150"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
   <img src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
   <img src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950"
-       style="zoom:110%;border:10px;margin:20px">
+       style="zoom:110%;margin:20px">
 </div>
 
 
@@ -161,7 +167,7 @@ Our purpose is to get the  SSIM is over 0.6
 
 The plot below show how the  structure similariy changes 
 
-<div align="center">  <img src= "images/ssim.png" alt="ssim.png"       style="zoom:10%;border:10px;margin:20px"></div>
+![ssim](/Users/amanda/Desktop/PatternFlow/recognition/s4548907/images/ssim.png)
 
 1. The  SSIM changes up and down around 0.6 after 50 epochs.
 2. During the whole training process, the max value of ssim is 0.727
