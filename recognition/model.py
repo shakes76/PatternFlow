@@ -1,6 +1,15 @@
 import tensorflow as tf
 import numpy as np
 
+"""
+Conducts a context module for the Imrpoved UNET. See Figure 1 in README.md
+for it's application within the model.
+Parameters: 
+    input: input tensor that goes into the context module
+    channels: Number of filters to perform the context module at
+Returns:
+    The resulting tensor of a context module to continue the overall model.
+"""
 def context_layer(input, channels):
     context_1 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
     activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(context_1)
@@ -9,6 +18,16 @@ def context_layer(input, channels):
     activation2 = tf.keras.layers.LeakyReLU(alpha=0.3)(context_2)
     return activation2
 
+"""
+Conducts a decoding step for the model, this is the 3x3 convilution, followed by
+a contentext module, followed by an element-wise summation. See the original paper for
+the improved UNET model.
+Parameters: 
+    input: input tensor that goes into the context module
+    channels: Number of filters to perform the context module at
+Returns:
+    The resulting tensor of a decode module to continue the overall model.
+"""
 def decode_layer(input, channels):
     decode_1 = tf.keras.layers.Conv2D(channels, (3, 3), strides=(2,2), padding="same")(input)
     activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(decode_1)
@@ -16,12 +35,30 @@ def decode_layer(input, channels):
     elem_wise_sum = decode_1 + context
     return elem_wise_sum
 
+"""
+Conducts an upsampling module for the Improved UNET model. See Figure 1 in README.md
+for it's application within the model.
+Parameters: 
+    input: input tensor that goes into the context module
+    channels: Number of filters to perform the context module at
+Returns:
+    The resulting tensor of a upsampling module to continue the overall model.
+"""
 def upsampling_module(input, channels):
     up = tf.keras.layers.UpSampling2D()(input)
     conv2d = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(up)
     activation = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d)
     return activation
 
+"""
+Conducts a localisation module within the Improved UNET model. See Figure 1 in README.md
+for it's application within the model.
+Parameters: 
+    input: input tensor that goes into the context module
+    channels: Number of filters to perform the context module at
+Returns:
+    The resulting tensor of a localisation module to continue the overall model.
+"""
 def localization_layer(input, channels):
     conv2D_3 = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
     activation1 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2D_3)
@@ -29,11 +66,31 @@ def localization_layer(input, channels):
     activation2 = tf.keras.layers.LeakyReLU(alpha=0.3)(conv2D_1)
     return activation2
 
+"""
+Conducts a segmentation layer for the model. See Figure 1 in README.md
+for it's application within the model.
+Parameters: 
+    input: input tensor that goes into the context module
+    channels: Number of filters to perform the context module at
+Returns:
+    The resulting tensor of a segmentation module to continue the overall model.
+"""
 def segmentation_layer(input, channels):
     conv2d = tf.keras.layers.Conv2D(channels, (3, 3), padding="same")(input)
     return tf.keras.layers.LeakyReLU(alpha=0.3)(conv2d)
 
-
+"""
+Constructs an Improved UNET model based on the number of output channels
+for segmenation, the number of initial filters to conduct convolutions with
+and the shape of the image.
+Parameters: 
+    output_channels: number of segmentation layers
+    f: number of filters to intitially start the model with. Initialised to
+       16 as per Figure 1 in README.md
+    input_shape: shape of the image recieved by the model.
+Returns:
+    An Improved UNET model that can be compiled.
+"""
 def improved_unet(output_channels, f=16, input_shape=(256, 256, 1)):
     modelInput = tf.keras.layers.Input(shape=(256, 256, 1))
 

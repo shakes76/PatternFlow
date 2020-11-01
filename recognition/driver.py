@@ -2,24 +2,45 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
-import pathlib
-from PIL import Image
-import zipfile
 from model import improved_unet
 from sklearn.utils import shuffle
 
+"""
+This function decodes a PNG file into a tensor. 
+Parameters: 
+    file_path: File path of the PNG image
+Returns: 
+    Tensor representation of the image
+"""
 def decode_png(file_path):
     png = tf.io.read_file(file_path)
     png = tf.image.decode_png(png, channels=1)
     png = tf.image.resize(png, (256, 256))
     return png
 
+"""
+This function decodes a JPEG file into a tensor. 
+Parameters: 
+    file_path: File path of the JPEG image
+Returns: 
+    Tensor representation of the image
+"""
 def decode_jpeg(file_path):
     jpeg = tf.io.read_file(file_path)
     jpeg = tf.image.decode_jpeg(jpeg, channels=1)
     jpeg = tf.image.resize(jpeg, (256, 256))
     return jpeg
 
+"""
+Processes the file path for both of the scan and label images to 
+convert to tensors
+Paremeters: 
+    scan_fp: string representation for the file path of the scan image
+    label_fp: string represntation for the file path of the label image
+Returns: 
+    A tuple containing the tensors for the scan image and the label images
+         (scan tensor, label tensor)
+"""
 def process_path(scan_fp, label_fp):
     #Process the Skin scan
     scan = decode_jpeg(scan_fp)
@@ -30,6 +51,12 @@ def process_path(scan_fp, label_fp):
     label = label == [0, 255]
     return scan, label
 
+"""
+Gives an image visualisation for each tensor contained in the display_list.
+Parameters: 
+    display_list: tensors to display
+Returns:
+"""
 def display(display_list):
     plt.figure(figsize=(10,10))
     for i in range(len(display_list)):
@@ -38,6 +65,16 @@ def display(display_list):
         plt.axis('off')
     plt.show()
 
+"""
+Displays the predictions of the given model and dataset. The output 
+is visualised as original photo, ground truth segmenation and predicted
+segmentation.
+Parameters:
+    dataset: the dataset to take the images from
+    model: the model used to predict the segmentation for images from the dataset
+Returns:
+    A tuple containing the ground truth and predicted label.
+"""
 def show_predictions(dataset, model):
     num = 1
     for scan, label in dataset.take(num):
@@ -46,29 +83,20 @@ def show_predictions(dataset, model):
         display([tf.squeeze(scan), tf.argmax(label, axis=-1), pred_label])
     return (label, pred_label)
 
-def dsc(label, pred_label, layer):
-    print("Label: ")
-    tf.print(tf.unique(tf.reshape(label, [-1])))
-    print(label.shape)
-    print("pred_label")
-    tf.print(tf.unique(tf.reshape(pred_label, [-1])))
-    print(pred_label.shape)
-    image_size = 256
-    denominator = 0
-    label_card = 0
-    pred_label_card = 0
-    for i in range(0, 256):
-        for j in range(0, 256):
-            if np.argmax(label[i][j]) == layer:
-                if pred_label[i][j] == layer:
-                    denominator += 1
-                label_card += 1
-            if pred_label[i][j] == layer:
-                pred_label_card += 1
-    numerator = label_card + pred_label_card
-    return (2 * denominator) / (numerator)
-
-def newDSC(label, pred_label, layer):
+"""
+Computes the dice coefficient between the ground truth label image
+and the predicted label given the layer. This is an adaption of a 
+solution by Zabir Al. Nazi (see references in README.md).
+Parameters:
+    label: ground truth label image
+    pred_label: predicted label image
+    layer: layer to compute the dice coefficient for. The
+           value must be either 0 or 1.
+Returns:
+    The dice coefficient between the two labels, i.e. how much the
+    two images overlap given the layer.
+"""
+def dice_function(label, pred_label, layer):
     label = np.argmax(label, axis=-1)
     label = tf.reshape(label, [-1])
     pred_label = tf.reshape(pred_label, [-1])
@@ -83,6 +111,13 @@ def newDSC(label, pred_label, layer):
     demonimator = label_card + pred_label_card
     return numerator / demonimator
 
+"""
+Modulised function to display the Loss and Accuracy graphs for the
+training of the model.
+Parameters: 
+    metrics: The loss and accuracy metrics calculated during the training
+             of the model.
+"""
 def show_loss_and_accuracy(metrics):
     plt.figure(figsize=(16, 8))
     plt.subplot(1, 2, 1)
@@ -102,10 +137,13 @@ def show_loss_and_accuracy(metrics):
     plt.show()
 
 
-
+"""
+Main function to run the scipt.
+"""
 def main():
     number_Of_output_channels = 2
     number_of_training_epochs = 50
+    batch_size = 10
     #List the file paths of the data
     skin_scans = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
     labels = sorted(glob.glob('ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
@@ -114,7 +152,6 @@ def main():
     print(len(labels))
 
     skin_scans, labels = shuffle(skin_scans, labels)
-
 
     #Split the data into train, validate and test sets
     #Note that we did a 85% train, 15% val and 5% test split
@@ -147,10 +184,11 @@ def main():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    loss_accuracy = model.fit(train_dataset.batch(10), epochs=number_of_training_epochs, validation_data=val_dataset.batch(10))
+    loss_accuracy = model.fit(train_dataset.batch(batch_size), epochs=number_of_training_epochs, validation_data=val_dataset.batch(batch_size))
 
     show_loss_and_accuracy(loss_accuracy)
     
+    #Compute the dice coefficients for each test image.
     num_of_tests = 130
     i = 1
     layer_0_average = 0
@@ -159,8 +197,8 @@ def main():
         pred_label = model.predict(scan[tf.newaxis, ...])
         pred_label = tf.argmax(pred_label[0], axis=-1)
         print("Displaying Dice Coefficient for test: ", i)
-        layer_0_dsc = newDSC(label, pred_label, 0)
-        layer_1_dsc = newDSC(label, pred_label, 1)
+        layer_0_dsc = dice_function(label, pred_label, 0)
+        layer_1_dsc = dice_function(label, pred_label, 1)
         print("Layer 0: ", layer_0_dsc)
         print("Layer 1: ", layer_1_dsc)
         i += 1
@@ -172,5 +210,6 @@ def main():
     print("Average Layer 0 DSC: ", layer_0_average)
     print("Average Later 1 DSC: ", layer_1_average)
 
+#Run the main function.
 if __name__ == "__main__":
     main()
