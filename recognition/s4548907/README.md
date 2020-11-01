@@ -14,10 +14,12 @@ The discriminator learns how to judge fake images from real images.
 
 The uniqueness of DCGAN (compared with GAN) :
 
- 	1. Use batchnormlise in both the generator and the discriminator.
- 	2. Remove fully connected hidden layers for deeper architectures
- 	3. Use ReLU activation in generator for all layers except for the output, which uses Tanh.
- 	4. Use LeakyReLU activation in the discriminator for all layers.
+   	1. Use batchnormlise in both the generator and the discriminator.
+   	2. Remove fully connected hidden layers for deeper architectures
+   	3. Use ReLU activation in generator for all layers except for the output, which uses Tanh.
+   	4. Use LeakyReLU activation in the discriminator for all layers.
+
+
 
 ### Problem Solved
 
@@ -51,13 +53,15 @@ Three figuers above show the sturcture of generator and descriminator.
 
 The generator model has :
 
-​	one dense layer (conver input noise(100) into (8*8*256) and reshape it into size 8 x 8 x 256)
+1. one dense layer (conver input noise(100) into (8*8*256) and reshape it into size 8 x 8 x 256)
 
-​	three transpose convolutional layers (2 x 2 kernel size) asociated with LeakyReLU and BatchNormalization layers
+2. three transpose convolutional layers (2 x 2 kernel size) asociated with LeakyReLU and
+
+   BatchNormalizationlayers
 
 The descriminator model has:
 
-​	two 3x3 convolutional layers, LeakyReLU layers and dropout layers with p=0.3.
+​		two 3x3 convolutional layers, LeakyReLU layers and dropout layers with p=0.3.
 
 
 
@@ -139,7 +143,7 @@ def make_discriminator_model():
 
 
 
-![result](images/result.png)
+![result](images/Result.png)
 
 
 
@@ -154,10 +158,6 @@ Our purpose is to get the  SSIM is over 0.6
 The plot below show how the  structure similariy changes 
 
 <img src="images/ssim.png" alt="ssim" style="zoom: 100%;" />
-
-
-
-
 
 1. The  SSIM changes up and down around 0.6 after 50 epochs.
 2. During the whole training process, the max value of ssim is 0.727
