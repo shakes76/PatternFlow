@@ -1,6 +1,6 @@
 # DCGAN On OASIS - Ziyan Wang
 This project is an assignment of [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) from 
-The University of Queensland. The chosen topic is No.6
+The University of Queensland. The chosen topic is No.6 (OASIS)
 
 ![Image of Gan Structure](./resources/chosen_question.png)
 
