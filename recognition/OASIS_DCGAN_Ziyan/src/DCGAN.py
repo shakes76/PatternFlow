@@ -189,7 +189,7 @@ class DCGAN:
             hist_ssim.append(ssim)
 
             # To get a reasonably clear image, SSIM test start after at least 500 epoch
-            if epoch >= 500:
+            if epoch >= 1000:
                 if ssim > 0.6:
                     achieve_count += 1
                     print(achieve_count)
@@ -197,7 +197,7 @@ class DCGAN:
                     achieve_count = 0
 
             # Save the model every 100 epoch
-            if (epoch + 1) % 100 == 0:
+            if (epoch + 1) % 200 == 0:
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
 
             print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
