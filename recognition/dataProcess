@@ -25,10 +25,7 @@ class DataProcess:
         shutil.copyfile(Src,Dst)
   def Generate(self, target_path, valid_ratio, test_ratio, class_name):
     assert 0 < valid_ratio < 1
-    assert 0 < test_ratio < 1
-    _file_path = None
-    _data = None
-    _length = None    
+    assert 0 < test_ratio < 1  
     if class_name == 'RIGHT':
         _file_path = self.rightKnee_path
         _data = listdir(self.rightKnee_path)
