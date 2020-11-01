@@ -33,27 +33,24 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ### The flowchart of the  process
 
-<img src="images/Flowchat.png" alt="Flowchat" style="zoom: 67%;" />
-
-
-
-
-
-
+<div align="center">
+  <img src= "images/Flowchat.png" alt="Flowchat.png"
+       style="zoom:67%;border:10px;margin:20px">
+</div><br><br>
 
 ### Details : The structure of generator
 
-<img src="images/Generator structure.png" alt="Generator structure" style="zoom: 70%;" />
+<div align="center">
+  <img src= "images/Generator structure.png" alt="Generator structure.png"
+       style="zoom:70%;border:10px;margin:20px">
+</div><br><br>
 
+### Details : The structure of discriminator
 
-
-
-
-
-
-### Details : The structure of discriminator 
-
-<img src="images/Descriminator.png" alt="Descriminator" style="zoom:60%;" />
+<div align="center">
+  <img src= "images/Descriminator.png" alt="Descriminator.png"
+       style="zoom:60%;border:10px;margin:20px">
+</div><br><br>
 
 
 
@@ -75,35 +72,25 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ## Example outputs
 
-<img align="left" src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100" style="zoom:110%;border:10px;margin:20px">
 
 
+<div align="left">
+  <img src= "images/image_at_epoch_0000.png" alt="image_at_epoch_0000"
+       style="zoom:110%;border:10px;margin:20px">
+  <img src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050"
+       style="zoom:110%;border:10px;margin:20px">
+  <img src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100"
+       style="zoom:110%;border:10px;margin:20px">
+</div>
 
-
-
-
-
-
-
-
-
-
-
-<img align="left" src="images/image_at_epoch_0150.png" alt="image_at_epoch_0150" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950" style="zoom:110%;border:10px;margin:20px">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<div align="left">
+  <img src= "images/image_at_epoch_0150.png" alt="image_at_epoch_0150"
+       style="zoom:110%;border:10px;margin:20px">
+  <img src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200"
+       style="zoom:110%;border:10px;margin:20px">
+  <img src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950"
+       style="zoom:110%;border:10px;margin:20px">
+</div>
 
 
 
@@ -117,7 +104,7 @@ Structural Similarity(SSIM) Index will be used to validate the generated images.
 
 The plot below show how the  structure similariy changes 
 
-<img src="images/ssim.png" alt="ssim" style="zoom:10%;" />
+<div align="center">  <img src= "images/ssim.png" alt="ssim.png"       style="zoom:10%;border:10px;margin:20px"></div>
 
 1. The  SSIM changes up and down around 0.6 after 50 epochs.
 2. During the whole training process, the max value of ssim is 0.727
