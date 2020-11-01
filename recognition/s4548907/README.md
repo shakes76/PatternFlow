@@ -35,24 +35,24 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 <div align="center">
   <img src= "images/Flowchat.png" alt="Flowchat.png"
-       style="zoom:100%;border:10px;margin:20px">
+       style="zoom:70%;border:10px;margin:20px">
 </div><br><br>
+
+
 
 ### Details : The structure of generator
 
 <div align="center">
   <img src= "images/Generator structure.png" alt="Generator structure.png"
-       style="zoom:100%;border:10px;margin:20px">
+       style="zoom:70%;border:10px;margin:20px">
 </div><br><br>
-
-
 
 ### Details : The structure of discriminator
 
 <div align="center">
   <img src= "images/Descriminator.png" alt="Descriminator.png"
-       style="zoom:100%;border:10px;margin:20px">
-</div><br><br>
+       style="zoom:60%;border:10px;margin:20px">
+</div><br><br><br>
 
 
 
