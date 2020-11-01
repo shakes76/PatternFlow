@@ -144,7 +144,7 @@ def make_discriminator_model():
 
 
 
-![Result](images/Result.png)
+<img src="images/result.png" alt="result" />
 
 
 
