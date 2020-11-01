@@ -8,6 +8,8 @@ class DataProcess:
     self.file_path = file_path
     self.right_knee_path = right_knee_path
     self.left_knee_path = left_knee_path
+    self.data_list = listdir(self.file_path)
+    self.data_set_length = len(self.data_list)
   def Process(self):
     pass
   
