@@ -167,7 +167,7 @@ Our purpose is to get the  SSIM is over 0.6
 
 The plot below show how the  structure similariy changes 
 
-![ssim](/Users/amanda/Desktop/PatternFlow/recognition/s4548907/images/ssim.png)
+![ssim](images/ssim.png)
 
 1. The  SSIM changes up and down around 0.6 after 50 epochs.
 2. During the whole training process, the max value of ssim is 0.727
