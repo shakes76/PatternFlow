@@ -47,7 +47,7 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 ### Details : The structure of discriminator 
 
-<img src="images/Descriminator.png" alt="Descriminator" style="zoom:38%;" />
+<img src="images/Descriminator.png" alt="Descriminator" style="zoom:30%;" />
 
 
 
@@ -71,13 +71,35 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
 
 
 
-<img src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:5%;" />
+<img align="left" src="images/image_at_epoch_0000.png" alt="image_at_epoch_0000" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100" style="zoom:110%;border:10px;margin:20px">
 
 
 
 
 
- <img src="images/image_at_epoch_1350.png" alt="image_at_epoch_1350" style="zoom:5%;" />
+
+
+
+
+
+
+
+
+<img align="left" src="images/image_at_epoch_0150.png" alt="image_at_epoch_0150" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200" style="zoom:110%;border:10px;margin:20px"><img align="left" src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950" style="zoom:110%;border:10px;margin:20px">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -91,7 +113,7 @@ Structural Similarity(SSIM) Index will be used to validate the generated images.
 
 The plot below show how the  structure similariy changes 
 
-<img src="images/ssim.png" alt="ssim" style="zoom:50%;" />
+<img src="images/ssim.png" alt="ssim" style="zoom:10%;" />
 
 1. The  SSIM changes up and down around 0.6 after 50 epochs.
 2. During the whole training process, the max value of ssim is 0.727
