@@ -17,7 +17,10 @@ The generator takes 100 numbers as input. These are randomly generated (using a 
 The loss function used is again the binary cross entropy function, however the optimiser used is the Adam optimiser from the Keras api using Tensorflow.
 
 ## Results
-Images
+After having run this model for 353 epochs, using the entire OASIS dataset, the models both appeared to be converging and some samples from the generator are displayed below, using an additional nine randomly generated sequences of numbers. Note that it was difficult to tell if further training would have signficantly affected the results due to computing resources being unreliable, however given the loss for both models were slowly decreasing for around 150 epochs this is unlikely, and further training would either produce similar results to these or slightly better ones. However, already with this amount of training, it seems that the results are already rather accurate when compared to the real data.
+<div align="center">
+<img src="./images/Epoch-353.png" >
+</div>
 
 ## System requirements
 The results above were trained using the GPU distribution of Tensorflow, using a [GeForce RTX 2080](https://www.nvidia.com/en-us/geforce/graphics-cards/rtx-2080/). Due to memory limitations, this model was trained resizing images to (64,64), however if you have more memory training at a larger size, or full size which is (256, 256) could be feasible.
