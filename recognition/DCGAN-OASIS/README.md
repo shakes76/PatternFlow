@@ -20,7 +20,7 @@ The loss function used is again the binary cross entropy function, however the o
 After having run this model for 353 epochs, using the entire OASIS dataset, the models both appeared to be converging and some samples from the generator are displayed below, using an additional nine randomly generated sequences of numbers. Note that it was difficult to tell if further training would have significantly affected the results due to computing resources being unreliable, however given the loss for both models were slowly decreasing for around 150 epochs this is unlikely, and further training would either produce similar results to these or slightly better ones. However, already with this amount of training, it seems that the results are already rather accurate when compared to the real data.
 
 <div align="center">
-    <img src="./images/Epoch-353.png" >
+    <img src="./resources/fake-images.png" >
 </div>
 
 ## System requirements
