@@ -14,10 +14,10 @@ The discriminator learns how to judge fake images from real images.
 
 The uniqueness of DCGAN (compared with GAN) :
 
-   	1. Use batchnormlise in both the generator and the discriminator.
+      	1. Use batchnormlise in both the generator and the discriminator.
       	2. Remove fully connected hidden layers for deeper architectures
-         	3. Use ReLU activation in generator for all layers except for the output, which uses Tanh.
-            	4. Use LeakyReLU activation in the discriminator for all layers.
+      	3. Use ReLU activation in generator for all layers except for the output, which uses Tanh.
+      	4. Use LeakyReLU activation in the discriminator for all layers.
 
 
 
@@ -39,13 +39,14 @@ The generator model of the DCGAN will create a reasonably fake images and ensure
        style="zoom:67%;border:10px;margin:20px">
   <br><br><br>
   <h3>The Structure of Generator</h3>
-  <img src="images/Generator structure.png" alt="Generator"
-       style="zoom:70%;border:10px;margin:20px">
+  <img src="images/Generator.png" alt="Generator"
+       style="zoom:50%;border:10px;margin:20px">
   <br><br><br>
   <h3>The Structure of Descriminator</h3>
   <img src="images/Descriminator.png" alt="Descriminator"
        style="zoom:60%;border:10px;margin:20px">
 </div>
+
 
 
 
@@ -143,7 +144,7 @@ def make_discriminator_model():
 
 
 
-![result](images/Result.png)
+![Result](images/Result.png)
 
 
 
