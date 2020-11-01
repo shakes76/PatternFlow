@@ -1,0 +1,14 @@
+
+from os import listdir
+import shutil
+import os
+
+class DataProcess:
+  def __init__(self,filepath,right_knee_path,left_knee_path):
+    pass
+  
+  def Process(self):
+    pass
+  
+  def Generate(self):
+    pass
