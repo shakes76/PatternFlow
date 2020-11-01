@@ -1,7 +1,7 @@
 class Config:
-    test_dir = 'dataset/keras_png_slices_seg_test'
-    train_dir = 'dataset/keras_png_slices_seg_train'
-    val_dir = 'dataset/keras_png_slices_seg_validate'
+    test_dir = 'dataset/keras_png_slices_test'
+    train_dir = 'dataset/keras_png_slices_train'
+    val_dir = 'dataset/keras_png_slices_validate'
     BUFFER_SIZE = 4832  # max in 9664
     BATCH_SIZE = 16
     IMG_SIZE = [128, 128]  # .png only
@@ -11,5 +11,5 @@ class Config:
     EPOCHS = 30
     NOISE_DIM = 100
     CHECKPOINT_DIR = 'checkpoints/'
-    Train = False
-    RESTORE = True
+    Train = True
+    RESTORE = False

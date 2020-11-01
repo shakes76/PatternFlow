@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, regularizers
-from recognition.OASIS_DCGAN.config import Config
+from config import Config
 
 
 # Discriminator

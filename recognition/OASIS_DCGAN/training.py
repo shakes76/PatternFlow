@@ -1,14 +1,11 @@
 import os
-import PIL
 import time
 import tensorflow as tf
-import numpy as np
 from IPython import display
 import matplotlib.pyplot as plt
 
-from recognition.OASIS_DCGAN.dataset import read_dataset
-import recognition.OASIS_DCGAN.dcgan as dcgan
-from recognition.OASIS_DCGAN.config import Config
+import dcgan as dcgan
+from config import Config
 
 # Set model
 generator = dcgan.make_generator_model()

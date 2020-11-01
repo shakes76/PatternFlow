@@ -1,9 +1,7 @@
 import os
-import PIL
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-from recognition.OASIS_DCGAN.config import Config
+from config import Config
 
 
 def read_dataset(switch='train'):
