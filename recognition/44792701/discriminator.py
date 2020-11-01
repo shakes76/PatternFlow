@@ -29,6 +29,8 @@ class Discriminator(tf.keras.Model):
 
         super(Discriminator, self).__init__()
 
+        # The main convolutional layers with increasing filter size at
+        # each layer.
         self.conv1 = Conv2D(64, (3, 3), strides=(2, 2), padding=self.padding)
         self.bnorm1 = BatchNormalization()
         self.drop1 = Dropout(self.dropout)

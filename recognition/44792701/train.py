@@ -39,7 +39,9 @@ def load_images(filenames):
     """
     Loads in images for the current batch of filenames. This input is a sublist
     of IMAGE_NAMES of size BATCH_SIZE, and returns a 4D array of images with
-    shape (BATCH_SIZE, x_size, y_size, colour_channels)
+    shape (BATCH_SIZE, x_size, y_size, colour_channels). Note that for this
+    task, there is only one colour channel because the OASIS dataset is 
+    greyscale.
     """
 
     # Initialise the results
@@ -95,6 +97,7 @@ def generate_samples(generator, epoch):
         plt.imshow(image[i-1])
         plt.axis('off')
 
+    # Save the image
     plt.savefig("./generated_images/Epoch-{}.png".format(epoch+1))
 
 
@@ -152,8 +155,8 @@ def train_step(real_images):
     gen_gradients = gen_tape.gradient(gen_loss, 
                                       generator.trainable_variables)
 
-    discrim_gradients = discrim_tape.gradient(discrim_loss, 
-                                              discriminator.trainable_variables)
+    discrim_gradients = discrim_tape.gradient(
+            discrim_loss, discriminator.trainable_variables)
     
     # Save loss metrics
     d_loss(discrim_loss)
@@ -163,8 +166,8 @@ def train_step(real_images):
     generator.optimiser.apply_gradients(zip(gen_gradients, 
                                             generator.trainable_variables))
 
-    discriminator.optimiser.apply_gradients(zip(discrim_gradients, 
-                                                discriminator.trainable_variables))
+    discriminator.optimiser.apply_gradients(
+            zip(discrim_gradients, discriminator.trainable_variables))
     
     return(discrim_loss, gen_loss)
     
@@ -193,7 +196,8 @@ for epoch in range(EPOCHS):
     loss.append((d_loss.result(), g_loss.result()))
         
     # Print update messages
-    print("Epoch {} computed in {} seconds".format(epoch+1, time.time()-start_time))
+    print("Epoch {} computed in {} seconds".format(
+            epoch+1, time.time()-start_time))
     print("Discriminator loss: {}".format(d_loss.result()))
     print("Generator loss: {}".format(g_loss.result()))
 
