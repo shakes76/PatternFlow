@@ -48,29 +48,36 @@ these series of experiments are:
 #### SSIM / Image Size
 As the following plot shows, the SSIM is increasing with the image size.
 
-![Generator Structure](./resources/ST_size.png)
+![SSIMSize](./resources/ST_size.png)
 
 #### SSIM / Specific slices
 As the following plots shows, when using 64 * 64 and 128 * 128 output size on all combinations of five continuous slices 
 (0-5,1-6,...) the SSIM is decreasing with the slice moving back on both of models.
 
-![Generator Structure](./resources/ST_64_slices.png)![Generator Structure](./resources/ST_128_slices.png)
+![SSIM64](./resources/ST_64_slices.png)![SSIM128](./resources/ST_128_slices.png)
 
-#### Model Training
-Considering the computation cost, and the study above, the model training will focus on the 64 * 64 and 128 * 128 outputs.
-When using sliced dataset, the SSIM is the mean value of 256 fake images and 256 real random chosen images. When using whole
-dataset, hte SSIM is the maximum value of 256 fake images and 256 real random chosen images. To achieve a “reasonably 
-clear image”, the model will train at least 1000 epochs then starts SSIM test. The following codes are example of a 
-64 * 64 DCGAN training on sliced data.
+#### Data
+As the above study, my project will focus on part of the dataset and the whole dataset, the following codes are an example
+of loading specific sliced(5-10) dataset.
 ```python
 # Parameters
 IMG_SIZE = 64
 TARGET_SLICE = list(range(5,10))
 
-# Load dataset
+# Load dataset, If need to load whole dataset, set target_slice = None
 img_loader = ImgLoader("D:\Datasets\keras_png_slices_data\keras_png_slices_train")
 train_dataset = img_loader.load_to_tensor(target_slice=TARGET_SLICE,img_size=IMG_SIZE)
+```
 
+#### Model Training and Result
+Considering the computation cost, and the study above, the model training will focus on the 64 * 64 outputs. When using 
+sliced dataset, the SSIM is the mean value of 256 fake images and 256 real random chosen images. When using whole dataset, 
+the SSIM is the maximum value of 256 fake images and 256 real random chosen images. To achieve a “reasonably clear 
+image”, the model will train at least 1000 epochs then starts SSIM test. The result is made up 2 parts, an example output
+from generator (left) and a plot of SSIM over Epochs (right).
+
+##### 64 * 64 Sliced Dataset
+```python
 # Construct model
 dcgan = DCGAN(IMG_SIZE,TARGET_SLICE)
 
@@ -78,15 +85,31 @@ dcgan = DCGAN(IMG_SIZE,TARGET_SLICE)
 hist_ssim = dcgan.train(train_dataset,10000,patience=3)
 ```
 
-##### 64 * 64 Sliced Dataset
-This experiment will train a DCGAN whose output is 64*64, and the training dataset is using specific slice (5-10) dataset
+This experiment will train a DCGAN whose output is 64 * 64, and the training dataset is using specific slice (5-10) dataset
 based on the study of SSIM_Test. The result shows that the DCGAN can achieve mean SSIM between 256 fake and real images
 above 0.6 three consecutive times after 1000 epochs.
 
-![Generator Structure](./resources/Example_64_Sliced.png)![Generator Structure](./resources/SSIM_64_Sliced.png)
+![0.61](./resources/Example_64_Sliced.png)![SSIM_64_Sliced](./resources/SSIM_64_Sliced.png)
 
 ##### 64 * 64 Whole Dataset
-This experiment will train a DCGAN whose output is 64*64, and the training dataset is using whole dataset. The reuslt 
-shows that the DCGAN can achieve max SSIM between 256 fake and real images above 0.6 stably after 200 epochs.
+```python
+# Construct model
+dcgan = DCGAN(IMG_SIZE)
 
-![Generator Structure](./resources/Example_64_All.png)![Generator Structure](./resources/SSIM_64_All.png)
+# When the SSIM meet requirement three consecutive times after 1000 epochs. The model training will stop.
+hist_ssim = dcgan.train(train_dataset,10000,patience=3)
+```
+
+This experiment will train a DCGAN whose output is 64*64, and the training dataset is using whole dataset. The result 
+shows that the DCGAN can achieve maximum SSIM between 256 fake and real images above 0.6 stably after 200 epochs.
+
+![0.728](./resources/Example_64_All.png)![SSIM_64_whole](./resources/SSIM_64_All.png)
+
+## Dependencies
+1. Tensorflow
+2. time
+3. matplotlib
+4. IPython
+5. pathlib
+6. PIL
+7. numpy (data processing in ImgLoader only)

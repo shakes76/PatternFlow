@@ -57,18 +57,18 @@ class DCGAN:
         model.add(layers.Reshape((int(self.img_size / 8), int(self.img_size / 8), self.batch_size)))
         assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), self.batch_size)
 
-        model.add(layers.Conv2DTranspose(8 * self.img_size, (6, 6), strides=(1, 1), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), 8 * self.img_size)
+        model.add(layers.Conv2DTranspose(512, (6, 6), strides=(1, 1), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 8), int(self.img_size / 8), 512)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(4 * self.img_size, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 4), int(self.img_size / 4), 4 * self.img_size)
+        model.add(layers.Conv2DTranspose(256, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 4), int(self.img_size / 4), 256)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
-        model.add(layers.Conv2DTranspose(2 * self.img_size, (6, 6), strides=(2, 2), padding='same', use_bias=False))
-        assert model.output_shape == (None, int(self.img_size / 2), int(self.img_size / 2), 2 * self.img_size)
+        model.add(layers.Conv2DTranspose(128, (6, 6), strides=(2, 2), padding='same', use_bias=False))
+        assert model.output_shape == (None, int(self.img_size / 2), int(self.img_size / 2), 128)
         model.add(layers.BatchNormalization())
         model.add(layers.ReLU())
 
