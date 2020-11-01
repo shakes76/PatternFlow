@@ -1,6 +1,6 @@
 '''
-    File name: test.py
-    Author: Bin Lyu
+    File name: DCGAN_OAI.py
+    Author: Bin Lyu(45740165)
     Date created: 10/30/2020
     Date last modified: 
     Python Version: 4.7.4
