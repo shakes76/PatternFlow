@@ -139,23 +139,9 @@ def make_discriminator_model():
 
 
 
-<div align="center">
-  <img src= "images/image_at_epoch_0000.png" alt="image_at_epoch_0000"
-       style="zoom:110%;margin:20px">
-  <img src="images/image_at_epoch_0050.png" alt="image_at_epoch_0050"
-       style="zoom:110%;margin:20px">
-  <img src="images/image_at_epoch_0100.png" alt="image_at_epoch_0100"
-       style="zoom:110%;margin:20px">
-</div>
+![result](images/result.png)
 
-<div align="center">
-  <img src= "images/image_at_epoch_0150.png" alt="image_at_epoch_0150"
-       style="zoom:110%;margin:20px">
-  <img src="images/image_at_epoch_0200.png" alt="image_at_epoch_0200"
-       style="zoom:110%;margin:20px">
-  <img src="images/image_at_epoch_1950.png" alt="image_at_epoch_1950"
-       style="zoom:110%;margin:20px">
-</div>
+
 
 
 
