@@ -4,9 +4,10 @@ import shutil
 import os
 
 class DataProcess:
-  def __init__(self,filepath,right_knee_path,left_knee_path):
-    pass
-  
+  def __init__(self,file_path,right_knee_path,left_knee_path):
+    self.file_path = file_path
+    self.right_knee_path = right_knee_path
+    self.left_knee_path = left_knee_path
   def Process(self):
     pass
   
