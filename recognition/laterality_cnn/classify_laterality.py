@@ -7,6 +7,11 @@ import sys
 from cnn import ConvBlock, CNNModel
 
 def main(arglist):
+    #Parameters
+    n_epochs = 10
+    batch_size = 32
+    learning_rate = 1E-3
+
     #Specify directory of data from arglist input
     data_dir = arglist[0]
         
@@ -138,7 +143,6 @@ def main(arglist):
     # plt.show()
 
     #Configure dataset for performance and shuffling. Shuffle buffer = number of images
-    batch_size = 32 #Hyperparameter
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     train_ds = train_ds.cache()
     train_ds = train_ds.shuffle(len(train_images))
@@ -178,7 +182,7 @@ def main(arglist):
 
     #Compile the model
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=1E-3), #Hyperparameter
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), #Hyperparameter
         loss=loss_fn,
         metrics=['accuracy']
     )
@@ -187,7 +191,6 @@ def main(arglist):
     # model.load_weights(checkpoint_path).expect_partial()
 
     #Train the model
-    n_epochs = 10 #Hyperparameter
     results = model.fit(train_ds, epochs=n_epochs, callbacks=[cp_callback], validation_data=val_ds)
 
     #Check final weights by evaluating on all sets
@@ -198,7 +201,7 @@ def main(arglist):
     print("Test set: ")
     model.evaluate(test_ds, verbose=2)
 
-    # Plot accuracy vs validation accuracy and loss vs validation loss (for every epoch)
+    Plot accuracy vs validation accuracy and loss vs validation loss (for every epoch)
     plt.plot(results.history['accuracy'], label='accuracy')
     plt.plot(results.history['val_accuracy'], label='val_accuracy')
     plt.xlabel("Epoch")
