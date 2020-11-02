@@ -1,7 +1,11 @@
 # OAI AKOA Dataset Laterality Classification
+In order to laterally classify the OAI AKOA knee data set, a Convolution Neural Network (CNN) based classifier was modelled using [Tensorflow](https://www.tensorflow.org/). The model strings together multiple layers and then ties them to fully connected (dense) layers to produce classified outputs. The configuration of the CNN is as follows:
 
-*description of the algorithm and the problem that it solves (approximately a paragraph), how it works in a paragraph and a figure/visualisation.*
-*description and explanation of the working principles of the algorithm implemented and the problem it solves*
+```
+
+&#8595;
+
+```
 
 
 ## Pre-requisites
@@ -12,7 +16,7 @@
 
 ## Usage
 ### cnn.py
-The Convolutional Neural Network module can be used in external scripts by importing the class `CNNModel` from *cnn.py* and using 
+The CNN module can be used in external scripts by importing the class `CNNModel` from *cnn.py* and using 
 
 ```python
 model = CNNModel(num_classes=<num_classes>)
@@ -29,7 +33,7 @@ The driver script *classify_laterality.py* can be run from the cmd line using
 where *<path_to_data_folder>* is the path to the OAI AKOA data folder e.g. *"C:\Users\\<user\>\\.keras\datasets\AKOA_Analysis"*.
 
 ## Examples
-An example usage of the driver script on the OAI AKOA dataset produces the following
+An example usage of the driver script using `>python classify_laterality.py <path_to_data_folder>` on the OAI AKOA dataset produces the following
 ```
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
@@ -108,7 +112,12 @@ Test set:
 ![image](plots/loss.png)
 
 ## Dataset Splitting
+The OAI AKOA dataset was split into three subsets - training, validation and test. The data was split on patients rather than individual images to prevent data leakage between sets. Checks were also made to ensure each set had a sufficiently balanced ratio of *'right'* labelled data to *'left'* labelled data (between 0.3 and 0.7) to prevent class imbalance. 
 
+The test subset was taken as 20% of the initial number of patients and the validation subset was then taken as 20% of the remaining number of patients e.g. the split ratios were
+* Test = **0.2**
+* Validation = (0.2 * (1 - Test)) = **0.16**
+* Training = (1 - Test - Validation) = **0.64**
 
 ## Authors
 Khang Nguyen
