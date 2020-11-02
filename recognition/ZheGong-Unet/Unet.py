@@ -1,13 +1,13 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import datasets, layers, models
+# from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
 import glob
 import zipfile
 import numpy as np
 from PIL import Image
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import LeakyReLU
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras.layers import LeakyReLU
 
 dataset_url="https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download"
 data_path = tf.keras.utils.get_file(origin=dataset_url,fname="keras_png_slices_data.zip")
