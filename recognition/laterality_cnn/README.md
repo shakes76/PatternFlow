@@ -1,13 +1,93 @@
 # OAI AKOA Dataset Laterality Classification
 In order to laterally classify the OAI AKOA knee data set, a Convolution Neural Network (CNN) based classifier was modelled using [Tensorflow](https://www.tensorflow.org/). The model strings together multiple layers and then ties them to fully connected (dense) layers to produce classified outputs. The configuration of the CNN is as follows:
 
+```python
+(input: 228 x 260 dimenson images)
 ```
-
-&#8595;
-
+<pre>
+ &#8595;
+</pre>
+```python
+2 x [Convolution (32 filters, (3 x 3) kernel size, relu activation)]
 ```
-
-
+<pre>
+ &#8595;
+</pre>
+```python
+[Max Pooling ((2 x 2) pool size)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dropout (0.2 rate)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+2 x [Convolution (64 filters, (3 x 3) kernel size, relu activation)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Max Pooling ((2 x 2) pool size)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dropout (0.2 rate)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+2 x [Convolution (128 filters, (3 x 3) kernel size, relu activation)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Max Pooling ((2 x 2) pool size)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dropout (0.2 rate)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Flatten ()]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dense (128 units, relu activation)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dropout (0.25 rate)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+[Dense (<num_classes> units, softmax activation)]
+```
+<pre>
+ &#8595;
+</pre>
+```python
+(output: logits of probability distribution over <num_classses> classes)
+```
 ## Pre-requisites
 * Python 3.5-3.8
 * Tensorflow 2.1.0
@@ -37,7 +117,9 @@ An example usage of the driver script using `>python classify_laterality.py <pat
 ```
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-=================================================================
+=================================================================<pre>
+ &#8595;
+</pre>
 conv_block (ConvBlock)       multiple                  9568
 _________________________________________________________________
 conv_block_1 (ConvBlock)     multiple                  55424
