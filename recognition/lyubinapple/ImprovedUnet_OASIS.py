@@ -1,8 +1,8 @@
 '''
-    File name: test.py
-    Author: Bin Lyu
+    File name: ImprovedUnet_OASIS.py
+    Author: Bin Lyu(45740165)
     Date created: 10/23/2020
-    Date last modified: 
+    Date last modified: 11/01/2020
     Python Version: 4.7.4
 '''
 import tensorflow as tf
@@ -33,8 +33,8 @@ train_ds = train_ds.shuffle(len(train_images))
 val_ds = val_ds.shuffle(len(val_images))
 test_ds = test_ds.shuffle(len(test_images))
 
-#decode and reshape the images to 256*256
 def decode_png(file_path):
+    #decode and reshape the images to 256*256
     png = tf.io.read_file(file_path)
     png = tf.image.decode_png(png, channels=1)
     png = tf.image.resize(png, (256, 256))
@@ -53,8 +53,8 @@ train_ds = train_ds.map(process_path)
 val_ds = val_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 
-#display images
 def display(display_list):
+    #display images
     plt.figure(figsize=(10, 10))
     for i in range(len(display_list)):
         plt.subplot(1, len(display_list), i+1)
@@ -195,17 +195,20 @@ def unet_model(output_channels, f=64):
 
     return tf.keras.Model(inputs=inputs, outputs=outputs)
 
+#compile and fit the model
 model = unet_model(4, f=4)
 model.summary()
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 model.fit(train_ds.batch(10),epochs=10,validation_data=val_ds.batch(10))
 
+#visulization the predict result
 def show_predictions(ds, num=1):
     for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])
         pred_mask = tf.argmax(pred_mask[0], axis=-1)
         display([tf.squeeze(image), tf.argmax(mask, axis=-1), pred_mask])
 
+#dice similarity coefficient
 def dice_coefficient(y_true, y_pred, smooth = 1):
     y_true_f = tf.keras.backend.flatten(y_true)
     y_pred_f = tf.keras.backend.flatten(y_pred)
@@ -214,9 +217,11 @@ def dice_coefficient(y_true, y_pred, smooth = 1):
     dice = (2. * intersection + smooth) / (union + smooth)
     return dice
 
+#dice similarity coefficient loss
 def dice_coefficient_loss(y_true, y_pred):
     return 1 - dice_coef(y_true, y_pred)
 
+#prediction fuction, get predict and true value for dice calculating
 def prediction(ds):
     pred = []
     true = []
@@ -230,4 +235,6 @@ def prediction(ds):
 pred, true = prediction(test_ds)
 dice = dice_coefficient(true, pred)
 print("Dice similarity coefficient is: ", dice) 
+
+#call show_predictions function to check the final result
 show_predictions(test_ds, 3)

@@ -15,7 +15,7 @@ import glob
 from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D, Conv2DTranspose, Dropout
-from keras.layers import Reshape, LeakyReLU
+from keras.layers import Reshape, LeakyReLU, BatchNormalization
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -58,6 +58,7 @@ def define_discriminator(ishape=(80,80,3)):
     # normal
     model.add(Conv2D(128, (5,5), padding='same', input_shape=ishape))
     model.add(LeakyReLU(alpha=0.2))
+    model.add(BatchNormalization()
     # downsample to 40x40
     model.add(Conv2D(128, (5,5), strides=(2,2), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
@@ -252,3 +253,13 @@ gan_model = define_gan(g_model, d_model)
 dataset = load_real_samples()
 # train model
 train(g_model, d_model, gan_model, dataset, latent_size)
+
+#Compute SSIM similarity
+pred_img = tf.convert_to_tensor(X)
+true_img = load_images(folder_images, 25)
+true_img = tf.convert_to_tensor(true_img)
+pred_i = tf.image.convert_image_dtype(pred_img, tf.float32)
+true_i = tf.image.convert_image_dtype(true_img, tf.float32)
+ssim2 = tf.image.ssim(pred_i, true_i, max_val=1)
+final_result = tf.reduce_mean(tf.cast(ssim2, dtype=tf.float32))
+print("SSIM is: ", final_result)
