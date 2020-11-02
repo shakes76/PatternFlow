@@ -10,6 +10,7 @@ import PIL.Image
 import random
 import cv2
 import glob
+from model.py import *
 
 # download images
 img_height =256
@@ -91,8 +92,31 @@ def plot_model_history(model_history):
     axs[1].legend(['train', 'val'], loc='best')
     plt.show()
 
+# fit model
+model = model(img_height, img_width, imag_channels)
+history =  model.fit(train_X, train_y, validation_data =(val_X, val_y), batch_size = 16, epochs=5)
+pred_test = model.predict(test_X)
+
+#dice coefficient
+def dice_coefficient(y_true, y_pred, smooth = 0):
+    y_true = tf.cast(y_true, tf.float32)
+    #change the dimension to one
+    y_true_f = tf.keras.backend.flatten(y_true)
+    y_pred_f = tf.keras.backend.flatten(y_pred)
+    #calculation for the loss function
+    intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_pred_f) + smooth)
+
+# calcculate dice coefficient 
+lis = 0
+for i in range(518):
+    
+    dice_coefficient_value = dice_coefficient(test_y[i], pred_test[i], smooth = 0)
+    lis += dice_coefficient_value
+ave = lis/518
+print(ave)
+
 # plot test images, masks and predict masks
-import matplotlib.pyplot as plt
 #test_X
 plt.figure(figsize=(10, 10))
 for i in range(8):
@@ -117,3 +141,4 @@ for i in range(8):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 plt.show() 
+
