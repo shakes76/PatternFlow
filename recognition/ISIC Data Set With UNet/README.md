@@ -148,7 +148,7 @@ I used a training and validating batch size of 32.
 
 After training was complete, I analysed the training history by ploting how the training dice coefficient and validating dice coefficients changed over each epoch. The plot of the training history is shown below. We can clearly see the training dice coefficient and validation dice coefficient converge over time.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/tree/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History.png?raw=true)
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History.png)
 
 ### Making Predictions
 
