@@ -15,3 +15,8 @@ def res_net_block(input_data, conv_size):
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.Conv2D(conv_size, kernel_size = 3, padding='same')(x) 
     return x
+
+# add segmentation layers
+def segmentation_layer(x):
+    seg = tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(x)
+    return seg
