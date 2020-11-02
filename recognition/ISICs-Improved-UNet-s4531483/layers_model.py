@@ -2,14 +2,15 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.regularizers import l2
 import tensorflow_addons as tfa
-# 'tensorflow-addons' is currently not available through Conda - after environment is set up/imported pip must be used
-# to install it to the environment. Use:
-# ********************************************
-# pip install tensorflow-addons==0.9.1
-# ********************************************
-# within the anaconda prompt with the activated environment to install the correct version (for TF v2.1).
-# TFA allows for an InstanceNormalization layer (rather than a BatchNormalization layer), as was implemented in the
-# referenced 'improved UNet'. This layer is necessary due to the usage of my small batch-size of 2.
+# 'tensorflow-addons' is an officially supported repository implementing new functionality:
+# More info at https://www.tensorflow.org/addons. Version 0.9.1 is required for TF 2.1.
+# TFA allows for a InstanceNormalization layer (rather than a BatchNormalization layer), as was implemented in the
+# referenced 'improved UNet'. This layer is necessary due to the usage of my small batch-size of 2, which can lead to
+# "stochasticity induced ...[which]... may destabilize batch normalizaton" -
+#   F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
+#   Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
+#   https://arxiv.org/abs/1802.10508v1.
+# While BatchNormalization normalises across the batch, InstanceNormalization normalises each batch separately.
 
 # --------------------------------------------
 # GLOBAL CONSTANTS
@@ -35,14 +36,15 @@ I_NORMALIZATION_PROPERTIES = dict(
 # --------------------------------------------
 
 # Implementation based off the 'improved UNet': https://arxiv.org/abs/1802.10508v1.
+# 2D implementation rather than 3D as 2D inputs/outputs are required.
 def improved_unet(width, height, channels):
     input = keras.Input(shape=(width, height, channels))  # Set input shape
 
     x1 = keras.layers.Conv2D(16, (3, 3), input_shape=(width, height, channels), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
-    # x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
-    #x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x4 = context_module(x1, 16)
+    x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
+    x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
+    x4 = context_module(x3, 16)
     x5 = keras.layers.Add()([x1, x4])
 
     x6 = keras.layers.Conv2D(32, (3, 3), strides=2, **CONV_PROPERTIES)(x5)
@@ -89,21 +91,19 @@ def improved_unet(width, height, channels):
     x36 = keras.layers.Concatenate()([x5, x35])
     x37 = keras.layers.Conv2D(32, (3, 3), **CONV_PROPERTIES)(x36)
     # x38 = keras.layers.BatchNormalization()(x37)
-    # x38 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x37)
-    # x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
+    x38 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x37)
+    x39 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x38)
 
-    seg_layer1 = keras.layers.Softmax()(x31)
+    seg_layer1 = keras.layers.Activation('sigmoid')(x31)
     u1 = upsampling_module(seg_layer1, 32)
-    seg_layer2 = keras.layers.Softmax()(x34)
+    seg_layer2 = keras.layers.Activation('sigmoid')(x34)
     s1 = keras.layers.Add()([u1, seg_layer2])
     u2 = upsampling_module(s1, 32)
-    seg_layer3 = keras.layers.Softmax()(x37)
+    seg_layer3 = keras.layers.Activation('sigmoid')(x39)
     s2 = keras.layers.Add()([u2, seg_layer3])
 
-    # Softmax used as final activation layer
-    # output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
-    dense = keras.layers.Dense(2)(s2)
-    output = keras.layers.Softmax()(dense)
+    # Sigmoid used as final activation layers as this is a binary segmentation, not three or more classes
+    output = keras.layers.Conv2D(1, (1, 1), activation="sigmoid", **CONV_PROPERTIES)(s2)
     u_net = keras.Model(inputs=[input], outputs=[output])
     return u_net
 
@@ -116,14 +116,14 @@ def improved_unet(width, height, channels):
 def context_module(input, out_filter):
     x1 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(input)
     # x2 = keras.layers.BatchNormalization()(x1)
-    # x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
-    #x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
-    x2 = keras.layers.Dropout(DROPOUT)(x1)
-    x3 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x2)
+    x2 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x1)
+    x3 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x2)
+    x4 = keras.layers.Dropout(DROPOUT)(x3)
+    x5 = keras.layers.Conv2D(out_filter, (3, 3), **CONV_PROPERTIES)(x4)
     #x6 = keras.layers.BatchNormalization()(x5)
-    x4 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x3)
-    x5 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x4)
-    return x5
+    x6 = tfa.layers.InstanceNormalization(**I_NORMALIZATION_PROPERTIES)(x5)
+    x7 = keras.layers.LeakyReLU(alpha=LEAKY_RELU_ALPHA)(x6)
+    return x7
 
 
 # An 'Upsampling Module', based off the 'improved UNet'.

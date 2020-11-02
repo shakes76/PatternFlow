@@ -18,15 +18,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # only print TF warnings and errors
 # https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34, folder structure would
 # be \data\image\ISIC2018_Task1-2_Training_Input_x2 containing inputs, and
 # \data\mask\ISIC2018_Task1_Training_GroundTruth_x2 containing ground truths.
-PATH_ORIGINAL_DATA = "data/image"  # directory that contains folder containing input images
-PATH_SEG_DATA = "data/mask"  # directory that contains folder containing ground truth images
+PATH_ORIGINAL_DATA = os.path.join("data", "image")  # directory that contains folder containing input images
+PATH_SEG_DATA = os.path.join("data", "mask")  # directory that contains folder containing ground truth images
 IMAGE_HEIGHT = 512  # the height input images are scaled to
 IMAGE_WIDTH = 512  # the width input images are scaled to
 CHANNELS = 3  # the number of channels of the input image
 SEED = 45  # set a seed so the different generators will work together properly, and match training/testing sets
 BATCH_SIZE = 2  # set the batch_size
-EPOCHS = 1  # set the number of epochs for training
-LEARNING_RATE = 0.0004  # set the training learning rate
+EPOCHS = 5  # set the number of epochs for training
+LEARNING_RATE = 0.0005  # set the training learning rate
 STEPS_PER_EPOCH_TRAIN = math.floor(2076 / BATCH_SIZE)  # set the number of steps per epoch for training samples
 STEPS_PER_EPOCH_TEST = math.floor(519 / BATCH_SIZE)  # set the number of steps per epoch for testing samples
 IMAGE_MODE = "rgb"  # image mode of input images (they are coloured rgb)
@@ -59,10 +59,19 @@ TEST_TRAIN_GEN_ARGS = dict(
 # MAIN FUNCTIONS
 # --------------------------------------------
 
-# def dice_coefficient(y_true, y_pred):
-    # pred_arr =
-    # numerator = 2 * (ker)
-    # denominator = 2 * IMAGE_WIDTH * IMAGE_HEIGHT
+# Metric for how similar two sets (prediction vs truth) are.
+# Implementation based off https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+# DSC = (2|X & Y|) / (|X| + |Y|) -> 'soft' dice coefficient.
+def dice_coefficient(truth, pred, eps=1e-7, axis=(1, 2, 3)):
+    numerator = (2.0 * (tf.reduce_sum(pred * truth, axis=axis))) + eps
+    denominator = tf.reduce_sum(pred, axis=axis) + tf.reduce_sum(truth, axis=axis) + eps
+    dice = tf.reduce_mean(numerator / denominator)
+    return dice
+
+
+# Loss function - DSC distance.
+def dice_loss(truth, pred):
+    return 1.0 - dice_coefficient(truth, pred)
 
 
 # Preprocess data forming the generators.
@@ -93,7 +102,7 @@ def pre_process_data():
         **TEST_TRAIN_GEN_ARGS)
 
     # Ideally this would be a Sequence joining the two generators instead of zipping them together to keep everything
-    # thread-safe, allowing for multiprocessing - but if it ain't broke.
+    # thread-safe, allowing for multiprocessing - but if it ain't broke. (It works).
     return zip(image_train_gen, mask_train_gen), zip(image_test_gen, mask_test_gen)
 
 
@@ -113,46 +122,50 @@ def train_model_check_accuracy(train_gen, test_gen):
     model = layers.improved_unet(IMAGE_WIDTH, IMAGE_HEIGHT, CHANNELS)
     model.summary()
     model.compile(optimizer=keras.optimizers.Adam(LEARNING_RATE),
-                  loss=keras.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
-
+                  loss=dice_loss, metrics=['accuracy', dice_coefficient])
     track = model.fit(
         train_gen,
         steps_per_epoch=STEPS_PER_EPOCH_TRAIN,
         epochs=EPOCHS,
         shuffle=True,
         verbose=1,
-        use_multiprocessing = False)
-    # plot_accuracy_loss(track)
+        use_multiprocessing=False)
+    plot_accuracy_loss(track)
 
     print("\nEvaluating test images...")
-    test_loss, test_accuracy = model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2, use_multiprocessing=False)
+    test_loss, test_accuracy, test_dice = \
+        model.evaluate(test_gen, steps=STEPS_PER_EPOCH_TEST, verbose=2, use_multiprocessing=False)
     print("Test Accuracy: " + str(test_accuracy))
-    print("Test Loss: " + str(test_loss) + "\n")
+    print("Test Loss: " + str(test_loss))
+    print("Test DSC: " + str(test_dice) + "\n")
     return model
 
 
 # Test and visualise model predictions with a set amount of test inputs.
 def test_visualise_model_predictions(model, test_gen):
     test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
-    figure, axes = plt.subplots(NUMBER_SHOW_TEST_PREDICTIONS, 3)
+    figure, axes = plt.subplots(NUMBER_SHOW_TEST_PREDICTIONS, 4)
     for i in test_range:
         current = next(islice(test_gen, i, None))
-        test_pred = np.argmax(model.predict(current, steps=1, use_multiprocessing=False)[0], axis=-1)
+        # np.argmax(model.predict(current, steps=1, use_multiprocessing=False)[0], axis=-1)
+        test_pred = model.predict(current, steps=1, use_multiprocessing=False)[0]
+        test_loss, test_accuracy, test_dice = \
+            model.evaluate(current, use_multiprocessing=False, verbose=2)
         truth = current[1][0]
         original = current[0][0]
         probabilities = keras.preprocessing.image.img_to_array(test_pred)
+        # test_dice = dice_coefficient(current, test_pred)
         # ones = probabilities >= 0.5
         # zeroes = probabilities < 0.5
-        # thresholded = probabilities
+        # thresholded = np.copy(probabilities)
         # thresholded[ones] = 1
         # thresholded[zeroes] = 0
-        # figure, axes = plt.subplots(1, 3)
         axes[i][0].title.set_text('Input')
         axes[i][0].imshow(original, vmin=0.0, vmax=1.0)
-        axes[i][1].title.set_text('Output')
+        axes[i][1].title.set_text('Output (DSC: ' + str(test_dice) + ")")
         axes[i][1].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
-        # axes[1].title.set_text('Thresholded')
-        # axes[1].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
+        # axes[i][2].title.set_text('Thresholded')
+        # axes[i][2].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
         axes[i][2].title.set_text('Ground Truth')
         axes[i][2].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
     plt.show()
