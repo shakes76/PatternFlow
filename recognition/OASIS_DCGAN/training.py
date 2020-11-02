@@ -4,6 +4,7 @@ import tensorflow as tf
 from IPython import display
 import matplotlib.pyplot as plt
 
+import main
 import dcgan as dcgan
 from config import Config
 
@@ -16,7 +17,14 @@ discriminator = dcgan.make_discriminator_model()
 generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
-seed = tf.random.normal([16, Config.NOISE_DIM])  # generate 16 examples
+# Set checkpoint
+checkpoint_prefix = os.path.join(Config.CHECKPOINT_DIR, "ckpt")
+checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
+                                 discriminator_optimizer=discriminator_optimizer,
+                                 generator=generator,
+                                 discriminator=discriminator)
+
+SEED = tf.random.normal([16, Config.NOISE_DIM])  # generate 16 examples
 
 
 @tf.function
@@ -52,15 +60,8 @@ def generate_and_save_images(model, epoch, test_input):
     plt.pause(2)
 
 
-# Set checkpoint
-checkpoint_prefix = os.path.join(Config.CHECKPOINT_DIR, "ckpt")
-checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
-                                 discriminator_optimizer=discriminator_optimizer,
-                                 generator=generator,
-                                 discriminator=discriminator)
-
 # restore latest checkpoint
-if Config.RESTORE:
+def restore_checkpoint():
     checkpoint.restore(tf.train.latest_checkpoint(Config.CHECKPOINT_DIR))
 
 
@@ -75,7 +76,7 @@ def train(dataset, epochs):
 
         # display figure
         display.clear_output(wait=True)
-        generate_and_save_images(generator, epoch + 1, seed)
+        generate_and_save_images(generator, epoch + 1, SEED)
 
         # save model for each 10 epoch
         if (epoch + 1) % 10 == 0:

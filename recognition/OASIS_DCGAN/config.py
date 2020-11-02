@@ -8,8 +8,7 @@ class Config:
     # data_crop = [0, 0 128, 128] # .jpeg only
 
     # Training Parameter
-    EPOCHS = 30
+    EPOCHS = 40
     NOISE_DIM = 100
     CHECKPOINT_DIR = 'checkpoints/'
-    Train = True
-    RESTORE = False
+
