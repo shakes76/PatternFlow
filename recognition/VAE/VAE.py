@@ -60,13 +60,18 @@ class VAE(tf.keras.Model):
     def define_encoder(self, latent_dimension, kernel_size, strides):
         e = Sequential()
         e.add(InputLayer(input_shape=(256, 256, 1)))
+        # downsampling
         e.add(Conv2D(filters=16, kernel_size=kernel_size, strides=strides, activation='relu'))
         e.add(BatchNormalization())
+        # downsampling
         e.add(Conv2D(filters=32, kernel_size=kernel_size, strides=strides, activation='relu'))
         e.add(BatchNormalization())
+        # downsampling
         e.add(Conv2D(filters=64, kernel_size=kernel_size, strides=strides, activation='relu'))
         e.add(BatchNormalization())
+        # flatten the image pixels
         e.add(Flatten())
+        # compress the image pixels to 2 * latent_dimension
         e.add(Dense(latent_dimension * 2))
         return e
 
@@ -74,15 +79,19 @@ class VAE(tf.keras.Model):
     def define_decoder(self, latent_dimension, kernel_size, strides):
         d = Sequential()
         d.add(InputLayer(input_shape=(latent_dimension,)))
-        d.add(Dense(units=32 * 32 * 32, activation=tf.nn.relu))
+        d.add(Dense(units=32*32*32, activation=tf.nn.relu))
         d.add(BatchNormalization())
         d.add(Reshape(target_shape=(32, 32, 32)))
+        # upsampling to 64 * 64
         d.add(Conv2DTranspose(filters=64, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
         d.add(BatchNormalization())
+        # upsampling to 128 * 128
         d.add(Conv2DTranspose(filters=32, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
         d.add(BatchNormalization())
+        # upsampling to 256 * 256
         d.add(Conv2DTranspose(filters=16, kernel_size=kernel_size, strides=strides, padding='same', activation='relu'))
         d.add(BatchNormalization())
+        # no activation
         d.add(Conv2DTranspose(filters=1, kernel_size=kernel_size, strides=1, padding='same'))
         return d
 
@@ -91,10 +100,14 @@ class VAE(tf.keras.Model):
 def calculate_ssim(predictions, test_sample):
     ssim_total = 0
     size = predictions.shape[0]
+    # summing up the ssim of different pairs of images and work out the average ssim
     for x_test in test_sample:
         for i in range(size):
+            # the generated image
             generated_img = img_as_float(tf.squeeze(predictions[i]))
+            # the reference image
             reference_img = img_as_float((tf.squeeze(x_test[i])))
+            # the ssim of this pair of images
             ssim_total += ssim(reference_img, generated_img, data_range=generated_img.max() - generated_img.min())
         # return the average structural similarity
         return ssim_total / size
@@ -146,9 +159,9 @@ def get_dataset(train_dir, test_dir, test_size=32):
     return normalized_train, normalized_test
 
 
-# plot the generated images 
+# plot the generated images
 def display_result(predictions):
-    fig = plt.figure(figsize=(9, 9))
+    fig = plt.figure(figsize=(5, 5))
     for i in range(9):
         plt.subplot(3, 3, i + 1)
         img = predictions[i]
@@ -159,6 +172,7 @@ def display_result(predictions):
 
 # function to train the model
 def train(model, train_dataset, test_sample, epochs, optimizer):
+    print('Starting training...')
     # iterate over all epochs
     for epoch in range(0, epochs + 1):
         # iterate over train_dataset containing training images
@@ -170,6 +184,7 @@ def train(model, train_dataset, test_sample, epochs, optimizer):
         display_result(predictions)
         # evaluate the model using Structural Similarity between generated images and test samples
         print("> " + str(epoch) + ": SSIM = " + str(calculate_ssim(predictions, test_sample)))
+        save_model(model, 'encoder_'+str(epoch)+'.h5', 'decoder_'+str(epoch)+'.h5')
     # return the trained model
     return model
 
@@ -192,23 +207,3 @@ def save_model(model, encoder_name, decoder_name):
     model.encoder.save(encoder_name)
     # save the decoder
     model.decoder.save(decoder_name)
-
-
-if __name__ == '__main__':
-    # define constants
-    epochs = 10
-    latent_dimension = 2
-    train_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/directory'
-    test_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/test directory'
-
-    # use an Adam optimiser
-    optimizer = Adam(1e-4)
-    # load training and test datasets
-    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=64)
-
-    # initialize a new VAE model
-    model = VAE(latent_dimension)
-    # train a new model
-    print('Start training')
-    model = train(model, train_dataset, test_dataset, epochs, optimizer)
-    save_model(model, 'encoder.h5', 'decoder.h5')
