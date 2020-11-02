@@ -1,4 +1,17 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+from PIL import Image, ImageOps 
+import image
+import numpy as np
 from matplotlib import pyplot as plt
+import os
+import tqdm
+from tqdm import tqdm_notebook, tnrange
+from skimage.transform import resize
 
 import tensorflow as tf
 
@@ -9,123 +22,90 @@ from tensorflow.keras.layers import MaxPooling2D, GlobalMaxPool2D
 from tensorflow.keras.layers import concatenate, add, LeakyReLU
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-import pathlib
-import glob
 
 
-# In[3]:
+batch_size = 24
+EPOCHS = 50
 
 
-#!pip install matplotlib
-#!pip install tqdm
-#!pip install scikit-image
-#!pip install keras
-#!pip install image
+imgName_X_train = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_train"))[2] # list of names all images in the given path
+imgName_y_train = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_train"))[2] # list of names all images in the given path
+
+print("No. of training images = ", len(imgName_X_train))
+print("No. of training images labels = ", len(imgName_y_train))
+
+print ("")
+
+imgName_X_validate = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_validate"))[2] # list of names all images in the given path
+imgName_y_validate = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_validate"))[2] # list of names all images in the given path
+
+print("No. of validating images = ", len(imgName_X_validate))
+print("No. of validating images labels = ", len(imgName_y_validate))
 
 
-# In[26]:
+X_train = np.zeros((len(imgName_X_train), 256, 256, 1), dtype=np.float32)
+y_train = np.zeros((len(imgName_y_train), 256, 256, 1), dtype=np.float32)
+
+X_validate = np.zeros((len(imgName_X_validate), 256, 256, 1), dtype=np.float32)
+y_validate = np.zeros((len(imgName_y_validate), 256, 256, 1), dtype=np.float32)
 
 
-batch_size = 32
-EPOCHS = 100
+############################################# For Training #######################################################
+# tqdm is used to display the progress bar
+for n_train, id_train in tqdm_notebook(enumerate(imgName_X_train), total=len(imgName_X_train)):
+    # Loading training images
+    img_train = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_train/"+id_train, grayscale=True)
+    x_img_train = img_to_array(img_train)
+    x_img_train = resize(x_img_train, (256, 256, 1), mode = 'constant', preserve_range = True)
+    
+    X_train[n_train] = (x_img_train / 127.5) - 1
 
+for n_mask_train, id_mask_train in tqdm_notebook(enumerate(imgName_y_train), total=len(imgName_y_train)):
+    # Loading training images
+    mask_train = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_train/"+id_mask_train, grayscale=True)
+    y_img_train = img_to_array(mask_train)
+    y_img_train = resize(y_img_train, (256, 256, 1), mode = 'constant', preserve_range = True)
+    
+    # Save images
+    y_train[n_mask_train] = (y_img_train / 127.5) - 1
+    
 
-# In[18]:
+########################## For Validation #######################################################
+for n_validate, id_validate in tqdm_notebook(enumerate(imgName_X_validate), total=len(imgName_X_validate)):
+    # Loading validating images
+    img_validate = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_validate/"+id_validate, grayscale=True)
+    x_img_validate = img_to_array(img_validate)
+    x_img_validate = resize(x_img_validate, (256, 256, 1), mode = 'constant', preserve_range = True)
+    
+    X_validate[n_validate] = (x_img_validate / 127.5) - 1
 
+for n_mask_validate, id_mask_validate in tqdm_notebook(enumerate(imgName_y_validate), total=len(imgName_y_validate)):
+    # Loading validating images
+    mask_validate = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_validate/"+id_mask_validate, grayscale=True)
+    y_img_validate = img_to_array(mask_validate)
+    y_img_validate = resize(y_img_validate, (256, 256, 1), mode = 'constant', preserve_range = True)
+    
+    # Save images
+    y_validate[n_mask_validate] = (y_img_validate / 127.5) - 1
 
-########################## Training Directory #####################################################
-train_x_dir = "C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_train/"
-train_y_dir = "C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_train/"
-
-########################### Validation Dorectory ######################################################
-
-val_x_dir = "C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_validate/"
-val_y_dir = "C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_validate/"
-
-
-# In[20]:
-
-
-train_imgs = glob.glob(train_x_dir + '*.png')
-train_labels = glob.glob(train_y_dir + '*.png')
-
-val_imgs = glob.glob(val_x_dir + '*.png')
-val_labels = glob.glob(val_y_dir + '*.png')
-
-
-# In[21]:
 
 
 # Create a tf.data.Dataset from the filenames (and labels).
-train_ds = tf.data.Dataset.from_tensor_slices((train_imgs, train_labels))
-val_ds = tf.data.Dataset.from_tensor_slices((val_imgs, val_labels))
+train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+val_ds = tf.data.Dataset.from_tensor_slices((X_validate, y_validate))
 
-
-# In[ ]:
-
-
-# Write a function that converts a filename and a label to a pair of data arrays.
-def map_fn(filename, label):
-    # Load the raw data from the file as a string.
-    img = tf.io.read_file(filename)
-    label = tf.io.read_file(label)
-    
-    # Convert the compressed string to a 3D uint8 tensor.
-    img = tf.image.decode_jpeg(img, channels=1) # channels=1 for greyscale
-    label = tf.image.decode_jpeg(label, channels=1) # channels=1 for greyscale
-    
-    # Resize the image to the desired size.
-    img = tf.image.resize(img, (256, 256))
-    label = tf.image.resize(label, (256, 256))
-    
-    # casting image as float32.
-    img = tf.cast(img, tf.float32)
-    label = tf.cast(label, tf.float32)
-    
-    #Standardise values to be in the [-1, 1] range.
-    img = (img / 127.5) - 1
-    label = (label / 127.5) - 1
-    
-    return img, label
-
-
-# In[25]:
 
 
 ##################### genrating pictures, shuffling and selecting batch images from training images. ##########################
-train_ds = train_ds.map(map_fn)
-# Make the dataset to be reshuffled each time it is iterated over.
-# This is so that we get different batches for each epoch.
-# For perfect shuffling, the buffer size needs to be greater than or equal to the size of the dataset.
-train_ds = train_ds.shuffle(len(train_imgs))
-train_ds = train_ds.batch(batch_size)
+train_ds = (train_ds.batch(batch_size).shuffle(len(imgName_X_train)))
+
 
 ##################### genrating pictures and selecting batch images from validation images. ##########################
-val_ds = val_ds.map(map_fn)
 val_ds = val_ds.batch(batch_size)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
 
 
 
 # # Generator 
-
-# In[ ]:
 
 
 def conv2d_func(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
@@ -145,13 +125,13 @@ def conv2d_func(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     return x
 
 
-# In[ ]:
+# In[30]:
 
 
-def generator(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
+def make_generator(n_filters = 16, dropout = 0.1, batchnorm = True):
     """Function to define the UNET Model"""
     
-    input_image = Input(shape=input_img.shape)
+    input_image = Input(shape=(256, 256, 1))
     # Contracting Path
     c1 = conv2d_func(input_image, n_filters * 1, kernel_size = 3, batchnorm = batchnorm)
     p1 = MaxPooling2D((2, 2))(c1)
@@ -192,143 +172,201 @@ def generator(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
     u9 = Dropout(dropout)(u9)
     c9 = conv2d_func(u9, n_filters * 1, kernel_size = 3, batchnorm = batchnorm)
     
-    outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
+    outputs = Conv2D(1, (1, 1), activation='tanh')(c9)
     
-    model = Model(inputs=[input_img], outputs=[outputs])
+    model = Model(inputs=input_image, outputs=outputs)
     return model
+
+
+# In[31]:
+
+
+generator = make_generator()
 
 
 # ## Discriminator
 # 
 # 
 
-# In[5]:
+# In[44]:
 
 
-def downsample(filters, size, apply_batchnorm=True):
+def downsample(layer, filters, size, apply_batchnorm=True):
     init = tf.random_normal_initializer(0., 0.02)
 
-    conv = Conv2D(filters=filters, kernel_size=(size,size) , strides=2, padding='same', kernel_initializer=init)
+    conv = Conv2D(filters=filters, kernel_size=(size,size) , strides=2, padding='same', kernel_initializer=init)(layer)
 
     if apply_batchnorm:
         conv = BatchNormalization()(conv)
   
-    conv = LeakyReLU(alpha=0.1)(conv)
+    conv = LeakyReLU(alpha=0.2)(conv)
 
     return conv
 
 
-# In[9]:
+# In[45]:
 
 
-def discriminator(inp_img, gen_img):
+def make_discriminator():
     init = tf.random_normal_initializer(0., 0.02)
 
-    inp_img_d = Input(shape=inp_img.shape)
-    gen_img_d = Input(shape=gen_img.shape)
+    inp_img_d = Input(shape=(256, 256, 1))
+    gen_img_d = Input(shape=(256, 256, 1))
 
     concat_img = concatenate([inp_img_d, gen_img_d])
 
-    d1 = downsample(64, 2, False)(concat_img)
-    d2 = downsample(128, 2, False)(d1)
-    d3 = downsample(256, 2, False)(d2)
-    d4 = downsample(512, 2, False)(d3)
+    d1 = downsample(concat_img, 64, 4, True)
+    d2 = downsample(d1, 128, 4, True)
+    d3 = downsample(d2, 256, 4, True)
+    d4 = downsample(d3, 512, 4, True)
 
     d_final = Conv2D(1, (4,4), padding='same', kernel_initializer=init)(d4)
-    disc_out = Activation('tanh')(d_final)  
+    disc_out = Activation('sigmoid')(d_final)  
     
-    disc_model = Model([inp_img_d, gen_img_d], disc_out)
+    disc_model = Model(inputs=[inp_img_d, gen_img_d], outputs=disc_out)
     
     return disc_model
 
 
+# In[46]:
+
+
+discriminator = make_discriminator()
+
+
 # # Training Model
 
-# In[ ]:
+# In[47]:
 
 
 def discriminator_loss(disc_real_output, disc_fake_out):
     binary_cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     real_loss = binary_cross_entropy(tf.ones_like(disc_real_output), disc_real_output)
     
-    generated_loss = loss_object(tf.zeros_like(disc_generated_output), disc_generated_output)
+    generated_loss = binary_cross_entropy(tf.zeros_like(disc_fake_out), disc_fake_out)
     
     total_disc_loss = real_loss + generated_loss
 
     return total_disc_loss
 
 
-# In[ ]:
+# In[48]:
 
 
-def generator_loss(disc_fake_out, fake_out, target):
+def generator_loss(disc_fake_out, fake_out, real_img):
     binary_cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     gan_loss = binary_cross_entropy(tf.ones_like(disc_fake_out), disc_fake_out)
 
     # mean absolute error
-    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
+    mae = tf.reduce_mean(tf.abs(real_img - fake_out))
 
-    total_gen_loss = gan_loss + (LAMBDA * l1_loss)
+    #total_gen_loss = gan_loss + (LAMBDA * l1_loss)
+    total_gen_loss = gan_loss + (100*mae)
+    
+    return total_gen_loss, gan_loss, mae
 
-    return total_gen_loss, gan_loss, l1_loss
 
-
-# In[ ]:
+# In[49]:
 
 
 generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
 
-# In[10]:
+# In[50]:
 
 
-def train_step(inp_img, real_img):
+import datetime
+log_dir="logs/"
 
-    fake_output = generator(inp_img, training=True)
-  
+summary_writer = tf.summary.create_file_writer(
+  log_dir + "fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+
+# In[51]:
+
+
+#%load_ext tensorboard
+#%tensorboard --logdir {log_dir}
+
+
+# In[52]:
+
+
+def train_step(inp_img, real_img, epoch):
+    
+    
     # Training discriminator
-    with tf.GradientTape() as descr_tape:
-    disc_real_out = discriminator([inp_img, real_img], training=True)
-    disc_fake_out = discriminator([inp_img, fake_output], training=True)
+    with tf.GradientTape() as descr_tape, tf.GradientTape() as gen_tape:
+        fake_output = generator(inp_img, training=True)
+        
+        disc_real_out = discriminator([inp_img, real_img], training=True)
+        disc_fake_out = discriminator([inp_img, fake_output], training=True)
 
-    disc_loss = discriminator_loss(disc_real_out, disc_fake_out)
-
+        disc_loss = discriminator_loss(disc_real_out, disc_fake_out)
+        gen_total_loss, gen_gan_loss, gen_mae = generator_loss(disc_fake_out, fake_output, real_img)
+        
     discriminator_gradients = descr_tape.gradient(disc_loss,
-                                               discriminator.trainable_variables)
+                                               discriminator.trainable_variables)    
     discriminator_optimizer.apply_gradients(zip(discriminator_gradients,
                                               discriminator.trainable_variables))
-  
-    # Training Generator
-    with tf.GradientTape() as gen_tape:
-    disc_fake_out_decision = discriminator([inp_img, fake_output])
-
-    gen_total_loss, gen_gan_loss, gen_l1_loss = generator_loss(disc_fake_out_decision, fake_output, target)
+    
     
     generator_gradients = gen_tape.gradient(gen_total_loss,
                                           generator.trainable_variables) 
     generator_optimizer.apply_gradients(zip(generator_gradients,
-                                          generator.trainable_variables))
+                                          generator.trainable_variables))    
   
+    with summary_writer.as_default():
+        tf.summary.scalar('gen_total_loss', gen_total_loss, step=epoch)
+        tf.summary.scalar('gen_gan_loss', gen_gan_loss, step=epoch)
+        tf.summary.scalar('gen_mae', gen_mae, step=epoch)
+        tf.summary.scalar('disc_loss', disc_loss, step=epoch)
+        
+    return gen_total_loss, gen_gan_loss, gen_mae, disc_loss
 
 
-# In[ ]:
+# In[53]:
+
+
+#!pip install tensorboard
 
 
 def train(train_ds, val_ds, EPOCHS):
     for epoch in range(EPOCHS):
         
+        print("Training on Epoch " + str(epoch+1))
+        #sepoch % 5 == 0:
+            
         for n, (input_image, label) in train_ds.enumerate():
-            print('.', end='')
+            #print('.', end='')
             if (n+1) % 100 == 0:
-                print()
-            train_step(input_image, label)
-            print()
-    
-
-
-# In[ ]:
+                print("Trained on: " + str(batch_size*(n+1)))
+            train_step(input_image, label, epoch)
+           
 
 
 train(train_ds, val_ds, EPOCHS)
+
+
+
+def generate_images(model, test_input, tar):
+    prediction = model(test_input, training=True)
+    plt.figure(figsize=(15,15))
+
+    display_list = [test_input[0], tar[0], prediction[0]]
+    title = ['Input Image', 'Ground Truth', 'Predicted Image']
+
+    for i in range(3):
+        plt.subplot(1, 3, i+1)
+        plt.title(title[i])
+        # getting the pixel values between [0, 1] to plot it.
+        plt.imshow(display_list[i] * 0.5 + 0.5)
+        plt.axis('off')
+    plt.show()
+
+for inp, tar in val_ds.take(5):
+    generate_images(generator, inp, tar)
+
+
 
