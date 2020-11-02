@@ -29,8 +29,15 @@ The goal of GAN is to take a set of random input array and generate near-real im
 
 
 
+<<<<<<< HEAD
 
 ![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)Training GAN on MNIST handwritten digits data.
+=======
+<p align="center">
+![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)
+</p>
+<div align="center">Training GAN on MNIST handwritten digits data.
+>>>>>>> ac4d40877419cf91fbdff35b40250057239b2365
 <a href="https://towardsdatascience.com/implementing-deep-convolutional-generative-adversarial-networks-dcgan-573df2b63c0d" target="_blank" >Image source.</a></div>
 
 
