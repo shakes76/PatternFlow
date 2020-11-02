@@ -144,30 +144,25 @@ def train_model_check_accuracy(train_gen, test_gen):
 # Test and visualise model predictions with a set amount of test inputs.
 def test_visualise_model_predictions(model, test_gen):
     test_range = np.arange(0, stop=NUMBER_SHOW_TEST_PREDICTIONS, step=1)
-    figure, axes = plt.subplots(NUMBER_SHOW_TEST_PREDICTIONS, 4)
+    figure, axes = plt.subplots(NUMBER_SHOW_TEST_PREDICTIONS, 3)
     for i in test_range:
         current = next(islice(test_gen, i, None))
-        # np.argmax(model.predict(current, steps=1, use_multiprocessing=False)[0], axis=-1)
         test_pred = model.predict(current, steps=1, use_multiprocessing=False)[0]
-        test_loss, test_accuracy, test_dice = \
-            model.evaluate(current, use_multiprocessing=False, verbose=2)
         truth = current[1][0]
         original = current[0][0]
         probabilities = keras.preprocessing.image.img_to_array(test_pred)
-        # test_dice = dice_coefficient(current, test_pred)
-        # ones = probabilities >= 0.5
-        # zeroes = probabilities < 0.5
-        # thresholded = np.copy(probabilities)
-        # thresholded[ones] = 1
-        # thresholded[zeroes] = 0
+        test_dice = dice_coefficient(truth, test_pred, axis=None)
+
         axes[i][0].title.set_text('Input')
         axes[i][0].imshow(original, vmin=0.0, vmax=1.0)
-        axes[i][1].title.set_text('Output (DSC: ' + str(test_dice) + ")")
+        axes[i][0].set_axis_off()
+        axes[i][1].title.set_text('Output (DSC: ' + str(test_dice.numpy()) + ")")
         axes[i][1].imshow(probabilities, cmap='gray', vmin=0.0, vmax=1.0)
-        # axes[i][2].title.set_text('Thresholded')
-        # axes[i][2].imshow(thresholded, cmap='gray', vmin=0.0, vmax=1.0)
+        axes[i][1].set_axis_off()
         axes[i][2].title.set_text('Ground Truth')
         axes[i][2].imshow(truth, cmap='gray', vmin=0.0, vmax=1.0)
+        axes[i][2].set_axis_off()
+    plt.axis('off')
     plt.show()
 
 
