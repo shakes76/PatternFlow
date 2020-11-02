@@ -100,9 +100,9 @@ Test set:
 105/105 - 2s - loss: 0.0030 - accuracy: 0.9991
 ```
 
-![Accuracy vs Epochs](/plots/accuracy.png)
+![image](plots/accuracy.png)
 
-![Loss vs Epochs](/plots/loss.png)
+![image](plots/loss.png)
 
 ## Dataset Splitting
 
