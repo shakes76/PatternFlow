@@ -23,7 +23,7 @@ tf.random.Generator = None
 import tensorflow_addons as tfa
 import cv2
 from sklearn.model_selection import train_test_split
-from model.py import improvedUnet
+from model.py import *
 
 
 #loading features/original images
