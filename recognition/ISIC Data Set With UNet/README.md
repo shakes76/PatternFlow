@@ -50,7 +50,7 @@ Below is an outline of how I used the model to segment the ISIC data set using t
 When we run the driver script, the first thing it does it output an example image and mask from the training dataset.
 This image is shown below.
 
-![alt text]()
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example.png)
 
 ### Creating the Model & Outputting Structure
 
@@ -154,11 +154,11 @@ After training was complete, I analysed the training history by ploting how the 
 
 Next, I displayed some predictions I made. Three such prediciton are shown below.
 
-![alt text]()
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%203.png)
 
-![alt text]()
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%204.png)
 
-![alt text]()
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%206.png)
 
 ### Analysing Dice Similarity Coefficient of Model
 
