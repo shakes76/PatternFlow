@@ -126,7 +126,7 @@ test_gen = SequenceGenerator(x_test, y_test, 4)
 
 # train the model
 model = make_model()
-model.fit(train_gen, validation_data=val_gen, epochs=20)
+model.fit(train_gen, validation_data=val_gen, epochs=1)
 
 # evaluate the model on the test set
 model.evaluate(test_gen)

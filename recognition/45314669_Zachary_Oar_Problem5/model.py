@@ -42,6 +42,30 @@ def dice_similarity(exp, pred):
     return numerator / denominator
 
 
+def leaky_relu_conv(layer_in, features, stride=1, size=(3,3)):
+    conv = keras.layers.Conv2D(features, size, strides=stride, padding="same")(layer_in)
+    leaky_relu = keras.layers.LeakyReLU(alpha=0.01)(conv)
+    return leaky_relu
+
+
+def context_module(layer_in, features):
+    conv = leaky_relu_conv(layer_in, features)
+    conv2 = leaky_relu_conv(conv, features)
+    conv2 = keras.layers.Dropout(0.3)(conv2)
+    return keras.layers.add([conv2, layer_in])
+
+
+def upsampling_module(layer_in, features, concat_layer):
+    upsamp = keras.layers.UpSampling2D((2, 2))(layer_in)
+    conv = leaky_relu_conv(upsamp, features)
+    return keras.layers.concatenate([conv, concat_layer])
+    
+
+def localisation_module(layer_in, features):
+    conv1 = leaky_relu_conv(layer_in, features)
+    return leaky_relu_conv(conv1, features, size=(1,1))
+
+
 def make_model():
     """
     Returns a standard UNET model as per the given lecture slides.
@@ -53,46 +77,34 @@ def make_model():
     """
     input_layer = keras.layers.Input(shape=(192, 256, 3))
 
-    conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(input_layer)
-    conv1 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(conv1)
-    pool1 = keras.layers.MaxPooling2D((2, 2))(conv1)
+    start_conv = leaky_relu_conv(input_layer, 16)
 
-    conv2 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(pool1)
-    conv2 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(conv2)
-    pool2 = keras.layers.MaxPooling2D((2, 2))(conv2)
+    context1 = context_module(start_conv, 16)
+    downconv1 = leaky_relu_conv(context1, 32, stride=2)
+
+    context2 = context_module(downconv1, 32)
+    downconv2 = leaky_relu_conv(context2, 64, stride=2)
     
-    conv3 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(pool2)
-    conv3 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(conv3)
-    pool3 = keras.layers.MaxPooling2D((2, 2))(conv3)
+    context3 = context_module(downconv2, 64)
+    downconv3 = leaky_relu_conv(context3, 128, stride=2)
     
-    conv4 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(pool3)
-    conv4 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(conv4)
-    pool4 = keras.layers.MaxPooling2D((2, 2))(conv4)
+    context4 = context_module(downconv3, 128)
+    downconv4 = leaky_relu_conv(context4, 256, stride=2)
 
-    conv_mid = keras.layers.Conv2D(512, (3, 3), activation="relu", padding="same")(pool4)
-    conv_mid = keras.layers.Conv2D(512, (3, 3), activation="relu", padding="same")(conv_mid)
-    upsamp1 = keras.layers.UpSampling2D((2, 2))(conv_mid)
+    central_context = context_module(downconv4, 256)
+    upconv1 = upsampling_module(central_context, 128, context4)
 
-    upconv1 = keras.layers.concatenate([upsamp1, conv4])
-    upconv1 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(upconv1)
-    upconv1 = keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same")(upconv1)
-    upsamp2 = keras.layers.UpSampling2D((2, 2))(upconv1)
+    local1 = localisation_module(upconv1, 128)
+    upconv2 = upsampling_module(local1, 64, context3)
 
-    upconv2 = keras.layers.concatenate([upsamp2, conv3])
-    upconv2 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(upconv2)
-    upconv2 = keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same")(upconv2)
-    upsamp3 = keras.layers.UpSampling2D((2, 2))(upconv2)
+    local2 = localisation_module(upconv2, 64)
+    upconv3 = upsampling_module(local2, 32, context2)
 
-    upconv3 = keras.layers.concatenate([upsamp3, conv2])
-    upconv3 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(upconv3)
-    upconv3 = keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same")(upconv3)
-    upsamp4 = keras.layers.UpSampling2D((2, 2))(upconv3)
+    local3 = localisation_module(upconv3, 32)
+    upconv4 = upsampling_module(local3, 16, context1)
 
-    upconv4 = keras.layers.concatenate([upsamp4, conv1])
-    upconv4 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(upconv4)
-    upconv4 = keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same")(upconv4)
-
-    conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(upconv4)
+    end_conv = leaky_relu_conv(upconv4, 32)
+    conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(end_conv)
 
     model = keras.Model(inputs=input_layer, outputs=conv_out)
     model.compile(optimizer = keras.optimizers.Adam(),
