@@ -1,8 +1,11 @@
 # OAI AKOA Dataset Laterality Classification
-In order to laterally classify the OAI AKOA knee data set, a Convolution Neural Network (CNN) based classifier was modelled using [Tensorflow](https://www.tensorflow.org/). The model strings together multiple layers and then ties them to fully connected (dense) layers to produce classified outputs. The configuration of the CNN is as follows:
+In order to laterally classify the OAI AKOA knee data set, a Convolution Neural Network (CNN) based classifier was modelled using [Tensorflow](https://www.tensorflow.org/). 
+The dataset consists of 18,680 MRIs (greyscale) of knees, labelled by patient and whether they are of the left or right knee. Approximately 58% of the MRIs are '*right'* classified with the rest being *'left'* classified. The dataset is split into 3 subsets - training, validation and testing, as detailed in the **Dataset Splitting** section.
+
+The CNN model strings together multiple layers and then ties them to fully connected (dense) layers to produce classified outputs. The configuration of the CNN is as follows:
 
 ```python
-(input: 228 x 260 dimenson images)
+(input: 228 x 260 dimenson images (greyscale))
   ↓
 2 x [Convolution (32 filters, (3 x 3) kernel size, relu activation)]
   ↓
@@ -32,6 +35,9 @@ In order to laterally classify the OAI AKOA knee data set, a Convolution Neural 
   ↓
 (output: logits of probability distribution over <num_classses> classes)
 ```
+
+The above CNN configuration is capable of achieving 99% accuracy on a test set within 10 epochs as shown in the **Example** section.
+
 ## Pre-requisites
 * Python 3.5-3.8
 * Tensorflow 2.1.0
@@ -56,14 +62,14 @@ The driver script *classify_laterality.py* can be run from the cmd line using
 
 where *<path_to_data_folder>* is the path to the OAI AKOA data folder e.g. *"C:\Users\\<user\>\\.keras\datasets\AKOA_Analysis"*.
 
-## Examples
+Hyperparameters that can be adjusted (*Batch size, learning rate, number of epochs*) in `classify_laterality.py` are tagged with the comment `#Hyperparameter`. Additionally, the script saves the weights of the model via checkpoints after every epoch. The location of the checkpoint file can be changed via the variable `checkpoint_path`. By default, the checkpoint is saved to `training/ckpt01.ckpt`. Loading of the weights can then be done by uncommenting the line `#model.load_weights(checkpoint_path).expect_partial()` (ln 187). If you wish to simply load the weights without doing anymore fitting, the `model.fit(...)` (ln 191) line should be commented out, as well as all the code for plotting (lns 201 - 220).
+
+## Example
 An example usage of the driver script using `>python classify_laterality.py <path_to_data_folder>` on the OAI AKOA dataset produces the following
 ```
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-=================================================================<pre>
- &#8595;
-</pre>
+=================================================================
 conv_block (ConvBlock)       multiple                  9568
 _________________________________________________________________
 conv_block_1 (ConvBlock)     multiple                  55424
@@ -138,7 +144,7 @@ Test set:
 ![image](plots/loss.png)
 
 ## Dataset Splitting
-The OAI AKOA dataset was split into three subsets - training, validation and test. The data was split on patients rather than individual images to prevent data leakage between sets. Checks were also made to ensure each set had a sufficiently balanced ratio of *'right'* labelled data to *'left'* labelled data (between 0.3 and 0.7) to prevent class imbalance. 
+The OAI AKOA dataset was split into 3 subsets - training, validation and test. The data was split on patients rather than individual images to prevent data leakage between sets. Checks were also made to ensure each set had a sufficiently balanced ratio of *'right'* labelled data to *'left'* labelled data (between 0.3 and 0.7) to prevent class imbalance. 
 
 The test subset was taken as 20% of the initial number of patients and the validation subset was then taken as 20% of the remaining number of patients e.g. the split ratios were
 * Test = **0.2**
