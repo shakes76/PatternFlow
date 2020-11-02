@@ -54,3 +54,11 @@ If all dependencies are installed and the images have been downloaded and arrang
 * Train the model from model.py over 20 epochs using the training and validation sets
 * Evaluate the trained model using the test set
 * Display a pyplot of some images segmented by the model and a comparison to what was expected.
+
+# References
+
+[U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/pdf/1505.04597.pdf)
+
+[Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge](https://arxiv.org/pdf/1802.10508v1.pdf)
+
+[ISIC 2018: Skin Lesion Analysis Towards Melanoma Detection](https://challenge2018.isic-archive.com/)
