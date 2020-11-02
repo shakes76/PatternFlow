@@ -1,4 +1,4 @@
-# DCGAN On OASIS - Ziyan Wang
+# DCGAN On OASIS - Ziyan Wang 45758151
 This project is an assignment of [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) from 
 The University of Queensland. The chosen topic is No.6 (OASIS)
 
