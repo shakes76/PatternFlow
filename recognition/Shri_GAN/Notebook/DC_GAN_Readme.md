@@ -30,8 +30,9 @@ The goal of GAN is to take a set of random input array and generate near-real im
 
 
 
-![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)<div align="center">Training GAN on MNIST handwritten digits data.
+![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)Training GAN on MNIST handwritten digits data.
 <a href="https://towardsdatascience.com/implementing-deep-convolutional-generative-adversarial-networks-dcgan-573df2b63c0d" target="_blank" >Image source.</a></div>
+
 
 
 
@@ -91,18 +92,18 @@ For training the GAN, we're using the crossectional MRI scans of patients' brain
 
 
 
-1. <a href="https://www.tensorflow.org/" target="_blank" >**Tensorflow:**</a> The project uses Tensorflow as a base platform. TensorFlow is an end-to-end open source platform for machine learning. The GUI is implemented using Jupyter Notebook. 
+1. <a href="https://www.tensorflow.org/" target="_blank" >**Tensorflow:**</a> The project uses Tensorflow as a base platform. TensorFlow is an end-to-end open source platform for machine learning. It uses a Tensor as a basic data structure which is  like an n-dimensional matirix. Tensor makes the data manipulations faster and effective and hence improve the overall processing of the models. For implementing Tensorflow on a GUI, Jupyter notebook is used.
 
 
-2.  <a href="https://keras.io/about/" target="_blank" >**Keras:**</a> Keras is a deep learning API written in Python, running on top of the machine learning platform TensorFlow. It was developed with a focus on enabling fast experimentation. Being able to go from idea to result as fast as possible is key to doing good research. For this project, following Keras APIs were used:
+2.  <a href="https://keras.io/about/" target="_blank" >**Keras:**</a> Keras is a deep learning API written in Python, Which implements Tensorflow as the platform. The key idea behind Keras was to develop a module that can enable faster implementation of machine learning and deep learning algorithms. For this project, following Keras APIs were used:
 
-    2.1. **Models:** Model works as a wrapper for all the layers in a neural network. It creats the network as a stack of layers. The simplicity and effectiveness of the layer by layer architecture makes the sequential model versatile and generalisable to suit any needs.
+    2.1. **Models:** Model works as a wrapper for all the layers in a neural network. It creats the network as a stack of layers. The simplicity and effectiveness of the layer by layer architecture makes the model versatile and generalisable to suit any needs.
     
-    2.2. **Layers:** Layers are the basic building blocks of neural networks in Keras. A layer consists of a tensor-in tensor-out computation function (the layer's call method) and some state, held in TensorFlow variables (the layer's weights).
+    2.2. **Layers:** Layers are the basic building blocks of neural networks in Keras. Each layer can be of a specific functionality. It can either be a structure representing nodes in a basic neural network or an array of nodes for Convolutio neural network. It can also be like a function implementation layer like dropouts, maxpooling, optimizers, etc. 
     
-    2.3 **Dataset preprocessing:**  Keras dataset preprocessing utilities, located at tf.keras.preprocessing, help you go from raw data on disk to a tf.data.Dataset object that can be used to train a model.
+    2.3 **Dataset preprocessing:**  Keras dataset preprocessing utilities, located at tf.keras.preprocessing. These were used to preprocess data into correct structure and make it fit for use.
     
-    2.4. **Optimizers:** An optimizer is one of the two arguments required for compiling a Keras model. You can either instantiate an optimizer before passing it to model.compile() , as in the above example, or you can pass it by its string identifier. In the latter case, the default parameters for the optimizer will be used.
+    2.4. **Optimizers:** An optimizers are the class of optimising functions to be used to train the models. The optimizers compare the current results obtained from the moedel with the train data and decide how to tune the weeights and biases in teh layers. Some of the commonly used optimizers are 'SGD' and 'Adam'. Optimizers are instantiated before passing it to model.compile().
     
     2.5. **Metrics:** A metric is a function that is used to judge the performance of your model. Metric functions are similar to loss functions, except that the results from evaluating a metric are not used when training the model. Note that you may use any loss function as a metric.
     
@@ -110,25 +111,162 @@ For training the GAN, we're using the crossectional MRI scans of patients' brain
     
     
 
-3. Numpy
-4. OpenCV
+    
+3. <a href="https://numpy.org/" target="_blank" >**Numpy:**</a> Numpy is a Python library to implement array-like datastructures. Although most of the project use tensors as basic data blocks, some sections use numpy data processing functions as helpers.
+    
+4. <a href="https://opencv.org/about/" target="_blank" >**OpenCV:**</a>   OpenCV *(Open Source Computer Vision Library)* is an open source computer vision and machine learning software library. In this project, openCV is used to load, resize and preprocess the image data.
+
+## Method to implement the algorithm
+
+### Following process is used to create a DC-GAN for brain Image Data.
+
+1. Load the training dataset into the environment using openCV library.
+
+2. Resize the images from 256x256 to 128x128 (for better processing speeds).
+
+3. Convert the images from RGB to Grayscale.
+
+4. Convert the images to tensor imagetype. 
+
+5. Normalise the image pixel values from (0,255) to (-1,1) for better outputs.
+
+6. Visualise the train image data to check if the training set is good enough for generating the fake images.
+
+7. Create a trainbatch function that takes in train data as a whole and returns a batch of train images at each function call.
+
+8. Create a generator function based on following attributes:
+
+    8.1 Model: keras.sequential
+    
+    8.2 Input layer: keras.dense layer with 16x16x256 nodes. input shape of noise shape (here, array of size 100). Activation: LeakyRelu() , BatchNormalisation = True.
+    
+    8.3 1st dense layer: reshaping to 16x16 2d layer with 256 nodes.
+    
+    8.4 Upsampling layers: Two upsampling layers converting 16x16 to 32x32 and then 128x128 2dConv layers. BatchNormalisation = True, Activation = LeakyRelu().
+    
+    8.5 Final (Output) layer: 128x128x1 2DConv layer. The output to be considered as the generated image from the generator model.
+
+8. Call the generator model and observe the structure of layers. (Use model.summary())
+
+9. Create Discriminator model based on following attributes:
+
+    9.1 Input layer: 2dConv layer with 64 nodes and input shape (128x128x1).
+    
+    9.2. Downsampling layers: Two downsampling layers converting 128x128 image to 64x64 -> 32x32. Add dropout layers with activation function = LeakyRelu().
+    
+    9.3 Flatten Layer: Convert 2DConv layer to dense layer.
+    
+    9.4 Output layer: layer with 1 node representing a binary output whether the image is a fake or a real.
+
+10. Call the discriminator model to visualise the structure of layers.
+
+11. Define loss function as follows:
+
+    11.1 Loss function: tf.keras.losses.BinaryCrossentropy()
+    
+    11.2 Generator loss: define a function to check the loss of generated image with all ones. The idea here is that we want to train generator thinking it always creates real images from input noise. This means the loss has to be compared with ones.
+    
+    11.3 Discriminator loss: define a function to calculate the loss of real images and fake images. The key idea here is to assume real image output as always ones and fake image outputs as always zeros. The total loss of the discriminator is defined as real loss plus fake loss. over time, this loss becomes comparable to the generator loss.
+    
+    
+12. Optimizer functions for discriminator and generator: adam optimizer (alpha = 1e-4).
+
+13. Define the train step function to do the following:
+
+    13.1 Get the random normal noise of size noise dimension (here 100-array).
+    
+    13.2 Generate n images from generator where n is the batch size of the training loop.
+    
+    13.3 Use discriminator to calculate the fake output (input: generated images) and real output (input: train images).
+    
+    13.4 Calculate the gradients for real and fake outputs.
+    
+    13.5 Apply the new generated gradients to generator and discriminator
+    
+    13.6 Return generator loss and discriminator loss for visualisations.
+    
+14. Define Structural similarity function based to do the following;
+    
+    14.1 Get the generated image and test data as input:
+    
+    14.2 For each test image, calculate the ssim for generated image using tf.image.ssim().
+    
+    14.3 return the maximum ssim.
+    
+15. Define functions to handle image outputs for each epoch to do following:
+    
+    15.1 Get the noise as input.
+    
+    15.2 Generate images using the generator for the input noise.
+    
+    15.3 Plot the generated images.
+    
+    15.4 for every 5th epoch, save the generated set of images to (root)/gen_images as outputs.
+    
+16. Define the train function to do the following:
+
+    16.1 Take dataset and #epochs as input.
+    
+    16.2 Create an iteration loop to run for #epochs.
+    
+    **For each loop,**
+    
+    16.3 Call the train step function with batch datset as input. Store generator loss and discriminator loss values into seperate lists.
+    
+    16.4 Call output image handler function to generate and save image.
+    
+    16.5. Take a random sample from generated images to test the SSIM with test dataset. Store the value into list.
+    
+    16.6 display the generated images for each epoch and the SSIM value.
+    
+17. Call the training function to run on training batch and for #epochs.
+
+18. Observe the trends in generator and discriminator loss by plotting them.
+
+19. Observe trends in SSIM w.r.t epochs by plotting it.
+
+20. Create a function to take generated images as inputs and return a .GIF file to visualise the progress of the training. Call the function.
+
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+## Observations
+
+### Train input
+
+### Plot of the Generator and Discriminator loss
+
+
+### Plot of the SSIM
+
+
+### GIF of the generated images.
+
+
+### single image generation with a sample noise.
+
+
 
 
 ```python
 
 ```
 
-* Step 1. Title For each experiment there must be a title or heading. Remember to include the date and who conducted the experiment.
-* Step 2. Aim
-             There must be an aim stating what this experiment intends to do or find out.
-* Step 3. Hypothesis
-             A prediction about what you think is going to happen.
-* Step 4. A list of equipment or materials
-            What you use and the quantity of each must be included.
-* Step 5. Method
-             Using steps and explain what happened in each step of the experiment. Remember to state how much (quantity) was added to                    what and where using which apparatus. Include a diagram at the end of the method to show how to set up the equipment or                        apparatus. This has to be detailed enough for someone else to replicate the experiment.
-* Step 6. Results
-             The results and observations of the experiment are recorded here, they can be (preferably) in table, list or paragraph form.
+
+```python
+
+```
+
 * Step 7. Discussion or Analysis
              Write down what you discovered about the experiment, including what was difficult or went wrong. The focus of your discussion                    should be based around what you think your results show about the experiment. You can include ideas for further experiments, an              explanation of problems and how to overcome them.
 * Step 8. Conclusion
