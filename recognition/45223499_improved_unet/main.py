@@ -28,4 +28,16 @@ def lis_files(path, names):
         image = image.replace('\\', '/')
         lis += [image]
     return lis
+image_name = os.listdir(imag_input)[1:2595]
+list_input = lis_files(imag_input, image_name)
+imag_output = os.listdir(imag_output)[1:2595]
+list_output = lis_files(output, imag_output)
+
+# divide dataset into train, test and validation datasets
+train_X = list_input[:1558]
+val_X = list_input[1558:2076]
+test_X = list_input[2076:2594]
+train_y = list_output[:1558]
+val_y = list_output[1558:2076]
+test_y = list_output[2076:2594]
 
