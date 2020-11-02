@@ -13,7 +13,7 @@ from PIL import Image
 from matplotlib import pyplot
 import glob
 from keras.optimizers import Adam
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Flatten, Conv2D, Conv2DTranspose, Dropout
 from keras.layers import Reshape, LeakyReLU, BatchNormalization
 import os
@@ -254,12 +254,50 @@ dataset = load_real_samples()
 # train model
 train(g_model, d_model, gan_model, dataset, latent_size)
 
-#Compute SSIM similarity
-pred_img = tf.convert_to_tensor(X)
-true_img = load_images(folder_images, 25)
-true_img = tf.convert_to_tensor(true_img)
-pred_i = tf.image.convert_image_dtype(pred_img, tf.float32)
-true_i = tf.image.convert_image_dtype(true_img, tf.float32)
-ssim2 = tf.image.ssim(pred_i, true_i, max_val=1)
-final_result = tf.reduce_mean(tf.cast(ssim2, dtype=tf.float32))
-print("SSIM is: ", final_result)
+# create input for the generator
+def create_latent_points(latent_size, n_samples, n_classes=10):
+    # generate points in the latent space
+    x_input = randn(latent_size * n_samples)
+    # reshape into a batch of inputs for the network
+    z_input = x_input.reshape(n_samples, latent_size)
+    return z_input
+
+# create a plot of generated images
+def plot_generated(examples, n):
+    # plot images
+    for i in range(n * n):
+        # define subplot(n rows, n cols, index)
+        pyplot.subplot(n, n, 1 + i)
+        # turn off axis
+        pyplot.axis('off')
+        # plot raw pixel data
+        pyplot.imshow(examples[i, :, :])
+    pyplot.show()
+    
+# make prediction and return tensor format for evaluation
+def plot_predict(pred_model, latent_size, n_samp):
+  model = load_model(pred_model)
+  # generate images
+  latent_points = create_latent_points(latent_size, n_samp)
+  # generate images
+  X  = model.predict(latent_points)
+  # scale from [-1,1] to [0,1]
+  X = (X + 1) / 2.0
+  # plot the result
+  plot_generated(X, 5)
+  return tf.convert_to_tensor(X)
+
+# evaluation, use SSIM similarityx
+def eval_predict(pred_ds, true_ds, size, max_val=1):
+  true_img = load_images(true_ds, 2500)
+  true_img = tf.convert_to_tensor(true_img)
+  pred_i = tf.image.convert_image_dtype(pred_ds, tf.float32)
+  true_i = tf.image.convert_image_dtype(true_img, tf.float32)
+  #print("pred_i, true_i", len(pred_i), len(true_i))
+  ssim2 = tf.image.ssim(pred_i, true_i, max_val=1)
+  final_result = tf.reduce_mean(tf.cast(ssim2, dtype=tf.float32))
+  print("SSIM is: ", final_result)
+
+# both the test set and ground truth have 2500 images
+pred_result = plot_predict("generator_model_050.h5", 2500, 2500)
+eval_predict(pred_result, folder_images, 2500, 1)
