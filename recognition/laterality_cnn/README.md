@@ -3,89 +3,33 @@ In order to laterally classify the OAI AKOA knee data set, a Convolution Neural 
 
 ```python
 (input: 228 x 260 dimenson images)
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 2 x [Convolution (32 filters, (3 x 3) kernel size, relu activation)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Max Pooling ((2 x 2) pool size)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Dropout (0.2 rate)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 2 x [Convolution (64 filters, (3 x 3) kernel size, relu activation)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Max Pooling ((2 x 2) pool size)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Dropout (0.2 rate)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 2 x [Convolution (128 filters, (3 x 3) kernel size, relu activation)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Max Pooling ((2 x 2) pool size)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Dropout (0.2 rate)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Flatten ()]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 [Dense (128 units, relu activation)]
-```
-<pre>
- &#8595;
-</pre>
-```python
-[Dropout (0.25 rate)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
+[Dropout (0.5 rate)]
+  ↓
 [Dense (<num_classes> units, softmax activation)]
-```
-<pre>
- &#8595;
-</pre>
-```python
+  ↓
 (output: logits of probability distribution over <num_classses> classes)
 ```
 ## Pre-requisites
