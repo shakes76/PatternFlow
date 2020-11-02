@@ -90,3 +90,30 @@ def plot_model_history(model_history):
     axs[1].set_xticks(np.arange(1,len(model_history.history['loss'])+1),len(model_history.history['loss'])/10)
     axs[1].legend(['train', 'val'], loc='best')
     plt.show()
+
+# plot test images, masks and predict masks
+import matplotlib.pyplot as plt
+#test_X
+plt.figure(figsize=(10, 10))
+for i in range(8):
+    ax = plt.subplot(1, 8, i+1)
+    plt.imshow(test_X[i])
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+plt.show()
+#test_y
+plt.figure(figsize=(10, 10))
+for i in range(8):
+    ax = plt.subplot(1, 8, i+1)
+    plt.imshow(test_y[i])
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+plt.show()
+# predict_test
+plt.figure(figsize=(10, 10))
+for i in range(8):
+    ax = plt.subplot(1, 8, i+1)
+    plt.imshow(np.round(pred_test[i]))
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+plt.show() 
