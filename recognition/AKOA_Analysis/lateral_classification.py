@@ -59,7 +59,7 @@ def train(images, shape, epochs):
     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.ylim([0.5, 1])
+    plt.ylim([0.5, 1.1])
     plt.legend(loc='lower right')    
     plt.savefig('graphs/accuracy.png')
 
