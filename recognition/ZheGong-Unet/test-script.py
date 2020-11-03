@@ -35,7 +35,7 @@ def process_path(image_fp,mask_fp):
 def display(display_list):
     plt.figure(figsize=(10,10))
     for i in range(len(display_list)):
-        plt.subplot(1,len(display_list),i+1)
+        plt.subplot(1,len(display_list), i + 1)
         plt.imshow(display_list[i],cmap='gray')
         plt.axis('off')
     plt.show()
@@ -44,7 +44,7 @@ def show_pridicts(ds,num):
     for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis,...])
         pred_mask = tf.argmax(pred_mask[0],axis=-1)
-        display([tf.squeeze(image),tf.argmax(mask,axis=-1),pred_mask])
+        display([tf.squeeze(image),tf.argmax(mask, axis=-1),pred_mask])
 
 def prediction(ds):
     pred=[]
@@ -88,14 +88,14 @@ test_ds=test_ds.map(process_path)
 val_ds=val_ds.map(process_path)
 
 model = model.unet_model(10,channel=2)
-model.compile(optimizer = keras.optimizers.Adam(lr=5.0e-4), loss = 'categorical_crossentropy', metrics=dice_coef)
-model.fit(train_ds.batch(10),epochs=10,validation_data=val_ds.batch(10))
+model.compile(optimizer = keras.optimizers.Adam(lr = 5.0e-4), loss = 'categorical_crossentropy', metrics=dice_coef)
+model.fit(train_ds.batch(10), epochs=10, validation_data = val_ds.batch(10))
 
 # Show examples of prediction
 show_pridicts(test_ds,3)
 
 # Evaluate performence of prediction
-pred,true=prediction(test_ds)
-dice = dice_coefficient(true,pred,smooth=1)
+pred,true = prediction(test_ds)
+dice = dice_coefficient(true, pred, smooth = 1.)
 
 print(float(dice))
