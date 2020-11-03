@@ -1,7 +1,7 @@
 # Improved UNet for ISICs Data
 __**Created by Matthew Costello, 45314838**__
 
-This is my implementation of ['the improved UNet'][https://arxiv.org/pdf/1802.10508v1.pdf], adapted for 2D binary class segmentation. It is a convolutional neural network that outputs an original image as a mask, segmented into white and black. Specifcally, the parameters of this model were tuned for the [ISIC 2018 challenge data for skin cancer][https://challenge2018.isic-archive.com/] - this model is capable of segmenting skin lesions with an **average [Dice similarity coefficient][https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient] of about 0.95** (example outputs visualised below).
+This is my implementation of ['the improved UNet'](https://arxiv.org/pdf/1802.10508v1.pdf), adapted for 2D binary class segmentation. It is a convolutional neural network that outputs an original image as a mask, segmented into white and black. Specifcally, the parameters of this model were tuned for the [ISIC 2018 challenge data for skin cancer](https://challenge2018.isic-archive.com/) - this model is capable of segmenting skin lesions with an **average [Dice similarity coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) of about 0.95** (example outputs visualised below).
 
 Explain how model works
 
