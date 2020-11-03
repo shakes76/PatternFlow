@@ -141,8 +141,8 @@ class IsicsUnet:
         # encoder/downsampling
         input_size = (256, 192, 3)
         inputs = tf.keras.Input(input_size)
-        conv1 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(256, 192, 3))(inputs)
-        conv1 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(254, 190, 32))(conv1)
+        conv1 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu')(inputs)
+        conv1 = tf.keras.layers.Conv2D(32, (3, 3), activation='relu')(conv1)
         pool1 = tf.keras.layers.MaxPool2D((2, 2))(conv1)
 
         conv2 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(pool1)

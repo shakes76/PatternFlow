@@ -37,7 +37,7 @@ def main():
     model.build_model()
 
     model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                        loss=tf.keras.losses.BinaryCrossentropy,
+                        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                         metrics=['accuracy'])
 
     history = model.model.fit(x=model.train_ds,
