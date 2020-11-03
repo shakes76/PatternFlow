@@ -18,7 +18,7 @@ class IsicsUnet:
         self.train_ds = None
         self.val_ds = None
         self.model = None
-        self.batch_size = 128
+        self.batch_size = 16
 
     @staticmethod
     def map_fn(image, mask):
@@ -39,7 +39,7 @@ class IsicsUnet:
         # load mask
         m = tf.io.read_file(mask)
         m = tf.image.decode_png(m, channels=1)
-        m = tf.image.resize(m, (256, 192))  # resize all masks to min size
+        m = tf.image.resize(m, (164, 100))  # resize all masks to min size
 
         # normalize mask to [0,1]
         m = tf.cast(m, tf.float32) / 255.0
