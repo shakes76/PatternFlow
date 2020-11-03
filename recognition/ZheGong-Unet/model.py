@@ -93,15 +93,15 @@ def unet_model(f,channel=4):
   # seg1
   conv = tf.keras.layers.Conv2D(8*f, (3, 3), padding='same')(up4)
   conv = tf.keras.layers.LeakyReLU(0.01)(conv)
-  conv = tf.keras.layers.Conv2D(4, (1, 1), padding='same')(conv)
+  conv = tf.keras.layers.Conv2D(channel, (1, 1), padding='same')(conv)
   conv = tf.keras.layers.LeakyReLU(0.01)(conv)
   
   # seg2
-  up4_ = tf.keras.layers.Conv2D(4, (1, 1), padding='same')(up4_)
+  up4_ = tf.keras.layers.Conv2D(channel, (1, 1), padding='same')(up4_)
   up4_ = tf.keras.layers.LeakyReLU(0.01)(up4_)
 
   # seg3
-  up3_ = tf.keras.layers.Conv2D(4, (1, 1), padding='same')(up3_)
+  up3_ = tf.keras.layers.Conv2D(channel, (1, 1), padding='same')(up3_)
   up3_ = tf.keras.layers.LeakyReLU(0.01)(up3_)
 
   # element-wise sum of seg1, seg2 and seg3
@@ -110,6 +110,6 @@ def unet_model(f,channel=4):
   up4_ = tf.keras.layers.UpSampling2D(size=(2, 2))(up4_)
   conv = conv + up4_
 
-  output = tf.keras.layers.Conv2D(4, (1, 1), activation='softmax')(conv)
+  output = tf.keras.layers.Conv2D(channel, (1, 1), activation='softmax')(conv)
   model = keras.Model(inputs=inputs,outputs=output)
   return model
