@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 # Import all the necessary libraries
@@ -39,23 +39,14 @@ from skimage.morphology import label
 from sklearn.model_selection import train_test_split
 
 
-# In[3]:
+# In[2]:
 
 
 # check the tf version
 print("Tensorflow Version: ", tf.keras.__version__)
 
 
-# In[4]:
-
-
-# initialising the compression dimensions
-img_width = 256
-img_height = 256
-border = 5
-
-
-# In[5]:
+# In[3]:
 
 
 # loading the dataset 
@@ -66,7 +57,7 @@ print("Number of images in features folder = ", len(isic_labels))
 print("Number of images in labels folder = ", len(isic_labels))
 
 
-# In[6]:
+# In[4]:
 
 
 # sorting of data with respect to labels
@@ -74,49 +65,63 @@ isic_features_sort = sorted(isic_features)
 isic_labels_sort = sorted(isic_labels)
 
 
-# In[7]:
+# In[5]:
 
 
-# function for loading the training input dataset
+# initialising the compression dimensions
+img_width = 256
+img_height = 256
+border = 5
+
+
+# In[6]:
+
+
+# get and resize the training input dataset
 def load_features(inp_path, ids):
-    X = np.zeros((len(ids), img_height,img_width,1), dtype = np.float32)
+    """ This function loads the data from training input folder into grayscale mode 
+    and normalizes the features to 0 and 1 """
+    X = np.zeros((len(ids), img_height, img_width, 1), dtype = np.float32)
     for n, id_ in tqdm_notebook(enumerate(ids), total = len(ids)): # capture all the images ids using tqdm       
-        img = load_img(inp_path + id_, color_mode = 'grayscale') # load images here
+        # load the image
+        img = load_img(inp_path + id_, color_mode = 'grayscale') 
         x_img = img_to_array(img) # convert images to array
         x_img = resize(x_img, (256,256,1), mode = 'constant', preserve_range = True)
         X[n] = x_img/255 # normalize the images
     return X    
 
 
-# In[8]:
+# In[9]:
 
 
 # function for loading the training groundtruth dataset
-def load_labels(inp_path,ids):
+def load_labels(inp_path, ids):
+    """ This function loads the data from training groundtruth folder into grayscale mode """
     X = np.zeros((len(ids), img_height, img_width,1), dtype = np.uint8)
     for n, id_ in tqdm_notebook(enumerate(ids), total = len(ids)): # capture all the images ids using tqdm 
-        img = load_img(inp_path + id_,color_mode = 'grayscale') # load images here
+        # load the image
+        img = load_img(inp_path + id_,color_mode = 'grayscale') 
         x_img = img_to_array(img) # convert images to array
         x_img = resize(x_img,(256,256,1),mode = 'constant', preserve_range = True)
         X[n] = x_img
     return X
 
 
-# In[9]:
+# In[10]:
 
 
 # Loading the images for the training input data set
 X_isic_train = load_features("D:/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/", isic_features_sort)
 
 
-# In[10]:
+# In[11]:
 
 
 # Loading the images for the training groundtruth data set
 y_isic_train=load_labels("D:/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/", isic_labels_sort)
 
 
-# In[11]:
+# In[12]:
 
 
 # train-validation-test split
@@ -127,6 +132,7 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 
 # In[13]:
 
 
+# normalizing the labels to 0 and 1 
 y_train_sc = y_train//255
 y_test_sc = y_test//255
 y_val_sc = y_val//255
@@ -135,37 +141,39 @@ y_val_sc = y_val//255
 # In[14]:
 
 
-# one hot encoding
+# one hot encoding 
 y_train_encode = to_categorical(y_train_sc) 
 y_test_encode = to_categorical(y_test_sc) 
 y_val_encode = to_categorical(y_val_sc) 
 
 
-# In[17]:
+# In[15]:
 
 
 def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
+    """ This function is used to add 2 convolutional layers with the parameters passed to it"""
+    
     # first layer
-    layer = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size), kernel_initializer = "he_normal", padding = "same")(input_tensor)
-    # It draws samples from a truncated normal distribution centered on 0 
+    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size), kernel_initializer = "he_normal", padding = "same")(input_tensor)
     if batchnorm:
-        layer = BatchNormalization()(layer)
-    layer = Activation("relu")(layer)
+        x = BatchNormalization()(x) # it draws samples from a truncated normal distribution centered on 0 to normalize the outputs from previous layers
+    x = Activation("relu")(x)
     
     # second layer
-    layer = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size), kernel_initializer = "he_normal", padding = "same")(input_tensor)
+    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size), kernel_initializer = "he_normal", padding = "same")(input_tensor)
     if batchnorm:
-        layer = BatchNormalization()(layer)
-    layer = Activation("relu")(layer)
-    
-    return layer
+            x = BatchNormalization()(x) # it draws samples from a truncated normal distribution centered on 0 to normalize the outputs from previous layers
+    x = Activation("relu")(x)    
+    return x
 
 
-# In[18]:
+# In[16]:
 
 
 def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
-    # contracting path - reduce enoder part
+    """ This function is used to generate and define the U-Net architecture - Encoder and Decoder"""
+    
+    # contracting path 
     c1 = conv2d_block(input_img, n_filters = n_filters*1, kernel_size = 3, batchnorm = batchnorm)
     p1 = MaxPooling2D((2, 2)) (c1)
     p1 = Dropout(dropout)(p1)
@@ -184,7 +192,7 @@ def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
     
     c5 = conv2d_block(p4, n_filters = n_filters*16, kernel_size = 3, batchnorm = batchnorm)
     
-    # expansive path - Decoder part
+    # expansive path 
     u6 = Conv2DTranspose(n_filters*8, (3, 3), strides = (2, 2), padding = 'same') (c5)
     u6 = concatenate([u6, c4])
     u6 = Dropout(dropout)(u6)
@@ -210,41 +218,45 @@ def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
     return model
 
 
-# In[15]:
+# In[17]:
 
 
 # dice coeffient
 def dice_coeffient(y_true, y_pred, smooth = 1):
+    """ this function is used to gauge the similarity of two samples """
     intersect = K.sum(K.abs(y_true * y_pred), axis = [1,2,3])
     union = K.sum(y_true,[1,2,3]) + K.sum(y_pred,[1,2,3]) - intersect
     coeff_dice = K.mean((intersect + smooth) / (union + smooth), axis = 0)
     return coeff_dice
 
 
-# In[16]:
+# In[18]:
 
 
+# dice loss function
 def dice_loss(y_true, y_pred, smooth = 1):
     return 1 - dice_coeffient(y_true, y_pred, smooth = 1)
-
-
-# In[19]:
-
-
-input_img = Input((img_height, img_width, 1), name = 'img')
-model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True)
-model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeff])
 
 
 # In[20]:
 
 
-model.summary()
+input_img = Input((img_height, img_width, 1), name = 'img')
+model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True)
+# compiling the model with Adam optimizer and dice loss
+model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeffient])
 
 
 # In[21]:
 
 
+model.summary()
+
+
+# In[22]:
+
+
+# A callback is a set of functions to be applied at given stages of the training procedure.
 callbacks = [
     EarlyStopping(patience = 10, verbose = 1),
     ReduceLROnPlateau(factor = 0.1, patience = 5, min_lr = 0.00001, verbose = 1),
@@ -252,17 +264,18 @@ callbacks = [
 ]
 
 
-# In[22]:
+# In[23]:
 
 
 results = model.fit(X_train, y_train_encode, batch_size = 32, epochs = 60, callbacks = callbacks, validation_data = (X_val, y_val_encode))
 
 
-# In[23]:
+# In[24]:
 
 
+# plot for training loss and validation loss wrt epochs
 plt.figure(figsize = (8, 8))
-plt.title("dice coefficient")
+plt.title("dice loss")
 plt.plot(results.history["loss"], label = "training_loss")
 plt.plot(results.history["val_loss"], label = "validation_loss")
 plt.plot( np.argmin(results.history["val_loss"]), np.min(results.history["val_loss"]), marker = "x", color = "r", label = "best model")
@@ -271,10 +284,10 @@ plt.ylabel("Loss")
 plt.legend();
 
 
-# In[24]:
+# In[25]:
 
 
-# Plotting the training and validation accuracy with respect to epochs
+# plot for training accuracy and validation accuracy wrt epochs
 plt.figure(figsize = (8,8))
 plt.title("Classification Accuracy")
 plt.plot(results.history["accuracy"],label = "training_accuracy")
@@ -284,32 +297,35 @@ plt.xlabel("Epochs")
 plt.legend();
 
 
-# In[25]:
-
-
-# load the best model
-model.load_weights('ISIC_model.h5')
-test_preds = model.predict(X_test,verbose = 1) # predict the model
-test_preds_max = np.argmax(test_preds,axis = -1)
-
-
 # In[26]:
 
 
+# load best model
+model.load_weights('ISIC_model.h5')
+
+
+# In[30]:
+
+
+# predict on model
+test_preds = model.predict(X_test,verbose = 1) 
+test_preds_max = np.argmax(test_preds,axis = -1)
 n,h,w,g = y_test.shape
 test_preds_reshape = test_preds_max.reshape(n,h,w,g)
 
 
-# In[27]:
+# In[31]:
 
 
 def plot_ISIS(X, y, Y_pred,ix = None):
+    """ this function returns the input image, true image and predicted image"""
     if ix is None:
         ix = random.randint(0, len(X))
     else:
         ix = ix    
 
     fig, ax = plt.subplots(1, 3, figsize = (20, 10))
+    
     ax[0].imshow(X[ix, ..., 0], cmap = 'gray')
     ax[0].contour(X[ix].squeeze(), colors = 'k', levels = [0.5])
     ax[0].set_title('Input Image')
@@ -323,8 +339,15 @@ def plot_ISIS(X, y, Y_pred,ix = None):
     ax[2].set_title('Predicted Image')
 
 
-# In[28]:
+# In[36]:
 
 
+# Check if testing data looks all right
 plot_ISIS(X_test,y_test,test_preds_reshape)
+
+
+# In[ ]:
+
+
+
 
