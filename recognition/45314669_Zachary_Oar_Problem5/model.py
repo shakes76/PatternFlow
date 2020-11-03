@@ -98,13 +98,20 @@ def make_model():
     upconv2 = upsampling_module(local1, 64, context3)
 
     local2 = localisation_module(upconv2, 64)
+    seg1 = leaky_relu_conv(local2, 16, size=(1, 1))
+    seg1 = keras.layers.UpSampling2D((2, 2))(seg1)
     upconv3 = upsampling_module(local2, 32, context2)
 
     local3 = localisation_module(upconv3, 32)
+    seg2 = leaky_relu_conv(local3, 16, size=(1,1))
+    seg2 = keras.layers.add([seg2, seg1])
+    seg2 = keras.layers.UpSampling2D((2, 2))(seg2)
     upconv4 = upsampling_module(local3, 16, context1)
 
     end_conv = leaky_relu_conv(upconv4, 32)
-    conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(end_conv)
+    seg3 = leaky_relu_conv(end_conv, 16, size=(1, 1))
+    seg3 = keras.layers.add([seg3, seg2])
+    conv_out = keras.layers.Conv2D(2, (1,1), padding="same", activation="softmax")(seg3)
 
     model = keras.Model(inputs=input_layer, outputs=conv_out)
     model.compile(optimizer = keras.optimizers.Adam(),
