@@ -28,7 +28,7 @@ def process_path(image_fp,mask_fp):
     image = tf.cast(image,tf.float32)/255.0
     
     mask = decode_png(mask_fp)
-    mask = mask == [0,85,170,255]
+    mask = mask == [0, 255]
     mask = tf.cast(mask,tf.float32)
     return image,mask
 
@@ -56,18 +56,22 @@ def prediction(ds):
     return pred,true
 
 # Download dataset
-dataset_url="https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download"
+dataset_url="https://cloudstor.aarnet.edu.au/sender/download.php?token=f0d763f9-d847-4150-847c-e0ec92d38cc5&files_ids=10200257"
 data_path = tf.keras.utils.get_file(origin=dataset_url,fname="keras_png_slices_data.zip")
 with zipfile.ZipFile(data_path) as zf:
     zf.extractall()
 
 # Get the images and return the sorted list
-train_images=sorted(glob.glob('keras_png_slices_data/keras_png_slices_train/*.png'))
-val_images=sorted(glob.glob('keras_png_slices_data/keras_png_slices_validate/*.png'))
-test_images=sorted(glob.glob('keras_png_slices_data/keras_png_slices_test/*.png'))
-train_masks=sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_train/*.png'))
-val_masks=sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_validate/*.png'))
-test_masks=sorted(glob.glob('keras_png_slices_data/keras_png_slices_seg_test/*.png'))
+train_images_total=sorted(glob.glob('ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
+train_masks_total=sorted(glob.glob('ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
+
+# Divided the dataset into training set, validation set and test set
+train_images=train_images_total[0:int(0.7*len(train_images_total))]
+val_images=train_images_total[int(0.7*len(train_images_total)):int(0.9*len(train_images_total))]
+test_images=train_images_total[int(0.9*len(train_images_total)):]
+train_masks=train_masks_total[0:int(0.7*len(train_masks_total))]
+val_masks=train_masks_total[int(0.7*len(train_masks_total)):int(0.9*len(train_masks_total))]
+test_masks=train_masks_total[int(0.9*len(train_masks_total)):]
 
 # Load dataset
 train_ds = tf.data.Dataset.from_tensor_slices((train_images,train_masks))
@@ -84,12 +88,12 @@ test_ds=test_ds.map(process_path)
 val_ds=val_ds.map(process_path)
 
 
-model = model.unet_model(10,channel=4)
+model = model.unet_model(10,channel=2)
 model.compile(optimizer = keras.optimizers.Adam(lr=5.0e-4), loss = 'categorical_crossentropy', metrics=dice_coef)
-model.fit(train_ds.batch(10),epochs=1,validation_data=val_ds.batch(10))
+model.fit(train_ds.batch(10),epochs=10,validation_data=val_ds.batch(10))
 
 # Show examples of prediction
-show_pridicts(test_ds,4)
+show_pridicts(test_ds,3)
 
 # Evaluate performence of prediction
 pred,true=prediction(test_ds)

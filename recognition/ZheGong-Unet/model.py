@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 
-def unet_model(f,channel=4):
+def unet_model(f,channel):
 
   # Block1
   inputs = keras.Input(shape=(256,256,1))
