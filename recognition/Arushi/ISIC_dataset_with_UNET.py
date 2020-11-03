@@ -259,6 +259,79 @@ results = model.fit(X_train, y_train_encode, batch_size=32, epochs=60, callbacks
                     validation_data=(X_val, y_val_encode))
 
 
+# In[23]:
+
+
+plt.figure(figsize=(8, 8))
+plt.title("categorical_crossentropy")
+plt.plot(results.history["loss"], label="training_loss")
+plt.plot(results.history["val_loss"], label="validation_loss")
+plt.plot( np.argmin(results.history["val_loss"]), np.min(results.history["val_loss"]), marker="x", color="r", label="best model")
+plt.xlabel("Epochs")
+plt.ylabel("loss")
+plt.legend();
+
+
+# In[24]:
+
+
+# Plotting the training and validation accuracy with respect to epochs
+plt.figure(figsize=(8,8))
+plt.title("Classification Accuracy")
+plt.plot(results.history["accuracy"],label="training_accuracy")
+plt.plot(results.history["val_accuracy"],label="validation_accuracy")
+plt.plot(np.argmin(results.history["val_accuracy"]),np.max(results.history["val_accuracy"]),marker="x",color="r",label="best model")
+plt.xlabel("Epochs")
+plt.legend();
+
+
+# In[25]:
+
+
+# load the best model
+model.load_weights('model-ISIC.h5')
+test_preds=model.predict(X_test,verbose=1) # predict the model
+test_preds_max=np.argmax(test_preds,axis=-1)
+
+
+# In[26]:
+
+
+n,h,w,g=y_test.shape
+test_preds_reshape=test_preds_max.reshape(n,h,w,g)
+
+
+# In[27]:
+
+
+def plot_ISIS(X, y, Y_pred,ix=None):
+    if ix is None:
+        ix = random.randint(0, len(X))
+    else:
+        ix = ix
+    
+
+    fig, ax = plt.subplots(1, 3, figsize=(20, 10))
+    ax[0].imshow(X[ix, ..., 0], cmap='gray')
+    ax[0].contour(X[ix].squeeze(), colors='k', levels=[0.5])
+    ax[0].set_title('Input Image')
+    
+    
+    ax[1].imshow(y[ix, ..., 0], cmap='gray')
+    ax[1].contour(y[ix].squeeze(), colors='k', levels=[0.5])
+    ax[1].set_title('True Image')
+    
+    ax[2].imshow(Y_pred[ix, ..., 0], cmap='gray')
+    ax[2].contour(Y_pred[ix].squeeze(), colors='k', levels=[0.5])
+    ax[2].set_title('Predicted Image')
+
+
+# In[28]:
+
+
+plot_ISIS(X_test,y_test,test_preds_reshape)
+
+
 # In[ ]:
 
 
