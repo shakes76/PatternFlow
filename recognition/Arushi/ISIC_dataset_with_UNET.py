@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[2]:
 
 
 # Import all the Libraries
@@ -34,14 +34,14 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.utils import to_categorical
 
 
-# In[4]:
+# In[3]:
 
 
 # check the version
 print("Tensorflow Version: ", tf.keras.__version__)
 
 
-# In[5]:
+# In[4]:
 
 
 # Initialising the compression dimensions
@@ -50,7 +50,7 @@ img_height =256
 border = 5
 
 
-# In[6]:
+# In[5]:
 
 
 # Loading the dataset 
@@ -61,14 +61,14 @@ print("Number of images in features folder = ", len(isic_labels))
 print("Number of images in labels folder = ", len(isic_labels))
 
 
-# In[7]:
+# In[6]:
 
 
 isic_features_sort = sorted(isic_features) # Sorting of data wit respect to labels
 isic_labels_sort = sorted(isic_labels) # Sorting of data wit respect to labels
 
 
-# In[8]:
+# In[7]:
 
 
 def load_features(inp_path,ids):
@@ -81,7 +81,7 @@ def load_features(inp_path,ids):
     return X    
 
 
-# In[9]:
+# In[8]:
 
 
 def load_labels(inp_path,ids):
@@ -94,35 +94,35 @@ def load_labels(inp_path,ids):
     return X
 
 
-# In[10]:
+# In[9]:
 
 
 # Loading the images for the training input data set
 X_isic_train = load_features("D:/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/",isic_features_sort)
 
 
-# In[11]:
+# In[10]:
 
 
 # Loading the images for the training groundtruth data set
 y_isic_train=load_labels("D:/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/",isic_labels_sort)
 
 
-# In[12]:
+# In[11]:
 
 
 # train-test split
 X_train, X_test, y_train, y_test = train_test_split(X_isic_train, y_isic_train, test_size = 0.20, random_state = 42)
 
 
-# In[13]:
+# In[12]:
 
 
 # train-val-test split
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25, random_state = 42)
 
 
-# In[14]:
+# In[13]:
 
 
 y_train_sc = y_train//255
@@ -130,7 +130,7 @@ y_test_sc = y_test//255
 y_val_sc = y_val//255
 
 
-# In[15]:
+# In[14]:
 
 
 # one hot encoding
@@ -139,7 +139,7 @@ y_test_encode = to_categorical(y_test_sc)
 y_val_encode = to_categorical(y_val_sc) 
 
 
-# In[16]:
+# In[15]:
 
 
 # Dice Coeffient
@@ -151,14 +151,14 @@ def dice_coeff(y_true, y_pred, smooth=1):
     return coeff_dice
 
 
-# In[17]:
+# In[16]:
 
 
 def dice_loss(y_true, y_pred, smooth = 1):
     return 1 - dice_coeff(y_true, y_pred, smooth = 1)
 
 
-# In[18]:
+# In[17]:
 
 
 def conv2d_block(input_tensor, n_filters, kernel_size=3, batchnorm=True):
@@ -178,7 +178,7 @@ def conv2d_block(input_tensor, n_filters, kernel_size=3, batchnorm=True):
     return layer
 
 
-# In[19]:
+# In[18]:
 
 
 def get_unet(input_img, n_filters=16, dropout=0.1, batchnorm=True):
@@ -227,7 +227,7 @@ def get_unet(input_img, n_filters=16, dropout=0.1, batchnorm=True):
     return model
 
 
-# In[20]:
+# In[19]:
 
 
 input_img = Input((img_height, img_width, 1), name='img')
@@ -236,10 +236,27 @@ model = get_unet(input_img, n_filters=16, dropout=0.05, batchnorm=True)
 model.compile(optimizer=Adam(), loss=dice_loss, metrics=["accuracy",dice_coeff])
 
 
-# In[21]:
+# In[20]:
 
 
 model.summary()
+
+
+# In[21]:
+
+
+callbacks = [
+    EarlyStopping(patience=10, verbose=1),
+    ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.00001, verbose=1),
+    ModelCheckpoint('model-ISIC.h5', verbose=1, save_best_only=True, save_weights_only=True)
+]
+
+
+# In[22]:
+
+
+results = model.fit(X_train, y_train_encode, batch_size=32, epochs=60, callbacks=callbacks,
+                    validation_data=(X_val, y_val_encode))
 
 
 # In[ ]:
