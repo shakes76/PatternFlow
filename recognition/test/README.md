@@ -33,11 +33,10 @@ Alogrithm
    *Loss Function:  
 	- dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
 	- dice_coef_loss:  loss=dice_coef_loss   
-![Getting Started](img.png)(D:\PatternFlow\recognition\test\images\model_summary.png, "model_summary")     
 
 Visualization  
 --------------------------------------------------------------------------------------------------
-![Getting Started](img.png)(D:\PatternFlow\recognition\test\results.png, "results")
+![Getting Started](img.png)
 
 
 
