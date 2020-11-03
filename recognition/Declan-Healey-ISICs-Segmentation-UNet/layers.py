@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import *
 import numpy as np
 import os
 
-def unet(input_size = (256, 256, 3)):
+def unet(input_size = (256, 256, 1)):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -44,7 +44,7 @@ def unet(input_size = (256, 256, 3)):
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-    conv10 = Conv2D(4, 1, activation = 'softmax')(conv9)
+    conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
     model = Model(inputs = inputs, outputs = conv10)
 

@@ -3,14 +3,15 @@ import glob
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from layers import *
+from IPython.display import clear_output
 
 print('TensorFlow version:', tf.__version__)
 
 images = sorted(glob.glob("C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2\*.jpg"))
 masks = sorted(glob.glob("C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2\*.png"))
 
-X_train, X_test, y_train, y_test = train_test_split(images, masks, test_size = 0.3, random_state = 42)
-X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size = 0.5, random_state = 42)
+X_train, X_test, y_train, y_test = train_test_split(images, masks, test_size = 0.2)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25)
 
 train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train))
 test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test))
@@ -57,9 +58,21 @@ def display(display_list):
         plt.axis('off')
     plt.show()
 
-for image, mask in train_ds.take(1):
-    display([tf.squeeze(image), tf.squeeze(mask)])
+# for image, mask in train_ds.take(1):
+#     display([tf.squeeze(image), tf.squeeze(mask)])
 
 model = unet()
-model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history = model.fit(train_ds.batch(3), epochs = 3, validation_data = val_ds.batch(32))
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+def show_predictions(ds, num = 1):
+    for image, mask in ds.take(num):
+        pred_mask = model.predict(image[tf.newaxis, ...])[0]
+        display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+
+
+class DisplayCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs = None):
+        clear_output(wait=True)
+        show_predictions(val_ds)
+
+history = model.fit(train_ds.batch(8), epochs = 10, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
