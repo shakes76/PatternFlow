@@ -31,7 +31,7 @@ There are 4 important adjustments:
 # Dependencies
 
 ### Usage of the ImprovedUnet_Demo.py file
-In order run the demo for a deep understanding of whole project, we must download the dataset which is given by our tutor. The download link is "https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5". There is a 3GB zip file called "ISIC2018_Task1-2_Training_Data.zip". After decompressing this zip file, there will be two files called "ISIC2018_Task1-2_Training_Input_x2" and "ISIC2018_Task1_Training_GroundTruth_x2".
+In order run the demo for a deep understanding of whole project, we must download the dataset which is given by our tutor. The download link is "https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5". There is a 3GB zip file called "ISIC2018_Task1-2_Training_Data.zip". After decompressing this zip file, there will be two files called "ISIC2018_Task1-2_Training_Input_x2" and "ISIC2018_Task1_Training_GroundTruth_x2". Also, this file will show the log of whole project.
 
 ### Usage of use improved_Unet_model.py file
 It will return a improved U-net model. which is a tensorflow object. This model is realized by referring to the above ideas. The input size is (256,256,3).
