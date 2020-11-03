@@ -19,11 +19,15 @@ Output
 ----------------------------------------------------------------------------------------------------------------------------------------
 ### 1. example pictures of prediction
 
-![Getting Started](img.png)
+![Getting Started](png/img.png)
 
 ### 2. The process for fitting training set and validation set
 
+![Getting Started](png/img2.png)
+
 ### 3. The result of the evaluation for the model on test data
+
+![Getting Started](png/img3.png)
 
 
 
