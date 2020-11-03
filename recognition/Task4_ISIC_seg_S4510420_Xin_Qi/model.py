@@ -114,7 +114,7 @@ class improved_UNET(object):
         return self.model.predict(raw_images)
     
     def show_result(self, raw_image, ground_truth, save_name = 'result.jpg'):
-        predict_result = self.predict(raw_image)
+        predict_result = self.predict(raw_image[np.newaxis,:,:,:])
 
         plt.figure(figsize=(16, 16))
         plt.subplot(1,3,1)

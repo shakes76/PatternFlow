@@ -4,6 +4,7 @@ import tensorflow as tf
 import zipfile
 import glob
 import random
+import numpy as np
 
 from model import *
 
@@ -86,14 +87,14 @@ def main():
 
     # plot the raw_image, ground truth and predict result together to check the actual performance
     # pick one image randomly from training set, validation set and testing set respectively.
-    train_image, train_mask = next(iter(train_ds.batch(400)))
-    new_Unet.show_result(train_image[100], train_mask[100], 'train_set_result.jpg')
+    train_image, train_mask = next(iter(train_ds.batch(50)))
+    new_Unet.show_result(train_image[30], train_mask[30], 'train_set_result.jpg')
 
-    val_image, val_mask = next(iter(val_ds.batch(400)))
-    new_Unet.show_result(val_image[100], val_mask[100], 'val_set_result.jpg')
+    val_image, val_mask = next(iter(val_ds.batch(50)))
+    new_Unet.show_result(val_image[10], val_mask[10], 'val_set_result.jpg')
 
-    test_image, test_mask = next(iter(test_ds.batch(394)))
-    new_Unet.show_result(test_image[100], test_mask[100], 'test_set_result.jpg')
+    test_image, test_mask = next(iter(test_ds.batch(50)))
+    new_Unet.show_result(test_image[20], test_mask[20], 'test_set_result.jpg')
 
 if __name__ == "__main__":
     main()
