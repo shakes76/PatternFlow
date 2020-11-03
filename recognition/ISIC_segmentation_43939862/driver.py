@@ -67,9 +67,6 @@ plt.show()
 
 #Build model
 model = ImprovedUnet(h, w, n_channels)
-for layer in model.layers:
-    if isinstance(layer, tf.keras.layers.Conv2D):
-        layer.add_loss(lambda: tf.keras.regularizers.l2(0.001)(layer.kernel))
 model.summary()
 
 #Compile model
