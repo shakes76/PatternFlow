@@ -1,9 +1,9 @@
 """
-ISIC 2018
+Imports the ISIC data set, as well as the U-Net model specified in solution.py.
+Uses the U-Net to build a convolutional neural network to segment the ISIC data.
 
 @author Max Hornigold
 """
-
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -33,10 +33,12 @@ def dice_coefficient_loss(y_true, y_pred):
 
 
 def compute_dice_coefficients(model, ds):
-    """Compute the minimum and the average dice coefficient for all predictions"""
+    """Compute the minimum and the average dice coefficient for all predictions
+    in the provided dataset"""
     DCEs = []
     for image, mask in ds:
         pred_mask = model.predict(image[tf.newaxis, ...])
+        pred_mask = tf.math.round(pred_mask)
         DCE = dice_coefficient(mask, pred_mask)
         DCEs.append(DCE)
     print("Minimum Dice Coefficient = ", min(DCEs))
@@ -44,7 +46,7 @@ def compute_dice_coefficients(model, ds):
 
 
 def display(display_list):
-    """Display plots"""
+    """Display provided plots"""
     plt.figure(figsize=(10, 6))
     for i in range(len(display_list)):
         plt.subplot(1, len(display_list), i+1)
@@ -54,25 +56,25 @@ def display(display_list):
 
 
 def display_data(ds, n=1):
-    """Display the image and mask from a given dataset"""
+    """Display n images and masks from a given dataset"""
     for image, mask in ds.take(n):
         display([tf.squeeze(image), tf.squeeze(mask)])
 
 
 def display_predictions(model, ds, n=1):
-    """"Make n predictions using the model and the given dataset"""
+    """"Make n predictions using the model and the given dataset and display
+    these predictions"""
     for image, mask in ds.take(n):
         pred_mask = model.predict(image[tf.newaxis, ...])
+        pred_mask = tf.math.round(pred_mask)
         display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
 
 
 def analyse_training_history(history):
-    """Plot the acuraccy and val accuracy of the model as it trains"""
+    """Plot the acuraccy and validation accuracy of the model as it trains"""
     plt.figure(figsize=(10, 6))
-    #plt.plot(history.history['accuracy'], label='accuracy')
-    #plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-    plt.plot(history.history['dice_coefficient'], label='dice_coefficient')
-    plt.plot(history.history['val_dice_coefficient'], label = 'val_dice_coefficient')
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.ylim([0, 1])
@@ -81,14 +83,16 @@ def analyse_training_history(history):
 
 
 class DisplayCallback(tf.keras.callbacks.Callback):
+    """Classed called when training the model"""
     
     def on_epoch_end(self, epoch, logs=None):
+        """At the end of each epoch, display a prediction"""
         clear_output(wait=True)
         display_predictions(model, val_ds, n=1)
 
 
 def decode_png(file_path):
-    """Decodes a png image"""
+    """Decodes and resizes a png image"""
     png = tf.io.read_file(file_path)
     png = tf.image.decode_png(png, channels=1)
     png = tf.image.resize(png, (256, 256))
@@ -96,7 +100,7 @@ def decode_png(file_path):
 
 
 def decode_jpg(file_path):
-    """Decodes a jpeg image"""
+    """Decodes and resizes a jpeg image"""
     jpg = tf.io.read_file(file_path)
     jpg = tf.image.decode_jpeg(jpg, channels=1)
     jpg = tf.image.resize(jpg, (256, 256))
@@ -104,14 +108,12 @@ def decode_jpg(file_path):
 
 
 def process_path(image_fp, mask_fp):
-    
+    """Process sn image and a mask by decoding and normalising them"""
     image = decode_jpg(image_fp)
     image = tf.cast(image, tf.float32) / 255.0
-
     mask = decode_png(mask_fp)
     mask = tf.cast(mask, tf.float32) / 255.0
     mask = tf.math.round(mask)
-    
     return image, mask
 
 
@@ -128,12 +130,12 @@ def import_ISIC_data():
     num_val = math.ceil(0.2*num_images)
     num_test = math.ceil(0.2*num_images)
     
-    # Split the images into train, validate and test datasets
+    # split the images into train, validate and test datasets
     train_images = [images[i] for i in range(0, num_training)]
     val_images = [images[i] for i in range(num_training, num_training + num_val)]
     test_images = [images[i] for i in range(num_training + num_val, num_training + num_val + num_test)]
 
-    # Split the masks into train, validate and test datasets
+    # split the masks into train, validate and test datasets
     train_masks = [masks[i] for i in range(0, num_training)]
     val_masks = [masks[i] for i in range(num_training, num_training + num_val)]
     test_masks = [masks[i] for i in range(num_training + num_val, num_training + num_val + num_test)]
@@ -157,7 +159,6 @@ def import_ISIC_data():
     return train_ds, val_ds, test_ds
 
 
-
 # import the data
 train_ds, val_ds, test_ds = import_ISIC_data()
    
@@ -165,22 +166,22 @@ train_ds, val_ds, test_ds = import_ISIC_data()
 display_data(train_ds, n=1)
    
 # create the model
-model = unet_model(1, f=6)
+model = unet_model()
     
 # show a summary of the model
 print(model.summary())
 
 # compile the model
 model.compile(optimizer='adam',
-              loss='binary_crossentropy', # dice_coefficient_loss binary_crossentropy
-              metrics=[dice_coefficient]) # accuracy dice_coefficient_loss binary_crossentropy
+              loss='binary_crossentropy', # or dice_coefficient_loss
+              metrics=['accuracy']) # or dice_coefficient
 
 # specify batch sizes
 train_batch_size = 32
 val_batch_size = 32
 
 # specify number of epochs
-num_epochs = 20
+num_epochs = 100
 
 # train the model
 history = model.fit(train_ds.batch(train_batch_size), 
@@ -188,17 +189,11 @@ history = model.fit(train_ds.batch(train_batch_size),
                     validation_data=val_ds.batch(val_batch_size),
                     callbacks=[DisplayCallback()])
 
-# save the model
-#model.save("filepath")
-
-# or I could just load the model
-#tf.keras.models.load_model("filepath")
-
 # analyse history of training the model
 analyse_training_history(history)
 
 # plot some predictions
-display_predictions(model, test_ds, n=1)
+display_predictions(model, test_ds, n=3)
 
 # compute dice similarity coefficients predictions
 compute_dice_coefficients(model, test_ds)

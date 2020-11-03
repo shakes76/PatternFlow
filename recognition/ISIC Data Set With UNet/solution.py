@@ -1,5 +1,5 @@
 """
-Unet Model
+A U-Net Model, with an unspecified number of output channels.
 
 @author Max Hornigold
 """
@@ -7,7 +7,7 @@ Unet Model
 import tensorflow as tf
 from tensorflow.keras import layers
 
-def unet_model(output_channels, f=6):
+def unet_model(f=16):
     """Creates and returns a UNET model"""
     
     inputs = tf.keras.layers.Input(shape=(256, 256, 1))
@@ -54,7 +54,7 @@ def unet_model(output_channels, f=6):
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
     
     # This is the last layer of the model.
-    outputs = layers.Conv2D(output_channels, 1, activation='sigmoid')(u1)
+    outputs = layers.Conv2D(1, 1, activation='sigmoid')(u1)
     
     # Create model using the layers
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
