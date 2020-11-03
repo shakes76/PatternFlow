@@ -94,4 +94,5 @@ show_pridicts(test_ds,4)
 # Evaluate performence of prediction
 pred,true=prediction(test_ds)
 dice = dice_coefficient(true,pred,smooth=1)
+
 print(float(dice))
