@@ -26,7 +26,7 @@ Therefore in an Improved Unet there is a context pathway that encodes abstract f
 * Then the model is built with 50 epochs and batch size 32. 
 
 #### Training accuracy vs Validation accuracy
-![Train_vs_Val_Accuracy](images/Train_vs_Val_Accuracy.png)
+![Train_vs_Val_Accuracy](images/Train_vs_Val_Accuracy.PNG)
 
 ### Results
 
@@ -35,11 +35,11 @@ Therefore in an Improved Unet there is a context pathway that encodes abstract f
 * One image from the prediction was plotted
 
 #### Prediction Image
-![Prediction](images/Prediction.png)
+![Prediction](images/Prediction.PNG)
 
 The corresponding test label image 
 #### Test Label Image
-![Testlabel](images/Testlabel.png)
+![Testlabel](images/Testlabel.PNG)
 
 ### Dice coefficient
 * In order to check the performance of the model, dice coefficient was used 
