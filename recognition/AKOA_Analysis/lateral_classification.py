@@ -52,6 +52,11 @@ def train(images, shape, epochs):
     model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy', 'mse'])
 
     history = model.fit(X_train, y_train, epochs=epochs, validation_split=0.2)
+
+    test_loss, test_accm, test_mse = model.evaluate(X_test,  y_test, verbose=2)
+    
+    print('test_loss:', test_loss)
+    print('test_accm:', test_accm)
     
 if __name__ == '__main__':
     main()
