@@ -73,8 +73,8 @@ class InfoVAE():
         return self.decode(eps, apply_sigmoid=True)
 
     def encode(self, x):
-        mean, logvar = tf.split(self.encoder(x), 2, 1)
-        return mean, logvar
+        mean = tf.split(self.encoder(x), 2, 1)
+        return mean
 
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
@@ -82,7 +82,7 @@ class InfoVAE():
 
     def decode(self, z, apply_sigmoid=False):
         logits = self.decoder(z)
-        if apply_sigmoid:
-            probs = tf.sigmoid(logits)
-            return probs
+        # if apply_sigmoid:
+        #     probs = tf.sigmoid(logits)
+        #     return probs
         return logits
