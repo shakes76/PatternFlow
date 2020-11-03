@@ -53,6 +53,16 @@ def train(images, shape, epochs):
 
     history = model.fit(X_train, y_train, epochs=epochs, validation_split=0.2)
 
+    #Plot accuracy and validation accuracy
+    
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.ylim([0.5, 1])
+    plt.legend(loc='lower right')    
+    plt.savefig('graphs/accuracy.png')
+
     test_loss, test_accm, test_mse = model.evaluate(X_test,  y_test, verbose=2)
     
     print('test_loss:', test_loss)
