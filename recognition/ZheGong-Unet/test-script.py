@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import glob
 import zipfile
 import numpy as np
-from PIL import Image
 import model
 
 # Dice coefficient metric
