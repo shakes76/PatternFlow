@@ -131,6 +131,10 @@ class IsicsUnet:
         # visualise (sanity check) loaded image and mask data
         self.visualise_loaded_data()
 
+        # set up batching
+        self.train_ds = self.train_ds.batch(32)
+        self.val_ds = self.val_ds.batch(32)
+
     def build_model(self):
         """
         Build the U-Net model using TensorFlow functional API
@@ -139,46 +143,50 @@ class IsicsUnet:
         # encoder/downsampling
         input_size = (256, 192, 3)
         inputs = tf.keras.Input(input_size)
-        conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(inputs)
-        conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv1)
+        conv1 = tf.keras.layers.Conv2D(32, 3, activation='relu')(inputs)
+        conv1 = tf.keras.layers.Conv2D(32, 3, activation='relu')(conv1)
         pool1 = tf.keras.layers.MaxPooling2D()(conv1)
 
-        conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu')(pool1)
-        conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv2)
+        conv2 = tf.keras.layers.Conv2D(64, 3, activation='relu')(pool1)
+        conv2 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv2)
         pool2 = tf.keras.layers.MaxPooling2D()(conv2)
 
-        conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu')(pool2)
-        conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv3)
+        conv3 = tf.keras.layers.Conv2D(128, 3, activation='relu')(pool2)
+        conv3 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv3)
         pool3 = tf.keras.layers.MaxPooling2D()(conv3)
 
-        conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(pool3)
-        conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv4)
-        pool4 = tf.keras.layers.MaxPooling2D()(conv4)
+        #conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(pool3)
+        #conv4 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv4)
+        #pool4 = tf.keras.layers.MaxPooling2D()(conv4)
 
-        # middle/bottleneck
-        conv5 = tf.keras.layers.Conv2D(256, 3, activation='relu')(pool4)
+        # middle/bridge/bottleneck/shared layer
+        conv5 = tf.keras.layers.Conv2D(256, 3, activation='relu')(pool3)
         conv5 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv5)
 
         # decoder/upsampling
-        up6 = tf.keras.layers.UpSampling2D()(conv5)
-        # TODO: copy and crop required here?
-        conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(up6)
-        conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv6)
+        #up6 = tf.keras.layers.UpSampling2D()(conv5)
+        #conv4 = tf.keras.layers.Cropping2D(cropping=((16, 8)))(conv4)
+        #up6 = tf.keras.layers.concatenate([conv4, up6], axis=4)
+        #conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(up6)
+        #conv6 = tf.keras.layers.Conv2D(512, 3, activation='relu')(conv6)
 
-        up7 = tf.keras.layers.UpSampling2D()(conv6)
-        # TODO: copy and crop required here?
-        conv7 = tf.keras.layers.Conv2D(256, 3, activation='relu')(up7)
-        conv7 = tf.keras.layers.Conv2D(256, 3, activation='relu')(conv7)
+        up7 = tf.keras.layers.UpSampling2D()(conv5)
+        conv3 = tf.keras.layers.Cropping2D(cropping=(48, 32))(conv3)
+        up7 = tf.keras.layers.concatenate([conv3, up7])
+        conv7 = tf.keras.layers.Conv2D(128, 3, activation='relu')(up7)
+        conv7 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv7)
 
         up8 = tf.keras.layers.UpSampling2D()(conv7)
-        # TODO: copy and crop required here?
-        conv8 = tf.keras.layers.Conv2D(128, 3, activation='relu')(up8)
-        conv8 = tf.keras.layers.Conv2D(128, 3, activation='relu')(conv8)
+        conv2 = tf.keras.layers.Cropping2D(cropping=(86, 54))(conv2)
+        up8 = tf.keras.layers.concatenate([conv2, up8])
+        conv8 = tf.keras.layers.Conv2D(64, 3, activation='relu')(up8)
+        conv8 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv8)
 
         up9 = tf.keras.layers.UpSampling2D()(conv8)
-        # TODO: copy and crop required here?
-        conv9 = tf.keras.layers.Conv2D(64, 3, activation='relu')(up9)
-        conv9 = tf.keras.layers.Conv2D(64, 3, activation='relu')(conv9)
+        conv1 = tf.keras.layers.Cropping2D(cropping=(166, 102))(conv1)
+        up9 = tf.keras.layers.concatenate([conv1,up9])
+        conv9 = tf.keras.layers.Conv2D(32, 3, activation='relu')(up9)
+        conv9 = tf.keras.layers.Conv2D(32, 3, activation='relu')(conv9)
 
         # segmentation (output) layer
         outputs = tf.keras.layers.Conv2D(1, 1, activation='softmax')(conv9)
