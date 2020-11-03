@@ -103,9 +103,16 @@ def unet_model(output_channels, f = 64):
     
     return tf.keras.Model(inputs=inputs, outputs=outputs)
 
-def show_predictions(ds, model, num=1):
-    for image, mask in ds.take(num):
-        pred_mask = model.predict(image[tf.newaxis, ...])
-        pred_mask = tf.argmax(pred_mask[0], axis=-1)
-        display([tf.squeeze(image), tf.argmax(mask, axis=-1), pred_mask])
-        
+def predictions(data, model, num=4):
+    image_batch, mask_batch = next(iter(data.batch(num)))
+    predict = model.predict(image_batch)
+    plt.figure(figsize = (11, 11))
+    for i in range(num):
+        plt.subplot(2, num, i+1)
+        plt.imshow(image_batch[i])
+        plt.axis('off')
+    plt.figure(figsize = (11, 11))
+    for i in range(num):
+        plt.subplot(2, num, i+1)
+        plt.imshow(tf.argmax(predict[i], axis=-1), cmap = 'gray')
+        plt.axis('off')
