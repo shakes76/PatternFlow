@@ -39,5 +39,19 @@ def train(images, shape, epochs):
 
     X_train, X_test, y_train, y_test = train_test_split(image, label, test_size=0.25, random_state=42)
     
+    #Create model
+
+    model = models.Sequential()
+    model.add(layers.InputLayer(input_shape=shape))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(32, activation='relu'))
+    model.add(layers.Dense(2))
+
+    model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+
+    history = model.fit(X_train, y_train, epochs=epochs, validation_split=0.2)
+    
 if __name__ == '__main__':
     main()
