@@ -158,7 +158,8 @@ def implot_show_predict(ds):
     # using imshow to vertify correctly load and process data
     title = ['Input Image', 'True Mask', 'Predicted Mask']
     for input_img, mask_img in ds:
-        pred_mask = improved_unet_model.predict(input_img)
+        input_img_pred = tf.expand_dims(input_img, axis=0)
+        pred_mask = improved_unet_model.predict(input_img_pred)
         display_list = [input_img, mask_img, pred_mask[0]]
         plt.figure(figsize=(12, 12))
         for i in range(len(display_list)):
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     print("Tensorflow version:", tf.__version__)
 
     # parameters
-    EPOCHS = 200
+    EPOCHS = 300
     BATCH_SIZE = 32
     STEPS_PER_EPOCH =1815//BATCH_SIZE
 
