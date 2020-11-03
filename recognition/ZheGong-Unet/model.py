@@ -1,4 +1,8 @@
 import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import LeakyReLU
 def unet_model(f,channel=4):
     # Block1
     inputs = keras.Input(shape=(256,256,1))
@@ -82,5 +86,5 @@ def unet_model(f,channel=4):
     conv = conv + up4_
 
     output = tf.keras.layers.Conv2D(channel, (1, 1), activation='softmax')(conv)
-    model=keras.Model(inputs=inputs,outputs=output)
+    model = keras.Model(inputs=inputs,outputs=output)
     return model

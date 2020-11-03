@@ -1,13 +1,12 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import datasets, layers, models
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import LeakyReLU
 import matplotlib.pyplot as plt
 import glob
 import zipfile
 import numpy as np
 from PIL import Image
+import model
 
 def dice_coefficient(y_true, y_pred, smooth=1.):
     y_true_f = tf.keras.backend.flatten(y_true)
