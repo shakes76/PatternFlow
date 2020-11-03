@@ -6,6 +6,7 @@ An example prediction is shown below. From left to right we have: the original s
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
 </p>
+<p align="center">Prediction made using U-Net model. Dice Similarity Coefficient = ???</p>
 
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
 
@@ -64,18 +65,16 @@ This image is shown below.
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
 </p>
-
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(1).png">
 </p>
-
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(2).png">
 </p>
-
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(4).png">
 </p>
+<p align="center">Example Images from the training dataset</p>
 
 ### Creating the Model & Outputting Structure
 
@@ -170,6 +169,7 @@ After training was complete, I analysed the training history by ploting how the 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
 </p>
+<p align="center">Training history of model after each epoch</p>
 
 ### Making Predictions
 Next, I displayed some predictions I made. Three such prediciton are shown below.
@@ -189,6 +189,7 @@ Next, I displayed some predictions I made. Three such prediciton are shown below
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165531.png">
 </p>
+<p align="center">Good predictions made using the model</p>
 
 As you can see, these are all really good predictions, and in my opinion are very usable. The dice similarity coefficients for these predictions are: ???, ???, and ???. This supports the accuracy of this prediction.
 
@@ -200,6 +201,7 @@ However, not all predictions are this good. For example, take a look at the foll
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(15).png">
 </p>
+<p align="center">Poor predictions made using the model</p>
 
 The dice similarity coefficient of this prediciton is ?????. This is clearly not a usable prediction.
 
