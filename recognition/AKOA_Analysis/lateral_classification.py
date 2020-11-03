@@ -47,9 +47,9 @@ def train(images, shape, epochs):
     model.add(layers.Flatten())
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
-    model.add(layers.Dense(2))
+    model.add(layers.Dense(1, activation='sigmoid'))
 
-    model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+    model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy', 'mse'])
 
     history = model.fit(X_train, y_train, epochs=epochs, validation_split=0.2)
     
