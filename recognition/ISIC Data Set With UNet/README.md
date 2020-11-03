@@ -3,7 +3,9 @@ This is my solution to the ISIC data set using a U-Net model. The aim of this so
 
 An example prediction is shown below. From left to right we have: the original skin lesion image, the correct segmentation, my model's predicted segmentation.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png)
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
+</p>
 
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
 
@@ -59,10 +61,21 @@ Below is an outline of how I used the model to segment the ISIC data set using t
 When we run the driver script, the first thing it does it output an example image and mask from the training dataset.
 This image is shown below.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png)
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(1).png)
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(2).png)
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(4).png)
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
+</p>
+
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(1).png">
+</p>
+
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(2).png">
+</p>
+
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(4).png">
+</p>
 
 ### Creating the Model & Outputting Structure
 
@@ -154,32 +167,41 @@ I used a training and validating batch size of 32.
 ### Analysing the Training History
 After training was complete, I analysed the training history by ploting how the training dice coefficient and validating dice coefficients changed over each epoch. The plot of the training history is shown below. We can clearly see the training dice coefficient and validation dice coefficient converge over time.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png)
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
+</p>
 
 ### Making Predictions
 Next, I displayed some predictions I made. Three such prediciton are shown below.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png)
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
+</p>
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(10).png">
+</p>
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(13).png">
+</p>
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(9).png">
+</p>
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165531.png">
+</p>
 
-
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(10).png)
-
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(13).png)
-
-
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(9).png)
-
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165531.png)
-
-As you can see, these are all really good predictions, and in my opinion are very usable. The dice similarity coefficients for these predictions are: _____, ____, and _____. This supports the accuracy of this prediction.
+As you can see, these are all really good predictions, and in my opinion are very usable. The dice similarity coefficients for these predictions are: ???, ???, and ???. This supports the accuracy of this prediction.
 
 However, not all predictions are this good. For example, take a look at the following prediction.
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20162140%20(102).png)
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20162140%20(102).png">
+</p>
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(15).png">
+</p>
 
-![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(15).png)
-
-The dice similarity coefficient of this prediciton is _____. This is clearly not a usable prediction.
+The dice similarity coefficient of this prediciton is ?????. This is clearly not a usable prediction.
 
 ### Analysing Dice Similarity Coefficient of Model
 Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.79369396. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
