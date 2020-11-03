@@ -5,8 +5,8 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.layers.experimental.preprocessing import Rescaling
 from tensorflow.keras.models import load_model
 import math
-from matplotlib import pyplot as plt
 from .VAE import VAE
+
 
 # Calculate the similarity between the original test images and the generated images.
 def calculate_ssim(predictions, test_sample):
@@ -103,8 +103,10 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
             train_step(model, x_train, optimizer)
         # feed the network test samples to generate new images
         predictions = model.generate_images(model, test_dataset)
-        # display the results
-        display_result(predictions)
+
+        # display the results. You may use this line to plot the generated images if matplotlib is allowed
+        # display_result(predictions)
+
         loss = Mean()
         for test_x in test_dataset:
             loss(calculate_loss(model, test_x))
@@ -159,4 +161,23 @@ if __name__ == '__main__':
     model, elbos, ssims = train(model, train_dataset, test_dataset, epochs, optimizer)
     # save the trained models
     save_model(model, 'encoder.h5', 'decoder.h5')
-    
+
+    # plot the ssim and elbo.
+    # uncomment the following if matplotlib is supported
+    """
+    from matplotlib import pyplot as plt
+    xs = range(0, 31)
+	plt.figure(figsize=(13, 5))
+	plt.subplot(1, 2, 1)
+	plt.title('SSIM of Each Epoch')
+	plt.plot(xs, ssims)
+	plt.xlabel('Epoch')
+	plt.ylabel('SSIM')
+	plt.subplot(1, 2, 2)
+	plt.title('ELBO of Each Epoch')
+	plt.plot(xs, elbos, color='orange')
+	plt.xlabel('Epoch')
+	plt.ylabel('ELBO')
+	fig.tight_layout()
+	"""
+
