@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow.keras.backend as K
 import glob
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -34,7 +35,7 @@ def decode_mask(path):
     img = tf.image.resize(img, [256, 256])
     img = tf.cast(img, tf.float32) / 255.0
     img = tf.math.round(img)
-    img = tf.cast(img, tf.uint8)
+    # img = tf.cast(img, tf.uint8)
     return img
 
 def process_path(image_path, mask_path):
@@ -61,12 +62,27 @@ def display(display_list):
 # for image, mask in train_ds.take(1):
 #     display([tf.squeeze(image), tf.squeeze(mask)])
 
+def dice_coefficient(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection) / (K.sum(y_true_f) + K.sum(y_pred_f))
+
+
+# def dice_distance(y_true, y_pred):
+#     print(1.0 - dice_coefficient(y_true, y_pred))
+#     return 1.0 - dice_coefficient(y_true, y_pred)
+
 model = unet()
-model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+# model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = [dice_coefficient])
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coefficient])
 
 def show_predictions(ds, num = 1):
     for image, mask in ds.take(num):
+        # pred_mask = model.predict(image)
         pred_mask = model.predict(image[tf.newaxis, ...])[0]
+        print(tf.squeeze(mask))
+        print(tf.squeeze(pred_mask))
         display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
 
 
@@ -75,4 +91,5 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         clear_output(wait=True)
         show_predictions(val_ds)
 
+# history = model.fit(train_ds.batch(8), epochs = 30, validation_data = val_ds.batch(8))
 history = model.fit(train_ds.batch(8), epochs = 10, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
