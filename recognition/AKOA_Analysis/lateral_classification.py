@@ -15,5 +15,17 @@ def train(images, shape, epochs):
     filelist = glob.glob(images)
     image = np.array([np.array(Image.open(fname)) for fname in filelist])
     
+    #Create label
+
+    label = []
+
+    #Populate label list
+
+    for fname in filelist:
+        if 'right' in fname.lower():
+            label.append(0)
+        elif 'left' in fname.lower():
+            label.append(1)
+    
 if __name__ == '__main__':
     main()
