@@ -70,7 +70,6 @@ Altogether, there are 23 convolutional layers of varied number of feature channe
 
 <div style="text-align: justify">As mentioned earlier, a separate test set was used for evaluating the model’s predictive performance. For assessing the model performance with the test set, each pixel’s predicted mask (label) is compared with that in the ground truth. There are many techniques available for this sort of comparison. One of the most widely used techniques is Dice Similarity Coefficient (DSC), which can be determined by twice intersection divided by union (very similar to F1-score). For getting the class-wise DSC, both ground truth image and predicted image masks (labels) were one hot encoded and then, the aforesaid method was applied. Both class-wise and overall DSC of the built U-net are appended below:</div>
 
-**DSC Achieved by the UNet Model**
 Category | DSC
 ---------| -----------
 Background | 0.9447
