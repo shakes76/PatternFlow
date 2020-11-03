@@ -1,7 +1,7 @@
 # **COMP3710 Report**
 The report is to build the generative model of OAI AKOA knee dataset using DCGAN algorithm. The structure of the model is presented in the appendix in the form of images (call plot _model function of tensorflow). Before fixing this difficult problem, I build an Improved Unet for problem 1 (segmentation of OASIS brain dataset). The structure and result of Unet is shown in appendix, too.
 
-> **Dependency:**
+>## **Dependencies:**
 - Python = 3.7
 - Tensorflow = 2.3.0
 - IPython
@@ -11,9 +11,7 @@ The report is to build the generative model of OAI AKOA knee dataset using DCGAN
 - glob
 
 
->**DCGAN for OAI AKOA dataset**
-
-**DCGAN Discription:**
+>## **DCGAN Discription:**
 
 I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. I have already contacted the construction of the GAN model during Demo2. This time I completed DCGAN on the basis of GAN. According to the DCGAN paper, the characteristics of my model are:
 1. Use convolutional layers instead of fully connected layers
@@ -24,15 +22,15 @@ I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. 
 6. I try to add batch normalization function into generator and discriminator. But the performance is bad. So in the end I did not use this function.
 7. Save the model design part separately in Model_DCGAN.py, and call the model in DCGAN_OAI.py.
 
-**Data split:**
+>## **Data Split:**
 
 I use 15000 images to train the model. During training, the batch size is set to be 128. In each batch, half to it is used to generate real samples. While half to it is used to generate fake samples. Finally, form a batch of weight updates together.
 
-**Evaluation method:**
+>## **Evaluation Method:**
 
 I used the built-in SSIM function of tensorflow. It just needs to pass in the tensors of the two sets of images to be compared to get the result.
 
-**Output and Performance:**
+>## **Output and Performance:**
 
 After 50 epochs based on 15000 images the prediction result is plot as follow:
 
@@ -42,14 +40,8 @@ This result is clear but the SSIM result is not good enough which is 0.28.
 
 Output is shown as follow:
 SSIM is:  tf.Tensor(0.27565268, shape=(), dtype=float32)
->**Appendix**
 
-**Structure of DCGAN**
-1. Generator
-![Getting Started](./resources/Generator.png)
-2. Discriminator
-![Getting Started](./resources/Discriminator.png)
-3. DCGAN![Getting Started](./resources/Gan.png)
+# **Appendix**
 
 >**Improved unet for egmentation of OASIS dataset**
 
@@ -62,7 +54,7 @@ The aim of this problem is to use improved unet to complete the segmentation of 
 
 I use the same data split method to traditional Unet. According to the OASIS dataset. According to the OASIS data set, I transfer data from different folders to train, test and validation variables. Use train dataset and validation dataset to fit the model. Then the train loss and accuracy of each epoch, as well as the validation loss and accuracy is printed as output.
 
-**Evaluation method:**
+**Evaluation Method:**
 
 I write a function to cumpute the dice similarity coefficient at the end of the model. At the beginning, I took this evaluation function as a parameter of metrics. But it doesn't work (System hint: unknown metric function). So I keep using accuracy during compile step and write seperate function to evaluate at the end.
 
@@ -76,3 +68,18 @@ Besides, the val_accuracy is 0.9866.
 Example of prediction visualisation is as follow:
 
 ![Getting Started](./resources/ImprovedUnetPredict.png)
+
+
+>**Structure of DCGAN**
+1. Generator
+
+<img src="./resources/Generator.png" width = "40%"/>
+
+
+2. Discriminator
+
+<img src="./resources/Discriminator.png" width = "40%"/>
+
+3. Gan
+
+<img src="./resources/Gan.png" width = "40%"/>
