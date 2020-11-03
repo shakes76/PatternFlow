@@ -3,7 +3,7 @@ The report is to build the generative model of OAI AKOA knee dataset using DCGAN
 
 > **Dependency:**
 - Python = 3.7
-- Tensorflow = 2.1.0
+- Tensorflow = 2.3.0
 - IPython
 - Matplotlib
 - PIL
@@ -25,7 +25,7 @@ I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. 
 
 **Data split:**
 
-I read all of images in OAI dataset. Then I use 15000 images to train the model. During training, the batch size is set to be 128. In each batch, half to it is used to generate real samples. While half to it is used to generate fake samples. Finally, form a batch of weight updates together.
+I use 15000 images to train the model. During training, the batch size is set to be 128. In each batch, half to it is used to generate real samples. While half to it is used to generate fake samples. Finally, form a batch of weight updates together.
 
 **Evaluation method:**
 
@@ -37,7 +37,7 @@ After 50 epochs based on 15000 images, the prediction result is plot as follow:
 
 ![Getting Started](DCGANPredict.png)
 
-This result is clear but the SSIM result is not good enough which is 0.11.
+This result is clear but the SSIM result is not good enough which is 0.28.
 
 >**Appendix**
 
