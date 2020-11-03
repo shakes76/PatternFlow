@@ -1,3 +1,12 @@
+"""
+Author: Zachary Oar
+Student Number: 45314669
+Course: COMP3710 Semester 2
+Date: November 2020
+
+Model for an Improved UNet to be used for image segmentation.
+"""
+
 from tensorflow import keras
 
 

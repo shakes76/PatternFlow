@@ -1,3 +1,13 @@
+"""
+Author: Zachary Oar
+Student Number: 45314669
+Course: COMP3710 Semester 2
+Date: November 2020
+
+Driver script for an Improved UNet model, which will conduct image segmentation
+on the ISIC 2018 Challenge dataset.
+"""
+
 from sklearn.model_selection import train_test_split
 import numpy as np
 import tensorflow as tf
@@ -127,7 +137,7 @@ test_gen = SequenceGenerator(x_test, y_test, 4)
 
 # train the model
 model = make_model()
-model.fit(train_gen, validation_data=val_gen, epochs=20)
+model.fit(train_gen, validation_data=val_gen, epochs=15)
 
 # evaluate the model on the test set
 model.evaluate(test_gen)
