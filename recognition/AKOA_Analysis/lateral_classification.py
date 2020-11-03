@@ -24,7 +24,11 @@ def train(images, shape, epochs):
     for fname in filelist:
         if 'right' in fname.lower():
             label.append(0)
+        elif 'R_I_G_H_T' in fname:
+            label.append(0)
         elif 'left' in fname.lower():
+            label.append(1)
+        elif 'L_E_F_T' in fname:
             label.append(1)
     
 if __name__ == '__main__':
