@@ -8,4 +8,4 @@ import tensorflow as tf
 print('Tensorflow version:', tf.__version__)
 
 def test():
-    print("Testing.")
+    print("Testing improved unet.")
