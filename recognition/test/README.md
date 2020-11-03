@@ -36,7 +36,7 @@ Alogrithm
 
 Visualization  
 --------------------------------------------------------------------------------------------------
-![Getting Started](img.png)(D:\PatternFlow/recognition/test/images)
+![Getting Started](img.png)
 
 
 
