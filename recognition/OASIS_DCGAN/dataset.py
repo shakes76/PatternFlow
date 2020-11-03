@@ -6,15 +6,15 @@ from config import Config
 
 def read_dataset(switch='train'):
     if switch == 'test':
-        image_list = os.listdir(Config.test_dir)
-        prefix = Config.test_dir + '/'
+        image_list = os.listdir(Config.TEST_DIR)
+        prefix = Config.TEST_DIR + '/'
     elif switch == 'valid':
-        image_list = os.listdir(Config.val_dir)
-        prefix = Config.val_dir + '/'
+        image_list = os.listdir(Config.VALID_DIR)
+        prefix = Config.VALID_DIR + '/'
     else:  # switch == 'train
-        image_list = os.listdir(Config.train_dir)
-        prefix = Config.train_dir + '/'
-    print('Maximum images size:', len(image_list), 'and Expected images size:', Config.BUFFER_SIZE)
+        image_list = os.listdir(Config.TRAIN_DIR)
+        prefix = Config.TRAIN_DIR + '/'
+    print('Maximum images size:', len(image_list), 'and Used images size:', min(Config.BUFFER_SIZE, len(image_list)))
 
     x = np.empty([min(Config.BUFFER_SIZE, len(image_list)), Config.IMG_SIZE[0], Config.IMG_SIZE[1], 1])
 

@@ -54,8 +54,7 @@ def generate_and_save_images(model, epoch, test_input):
         plt.subplot(4, 4, i + 1)
         plt.imshow(((predictions[i] + 1.0) / 2.0 * 255), cmap='gray')
         plt.axis('off')
-        # set image_name
-        plt.savefig('gen_fig\image_at_epoch_{:03d}.jpg'.format(epoch))
+        plt.savefig('gen_im\image_at_epoch_{:03d}.jpg'.format(epoch))
         plt.pause(0.25)
     plt.pause(2)
 
