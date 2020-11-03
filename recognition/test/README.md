@@ -10,7 +10,9 @@ Description
 This report illustrates how to train a U-Net for OASIS brain tumor segmentation, using a minimum   
 Dice similarity coefficient of 0.9 on the test dataset. The data is consist of MR images  
 of the 300+ human brains with accompanying segmentations, which we need to download from Cloidstore   
-with the link 'https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download'.
+with the link 'https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download'.  
+
+There are 2 scipt files, a README.md file, and one image file( final results and model_summary)
 
 Environment
 --------------------------------------------------------------------------------------------------
