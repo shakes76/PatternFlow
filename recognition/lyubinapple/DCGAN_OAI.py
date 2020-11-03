@@ -18,7 +18,7 @@ from keras.layers import Dense, Flatten, Conv2D, Conv2DTranspose, Dropout
 from keras.layers import Reshape, LeakyReLU, BatchNormalization
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-
+import Model_DCGAN
 
 def load_images(path, n_images):
     images = list()
@@ -31,6 +31,7 @@ def load_images(path, n_images):
         pixels = asarray(image)
         # save image into list
         images.append(pixels)
+        print("Load images ", fn)
         # stop once we have enough
         if len(images) >= n_images:
             break
@@ -52,86 +53,7 @@ savez_compressed('OAI.npz', images)
 print('Loaded:', images.shape)
 plot_images(images, 5)
 
-# create discriminator model, a binary classification CNN model
-def define_discriminator(ishape=(80,80,3)):
-    model = Sequential()
-    # normal
-    model.add(Conv2D(128, (5,5), padding='same', input_shape=ishape))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization()
-    # downsample to 40x40
-    model.add(Conv2D(128, (5,5), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # downsample to 20x30
-    model.add(Conv2D(128, (5,5), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # downsample to 10x10
-    model.add(Conv2D(128, (5,5), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # downsample to 5x5
-    model.add(Conv2D(128, (5,5), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # use binary classification activation function 
-    model.add(Flatten())
-    model.add(Dropout(0.4))
-    model.add(Dense(1, activation='sigmoid'))
-    model.summary()
-    # compile model, adam stochastic gradient descent
-    # learning rate=0.0002, momentum=0.5
-    opt = Adam(lr=0.0002, beta_1=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
-    
-    return model
-
-    # create generator model, generate 80×80 color image from a point in latent space
-def define_generator(latent_size):
-    model = Sequential()
-    # foundation for 5x5 feature maps
-    n_nodes = 128 * 5 * 5
-    # use fully connected layer to interpret the point in latent space
-    # gan tries to map the input distribution in latent space to generate new output
-    model.add(Dense(n_nodes, input_dim=latent_size))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Reshape((5, 5, 128)))
-    # upsample to 10x10
-    # use transpose convolutional layer to increase the area of activations to 4 times
-    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # upsample to 20x20
-    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # upsample to 40x40
-    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # upsample to 80x80
-    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    # output layer 80x80x3, scale to [-1,1]
-    model.add(Conv2D(3, (5,5), activation='tanh', padding='same'))
-    # no need to compile due to this model is not trained directly
-    model.summary()
-    return model
-
-    # define the combined generator and discriminator model
-# train the generator model weight 
-def define_gan(g_model, d_model):
-    # make weights in the discriminator not trainable
-    # ensure only train and update the model weights in the generator
-    d_model.trainable = False
-    
-    model = Sequential()
-    # combine generator and discriminator model together
-    model.add(g_model)
-    model.add(d_model)
-    model.summary()
-    
-    # compile gan model, adam stochastic gradient descent
-    # learning rate=0.0002, momentum=0.5
-    opt = Adam(lr=0.0002, beta_1=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt)
-    return model
-
-    # load dataset that have pre-processed as np array and rescale
+# load dataset that have pre-processed as np array and rescale
 def load_real_samples():
     data = load('OAI.npz')
     X = data['arr_0']
@@ -149,7 +71,7 @@ def generate_real_samples(dataset, n_samples):
     y = ones((n_samples, 1))
     return X, y
 
-    # create input for the generator
+# create input for the generator
 def create_latent_points(latent_size, n_samples):
     # generate points in the latent space (random normal distribution)
     x_input = randn(latent_size * n_samples)
@@ -157,7 +79,7 @@ def create_latent_points(latent_size, n_samples):
     x_input = x_input.reshape(n_samples, latent_size)
     return x_input
 
-    # use generator model to generate fake examples, with class labels
+# use generator model to generate fake examples, with class labels
 def generate_fake_samples(g_model, latent_size, n_samples):
     # generate points in latent space as a batch of input samples for g_model
     x_input = create_latent_points(latent_size, n_samples)
@@ -202,7 +124,7 @@ def summarize_performance(epoch, g_model, d_model, dataset, latent_size, n_sampl
     fn = 'generator_model_%03d.h5' % (epoch+1)
     g_model.save(fn)
 
-    # train the generator and discriminator
+# train the generator and discriminator
 def train(g_model, d_model, gan_model, dataset, latent_size, ep=50, batch_num=128):
     # each epoch includes about 390 (50000/128) batches
     bat_per_epo = int(dataset.shape[0] / batch_num)
@@ -241,13 +163,13 @@ latent_size = 100
 
 # create discriminator model
 print("create discriminator model ")
-d_model = define_discriminator()
+d_model = Model_DCGAN.define_discriminator()
 
 # create generator model
-g_model = define_generator(latent_size)
+g_model = Model_DCGAN.define_generator(latent_size)
 
 # create gan model (combination of the above two model)
-gan_model = define_gan(g_model, d_model)
+gan_model = Model_DCGAN.define_gan(g_model, d_model)
 
 # load image data
 dataset = load_real_samples()

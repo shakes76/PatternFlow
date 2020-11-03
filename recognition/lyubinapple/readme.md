@@ -2,15 +2,21 @@
 The report is divided into two parts. The first part is to use improved Unet to implement segmentation of OASIS brain dataset. The second part is to build the generative model of OAI AKOA knee dataset using DCGAN algorithm.
 
 The structure of the model is presented in the appendix in the form of images (call plot _model function of tensorflow).
+
+
+> **Dependency:**
+- Python = 3.7
+- Tensorflow = 2.1.0
+- IPython
+- Matplotlib
+- PIL
+- zipfile
+- glob
 >**1. Improved unet for egmentation of OASIS dataset**
 
 **Problem Discription:**
 
 The aim of this problem is to use improved unet to complete the segmentation of the brain MRI images. Improved Unet is a optimization of  Unet. It introduces many new modules, such as location module, context module and segmentation layer. Besides, it uses leaky ReLu instead of ReLu. One thing worth noting is that there are three segmentation layers, and their results are added to get the final output. The dimensions of these three segmentation layers are different. So first upsampling to unify the dimensions, and then add them.
-
-
-**Dependencies:**
-
 
 
 **Data split:**
@@ -53,7 +59,9 @@ I used the built-in SSIM function of tensorflow. It just needs to pass in the te
 **Performance:**
 
 After 50 epochs based on 15000 images, the prediction result is plot as follow:
+
 ![Getting Started](DCGANPredict.png)
+
 This result is clear but the SSIM result is not good enough which is 0.11.
 
 >**Appendix**
