@@ -4,8 +4,8 @@ from tensorflow.keras.metrics import Mean
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.layers.experimental.preprocessing import Rescaling
 from tensorflow.keras.models import load_model
-import math
 from .VAE import VAE
+from matplotlib import pyplot as plt
 
 
 # Calculate the similarity between the original test images and the generated images.
@@ -27,7 +27,8 @@ def calculate_ssim(predictions, test_sample):
 
 # compute the log probability
 def log_normal_pdf(sample, mean, log_var, raxis=1):
-    log_2pi = tf.math.log(2.0 * math.pi)
+    pi = 3.1415926536
+    log_2pi = tf.math.log(2.0 * pi)
     p = -0.5 * ((sample - mean) ** 2.0 * tf.exp(-log_var) + log_var + log_2pi)
     return tf.reduce_sum(p, axis=raxis)
 
@@ -165,7 +166,6 @@ if __name__ == '__main__':
     # plot the ssim and elbo.
     # uncomment the following if matplotlib is supported
     """
-    from matplotlib import pyplot as plt
     xs = range(0, 31)
 	plt.figure(figsize=(13, 5))
 	plt.subplot(1, 2, 1)
