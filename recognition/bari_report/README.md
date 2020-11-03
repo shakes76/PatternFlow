@@ -1,4 +1,4 @@
-<h1 align=justify>UNet Model for Image Segmentation</>
+<h1 align=center>UNet Model for Image Segmentation</h1>
   
 <h2>Introduction</h2>
 
@@ -29,14 +29,14 @@ Deep convolutional neural network has created a huge bang for last couple of yea
 
 <h2>Methods and Algorithm</h2>
 
-### Data Preparation
+### Data Partition
 
-<div align="justify">The dataset used here was a part ISIC 2018 challenge that consists of 2,594 images in both input and ground truth. All the images have a dimension of 511 by 384 pixel, where all the images in ground truth have the binary masks:
+<div style="text-align: justify">The dataset used here was a part ISIC 2018 challenge that consists of 2,594 images in both input and ground truth. All the images have a dimension of 511 by 384 pixel, where all the images in ground truth have the binary masks:</div>
+  
 <pre>0: representing the background of the image, or areas outside the primary lesion
-255: representing the foreground of the image, or areas inside the primary lesion</code></pre>
+255: representing the foreground of the image, or areas inside the primary lesion</pre>
 
-First, the dimension of the images was resized to 256 by 256 pixel and all images were converted to grey scale. In order to normalize the data, the pixel values were divided by 255.0 (the highest pixel value). Since the number of available images is not very large, 70% of the images, i.e. 1,816 images were separated for training the model. As the validation set has an important role in tuning model hyperparameters, 20% of total, i.e. 518 images were allocated in validation set. The remaining 10% of total images (260 in number) were kept aside and used exclusively for evaluating the predictive performance of the developed UNet model. The allocation of images among the train, validation and test set was done following the random selection principle.
-</div>
+<div style="text-align: justify">At first, the dimension of the images was resized to 256 by 256 pixel and all images were converted to grey scale. In order to normalize the data, the pixel values were divided by 255.0 (the highest pixel value). Since the number of available images is not very large, 70% of the images, i.e. 1,816 images were separated for training the model. As the validation set has an important role in tuning model hyperparameters, 20% of total, i.e. 518 images were allocated in validation set. The remaining 10% of total images (260 in number) were kept aside and used exclusively for evaluating the predictive performance of the developed UNet model. The allocation of images among the train, validation and test set was done following the random selection principle.</div>
 
 ### Model Architecture
 
@@ -50,9 +50,29 @@ First, the dimension of the images was resized to 256 by 256 pixel and all image
 
 Altogether, there are 23 convolutional layers of varied number of feature channels.
 
+### Model Compilation and Training
+
+<div style="text-align: justify">The model is compiled with Adam optimizer, as it’s the ability to adapt the learning rate during the course of training the model and is very handy in reaching local and global minima very fast. Besides, ‘binary_crossentropy’ loss was chosen since this is a binary classification problem. In the course of model fitting, callbacks were applied to save best model along with parameter weights, which would be loaded once the training was over. Though the model is expected to be trained in 50 epochs, the training might stop early if loss doesn’t improve in ten consecutive epochs even after lowering the learning rates after 5 epochs.</div>
+
+### Classification Threshold
+
+<div style="text-align: justify">Since the model is trained having a single feature channel (without one hot encoding) in both training and validation set the ground truths, the model prediction provides a single probability value per instance. Hence, setting a threshold is essential to distinguish between two prediction classes, e.g. background and lesion (foreground). For this particular problem, the thresh was set at 0.5, i.e. any predicted probability above 0.50 was categorized as lesion and any predicted probability equal to or below the threshold was categorized as background.</div>
+
+<h2>Discussion and Conclusion</h2>
+
+### Model Performance Analysis
+
+<div style="text-align: justify">As mentioned earlier, a separate test set was used for evaluating the model’s predictive performance. For assessing the model performance with the test set, each pixel’s predicted mask (label) is compared with that in the ground truth. There are many techniques available for this sort of comparison. One of the most widely used techniques is Dice Similarity Coefficient (DSC), which can be determined by twice intersection divided by union (very similar to F1-score). For getting the class-wise DSC, both ground truth image and predicted image masks (labels) were one hot encoded and then, the aforesaid method was applied. Both class-wise and overall DSC of the built U-net are appended below:</div>
+
+
 **Model Performance**
 Category | DSC
 ---------| -----------
-Background | 0.9459
-Lesion | 0.8189
-Overall | 0.8828
+Background | 0.9447
+Lesion | 0.8183
+Overall | 0.8789
+
+Couple of predicted (segmented) images in grey scale along with corresponding images in input and ground truth of the test set are appended below.
+
+### Conclusion
+<div>The performance of the built U-net model is quite impressive, although there is room for improvement. Such improvement can be achieved either by tweaking the model architecture or augmenting the input images or even by enriching the dataset by adding more images along with properly masked ground truth.</div>
