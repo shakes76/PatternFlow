@@ -45,6 +45,8 @@ cp * dataset/masks
 ```
 Then you are good to load the dataset images!
 
+After the loading process of data preparation, we then ***split the images set into training, validating and testing set by ratio of 0.8:0.1:0.1***, the reason behind this decision is our whole dataset is size of 2,594, which 80% is sufficient to train the model.
+
 ### Data Generator
 The filenames of the mask images should have the id which is same as the filenames of the RGB images with "_segmentation" ending.
 The size of the mask image for the corresponding RGB image should be same.
@@ -53,12 +55,41 @@ Even our preprocessed dataset have 2,594 train images and its corresponding segm
 and you will see that during the training phase, data is generated in parallel by the CPU and then directly fed to the GPU.
 For more detailed reference of implementation of data generation part, check this tutorial:
 [A detailed example of how to use data generators with Keras](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
+This class can be run independently by using:
+```shell
+python dataGenerator.py
+```
 
 ## [Basic Unet Structure](https://arxiv.org/pdf/1505.04597.pdf)
-![](resources/UNET.png)
+<p align="center">
+  <img width="700" src="resources/UNET.png" />
+</p>
+You can check the detailed implementation of U_net structure by using the following command:
+```shell
+python model_basic.py
+```
+Then see its result on our dataset in jupyter notebook file:
+```shell
+jupyter notebook ISIC2018_Segmentation.ipynb
+```
 
 ## [Improved Unet Structure](https://arxiv.org/abs/1802.10508v1)
-![](resources/Improved_UNET.png)
+<p align="center">
+  <img width="700" src="resources/Improved_UNET.png" />
+</p>
+The figure above shows the structure of the improved UNet.  
+
+- The context module is a pre-activation residual block, with two 3x3 convolutional layers and a dropout layer with p=0.3 in the middle. Noted that, the activation layer uses Leaky ReLU, and batch normalization is changed to instance normalization.
+- The upsampling module is simply a upsampling2D layer followed by a 3x3 convolution that halves the number of feature map.
+- The localization module contains a 3x3 convolution and then a 1x1 convolution which halves the number of feature maps.  
+You can check the detailed implementation of Improved_U_net structure by using the following command:
+```shell
+python model_improved.py
+```
+Then see its result on our dataset in jupyter notebook file:
+```shell
+jupyter notebook ISIC2018_Segmentation_improved_u_net.ipynb
+```
 
 ## Evaluation Metrics
 
@@ -69,3 +100,11 @@ By nature, usually these problems are highly unbalanced, so these classification
 Therefore, if the datasets or the images are unbalanced, the pixel wise accuracy which we usually use to evaluate classification problems will no longer be valid or proper matrix to use. The reason is that if you for example predict every pixels as background then your accurary will already be 90% which is too high, it is biased. So what we want to do is instead use matrix that specifically target the pixels in the foreground classes.  
 The Sorensen-Dice coefficient is used as a similairty metric and is commonly used as a metric for segmentation algorithms.  
 The original formula was intended to be applied to binary data. Given two sets, X and Y, it is defined as 2|X||Y|/|X|+|Y|, where |X| and |Y| are the cardinalities of the two sets.
+
+## Result
+By training our model through the improved unet structure, we got final average dice similarity coefficiency 0.8285 on test set.  
+Below is the dice-accuracy-loss plot while training our model:
+<p align="center">
+  <img width="500" img src="resources/acc_loss_improved_unet.png" />
+</p>
+
