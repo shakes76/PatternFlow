@@ -52,7 +52,7 @@ def data_part_normal(test_ratio=0.10, val_ratio=0.20):
         train-validation-test sets {dict}: partitioned and normalized data sets
     """
     input_path = input("\nProvide directory path for 'INPUT' images: ")
-    gt_path = input("\nProvide directory path for GROUND TRUTH images: ")
+    gt_path = input("\nProvide directory path for 'GROUND TRUTH' images: ")
     print("\nMany Thanks :))")
     print("Now loading images to be followed by model training")
     print("This might take a bit longer (depending on your system)\n")
