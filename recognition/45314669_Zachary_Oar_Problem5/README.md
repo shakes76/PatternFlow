@@ -20,7 +20,7 @@ The expansive path uses four repeated applications of two 3x3 unpadded convoluti
 
 The Improved UNet model is taken from the paper "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge", and makes several adjustments to the architecture of a standard UNet to boost performance.  A visualisation of the Improved UNet's strcutre is shown below.
 
-![Improved UNet Structure](images/improved_unet.png)
+![Improved UNet Structure](images/improved_unet.PNG)
 
 Among several tweaks to the original structure are:
 
