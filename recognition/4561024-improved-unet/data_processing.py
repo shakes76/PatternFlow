@@ -23,14 +23,14 @@ def load_image(path):
         image_array.append(image)
     return image_array
 
-def palette(image):
+def get_palette(image):
     palette = []
     for i in image:
         for j in i:
             palette.append(j)
-    return list(set([tuple(x) for x in palette]))
+    return list(sorted(set([tuple(x) for x in palette]), reverse=True))
 
-def one_hot(palette, image):
+def get_one_hot(palette, image):
     one_hot = []
     for color in palette:
         class_map = tf.reduce_all(tf.equal(image, color), axis=-1)
@@ -38,3 +38,11 @@ def one_hot(palette, image):
     one_hot = tf.stack(one_hot, axis=-1)
     one_hot = tf.cast(one_hot, tf.float32)
     return one_hot
+
+def one_hot_encode(dataset):
+    images = []
+    for image in dataset:
+        palette = get_palette(image)
+        one_hot = get_one_hot(palette, image)
+        images.append(one_hot)
+    return images
