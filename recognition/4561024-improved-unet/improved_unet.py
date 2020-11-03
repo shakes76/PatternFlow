@@ -4,10 +4,9 @@ Improved UNet
 @author Aghnia Prawira (45610240)
 '''
 import tensorflow as tf
-from keras.models import Model
+from keras import backend as k
 from keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, concatenate
-# from keras.layers.convolutional import Conv2D, Conv2DTranspose
-# from keras.layers.pooling import MaxPooling2D
+from keras.models import Model
 
 print('Tensorflow version:', tf.__version__)
 
@@ -124,4 +123,11 @@ def unet():
     outputs = Conv2D(4, (3, 3), padding='same',activation='softmax')(s3_2_1)
     model = Model(inputs, outputs)
     model.summary()
-    return model             
+    return model  
+
+def dice_coefficient(y_true, y_pred):
+    intersection = k.sum((y_true * y_pred), axis=[1,2,3])
+    y_true_sum = k.sum(y_true, axis=[1,2,3])
+    y_pred_sum = k.sum(y_pred, axis=[1,2,3])
+    coefficient = 2 * intersection / (y_true_sum + y_pred_sum)
+    return coefficient
