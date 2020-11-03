@@ -15,3 +15,14 @@ Therefore in an Improved Unet there is a context pathway that encodes abstract f
 
 ### Visual Architecture
 ![Architecture](images/Architecture.png)
+
+## Data Preprocessing
+
+## Results
+
+## Training accuracy vs Validation accuracy
+
+## Prediction Image
+
+## Dice coefficient
+
