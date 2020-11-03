@@ -89,7 +89,7 @@ val_ds=val_ds.map(process_path)
 
 model = model.unet_model(10,channel=2)
 model.compile(optimizer = keras.optimizers.Adam(lr = 5.0e-4), loss = 'categorical_crossentropy', metrics=dice_coef)
-model.fit(train_ds.batch(10), epochs=10, validation_data = val_ds.batch(10))
+model.fit(train_ds.batch(20), epochs=10, validation_data = val_ds.batch(20))
 
 # Show examples of prediction
 show_pridicts(test_ds,3)

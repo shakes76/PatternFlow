@@ -9,9 +9,9 @@ This folders include a README.md , a foledr 'png' containg three pictures of the
 
 1. An improved Unet model is built in model.py. 
 
-2. test-script.py contains other functions and scrips for running the algorrithm.
+2. test-script.py contains other functions and scrips for running the algorithm.
 
-By runing the test-script.py, we will get the example pictures of prediction and the evaluation (Dice similarity coefficient) for the model on test data. 
+By runing the test-script.py, we will fit the model of model.py on training and validation data set. With the fitted model, we then get the prediction on test data (pictures of prediction) and the evaluation (Dice similarity coefficient) for the model on test data by comparing with ground truth masks. 
 
 Dataset
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -44,7 +44,9 @@ Output
 
 ![Getting Started](png/img3.png)
 
-
+Result
+----------------------------------------------------------------------------------------------------------------------------------------
+The result of the dice similarity coeffient is roughly 0.89 which is over 0.8. So this model works well that can solve the problem.
 
 Author
 ----------------------------------------------------------------------------------------------------------------------------------------
