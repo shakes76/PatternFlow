@@ -5,7 +5,7 @@ Description
 
 In this project, we will segment the ISICs data set with an improved UNet model with all labels having a minimum Dice similarity coefficient of 0.8 on the test set.
 
-This folders include a README.md , a foledr 'png' containg three pictures of the result and two python files, model.py and test-script.py: 
+This folders include a README.md , a folder 'png' containg five pictures of the output from the algorithm and two python files, model.py and test-script.py: 
 
 1. An improved Unet model is built in model.py. 
 
@@ -18,7 +18,7 @@ Dataset
 
 The data downloaded from <https://cloudstor.aarnet.edu.au/sender/download.php?token=f0d763f9-d847-4150-847c-e0ec92d38cc5&files_ids=10200257> contains two files, Input data and ground truth data. I split them into training set, validation set and test set with a ratio of 7:2:1.
 
-After processing the data, we can display the image in the data set. Following are the images from training dataset:
+After processing the data, we can display the image in the data set. Following are the images from training dataset(input and ground truth respectively):
 
 ![Architecture](png/img4.png)
 
@@ -32,7 +32,7 @@ The architecture is shown below:
 
 Output
 ----------------------------------------------------------------------------------------------------------------------------------------
-### 1. example pictures of prediction
+### 1. Example pictures of prediction
 
 ![Getting Started](png/img.png)
 
