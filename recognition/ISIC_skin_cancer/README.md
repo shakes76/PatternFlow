@@ -55,16 +55,41 @@ Even our preprocessed dataset have 2,594 train images and its corresponding segm
 and you will see that during the training phase, data is generated in parallel by the CPU and then directly fed to the GPU.
 For more detailed reference of implementation of data generation part, check this tutorial:
 [A detailed example of how to use data generators with Keras](https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly)
+This class can be run independently by using:
+```shell
+python dataGenerator.py
+```
 
 ## [Basic Unet Structure](https://arxiv.org/pdf/1505.04597.pdf)
 <p align="center">
   <img width="700" src="resources/UNET.png" />
 </p>
+You can check the detailed implementation of U_net structure by using the following command:
+```shell
+python model_basic.py
+```
+Then see its result on our dataset in jupyter notebook file:
+```shell
+jupyter notebook ISIC2018_Segmentation.ipynb
+```
 
 ## [Improved Unet Structure](https://arxiv.org/abs/1802.10508v1)
 <p align="center">
   <img width="700" src="resources/Improved_UNET.png" />
 </p>
+The figure above shows the structure of the improved UNet.  
+
+- The context module is a pre-activation residual block, with two 3x3 convolutional layers and a dropout layer with p=0.3 in the middle. Noted that, the activation layer uses Leaky ReLU, and batch normalization is changed to instance normalization.
+- The upsampling module is simply a upsampling2D layer followed by a 3x3 convolution that halves the number of feature map.
+- The localization module contains a 3x3 convolution and then a 1x1 convolution which halves the number of feature maps.  
+You can check the detailed implementation of Improved_U_net structure by using the following command:
+```shell
+python model_improved.py
+```
+Then see its result on our dataset in jupyter notebook file:
+```shell
+jupyter notebook ISIC2018_Segmentation_improved_u_net.ipynb
+```
 
 ## Evaluation Metrics
 
