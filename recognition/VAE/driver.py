@@ -4,8 +4,9 @@ from tensorflow.keras.metrics import Mean
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.layers.experimental.preprocessing import Rescaling
 from tensorflow.keras.models import load_model
-from .VAE import VAE
+import VAE
 from matplotlib import pyplot as plt
+import sys
 
 
 # Calculate the similarity between the original test images and the generated images.
@@ -67,7 +68,7 @@ def train_step(model, x, optimizer):
 # load the training and testing image datasets
 def get_dataset(train_dir, test_dir, test_size=32):
     # a normalisation layer
-    normalization_layer = Rescaling(1./255)
+    normalization_layer = Rescaling(1. / 255)
     # load the training images with the default batch size(i.e., 32)
     train_dataset = image_dataset_from_directory(train_dir, color_mode='grayscale', label_mode=None)
     # load the testing images with a specified batch size
@@ -105,8 +106,11 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
         # feed the network test samples to generate new images
         predictions = model.generate_images(model, test_dataset)
 
-        # display the results. You may use this line to plot the generated images if matplotlib is allowed
-        # display_result(predictions)
+        # display the results.
+        try:
+            display_result(predictions)
+        except:
+            pass
 
         loss = Mean()
         for test_x in test_dataset:
@@ -114,7 +118,7 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
         elbo = -loss.result()
         # evaluate the model using Structural Similarity between generated images and test samples
         ssim = calculate_ssim(predictions, test_dataset)
-        print("> " + str(epoch) + ": SSIM=" + str(ssim)+', ELBO=' + str(elbo))
+        print("> " + str(epoch) + ": SSIM=" + str(ssim) + ', ELBO=' + str(elbo))
         ssims.append(ssim)
         elbos.append(elbo)
     # return the trained model
@@ -124,7 +128,7 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
 # load pre-trained models
 def load_pretrained_model(latent_dimension, encoder_name, decoder_name):
     # initialize a new VAE model
-    model = VAE(latent_dimension)
+    model = VAE.VAENetwork(latent_dimension)
     # load encoder
     model.encoder = load_model(encoder_name)
     # load decoder
@@ -147,9 +151,9 @@ if __name__ == '__main__':
     latent_dimension = 2
 
     # train_img_dir stores the training images
-    train_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/train'
+    train_img_dir = sys.argv[1]
     # test_img_dir stores the testing images
-    test_img_dir = 'D:/keras_png_slices_data/keras_png_slices_data/test'
+    test_img_dir = sys.argv[2]
 
     # use an Adam optimiser
     optimizer = Adam(1e-4)
@@ -157,27 +161,31 @@ if __name__ == '__main__':
     train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=544)
 
     # initialize a new VAE model
-    model = VAE(latent_dimension)
+    model = VAE.VAENetwork(latent_dimension)
     # train a new model
     model, elbos, ssims = train(model, train_dataset, test_dataset, epochs, optimizer)
     # save the trained models
-    save_model(model, 'encoder.h5', 'decoder.h5')
+    try:
+        save_model(model, 'encoder.h5', 'decoder.h5')
+    except:
+        pass
 
     # plot the ssim and elbo.
-    # uncomment the following if matplotlib is supported
-    """
-    xs = range(0, 31)
-	plt.figure(figsize=(13, 5))
-	plt.subplot(1, 2, 1)
-	plt.title('SSIM of Each Epoch')
-	plt.plot(xs, ssims)
-	plt.xlabel('Epoch')
-	plt.ylabel('SSIM')
-	plt.subplot(1, 2, 2)
-	plt.title('ELBO of Each Epoch')
-	plt.plot(xs, elbos, color='orange')
-	plt.xlabel('Epoch')
-	plt.ylabel('ELBO')
-	fig.tight_layout()
-	"""
+    try:
+
+        xs = range(0, 31)
+        fig = plt.figure(figsize=(13, 5))
+        plt.subplot(1, 2, 1)
+        plt.title('SSIM of Each Epoch')
+        plt.plot(xs, ssims)
+        plt.xlabel('Epoch')
+        plt.ylabel('SSIM')
+        plt.subplot(1, 2, 2)
+        plt.title('ELBO of Each Epoch')
+        plt.plot(xs, elbos, color='orange')
+        plt.xlabel('Epoch')
+        plt.ylabel('ELBO')
+        fig.tight_layout()
+    except:
+        print('matplotlib is not supported')
 

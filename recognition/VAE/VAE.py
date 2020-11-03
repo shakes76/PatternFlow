@@ -3,9 +3,9 @@ from tensorflow.keras.layers import Conv2D, Conv2DTranspose, InputLayer, Flatten
 from tensorflow.keras import Sequential
 
 
-class VAE(tf.keras.Model):
+class VAENetwork(tf.keras.Model):
     def __init__(self, latent_dimension, kernel_size=3, strides=2):
-        super(VAE, self).__init__()
+        super(VAENetwork, self).__init__()
         # number of dimensions of the latent distribution
         self.latent_dim = latent_dimension
         # the encoder

@@ -11,8 +11,17 @@ encoder and feed them to the decoder to generate brain images.
 A Gaussian distribution is used to model the latent representation.
 
 ## Dependencies
-1. Tensorflow
-2. MatPlotLib
+### Tensorflow: 
+To install Tensorflow, use the following command:
+```
+pip install tensorflow
+```
+
+### matplotlib
+To install matplotlib, use the following command: 
+```
+pip install matplotlib
+```
 
 ## Dataset Preparation
 Since VAE is an unsupervised learning technique, we do not need too many test images. 
@@ -35,4 +44,22 @@ After 30 epochs, the SSIM and loss are 0.6467 and 17051.21. Let’s plot four of
 The ELBO and SSIM over the 30 epochs are shown below. 
 ![Evalaution](evaluation.png)
 
+## Running Code
+To run the project, execute `driver.py` located in `Patternflow/recognition/VAE/` 
+using the following command:
+```
+python driver.py arg1 arg2
+```
+where arg1 is the directory stores the training images and 
+arg2 is the directory stores the testing images.
+Below is an example:
+```
+python driver.py keras_png_slices_data/train keras_png_slices_data/test
+```
+where `keras_png_slices_data/train` stores the training images and 
+`keras_png_slices_data/test` stores the test images.
+
+
+## Author
+Yunke QU. Student ID: 44631604.
  
