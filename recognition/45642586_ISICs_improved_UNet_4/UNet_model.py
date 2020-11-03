@@ -21,13 +21,10 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import SGD
 import tensorflow as tf
 
-print("Tensorflow version:", tf.__version__)
+
 
 
 # layers
-
-# leaky ReLU, no batchnormalization
-
 
 def UNet_context_module(filters, inp, layer_name):
     # Each context_module consists of two 3x3 conv layers and a dropout(0.3) in between.

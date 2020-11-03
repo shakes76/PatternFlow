@@ -21,8 +21,7 @@ from tensorflow.keras.optimizers import SGD
 import tensorflow as tf
 import UNet_model
 
-
-
+# "__main__" is at the end.
 
 # load and process data
 def load_data():
@@ -175,7 +174,7 @@ if __name__ == "__main__":
     print("Tensorflow version:", tf.__version__)
 
     # parameters
-    EPOCHS = 100
+    EPOCHS = 200
     BATCH_SIZE = 32
     STEPS_PER_EPOCH =1815//BATCH_SIZE
 
@@ -193,16 +192,14 @@ if __name__ == "__main__":
     improved_unet_model = UNet_model.Improved_UNet_model()
 
     # train
-    opt = SGD(lr=0.2)
     # learning rate decay
-    initial_learning_rate = 0.1
+    initial_learning_rate = 0.0005
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
         initial_learning_rate,
         decay_steps=1000,
         decay_rate=0.985,
         staircase=True)
-    # opt = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
-    opt = SGD(learning_rate=lr_schedule)
+    opt = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
 
 
     improved_unet_model.compile(optimizer=opt, loss=dice_coef_loss, metrics=[dice_coef])
