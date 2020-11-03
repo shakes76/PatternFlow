@@ -61,7 +61,7 @@ def display(display_list):
 for image, mask in train_ds.take(1):
     display([tf.squeeze(image), tf.argmax(mask, axis=-1)])
 
-loaded_model = tf.keras.models.load_model('D:\PatternFlow\recognition\test\unet_model')
+loaded_model = tf.keras.models.load_model('D:\PatternFlow/recognition/test')
 model = loaded_model
 smooth = 1.
 def dice_coef(train_ds, test_ds):
