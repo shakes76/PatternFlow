@@ -71,7 +71,7 @@ def unet_model(output_channel=4, f=4):
 model = unet_model(4, f=4)
 model.summary()
 
-model.save('D:\PatternFlow\recognition\test\unet_model')
+model.save(r'D:\PatternFlow\recognition\test\unet_model.py')
 
 if __name__ == "__main__":
     pass
