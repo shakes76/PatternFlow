@@ -50,7 +50,7 @@ train_ds = train_ds.map(process_path)
 val_ds = val_ds.map(process_path)
 test_ds = test_ds.map(process_path)
 
-def display(display_list):
+def display(dgit git isplay_list):
     plt.figure(figsize=(10, 10))
     for i in range(len(display_list)):
         plt.subplot(1, len(display_list), i+1)
@@ -88,5 +88,5 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         clear_output(wait=True)
         show_predictions(val_ds)
 
-history = model.fit(train_ds.batch(20), epochs=1, validation_data=val_ds.batch(20),callbacks=[DisplayCallback()])
+history = model.fit(train_ds.batch(20), epochs=20, validation_data=val_ds.batch(20),callbacks=[DisplayCallback()])
 show_predictions(test_ds, 3)
