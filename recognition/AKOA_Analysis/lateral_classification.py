@@ -30,6 +30,14 @@ def train(images, shape, epochs):
             label.append(1)
         elif 'L_E_F_T' in fname:
             label.append(1)
+            
+    #Convert label list to numpy array
+
+    label = np.array(label)
+
+    #Split label and images into test and training sets
+
+    X_train, X_test, y_train, y_test = train_test_split(image, label, test_size=0.25, random_state=42)
     
 if __name__ == '__main__':
     main()
