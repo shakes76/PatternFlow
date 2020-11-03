@@ -22,6 +22,7 @@ I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. 
 4. The output layer of the generator uses tanh
 5. Use adam optimizer to train GAN, set the learning rate to 0.0002
 6. I try to add batch normalization function into generator and discriminator. But the performance is bad. So in the end I did not use this function.
+7. Save the model design part separately in Model_DCGAN.py, and call the model in DCGAN_OAI.py.
 
 **Data split:**
 
@@ -31,22 +32,24 @@ I use 15000 images to train the model. During training, the batch size is set to
 
 I used the built-in SSIM function of tensorflow. It just needs to pass in the tensors of the two sets of images to be compared to get the result.
 
-**Performance:**
+**Output and Performance:**
 
-After 50 epochs based on 15000 images, the prediction result is plot as follow:
+After 50 epochs based on 15000 images the prediction result is plot as follow:
 
-![Getting Started](DCGANPredict.png)
+![Getting Started](./resources/DCGANPredict.png)
 
 This result is clear but the SSIM result is not good enough which is 0.28.
 
+Output is shown as follow:
+SSIM is:  tf.Tensor(0.27565268, shape=(), dtype=float32)
 >**Appendix**
 
 **Structure of DCGAN**
 1. Generator
-![Getting Started](Generator.png)
+![Getting Started](./resources/Generator.png)
 2. Discriminator
-![Getting Started](Discriminator.png)
-3. DCGAN![Getting Started](Gan.png)
+![Getting Started](./resources/Discriminator.png)
+3. DCGAN![Getting Started](./resources/Gan.png)
 
 >**Improved unet for egmentation of OASIS dataset**
 
@@ -72,8 +75,4 @@ Besides, the val_accuracy is 0.9866.
 
 Example of prediction visualisation is as follow:
 
-![Getting Started](ImprovedUnetPredict.png)
-
-**Structure of Improved Unet:**
-
-![Getting Started](ImprovedUnet.png)
+![Getting Started](./resources/ImprovedUnetPredict.png)
