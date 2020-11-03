@@ -1,6 +1,6 @@
 import tensorflow as tf
-from config import train_dir, test_dir, valid_dir, img_size
-
+from config import train_dir, test_dir, valid_dir
+img_size = 256
 # Load images. NOTE: image_dataset_from_directory is only available in tf 2.3+
 img_height = img_size
 img_width = img_size
