@@ -159,15 +159,15 @@ def implot_show_predict(ds):
     # using imshow to vertify correctly load and process data
     title = ['Input Image', 'True Mask', 'Predicted Mask']
     for input_img, mask_img in ds:
-        display_list = [input_img, mask_img]
-        display_list.append(improved_unet_model.predict(input_img))
-        plt.figure(figsize=(18, 18))
+        pred_mask = improved_unet_model.predict(input_img)
+        display_list = [input_img, mask_img, pred_mask[0]]
+        plt.figure(figsize=(12, 12))
         for i in range(len(display_list)):
             plt.subplot(1, 3, i+1)
             plt.title(title[i])
             plt.imshow(tf.keras.preprocessing.image.array_to_img(display_list[i]))
             plt.axis('off')
-            plt.show()
+        plt.show()
       
 
 
@@ -181,12 +181,12 @@ if __name__ == "__main__":
 
     # load and process data
     image_ds = load_data()
-    image_train, image_val, image_test = split_train_test_val(image_ds)
+    image_train_all, image_val_all, image_test_all = split_train_test_val(image_ds)
 
     # set batch size
-    image_train = image_train.batch(BATCH_SIZE).repeat()
-    image_val = image_val.batch(BATCH_SIZE)
-    image_test = image_test.batch(BATCH_SIZE)
+    image_train = image_train_all.batch(BATCH_SIZE).repeat()
+    image_val = image_val_all.batch(BATCH_SIZE)
+    image_test = image_test_all.batch(BATCH_SIZE)
 
 
     # Improved Unet model
@@ -217,6 +217,6 @@ if __name__ == "__main__":
     print("Finish Evaluation")
 
     # plot input/ground_truth/predict image
-    implot_show_predict(image_test.take(10))
+    implot_show_predict(image_test_all.take(10))
 
     print("END")
