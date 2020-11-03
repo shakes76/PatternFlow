@@ -31,9 +31,10 @@ def main():
 
     model.load_data()
 
-    model.build_model()
+    # visualise (sanity check) loaded image and mask data
+    #model.visualise_loaded_data()
 
-    model.show_predictions()
+    model.build_model()
 
     model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                         loss=tf.keras.losses.BinaryCrossentropy,
