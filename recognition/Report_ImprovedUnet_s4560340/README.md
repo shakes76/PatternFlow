@@ -16,13 +16,35 @@ Therefore in an Improved Unet there is a context pathway that encodes abstract f
 ### Visual Architecture
 ![Architecture](images/Architecture.png)
 
-## Data Preprocessing
+### Data Preprocessing
+* The data used for this project is the ISIC Melanoma Dermoscopy dataset. The total number of images in this dataset are 2594. This data is split into train(60%), validation(15%) and test(25%). The model  is trained on the training data and the validation set is used for calculating validation loss and validation accuracy during training.
+* The images have different sizes and hence have been resized to 256x256 pixels. Both input images and label images have been resized.
+* The label images have 2 pixel values - 0 and 1 which makes the problem as binary classification of pixels in the image.
 
-## Results
+### Model Compliling and Building
+* The model is complied using Adam's optimizer with a learning rate of 0.0001, and Binary crossentropy loss. 
+* Then the model is built with 50 epochs and batch size 32. 
 
-## Training accuracy vs Validation accuracy
+#### Training accuracy vs Validation accuracy
+![Train_vs_Val_Accuracy](images/Train_vs_Val_Accuracy.png)
 
-## Prediction Image
+### Results
 
-## Dice coefficient
+* The data seperated as test data is used for predictions and checking the closeness of the predicted values with true values of label.
+* The prediction values were rounded 
+* One image from the prediction was plotted
+
+#### Prediction Image
+![Prediction](images/Prediction.png)
+
+The corresponding test label image 
+#### Test Label Image
+![Testlabel](images/Testlabel.png)
+
+### Dice coefficient
+* In order to check the performance of the model, dice coefficient was used 
+* The dice coefficient obatined was - 0.84
+
+
+
 
