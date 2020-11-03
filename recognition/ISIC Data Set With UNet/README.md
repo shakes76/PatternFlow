@@ -3,7 +3,7 @@ This is my solution to the ISIC data set using a U-Net model. The aim of this so
 
 An example prediction is shown below. From left to right we have: the original skin lesion image, the correct segmentation, my model's predicted segmentation.
 
-![alt text]("")
+![alt text](https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png)
 
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
 
