@@ -66,8 +66,7 @@ Dice similarity coefficient is:  tf.Tensor(0.9777626, shape=(), dtype=float32)
 Besides, the val_accuracy is 0.9866. 
 
 Example of prediction visualisation is as follow:
-
-![Getting Started](./resources/ImprovedUnetPredict.png)
+<img src="./resources/ImprovedUnetPredict.png" width = "40%"/>
 
 
 >**Structure of DCGAN**
