@@ -39,7 +39,7 @@ This is the driver script. This file imports the data, manipulates the data into
 
 | Dependencies | Classes (and their methods) | Functions |
 | --- | --- |
-| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend` | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient`
+| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend` | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient` |
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
@@ -68,9 +68,9 @@ Below I have detailed each of the functions in this script, describing their pur
 ## How to Run the File
 In order to train this model as I have, follow the next steps:
 * You will firstly need to download the ISIC data locally.
-* Then, you will need to edit the driver_script so that the images and masks are imported correctly.
+* Then, you will need to edit `driver_script.py` so that the images and masks are imported correctly.
 * Then, you will need to make sure that all the dependencies listed previously are present in the environment.
-* Then, you will need to simply run the dripver_script.py file.
+* Then, you will need to simply run `driver_script.py`, and do not require any commandline arguments.
 
 ## Results
 Below is an outline of how I used the model to segment the ISIC data set using the UNet model, alongside some results and images.
