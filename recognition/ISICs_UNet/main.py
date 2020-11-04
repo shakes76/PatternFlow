@@ -30,21 +30,21 @@ def main():
     model = IsicsUnet()
 
     model.load_data()
-
-    # visualise (sanity check) loaded image and mask data
     #model.visualise_loaded_data()
 
     model.build_model()
+    model.model.summary()
 
-    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.09),
+                        loss='binary_crossentropy',
+                        #loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                         metrics=['accuracy'])
+    model.show_predictions()
 
-    history = model.model.fit(x=model.train_ds,
-                        validation_data=model.val_ds,
-                        verbose=1,
-                        epochs=3)
-
+    history = model.model.fit(x=model.train_ds.batch(model.BATCH_SIZE, drop_remainder=True),
+                              validation_data=model.val_ds.batch(model.BATCH_SIZE, drop_remainder=True),
+                              verbose=1,
+                              epochs=3)
     model.show_predictions()
 
     print("END")
