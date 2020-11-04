@@ -1,10 +1,10 @@
 # COMP3710 PatternFlow project submission
+InfoVAE implementation by Ishraque Zahin, 45129256
 
-## TODOs
-[ ] optimise latent dim
-[ ] calculate reconstruction SSIM
-[ ] add script for generation images and generation SSIM
-[ ] optimise dssim factor or turn it off. We should not see modal collapse
+## How it works
+
+
+## Running Locally
 
 
 ## Resources

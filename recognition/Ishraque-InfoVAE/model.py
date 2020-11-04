@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import Model, Input, datasets, layers, models, optimizers, losses
 from data import img_size
 
+# Update model here
 def get_encoder(latent_dim):
     input_layer = layers.Input(shape=(img_size, img_size, 1))
     c1 = layers.Conv2D(filters=32, kernel_size=3, activation='relu')(input_layer)
@@ -13,7 +14,7 @@ def get_encoder(latent_dim):
 
 def get_decoder(latent_dim):
     input_layer = layers.Input(shape=(latent_dim, )) # Ensure this matches output of encoder network
-    d1 = layers.Dense(img_size, activation='relu')(input_layer)
+    d1 = layers.Dense(img_size*2, activation='relu')(input_layer)
     d2 = layers.Dense((img_size//4)*(img_size//4)*32, activation='relu')(d1)
     r1 = layers.Reshape(target_shape=((img_size//4), (img_size//4), 32))(d2)
     c1 = layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu')(r1)
@@ -22,7 +23,7 @@ def get_decoder(latent_dim):
     return models.Model(inputs=input_layer, outputs=c3)
 
 class InfoVAE():
-    """Informaiton Maximising Convolutional variational autoencoder."""
+    """Information maximising convolutional variational autoencoder."""
 
     def __init__(self, latent_dim):
         self.latent_dim = latent_dim
@@ -34,7 +35,6 @@ class InfoVAE():
         self.model = Model(inputs=i, outputs=x) # wrap into keras Model object
         self.optimizer = optimizers.Adam()
 
-    # MMD function adapted from https://github.com/ShengjiaZhao/MMD-Variational-Autoencoder/
     @tf.function
     def _compute_kernel(self, x, y):
         x_size = tf.shape(x)[0]
@@ -51,6 +51,7 @@ class InfoVAE():
         xy_kernel = self._compute_kernel(x, y)
         return tf.reduce_mean(x_kernel) + tf.reduce_mean(y_kernel) - 2 * tf.reduce_mean(xy_kernel)
 
+    # MMD function adapted from https://github.com/ShengjiaZhao/MMD-Variational-Autoencoder/
     @tf.function
     def _encoder_loss(self, latent_encoding: tf.Tensor):
         actual_dist = tf.random.normal(shape=latent_encoding.shape)
@@ -58,10 +59,9 @@ class InfoVAE():
 
     @tf.function
     def _dssim_loss_scalar(self, shape, images):
-        """Calculate DSSIM"""
+        """Calculate DSSIM for loss. Currently unused"""
         actual_dist = tf.random.normal(shape=shape)
         reconstruction = self.decoder(actual_dist, training=True)
-        # Compute SSIM over tf.float32 Tensors.
         ssim2 = tf.image.ssim(images, reconstruction, max_val=1.0, filter_size=11,
                             filter_sigma=1.5, k1=0.01, k2=0.03)
         return (1-tf.reduce_mean(ssim2, axis=None))/2
@@ -73,10 +73,7 @@ class InfoVAE():
             latent_encoding = self.encoder(images, training=True)
             reconstruction = self.decoder(latent_encoding, training=True)
             enc_loss = self._encoder_loss(latent_encoding)
-
-            # SSIM loss
-            dssim = self._dssim_loss_scalar(latent_encoding.shape, images)
-            rec_loss = losses.mean_squared_error(images, reconstruction)*(1 + dssim)
+            rec_loss = losses.mean_squared_error(images, reconstruction)
 
             loss = enc_loss + rec_loss
         gradients = tape.gradient(loss, self.model.trainable_variables)
@@ -94,7 +91,7 @@ class InfoVAE():
         return tf.math.reduce_mean(enc_loss + rec_loss, axis=None)
 
     @tf.function
-    def random_reconstruction_sample(self, n):
-        """Returns n reconstructed images"""
+    def random_generation_sample(self, n):
+        """Returns n generated images"""
         latent_encoding = tf.random.normal(shape=(n, self.latent_dim))
         return self.decoder(latent_encoding, training=False)
