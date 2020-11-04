@@ -13,7 +13,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Activation, LeakyReLU, Conv2D, Conv2DTranspose, BatchNormalization, Flatten, Dense, Reshape
+from tensorflow.keras.layers import Input, LeakyReLU, Conv2D, Conv2DTranspose, BatchNormalization, Flatten, Dense, Reshape
 from tensorflow.keras.models import Model
 from PIL import Image
 
@@ -21,7 +21,7 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # parameters
-epochs = 100
+epochs = 5
 batch_size = 64
 dataset_path = "./keras_png_slices_data/keras_png_slices_train/*"
 output_path = "./keras_png_slices_data/"
@@ -43,19 +43,17 @@ for i in range(n_datasize):
 images = np.array(images)
 
 # Check dataset shape and verify the images
-print(images.shape)
-# plt.figure(figsize=(10, 10))
-# for i in range(25):
-#     plt.subplot(5, 5, i+1)
-#     plt.xticks([])
-#     plt.yticks([])
-#     plt.imshow(images[i], cmap='gray')
-# plt.show()
+plt.figure(figsize=(10, 10))
+for i in range(25):
+    plt.subplot(5, 5, i+1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.imshow(images[i], cmap='gray')
+plt.savefig(output_path + 'Original_Images.png')
 
 # Normalise data to [0, 1]
 data = images.reshape((n_datasize, 256, 256, 1)).astype('float32')
 data = data / 255.0
-print(data.shape)
 
 # Batch and shuffle the data
 X_train = tf.data.Dataset.from_tensor_slices(
@@ -129,23 +127,16 @@ image_shape = (256, 256, 1)
 # Build generator
 generator = generator_network(noise_shape)
 generator.summary()
-# Verify the model
-# noise = tf.random.normal([1, 100])
-# generated_image = generator(noise, training=False)
-# plt.imshow(generated_image[0, :, :, 0], cmap='gray')
-# plt.show()
 
 # Build discriminator
 discriminator = discriminator_network(image_shape)
 discriminator.summary()
-# Verify the model
-# decision = discriminator(generated_image)
-# print(decision)
 
 # Model losses and optimizers
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=False)
 
 
+# Discriminator loss
 def discriminator_loss(real_output, fake_output):
     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
@@ -153,6 +144,7 @@ def discriminator_loss(real_output, fake_output):
     return total_loss
 
 
+# Generator loss
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
@@ -166,7 +158,7 @@ seed = tf.random.normal([num_examples_to_generate, 100])
 
 
 # Training step
-@tf.functionss
+@tf.function
 def train_step(images):
     noise = tf.random.normal([batch_size, 100])
 
@@ -225,7 +217,7 @@ def generate_sample_images(model, epoch, test_input):
         plt.imshow(predictions[i, :, :, 0], cmap='gray')
         plt.axis('off')
     
-    plt.savefig(output_path+'image_at_epoch_{:04d}.png'.format(epoch + 1))
+    plt.savefig(output_path + 'image_at_epoch_{:04d}.png'.format(epoch + 1))
 
 
 # Train the model and show the results
@@ -252,6 +244,6 @@ for i in range(25):
     plt.axis('off')
 
 plt.tight_layout()
-plt.savefig(output_path+'Examples.png')
+plt.savefig(output_path + 'Examples.png')
 
 print("End")
