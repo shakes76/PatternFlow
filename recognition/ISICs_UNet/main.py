@@ -30,16 +30,14 @@ def main():
     model = IsicsUnet()
 
     model.load_data()
-    print(model.train_ds)
-    print(model.val_ds)
-    #model.visualise_loaded_data()
+    model.visualise_loaded_data()
 
     model.build_model()
     model.model.summary()
 
-    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.9),
-                        #loss='binary_crossentropy',
-                        loss='categorical_crossentropy',
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
+                        loss='binary_crossentropy',
+                        #loss='categorical_crossentropy',
                         metrics=['accuracy'])
     model.show_predictions()
 

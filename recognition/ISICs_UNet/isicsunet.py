@@ -52,8 +52,7 @@ class IsicsUnet:
         m = tf.image.resize(m, (MASK_WIDTH, MASK_HEIGHT))  # resize all masks to min size
 
         # normalize mask to [0,1]
-        #m = tf.cast(m, tf.float32) / 255.0
-
+        m = tf.cast(m, tf.float32) / 255.0
         # do we need to one-hot encode the mask? theres only one channel anyway?
         #m = tf.keras.utils.to_categorical(m)
 
@@ -77,6 +76,7 @@ class IsicsUnet:
             plt.axis('off')
             plt.subplot(3, 2, 2 * i + 2)
             plt.imshow(mask_batch[i])
+            print("Mask batch size:", mask_batch[i].numpy().tolist())
             plt.title("True mask")
             plt.axis('off')
         plt.show()
@@ -135,10 +135,12 @@ class IsicsUnet:
 
         self.train_ds = self.train_ds.shuffle(len(train_images))
         self.val_ds = self.val_ds.shuffle(len(val_images))
+        self.test_ds = self.test_ds.shuffle(len(test_images))
 
         # map filenames to data arrays
         self.train_ds = self.train_ds.map(IsicsUnet.map_fn)
         self.val_ds = self.val_ds.map(IsicsUnet.map_fn)
+        self.test_ds = self.test_ds.map(IsicsUnet.map_fn)
 
         for image, mask in self.train_ds.take(1):
             print('Image shape:', image.numpy().shape)
@@ -206,7 +208,7 @@ class IsicsUnet:
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(conv9)
 
         # segmentation (output) layer
-        outputs = tf.keras.layers.Conv2D(2, (1, 1), activation='softmax')(conv9)
+        outputs = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
         self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
 
@@ -230,24 +232,22 @@ class IsicsUnet:
         for i in range(3):
             # show base image
             plt.subplot(3,3,3*i+1)
-            print("mask_batch:", mask_batch[i].shape)
             plt.imshow(image_batch[i])
             plt.axis('off')
 
             # show true mask
             plt.subplot(3,3,3*i+2)
-            print("mask_batch:", mask_batch[i].shape)
             plt.imshow(mask_batch[i])
             plt.axis('off')
 
             # show predicted mask
             plt.subplot(3,3,3*i+3)
-            print("Predictions:", predictions[i].shape)
-            pred_mask = tf.argmax(predictions[i], axis=-1)
-            pred_mask = tf.expand_dims(pred_mask, axis=-1)
-            print("pred_mask:", pred_mask.shape)
-            plt.imshow(pred_mask)
-            #plt.imshow(predictions[i])
+            #print("Predictions:", predictions[i].shape)
+            #pred_mask = tf.argmax(predictions[i], axis=-1)
+            #pred_mask = tf.expand_dims(pred_mask, axis=-1)
+            #print("pred_mask:", pred_mask.shape)
+            #plt.imshow(pred_mask)
+            plt.imshow(predictions[i])
             plt.axis('off')
 
         plt.show()
