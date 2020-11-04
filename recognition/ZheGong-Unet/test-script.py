@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import glob
 import zipfile
 import numpy as np
-import model
+from model import *
 
 # Dice coefficient metric
 def dice_coefficient(y_true, y_pred, smooth=1.):
