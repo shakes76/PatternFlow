@@ -11,9 +11,10 @@ The report is to build the generative model of OAI AKOA knee dataset using DCGAN
 - glob
 
 
->## **DCGAN Discription:**
+>## **Problem Discription:**
 
-I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. I have already contacted the construction of the GAN model during Demo2. This time I completed DCGAN on the basis of GAN. According to the DCGAN paper, the characteristics of my model are:
+Problem 6 is to use DCGAN to develop a generative model of the OAI AKOA knee dataset to create reasonably clear image. DCGAN is an optimization of traditional GAN. I have already contacted the construction of the GAN model during Demo2. This time I completed DCGAN on the basis of GAN. The structure of generator, discriminator and gan model is attached in appendix. According to the DCGAN paper, the key points of my model design include:
+
 1. Use convolutional layers instead of fully connected layers
 2. Use step-size convolution instead of upsampling, which improves the stability of GAN training and the quality of generated results
 3. Use leakyRELU instead of RELU to prevent gradient sparseness
@@ -24,7 +25,9 @@ I build DCGAN model for problem 6. DCGAN is an optimization of traditional GAN. 
 
 >## **Data Split:**
 
-I use 15000 images to train the model. During training, the batch size is set to be 128. In each batch, half to it is used to generate real samples. While half to it is used to generate fake samples. Finally, form a batch of weight updates together.
+I use 15000 images to train the model. During training, the batch size is set to be 128. In each batch, half to it is used to generate real samples. While half to it is used to generate fake samples. Finally, form a batch of weight updates together. Here is the true images:
+
+![Getting Started](./resources/DCGANTrue.png)
 
 >## **Evaluation Method:**
 
@@ -32,14 +35,13 @@ I used the built-in SSIM function of tensorflow. It just needs to pass in the te
 
 >## **Output and Performance:**
 
-After 50 epochs based on 15000 images the prediction result is plot as follow:
+After 50 epochs based on 15000 images, the prediction result is plot as follow:
 
 ![Getting Started](./resources/DCGANPredict.png)
 
-This result is clear but the SSIM result is not good enough which is 0.28.
+This prediction images are clear and similar to the original ones. However, the SSIM result is not good enough which is 0.28. Output is shown as follow:
 
-Output is shown as follow:
-SSIM is:  tf.Tensor(0.27565268, shape=(), dtype=float32)
+*SSIM is:  tf.Tensor(0.27565268, shape=(), dtype=float32)*
 
 # **Appendix**
 
@@ -62,24 +64,23 @@ I write a function to cumpute the dice similarity coefficient at the end of the 
 
 After 10 epochs, the dice similarity coefficient is: 0.9778, meets the requirements of 0.9. The output of dice similarity coefficient is as below. 
 
-Dice similarity coefficient is:  tf.Tensor(0.9777626, shape=(), dtype=float32)
-Besides, the val_accuracy is 0.9866. 
+*Dice similarity coefficient is:  tf.Tensor(0.9777626, shape=(), dtype=float32)*
 
 Example of prediction visualisation is as follow:
 
-<img src="./resources/ImprovedUnetPredict.png" width = "40%"/>
+<img src="./resources/ImprovedUnetPredict.png" width = "30%"/>
 
 
 > 2.**Structure of DCGAN**
 1. Generator
 
-<img src="./resources/Generator.png" width = "40%"/>
+<img src="./resources/Generator.png" width = "30%"/>
 
 
 2. Discriminator
 
-<img src="./resources/Discriminator.png" width = "40%"/>
+<img src="./resources/Discriminator.png" width = "25%"/>
 
 3. Gan
 
-<img src="./resources/Gan.png" width = "40%"/>
+<img src="./resources/Gan.png" width = "30%"/>

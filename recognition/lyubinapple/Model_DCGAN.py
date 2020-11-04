@@ -1,9 +1,10 @@
 '''
-    File name: Model.py
+    File name: Model_DCGAN.py
     Author: Bin Lyu(45740165)
     Date created: 11/03/2020
-    Date last modified: 
+    Date last modified: 11/04/2020
     Python Version: 4.7.4
+    Move model part into this new file
 '''
 
 import tensorflow as tf

@@ -49,10 +49,11 @@ def plot_images(imgs, n):
     pyplot.show()
 
 path = "/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/AKOA_Analysis/"
-images = load_images(path, 150000)
+images = load_images(path, 15000)
 savez_compressed('OAI.npz', images)
 print('Loaded:', images.shape)
-plot_images(images, 5)
+# display true images from initial dataset
+plot_images(images, 2)
 
 # load dataset that have pre-processed as np array and rescale
 def load_real_samples():
