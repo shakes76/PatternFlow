@@ -200,14 +200,14 @@ After training was complete, I analysed the training history by ploting how the 
 We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from an alternate model (trained using the same datasets, optimizer and loss function).
 
 <p align="center">
-  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History%20Other%20Model.png">
 </p>
 <p align="center">Training history of model after each epoch</p>
 
 Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
 
 ### Making Predictions
-Next, I displayed some predictions I made. Three such prediciton are shown below.
+Next, I made and displayed some predictions using the model to test that it is accurate. Five of these such predictions are shown below.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
@@ -218,7 +218,7 @@ Next, I displayed some predictions I made. Three such prediciton are shown below
 <p align="center">Good predictions made using the model</p>
 </p>
 
-As you can see, these are all really good predictions, and in my opinion are very usable.
+As you can see, these are all really good predictions, and in my opinion are very usable. The first four in particular are highly accurate. One shortcoming I found was how my model dealt with the edges of the segmentation. As you can see in the fifth prediction, my prediction does not find the correct outline that was needed.
 
 However, not all predictions are this good. For example, take a look at the following two predictions.
 
