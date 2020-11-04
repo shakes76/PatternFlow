@@ -17,3 +17,15 @@ ISIC2018
     |_ ISIC_0000001_segmentation
     |_ ...
 ```
+
+## Reference
+
+https://medium.com/the-owl/k-fold-cross-validation-in-keras-3ec4a3a00538
+
+https://github.com/zhixuhao/unet
+
+https://github.com/NifTK/NiftyNet/blob/a383ba342e3e38a7ad7eed7538bfb34960f80c8d/niftynet/layer/loss_segmentation.py
+
+https://keras.io/api/losses/#creating-custom-losses
+
+https://gist.github.com/abhinavsagar/fe0c900133cafe93194c069fe655ef6e
