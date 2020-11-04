@@ -19,9 +19,9 @@ def get_encoder(latent_dim):
 
 def get_decoder(latent_dim):
     input_layer = layers.Input(shape=(latent_dim, )) # Ensure this matches output of encoder network
-    d1 = layers.Dense(img_size*2, activation='relu')(input_layer)
-    d2 = layers.Dense((img_size//4)*(img_size//4)*32, activation='relu')(d1)
-    r1 = layers.Reshape(target_shape=((img_size//4), (img_size//4), 32))(d2)
+    d1 = layers.Dense(img_size, activation='relu')(input_layer)
+    d2 = layers.Dense((img_size//4)*(img_size//4)*32, activation='relu')(d1) # match the 1/4 downscale of the encoder
+    r1 = layers.Reshape(target_shape=((img_size//4), (img_size//4), 32))(d2) # so we get same image size as output
     c1 = layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu')(r1)
     c2 = layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu')(c1)
     c3 = layers.Conv2DTranspose(filters=1, kernel_size=3, strides=1, padding='same')(c2)
@@ -52,7 +52,6 @@ class InfoVAE():
         self.model = Model(inputs=i, outputs=x) # wrap into keras Model object
         self.optimizer = optimizers.Adam()
 
-    @tf.function
     def _compute_kernel(self, x, y):
         x_size = tf.shape(x)[0]
         y_size = tf.shape(y)[0]
@@ -61,14 +60,12 @@ class InfoVAE():
         tiled_y = tf.tile(tf.reshape(y, tf.stack([1, y_size, dim])), tf.stack([x_size, 1, 1]))
         return tf.exp(-tf.reduce_mean(tf.square(tiled_x - tiled_y), axis=2) / tf.cast(dim, tf.float32))
 
-    @tf.function
     def _compute_mmd(self, x, y):
         x_kernel = self._compute_kernel(x, x)
         y_kernel = self._compute_kernel(y, y)
         xy_kernel = self._compute_kernel(x, y)
         return tf.reduce_mean(x_kernel) + tf.reduce_mean(y_kernel) - 2 * tf.reduce_mean(xy_kernel)
 
-    @tf.function
     def _encoder_loss(self, latent_encoding: tf.Tensor):
         """ Calculates the loss for the encoder by checking MMD between
             encoding of training/test data and random sample of Gaussian normal
@@ -78,7 +75,6 @@ class InfoVAE():
         actual_dist = tf.random.normal(shape=latent_encoding.shape)
         return self._compute_mmd(actual_dist, latent_encoding)
 
-    @tf.function
     def _dssim_loss_scalar(self, shape, images):
         """ Calculate DSSIM for factoring into decoder loss.
             Using this in the decoder loss results in a sort of modal
@@ -109,7 +105,6 @@ class InfoVAE():
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
         return tf.reduce_mean(loss, axis=None) # collapse loss into 1 number
     
-    @tf.function
     def get_loss(self, images: tf.Tensor):
         """Get loss for a given validation set"""
         latent_encoding = self.encoder(images, training=False)
@@ -119,7 +114,6 @@ class InfoVAE():
 
         return tf.math.reduce_mean(enc_loss + rec_loss, axis=None)
 
-    @tf.function
     def random_generation_sample(self, n):
         """Returns n generated images"""
         latent_encoding = tf.random.normal(shape=(n, self.latent_dim))
