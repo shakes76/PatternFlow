@@ -16,8 +16,8 @@ IMAGE_WIDTH = 512
 IMAGE_HEIGHT = 384
 IMAGE_CHANNELS = 3
 
-MASK_WIDTH = 324
-MASK_HEIGHT = 196
+MASK_WIDTH = 309
+MASK_HEIGHT = 181
 MASK_CHANNELS = 1
 
 class IsicsUnet:
@@ -172,25 +172,29 @@ class IsicsUnet:
 
         # decoder/upsampling
         up6 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv5)
-        conv4 = tf.keras.layers.Cropping2D(cropping=((4, 4), (4, 4)))(conv4)
+        up6 = tf.keras.layers.Conv2D(512, (2, 2))(up6)
+        conv4 = tf.keras.layers.Cropping2D(cropping=((4, 5), (4, 5)))(conv4)
         up6 = tf.keras.layers.concatenate([conv4, up6])
         conv6 = tf.keras.layers.Conv2D(512, (3, 3), activation='relu')(up6)
         conv6 = tf.keras.layers.Conv2D(512, (3, 3), activation='relu')(conv6)
 
         up7 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv6)
-        conv3 = tf.keras.layers.Cropping2D(cropping=((16, 17), (16, 17)))(conv3)
+        up7 = tf.keras.layers.Conv2D(256, (2, 2))(up7)
+        conv3 = tf.keras.layers.Cropping2D(cropping=((18, 18), (18, 18)))(conv3)
         up7 = tf.keras.layers.concatenate([conv3, up7])
         conv7 = tf.keras.layers.Conv2D(256, (3, 3), activation='relu')(up7)
         conv7 = tf.keras.layers.Conv2D(256, (3, 3), activation='relu')(conv7)
 
         up8 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv7)
-        conv2 = tf.keras.layers.Cropping2D(cropping=((41, 41), (41, 41)))(conv2)
+        up8 = tf.keras.layers.Conv2D(128, (2, 2))(up8)
+        conv2 = tf.keras.layers.Cropping2D(cropping=((44, 45), (44, 45)))(conv2)
         up8 = tf.keras.layers.concatenate([conv2, up8])
         conv8 = tf.keras.layers.Conv2D(128, (3, 3), activation='relu')(up8)
         conv8 = tf.keras.layers.Conv2D(128, (3, 3), activation='relu')(conv8)
 
         up9 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv8)
-        conv1 = tf.keras.layers.Cropping2D(cropping=((90, 90), (90, 90)))(conv1)
+        up9 = tf.keras.layers.Conv2D(64, (2, 2))(up9)
+        conv1 = tf.keras.layers.Cropping2D(cropping=((97, 98), (97, 98)))(conv1)
         up9 = tf.keras.layers.concatenate([conv1,up9])
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(up9)
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(conv9)
