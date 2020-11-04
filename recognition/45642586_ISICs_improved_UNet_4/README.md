@@ -22,6 +22,17 @@ I split the whole data set into training/validation/testing set (70:15:15).
 Our first version algorithm has overfitting issue, the training DSC is very hight but validation/test DSC are less than 0.75. Therefore, because our U-Net model is very deep, so I add some batch_nomalization layers after some of the con2d layers to solve overfitting. Besides, I also set the batch size as 32.
 
 
+## Dependencies:
+The following are required:
+
+	1. Python 3.7
+	
+	2. Tensorflow-gpu 2.1
+	
+	3. Matplotlib
+	
+My environment.yml file can be used to create env for ease of use with Anaconda.
+
 ## Usage of the module (how it works):
 Please run the driver script (driver.py) to call the Improved UNet module in UNet_model.py. The UNet_model is imported by driver.py 
 and train/test on ISICs 2018 data set to finish the image sementation, where the Improved UNet module is implemented based on Tensorflow.
