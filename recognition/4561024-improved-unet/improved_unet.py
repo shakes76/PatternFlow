@@ -86,7 +86,7 @@ def unet():
     c5 = Add()([c4_down, c5])
     
     # Upsampling module
-    u4 = UpSampling2D()(c5)
+    u4 = UpSampling2D(size=(2, 2))(c5)
     
     '''Up 4'''
     # Concatenation
@@ -98,7 +98,7 @@ def unet():
     u4 = LeakyReLU(alpha=0.01)(u4)
     
     # Upsampling module
-    u3 = UpSampling2D()(u4)
+    u3 = UpSampling2D(size=(2, 2))(u4)
     
     '''Up 3'''
     # Concatenation
@@ -109,12 +109,12 @@ def unet():
     u3 = Conv2D(64, (1, 1), padding='same')(u3)
     u3 = LeakyReLU(alpha=0.01)(u3)
     # Segmentation module
-    s3 = Conv2D(4, (3, 3), padding='same')(u3)
+    s3 = Conv2D(4, (1, 1), padding='same')(u3)
     s3 = LeakyReLU(alpha=0.01)(s3)
-    s3 = UpSampling2D()(s3)
+    s3 = UpSampling2D(size=(2, 2))(s3)
     
     # Upsampling module
-    u2 = UpSampling2D()(u3)
+    u2 = UpSampling2D(size=(2, 2))(u3)
     
     '''Up 2'''
     # Concatenation
@@ -125,27 +125,27 @@ def unet():
     u2 = Conv2D(32, (1, 1), padding='same')(u2)
     u2 = LeakyReLU(alpha=0.01)(u2)
     # Segmentation module
-    s2 = Conv2D(4, (3, 3), padding='same')(u2)
+    s2 = Conv2D(4, (1, 1), padding='same')(u2)
     s2 = LeakyReLU(alpha=0.01)(s2)
     s3_2 = Add()([s3, s2])
-    s3_2 = UpSampling2D()(s3_2)
+    s3_2 = UpSampling2D(size=(2, 2))(s3_2)
     
     # Upsampling module
-    u1 = UpSampling2D()(u2)
+    u1 = UpSampling2D(size=(2, 2))(u2)
     
     '''Up 1'''
     # Concatenation
     u1 = concatenate([u1, c1])
-    # Final conv layer (3,3) OR (1,1)?!?!?!!!
-    u1 = Conv2D(32, (3, 3), padding='same')(u1)
+    # Final conv layer
+    u1 = Conv2D(32, (1, 1), padding='same')(u1)
     u1 = LeakyReLU(alpha=0.01)(u1)
     # Segmentation module
-    s1 = Conv2D(4, (3, 3), padding='same')(u1)
+    s1 = Conv2D(4, (1, 1), padding='same')(u1)
     s1 = LeakyReLU(alpha=0.01)(s1)
     # Element-wise sum
     s3_2_1 = Add()([s3_2, s1])
     
-    outputs = Conv2D(4, (3, 3), padding='same',activation='softmax')(s3_2_1)
+    outputs = Conv2D(4, (1, 1), padding='same', activation='softmax')(s3_2_1)
     model = Model(inputs, outputs)
     model.summary()
     return model  

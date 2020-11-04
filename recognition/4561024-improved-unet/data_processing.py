@@ -13,7 +13,7 @@ def test():
     
 def load_image(path):
     image_array = []
-    for name in os.listdir(path)[:100]:
+    for name in os.listdir(path)[:200]:
         # Loading and resizing image
         filename = path + name
         image = load_img(filename, color_mode='grayscale', target_size=(256, 256))
