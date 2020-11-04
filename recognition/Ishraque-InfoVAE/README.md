@@ -30,7 +30,10 @@ Ensure you have `jupyter` and `tensorflow` version 2.3.0 or higher installed in 
 
 Update the input data directories in `config.py`. Optionally, update the variables/ingestion methods in `data.py` if desired.
 
-Run `jupyter notebook run.ipynb` to start the driver notebook/script.
+In your terminal, run the following to start the driver notebook/script:
+```bash
+jupyter notebook run.ipynb
+```
 
 ## Resources
 
