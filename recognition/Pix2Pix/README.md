@@ -23,7 +23,8 @@ On running Driver.py script, Pix2Pix_algorithm.py get triggered which performs t
 1. After model is trained, testing data set is loaded, preproccesed and finally using generator brain MRI images are generated.
 
 High level architecture of Pix2Pix GAN model with Input, generated images from generator & ground truth image is shown below:--
-![](images/GAN_fake.png) (images/GAN_real.png)
+![](images/GAN_fake.png) 
+![](images/GAN_real.png)
 
 
 ## Results
