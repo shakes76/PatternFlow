@@ -6,7 +6,7 @@ Student name: Xiao Sun;
 
 Student ID: 45642586;
 
-## 
+## Question
 For COMP3710 Pattern Recognition Report, I choose the fourth problem, which is: 
 4. Segment the ISICs data set with the Improved UNet [1] with all labels having a minimum Dice similarity coefficient of 0.8 on the test set. [Normal Difficulty]
 
@@ -17,10 +17,10 @@ Our model algorithm is an improved UNet model, which is inspired by the popular 
 The data set we used is part of ISIC 2018 challenge data for skin cancer segmentation labels (preprocessed version).
 In this project, we aim to implement the improved U-Net model and apply on ISIC data set to segment skin cancer images.
 
+I split the whole data set into training/validation/testing set (70:15:15).
 
+Our first version algorithm has overfitting issue, the training DSC is very hight but validation/test DSC are less than 0.75. Therefore, because our U-Net model is very deep, so I add some batch_nomalization layers after some of the con2d layers to solve overfitting. Besides, I also set the batch size as 32.
 
-......describe and justify your training, validation and testing split of the data
-......problems(overfitting), how i change algorithm, and why 
 
 ## Usage of the module (how it works):
 Please run the driver script (driver.py) to call the Improved UNet module in UNet_model.py. The UNet_model is imported by driver.py 
