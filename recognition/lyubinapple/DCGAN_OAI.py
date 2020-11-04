@@ -2,7 +2,7 @@
     File name: DCGAN_OAI.py
     Author: Bin Lyu(45740165)
     Date created: 10/30/2020
-    Date last modified: 
+    Date last modified: 11/04/2020
     Python Version: 4.7.4
 '''
 import tensorflow as tf
@@ -27,7 +27,8 @@ def load_images(path, n_images):
         # load the image
         image = Image.open(path + fn)
         image = image.convert('RGB')
-        image = image.resize((80, 80),Image.ANTIALIAS)
+        # keep high-quality during downsampling
+        image = image.resize((80, 80), Image.ANTIALIAS)
         pixels = asarray(image)
         # save image into list
         images.append(pixels)
@@ -48,7 +49,7 @@ def plot_images(imgs, n):
     pyplot.show()
 
 path = "/Users/annalyu/Desktop/Data_Science/2020.2/COMP3710/Ass/Ass3Data/AKOA_Analysis/"
-images = load_images(path, 150)
+images = load_images(path, 150000)
 savez_compressed('OAI.npz', images)
 print('Loaded:', images.shape)
 plot_images(images, 5)
@@ -159,7 +160,7 @@ def train(g_model, d_model, gan_model, dataset, latent_size, ep=50, batch_num=12
             summarize_performance(i, g_model, d_model, dataset, latent_size)
 
 # size of the latent space
-latent_size = 100
+latent_size = 2500
 
 # create discriminator model
 print("create discriminator model ")
@@ -206,16 +207,19 @@ def plot_predict(pred_model, latent_size, n_samp):
   # scale from [-1,1] to [0,1]
   X = (X + 1) / 2.0
   # plot the result
-  plot_generated(X, 5)
+  plot_generated(X, 2)
   return tf.convert_to_tensor(X)
 
 # evaluation, use SSIM similarityx
 def eval_predict(pred_ds, true_ds, size, max_val=1):
-  true_img = load_images(true_ds, 2500)
+  # load true images and convert to tensorflow format
+  true_img = load_images(true_ds, size)
   true_img = tf.convert_to_tensor(true_img)
+  # convert image to float 32 for use 
   pred_i = tf.image.convert_image_dtype(pred_ds, tf.float32)
   true_i = tf.image.convert_image_dtype(true_img, tf.float32)
-  #print("pred_i, true_i", len(pred_i), len(true_i))
+  # print("pred_i, true_i", len(pred_i), len(true_i))
+  # calculate SSIM of these two dataset
   ssim2 = tf.image.ssim(pred_i, true_i, max_val=1)
   final_result = tf.reduce_mean(tf.cast(ssim2, dtype=tf.float32))
   print("SSIM is: ", final_result)

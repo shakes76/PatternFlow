@@ -43,7 +43,7 @@ SSIM is:  tf.Tensor(0.27565268, shape=(), dtype=float32)
 
 # **Appendix**
 
->**Improved unet for egmentation of OASIS dataset**
+>**1. Improved unet for segmentation of OASIS dataset**
 
 **Problem Discription:**
 
@@ -66,10 +66,11 @@ Dice similarity coefficient is:  tf.Tensor(0.9777626, shape=(), dtype=float32)
 Besides, the val_accuracy is 0.9866. 
 
 Example of prediction visualisation is as follow:
+
 <img src="./resources/ImprovedUnetPredict.png" width = "40%"/>
 
 
->**Structure of DCGAN**
+> 2.**Structure of DCGAN**
 1. Generator
 
 <img src="./resources/Generator.png" width = "40%"/>
