@@ -37,9 +37,9 @@ Below I have detailed each of the functions in this script, describing their pur
 ## driver_script.py
 This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
 
-| Dependencies | Classes (and their methods) | Functions |
-| --- | --- |
-| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend` | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient` |
+| Dependencies                            | Classes (and their methods)      | Functions                                                     |
+| --------------------------------------- | -------------------------------- | ------------------------------------------------------------- |
+| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend`  | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient` |
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
