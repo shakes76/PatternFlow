@@ -123,8 +123,7 @@ In order to train this model as I have, follow the next steps:
 Below is an outline of how I used the model to segment the ISIC data set using the UNet model, alongside some results and images.
 
 ### Plotting an Example Image
-When we run the driver script, the first thing it does it output an example image and mask from the training dataset.
-This image is shown below.
+When we run the driver script, the first thing it does it output an example image and mask from the training dataset. This image is shown below.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
@@ -135,69 +134,77 @@ This image is shown below.
 </p>
 
 ### Creating the Model & Outputting Structure
+Next, the model is created. The model summary is output, which I have included below. Note that the below output has been simplified.
 
-The model summary is output. The output is shown below.
+| Layer (type)   | Output Shape    | Param #  | Connected to              |
+| -------------- | --------------- | -------- | ------------------------- |
+| InputLayer 1   | (256, 256, 1)   | 0        |                           |
+| Conv2D 1       | (256, 256, 6)   | 60       | InputLayer 1              |
+| Conv2D 2       | (256, 256, 6)   | 330      | Conv2D 1                  |
+| MaxPooling2D 1 | (128, 128, 6)   | 0        | Conv2D 2                  |
+| Conv2D 3       | (128, 128, 12)  | 660      | MaxPooling2D 1            |
+| Conv2D 4       | (128, 128, 12)  | 1308     | Conv2D 3                  |
+| MaxPooling2D 2 | (64, 64, 12)    | 0        | Conv2D 4                  |
+| Conv2D 5       | (64, 64, 24)    | 2616     | MaxPooling2D 2            |
+| Conv2D 6       | (64, 64, 24)    | 5208     | Conv2D 5                  |
+| MaxPooling2D 3 | (32, 32, 24)    | 0        | Conv2D 6                  |
+| Conv2D  7      | (32, 32, 48)    | 10416    | MaxPooling2D 3            |
+| Conv2D  8      | (32, 32, 48)    | 20784    | Conv2D 7                  |
+| MaxPooling2D 4 | (16, 16, 48)    | 0        | Conv2D 8                  |
+| Conv2D 9       | (16, 16, 96)    | 41568    | MaxPooling2D 4            |
+| Conv2D 10      | (16, 16, 96)    | 83040    | Conv2D 9                  |
+| UpSampling2D 1 | (32, 32, 96)    | 0        | Conv2D 10                 |
+| Concatenate 1  | (32, 32, 144)   | 0        | UpSampling2D 1 & Conv2D 8 |
+| Conv2D 11      | (32, 32, 48)    | 62256    | Concatenate 1             |
+| Conv2D 12      | (32, 32, 48)    | 20784    | Conv2D 11                 |
+| UpSampling2D 2 | (64, 64, 48)    | 0        | Conv2D 12                 |
+| Concatenate 2  | (64, 64, 72)    | 0        | UpSampling2D 2 & Conv2D 6 |
+| Conv2D 13      | (64, 64, 24)    | 15576    | Concatenate 2             |
+| Conv2D 14      | (64, 64, 24)    | 5208     | Conv2D 13                 |
+| UpSampling2D 3 | (128, 128, 24)  | 0        | Conv2D 14                 |
+| Concatenate 3  | (128, 128, 36)  | 0        | UpSampling2D 3 & Conv2D 4 |
+| Conv2D 15      | (128, 128, 12)  | 3900     | Concatenate 3             |
+| Conv2D 16      | (128, 128, 12)  | 1308     | Conv2D 15                 |
+| UpSampling2D 4 | (256, 256, 12)  | 0        | Conv2D 16                 |
+| Concatenate 4  | (256, 256, 18)  | 0        | UpSampling2D 4 & Conv2D 2 |
+| Conv2D 17      | (256, 256, 6)   | 978      | Concatenate 4             |
+| Conv2D 18      | (256, 256, 6)   | 330      | Conv2D 17                 |
+| Conv2D 19      | (256, 256, 1)   | 7        | Conv2D 18                 |
 
-| Layer (type)   | Output Shape          | Param #  | Connected to              |
-| -------------- | --------------------- | -------- | ------------------------- |
-| InputLayer 1   | (None, 256, 256, 1)   | 0        |                           |
-| Conv2D 1       | (None, 256, 256, 6)   | 60       | InputLayer 1              |
-| Conv2D 2       | (None, 256, 256, 6)   | 330      | Conv2D 1                  |
-| MaxPooling2D 1 | (None, 128, 128, 6)   | 0        | Conv2D 2                  |
-| Conv2D 3       | (None, 128, 128, 12)  | 660      | MaxPooling2D 1            |
-| Conv2D 4       | (None, 128, 128, 12)  | 1308     | Conv2D 3                  |
-| MaxPooling2D 2 | (None, 64, 64, 12)    | 0        | Conv2D 4                  |
-| Conv2D 5       | (None, 64, 64, 24)    | 2616     | MaxPooling2D 2            |
-| Conv2D 6       | (None, 64, 64, 24)    | 5208     | Conv2D 5                  |
-| MaxPooling2D 3 | (None, 32, 32, 24)    | 0        | Conv2D 6                  |
-| Conv2D  7      | (None, 32, 32, 48)    | 10416    | MaxPooling2D 3            |
-| Conv2D  8      | (None, 32, 32, 48)    | 20784    | Conv2D 7                  |
-| MaxPooling2D 4 | (None, 16, 16, 48)    | 0        | Conv2D 8                  |
-| Conv2D 9       | (None, 16, 16, 96)    | 41568    | MaxPooling2D 4            |
-| Conv2D 10      | (None, 16, 16, 96)    | 83040    | Conv2D 9                  |
-| UpSampling2D 1 | (None, 32, 32, 96)    | 0        | Conv2D 10                 |
-| Concatenate 1  | (None, 32, 32, 144)   | 0        | UpSampling2D 1 & Conv2D 8 |
-| Conv2D 11      | (None, 32, 32, 48)    | 62256    | Concatenate 1             |
-| Conv2D 12      | (None, 32, 32, 48)    | 20784    | Conv2D 11                 |
-| UpSampling2D 2 | (None, 64, 64, 48)    | 0        | Conv2D 12                 |
-| Concatenate 2  | (None, 64, 64, 72)    | 0        | UpSampling2D 2 & Conv2D 6 |
-| Conv2D 13      | (None, 64, 64, 24)    | 15576    | Concatenate 2             |
-| Conv2D 14      | (None, 64, 64, 24)    | 5208     | Conv2D 13                 |
-| UpSampling2D 3 | (None, 128, 128, 24)  | 0        | Conv2D 14                 |
-| Concatenate 3  | (None, 128, 128, 36)  | 0        | UpSampling2D 3 & Conv2D 4 |
-| Conv2D 15      | (None, 128, 128, 12)  | 3900     | Concatenate 3             |
-| Conv2D 16      | (None, 128, 128, 12)  | 1308     | Conv2D 15                 |
-| UpSampling2D 4 | (None, 256, 256, 12)  | 0        | Conv2D 16                 |
-| Concatenate 4  | (None, 256, 256, 18)  | 0        | UpSampling2D 4 & Conv2D 2 |
-| Conv2D 17      | (None, 256, 256, 6)   | 978      | Concatenate 4             |
-| Conv2D 18      | (None, 256, 256, 6)   | 330      | Conv2D 17                 |
-| Conv2D 19      | (None, 256, 256, 1)   | 7        | Conv2D 18                 |
-
-Total parameters: 276,337
-
-Trainable parameters: 276,337
-
-Non-trainable parameters: 0
+In total, there are 276,337 parameters, all of which are trainable.
 
 ### Compiling the Model
-I used the adam optimizer. I used the default adam optimizer and so did not change the learning rate.
+Next, I compiled the model. 
 
-I used binary crossentropy as the loss function.
+**Optimizer**: I used the default Adam optimizer and did not change the learning rate. I found that this was an adequate optimizer and did not with to explore alternatives.
 
-I used accuracy as a metric.
+**Loss Function**: I used binary crossentropy as the loss function. The only alternative I considered here was to use the dice coefficient loss as a custom loss function. I decided not to in the end, due to the dice coefficient loss not giving me my desired convergence.
+
+**Metrics**: I used accuracy as a metric. I have also used dice coefficient as a metric but chose accuracy in the end. Either of these would have sufficed here though.
 
 ### Training the Model
-I trained the model over 100 epochs.
+Next, I trained the model.
 
-I used a training and validating batch size of 32.
+I trained the model over 100 epochs. I stopped at 100 epochs because I was getting good convergence and my training accuracy and validation accuracy.
+
+I used a training and validating batch size of 32. This size sufficed and given my hardware felt this was more than plenty.
 
 ### Analysing the Training History
-After training was complete, I analysed the training history by ploting how the training dice coefficient and validating dice coefficients changed over each epoch. The plot of the training history is shown below. We can clearly see the training dice coefficient and validation dice coefficient converge over time.
+After training was complete, I analysed the training history by ploting how the training accuracy and validation accuracy changed over each epoch. The plot of the training history is shown below.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
 </p>
 <p align="center">Training history of model after each epoch</p>
+
+We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from an alternate model (trained using the same datasets, optimizer and loss function).
+
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
+</p>
+<p align="center">Training history of model after each epoch</p>
+
+Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
 
 ### Making Predictions
 Next, I displayed some predictions I made. Three such prediciton are shown below.
