@@ -1,12 +1,11 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import datasets, layers, models, optimizers, losses
-import tensorflow_probability as tfp
 from data import img_size
 
 def get_encoder(latent_dim):
     input_layer = layers.Input(shape=(img_size, img_size, 1))
-    c1 = layers.Conv2D(filters=32, kernel_size=3, input_shape=(2, 2), activation='relu')(input_layer)
+    c1 = layers.Conv2D(filters=32, kernel_size=3, activation='relu')(input_layer)
     c2 = layers.Conv2D(filters=64, kernel_size=3, strides=(2, 2), activation='relu')(c1)
     d1 = layers.Flatten()(c2)
     d2 = layers.Dense(latent_dim)(d1)
@@ -72,8 +71,8 @@ class InfoVAE():
             rec_loss = losses.mean_squared_error(images, reconstruction)
 
             # SSIM loss
-            dssim = self._dssim_loss_scalar(latent_encoding.shape, images)
-            loss = (enc_loss + rec_loss)*(1+dssim)
+            # dssim = self._dssim_loss_scalar(latent_encoding.shape, images)
+            loss = enc_loss + (rec_loss)
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
         return tf.reduce_mean(loss, axis=None)

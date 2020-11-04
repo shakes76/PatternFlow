@@ -8,3 +8,4 @@
 2. [Shengjia Zhao's InfoVAE tutorial](https://ermongroup.github.io/blog/a-tutorial-on-mmd-variational-autoencoders/)
 3. [Shengjia Zhao's InfoVAE implementation](https://github.com/ShengjiaZhao/MMD-Variational-Autoencoder/)
 4. [Tensorflow CVAE tutorial](https://www.tensorflow.org/tutorials/generative/cvae)
+5. [SSIM and DSSIM](https://en.wikipedia.org/wiki/Structural_similarity)
