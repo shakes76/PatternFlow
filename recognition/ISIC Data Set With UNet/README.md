@@ -228,7 +228,7 @@ However, not all predictions are this good. For example, take a look at the foll
 <p align="center">Poor predictions made using the model</p>
 </p>
 
-These are clearly not usable predictions. I found that often the model got tricked up by certain skin features.
+These are clearly not usable predictions. I found that often the model got tricked up by certain skin features. If we look at the first prediction, the four black dots trick the model, which completely misses the actual lesion. On the other hand, in the second prediction, the skin lesion is correcly identified, however the model also incorrectly segments many other parts of the image which are not skin lesions. These two examples, which are not compeltely uncommon in the predictions made, show that the model still needs a lot of work if it is going to be used on all images, particularly trickier images which are obscured.
 
 ### Analysing Dice Similarity Coefficient of Model
 Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.79369396. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
