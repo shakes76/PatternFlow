@@ -13,12 +13,9 @@ I will now outline the contents of this repository, before discussing how the mo
 ## Contents of this Repository
 The contents of this repository are detailed below.
 
-Scripts:
-* `driver_script.py`
-* `solution.py`
-
-Folders:
-* `Images`
+| Scripts | Folders |
+| ------- | ------- |
+| `driver_script.py` `solution.py` | `Images` |
 
 `driver_script.py` imports the ISIC data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
 
@@ -29,12 +26,9 @@ This `Images` folder contains a number of images relating to the training, predi
 ## solution.py
 This file is used to create the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
 
-Dependencies
-* `tensorflow`
-* `tensorflow.keras.layers`
-
-Functions
-* `model`
+| Dependencies | Functions |
+| --- | --- |
+| `tensorflow` `tensorflow.keras.layers` | `unet_model` |
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
@@ -43,30 +37,9 @@ Below I have detailed each of the functions in this script, describing their pur
 ## driver_script.py
 This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
 
-Dependencies:
-* `tensorflow`
-* `matplotlib.pyplot`
-* `math`
-* `glob`
-* `IPython.display.clear_output`
-* `tensorflow.keras.backend`
-
-Classes (and their methods):
-* `DisplayCallback`
-  * `on_epoch_end`
-
-Functions:
-* `import_ISIC_data`
-* `process_path`
-* `decode_jpg`
-* `decode_png`
-* `analyse_training_history`
-* `display_predictions`
-* `display_data`
-* `display`
-* `compute_dice_coefficients`
-* `dice_coefficient_loss`
-* `dice_coefficient`
+| Dependencies | Classes (and their methods) | Functions |
+| --- | --- |
+| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend` | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient`
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
