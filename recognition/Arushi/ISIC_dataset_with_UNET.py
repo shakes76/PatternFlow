@@ -1,82 +1,23 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
-# Import all the necessary libraries
-
-import os
-import random
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-plt.style.use("ggplot")
-get_ipython().run_line_magic('matplotlib', 'inline')
-
-import tensorflow as tf
-
-from keras.models import Model, load_model
-from keras.layers import Input, BatchNormalization, Activation, Dense, Dropout
-from keras.layers.core import Lambda, RepeatVector, Reshape
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D, GlobalMaxPool2D
-from keras.layers.merge import concatenate, add
-from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from keras.optimizers import Adam
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-from keras.utils import to_categorical
-from keras import backend as K
-
-from tqdm import tqdm_notebook, tnrange
-
-from itertools import chain
-
-from skimage.io import imread, imshow, concatenate_images
-from skimage.transform import resize
-from skimage.morphology import label
-
-from sklearn.model_selection import train_test_split
-
-
-
-
-# In[ ]:
-
-
-# initialising the compression dimensions
-img_width = 256
-img_height = 256
-border = 5
-
-
-# In[ ]:
-
-
-train_input_path = input("Enter the Location of Training_Input folder")
-train_groundtruth_path = input("Enter the Location of Training_GroundTruth folder")
-
-
 # In[2]:
 
 
-def load_dataset(train_input_path, train_groundtruth_path):    
+def load_dataset(train_input_path, train_groundtruth_path):  
+    """This function will load the dataset"""
     isic_features = next(os.walk(train_input_path))[2] 
     isic_labels = next(os.walk(train_groundtruth_path))[2] 
-
-   # print("Number of images in features folder = ", len(isic_labels))
-   # print("Number of images in labels folder = ", len(isic_labels))
     return isic_features, isic_labels
 
 
 # In[3]:
 
 
-def sorting_labels(isic_features, isic_labels):
-    
+def sorting_labels(isic_features, isic_labels):  
+    """This function will sort teh data with respect to labels"""
     isic_features_sort = sorted(isic_features) 
-    isic_labels_sort=sorted(isic_labels) 
-    
+    isic_labels_sort=sorted(isic_labels)     
     return isic_features_sort, isic_labels_sort
 
 
@@ -116,11 +57,11 @@ def load_labels(inp_path, ids):
 # In[6]:
 
 
+# train-validation-test split
 def split_datatset(X_isic_train, y_isic_train):
-    # train-validation-test split
+    """This function is performing train, validation and test split"""
     X_train, X_test, y_train, y_test = train_test_split(X_isic_train, y_isic_train, test_size = 0.20, random_state = 42)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25, random_state = 42)
-    
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25, random_state = 42)    
     return X_train, X_test, y_train, y_test, X_val, y_val
 
 
@@ -128,10 +69,11 @@ def split_datatset(X_isic_train, y_isic_train):
 
 
 def encoding(y_train,y_test,y_val):
+    # normalizing the labels to 0 and 1 
     y_train_sc = y_train//255
     y_test_sc = y_test//255
     y_val_sc = y_val//255
-    
+    # one hot encoding 
     y_train_encode = to_categorical(y_train_sc) 
     y_test_encode = to_categorical(y_test_sc) 
     y_val_encode = to_categorical(y_val_sc) 
@@ -214,7 +156,7 @@ def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
 
 # dice coeffient
 def dice_coeffient(y_true, y_pred, smooth = 1):
-    """ this function is used to gauge the similarity of two samples """
+    """ This function is used to gauge the similarity of two samples """
     intersect = K.sum(K.abs(y_true * y_pred), axis = [1,2,3])
     union = K.sum(y_true,[1,2,3]) + K.sum(y_pred,[1,2,3]) - intersect
     coeff_dice = K.mean((intersect + smooth) / (union + smooth), axis = 0)
@@ -232,8 +174,8 @@ def dice_loss(y_true, y_pred, smooth = 1):
 # In[12]:
 
 
+# plot for training loss and validation loss wrt epochs
 def lossPlot(results):
-    # plot for training loss and validation loss wrt epochs
     plt.figure(figsize = (8, 8))
     plt.title("dice loss")
     plt.plot(results.history["loss"], label = "training_loss")
@@ -247,6 +189,7 @@ def lossPlot(results):
 # In[13]:
 
 
+# plot for training accuracy and validation accuracy wrt epochs
 def accuracyPlot(results):
     plt.figure(figsize = (8,8))
     plt.title("Classification Accuracy")
@@ -260,6 +203,7 @@ def accuracyPlot(results):
 # In[14]:
 
 
+# loading the best model and predicting on model
 def best_model(model,X_test,y_test):
     model.load_weights('ISIC_model.h5')
     test_preds=model.predict(X_test,verbose=1) 
@@ -273,13 +217,14 @@ def best_model(model,X_test,y_test):
 
 
 def plot_ISIC(X, y, Y_pred,ix=None):
-    
+    """ This function returns the input image, true image and predicted image"""
     if ix is None:
         ix = random.randint(0, len(X))
     else:
         ix = ix   
 
     fig, ax = plt.subplots(1, 3, figsize=(20, 10))
+    
     ax[0].imshow(X[ix, ..., 0], cmap='gray')
     ax[0].contour(X[ix].squeeze(), colors='k', levels=[0.5])
     ax[0].set_title('Input Image')   
@@ -290,46 +235,5 @@ def plot_ISIC(X, y, Y_pred,ix=None):
     
     ax[2].imshow(Y_pred[ix, ..., 0], cmap='gray')
     ax[2].contour(Y_pred[ix].squeeze(), colors='k', levels=[0.5])
-    ax[2].set_title('Predicted Image')
-    
-
-
-# In[16]:
-
-
-def main():
-    isic_features, isic_labels = load_dataset(train_input_path, train_groundtruth_path)    
-    isic_features_sort, isic_labels_sort = sorting_labels(isic_features, isic_labels)
-    X_isic_train = load_features(train_input_path+"/", isic_features_sort)       
-    y_isic_train = load_labels(train_groundtruth_path+"/",isic_labels_sort)
-    X_train, X_test, y_train, y_test, X_val, y_val = split_datatset(X_isic_train, y_isic_train)
-    y_train_encode, y_test_encode, y_val_encode = encoding(y_train,y_test,y_val)
-    input_img = Input((img_height, img_width, 1), name = 'img')
-    model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True)
-    model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeffient])
-    
-    callbacks = [
-    EarlyStopping(patience = 10, verbose = 1),
-    ReduceLROnPlateau(factor = 0.1, patience = 5, min_lr = 0.00001, verbose = 1),
-    ModelCheckpoint('ISIC_model.h5', verbose = 1, save_best_only = True, save_weights_only = True)
-    ]
-    
-    results = model.fit(X_train, y_train_encode, batch_size = 32, epochs = 60, callbacks = callbacks, validation_data = (X_val, y_val_encode))
-    test_preds_reshape = best_model(model,X_test,y_test)
-    
-    lossPlot(results)
-    accuracyPlot(results)
-    plot_ISIC(X_test,y_test,test_preds_reshape)
-
-
-# In[17]:
-
-
-main()
-
-
-# In[ ]:
-
-
-
+    ax[2].set_title('Predicted Image')    
 
