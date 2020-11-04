@@ -12,7 +12,7 @@ Dice similarity coefficient of 0.9 on the test dataset. The data is consist of M
 of the 300+ human brains with accompanying segmentations, which we need to download from Cloidstore   
 with the link 'https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download'.  
 
-There are 2 scipt files, a README.md file, and one image file( final results and model_summary) under the test file.
+There are 2 script files, a README.md file, and one image file( final results and model_summary) under the test file.
 The root is, on the top-recognition branch in github, "PatternFlow/recognition/test/..."
 
 Environment
