@@ -41,7 +41,7 @@ Alogrithm
     - dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
 	- dice_coef_loss:  loss=dice_coef_loss   
 ## Model flow  chart ( the process of building the model)
-![Getting Started](.\images\model_summary.png)      
+![Getting Started](model_summary.png)      
 
 
 
