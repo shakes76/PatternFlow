@@ -69,10 +69,8 @@ def UNet_localization_module(filters, inp):
     
 # Build networks
 
-def Improved_UNet_model():
+def Improved_UNet_model(filters=16, input_layer = Input((256,256,3))):
     
-    filters = 16
-    input_layer = Input((256,256,3))
     
     # block 1:
     block1_x1 = layers.Conv2D(filters, kernel_size =3, padding = 'same')(input_layer)
@@ -162,6 +160,7 @@ def Improved_UNet_model():
     segmentation_2 = layers.UpSampling2D(size=(4,4))(segmentation_2)
     final_block_output = layers.Conv2D(1, kernel_size =3, padding = 'same')(output_b9)
     
+    # combine different level's output as the final output.
     output = layers.Add()([segmentation_1, segmentation_2, final_block_output])
     #output = layers.BatchNormalization()(output)
     output = layers.Activation('sigmoid')(output)
