@@ -1,12 +1,12 @@
 # Segmentation of ISIC data set with U-Net
-This is my solution to the ISIC data set using a U-Net model. The aim of this solution is to train a convolutional neural network to segment the ISIC data, which is a collection of photographs of skin lesions. A U-Net model was used as the convolutional neural network and is a great choice for this type of segmentation problem. In the end, I was able to make predictions with a dice similarity coefficient of 0.7.
+This is my solution to the ISIC data set using a U-Net model. The aim of this solution is to train a convolutional neural network to segment the ISIC data, which is a collection of photographs of skin lesions. A U-Net model was used as the convolutional neural network and is a great choice for this type of segmentation problem. In the end, I was able to make predictions with a dice similarity coefficient of 0.79.
 
-An example prediction is shown below. From left to right we have: the original skin lesion image, the correct segmentation, my model's predicted segmentation.
+An example prediction made using the model is shown below. From left to right we have: the original skin lesion image, the correct segmentation, my model's predicted segmentation.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
-</p>
 <p align="center">Prediction made using U-Net model. Dice Similarity Coefficient = ???</p>
+</p>
 
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
 
@@ -48,6 +48,50 @@ Includes a number of functions:
 * dice_coefficient_loss()
 * dice_coefficient()
 
+**import_ISIC_data**
+
+Downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
+
+**process_path**
+
+Processes an image and a mask by decoding and normalising them.
+
+**decode_jpg**
+
+Decodes and resizes a jpeg image.
+
+**decode_png**
+
+Decodes and resizes a png image.
+
+**analyse_training_history**
+
+Plot the acuraccy and validation accuracy of the model as it trains.
+
+**display_predictions**
+
+Makes n predictions using the model and the given dataset and displays these predictions.
+
+**display_data**
+
+Displays n images and masks from a given dataset.
+
+**display**
+
+Displays plots of the provided data.
+
+**compute_dice_coefficients**
+
+Computes the average dice similarity coefficient for all predictions made using the provided dataset.
+
+**dice_coefficient_loss**
+
+Computes the dice similarity coefficient loss for a prediction.
+
+**dice_coefficient**
+
+Computes the dice similarity coefficient for a prediction.
+
 ## How to Run the File
 In order to train this model as I have, follow the next steps:
 * You will firstly need to download the ISIC data locally.
@@ -64,92 +108,60 @@ This image is shown below.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(1).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(2).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20165055%20(4).png">
-</p>
 <p align="center">Example Images from the training dataset</p>
+</p>
 
 ### Creating the Model & Outputting Structure
 
 The model summary is output. The output is shown below.
 
-Layer (type)                    Output Shape         Param #     Connected to
-input_2 (InputLayer)            [(None, 256, 256, 1) 0
+| Layer (type)                   | Output Shape          | Param #  | Connected to           |
+| ------------------------------ | --------------------- | -------- | ---------------------- |
+| input_2 (InputLayer)           | [(None, 256, 256, 1)  | 0        |                        |
+| conv2d_19 (Conv2D)             | (None, 256, 256, 6)   | 60       | input_2[0][0]          |
+| conv2d_20 (Conv2D)             | (None, 256, 256, 6)   | 330      | conv2d_19[0][0]        |
+| max_pooling2d_4 (MaxPooling2D) | (None, 128, 128, 6)   | 0        | conv2d_20[0][0]        |
+| conv2d_21 (Conv2D)             | (None, 128, 128, 12)  | 660      | max_pooling2d_4[0][0]  |
+| conv2d_22 (Conv2D)             | (None, 128, 128, 12)  | 1308     | conv2d_21[0][0]        |
+| max_pooling2d_5 (MaxPooling2D) | (None, 64, 64, 12)    | 0        | conv2d_22[0][0]        |
+| conv2d_23 (Conv2D)             | (None, 64, 64, 24)    | 2616     | max_pooling2d_5[0][0]  |
+| conv2d_24 (Conv2D)             | (None, 64, 64, 24)    | 5208     | conv2d_23[0][0]        |
+| max_pooling2d_6 (MaxPooling2D) | (None, 32, 32, 24)    | 0        | conv2d_24[0][0]        |
+| conv2d_25 (Conv2D)             | (None, 32, 32, 48)    | 10416    | max_pooling2d_6[0][0]  |
+| conv2d_26 (Conv2D)             | (None, 32, 32, 48)    | 20784    | conv2d_25[0][0]        |
+| max_pooling2d_7 (MaxPooling2D) | (None, 16, 16, 48)    | 0        | conv2d_26[0][0]        |
+| conv2d_27 (Conv2D)             | (None, 16, 16, 96)    | 41568    | max_pooling2d_7[0][0]  |
+| conv2d_28 (Conv2D)             | (None, 16, 16, 96)    | 83040    | conv2d_27[0][0]        |
+| up_sampling2d_4 (UpSampling2D) | (None, 32, 32, 96)    | 0        | conv2d_28[0][0]        |
+| concatenate_4 (Concatenate)    | (None, 32, 32, 144)   | 0        | up_sampling2d_4[0][0]  |
+|                                |                       |          | conv2d_26[0][0]        |
+| conv2d_29 (Conv2D)             | (None, 32, 32, 48)    | 62256    | concatenate_4[0][0]    |
+| conv2d_30 (Conv2D)             | (None, 32, 32, 48)    | 20784    | conv2d_29[0][0]        |
+| up_sampling2d_5 (UpSampling2D) | (None, 64, 64, 48)    | 0        | conv2d_30[0][0]        |
+| concatenate_5 (Concatenate)    | (None, 64, 64, 72)    | 0        | up_sampling2d_5[0][0]  |
+|                                |                       |          | conv2d_24[0][0]        |
+| conv2d_31 (Conv2D)             | (None, 64, 64, 24)    | 15576    | concatenate_5[0][0]    |
+| conv2d_32 (Conv2D)             | (None, 64, 64, 24)    | 5208     | conv2d_31[0][0]        |
+| up_sampling2d_6 (UpSampling2D) | (None, 128, 128, 24)  | 0        | conv2d_32[0][0]        |
+| concatenate_6 (Concatenate)    | (None, 128, 128, 36)  | 0        | up_sampling2d_6[0][0]  |
+|                                |                       |          | conv2d_22[0][0]        |
+| conv2d_33 (Conv2D)             | (None, 128, 128, 12)  | 3900     | concatenate_6[0][0]    |
+| conv2d_34 (Conv2D)             | (None, 128, 128, 12)  | 1308     | conv2d_33[0][0]        |
+| up_sampling2d_7 (UpSampling2D) | (None, 256, 256, 12)  | 0        | conv2d_34[0][0]        |
+| concatenate_7 (Concatenate)    | (None, 256, 256, 18)  | 0        | up_sampling2d_7[0][0]  |
+|                                |                       |          | conv2d_20[0][0]        |
+| conv2d_35 (Conv2D)             | (None, 256, 256, 6)   | 978      | concatenate_7[0][0]    |
+| conv2d_36 (Conv2D)             | (None, 256, 256, 6)   | 330      | conv2d_35[0][0]        |
+| conv2d_37 (Conv2D)             | (None, 256, 256, 1)   | 7        | conv2d_36[0][0]        |
 
-conv2d_19 (Conv2D)              (None, 256, 256, 6)  60          input_2[0][0]
+Total parameters: 276,337
 
-conv2d_20 (Conv2D)              (None, 256, 256, 6)  330         conv2d_19[0][0]
+Trainable parameters: 276,337
 
-max_pooling2d_4 (MaxPooling2D)  (None, 128, 128, 6)  0           conv2d_20[0][0]
-
-conv2d_21 (Conv2D)              (None, 128, 128, 12) 660         max_pooling2d_4[0][0]
-
-conv2d_22 (Conv2D)              (None, 128, 128, 12) 1308        conv2d_21[0][0]
-
-max_pooling2d_5 (MaxPooling2D)  (None, 64, 64, 12)   0           conv2d_22[0][0]
-
-conv2d_23 (Conv2D)              (None, 64, 64, 24)   2616        max_pooling2d_5[0][0]
-
-conv2d_24 (Conv2D)              (None, 64, 64, 24)   5208        conv2d_23[0][0]
-
-max_pooling2d_6 (MaxPooling2D)  (None, 32, 32, 24)   0           conv2d_24[0][0]
-
-conv2d_25 (Conv2D)              (None, 32, 32, 48)   10416       max_pooling2d_6[0][0]
-
-conv2d_26 (Conv2D)              (None, 32, 32, 48)   20784       conv2d_25[0][0]
-
-max_pooling2d_7 (MaxPooling2D)  (None, 16, 16, 48)   0           conv2d_26[0][0]
-
-conv2d_27 (Conv2D)              (None, 16, 16, 96)   41568       max_pooling2d_7[0][0]
-
-conv2d_28 (Conv2D)              (None, 16, 16, 96)   83040       conv2d_27[0][0]
-
-up_sampling2d_4 (UpSampling2D)  (None, 32, 32, 96)   0           conv2d_28[0][0]
-
-concatenate_4 (Concatenate)     (None, 32, 32, 144)  0           up_sampling2d_4[0][0]            
-                                                                 conv2d_26[0][0]                                                           
-conv2d_29 (Conv2D)              (None, 32, 32, 48)   62256       concatenate_4[0][0]              
-conv2d_30 (Conv2D)              (None, 32, 32, 48)   20784       conv2d_29[0][0]
-
-up_sampling2d_5 (UpSampling2D)  (None, 64, 64, 48)   0           conv2d_30[0][0]
-
-concatenate_5 (Concatenate)     (None, 64, 64, 72)   0           up_sampling2d_5[0][0]            
-                                                                 conv2d_24[0][0]
-                                                                 
-conv2d_31 (Conv2D)              (None, 64, 64, 24)   15576       concatenate_5[0][0]
-
-conv2d_32 (Conv2D)              (None, 64, 64, 24)   5208        conv2d_31[0][0]       
-
-up_sampling2d_6 (UpSampling2D)  (None, 128, 128, 24) 0           conv2d_32[0][0]        
-
-concatenate_6 (Concatenate)     (None, 128, 128, 36) 0           up_sampling2d_6[0][0]            
-                                                                 conv2d_22[0][0]                  
-
-conv2d_33 (Conv2D)              (None, 128, 128, 12) 3900        concatenate_6[0][0]    
-
-conv2d_34 (Conv2D)              (None, 128, 128, 12) 1308        conv2d_33[0][0]                  
-
-up_sampling2d_7 (UpSampling2D)  (None, 256, 256, 12) 0           conv2d_34[0][0]                  
-
-concatenate_7 (Concatenate)     (None, 256, 256, 18) 0           up_sampling2d_7[0][0]            
-                                                                 conv2d_20[0][0]  
-                                                                 
-conv2d_35 (Conv2D)              (None, 256, 256, 6)  978         concatenate_7[0][0]   
-
-conv2d_36 (Conv2D)              (None, 256, 256, 6)  330         conv2d_35[0][0]    
-
-conv2d_37 (Conv2D)              (None, 256, 256, 1)  7           conv2d_36[0][0]                  
-
-Total params: 276,337
-Trainable params: 276,337
-Non-trainable params: 0
+Non-trainable parameters: 0
 
 ### Compiling the Model
 I used the adam optimizer.
@@ -176,20 +188,12 @@ Next, I displayed some predictions I made. Three such prediciton are shown below
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(10).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(13).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(9).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165531.png">
-</p>
 <p align="center">Good predictions made using the model</p>
+</p>
 
 As you can see, these are all really good predictions, and in my opinion are very usable. The dice similarity coefficients for these predictions are: ???, ???, and ???. This supports the accuracy of this prediction.
 
@@ -197,11 +201,9 @@ However, not all predictions are this good. For example, take a look at the foll
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20162140%20(102).png">
-</p>
-<p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20164859%20(15).png">
-</p>
 <p align="center">Poor predictions made using the model</p>
+</p>
 
 The dice similarity coefficient of this prediciton is ?????. This is clearly not a usable prediction.
 
