@@ -1,10 +1,11 @@
 """
-This is program for COMP3710 Report, resolving problem 6.
+This is DCGAN tensorflow implementation for COMP3710 Report, resolving problem 6.
 [Create a generative model of the OASIS brain or the OAI AKOA knee data set using a DCGAN that
 has a “reasonably clear image” and a Structured Similarity (SSIM) of over 0.6.]
 
-@auther: Ganze Zheng
+@author: Ganze Zheng
 @studentID: 44570776
+@date: 04/11/2020
 """
 
 import glob
@@ -20,10 +21,10 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # parameters
-epochs = 200
+epochs = 100
 batch_size = 64
-dataset_path = "../keras_png_slices_data/keras_png_slices_train/*"
-output_path = "../keras_png_slices_data/"
+dataset_path = "./keras_png_slices_data/keras_png_slices_train/*"
+output_path = "./keras_png_slices_data/"
 
 # Load OASIS Dataset
 filenames = glob.glob(dataset_path)
@@ -72,11 +73,6 @@ def generator_network(input_shape, name='G'):
     norm = BatchNormalization()(dense)
     activation = LeakyReLU()(norm)
     dense = Reshape((16, 16, 256))(activation)
-    # 8x8x512
-    # deepConvNet = Conv2DTranspose(
-    #     256, (4, 4), strides=(2, 2), padding='same')(dense)
-    # norm = BatchNormalization()(deepConvNet)
-    # activation = LeakyReLU()(norm)
     # 16x16x256
     deepConvNet = Conv2DTranspose(
         128, (4, 4), strides=(2, 2), padding='same')(dense)
@@ -119,10 +115,6 @@ def discriminator_network(input_shape, name='D'):
     activation = LeakyReLU()(convNet)
     norm = BatchNormalization()(activation)
     # 32x32x128
-    # convNet = Conv2D(256, (4, 4), strides=(2, 2), padding='same')(norm)
-    # activation = LeakyReLU()(convNet)
-    # norm = BatchNormalization()(activation)
-    # 16x16x256
 
     flatten = Flatten()(norm)
     d_net = Dense(1, activation='sigmoid')(flatten)
@@ -174,7 +166,7 @@ seed = tf.random.normal([num_examples_to_generate, 100])
 
 
 # Training step
-@tf.function
+@tf.functionss
 def train_step(images):
     noise = tf.random.normal([batch_size, 100])
 
@@ -233,7 +225,7 @@ def generate_sample_images(model, epoch, test_input):
         plt.imshow(predictions[i, :, :, 0], cmap='gray')
         plt.axis('off')
     
-    plt.savefig(output_path+'image_at_epoch_{:04d}.png'.format(epoch))
+    plt.savefig(output_path+'image_at_epoch_{:04d}.png'.format(epoch + 1))
 
 
 # Train the model and show the results
@@ -250,7 +242,7 @@ plt.savefig(output_path+'Loss_Curve.png')
 
 # Predict
 n_images = 25
-noise = tf.random.normal([n_images, 1, 1, 100])
+noise = tf.random.normal([n_images, 100])
 im = generator(noise, training=False)
 
 plt.figure(figsize=(10, 10))
