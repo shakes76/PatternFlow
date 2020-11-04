@@ -87,11 +87,21 @@ def dice_np(lbl_gt, lbl_pred):
 def dice_loss(lbl_gt, lbl_pred):
     return 1-dice(lbl_gt, lbl_pred)
 
-model.compile(optimizer = 'Adam', loss=dice_loss, metrics=[dice]) 
+model.compile(optimizer = tf.keras.optimizers.Adam(lr=0.0005), loss=dice_loss, metrics=[dice]) 
 
 #Train model
-history = model.fit(train_ds.batch(16), epochs=100, validation_data = validate_ds.batch(16), 
-                callbacks = [TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000)])
+def lr_schedule(initial=3e-4, decay=0.985, steps=1):
+    def schedule(epoch):
+        return initial * (decay ** np.floor(epoch/steps))
+    return tf.keras.callbacks.LearningRateScheduler(schedule)
+
+my_callbacks = [lr_schedule(initial=5e-4, decay=0.6, steps=2), 
+                TensorBoard(log_dir='./tb', histogram_freq=0, write_graph=False, profile_batch = 100000000),
+                tf.keras.callbacks.EarlyStopping(monitor='val_dice', patience=5, mode='max',
+                                                 restore_best_weights=True)]
+
+history = model.fit(train_ds.batch(16), epochs=50, validation_data = validate_ds.batch(16), 
+                callbacks = my_callbacks)
 
 #Evaluate model
 plt.figure(1)
