@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[5]:
 
 
 # calling the ISIC_dataset_with_UNET file
-get_ipython().run_line_magic('run', 'ISIC_dataset_with_UNET.ipynb')
+get_ipython().run_line_magic('run', 'ISIC_dataset_with_UNET.py')
 
 # Import all the necessary libraries
 import os
@@ -57,10 +57,10 @@ def main():
     y_train_encode, y_test_encode, y_val_encode = encoding(y_train,y_test,y_val)
     input_img = Input((img_height, img_width, 1), name = 'img')
     model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True)
-    model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeffient])
-    
+    model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeffient]) # compiling the model with Adam optimizer and dice loss
+    model.summary()
     callbacks = [EarlyStopping(patience = 10, verbose = 1), ReduceLROnPlateau(factor = 0.1, patience = 5, min_lr = 0.00001, verbose = 1), ModelCheckpoint('ISIC_model.h5', verbose = 1, save_best_only = True, save_weights_only = True)]
-    
+   
     results = model.fit(X_train, y_train_encode, batch_size = 32, epochs = 60, callbacks = callbacks, validation_data = (X_val, y_val_encode))
     test_preds_reshape = best_model(model,X_test,y_test)
     
@@ -70,4 +70,10 @@ def main():
 
     
 main()
+
+
+# In[ ]:
+
+
+
 
