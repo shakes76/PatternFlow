@@ -29,21 +29,16 @@ The goal of GAN is to take a set of random input array and generate near-real im
 
 
 
-<<<<<<< HEAD
 
-![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)Training GAN on MNIST handwritten digits data.
-=======
-<p align="center">
-![Alt Text](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true)
-</p>
-<div align="center">Training GAN on MNIST handwritten digits data.
->>>>>>> ac4d40877419cf91fbdff35b40250057239b2365
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/1_fN-q2XG9CTii8S6Xh8SIyg.gif?raw=true" width="256" height="256" align = "center"/>
+
+<div style="text-align:center">
 <a href="https://towardsdatascience.com/implementing-deep-convolutional-generative-adversarial-networks-dcgan-573df2b63c0d" target="_blank" >Image source.</a></div>
 
 
 
 
-GANs were first introduced in the research paper <a href="https://arxiv.org/abs/1511.06434" target="_blank" >Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</a>
+DC-GANs were first introduced in the research paper <a href="https://arxiv.org/abs/1511.06434" target="_blank" >Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</a>
  by *Alec Radford, Luke Metz, Soumith Chintala.* Since then the GANS have been customised and developed for a variety of applications that doesn't limit to the image data. 
 
 
@@ -53,7 +48,7 @@ The best example to understand the power of GAN can be found on the website  htt
 
 The website generates a new image of a person that does not exis in real life. in the back-end, it uses a modified version of the DCGAN model called <a href=" https://arxiv.org/abs/1912.04958" target="_blank" >Style-GAN</a>  that identifies different parts of faces to train the generaotr better. The end result is shockingly real.
 
-<img src="https://thispersondoesnotexist.com/image" width="512" height="512" />
+<img src="https://thispersondoesnotexist.com/image" width="256" height="256" />
 <a href="https://thispersondoesnotexist.com/" target="_blank" ><div align="center">This person Doesnot Exist.</div></a></a>
 
 
@@ -61,7 +56,8 @@ The website generates a new image of a person that does not exis in real life. i
 
 
 
-![Test Image](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/fake_celebrities.png?raw=true)
+
+![Test Image](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/fake_celebrities.png?raw=true width="256" height="256" )
 <div align="center">These images are generated using the GAN network trained on celebrity faces dataset.</div>
 
 ## **Big Picture Process:**
@@ -86,7 +82,8 @@ The dataset used for the project is a collection of data for over 1000 patients 
 
 For training the GAN, we're using the crossectional MRI scans of patients' brains. Each brain scan has 32 cross sections. The data is stored as 256x256 pixel image stored in a *.PNG* format. An example of the image data is shown below.
 
-![Train Image](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/brain_train.PNG?raw=true)
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/brain_train.PNG?raw=true" alt="drawing" width="400"/>
+
 <a href="https://www.oasis-brains.org/" target="_blank" ><div align="center">OASIS Brain MRI Images data</div></a>
 
 
@@ -94,7 +91,8 @@ For training the GAN, we're using the crossectional MRI scans of patients' brain
 
 ## Tools and Techniques (Libraries and dependencies for the project)
 
-![TF_with_keras](https://cdn-images-1.medium.com/freeze/max/1000/1*ZMzAVt_1ZL4AaN-hGW1-0w.png?q=20?raw=true)
+<img src="https://cdn-images-1.medium.com/freeze/max/1000/1*ZMzAVt_1ZL4AaN-hGW1-0w.png?q=20?raw=true" alt="drawing" width="400"/>
+
 <a href="https://cdn-images-1.medium.com/freeze/max/1000/1*ZMzAVt_1ZL4AaN-hGW1-0w.png?q=20" target="_blank" >
 
 
@@ -247,118 +245,46 @@ For training the GAN, we're using the crossectional MRI scans of patients' brain
     
     
 
+## Instructions to run the code
+
+1. Download the helper files and the main notebook S4562394_DC_GAN_Main_notebook.ipynb.
+2. Open main notebook.
+3. Provide the parameters as per the instructions mentioned in the notebook.
+4. Run the notebook.
+
 ## Observations
 
-### Train input
-
 ### Plot of the Generator and Discriminator loss
+
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/losses_20201104_1.PNG?raw=true" alt="drawing" width="500"/>
+
+
 
 
 ### Plot of the SSIM
 
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/SSIM_202001104.PNG?raw=true" alt="drawing" width="500"/>
+
+
+
 
 ### GIF of the generated images.
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/dcgan_20201104_1.gif?raw=true" alt="drawing" width="400"/>
 
 
-### single image generation with a sample noise.
+### Generating random image from noise
 
-
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-* Step 7. Discussion or Analysis
-             Write down what you discovered about the experiment, including what was difficult or went wrong. The focus of your discussion                    should be based around what you think your results show about the experiment. You can include ideas for further experiments, an              explanation of problems and how to overcome them.
-* Step 8. Conclusion
-            A short summary of what was discovered by the experiment. This should be concise and answer the aim.
-
-* Incredients for a gan
-
-improving the model
-
-producing the results
-
-Testing the model: SSIM
-
-The project pipeline
-
-* dataset
-* helpers/ dependencies
-* generator
-* discriminator
-* training
-* converting to images and then to gifs
-* testing model accuracies and loss
-* plots of accuracy, loss, ssim w.r.t epochs
-
-Final gifs
-
-conclusions
-
-future work
-
-
-references
+<img src="https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/test_images_from_noise.PNG?raw=true" alt="drawing" width="500"/>
 
 
 
-```python
+# References
 
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
+* https://en.wikipedia.org/wiki/Structural_similarity
+* https://arxiv.org/abs/1511.06434
+* https://www.oasis-brains.org/
+* https://www.tensorflow.org/tutorials/generative/dcgan
+* https://www.tensorflow.org/hub/tutorials/tf_hub_generative_image_module
 
 
-```python
 
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
