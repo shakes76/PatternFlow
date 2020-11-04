@@ -52,7 +52,7 @@ class IsicsUnet:
         m = tf.image.resize(m, (MASK_WIDTH, MASK_HEIGHT))  # resize all masks to min size
 
         # normalize mask to [0,1]
-        #m = tf.cast(m, tf.float32) / 255.0
+        m = tf.cast(m, tf.float32) / 255.0
 
         # do we need to one-hot encode the mask? theres only one channel anyway?
         #m = tf.keras.utils.to_categorical(m)
@@ -206,7 +206,7 @@ class IsicsUnet:
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(conv9)
 
         # segmentation (output) layer
-        outputs = tf.keras.layers.Conv2D(2, (1, 1), activation='softmax')(conv9)
+        outputs = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
         self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
 
@@ -243,10 +243,11 @@ class IsicsUnet:
             # show predicted mask
             plt.subplot(3,3,3*i+3)
             print("Predictions:", predictions[i].shape)
-            pred_mask = tf.argmax(predictions[i], axis=-1)
-            pred_mask = tf.expand_dims(pred_mask, axis=-1)
-            print("pred_mask:", pred_mask.shape)
-            plt.imshow(pred_mask)
+            #pred_mask = tf.argmax(predictions[i], axis=-1)
+            #pred_mask = tf.expand_dims(pred_mask, axis=-1)
+            #print("pred_mask:", pred_mask.shape)
+            #plt.imshow(pred_mask)
+            plt.imshow(predictions[i])
             plt.axis('off')
 
         plt.show()
