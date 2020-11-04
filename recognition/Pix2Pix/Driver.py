@@ -23,8 +23,8 @@ run_Pix2Pix(batch_size, epoch)
 Loading test dataset 
 """
 
-imgName_X_test = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_test"))[2] # list of names all images in the given path
-imgName_y_test = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_test"))[2] # list of names all images in the given path
+imgName_X_test = next(os.walk("/keras_png_slices_data/keras_png_slices_seg_test"))[2] # list of names all images in the given path
+imgName_y_test = next(os.walk("/keras_png_slices_data/keras_png_slices_test"))[2] # list of names all images in the given path
 
 print("No. of testing images = ", len(imgName_X_test))
 print("No. of testing images labels = ", len(imgName_y_test))    
@@ -40,7 +40,7 @@ Data Preprocessing on test dataset.
 ########################## For Testing #######################################################
 for n_test, id_test in tqdm_notebook(enumerate(imgName_X_test), total=len(imgName_X_test)):
     # Loading validating images
-    img_test = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_test/"+id_test, grayscale=True)
+    img_test = load_img("/keras_png_slices_data/keras_png_slices_seg_test/"+id_test, grayscale=True)
     x_img_test = img_to_array(img_test)
     x_img_test = resize(x_img_test, (256, 256, 1), mode = 'constant', preserve_range = True)
     
@@ -48,7 +48,7 @@ for n_test, id_test in tqdm_notebook(enumerate(imgName_X_test), total=len(imgNam
 
 for n_mask_test, id_mask_test in tqdm_notebook(enumerate(imgName_y_test), total=len(imgName_y_test)):
     # Loading validating images
-    mask_test = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_test/"+id_mask_test, grayscale=True)
+    mask_test = load_img("/keras_png_slices_data/keras_png_slices_test/"+id_mask_test, grayscale=True)
     y_img_test = img_to_array(mask_test)
     y_img_test = resize(y_img_test, (256, 256, 1), mode = 'constant', preserve_range = True)
     

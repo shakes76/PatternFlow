@@ -31,16 +31,16 @@ def dataPreprocessing(batch_size):
     print("Data preprocessing opereation is being running...")
     print("")
     
-    imgName_X_train = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_train"))[2] # list of names all images in the given path
-    imgName_y_train = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_train"))[2] # list of names all images in the given path
+    imgName_X_train = next(os.walk("/keras_png_slices_data/keras_png_slices_seg_train"))[2] # list of names all images in the given path
+    imgName_y_train = next(os.walk("/keras_png_slices_data/keras_png_slices_train"))[2] # list of names all images in the given path
 
     print("No. of training images = ", len(imgName_X_train))
     print("No. of training images labels = ", len(imgName_y_train))
 
     print ("")
 
-    imgName_X_validate = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_validate"))[2] # list of names all images in the given path
-    imgName_y_validate = next(os.walk("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_validate"))[2] # list of names all images in the given path
+    imgName_X_validate = next(os.walk("/keras_png_slices_data/keras_png_slices_seg_validate"))[2] # list of names all images in the given path
+    imgName_y_validate = next(os.walk("/keras_png_slices_data/keras_png_slices_validate"))[2] # list of names all images in the given path
 
     print("No. of validating images = ", len(imgName_X_validate))
     print("No. of validating images labels = ", len(imgName_y_validate))    
@@ -58,7 +58,7 @@ def dataPreprocessing(batch_size):
     # tqdm is used to display the progress bar
     for n_train, id_train in tqdm_notebook(enumerate(imgName_X_train), total=len(imgName_X_train)):
         # Loading training images
-        img_train = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_train/"+id_train, grayscale=True)
+        img_train = load_img("/keras_png_slices_data/keras_png_slices_seg_train/"+id_train, grayscale=True)
         x_img_train = img_to_array(img_train)
         x_img_train = resize(x_img_train, (256, 256, 1), mode = 'constant', preserve_range = True)
         
@@ -66,7 +66,7 @@ def dataPreprocessing(batch_size):
     
     for n_mask_train, id_mask_train in tqdm_notebook(enumerate(imgName_y_train), total=len(imgName_y_train)):
         # Loading training images
-        mask_train = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_train/"+id_mask_train, grayscale=True)
+        mask_train = load_img("/keras_png_slices_data/keras_png_slices_train/"+id_mask_train, grayscale=True)
         y_img_train = img_to_array(mask_train)
         y_img_train = resize(y_img_train, (256, 256, 1), mode = 'constant', preserve_range = True)
         
@@ -77,7 +77,7 @@ def dataPreprocessing(batch_size):
     ########################## For Validation #######################################################
     for n_validate, id_validate in tqdm_notebook(enumerate(imgName_X_validate), total=len(imgName_X_validate)):
         # Loading validating images
-        img_validate = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_seg_validate/"+id_validate, grayscale=True)
+        img_validate = load_img("/keras_png_slices_data/keras_png_slices_seg_validate/"+id_validate, grayscale=True)
         x_img_validate = img_to_array(img_validate)
         x_img_validate = resize(x_img_validate, (256, 256, 1), mode = 'constant', preserve_range = True)
         
@@ -85,7 +85,7 @@ def dataPreprocessing(batch_size):
     
     for n_mask_validate, id_mask_validate in tqdm_notebook(enumerate(imgName_y_validate), total=len(imgName_y_validate)):
         # Loading validating images
-        mask_validate = load_img("C:/Users/s4586360/Downloads/keras_png_slices_data/keras_png_slices_validate/"+id_mask_validate, grayscale=True)
+        mask_validate = load_img("/keras_png_slices_data/keras_png_slices_validate/"+id_mask_validate, grayscale=True)
         y_img_validate = img_to_array(mask_validate)
         y_img_validate = resize(y_img_validate, (256, 256, 1), mode = 'constant', preserve_range = True)
         
