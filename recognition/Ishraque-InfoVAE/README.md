@@ -4,9 +4,9 @@ InfoVAE implementation by Ishraque Zahin, 45129256
 
 Original:
 
-<img src="readme_assets/test_data.png" width="400">
+<img src="readme_assets/train_data.png" width="400">
 
-Generated:
+Generated (at epoch 5):
 
 <img src="readme_assets/generated.png" width="400">
 
