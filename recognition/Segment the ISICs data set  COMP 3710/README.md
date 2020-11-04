@@ -46,15 +46,3 @@ wget https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_ISIC_Part1_Test_
 ```
 python train.py --batch_size 16 --data_dir datasets --workers 8 --epochs 100 --lr 0.0001 --logs ./logs 
 ```
-## 4. test
-Test model performance on isic2016 and Dice similarity coefficient
-```
-python test.py --data_dir datasets --model weight/best.ckpt
-```
-If you don’t want to train the model from scratch, you can download my trained model from [here] (fill in the model link)
-
-If you want to see the model effect more intuitively
-```
-python pre.py --pre_dir test --model weight/best.ckpt --out testout
-```
-This will input the images in the test into the model, and convert the output into images and store them in the testout
