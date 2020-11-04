@@ -11,39 +11,49 @@ An example prediction made using the model is shown below. From left to right we
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
 
 ## Contents of this Repository
-This repository contains  contains the following two files:
-* driver_script.py
-* solution.py
+The contents of this repository are detailed below.
 
-driver_script.py imports the ISIC data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
+Scripts:
+* `driver_script.py`
+* `solution.py`
 
-solution.py contains the actual U-Net model used by driver_script.py.
+Folders:
+* `Images`
 
-Both of these files are discusssed in detail below.
+`driver_script.py` imports the ISIC data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
 
-The repository also contains the folder:
-* Images
+`solution.py` contains the actual U-Net model used by driver_script.py.
 
-This folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this README.md file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
+This `Images` folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this README.md file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
 
 ## solution.py
 This file is used to create the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
-
-Functions
-* `model`
 
 Dependencies
 * `tensorflow`
 * `tensorflow.keras.layers`
 
+Functions
+* `model`
+
 Below I have detailed each of the functions in this script, describing their purpose.
 
-`model`
-
-Creates the U-Net model using the structure specified.
+`model` creates the U-Net model using the structure specified.
 
 ## driver_script.py
 This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
+
+Dependencies:
+* `tensorflow`
+* `matplotlib.pyplot`
+* `math`
+* `glob`
+* `IPython.display.clear_output`
+* `tensorflow.keras.backend`
+
+Classes (and their methods):
+* `DisplayCallback`
+  * `on_epoch_end`
 
 Functions:
 * `import_ISIC_data`
@@ -58,63 +68,29 @@ Functions:
 * `dice_coefficient_loss`
 * `dice_coefficient`
 
-Classes (and their methods):
-* `DisplayCallback`
-  * `on_epoch_end`
-  
-Dependencies:
-* `tensorflow`
-* `matplotlib.pyplot`
-* `math`
-* `glob`
-* `IPython.display.clear_output`
-* `tensorflow.keras.backend`
-
 Below I have detailed each of the functions in this script, describing their purpose.
 
-`import_ISIC_data()`
+`import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
 
-Downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
+`process_path(image_fp, mask_fp)` processes an image and a mask by decoding and normalising them.
 
-`process_path(image_fp, mask_fp)`
+`decode_jpg(file_path)` decodes and resizes a jpeg image.
 
-Processes an image and a mask by decoding and normalising them.
+`decode_png(file_path)` decodes and resizes a png image.
 
-`decode_jpg(file_path)`
+`analyse_training_history(history)` plots the acuraccy and validation accuracy of the model as it trains.
 
-Decodes and resizes a jpeg image.
+`display_predictions(model, ds, n=1)` makes n predictions using the model and the given dataset and displays these predictions.
 
-`decode_png(file_path)`
+`display_data(ds, n=1)` displays n images and masks from a given dataset.
 
-Decodes and resizes a png image.
+`display(display_list)` displays plots of the provided data.
+ 
+`compute_dice_coefficients(model, ds)` computes the average dice similarity coefficient for all predictions made using the provided dataset.
 
-`analyse_training_history(history)`
+`dice_coefficient_loss(y_true, y_pred)` computes the dice similarity coefficient loss for a prediction.
 
-Plot the acuraccy and validation accuracy of the model as it trains.
-
-`display_predictions(model, ds, n=1)`
-
-Makes n predictions using the model and the given dataset and displays these predictions.
-
-`display_data(ds, n=1)`
-
-Displays n images and masks from a given dataset.
-
-`display(display_list)`
-
-Displays plots of the provided data.
-
-`compute_dice_coefficients(model, ds)`
-
-Computes the average dice similarity coefficient for all predictions made using the provided dataset.
-
-`dice_coefficient_loss(y_true, y_pred)`
-
-Computes the dice similarity coefficient loss for a prediction.
-
-`dice_coefficient(y_true, y_pred, smooth = 0.)`
-
-Computes the dice similarity coefficient for a prediction.
+`dice_coefficient(y_true, y_pred, smooth = 0.)` computes the dice similarity coefficient for a prediction.
 
 ## How to Run the File
 In order to train this model as I have, follow the next steps:
