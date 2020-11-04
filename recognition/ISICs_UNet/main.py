@@ -30,6 +30,8 @@ def main():
     model = IsicsUnet()
 
     model.load_data()
+    print(model.train_ds)
+    print(model.val_ds)
     #model.visualise_loaded_data()
 
     model.build_model()
@@ -44,8 +46,10 @@ def main():
     history = model.model.fit(x=model.train_ds.batch(model.BATCH_SIZE, drop_remainder=True),
                               validation_data=model.val_ds.batch(model.BATCH_SIZE, drop_remainder=True),
                               verbose=1,
-                              epochs=3)
+                              epochs=1)
     model.show_predictions()
+
+    # todo test and compare to dice similarity coefficient
 
     print("END")
 

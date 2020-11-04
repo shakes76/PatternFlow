@@ -24,6 +24,7 @@ class IsicsUnet:
     def __init__(self):
         self.train_ds = None
         self.val_ds = None
+        self.test_ds = None
         self.model = None
         self.BATCH_SIZE = 1
 
@@ -39,6 +40,7 @@ class IsicsUnet:
         # load image
         img = tf.io.read_file(image)
         img = tf.image.decode_jpeg(img, channels=IMAGE_CHANNELS)
+        img = tf.image.convert_image_dtype(img, tf.uint8)
         img = tf.image.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT))  # resize all images to min size
 
         # normalize image to [0,1]
@@ -50,7 +52,7 @@ class IsicsUnet:
         m = tf.image.resize(m, (MASK_WIDTH, MASK_HEIGHT))  # resize all masks to min size
 
         # normalize mask to [0,1]
-        m = tf.cast(m, tf.float32) / 255.0
+        #m = tf.cast(m, tf.float32) / 255.0
 
         # do we need to one-hot encode the mask? theres only one channel anyway?
         #m = tf.keras.utils.to_categorical(m)
@@ -114,18 +116,22 @@ class IsicsUnet:
         mask_count = len(mask_filenames)
         print("Image count:", image_count, "Mask count:", mask_count)
 
-        # split the dataset, 80% train 20% validate
+        # split the dataset, 60% train 20% validate 20% test
         val_size = int(image_count * 0.2)
-        val_images = image_filenames[:val_size]
-        val_masks = mask_filenames[:val_size]
-        train_images = image_filenames[val_size:]
-        train_masks = mask_filenames[val_size:]
+        test_images = image_filenames[:val_size]
+        test_masks = mask_filenames[:val_size]
+        val_images = image_filenames[val_size:val_size*2]
+        val_masks = mask_filenames[val_size:val_size*2]
+        train_images = image_filenames[val_size*2:]
+        train_masks = mask_filenames[val_size*2:]
         print("Size of training set:", len(train_images), len(train_masks))
         print("Size of validation set:", len(val_images), len(val_masks))
+        print("Size of test set:", len(test_images), len(test_masks))
 
         # create TensorFlow Dataset and shuffle it
         self.train_ds = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
         self.val_ds = tf.data.Dataset.from_tensor_slices((val_images, val_masks))
+        self.test_ds = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
 
         self.train_ds = self.train_ds.shuffle(len(train_images))
         self.val_ds = self.val_ds.shuffle(len(val_images))
@@ -200,7 +206,7 @@ class IsicsUnet:
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), activation='relu')(conv9)
 
         # segmentation (output) layer
-        outputs = tf.keras.layers.Conv2D(1, (1, 1), activation='softmax')(conv9)
+        outputs = tf.keras.layers.Conv2D(2, (1, 1), activation='softmax')(conv9)
 
         self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
 
@@ -218,24 +224,29 @@ class IsicsUnet:
         """
         image_batch, mask_batch = next(iter(self.val_ds.batch(3)))
         predictions = self.model.predict(image_batch)
-        # TODO: is it required to convert to predicted masks?
 
         import matplotlib.pyplot as plt
         plt.figure(figsize=(20,10))
         for i in range(3):
             # show base image
             plt.subplot(3,3,3*i+1)
+            print("mask_batch:", mask_batch[i].shape)
             plt.imshow(image_batch[i])
             plt.axis('off')
 
             # show true mask
             plt.subplot(3,3,3*i+2)
+            print("mask_batch:", mask_batch[i].shape)
             plt.imshow(mask_batch[i])
             plt.axis('off')
 
             # show predicted mask
             plt.subplot(3,3,3*i+3)
-            plt.imshow(predictions[i])
+            print("Predictions:", predictions[i].shape)
+            pred_mask = tf.argmax(predictions[i], axis=-1)
+            pred_mask = tf.expand_dims(pred_mask, axis=-1)
+            print("pred_mask:", pred_mask.shape)
+            plt.imshow(pred_mask)
             plt.axis('off')
 
         plt.show()
