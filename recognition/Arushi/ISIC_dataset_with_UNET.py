@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 def load_dataset(train_input_path, train_groundtruth_path):  
@@ -11,17 +11,17 @@ def load_dataset(train_input_path, train_groundtruth_path):
     return isic_features, isic_labels
 
 
-# In[3]:
+# In[2]:
 
 
 def sorting_labels(isic_features, isic_labels):  
     """This function will sort teh data with respect to labels"""
     isic_features_sort = sorted(isic_features) 
-    isic_labels_sort=sorted(isic_labels)     
+    isic_labels_sort = sorted(isic_labels)     
     return isic_features_sort, isic_labels_sort
 
 
-# In[4]:
+# In[3]:
 
 
 # get and resize the training input dataset
@@ -38,7 +38,7 @@ def load_features(inp_path, ids):
     return X_isic_train 
 
 
-# In[5]:
+# In[4]:
 
 
 # function for loading the training groundtruth dataset
@@ -54,7 +54,7 @@ def load_labels(inp_path, ids):
     return y_isic_train
 
 
-# In[6]:
+# In[5]:
 
 
 # train-validation-test split
@@ -65,7 +65,7 @@ def split_datatset(X_isic_train, y_isic_train):
     return X_train, X_test, y_train, y_test, X_val, y_val
 
 
-# In[7]:
+# In[6]:
 
 
 def encoding(y_train,y_test,y_val):
@@ -80,7 +80,7 @@ def encoding(y_train,y_test,y_val):
     return y_train_encode, y_test_encode, y_val_encode
 
 
-# In[8]:
+# In[7]:
 
 
 def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
@@ -100,7 +100,7 @@ def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     return x
 
 
-# In[9]:
+# In[8]:
 
 
 def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
@@ -151,7 +151,7 @@ def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
     return model
 
 
-# In[10]:
+# In[9]:
 
 
 # dice coeffient
@@ -163,7 +163,7 @@ def dice_coeffient(y_true, y_pred, smooth = 1):
     return coeff_dice
 
 
-# In[11]:
+# In[10]:
 
 
 # dice loss function
@@ -171,7 +171,7 @@ def dice_loss(y_true, y_pred, smooth = 1):
     return 1 - dice_coeffient(y_true, y_pred, smooth = 1)
 
 
-# In[12]:
+# In[11]:
 
 
 # plot for training loss and validation loss wrt epochs
@@ -186,7 +186,7 @@ def lossPlot(results):
     plt.legend();
 
 
-# In[13]:
+# In[12]:
 
 
 # plot for training accuracy and validation accuracy wrt epochs
@@ -200,20 +200,20 @@ def accuracyPlot(results):
     plt.legend();
 
 
-# In[14]:
+# In[13]:
 
 
 # loading the best model and predicting on model
 def best_model(model,X_test,y_test):
     model.load_weights('ISIC_model.h5')
-    test_preds=model.predict(X_test,verbose=1) 
-    test_preds_max=np.argmax(test_preds,axis=-1) 
-    n,h,w,g=y_test.shape
-    test_preds_reshape=test_preds_max.reshape(n,h,w,g)
+    test_preds = model.predict(X_test,verbose=1) 
+    test_preds_max = np.argmax(test_preds,axis=-1) 
+    n,h,w,g = y_test.shape
+    test_preds_reshape = test_preds_max.reshape(n,h,w,g)
     return test_preds_reshape
 
 
-# In[15]:
+# In[14]:
 
 
 def plot_ISIC(X, y, Y_pred,ix=None):
