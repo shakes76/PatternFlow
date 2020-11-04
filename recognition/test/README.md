@@ -27,18 +27,29 @@ Alogrithm
 	*Parameters:
 	- out_channel: 4
 	- input_data: tensor.shape(256, 256, 1)
-	- activation: LealyRelu(alpha=0.01), softmax  
+	- activation: 
+	  -LealyRelu(alpha=0.01): It fixes the “dying ReLU” problem, as it doesn’t have zero-slope parts.   
+	  -softmax: It converts the scores to a normalized probability distribution.
 	- epochs: 20  
 	- train_ds.batch: 20  
 	- val_ds.batch: 20
 
-   *Loss Function:  
-	- dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
+   *Loss Function: Dice coefficient is used for comparing the similarity of two batch of data (especially for binary image    
+   	segmentation). The coefficient between 0 to 1, 1 means totally match.  Based on the matric of dice coefffient, we can   
+   	evaluate the dice loss.  
+      	- dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
 	- dice_coef_loss:  loss=dice_coef_loss   
+## Model flow  chart ( the process of building the model)
+![Getting Started](.\images\model_summary.png)      
 
-Visualization  
+
+
+Visualization (Prediction) 
 --------------------------------------------------------------------------------------------------
+
+
 ![Getting Started](img.png)
+
 
 
 
