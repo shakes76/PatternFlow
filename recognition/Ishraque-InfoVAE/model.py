@@ -48,41 +48,48 @@ class InfoVAE():
         xy_kernel = self._compute_kernel(x, y)
         return tf.reduce_mean(x_kernel) + tf.reduce_mean(y_kernel) - 2 * tf.reduce_mean(xy_kernel)
 
+    @tf.function
     def _encoder_loss(self, latent_encoding: tf.Tensor):
         # actual_dist = tf.random.normal(shape=(batch_size, self.latent_dim))
         actual_dist = tf.random.normal(shape=latent_encoding.shape)
         return self._compute_mmd(actual_dist, latent_encoding)
+
+    def _dssim_loss_scalar(self, shape, images):
+        actual_dist = tf.random.normal(shape=shape)
+        reconstruction = self.decoder(actual_dist, training=True)
+        # Compute SSIM over tf.float32 Tensors.
+        ssim2 = tf.image.ssim(images, reconstruction, max_val=1.0, filter_size=11,
+                            filter_sigma=1.5, k1=0.01, k2=0.03)
+        return (1-tf.reduce_mean(ssim2, axis=None))/2
 
     @tf.function
     def train(self, images: tf.Tensor):
         loss = -1
         with tf.GradientTape() as tape:
             latent_encoding = self.encoder(images, training=True)
-            reconstruction = self.decoder(latent_encoding)
+            reconstruction = self.decoder(latent_encoding, training=True)
             enc_loss = self._encoder_loss(latent_encoding)
             rec_loss = losses.mean_squared_error(images, reconstruction)
-            loss = enc_loss + rec_loss
+
+            # SSIM loss
+            dssim = self._dssim_loss_scalar(latent_encoding.shape, images)
+            loss = (enc_loss + rec_loss)*(1+dssim)
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-        return loss
+        return tf.reduce_mean(loss, axis=None)
     
     @tf.function
-    def sample(self, eps=None):
-        if eps is None:
-            eps = tf.random.normal(shape=(100, self.latent_dim))
-        return self.decode(eps, apply_sigmoid=True)
+    def get_loss(self, images: tf.Tensor):
+        """Get loss for a given validation set"""
+        latent_encoding = self.encoder(images, training=False)
+        reconstruction = self.decoder(latent_encoding, training=False)
+        enc_loss = self._encoder_loss(latent_encoding)
+        rec_loss = losses.mean_squared_error(images, reconstruction)
 
-    def encode(self, x):
-        mean = tf.split(self.encoder(x), 2, 1)
-        return mean
+        return tf.math.reduce_mean(enc_loss + rec_loss, axis=None)
 
-    def reparameterize(self, mean, logvar):
-        eps = tf.random.normal(shape=mean.shape)
-        return eps * tf.exp(logvar * .5) + mean
-
-    def decode(self, z, apply_sigmoid=False):
-        logits = self.decoder(z)
-        # if apply_sigmoid:
-        #     probs = tf.sigmoid(logits)
-        #     return probs
-        return logits
+    @tf.function
+    def random_reconstruction_sample(self, n):
+        """Returns n reconstructed images"""
+        latent_encoding = tf.random.normal(shape=(n, self.latent_dim))
+        return self.decoder(latent_encoding, training=False)
