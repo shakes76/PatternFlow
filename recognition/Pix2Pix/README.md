@@ -6,7 +6,7 @@ Pix2Pix is a conditional Generative Adversarial Network model also known as GAN,
 GAN architecture is comprised of a generator model which tries to generate fake or sythetic images, followed by a discriminator which on the other hand classifies image as real (from the dataset) or fake (generated from generator).
 The weights of discriminator model are updated directly, however, the weights of generator model are updated via discriminator model. The two models are trained simultaneously where the generator tries to fool the discriminator and the discriminator try to classify fake images from real ones.
 
-Few examples of Pix2Pix GAN use cases:- 
+#### Few examples of Pix2Pix GAN use cases:- 
 ![](images/Pix2Pix_examples.PNG)
 
 
@@ -29,8 +29,11 @@ High level architecture of Pix2Pix GAN model with Input, generated images from g
 
 ## Results
 1st Result-
+
 ![](images/Result1.png)
+
 2nd Result-
+
 ![](images/Result2.png)
 
 
