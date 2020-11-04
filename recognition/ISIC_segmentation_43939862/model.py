@@ -94,7 +94,8 @@ def ImprovedUnet(h, w, n_channels):
     b5_out = b5_m_c2 + b5_res
     
     #Block 6 (Localization)
-    b6_us = tf.keras.layers.Conv2DTranspose(F[3], (3,3), strides = (2,2), padding = 'same')(b5_out)
+    b6_us = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b5_out)
+    b6_us = tf.keras.layers.Conv2D(F[3], (3,3), padding = 'same')(b6_us)
     b6_us = tf.keras.layers.BatchNormalization()(b6_us)
     b6_us = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b6_us)
     b6_con = tf.keras.layers.concatenate([b6_us,b4_out])
@@ -107,7 +108,8 @@ def ImprovedUnet(h, w, n_channels):
     b6_m_c2a = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b6_m_c2n)
     
     #Block 7 (Localization)
-    b7_us = tf.keras.layers.Conv2DTranspose(F[2], (3,3), strides = (2,2), padding = 'same')(b6_m_c2a)
+    b7_us = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b6_m_c2a)
+    b7_us = tf.keras.layers.Conv2D(F[2], (3,3), padding = 'same')(b7_us)
     b7_us = tf.keras.layers.BatchNormalization()(b7_us)
     b7_us = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b7_us)
     b7_con = tf.keras.layers.concatenate([b7_us,b3_out])
@@ -121,7 +123,8 @@ def ImprovedUnet(h, w, n_channels):
     b7_m_c2a = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b7_m_c2n)
 
     #Block 8 (Localization)
-    b8_us = tf.keras.layers.Conv2DTranspose(F[1], (3,3), strides = (2,2), padding = 'same')(b7_m_c2a)
+    b8_us = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b7_m_c2a)
+    b8_us = tf.keras.layers.Conv2D(F[1], (3,3), padding = 'same')(b8_us)
     b8_us = tf.keras.layers.BatchNormalization()(b8_us)
     b8_us = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b8_us)
     b8_con = tf.keras.layers.concatenate([b8_us,b2_out])
@@ -135,7 +138,8 @@ def ImprovedUnet(h, w, n_channels):
     b8_m_c2a = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b8_m_c2n)
     
     #Block 9 (Localization)
-    b9_us = tf.keras.layers.Conv2DTranspose(F[0], (3,3), strides = (2,2), padding = 'same')(b8_m_c2a)
+    b9_us = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b8_m_c2a)
+    b9_us = tf.keras.layers.Conv2D(F[0], (3,3), padding = 'same')(b9_us)
     b9_us = tf.keras.layers.BatchNormalization()(b9_us)
     b9_us = tf.keras.layers.LeakyReLU(alpha=lrelu_alp)(b9_us)
     b9_con = tf.keras.layers.concatenate([b9_us,b1_out])
@@ -147,10 +151,10 @@ def ImprovedUnet(h, w, n_channels):
     
     #Block 10 (Segmentations)
     b7_seg = tf.keras.layers.Conv2D(1, (1,1))(b7_seg)
-    b7_seg = tf.keras.layers.Conv2DTranspose(1, (3,3), strides = (2,2), padding = 'same')(b7_seg)
+    b7_seg = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b7_seg)
     b8_seg = tf.keras.layers.Conv2D(1, (1,1))(b8_seg)
     b78_seg = b7_seg + b8_seg
-    b78_seg = tf.keras.layers.Conv2DTranspose(1, (3,3), strides = (2,2), padding = 'same')(b78_seg)
+    b78_seg = tf.keras.layers.UpSampling2D(size= (2,2), interpolation = 'nearest')(b78_seg)
     b789_seg = b78_seg + b9_seg
     
     output_layer = tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(b789_seg)
