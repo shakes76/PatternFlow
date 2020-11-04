@@ -35,14 +35,13 @@ def main():
     model.build_model()
     model.model.summary()
 
-    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                         loss='binary_crossentropy',
-                        #loss='categorical_crossentropy',
                         metrics=['accuracy'])
     model.show_predictions()
 
-    history = model.model.fit(x=model.train_ds.batch(model.BATCH_SIZE, drop_remainder=True),
-                              validation_data=model.val_ds.batch(model.BATCH_SIZE, drop_remainder=True),
+    history = model.model.fit(x=model.train_ds.batch(1),
+                              validation_data=model.val_ds.batch(1),
                               verbose=1,
                               epochs=1)
     model.show_predictions()

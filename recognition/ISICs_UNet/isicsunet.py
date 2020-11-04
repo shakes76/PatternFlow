@@ -79,14 +79,6 @@ class IsicsUnet:
             plt.axis('off')
         plt.show()
 
-    def visualise_segmentation(self):
-        """
-        Helper function to visualise loaded image and mask data
-
-        Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
-        """
-        pass
-
     def load_data(self):
         """
         Downloads and prepares the data set for use in the model
@@ -209,12 +201,6 @@ class IsicsUnet:
         outputs = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
         self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
-
-    def train_model(self):
-        """
-        Train the model
-        """
-        pass
 
     def show_predictions(self):
         """
