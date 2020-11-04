@@ -14,7 +14,7 @@ def test():
     print("Testing improved unet.")
     
 def unet():
-    inputs = Input(shape=(256, 256, 4))
+    inputs = Input(shape=(256, 256, 1))
     
     c0 = Conv2D(16, (3, 3), padding='same')(inputs)
     c0 = LeakyReLU(alpha=0.01)(c0)
