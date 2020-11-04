@@ -57,9 +57,6 @@ The website generates a new image of a person that does not exis in real life. i
 
 
 
-![Test Image](https://github.com/agrawal-s/PatternFlow/blob/topic-recognition/recognition/Shri_GAN/Screenshots/fake_celebrities.png?raw=true width="256" height="256" )
-<div align="center">These images are generated using the GAN network trained on celebrity faces dataset.</div>
-
 ## **Big Picture Process:**
 
 1. Generator generates a random image of the size similar to the training data based on a random seed.
