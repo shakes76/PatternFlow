@@ -29,86 +29,90 @@ This folder contains a number of images relating to the training, predicting and
 ## solution.py
 This file is used to create the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
 
-This script includes a single function:
-* model
+Functions
+* `model`
 
-This script has two dependencies:
-* tensorflow
-* tensorflow.keras.layers
+Dependencies
+* `tensorflow`
+* `tensorflow.keras.layers`
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
-**model**
+`model`
 
 Creates the U-Net model using the structure specified.
 
 ## driver_script.py
 This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
 
-This script includes a number of functions:
-* import_ISIC_data
-* process_path
-* decode_jpg
-* decode_png
-* analyse_training_history
-* display_predictions
-* display_data
-* display
-* compute_dice_coefficients
-* dice_coefficient_loss
-* dice_coefficient
+Functions:
+* `import_ISIC_data`
+* `process_path`
+* `decode_jpg`
+* `decode_png`
+* `analyse_training_history`
+* `display_predictions`
+* `display_data`
+* `display`
+* `compute_dice_coefficients`
+* `dice_coefficient_loss`
+* `dice_coefficient`
 
-This script has a number of dependenciess:
-* tensorflow
-* matplotlib.pyplot
-* math
-* glob
-* IPython.display.clear_output
-* tensorflow.keras.backend
+Classes (and their methods):
+* `DisplayCallback`
+  * `on_epoch_end`
+  
+Dependencies:
+* `tensorflow`
+* `matplotlib.pyplot`
+* `math`
+* `glob`
+* `IPython.display.clear_output`
+* `tensorflow.keras.backend`
 
 Below I have detailed each of the functions in this script, describing their purpose.
 
-**import_ISIC_data**
+`import_ISIC_data()`
 
 Downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
 
-**process_path**
+`process_path(image_fp, mask_fp)`
 
 Processes an image and a mask by decoding and normalising them.
 
-**decode_jpg**
+`decode_jpg(file_path)`
 
 Decodes and resizes a jpeg image.
 
-**decode_png**
+`decode_png(file_path)`
 
 Decodes and resizes a png image.
 
-**analyse_training_history**
+`analyse_training_history(history)`
 
 Plot the acuraccy and validation accuracy of the model as it trains.
 
-**display_predictions**
+`display_predictions(model, ds, n=1)`
 
 Makes n predictions using the model and the given dataset and displays these predictions.
 
-**display_data**
+`display_data(ds, n=1)`
 
 Displays n images and masks from a given dataset.
 
-**display**
+`display(display_list)`
 
 Displays plots of the provided data.
 
-**compute_dice_coefficients**
+`compute_dice_coefficients(model, ds)`
 
 Computes the average dice similarity coefficient for all predictions made using the provided dataset.
 
-**dice_coefficient_loss**
+`dice_coefficient_loss(y_true, y_pred)`
 
 Computes the dice similarity coefficient loss for a prediction.
 
-**dice_coefficient**
+`dice_coefficient(y_true, y_pred, smooth = 0.)`
 
 Computes the dice similarity coefficient for a prediction.
 
