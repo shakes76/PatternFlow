@@ -12,7 +12,8 @@ Dice similarity coefficient of 0.9 on the test dataset. The data is consist of M
 of the 300+ human brains with accompanying segmentations, which we need to download from Cloidstore   
 with the link 'https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download'.  
 
-There are 2 scipt files, a README.md file, and one image file( final results and model_summary)
+There are 2 scipt files, a README.md file, and one image file( final results and model_summary) under the test file.
+The root is, on the top-recognition branch in github, "PatternFlow/recognition/test/..."
 
 Environment
 --------------------------------------------------------------------------------------------------
@@ -34,10 +35,10 @@ Alogrithm
 	- train_ds.batch: 20  
 	- val_ds.batch: 20
 
-   *Loss Function: Dice coefficient is used for comparing the similarity of two batch of data (especially for binary image    
+   *Loss Function: Dice coefficient is used for comparing the similarity of  two batch of data (especially for binary image    
    	segmentation). The coefficient between 0 to 1, 1 means totally match.  Based on the matric of dice coefffient, we can   
    	evaluate the dice loss.  
-      	- dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
+    - dice_coef: metrics=[(2. * intersection + smooth) / (K.sum(train_ds_f) + K.sum(test_ds_f) + smooth)]  
 	- dice_coef_loss:  loss=dice_coef_loss   
 ## Model flow  chart ( the process of building the model)
 ![Getting Started](.\images\model_summary.png)      
@@ -49,6 +50,8 @@ Visualization (Prediction)
 
 
 ![Getting Started](img.png)
+
+The prediction on brain segmentation is around 0.99, which denotes perfect and complete overlap. 
 
 
 
