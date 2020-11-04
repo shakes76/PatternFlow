@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input, datasets, layers, models, optimizers, losses
+from tensorflow.keras import Model, Input, layers, models, optimizers, losses
 from data import img_size
 
 # Update model here
@@ -68,6 +68,7 @@ class InfoVAE():
 
     @tf.function
     def train(self, images: tf.Tensor):
+        """Train the model and return the loss"""
         loss = -1
         with tf.GradientTape() as tape:
             latent_encoding = self.encoder(images, training=True)
@@ -78,7 +79,7 @@ class InfoVAE():
             loss = enc_loss + rec_loss
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-        return tf.reduce_mean(loss, axis=None)
+        return tf.reduce_mean(loss, axis=None) # collapse loss into 1 number
     
     @tf.function
     def get_loss(self, images: tf.Tensor):
