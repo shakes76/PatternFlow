@@ -16,57 +16,72 @@ def test():
 def unet():
     inputs = Input(shape=(256, 256, 4))
     
-    c0 = Conv2D(16, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(inputs)
+    c0 = Conv2D(16, (3, 3), padding='same')(inputs)
+    c0 = LeakyReLU(alpha=0.01)(c0)
     
     '''Conv 1'''
     # Context module
-    c1 = Conv2D(16, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c0)
+    c1 = Conv2D(16, (3, 3), padding='same')(c0)
+    c1 = LeakyReLU(alpha=0.01)(c1)
     c1 = Dropout(0.3)(c1)
-    c1 = Conv2D(16, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c1)
+    c1 = Conv2D(16, (3, 3), padding='same')(c1)
+    c1 = LeakyReLU(alpha=0.01)(c1)
     # Element-wise sum
     c1 = Add()([c0, c1])
     
     # Downsampling
-    c1_down = Conv2D(32, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(alpha=0.01))(c1)
+    c1_down = Conv2D(32, (3, 3), strides=(2, 2), padding='same')(c1)
+    c1_down = LeakyReLU(alpha=0.01)(c1_down)
     
     '''Conv 2'''
     # Context module
-    c2 = Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c1_down)
+    c2 = Conv2D(32, (3, 3), padding='same')(c1_down)
+    c2 = LeakyReLU(alpha=0.01)(c2)
     c2 = Dropout(0.3)(c2)
-    c2 = Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c2)
+    c2 = Conv2D(32, (3, 3), padding='same')(c2)
+    c2 = LeakyReLU(alpha=0.01)(c2)
     # Element-wise sum
     c2 = Add()([c1_down, c2])
     
     # Downsampling
-    c2_down = Conv2D(64, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(alpha=0.01))(c2)
+    c2_down = Conv2D(64, (3, 3), strides=(2, 2), padding='same')(c2)
+    c2_down = LeakyReLU(alpha=0.01)(c2_down)
     
     '''Conv 3'''
     # Context module
-    c3 = Conv2D(64, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c2_down)
+    c3 = Conv2D(64, (3, 3), padding='same')(c2_down)
+    c3 = LeakyReLU(alpha=0.01)(c3)
     c3 = Dropout(0.3)(c3)
-    c3 = Conv2D(64, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c3)
+    c3 = Conv2D(64, (3, 3), padding='same')(c3)
+    c3 = LeakyReLU(alpha=0.01)(c3)
     # Element-wise sum
     c3 = Add()([c2_down, c3])
     
     # Downsampling
-    c3_down = Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(alpha=0.01))(c3)
+    c3_down = Conv2D(128, (3, 3), strides=(2, 2), padding='same')(c3)
+    c3_down = LeakyReLU(alpha=0.01)(c3_down)
     
     '''Conv 4'''
     # Context module
-    c4 = Conv2D(128, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c3_down)
+    c4 = Conv2D(128, (3, 3), padding='same')(c3_down)
+    c4 = LeakyReLU(alpha=0.01)(c4)
     c4 = Dropout(0.3)(c4)
-    c4 = Conv2D(128, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c4)
+    c4 = Conv2D(128, (3, 3), padding='same')(c4)
+    c4 = LeakyReLU(alpha=0.01)(c4)
     # Element-wise sum
     c4 = Add()([c3_down, c4])
     
     # Downsampling
-    c4_down = Conv2D(256, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(alpha=0.01))(c4)
+    c4_down = Conv2D(256, (3, 3), strides=(2, 2), padding='same')(c4)
+    c4_down = LeakyReLU(alpha=0.01)(c4_down)
     
     '''Conv 5'''
     # Context module
-    c5 = Conv2D(256, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c4_down)
+    c5 = Conv2D(256, (3, 3), padding='same')(c4_down)
+    c5 = LeakyReLU(alpha=0.01)(c5)
     c5 = Dropout(0.3)(c5)
-    c5 = Conv2D(256, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(c5)
+    c5 = Conv2D(256, (3, 3), padding='same')(c5)
+    c5 = LeakyReLU(alpha=0.01)(c5)
     # Element-wise sum
     c5 = Add()([c4_down, c5])
     
@@ -77,8 +92,10 @@ def unet():
     # Concatenation
     u4 = concatenate([u4, c4])
     # Localization module
-    u4 = Conv2D(128, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u4)
-    u4 = Conv2D(128, (1, 1), padding='same', activation=LeakyReLU(alpha=0.01))(u4)
+    u4 = Conv2D(128, (3, 3), padding='same')(u4)
+    u4 = LeakyReLU(alpha=0.01)(u4)
+    u4 = Conv2D(128, (1, 1), padding='same')(u4)
+    u4 = LeakyReLU(alpha=0.01)(u4)
     
     # Upsampling module
     u3 = UpSampling2D()(u4)
@@ -87,10 +104,13 @@ def unet():
     # Concatenation
     u3 = concatenate([u3, c3])
     # Localization module
-    u3 = Conv2D(64, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u3)
-    u3 = Conv2D(64, (1, 1), padding='same', activation=LeakyReLU(alpha=0.01))(u3)
+    u3 = Conv2D(64, (3, 3), padding='same')(u3)
+    u3 = LeakyReLU(alpha=0.01)(u3)
+    u3 = Conv2D(64, (1, 1), padding='same')(u3)
+    u3 = LeakyReLU(alpha=0.01)(u3)
     # Segmentation module
-    s3 = Conv2D(4, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u3)
+    s3 = Conv2D(4, (3, 3), padding='same')(u3)
+    s3 = LeakyReLU(alpha=0.01)(s3)
     s3 = UpSampling2D()(s3)
     
     # Upsampling module
@@ -100,10 +120,13 @@ def unet():
     # Concatenation
     u2 = concatenate([u2, c2])
     # Localization module
-    u2 = Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u2)
-    u2 = Conv2D(32, (1, 1), padding='same', activation=LeakyReLU(alpha=0.01))(u2)
+    u2 = Conv2D(32, (3, 3), padding='same')(u2)
+    u2 = LeakyReLU(alpha=0.01)(u2)
+    u2 = Conv2D(32, (1, 1), padding='same')(u2)
+    u2 = LeakyReLU(alpha=0.01)(u2)
     # Segmentation module
-    s2 = Conv2D(4, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u2)
+    s2 = Conv2D(4, (3, 3), padding='same')(u2)
+    s2 = LeakyReLU(alpha=0.01)(s2)
     s3_2 = Add()([s3, s2])
     s3_2 = UpSampling2D()(s3_2)
     
@@ -114,9 +137,11 @@ def unet():
     # Concatenation
     u1 = concatenate([u1, c1])
     # Final conv layer (3,3) OR (1,1)?!?!?!!!
-    u1 = Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u1)
+    u1 = Conv2D(32, (3, 3), padding='same')(u1)
+    u1 = LeakyReLU(alpha=0.01)(u1)
     # Segmentation module
-    s1 = Conv2D(4, (3, 3), padding='same', activation=LeakyReLU(alpha=0.01))(u1)
+    s1 = Conv2D(4, (3, 3), padding='same')(u1)
+    s1 = LeakyReLU(alpha=0.01)(s1)
     # Element-wise sum
     s3_2_1 = Add()([s3_2, s1])
     
@@ -131,3 +156,11 @@ def dice_coefficient(y_true, y_pred):
     y_pred_sum = k.sum(y_pred, axis=[1,2,3])
     coefficient = 2 * intersection / (y_true_sum + y_pred_sum)
     return coefficient
+
+def dice_coefficient_avg(y_true, y_pred):
+    coefficient = k.mean(dice_coefficient(y_true, y_pred))
+    return coefficient
+
+def dice_loss(y_true, y_pred):
+    loss = 1 - dice_coefficient_avg(y_true, y_pred)
+    return loss
