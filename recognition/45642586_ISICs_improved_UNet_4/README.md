@@ -12,10 +12,13 @@ For COMP3710 Pattern Recognition Report, I choose the fourth problem, which is:
 
 
 ## Description of algorithm and the problem solved:
-Our model algorithm is an improved UNet model, which is inspired by the popular U-Net model.
+Our model algorithm is an improved UNet model (U-shaped encoder-decoder structure), which is inspired by the popular U-Net model.
+
+![image](https://user-images.githubusercontent.com/69885082/98076019-2eed0380-1eb9-11eb-9976-0f9daab0286b.png)
+
 
 The data set we used is part of ISIC 2018 challenge data for skin cancer segmentation labels (preprocessed version).
-In this project, we aim to implement the improved U-Net model and apply on ISIC data set to segment skin cancer images.
+In this project, we aim to implement the improved U-Net model and apply on ISIC data set to segment skin cancer images, to recognition the skin cancer area from skin images.
 
 I split the whole data set into training/validation/testing set (70:15:15).
 
