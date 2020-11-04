@@ -1,5 +1,6 @@
 # Objective:
 The agenda of this Project is to Apply Improved U-Net [1] architecture on the ISICs data set by predicting the segmentation responses on lesion images in test data set with an overall minimum Dice Score of `0.8`.
+
 The Data Set consist of the "Skin Lesion Analysis Towards Melanoma Detection" the challenge leverages a dataset of annotated skin lesion images from the ISIC Archive. The dataset contains both raw (Input data) and segmented (Response data) images of skin patches to detect the areas of skin lesion. The Response data comprises of binary mask images in PNG format which indicates the location of the primary skin lesion within each input lesion image.
 ![Objective](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Objective.PNG)
 ***
@@ -42,10 +43,15 @@ Activation function used is _**“Leaky ReLU"**_ nonlinearities with a negative 
 
 On the ISIC training data set, the built U-Net model is trained and the best model selection takes place based on validation data set loss improvement. The call-back parameter was allocated to catch the best model that had the lowest loss of validity.
 - **Binary_Crossentropy Loss plot** with respect to the number of epochs for training and validation data set along with marker for best model is represented below.
+
 ![Binary_Crossentropy_Loss Plot](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Model_Loss_Plot.png)
+
 - **Accuracy Plot** with respect to the number of epochs for training and validation data set along with marker for best model is represented below.
+
 ![Accuracy Plot](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Model_Accuracy_Plot.png)
+
 - Overall **Dice Score** of the ISIC test data set obtained is `0.88`.
+
 - **Predicted segmentation** image of a random ISIC test sample with lesion image and  actual segmentation image is represented below.
 ![Predicted_Image1](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Predicted_Image1.png)
 ![Predicted_Image2](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Predicted_Image2.png)
