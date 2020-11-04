@@ -5,7 +5,7 @@ An example prediction made using the model is shown below. From left to right we
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
-<p align="center">Prediction made using U-Net model. Dice Similarity Coefficient = ???</p>
+<p align="center">Prediction made using U-Net model.</p>
 </p>
 
 I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
@@ -15,38 +15,58 @@ This repository contains  contains the following two files:
 * driver_script.py
 * solution.py
 
-driver_script.py imports the data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
+driver_script.py imports the ISIC data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
 
 solution.py contains the actual U-Net model used by driver_script.py.
 
-The folder also contains the folder:
+Both of these files are discusssed in detail below.
+
+The repository also contains the folder:
 * Images
 
-This folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this README.md file.
+This folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this README.md file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
 
 ## solution.py
-This is the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
+This file is used to create the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
+
+This script includes a single function:
+* model
+
+This script has two dependencies:
+* tensorflow
+* tensorflow.keras.layers
+
+Below I have detailed each of the functions in this script, describing their purpose.
+
+**model**
+
+Creates the U-Net model using the structure specified.
 
 ## driver_script.py
-This is the driver script. This file:
-* imports the data.
-* manipulates the data into various datasets for training, validating and testing.
-* import the model from solution.py and compile this model.
-* train the model using the datasets.
-* makes and plots predictions using the model.
+This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
 
-Includes a number of functions:
-* import_ISIC_data()
-* process_path()
-* decode_jpg()
-* decode_png()
-* analyse_training_history()
-* display_predictions()
-* display_data()
-* display()
-* compute_dice_coefficients()
-* dice_coefficient_loss()
-* dice_coefficient()
+This script includes a number of functions:
+* import_ISIC_data
+* process_path
+* decode_jpg
+* decode_png
+* analyse_training_history
+* display_predictions
+* display_data
+* display
+* compute_dice_coefficients
+* dice_coefficient_loss
+* dice_coefficient
+
+This script has a number of dependenciess:
+* tensorflow
+* matplotlib.pyplot
+* math
+* glob
+* IPython.display.clear_output
+* tensorflow.keras.backend
+
+Below I have detailed each of the functions in this script, describing their purpose.
 
 **import_ISIC_data**
 
@@ -118,44 +138,40 @@ This image is shown below.
 
 The model summary is output. The output is shown below.
 
-| Layer (type)                   | Output Shape          | Param #  | Connected to           |
-| ------------------------------ | --------------------- | -------- | ---------------------- |
-| input_2 (InputLayer)           | [(None, 256, 256, 1)  | 0        |                        |
-| conv2d_19 (Conv2D)             | (None, 256, 256, 6)   | 60       | input_2[0][0]          |
-| conv2d_20 (Conv2D)             | (None, 256, 256, 6)   | 330      | conv2d_19[0][0]        |
-| max_pooling2d_4 (MaxPooling2D) | (None, 128, 128, 6)   | 0        | conv2d_20[0][0]        |
-| conv2d_21 (Conv2D)             | (None, 128, 128, 12)  | 660      | max_pooling2d_4[0][0]  |
-| conv2d_22 (Conv2D)             | (None, 128, 128, 12)  | 1308     | conv2d_21[0][0]        |
-| max_pooling2d_5 (MaxPooling2D) | (None, 64, 64, 12)    | 0        | conv2d_22[0][0]        |
-| conv2d_23 (Conv2D)             | (None, 64, 64, 24)    | 2616     | max_pooling2d_5[0][0]  |
-| conv2d_24 (Conv2D)             | (None, 64, 64, 24)    | 5208     | conv2d_23[0][0]        |
-| max_pooling2d_6 (MaxPooling2D) | (None, 32, 32, 24)    | 0        | conv2d_24[0][0]        |
-| conv2d_25 (Conv2D)             | (None, 32, 32, 48)    | 10416    | max_pooling2d_6[0][0]  |
-| conv2d_26 (Conv2D)             | (None, 32, 32, 48)    | 20784    | conv2d_25[0][0]        |
-| max_pooling2d_7 (MaxPooling2D) | (None, 16, 16, 48)    | 0        | conv2d_26[0][0]        |
-| conv2d_27 (Conv2D)             | (None, 16, 16, 96)    | 41568    | max_pooling2d_7[0][0]  |
-| conv2d_28 (Conv2D)             | (None, 16, 16, 96)    | 83040    | conv2d_27[0][0]        |
-| up_sampling2d_4 (UpSampling2D) | (None, 32, 32, 96)    | 0        | conv2d_28[0][0]        |
-| concatenate_4 (Concatenate)    | (None, 32, 32, 144)   | 0        | up_sampling2d_4[0][0]  |
-|                                |                       |          | conv2d_26[0][0]        |
-| conv2d_29 (Conv2D)             | (None, 32, 32, 48)    | 62256    | concatenate_4[0][0]    |
-| conv2d_30 (Conv2D)             | (None, 32, 32, 48)    | 20784    | conv2d_29[0][0]        |
-| up_sampling2d_5 (UpSampling2D) | (None, 64, 64, 48)    | 0        | conv2d_30[0][0]        |
-| concatenate_5 (Concatenate)    | (None, 64, 64, 72)    | 0        | up_sampling2d_5[0][0]  |
-|                                |                       |          | conv2d_24[0][0]        |
-| conv2d_31 (Conv2D)             | (None, 64, 64, 24)    | 15576    | concatenate_5[0][0]    |
-| conv2d_32 (Conv2D)             | (None, 64, 64, 24)    | 5208     | conv2d_31[0][0]        |
-| up_sampling2d_6 (UpSampling2D) | (None, 128, 128, 24)  | 0        | conv2d_32[0][0]        |
-| concatenate_6 (Concatenate)    | (None, 128, 128, 36)  | 0        | up_sampling2d_6[0][0]  |
-|                                |                       |          | conv2d_22[0][0]        |
-| conv2d_33 (Conv2D)             | (None, 128, 128, 12)  | 3900     | concatenate_6[0][0]    |
-| conv2d_34 (Conv2D)             | (None, 128, 128, 12)  | 1308     | conv2d_33[0][0]        |
-| up_sampling2d_7 (UpSampling2D) | (None, 256, 256, 12)  | 0        | conv2d_34[0][0]        |
-| concatenate_7 (Concatenate)    | (None, 256, 256, 18)  | 0        | up_sampling2d_7[0][0]  |
-|                                |                       |          | conv2d_20[0][0]        |
-| conv2d_35 (Conv2D)             | (None, 256, 256, 6)   | 978      | concatenate_7[0][0]    |
-| conv2d_36 (Conv2D)             | (None, 256, 256, 6)   | 330      | conv2d_35[0][0]        |
-| conv2d_37 (Conv2D)             | (None, 256, 256, 1)   | 7        | conv2d_36[0][0]        |
+| Layer (type)   | Output Shape          | Param #  | Connected to              |
+| -------------- | --------------------- | -------- | ------------------------- |
+| InputLayer 1   | (None, 256, 256, 1)   | 0        |                           |
+| Conv2D 1       | (None, 256, 256, 6)   | 60       | InputLayer 1              |
+| Conv2D 2       | (None, 256, 256, 6)   | 330      | Conv2D 1                  |
+| MaxPooling2D 1 | (None, 128, 128, 6)   | 0        | Conv2D 2                  |
+| Conv2D 3       | (None, 128, 128, 12)  | 660      | MaxPooling2D 1            |
+| Conv2D 4       | (None, 128, 128, 12)  | 1308     | Conv2D 3                  |
+| MaxPooling2D 2 | (None, 64, 64, 12)    | 0        | Conv2D 4                  |
+| Conv2D 5       | (None, 64, 64, 24)    | 2616     | MaxPooling2D 2            |
+| Conv2D 6       | (None, 64, 64, 24)    | 5208     | Conv2D 5                  |
+| MaxPooling2D 3 | (None, 32, 32, 24)    | 0        | Conv2D 6                  |
+| Conv2D  7      | (None, 32, 32, 48)    | 10416    | MaxPooling2D 3            |
+| Conv2D  8      | (None, 32, 32, 48)    | 20784    | Conv2D 7                  |
+| MaxPooling2D 4 | (None, 16, 16, 48)    | 0        | Conv2D 8                  |
+| Conv2D 9       | (None, 16, 16, 96)    | 41568    | MaxPooling2D 4            |
+| Conv2D 10      | (None, 16, 16, 96)    | 83040    | Conv2D 9                  |
+| UpSampling2D 1 | (None, 32, 32, 96)    | 0        | Conv2D 10                 |
+| Concatenate 1  | (None, 32, 32, 144)   | 0        | UpSampling2D 1 & Conv2D 8 |
+| Conv2D 11      | (None, 32, 32, 48)    | 62256    | Concatenate 1             |
+| Conv2D 12      | (None, 32, 32, 48)    | 20784    | Conv2D 11                 |
+| UpSampling2D 2 | (None, 64, 64, 48)    | 0        | Conv2D 12                 |
+| Concatenate 2  | (None, 64, 64, 72)    | 0        | UpSampling2D 2 & Conv2D 6 |
+| Conv2D 13      | (None, 64, 64, 24)    | 15576    | Concatenate 2             |
+| Conv2D 14      | (None, 64, 64, 24)    | 5208     | Conv2D 13                 |
+| UpSampling2D 3 | (None, 128, 128, 24)  | 0        | Conv2D 14                 |
+| Concatenate 3  | (None, 128, 128, 36)  | 0        | UpSampling2D 3 & Conv2D 4 |
+| Conv2D 15      | (None, 128, 128, 12)  | 3900     | Concatenate 3             |
+| Conv2D 16      | (None, 128, 128, 12)  | 1308     | Conv2D 15                 |
+| UpSampling2D 4 | (None, 256, 256, 12)  | 0        | Conv2D 16                 |
+| Concatenate 4  | (None, 256, 256, 18)  | 0        | UpSampling2D 4 & Conv2D 2 |
+| Conv2D 17      | (None, 256, 256, 6)   | 978      | Concatenate 4             |
+| Conv2D 18      | (None, 256, 256, 6)   | 330      | Conv2D 17                 |
+| Conv2D 19      | (None, 256, 256, 1)   | 7        | Conv2D 18                 |
 
 Total parameters: 276,337
 
@@ -164,14 +180,14 @@ Trainable parameters: 276,337
 Non-trainable parameters: 0
 
 ### Compiling the Model
-I used the adam optimizer.
+I used the adam optimizer. I used the default adam optimizer and so did not change the learning rate.
 
 I used binary crossentropy as the loss function.
 
-I used dice coefficient loss as a metric.
+I used accuracy as a metric.
 
 ### Training the Model
-I used 50 epochs.
+I trained the model over 100 epochs.
 
 I used a training and validating batch size of 32.
 
@@ -195,9 +211,9 @@ Next, I displayed some predictions I made. Three such prediciton are shown below
 <p align="center">Good predictions made using the model</p>
 </p>
 
-As you can see, these are all really good predictions, and in my opinion are very usable. The dice similarity coefficients for these predictions are: ???, ???, and ???. This supports the accuracy of this prediction.
+As you can see, these are all really good predictions, and in my opinion are very usable.
 
-However, not all predictions are this good. For example, take a look at the following prediction.
+However, not all predictions are this good. For example, take a look at the following two predictions.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20162140%20(102).png">
@@ -205,13 +221,14 @@ However, not all predictions are this good. For example, take a look at the foll
 <p align="center">Poor predictions made using the model</p>
 </p>
 
-The dice similarity coefficient of this prediciton is ?????. This is clearly not a usable prediction.
+These are clearly not usable predictions. I found that often the model got tricked up by certain skin features.
 
 ### Analysing Dice Similarity Coefficient of Model
 Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.79369396. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
 
 ## Improvements to the Model?
 Whilst this model meets the 0.7 target accuracy for the dice similarity coefficient, clearly I have shown there is still great room for growth and construct a superior model which does not have the same shortcomings. Some potential areas to explore here are:
+
 * Using dice coefficient loss as a loss function, as opposed to binary crossentropy.
 * Incorporating dropoutlayers into the model to reduce overfitting.
 * Increasing the number of filters in the model.
@@ -220,4 +237,4 @@ Whilst this model meets the 0.7 target accuracy for the dice similarity coeffici
 
 It is very likely that by simply incorporating some of these would result in a superior model.
 
-If we wanted to go even further, we could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow us to reach higher accuracy levels.
+If I wanted to go even further, I could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow me to reach higher accuracy levels.
