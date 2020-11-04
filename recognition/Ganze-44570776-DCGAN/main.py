@@ -21,7 +21,7 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # parameters
-epochs = 5
+epochs = 100
 batch_size = 64
 dataset_path = "./keras_png_slices_data/keras_png_slices_train/*"
 output_path = "./keras_png_slices_data/"
