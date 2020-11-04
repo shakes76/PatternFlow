@@ -20,6 +20,7 @@ MASK_WIDTH = 309
 MASK_HEIGHT = 181
 MASK_CHANNELS = 1
 
+
 class IsicsUnet:
     def __init__(self):
         self.train_ds = None
