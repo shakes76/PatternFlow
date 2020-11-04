@@ -65,7 +65,6 @@ class IsicsUnet:
         Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
         """
         image_batch, mask_batch = next(iter(self.train_ds.batch(3)))
-        print("Image batch shape:", image_batch.numpy().shape)
 
         import matplotlib.pyplot as plt
         plt.figure(figsize=(10, 10))
@@ -76,7 +75,6 @@ class IsicsUnet:
             plt.axis('off')
             plt.subplot(3, 2, 2 * i + 2)
             plt.imshow(mask_batch[i])
-            print("Mask batch size:", mask_batch[i].numpy().tolist())
             plt.title("True mask")
             plt.axis('off')
         plt.show()
