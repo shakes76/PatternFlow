@@ -1,3 +1,8 @@
+"""
+InfoVAE implementation for COMP3710 PatternFlow project
+Author: Ishraque Zahin, 45129256
+"""
+
 import tensorflow as tf
 from tensorflow.keras import Model, Input, layers, models, optimizers, losses
 from data import img_size

@@ -1,3 +1,7 @@
+"""
+Configurations used for data importation and output file location
+"""
+
 # Update these file paths as necessary
 train_dir = r"C:\Users\s4512925\COMP3710_data\train_x"
 test_dir = r"C:\Users\s4512925\COMP3710_data\test_x"

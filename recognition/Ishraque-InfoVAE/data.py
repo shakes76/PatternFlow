@@ -1,3 +1,7 @@
+"""
+Data imports handler. Exports data as tensorflow datasets for lazy loading
+"""
+
 import tensorflow as tf
 from config import train_dir, test_dir, valid_dir
 
