@@ -1,5 +1,5 @@
 '''
-Improved UNet
+Improved UNet model
 
 @author Aghnia Prawira (45610240)
 '''
@@ -8,11 +8,6 @@ from keras import backend as k
 from keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, concatenate
 from keras.models import Model
 
-print('Tensorflow version:', tf.__version__)
-
-def test():
-    print("Testing improved unet.")
-    
 def unet():
     inputs = Input(shape=(256, 256, 1))
     
@@ -147,22 +142,30 @@ def unet():
     
     outputs = Conv2D(4, (3, 3), padding='same', activation='softmax')(s3_2_1)
     model = Model(inputs, outputs)
-    model.summary()
     return model  
 
 def dice_coefficient(y_true, y_pred):
+    '''
+    Dice similarity coefficient (DSC) of each label.
+    '''
     intersection = k.sum((y_true * y_pred), axis=[1,2,3])
 #     y_true_sum = k.sum(k.square(y_true), axis=[1,2,3])
 #     y_pred_sum = k.sum(k.square(y_pred), axis=[1,2,3])
     y_true_sum = k.sum(y_true, axis=[1,2,3])
     y_pred_sum = k.sum(y_pred, axis=[1,2,3])
-    coefficient = 2.0 * intersection / (y_true_sum + y_pred_sum)
+    coefficient = (2.0 * intersection) / (y_true_sum + y_pred_sum)
     return coefficient
 
 def dice_coefficient_avg(y_true, y_pred):
+    '''
+    Average DSC of all labels.
+    '''
     coefficient = k.mean(dice_coefficient(y_true, y_pred))
     return coefficient
 
 def dice_loss(y_true, y_pred):
-    loss = 1 - dice_coefficient_avg(y_true, y_pred)
+    '''
+    Loss: 1 - average DSC
+    '''
+    loss = 1.0 - dice_coefficient_avg(y_true, y_pred)
     return loss
