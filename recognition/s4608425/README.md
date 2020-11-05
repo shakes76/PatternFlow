@@ -1,14 +1,16 @@
-# Recognition Problems
-Various image analysis / pattern recognition problems solved in Tensorflow (TF)
+# Title
+Classifying ISIC dataset with Unet with dice coefficient as evaluation metric
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+## Description of algorithm
+The model used is Unet...
 
-## Contributing
-* Fork the dedicated 'topic-recognition' branch
-* Create a directory for your problem and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save an image of the generated results
-* Add a README.md file that describes the problem, its solution and shows a picture of it.
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your problem directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+### Problem it solves
+This deep learning model helps to solve the problem of segmentation of the images that can be used for various purposes in the medical and healthcare industry.
+
+
+#### How it works
+At first, all the images of the ISIC dataset were sized same into 196,256 as it was all differently sized. The 255 segmented classes were converted to binary classes by normalisation (/255) and then by approximating labels below a mid-threshold into one class and above threshold into another class. The filtered images were passed in the model that is described above. The output images came out to be segmented(they only had two colours, one for each class).
+
+#### Bibliography
+
+
