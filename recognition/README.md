@@ -17,6 +17,7 @@ The context modules contain two convolutional layers with a dropout layer in bet
 
 The Improved UNET has been used in this context to complete segmentation of skin lesions from the ISIC dataset. The aim is to train the model to identify between the foreground and the background in each image, the foreground being the skin lesion, and the background being anything else. Figure 2 below shows and example training image and label for training.
 
+![](READMEImages/ExampleImageAndLabel.PNG)
 [Insert Figure on the image and label]
 
 We can see in Figure 2 that there are some challenges imposed with this as the model needs to successfully distinguish between the lesion and other aspects such as hair, markings and other obstructions.
@@ -40,14 +41,17 @@ The goal of this model was to segment the ISIC dataset with a minimum dice coeff
 
 Figure 3 below shows the results of running the Improved UNET for 50 epochs with 4 initial starting filters.
 
+![](READMEImages/LossAndAccuracy50Epochs4Filters.PNG)
 [Insert Figure 3, the loss and accuracy graphs]
 
 We can see that there is little deviation between the training and validation accuracy. However, there does appear a deviation in trend for the loss indicating that the model is unstable with data that it has not seen before. This is evident in some of the predicted segmentations below from the model after training. 
 
 Firstly, Figure 4 and 5 show a good predictions from the model with an accurate segmentation.
 
+![](READMEImages/50Epochs4FiltersGood2.PNG)
 [Insert 50Epochs4FiltersGood2.PNG here]
 
+![](READMEImages/50Epochs4FiltersGood3.PNG)
 [Insert 50Epochs4FiltersGood3.PNG here]
 
 In Figures 4 and 5 it is evident that the model has successfully selected the lesion amognst the markings and hair (which could be considered as noise) on the skin.
@@ -56,16 +60,20 @@ Unfortunately there are some predictions in which the model does appear to under
 
 Figure 6 below shows an example where the model cannot segment the lesion due to the high amount of hair in the way.
 
+![](READMEImages/50Epochs4FiltersBad1.PNG)
 [Insert 50Epochs4FiltersBad1.PNG]
 
 Figures 7 and 8 below shows the inability of the model to segment the skin lesion with other markings similar to the lesion itself.
 
+![](READMEImages/50Epochs4FiltersBad3.PNG)
 [insert 50Epochs4FiltersBad3.PNG here]
 
+![](READMEImages/50Epochs4FiltersBad2.PNG)
 [insert 50Epochs4FiltersBad2.PNG here]
 
 Despite some of these failures in the test dataset, the average dice coefficient for each segment layer both appear above 0.8 as seen in Figure 8 below.
 
+![](READMEImages/50Epochs4FiltersFinalDSC.PNG)
 [insert 50Epochs4FiltersFinalDSC.PNG here]
 
 As expected, the background (layer 0) is easier to classify under this model compared to the foreground (layer 1) which represents the actual skin lesion istelf. Thus, these results indicated that overall on the test set, the model performs well when segmenting the skin lesions.
