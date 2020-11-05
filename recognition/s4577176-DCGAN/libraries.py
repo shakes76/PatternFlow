@@ -1,3 +1,5 @@
+#requires libraries:
+
 import matplotlib.pyplot as plt
 import os, time  
 import numpy as np 

@@ -1,4 +1,4 @@
-
+#to check the gpu 
 
 from libraries import *
 
