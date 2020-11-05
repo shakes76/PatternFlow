@@ -3,7 +3,13 @@
      This part bulids the training model and finally saves the model's training parameters (h5 file). The size of the input images is (150,150), and batch size is 32. The use of callbacks is to stop the training process when the loss function has not changed significantly. Convolutional neural network is the algorithm of this model.
 
 * ## Results 
-   Images classification:
+   Training and validation accuracy:
+   
+   ![](https://github.com/1665446266/PatternFlow/blob/topic-recognition/recognition/project(%20OAI%20AKOA%20knee%20dataset)/bulid%20model/Training%20and%20validation%20accuracy.png?raw=true)
+   
+   Training and validation loss:
+   
+   ![](https://github.com/1665446266/PatternFlow/blob/topic-recognition/recognition/project(%20OAI%20AKOA%20knee%20dataset)/bulid%20model/Training%20and%20validation%20loss.png?raw=true)
    
   
 * ## Code
@@ -55,7 +61,8 @@
          #fit model
         from PIL import ImageFile
         ImageFile.LOAD_TRUNCATED_IMAGES = True
-
+         
+        # early stoping
         es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=20)
         history = model.fit(
                   train_generator,
