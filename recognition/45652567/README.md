@@ -34,5 +34,13 @@ To fit the model, I compiled the model with the learning rate at 0.0001, set the
 
 The result is as follow:
 
+<image width="700" src="pic/modelfit.PNG" />
 
+## Dice coefficient
+
+The objective of the project is to reach 0.9 for dice similarity coefficient.
+
+The results are shown below:
+
+<image width="700" src="pic/dice.PNG" />
 
