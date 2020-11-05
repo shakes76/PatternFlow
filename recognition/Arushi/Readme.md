@@ -16,7 +16,7 @@ The dataset contains the largest collection of quality-controlled dermoscopic im
 U-Net is a convolution network architecture that is used for precise and fast image segmentation. The architecture looks like a ‘U-shaped’ and majorly consists of two parts: encoder network and decoder network. The encoder(contracting path) is the left part of the diagram which is usually pre-trained classification network where convolution blocks and maxpool downsampling is applied to encode the input images into feature representations and the decoder(expansion path) is the right part of the diagram where upsampling and concatenation is performed by regular operations to get the features learned by encoder into dense classification. The basic concept of the model is to incorporate a ‘U’ shaped model in which the input images are first downsampled by decreasing their dimensions and then upsampling them back to their original scale. The model discovers and executes the segmentation process of the image during the course. This architecture consists of the following sections: contraction, bottleneck, expansion section and the skip connection.  
 Below is the U-Net architecture image:
 
-[![U-Net architecture](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/u-net_architecture.png)
+![U-Net architecture](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/u-net_architecture.png)
 
 In this model:
 1.	The contracting path is composed of 4 blocks. It consists of two 3x3 convolutions with ReLu activation function and batch normalization and a 2x2 max pooling operation with stride 2 for downsampling. At each downsampling step, we double the number of feature channels so that the architecture can learn the complex structures effectively. 
@@ -48,14 +48,12 @@ In this model:
 
 # Model Output:
 -	Accuracy plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
-[![Accuracy plot]()
+![Accuracy plot]()
 -	Dice loss plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
-[![Dice loss plot]()
--	Individual dice scores for all predicted segmentation images for the test data set.
-[![Individual dice score]()
+![Dice loss plot]()
 -	Overall dice score of the dataset: 
 -	Plot input image, true image and predicted image
-[![final image]()
+![final image]()
 
 # Reference:
 O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,” in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015, ser. Lecture Notes in Computer Science, N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi, Eds. Cham: Springer International Publishing, 2015, pp. 234–241.
