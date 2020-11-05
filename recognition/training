@@ -87,3 +87,10 @@ checkpoint = ModelCheckpoint(
     # of the monitored value
     period = 1 # The number of epoch in the interval between checkpoints
 )
+# Start training
+history = model.fit(x = train_data_gen, # Input training set
+                    steps_per_epoch = total_train // batch_size # The number of training steps contained in an epoch
+                    epochs = epochs, # Training mode iterations
+                    validation_data = val_data_gen # Input validation set
+                    validation_steps = total_val // batch_size, # The number of training steps contained in an epoch
+                    callbacks = [checkpoint,reduce_lr]) # Execute callback function
