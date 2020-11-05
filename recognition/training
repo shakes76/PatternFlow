@@ -74,3 +74,16 @@ reduce_lr = ReduceLROnPlateau(
 )
 
 # Callback function 2: save optimal model
+checkpoint = ModelCheckpoint(
+    filepath = './save_weights/myweights.h5', # Path to save the model
+    monitor = 'val_acc', # Values to monitor
+    save_weights_only = True,
+    # If set to true, only the model weight is saved; otherwise ,the whole model(including model structure,
+    # configuration information,etc.)will be saved
+    save_best_only = True, # When set ro true, the current model is saved only when the monitoring value is improved
+    mode = 'auto',
+    # When the monitoring value is val_acc, the mode should be max; when the monitoring value is val_loss,
+    # the mode should be min, in the auto mode, the evaluation criteria are automatically inferred from the name
+    # of the monitored value
+    period = 1 # The number of epoch in the interval between checkpoints
+)
