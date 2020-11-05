@@ -15,12 +15,12 @@ def decode_image(filename):
     # Loading and resizing image
     image = load_img(filename, color_mode='grayscale', target_size=(256, 256))
     # Convert image pixels to array
-    image = img_to_array(image)
+    image = img_to_array(image, dtype='float32')
     return image
     
 def load_image(path):
     image_array = []
-    for name in sorted(os.listdir(path))[:200]:
+    for name in sorted(os.listdir(path)):
         filename = path + name
         image = decode_image(filename)
         image = image/255
@@ -29,11 +29,10 @@ def load_image(path):
 
 def load_seg(path):
     seg_array = []
-    for name in sorted(os.listdir(path))[:200]:
+    for name in sorted(os.listdir(path)):
         filename = path + name
         seg = decode_image(filename)
-        seg = seg == [0.0, 85.0, 170.0, 255.0]
-        seg = tf.cast(seg, tf.float32)
+        seg = (seg == [0.0, 85.0, 170.0, 255.0]).astype('float32')
         seg_array.append(seg)
     return seg_array
 
