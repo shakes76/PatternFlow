@@ -42,12 +42,12 @@ Here is the Advanced U-Net Network Architecture taken from the paper [[1]](##Ref
 However, because the ISIC datasets are 2D images, the network in this project is modified to use a 2D convolutional layer (3x3).
 
 <p align="center"> 
-	<img src="https://i.ibb.co/DzLGg2q/improved-unet.png" />
-</>
+	<img src="./images/improved-unet.PNG" />
+</p>
 
 <p align="center"> 
-	Figure 1. Advanced U-Net Network Architecture
-</>
+	Figure 2. Advanced U-Net Network Architecture
+</p>
 
 This architecture includes a context module that encodes increasingly abstract representations of the input as it progress deeper into the network. Then, a localization module is used to recombine the representations with shallower feature to precisely localize the structures of interest. 
 
@@ -75,7 +75,12 @@ Throughout the network we use leaky ReLU nonlinearities with a negative slope of
  - Conv2D 1x1 with Leaky ReLU as activation function
 
 ### Metrics
-The metrics used in this model is dice similarity coefficient (dsc).
+The metrics used in this model is Dice Similarity Coefficient [(DSC)](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
+
+The DSC used in this project is the following:
+<p  align="center">
+	<img  src="./images/results.png"  />
+</p>
 
 
 ## Dependencies
@@ -89,12 +94,14 @@ The metrics used in this model is dice similarity coefficient (dsc).
  You can also use the following conda [environment.yml](./environment.yml)
  
 ## Usage
+```>>> python driver.py```
 
 ### model.py
 This file is for creating the U-Net model. There are 2 model, the original U-Net and the Advanced U-Net.
 
  - `unet()`
  - `improved_unet()`
+	 
 	 This one is what this project is using. The model takes as input an array of RGB image data with shape (batch_size, 192, 256, 3) and predicts a segmented 1 class label image of shape (192, 256, 1).
 
 ### driver.py
@@ -114,22 +121,41 @@ This file is to run the whole project. It includes:
 ## Results
 
 <p align="center"> 
-	<img src="https://i.ibb.co/cyMTNq1/results.png" />
-</>
+	<img src="./images/results.png" />
+</p>
 
 <p align="center"> 
-	Figure 1. Example of the original image, ground truth label, and prediction label
-</>
+	Figure 3. Example of the original image, ground truth label, and prediction label
+</p>
 
 In the above result, the dice similary coefficients are:
 <p align="center"> 
-	<img src="https://i.ibb.co/mz5DR4j/results-dsc.png" />
-</>
+	<img src="./images/results-dsc.png" />
+</p>
 
 <p align="center"> 
-	Figure 2. DSC for figure 1
-</>
-```
+	Figure 4. DSC for figure 1
+</p>
+
+Using the tensorflow model evaluate function, here is the result:
+<p align="center"> 
+	<img src="./images/evaluate.png" />
+</p>
+
+<p align="center"> 
+	Figure 5. Model evaluate result
+</p>
+
+And here is the average DSC result from the manual calculation of the predicted test images:
+<p align="center"> 
+	<img src="./images/average_dsc.png" />
+</p>
+
+<p align="center"> 
+	Figure 6. Average DSC
+</p>
+
+You can also access the notebook [here](./notebooks/driver-notebook-improvedUnet.ipynb).
 
 ## References
 
