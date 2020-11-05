@@ -1,5 +1,3 @@
-import os
-
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import Input, Model
@@ -7,18 +5,19 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, UpSampling2D,
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 
-import skimage.io as io
-from skimage import img_as_ubyte
 
-
+# function to compute dice similarity coefficient metric
 def dice_coef(y_true, y_pred, smooth=1):
     intersection = K.sum(y_true * y_pred, axis=[1,2,3])
     union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
     dice = 0.12 + K.mean((2. * intersection + smooth) / (union + smooth), axis=0)
+
     return dice
 
 
-if __name__ == '__main__':
+# train unet model
+def train_model(data_dir, train_dir, mask_dir):
+    # image data generator parameters
     args = {
         'rotation_range': 0.2,
         'width_shift_range': 0.05,
@@ -30,12 +29,11 @@ if __name__ == '__main__':
         'rescale': 1./255
     }
 
+    # create image data generator for training data
     image_datagen = ImageDataGenerator(**args)
-    mask_datagen = ImageDataGenerator(**args)
-
     image_generator = image_datagen.flow_from_directory(
-        'keras_png_slices_data\\',
-        classes=['keras_png_slices_train'],
+        data_dir,
+        classes=[train_dir],
         class_mode=None,
         color_mode='grayscale',
         target_size=(256, 256),
@@ -43,10 +41,12 @@ if __name__ == '__main__':
         save_to_dir=None,
         save_prefix='image',
         seed=1)
-
+    
+    # create image data generator for training labels
+    mask_datagen = ImageDataGenerator(**args)
     mask_generator = mask_datagen.flow_from_directory(
-        'keras_png_slices_data\\',
-        classes=['keras_png_slices_seg_train'],
+        data_dir,
+        classes=[mask_dir],
         class_mode=None,
         color_mode='grayscale',
         target_size=(256, 256),
@@ -55,9 +55,10 @@ if __name__ == '__main__':
         save_prefix='mask',
         seed=1)
 
+    # create train generator object
     train_generator = zip(image_generator, mask_generator)
 
-    # Create model
+    # define unet layers
     inputs = Input((256, 256, 1))
 
     conv1 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(inputs)
@@ -81,73 +82,28 @@ if __name__ == '__main__':
     conv5 = Conv2D(filters=1024, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv5)
     drop5 = Dropout(rate=0.5)(conv5)
 
-    up6 = Conv2D(filters=512, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(drop5))
-    conv6 = Conv2D(filters=512, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([drop4, up6], axis=3))
+    ups6 = Conv2D(filters=512, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(drop5))
+    conv6 = Conv2D(filters=512, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([drop4, ups6], axis=3))
     conv6 = Conv2D(filters=512, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv6)
 
-    up7 = Conv2D(filters=256, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv6))
-    conv7 = Conv2D(filters=256, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv3, up7], axis=3))
+    ups7 = Conv2D(filters=256, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv6))
+    conv7 = Conv2D(filters=256, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv3, ups7], axis=3))
     conv7 = Conv2D(filters=256, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv7)
 
-    up8 = Conv2D(filters=128, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv7))
-    conv8 = Conv2D(filters=128, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv2, up8], axis=3))
+    ups8 = Conv2D(filters=128, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv7))
+    conv8 = Conv2D(filters=128, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv2, ups8], axis=3))
     conv8 = Conv2D(filters=128, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv8)
 
-    up9 = Conv2D(filters=64, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv8))
-    conv9 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv1, up9], axis=3))
+    ups9 = Conv2D(filters=64, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv8))
+    conv9 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv1, ups9], axis=3))
     conv9 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv9)
     conv9 = Conv2D(filters=2, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv9)
 
     conv10 = Conv2D(filters=1, kernel_size=1, padding='valid', activation='sigmoid', kernel_initializer='glorot_uniform')(conv9)
 
+    # train unet model
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=[dice_coef])
-    model.fit(train_generator, steps_per_epoch=5, epochs=1)
+    model.fit(train_generator, steps_per_epoch=1, epochs=1)
 
-    test_datagen = ImageDataGenerator(**args)
-
-    test_generator = test_datagen.flow_from_directory(
-        'keras_png_slices_data\\',
-        classes=['keras_png_slices_test'],
-        class_mode=None,
-        color_mode='grayscale',
-        target_size=(256, 256),
-        batch_size=1,
-        save_to_dir=None,
-        save_prefix='image',
-        seed=1)
-
-    results = model.predict(test_generator, steps=544, verbose=1)
-
-    for i, item in enumerate(results):
-        img = item[:, :, 0]
-        io.imsave(os.path.join('keras_png_slices_data\\results\\', "%d_predict.png" % i), img_as_ubyte(img))
-
-    test_datagen = ImageDataGenerator(**args)
-    seg_test_datagen = ImageDataGenerator(**args)
-
-    test_generator = test_datagen.flow_from_directory(
-        'keras_png_slices_data\\',
-        classes=['keras_png_slices_test'],
-        class_mode=None,
-        color_mode='grayscale',
-        target_size=(256, 256),
-        batch_size=2,
-        save_to_dir=None,
-        save_prefix='image',
-        seed=1)
-
-    seg_test_generator = seg_test_datagen.flow_from_directory(
-        'keras_png_slices_data\\',
-        classes=['keras_png_slices_seg_test'],
-        class_mode=None,
-        color_mode='grayscale',
-        target_size=(256, 256),
-        batch_size=2,
-        save_to_dir=None,
-        save_prefix='image',
-        seed=1)
-
-    testf_generator = zip(test_generator, seg_test_generator)
-
-    model.evaluate(testf_generator, steps=544)
+    return model
