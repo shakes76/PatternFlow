@@ -28,7 +28,11 @@ def create_model():
                   metrics=["accuracy"])  # evaluation function
     return model
 
-    train_image_generator = ImageDataGenerator(rescale=1. / 255,
+image_path = "/home/lbd855/DeepLearning/Knee/"
+train_dir = image_path + "train"
+validation_dir = image_path + "test"
+
+train_image_generator = ImageDataGenerator(rescale=1. / 255,
                                            rotation_range=40,
                                            width_shift_range=0.2,
                                            height_shift_range=0.2,
@@ -37,8 +41,19 @@ def create_model():
                                            horizontal_flip=True,
                                            fill_mode='nearest')
 
-    train_data_gen = train_image_generator.flow_from_directory(directory=train_dir,
+train_data_gen = train_image_generator.flow_from_directory(directory=train_dir,
                                                            batch_size=batch_size,
                                                            shuffle=True,
                                                            target_size=(im_height, im_width),
                                                            class_mode='categorical')
+
+total_train = train_data_gen.n
+validation_image_generator = ImageDataGenerator(rescale=1. / 255)  # normalization
+
+val_data_gen = validation_image_generator.flow_from_directory(directory=validation_dir,
+                                                              batch_size=batch_size,
+                                                              shuffle=False,
+                                                              target_size=(im_height, im_width),
+                                                              class_mode='categorical')
+total_val = val_data_gen.n
+# use tf.keras.applications And use the official pretraining model
