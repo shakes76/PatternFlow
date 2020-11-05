@@ -8,7 +8,7 @@ For this work,I built an improved UNet model and performed image segmentation on
 
  I divided the data set into training set ,validation set and test set whose proportions are 6:2:2 respectively. At the same time, the images were normalized and resized into 256 * 256 * 1 and 256 * 256 * 3. When processing the mask images, I rounded all the values of the images to 0 and 1. The structure of the improved UNet has been shown below.
 
-![image](https://github.com/Peiran66/PatternFlow/tree/topic-recognition/recognition/45223499_improved_unet/images/improved_unet.png)
+![image](images/improved_unet.png)
 
 Improved UNet is roughly divided into two parts like ordinary UNet, encoding and decoding. The difference is that each layer of the decoder part in the improved UNet contains a convolutional layer and a context module, and the input of the next layer is the sum of the previous layer. A context module also called pre-activation residual which contains 7 layers that are two instance normalization layers, two activation layers "LeakyReLU" with a negative slope of $10^{-2}$, 2 convolution layers and one dropout layer with 0.3 droupout. However, the upsampling module of the decoding part replaces the previous transpose convolutional layer. The newly added localization module consist of  3x3 convolution and 1x1 convolution and it can combine the features from concatenation and also reduce the number of features. This model also contain segmentation layers which are 1 * 1 2D convolution layer and upscale layers which are upsampling2D layers. For output layer is a  1 * 1 2D convolution layer and activation function is sigmoid. 
 
