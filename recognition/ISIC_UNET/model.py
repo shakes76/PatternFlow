@@ -1,15 +1,12 @@
 """
-Class defining UNet model which segements ISIC data.
+Module defining UNet model blocks and class.
 
 @author: s4537175
 """
 
 import tensorflow as tf
 
-# Number of filters
-d = 16
-
-#%%
+### UNet model blocks ###
 
 class DownBlock(tf.keras.layers.Layer):
     def __init__(self, filters=16):
@@ -59,6 +56,8 @@ class ConcatOutBlock(tf.keras.layers.Layer):
         x = self.conv2(x)
         return self.out(x) 
     
+### UNet model ###
+    
 class UNetModel(tf.keras.Model):
     def __init__(self, filters=16):
         super(UNetModel, self).__init__()
@@ -84,28 +83,3 @@ class UNetModel(tf.keras.Model):
         x = self.up_block3(x, y3)
         x = self.up_block4(x, y2)
         return self.out(x, y1)
-        
-        
-model = UNetModel(d)
-
-#%%
-model.build((None, 512,512,3))
-model.summary() 
-
-#%%
-
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-
-'''
-history = model.fit(train_ds.batch(16),
-                    validation_data=val_ds.batch(16),
-                    epochs=2)
-
-
-test_loss, test_acc = model.evaluate(test_ds.batch(1))
-print('Test accuracy:', test_acc)
-'''
-
-
