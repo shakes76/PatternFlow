@@ -8,8 +8,7 @@ The weights of discriminator model are updated directly, however, the weights of
 
 Few examples of Pix2Pix GAN use cases:- 
 
-<p align="center"> ![](images/Pix2Pix_examples.PNG) </p>
-
+<p align="center"> <src="images/Pix2Pix_examples.PNG"> </p>
 
 
 ## Problem this algorithm solves
@@ -25,9 +24,9 @@ On running Driver.py script, Pix2Pix_algorithm.py get triggered which performs t
 
 High level architecture of Pix2Pix GAN model with Input, generated images from generator & ground truth image is shown below:--
 
-<p align="center">![](images/GAN_fake.png) </p>
+<p align="center"> <src="images/GAN_fake.png"> </p>
 
-<p align="center"> ![](images/GAN_real.png) </p>
+<p align="center"> <src="images/GAN_real.png"> </p>
 
 
 ## Results
@@ -41,8 +40,14 @@ High level architecture of Pix2Pix GAN model with Input, generated images from g
 
 
 ## Dataset
+Training, validation & testing dataset size used are: -
+* Training data size used to train model is **9664**.
+* Validation dataset has **1120** number of images.
+* Testing data has **544** number of images.  
+
+Model training needs as large number of data samples as we can train it on therefore, large proportion of dataset is used as training dataset. Validation dataset on the other hand is used to monitor the performance of the model on unseen data while it is still under training therefore a small proportion would suffice the need. And finally after model is trained its performce can be test on testing data which can be the smallest among training, validation & testing dataset.
 
 
 ## Sources
-1. https://www.tensorflow.org/tutorials/generative/pix2pix
-1. https://arxiv.org/abs/1611.07004
+* https://www.tensorflow.org/tutorials/generative/pix2pix
+* https://arxiv.org/abs/1611.07004
