@@ -10,7 +10,6 @@ Few examples of Pix2Pix GAN use cases:-
 
 <img align="center">
 ![](images/Pix2Pix_examples.PNG)
-</img>
 
 ## Problem this algorithm solves
 This algorithm solves image-to-image tanslantion problems. Here it is genrating brain MRI images from segmented brain MRI images.
@@ -27,11 +26,11 @@ High level architecture of Pix2Pix GAN model with Input, generated images from g
 
 <img align="center">
 ![](images/GAN_fake.png)
-</img>
+
 
 <img align="center">
 ![](images/GAN_real.png)
-</img>
+
 
 ## Results
 *1st Result-*
