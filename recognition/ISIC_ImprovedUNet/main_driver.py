@@ -45,7 +45,7 @@ Train = prepare_data(X_train, Y_train)
 Valid = prepare_data(X_train_valid, Y_train_valid)
 Test = prepare_data(X_test, Y_test)
 
-model = model()
+model = unet()
 model.compile(optimizer = keras.optimizers.Adam(lr = 0.001), 
               loss = 'categorical_crossentropy', 
               metrics = dice_coefficient)
