@@ -42,7 +42,7 @@ Here is the Advanced U-Net Network Architecture taken from the paper [[1]](##Ref
 However, because the ISIC datasets are 2D images, the network in this project is modified to use a 2D convolutional layer (3x3).
 
 <p align="center"> 
-	<img src="./images/improved-unet.PNG" />
+	<img src="./images/improved_unet.PNG" />
 </p>
 
 <p align="center"> 
@@ -79,7 +79,7 @@ The metrics used in this model is Dice Similarity Coefficient [(DSC)](https://en
 
 The DSC used in this project is the following:
 <p  align="center">
-	<img  src="./images/results.png"  />
+	<img  src="./images/dsc_wiki.PNG"  />
 </p>
 
 
@@ -96,7 +96,7 @@ The DSC used in this project is the following:
 ## Usage
 ```>>> python driver.py```
 
-### model.py
+### [model.py](./model.py)
 This file is for creating the U-Net model. There are 2 model, the original U-Net and the Advanced U-Net.
 
  - `unet()`
@@ -104,7 +104,7 @@ This file is for creating the U-Net model. There are 2 model, the original U-Net
 	 
 	 This one is what this project is using. The model takes as input an array of RGB image data with shape (batch_size, 192, 256, 3) and predicts a segmented 1 class label image of shape (192, 256, 1).
 
-### driver.py
+### [driver.py](./driver.py)
 This file is to run the whole project. It includes:
 
  - Splitting the dataset into training, validation, and testing
@@ -130,7 +130,7 @@ This file is to run the whole project. It includes:
 
 In the above result, the dice similary coefficients are:
 <p align="center"> 
-	<img src="./images/results-dsc.png" />
+	<img src="./images/results_dsc.png" />
 </p>
 
 <p align="center"> 
@@ -139,7 +139,7 @@ In the above result, the dice similary coefficients are:
 
 Using the tensorflow model evaluate function, here is the result:
 <p align="center"> 
-	<img src="./images/evaluate.png" />
+	<img src="./images/evaluate.PNG" />
 </p>
 
 <p align="center"> 
@@ -162,6 +162,7 @@ You can also access the notebook [here](./notebooks/driver-notebook-improvedUnet
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
 Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
 https://arxiv.org/abs/1802.10508v1
+
 [2] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,”
 in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015, ser. Lecture Notes in
 Computer Science, N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi, Eds. Cham: Springer International
