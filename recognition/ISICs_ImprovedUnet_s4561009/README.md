@@ -37,7 +37,7 @@ However, the mask images from the dataset link has pixel in range of 0-255 which
 
 ## Model Architecture
 
-Here is the Advanced U-Net Network Architecture taken from the paper [[1]](##References) which is inspired by the original U-Net Architecture from [[2]](##References). This network is originally designed to process large 3D input blocks and thus using a 3D convolutional layer (3x3x3). 
+Here is the Advanced U-Net Network Architecture taken from the paper [[1]](#References) which is inspired by the original U-Net Architecture from [[2]](#References). This network is originally designed to process large 3D input blocks and thus using a 3D convolutional layer (3x3x3). 
 
 However, because the ISIC datasets are 2D images, the network in this project is modified to use a 2D convolutional layer (3x3).
 
