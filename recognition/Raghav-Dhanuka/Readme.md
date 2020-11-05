@@ -43,9 +43,11 @@ Activation function used is _**“Leaky ReLU"**_ nonlinearities with a negative 
 
 On the ISIC training data set, the built U-Net model is trained and the best model selection takes place based on validation data set loss improvement. The call-back parameter was allocated to catch the best model that had the lowest loss of validity.
 - **Binary_Crossentropy Loss plot** with respect to the number of epochs for training and validation data set along with marker for best model is represented below.
+
 ![Binary_Crossentropy_Loss Plot](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Model_Loss_Plot.png)
 
 - **Accuracy Plot** with respect to the number of epochs for training and validation data set along with marker for best model is represented below.
+
 ![Accuracy Plot](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Model_Accuracy_Plot.png)
 
 - Overall **Dice Score** of the ISIC test data set obtained is `0.85`.
@@ -53,6 +55,7 @@ On the ISIC training data set, the built U-Net model is trained and the best mod
 Further, it was also idetified and confirmed  that all the test dataset is having the dice score of above `0.80`.
 
 - **Predicted segmentation** image of a random ISIC test sample with lesion image and  actual segmentation image is represented below.
+
 ![Predicted_Image1](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Predicted_Image1.png)
 ![Predicted_Image2](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Predicted_Image2.png)
 ![Predicted_Image3](https://github.com/Raghav-Dhanuka/PatternFlow/blob/topic-recognition/recognition/Raghav-Dhanuka/Predicted_Image3.png)
@@ -61,10 +64,10 @@ Further, it was also idetified and confirmed  that all the test dataset is havin
 # Dependencies:
 
 - There are few packages required to be installed and imported before running the algorithm such as _OS, Numpy, Pandas, Matplotlib, Keras, Scikit-Learn, Scikit-Image, tqdm_.
-- The algorithm script name - _**“Final_Project.py”**_ and the Main test drive script name - _**“main. py”**_ should be kept in the same path before the execution of the test drive script.
+- The algorithm script name - _**“Improved_Unet_ISICs_Algo.py”**_ and the Main test drive script name - _**“main. py”**_ should be kept in the same path before the execution of the test drive script.
 - The output of the algorithm is present in the _**Output_Model.ipynb**_ file.
 
-## References:
+# References:
 
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
 Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1

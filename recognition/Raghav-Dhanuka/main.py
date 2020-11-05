@@ -12,7 +12,7 @@
 ## Mmaintainer: Raghav Dhanuka
 ## Email: r.dhanuka@uqconnect.edu.au
 ## Status: 'Dev'
-## Description: This is the Driver Script which will invoke the algo script Final_Project.py
+## Description: This is the Driver Script which will invoke the algo script Improved_Unet_ISICs_Algo.py
 ##################################################
 """
  
@@ -44,7 +44,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.utils import to_categorical
 from tensorflow.keras import Sequential
 
-get_ipython().run_line_magic('run', 'Final_Project.py')
+get_ipython().run_line_magic('run', 'Improved_Unet_ISICs_Algo.py')
 
 # Global Variable
 img_width = 256 # Defining the width of image
