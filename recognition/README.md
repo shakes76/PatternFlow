@@ -10,6 +10,7 @@ The code in this repository uses an Improved UNET model to segment skin lesions 
 
 The Improved UNET is an updated version derived from the design of an auto-encoder in the shape of a U that was created by Ronnenberger and colleagues from the University of Freiburg (2015). The Improved UNET created by Isensee and colleagues, adapts the idea of the UNET structure with there being an encoder and decoder stage with skip steps, however, it also includes context modules and localization modules which can be seen in Figure 1 below (2017).
 
+![](READMEImages/ImprovedUnet.PNG)
 [Insert Figure of Improved UNET here]
 
 The context modules contain two convolutional layers with a dropout layer in between and the localization module includes a 3x3 convolution followed by a 1x1 convolution (Isensee et. al, 2017).
