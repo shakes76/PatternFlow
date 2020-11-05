@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[68]:
+# In[49]:
 
 
 import glob
@@ -17,14 +17,14 @@ import matplotlib.pyplot as plt
 
 
 
-# In[69]:
+# In[50]:
 
 
-ground=glob.glob("C:/Users/s4578182/Desktop/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
-train=glob.glob("C:/Users/s4578182/Desktop/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
+ground=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
+train=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
 
 
-# In[70]:
+# In[51]:
 
 
 from keras.models import *
@@ -34,44 +34,50 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 import keras
 
 
-# In[71]:
+# In[52]:
 
 
 print('Size of training set:', len(train))
 
 
-# In[72]:
+# In[53]:
 
 
 print('Size of ground set:', len(ground))
 
 
-# In[93]:
+# In[54]:
 
 
 print(train[0])
 
 
-# In[138]:
+# In[69]:
 
 
-test = np.array(Image.open(ground[0]))
+test = np.array((Image.open(ground[0]).resize((256, 256))))
 print(test.shape)
 print(ground[0])
 print(np.unique(test))
 
 
-# In[139]:
+# In[71]:
 
 
 ground_images = []
 
-for directory in ground:
-    img = np.array(Image.open(ground[0]))
+for dire in range(len(ground)):
+    img =np.array((Image.open(ground[dire]).resize((256, 256))))
     ground_images.append(img)
 
 
-# In[154]:
+# In[57]:
+
+
+print(len(ground_images))
+
+
+# In[ ]:
 
 
 train_images = []
@@ -81,33 +87,28 @@ for directory in train:
     train.append(img)
 
 
-# In[ ]:
+# In[70]:
 
 
-plt.imshow(ground_images[0])
+plt.imshow(test)
 
 
-# In[160]:
+# In[59]:
 
 
-plt.imshow(ground_images[0])
+plt.imshow(new1)
 
 
-# In[174]:
+# In[72]:
 
 
-new1=ground_images[0]
-list1=[]
-for i in new1:
-    list1=np.unique(i)
-    for j in list1:
-        if(j==0):
-            continue
-        elif(j==255):
-            continue
-        else:
-            list1[j]=127
-new1=list1    
+for dir1 in range(len(ground_images)):
+    new1=ground_images[dir1]
+    for i in range(len(new1)):
+        for j in range(len(new1[i])):
+            if(new1[i][j]>0 and new1[i][j]<255):
+                new1[i][j]=127
+    ground_images[dir1]=new1
            
 
 
