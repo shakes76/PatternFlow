@@ -151,10 +151,12 @@ def main():
     print(len(skin_scans))
     print(len(labels))
 
+    #Shuffle the data before the split
     skin_scans, labels = shuffle(skin_scans, labels)
 
     #Split the data into train, validate and test sets
     #Note that we did a 85% train, 15% val and 5% test split
+    #See README.md for more information.
     train_ds_size = 2204
     val_ds_size = 260
     train_scans = skin_scans[:train_ds_size]
@@ -172,6 +174,7 @@ def main():
     val_dataset = val_dataset.map(process_path)
     test_dataset = test_dataset.map(process_path)
 
+    #Confirm that the data has been loaded correctly.
     for scan, label in train_dataset.take(1):
         display([tf.squeeze(scan), tf.argmax(label, axis=-1)])
         print(scan.shape)

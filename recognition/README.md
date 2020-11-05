@@ -1,4 +1,6 @@
 # Applying The Improved UNET on the ISIC Data Set
+### Morgan Nierfeld
+### 45307906
 
 ## Overview
 
@@ -12,7 +14,7 @@ The Improved UNET is an updated version derived from the design of an auto-encod
 
 The context modules contain two convolutional layers with a dropout layer in between and the localization module includes a 3x3 convolution followed by a 1x1 convolution (Isensee et. al, 2017).
 
-The improved UNET has been used in this context to complete segmentation of skin lesions from the ISIC dataset. The aim is to train the model to identify between the foreground and the background in each image, the foreground being the skin lesion, and the background being anything aside from the skin lesion. Figure 2 below shows and example training image and label for training.
+The Improved UNET has been used in this context to complete segmentation of skin lesions from the ISIC dataset. The aim is to train the model to identify between the foreground and the background in each image, the foreground being the skin lesion, and the background being anything else. Figure 2 below shows and example training image and label for training.
 
 [Insert Figure on the image and label]
 
@@ -25,15 +27,15 @@ To confirm the accuracy of this model, the Dice coefficient is calculated for al
 In this repository there are two main files used to preprocess, create the model, train the model and display the results. Firstly, the model.py script contains the design of the Improved UNET model which the improved_unet function is then called upon on the driver.py script. The driver.py script conducts the following preprocessing tasks:
 * Shuffles the data
     * This was done as it allows for more difficult training images to be more likely included in the training process of the model.
-* Conducts a train, validate and test split
+* Conducts a train, validate and test split on the data
 * Converts the data into data sets
     * Within this preprocessing, the data is extracted from photos to tensors, one-hot encoded.
 
 After the preprocessing, the model is then called from model.py and then compiled and trained for 50 epochs with training and validation batch sizes of 10. Plots of epoch vs loss and accuracy are then displayed to visualise the training. The training set is then used to predict each label image, currently, driver.py script displays every prediction, howoever, this can be adjusted to user preference as to whether or not the predicted labels want to be visually inspected. During this output, the original photo, the ground truth segmentation and the predicted segmentation. Finally, the average dice coefficient is calculated by first calculating the dice coefficient for each predicted label.
 
-## Results and Discussions
+## Results and Observations
 
-The goal of this model was to segment the ISIC dataset with a minimum dice coefficient of 0.8 on the test dataset. To achieve this, the number of training epochs were set to 50 epochs, and the number of filters in which the model will start with was set to 4. The reason why the initial number of starting filters were set to 4 and not 16 as seen in Figure 1, was because it was found that 16 starting filters appeared to cause over fitting of the data. This is likely because there are only two segments and classify and 16 filters is causing there to be over classification. It was also found from testing with lower epochs that 4 starting filters produced the highest dice coefficient.
+The goal of this model was to segment the ISIC dataset with a minimum dice coefficient of 0.8 on the test dataset. To achieve this, the number of training epochs were set to 50 epochs, and the number of filters in which the model will start with was set to 4 (see Figure 1 and the documentation for the improved_unet function). The reason why the initial number of starting filters were set to 4 and not 16 as per Figure 1, was because it was found that 16 starting filters appeared to cause over fitting of the data. This is likely because there are only two segments and classify and 16 filters is causing there to be over classification. It was also found from testing with lower epochs (30 epochs) that 4 starting filters produced the highest dice coefficient on the test dataset.
 
 Figure 3 below shows the results of running the Improved UNET for 50 epochs with 4 initial starting filters.
 
@@ -41,7 +43,7 @@ Figure 3 below shows the results of running the Improved UNET for 50 epochs with
 
 We can see that there is little deviation between the training and validation accuracy. However, there does appear a deviation in trend for the loss indicating that the model is unstable with data that it has not seen before. This is evident in some of the predicted segmentations below from the model after training. 
 
-Firstly, Figure 4 and 5 show a good prediction from the model with an accurate segmentation.
+Firstly, Figure 4 and 5 show a good predictions from the model with an accurate segmentation.
 
 [Insert 50Epochs4FiltersGood2.PNG here]
 
@@ -55,7 +57,7 @@ Figure 6 below shows an example where the model cannot segment the lesion due to
 
 [Insert 50Epochs4FiltersBad1.PNG]
 
-Figures 7 and 8 below shows the inability of the model to segment the skin lesion with other markings similar to the legion itself.
+Figures 7 and 8 below shows the inability of the model to segment the skin lesion with other markings similar to the lesion itself.
 
 [insert 50Epochs4FiltersBad3.PNG here]
 
@@ -69,9 +71,9 @@ As expected, the background (layer 0) is easier to classify under this model com
 
 ## Dependencies
 
-It is recommended that this program is ran on a computer containing and RTX graphics card that is 2080 or above during to their architecture. Couple this with tensorflow-gpu installed, the training process can run much faster compared to running the program on a CPU.
+It is recommended that this program is ran on a computer containing and RTX graphics card that is 2080 or above due to their architecture. Couple this with tensorflow-gpu installed, the training process can run much faster compared to running the program on a CPU.
 
-This program also requires the ISIC dataset to be pre-downloaded in the working directory as it does not automatically download the data if it isn't already contained within the system. The data can be downloaded on the following link:
+This program also requires the ISIC dataset to be pre-downloaded in the working directory as this code does not automatically download the data if it isn't already contained within the system. The data can be downloaded on the following link:
 https://cloudstor.aarnet.edu.au/sender/?s=download&token=505165ed-736e-4fc5-8183-755722949d34
 
 ## Training, Validation and Test Split
