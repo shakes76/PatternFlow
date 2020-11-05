@@ -104,6 +104,6 @@ def train_model(data_dir, train_dir, mask_dir):
     # train unet model
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=[dice_coef])
-    model.fit(train_generator, steps_per_epoch=1, epochs=1)
+    model.fit(train_generator, steps_per_epoch=2000, epochs=5)
 
     return model
