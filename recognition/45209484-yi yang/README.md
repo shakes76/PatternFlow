@@ -5,7 +5,7 @@ This is the report of the last assignment of course COMP3710.
 Segment the ISICs data set with the UNet with all labels having a minimum Dice similarity coefficient of 0.7 on the test set.
 
 ## Algorithm -- UNet
-This UNet is developed by N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi. The UNet is convolutional network architecture for fast and precise segmentation of images. Up to now it has outperformed the prior best method (a sliding-window convolutional network) on the ISBI challenge for segmentation of neuronal structures in electron microscopic stacks. Here in my project I borrowed it to do skin cancer image segmentation.
+This UNet is developed by N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi. The UNet is convolutional network architecture for fast and precise segmentation of images. Up to now it has outperformed the prior best method (a sliding-window convolutional network) on the ISBI challenge for segmentation of neuronal structures in electron microscopic stacks. A U-Net consists of an encoder (downsampler) and decoder (upsampler). In-order to learn robust features, and reduce the number of trainable parameters, a pretrained model can be used as the encoder. Here in my project I borrowed it to do skin cancer image segmentation. 
 
 ![Getting Started](images/unet.png)
 
@@ -83,6 +83,10 @@ In this project, a 0.7 dice similarity coefficient is required. The formula of i
 ![Getting Started](images/pred2.png)
 ![Getting Started](images/pred3.png)
 ![Getting Started](images/pred4.png)
+
+## Dice similarity coefficient
+
+For this prodiction, the dice coefficient is 0.84.
 
 ## Reference
 
