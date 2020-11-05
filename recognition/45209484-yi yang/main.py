@@ -38,3 +38,14 @@ y = convert_array_truth(filelist_ground_truth)
 
 # one hot
 y = np.round(y / 255)
+
+# train test split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+# check shapes
+print("x.shape:", x.shape)
+print("y.shape:", y.shape)
+print("x_train.shape:", x_train.shape)
+print("x_test.shape:", x_test.shape)
+print("y_train.shape:", y_train.shape)
+print("y_test.shape:", y_test.shape)
