@@ -30,7 +30,7 @@ def main():
     model = IsicsUnet()
 
     model.load_data()
-    model.visualise_loaded_data()
+    #model.visualise_loaded_data()
 
     model.build_model()
     model.model.summary()
@@ -38,12 +38,12 @@ def main():
     model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                         loss='binary_crossentropy',
                         metrics=['accuracy'])
-    model.show_predictions()
+    #model.show_predictions()
 
     history = model.model.fit(x=model.train_ds.batch(1),
                               validation_data=model.val_ds.batch(1),
                               verbose=1,
-                              epochs=1)
+                              epochs=3)
     model.show_predictions()
 
     # todo test and compare to dice similarity coefficient

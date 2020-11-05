@@ -27,7 +27,6 @@ class IsicsUnet:
         self.val_ds = None
         self.test_ds = None
         self.model = None
-        self.BATCH_SIZE = 1
 
 
     @staticmethod
@@ -54,19 +53,19 @@ class IsicsUnet:
 
         # normalize mask to [0,1]
         m = tf.cast(m, tf.float32) / 255.0
-        # do we need to one-hot encode the mask? theres only one channel anyway?
-        #m = tf.keras.utils.to_categorical(m)
 
         return img, m
 
     def visualise_loaded_data(self):
         """
-        Helper function to visualise loaded image and mask data
+        Helper function to visualise loaded image and mask data for sanity checking
 
         Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
         """
+        # fetch some loaded images and true masks
         image_batch, mask_batch = next(iter(self.train_ds.batch(3)))
 
+        # visualise images and true masks
         import matplotlib.pyplot as plt
         plt.figure(figsize=(10, 10))
         for i in range(3):
@@ -119,7 +118,7 @@ class IsicsUnet:
         print("Size of validation set:", len(val_images), len(val_masks))
         print("Size of test set:", len(test_images), len(test_masks))
 
-        # create TensorFlow Dataset and shuffle it
+        # create TensorFlow Datasets and shuffle them
         self.train_ds = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
         self.val_ds = tf.data.Dataset.from_tensor_slices((val_images, val_masks))
         self.test_ds = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
@@ -136,10 +135,6 @@ class IsicsUnet:
         for image, mask in self.train_ds.take(1):
             print('Image shape:', image.numpy().shape)
             print('Mask shape:', mask.numpy().shape)
-
-        ## batch data set
-        #self.train_ds = self.train_ds.batch(self.batch_size, drop_remainder=True)
-        #self.val_ds = self.train_ds.batch(self.batch_size, drop_remainder=True)
 
     def build_model(self):
         """
@@ -209,9 +204,12 @@ class IsicsUnet:
 
         Based on code from COMP3710-demo-code.ipynb from Guest Lecture.
         """
+
+        # generate predicted masks
         image_batch, mask_batch = next(iter(self.val_ds.batch(3)))
         predictions = self.model.predict(image_batch)
 
+        # visualise images and masks
         import matplotlib.pyplot as plt
         plt.figure(figsize=(20,10))
         for i in range(3):
@@ -227,12 +225,6 @@ class IsicsUnet:
 
             # show predicted mask
             plt.subplot(3,3,3*i+3)
-            #print("Predictions:", predictions[i].shape)
-            #pred_mask = tf.argmax(predictions[i], axis=-1)
-            #pred_mask = tf.expand_dims(pred_mask, axis=-1)
-            #print("pred_mask:", pred_mask.shape)
-            #plt.imshow(pred_mask)
             plt.imshow(predictions[i])
             plt.axis('off')
-
         plt.show()
