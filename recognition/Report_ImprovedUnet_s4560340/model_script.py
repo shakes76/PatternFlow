@@ -5,7 +5,7 @@ from tensorflow.keras.layers import concatenate
 from tensorflow.keras import Input
 
 
-#3Function with the model
+##Function with the model
 def improved_unet_model():
 
     ## Specifying input size
