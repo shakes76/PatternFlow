@@ -220,7 +220,7 @@ def improved_unet(num_output_classes, input_size=(256,256,3)):
     # final conv layer
     conv_final = Conv2D(32, (3, 3), activation = leakyReLu, padding='same')(concat4)
     # final segmentation layer
-    segment_final = Conv2D(1, (1, 1), activation = leakyReLu, padding="same")(conv_final) 
+    segment_final = Conv2D(num_output_classes, (1, 1), activation = leakyReLu, padding="same")(conv_final) 
     add_final = Add()([segment_final, upscale2])
 
     if num_output_classes > 2:

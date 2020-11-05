@@ -1,0 +1,142 @@
+
+# Image Segmentation of the ISIC 2018 Melanoma Dermoscopy Dataset with Improved U-Net
+
+This project is done for the COMP3710 - Pattern Recognition Course 
+
+The algorithm will directly contribute to the [open source PatternFlow library on GitHub](https://github.com/shakes76/PatternFlow).
+
+
+## Dataset Description
+The dataset is taken from the ISIC 2018 Challenge for Task 1 (Lesion Boundary Segmentation). Further info can be seen [here](https://challenge2018.isic-archive.com/task1/).
+
+To run this project, download the dataset from this link: [https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5](https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5)
+
+### Input Data
+The input data are dermoscopic lesion images in JPEG format.
+
+
+### Response Data
+The response data are binary mask images in PNG format, indicating the location of the primary skin lesion within each input lesion image.
+
+Mask images must have the exact same dimensions as their corresponding lesion image. Mask images are encoded as single-channel (grayscale) 8-bit PNGs (to provide lossless compression), where each pixel is either:
+
+* 0: representing the background of the image, or areas outside the primary lesion
+* 255: representing the foreground of the image, or areas inside the primary lesion
+
+However, the mask images from the dataset link has pixel in range of 0-255 which is caused by edge information of the segmentation. A convertion to binary images is needed.
+
+### Examples
+
+<p align="center"> 
+	<img src="./images/example.PNG" />
+</p>
+
+<p align="center"> 
+	Figure 1. Example of the original image and the ground truth label
+</p>
+
+## Model Architecture
+
+Here is the Advanced U-Net Network Architecture taken from the paper [[1]](##References) which is inspired by the original U-Net Architecture from [[2]](##References). This network is originally designed to process large 3D input blocks and thus using a 3D convolutional layer (3x3x3). 
+
+However, because the ISIC datasets are 2D images, the network in this project is modified to use a 2D convolutional layer (3x3).
+
+<p align="center"> 
+	<img src="https://i.ibb.co/DzLGg2q/improved-unet.png" />
+</>
+
+<p align="center"> 
+	Figure 1. Advanced U-Net Network Architecture
+</>
+
+This architecture includes a context module that encodes increasingly abstract representations of the input as it progress deeper into the network. Then, a localization module is used to recombine the representations with shallower feature to precisely localize the structures of interest. 
+
+It is done by doing an upsampling, and concatenating the result with the corresponding context module, then followed by the localization module.
+
+Segmentation layers are also integrated at different levels of the network and combining them via element-wise summation to form the final network output.
+
+Throughout the network we use leaky ReLU nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions.
+
+**Context Module**, context_module() in model.py
+ - Instance Normalization
+ - Leaky ReLU nonlinearities with a negative slope of 10−2
+ - Conv2D 3x3
+ - A dropout layer (pdrop = 0.3)
+ - Instance Normalization
+ - Leaky ReLU nonlinearities with a negative slope of 10−2
+ - Conv2D 3x3
+
+**Upsampling Module**, upsampling_module() in model.py
+ - Upsampling2D()
+ - Conv2D 3x3 with Leaky ReLU as activation function
+
+**Localization Module**, localization_module() in model.py
+ - Conv2D 3x3 with Leaky ReLU as activation function 
+ - Conv2D 1x1 with Leaky ReLU as activation function
+
+### Metrics
+The metrics used in this model is dice similarity coefficient (dsc).
+
+
+## Dependencies
+ - Python 3.7.9
+ - Tensorflow 2.1.0
+ - Tensorflow addons 0.9.1 (compatible with tensorflow 2.1)
+ - Numpy 1.19.1
+ - Opencv python 4.4.0.44
+ - Matplotlib 3.3.1
+ 
+ You can also use the following conda [environment.yml](./environment.yml)
+ 
+## Usage
+
+### model.py
+This file is for creating the U-Net model. There are 2 model, the original U-Net and the Advanced U-Net.
+
+ - `unet()`
+ - `improved_unet()`
+	 This one is what this project is using. The model takes as input an array of RGB image data with shape (batch_size, 192, 256, 3) and predicts a segmented 1 class label image of shape (192, 256, 1).
+
+### driver.py
+This file is to run the whole project. It includes:
+
+ - Splitting the dataset into training, validation, and testing
+	 - The split ratio is 0.7, 0.2, 0.1
+ - Data preprocessing (using tensorflow.data.Dataset)
+	 - The label image is not one-hot encoded since there is only 1 foreground class.
+ - Model training
+	 - The model is trained over 10 epochs with a batch size of 32 in each epoch.
+ - Model evaluation
+	 - Model evaluation on the test set (with 32 batch size) using the tensorflow model evaluate function.
+ - Predicting the test set
+	 - Predict all images on the test set and calculating the DSC of each label manually and getting the average.
+
+## Results
+
+<p align="center"> 
+	<img src="https://i.ibb.co/cyMTNq1/results.png" />
+</>
+
+<p align="center"> 
+	Figure 1. Example of the original image, ground truth label, and prediction label
+</>
+
+In the above result, the dice similary coefficients are:
+<p align="center"> 
+	<img src="https://i.ibb.co/mz5DR4j/results-dsc.png" />
+</>
+
+<p align="center"> 
+	Figure 2. DSC for figure 1
+</>
+```
+
+## References
+
+[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
+Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
+https://arxiv.org/abs/1802.10508v1
+[2] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,”
+in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015, ser. Lecture Notes in
+Computer Science, N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi, Eds. Cham: Springer International
+Publishing, 2015, pp. 234–241.
