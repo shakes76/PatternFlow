@@ -74,7 +74,7 @@ def main():
     # buile the model
     new_Unet = improved_UNET((256,256,3), train_ds, val_ds)
     new_Unet.compile()
-    new_Unet.fit(batch_size=8, epoch=15, checkpoint=True, checkpoint_name='ISIC.hdf5')
+    new_Unet.fit(batch_size=8, epoch=20, checkpoint=True, checkpoint_name='ISIC.hdf5')
 
     # print the DSC on testing set.
     image, label = next(iter(test_ds.batch(394)))
