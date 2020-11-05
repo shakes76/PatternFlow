@@ -54,4 +54,4 @@ print("y_test.shape:", y_test.shape)
 model = model()
 
 # fit
-fit(model,x_train,y_train,5,4)
+fit(model,x_train,y_train,10,4)
