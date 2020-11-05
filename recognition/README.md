@@ -11,14 +11,16 @@ The code in this repository uses an Improved UNET model to segment skin lesions 
 The Improved UNET is an updated version derived from the design of an auto-encoder in the shape of a U that was created by Ronnenberger and colleagues from the University of Freiburg (2015). The Improved UNET created by Isensee and colleagues, adapts the idea of the UNET structure with there being an encoder and decoder stage with skip steps, however, it also includes context modules and localization modules which can be seen in Figure 1 below (2017).
 
 ![](READMEImages/ImprovedUnet.PNG)
-[Insert Figure of Improved UNET here]
+
+*Figure 1:Improved Unet model design by Isensee and colleagues (2017).*
 
 The context modules contain two convolutional layers with a dropout layer in between and the localization module includes a 3x3 convolution followed by a 1x1 convolution (Isensee et. al, 2017).
 
 The Improved UNET has been used in this context to complete segmentation of skin lesions from the ISIC dataset. The aim is to train the model to identify between the foreground and the background in each image, the foreground being the skin lesion, and the background being anything else. Figure 2 below shows and example training image and label for training.
 
 ![](READMEImages/ExampleImageAndLabel.PNG)
-[Insert Figure on the image and label]
+
+*Figure 2: Example of an image of a skin lesion and a segmentation of that lesion.*
 
 We can see in Figure 2 that there are some challenges imposed with this as the model needs to successfully distinguish between the lesion and other aspects such as hair, markings and other obstructions.
 
@@ -42,17 +44,20 @@ The goal of this model was to segment the ISIC dataset with a minimum dice coeff
 Figure 3 below shows the results of running the Improved UNET for 50 epochs with 4 initial starting filters.
 
 ![](READMEImages/LossAndAccuracy50Epochs4Filters.PNG)
-[Insert Figure 3, the loss and accuracy graphs]
+
+*Figure 3: Graphs representing the loss and accuracy from training the model.*
 
 We can see that there is little deviation between the training and validation accuracy. However, there does appear a deviation in trend for the loss indicating that the model is unstable with data that it has not seen before. This is evident in some of the predicted segmentations below from the model after training. 
 
 Firstly, Figure 4 and 5 show a good predictions from the model with an accurate segmentation.
 
 ![](READMEImages/50Epochs4FiltersGood2.PNG)
-[Insert 50Epochs4FiltersGood2.PNG here]
+
+*Figure 4: Prediction showing the model being able to segment the lesion despite 'noise' in the image*
 
 ![](READMEImages/50Epochs4FiltersGood3.PNG)
-[Insert 50Epochs4FiltersGood3.PNG here]
+
+*Figure 5: Another example prediction showing the model being able to segment the lesion despite 'noise' in the image*
 
 In Figures 4 and 5 it is evident that the model has successfully selected the lesion amognst the markings and hair (which could be considered as noise) on the skin.
 
@@ -61,20 +66,24 @@ Unfortunately there are some predictions in which the model does appear to under
 Figure 6 below shows an example where the model cannot segment the lesion due to the high amount of hair in the way.
 
 ![](READMEImages/50Epochs4FiltersBad1.PNG)
-[Insert 50Epochs4FiltersBad1.PNG]
+
+*Figure 6: An example of the model unable to predict a segmentation due to a high amount of hair covering the skin lesion*
 
 Figures 7 and 8 below shows the inability of the model to segment the skin lesion with other markings similar to the lesion itself.
 
 ![](READMEImages/50Epochs4FiltersBad3.PNG)
-[insert 50Epochs4FiltersBad3.PNG here]
+
+*Figure 7: An example where the model has made no prediction for a segmentation.*
 
 ![](READMEImages/50Epochs4FiltersBad2.PNG)
-[insert 50Epochs4FiltersBad2.PNG here]
+
+*Figure 8: An example where the model is unable to clearly distinguish the lesion itself, however, it still is close.*
 
 Despite some of these failures in the test dataset, the average dice coefficient for each segment layer both appear above 0.8 as seen in Figure 8 below.
 
 ![](READMEImages/50Epochs4FiltersFinalDSC.PNG)
-[insert 50Epochs4FiltersFinalDSC.PNG here]
+
+*Figure 9: Average Dice Coefficient for layers 0 and 1 for all test images. Results similar to this were produced multiple times.*
 
 As expected, the background (layer 0) is easier to classify under this model compared to the foreground (layer 1) which represents the actual skin lesion istelf. Thus, these results indicated that overall on the test set, the model performs well when segmenting the skin lesions.
 
