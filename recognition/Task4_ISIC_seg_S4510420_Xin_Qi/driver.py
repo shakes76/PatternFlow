@@ -71,7 +71,7 @@ def main():
     train_ds = train_ds.map(map_fn)
     val_ds = val_ds.map(map_fn)
     test_ds = test_ds.map(map_fn)
-
+    # buile the model
     new_Unet = improved_UNET((256,256,3), train_ds, val_ds)
     new_Unet.compile()
     new_Unet.fit(batch_size=8, epoch=15, checkpoint=True, checkpoint_name='ISIC.hdf5')
