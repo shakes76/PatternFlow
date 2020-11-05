@@ -44,17 +44,7 @@ This file is to evaluate the performance of model. There are several steps:
 * Train the model on both training dataset and test dataset.
 * Plot and compare the origin image, ground truth and the predict image.
 
-What needs to be pointed out is the training dataset and test dataset. The original image is taken from "ISIC2018_Task1-2_Training_Input_x2" file and the ground truth is taken from "ISIC2018_Task1_Training_GroundTruth_x2". After import this image, I split them into training dataset and test dataset, the ratio of them is 0.8. Both training dataset and test dataset contain two sub datasets, one is the training inputs, and the other one is the ground truth. The final size of them as shown in the following chart:
-$$
-\begin{array}{|c|c|c|}
-\hline \text { Dataset } & \text { Dataset size } & \text { Channel } \\
-\hline \text { Training Dataset } & (2075, 256, 256) & 3 \\
-\hline \text { Training Dataset ground truth } & (2075, 256, 256) & 1 \\
-\hline \text { Test Dataset } & (519, 256, 256) & 3 \\
-\hline \text { Tesr Dataset ground truth } & (519, 256, 256) & 1 \\
-\hline
-\end{array}
-$$
+What needs to be pointed out is the training dataset and test dataset. The original image is taken from "ISIC2018_Task1-2_Training_Input_x2" file and the ground truth is taken from "ISIC2018_Task1_Training_GroundTruth_x2". After import this image, I split them into training dataset and test dataset, the ratio of them is 0.8. Both training dataset and test dataset contain two sub datasets, one is the training inputs, and the other one is the ground truth. The size of training dataset and training dataset ground truth is (2075, 256, 256,3) and (2075, 256, 256,1), the size of test dataset and test dataset ground truth is (519, 256, 256,3) and (519, 256, 256,1).
 
 # Result
 After using improved model, we get the result of segemantation on test dataset. One example of result as below:
