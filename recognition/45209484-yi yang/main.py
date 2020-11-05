@@ -22,3 +22,19 @@ from tensorflow.keras.models import Model
 # load files
 filelist_input = glob.glob("C:/Users/s4520948/Downloads/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
 filelist_ground_truth = glob.glob("C:/Users/s4520948/Downloads/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
+
+# check size
+print(len(filelist_input))
+print(len(filelist_ground_truth))
+
+# convert input image to array
+x = convert_array(filelist_input)
+
+# rescale
+x = x / 255.
+
+# convert ground truth to array
+y = convert_array_truth(filelist_ground_truth)
+
+# one hot
+y = np.round(y / 255)
