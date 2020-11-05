@@ -6,8 +6,9 @@ Pix2Pix is a conditional Generative Adversarial Network model also known as GAN,
 GAN architecture is comprised of a generator model which tries to generate fake or sythetic images, followed by a discriminator which on the other hand classifies image as real (from the dataset) or fake (generated from generator).
 The weights of discriminator model are updated directly, however, the weights of generator model are updated via discriminator model. The two models are trained simultaneously where the generator tries to fool the discriminator and the discriminator try to classify fake images from real ones.
 
-#### Few examples of Pix2Pix GAN use cases:- 
-![](images/Pix2Pix_examples.PNG)
+Few examples of Pix2Pix GAN use cases:- 
+
+<p align="center"> ![](images/Pix2Pix_examples.PNG) </p>
 
 
 
@@ -23,16 +24,18 @@ On running Driver.py script, Pix2Pix_algorithm.py get triggered which performs t
 1. After model is trained, testing data set is loaded, preproccesed and finally using generator brain MRI images are generated.
 
 High level architecture of Pix2Pix GAN model with Input, generated images from generator & ground truth image is shown below:--
-![](images/GAN_fake.png) 
-![](images/GAN_real.png)
+
+<p align="center">![](images/GAN_fake.png) </p>
+
+<p align="center"> ![](images/GAN_real.png) </p>
 
 
 ## Results
-1st Result-
+*1st Result-*
 
 ![](images/Result1.png)
 
-2nd Result-
+*2nd Result-*
 
 ![](images/Result2.png)
 
@@ -41,5 +44,5 @@ High level architecture of Pix2Pix GAN model with Input, generated images from g
 
 
 ## Sources
-https://www.tensorflow.org/tutorials/generative/pix2pix & 
-https://arxiv.org/abs/1611.07004
+1. https://www.tensorflow.org/tutorials/generative/pix2pix
+1. https://arxiv.org/abs/1611.07004
