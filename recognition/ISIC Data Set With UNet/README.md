@@ -75,8 +75,8 @@ In order to train this model as I have, follow the next steps:
 ## Results
 Below is an outline of how I used the driver script to import the ISIC data, train the U-Net model, and segment the data using this model, alongside some results and images.
 
-### Plotting an Example Image
-When we run the driver script, the first thing it does it output an example image and mask from the training dataset. Below are a few of these example images. Note that I have convertes the images into black and white, which makes segmenting the images far simpler.
+### Checking the Images
+When we run the driver script, the first thing it does it output an example image and mask from the training dataset. Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
@@ -100,28 +100,28 @@ Next, the model itself is created by using the `unet_model` function imported fr
 | `Conv2D 5`       | `(64, 64, 24)`    | `2616`     | `MaxPooling2D 2`            |
 | `Conv2D 6`       | `(64, 64, 24)`    | `5208`     | `Conv2D 5`                  |
 | `MaxPooling2D 3` | `(32, 32, 24)`    | `0`        | `Conv2D 6`                  |
-| `Conv2D  7      | `(32, 32, 48)`    | `10416`    | `MaxPooling2D 3`            |
-| `Conv2D  8      | `(32, 32, 48)`    | `20784`    | `Conv2D 7`                  |
-| `MaxPooling2D 4 | `(16, 16, 48)`    | `0`        | `Conv2D 8`                  |
-| `Conv2D 9       | `(16, 16, 96)`    | `41568`    | `MaxPooling2D 4`            |
-| `Conv2D 10      | `(16, 16, 96)`    | `83040`    | `Conv2D 9`                  |
-| `UpSampling2D 1 | `(32, 32, 96)`    | `0`        | `Conv2D 10`                 |
-| `Concatenate 1  | `(32, 32, 144)`   | `0`        | `UpSampling2D 1 & Conv2D 8` |
-| `Conv2D 11      | `(32, 32, 48)`    | `62256`    | `Concatenate 1`             |
-| `Conv2D 12      | `(32, 32, 48)`    | `20784`    | `Conv2D 11`                 |
-| `UpSampling2D 2 | `(64, 64, 48)`    | `0`        | `Conv2D 12`                 |
-| `Concatenate 2  | `(64, 64, 72)`    | `0`        | `UpSampling2D 2 & Conv2D 6` |
-| `Conv2D 13      | `(64, 64, 24)`    | `15576`    | `Concatenate 2`             |
-| `Conv2D 14      | `(64, 64, 24)`    | `5208`     | `Conv2D 13`                 |
-| `UpSampling2D 3 | `(128, 128, 24)`  | `0`        | `Conv2D 14`                 |
-| `Concatenate 3  | `(128, 128, 36)`  | `0`        | `UpSampling2D 3 & Conv2D 4` |
-| `Conv2D 15      | `(128, 128, 12)`  | `3900`     | `Concatenate 3`             |
-| `Conv2D 16      | `(128, 128, 12)`  | `1308`     | `Conv2D 15`                 |
-| `UpSampling2D 4 | `(256, 256, 12)`  | `0`        | `Conv2D 16`                 |
-| `Concatenate 4  | `(256, 256, 18)`  | `0`        | `UpSampling2D 4 & Conv2D 2` |
-| `Conv2D 17      | `(256, 256, 6)`   | `978`      | `Concatenate 4`             |
-| `Conv2D 18      | `(256, 256, 6)`   | `330`      | `Conv2D 17`                 |
-| `Conv2D 19      | `(256, 256, 1)`   | `7`        | `Conv2D 18`                 |
+| `Conv2D  7`      | `(32, 32, 48)`    | `10416`    | `MaxPooling2D 3`            |
+| `Conv2D  8`      | `(32, 32, 48)`    | `20784`    | `Conv2D 7`                  |
+| `MaxPooling2D 4` | `(16, 16, 48)`    | `0`        | `Conv2D 8`                  |
+| `Conv2D 9`       | `(16, 16, 96)`    | `41568`    | `MaxPooling2D 4`            |
+| `Conv2D 10`      | `(16, 16, 96)`    | `83040`    | `Conv2D 9`                  |
+| `UpSampling2D 1` | `(32, 32, 96)`    | `0`        | `Conv2D 10`                 |
+| `Concatenate 1`  | `(32, 32, 144)`   | `0`        | `UpSampling2D 1 & Conv2D 8` |
+| `Conv2D 11`      | `(32, 32, 48)`    | `62256`    | `Concatenate 1`             |
+| `Conv2D 12`      | `(32, 32, 48)`    | `20784`    | `Conv2D 11`                 |
+| `UpSampling2D 2` | `(64, 64, 48)`    | `0`        | `Conv2D 12`                 |
+| `Concatenate 2`  | `(64, 64, 72)`    | `0`        | `UpSampling2D 2 & Conv2D 6` |
+| `Conv2D 13`      | `(64, 64, 24)`    | `15576`    | `Concatenate 2`             |
+| `Conv2D 14`      | `(64, 64, 24)`    | `5208`     | `Conv2D 13`                 |
+| `UpSampling2D 3` | `(128, 128, 24)`  | `0`        | `Conv2D 14`                 |
+| `Concatenate 3`  | `(128, 128, 36)`  | `0`        | `UpSampling2D 3 & Conv2D 4` |
+| `Conv2D 15`      | `(128, 128, 12)`  | `3900`     | `Concatenate 3`             |
+| `Conv2D 16`      | `(128, 128, 12)`  | `1308`     | `Conv2D 15`                 |
+| `UpSampling2D 4` | `(256, 256, 12)`  | `0`        | `Conv2D 16`                 |
+| `Concatenate 4`  | `(256, 256, 18)`  | `0`        | `UpSampling2D 4 & Conv2D 2` |
+| `Conv2D 17`      | `(256, 256, 6)`   | `978`      | `Concatenate 4`             |
+| `Conv2D 18`      | `(256, 256, 6)`   | `330`      | `Conv2D 17`                 |
+| `Conv2D 19`      | `(256, 256, 1)`   | `7`        | `Conv2D 18`                 |
 
 ### Compiling the Model
 Next, I compiled the model with the following parameters.
