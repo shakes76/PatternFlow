@@ -133,28 +133,19 @@ Next, I compiled the model with the following parameters.
 **Metrics**: I used accuracy as a metric. I have also used dice coefficient as a metric but chose accuracy in the end. Either of these would have sufficed here though.
 
 ### Training the Model
-Next, I trained the model.
-
-I trained the model over 100 epochs. I stopped at 100 epochs because I was getting good convergence and my training accuracy and validation accuracy.
-
-I used a training and validating batch size of 32. This size sufficed and given my hardware felt this was more than plenty.
-
-### Analysing the Training History
-After training was complete, I analysed the training history by ploting how the training accuracy and validation accuracy changed over each epoch. The plot of the training history is shown below.
+Next, I trained the model. I trained the model over 100 epochs. I stopped at 100 epochs because I was getting good convergence and my training accuracy and validation accuracy. I used a training and validating batch size of 32. This size sufficed and given my hardware felt this was more than plenty. After training was complete, I analysed the training history by ploting how the training accuracy and validation accuracy changed over each epoch. The plot of the training history is shown below.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
 </p>
 <p align="center">Training history of model after each epoch</p>
 
-We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from an alternate model (trained using the same datasets, optimizer and loss function).
+We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from an alternate model (trained using the same datasets, optimizer and loss function). Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History%20Other%20Model.png">
 </p>
 <p align="center">Training history of model after each epoch</p>
-
-Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
 
 ### Making Predictions
 Next, I made and displayed some predictions using the model to test that it is accurate. Five of these such predictions are shown below.
@@ -168,9 +159,7 @@ Next, I made and displayed some predictions using the model to test that it is a
 <p align="center">Good predictions made using the model</p>
 </p>
 
-As you can see, these are all really good predictions, and in my opinion are very usable. The first four in particular are highly accurate. One shortcoming I found was how my model dealt with the edges of the segmentation. As you can see in the fifth prediction, my prediction does not find the correct outline that was needed.
-
-However, not all predictions are this good. For example, take a look at the following two predictions.
+As you can see, these are all really good predictions, and in my opinion are very usable. The predictions correctly outline the skin lesion, and are quite close to the ideal segmentation. One shortcoming I found was how my model dealt with the edges of the segmentation. As you can see in the fifth prediction, my prediction does not find the correct outline that was needed. Additionally, in the fourth images, we can see that the model incorrectly picks up additional smaller skin lesions which are simply not there. Overally however, these predictions are quite good and have a high dice similarity coefficient. Unfortunately, not all predictions are this good. For example, take a look at the following two predictions.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20162140%20(102).png">
@@ -181,10 +170,10 @@ However, not all predictions are this good. For example, take a look at the foll
 These are clearly not usable predictions. I found that often the model got tricked up by certain skin features. If we look at the first prediction, the four black dots trick the model, which completely misses the actual lesion. On the other hand, in the second prediction, the skin lesion is correcly identified, however the model also incorrectly segments many other parts of the image which are not skin lesions. These two examples, which are not compeltely uncommon in the predictions made, show that the model still needs a lot of work if it is going to be used on all images, particularly trickier images which are obscured.
 
 ### Analysing Dice Similarity Coefficient of Model
-Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.79369396. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
+Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.7937. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
 
 ## Improvements to the Model?
-Whilst this model meets the 0.7 target accuracy for the dice similarity coefficient, clearly I have shown there is still great room for growth and construct a superior model which does not have the same shortcomings. Some potential areas to explore here are:
+Whilst this model meets the 0.70 target accuracy for the dice similarity coefficient, clearly I have shown there is still great room for growth to construct a superior model which does not have the same shortcomings. Some potential areas to explore here are:
 
 * Using dice coefficient loss as a loss function, as opposed to binary crossentropy.
 * Incorporating dropoutlayers into the model to reduce overfitting.
@@ -192,6 +181,4 @@ Whilst this model meets the 0.7 target accuracy for the dice similarity coeffici
 * Increasing the batch size and number of epochs when training the model.
 * Varying the learning rate.
 
-It is very likely that by simply incorporating some of these would result in a superior model.
-
-If I wanted to go even further, I could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow me to reach higher accuracy levels.
+It is very likely that by simply incorporating some of these would result in a superior model. Additionally, if I wanted to go even further, I could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow me to reach higher accuracy levels.
