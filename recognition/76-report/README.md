@@ -2,7 +2,7 @@
 ## Name: Jiayu Zhou <br> Student No.:45478776
 ###  Introduction
 Unet is a neural network with a " U" shape. It includes Convolution, Max Pooling, Receptive field, batch normalization, Up-sampling, Transposed Convolution, 
-Skip Connections and so on. its activation function is relu. Compared to other neural network, Unet does not have dense layer, thus its input is able to have various size.<br>
+Skip Connections and so on. Its activation function is Relu and in the output layer, activation function is Sigmoid or Softmax which is used for multiple labels classification. Compared to other neural network, Unet does not have dense layer, thus its input is able to have various size.<br>
 Totally, Unet contains two parts, one is feature extraction and the other one id up sampling, this structure also called as encoder and decoder. 
 In feature extraction, image size will be changed because of max pooling. In up sampling, for each up sampling, 
 it will merge with feature extraction layer that has the same size. 
@@ -30,7 +30,8 @@ The improved Unet includes: first layer-3x3 convolution with 16 filter size and 
 ere are totally five similar structures with different filter size in the context path. and then add the first layer and its context module, 
 do the same thing for later layers. Subsequently, there is the localization pathway, four up sampling layers in main branch happens here. 
 In addition, for each localization module includes a 3x3 conv and 1x1 conv to halves the number of feature maps.
-By segmentation layer and upscale in the side branch, and then add them before output, images size increase from 64x64 to 256x256 as the original size.
+By segmentation layer and upscale in the side branch, and then add them before output, images size increase from 64x64 to 256x256 as the original size. 
+Activation function is Relu and in the output layer, the activation function here is Sigmoid because this is a binary classification.
 At the same time, merge the information from the down sampling is also important. The initial learning rate is 5e-4 and decay is 10e-5. <br>
 
 ### Model sammary<br>
