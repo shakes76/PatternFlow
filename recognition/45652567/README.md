@@ -22,7 +22,7 @@ I randomly add Dropoup layers between the Unet to reducing overfitting.
 
 ## Fit the model
 
-To fit the model, we compile the model with the learning rate at 0.0001, set the loss as binary_crossentropy, and used the metrics of accuracy.
+To fit the model, I compiled the model with the learning rate at 0.0001, set the loss as binary_crossentropy, and used the metrics of accuracy.
 
 The result is as follow:
 
