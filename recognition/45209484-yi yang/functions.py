@@ -24,3 +24,12 @@ def convert_array_truth(filelist):
         data.append(image)
     data = np.array(data, dtype=np.uint8)
     return data
+
+# compile and fit model
+def fit(model,x,y, epoch_size, batch):
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), 
+                     loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+                     metrics=['accuracy'])
+
+    model.fit(x, y, epochs=epoch_size, batch_size=batch,
+                    validation_split=0.2)
