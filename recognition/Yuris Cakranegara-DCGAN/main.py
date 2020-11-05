@@ -1,10 +1,13 @@
 from dataset_loader import ImageDatasetLoader
 from model import OasisDCGAN
 import matplotlib.pyplot as plt
+import os
 
 def main():
     train_dataset_dir = "../../../keras_png_slices_data/keras_png_slices_train/"
     result_dir = "result_images/"
+    os.makedirs(result_dir, exist_ok=True)
+
     epochs = 250
     batch_size = 64
     img_shape = (256, 256, 1)
@@ -29,7 +32,7 @@ def main():
     plt.savefig(result_dir + "real_images.png")
 
     # Create and train the model
-    model = OasisDCGAN(result_dir)
+    model = OasisDCGAN(result_dir=result_dir)
     model.train(batch_size, epochs, X_train)
 
     # Crate and store generator loss plot
