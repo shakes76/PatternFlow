@@ -59,13 +59,13 @@ class improved_UNET(object):
         if batch_norm:
             X = BatchNormalization()(X)
 
-        X = Activation('relu')(X)
+        X = Activation(tf.nn.leaky_relu)(X)
 
         X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(X)
         if batch_norm:
             X = BatchNormalization()(X)
 
-        X = Activation('relu')(X)
+        X = Activation(tf.nn.leaky_relu)(X)
 
         return X
 
@@ -74,36 +74,36 @@ class improved_UNET(object):
         inputs = Input(self._image_size)
         conv1 = self.conv_block(inputs,self._num_filters,3,batch_norm=True)
         p1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv1)
-        p1 = Dropout(0.3)(p1)
+        p1 = Dropout(0.2)(p1)
 
         conv2 = self.conv_block(p1,self._num_filters*2,3,batch_norm=True)
         p2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv2)
-        p2 = Dropout(0.3)(p2)
+        p2 = Dropout(0.2)(p2)
 
         conv3 = self.conv_block(p2,self._num_filters*4,3,batch_norm=True)
         p3 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv3)
-        p3 = Dropout(0.3)(p3)
+        p3 = Dropout(0.2)(p3)
 
         conv4 = self.conv_block(p3,self._num_filters*8,3,batch_norm=True)
         p4 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv4)
-        p4 = Dropout(0.3)(p4)
+        p4 = Dropout(0.2)(p4)
 
         conv5 = self.conv_block(p4,self._num_filters*16,3,batch_norm=True)
 
         u6 = Conv2DTranspose(self._num_filters*8, (3,3), strides=(2, 2), padding='same')(conv5)
         u6 = concatenate([u6,conv4])
         conv6 = self.conv_block(u6,self._num_filters*8,3,batch_norm=True)
-        conv6 = Dropout(0.3)(conv6)
+        conv6 = Dropout(0.2)(conv6)
 
         u7 = Conv2DTranspose(self._num_filters*4,(3,3),strides = (2,2) , padding='same')(conv6)
         u7 = concatenate([u7,conv3])
         conv7 = self.conv_block(u7,self._num_filters*4,3,batch_norm=True)
-        conv7 = Dropout(0.3)(conv7)
+        conv7 = Dropout(0.2)(conv7)
 
         u8 = Conv2DTranspose(self._num_filters*2,(3,3),strides = (2,2) , padding='same')(conv7)
         u8 = concatenate([u8,conv2])
         conv8 = self.conv_block(u8,self._num_filters*2,3,batch_norm=True)
-        conv8 = Dropout(0.3)(conv8)
+        conv8 = Dropout(0.2)(conv8)
 
         u9 = Conv2DTranspose(self._num_filters,(3,3),strides = (2,2) , padding='same')(conv8)
         u9 = concatenate([u9, conv1])
@@ -115,7 +115,7 @@ class improved_UNET(object):
 
         return model 
 
-    def compile(self, learning_rate = 1e-4):
+    def compile(self, learning_rate = 0.5e-4):
         """Compile model, can tune the learning rate here"""
         self.model = self.Unet()
         self.model.compile(optimizer = Adam(lr = learning_rate),
