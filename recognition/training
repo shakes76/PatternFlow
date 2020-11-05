@@ -57,3 +57,19 @@ val_data_gen = validation_image_generator.flow_from_directory(directory=validati
                                                               class_mode='categorical')
 total_val = val_data_gen.n
 # use tf.keras.applications And use the official pretraining model
+
+model = create_model()
+# Callback function 1: learning rate attenuation
+
+reduce_lr = ReduceLROnPlateau(
+    monior = 'val_loss', # Value to monior
+    factor = 0.1 # The learning rate decreased to 1 /10 of the original
+    patience = 2,
+    # When the number of epoch passes and the performance of the model is notimproved,
+    # the action of reducing the learning rate will be triggered
+    mode = 'auto',
+    # When the moitouing value is val_ When ACC,  the mode should be max, when the monitering value is val_
+    # In case of loss, the mode should be min, in auto mode, the evaluation criteria are automatically inferred
+    # from the name of the monitored value
+    verbose = 1 # If true, a message is output for each update. Default value:false
+)
