@@ -52,3 +52,7 @@ The following three images shows the real performance on three sets.
 
 ------
 
+python=3.7
+
+tensorflow-gpu(tensorflow2.1)
+

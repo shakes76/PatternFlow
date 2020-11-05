@@ -157,7 +157,7 @@ class improved_UNET(object):
 
         plt.figure(figsize=(16, 16))
         plt.subplot(1,3,1)
-        plt.imshow(tf.reshape(raw_image,self._image_size)
+        plt.imshow(tf.reshape(raw_image,self._image_size))
         plt.title("raw_image", size=12)
         plt.subplot(1,3,2)
         plt.imshow(tf.reshape(ground_truth,self._image_size[:2]), cmap=plt.cm.gray)
