@@ -2,7 +2,9 @@
 Classifying ISIC dataset with Unet with dice coefficient as evaluation metric
 
 ## Description of algorithm
-The model used is Unet, 
+The model used is Unet, what happens here is, there are three stages, In the first stage, the first four levels are the image contracting layers where the size of the image is reduced, done by using, conv2d layers of tensorflow's keras library along with maxpooling2d layers. Then the second stage is bottleneck stage which is again done by conv2d layers. The third stage is the expansion stage where the images regain their original size along with segmentation, this is done by four layers of conv2d and upsampling2d. Padding is also done in the model as a precaution that the image arrays do not loose original information while reduction.
+[!unet]()
+
 
 ### Problem it solves
 This deep learning model helps to solve the problem of segmentation of the images that can be used for various purposes in the medical and healthcare industry.The output of this deep network is compared with the original input using a metric known as dice similarity. It tells us how well the image segmentation resembles the original input image based on the overlapping. It is calculated by twice the area overlapping between segmented and original image upon the total pixels in segmented and original image. 
