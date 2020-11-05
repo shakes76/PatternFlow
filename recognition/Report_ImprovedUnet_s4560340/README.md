@@ -1,6 +1,10 @@
 ##  Improved Unet
 Improved unet is an improvised form of the unet. The network follows a similar architecture to unet. It starts with a context aggregation path encoding abstract representations of the input as we go deeper into the network. This is followed by a localization pathway that recombines these representations with shallower features to precisely localize the structures of interest. Then gradient signals are injected further deep in the network through deep supervision.
 
+#### Problem definition
+The ISIC dataset is a set of dermoscopic images of skin affected by Melanoma and label images (segmented) showing the region of affected skin cells. The input image is partitioned various parts called segments. Then the important image segments are used for processing the input image. An image is a set of different pixels. The pixels that have similar attributes are grouped together using image segmentation to detect  boundaries or objects. Based on the input images, the improved unet network segments the images with the help of various sections decribed below. The performance of the improved U net is then checked with the test set. 
+
+
 ### Context Pathway
 Context modules are used as activations in the context pathway. Each context module consists of – a 3x3 convolution layer, followed by a dropout layer with 0.3 which followed by another 3x3 convolution layer. Each convolution layer uses Leaky ReLU as the activation function for the layer. In the context pathway, the context modules are connected by 3X3 convolution layers with stride 2 hence reducing the resolution of the feature map.
 
@@ -16,9 +20,18 @@ Therefore in an Improved Unet there is a context pathway that encodes abstract f
 ### Visual Architecture
 ![Architecture](images/Architecture.png)
 
+### Dependencies used in the algorithm 
+* Numpy 
+* Matplotlib
+* Sklearn
+* Glob 
+* Tensorflow
+* Keras - models , layers
+
 ### Data Preprocessing
-* The data used for this project is the ISIC Melanoma Dermoscopy dataset. The total number of images in this dataset are 2594. This data is split into train(60%), validation(15%) and test(25%). The model  is trained on the training data and the validation set is used for calculating validation loss and validation accuracy during training.
 * The images have different sizes and hence have been resized to 256x256 pixels. Both input images and label images have been resized.
+* The data used for this project is the ISIC Melanoma Dermoscopy dataset. The total number of images in this dataset are 2594. This data is split into train(60%), validation(15%) and test(25%). The model  is trained on the training data and the validation set is used for calculating validation loss and validation accuracy during training.
+* After training the model with the help of training and validation sets, test set is used to calculate the dice coefficient.
 * The label images have 2 pixel values - 0 and 1 which makes the problem as binary classification of pixels in the image.
 
 ### Model Compliling and Building

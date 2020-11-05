@@ -1,24 +1,28 @@
+## Importing all the necessary modules from tensorflow
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, MaxPooling2D, Flatten, Dense,Dropout,UpSampling2D,concatenate, Add, LeakyReLU
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras import Input
 
 
+#3Function with the model
 def improved_unet_model():
 
+    ## Specifying input size
     input__ = Input((256,256,3))
 
+    ##First conv layer with LeakyRelu activation
     c1 = Conv2D(16, (3, 3), strides=(1, 1), padding='same')(input__)
     act_1 = LeakyReLU(alpha =0.01)(c1)
 
-    ##first context module
+    ##first context module with dropout
     context_mod1_layer1 = Conv2D(16, (3, 3), strides=(1, 1), padding='same')(act_1)
     act_2 = LeakyReLU(alpha =0.01)(context_mod1_layer1)
     cont_dropoutlayer1 = Dropout(.3, input_shape=(2,))(act_2)
     context_mod1_layer2 =  Conv2D(16, (3, 3),  strides=(1, 1), padding='same')(cont_dropoutlayer1)
     act_3 = LeakyReLU(alpha =0.01)(context_mod1_layer2)
 
-    ##element wise add
+    ##element wise addition
     elem_add_1 = Add()([c1, act_3])
 
     c2 = Conv2D(32, (3, 3),  strides=(2, 2), padding='same')(elem_add_1)
@@ -73,11 +77,10 @@ def improved_unet_model():
     ##element wise add5
     elem_add_5 = Add()([c5, act_15])
 
-    ##upsampling 1
+    ##upsampling module 1 (in order to be the same size with the corresponding context pathway level for concatenation
     up_1 = UpSampling2D(size=(2, 2))(elem_add_5)
     upconv_1 = Conv2D(128, (3, 3),  strides=(1, 1), padding='same')(up_1)
     act_16 = LeakyReLU(alpha =0.01)(upconv_1)
-
 
     #concat 1 
     con1 = concatenate([elem_add_4,act_16], axis = 3)
@@ -133,20 +136,23 @@ def improved_unet_model():
 
     seg_2 = Conv2D(1, (3, 3),  strides=(1, 1), padding='same')(act_23)
     act_27 = LeakyReLU(alpha =0.01)(seg_2)
-    #up_seg2 = UpSampling2D(size=(2, 2))(seg_2)
 
     seg_3 = Conv2D(1, (3, 3), strides=(1, 1), padding='same')(act_20)
     act_28 = LeakyReLU(alpha =0.01)(seg_3)
+    ## Upsampling for addition with second segmentation layer
     up_seg3 = UpSampling2D(size=(2, 2))(act_28)
 
     ##element wise add6
     elem_add_5 = Add()([act_27, up_seg3])
+    ##Upsampling the addition output for addition with first segmentation layer
     up_add5 = UpSampling2D(size=(2, 2))(elem_add_5)
 
     ##element wise add7
     elem_add_6= Add()([up_add5, act_26])
+    ##output layer with sigmoid activation function
     output = Conv2D(1, 1, activation = 'sigmoid')(elem_add_6)
 
+    ## Building model by specifying input and output layers
     model = Model(input__, output)
 
     return model
