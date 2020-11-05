@@ -14,7 +14,9 @@ Generated (at epoch 5):
 
 VAEs (Variational Auto Encoders) work by trying to model the encoded data as a sample from a prior distribution (usually something simple like Gaussian). Thus, any encoding is not only a compression of the data, but a probability of various input data. This allows us to reconstruct the original data accurately (just by taking the *most probable* input) or with some variations -We can generate random samples with the same dimensions as our *lantent space* (model of the prior distribution sampling) and feed it into our decoder to obtain newly generated data.<sup>1 2</sup>
 
-VAEs need some method of determining how different the modeled distribution is to the reference distribution (e.g usually assumed Gaussian). Traditionally, KL divergence was used, and InfoVAEs improved on this using MMD (Maximum-Mean Discrepancy).<sup>1</sup>
+VAEs need some method of determining how different the modeled distribution is to the reference distribution (e.g usually assumed Gaussian). Traditionally the evidence lower bound (ELBO) loss function uses KL divergence to measure the similarity between the modeled and reference distribution. This results in some issues, such as an *uninformative latent coding* due to preferencing modeled samples that come directly from the reference, and *over fitting* of the data as a trivial way to maximise the similarity to a gaussian is to just model a distribution using the mean of the data and near zero variance which -is a valid gaussian distribution- but results in encodings that are close to that mean.<sup>1 2</sup>
+
+InfoVAEs (Information Maximising VAEs) improved on this using MMD (Maximum-Mean Discrepancy) for the loss function, which doesn't only look to match the type of distribution, but all the *moments of that distribution*. This ensures that variance is taken into account, and allows us to better represent salient features in the latent space.<sup>1 2</sup>
 
 ## How it works
 
