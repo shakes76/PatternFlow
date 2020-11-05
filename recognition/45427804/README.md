@@ -17,10 +17,10 @@ y_test (labels) has 544 images which are 256*256 pixels(black and white photo)
 
 # Data preparation
 
- Using **sorted function** to sort each dataset to make sure that each picture can correspond to the corresponding label. After that, using **reshape function** to make x_train data and x_test data into 4 dimensions for instance (9664,256,256,1) and (544,256,256,1), and then divide training data and test data by 255 to achieve **normalization**. In y_train data and y_test data has 4 unique number which are 0, 85, 170 and 255, and dividing y_train data and y_test_data by 85 to make labels.
+ Using **sorted function** to sort each dataset to make sure that each picture can correspond to the corresponding label. After that, using **reshape function** to make x_train data and x_test data into 4 dimensions for instance (9664,256,256,1) and (544,256,256,1), and then divide training data and test data by 255 to achieve **normalization**. In y_train data and y_test data has 4 unique number which are 0, 85, 170 and 255, and dividing y_train data and y_test_data by 85 to make 4 labels which are 1, 2, 3 and 4.
 
 
-We will make 4 labels which are:
+### 4 labels which are:
 * 0 - Background
 * 1 - CSF (cerebrospinal fluid)
 * 2 - Gray matter
@@ -28,3 +28,5 @@ We will make 4 labels which are:
 
 # For example:
 ![](images/labels.png)
+
+# Unet Model
