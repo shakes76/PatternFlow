@@ -109,8 +109,7 @@ def dice_coefficient(y_true, y_pred, smooth = 0):
 
 # calcculate dice coefficient 
 lis = 0
-for i in range(518):
-    
+for i in range(518):  
     dice_coefficient_value = dice_coefficient(test_y[i], pred_test[i], smooth = 0)
     lis += dice_coefficient_value
 ave = lis/518
