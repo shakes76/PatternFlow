@@ -21,6 +21,11 @@ class OasisDCGAN:
         self.discriminator = self.__discriminator()
         self.result_dir = result_dir
 
+        # Define properties to calculate loss
+        self.cross_entropy = tf.keras.losses.BinaryCrossentropy()
+        self.generator_loss = []
+        self.discriminator_loss = []
+
         # Construct the GAN model
         self.model = Sequential([self.generator, self.discriminator])
 
@@ -87,6 +92,22 @@ class OasisDCGAN:
         batched_dataset = batched_dataset.batch(batch_size, drop_remainder=True).prefetch(1)
         return batched_dataset
 
+    def __get_discriminator_loss(self, generated_output, real_output):
+        generated_loss = self.cross_entropy(tf.zeros_like(generated_output), generated_output)
+        real_loss = self.cross_entropy(tf.ones_like(real_output), real_output)
+        return generated_loss + real_loss
+    
+    def __get_generator_loss(self, generated_output):
+        return self.cross_entropy(tf.ones_like(generated_output), generated_output)
+    
+    def __calculate_loss(self, real_imgs):
+        noise = tf.random.normal(shape=[9, self.codings_size])
+        gen_imgs = self.generator(noise)
+        gen_output = self.discriminator(gen_imgs)
+        real_output = self.discriminator(real_imgs)
+        self.discriminator_loss.append(self.__get_discriminator_loss(gen_output, real_output))
+        self.generator_loss.append(self.__get_generator_loss(gen_output))
+
     def train(self, batch_size, epochs, dataset):
         """Trains the DCGAN model.
 
@@ -149,6 +170,9 @@ class OasisDCGAN:
                 self.generator = generator
                 self.discriminator = discriminator
                 
+            # Calculate loss after every epoch
+            self.__calculate_loss(X_batch)
+
             # Store the resulting image every 5 epochs
             if (epoch+1)%5 == 0:
                 self.__save_image_result(epoch+1)
