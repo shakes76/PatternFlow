@@ -35,7 +35,7 @@ def main():
     model.build_model()
     model.model.summary()
 
-    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                         loss='binary_crossentropy',
                         metrics=['accuracy'])
     #model.show_predictions()
