@@ -17,8 +17,6 @@ X_DATA_LOCATION = 'C:/Users/match/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2
 Y_DATA_LOCATION = 'C:/Users/match/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
 TRAIN_SIZE = 0.8
 VALIDATE_SIZE = 0.1
-TRAIN_BATCH_SIZE = 500
-VALIDATE_BATCH_SIZE = 100
 
 
 # Import data
@@ -62,4 +60,4 @@ plt.ylim([0.0, 1])
 plt.legend(loc='upper left')
 
 # Evaluate model
-model.evaluate(test_data)
+model.evaluate(test_seq)

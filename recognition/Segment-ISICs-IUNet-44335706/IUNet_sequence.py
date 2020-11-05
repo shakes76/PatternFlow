@@ -4,15 +4,15 @@ Custom sequence class and functions for accessing data in a Keras model
 
 import tensorflow as tf
 from math import ceil
-from numpy import zeros, ceil, squeeze
+from numpy import zeros, ceil
 from matplotlib.pyplot import imread
 from skimage.transform import resize
 
 # One hot encode segmented images
 def process_segs(seg_image):
-	seg_image = resize(seg_image, (256, 256, 1))
-	seg_image = ceil(seg_image)
-	return squeeze(tf.one_hot(seg_image, 2, axis=2))
+    seg_image = resize(seg_image, (256, 256, 1))
+    seg_image = tf.dtypes.cast(tf.math.ceil(seg_image), dtype=tf.uint8)
+    return tf.one_hot(seg_image, 2, axis=2)[:, :, :, 0]
 
 
 class iunet_sequence(tf.keras.utils.Sequence):
