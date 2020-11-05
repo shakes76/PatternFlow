@@ -56,7 +56,7 @@ def decode_mask(masks):
 def decode_img(imges):
     l = []
     for img in imges:
-        img = cv2.imread(img)
+        img = image.imread(img)
         img = cv2.resize(img, (img_height, img_width))/255.0
         l.append(img)
     return l
