@@ -21,7 +21,7 @@ There are totally 2594 images, I split them into training set(70%), validation s
 For mask images, there are many values in the range of 0 and 255, so I set values that lower than 0.5 as 0 and values that higher than or equal to 0.5 as 1. 
 Therefore, there are two labels. Subsequently, I resized the images as (256,256). the input size of model should be (256,256,3) and the output size should be (256,256,1).<br>
 train input image example<br>
-![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/train_input.png)
+![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/train_input.png)<br>
 train label image example<br>
 ![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/train_label.png)<br>
 
