@@ -15,4 +15,4 @@ We will make 4 labels which are:
 * 3 - White matter
 
 # For example:
-![](seg_001_slice_0.nii.png)
+![](images/seg_001_slice_0.nii.png)
