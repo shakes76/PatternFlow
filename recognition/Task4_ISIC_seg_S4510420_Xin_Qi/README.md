@@ -1,4 +1,4 @@
-## TASK4: Segment the ISICs dataset 
+# TASK4: Segment the ISICs dataset 
 
 ------
 
@@ -6,7 +6,7 @@ Segment the ISICs dataset with the Improved UNet with all labels having a minimu
 
 Author: Xin Qi (s45104208).       Last updated: *05/11/2020*
 
-#### **Quick Start**
+## **Quick Start**
 
 ------
 
@@ -22,25 +22,25 @@ python driver.py
 
 to run the driver.py script. It will print the final DSC score on testing set and save three images to show the real performance on training set, validation set and testing set.
 
-#### **The Description of the algorithm**
+## **The Description of the algorithm**
 
 ------
 
 The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. There are two phases fro this model. The frist phase is context aggregation pathway that encodes increasingly abstract representations of the input. The second phase is localization pathway that recombines these representations with shallower features to precisely localize the structures of interest.
 
-#### **The problem that it solves**
+## **The problem that it solves**
 
 ------
 
 This improved Unet can be utilized to do image segmentation. The ISICs dataset is about skin cancer. When giving a image, we should dertermine the value of each pixel in predicted image (0 or 1). In order to better evaluate the performance of model, we use dice coefficient loss to fit the model.  The final result can be a segmented image.
 
-#### **Data Spliting**
+## **Data Spliting**
 
 ------
 
 The whole datset has 2594 raw images and corresponding 2594 ground truth images. I split the dataset into three parts: testing set, validation set and testing set. The sample size of each set is 1800, 400 and 394 respectively.
 
-#### **Result**
+## **Result**
 
 ------
 
@@ -48,7 +48,7 @@ The final DEC in testing set is 0.82.
 
 The following three images shows the real performance on three sets.
 
-#### **Dependencies**
+## **Dependencies**
 
 ------
 
