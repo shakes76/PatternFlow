@@ -105,3 +105,14 @@ print("Time took: {:4.2f} min".format((end_time - start_time)/60))
 
 generator.save("C:\\Users\\61484\\comp3710_final\\PatternFlow\\recognition\\s4577176-DCGAN\\saved_models\\generator" + "-" + str(img_shape[0]) + ".h5")
 #discriminator.save("C:\\Users\\61484\\comp3710_final\\PatternFlow\\recognition\\s4577176-DCGAN\\saved_models\\discriminator"+ "-" + str(img_shape[0]) + ".h5")
+
+
+#plotting loss values of generator and discrimiantor:
+
+#discriminator loss
+disc_loss = [i["D"] for i in history]
+#generator loss
+gen_loss = [i["G"] for i in history]
+
+plt.plot(disc_loss)
+plt.plot(gen_loss)
