@@ -35,11 +35,11 @@ class ImageDatasetLoader:
         Returns:
             np.ndarray: The images list in the form of a numpy array.
         """
-        assert type(nm_images) == int, \
-            "nm_images has to be an integer."
-
+        
         imgs = np.sort(os.listdir(self.dir_data))
         if (nm_images != None):
+            assert type(nm_images) == int, \
+                "nm_images has to be an integer."
             imgs = imgs[:nm_images]
 
         X = []
