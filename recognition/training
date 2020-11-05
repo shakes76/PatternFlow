@@ -60,7 +60,6 @@ total_val = val_data_gen.n
 
 model = create_model()
 # Callback function 1: learning rate attenuation
-
 reduce_lr = ReduceLROnPlateau(
     monior = 'val_loss', # Value to monior
     factor = 0.1 # The learning rate decreased to 1 /10 of the original
@@ -73,3 +72,5 @@ reduce_lr = ReduceLROnPlateau(
     # from the name of the monitored value
     verbose = 1 # If true, a message is output for each update. Default value:false
 )
+
+# Callback function 2: save optimal model
