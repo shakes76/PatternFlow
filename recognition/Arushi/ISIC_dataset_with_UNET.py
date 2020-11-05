@@ -1,7 +1,21 @@
+"""
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
+# -*- coding: utf-8 -*-
+# ===========================================================================================================
+Author: Arushi Mahajan
+Student Number: 45755833
+Copyright: Copyright 2020, UNet with ISIC dataset
+Credits: Arushi Mahajan, Shakes and Team
+License: COMP3710
+Version: 1.0.1
+Maintainer: Arushi Mahjan
+Email: arushi.mahajan@uqconnect.edu.au
+Status: Dev
+Date Created: 31/10/2020
+Date Modified: 05/11/2020
+Description: This file contains all the functions that are required to run the test driver script
+# ===========================================================================================================
+"""
 
 
 def load_dataset(train_input_path, train_groundtruth_path):  
@@ -11,17 +25,11 @@ def load_dataset(train_input_path, train_groundtruth_path):
     return isic_features, isic_labels
 
 
-# In[2]:
-
-
 def sorting_labels(isic_features, isic_labels):  
-    """This function will sort teh data with respect to labels"""
+    """This function will sort the data with respect to labels"""
     isic_features_sort = sorted(isic_features) 
     isic_labels_sort = sorted(isic_labels)     
     return isic_features_sort, isic_labels_sort
-
-
-# In[3]:
 
 
 # get and resize the training input dataset
@@ -38,9 +46,6 @@ def load_features(inp_path, ids):
     return X_isic_train 
 
 
-# In[4]:
-
-
 # function for loading the training groundtruth dataset
 def load_labels(inp_path, ids):
     """ This function loads the data from training groundtruth folder into grayscale mode """
@@ -54,21 +59,18 @@ def load_labels(inp_path, ids):
     return y_isic_train
 
 
-# In[5]:
-
 
 # train-validation-test split
 def split_datatset(X_isic_train, y_isic_train):
-    """This function is performing train, validation and test split"""
+    """This function is performing train, validation and test split and splitting the data 60:20:20 ratio"""
     X_train, X_test, y_train, y_test = train_test_split(X_isic_train, y_isic_train, test_size = 0.20, random_state = 42)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25, random_state = 42)    
     return X_train, X_test, y_train, y_test, X_val, y_val
 
 
-# In[6]:
-
 
 def encoding(y_train,y_test,y_val):
+    """This function is normalizing the segmentation data and performing one hot encoding"""
     # normalizing the labels to 0 and 1 
     y_train_sc = y_train//255
     y_test_sc = y_test//255
@@ -79,8 +81,6 @@ def encoding(y_train,y_test,y_val):
     y_val_encode = to_categorical(y_val_sc) 
     return y_train_encode, y_test_encode, y_val_encode
 
-
-# In[7]:
 
 
 def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
@@ -100,7 +100,6 @@ def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     return x
 
 
-# In[8]:
 
 
 def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
@@ -151,31 +150,32 @@ def get_unet(input_img, n_filters = 16, dropout = 0.1, batchnorm = True):
     return model
 
 
-# In[9]:
 
-
-# dice coeffient
 def dice_coeffient(y_true, y_pred, smooth = 1):
-    """ This function is used to gauge the similarity of two samples """
+    """ This function is used to find the dice coefficient of overall model """
     intersect = K.sum(K.abs(y_true * y_pred), axis = [1,2,3])
     union = K.sum(y_true,[1,2,3]) + K.sum(y_pred,[1,2,3]) - intersect
     coeff_dice = K.mean((intersect + smooth) / (union + smooth), axis = 0)
     return coeff_dice
 
 
-# In[10]:
 
-
-# dice loss function
 def dice_loss(y_true, y_pred, smooth = 1):
+    """ This function is used to evaluate dice loss """
     return 1 - dice_coeffient(y_true, y_pred, smooth = 1)
 
 
-# In[11]:
+def dice_coeffient_each(y_true, y_pred, smooth=1): 
+    """ This function is used to find the dice coefficient for each test segmentation """
+    intersect = K.sum(K.abs(y_true * y_pred), axis=[1,2,3])
+    union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersect
+    coeff_dice_ind = (intersect + smooth) / (union + smooth)
+    return dice_coeffient_each
 
 
-# plot for training loss and validation loss wrt epochs
+
 def lossPlot(results):
+    """Function is used to plot for training loss and validation loss with respect to epochs"""
     plt.figure(figsize = (8, 8))
     plt.title("dice loss")
     plt.plot(results.history["loss"], label = "training_loss")
@@ -186,11 +186,10 @@ def lossPlot(results):
     plt.legend();
 
 
-# In[12]:
 
 
-# plot for training accuracy and validation accuracy wrt epochs
 def accuracyPlot(results):
+    """Function is used to plot for training accuracy and validation accuracy with respect to epochs"""
     plt.figure(figsize = (8,8))
     plt.title("Classification Accuracy")
     plt.plot(results.history["accuracy"],label = "training_accuracy")
@@ -200,20 +199,21 @@ def accuracyPlot(results):
     plt.legend();
 
 
-# In[13]:
 
 
-# loading the best model and predicting on model
-def best_model(model,X_test,y_test):
+
+def best_model(model,X_test,y_test,y_test_encode):
+    """Function for loading the best model and predicting on model"""
     model.load_weights('ISIC_model.h5')
     test_preds = model.predict(X_test,verbose=1) 
-    test_preds_max = np.argmax(test_preds,axis=-1) 
+    test_preds_max = np.argmax(test_preds,axis=-1)
+    print("Overall dice coefficient of the ISIC test data\n")
+    print(dice_coeffient(y_test_encode,test_preds)))
     n,h,w,g = y_test.shape
     test_preds_reshape = test_preds_max.reshape(n,h,w,g)
     return test_preds_reshape
 
 
-# In[14]:
 
 
 def plot_ISIC(X, y, Y_pred,ix=None):
@@ -225,15 +225,17 @@ def plot_ISIC(X, y, Y_pred,ix=None):
 
     fig, ax = plt.subplots(1, 3, figsize=(20, 10))
     
+    #Plotting original image
     ax[0].imshow(X[ix, ..., 0], cmap='gray')
     ax[0].contour(X[ix].squeeze(), colors='k', levels=[0.5])
     ax[0].set_title('Input Image')   
     
+    #Plotting true image
     ax[1].imshow(y[ix, ..., 0], cmap='gray')
     ax[1].contour(y[ix].squeeze(), colors='k', levels=[0.5])
     ax[1].set_title('True Image')
     
+    #Plotting predicted image
     ax[2].imshow(Y_pred[ix, ..., 0], cmap='gray')
     ax[2].contour(Y_pred[ix].squeeze(), colors='k', levels=[0.5])
     ax[2].set_title('Predicted Image')    
-
