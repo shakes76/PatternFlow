@@ -1,6 +1,10 @@
 # Contents
 * ## Description
-     This part bulids the training model and finally saves the model's training parameters (h5 file). The size of the input images is (150,150), and batch size is 32. The use of callbacks is to stop the training process when the loss function has not changed significantly. Convolutional neural network is the algorithm of this model.
+     This part bulids the training model and finally saves the model's training parameters (h5 file). The size of the input images is (150,150), and batch size is 32. The use of callbacks is to stop the training process when the loss function has not changed significantly. Convolutional neural network is the algorithm of this model. It contains 1 input layer, 4 convolutional layers, 4 max pooling layers, dropout layer and fully connected layer. The output is 2 classes. It is used to classify left and right knees.
+     
+   Model structure and parameters:
+   
+   ![](https://github.com/1665446266/PatternFlow/blob/topic-recognition/recognition/project(%20OAI%20AKOA%20knee%20dataset)/bulid%20model/model%20structure.png?raw=true)
 
 * ## Results 
    Training and validation accuracy:
