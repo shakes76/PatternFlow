@@ -46,9 +46,5 @@ Valid = prepare_data(X_train_valid, Y_train_valid)
 Test = prepare_data(X_test, Y_test)
 
 model = unet()
-model.compile(optimizer = keras.optimizers.Adam(lr = 0.001), 
-              loss = 'categorical_crossentropy', 
-              metrics = dice_coefficient)
-model.fit(Train.batch(16),
-          epochs=10,
-          validation_data = Valid.batch(16))
+model.compile(optimizer = keras.optimizers.Adam(lr = 0.0001), loss = 'categorical_crossentropy', metrics=dice_coef)
+model.fit(Train.batch(20), epochs=10, validation_data = Valid.batch(20))
