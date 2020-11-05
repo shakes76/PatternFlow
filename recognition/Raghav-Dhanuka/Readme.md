@@ -65,7 +65,7 @@ Further, it was also idetified and confirmed  that all the test dataset is havin
 
 - There are few packages required to be installed and imported before running the algorithm such as _OS, Numpy, Pandas, Matplotlib, Keras, Scikit-Learn, Scikit-Image, tqdm_.
 - The algorithm script name - _**“Improved_Unet_ISICs_Algo.py”**_ and the Main test drive script name - _**“main. py”**_ should be kept in the same path before the execution of the test drive script.
-- The output of the algorithm is present in the _**Output_Model.ipynb**_ file.
+- The output of the algorithm is present in the _**Output_Model.ipynb**_ file which depicts the plots and images of the model result.
 
 # References:
 
