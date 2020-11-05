@@ -26,5 +26,29 @@ to run the driver.py script. It will print the final DSC score on testing set an
 
 ------
 
-The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, 
+The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. 
+
+#### **The problem that it solves**
+
+------
+
+This improved Unet can be utilized to do image segmentation. The ISICs dataset is about skin cancer. When giving a image, we should dertermine the value of each pixel in predicted image (0 or 1). In order to better evaluate the performance of model, we use dice coefficient loss to fit the model.  The final result can be a segmented image.
+
+#### **Data Spliting**
+
+------
+
+The whole datset has 2594 raw images and corresponding 2594 ground truth images. I split the dataset into three parts: testing set, validation set and testing set. The sample size of each set is 1800, 400 and 394 respectively.
+
+#### **Result**
+
+------
+
+The final DEC in testing set is 0.82.
+
+The following three images shows the real performance on three sets.
+
+#### **Dependencies**
+
+------
 
