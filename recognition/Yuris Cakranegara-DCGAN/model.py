@@ -88,6 +88,18 @@ class OasisDCGAN:
         return batched_dataset
 
     def train(self, batch_size, epochs, dataset):
+        """Trains the DCGAN model.
+
+        Args:
+            batch_size (int): The size of the dataset batch the training will be performed on.
+            epochs (int): The number of training epoch.
+            dataset (numpy.ndarray): The training dataset.
+        """
+        assert type(batch_size) == int, \
+            "batch_size has to be an integer."
+        assert type(epochs) == int, \
+            "epochs has to be an integer."
+
         # Create a batched dataset
         batched_dataset = self.__create_batched_dataset(dataset, batch_size)
 
