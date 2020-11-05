@@ -55,3 +55,7 @@ model = model()
 
 # fit
 fit(model,x_train,y_train,10,4)
+
+# predict
+pred = model.predict(x_test,batch_size=4)
+pred_mask = np.round(pred)
