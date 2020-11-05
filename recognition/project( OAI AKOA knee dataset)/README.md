@@ -1,3 +1,5 @@
+# Xiaomeng Cai 45490826
+
 ## Description
 This project is to classify laterality (left or right sided knee) of the OAI AKOA knee data set, and the accuracy on the test dataset is 90.04%. Algorithm is Convolutional Neural Network.
 
