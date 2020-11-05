@@ -20,10 +20,11 @@ python==3.7<br> tensorflow==2.3.0
 There are totally 2594 images, I split them into training set(70%), validation set(20%) and test set(10%). 
 For mask images, there are many values in the range of 0 and 255, so I set values that lower than 0.5 as 0 and values that higher than or equal to 0.5 as 1. 
 Therefore, there are two labels. Subsequently, I resized the images as (256,256). the input size of model should be (256,256,3) and the output size should be (256,256,1).<br>
-![train input image example](/images/X_train.png)
-Format: ![Alt Text](url)
-![train label image example](/images/y_train.png)
-Format: ![Alt Text](url)
+train input image example<br>
+![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/train_input.png)
+train label image example<br>
+![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/train_label.png)<br>
+
 ### Improved Unet <br>
 There are some differences from Unet. 
 The improved Unet includes: first layer-3x3 convolution with 16 filter size and a context module with two 3x3 conv and one dropout layer. Th
@@ -140,9 +141,10 @@ It evaluates the similarity of label images and prediction images.<br>
 
 
 ### Training and validation results<br>
-Batch size is 2 and epoch is 20.
-![loss and dice coefficient](/images/trainresult.png)
-Format: ![Alt Text](url)
+Batch size is 2 and epoch is 20.<br>
+loss and dice coefficient<br>
+![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/loss_dice.png)<br>
+
 ### Test prediction<br>
-![loss and dice coefficient](/images/testresult.png)
-Format: ![Alt Text](url)
+![image](https://github.com/mollypython/PatternFlow/blob/topic-recognition/recognition/76-report/images/test_prediction.png)
+
