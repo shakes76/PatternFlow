@@ -1,4 +1,4 @@
-# Improved UNet 
+## Improved UNet 
 
 #### Introduction
 
@@ -16,13 +16,11 @@ Improved UNet is roughly divided into two parts like ordinary UNet, encoding and
 
 My network architecture is trained using 256*256 voxels and randomly sampled patches with a batch size of 16. I train for a total of 10 epochs. I use the Adam optimizer for training, the initial learning rate is $10^{-4}$. Then I make a prediction on test set and I got the plots. From left to right, it is the real skin pictures, ground truth and predicted pictures.
 
-<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170223803.png" alt="image-20201105170223803" style="zoom:35%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170304262.png" alt="image-20201105170304262" style="zoom:35%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170450077.png" alt="image-20201105170450077" style="zoom:35%;" />
+<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170223803.png" alt="image-20201105170223803" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170304262.png" alt="image-20201105170304262" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170450077.png" alt="image-20201105170450077" style="zoom:33%;" />
 
-<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170606667.png" alt="image-20201105170606667" style="zoom:35%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170635433.png" alt="image-20201105170635433" style="zoom:35%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170707656.png" alt="image-20201105170707656" style="zoom:35%;" />
+<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170606667.png" alt="image-20201105170606667" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170635433.png" alt="image-20201105170635433" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170707656.png" alt="image-20201105170707656" style="zoom:33%;" />
 
-​                 images                                   ground truth                        predicted mask 
-
-
+​         images                                   ground truth                        predicted mask 
 
 #### Evaluation 
 
