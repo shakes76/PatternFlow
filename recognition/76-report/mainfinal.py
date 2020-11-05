@@ -22,6 +22,7 @@ os.chdir('C:/Users/s4547877/Downloads/')
 # In[4]:
 
 
+#get path
 input_PATH='./ISIC2018_Task1-2_Training_Input_x2/'
 input_ids = next(os.walk(input_PATH))[2]  
 truth_PATH='./ISIC2018_Task1_Training_GroundTruth_x2/'
@@ -32,6 +33,18 @@ truth_ids = next(os.walk(truth_PATH))[2]
 
 
 X_train,X_val,X_test,y_train,y_val,y_test=loaddata(input_PATH,input_ids,truth_PATH,truth_ids)
+
+
+# In[8]:
+
+
+#show a sample
+import matplotlib.pyplot as plt
+img = imread(input_PATH + input_ids[1])
+#img = resize(img, (IMG_HEIGHT, IMG_WIDTH), mode='constant', preserve_range=True)
+print(img.shape)
+plt.imshow(img)
+plt.show()
 
 
 # In[6]:
@@ -49,6 +62,7 @@ result=model.fit(X_train,y_train,batch_size=2,validation_data=(X_val,y_val),epoc
 # In[ ]:
 
 
+#visiualize training procedure
 get_ipython().run_line_magic('matplotlib', 'inline')
 from matplotlib import pyplot as plt
 plt.figure(figsize=(12,8))
@@ -65,12 +79,14 @@ plt.legend()
 # In[ ]:
 
 
+#test set prediction
 y_test_pred=model.predict(X_test)
 
 
 # In[ ]:
 
 
+#show the first test set and its prediction
 re = model.predict(X_test)
 
 re = re > 0.5
@@ -91,6 +107,7 @@ plt.title('y_test_prediction')
 # In[ ]:
 
 
+#dice coefficient of the testset 
 scores = model.evaluate(X_test,y_test,batch_size=16)
 print("dice_coef = ", scores[1])
 
