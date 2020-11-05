@@ -1,8 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
-
+"""
+##################################################
+## Author: Raghav Dhanuka - s4593673
+## Copyright: Copyright 2020, Improved U-Net - ISICs Dataset
+## Credits: [Raghav Dhanuka, Shakes and Team]
+## Date: Nov 3 12:17:14 2020
+## License: COMP3701
+## Version: “0.1.0”
+## Mmaintainer: Raghav Dhanuka
+## Email: r.dhanuka@uqconnect.edu.au
+## Status: 'Dev'
+## Description: This is the Driver Script which will invoke the algo script Final_Project.py
+##################################################
+"""
+ 
 
 # Libraries used for this Project
 import os # used for interaction with the operating system 
@@ -31,7 +44,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.utils import to_categorical
 from tensorflow.keras import Sequential
 
-get_ipython().run_line_magic('run', 'Final_Project.ipynb')
+get_ipython().run_line_magic('run', 'Final_Project.py')
 
 # Global Variable
 img_width = 256 # Defining the width of image
@@ -44,7 +57,9 @@ path_seg = input("Please Enter the Path for Training_GroundTruth_x2")
 
 
 def main():
-    """This Function is calling all the functions defined in the module script named "Final_Project" """
+    """
+    This Function is calling all the functions defined in the module script named "Final_Project" 
+    """
     # Loading dataset for the model
     isic_train, isic_seg_train = path_for_dataset(path_train,path_seg)
     isic_train_sort,isic_seg_train_sort = sorted_test(isic_train, isic_seg_train)

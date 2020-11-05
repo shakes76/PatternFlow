@@ -1,11 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[3]:
+"""
+##################################################
+## Author: Raghav Dhanuka - s4593673
+## Copyright: Copyright 2020, Improved U-Net - ISICs Dataset
+## Credits: [Raghav Dhanuka, Shakes and Team]
+## Date: Oct 31 12:17:14 2020
+## License: COMP3701
+## Version: “0.1.0”
+## Mmaintainer: Raghav Dhanuka
+## Email: r.dhanuka@uqconnect.edu.au
+## Status: 'Dev'
+## Description:  All the Modules for the Improved U-Net are present below which will be run using the driver script main.py
+##################################################
+"""
 
 
 def path_for_dataset(path_train,path_seg):
-    """This Function is used Extracting the file names of the images and masks in training, test and validation folders"""
+    """
+    This Function is used Extracting the file names of the images and masks in training, test and validation folders
+    """
     
     isic_train = next(os.walk(path_train))[2] # returns all the files "DIR."
     isic_seg_train=next(os.walk(path_seg))[2] # returns all the files "DIR."
@@ -15,26 +29,30 @@ def path_for_dataset(path_train,path_seg):
     return isic_train, isic_seg_train
 
 
-# In[4]:
+
 
 
 def sorted_test(isic_train, isic_seg_train):
-    """This Function is used for Sorting the data with respect to labels"""
+    """
+    This Function is used for Sorting the data with respect to labels
+    """
     isic_train_sort=sorted(isic_train) # Sorting of data with respect to labels
     isic_seg_train_sort=sorted(isic_seg_train) # Sorting of data with respect to labels
     
     return isic_train_sort, isic_seg_train_sort
 
 
-# In[5]:
+
 
 
 def Load_img(inp_path,isic):
-    """ This function is used for Loading the images from the Training_Input_x2 folder"""
-    " - Storing them with the above dimensions specified"
-    " - Loading the images in Greayscale format"
-    " - Normalizing the image with 255 as Normalising data by dividing it by 255 should improve activation functions performance"
-    " - Sigmoid function works more efficiently with data range 0.0-1.0."
+    """ 
+    This function is used for Loading the images from the Training_Input_x2 folder
+    """
+    # " - Storing them with the above dimensions specified"
+    # " - Loading the images in Greayscale format"
+    # " - Normalizing the image with 255 as Normalising data by dividing it by 255 should improve activation functions performance"
+    # " - Sigmoid function works more efficiently with data range 0.0-1.0."
     
     X_ISIC_train= np.zeros((len(isic),img_height,img_width,1),dtype=np.float32)
     for n, id_ in tqdm_notebook(enumerate(isic), total=len(isic)): # capture all the images ids using tqdm
@@ -46,13 +64,14 @@ def Load_img(inp_path,isic):
     return X_ISIC_train
 
 
-# In[6]:
 
 
 def Load_segmentation(inp_path,isic):
-    """ This function is used for Loading the images from the Training_GroundTruth_x2 folder"""
-    " - Storing them with the above dimensions specified"
-    " - Loading the images in Greayscale format"
+    """ 
+    This function is used for Loading the images from the Training_GroundTruth_x2 folder
+    """
+    # " - Storing them with the above dimensions specified"
+    # " - Loading the images in Greayscale format"
     
     Y_ISIC_train= np.zeros((len(isic),img_height,img_width,1),dtype=np.uint8)
     for n, id_ in tqdm_notebook(enumerate(isic), total=len(isic)):
@@ -65,11 +84,12 @@ def Load_segmentation(inp_path,isic):
     return Y_ISIC_train
 
 
-# In[7]:
 
 
 def load_dataset(X_ISIC_train, Y_ISIC_train):
-    """This Function is used for spliting the dataset into Train, Test, and Val"""
+    """
+    This Function is used for spliting the dataset into Train, Test, and Val
+    """
     X_train, X_test, y_train, y_test = train_test_split(X_ISIC_train, Y_ISIC_train, test_size=0.20, random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=42)
     X_train.shape
@@ -77,31 +97,35 @@ def load_dataset(X_ISIC_train, Y_ISIC_train):
     return X_train, X_test, y_train, y_test, X_val, y_val
 
 
-# In[8]:
+
 
 
 def pre_processing(y_train,y_test,y_val):
-    """This Function is used for Pre_processing the Y labels into two categoraical format"""
-    " - By calculating the quotient Normalizing the image with data range 0.0-1.0"
-    " - By using One-Hot Encoding to Labels"
+    """
+    This Function is used for Pre_processing the Y labels into two categoraical format
+    """
+    # " - By calculating the quotient Normalizing the image with data range 0.0-1.0"
+    # " - By using One-Hot Encoding to Labels"
     Y_ISIC_train_sc = y_train//255
     Y_ISIC_test_sc = y_test//255
     Y_ISIC_val_sc = y_val//255
-    Y_ISIC_train_cat = to_categorical(Y_ISIC_train_sc) # one hot encoding
-    Y_ISIC_test_cat = to_categorical(Y_ISIC_test_sc) # one hot encoding
-    Y_ISIC_val_cat = to_categorical(Y_ISIC_val_sc) # one hot encoding
+    Y_ISIC_train_cat = to_categorical(Y_ISIC_train_sc) # one hot encoding on Y_train
+    Y_ISIC_test_cat = to_categorical(Y_ISIC_test_sc) # one hot encoding on Y_test
+    Y_ISIC_val_cat = to_categorical(Y_ISIC_val_sc) # one hot encoding on Y_val
     
     return Y_ISIC_train_cat, Y_ISIC_test_cat, Y_ISIC_val_cat
 
 
-# In[9]:
+
 
 
 # Dice Coeffient
 from keras import backend as K
 def dice_coeff(y_true, y_pred, smooth=1):
-    """This Function is used to gauge similarity of two samples"""
-    "When applied to Boolean data, using the definition of true positive (TP), false positive (FP), and false negative (FN)"
+    """
+    This Function is used to gauge similarity of two samples
+    """
+    # " - When applied to Boolean data, using the definition of true positive (TP), false positive (FP), and false negative (FN)"
     
     intersect = K.sum(K.abs(y_true * y_pred), axis=[1,2,3])
     union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersect
@@ -109,13 +133,14 @@ def dice_coeff(y_true, y_pred, smooth=1):
     return coeff_dice
 
 
-# In[10]:
 
 
 def dice_coeff_for_each_seg(y_true, y_pred, smooth=1):
-    """This Function is used to gauge similarity of two samples"""
-    "When applied to Boolean data, using the definition of true positive (TP), false positive (FP), and false negative (FN)"
-    "This will calculate the dice score foe each segmented data"
+    """
+    This Function is used to gauge similarity of two samples
+    """
+    # " - When applied to Boolean data, using the definition of true positive (TP), false positive (FP), and false negative (FN)"
+    # " - This will calculate the dice score foe each segmented data"
     
     intersect = K.sum(K.abs(y_true * y_pred), axis=[1,2,3])
     union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersect
@@ -123,18 +148,20 @@ def dice_coeff_for_each_seg(y_true, y_pred, smooth=1):
     return dice_coeff_for_each_seg
 
 
-# In[11]:
 
 
 def generat_unet():
-    """This Function is using the improved Unet Architecture with the following changes"""
-    " - change activation to LeakyReLU from batchnorm"
-    " - change dropout layer from Dropout(0.05) to Dropout(0.3)"
-    " - Adding two Context module with a dropout layer in between two conv2d layer"
-    " - Performing the elementwise summation"
-    " - Downsampling the layer between two context module"
-    " - concatenating layer with corresponding downsampling layer"
-    " - Elemetwise summation of segmentation layers"
+    """
+    This Function is using the improved Unet Architecture with the following changes
+    """
+    # " - change activation to LeakyReLU from batchnorm"
+    # " - change dropout layer from Dropout(0.05) to Dropout(0.3)"
+    # " - Adding two Context module with a dropout layer in between two conv2d layer"
+    # " - Performing the elementwise summation"
+    # " - Downsampling the layer between two context module"
+    # " - concatenating layer with corresponding downsampling layer"
+    # " - Elemetwise summation of segmentation layers"
+    
     # assigning input for the Unet model
     inputs = Input(shape=(256, 256, 1))
     CL = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(inputs)
@@ -209,11 +236,13 @@ def generat_unet():
     return model
 
 
-# In[12]:
+
 
 
 def loss_plot(results):
-    """This Function is used for used for plotting the graph of the training and Validation loss with respect to epoch"""
+    """
+    This Function is used for used for plotting the graph of the training and Validation loss with respect to epoch
+    """
     plt.figure(figsize=(8, 8))
     plt.title("Binary_Crossentropy_loss")
     plt.plot(results.history["loss"], label="training_loss")
@@ -224,11 +253,13 @@ def loss_plot(results):
     plt.legend();
 
 
-# In[13]:
+
 
 
 def acc_plot(results):
-    """This Function is used for Plotting the training and validation accuracy with respect to epochs"""
+    """
+    This Function is used for Plotting the training and validation accuracy with respect to epochs
+    """
     plt.figure(figsize=(8,8))
     plt.title("Classification Accuracy")
     plt.plot(results.history["accuracy"],label="training_accuracy")
@@ -239,11 +270,13 @@ def acc_plot(results):
     plt.legend();
 
 
-# In[14]:
+
 
 
 def best_model(model,X_test,y_test,Y_ISIC_test_cat):
-    """This Function is used for Capturing the Best model for the epoch"""
+    """
+    This Function is used for Capturing the Best model for the epoch
+    """
     model.load_weights('model-ISIC.h5')
     test_preds=model.predict(X_test,verbose=1) # predict the model
     test_preds_max=np.argmax(test_preds,axis=-1) # Returns the indices of the maximum values along an axis
@@ -255,11 +288,13 @@ def best_model(model,X_test,y_test,Y_ISIC_test_cat):
     return test_preds_reshape
 
 
-# In[15]:
+
 
 
 def plot_ISIc(X, y, Y_pred,ix=None):
-    """This function is used for ploting the True image vs the Predictive image from the above model"""
+    """
+    This function is used for ploting the True image vs the Predictive image from the above model
+    """
     if ix is None:
         ix = random.randint(0, len(X))
     else:
@@ -281,13 +316,6 @@ def plot_ISIc(X, y, Y_pred,ix=None):
     
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 
