@@ -1,5 +1,5 @@
 # Deep Convolutional Generative Adversarial Network (DCGAN) 
-## Author: Dream Gonsalves
+## Author: Dream Gonsalves-45970823
 
 
 ##### Pattern Recognition Report 
