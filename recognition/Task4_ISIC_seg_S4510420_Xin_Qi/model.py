@@ -8,10 +8,12 @@ from tensorflow.keras.callbacks import *
 from tensorflow.keras import backend as K
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 class improved_UNET(object):
     """The improved UNET model for image segmentation"""
-    def __init__(self, train_data, validate_data, num_filters=64):
+    def __init__(self, image_size, train_data, validate_data, num_filters=64):
+        self._image_size = image_size
         self._train_data = train_data
         self._vali_data = validate_data
         self._num_filters = num_filters
@@ -19,6 +21,17 @@ class improved_UNET(object):
         self.model = None
 
     def dice_coef(self, y_true, y_pred, smooth = 1.):
+        """
+        calculate the dice coefficient when giving ground truth and predicted result
+
+        parameters:
+            (tensor)y_true: ground truth
+            (tensor)y_pred: predicted result
+            (float)smooth:  smoothing value to prevent the denominator from being 0
+
+        return:
+            (folat)return the dice coefficient
+        """
         y_true = tf.cast(y_true, tf.float32)
         y_true = K.flatten(y_true)
         y_pred = K.flatten(y_pred)
@@ -26,10 +39,22 @@ class improved_UNET(object):
         return (2. * intersection + smooth) / (K.sum(y_true) + K.sum(y_pred) + smooth)
 
     def dice_coef_loss(self, y_true, y_pred):
+        """calculate the dice coefficient loss"""
         return 1. - self.dice_coef(y_true, y_pred)
 
 
     def conv_block(self, input_mat,num_filters,kernel_size,batch_norm):
+        """Define a convolution architecture combined with batch normalization
+        
+        parameters:
+            (layer in tf)imput_mat: The input matrix
+            (int)num_filters: the number of filters in convolution layer
+            (int)kernel_size: the width/length of kernel
+            (bool)batch_norm: whether to use batch normalization
+
+        return:
+            (layer in tf)X
+        """
         X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(input_mat)
         if batch_norm:
             X = BatchNormalization()(X)
@@ -45,7 +70,8 @@ class improved_UNET(object):
         return X
 
     def Unet(self):
-        inputs = Input((256,256,3))
+        """Define the whole architecture of this improved Unet"""
+        inputs = Input(self._image_size)
         conv1 = self.conv_block(inputs,self._num_filters,3,batch_norm=True)
         p1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv1)
         p1 = Dropout(0.2)(p1)
@@ -90,12 +116,21 @@ class improved_UNET(object):
         return model 
 
     def compile(self, learning_rate = 0.5e-4):
+        """Compile model, can tune the learning rate here"""
         self.model = self.Unet()
         self.model.compile(optimizer = Adam(lr = learning_rate),
                     loss = self.dice_coef_loss, 
                     metrics = [self.dice_coef])
 
     def fit(self, batch_size = 8, epoch = 15, checkpoint=True, checkpoint_name = 'ISIC.hdf5'):
+        """Fit the improved Unet model
+        
+        Parameter:
+            (int)batch_size: the size of one batch
+            (int)epoch: the number of epoch to fit the model
+            (bool)checkpoint: whether to save the best model
+            (str)checkpoint_name: the name of the saved model
+        """
         if checkpoint:
             model_checkpoint = ModelCheckpoint(checkpoint_name, monitor='val_loss',
                                     verbose=1, save_best_only=True)
@@ -114,17 +149,21 @@ class improved_UNET(object):
         return self.model.predict(raw_images)
     
     def show_result(self, raw_image, ground_truth, save_name = 'result.jpg'):
+        """
+            Giving the raw image and its ground truth, 
+            plot the raw image, ground truth and predicted images together
+        """
         predict_result = self.predict(raw_image[np.newaxis,:,:,:])
 
         plt.figure(figsize=(16, 16))
         plt.subplot(1,3,1)
-        plt.imshow(tf.reshape(raw_image,(256,256,3)))
+        plt.imshow(tf.reshape(raw_image,self._image_size)
         plt.title("raw_image", size=12)
         plt.subplot(1,3,2)
-        plt.imshow(tf.reshape(ground_truth,(256,256)), cmap=plt.cm.gray)
+        plt.imshow(tf.reshape(ground_truth,self._image_size[:2]), cmap=plt.cm.gray)
         plt.title("ground_truth", size=12)
         plt.subplot(1,3,3)
-        plt.imshow(tf.reshape(predict_result,(256,256)), cmap=plt.cm.gray)
+        plt.imshow(tf.reshape(predict_result,self._image_size[:2]), cmap=plt.cm.gray)
         plt.title("predict_image", size=12)
 
         plt.savefig(save_name)

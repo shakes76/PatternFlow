@@ -9,6 +9,7 @@ import numpy as np
 from model import *
 
 def main():
+    """The driver script of using the improved Unet model"""
     # download the dataset
     dataset_url = "https://cloudstor.aarnet.edu.au/sender/download.php?token=f0d763f9-d847-4150-847c-e0ec92d38cc5&files_ids=10200257"
     data_path = tf.keras.utils.get_file(origin=dataset_url,
@@ -36,7 +37,7 @@ def main():
     random.shuffle(image)
     random.seed(42)
     random.shuffle(mask)
-
+    # split dataset into training set, validation set and testing set
     train_image = image[:N_train]
     train_mask = mask[:N_train]
     vali_image = image[N_train:N_train+N_vali]
@@ -53,6 +54,7 @@ def main():
         img = tf.io.read_file(filename)
         # Convert the compressed string to a 3D uint8 tensor.
         img = tf.image.decode_png(img, channels=3)
+        # resize the image size to the same size
         img = tf.image.resize(img, (256, 256))
         # Standardise values to be in the [0, 1] range.
         img = tf.cast(img, tf.float32) / 255.0
@@ -70,7 +72,7 @@ def main():
     val_ds = val_ds.map(map_fn)
     test_ds = test_ds.map(map_fn)
 
-    new_Unet = improved_UNET(train_ds, val_ds)
+    new_Unet = improved_UNET((256,256,3), train_ds, val_ds)
     new_Unet.compile()
     new_Unet.fit(batch_size=8, epoch=15, checkpoint=True, checkpoint_name='ISIC.hdf5')
 
