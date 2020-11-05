@@ -30,3 +30,5 @@ y_test (labels) has 544 images which are 256*256 pixels(black and white photo)
 ![](images/labels.png)
 
 # Unet Model
+![](images/UNET.jpg)
+The shape of Unet network structure is similar to U like the picture above. composed of convolution and pooling units. The left half is the encoder, that is, the traditional classification network is the "down-sampling stage", and the right half is the decoder is the "up-sampling stage". The gray arrow in the middle is a jump connection, which stitches the shallow features with the deep features, because the shallow layer can usually capture some simple features of the image, such as borders and colors. The deep convolution operation captures some unexplainable abstract features of the image. It is best to use the shallow and deep at the same time, while allowing the decoder to learn the relevant features lost in the encoder pooling downsampling
