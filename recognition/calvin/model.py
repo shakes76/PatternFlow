@@ -100,33 +100,6 @@ if __name__ == '__main__':
 
     conv10 = Conv2D(filters=1, kernel_size=1, padding='valid', activation='sigmoid', kernel_initializer='glorot_uniform')(conv9)
 
-    # valid_img_datagen = ImageDataGenerator(**args)
-    # valid_mask_datagen = ImageDataGenerator(**args)
-
-    # valid_image_generator = valid_img_datagen.flow_from_directory(
-    #     'keras_png_slices_data\\',
-    #     classes=['keras_png_slices_validate'],
-    #     class_mode=None,
-    #     color_mode='grayscale',
-    #     target_size=(256, 256),
-    #     batch_size=2,
-    #     save_to_dir=None,
-    #     save_prefix='image',
-    #     seed=1)
-
-    # valid_mask_generator = valid_mask_datagen.flow_from_directory(
-    #     'keras_png_slices_data\\',
-    #     classes=['keras_png_slices_seg_validate'],
-    #     class_mode=None,
-    #     color_mode='grayscale',
-    #     target_size=(256, 256),
-    #     batch_size=2,
-    #     save_to_dir=None,
-    #     save_prefix='mask',
-    #     seed=1)
-
-    # valid_generator = zip(valid_image_generator, valid_mask_generator)
-
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=[dice_coef])
     model.fit(train_generator, steps_per_epoch=5, epochs=1)
@@ -150,7 +123,19 @@ if __name__ == '__main__':
         img = item[:, :, 0]
         io.imsave(os.path.join('keras_png_slices_data\\results\\', "%d_predict.png" % i), img_as_ubyte(img))
 
+    test_datagen = ImageDataGenerator(**args)
     seg_test_datagen = ImageDataGenerator(**args)
+
+    test_generator = test_datagen.flow_from_directory(
+        'keras_png_slices_data\\',
+        classes=['keras_png_slices_test'],
+        class_mode=None,
+        color_mode='grayscale',
+        target_size=(256, 256),
+        batch_size=2,
+        save_to_dir=None,
+        save_prefix='image',
+        seed=1)
 
     seg_test_generator = seg_test_datagen.flow_from_directory(
         'keras_png_slices_data\\',
@@ -158,9 +143,11 @@ if __name__ == '__main__':
         class_mode=None,
         color_mode='grayscale',
         target_size=(256, 256),
-        batch_size=1,
+        batch_size=2,
         save_to_dir=None,
         save_prefix='image',
         seed=1)
 
-    model.evaluate(results, seg_test_generator)
+    testf_generator = zip(test_generator, seg_test_generator)
+
+    model.evaluate(testf_generator, steps=544)
