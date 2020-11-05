@@ -7,6 +7,7 @@ Data resource: magnetic resonance (MR) image of the brain from OASIS dataset.
 Dataset contains train data and  seg_train data
 
 x_train = train data
+
 y_train =  seg_train data
 
 ![](images/example.png)
