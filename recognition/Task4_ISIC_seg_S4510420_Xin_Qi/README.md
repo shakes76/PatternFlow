@@ -46,15 +46,15 @@ The whole datset has 2594 raw images and corresponding 2594 ground truth images.
 
 The final DEC in testing set is 0.8296 and the common line output is shown in the next picture.
 
-![screenshoot_of_output](/Users/qixin/Desktop/PatternFlow/recognition/Task4_ISIC_seg_S4510420_Xin_Qi/image_results/screenshoot_of_output.png)
+![screenshoot_of_output](image_results/screenshoot_of_output.png)
 
 The following three images shows the real performance on three sets.
 
-![train_set_result](/Users/qixin/Desktop/PatternFlow/recognition/Task4_ISIC_seg_S4510420_Xin_Qi/image_results/train_set_result.png)
+![train_set_result](image_results/train_set_result.png)
 
-![val_set_result](/Users/qixin/Desktop/PatternFlow/recognition/Task4_ISIC_seg_S4510420_Xin_Qi/image_results/val_set_result.png)
+![val_set_result](image_results/val_set_result.png)
 
-![test_set_result](/Users/qixin/Desktop/PatternFlow/recognition/Task4_ISIC_seg_S4510420_Xin_Qi/image_results/test_set_result.png)
+![test_set_result](image_results/test_set_result.png)
 
 ## **Dependencies**
 
