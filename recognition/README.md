@@ -1,4 +1,7 @@
-# OASIS brain data set with an Improved UNet
+Name: Alexander Bayusuto Wanengkirtyo
+Student ID: 45616738
+
+# OASIS brain data set with an Improved UNet (1)
 
 ## Model:
 
