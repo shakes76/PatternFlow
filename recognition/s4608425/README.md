@@ -6,7 +6,7 @@ Classifying ISIC dataset with Unet with dice coefficient as evaluation metric
 ## Description of algorithm
 The model used is Unet, what happens here is, there are three stages, In the first stage, the first four levels are the image contracting layers where the size of the image is reduced, done by using, conv2d layers of tensorflow's keras library along with maxpooling2d layers. Then the second stage is bottleneck stage which is again done by conv2d layers. The third stage is the expansion stage where the images regain their original size along with segmentation, this is done by four layers of conv2d and upsampling2d. Padding is also done in the model as a precaution that the image arrays do not loose original information while reduction.
 
-[!unet](https://github.com/tusharvinayaraj/PatternFlow/blob/topic-recognition/recognition/s4608425/resources/loss.PNG)
+[!unet](https://github.com/tusharvinayaraj/PatternFlow/blob/topic-recognition/recognition/s4608425/resources/unet.PNG)
 
 
 ### Problem it solves
@@ -20,7 +20,10 @@ This model achieved a dice similarity coeffient of approximately 0.62.
 
 ### Figures
 The loss plot
-[!loss](resources/tresult.PNG)
+[!loss](resources/loss.PNG)
+
+example output
+[!op](resources/output.PNG)
 
 
 ### Bibliography
