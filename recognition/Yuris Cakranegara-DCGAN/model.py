@@ -81,7 +81,7 @@ class OasisDCGAN:
             batch_size (int): The size of each batch which the dataset would be divided into.
 
         Returns:
-            [PrefetchDataset]: [description]
+            [PrefetchDataset]: The dataset that has been divided into batches.
         """
         batched_dataset = tf.data.Dataset.from_tensor_slices(dataset).shuffle(buffer_size=1000)
         batched_dataset = batched_dataset.batch(batch_size, drop_remainder=True).prefetch(1)
@@ -112,7 +112,6 @@ class OasisDCGAN:
                 # Generate numbers based just on noise input
                 gen_images = generator(noise)
                 # Concatenate Generated Images against the Real Ones
-                # To use tf.concat, the data types must match!
                 X_fake_vs_real = tf.concat([gen_images, tf.dtypes.cast(X_batch,tf.float32)], axis=0)
                 # Targets set to zero for fake images and 1 for real images
                 y1 = tf.constant([[0.]] * batch_size + [[1.]] * batch_size)
