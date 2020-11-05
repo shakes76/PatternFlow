@@ -1,14 +1,28 @@
+"""
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[5]:
+# -*- coding: utf-8 -*-
+# =============================================================================
+Author: Arushi Mahajan
+Student Number: 45755833
+Copyright: Copyright 2020, UNet with ISIC dataset
+Credits: Arushi Mahajan, Shakes and Team
+License: COMP3710
+Version: 1.0.1
+Maintainer: Arushi Mahjan
+Email: arushi.mahajan@uqconnect.edu.au
+Status: Dev
+Date Created: 31/10/2020
+Date Modified: 05/11/2020
+Description: Test driver script that calls and runs the algorithm
+# =============================================================================
+"""
 
 
 # calling the ISIC_dataset_with_UNET file
 get_ipython().run_line_magic('run', 'ISIC_dataset_with_UNET.py')
 
 # Import all the necessary libraries
-import os
+import os 
 import random
 import pandas as pd
 import numpy as np
@@ -44,8 +58,8 @@ img_height = 256
 border = 5
 
 # asking the user to enter the path of training input and training groundtruth folder
-train_input_path = input("Enter the Location of Training_Input folder")
-train_groundtruth_path = input("Enter the Location of Training_GroundTruth folder")
+train_input_path = input("Enter the Location of Training_Input folder: ")
+train_groundtruth_path = input("Enter the Location of Training_GroundTruth folder: ")
 
 def main():
     """This function will automatically call all the functions and produce the final result"""
@@ -56,23 +70,22 @@ def main():
     X_train, X_test, y_train, y_test, X_val, y_val = split_datatset(X_isic_train, y_isic_train)
     y_train_encode, y_test_encode, y_val_encode = encoding(y_train,y_test,y_val)
     input_img = Input((img_height, img_width, 1), name = 'img')
-    model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True)
+    model = get_unet(input_img, n_filters = 16, dropout = 0.05, batchnorm = True) # generating u-net model
     model.compile(optimizer = Adam(), loss = dice_loss, metrics = ["accuracy",dice_coeffient]) # compiling the model with Adam optimizer and dice loss
-    model.summary()
-    callbacks = [EarlyStopping(patience = 10, verbose = 1), ReduceLROnPlateau(factor = 0.1, patience = 5, min_lr = 0.00001, verbose = 1), ModelCheckpoint('ISIC_model.h5', verbose = 1, save_best_only = True, save_weights_only = True)]
+    model.summary() # model summary
+    callbacks = [EarlyStopping(patience = 10, verbose = 1), ReduceLROnPlateau(factor = 0.1, patience = 5, min_lr = 0.00001, verbose = 1), ModelCheckpoint('ISIC_model.h5', verbose = 1, save_best_only = True, save_weights_only = True)] # initializing callback to choose the best model
    
-    results = model.fit(X_train, y_train_encode, batch_size = 32, epochs = 60, callbacks = callbacks, validation_data = (X_val, y_val_encode))
-    test_preds_reshape = best_model(model,X_test,y_test)
+    results = model.fit(X_train, y_train_encode, batch_size = 32, epochs = 60, callbacks = callbacks, validation_data = (X_val, y_val_encode)) # model fitting
+    test_preds_reshape = best_model(model,X_test,y_test,y_test_encode) # loading the best model
     
-    lossPlot(results)
-    accuracyPlot(results)
-    plot_ISIC(X_test,y_test,test_preds_reshape)
+    lossPlot(results) # plotting loss plot
+    accuracyPlot(results) # plotting accuracy plot
+    plot_ISIC(X_test,y_test,test_preds_reshape) # plotting output
 
-    
+# calling the main function 
 main()
 
 
-# In[ ]:
 
 
 
