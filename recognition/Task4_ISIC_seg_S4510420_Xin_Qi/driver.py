@@ -21,7 +21,7 @@ def main():
     image = sorted(glob.glob('ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
     mask = sorted(glob.glob('ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
 
-    N_sample = len(mask)
+    # N_sample = len(mask)
     N_train = 1800
     N_vali = 400
     N_test = 394
