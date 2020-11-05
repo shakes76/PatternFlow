@@ -45,7 +45,7 @@ Figure 3 below shows the results of running the Improved UNET for 50 epochs with
 
 ![](READMEImages/LossAndAccuracy50Epochs4Filters.PNG)
 
-*Figure 3: Graphs representing the loss and accuracy from training the model.*
+*Figure 3: Graphs representing the loss and accuracy from training the model. The loss graph appears to decrease exponentially and the accuracy appears to be increasing logarithmically*
 
 We can see that there is little deviation between the training and validation accuracy. However, there does appear a deviation in trend for the loss indicating that the model is unstable with data that it has not seen before. This is evident in some of the predicted segmentations below from the model after training. 
 
