@@ -88,6 +88,11 @@ test_ds = tf.data.Dataset.from_tensor_slices((test_img, test_seg))
 train_ds = train_ds.shuffle(len(train_img))
 val_ds = val_ds.shuffle(len(val_img))
 
+#%%
+
+print(train_ds.take(1))
+
+
 
 #%%
 '''
@@ -119,27 +124,65 @@ find_min_size(imgs)
 
 #%%
 
-
-def load_single(filename, c):
-    img = tf.io.read_file(filename)
-    img = tf.image.decode_png(img, channels=c)
+def load_img(img_file):
+    img = tf.io.read_file(img_file)
+    img = tf.image.decode_jpeg(img, channels=3)
     print(img.shape)
-    if (img.shape[0] < img.shape[1]) :
-        tf.image.transpose(img)
+    #if (img.shape[0] < img.shape[1]) :
+       # tf.image.transpose(img)
     img = tf.image.resize(img, (270, 288))
     img = tf.cast(img, tf.float32)
-    print(img.shape)
-    return img / 255
+    img = img / 255.0
+    return img
+
+def load_seg(seg_file):
+    seg = tf.io.read_file(seg_file)
+    seg = tf.image.decode_png(seg, channels=1)
+    #if (seg.shape[0] < seg.shape[1]) :
+       # tf.image.transpose(seg)
+    seg = tf.image.resize(seg, (270, 288))
+    seg = tf.cast(seg, tf.float32)
+    seg = seg / 255.0
+    bin_seg = (seg > 0.5)
+    return bin_seg
+
+def load_data(img_file, seg_file):
+    img = load_img(img_file)
+    seg = load_seg(seg_file)
+    return img, seg
     
-x = load_single(train_img[0], 3)
-plt.imshow(x)
+
+train_ds = train_ds.map(load_data)
+val_ds = val_ds.map(load_data)
+test_ds = test_ds.map(load_data)
 
 #%%
 
-x = load_single(train_seg[0], 1)
-y = (x > 0.5)
-print(y)
-plt.imshow(y, cmap='gray')
+x = load_img(test_img[0])
+print(x.shape)
+print(x.shape[0])
+
+
+#%%
+
+train_ds = train_ds.map(load_data)
+val_ds = val_ds.map(load_data)
+test_ds = test_ds.map(load_data)
+
+
+#%%
+
+def view_imgs(n):
+    plt.figure(figsize=(8,n*4))
+    i = 0
+    for img, label in train_ds.take(n):
+        plt.subplot(n, 2, 2*i + 1)
+        plt.imshow(img)
+        plt.subplot(n, 2, 2*i + 2)
+        plt.imshow(label, cmap='gray')
+        i = i + 1
+
+view_imgs(5)
 
 
 
