@@ -1,4 +1,4 @@
-#### Image Segmentation Task
+# Image Segmentation Task
 Task: Segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
 similarity coefficient of 0.9 on the test set.
 
