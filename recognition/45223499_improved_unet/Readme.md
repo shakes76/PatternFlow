@@ -16,17 +16,17 @@ Improved UNet is roughly divided into two parts like ordinary UNet, encoding and
 
 My network architecture is trained using 256*256 voxels and randomly sampled patches with a batch size of 16. I train for a total of 10 epochs. I use the Adam optimizer for training, the initial learning rate is $10^{-4}$. Then I make a prediction on test set and I got the plots. From left to right, it is the real skin pictures, ground truth and predicted pictures.
 
-<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170223803.png" alt="image-20201105170223803" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170304262.png" alt="image-20201105170304262" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170450077.png" alt="image-20201105170450077" style="zoom:33%;" />
+<img src="images/image1.png" alt="image" style="width:25%;" /><img src="images/1_ground_truth.png" alt="image" style="width:25%;" /> <img src="images/1_pre.png" alt="image" style="width:25%;" />
 
-<img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170606667.png" alt="image-20201105170606667" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170635433.png" alt="image-20201105170635433" style="zoom:33%;" /> <img src="C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105170707656.png" alt="image-20201105170707656" style="zoom:33%;" />
+<img src="images/2_images.png" alt="image" style="width:25%;" /> <img src="images/2_gt.png" alt="image" style="width:25%;" /> <img src="images/2_pre.png" alt="image" style="width:25%;" />
 
-​         images                                   ground truth                        predicted mask 
+​        **images**                          **ground truth**                      **predicted mask** 
 
 #### Evaluation 
 
-The final trend of loss and Acurracy is used to determine whether the model converges. The plot of model accuracy and loss are shown below. Apparently, accuracy becomes higher and loss becomes lower.
+The final trend of loss and acurracy is used to determine whether the model converges. The plot of model accuracy and loss are shown below. Apparently, accuracy becomes higher and loss becomes lower.
 
-![image-20201105164853198](C:\Users\94432\AppData\Roaming\Typora\typora-user-images\image-20201105164853198.png)
+<img src="images/accuracy_loss.png">
 
 I choose the dice coefficient value as a metric to evaluate the image segmentation model, because this metric can get the ratio of the same pixels between the ground truth and the predicted images. At the same time, the closer the value is to 1, the more similar the image is. Finally, my dice coefficient value on test set is 0.83. 
 
