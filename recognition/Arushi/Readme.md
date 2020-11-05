@@ -44,10 +44,6 @@ In this model:
 4.	Then, run Test_driver_script.py file and while running the Test_driver_script.py script, the user command will ask to enter the path of training input and training groundtruth folder. 
 5.	After running the Test_driver_script.py file, it will automatically compile all the code and give the desired results and plots and figures. 
 
-# Description of Comments:
-1.	All the functions in ISIC_dataset_with_UNET.py file have comments that explains what the function does. 
-2.	In Test_driver_script.py file, the comments have been made to ensure that the user understands why the line of code is been used there. 
-
 # Model Output:
 •	Accuracy plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
 [![Accuracy plot]()
