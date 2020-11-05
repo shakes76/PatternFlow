@@ -27,7 +27,7 @@ y_test (labels) has 544 images which are 256*256 pixels(black and white photo)
 * 3 - White matter
 
 # For example:
-![](images/labels.png =250x250)
+![](images/labels.png | width=100)
 
 # Unet Model
 ![](images/UNET.jpg)
