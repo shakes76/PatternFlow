@@ -1,4 +1,4 @@
-# Table of Contents
+# Contents
 * ## Description
      This part is to classify the raw dataset as two classe(left knee and right knee). This is to sort the images into two different folders based on the keyword of the file name (keyword:'RIGHT'). Then split them into training dataset (12,000 images), validation dataset (4,000 images) and test dataset(2,680 images).
 
