@@ -8,7 +8,7 @@ The weights of discriminator model are updated directly, however, the weights of
 
 Few examples of Pix2Pix GAN use cases:- 
 
-<img src="image/", align="center"> ![](images/Pix2Pix_examples.PNG) </img>
+![GAN Output Examples](images/Pix2Pix_examples.PNG)
 
 ## Problem this algorithm solves
 This algorithm solves image-to-image tanslantion problems. Here it is genrating brain MRI images from segmented brain MRI images.
@@ -23,20 +23,17 @@ On running Driver.py script, Pix2Pix_algorithm.py get triggered which performs t
 
 High level architecture of Pix2Pix GAN model with Input, generated images from generator & ground truth image is shown below:--
 
-<img src="image/", align="center"> ![](images/GAN_fake.png) </img>
-
-
-<img src="image/", align="center"> ![](images/GAN_real.png) </img>
+![GAN Architecture](images/GAN_Architecture.png)
 
 
 ## Results
 *1st Result-*
 
-![](images/Result1.png)
+![Test Image1](images/Result1.png)
 
 *2nd Result-*
 
-![](images/Result2.png)
+![Test Image2](images/Result2.png)
 
 
 ## Dataset
