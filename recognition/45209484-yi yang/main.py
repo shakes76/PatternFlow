@@ -49,3 +49,9 @@ print("x_train.shape:", x_train.shape)
 print("x_test.shape:", x_test.shape)
 print("y_train.shape:", y_train.shape)
 print("y_test.shape:", y_test.shape)
+
+# train model
+model = model()
+
+# fit
+fit(model,x_train,y_train,5,4)
