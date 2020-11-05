@@ -3,8 +3,7 @@ Custom sequence class and functions for accessing data in a Keras model
 '''
 
 import tensorflow as tf
-from math import ceil
-from numpy import zeros, ceil
+import numpy as np
 from matplotlib.pyplot import imread
 from skimage.transform import resize
 
@@ -22,17 +21,17 @@ class iunet_sequence(tf.keras.utils.Sequence):
         self.batch_size = batch_size
 
     def __len__(self):
-        return int(ceil(len(self.x_data) / self.batch_size))
+        return int(tf.math.ceil(len(self.x_data) / self.batch_size))
 
     def __getitem__(self, idx):
         i = idx * self.batch_size
         x_batch_paths = self.x_data[i : i + self.batch_size]
         y_batch_paths = self.y_data[i : i + self.batch_size]
-        x = zeros((self.batch_size, 256, 256, 1), dtype="float32")
+        x = np.zeros((self.batch_size, 256, 256, 1), dtype="float32")
         for j, path in enumerate(x_batch_paths):
             x[j] = tf.constant(resize(imread(path), (256, 256, 1)))
-        y = zeros((self.batch_size, 256, 256, 2), dtype="uint8")
+        y = np.zeros((self.batch_size, 256, 256, 2), dtype="uint8")
         for j, path in enumerate(y_batch_paths):
             y[j] = process_segs(imread(path))
-        return x, y
+        return tf.constant(x), tf.constant(y)
 

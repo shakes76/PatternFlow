@@ -4,6 +4,16 @@ Module for building an improved UNet model using Keras layers
 
 import tensorflow as tf
 
+def dice_coef_loss(y_act, y_pred):
+	'''
+	Return the dice coefficient loss of two images
+	'''
+	flat_act = tf.cast(tf.keras.backend.flatten(y_act), dtype=tf.float32)
+	flat_pred = tf.cast(tf.keras.backend.flatten(y_pred), dtype=tf.float32)
+	intersection = tf.reduce_sum(tf.multiply(flat_act, flat_pred))
+	return 1 - 2 * (intersection + 1) / (tf.reduce_sum(flat_act) + tf.reduce_sum(flat_pred) + 1)
+
+
 def iunet_model():
 	inputs = tf.keras.Input((256, 256, 1))
 

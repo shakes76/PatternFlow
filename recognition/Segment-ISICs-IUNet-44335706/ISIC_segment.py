@@ -9,8 +9,8 @@ from sklearn.utils import shuffle
 import numpy as np
 from math import ceil
 from glob import glob
-from IUNet_sequence import iunet_sequence
-from IUNet_model import iunet_model
+from IUNet_sequence import *
+from IUNet_model import *
 
 # Define global variables
 X_DATA_LOCATION = 'C:/Users/match/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
@@ -41,7 +41,7 @@ model = iunet_model()
 # Compile model
 model.compile(
     optimizer=tf.keras.optimizers.Adam(),
-    loss=tf.keras.losses.CategoricalCrossentropy(),
+    loss=dice_coef_loss,
     metrics=['accuracy'])
 
 # Train model
