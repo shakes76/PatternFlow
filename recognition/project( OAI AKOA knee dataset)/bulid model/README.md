@@ -1,4 +1,4 @@
-# Table of Contents
+# Contents
 * ## Description
      This part bulids the training model and finally saves the model's training parameters (h5 file). The size of the input images is (150,150), and batch size is 32. The use of callbacks is to stop the training process when the loss function has not changed significantly. Convolutional neural network is the algorithm of this model.
 
