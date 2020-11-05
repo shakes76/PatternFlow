@@ -21,12 +21,15 @@ from dice import *
 
 def unet(input_size = (256,256,3)):
     inputs = Input(input_size)
+    #3x3 conv with 16 fliters
     c1 =  Conv2D(16, 3, activation='relu', kernel_initializer='he_normal',padding='same') (inputs)
+    #context module
     c1 =  Conv2D(16, 3, activation='relu',kernel_initializer='he_normal',  padding='same') (c1)
     d1 = Dropout(0.3)(c1)
     c1 =  Conv2D(16, 3, activation='relu',kernel_initializer='he_normal',  padding='same') (d1)
+    # add two parts above
     c1 = c1+c1
-
+    #upsampling
     p2 = MaxPooling2D((2, 2)) (c1)
     c2 =  Conv2D(32, 3, activation='relu',kernel_initializer='he_normal',  padding='same') (p2)
     d2 = Dropout(0.3)(c2)
@@ -54,7 +57,7 @@ def unet(input_size = (256,256,3)):
 
     u6 = UpSampling2D((2, 2)) (c5)
 
-   
+    #merge downsampling and up sampling 
     merge6 = concatenate([c4,u6], axis = 3)
     c7 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
     c7 = Conv2D(128, 1, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(c7)
@@ -63,9 +66,10 @@ def unet(input_size = (256,256,3)):
     merge7 = concatenate([c3,u7], axis = 3)
     c8 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
     c8 = Conv2D(64, 1, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(c8)
+    # segmentation layer and upscale in side branch
     s8 = Conv2D(1, (1, 1))(c8)    
-    #s8 = tensorflow.keras.layers.Add(UpSampling2D(2, 2))(s8)
     s8 = UpSampling2D((2, 2))(s8)
+    #upsampling
     u8 = UpSampling2D((2, 2))(c8)
 
     merge8 = concatenate([c2,u8], axis = 3)
