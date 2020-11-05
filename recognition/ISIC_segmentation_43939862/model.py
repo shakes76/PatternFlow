@@ -12,14 +12,27 @@ import tensorflow as tf
 # c#a = activation function of conv #
 # do = dropout
 # out = output (with res)
-# us = upsample
+# us = upsample "block"
 # con = concatenation
 # seg = segmentation
 # =============================================================================
+
 def ImprovedUnet(h, w, n_channels):
-    F = [8,16,32,64,128]
-    wd = 0.0005
-    lrelu_alp = 0.01
+    """
+    Improved Unet CNN Keras model, as defined by Isenee et. al.
+    Defined using functional API
+
+    Parameters:
+        h (int): Input image height
+        w (int): Input image width
+        n_channels (int): Number of input image channels
+
+    Returns:
+        (Keras model): Improved Unet model, with sigmoid activation output
+    """
+    F = [8,16,32,64,128] #Filter sizes
+    wd = 0.0005 #Weight decay of kernel regularizers
+    lrelu_alp = 0.01 #Leaky relu alpha
     input_layer = tf.keras.layers.Input(shape = (h,w,n_channels))
         
     #Block 1 (Context)
