@@ -1,7 +1,7 @@
 # ISIC Image Segmentation Using Improved Unet
 
 The model used in this project, based on the ConvNet from [1], is an improved version of Unet.[2] 
-This improved Unet uses the main aspects of the original Unet ñ an autoencoder with long skip connections ñ 
+This improved Unet uses the main aspects of the original Unet ‚Äì an autoencoder with long skip connections ‚Äì 
 as well as a few additional features. Firstly, they use residual blocks in the context pathway (encoder), 
 inspired by [3]. By adding short skip connections (identity mappings in this case, shown to be optimal by [4]) 
 from the input to the output of a block, connected with an element-wise sum, the gradient can flow more 
@@ -51,7 +51,7 @@ which extracts relevant features from the input at varying levels of abstraction
 which recombines those features, as well as features directly from the encoder (via long skip connections) 
 to generate the desired output. The architecture of these two pathways will be discussed in detail.
 
-Context pathway:
+*Context pathway:*
 The context pathway is made up of a series of down-samplings via 3x3 filter 2x2 stride convolutions, 
 followed by a context module. The context modules are pre-activation residual blocks, containing 2 sets of: 
 Batch normalization, leaky relu activation (hence pre-activation), and a 3x3 convolution with a kernel regularizer. 
@@ -59,7 +59,7 @@ There is a r=0.3 dropout layer between these sets. The short residual skip conne
 of these sets via element-wise sum. Note that the very first layer (after the input layer) is a normal 3x3 
 convolution rather than a down-sample.
 
-Localization pathway:
+*Localization pathway:*
 The localization pathway is made up of a series of up-samplings via 2x2 upsamples and 3x3 convolutions halving the feature maps (with batch
 normalization and leaky relu activation), concatenation with the corresponding layer from the encoder via long skip connections, 
 followed by a localization module. The localization modules contain a 3x3 filter convolution with a kernel regularizer, 
@@ -78,16 +78,13 @@ Architecture diagram:
 3. Use model.predict on test set (The average of this is used as the final performance metric)
 4. Plot 3 predictions along with ground-truth  
 The output of this is given in the Output section below.
-<br/>
-<br/>
 
 ## Dependencies
 - Tensorflow (GPU)
 - Glob
 - Numpy
-- Matplotlib
-*- There should be a directory named 'tb' in the working directory*
-<br/>
+- Matplotlib  
+- There should be a directory named 'tb' in the working directory
 <br/>
 
 ## Training/validation/test split
@@ -98,10 +95,13 @@ The remaining images make up the training set (i.e. 64%).
 As the dataset is not particularly large, a decent portion of the images need to be designated to validation/test sets. 20% should be fine for this.
 <br/>
 <br/>
+<br/>
+<br/>
 
 ## Output
 *Note: Running the default learning rate for 200 epochs finds a low validation loss quickly, with damped oscillations after that (see extra image in /images). So for final training, 
 I used a learning rate schedule with normal initial rate and aggresive decay, together with a StopEarly callback. This found a solution equally as accurate on the validation set in only 16 epochs*
+
 Average DICE score (test set predictions): 0.8419404442018784 
 
 Sample predicted segmentation:  
@@ -113,9 +113,9 @@ Training accuracy plot:
 <br/>
 
 ## References
-[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, ìBrain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,î Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1  
-[2] O.  Ronneberger,  P.  Fischer,  and  T.  Brox,  ìU-net:  Convolutional  networks  forbiomedical  image  segmentation,î  in *International  Conference  on  Medical  Image Computing and Computer-Assisted Intervention*. Springer. 2015. pp. 234ñ241  
+[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, ‚ÄúBrain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,‚Äù Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1  
+[2] O.  Ronneberger,  P.  Fischer,  and  T.  Brox,  ‚ÄúU-net:  Convolutional  networks  forbiomedical  image  segmentation,‚Äù  in *International  Conference  on  Medical  Image Computing and Computer-Assisted Intervention*. Springer. 2015. pp. 234‚Äì241  
 [3] F. Milletari,  N. Navab,  and S.A. Ahmadi. "V-net:  Fully convolutional neural networks forvolumetric medical image segmentation," 2016. [Online].  https://arxiv.org/1606.04797  
-[4] K. He, X. Zhang, S. Ren, and J. Sun, ìIdentity  mappings  in  deep  residual  networks,î in *European  Conference  on  Computer  Vision*. Springer. 2016. pp. 630ñ645  
-[5] B. Kayalibay, G. Jensen, and P. van der Smagt, ìCNN-based  segmentation  of medical imaging data,î Jan. 2017. [Online]. Available: https://arxiv.org/1701.03056
+[4] K. He, X. Zhang, S. Ren, and J. Sun, ‚ÄúIdentity  mappings  in  deep  residual  networks,‚Äù in *European  Conference  on  Computer  Vision*. Springer. 2016. pp. 630‚Äì645  
+[5] B. Kayalibay, G. Jensen, and P. van der Smagt, ‚ÄúCNN-based  segmentation  of medical imaging data,‚Äù Jan. 2017. [Online]. Available: https://arxiv.org/1701.03056  
 [6] H. Chen, Q. Dou, L. Yu, and P.A. Heng. "Voxresnet:  Deep voxelwise residual networks forvolumetric brain segmentation," 2016. [Online]. Available: https://arxiv.org/1608.05895v1
