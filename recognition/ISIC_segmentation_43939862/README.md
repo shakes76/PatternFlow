@@ -21,11 +21,11 @@ varying resolutions, along with their ground truth segmentations.
 **File: driver.py**
 1. Image/label filenames are read and split into training/validation/test sets.
 2. Sets are formated into tensorflow datasets and shuffled.
-3. Map the datasets according to a pre-processing function, allowing pre-processing to be done "on the fly".
-	a) Load/decode image file from filename
-	b) Resize to 256x256
-	c) Normalize to range [0,1]
-	d) Repeat (a)-(c) for label image, but also adding channel dimension of length 1
+3. Map the datasets according to a pre-processing function, allowing pre-processing to be done "on the fly".  
+	a) Load/decode image file from filename  
+	b) Resize to 256x256  
+	c) Normalize to range [0,1]  
+	d) Repeat (a)-(c) for label image, but also adding channel dimension of length 1  
 4. Load a single image/label and print meta-data to ensure steps 1-3 are working (Output below).  
 
 Image shape:  (256, 256, 3)  
@@ -78,6 +78,7 @@ Architecture diagram:
 3. Use model.predict on test set (The average of this is used as the final performance metric)
 4. Plot 3 predictions along with ground-truth  
 The output of this is given in the Output section below.
+<br/>
 
 ## Dependencies
 - Tensorflow (GPU)
@@ -96,7 +97,6 @@ As the dataset is not particularly large, a decent portion of the images need to
 <br/>
 <br/>
 <br/>
-<br/>
 
 ## Output
 *Note: Running the default learning rate for 200 epochs finds a low validation loss quickly, with damped oscillations after that (see extra image in /images). So for final training, 
@@ -104,11 +104,11 @@ I used a learning rate schedule with normal initial rate and aggresive decay, to
 
 Average DICE score (test set predictions): 0.8419404442018784 
 
-Sample predicted segmentation:  
-![Predicted segmentations](/recognition/ISIC_segmentation_43939862/images/predictions.png)
-
 Training accuracy plot:  
 ![Training accuracy plot](/recognition/ISIC_segmentation_43939862/images/training_plot.png)
+
+Sample predicted segmentation:  
+![Predicted segmentations](/recognition/ISIC_segmentation_43939862/images/predictions.png)
 <br/>
 <br/>
 
