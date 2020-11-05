@@ -15,4 +15,4 @@ We will make 4 labels which are:
 * 3 - White matter
 
 # For example:
-![](images/labels.png =250x)
+![](images/labels.png)
