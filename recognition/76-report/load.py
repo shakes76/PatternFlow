@@ -54,9 +54,6 @@ def loaddata(input_PATH,input_ids,truth_PATH,truth_ids):
     y_test[y_test>0.5]=1
     y_test[y_test<=0.5]=0
     
-    y_train= to_categorical(y_train, 2)
-    y_val= to_categorical(y_val, 2)
-    y_test= to_categorical(y_test, 2)
     
     return X_train,X_val,X_test,y_train,y_val,y_test
 
