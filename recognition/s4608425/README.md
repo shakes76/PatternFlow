@@ -7,13 +7,13 @@ The model used is Unet,
 ### Problem it solves
 This deep learning model helps to solve the problem of segmentation of the images that can be used for various purposes in the medical and healthcare industry.The output of this deep network is compared with the original input using a metric known as dice similarity. It tells us how well the image segmentation resembles the original input image based on the overlapping. It is calculated by twice the area overlapping between segmented and original image upon the total pixels in segmented and original image. 
 
-#### How it works
+### How it works
 At first, all the images of the ISIC dataset were sized same into 196,256 as it was all differently sized. The 255 segmented classes were converted to binary classes by normalisation (/255) and then by approximating labels below a mid-threshold into one class and above threshold into another class. The filtered images were passed in the model that is described above. The output images came out to be segmented(they only had two colours, one for each class) and hence, the goal of the problem was achieved. 
 
 ### Result
-This model achieved a dice similarity coeffient of approximately 0.62
+This model achieved a dice similarity coeffient of approximately 0.62.
 
-### figure
+### Figure
 
 
 #### Bibliography
