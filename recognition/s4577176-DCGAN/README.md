@@ -15,7 +15,7 @@
 
 ## Constraint
 
-The fake and original image should have a structural similarity of atleast 0.6
+> The fake and original image should have a structural similarity of atleast 0.6
 
 ## Generative Adverserial networks:
 
@@ -110,6 +110,10 @@ used to store the images going to use in README.md
 
 ## Usage:
 
+>>Physical requirements: Windows os 64-bit
+
+>>Pthon version used: 3.7.9
+
 ### Requried libraries:
 
 1. matplotlib
@@ -121,6 +125,7 @@ used to store the images going to use in README.md
 7. tqdm
 
 please make sure you install all these libraries using pip or conda.
+
 
 ## How to run the code?
 
@@ -152,6 +157,8 @@ Results:
 <p align="center">
   <img width="300" height="280" src="https://github.com/shashank-rv/PatternFlow/blob/topic-recognition/recognition/s4577176-DCGAN/resources/original.JPG?raw=true">
 </p>
+
+
 
 
 
