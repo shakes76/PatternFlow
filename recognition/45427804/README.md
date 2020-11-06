@@ -39,7 +39,8 @@ The shape of Unet network structure is similar to U like the picture above. It c
 * The blue arrow indicates skip connection, and each level is a very standard DenseNet structure. Each prototype unit represents a series of operations of convolution + activation function.
 
 # Prediction results
-The plot below shows the prediction results and y_test_label truth pictures
+The plot below shows the prediction results and y_test_label truth pictures on the 470th picture
+
 ![](images/prediction.png)
 
 # Dice_Cofficient
