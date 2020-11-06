@@ -126,12 +126,9 @@ Results:
   
 ![image info](training_100.png)
 
-# Gif generated in tranining
+# Generated images after traning:
 
-
-
-# Test images
-
+![image info](testing_images.png)
 
 
 
