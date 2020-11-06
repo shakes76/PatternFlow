@@ -86,7 +86,7 @@ def show_predictions(dataset, model):
 """
 Computes the dice coefficient between the ground truth label image
 and the predicted label given the layer. This is an adaption of a 
-solution by Zabir Al. Nazi (see references in README.md).
+solution by Zabir Al. Nazi (2020)(see references in README.md).
 Parameters:
     label: ground truth label image
     pred_label: predicted label image
