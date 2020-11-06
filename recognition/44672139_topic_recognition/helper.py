@@ -67,7 +67,6 @@ def dice_coef(true, pred, smooth=1):
     totalPixels = (tf.keras.backend.sum(true1) + tf.keras.backend.sum(pred1))+smooth
     return (2 * overlap) / totalPixels
 
-#convolution operation in unet with (3, 3) filters
 def convolution(inputs, filters):
     c1 = tf.keras.layers.Conv2D(filters, (3, 3), padding='same', activation='relu')(inputs)
     return tf.keras.layers.Conv2D(filters, (3, 3), padding='same', activation='relu')(c1)
@@ -93,46 +92,51 @@ def unet():
     c5 = convolution(c5, 64)
     
     #Expanding path
-    c6 = tf.keras.layers.Conv2DTranspose(32, (2, 2), padding='same')(c5)
+    c6 = tf.keras.layers.Conv2DTranspose(32, (2, 2), strides =(2, 2), padding='same')(c5)
     c6 = tf.keras.layers.concatenate([c6, c4])
     c6 = convolution(c6, 32)
     
-    c7 = tf.keras.layers.Conv2DTranspose(16, (2, 2), padding='same')(c6)
+    c7 = tf.keras.layers.Conv2DTranspose(16, (2, 2), strides =(2, 2),padding='same')(c6)
     c7 = tf.keras.layers.concatenate([c7, c3])
     c7 = convolution(c7, 16)
 
-    c8 = tf.keras.layers.Conv2DTranspose(8, (2, 2), padding='same')(c7)
+    c8 = tf.keras.layers.Conv2DTranspose(8, (2, 2), strides =(2, 2),padding='same')(c7)
     c8 = tf.keras.layers.concatenate([c8, c2])
     c8 = convolution(c8, 8)
 
-    c9 = tf.keras.layers.Conv2DTranspose(4, (2, 2), padding='same')(c8)
+    c9 = tf.keras.layers.Conv2DTranspose(4, (2, 2), strides =(2, 2),padding='same')(c8)
     c9 = tf.keras.layers.concatenate([c9, c1])
     c9 = convolution(c9, 4)
     
-    #we use sigmoid because only black and white
+    #we use sigmoid because only black and white pixels
     outputs = tf.keras.layers.Conv2D(2, (1,1), activation='sigmoid')(c9)
     
     return tf.keras.Model(inputs=inputs, outputs=outputs)
 
 def predictions(data, model, num=4):
     image_batch, mask_batch = next(iter(data.batch(num)))
+    #prediction using our model
     predict = model.predict(image_batch)
     plt.figure(figsize = (11, 11))
     for i in range(num):
         plt.subplot(2, num, i+1)
+        #plotting true mask
         plt.imshow(tf.argmax(mask_batch[i], axis=-1), cmap = 'gray')
         plt.axis('off')
     plt.figure(figsize = (11, 11))
     for i in range(num):
         plt.subplot(2, num, i+1)
+        #plotting prediction mask
         plt.imshow(tf.argmax(predict[i], axis=-1), cmap = 'gray')
         plt.axis('off')
     for i in range(num):
         print(dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy())
 def average_dice(data, model):
     image_batch, mask_batch = next(iter(data.batch(259)))
+    #Prediction on all the images in the test set
     predict = model.predict(image_batch)
     sum = 0
     for i in range(259):
         sum = sum + dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy()
+    #average of the dice coefficients over the test set
     print(sum/259)
