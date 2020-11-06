@@ -16,7 +16,7 @@ Task found in https://challenge2018.isic-archive.com/
 
 U-net is one of the popular image segmentation architectures used mostly in biomedical purposes. The name UNet is because it’s architecture contains a compressive path and an expansive path which can be viewed as a U shape. This architecture is built in such a way that it could generate better results even for a less number of training data sets.
 
-## data set structure
+## Data Set Structure
 
 data set folder need to be stored in same directory with structure same as below
 ```bash
@@ -30,6 +30,12 @@ ISIC2018
     |_ ISIC_0000001_segmentation
     |_ ...
 ```
+
+## Dice Coefficient
+
+The Sørensen–Dice coefficient is a statistic used to gauge the similarity of two samples.
+
+Further information in https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
 
 ## Usages
 
