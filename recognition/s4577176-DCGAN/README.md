@@ -94,6 +94,13 @@ used to load the trained model and generate random fake images which will hopefu
 
 used to check the structural similarity between the fake and the original images.
 
+### saved_models folder
+
+The trained models are saved in this folder.
+
+### resorces folder
+
+used to store the images going to use in README.md
 
 ## Usage:
 
@@ -122,13 +129,5 @@ please make sure you install all these libraries using pip or conda.
 >step 5: open the load_model.py. the first thing to do is changing the directory in the load_model function to an appropriate place and generate fake images.
 
 >step 6: once you are done with saving the model, open the metric_check.py file and change the directories to suitable locations and to check the structural similarity between thw fake and the original images.
-
-
-
-
-
-
-
-
 
 
