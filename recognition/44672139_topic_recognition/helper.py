@@ -112,4 +112,10 @@ def predictions(data, model, num=4):
         plt.axis('off')
     for i in range(num):
         print(dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy())
-        
+def average_dice(data, model):
+    image_batch, mask_batch = next(iter(data.batch(259)))
+    predict = model.predict(image_batch)
+    sum = 0
+    for i in range(259):
+        sum = sum + dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy()
+    print(sum/259)
