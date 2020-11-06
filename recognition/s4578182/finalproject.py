@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[1]:
 
 
 import glob
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -15,8 +16,8 @@ from sklearn.model_selection import train_test_split
 # In[2]:
 
 
-ground=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
-train=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
+ground=glob.glob("D:/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
+train=glob.glob("D:/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
 
 
 # In[3]:
@@ -84,7 +85,7 @@ plt.imshow(train_images[0])
 #     ground_images[ground_images < 127] = 0
 #            
 
-# In[ ]:
+# In[10]:
 
 
 for x in ground_images:
@@ -95,23 +96,40 @@ for x in ground_images:
 # In[ ]:
 
 
+
+
+
+# In[11]:
+
+
+for x in range(len(train_images)):
+    list1=train_images[x]
+    list1=list1/255
+    train_images[x]=list1
+
+
+# In[12]:
+
+
 train_images=np.array(train_images)
 train_images.shape
 
 
-# In[ ]:
+# In[23]:
 
 
+for i in ground_images:
+    print(np.unique(i))
 
 
-
-# In[ ]:
-
+# In[14]:
 
 
+for i in train_images:
+    print(np.unique(i))
 
 
-# In[ ]:
+# In[15]:
 
 
 ground_img=np.expand_dims(np.array(ground_images),-1)
@@ -121,26 +139,32 @@ print(ground_img.shape)
 # In[ ]:
 
 
-ground1=tf.data.Dataset.from_tensor_slices(ground_img)
 
 
-# In[ ]:
+
+# In[16]:
 
 
-train1= tf.data.Dataset.from_tensor_slices(train_images)
+plt.imshow(train_images[0])
 
 
-# In[ ]:
+# In[17]:
+
+
+plt.imshow(ground_images[0])
+
+
+# In[18]:
 
 
 X_train, X_test, y_train, y_test = train_test_split(train_images, ground_img, test_size=0.33, random_state=42)
 
 
-# In[ ]:
+# In[19]:
 
 
-inputs = Input((256,256,3))
-conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
+inputs_layer = Input((256,256,3))
+conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs_layer)
 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
@@ -178,19 +202,19 @@ merge9 = concatenate([conv1,up9], axis = 3)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-den10 =Dense(1, activation = 'sigmoid')(conv9)
+conv10 =Conv2D(1,1, activation = 'sigmoid')(conv9)
 
-model = Model(input = inputs, output = den10)
+model = Model(inputs =inputs_layer, outputs = conv10)
 
 model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
     
 model.summary()
 
 
-# In[ ]:
+# In[24]:
 
 
-history = model.fit(X_train,y_train, epochs=10, verbose=1)
+history = model.fit(X_train,y_train, epochs=25,batch_size=8, verbose=1)
 
 
 # In[ ]:
