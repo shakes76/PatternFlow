@@ -29,3 +29,5 @@ https://github.com/NifTK/NiftyNet/blob/a383ba342e3e38a7ad7eed7538bfb34960f80c8d/
 https://keras.io/api/losses/#creating-custom-losses
 
 https://gist.github.com/abhinavsagar/fe0c900133cafe93194c069fe655ef6e
+
+https://stackoverflow.com/questions/35911252/disable-tensorflow-debugging-information
