@@ -141,11 +141,12 @@ def train_step(images,BATCH_SIZE,noise_dim,generator,discriminator,generator_opt
 
 
 def train(dataset, epochs,generator,discriminator,generator_optimizer,discriminator_optimizer) :
+    g_loss = []
+    d_loss = []
     for epoch in range(epochs):
+        from IPython import display
         start = time.time()
-        
-        g_loss = []
-        d_loss = []
+        seed = tf.random.normal([20, 100])
 
         for image_batch in dataset:
             (gen_loss,disc_loss)=train_step(image_batch,128,100,generator,discriminator,generator_optimizer,discriminator_optimizer)
@@ -155,8 +156,8 @@ def train(dataset, epochs,generator,discriminator,generator_optimizer,discrimina
         generate_and_save_images(generator,
                              epoch + 1,
                              seed)
-        g_loss.append(g_loss)
-        d_loss.append(d_loss)
+        g_loss.append(gen_loss.numpy())
+        d_loss.append(disc_loss.numpy())
 
        # Save the model every 20 epochs
         if (epoch + 1) % 20 == 0:
@@ -165,6 +166,7 @@ def train(dataset, epochs,generator,discriminator,generator_optimizer,discrimina
         print ('Time for epoch {} is {} sec'.format(epoch + 1, time.time()-start))
 
     # Generate after the final epoch
+    
     display.clear_output(wait=True)
     generate_and_save_images(generator,
                            epochs,
