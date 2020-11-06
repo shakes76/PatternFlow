@@ -71,6 +71,6 @@ each label's dice coefficient score from 0 to 3:
 ![](images/validation_loss.png)
 
 ![](images/Dice_coeff.png width=200)
-<img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="200" height="400" />
+<img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="500" height="400" />
 
 
