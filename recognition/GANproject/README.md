@@ -19,7 +19,7 @@ In particular, I have implemented a deep convolutional generative adversarial ne
 * no pooling layers
 
 I also did not follow several specifications as I found they either did not work or produced lower quality results:
-* They suggested the use of a ReLU activation function in the generator, however, I found LeakyReLU worked better as I used noise inputs generated with mean=0, sd=1. They also suggested the use of a Tanh activation function in the final layer of the generator, however, I found my model worked better without any activation functions in the generator and discriminator.
+* They suggested the use of a ReLU activation function in the generator, however, I found LeakyReLU worked better as they are more effective in preventing vanishing gradients. They also suggested the use of a Tanh activation function in the final layer of the generator, however, I found my model worked better without any activation functions in the generator and discriminator.
 * Instead of using a batch size of 128, I used a batch size of 10 (i.e. 10 real and 10 fake images in each batch). I found larger batch sizes would overload the GPU.
 * The paper suggested the use of beta_1=0.5 for the Adam optimiser, however I found that using the default beta_1=0.9 worked fine.
 * I decided to use a latent space of 256 instead of 100 for no real reason and this worked quite well
