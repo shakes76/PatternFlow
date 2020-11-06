@@ -93,7 +93,6 @@ def make_datasets(img_shape,
 def load_img(img_shape, img_file):
     img = tf.io.read_file(img_file)
     img = tf.image.decode_jpeg(img, channels=3)
-    print(img.shape)
     #if (img.shape[0] < img.shape[1]) :
        # tf.image.transpose(img)
     img = tf.image.resize(img, img_shape)
@@ -108,8 +107,8 @@ def load_seg(img_shape, seg_file):
        # tf.image.transpose(seg)
     seg = tf.image.resize(seg, img_shape)
     seg = tf.cast(seg, tf.float32)
-    seg = seg / 255.0
-    bin_seg = (seg > 0.5)
+    seg = tf.math.round(seg / 255.0)
+    bin_seg = (seg == [0.0, 1.0])
     return tf.cast(bin_seg, tf.float32)
 
 def load_data(img_file, seg_file):
@@ -125,7 +124,7 @@ def view_imgs(ds, n):
         plt.subplot(n, 2, 2*i + 1)
         plt.imshow(img)
         plt.subplot(n, 2, 2*i + 2)
-        plt.imshow(label, cmap='gray')
+        plt.imshow(label[:,:,1], cmap='gray')
         i = i + 1
 
 def view_preds(model, ds, n):
@@ -133,17 +132,17 @@ def view_preds(model, ds, n):
     i = 0
     for img, true_segs in ds.take(n):
         predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
-        pred_segs = tf.reshape(predictions, [512, 512, 1])
-        #print(pred_segs)
+        pred_segs = tf.reshape(predictions, [512, 512, 2])
+        print(pred_segs)
         
         plt.subplot(n, 4, 4*i + 1)
         plt.imshow(img)
         plt.subplot(n, 4, 4*i + 2)
-        plt.imshow(true_segs, cmap='gray')
+        plt.imshow(true_segs[:,:,1], cmap='gray')
         plt.subplot(n, 4, 4*i + 3)
-        plt.imshow(pred_segs, cmap='gray')
+        plt.imshow(pred_segs[:,:,1], cmap='gray')
         plt.subplot(n, 4, 4*i + 4)
-        #plt.imshow(onehot_to_seg(tf.math.round(pred_segs)), cmap='gray')
+        plt.imshow(pred_segs[:,:,0], cmap='gray')
         i = i + 1
   
 #%%

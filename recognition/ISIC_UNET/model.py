@@ -48,7 +48,7 @@ class ConcatOutBlock(tf.keras.layers.Layer):
         self.concat = tf.keras.layers.Concatenate()
         self.conv1 = tf.keras.layers.Conv2D(filters, 3, activation='relu', padding='same')
         self.conv2 = tf.keras.layers.Conv2D(filters, 3, activation='relu', padding='same')
-        self.out = tf.keras.layers.Conv2D(1, 1, activation='softmax')
+        self.out = tf.keras.layers.Conv2D(2, 1, activation='softmax')
     
     def call(self, x, y):
         x = self.concat([x, y])
@@ -85,10 +85,8 @@ class UNetModel(tf.keras.Model):
         return self.out(x, y1)
     
 ### Dice Similarity Coefficient metric ###  
-    
 def dsc(true_segs, pred_segs):
 	pred_flat = tf.keras.backend.flatten(pred_segs)
-
 	true_flat = tf.keras.backend.flatten(true_segs)
 	intersect = tf.keras.backend.sum(pred_flat * true_flat)
 	return ( (2.0 * intersect) 
@@ -99,9 +97,9 @@ def dsc_loss(true_segs, pred_segs):
 	return 1.0 - dsc(pred_segs, true_segs)
 
 def avg_dsc(true_segs, pred_segs):
-    return (0.5 * dsc(pred_segs, true_segs) 
-            + 0.5 * dsc(1.0 - pred_segs, 1.0 - true_segs))
+    return (0.5 * dsc(pred_segs[:,:,0], true_segs[:,:,0]) 
+            + 0.5 * dsc(pred_segs[:,:,1], true_segs[:,:,1]))
 
 def avg_dsc_loss(true_segs, pred_segs):
-    return (0.5 * dsc_loss(pred_segs, true_segs) 
-            + 0.5 * dsc_loss(1.0 - pred_segs, 1.0 - true_segs))
+    return (0.5 * dsc_loss(pred_segs[:,:,0], true_segs[:,:,0])
+            + 0.5 * dsc_loss(pred_segs[:,:,1], 1.0 - true_segs[:,:,1]))
