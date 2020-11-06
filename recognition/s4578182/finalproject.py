@@ -217,10 +217,20 @@ model.summary()
 history = model.fit(X_train,y_train, epochs=20,batch_size=10, verbose=1)
 
 
-# In[ ]:
+# In[22]:
 
 
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
 
+
+# In[23]:
+
+
+ypred = model.predict_classes(X_test)
 
 
 # In[21]:
