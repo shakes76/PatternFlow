@@ -227,23 +227,25 @@ plt.ylim([0.5, 1])
 plt.legend(loc='lower right')
 
 
-# In[23]:
+# In[26]:
 
 
-ypred = model.predict_classes(X_test)
+ypred = model.predict(X_test)
 
 
-# In[21]:
+# In[32]:
 
 
 smooth=1
-intersection = K.sum(y_true * y_pred, axis=[1,2,3])
-union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
-dice = K.mean((2. * intersection + smooth)/(union + smooth), axis=0)
+intersection = Keras.sum(y_test * ypred, axis=[1,2,3])
+union = Keras.sum(y_test, axis=[1,2,3]) + Keras.sum(ypred, axis=[1,2,3])
+dice = mean((2.0 * intersection + smooth)/(union + smooth), axis=0)
 
 
 # In[ ]:
 
 
+dice = np.sum(seg[gt==k])*2.0 / (np.sum(seg) + np.sum(gt))
 
+print 'Dice similarity score is {}'.format(dice)
 
