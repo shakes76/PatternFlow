@@ -35,8 +35,12 @@ The shape of Unet network structure is similar to U like the picture above. It c
 
 # Improved Unet
 ![](images/unet.png)
-* context modules: it is a pre-activation residual block with two convolutional layers and a dropout layer (drop = 0.3) in between, and it conected by 3x3x3 convolutions with input stride 2. The purpose is to allow more features while downing to the aggregation pathway and to reduce the
-resolution of the feature maps.
+* context module: it is a pre-activation residual block with two 3X3X3 convolutional layers and a dropout layer (drop = 0.3) in between, and it is followed by 3x3x3 convolutions with input stride 2. The purpose is to allow more features while downing to the aggregation pathway and to reduce the
+resolution of the feature maps. There are 5 context modules in the model.
+* Upsampling modul: it is to upsampling the low-resolution feature maps and connected by a 3x3x3 convolution that halves the number of feature
+maps.
+*  locolization module: it contains a 3x3x3 convolution and a 1x1x1 convolution which reduces half of number of feature maps.
+* Leaky ReLU
 
 
 
