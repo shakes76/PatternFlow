@@ -15,14 +15,14 @@ from keras.layers.merge import concatenate, add
 
 def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     
-    # first layer
+    # 1st layer
     layer = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),
               kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
     if batchnorm:
         layer = BatchNormalization()(layer)
     layer = Activation('relu')(layer)
     
-    # second layer
+    # 2nd layer
     layer = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),
               kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
     if batchnorm:
@@ -31,7 +31,7 @@ def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     
     return layer
 
-# Building the U-NET model
+# To build  U-NET model
 def unet_gen(inp_img, n_fil = 16, drop = 0.1, batch = True):
     
     # Contracting Path
