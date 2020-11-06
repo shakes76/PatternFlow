@@ -2,6 +2,7 @@ from dataset_loader import ImageDatasetLoader
 from model import OasisDCGAN
 import matplotlib.pyplot as plt
 import os
+import tensorflow as tf
 
 def main():
     # Replace the train_dataset_dir with the actual directory of the training dataset
@@ -38,20 +39,29 @@ def main():
     model = OasisDCGAN(result_dir=result_dir)
     model.train(batch_size, epochs, X_train)
 
-    # Crate and store generator loss plot
+    # Create and store generator loss plot
+    plt.clf()
     plt.title('Generator Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.plot(range(1, epochs+1), model.generator_loss)
     plt.savefig("generator_loss.png")
 
-    # Crate and store discriminator loss plot
+    # Create and store discriminator loss plot
+    plt.clf()
     plt.title('Discriminator Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.plot(range(1, epochs+1), model.discriminator_loss)
     plt.savefig("discriminator_loss")
 
+    # Calculate SSIM
+    noise = tf.random.normal(shape=[1, model.codings_size])
+    img1 = model.generator(noise)[0]
+    img2 = tf.convert_to_tensor(X_train[1])
+    img2 = tf.cast(img2, dtype=tf.float32)
+    ssim = tf.image.ssim(img1, img2, max_val=1)
+    print("Structural Similarity:", ssim)
 
 if __name__ == "__main__":
     main()

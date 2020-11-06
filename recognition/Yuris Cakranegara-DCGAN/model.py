@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import time
 from tensorflow.keras.layers import Dense,Reshape,Dropout,LeakyReLU,Flatten,BatchNormalization,Conv2D,Conv2DTranspose
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adam
 
 class OasisDCGAN:
     def __init__(self, codings_size=100, result_dir="./"):
@@ -29,12 +31,13 @@ class OasisDCGAN:
         # Construct the GAN model
         self.model = Sequential([self.generator, self.discriminator])
 
+        optimizer = Adam(0.0002)
         # Set the discriminator to be non-trainable before compiling the GAN model
-        self.discriminator.compile(loss="binary_crossentropy", optimizer="adam")
+        self.discriminator.compile(loss="binary_crossentropy", optimizer=optimizer)
         self.discriminator.trainable = False
 
         # Compile the GAN model
-        self.model.compile(loss="binary_crossentropy", optimizer="adam")
+        self.model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
     def __generator(self):
         generator = Sequential()
@@ -42,7 +45,9 @@ class OasisDCGAN:
         generator.add(Reshape([16, 16, 256]))
         generator.add(BatchNormalization())
         generator.add(Conv2DTranspose(128, kernel_size=4, strides=2, padding="same", activation="relu"))
+        generator.add(BatchNormalization())
         generator.add(Conv2DTranspose(64, kernel_size=4, strides=2, padding="same", activation="relu"))
+        generator.add(BatchNormalization())
         generator.add(Conv2DTranspose(32, kernel_size=4, strides=2, padding="same", activation="relu"))
         generator.add(BatchNormalization())
         generator.add(Conv2DTranspose(1, kernel_size=4, strides=2, padding="same", activation="tanh"))
@@ -52,11 +57,11 @@ class OasisDCGAN:
     def __discriminator(self):
         discriminator = Sequential()
         discriminator.add(Conv2D(32, kernel_size=4, strides=2, padding="same", \
-                                activation=LeakyReLU(0.3), input_shape=[256, 256, 1]))
+                                activation=LeakyReLU(), input_shape=[256, 256, 1]))
         discriminator.add(Dropout(0.3))
-        discriminator.add(Conv2D(64, kernel_size=4, strides=2, padding="same", activation=LeakyReLU(0.3)))
+        discriminator.add(Conv2D(64, kernel_size=4, strides=2, padding="same", activation=LeakyReLU()))
         discriminator.add(Dropout(0.3))
-        discriminator.add(Conv2D(128, kernel_size=4, strides=2, padding="same", activation=LeakyReLU(0.3)))
+        discriminator.add(Conv2D(128, kernel_size=4, strides=2, padding="same", activation=LeakyReLU()))
         discriminator.add(Dropout(0.3))
         discriminator.add(Flatten())
         discriminator.add(Dense(1, activation="sigmoid"))
@@ -121,6 +126,8 @@ class OasisDCGAN:
         assert type(epochs) == int, \
             "epochs has to be an integer."
 
+        train_start = time.time()
+
         # Create a batched dataset
         batched_dataset = self.__create_batched_dataset(dataset, batch_size)
 
@@ -129,6 +136,7 @@ class OasisDCGAN:
 
         # For every epcoh
         for epoch in range(epochs):
+            epoch_start = time.time()
             print(f"Currently on Epoch {epoch+1}")
             i = 0
             # For every batch in the dataset
@@ -169,6 +177,8 @@ class OasisDCGAN:
                 self.generator = generator
                 self.discriminator = discriminator
                 
+            print("Epoch finished in {time} sec".format(time=time.time() - epoch_start))
+
             # Calculate loss after every epoch
             self.__calculate_loss(X_batch)
 
@@ -177,3 +187,4 @@ class OasisDCGAN:
                 self.__save_image_result(epoch+1)
                 
         print("TRAINING COMPLETE")
+        print("Training finished in {time} sec".format(time=time.time() - train_start))
