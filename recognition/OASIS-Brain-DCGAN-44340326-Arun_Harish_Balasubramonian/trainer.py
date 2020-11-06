@@ -10,13 +10,24 @@ NOISE_INPUT_DIM = 64
 BATCH_SIZE = 90
 LEARNING_RATE = 1e-4
 
+"""
+    The train loader is responsible for training the model by getting the command line argument
+    options relevant to epoch and number of dataset to be used. It saves the model and its output image
+    on every fifth epoch.
+    Reference : The code is similar to https://www.tensorflow.org/tutorials/generative/dcgan, but adapted
+    to the OASIS dataset.
+"""
 class TrainLoader():
     def __init__(self, data_loader, argument_parser):
+        # Sets both the argument parser, to retrieve command line arguments, and
+        # the data loader to get the image loaded. 
         self.dataset_loader = data_loader
         self.argument_parser = argument_parser
+        # From logits set to True for sigmoid activation function to be used
+        # avoiding precision or numerical overflow errors
         self.binary_cross_entropy = losses.BinaryCrossentropy(from_logits=True)
         
-        # Setting up the generator and discriminator models
+        # Setting up the generator and discriminator models and its optimisers
         self.generator = self._generator_model()
         self.discriminator = self._discriminator_model()
         self.generator_optmiser_func = self._generator_optimiser()
@@ -130,7 +141,7 @@ class TrainLoader():
                     # Saving epoch
                     print("Saving image:{}".format(image_title))
                     # Setting title
-                    plt.title("EPOCH {}".format(idx))
+                    plt.title("EPOCH {}".format(current_epoch))
                     plt.imshow(generated_image, cmap="gray")
                     plt.savefig(path.abspath("./images/{}".format(image_title)))
 
