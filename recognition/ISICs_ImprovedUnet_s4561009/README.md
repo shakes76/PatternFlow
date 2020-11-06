@@ -7,13 +7,12 @@ The algorithm will directly contribute to the [open source PatternFlow library o
 
 
 ## Dataset Description
-The dataset is taken from the ISIC 2018 Challenge for Task 1 (Lesion Boundary Segmentation). Further info can be seen [here](https://challenge2018.isic-archive.com/task1/).
+The dataset is taken from the ISIC 2018 Challenge for Task 1 (Lesion Boundary Segmentation). Further info on the challenge can be seen [here](https://challenge2018.isic-archive.com/task1/).
 
 To run this project, download the dataset from this link: [https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5](https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5)
 
 ### Input Data
 The input data are dermoscopic lesion images in JPEG format.
-
 
 ### Response Data
 The response data are binary mask images in PNG format, indicating the location of the primary skin lesion within each input lesion image.
@@ -76,7 +75,9 @@ Throughout the network we use **_Leaky ReLU_** nonlinearities with a negative sl
  - Conv2D 3x3 with Leaky ReLU as activation function 
  - Conv2D 1x1 with Leaky ReLU as activation function
 
- **The output layer** uses a _sigmoid_ activation function because it is a binary classification.
+**The output layer** uses a _sigmoid_ activation function because it is a binary classification.
+
+The model is then compiled with _adam_ optimizer (default learning rate 0.001).
 
 ### Metrics
 The metrics used in this model is Dice Similarity Coefficient [(DSC)](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient), which is the most used metric in validating medical volume segmentations
