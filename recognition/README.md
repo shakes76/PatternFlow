@@ -11,3 +11,6 @@
 
 ## Requirment:
 Version: Tensorflow >=2.20
+
+## Algorithm:
+![image](https://github.com/Alexu0506/PatternFlow/blob/topic-recognition/recognition/p1.png)
