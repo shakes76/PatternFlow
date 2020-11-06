@@ -12,6 +12,8 @@ import os, time
 import numpy as np
 import cv2 
 import glob 
+from skimage import color
+from skimage import io
 from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
 from keras.backend.tensorflow_backend import set_session
@@ -21,9 +23,10 @@ def image_data(img_dir):
     data_path = os.path.join("D:\\u_net\\keras_png_slices_data\\"+img_dir,'*g') 
     files = glob.glob(data_path) 
     data = [] 
+    img_shape     = (128, 128, 1)
     for f1 in files: 
-        img = cv2.imread(f1) 
-        data.append(img) 
+        img = load_img(f1, target_size=img_shape[:2],color_mode = "grayscale") 
+        data.append(img_to_array(img)) 
     return(np.array(data))
 
 
