@@ -14,13 +14,9 @@ Improved UNet is roughly divided into two parts like ordinary UNet, encoding and
 
 #### Training and prediction Procedure
 
-My network architecture is trained using 256*256 voxels and randomly sampled patches with a batch size of 16. I train for a total of 10 epochs. I use the Adam optimizer for training, the initial learning rate is $10^{-4}$. Then I make a prediction on test set and I got the plots. From left to right, it is the real skin pictures, ground truth and predicted pictures.
+My network architecture is trained using 256*256 voxels and randomly sampled patches with a batch size of 16. I train for a total of 10 epochs. I use the Adam optimizer for training, the initial learning rate is $10^{-4}$. Then I make a prediction on test set and I got the plots.
 
-<img src="images/image1.png" alt="image" style="width:25%;" /><img src="images/1_ground_truth.png" alt="image" style="width:25%;" /> <img src="images/1_pre.png" alt="image" style="width:25%;" />
-
-<img src="images/2_images.png" alt="image" style="width:25%;" /> <img src="images/2_gt.png" alt="image" style="width:25%;" /> <img src="images/2_pre.png" alt="image" style="width:25%;" />
-
-​        **images**                          **ground truth**                      **predicted mask** 
+![image](images/pred.png)
 
 #### Evaluation 
 
