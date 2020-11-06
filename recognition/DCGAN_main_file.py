@@ -30,7 +30,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_im
 # In[3]:
 
 
-# lets check gpu available 
+# lets how many gpu are available
 tf.__version__
 import tensorflow as tf
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
@@ -55,7 +55,7 @@ set_session(tf.compat.v1.Session(config=config))
 
 # In[6]:
 
-
+# get the data
 X_seg_train = image_data('keras_png_slices_train')
 
 
