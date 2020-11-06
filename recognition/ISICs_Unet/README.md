@@ -64,7 +64,7 @@ Evaluation dice coefficient is 0.805256724357605.
 
 plot of train/valid Dice coefficient: 
 
-![img](imgs/train and valid dice_coef.png)
+![img](imgs/train_and_valid_dice_coef.png)
 
 case present:
 
