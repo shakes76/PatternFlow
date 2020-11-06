@@ -60,12 +60,12 @@ if __name__ == "__main__":
     argument_parser = ArgumentParser()
     dataset_loader = DataLoader()
     trainset_loader = TrainLoader(dataset_loader, argument_parser)
-    generator_loader = GeneratorLoader()
- 
+    
     try:
         argument_parser.parse(sys.argv)
 
         if argument_parser.is_load_mode():
+            generator_loader = GeneratorLoader()
             # Use the loader to generate the image
             generator_loader.generate()
         else:
