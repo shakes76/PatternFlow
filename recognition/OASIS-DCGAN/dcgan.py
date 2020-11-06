@@ -206,7 +206,7 @@ def DCGAN(train_dir, test_dir, result, epochs=10000, batch_size=256):
             # Plot the progress
             if epoch % 500 == 0:
                 plot_generated_images(noise,
-                                      path_save=result+"/image_{:05.0f}.png".
+                                      path_save=result+"image_{:05.0f}.png".
                                       format(epoch), 
                                       title="Epoch {}".format(epoch))
                 print(("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%]"+
@@ -216,9 +216,14 @@ def DCGAN(train_dir, test_dir, result, epochs=10000, batch_size=256):
                 print(("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%]"+
                         "[G loss: {:4.3f}]").format(epoch, disc_loss[0], 
                        100*disc_loss[1], combo_loss), end="\r")
-            
+        plot_generated_images(noise, path_save=result+"image_final.png".
+                              format(epoch), title="Final Run".format(epoch))
+        print(("Epoch {:05.0f} [D loss: {:4.3f}, acc.: {:05.1f}%]"+
+                        "[G loss: {:4.3f}]").format(epoch, disc_loss[0], 
+                       100*disc_loss[1], combo_loss))
         return history
-
+        
     noise = get_noise(nsample=4, latent_dim=100)
-    history = train((combo, discriminator, generator), X_train, noise=noise, result=result)
+    history = train((combo, discriminator, generator), X_train, noise=noise, 
+                    result=result)
     
