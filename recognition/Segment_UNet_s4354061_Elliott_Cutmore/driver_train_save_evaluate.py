@@ -7,18 +7,18 @@ if __name__ == "__main__":
     # Use a subset of the 2594 images to only 100 for compuational speed up
     subset = False
     # Black and white Binary segmentation channels
-    num_classes = 2
+    num_classes = 1
     # how many images to run through net:
     batch_size = 4
     # How many cycles to train the net for: only in option=1
-    epochs = 200
+    epochs = 30
     # where to load images from (input and targets)
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
     # Where to save trained model and checkpoints to from training
-    save_model_path = ".\\model_3"
-    # save_checkpoint_path = ".\\training_3\\cp.ckpt"
-    save_history_path = ".\\history_3_pickle"
+    save_model_path = ".\\model_test_1"
+    save_checkpoint_path = save_model_path
+    save_history_path = ".\\history_test_1_pickle"
 
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
@@ -74,7 +74,8 @@ if __name__ == "__main__":
 
     # Create a UNet model instance:
     print("Creating a model...")
-    model = create_model(img_dims, num_classes)
+    # model = create_UNet(img_dims, num_classes)
+    model = create_improved_UNet(img_dims, num_classes)
     model.summary()
 
     # Train the new UNet model and check where its going to be saved:

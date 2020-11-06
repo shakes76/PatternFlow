@@ -5,16 +5,16 @@ if __name__ == "__main__":
     # How histograms of image size data used to make judgement on CNN image size
     inspect_image_sizes = False
     # Use a subset of the 2594 images to only 100 for compuational speed up
-    subset = True
+    subset = False
     # Black and white Binary segmentation channels
-    num_classes = 2
+    num_classes = 1
     # how many images to run through net:
     batch_size = 4
     # where to load images from (input and targets)
     img_dir = "H:\\COMP3710\\ISIC2018_Task1-2_Training_Input_x2"
     seg_dir = "H:\\COMP3710\\ISIC2018_Task1_Training_GroundTruth_x2"
-    load_path = ".\\model_2"
-    history_load_path = ".\\history_2_pickle"
+    load_path = ".\\model_test_1"
+    history_load_path = ".\\history_test_1_pickle"
 
     # Get all filename's from the paths of inputs and targets specified:
     input_img_paths, target_img_paths = \
@@ -66,10 +66,10 @@ if __name__ == "__main__":
 
 
     model = load_model(load_path)
-    # history = load_history(history_load_path)
-    #
-    # print("Plotting training history...")
-    # training_plot(history)
+    history = load_history(history_load_path)
+
+    print("Plotting training history...")
+    training_plot(history)
     print("Evaluating a test set/generator")
     test_preds, test_loss, test_acc = evaluate(test_gen, model)
     print("Test set size: ", len(test_preds))

@@ -1,3 +1,4 @@
+
 import tensorflow as tf
 # from tensorflow.compat.v1 import ConfigProto
 # from tensorflow.compat.v1 import InteractiveSession
@@ -11,7 +12,9 @@ import tensorflow.keras.backend as K
 from tensorflow.keras import datasets, Model
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, array_to_img
-from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concatenate, Concatenate, UpSampling2D, Conv2DTranspose, Dense
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concatenate, Concatenate, UpSampling2D, Conv2DTranspose, Dense, BatchNormalization, add, LeakyReLU
+# from tensorflow.compat.v1.keras.utils import get_custom_objects
+import tensorflow.keras.losses
 from PIL import Image, ImageOps
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
@@ -22,7 +25,10 @@ import numpy as np
 import glob
 import random
 import pickle
-import math
+
+# GLOBAL Variable
+# Initialize the random seed
+seed = 3
 
 
 def get_img_target_paths(img_dir, seg_dir):
@@ -116,7 +122,7 @@ def inspect_images(sizes, range_w=[510, 520], range_h=[380, 390]):
 
 
 def train_val_test_split(val_split, input_img_paths,
-                         target_img_paths, test_split=0.05, seed=1337):
+                         target_img_paths, test_split=0.05, seed=seed):
     """
     This function is used to split up a single dataset of images into a
     training, validation and testing set to be used for training and
@@ -153,7 +159,7 @@ def train_val_test_split(val_split, input_img_paths,
     return train_input, train_target, val_input, val_target, test_input, test_target
 
 
-def create_model(img_dims, num_classes):
+def create_UNet(img_dims, num_classes):
     """
     This function creates a typical UNet which is used to segment color (RGB)
     images into binary black and white output segmentation maps.
@@ -225,8 +231,153 @@ def create_model(img_dims, num_classes):
     cat_1_4 = Conv2D(f[0], (3, 3), activation=act, kernel_initializer=kern, padding=pad, name="cat_1_2")(cat_1_3)
 
     # Output layer
-    output_layer = Conv2D(num_classes, (1, 1), activation="softmax", kernel_initializer=kern, padding=pad,
+    output_layer = Conv2D(num_classes, (1, 1), activation="sigmoid", kernel_initializer=kern, padding=pad,
                           name="Output")(cat_1_4)
+
+    # Create model:
+    model = Model(inputs=input_layer, outputs=output_layer, name="Model")
+
+    return model
+
+
+def pre_activation_residual_block(in_layer, f, act, kern, pad):
+    """
+
+        :param in_layer: (tf.keras.layer)
+        :return: out_layer: (tf.keras.layer)
+        """
+
+    # Feedback
+    batch_norm_1 = BatchNormalization(name=("PARB_batch_norm_1_%d" % f))(in_layer)
+    relu_1 = LeakyReLU(name=("PARB_relu_1_%d" % f))(batch_norm_1)
+    conv_1 = Conv2D(f, (3, 3), activation=act, kernel_initializer=kern, padding=pad, name=("PARB_conv_1_%d" % f))(relu_1)
+    batch_norm_2 = BatchNormalization(name=("PARB_batch_norm_2_%d" % f))(conv_1)
+    relu_2 = LeakyReLU(name=("PARB_relu_2_%d" % f))(batch_norm_2)
+    conv_2 = Conv2D(f, (3, 3), activation=act, kernel_initializer=kern, padding=pad, name=("PARB_conv_2_%d" % f))(relu_2)
+    out_layer = add([conv_2, in_layer], name=("PARB_sum_%d" % f))
+
+    return out_layer
+
+def context_module(in_layer, f, act, kern, pad):
+    """
+
+    :param in_layer: (tf.keras.layer)
+    :return: out_layer: (tf.keras.layer)
+    """
+
+    PARB = pre_activation_residual_block(in_layer, f, act, kern, pad)
+    drop_layer = Dropout(0.3, name=("context_dropout_%d" % f))(PARB)
+    conv_1 = Conv2D(f, (3, 3), activation=act, kernel_initializer=kern, padding=pad, name=("context_conv_1_%d" % f))(PARB)
+    conv_2 = Conv2D(f, (3, 3), activation=act, kernel_initializer=kern, padding=pad, name=("context_conv_2_%d" % f))(conv_1)
+    out_layer = add([conv_2, drop_layer])
+
+    return out_layer
+
+def create_improved_UNet(img_dims, num_classes):
+    """
+    This function creates an improved UNet based on the paper:
+    F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and
+    K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics
+    Survival Prediction: Contribution to the BRATS 2017 Challenge,”
+    Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1
+    which is used to segment color (RGB) images into binary black
+    and white output segmentation maps.
+    :param img_dims: (tuple) (height, width, channels)
+    :param num_classes: (int) number of output segmentation tones (2 for binary)
+    :return: (tensorflow.keras.Model) instance of a model
+    """
+
+    act = 'relu'
+    kern = 'he_uniform'
+    pad = 'same'
+    inter = 'nearest'
+    # f = [64, 128, 256, 512, 1024]
+    f = [16, 32, 64, 128, 256]
+    lrelu = lambda x: tf.keras.activations.relu(x, alpha=0.01)
+
+    # Input layer - has shape (height, width, channels)
+    input_layer = Input(shape=img_dims, name="Input")
+
+    ## Convolutional layers - Feature learning
+    # Level 1:
+    conv_1 = Conv2D(f[0], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_1")(input_layer)
+    context_1 = context_module(conv_1, f[0], act, kern, pad)
+    context_add_1 = add([context_1, conv_1], name="context_add_1")
+
+    # Level_2
+    conv_2 = Conv2D(f[1], (3, 3), strides=(2, 2), activation=lrelu, kernel_initializer=kern, padding=pad,
+                    name="conv_2")(context_add_1)
+    context_2 = context_module(conv_2, f[1], act, kern, pad)
+    context_add_2 = add([context_2, conv_2])
+
+    # Level_3:
+    conv_3 = Conv2D(f[2], (3, 3), strides=(2, 2), activation=lrelu, kernel_initializer=kern, padding=pad,
+                    name="conv_3")(context_add_2)
+    context_3 = context_module(conv_3, f[2], act, kern, pad)
+    context_add_3 = add([context_3, conv_3])
+
+    # Level_4:
+    conv_4 = Conv2D(f[3], (3, 3), strides=(2, 2), activation=lrelu, kernel_initializer=kern, padding=pad,
+                    name="conv_4")(context_add_3)
+    context_4 = context_module(conv_4, f[3], act, kern, pad)
+    context_add_4 = add([context_4, conv_4])
+
+    # Level_5:
+    conv_5 = Conv2D(f[4], (3, 3), strides=(2, 2), activation=lrelu, kernel_initializer=kern, padding=pad,
+                    name="conv_5")(context_add_4)
+    context_5 = context_module(conv_5, f[4], act, kern, pad)
+    context_add_5 = add([context_5, conv_5])
+    up_5 = UpSampling2D((2, 2), interpolation=inter, name="up_5")(context_add_5)
+    conv_5_1 = Conv2D(f[3], (3, 3), activation=act, kernel_initializer=kern, padding=pad,
+                    name="conv_5_1")(up_5)
+
+    # CONCAT 4:
+    # Localisation
+    cat_4 = Concatenate(axis=3, name="cat_4")([conv_5_1, context_add_4])
+    conv_4_1 = Conv2D(f[3], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_4_1")(cat_4)
+    conv_4_2 = Conv2D(f[3], (1, 1), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_4_2")(conv_4_1)
+    # Up sampling module
+    up_4 = UpSampling2D((2, 2), interpolation=inter, name="up_4")(conv_4_2)
+    conv_4_3 = Conv2D(f[2], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad,
+                    name="conv_4_3")(up_4)
+
+    # CONCAT 3:
+    # Localisation
+    cat_3 = Concatenate(axis=3, name="cat_3")([conv_4_3, context_add_3])
+    conv_3_1 = Conv2D(f[2], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_3_1")(cat_3)
+    conv_3_2 = Conv2D(f[2], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_3_2")(conv_3_1)
+    # Segmentation layer:
+    seg_3_1 = Conv2D(1, (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="seg_3_1")(conv_3_2)
+    seg_3 = UpSampling2D((4, 4), interpolation=inter, name="up_seg_3_2")(seg_3_1)
+    # Up sampling module
+    up_3 = UpSampling2D((2, 2), interpolation=inter, name="up_3")(conv_3_2)
+    conv_3_3 = Conv2D(f[1], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad,
+                      name="conv_3_3")(up_3)
+
+    # CONCAT 2:
+    # Localisation
+    cat_2 = Concatenate(axis=3, name="cat_2")([conv_3_3, context_add_2])
+    conv_2_1 = Conv2D(f[1], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_2_1")(cat_2)
+    conv_2_2 = Conv2D(f[1], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_2_2")(conv_2_1)
+    # Segmentation layer:
+    seg_2_1 = Conv2D(1, (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="seg_2_1")(conv_2_2)
+    seg_2 = UpSampling2D((2, 2), interpolation=inter, name="up_seg_2")(seg_2_1)
+    # Up sampling module
+    up_2 = UpSampling2D((2, 2), interpolation=inter, name="up_2")(conv_2_2)
+    conv_2_3 = Conv2D(f[0], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad,
+                      name="conv_2_3")(up_2)
+
+    # CONCAT 1:
+    cat_1 = Concatenate(axis=3, name="cat_1")([conv_2_3, context_add_1])
+    conv_1_1 = Conv2D(f[1], (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="conv_1_1")(cat_1)
+    seg_1 = Conv2D(1, (3, 3), activation=lrelu, kernel_initializer=kern, padding=pad, name="seg_1")(conv_1_1)
+    # Sum seg layers
+    seg_sum_2 = add([seg_3, seg_2])
+    seg_sum_1 = add([seg_sum_2, seg_1])
+
+    # Output layer
+    output_layer = Conv2D(num_classes, (1, 1), activation="sigmoid", kernel_initializer=kern, padding=pad,
+                          name="Output")(seg_sum_1)
 
     # Create model:
     model = Model(inputs=input_layer, outputs=output_layer, name="Model")
@@ -300,7 +451,8 @@ def load_target_images_from_path_list(batch_target_img_paths, img_dims, num_clas
     for j, path in enumerate(batch_target_img_paths):
         img = load_segmented_image(path, img_dims)
         img = tf.reshape(img, [img_dims[0] * img_dims[1]])
-        img = tf.keras.utils.to_categorical(img, num_classes)
+        if num_classes > 1:
+            img = tf.keras.utils.to_categorical(img, num_classes)
         img = tf.reshape(img, [img_dims[0] * img_dims[1] * num_classes])
         img = tf.cast(img, tf.uint8)
         if j == 0:
@@ -348,6 +500,7 @@ class CustomSequence(Sequence):
         :return: 2 (Tensor)'s: x=batch of input images, y=batch of target
          images
         """
+
         i = idx * self.batch_size
         end_index = (i + self.batch_size)
         if end_index > len(self.target_img_paths):
@@ -360,6 +513,14 @@ class CustomSequence(Sequence):
                                               self.img_dims, self.num_classes)
 
         return x, y
+
+    def on_epoch_end(self):
+        """
+        Overrides the on_epoch_end method
+        :return:
+        """
+        random.Random(seed).shuffle(self.input_img_paths)
+        random.Random(seed).shuffle(self.input_target_paths)
 
 
 def create_generator(img_paths, target_paths, img_dims, batch_size, num_classes):
@@ -397,6 +558,28 @@ def dice_coefficient_loss(y_true, y_pred):
     return 1. - dice_coefficient(y_true, y_pred)
 
 
+class CustomDSC(tensorflow.keras.losses.Loss):
+    def __init__(self, name="CustomDSC"):
+        super().__init__(name=name)
+
+    def call(self, y_true, y_pred):
+        """
+            Function used to evaluate the similarity of two images
+            :param y_true: (Tensor) image_1
+            :param y_pred: (Tensor) image_2
+            :param smooth: (float)
+            :return: (float) dice coefficient similarity of two images
+            """
+        y_true = tf.cast(y_true, dtype=tf.float32)
+        y_pred = tf.cast(y_pred, dtype=tf.float32)
+        y_true_f = K.flatten(y_true)
+        y_pred_f = K.flatten(y_pred)
+
+        intersection = K.sum(y_true_f * y_pred_f)
+        return 1 - ((2. * intersection) / (K.sum(y_true_f) + K.sum(y_pred_f)))
+        # return dice_coefficient_loss(y_true, y_pred)
+
+
 def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
                 save_checkpoint_path=None, save_history_path=None):
     """
@@ -426,11 +609,9 @@ def train_model(train_gen, val_gen, model, epochs=1, save_model_path=None,
         callbacks = []
 
     # Compile the model:
-    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
-    # loss = dice_coefficient_loss
     metrics = ['accuracy']
-    opt = Adam(lr=1e-6)
-    model.compile(loss=loss, optimizer=opt, metrics=metrics)
+    loss = dice_coefficient_loss
+    model.compile(loss=loss, optimizer=Adam(lr=1e-6), metrics=metrics)
 
     # Train the model, doing validation at the end of each epoch.
     history = model.fit(train_gen, epochs=epochs, validation_data=val_gen, callbacks=callbacks)
@@ -455,7 +636,17 @@ def load_model(load_path):
     :return: (tensorflow.keras.Model) instance
     """
     if os.path.exists(load_path):
-        return tf.keras.models.load_model(load_path)
+
+        print("Getting model")
+        tensorflow.keras.losses.dice_coefficient_loss = dice_coefficient_loss
+        print("Getting custom object")
+        model = tf.keras.models.load_model(load_path, compile=False)
+        loss = dice_coefficient_loss
+        metrics = ['accuracy']
+        opt = Adam(lr=1e-6)
+        model.compile(loss=loss, optimizer=opt, metrics=metrics)
+        return model
+
     else:
         print("File %s not found" % load_path)
         return None
@@ -544,14 +735,14 @@ def check_generator(generator, img_dims, batch_size, num_classes, visualise=Fals
 
     tf.assert_equal(shape_x, true_shape_x)
     tf.assert_equal(shape_y, true_shape_y)
-    # shape_y = tf.cast(shape_y, dtype=tf.float)
     tf.assert_equal(shape_x[:-1], shape_y[:-1])
 
     if visualise:
 
         xn = np.array(x)
         print(np.shape(xn))
-        yn = np.argmax(np.array(y), axis=3)
+        yn = np.array(y)
+        # yn = np.argmax(np.array(y), axis=3)
         num_imgs = batch_size
         plt.figure(figsize=(10, 10))
         j = 1
@@ -645,27 +836,38 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
     test_target_set = test_target_img_path[0:num_imgs]
     x = load_input_images_from_path_list(test_input_set, img_dims)
     y = load_target_images_from_path_list(test_target_set, img_dims, num_classes)
-    dice_targets = np.argmax(np.array(load_target_images_from_path_list(test_target_img_path, img_dims, num_classes)), axis=3)
+    # dice_targets = np.argmax(np.array(load_target_images_from_path_list(test_target_img_path, img_dims, num_classes)), axis=3)
+    dice_targets = np.array(load_target_images_from_path_list(test_target_img_path, img_dims, num_classes))
 
     xn = np.array(x)
-    yn = np.argmax(np.array(y), axis=3)
-    output = np.argmax(np.array(test_preds), axis=3)
+    yn = np.array(y)
+    output = np.array(test_preds)
+    # yn = np.argmax(np.array(y), axis=3)
+    # output = np.argmax(np.array(test_preds), axis=3)
 
     # for all images in test set
     dice_sim = []
     # print(len(output), len(test_target_img_path))
     for i in range(len(output)):
-        dice_sim.append(dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])).numpy())
+        dice_sim.append(
+            dice_coefficient(tf.convert_to_tensor(dice_targets[i]), tf.convert_to_tensor(output[i])).numpy())
 
-    print("Dice Coeffiecient Scores: %d images\nAverage Dice Coefficient: %2.4f" % (len(dice_sim), tf.math.reduce_mean(dice_sim)))
+    xn = [a for _, a in sorted(zip(dice_sim, xn), key=lambda pair: pair[0], reverse=True)]
+    yn = [a for _, a in sorted(zip(dice_sim, yn), key=lambda pair: pair[0], reverse=True)]
+    output = [a for _, a in sorted(zip(dice_sim, output), key=lambda pair: pair[0], reverse=True)]
+    dice_sim = sorted(dice_sim);
+
+    print("Dice Coeffiecient Scores: %d images\nAverage Dice Coefficient: %2.4f" % (
+    len(dice_sim), tf.math.reduce_mean(dice_sim)))
     for i in range(len(dice_sim)):
         print("Image: %s | Dice: %2.4f" % (test_target_img_path[i].split(os.sep)[-1].split("_")[1], dice_sim[i]))
 
     if visualise:
-        fig, big_axes = plt.subplots(figsize=(10, 3*num_imgs), nrows=num_imgs, ncols=1)
+        fig, big_axes = plt.subplots(figsize=(10, 3 * num_imgs), nrows=num_imgs, ncols=1)
 
         for row, big_ax in enumerate(big_axes, start=1):
-            big_ax.set_title("Image: %s | Dice: %2.4f" % (test_target_img_path[row-1].split(os.sep)[-1].split("_")[1], dice_sim[row-1]))
+            big_ax.set_title("Image: %s | Dice: %2.4f" % (
+            test_target_img_path[row - 1].split(os.sep)[-1].split("_")[1], dice_sim[row - 1]))
             big_ax.axis("off")
             # # Turn off axis lines and ticks of the big subplot
             # # obs alpha is 0 in RGBA string!
@@ -673,8 +875,8 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
             # # removes the white frame
             # big_ax._frameon = False
 
-        j=1
-        c=1
+        j = 1
+        c = 1
         for i in range(num_imgs):
             ax = fig.add_subplot(num_imgs, 3, j)
             ax.imshow(xn[i])  # [:, :, 0], cmap='gray') #
@@ -683,29 +885,31 @@ def results(test_input_img_path, test_target_img_path, test_preds, num_imgs, img
             # Turn off tick labels
             ax.set_yticklabels([])
             ax.set_xticklabels([])
-            j=j+1
+            j = j + 1
             ax = fig.add_subplot(num_imgs, 3, j)
             ax.imshow(yn[i], cmap='gray')
             # ax.tick_params(labelcolor=(0, 0, 0 , 0.0), top='off', bottom='off', left='off', right='off')
             # Turn off tick labels
             ax.set_yticklabels([])
             ax.set_xticklabels([])
-            j=j+1
+            j = j + 1
             ax = fig.add_subplot(num_imgs, 3, j)
-            ax.imshow(output[i], cmap='gray') #
+            ax.imshow(output[i], cmap='gray')  #
             # ax.tick_params(labelcolor=(0, 0, 0 , 0.0), top='off', bottom='off', left='off', right='off')
             ax.set_xlabel("Predicted")
             # Turn off tick labels
             ax.set_yticklabels([])
             ax.set_xticklabels([])
-            j=j+1
+            j = j + 1
+        plt.tight_layout()
 
-
-        c+=1
+        c += 1
         bin_size = 20
         plt.figure(c, figsize=(10, 5))
         plt.hist(dice_sim, bins=bin_size)
         plt.title("Histogram Dice Similarity Coefficient")
-
         plt.tight_layout()
         plt.show()
+
+
+

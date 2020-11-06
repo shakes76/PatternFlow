@@ -1,31 +1,35 @@
-# Segmentation of ISIC data set using a UNet
+# Segmentation of ISIC data set using an improved UNet
 This module has three scripts: **segment.py** which holds the 
 algorithm specific functions and classes  required for image 
 segmentation, **driver_train_save_evaluate.py** and 
-**driver_load_evaluate.py** which acts as test scripts 
+**driver_load_evaluate.py** which act as test scripts 
 to run algorithm specific code in a tensorflow GPU 
-test environment.
+virtual environment.
 
 The module created was specifically designed for the segmentation 
 of skin irregularities occurring in images from the ISIC data set. 
 This segmentation is done using a Convolutional Neural Network 
-(**CNN**) structure known as a **UNet**. Coloured images are given
-as input images in addition to black and white (binary) segmented masks
-corresponding to the input images, known as target images. The CNN maps
-the relationship between the input and target images. From this, the UNet
-can predict from new test input data (coloured images) what their 
-corresponding segmentation mask should look like. The driver scripts 
+(**CNN**) structure known as a **UNet**. The UNet used has been 
+modified using pre-activation residual block context module's in 
+feedback to store high resolution information unlike skip connections
+ like a classical UNet where high resolution information is lost.
+Coloured images are given as input images in addition to black and white
+(binary) segmented masks corresponding to the input images, known as target
+images. The CNN maps the relationship between the input and target images.
+From this, the UNet can predict from new test input data (coloured images) 
+what their corresponding segmentation mask should look like. The driver scripts 
 show example usage of the algorithm specific implementation of the 
 segmentation. The **driver_train_save_evaluate.py** script loads 
 input and target images, trains a UNet model, saves it to storage then 
 evaluates the accuracy of the predicted output segmentation masks of a 
 new test set of data. The **driver_load_evaluate.py** script loads in a 
-pre-train UNet and evaluates the accuracy of the predicted output 
+pre-trained UNet and evaluates the accuracy of the predicted output 
 segmentation masks of a new test set of data. 
 
 A model was trained with the **driver_train_save_evaluate** script for 200
-epochs, Adam's optimizer (learning rate = 1e-6), 2517 training images and 503 validation images. The average 
-dice similarity coefficient was **0.85**. Below is shown the output from 
+epochs, Adam's optimizer (learning rate = 1e-6), 2014 training images and 
+503 validation images with a test set of 77 images. The average dice 
+similarity coefficient was **0.85**. Below is shown the output from 
 the **results** function from **segment.py**. 
 
 ![training_image](./training.PNG)
@@ -34,17 +38,17 @@ This image shows the accuracy and loss tracked over the course of the training
 history
 
 
-![training_image](./predictions.PNG)
+![training_image](./good_predictions.PNG)
 
 This image shows the output from four input test images (if run in 
 a jupyter notebook and the **num_imgs** argument is set to the number of images 
 that occur in the test predictions output, then all test prediction outputs can
 be seen)
 
-![training_image](./average_results.PNG)
+![training_image](./bad_predictions.PNG)
 
-This image shows terminal outputs of the average dice similarity coefficient and some
-dice similarity coefficients of a few of the test images
+This image shows terminal outputs of the worst few images from the prediction,
+it shows that not all images are segmented correctly.
 
 ![training_image](./histogram.PNG)
 
@@ -117,3 +121,17 @@ set "True")
 from the model
 6. Display the results on the test set of images and their model 
 predicted counterpart's
+
+## Envirnoment setup used:
+```console
+mkdir D:\s4354061
+cd D:\s4354061
+conda create -y --prefix D:\s4354061\venv tensorflow-gpu
+conda activate D:\s4354061\venv
+conda install ipykernel -y
+python -m ipykernel install --user --name venv --display-name "Python (venv)"
+pip install matplotlib
+pip install tensorflow_datasets
+pip install sklearn
+```
+ 
