@@ -16,7 +16,7 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 
 ## Implementations
 ### Data Split
-70% for training, 15% for validation, 15% for testing.
+Since the data set is sufficiently large with 2594 pairs of images, we can conduct train, validation, test split on the dataset. Since the model has large amount of parameters, it's necessary to have a validation set to prevent overfitting. Data was split as 70% for training, 15% for validation, 15% for testing. 
 
 ### Model Training Parameters
 * Activation function: Sigmoid
@@ -24,6 +24,7 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 * Loss function: BinaryCrossEntrypy
 * Checkpoint Callback: Maximum validation accuracy
 * Training Epoch: 250
+* Batch size: 10
 
 ### Result
 1. Training plots<br />
@@ -47,3 +48,6 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 ## Author
 Name: Wenjun Zhang<br />
 Student Number: s4469251
+
+## Reference
+..
