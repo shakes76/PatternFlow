@@ -34,7 +34,7 @@ from model import *
 
 
 # Proportions of image set to use
-total_prop = 0.5
+total_prop = 1
 val_prop = 0.1
 test_prop = 0.1
 
@@ -49,7 +49,7 @@ view_imgs(train_ds, 3)
 #%%
 
 # Number of filters
-d = 8
+d = 12
 
 model = UNetModel(d)
 
@@ -61,11 +61,11 @@ model.summary()
 
 #%%
 
-adam_opt = tf.keras.optimizers.Adam(learning_rate= 1*10**(-5))
+adam_opt = tf.keras.optimizers.Adam(learning_rate= 5*10**(-5))
 
 model.compile(optimizer=adam_opt,
-              loss=avg_dsc_loss,
-              metrics=[dsc_fore, dsc_back, 'accuracy'])
+              loss='categorical_crossentropy',
+              metrics=[dsc_fore, dsc_back])
 
 #%%
 history = model.fit(train_ds.batch(batch_size),
@@ -74,7 +74,7 @@ history = model.fit(train_ds.batch(batch_size),
 
 #%%
 
-test_loss, test_acc, b, c = model.evaluate(test_ds.batch(batch_size))
+test_loss, test_acc, b = model.evaluate(test_ds.batch(batch_size))
 print('Test accuracy:', test_acc)
 
 #%%
