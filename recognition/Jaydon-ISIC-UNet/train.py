@@ -9,9 +9,7 @@ from model import UNet
 from training_utils import *
 
 img_size = 128
-img_channels = 3
 batch_size = 32
-
 base_path = "/content/data/images"
 image_path = "/content/data/images/ISIC2018_Task1-2_Training_Input_x2"
 
@@ -41,8 +39,8 @@ print("Testing images: ", len(test_ids))
 print("Validation images: ", len(validation_ids))
 
 
-# Test generator
-gen = DataGenerator(training_ids, base_path, batch_size=batch_size, image_size=img_size)
+# Instantiate a Generator
+"""gen = DataGenerator(training_ids, base_path, batch_size=batch_size, image_size=img_size)
 
 # Test the Generator
 testX, testY = gen.__getitem__(0)
@@ -54,10 +52,11 @@ ax = plot.add_subplot(1, 2, 1)
 ax.imshow(testX[0])
 ax = plot.add_subplot(1, 2, 2)
 ax.imshow(np.reshape(testY[0], (img_size, img_size)), cmap="gray")
+"""
 
 # Compile a model and show the shape
 model = UNet(img_size, img_size)
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=[dice_coef, "acc"])
 model.summary()
 plot_model(model, show_shapes=True)
 
@@ -69,5 +68,5 @@ validation_gen = DataGenerator(validation_ids, base_path, 3, 128)
 training_step_size = len(training_ids) // batch_size # Step size of training data
 validation_step_size = len(validation_ids) // batch_size # Step size of validation data
 
-h = model.fit_generator(training_gen, validation_data = validation_gen, steps_per_epoch=training_step_size, validation_steps=validation_step_size, epochs = 5)
+h = model.fit_generator(training_gen, validation_data = validation_gen, steps_per_epoch=training_step_size, validation_steps=validation_step_size, epochs = 20)
 model.save("ISIC-UNet.h5")
