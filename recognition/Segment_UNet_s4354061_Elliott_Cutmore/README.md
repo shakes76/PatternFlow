@@ -32,25 +32,25 @@ epochs, Adam's optimizer (learning rate = 1e-6), 2014 training images and
 similarity coefficient was **0.85**. Below is shown the output from 
 the **results** function from **segment.py**. 
 
-![training_image](./training.PNG)
+![training_image](./images/training.PNG)
 
 This image shows the accuracy and loss tracked over the course of the training
 history
 
 
-![training_image](./good_predictions.PNG)
+![training_image](./images/good_predictions.PNG)
 
 This image shows the output from four input test images (if run in 
 a jupyter notebook and the **num_imgs** argument is set to the number of images 
 that occur in the test predictions output, then all test prediction outputs can
 be seen)
 
-![training_image](./bad_predictions.PNG)
+![training_image](./images/bad_predictions.PNG)
 
 This image shows terminal outputs of the worst few images from the prediction,
 it shows that not all images are segmented correctly.
 
-![training_image](./histogram.PNG)
+![training_image](./images/histogram.PNG)
 
 This image is a histogram of the distribution of the dice similarity
 coefficient's for all images in the test set with their corressponding
