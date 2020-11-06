@@ -48,7 +48,7 @@ class ConcatOutBlock(tf.keras.layers.Layer):
         self.concat = tf.keras.layers.Concatenate()
         self.conv1 = tf.keras.layers.Conv2D(filters, 3, activation='relu', padding='same')
         self.conv2 = tf.keras.layers.Conv2D(filters, 3, activation='relu', padding='same')
-        self.out = tf.keras.layers.Conv2D(2, 1, activation='softmax')
+        self.out = tf.keras.layers.Conv2D(2, 1, activation='softmax', padding='same')
     
     def call(self, x, y):
         x = self.concat([x, y])
@@ -90,16 +90,21 @@ def dsc(true_segs, pred_segs):
 	true_flat = tf.keras.backend.flatten(true_segs)
 	intersect = tf.keras.backend.sum(pred_flat * true_flat)
 	return ( (2.0 * intersect) 
-            / (tf.keras.backend.sum(pred_flat) 
-               + tf.keras.backend.sum(true_flat)) )
+            / tf.keras.backend.sum(pred_flat + true_flat) )
 
 def dsc_loss(true_segs, pred_segs):
-	return 1.0 - dsc(pred_segs, true_segs)
+	return 1.0 - dsc(true_segs, pred_segs)
 
 def avg_dsc(true_segs, pred_segs):
-    return (0.5 * dsc(pred_segs[:,:,0], true_segs[:,:,0]) 
-            + 0.5 * dsc(pred_segs[:,:,1], true_segs[:,:,1]))
+    return (0.5 * dsc(true_segs[:,:,0], pred_segs[:,:,0]) 
+            + 0.5 * dsc(true_segs[:,:,1], pred_segs[:,:,1]))
 
 def avg_dsc_loss(true_segs, pred_segs):
-    return (0.5 * dsc_loss(pred_segs[:,:,0], true_segs[:,:,0])
-            + 0.5 * dsc_loss(pred_segs[:,:,1], 1.0 - true_segs[:,:,1]))
+    return (0.5 * dsc_loss(true_segs[:,:,0], pred_segs[:,:,0])
+            + 0.5 * dsc_loss(true_segs[:,:,1], pred_segs[:,:,1]))
+
+def dsc_fore(true_segs, pred_segs):
+    return dsc(true_segs[:,:,1], pred_segs[:,:,1])
+    
+def dsc_back(true_segs, pred_segs):
+    return dsc(true_segs[:,:,0], pred_segs[:,:,0]) 

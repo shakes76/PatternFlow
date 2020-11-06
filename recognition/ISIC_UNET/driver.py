@@ -27,7 +27,7 @@ print(sys.path)
 #%%
 
 from load_images import get_datasets, view_imgs, view_preds
-from model import UNetModel, dsc, dsc_loss, avg_dsc, avg_dsc_loss
+from model import *
 
 
 ### VARIABLES TO CHANGE ###
@@ -49,42 +49,57 @@ view_imgs(train_ds, 3)
 #%%
 
 # Number of filters
-d = 4
+d = 8
 
 model = UNetModel(d)
 
 
 #%%
-model.build((32, 512,512,3))
+batch_size = 16
+model.build((batch_size, 512,512,3))
 model.summary() 
 
 #%%
 
-adam_opt = tf.keras.optimizers.Adam(learning_rate= 5*10**(-5))
+adam_opt = tf.keras.optimizers.Adam(learning_rate= 1*10**(-5))
 
 model.compile(optimizer=adam_opt,
               loss=avg_dsc_loss,
-              metrics=[avg_dsc])
+              metrics=[dsc_fore, dsc_back, 'accuracy'])
+
+#%%
+history = model.fit(train_ds.batch(batch_size),
+                    validation_data=val_ds.batch(batch_size),
+                    epochs=3)
 
 #%%
 
-history = model.fit(train_ds.batch(32),
-                    validation_data=val_ds.batch(32),
-                    epochs=2)
-
-#%%
-
-test_loss, test_acc = model.evaluate(test_ds.batch(1))
+test_loss, test_acc, b, c = model.evaluate(test_ds.batch(batch_size))
 print('Test accuracy:', test_acc)
 
 #%%
+view_preds(model, test_ds, 3)
 
-view_preds(model, test_ds, 5)
+#%%
+model.evaluate(train_ds.batch(batch_size))
 
 
 #%%
-for img, true_segs in train_ds.take(1):
+k = 10
+eek1 = 0
+eek2 = 0
+for img, true_segs in train_ds.take(k):
         predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
         pred_segs = tf.reshape(predictions, [512, 512, 2])
+        #print(true_segs[200:210,200:220,1])
+        #print(pred_segs[200:210,200:220,1])
+        #print(pred_segs[200:210,200:220,0])
         
-        print(avg_dsc(true_segs, pred_segs))
+        #print(avg_dsc(true_segs, pred_segs))
+        eek1 = eek1 + avg_dsc(true_segs, pred_segs)
+        eek2 = eek2 + dsc_fore(true_segs, pred_segs)
+        #print(avg_dsc_loss(true_segs, pred_segs))
+        #print(dsc_fore(true_segs, pred_segs))
+        #print(dsc_back(true_segs, pred_segs))
+print(eek1/k)
+print(eek2/k)

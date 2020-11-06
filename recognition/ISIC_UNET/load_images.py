@@ -133,7 +133,10 @@ def view_preds(model, ds, n):
     for img, true_segs in ds.take(n):
         predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
         pred_segs = tf.reshape(predictions, [512, 512, 2])
-        print(pred_segs)
+        
+        print(pred_segs[:,:,1])
+        print(tf.math.round(pred_segs[:,:,1]))
+        print(true_segs[:,:,1])
         
         plt.subplot(n, 4, 4*i + 1)
         plt.imshow(img)
@@ -142,7 +145,7 @@ def view_preds(model, ds, n):
         plt.subplot(n, 4, 4*i + 3)
         plt.imshow(pred_segs[:,:,1], cmap='gray')
         plt.subplot(n, 4, 4*i + 4)
-        plt.imshow(pred_segs[:,:,0], cmap='gray')
+        plt.imshow(tf.math.round(pred_segs[:,:,1]), cmap='gray')
         i = i + 1
   
 #%%
