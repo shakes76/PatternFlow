@@ -2,7 +2,7 @@
 
 ## Backgournd
 ### Problem Statement
-ISICs dataset contains images of Melanoma, a serious form of skin cancer. The aim of this project is to conduct image segmentation, creating pixel-wise binary mask for Melanoma. The dataset contains 2594 photos of Melanoma and 2594 masks. 
+ISICs dataset contains images of Melanoma, a serious form of skin cancer. The aim of this project is to conduct image segmentation, creating pixel-wise binary mask for Melanoma. The dataset contains 2594 photos of Melanoma and 2594 masks. <br />
 Dataset can be downloaded from https://challenge2018.isic-archive.com/
 
 ### Algorithm
@@ -26,11 +26,15 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 * Training Epoch: 250
 
 ### Result
+1. Training plots<br />
 ![Accuracy](images/acc1.png)
 ![Loss](images/loss1.png)
 ![dsc](images/dsc1.png)
+2. Prediction plots<br />
 ![Predictions](images/predictions.png)<br />
-(First row: row images; Second row: ground truth; Third row: predictions)
+(First row: row images; Second row: ground truth; Third row: predictions)<br /><br />
+3. Dice Similarity on testing data: 0.814<br /><br />
+![Predictions](images/test_dsc.png)<br />
 
 ## Dependencies
 * Python=3.7
@@ -41,5 +45,5 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 
 
 ## Author
-Name: Wenjun Zhang
+Name: Wenjun Zhang<br />
 Student Number: s4469251
