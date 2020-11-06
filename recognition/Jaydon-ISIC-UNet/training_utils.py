@@ -73,21 +73,10 @@ class DataGenerator(Sequence):
         """Updates indexes after each epoch"""
         pass
 
-def dice_coefficient(y_true, y_predicted):
-    y_true = np.asarray(y_true).astype(np.bool)
-    y_predicted = np.asarray(y_predicted).astype(np.bool)
-    intersect = np.logical_and(y_true, y_predicted)
-    return (2.0 * intersect.sum()) / (y_true.sum() + y_predicted.sum())
 
-
-def dice_coefficient_(y_true, y_predicted, smooth=1):
-    y_true_flat = Keras.flatten(y_true)
-    y_predicted_flat = Keras.flatten(y_predicted)
-    intersect = Keras.sum(y_true_flat * y_predicted_flat)
-    return 2.0 * intersect + smooth / (
-        Keras.sum(y_true_flat) + Keras.sum(y_predicted_flat) + smooth
-    )
-
-
-def dice_loss(y_true, y_predicted):
-    return -dice_coefficient(y_true, y_predicted)
+def dice_coef(y_true, y_pred, smooth=1):
+    """Quick implementation of Dice coefficient found online"""
+    y_true_f = Keras.flatten(y_true)
+    y_pred_f = Keras.flatten(y_pred)
+    intersection = Keras.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (Keras.sum(y_true_f) + Keras.sum(y_pred_f) + smooth)
