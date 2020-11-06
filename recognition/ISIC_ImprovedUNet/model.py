@@ -1,8 +1,15 @@
+"""
+Author: Marko Uksanovic
+Student Number: s4484509
+"""
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import regularizers
 
 # Global constants
-ConvProp = dict(padding = 'same')
+ConvProp = dict(padding = 'same', 
+                kernel_initializer='he_uniform',
+				kernel_regularizer=regularizers.l2(0.0001))
 leakyReLU = tf.keras.layers.LeakyReLU(alpha = 0.01)
 
 def unet():

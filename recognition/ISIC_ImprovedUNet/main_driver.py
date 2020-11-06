@@ -1,3 +1,7 @@
+"""
+Author: Marko Uksanovic
+Student Number: s4484509
+"""
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
