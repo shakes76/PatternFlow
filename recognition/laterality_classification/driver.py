@@ -5,7 +5,6 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 import matplotlib.pyplot as plt
 import random
-import datetime
 
 
 def proof_no_set_overlap(train_image_names, test_image_names):

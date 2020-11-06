@@ -16,8 +16,8 @@ has two keras model options, the normal model and an overly simplified model
 (for comparision purposes). 
 
 #### Normal Model Architecture
-NOTE: the usage of dropout and exact dropout rate for these dropout layers
-is defined in the init parameters of the class.
+The following architecture was naturally converged towards after 
+multiple rounds of testing different structures.
 ```
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #   
@@ -46,7 +46,8 @@ Total params: 7,359,105
 Trainable params: 7,359,105
 Non-trainable params: 0
 ```
-
+**Note**: *the usage of dropout and exact dropout rate for these dropout layers
+is defined in the init parameters of the class.*
 #### Simplified Model Architecture
 ```
 _________________________________________________________________
@@ -99,6 +100,14 @@ To mitigate this effect, during the processing of the dataset, patients are
 uniquely identified by the filename, and an extra processing step is done to
 ensure that the training and validation set do not contain any images from the
 same unique patient.
+
+#### Dependencies
+* LateralityClassifier (described above)
+* Core python libraries (os, random)
+* TensorFlow
+* Keras
+* MatPlotLib
+* NumPy
 
 ## Results/Output
 ### Normal Model
