@@ -1,6 +1,5 @@
 # Image Segmentation Task
-Task: Segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
-similarity coefficient of 0.9 on the test set.
+Task: Segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice similarity coefficient of 0.9 on the test set.
 
 [Data resource](https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ): magnetic resonance (MR) image of the brain from OASIS dataset.
 
