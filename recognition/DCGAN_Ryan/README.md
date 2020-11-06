@@ -19,7 +19,7 @@ I train two models simultaneously.
 #### Result after 400 Epochs
 ![avatar](./image/example_output.png)
 #### Example Outputs
-Generate a 256$\times$256 image with a 100x1 random normal noise with the trained generator model. <br/>
+Generate a 256x256 image with a 100x1 random normal noise with the trained generator model. <br/>
 ![avatar](./image/generated_example.png)<br/>
 Compare the generated image with images in the original data set and calculate the max value of Structured Similarity (SSIM).<br/>
 **Note: Structured Similarity (SSIM): 0.6319508**
@@ -96,11 +96,13 @@ def make_discriminator_model():
     return model
 
 def discriminator_loss(real_output, fake_output):
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
     return real_loss + fake_loss
 
 def generator_loss(fake_output):
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 ```
 ___
