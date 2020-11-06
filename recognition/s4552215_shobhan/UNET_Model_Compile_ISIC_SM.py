@@ -38,7 +38,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.utils import to_categorical
 from keras import backend as K
 
-#The Function to evaluate dice coefficient for overall test data set
+#The Function to evaluate dice coefficient for overall test data sets
 def dice_coeff(y_true, y_pred, smooth=1):
     intersect = K.sum(K.abs(y_true * y_pred), axis=[1,2,3])
     union = K.sum(y_true,[1,2,3])+K.sum(y_pred,[1,2,3])-intersect
@@ -73,7 +73,7 @@ def plot_ISIC_all(X, y, y_pred, ix=None):
         ix = ix
 
     
-    # To Plot the original lesion grayscale image
+    # To Plot the original lesion grayscale images
     fig, ax = plt.subplots(1, 3, figsize=(20, 10))
     ax[0].imshow(X[ix, ..., 0], cmap='gray')
     ax[0].contour(X[ix].squeeze(), colors='k', levels=[0.5])
