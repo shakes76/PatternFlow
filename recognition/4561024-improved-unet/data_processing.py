@@ -4,42 +4,29 @@ Load and process OASIS brain data set
 @author Aghnia Prawira (45610240)
 '''
 
-import os
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import tensorflow as tf
+from tensorflow.io import read_file
+from tensorflow.image import decode_png, resize
 
 def decode_image(filename):
     '''
     Load and resize an image.
     '''
     # Load and resize image
-    image = load_img(filename, color_mode='grayscale', target_size=(256, 256))
-    # Convert image pixels to array
-    image = img_to_array(image, dtype='float32')
+    image = read_file(filename)
+    image = decode_png(image, channels=1)
+    image = resize(image, (256, 256))
     return image
-    
-def load_image(path):
-    '''
-    Load and normalize all images in path.
-    '''
-    image_array = []
-    for name in sorted(os.listdir(path)):
-        filename = path + name
-        image = decode_image(filename)
-        # Normalize image
-        image /= 255
-        image_array.append(image)
-    return image_array
 
-def load_seg(path):
+def process_image(image, seg):
     '''
-    Load and one-hot encode all segmentation 
-    images in path.
+    Load and normalize input images.
+    Load and one-hot encode segmentation images.
     '''
-    seg_array = []
-    for name in sorted(os.listdir(path)):
-        filename = path + name
-        seg = decode_image(filename)
-        # One-hot encode image
-        seg = (seg == [0, 85, 170, 255]).astype('float32')
-        seg_array.append(seg)
-    return seg_array
+    image = decode_image(image)
+    image = image/255.0
+    
+    seg = decode_image(seg)
+    # One-hot encode image
+    seg = tf.cast(seg == [0.0, 85.0, 170.0, 255.0], tf.float32)
+    return image, seg
