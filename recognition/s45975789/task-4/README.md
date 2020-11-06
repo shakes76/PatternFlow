@@ -19,15 +19,23 @@ GanModel.py module has both the generator and discrimininator network. Generator
 
 Discriminator takes input image( either real or fake) of size (256,256,1). It inculdes 6 convolution-2D layer with convolution strides for downsampling with LeakyRelu activation and uses droplayer with 0.3 for regularisation. Output layer uses sigmoid activation for classifying real(1) or fake(0) images.
 
-Task-6 is the main file, it consists of function to load the images(data_gen), function to display the images produced by the generator network( display_images), other model parameters, building the models(generator, discriminator and combined networks), and finally training process for the nubmer of epoches.
+Task-6 is the main file, it consists of function to load the images(data_gen), function to display the images produced by the generator network( display_images), other model parameters, building the models(generator, discriminator and combined networks), finally training process for the nubmer of epoches and ploting the training loss.
 
 ## Training
 
 Training the GAN involves training the generator part to maximize the final binary classification error ( between real or fake image), while discriminator is trained to minimize it. Reaches equilibrium when discriminator classify with equal probability and generator produces images that follows the input brain images probability distribution.
 
 ### Training procedure
-Combined model is built by adding discriminator on top of generator. Compile the discriminator and set the training to false before compiling the combined model, so that only generator's model parameter are only updated. And not nessecary on compiling the generator model as its not ran alone. 
+Combined model is built by sequential adding generator and discriminator together. Compile the discriminator and set the training to false before compiling the combined model, so that only generator's model parameter are only updated. And not nessecary on compiling the generator model as its not ran alone. 
 1. Reading the real-images of Batch-size(16), using data-gen() from the OASIS Dataset.
 1. Using generator to generate fake images by giving input as a random noise vectors for a Batch-size(16).
 1. Train the discriminator with both real(1) and fake(0) images to classify. This will allow the discriminator's weights to be updated.
 1. Train the combined model only using the fake images.Note when combined model is trained only generator's model parameter is updated.
+
+## Results
+
+Whole Training takes 20-25 minutes for 15000 Epochs to complete. Below represents the Training loss for DCGAN and generated images for each epochs(mentioned on top), 4 noise vectors are given as input to generator network and crossponding 4 predicted image results are shown.
+
+![](https://github.com/Pragatheeswari/epic1/blob/master/Training_loss_plot.jpg)
+
+![](https://github.com/Pragatheeswari/epic1/blob/master/DCGAN_generator_images.jpg)
