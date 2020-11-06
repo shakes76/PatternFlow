@@ -51,6 +51,22 @@ The use of Dice Loss and the sample are extremely unbalanced. If Dice Loss is us
 
 Because the background color 0 accounts for more than 80%. It is a severely unbalanced data. So we need to use dice coefficient to evaluate the model.
 
+# The result
+
+dice_coefficient: 0.9552 which achieves our goal.
+
+```python
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_path,
+    save_weights_only=True,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True)
+```
+
+each label's dice coefficient score from 0 to 3:
+[0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
+
 
 
 
