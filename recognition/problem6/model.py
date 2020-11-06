@@ -58,7 +58,7 @@ def build_generator(input_shape):
     t = tfk2.Conv2D(3, 3, padding = "same", activation = tf.nn.leaky_relu)(t)
 
     t = tfk2.UpSampling2D()(t)
-    t = tfk2.Conv2D(3, 3, padding = "same", activation = 'tanh')(t)
+    t = tfk2.Conv2D(3, 3, padding = "same", activation = 'sigmoid')(t)
     #t = tfk2.Conv2D(3, 3, padding = "same")(t)
     model = tf.keras.Model(inputs = input_layer, outputs = t)
     model.summary()
@@ -76,7 +76,7 @@ def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
 
-
+@tf.function
 def train_step(data, disc, gen, opt1, opt2):
     
 

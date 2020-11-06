@@ -8,9 +8,9 @@ from PIL import Image
 if __name__ == "__main__":
     #tf.config.run_functions_eagerly(True)
     path = sys.argv[1]
-    save_dir = os.path.join(path,'gen_images_new')
+    save_dir = os.path.join(path,'gen_images_01')
     
-    path = os.path.join(path, 'keras_png_slices_data - Copy')
+    path = os.path.join(path, 'keras_png_slices_data')
     path = os.path.join(path, 'keras_png_slices_seg_train')
     
     image_paths = load_paths(path)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
                 
             except StopIteration:
                 step += 1
-                img = Image.fromarray(((gen_image[0].numpy() + 1) * 127.5).astype('uint8'), mode='RGB')
+                img = Image.fromarray((gen_image[0].numpy()*255).astype('uint8'), mode='RGB')
             
                 img.save(os.path.join(save_dir, "generated_img" + str(step) + ".png"))
 
