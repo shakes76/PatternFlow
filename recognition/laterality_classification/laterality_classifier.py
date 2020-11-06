@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow.keras.layers as layers
-from tensorflow.keras.regularizers import l2
 
 
 class LateralityClassifier:
@@ -45,9 +44,9 @@ class LateralityClassifier:
         drop2 = layers.Dropout(droprate)(dense1)
 
         if self.use_dropout:
-            output = layers.Dense(1, activation="relu")(drop2)
+            output = layers.Dense(1, activation="sigmoid")(drop2)
         else:
-            output = layers.Dense(1, activation="relu")(dense1)
+            output = layers.Dense(1, activation="sigmoid")(dense1)
 
         model = tf.keras.Model(inputs=input_layer, outputs=output)
 

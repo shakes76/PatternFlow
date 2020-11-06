@@ -5,6 +5,7 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 import matplotlib.pyplot as plt
 import random
+import datetime
 
 
 def proof_no_set_overlap(train_image_names, test_image_names):
@@ -166,7 +167,7 @@ def visualise_images(X, y, set_size, title, seed=0):
     """
     random.seed(seed)
 
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(4, 4))
     for i in range(9):
         index = random.randint(0, set_size - 1)
         plt.subplot(3, 3, i + 1)
@@ -176,7 +177,8 @@ def visualise_images(X, y, set_size, title, seed=0):
         plt.title("left" if label == 0 else "right")
         plt.axis('off')
 
-    plt.suptitle(title)
+    plt.suptitle(title + "\n\n\n")
+    plt.savefig(title.replace(" ", "_") + ".png")
     plt.show()
 
 
@@ -188,8 +190,8 @@ def mean_square_error(predictions, actual):
     MSE = sum((prediction - actual)^2) / num_labels
 
     Args:
-        predictions:
-        actual:
+        predictions: An array of label predictions made by the model
+        actual: An array of the actual labels
 
     Returns:
         A float value of the MSE
@@ -217,7 +219,7 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
         X_test: the tf array of images to validate with
         y_test: the tf array of labels to validate with
     """
-    model = classifier.build_simple_model()
+    model = classifier.build_model()
 
     model.summary()
 
@@ -239,6 +241,7 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     plt.legend(['training', 'validation'])
     plt.show()
 
+    # assess the models accuracy with several metrics
     test_predictions = model.predict(X_test)[:, 0]
 
     print("mean square error of predictions = ",
