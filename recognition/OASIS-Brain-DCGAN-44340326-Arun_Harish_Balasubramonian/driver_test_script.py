@@ -14,7 +14,8 @@ POSSIBLE_OPTIONS = {
 }
 
 """
-    Argument Parser that parses the command line argument
+    Argument Parser that parses the command line argument. If the generate-image option is
+    set then does not attempt to train the model, even if other options are present.
     See the README.md test script for more information
 """
 class ArgumentParser():
@@ -43,6 +44,7 @@ class ArgumentParser():
 
     # Parses the argument and looks for match with accepted command line arguments
     def parse(self, arguments):
+        # Omitting the first argument of filename
         for i in range(1, len(arguments)):
             argument = arguments[i].split("=")
             option = argument[0]
