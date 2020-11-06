@@ -18,6 +18,8 @@ from tensorflow.keras import layers
 import os, time 
 from skimage import color
 from skimage import io
+import imageio
+import PIL
 import cv2 
 import glob 
 import numpy as np
@@ -78,15 +80,15 @@ train_images = (X_seg_train - 127.5) / 127.5 # Normalize the images to [-1, 1]
 
 # In[9]:
 
-
+# display the image
 plt.imshow(train_images[1],cmap='gray')
 
 
 # In[10]:
 
-
+# setting the batch size and buffer size 
 BUFFER_SIZE = 8000
-BATCH_SIZE = 50
+BATCH_SIZE = 128
 
 
 # In[11]:
@@ -197,41 +199,11 @@ plt.xlabel("epochs")
 plt.ylabel("loss_values")
 
 
-# In[26]:
-
-
-import imageio
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-import PIL
-
-
-# In[27]:
-
-
-anim_file = 'dcgan.gif'
-
-with imageio.get_writer(anim_file, mode='I') as writer:
-  filenames = glob.glob('image*.png')
-  filenames = sorted(filenames)
-  for filename in filenames:
-    image = imageio.imread(filename)
-    writer.append_data(image)
-  image = imageio.imread(filename)
-  writer.append_data(image)
-
-
-# In[28]:
-
-
-import tensorflow_docs.vis.embed as embed
-embed.embed_file(anim_file)
 
 
 # In[51]:
 
-
+# plot generated images from generator
 fig, axs = plt.subplots(2, 2,figsize=(15,15))
 noise = tf.random.normal([1, 100])
 generated_image = generator(noise, training=False)
