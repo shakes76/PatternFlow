@@ -19,8 +19,9 @@ varying resolutions, along with their ground truth segmentations.
 ## The Algorithm
 ### Pre-processing and model-handling
 **File: driver.py**
-1. Image/label filenames are read and split into training/validation/test sets.
-2. Sets are formated into tensorflow datasets and shuffled.
+1. Read image/label filenames and split into training/validation/test sets.  
+	- Images/labels are in directory 'ISIC2018_Data' outside the repo, in folders called 'ISIC2018_Images' and 'ISIC2018_Labels' respectively.
+2. Format sets into tensorflow datasets and shuffle each of them.
 3. Map the datasets according to a pre-processing function, allowing pre-processing to be done "on the fly".  
 	a) Load/decode image file from filename  
 	b) Resize to 256x256  
@@ -38,7 +39,7 @@ channels: 3
 ![Sample image/label](/recognition/ISIC_segmentation_43939862/images/image_label_example.png)
 
 
-5. Call model-building function from model.py.
+5. Call model-building function from model.py, which returns the Keras model directly.
 6. Create binary segmentation DICE loss function/metric (plus numpy version for use in predictions).
 7. Compile model with Adam optimizer, DICE loss function, and DICE metric.
 8. Define the learning rate schedule.
@@ -73,7 +74,7 @@ Architecture diagram:
 
 ### Evaluation
 **File: driver.py**
-1. Generate training/validation accuracy plot (with DICE)
+1. Generate training/validation accuracy plot (with DICE https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient)
 2. Use model.evaluate on test set
 3. Use model.predict on test set (The average of this is used as the final performance metric)
 4. Plot 3 predictions along with ground-truth  
@@ -102,7 +103,7 @@ As the dataset is not particularly large, a decent portion of the images need to
 *Note: Running the default learning rate for 200 epochs finds a low validation loss quickly, with damped oscillations after that (see extra image in /images). So for final training, 
 I used a learning rate schedule with normal initial rate and aggresive decay, together with a StopEarly callback. This found a solution equally as accurate on the validation set in only 16 epochs*
 
-Average DICE score (test set predictions): 0.8419404442018784 
+**Average DICE score (test set predictions): 0.8419404442018784**
 
 Training accuracy plot:  
 ![Training accuracy plot](/recognition/ISIC_segmentation_43939862/images/training_plot.png)
