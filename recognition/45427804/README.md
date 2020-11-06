@@ -41,6 +41,16 @@ The shape of Unet network structure is similar to U like the picture above. It c
 # Prediction results
 
 # Dice_Cofficient
+The Dice coefficient is a ensemble similarity measurement function, usually used to calculate the similarity of two samples, with a value range of [0,1]:
+![](images/dice.png)
+Where |X∩Y| is the intersection between X and Y, and |X| and |Y| sub-tables represent the number of elements of X and Y. Among them, the coefficient of the numerator is 2, because the denominator has repeated calculations of X and Reasons for common elements among Y.
+# Dice Loss
+Dice loss = 1 - dice_coefficient
+
+The use of Dice Loss and the sample are extremely unbalanced. If Dice Loss is used under normal circumstances, it will have an adverse effect on back propagation and make training unstable.
+
+Because the background color 0 accounts for more than 80%. It is a severely unbalanced data. So we need to use dice coefficient to evaluate the model.
+
 
 
 
