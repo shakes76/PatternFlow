@@ -7,9 +7,10 @@ import tensorflow as tf
 from random import shuffle, seed
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
     Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose
+from tf.keras.callbacks import ModelCheckpoint
 
-inputs = [cv2.imread(file) for file in glob.glob('Downloads/ISIC2018_Task1-2_Training_Input_x2/*.jpg')]
-outputs = [cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in glob.glob('Downloads/ISIC2018_Task1_Training_GroundTruth_x2/*.png')]
+inputs = [cv2.imread(file) for file in glob.glob('D:\study\\7310\ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg')]
+outputs = [cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in glob.glob('D:\study\\7310\ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png')]
 
 for i in range(len(inputs)):
     inputs[i] = cv2.resize(inputs[i],(256,256))/255
@@ -41,7 +42,7 @@ y_test = y[2197:2594,:,:,:]
 
 model = improved_unet(256)
 
-#### Compile Model
+# Compile Model
 def dsc(y_true, y_pred):
     intersection = tf.reduce_sum(tf.math.multiply(y_true, y_pred))
     dsc = 2*intersection / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
@@ -73,6 +74,12 @@ for i in range(len(test_input_images)):
 avg = s/len(test_input_images)
 print('Average DSC: ',avg)
 
+#plot the result
+image_dsc.sort()
 
-
+a = 100 
+high_dsc_images_X = [X_test[idx] for dsc,idx in image_dsc[-a:(-a-7):-1]]
+high_dsc_images_y = [y_test[idx] for dsc,idx in image_dsc[-a:(-a-7):-1]]
+high_dsc = [dsc for dsc,idx in image_dsc[-a:(-a-7):-1]]
+plot_segment(model, high_dsc_images_X, high_dsc_images_y, high_dsc)
 
