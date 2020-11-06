@@ -1,5 +1,5 @@
 """
-A U-Net Model, with an unspecified number of output channels.
+Creates and returns a standard UNET model using tensorflow.
 
 @author Max Hornigold
 """
@@ -8,11 +8,13 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 def unet_model(f=16):
-    """Creates and returns a UNET model"""
+    """Creates and returns a standard UNET model. User is able to specify
+    the number of filters using f, although f=16 is recommended."""
     
+    # create an input layer
     inputs = tf.keras.layers.Input(shape=(256, 256, 1))
     
-    # Downsampling through the model
+    # downsample (encoder)
     d1 = layers.Conv2D(f, 3, padding='same', activation='relu')(inputs)
     d1 = layers.Conv2D(f, 3, padding='same', activation='relu')(d1)
     
@@ -32,7 +34,7 @@ def unet_model(f=16):
     d5 = layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
     d5 = layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
     
-    # Upsampling and establishing the skip connections
+    # upsample (decoder)
     u4 = layers.UpSampling2D()(d5)
     u4 = layers.concatenate([u4, d4])
     u4 = layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
@@ -53,10 +55,10 @@ def unet_model(f=16):
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
     u1 = layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
     
-    # This is the last layer of the model.
+    # create an output layer
     outputs = layers.Conv2D(1, 1, activation='sigmoid')(u1)
     
-    # Create model using the layers
+    # combine input and output to create the model
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     
     # return the model

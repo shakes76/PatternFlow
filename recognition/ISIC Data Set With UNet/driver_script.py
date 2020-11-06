@@ -17,13 +17,14 @@ from tensorflow.keras import backend as K
 def dice_coefficient(y_true, y_pred, smooth = 0.):
     """Computes the dice similarity coefficient for a prediction."""
     
-    # change the dimension to one
+    # flatten the data
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     
-    # calculation for the loss function
+    # compute the intersection
     intersection = K.sum(y_true_f * y_pred_f)
     
+    # compute and return the dice coefficient
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 
@@ -108,11 +109,16 @@ def decode_jpg(file_path):
 
 def process_path(image_fp, mask_fp):
     """Processes an image and a mask by decoding and normalising them."""
+    
+    # process the image
     image = decode_jpg(image_fp)
     image = tf.cast(image, tf.float32) / 255.0
+    
+    # process the mask
     mask = decode_png(mask_fp)
     mask = tf.cast(mask, tf.float32) / 255.0
     mask = tf.math.round(mask)
+    
     return image, mask
 
 
@@ -173,8 +179,8 @@ print(model.summary())
 
 # compile the model
 model.compile(optimizer='adam',
-              loss='binary_crossentropy', # or dice_coefficient_loss
-              metrics=['accuracy']) # or dice_coefficient
+              loss='binary_crossentropy', # could use dice_coefficient_loss
+              metrics=['accuracy']) # could use dice_coefficient
 
 # specify batch sizes
 train_batch_size = 32
