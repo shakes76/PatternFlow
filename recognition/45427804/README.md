@@ -82,14 +82,14 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 ```
 
 Each label's dice coefficient score from 0 to 3:
-[0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
+[0.9987185 , 0.94281095, 0.95675904, 0.9739685 ]
 
-![](images/validation_loss.png)
+![](images/loss.png)
 
 When the epoch increases, the distance between training loss and val_loss also increases, which means that the model will overfitting after keep training.
 
 The plot below shows how dice_coefficient changes during training
 
-<img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="450" height="350" />
+![](images/coefficient.png)
 
 
