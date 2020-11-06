@@ -49,7 +49,7 @@ The stride size and kernel size are 2 and 3, respectively.
 Batch normalisation layers are used to because it has been found that they can (slightly) improve the SSIM and speed up the training process.
 The architecture of the VAE is visualised below. 
 <p align="center">
-    <img src='Architecture.jpg' width=80%>
+    <img src='Architecture.JPG' width=80%>
 </p>
 
 
