@@ -15,3 +15,10 @@ Version: Tensorflow >=2.20
 ## Algorithm:
 ### DenseNet
 ![image](https://github.com/Alexu0506/PatternFlow/blob/topic-recognition/recognition/p1.png)
+* 5-layer dense block with a growth rate of k=4. Each layer takes all preceding feature-maps as input.  
+
+List several advantages of densenet:
+1. Reduced vanishing gradient
+2. Enhanced feature delivery
+3. More effective use of features
+4. To some extent, the number of parameters is reduced
