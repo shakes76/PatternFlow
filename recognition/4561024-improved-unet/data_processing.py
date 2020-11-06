@@ -22,7 +22,7 @@ def load_image(path):
     Load and normalize all images in path.
     '''
     image_array = []
-    for name in sorted(os.listdir(path))[:200]:
+    for name in sorted(os.listdir(path)):
         filename = path + name
         image = decode_image(filename)
         # Normalize image
@@ -36,7 +36,7 @@ def load_seg(path):
     images in path.
     '''
     seg_array = []
-    for name in sorted(os.listdir(path))[:200]:
+    for name in sorted(os.listdir(path)):
         filename = path + name
         seg = decode_image(filename)
         # One-hot encode image
