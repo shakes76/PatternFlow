@@ -1,10 +1,4 @@
-## Image Segmentation Task
-Task: Segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
-similarity coefficient of 0.9 on the test set.
-
-Data resource: magnetic resonance (MR) image of the brain from OASIS dataset.
-Dataset contains Train data and label data
-
+# Recognition Problems
 Various image analysis / pattern recognition problems solved in Tensorflow (TF)
 
 This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
