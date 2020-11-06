@@ -28,7 +28,7 @@ def loading_img(img_path,img_width,img_height):
         
     return X
 
-# To load segmentation images
+# To load segmentation images from ISICs dataset
 def loading_seg(seg_path,img_width,img_height):
     ids_all = next(os.walk(seg_path))[2]
     ids_all_sort = sorted(ids_all)
