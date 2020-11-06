@@ -5,7 +5,7 @@ Amy Zhao
 
 43571806
 
-## Introduction:
+## Introduction
 An important field within computer vision is medical imaging. However, a main problem within this area of research is that it is difficult to obtain a large sample of training images. Limitations to obtaining brain MRIs include: the low availability of participants, the time it takes to obtain and process high resolution MRI brain images, as well as the fact that participants have to stay still for long periods of time (whichkes it difficult to obtain a good image). Therefore it is useful to implement a generative adversarial network (GAN) that can be trained on existing brain MRIs and then if trained successfully, it can generate an infinite number of plausible brain MRIs. This would aid the training of computer vision techniques such as brain segmentation which would require much more expansive datasets that may otherwise not exist without many man-hours of medical imaging. 
 
 In particular, I have implemented a deep convolutional generative adversarial network (DCGAN) with reference DCGAN specifications in the paper written by Radford, Metz and Chintala [1]. In the DCGAN, the use of convolutional layers allows higher quality feature mapping and recognition relative to the traditional GAN only connected by dense layers. In my GAN implementation, I followed specifications such as:
@@ -28,9 +28,10 @@ I also did not follow several specifications as I found they either did not work
 * I used dropout layers in my discriminator to make my discriminator learn more slowly. I did not try running the GAN without dropout layers so I'm not sure if this had any real effect, but the current model is quite effective.
 * In contrast to the number of filters in the generator in Figure 1 in [1] (which had filters 1024, 512, 256, 128 for the Conv2DTranspose layers), I used a maximum of 256 for the filters in my layers. I originally implemented the same number of filters in my generator as the paper, however, I found that my GPU would run out of memory due to the large number of filters.
 
-## Data:
+## Data
 Data consists of all the non-segmented OASIS data (9664 training images, 544 test images, 1120 validation images). The size of these images are 256x256 and are greyscale with pixel values ranging from 0 to 255.
 ![sample real images](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/sample%20real%20images.PNG)
+
 ## Model script
 The model script contains 2 functions, a generator and discriminator
 
@@ -92,11 +93,15 @@ I defined a training loop which feeds an image batch to the training function an
 199th epoch:
 ![199th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch199%20batch700%20less%20g%20layers.png)
 
+#### Generator and discriminator losses
+Here is a plot of the generator(blue) and discriminator(red) losses for the first 40 epochs (I forgot to record the losses when I ran it for 200 epochs). At around 25 epochs the training appears to stabilise and converge.
+![plot](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/losses.PNG)
 
 ### SSIM
 After generating images from the trained generator, you can choose an image to calculate the SSIM for. Only one image is chosen since the calculation involves iterating over the entire training set and calculating and storing the SSIM value which is computational expensive as there are over 11000 training images. The maximum SSIM is then displayed along with the corresponding training image which is closest in structural similarity to the generated image. With 200 epochs, the SSIM should be above 0.64 with some images reaching 0.68.
 
-![example of SSIM output](
+The following example was generated after 40 epochs with an SSIM of 0.68.
+![example of SSIM output](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/sample%20SSIM.PNG)
 
 [1] A. Radford, L. Metz, and S. Chintala, “Unsupervised Representation Learning with Deep Convolutional
 Generative Adversarial Networks,” arXiv:1511.06434 [cs], Jan. 2016, arXiv: 1511.06434. [Online]. Available:
