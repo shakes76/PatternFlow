@@ -48,7 +48,9 @@ The decoder has 64, 32, 16 filters each layer.
 The stride size and kernel size are 2 and 3, respectively.
 Batch normalisation layers are used to because it has been found that they can (slightly) improve the SSIM and speed up the training process.
 The architecture of the VAE is visualised below. 
-![VAE Architecture](Archetecture.JPG)
+<p align="center">
+    <img src='Architecture.jpg' width=80%>
+</p>
 
 
 ## Training
@@ -56,11 +58,17 @@ In each epoch, the model is trained on the same 9664 images.
 The generated images are evaluated by SSIM.
 The SSIM and ELBO after the first epoch are 0.4773 and 17951.17. 
 Let’s plot four of the images generated in the first epoch below.
-![First Epoch](first_epoch.png)
+<p align="center">
+    <img src='first_epoch.png' width=40%>
+</p>
 After 30 epochs, the SSIM and loss are 0.6467 and 17051.21. Let’s plot four of the generated images：
-![30th Epoch](30th%20epoch.png)
+<p align="center">
+    <img src='30th epoch.png' width=40%>
+</p>
 The ELBO and SSIM over the 30 epochs are shown below. 
-![Evalaution](evaluation.png)
+<p align="center">
+    <img src='evaluation.png' width=80%>
+</p>
 
 
 ## Running Code
@@ -71,7 +79,7 @@ python driver.py arg1 arg2
 ```
 where arg1 is the directory stores the training images and 
 arg2 is the directory stores the testing images.
-Below is an example:
+Below is an example: 
 ```
 python driver.py keras_png_slices_data/train keras_png_slices_data/test
 ```
