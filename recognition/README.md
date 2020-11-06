@@ -60,4 +60,29 @@ The Open Access Series of Imaging Studies (OASIS) is collection of neuroimaging 
 longitudinal collections of brain images.Majorly images containing obtained from the subjects are used to study Alzheimer's disease.But i will be using nearly 9000 of these 
 images to train a DCGAN model and generate new brain images.For futher detailed description of dataset refer http://www.oasis-brains.org.
 
+![image info](training_images.png)
+
+# Prerequirements : 
+
+- A computer with high end graphic card (NVDIA rtx 2060 recommended), as training a DCGAN model on cpu is very slow.
+- python 3.7.0
+- tensorflow gpu = 1.15 version to support use of GPU in training
+
+# packages:
+
+I have just provide the commands to install these libraries through command prompt
+```bash
+pip install Tensorflow-gpu
+pip install pandas
+pip install matplotlib
+pip install keras
+pip install Ipython
+pip install opencv
+pip install skimage
+```
+
+
+
+
+
 
