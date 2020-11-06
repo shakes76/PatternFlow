@@ -14,7 +14,7 @@ from model import*
 inputs = sorted([input_folder+'/'+file for file in os.listdir(./ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2) if file.endswith('jpg')])
 outputs = sorted([output_folder+'/'+file for file in os.listdir(./ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2) if file.endswith('png')])
 
-# split the data into train dataset, test dataset and validation dataset
+# resize data and split the data into train dataset, test dataset and validation dataset
 def resize_data(inputs):  
     outputs = [resize(mpimg.imread(data)/255,[256,256]).numpy() for data in inputs]
     outputs = np.array(outputs)
@@ -44,13 +44,15 @@ def dsc(y_true, y_pred):
     dsc = 2*intersection / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
     return dsc
 
-def build_model(X_train,y_train):
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[dsc, 'accuracy'])
+if __name__ == "__main__":
+    model = improved_u_net(256)
+    metric = [dsc, 'accuracy']
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics= metric)
     model_checkpoint = ModelCheckpoint(filepath='best_checkpoint',save_best_only= True,save_weights_only=True,monitor = 'val_accuracy',mode='max')
     # train
     history = model.fit(x = X_train, y=y_train, epochs=30, verbose=1,validation_data=(X_val, y_val), batch_size = 8, callbacks=[model_checkpoint])
-
-# test
+    
+# test by average DSC
 data_dsc = []
 dsc_sum = 0
 l = len(y_test_data)
@@ -64,7 +66,7 @@ for i in range(l):
 dsc_avg = dsc_sum/l
 print('Average DSC: ',dsc_avg)
 
-#plot the result
+#plot the pic for train data and test data
 def plot_segment(model, X_test, y_test, dsc):
     fig, ax = plt.subplots(3, 6, figsize = (16,8))
     for i in range(6):
