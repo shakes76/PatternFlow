@@ -34,7 +34,7 @@ Combined model is built by sequential adding generator and discriminator togethe
 
 ## Results
 
-Training takes 20-25 minutes for 15000 Epochs to complete. Below represents the generated fake images, which is printed for every 1000 epochs.
+Whole Training takes 20-25 minutes for 15000 Epochs to complete. Below represents the Training loss for DCGAN and generated images for each epochs(mentioned on top), 4 noise vectors are given as input to generator network and crossponding 4 predicted image results are shown.
 
 ![](https://github.com/Pragatheeswari/epic1/blob/master/Training_loss_plot.jpg)
 
