@@ -13,10 +13,12 @@ from IUNet_sequence import *
 from IUNet_model import *
 
 # Define global variables
-X_DATA_LOCATION = 'C:/Users/match/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
-Y_DATA_LOCATION = 'C:/Users/match/Downloads/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
+X_DATA_LOCATION = 'H:\COMP3710\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2'
+Y_DATA_LOCATION = 'H:\COMP3710\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2'
 TRAIN_SIZE = 0.8
 VALIDATE_SIZE = 0.1
+TRAIN_BATCH_SIZE = 80
+VALIDATE_BATCH_SIZE = 200
 
 
 # Import data
