@@ -60,7 +60,7 @@ if __name__ == "__main__":
     argument_parser = ArgumentParser()
     dataset_loader = DataLoader()
     trainset_loader = TrainLoader(dataset_loader, argument_parser)
-    
+
     try:
         argument_parser.parse(sys.argv)
 
@@ -72,5 +72,5 @@ if __name__ == "__main__":
             dataset_loader.load(argument_parser)
             with tf.device("/device:GPU:0"):
                 trainset_loader.train()
-    except:
-        print("ERROR during parsing")
+    except Exception as a:
+        print("ERROR during parsing: Make sure you call generate mode only after generating a model")

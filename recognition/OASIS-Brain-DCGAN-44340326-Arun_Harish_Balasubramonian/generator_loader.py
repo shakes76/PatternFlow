@@ -18,7 +18,7 @@ class GeneratorLoader():
         plt.imshow(image, cmap="gray")
         # Checking whether directory exists
         if not path.exists(output_path):
-            Exception("No output directory found")
+            raise Exception("No output directory found")
         if not path.exists(print_image_path):
             mkdir(print_image_path)
 
