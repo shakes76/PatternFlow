@@ -38,16 +38,24 @@ def prepare_data(X, Y):
 
     return data
 
-def dice_similarity(true, prediction):
-    X = tf.keras.layers.Flatten()(true)
-    Y = tf.keras.layers.Flatten()(prediction)
+def dice_similarity(prediction, true):
+    X = tf.keras.backend.flatten(true)
+    Y = tf.keras.backend.flatten(prediction)
 
     num = (2.0 * tf.math.reduce_sum(X * Y))
     denom = tf.math.reduce_sum(X) + tf.math.reduce_sum(Y)
-
-    coefficient = tf.math.reduce_mean(num / denom)
+    coefficient = num / denom
 
     return coefficient
+
+def test_predictions(data):
+    predictions = []
+    actual_masks = []
+    for img, mask in data:
+        predicted_mask = model.predict(img[tf.newaxis,...])
+        predictions.append(predicted_mask)
+        actual_masks.append(mask)
+    return predictions, actual_masks
 
 dice_sim_coeff = dice_similarity
 
@@ -62,4 +70,7 @@ model = unet()
 model.compile(optimizer = keras.optimizers.Adam(lr = 0.0001), loss = 'binary_crossentropy', metrics=dice_sim_coeff)
 model.fit(Train.batch(16), epochs=5, validation_data = Valid.batch(16))
 
-model.evaluate(Test)
+predictions, truth = test_predictions(Test)
+performance = dice_similarity(predictions, truth)
+
+print(float(performance)) 
