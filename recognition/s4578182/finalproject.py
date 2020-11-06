@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[49]:
+# In[10]:
 
 
 import glob
@@ -9,16 +9,17 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 
-# In[50]:
+# In[2]:
 
 
 ground=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1_Training_GroundTruth_x2/*.png")
 train=glob.glob("C:/Users/s4578182/Downloads/ISIC2018_Task1-2_Training_Input_x2/*.jpg")
 
 
-# In[103]:
+# In[3]:
 
 
 from keras.models import *
@@ -28,19 +29,19 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 import keras
 
 
-# In[52]:
+# In[4]:
 
 
 print('Size of training set:', len(train))
 
 
-# In[53]:
+# In[5]:
 
 
 print('Size of ground set:', len(ground))
 
 
-# In[71]:
+# In[6]:
 
 
 ground_images = []
@@ -50,7 +51,7 @@ for dire in range(len(ground)):
     ground_images.append(img)
 
 
-# In[74]:
+# In[7]:
 
 
 train_images = []
@@ -60,58 +61,82 @@ for dire in range(len(train)):
     train_images.append(img)
 
 
-# In[70]:
+# In[8]:
 
 
-plt.imshow(test)
+plt.imshow(ground_images[0])
 
 
-# In[59]:
+# In[9]:
 
 
-plt.imshow(new1)
+plt.imshow(train_images[0])
 
 
-# In[72]:
+# for dir1 in range(len(ground_images)):
+#     new1=ground_images[dir1]
+#     for i in range(len(new1)):
+#         for j in range(len(new1[i])):
+#             if(new1[i][j]>0 and new1[i][j]<255):
+#                 new1[i][j]=127
+#     ground_images[dir1]=new1
+#     ground_images[ground_images > 127] = 1
+#     ground_images[ground_images < 127] = 0
+#            
+
+# In[ ]:
 
 
-for dir1 in range(len(ground_images)):
-    new1=ground_images[dir1]
-    for i in range(len(new1)):
-        for j in range(len(new1[i])):
-            if(new1[i][j]>0 and new1[i][j]<255):
-                new1[i][j]=127
-    ground_images[dir1]=new1
-           
+for x in ground_images:
+    x[x <= 127] = 0
+    x[x > 127] = 1
 
 
-# In[89]:
+# In[ ]:
 
 
 train_images=np.array(train_images)
 train_images.shape
 
 
-# In[78]:
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
 
 
 ground_img=np.expand_dims(np.array(ground_images),-1)
 print(ground_img.shape)
 
 
-# In[91]:
+# In[ ]:
 
 
 ground1=tf.data.Dataset.from_tensor_slices(ground_img)
 
 
-# In[90]:
+# In[ ]:
 
 
 train1= tf.data.Dataset.from_tensor_slices(train_images)
 
 
-# In[104]:
+# In[ ]:
+
+
+X_train, X_test, y_train, y_test = train_test_split(train_images, ground_img, test_size=0.33, random_state=42)
+
+
+# In[ ]:
 
 
 inputs = Input((256,256,3))
@@ -153,17 +178,28 @@ merge9 = concatenate([conv1,up9], axis = 3)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-conv10 = Conv2D(3, 1, activation = 'softmax')(conv9)
+den10 =Dense(1, activation = 'sigmoid')(conv9)
 
-model.compile(optimizer = Adam(lr = 1e-4), loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
+model = Model(input = inputs, output = den10)
+
+model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
     
 model.summary()
 
 
-# In[106]:
+# In[ ]:
 
 
-history = model.fit(train1, validation_data=ground1, epochs=10, verbose=0)
+history = model.fit(X_train,y_train, epochs=10, verbose=1)
+
+
+# In[ ]:
+
+
+smooth=1
+intersection = K.sum(y_true * y_pred, axis=[1,2,3])
+union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
+dice = K.mean((2. * intersection + smooth)/(union + smooth), axis=0)
 
 
 # In[ ]:
