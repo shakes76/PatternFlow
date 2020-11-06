@@ -14,6 +14,9 @@ from isicsunet import IsicsUnet
 def main():
     print(tf.__version__)
 
+    # use batch size of 1 to save VRAM
+    BATCH_SIZE = 1
+
     # TensorFlow provided code to limit GPU memory growth
     # Retrieved from:
     # https://www.tensorflow.org/guide/gpu
@@ -43,14 +46,14 @@ def main():
     #model.show_predictions()  # sanity check
 
     # Train model
-    history = model.model.fit(x=model.train_ds.batch(1),
-                              validation_data=model.val_ds.batch(1),
+    history = model.model.fit(x=model.train_ds.batch(BATCH_SIZE),
+                              validation_data=model.val_ds.batch(BATCH_SIZE),
                               epochs=3)
     model.show_predictions()
 
     # Get dice similarity for test set and show result
     print("Evaluate")
-    result = model.model.evaluate(model.test_ds)
+    result = model.model.evaluate(model.test_ds.batch(BATCH_SIZE))
     print(result)
 
     print("END")
