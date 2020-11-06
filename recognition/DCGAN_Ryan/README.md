@@ -19,8 +19,8 @@ I train two models simultaneously.
 #### Result after 400 Epochs
 ![avatar](./image/example_output.png)
 #### Example Outputs
-Generate a 256$\times$256 image with a 100$\times$1 random normal noise with the trained generator model. 
-![avatar](./image/generated_example.png)
+Generate a 256$\times$256 image with a 100x1 random normal noise with the trained generator model. 
+![avatar](./image/generated_example.png)<br/>
 Compare the generated image with images in the original data set and calculate the max value of Structured Similarity (SSIM).
 **Note: Structured Similarity (SSIM): 0.6319508**
 ___
