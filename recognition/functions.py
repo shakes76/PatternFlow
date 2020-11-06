@@ -32,6 +32,8 @@ def image_data(img_dir):
 
 # In[2]:
 
+# generator model
+
 def make_generator_model():
     model = tf.keras.Sequential()
     model.add(layers.Dense(8*8*512, use_bias=False, input_shape=(100,)))
@@ -59,6 +61,8 @@ def make_generator_model():
 
 
 # In[3]:
+
+# discriminator model
 
 
 def make_discriminator_model():
@@ -143,6 +147,12 @@ def train_step(images,BATCH_SIZE,noise_dim,generator,discriminator,generator_opt
 def train(dataset, epochs,generator,discriminator,generator_optimizer,discriminator_optimizer) :
     g_loss = []
     d_loss = []
+    checkpoint_dir = './training_checkpoints'
+    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+    checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
+                                 discriminator_optimizer=discriminator_optimizer,
+                                 generator=generator,
+                                 discriminator=discriminator)
     for epoch in range(epochs):
         from IPython import display
         start = time.time()
