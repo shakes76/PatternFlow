@@ -13,17 +13,16 @@ This repository contains my solution to the problem of accurately segmenting the
 </p>
 
 ## Contents of this Repository
-The contents of this repository are detailed in the table below.
+The contents of this repository are:
 
 **Scrips**: `solution.py` `driver_script.py`
 
 **Images**: `Images`
 
-`solution.py` contains the structure for the actual U-Net model. This script does not need to be run, and is simply imported by `driver_script.py`.
-
-`driver_script.py` does most of the work. It imports the ISIC data, creates, compiles and trains the U-Net model, makes some predictions, and analyses the performance of the model.
-
-The `Images` folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this `README.md` file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
+The purpose of these scripts and images are detailed below:
+* `solution.py` contains the structure for the actual U-Net model. This script does not need to be run, and is simply imported by `driver_script.py`.
+* `driver_script.py` does most of the work. It imports the ISIC data, creates, compiles and trains the U-Net model, makes some predictions, and analyses the performance of the model.
+* The `Images` folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this `README.md` file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
 
 ## `solution.py`
 This script contains one function which is used to create the U-Net model. The model is is implemented entirely in TensorFlow. This script does not need to be run and is instead imported into `driver_script.py`.
@@ -46,7 +45,7 @@ This is the driver script. This script: imports the data; manipulates the data i
 
 Each of the script's functions is detailed below:
 
-* `import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
+* `import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testing datasets.
 * `process_path(image_fp, mask_fp)` processes an image and a mask by decoding and normalising them.
 * `decode_jpg(file_path)` decodes and resizes a jpeg image.
 * `decode_png(file_path)` decodes and resizes a png image.
@@ -63,12 +62,12 @@ In order to train this model as I have, you will need to follow the steps below.
 * Firstly, you will want to check that you have all the dependencies listed previously in the environment you wish to work in. This primarily includes `tensorflow` and `matplotlib`.
 * Next, you will need to download the ISIC data locally. You can download the dataset from the following website https://www.isic-archive.com/#!/topWithHeader/wideContentTop/main. Make sure that you have two folders, one for the images and one for the masks. Once the images are downloaded, you will want to record their paths.
 * Then, you will need to edit `driver_script.py` so that the images and masks are imported correctly. The logic for this is completely contained with the `import_ISIC_data` function. You will simply need to change the path where the images are imported from. Also make sure that the datasets are created properly.
-* Then, you will need to simply run `driver_script.py`. You do not need to provide any commandline arguments.
+* Finally, you will need to simply run `driver_script.py`. You do not need to provide any commandline arguments.
 
 If your environment is setup and the paths you have provided for the images are correct, then your model should start training at this point. Before spending time training your model, it is important to check that your datasets are working as expected by displaying some images. You may also wish to play around with some variables, such as the number of epochs and the batch sizes depending on your time limit and computational power.
 
 ## Checking the Images
-When I ran the driver script, the first thing wanted to do was output some example images and masks from the training dataset to check that this process was working well. I split the data into training, validating and testing sets with as a 50-20-20 split (leaving out 10%). Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
+When I ran the driver script, the first thing I wanted to do was output some example images and masks from the training dataset to check that this process was working well. I split the data into training, validating and testing sets using a 50-20-20 split (leaving out 10%). Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
@@ -121,7 +120,7 @@ This model is a direct match to a vanilla U-Net model, which includes downsampli
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/U-Net%20Model/UNet%20Architecture.png">
 </p>
 <p align="center">Standard U-Net model architecture</p>
-<p align="center">riagram from https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/</p>
+<p align="center">(diagram from https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)</p>
 
 ## Compiling the Model
 Next, I compiled the model with the following parameters.
@@ -140,7 +139,7 @@ Next, I trained the model. I trained the model over 100 epochs. I stopped at 100
 </p>
 <p align="center">Training history of model after each epoch</p>
 
-We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from an alternate model (trained using the same datasets, optimizer and loss function). Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
+We can clearly see the training accuracy and validation accuracy converge over time. However, it is surprising to see this accuracy be so high for early epochs. This is where I believe that using the dice coefficient as a metric would have been more useful. This is because the dice coefficient can be a better measure of how accurate the model truly is performing, and we would see it have a far lower dice coefficient for these early epochs. An example image is shown below from a previous model (trained using the same datasets, optimizer and loss function). Clearly in this model, we can see how the dice coefficient improved slowly but surely over time.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History%20Other%20Model.png">
@@ -170,7 +169,7 @@ As you can see, these are all really good predictions, and in my opinion are ver
 These are clearly not usable predictions. I found that often the model got tricked up by certain skin features. If we look at the first prediction, the four black dots trick the model, which completely misses the actual lesion. On the other hand, in the second prediction, the skin lesion is correcly identified, however the model also incorrectly segments many other parts of the image which are not skin lesions. These two examples, which are not compeltely uncommon in the predictions made, show that the model still needs a lot of work if it is going to be used on all images, particularly trickier images which are obscured.
 
 ## Accuracy of the Model
-Next, I analysed the accuracy of the model by computing it's dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.7937. Overall, this is a reasonably good score and reflects how many of the predictions, some of which are shown above, are accurate and completely usable. However, being an average, we must not forget that in some of the trickier images this score is far lower. Ideally, a superior model would have a mimimum dice similarity coefficient of 0.7 on the testing dataset.
+Next, I analysed the accuracy of the model by computing it's dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I averaged these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.7937. Overall, this is a reasonably good score and reflects how many of the predictions, some of which are shown above, are accurate and completely usable. However, being an average, we must not forget that in some of the trickier images this score is far lower. Ideally, a superior model would have a mimimum dice similarity coefficient of 0.7 on the testing dataset.
 
 ## Improvements to the Model
 Whilst this model meets the 0.70 target accuracy for the dice similarity coefficient, clearly I have shown there is still great room for growth to construct a superior model which does not have the same shortcomings. Some potential areas to explore here are:
