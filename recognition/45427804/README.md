@@ -70,6 +70,7 @@ each label's dice coefficient score from 0 to 3:
 
 ![](images/validation_loss.png)
 
+![](images/Dice_coeff.png)
 
 
 
