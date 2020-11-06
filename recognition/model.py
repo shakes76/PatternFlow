@@ -20,8 +20,8 @@ def context_layer(input, channels):
 
 """
 Conducts a decoding step for the model, this is the 3x3 convilution, followed by
-a contentext module, followed by an element-wise summation. See the original paper for
-the improved UNET model.
+a context module, followed by an element-wise summation. See the original paper for
+the Improved UNET model.
 Parameters: 
     input: input tensor that goes into the context module
     channels: Number of filters to perform the context module at
