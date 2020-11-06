@@ -1,4 +1,8 @@
 # Image Segmentation Keras : Implementation of Segmentation on the ISICs data set with the [Improved UNet](https://arxiv.org/abs/1802.10508v1)
+## Motivation
+The agenda of this project is to apply the improved U-Net architecture on the ISICs data set to predict the segmentation response of the lesion image in the test data set, and the overall minimum Dice score is 0.8.  
+The data set is challenged by "Analysis of Skin Lesions for Melanoma Detection" using a data set of annotated skin lesion images from ISIC archives. The data set contains raw (input data) and segmented (response data) images of skin patches, which are used to detect skin lesions. The response data includes a binary mask image in PNG format, which indicates the position of the original skin lesion in each input lesion image.
+
 I used Keras with a Tensorflow backend. This UNet was built for the pre-processed version of ISICs data set (as provided by COMP3710 teaching team).  
 However, if you are intereted in to download the original dataset, it is on: https://challenge2018.isic-archive.com/
 
