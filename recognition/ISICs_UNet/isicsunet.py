@@ -28,6 +28,21 @@ class IsicsUnet:
         self.test_ds = None
         self.model = None
 
+    @staticmethod
+    def dice_coefficient(y_true, y_pred):
+        """
+        Calculate Dice similarity coeefficient for use as a metric
+
+        Interpreted for use with same sized masks as:
+         2*(number of pixels with same class in both masks, ie the union)
+         /2*(number of pixels in each mask)
+
+        Based on definition given by https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+        """
+        union = tf.math.equal(y_true, y_pred)
+        numerator = 2*tf.math.reduce_sum(tf.cast(union, tf.float32))
+        denominator = 2*MASK_WIDTH*MASK_HEIGHT
+        return numerator/denominator
 
     @staticmethod
     def map_fn(image, mask):
@@ -185,14 +200,14 @@ class IsicsUnet:
 
         up9 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv8)
         up9 = tf.keras.layers.Conv2D(64, (2, 2), padding="same")(up9)
-        up9 = tf.keras.layers.concatenate([conv1,up9])
+        up9 = tf.keras.layers.concatenate([conv1, up9])
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(up9)
         conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(conv9)
 
         # segmentation (output) layer
         outputs = tf.keras.layers.Conv2D(1, (1, 1), padding="same", activation='sigmoid')(conv9)
 
-        self.model = tf.keras.Model(inputs=inputs,outputs=outputs)
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
     def show_predictions(self):
         """
@@ -207,20 +222,20 @@ class IsicsUnet:
 
         # visualise images and masks
         import matplotlib.pyplot as plt
-        plt.figure(figsize=(20,10))
+        plt.figure(figsize=(20, 10))
         for i in range(3):
             # show base image
-            plt.subplot(3,3,3*i+1)
+            plt.subplot(3, 3, 3*i+1)
             plt.imshow(image_batch[i])
             plt.axis('off')
 
             # show true mask
-            plt.subplot(3,3,3*i+2)
+            plt.subplot(3, 3, 3*i+2)
             plt.imshow(mask_batch[i])
             plt.axis('off')
 
             # show predicted mask
-            plt.subplot(3,3,3*i+3)
+            plt.subplot(3, 3, 3*i+3)
             plt.imshow(predictions[i])
             plt.axis('off')
         plt.show()

@@ -35,18 +35,19 @@ def main():
     model.build_model()
     model.model.summary()
 
-    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+    model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
                         loss='binary_crossentropy',
-                        metrics=['accuracy'])
+                        metrics=['accuracy', IsicsUnet.dice_coefficient])
     #model.show_predictions()
 
     history = model.model.fit(x=model.train_ds.batch(1),
                               validation_data=model.val_ds.batch(1),
-                              verbose=1,
-                              epochs=3)
+                              epochs=10)
     model.show_predictions()
 
-    # todo test and compare to dice similarity coefficient
+    print("Evaluate")
+    result = model.evaluate(model.test_ds)
+    print(result)
 
     print("END")
 
