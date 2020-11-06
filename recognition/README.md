@@ -90,30 +90,30 @@ required goal.'
 
 Procedure followed in implementing the DCGAN model:
 ===========================================================
-1.Load the image 
-2.Preprocessing the image: while orginal image is 3 dimensional with shape 256 x 256. I have converted this 3D image into gray scale image with shape 128 x 128
-3.Normalizing[-1,1] the data  by subtracting and dividing by 127
-4.Creating the generator fucntion:
-  - Initially a dense layer and then three upsampling layers or de-covolutional layers.
-  - After each layer bacth noramalization and leaky relu were added
-  - Negative slope parameter in leakyrelu layer was set to 0.2
-  - checking whether the output is of shape = (128,128,1)
+1. Load the image.
+2. Preprocessing the image: while orginal image is 3 dimensional with shape 256 x 256. I have converted this 3D image into gray scale image with shape 128 x 128.
+3. Normalizing[-1,1] the data  by subtracting and dividing by 127.
+4. Creating the generator fucntion:
+  * Initially a dense layer and then three upsampling layers or de-covolutional layers.
+  * After each layer bacth noramalization and leaky relu were added.
+  * Negative slope parameter in leakyrelu layer was set to 0.2.
+  * checking whether the output is of shape = (128,128,1).
 5. Creating the discriminator model:
-  - Input to this method is out put of discriminator model. specifying the input shape as (128,128,1)
-  - Two convolutional layers were installed and one dense layer.
-  - Down sampling through strided convolutions.
-  - final generating probabilities through dense layer 
-6.Creating loss function:
-  - In both generator and discriminator, Binary cross entropy method was used.As Binary cross-entropy deal with only binary classiication this could be good choice.
-  - In generator loss is calculated from discriminator. If generator sucessfully produce images which pass dicriminator as real it get 1 value orther wise 0 value.
-  - In discriminator all the real images treated as one's and all fake images treated as zero's.
-7.Adam optimizaer was chosen for model optimization(learning rate =0.001)
-8.Training_step:
-  - Generate batch size of images (here 128) from generator with random noise as input
-  - Feed these images to dicriminator to classify into real or fake
-  - Calculate the gradients and apply new gradients to dicriminator and generator.
-  - return loss values
-9.Training: Given the epoch number for each epoch iterate the traning step
+  * Input to this method is out put of discriminator model. specifying the input shape as (128,128,1).
+  * Two convolutional layers were installed and one dense layer.
+  * Down sampling through strided convolutions.
+  * final generating probabilities through dense layer .
+6. Creating loss function:
+  * In both generator and discriminator, Binary cross entropy method was used.As Binary cross-entropy deal with only binary classiication this could be good choice.
+  * In generator loss is calculated from discriminator. If generator sucessfully produce images which pass dicriminator as real it get 1 value orther wise 0 value.
+  * In discriminator all the real images treated as one's and all fake images treated as zero's.
+7. Adam optimizaer was chosen for model optimization(learning rate =0.001).
+8. Training_step :
+  * Generate batch size of images (here 128) from generator with random noise as input.
+  * Feed these images to dicriminator to classify into real or fake.
+  * Calculate the gradients and apply new gradients to dicriminator and generator.
+  * return loss values.
+9. Training: Given the epoch number for each epoch iterate the traning step.
 10. plotting the generator and discriminator loss values.
 11. generating a gif through image saved at each epoch in traning.
 12. Finally generating images similar to traning images through by feeding random noise vector.
