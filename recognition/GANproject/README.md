@@ -77,19 +77,19 @@ I defined a training loop which feeds an image batch to the training function an
 
 #### Sample outputs
 4th epoch:
-![4th Epoch](https://github.com/amyzhao11/recognition/blob/master/0411%20Epoch4%20batch0%20less%20g%20layers.png)
+![4th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch4%20batch0%20less%20g%20layers.png)
 
 10th epoch:
-![10th Epoch](https://github.com/amyzhao11/recognition/blob/master/0411%20Epoch10%20batch0%20less%20g%20layers.png)
+![10th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch10%20batch0%20less%20g%20layers.png)
 
 20th epoch:
-![20th Epoch](https://github.com/amyzhao11/recognition/blob/master/0411%20Epoch20%20batch0%20less%20g%20layers.png)
+![20th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch20%20batch0%20less%20g%20layers.png)
 
 50th epoch:
-![50th Epoch](https://github.com/amyzhao11/recognition/blob/master/0411%20Epoch50%20batch0%20less%20g%20layers.png)
+![50th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch50%20batch0%20less%20g%20layers.png)
 
 199th epoch:
-![199th Epoch](https://github.com/amyzhao11/recognition/blob/master/0411%20Epoch199%20batch700%20less%20g%20layers.png)
+![199th Epoch](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/0411%20Epoch199%20batch700%20less%20g%20layers.png)
 
 
 ### SSIM
