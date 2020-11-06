@@ -10,39 +10,10 @@ from tensorflow.keras import backend as K
 from IPython.display import clear_output
 from model import *
 
-## GETTING THE INPUT FILES
-isic_input_path = './../../../dataset/ISIC2018_Task1-2_Training_Input_x2/*.jpg'
-isic_groundTruth_path = './../../../dataset/ISIC2018_Task1_Training_GroundTruth_x2/*.png'
-isic_input = sorted(glob.glob(isic_input_path))
-isic_groundTruth = sorted(glob.glob(isic_groundTruth_path))
-
-## VARIABLES
-DATASET_SIZE = len(isic_input)
-BATCH_SIZE = 32
-IMG_HEIGHT = 192
-IMG_WIDTH = 256
-
-TRAIN_SIZE = int(0.7 * DATASET_SIZE)
-VAL_SIZE = int(0.2 * DATASET_SIZE)
-TEST_SIZE = int(0.1 * DATASET_SIZE)
-
-## Splitting up the dataset for training, validation, and testing
-
-full_ds = tf.data.Dataset.from_tensor_slices((isic_input, isic_groundTruth))
-full_ds = full_ds.shuffle(DATASET_SIZE, reshuffle_each_iteration=False)
-train_ds = full_ds.take(TRAIN_SIZE)
-# skip the dataset already used for training
-test_ds = full_ds.skip(TRAIN_SIZE)
-# get the dataset for validation
-val_ds = full_ds.skip(VAL_SIZE)
-# get the dataset for testing
-test_ds = full_ds.take(TEST_SIZE)
-
 
 ####################################################
 ################ DATA PREPROCESSING ################
 ####################################################
-
 def decode_img(image):
     """ A function used for decoding the input image
 
@@ -123,34 +94,51 @@ def process_data(image, label):
     
     return image, label   
 
-## Process the raw data
-## Use Dataset.map to apply this transformation.
-processed_train_ds = train_ds.map(process_data)
-processed_val_ds = val_ds.map(process_data)
-processed_test_ds = test_ds.map(process_data)
-
-# Getting the input and output size
-input_size = (0, 0, 0)
-output_class_num = 0
-for image, label in processed_train_ds.take(1):
-    input_size = image.numpy().shape
-    output_class_num = label.numpy().shape[2]
-
 
 ######################################################
 ################### MODEL TRAINING ###################
 ######################################################
+def dice_coef(y_true, y_pred, smooth=1.0):
+    """ Function to calculate Dice similarity Coefficient between ground truth label image
+        and the predicted label image
 
-def dice_coef(y_true, y_pred, smooth=1):
+    Args:
+        y_true (numpy.array): a numpy array of ground truth label image data
+        y_pred (numpy.array): a numpy array of predicted label image data
+        smooth (float, optional): a number to avoid division by 0
+
+    Returns:
+        float: The DSC between y_true and y_pred
+    """   
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
     return (2. * intersection + smooth) / (K.sum(y_true_f*y_true_f) + K.sum(y_pred_f*y_pred_f) + smooth)
 
 def dice_coef_loss(y_true, y_pred):
+    """ Dice similarity Coefficient loss function between ground truth label image
+        and the predicted label image
+
+    Args:
+        y_true (numpy.array): a numpy array of ground truth label image data
+        y_pred (numpy.array): a numpy array of predicted label image data
+
+    Returns:
+        float: The DSC loss between y_true and y_pred
+    """ 
     return 1-dice_coef(y_true, y_pred)
 
-def display(image, ground_truth, prediction, num):
+def display(image, ground_truth, prediction, result_dir, num):
+    """ Function to display/compare the original image, ground truth label, and 
+        prediction label.
+
+    Args:
+        image (numpy.array): a numpy array of the original image (input image)
+        ground_truth (numpy.array): a numpy array of ground truth label image data
+        prediction (numpy.array): a numpy array of predicted label image data
+        result_dir (string): path to the result images directory
+        num (integer): number of images to display/compare
+    """ 
     plt.figure(figsize=(20, 20))
     colors = ['black', 'green', 'red']
     for i in range(num):
@@ -179,68 +167,113 @@ def display(image, ground_truth, prediction, num):
         plt.axis('off')
 
         print("DICE SIMILARITY FOR INPUT {}: {}".format(i, dice_coef(ground_truth[i], prediction[i])))
-    plt.show()
+    plt.savefig(result_dir + "results.png")
 
     
-def show_predictions(processed_test_ds, num=3):
+def show_predictions(processed_test_ds, result_dir, num=3):
     image_test_batch, label_test_batch = next(iter(processed_test_ds.batch(num)))
     prediction = model.predict(image_test_batch)
     display(image_test_batch, label_test_batch, prediction, num)
 
-class DisplayCallback(tf.keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        clear_output(wait=True)
-        show_predictions(processed_test_ds)
+
+#####################################################
+################### MAIN FUNCTION ###################
+#####################################################
+def main():
+    ## GETTING THE INPUT FILES
+    isic_input_path = './dataset/ISIC2018_Task1-2_Training_Input_x2/*.jpg'
+    isic_groundTruth_path = './dataset/ISIC2018_Task1_Training_GroundTruth_x2/*.png'
+    isic_input = sorted(glob.glob(isic_input_path))
+    isic_groundTruth = sorted(glob.glob(isic_groundTruth_path))
+
+    result_images_dir = "result_images/"
+    os.makedirs(result_dir, exist_ok=True)
+
+    ## VARIABLES
+    DATASET_SIZE = len(isic_input)
+    BATCH_SIZE = 32
+    IMG_HEIGHT = 192
+    IMG_WIDTH = 256
+
+    TRAIN_SIZE = int(0.7 * DATASET_SIZE)
+    VAL_SIZE = int(0.2 * DATASET_SIZE)
+    TEST_SIZE = int(0.1 * DATASET_SIZE)
+
+    ## Splitting up the dataset for training, validation, and testing
+    full_ds = tf.data.Dataset.from_tensor_slices((isic_input, isic_groundTruth))
+    full_ds = full_ds.shuffle(DATASET_SIZE, reshuffle_each_iteration=False)
+    train_ds = full_ds.take(TRAIN_SIZE)
+    # skip the dataset already used for training
+    test_ds = full_ds.skip(TRAIN_SIZE)
+    # get the dataset for validation
+    val_ds = full_ds.skip(VAL_SIZE)
+    # get the dataset for testing
+    test_ds = full_ds.take(TEST_SIZE)
+
+    ## Process the raw data
+    ## Use Dataset.map to apply this transformation.
+    processed_train_ds = train_ds.map(process_data)
+    processed_val_ds = val_ds.map(process_data)
+    processed_test_ds = test_ds.map(process_data)
+
+    # Getting the input and output size
+    input_size = (0, 0, 0)
+    output_class_num = 0
+    for image, label in processed_train_ds.take(1):
+        input_size = image.numpy().shape
+        output_class_num = label.numpy().shape[2]
+
+    ## Uncomment below to use the original unet model
+    # model = unet(output_class_num, input_size)
+    ## Uncomment below to use the improved unet model
+    model = improved_unet(output_class_num, input_size)
+
+    ## Using dice similarity coefficient as the loss function and one of the metric
+    print("Loss Function: dice similarity coefficient\n")
+    model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
+    model.summary()
+
+    ## TRAIN THE MODEL
+    history = model.fit(processed_train_ds.batch(BATCH_SIZE), 
+                        validation_data=processed_val_ds.batch(BATCH_SIZE), 
+                        epochs=1)
+    print()
+
+    ## Show some predictions result
+    print("Close the images to continue...")
+    show_predictions(processed_test_ds, result_dir)
+    print()
+
+    ## EVALUATE THE TRAINED MODEL
+    [loss, accuracy, dsc] = model.evaluate(processed_test_ds.batch(BATCH_SIZE), verbose=1)
+    print("RESULTS FROM THE EVALUATE FUNCTION:")
+    print("Loss (dice similarity coefficient):", loss)
+    print("Dice Similarity Coefficient:", dsc)
+    print("Accuracy (metrics):", accuracy)
+    print()
+
+    ## PREDICT ALL THE TEST SET
+    image_test_batch, label_test_batch = next(iter(processed_test_ds.batch(TEST_SIZE)))
+    predictions = model.predict(image_test_batch)
+
+    ## CALCULATING THE AVERAGE DSC OF ALL PREDICTED TEST IMAGE
+    bad_dsc = 0
+    total_dsc = 0
+    length = predictions.shape[0]
+    min_dsc = 0.8
+    print("DSC BELOW {}:".format(min_dsc))
+    for i in range(length):
+        dsc = dice_coef(label_test_batch[i], predictions[i])
+        if dsc < min_dsc:
+            bad_dsc += 1
+            print("  Index {}, dsc is {}".format(i, dsc))
+        total_dsc += dsc
+
+    print()
+    print("There are {} bad dsc (< 0.8) out of {}".format(bad_dsc, length))
+    print("There are {} good dsc (>= 0.8) out of {}".format((length-bad_dsc), length))
+    print("Average dsc: ", total_dsc/length)
 
 
-## Use this one for the original unet model
-# model = unet(output_class_num, input_size)
-
-## Use this one for the improved unet model
-model = improved_unet(output_class_num, input_size)
-
-## Using dice similarity coefficient as the loss function and one of the metric
-print("Loss Function: dice similarity coefficient\n")
-model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
-model.summary()
-
-## TRAIN THE MODEL
-history = model.fit(processed_train_ds.batch(BATCH_SIZE), 
-                    validation_data=processed_val_ds.batch(BATCH_SIZE), 
-                    epochs=1)
-print()
-
-## Show some predictions result
-print("Close the images to continue...")
-show_predictions(processed_test_ds)
-print()
-
-## EVALUATE THE TRAINED MODEL
-[loss, accuracy, dsc] = model.evaluate(processed_test_ds.batch(BATCH_SIZE), verbose=1)
-print("RESULTS FROM THE EVALUATE FUNCTION:")
-print("Loss (dice similarity coefficient):", loss)
-print("Dice Similarity Coefficient:", dsc)
-print("Accuracy (metrics):", accuracy)
-print()
-
-## PREDICT ALL THE TEST SET
-image_test_batch, label_test_batch = next(iter(processed_test_ds.batch(TEST_SIZE)))
-predictions = model.predict(image_test_batch)
-
-## CALCULATING THE AVERAGE DSC OF ALL PREDICTED TEST IMAGE
-bad_dsc = 0
-total_dsc = 0
-length = predictions.shape[0]
-min_dsc = 0.8
-print("DSC BELOW {}:".format(min_dsc))
-for i in range(length):
-    dsc = dice_coef(label_test_batch[i], predictions[i])
-    if dsc < min_dsc:
-        bad_dsc += 1
-        print("  Index {}, dsc is {}".format(i, dsc))
-    total_dsc += dsc
-
-print()
-print("There are {} bad dsc (< 0.8) out of {}".format(bad_dsc, length))
-print("There are {} good dsc (>= 0.8) out of {}".format((length-bad_dsc), length))
-print("Average dsc: ", total_dsc/length)
+if __name__ == "__main__":
+    main()

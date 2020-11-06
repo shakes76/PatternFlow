@@ -94,6 +94,12 @@ The DSC used in this project is the following:
  You can also use the following conda [environment.yml](./environment.yml)
  
 ## Usage
+Make sure that you have downloaded the dataset.
+
+Create a folder called 'dataset' in the same directory as the driver.py and unzip the dataset inside that folder.
+
+Then you can run the following command:
+
 ```>>> python driver.py```
 
 ### [model.py](./model.py)
