@@ -6,10 +6,15 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
 from tensorflow.keras import layers
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 
 BATCH_SIZE = 4
 noise_dim = 100
+smooth = 0.8
+
+generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
 
 def make_generator_model():
@@ -69,3 +74,16 @@ generated_image = generator(noise, training=False)
 discriminator = make_discriminator_model()
 decision = discriminator(generated_image)
 print(decision)
+
+
+def discriminator_loss(real_output, fake_output):
+    real_loss = cross_entropy(tf.ones_like(real_output * smooth), real_output)
+    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    total_loss = real_loss + fake_loss
+    return total_loss
+
+
+def generator_loss(fake_output):
+    return cross_entropy(tf.ones_like(fake_output * smooth), fake_output)
+
+
