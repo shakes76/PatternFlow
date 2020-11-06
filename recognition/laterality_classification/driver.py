@@ -67,7 +67,7 @@ def process_dataset(dir_data, N_train, N_test):
     # num left found: 7,760
     # num_right found: 10,920
 
-    random.shuffle(all_image_names)
+    # random.shuffle(all_image_names)
 
     train_image_names, test_image_names = split_by_patients(all_image_names,
                                                             N_train, N_test)
@@ -127,8 +127,15 @@ def visualise_images(X, y, set_size, title, seed=0):
 
 
 def mean_square_error(predictions, actual):
-    return sum([(y - yhat) ** 2 for (y, yhat) in (actual, predictions)]) \
-           / len(actual)
+    square_diff_sum = 0
+
+    if len(predictions) != len(actual):
+        raise IndexError
+
+    for i in range(len(predictions)):
+        square_diff_sum += (actual[i] - predictions[i]) ** 2
+
+    return square_diff_sum / len(actual)
 
 
 def build_train_model(classifier, X_train, y_train, X_test, y_test):
@@ -154,7 +161,12 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     plt.legend(['training', 'validation'])
     plt.show()
 
-    test_predictions = tf.cast(tf.round(model.predict(X_test)), tf.int32)[:, 0]
+    test_predictions = model.predict(X_test)[:, 0]
+
+    print("mean square error of predictions = ",
+          mean_square_error(test_predictions, y_test.numpy()))
+
+    test_predictions = tf.cast(tf.round(test_predictions), dtype=tf.int32)
 
     acc = len([i for i in range(len(y_test))
                if test_predictions[i] == y_test[i]]) / len(y_test)
