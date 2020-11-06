@@ -6,4 +6,8 @@
 
 ## File specification
 * dataProcess.py is the file to Process the raw data, create two folders and write photos of the left knee and the right knee into the two folders respectively.
-* train.py is the file to train the dataset，here we use DenseNet as base net, and the weights of ImageNet, then we train the last seven layers;
+* train.py is the file to train the dataset，here we use DenseNet as base net, and the weights of ImageNet, then we train the last seven layers.
+* predict.py is the file to predict the results of the test data.
+
+## Requirment:
+Version: Tensorflow >=2.20
