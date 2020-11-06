@@ -13,14 +13,14 @@ I train two models simultaneously.
 ("Authentic" images are provided as training data to CNN.)
 - DCGAN(generator): Trained to generate images classified as authentic by CNN. 
 (By trying to fool CNN, DCGAN learns to generate images similar to the training data.)<br/>The generator uses tf.keras.layers.Conv2DTranspose (upsampling) layers to produce an image from a seed (random noise). Start with a Dense layer that takes this seed as input, then upsample several times until it reaches the desired image size of 256x256x1. Notice the tf.keras.layers.LeakyReLU activation for each layer, except the output layer which uses tanh.
-![avatar](/image/DCGAN_ref.png)
+![avatar](./image/DCGAN_ref.png)
 ---
 ## Visualization
 #### Result after 400 Epochs
-![avatar](/image/example_output.png)
+![avatar](./image/example_output.png)
 #### Example Outputs
 Generate a 256$\times$256 image with a 100$\times$1 random normal noise with the trained generator model. 
-![avatar](/image/generated_example.png)
+![avatar](./image/generated_example.png)
 Compare the generated image with images in the original data set and calculate the max value of Structured Similarity (SSIM).
 **Note: Structured Similarity (SSIM): 0.6319508**
 ___
