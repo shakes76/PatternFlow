@@ -7,12 +7,12 @@ Dataset can be downloaded from https://challenge2018.isic-archive.com/
 
 ### Algorithm
 U-Net is a convolutional network architecture, designed for biomedical image segmentation. It consists of one contraction part, bottleneck and expansion part. Any contraction block and expansion block at the same level will be concatenated. (Ronneberger, Fischer, Brox, 2015)
-![unet]((images/unet.png))
+<a href="url"><img src="images/unet.png" height="300" width="500" ></a>
 We are using the improved U-Net, developed based on U-Net in 2017. The following features are added to normal U-Net:
 1. Context modules for activations
 2. Localization pathway to transfer features from lower level to higher spatial resolution
 3. Segmentation layers integration at different levels for deep supervision
-![improved_unet]((images/improved_unet.png))
+![improved_unet](images/improved-unet.png)
 
 ## Implementations
 ### Data Split
@@ -26,10 +26,10 @@ Checkpoint Callback: Maximum validation accuracy
 Training Epoch: 250
 
 ### Result
-![Accuracy]((images/acc.png))
-![Loss]((images/loss.png))
-![dsc]((images/dsc.png))
-![Predictions]((images/predictions.png))
+![Accuracy](images/acc1.png)
+![Loss](images/loss1.png)
+![dsc](images/dsc1.png)
+![Predictions](images/predictions.png)
 (First row: row images; Second row: ground truth; Third row: predictions)
 
 ## Dependencies
