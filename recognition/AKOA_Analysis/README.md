@@ -17,4 +17,5 @@ The dataset had over 18,000 images, each labeled left or right. The training dat
 ## EXAMPLE OUTPUTS
 ### Training and Validation Accuracy
 ![Accuracy graph](https://raw.githubusercontent.com/josh-lim1234/PatternFlow/topic-recognition/recognition/AKOA_Analysis/graphs/accuracy.png)
+### Last Epoch Statistics
 ![Last Epoch Statistics](https://raw.githubusercontent.com/josh-lim1234/PatternFlow/topic-recognition/recognition/AKOA_Analysis/graphs/lastepochstats.png)
