@@ -60,6 +60,150 @@ train_ds = train_ds.map(preprocess.process_path)
 val_ds = val_ds.map(preprocess.process_path)
 test_ds = test_ds.map(preprocess.process_path)
 
+# Input Image Parameters for model
+image_pixel_rows = 256 
+image_pixel_cols = 256
+image_channels = 1
+
+from tensorflow.keras.layers import Input, Activation, ReLU, LeakyReLU, Conv2D, Conv2DTranspose, BatchNormalization, Flatten, Dense, Reshape, Dropout, InstanceNormalization
+from tensorflow.keras.initializers import GlorotNormal
+
+def conv2D_layer(input_layer, 
+                 n_filters, 
+                 kernel_size=(3, 3),
+                 strides=(1, 1),
+                 activation=ReLU(), 
+                 use_bias=True,
+                 kernel_initializer=GlorotNormal(),
+                 batch_normalization=False,
+                 instance_normalization=False
+                 **kwargs):
+    """
+    Create a 2D convolutional layer according to parameters.
+
+    @param input_layer:
+        The input layer.
+    @param n_filters:
+        The number of filters.
+    @param kernel_size:
+        The size of the kernel filter.
+    @param strides:
+        The stride number during convolution.
+    @param activation:
+        Keras activation layer to use.
+    @param batch_normalization:
+        If true, apply batch normalization.
+    @param instance_normalization:
+        If truem apply instance normalization.
+
+    Reference: Adapted from Shakes lecture code layers.py
+    """
+    # Create a 2D convolution layer 
+    conv_layer = Conv2D(n_filters, 
+                        kernel_size=kernel_size,
+                        strides=strides,
+                        padding='same',
+                        activation=None,
+                        use_bias=use_bias,
+                        kernel_initializer=kernel_initializer, 
+                        **kwargs)(input_layer)
+    
+    # Apply chosen normalization method
+    if batch_normalization:
+        # Apply Batch normalization layer 
+        norm_layer = BatchNormalization()(conv_layer)
+    elif instance_normalization:
+        # Apply Instance normalization
+        norm_layer = InstanceNormalization()(conv_layer)
+
+    # Activation function
+    layer = activation(norm_layer) 
+    
+    return layer
+
+
+
+def context_module(input, n_filters):
+    """
+    The activations in the context pathway are computed by context modules.
+    Each context module is a pre-activation residual block with two
+    3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between.
+    """
+    conv1 = conv2D_layer(input, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
+    dropout = Dropout(rate=0.3)(conv1)
+    conv2 = conv2D_layer(dropout, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
+
+    return conv2
+
+# improved unet model
+def unet_model(output_channels, f=64):
+    """
+    Improved UNet network based on https://arxiv.org/abs/1802.10508v1.
+
+    Comprises of a context aggregation pathway that encodes increasingly abstract 
+    representations of the input as we progress deeper into the network, followed 
+    by a localization pathway that recombines these representations with shallower 
+    features to precisely localize the structures of interest.
+
+
+
+    output_channels: Correspond to the classes a pixel can be. Here 4.
+    f: Filters used in convolutional layers.
+    
+    Reference: https://arxiv.org/abs/1802.10508v1
+    """
+    inputs = tf.keras.layers.Input(shape=(image_pixel_rows, image_pixel_cols, image_channels))
+    
+    # Downsampling through the model
+    d1 = tf.keras.layers.Conv2D(f, 3, padding='same', activation='relu')(inputs)
+    d1 = tf.keras.layers.Conv2D(f, 3, padding='same', activation='relu')(d1)
+    
+    d2 = tf.keras.layers.MaxPooling2D()(d1)
+    d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(d2)
+    d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(d2)
+    
+    d3 = tf.keras.layers.MaxPooling2D()(d2)
+    d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(d3)
+    d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(d3)
+    
+    d4 = tf.keras.layers.MaxPooling2D()(d3)
+    d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(d4)
+    d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(d4)
+    
+    d5 = tf.keras.layers.MaxPooling2D()(d4)
+    d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
+    d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
+    
+    # Upsampling and establishing skip connections
+    u4 = tf.keras.layers.UpSampling2D()(d5)
+    u4 = tf.keras.layers.concatenate([u4, d4])
+    u4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
+    u4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
+    
+    u3 = tf.keras.layers.UpSampling2D()(u4)
+    u3 = tf.keras.layers.concatenate([u3, d3])
+    u3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
+    u3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
+    
+    u2 = tf.keras.layers.UpSampling2D()(u3)
+    u2 = tf.keras.layers.concatenate([u2, d2])
+    u2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
+    u2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
+    
+    u1 = tf.keras.layers.UpSampling2D()(u2)
+    u1 = tf.keras.layers.concatenate([u1, d1])
+    u1 = tf.keras.layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
+    u1 = tf.keras.layers.Conv2D(f, 3, padding='same', activation='relu')(u1)
+    
+    # This is the last layer of the model
+    # Multiclass classification, to use softmax to output class predctions that
+    # sum to 1 (i.e. probabilities). If problem involved binary classification of
+    # pixels, the can use a sigmoid (0 or 1).
+    outputs = tf.keras.layers.Conv2D(output_channels, 1, activation='softmax')(u1)
+    
+    return tf.keras.Model(inputs=inputs, outputs=outputs)
+
+
 
 
 

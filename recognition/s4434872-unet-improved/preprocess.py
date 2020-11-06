@@ -16,6 +16,8 @@ def decode_png(file_path):
         The full path of the image file.
     @returns:
         png image with 1 channel (grayscale) and size 256x256.
+
+    Reference: Adapted from Siyu lu
     """
     # Load the raw data from the file as a string
     png = tf.io.read_file(file_path)
