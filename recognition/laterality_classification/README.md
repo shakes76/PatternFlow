@@ -73,19 +73,19 @@ LateralityClassifier class and performance analysis takes place.
 
 #### Process
 When ran as the main file, the driver does the following:
-* Downloads the AKOA dataset from the cloudstor URL (if it isn't already 
+1. Downloads the AKOA dataset from the cloudstor URL (if it isn't already 
 downloaded).
-* Processes the image files, splitting them into training and validation,
+2. Processes the image files, splitting them into training and validation,
  determining the classification label from the file name and ensuring minimal
  data leakage across the sets.*
-* Performs initial dataset inspection: prints ratio of each class, and 
+3. Performs initial dataset inspection: prints ratio of each class, and 
  visualises random images from each set paired with their labels (See Appendix A, B & C).
-* Creates an instance of LateralityClassifier, creates a keras model from it,
+4. Creates an instance of LateralityClassifier, creates a keras model from it,
  compiles, and trains this model on the processed data.
-* Performance over epochs of training is plotted
-* Calculation of MSE and classification accuracy on the validation set is
+5. Performance over epochs of training is plotted
+6. Calculation of MSE and classification accuracy on the validation set is
  printed
-* Visualisation of predictions and their actual labels is shown for inspection
+7. Visualisation of predictions and their actual labels is shown for inspection
 
 
 #####*Solving Data Leakage
@@ -100,7 +100,23 @@ uniquely identified by the filename, and an extra processing step is done to
 ensure that the training and validation set do not contain any images from the
 same unique patient.
 
-## Results
+## Results/Output
+### Normal Model
+
+### Simplified Model
+Although the normal model performed considerably well on the dataset, it may
+be over-estimating the difficulty of the problem as using 
+LateralityClassifier's simple model usually performs just as well.
+
+#### Example Metric Output
+```
+mean square error of predictions =  0.02686644094643213
+validation acc = 0.9693333333333334
+```
+#### Example Visualisation Output
+![](resources/simple/Model_predictions_on_validation_set.png)
+![](resources/simple/Actual_labels_of_validation_set.png)
+
 
 
 ## Appendix

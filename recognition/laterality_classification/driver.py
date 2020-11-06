@@ -219,7 +219,7 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
         X_test: the tf array of images to validate with
         y_test: the tf array of labels to validate with
     """
-    model = classifier.build_model()
+    model = classifier.build_simple_model()
 
     model.summary()
 
