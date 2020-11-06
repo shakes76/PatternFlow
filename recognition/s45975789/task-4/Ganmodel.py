@@ -1,3 +1,4 @@
+# importing packages.
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -5,6 +6,7 @@ from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D,LeakyReLU
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Input
 
+# Generator model Layers.
 def make_generator_model():
     model = tf.keras.Sequential()
     model.add(layers.Dense(16*16*3,  input_shape=(100,)))
@@ -34,13 +36,14 @@ def make_generator_model():
     model.add(layers.BatchNormalization())
     model.add(layers.ReLU())
     
-    model.add(layers.Conv2D(1, (1, 1), activation='tanh'))
+    model.add(layers.Conv2D(1, (1, 1), activation='elu'))
     assert model.output_shape == (None, 256, 256, 1)
 
   
     return model 
 
 
+# Discriminator model layers.
 def make_discriminator_model():
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(16, (5, 5), strides=(2, 2), padding='same',
