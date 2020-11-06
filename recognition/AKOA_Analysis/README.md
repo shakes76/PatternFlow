@@ -6,7 +6,7 @@ The lateral classification of the OAI AKOA knee dataset(left or right sided knee
 * Python 3.7
 * TensorFlow 2.3
 * Matlablib
- * pyplot
+  * pyplot
 * Numpy
 * sklearn.model_selection
   * train_test_split
