@@ -37,3 +37,6 @@ One advantage of densenet is that the network is narrower and has fewer paramete
 
 ## Train result
 ![image](https://github.com/Alexu0506/PatternFlow/blob/topic-recognition/recognition/p3.png)
+
+## conclution
+The project belongs to the category of image recognition, and the main problem to be solved is the binary classification problem in image classification. Appropriate model selection and construction is the key to solve the problem. First of all, we preprocess the data set with normalized input and remove some outliers. Then we train the model by using image enhancement technology. We try different combinations of super parameters and select the model with the strongest performance as our final model. In the project, only a single model is used for training prediction, and if multiple models are used for fusion, better results may be achieved.
