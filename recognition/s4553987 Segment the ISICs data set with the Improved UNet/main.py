@@ -42,6 +42,11 @@ y_test = y[2197:2594,:,:,:]
 model = improved_unet(256)
 
 #### Compile Model
+def dsc(y_true, y_pred):
+    intersection = tf.reduce_sum(tf.math.multiply(y_true, y_pred))
+    dsc = 2*intersection / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
+    return dsc
+
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[dsc, 'accuracy'])
 
 
@@ -50,13 +55,24 @@ model_callback=tf.keras.callbacks.ModelCheckpoint(filepath='best_checkpoint',
                                               save_weights_only=True,
                                               monitor = 'val_accuracy',
                                               mode='max')
-
+# train
 history = model.fit(x = X_train, y=y_train, epochs=30, verbose=1,
                     validation_data=(X_val, y_val), batch_size = 8, callbacks=[model_callback])
 
-def dsc(y_true, y_pred):
-    intersection = tf.reduce_sum(tf.math.multiply(y_true, y_pred))
-    dsc = 2*intersection / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
-    return dsc
+
+# test
+image_dsc = []
+s = 0
+for i in range(len(test_input_images)):
+        img = X_test[i][np.newaxis,:,:,:]
+        pred = model.predict(img)
+        predd = tf.math.round(pred)
+        i_dsc = dsc(predd[0], y_test[i]).numpy()
+        s += i_dsc
+        image_dsc.append((i_dsc, i))
+avg = s/len(test_input_images)
+print('Average DSC: ',avg)
+
+
 
 
