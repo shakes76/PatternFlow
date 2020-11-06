@@ -8,8 +8,8 @@ of 0.9 on the test set.
 Start Date: 01/11/2020
 """
 import tensorflow as tf
-
 import glob
+import preprocess
 
 print('Tensorflow Version:', tf.__version__)
 
@@ -47,10 +47,19 @@ test_ds = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
 
 # Make the dataset to be reshuffled each time it is iterated over.
 # This is so that we get different batches for each epoch.
-# For perfect shuffling, the buffer size needs to be greater than or equal to the size of the dataset.
+# For perfect shuffling, the buffer size needs to be greater than or equal to 
+# the size of the dataset.
 train_ds = train_ds.shuffle(len(train_images))
 val_ds = val_ds.shuffle(len(val_images))
 test_ds = test_ds.shuffle(len(test_images))
+
+# Use Dataset.map to apply preprocessing transformation.
+# Normalize the images and pixel-wise one-hot encode the segmentation masks.
+print("> Preprocessing images ...")
+train_ds = train_ds.map(preprocess.process_path)
+val_ds = val_ds.map(preprocess.process_path)
+test_ds = test_ds.map(preprocess.process_path)
+
 
 
 
