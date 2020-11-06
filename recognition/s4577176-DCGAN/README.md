@@ -22,6 +22,12 @@ The fake and original image should have a structural similarity of atleast 0.6
 These are generator-discriminator based model, which are used to generate like-pixel images using the training data.
 
 
+<p align="center">
+  <img width="240" height="300" src="https://1.bp.blogspot.com/-G2UZt_kQASA/XPkk8EIynCI/AAAAAAAABVY/AVFupBhQrUws7-rttDKKrqMZyP6i4uxlwCLcBGAs/s320/simple_e20_faces.gif">
+</p>
+
+
+
 ## Modules:
 
 ### libraries.py
@@ -129,5 +135,25 @@ please make sure you install all these libraries using pip or conda.
 >step 5: Open the load_model.py. the first thing to do is changing the directory in the load_model function to an appropriate place and generate fake images.
 
 >step 6: Once you are done with saving the model, open the metric_check.py file and change the directories to suitable locations and to check the structural similarity between the fake and the original images.
+
+
+Results:
+
+
+
+  >Fake image
+
+<p align="center">
+  <img width="300" height="280" src="https://github.com/shashank-rv/PatternFlow/blob/topic-recognition/recognition/s4577176-DCGAN/resources/fake.JPG?raw=true">
+</p>
+
+> Original image
+
+<p align="center">
+  <img width="300" height="280" src="https://github.com/shashank-rv/PatternFlow/blob/topic-recognition/recognition/s4577176-DCGAN/resources/original.JPG?raw=true">
+</p>
+
+
+
 
 
