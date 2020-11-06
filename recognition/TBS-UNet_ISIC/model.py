@@ -19,9 +19,9 @@ if(len(input_data_paths) != len(gt_data_paths)):
     print("Mismatch in data / labels")
 
 nData = len(input_data_paths)
-trainProp = 0.85
+trainProp = 0.8
 valProp = 0.1
-testProp = 0.05
+testProp = 0.1
 nTrain = math.floor(trainProp * nData)
 nVal = math.floor(valProp * nData)
 nTest = nData - nTrain - nVal
@@ -34,14 +34,43 @@ print("Testing on ", nTest, " samples")
 
 # make dimensions as divisible by powers of two as possible while maintaining the aspect ratio of the input
 # (512 = 2^9, 384 = 3*2^7)
-nx = 512
-ny = 384
+nx = 256
+ny = 192
+nTypes = 2
+
+# first load all data and labels into a single array
+data = np.empty([nData, ny, nx, 3 + nTypes])
 
 trainData = np.empty([nTrain, ny, nx, 3])
 valData = np.empty([nVal, ny, nx, 3])
 testData = np.empty([nTest, ny, nx, 3])
 
+trainLabels = np.empty([nTrain, ny, nx, nTypes])
+valLabels = np.empty([nVal, ny, nx, nTypes])
+testLabels = np.empty([nTest, ny, nx, nTypes])
 
+# load all data and labels into the data array
+for i, path in enumerate(input_data_paths):
+    if i % 200 == 0:
+        print("loading input ", i)
+    input_img = Image.open(input_data_dir + "\\" + path).resize((nx, ny))
+    data[i,:,:,0:3] = np.asarray(input_img) / 255.0
+
+    gt_img = Image.open(gt_data_dir + "\\" + gt_data_paths[i]).resize((nx, ny))
+    data[i,:,:,3:5] = np.eye(nTypes)[(np.asarray(gt_img) * (1/255)).astype(int)]
+
+# shuffle the data array
+np.random.shuffle(data)
+trainData = data[0:nTrain, :, :, 0:3]
+valData = data[nTrain:nTrain+nVal, :, :, 0:3]
+testData = data[nTrain+nVal:, :, :, 0:3]
+trainLabels = data[0:nTrain, :, :, 3:5]
+valLabels = data[nTrain:nTrain+nVal, :, :, 3:5]
+testLabels = data[nTrain+nVal:, :, :, 3:5]
+
+
+
+"""
 # iterate over data to construct full input data
 for i, path in enumerate(input_data_paths):
     if i % 200 == 0:
@@ -56,11 +85,6 @@ for i, path in enumerate(input_data_paths):
         testData[i - nTrain - nVal] = np.asarray(img) / 255.0
 
 
-nTypes = 2
-trainLabels = np.empty([nTrain, ny, nx, nTypes])
-valLabels = np.empty([nVal, ny, nx, nTypes])
-testLabels = np.empty([nTest, ny, nx, nTypes])
-
 # iterate over data to construct full input labels
 for i, path in enumerate(gt_data_paths):
     if i % 200 == 0:
@@ -72,6 +96,18 @@ for i, path in enumerate(gt_data_paths):
         valLabels[i - nTrain] = np.eye(nTypes)[(np.asarray(img) * (1/255)).astype(int)]
     else:
         testLabels[i - nTrain - nVal] = np.eye(nTypes)[(np.asarray(img) * (1/255)).astype(int)]
+"""
+
+""" FUNCTION TO COMPUTE DICE SCORE 
+    Inputs: two numpy arrays 
+"""
+def diceScore(a, b):
+    aIntB = np.logical_and(a == 1, b == 1)
+    return 2 * aIntB.sum() / (a.sum() + b.sum())
+
+# TEST - please delete
+print("test dice score, should be 1: ", diceScore(trainLabels[100,:,:,:].argmax(axis=2), trainLabels[100,:,:,:].argmax(axis=2)))
+print("test dice score, should be < 1: ", diceScore(trainLabels[100,:,:,:].argmax(axis=2), trainLabels[200,:,:,:].argmax(axis=2)))
 
 """ This part goes in the model script"""
 
@@ -79,7 +115,7 @@ for i, path in enumerate(gt_data_paths):
 # down path
 
 # down-level 1
-input_layer = layers.Input((384,512,3))
+input_layer = layers.Input((ny,nx,3))
 conv_1 = layers.Conv2D(64, (3,3), activation='relu', padding='same')(input_layer)
 conv_2 = layers.Conv2D(64, (3,3), activation='relu', padding='same')(conv_1)
 mPool_1 = layers.MaxPooling2D(pool_size=(2,2), padding='same')(conv_2)
@@ -133,24 +169,41 @@ unet = tf.keras.Model(inputs=input_layer, outputs=conv_19)
 unet.compile(optimizer='adam', loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False), metrics=['accuracy'])
 print(unet.summary())
 
-h = unet.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=4, epochs=10)
+h = unet.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=16, epochs=3)
+
+
+
+
+""" PLOTTING STUFF - Should be in driver script i think"""
 plt.plot(h.history['accuracy'])
 plt.plot(h.history['val_accuracy'])
 
 samplePrediction_1 = unet.predict(trainData[100:101])
 samplePrediction_2 = unet.predict(trainData[200:201])
 
-plt.figure()
+# compute test data prediction
+testPredictions = unet.predict(testData)
 
+#
+avgDice = 0.0
+for i in range(nTest):
+    avgDice += diceScore(testPredictions[i,:,:,:].argmax(axis=2), testLabels[i,:,:,:].argmax(axis=2))
+avgDice /= nTest
+print("Average dice score on test set is: ", avgDice)
+#print("Dice score example 1: ", diceScore(samplePrediction_1[0,:,:,:].argmax(axis=2), trainLabels[100,:,:,:].argmax(axis=2)))
+#print("Dice score example 2: ", diceScore(samplePrediction_2[0,:,:,:].argmax(axis=2), trainLabels[200,:,:,:].argmax(axis=2)))
+
+plt.figure()
 plt.imshow(trainData[100])
 plt.figure()
-
 plt.imshow(samplePrediction_1[0,:,:,0])
 plt.figure()
 plt.imshow(samplePrediction_1[0,:,:,1])
 plt.figure()
 plt.imshow(samplePrediction_1[0,:,:,:].argmax(axis=2))
 
+plt.figure()
+plt.imshow(trainData[200])
 plt.figure()
 plt.imshow(samplePrediction_2[0,:,:,0])
 plt.figure()
