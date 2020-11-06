@@ -3,11 +3,8 @@ from tensorflow.keras.layers import Conv2D, Input
 
 from layers import downsample, bottleneck, upsample
 
-height = 128
-width = 128
 
-
-def UNet():
+def UNet(width, height):
     """
     Generates a new UNet model with 4 downsampling layers, bottleneck and 4 upsampling layers
     """

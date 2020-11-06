@@ -47,6 +47,7 @@ def downsample(
     pooling = MaxPooling2D((2, 2), (2, 2))(norm)
     return norm, pooling
 
+
 def upsample(
     input,
     skip,

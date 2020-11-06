@@ -6,14 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from model import UNet
-from trianing_utils import DataGenerator
+from training_utils import DataGenerator
 
 # Generate a test UNet model to check if it compiles correctly
-model = UNet()
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
-model.summary()
-plot_model(model, show_shapes=True)
-
 img_size = 128
 img_channels = 3
 batch_size = 20
@@ -26,9 +21,9 @@ for file in os.walk(image_path):
     for filename in file:
         training_ids.append(filename)
 
-# Gets filenames and takes .jpg off to leave IDs
+# Get the filenames and take .jpg off to leave IDs
 training_ids = training_ids[2]
-training_ids = [filename.split('.',1)[0] for filename in training_ids]
+training_ids = [filename.split(".", 1)[0] for filename in training_ids]
 
 # Split into training, test and validation data
 validation_size = floor(len(training_ids) * 0.2)
@@ -59,3 +54,26 @@ ax = plot.add_subplot(1, 2, 1)
 ax.imshow(testX[0])
 ax = plot.add_subplot(1, 2, 2)
 ax.imshow(np.reshape(testY[0], (img_size, img_size)), cmap="gray")
+
+# Compile a model and show the shape
+model = UNet(img_size, img_size)
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
+model.summary()
+plot_model(model, show_shapes=True)
+
+# Create training and validation generators
+
+training_gen = DataGenerator(training_ids, base_path)
+validation_gen = DataGenerator(validation_ids, base_path, 3, 128)
+
+training_step_size = len(training_ids) // batch_size  # Step size of training data
+validation_step_size = len(validation_ids) // batch_size  # Step size of validation data
+
+h = model.fit(
+    training_gen,
+    validation_data=validation_gen,
+    steps_per_epoch=training_step_size,
+    validation_steps=validation_step_size,
+    epochs=20,
+)
+model.save("ISIC-UNet.h5")
