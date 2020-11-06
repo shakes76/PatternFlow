@@ -94,3 +94,14 @@ history = model.fit(x = train_data_gen, # Input training set
                     validation_data = val_data_gen # Input validation set
                     validation_steps = total_val // batch_size, # The number of training steps contained in an epoch
                     callbacks = [checkpoint,reduce_lr]) # Execute callback function
+# save the trained model weight
+model.save_weights('./save_weights/myweights.h5')
+
+# Record the accuracy and loss value of training set and verification set
+history_dist = history.history
+train_loss = history_dict["loss"] # loss value of training set
+train_accuracy = history_dict["accuracy"] # accuracy of the training set
+val_loss = history_dict["val_loss"] # loss value of validation set
+val_accuracy = history_dict["val_accuracy"] # accuracy of validation set
+
+    
