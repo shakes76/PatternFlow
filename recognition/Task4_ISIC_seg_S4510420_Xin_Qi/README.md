@@ -26,7 +26,7 @@ to run the driver.py script. It will print the final DSC score on testing set an
 
 ------
 
-The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. There are two phases for this model. The frist phase is context aggregation pathway that encodes increasingly abstract representations of the input. The second phase is localization pathway that recombines these representations with shallower features to precisely localize the structures of interest.
+The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. There are two phases for this model. The first phase is context aggregation pathway that encodes increasingly abstract representations of the input. The second phase is localization pathway that recombines these representations with shallower features to precisely localize the structures of interest.
 
 ## **The problem that it solves**
 
