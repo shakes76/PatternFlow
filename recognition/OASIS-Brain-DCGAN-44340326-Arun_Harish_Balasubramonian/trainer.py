@@ -33,8 +33,10 @@ class TrainLoader():
         self.generator_optmiser_func = self._generator_optimiser()
         self.discriminator_optimiser_func = self._discriminator_optimiser()
     
+    # An internal function that generates the generator model
     def _generator_model(self):
         model = Sequential()
+        # Since the image is 
         model.add(Dense(4 * 4 * 256, use_bias=False, input_shape=(NOISE_INPUT_DIM,)))
         model.add(BatchNormalization())
         model.add(Reshape((4, 4, 256)))
