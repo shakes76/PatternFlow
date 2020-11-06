@@ -18,7 +18,7 @@ The updated UNet, and the basis of the network implemented here is the UNet by I
 
 ![image](https://github.com/Markopteryx/PatternFlow/blob/topic-recognition/recognition/ISIC_ImprovedUNet/model.png)
 
-Due to the nature of the task, the improved UNet as created for the specific dataset it was used on (brain image segmentation); therefore some changes had to be made for usage on the skin cancer dataset. First we only have two dimensional images here, so the dimensionality of the inputs is reduced by one. Additonally, we make use of the LeakyReLU activation function rather than the standard ReLU to prevent the dying ReLU problem seen when inputs of the ReLU are forced to zero. 
+Due to the nature of the task, the improved UNet was created for the specific dataset it was used on (brain image segmentation); therefore some changes had to be made for usage on the skin cancer dataset. First we only have two dimensional images here, so the dimensionality of the inputs is reduced by one. Additonally, we make use of the LeakyReLU activation function rather than the standard ReLU to prevent the dying ReLU problem seen when inputs of the ReLU are forced to zero. Other changes made for the improved UNet include removal of the max pooling layers in favor of downsampling convolutions, the addition of segmentation layers is used as a form of deep supervision (Isensee et al, 2017).
 
 # Dependencies
 
