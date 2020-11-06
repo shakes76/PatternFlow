@@ -1,11 +1,13 @@
 import tensorflow as tf
+from tensorflow.keras import layers
+import time
 
 tf.__version__
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
-from tensorflow.keras import layers
+
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 
@@ -109,6 +111,18 @@ def train_step(images):
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
     
+
+def train(dataset, epochs):
+    for epoch in range(epochs):
+        start = time.time()
+        for image_batch in dataset:
+            train_step(image_batch)
+            
+        print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
+
+
+
+
 
 
 
