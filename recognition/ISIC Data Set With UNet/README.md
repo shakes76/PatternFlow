@@ -32,7 +32,8 @@ This script contains one function which is used to create the U-Net model. The m
 
 **Functions**: `unet_model`
 
-`unet_model(f=16)` creates the U-Net model using the structure specified.
+The script's single function is detailed below:
+* `unet_model(f=16)` creates the U-Net model using the structure specified.
 
 ## `driver_script.py`
 This is the driver script. This script: imports the data; manipulates the data into various datasets for training, validating and testing; creates and compiles the model from `solution.py`; trains the model using the datasets; and finally, makes and plots predictions using the model.
@@ -43,27 +44,19 @@ This is the driver script. This script: imports the data; manipulates the data i
 
 **Functions**: `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient`
 
-`import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
+Each of the script's functions is detailed below:
 
-`process_path(image_fp, mask_fp)` processes an image and a mask by decoding and normalising them.
-
-`decode_jpg(file_path)` decodes and resizes a jpeg image.
-
-`decode_png(file_path)` decodes and resizes a png image.
-
-`analyse_training_history(history)` plots the acuraccy and validation accuracy of the model as it trains.
-
-`display_predictions(model, ds, n=1)` makes n predictions using the model and the given dataset and displays these predictions.
-
-`display_data(ds, n=1)` displays n images and masks from a given dataset.
-
-`display(display_list)` displays plots of the provided data.
- 
-`compute_dice_coefficients(model, ds)` computes the average dice similarity coefficient for all predictions made using the provided dataset.
-
-`dice_coefficient_loss(y_true, y_pred)` computes the dice similarity coefficient loss for a prediction.
-
-`dice_coefficient(y_true, y_pred, smooth = 0.)` computes the dice similarity coefficient for a prediction.
+* `import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
+* `process_path(image_fp, mask_fp)` processes an image and a mask by decoding and normalising them.
+* `decode_jpg(file_path)` decodes and resizes a jpeg image.
+* `decode_png(file_path)` decodes and resizes a png image.
+* `analyse_training_history(history)` plots the acuraccy and validation accuracy of the model as it trains.
+* `display_predictions(model, ds, n=1)` makes n predictions using the model and the given dataset and displays these predictions.
+* `display_data(ds, n=1)` displays n images and masks from a given dataset.
+* `display(display_list)` displays plots of the provided data.
+* `compute_dice_coefficients(model, ds)` computes the average dice similarity coefficient for all predictions made using the provided dataset.
+* `dice_coefficient_loss(y_true, y_pred)` computes the dice similarity coefficient loss for a prediction.
+* `dice_coefficient(y_true, y_pred, smooth = 0.)` computes the dice similarity coefficient for a prediction.
 
 ## How to Run the File
 In order to train this model as I have, you will need to follow the steps below. Once you have downloaded `solution.py` and `driver_script.py`:
@@ -74,11 +67,8 @@ In order to train this model as I have, you will need to follow the steps below.
 
 If your environment is setup and the paths you have provided for the images are correct, then your model should start training at this point. Before spending time training your model, it is important to check that your datasets are working as expected by displaying some images. You may also wish to play around with some variables, such as the number of epochs and the batch sizes depending on your time limit and computational power.
 
-## Results
-Below is an outline of how I used the `driver_script.py` to import the ISIC data, train the U-Net model, and segment the data using this model, alongside some results and images.
-
-### Checking the Images
-When I ran the driver script, the first thing wanted to do was output some example images and masks from the training dataset to check that this process was working well. Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
+## Checking the Images
+When I ran the driver script, the first thing wanted to do was output some example images and masks from the training dataset to check that this process was working well. I split the data into training, validating and testing sets with as a 50-20-20 split (leaving out 10%). Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
@@ -87,7 +77,7 @@ When I ran the driver script, the first thing wanted to do was output some examp
 <p align="center">Example images and their corresponding masks from the training dataset</p>
 </p>
 
-### Creating the Model & Outputting Structure
+## Creating the Model & Outputting Structure
 Next, I created the model itself by using the `unet_model` function imported from `solution.py`. I have included the model summary output below.
 
 | Layer (type)   | Output Shape    | Param #  | Connected to              |
@@ -125,15 +115,15 @@ Next, I created the model itself by using the `unet_model` function imported fro
 | `Conv2D 18`      | `(256, 256, 6)`   | `330`      | `Conv2D 17`                 |
 | `Conv2D 19`      | `(256, 256, 1)`   | `7`        | `Conv2D 18`                 |
 
-This model is a direct match to a vanilla U-Net model, which includes downsampling (the encoder), upsampling (the decoder) and the important skip connections. A diagram of the standard U-Net model is shown below.
+This model is a direct match to a vanilla U-Net model, which includes downsampling (the encoder), upsampling (the decoder) and the important skip connections. A diagram of the standard U-Net model used is shown below.
 
 <p align="center">
-  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/U-Net%20Model/UNet%20Architecture.png">
 </p>
 <p align="center">Standard U-Net model architecture</p>
 <p align="center">riagram from https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/</p>
 
-### Compiling the Model
+## Compiling the Model
 Next, I compiled the model with the following parameters.
 
 **Optimizer**: I used the default Adam optimizer and did not change the learning rate. I found that this was an adequate optimizer and did not with to explore alternatives.
@@ -142,7 +132,7 @@ Next, I compiled the model with the following parameters.
 
 **Metrics**: I used accuracy as a metric. I have also used dice coefficient as a metric but chose accuracy in the end. Either of these would have sufficed here though.
 
-### Training the Model
+## Training the Model
 Next, I trained the model. I trained the model over 100 epochs. I stopped at 100 epochs because I was getting good convergence and my training accuracy and validation accuracy. I used a training and validating batch size of 32. This size sufficed and given my hardware felt this was more than plenty. After training was complete, I analysed the training history by ploting how the training accuracy and validation accuracy changed over each epoch. The plot of the training history is shown below.
 
 <p align="center">
@@ -157,7 +147,7 @@ We can clearly see the training accuracy and validation accuracy converge over t
 </p>
 <p align="center">Training history of model after each epoch</p>
 
-### Making Predictions
+## Making Predictions using the Model
 Next, I made and displayed some predictions using the model to test that it is accurate. Five of these such predictions are shown below.
 
 <p align="center">
@@ -179,10 +169,10 @@ As you can see, these are all really good predictions, and in my opinion are ver
 
 These are clearly not usable predictions. I found that often the model got tricked up by certain skin features. If we look at the first prediction, the four black dots trick the model, which completely misses the actual lesion. On the other hand, in the second prediction, the skin lesion is correcly identified, however the model also incorrectly segments many other parts of the image which are not skin lesions. These two examples, which are not compeltely uncommon in the predictions made, show that the model still needs a lot of work if it is going to be used on all images, particularly trickier images which are obscured.
 
-### Analysing Dice Similarity Coefficient of Model
-Next, I computed the dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.7937. Overall, this is a reasonably good average. However, being an average, we do lose the importance of how innacurate the model can be in some tricky images.
+## Accuracy of the Model
+Next, I analysed the accuracy of the model by computing it's dice similarity coefficient. I did this by recording the dice similarity coefficient for each prediction made using the testing data. Then, I average these values to find the average dice similarity coefficient. Doing this, I found that the average dice similarity coefficient was 0.7937. Overall, this is a reasonably good score and reflects how many of the predictions, some of which are shown above, are accurate and completely usable. However, being an average, we must not forget that in some of the trickier images this score is far lower. Ideally, a superior model would have a mimimum dice similarity coefficient of 0.7 on the testing dataset.
 
-## Improvements to the Model?
+## Improvements to the Model
 Whilst this model meets the 0.70 target accuracy for the dice similarity coefficient, clearly I have shown there is still great room for growth to construct a superior model which does not have the same shortcomings. Some potential areas to explore here are:
 
 * Using dice coefficient loss as a loss function, as opposed to binary crossentropy.
@@ -191,4 +181,4 @@ Whilst this model meets the 0.70 target accuracy for the dice similarity coeffic
 * Increasing the batch size and number of epochs when training the model.
 * Varying the learning rate.
 
-It is very likely that by simply incorporating some of these would result in a superior model. Additionally, if I wanted to go even further, I could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow me to reach higher accuracy levels.
+It is very likely that simply incorporating some of these would result in a superior model. Additionally, if I wanted to go even further, I could implement a modified U-Net, which is simply an expansion of the current vanilla U-Net used in this model. A modified U-Net will almost certainly allow me to reach higher accuracy levels.
