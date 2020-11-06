@@ -12,3 +12,6 @@ Tristan Samson
 
 
 ## Example Outputs
+Training behaviour
+
+(figures/train_accuracy.png)
