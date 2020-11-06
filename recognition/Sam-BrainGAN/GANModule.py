@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 import time
+import matplotlib as plt
 
 tf.__version__
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -89,9 +90,6 @@ def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output * smooth), fake_output)
 
 
-
-# Notice the use of `tf.function`
-# This annotation causes the function to be "compiled".
 @tf.function
 def train_step(images):
     noise = tf.random.normal([BATCH_SIZE, noise_dim])
@@ -115,14 +113,33 @@ def train_step(images):
 def train(dataset, epochs):
     for epoch in range(epochs):
         start = time.time()
+        i = 0;
         for image_batch in dataset:
             train_step(image_batch)
+            if (i == 0):
+               seed = tf.random.normal([BATCH_SIZE, noise_dim])
+               generate_image(generator, epoch + 1, seed, image_batch)
             
         print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
 
+def generate_image(model, epoch, test_input, images):
+    predictions = model(test_input, training=False)
 
+    real_output = discriminator(images, training=False)
+    fake_output = discriminator(predictions, training=False)
 
+    gen_loss = generator_loss(fake_output)
+    disc_loss = discriminator_loss(real_output, fake_output)
 
+    print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss, disc_loss))
+
+    ssim1 = tf.image.ssim(predictions, images, 2)
+    print("SSIM: {}".format(tf.math.reduce_mean(ssim1)))
+
+    plt.imshow(predictions[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
+    plt.axis('off')
+
+    plt.show()
 
 
