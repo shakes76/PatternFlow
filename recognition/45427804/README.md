@@ -69,7 +69,7 @@ Because the background color 0 accounts for more than 80%. It is a severely unba
 
 # The result
 
-dice_coefficient: 0.9552 which achieves our goal and the performance is good.
+dice_coefficient: 0.9681 which achieves our goal and the performance is good.
 
 Using command below to save the best result
 ```python
