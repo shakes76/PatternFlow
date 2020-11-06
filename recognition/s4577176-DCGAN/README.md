@@ -23,7 +23,7 @@ These are generator-discriminator based model, which are used to generate like-p
 
 
 <p align="center">
-  <img width="240" height="300" src="https://1.bp.blogspot.com/-G2UZt_kQASA/XPkk8EIynCI/AAAAAAAABVY/AVFupBhQrUws7-rttDKKrqMZyP6i4uxlwCLcBGAs/s320/simple_e20_faces.gif">
+  <img width="240" height="300" src="https://github.com/shashank-rv/PatternFlow/blob/topic-recognition/recognition/s4577176-DCGAN/resources/simple_e20_faces.gif?raw=true">
 </p>
 
 
