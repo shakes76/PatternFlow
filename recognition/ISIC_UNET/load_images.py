@@ -10,11 +10,15 @@ import glob
 import os
 import random
 
-def get_datasets(root_folder, total_prop, val_prop, test_prop):
-    return make_datasets(
+"""return make_datasets(
                 split_imgs(
                     load_imgs(root_folder), 
-                              total_prop, val_prop, test_prop))
+                              total_prop, val_prop, test_prop))"""
+
+def get_datasets(root_folder, total_prop, val_prop, test_prop):
+    imgs, segs = load_imgs(root_folder)
+    train_img, train_seg, val_img, val_seg, test_img, test_seg = split_imgs(imgs, segs, total_prop, val_prop, test_prop)
+    return make_datasets(1, train_img, train_seg, val_img, val_seg, test_img, test_seg)
 
 def load_imgs(root_folder):
     ### Load and shuffle image filenames ###
@@ -106,7 +110,7 @@ def load_seg(img_shape, seg_file):
     seg = tf.cast(seg, tf.float32)
     seg = seg / 255.0
     bin_seg = (seg > 0.5)
-    return bin_seg
+    return tf.cast(bin_seg, tf.float32)
 
 def load_data(img_file, seg_file):
     img_shape = (512, 512)
@@ -128,8 +132,8 @@ def view_preds(model, ds, n):
     plt.figure(figsize=(4*4,n*4))
     i = 0
     for img, true_segs in ds.take(n):
-        predictions = model.predict(tf.reshape(img, [1, 256, 256, 1]))
-        pred_segs = tf.reshape(predictions, [256, 256, 4])
+        predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
+        pred_segs = tf.reshape(predictions, [512, 512, 1])
         #print(pred_segs)
         
         plt.subplot(n, 4, 4*i + 1)
