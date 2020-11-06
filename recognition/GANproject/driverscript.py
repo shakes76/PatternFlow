@@ -77,8 +77,6 @@ pyplot.show()
 ########################################################################
 #Call the generator and discriminator models
 
-from modelscript import define_generator, define_discriminator
-
 g_model = define_generator()
 
 d_model = define_discriminator()
