@@ -46,4 +46,18 @@ I will be using batch normalization in both generator and discriminator as it no
 
 In both generator and discriminator i will be using leakyrelu activation function after convolutional and batch normalization layers.For last convolutional layer in generator tanh function is used.
 
+# Training process of GAN network:
+
+* Intially, generator starts with a random noise and generates a image.
+* Next, discriminator compares the image generated to original image and make a decision
+* Based on output of discriminator, generator produce more image trying to get similar images as traning goes on.
+* Combiner stacks up generator and discriminator together.
+* Most importantly in traning when genarator is in traning process discriminator remains static, and when discriminator is in traning process generator remains static.
+
+# Dataset used in this project:
+
+The Open Access Series of Imaging Studies (OASIS) is collection of neuroimaging datasets publicy available for study and analysis.The image data i will be working on contains 
+longitudinal collections of brain images.Majorly images containing obtained from the subjects are used to study Alzheimer's disease.But i will be using nearly 9000 of these 
+images to train a DCGAN model and generate new brain images.For futher detailed description of dataset refer http://www.oasis-brains.org.
+
 
