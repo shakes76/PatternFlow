@@ -2,10 +2,9 @@
 Segment the ISICs data set with the Improved UNet 
 @author Nan WANG 
 """
-
 import tensorflow as tf
 tf.random.Generator = None
-from tensorflow_addons as tfa
+from tensorflow_addons.layers import InstanceNormalization
 from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
     Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose, LeakyReLU
 
@@ -13,12 +12,10 @@ from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
 # build context module
 def context_module(input, filters):
     ins_layer1 = InstanceNormalization()(input)
-    relu_layer1 = LeakyReLU(alpha=0.01)(ins_layer1)
-    conv_layer1 = Conv2D(filters, (3,3), padding='same')(relu_layer1)
+    conv_layer1 = Conv2D(filters, (3,3), padding='same',activation=tf.keras.layers.LeakyReLU(alpha=0.01))(ins_layer1)
     dropout = Dropout(0.3)(conv_layer1)
-    ins_layer2 = tfa.layers.InstanceNormalization()(dropout)
-    relu_layer2 = LeakyReLU(alpha=0.01)(ins_layer2)
-    conv_layer2 = Conv2D(filters, (3,3), padding='same')(relu_layer2)
+    ins_layer2 = InstanceNormalization()(dropout)
+    conv_layer2 = Conv2D(filters, (3,3), padding='same',activation=tf.keras.layers.LeakyReLU(alpha=0.01))(ins_layer2)
     return conv_layer2
 
 # build unsampling module
