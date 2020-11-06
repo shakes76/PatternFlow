@@ -28,7 +28,7 @@ Following the structure of Unet, I downsampling the input and then upsampling ag
 I randomly add Dropoup layers between the Unet to reducing overfitting.
 
 
-## Fit the model
+## Fit the model with normal Unet
 
 To fit the model, I compiled the model with the learning rate at 0.0001, set the loss as binary_crossentropy, and used the metrics of accuracy.
 
@@ -36,11 +36,32 @@ The result is as follow:
 
 <image width="700" src="pic/modelfit.PNG" />
 
-## Dice coefficient
+## Dice coefficient with nromal Unet
 
-The objective of the project is to reach 0.9 for dice similarity coefficient.
-
-The results are shown below:
+The results of dice coefficient for normal Unet are as follows:
 
 <image width="700" src="pic/dice.PNG" />
+
+## Improved Unet structure
+
+The improved Unet structure will look like this:
+
+<image width="700" src="pic/improved_Unet.PNG" />
+
+
+## Fit the model with improved_Unet
+
+To fit the model, I compiled the model with the learning rate at 0.0001, set the loss as binary_crossentropy, and used the metrics of accuracy.
+
+The result is as follow:
+
+<image width="700" src="pic/improved_modelfit.PNG" />
+
+## Dice coefficient with improved Unet
+
+The results of dice coefficient for improved Unet are as follows:
+
+<image width="700" src="pic/improved_dice.PNG" />
+
+
 
