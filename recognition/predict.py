@@ -20,3 +20,30 @@ def create_model():
                   loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),  # Cross entropy loss function
                   metrics=["accuracy"])  # evaluation function
     return model
+
+img_path = '/home/lbd855/DeepLearning/test/'
+
+model = create_model()
+model.load_weights('/home/lbd855/DeepLearning/save_weights/myweights.h5')
+
+R_label_list = ['RIGHT', 'Right', 'R_I_G_H_T']
+L_label_list = ['LEFT', 'Left', 'L_E_F_T']
+
+test_images = [img_path + i for i in os.listdir(img_path)]
+sum = len(test_images)
+num = 0
+for i, image_file in enumerate(test_images):
+    img = image.load_img(image_file, target_size=(224, 224))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = tf.keras.applications.densenet.preprocess_input(x)
+    preds = model.predict(x, verbose=0)
+    print(preds)
+    if preds[0, 0] > preds[0, 1]:
+        if any(label in image_file for label in L_label_list):
+            num = num + 1
+    else:
+        if any(label in image_file for label in R_label_list):
+            num = num + 1
+acc = num / sum
+print("Accuracy: {} ".format(acc))
