@@ -6,6 +6,7 @@ from layers import downsample, bottleneck, upsample
 height = 128
 width = 128
 
+
 def UNet():
     """
     Generates a new UNet model with 4 downsampling layers, bottleneck and 4 upsampling layers
@@ -17,7 +18,7 @@ def UNet():
     ds3, pool = downsample(pool, 64)  # downsample to 16
     ds4, pool = downsample(pool, 128)  # downsample to 8
 
-    # add bottleneck 
+    # add bottleneck
     bn = bottleneck(pool, 256)
 
     # add 4 upsampling layers
