@@ -40,11 +40,13 @@ The shape of Unet network structure is similar to U like the picture above. It c
 
 # Prediction results
 The plot below shows the prediction results and y_test_label truth pictures
-![](images/prediction)
+![](images/prediction.png)
 
 # Dice_Cofficient
 The Dice coefficient is a ensemble similarity measurement function, usually used to calculate the similarity of two samples, with a value range of [0,1]:
+
 ![](images/dice.png)
+
 Where |X∩Y| is the intersection between X and Y, and |X| and |Y| sub-tables represent the number of elements of X and Y. Among them, the coefficient of the numerator is 2, because the denominator has repeated calculations of X and Reasons for common elements among Y.
 # Dice Loss
 Dice loss = 1 - dice_coefficient
@@ -71,9 +73,11 @@ Each label's dice coefficient score from 0 to 3:
 [0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
 
 ![](images/validation_loss.png)
+
 When the epoch increases, the distance between training loss and val_loss also increases, which means that the model will overfitting after keep training.
 
 The plot below shows how dice_coefficient changes during training
+
 <img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="450" height="350" />
 
 
