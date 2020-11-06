@@ -14,16 +14,16 @@ img_channels = 3
 batch_size = 20
 
 base_path = "./data/ISIC2018_Task1-2_Training_Data/"
-image_path = "./dataset/ISIC2018_Task1-2_Training_Data/images"
+image_path = "./data/ISIC2018_Task1-2_Training_Data/images"
 
 training_ids = []
 for file in os.walk(image_path):
     for filename in file:
         training_ids.append(filename)
 
-# Get the filenames and take .jpg off to leave IDs
+# Get filenames and take file extensions off to leave IDs
 training_ids = training_ids[2]
-training_ids = [filename.split(".", 1)[0] for filename in training_ids]
+training_ids = [filename.split('.',1)[0] for filename in training_ids]
 
 # Split into training, test and validation data
 validation_size = floor(len(training_ids) * 0.2)
@@ -66,14 +66,8 @@ plot_model(model, show_shapes=True)
 training_gen = DataGenerator(training_ids, base_path)
 validation_gen = DataGenerator(validation_ids, base_path, 3, 128)
 
-training_step_size = len(training_ids) // batch_size  # Step size of training data
-validation_step_size = len(validation_ids) // batch_size  # Step size of validation data
+training_step_size = len(training_ids) // batch_size # Step size of training data
+validation_step_size = len(validation_ids) // batch_size # Step size of validation data
 
-h = model.fit(
-    training_gen,
-    validation_data=validation_gen,
-    steps_per_epoch=training_step_size,
-    validation_steps=validation_step_size,
-    epochs=20,
-)
+h = model.fit(training_gen, validation_data = validation_gen, steps_per_epoch=training_step_size, validation_steps=validation_step_size, epochs = 20)
 model.save("ISIC-UNet.h5")
