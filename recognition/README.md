@@ -35,7 +35,7 @@ In this repository there are two main files used to preprocess, create the model
 * Converts the data into data sets
     * Within this preprocessing, the data is extracted from images to tensors and one-hot encoded for the label images.
 
-After the preprocessing, the model is then called from model.py and then compiled and trained for 50 epochs with training and validation batch sizes of 10. Plots of epoch vs loss and accuracy are then displayed to visualise the training. The training set is then used to predict each label image. Currently, driver.py script displays every prediction, howoever, the code for this can be commented out depending on user preference and whether or not the predicted labels need to be observed. Refer to Figure 4 for an example on how the predicted lable is displayed. Finally, the average dice coefficient is calculated by first calculating the dice coefficient for each predicted label and then calculating the average dice coefficient for each layer.
+After the preprocessing, the model is then called from model.py and then compiled and trained for 50 epochs with training and validation batch sizes of 10. Plots of epoch vs loss and accuracy are then displayed to visualise the training. The training set is then used to predict each label image. Currently, driver.py script displays every prediction, howoever, the code for this can be commented out depending on user preference and whether or not the predicted labels need to be observed. Refer to Figure 4 for an example on how the predicted label is displayed. Finally, the average dice coefficient is calculated by first calculating the dice coefficient for each predicted label and then calculating the average dice coefficient for each layer.
 
 ## Results and Observations
 
