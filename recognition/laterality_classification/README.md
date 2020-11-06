@@ -79,10 +79,7 @@ downloaded).
  determining the classification label from the file name and ensuring minimal
  data leakage across the sets.*
 * Performs initial dataset inspection: prints ratio of each class, and 
- visualises random images from each set paired with their labels.
- 
-![](resources/visualisation_of_testing_set.png)
-![](resources/visualisation_of_training_set.png)
+ visualises random images from each set paired with their labels (See Appendix A, B & C).
 * Creates an instance of LateralityClassifier, creates a keras model from it,
  compiles, and trains this model on the processed data.
 * Performance over epochs of training is plotted
@@ -104,3 +101,22 @@ ensure that the training and validation set do not contain any images from the
 same unique patient.
 
 ## Results
+
+
+## Appendix
+### Appendix A
+![](resources/visualisation_of_testing_set.png)
+### Appendix B
+![](resources/visualisation_of_training_set.png)
+### Appendix C
+Example output after initial dataset inspection
+
+```
+unique patients in entire dataset:  101
+unique patients in training set:  38
+unique patients in testing set:  8
+number of patients in training and testing:  0
+
+proportion of right knee in training set: 3920 6000
+proportion of right knee in test set: 560 1500
+```
