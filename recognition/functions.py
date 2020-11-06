@@ -3,22 +3,31 @@
 
 # In[1]:
 
+import tensorflow as tf
+import random
+import pandas as pd
+import matplotlib.pyplot as plt
+from tensorflow.keras import layers
+import os, time 
+import numpy as np
+import cv2 
+import glob 
+from keras.preprocessing.image import load_img
+from keras.preprocessing.image import img_to_array
+from keras.backend.tensorflow_backend import set_session
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
-def get_data(dir_data):
-    nm_imgs = os.listdir(dir_data)
-    X_train = []
-    img_shape     = (56, 56, 1)
-    for i, myid in enumerate(nm_imgs):
-        image = load_img(dir_data + "/" + myid,
-                         target_size=img_shape[:2],color_mode = "grayscale")
-        image = img_to_array(image)
-        X_train.append(image)
-    X_train = np.array(X_train)
-    return(X_train)
+def image_data(img_dir):
+    data_path = os.path.join("D:\\u_net\\keras_png_slices_data\\"+img_dir,'*g') 
+    files = glob.glob(data_path) 
+    data = [] 
+    for f1 in files: 
+        img = cv2.imread(f1) 
+        data.append(img) 
+    return(np.array(data))
 
 
 # In[2]:
-
 
 def make_generator_model():
     model = tf.keras.Sequential()
@@ -179,6 +188,7 @@ def generate_and_save_images(model, epoch, test_input):
 
 
 # In[ ]:
+
 
 
 
