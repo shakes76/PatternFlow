@@ -115,7 +115,7 @@ train_images=np.array(train_images)
 train_images.shape
 
 
-# In[23]:
+# In[13]:
 
 
 for i in ground_images:
@@ -163,7 +163,7 @@ X_train, X_test, y_train, y_test = train_test_split(train_images, ground_img, te
 # In[19]:
 
 
-inputs_layer = Input((256,256,3))
+inputs_layer = Input(shape=(256,256,3))
 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs_layer)
 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -211,13 +211,19 @@ model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics
 model.summary()
 
 
-# In[24]:
+# In[20]:
 
 
-history = model.fit(X_train,y_train, epochs=25,batch_size=8, verbose=1)
+history = model.fit(X_train,y_train, epochs=20,batch_size=10, verbose=1)
 
 
 # In[ ]:
+
+
+
+
+
+# In[21]:
 
 
 smooth=1
