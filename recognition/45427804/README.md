@@ -53,9 +53,9 @@ Because the background color 0 accounts for more than 80%. It is a severely unba
 
 # The result
 
-dice_coefficient: 0.9552 which achieves our goal.
+dice_coefficient: 0.9552 which achieves our goal and the performance is good.
 
-Using command below to save best result
+Using command below to save the best result
 ```python
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
@@ -65,12 +65,13 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True)
 ```
 
-each label's dice coefficient score from 0 to 3:
+Each label's dice coefficient score from 0 to 3:
 [0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
 
 ![](images/validation_loss.png)
+When the epoch increases, the distance between training loss and val_loss also increases, which means that the model will overfitting after keep training.
 
-![](images/Dice_coeff.png width=200)
-<img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="500" height="400" />
+The plot below shows how dice_coefficient changes during training
+<img src="https://github.com/ShengChih-Lin/PatternFlow/blob/topic-recognition/recognition/45427804/images/Dice_coeff.png" width="450" height="350" />
 
 
