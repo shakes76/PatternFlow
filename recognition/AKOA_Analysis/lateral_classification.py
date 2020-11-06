@@ -10,7 +10,7 @@ def train(shape, epochs, image_train, label_train, image_test, label_test):
 
     model = models.Sequential()
     model.add(layers.InputLayer(input_shape=shape))
-    model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
     model.add(layers.Flatten())
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
@@ -22,8 +22,8 @@ def train(shape, epochs, image_train, label_train, image_test, label_test):
 
     #Plot accuracy and validation accuracy
     
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.plot(history.history['accuracy'], label='Accuracy')
+    plt.plot(history.history['val_accuracy'], label = 'Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.ylim([0.5, 1.1])
