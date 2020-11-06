@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
-
+import tensorflow.keras.backend as K
 """ This part goes in the driver script """
 import os
 from PIL import Image
@@ -19,9 +19,9 @@ if(len(input_data_paths) != len(gt_data_paths)):
     print("Mismatch in data / labels")
 
 nData = len(input_data_paths)
-trainProp = 0.8
-valProp = 0.1
-testProp = 0.1
+trainProp = 0.7
+valProp = 0.15
+testProp = 0.15
 nTrain = math.floor(trainProp * nData)
 nVal = math.floor(valProp * nData)
 nTest = nData - nTrain - nVal
@@ -61,6 +61,8 @@ for i, path in enumerate(input_data_paths):
 
 # shuffle the data array
 np.random.shuffle(data)
+
+# split the data array into train, val, test input data and labels
 trainData = data[0:nTrain, :, :, 0:3]
 valData = data[nTrain:nTrain+nVal, :, :, 0:3]
 testData = data[nTrain+nVal:, :, :, 0:3]
@@ -69,35 +71,6 @@ valLabels = data[nTrain:nTrain+nVal, :, :, 3:5]
 testLabels = data[nTrain+nVal:, :, :, 3:5]
 
 
-
-"""
-# iterate over data to construct full input data
-for i, path in enumerate(input_data_paths):
-    if i % 200 == 0:
-        print("loading input ", i)
-    img = Image.open(input_data_dir + "\\" + path).resize((nx, ny))
-    # split data into the 3 data sets - done this way so we have no excess mem allocation
-    if i < nTrain:
-        trainData[i] = np.asarray(img) / 255.0
-    elif i >= nTrain and i < nTrain + nVal:
-        valData[i - nTrain] = np.asarray(img) / 255.0
-    else:
-        testData[i - nTrain - nVal] = np.asarray(img) / 255.0
-
-
-# iterate over data to construct full input labels
-for i, path in enumerate(gt_data_paths):
-    if i % 200 == 0:
-        print("loading labels ", i)
-    img = Image.open(gt_data_dir + "\\" + path).resize((nx, ny))
-    if i < nTrain:
-        trainLabels[i] = np.eye(nTypes)[(np.asarray(img) * (1/255)).astype(int)]
-    elif i >= nTrain and i < nTrain + nVal:
-        valLabels[i - nTrain] = np.eye(nTypes)[(np.asarray(img) * (1/255)).astype(int)]
-    else:
-        testLabels[i - nTrain - nVal] = np.eye(nTypes)[(np.asarray(img) * (1/255)).astype(int)]
-"""
-
 """ FUNCTION TO COMPUTE DICE SCORE 
     Inputs: two numpy arrays 
 """
@@ -105,11 +78,39 @@ def diceScore(a, b):
     aIntB = np.logical_and(a == 1, b == 1)
     return 2 * aIntB.sum() / (a.sum() + b.sum())
 
-# TEST - please delete
-print("test dice score, should be 1: ", diceScore(trainLabels[100,:,:,:].argmax(axis=2), trainLabels[100,:,:,:].argmax(axis=2)))
-print("test dice score, should be < 1: ", diceScore(trainLabels[100,:,:,:].argmax(axis=2), trainLabels[200,:,:,:].argmax(axis=2)))
+"""
+    Metric function to compute the dice score during training
+"""
+def dice_metric(y_true, y_pred, epsilon=1e-6):
+    y_true_am = K.argmax(y_true, axis=3)
+    y_pred_am = K.argmax(y_pred, axis=3)
+
+    # calculate sums over the x and y axis of each label frame in the batch
+    axes = tuple(range(1, len(y_pred_am.shape)))
+
+    # calculate the dice coefficient according to the formula (square y_true, y_pred cause it trains better)
+    num = 2. * K.cast(K.sum(y_true_am * y_pred_am, axes), 'float32')
+    denom = K.cast(K.sum(y_true_am + y_pred_am, axes), 'float32')
+
+    # as this loss is being called on a batch of samples, take the average loss over the whole batch
+    return K.mean(num / denom)
 
 """ This part goes in the model script"""
+
+# soft_dice loss function to train against
+def soft_dice_loss(y_true, y_pred, epsilon=1e-6):
+
+    # calculate sums over the x and y axis of each label frame in the batch
+    axes = tuple(range(1, len(y_pred.shape) - 1))
+
+    # calculate the dice coefficient according to the formula (square y_true, y_pred cause it trains better)
+    num = 2. * K.cast(K.sum(y_true * y_pred, axes), 'float32')
+    denom = K.cast(K.sum(K.square(y_true) + K.square(y_pred), axes), 'float32')
+
+    # as this loss is being called on a batch of samples, take the average loss over the whole batch
+    # use the epsilon to make sure we have no divide by 0
+    return 1. - K.mean((num + epsilon) / (denom + epsilon))
+
 
 ### STANDARD U-NET
 # down path
@@ -166,20 +167,29 @@ conv_18 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(conv_17)
 conv_19 = layers.Conv2D(2, (1, 1), activation='softmax', padding='same')(conv_18)
 
 unet = tf.keras.Model(inputs=input_layer, outputs=conv_19)
-unet.compile(optimizer='adam', loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False), metrics=['accuracy'])
+# unet.compile(optimizer='adam', loss = tf.keras.losses.BinaryCrossentropy(from_logits=False, label_smoothing=0), metrics=[tf.keras.metrics.BinaryAccuracy()])
+unet.compile(optimizer='adam', loss = soft_dice_loss, metrics=[dice_metric])
 print(unet.summary())
 
-h = unet.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=16, epochs=3)
+h = unet.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=16, epochs=30)
 
-
+# save unet model after training
+unet.save("unet_model")
 
 
 """ PLOTTING STUFF - Should be in driver script i think"""
-plt.plot(h.history['accuracy'])
-plt.plot(h.history['val_accuracy'])
 
-samplePrediction_1 = unet.predict(trainData[100:101])
-samplePrediction_2 = unet.predict(trainData[200:201])
+plt.plot(h.history['dice_metric'], label="Training Dice Coefficient")
+plt.plot(h.history['val_dice_metric'], label="Validation Dice Coefficient")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.figure()
+plt.plot(h.history['loss'], label="Training loss")
+plt.plot(h.history['val_loss'], label="Validation loss")
+plt.ylabel("Loss")
+plt.xlabel("Epoch")
+plt.legend()
 
 # compute test data prediction
 testPredictions = unet.predict(testData)
@@ -190,11 +200,15 @@ for i in range(nTest):
     avgDice += diceScore(testPredictions[i,:,:,:].argmax(axis=2), testLabels[i,:,:,:].argmax(axis=2))
 avgDice /= nTest
 print("Average dice score on test set is: ", avgDice)
-#print("Dice score example 1: ", diceScore(samplePrediction_1[0,:,:,:].argmax(axis=2), trainLabels[100,:,:,:].argmax(axis=2)))
-#print("Dice score example 2: ", diceScore(samplePrediction_2[0,:,:,:].argmax(axis=2), trainLabels[200,:,:,:].argmax(axis=2)))
+
+samplePrediction_1 = unet.predict(testData[0:1])
+samplePrediction_2 = unet.predict(testData[10:11])
+
+print("Dice score example 1: ", diceScore(samplePrediction_1[0,:,:,:].argmax(axis=2), testLabels[0,:,:,:].argmax(axis=2)))
+print("Dice score example 2: ", diceScore(samplePrediction_2[0,:,:,:].argmax(axis=2), testLabels[10,:,:,:].argmax(axis=2)))
 
 plt.figure()
-plt.imshow(trainData[100])
+plt.imshow(testData[0])
 plt.figure()
 plt.imshow(samplePrediction_1[0,:,:,0])
 plt.figure()
@@ -203,7 +217,7 @@ plt.figure()
 plt.imshow(samplePrediction_1[0,:,:,:].argmax(axis=2))
 
 plt.figure()
-plt.imshow(trainData[200])
+plt.imshow(testData[10])
 plt.figure()
 plt.imshow(samplePrediction_2[0,:,:,0])
 plt.figure()
