@@ -75,6 +75,23 @@ avg = s/len(test_input_images)
 print('Average DSC: ',avg)
 
 #plot the result
+def plot_segment(model, X_test, y_test, dsc):
+    """
+    Plot input, groundtruth and prediction.
+    """
+    fig, ax = plt.subplots(3, 6, figsize = (16,8))
+    for i in range(6):
+        ax[0][i].imshow(X_test[i])
+        ax[0][i].get_xaxis().set_visible(False)
+        ax[0][i].get_yaxis().set_visible(False)
+        ax[1][i].imshow(y_test[i])
+        ax[1][i].get_xaxis().set_visible(False)
+        ax[1][i].get_yaxis().set_visible(False)
+        ax[2][i].imshow(tf.math.round(model.predict(X_test[i][np.newaxis,:,:,:]))[0])
+        ax[2][i].get_xaxis().set_visible(False)
+        ax[2][i].get_yaxis().set_visible(False)
+        ax[2][i].set_title('dsc: '+str(round(dsc[i],2)))
+        
 image_dsc.sort()
 
 a = 100 
