@@ -17,9 +17,9 @@ def calculate_ssim(predictions, test_sample):
     for x_test in test_sample:
         for i in range(size):
             # the generated image
-            generated_img = tf.image.convert_image_dtype(tf.squeeze(predictions[i]), dtype=tf.float32)
+            generated_img = tf.image.convert_image_dtype(predictions[i], dtype=tf.float32)
             # the reference image
-            reference_img = tf.image.convert_image_dtype((tf.squeeze(x_test[i])), dtype=tf.float32)
+            reference_img = tf.image.convert_image_dtype(x_test[i], dtype=tf.float32)
             # the ssim of this pair of images
             ssim_total += tf.image.ssim(reference_img, generated_img, max_val=1.0)
         # return the average structural similarity
@@ -147,7 +147,7 @@ def save_model(model, encoder_name, decoder_name):
 
 if __name__ == '__main__':
     # define constants
-    epochs = 30
+    epochs = 5
     latent_dimension = 2
 
     # train_img_dir stores the training images
