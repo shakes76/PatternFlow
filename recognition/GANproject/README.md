@@ -28,16 +28,16 @@ I also did not follow several specifications as I found they either did not work
 * I used dropout layers in my discriminator to make my discriminator learn more slowly. I did not try running the GAN without dropout layers so I'm not sure if this had any real effect, but the current model is quite effective.
 
 ## Data:
-Data consists of all the non-segmented OASIS data (9664 training images, 544 test images, 1120 validation images). The size of these images are 256x256 and are greyscale.
+Data consists of all the non-segmented OASIS data (9664 training images, 544 test images, 1120 validation images). The size of these images are 256x256 and are greyscale with pixel values ranging from 0 to 255.
 
 ## Model script
-The model script contains 2 functions
+The model script contains 2 functions, a generator and discriminator
 
 ### Generator
-The generator generates 256 x 256 images and is designed to take an input noise vector with latent space of size 256. Batchnorm is used after every convolutional layer except the last one. 
+The generator generates 256 x 256 images and is designed to take an input noise vector with latent space of size 256. Batchnorm is used after every convolutional layer except the last one. Each layer uses LeakyReLU with slope of 0.2 for each layer except the last which has no activation function (when no activation function is specified the default activation is linear).
 
 ### Discriminator
-The discriminator takes an input image size of 256 x 256 and returns one output value. Its main objective is to classify the input images as real or fake by trying to minimise its loss. Batchnorm is used after every convolutional layer except the last one. I also used dropout layers with a dropout of 0.4.
+The discriminator takes an input image size of 256 x 256 and returns one output value. Its main objective is to classify the input images as real or fake by trying to minimise its loss. Batchnorm is used after every convolutional layer except the last one. I also used dropout layers with a dropout of 0.4. Each layer uses LeakyReLU with slope of 0.2 for each layer except the last which has no activation function (when no activation function is specified the default activation is linear).
 
 ## Driver script
 ### Dependencies
@@ -60,10 +60,10 @@ The OASIS dataset contains 6 folders, however, only 3 of those folders are relev
 These images were loaded for each folder and then concatenated into a single variable containing all the images, there were a total of 11328 images.
 
 ### Preprocessing the data
-As per the paper [1], I scaled the image pixel values so that they were between -1 and 1. 
+As per the paper [1], I scaled the image pixel values so that they were between -1 and 1. I did not change the image dimensions.
 
 ### Loss functions and optimisers
-The loss for the discriminator was defined as the sum of the binary crossentropy of classifying the real images and the binary crossentropy of classifying the fake images. Which means that loss is minimised for the discriminator if it is able to correctly classify real images as real and fake images as fake. The loss for the generator was defined as the binary crossentropy of fake images with real image labels. This means the loss for the generator is minimised if its generated images are classified as real.
+The loss for the discriminator was defined as the sum of the binary crossentropy of classifying the real images and the binary crossentropy of classifying the fake images. Which means that loss is minimised for the discriminator if it is able to correctly classify real images as real and fake images as fake. The loss for the generator was defined as the binary crossentropy of fake images with real image labels. This means the loss for the generator is minimised if its generated images are classified as real. 
 
 I used the Adam optimiser with learning rate 0.0002 for the generator and a learning rate of 0.0001 for the discriminator as I found the generator loss was not growing as quickly as I would have liked when the discriminator learning rate was 0.0002.
 
