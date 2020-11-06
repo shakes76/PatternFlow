@@ -19,9 +19,9 @@ I train two models simultaneously.
 #### Result after 400 Epochs
 ![avatar](./image/example_output.png)
 #### Example Outputs
-Generate a 256$\times$256 image with a 100x1 random normal noise with the trained generator model. 
+Generate a 256$\times$256 image with a 100x1 random normal noise with the trained generator model. <br/>
 ![avatar](./image/generated_example.png)<br/>
-Compare the generated image with images in the original data set and calculate the max value of Structured Similarity (SSIM).
+Compare the generated image with images in the original data set and calculate the max value of Structured Similarity (SSIM).<br/>
 **Note: Structured Similarity (SSIM): 0.6319508**
 ___
 ## Algorithm Code
@@ -110,7 +110,7 @@ ___
 - Keras
 ___
 ## OASIS Brain Data Set
-OASIS Brain data set - This is part of the OASIS brain study with segmentation labels.<br/>In the training set, there are 9664 brain images of 256$\times$256 pixel in grayscale. For the model training, the original size of images(256$\times$256) will be used.
+OASIS Brain data set - This is part of the OASIS brain study with segmentation labels.<br/>In the training set, there are 9664 brain images of 256x256 pixel in grayscale. For the model training, the original size of images(256x256) will be used.
 ___
 ## Author
 **Ruixiang Ma<br/>45511365**
