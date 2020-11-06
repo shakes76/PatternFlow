@@ -48,12 +48,19 @@ In this model:
 
 # Model Output:
 -	Accuracy plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
-![Accuracy plot]()
+
+![Accuracy plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/accuracy_plot.png)
+
 -	Dice loss plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
-![Dice loss plot]()
--	Overall dice score of the dataset: 
+
+![Dice loss plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/loss_plot.png)
+
+-	Overall dice score of the dataset: *0.8878574*
+
 -	Plot input image, true image and predicted image
-![final image]()
+
+![final image](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/final_output.JPG)
+
 
 # Reference:
 O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,” in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015, ser. Lecture Notes in Computer Science, N. Navab, J. Hornegger, W. M. Wells, and A. F. Frangi, Eds. Cham: Springer International Publishing, 2015, pp. 234–241.
