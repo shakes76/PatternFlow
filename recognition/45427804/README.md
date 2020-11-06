@@ -35,4 +35,12 @@ The shape of Unet network structure is similar to U like the picture above. It c
 
 # UNET++
 ![](images/unet++.png)
+* The blue and green parts are the parts added by Unet++ to UNet. There are L1, L2, L3 and L4 on the right, these are the settings of Unet++ for different depths of the network. The green arrow indicates up-sampling, the same as UNet, and the black down arrow indicates down-sampling, the same as UNet.
+* The blue arrow indicates skip connection, and each level is a very standard DenseNet structure. Each prototype unit represents a series of operations of convolution + activation function.
+
+# Prediction results
+
+# Dice_Cofficient
+
+
 
