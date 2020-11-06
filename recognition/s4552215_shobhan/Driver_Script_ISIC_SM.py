@@ -36,7 +36,7 @@ from keras import backend as K
 import UNET_Model_Compile_ISIC_SM as UNC
 import sys
 
-# To Provide the input and response image paths from the command line
+# To Provide the input image and response image paths from the command line
 img_path = str(sys.argv[1])
 seg_path = str(sys.argv[2])
 img_width = 256
