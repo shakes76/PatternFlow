@@ -55,6 +55,7 @@ Because the background color 0 accounts for more than 80%. It is a severely unba
 
 dice_coefficient: 0.9552 which achieves our goal.
 
+Using command below to save best result
 ```python
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
@@ -66,6 +67,8 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 each label's dice coefficient score from 0 to 3:
 [0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
+
+![](images/valisation loss.png)
 
 
 
