@@ -15,7 +15,8 @@ def train(shape, epochs, image_train, label_train, image_test, label_test):
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
     model.add(layers.Dense(1, activation='sigmoid'))
-
+    
+    #Binary cross entropy loss function was chosen because there are only two classes
     model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy', 'mse'])
 
     history = model.fit(image_train, label_train, epochs=epochs, validation_split=0.2)
