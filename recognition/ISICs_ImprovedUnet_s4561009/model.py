@@ -1,3 +1,13 @@
+'''
+Model script for U-Net and Improved U-Net
+
+@author Vincentius Aditya Sundjaja
+@student_number 45610099
+@email s4561009@student.uq.edu.au
+@course COMP3710 - Pattern Recognition
+@date 6 November 2020
+'''
+
 from tensorflow.keras import models, layers, Model, Input
 from tensorflow.keras.layers import Activation, Add, Conv2D, BatchNormalization, Dropout, LeakyReLU, UpSampling2D, MaxPooling2D, concatenate
 import tensorflow_addons as tfa
@@ -171,7 +181,7 @@ def improved_unet(num_output_classes, input_size=(256,256,3)):
 
     inputs = Input(input_size)
 
-    # Encoder path, [16,32,64,128,256]
+    ## Encoder path (context pathway), [16,32,64,128,256]
     conv1 = Conv2D(INIT_FILTER * 1, (3, 3), activation = leakyReLu, padding="same")(inputs)
     conMod1 = context_module(conv1, INIT_FILTER * 1)
     add1 = Add()([conv1, conMod1])
@@ -192,7 +202,7 @@ def improved_unet(num_output_classes, input_size=(256,256,3)):
     conMod5 = context_module(conv5, INIT_FILTER * 16)
     add5 = Add()([conv5, conMod5])
 
-    # Decoder path. [128, 64, 32, 16]
+    ## Decoder path (localization pathway). [128, 64, 32, 16]
     up1 = upsampling_module(add5, INIT_FILTER * 8, activation = leakyReLu)
     concat1 = concatenate([add4, up1])
 

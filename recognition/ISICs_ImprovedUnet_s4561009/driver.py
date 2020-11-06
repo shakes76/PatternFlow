@@ -1,8 +1,20 @@
+'''
+Driver script for training and predicting the ISIC 2018 Challenge dataset
+using the Improved U-Net network architecture.
+
+@author Vincentius Aditya Sundjaja
+@student_number 45610099
+@email s4561009@student.uq.edu.au
+@course COMP3710 - Pattern Recognition
+@date 6 November 2020
+'''
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
 import cv2
+import os
 
 from matplotlib import image
 from pathlib import Path
@@ -95,9 +107,9 @@ def process_data(image, label):
     return image, label   
 
 
-######################################################
-################### MODEL TRAINING ###################
-######################################################
+#####################################################################
+################### MODEL TRAINING AND PREDICTING ###################
+#####################################################################
 def dice_coef(y_true, y_pred, smooth=1.0):
     """ Function to calculate Dice similarity Coefficient between ground truth label image
         and the predicted label image
@@ -128,7 +140,7 @@ def dice_coef_loss(y_true, y_pred):
     """ 
     return 1-dice_coef(y_true, y_pred)
 
-def display(image, ground_truth, prediction, result_dir, num):
+def display(image, ground_truth, prediction, result_dir, output_class_num, num):
     """ Function to display/compare the original image, ground truth label, and 
         prediction label.
 
@@ -169,12 +181,35 @@ def display(image, ground_truth, prediction, result_dir, num):
         print("DICE SIMILARITY FOR INPUT {}: {}".format(i, dice_coef(ground_truth[i], prediction[i])))
     plt.savefig(result_dir + "results.png")
 
-    
-def show_predictions(processed_test_ds, result_dir, num=3):
+def show_predictions(model, processed_test_ds, result_dir, output_class_num, num=3):
     image_test_batch, label_test_batch = next(iter(processed_test_ds.batch(num)))
     prediction = model.predict(image_test_batch)
-    display(image_test_batch, label_test_batch, prediction, num)
+    display(image_test_batch, label_test_batch, prediction, result_dir, output_class_num, num)
 
+def show_plots(history, result_dir):
+    plt.subplot(211)
+    plt.title('Dice Similarity Coefficient Loss')
+    plt.plot(history.history['loss'], label='train')
+    plt.plot(history.history['val_loss'], label='val')
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss (DSC)")
+
+    # plot accuracy during training
+    plt.subplot(212)
+    plt.title('Dice Similarity Coefficient')
+    plt.plot(history.history['dice_coef'], label='train')
+    plt.plot(history.history['val_dice_coef'], label='val')
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy (DSC)")
+
+    plt.tight_layout()
+    plt.savefig(result_dir + "plots.png")
+
+## GLOBAL VARIABLES
+IMG_HEIGHT = 192
+IMG_WIDTH = 256
 
 #####################################################
 ################### MAIN FUNCTION ###################
@@ -187,13 +222,12 @@ def main():
     isic_groundTruth = sorted(glob.glob(isic_groundTruth_path))
 
     result_images_dir = "result_images/"
-    os.makedirs(result_dir, exist_ok=True)
+    os.makedirs(result_images_dir, exist_ok=True)
 
-    ## VARIABLES
+    ## PARAMETERS
     DATASET_SIZE = len(isic_input)
     BATCH_SIZE = 32
-    IMG_HEIGHT = 192
-    IMG_WIDTH = 256
+    NUM_OF_EPOCH = 10
 
     TRAIN_SIZE = int(0.7 * DATASET_SIZE)
     VAL_SIZE = int(0.2 * DATASET_SIZE)
@@ -236,12 +270,13 @@ def main():
     ## TRAIN THE MODEL
     history = model.fit(processed_train_ds.batch(BATCH_SIZE), 
                         validation_data=processed_val_ds.batch(BATCH_SIZE), 
-                        epochs=1)
+                        epochs=NUM_OF_EPOCH)
+    show_plots(history, result_images_dir)
     print()
 
     ## Show some predictions result
     print("Close the images to continue...")
-    show_predictions(processed_test_ds, result_dir)
+    show_predictions(model, processed_test_ds, result_images_dir, output_class_num)
     print()
 
     ## EVALUATE THE TRAINED MODEL

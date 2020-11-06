@@ -49,13 +49,15 @@ However, because the ISIC datasets are 2D images, the network in this project is
 	Figure 2. Advanced U-Net Network Architecture
 </p>
 
-This architecture includes a context module that encodes increasingly abstract representations of the input as it progress deeper into the network. Then, a localization module is used to recombine the representations with shallower feature to precisely localize the structures of interest. 
+This architecture includes a _context module_ that encodes increasingly abstract representations of the input as it progress deeper into the network. Then, a _localization module_ is used to recombine the representations with shallower feature to precisely localize the structures of interest. 
 
 It is done by doing an upsampling, and concatenating the result with the corresponding context module, then followed by the localization module.
 
-Segmentation layers are also integrated at different levels of the network and combining them via element-wise summation to form the final network output.
+_Segmentation layers_ are also integrated at different levels of the network and combining them via element-wise summation to form the final network output.
 
-Throughout the network we use leaky ReLU nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions.
+Throughout the network we use **_Leaky ReLU_** nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions.
+
+**The input layer** is _(image height, image width, 3)_, with 3 as the image channel.
 
 **Context Module**, context_module() in model.py
  - Instance Normalization
@@ -74,8 +76,10 @@ Throughout the network we use leaky ReLU nonlinearities with a negative slope of
  - Conv2D 3x3 with Leaky ReLU as activation function 
  - Conv2D 1x1 with Leaky ReLU as activation function
 
+ **The output layer** uses a _sigmoid_ activation function because it is a binary classification.
+
 ### Metrics
-The metrics used in this model is Dice Similarity Coefficient [(DSC)](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
+The metrics used in this model is Dice Similarity Coefficient [(DSC)](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient), which is the most used metric in validating medical volume segmentations
 
 The DSC used in this project is the following:
 <p  align="center">
@@ -114,9 +118,11 @@ This file is for creating the U-Net model. There are 2 model, the original U-Net
 This file is to run the whole project. It includes:
 
  - Splitting the dataset into training, validation, and testing
-	 - The split ratio is 0.7, 0.2, 0.1
+	 - The split ratio used is the common one which is 0.7, 0.15, 0.15 respectively. The dataset is large enough so that the model can have more training data to learn.
  - Data preprocessing (using tensorflow.data.Dataset)
-	 - The label image is not one-hot encoded since there is only 1 foreground class.
+	 - The images are resized to 192x256.
+	 - Both input and label images are normalized (divided by 255). The label images are then rounded off to 0 or 1 (binary images).
+	 - The label image is not one-hot encoded since there is only 1 foreground class. Also, it seems that doing the one hot encoding overfits the training.
  - Model training
 	 - The model is trained over 10 epochs with a batch size of 32 in each epoch.
  - Model evaluation
@@ -140,7 +146,16 @@ In the above result, the dice similary coefficients are:
 </p>
 
 <p align="center"> 
-	Figure 4. DSC for figure 1
+	Figure 4. DSC for Figure 3
+</p>
+
+Here is the example of plots of the metrics after 10 epochs:
+<p align="center"> 
+	<img src="./images/metrics.png" />
+</p>
+
+<p align="center"> 
+	Figure 5. DSC Loss and Metrics Plots
 </p>
 
 Using the tensorflow model evaluate function, here is the result:
@@ -149,7 +164,7 @@ Using the tensorflow model evaluate function, here is the result:
 </p>
 
 <p align="center"> 
-	Figure 5. Model evaluate result
+	Figure 6. Model Evaluate Result
 </p>
 
 And here is the average DSC result from the manual calculation of the predicted test images:
@@ -158,7 +173,7 @@ And here is the average DSC result from the manual calculation of the predicted 
 </p>
 
 <p align="center"> 
-	Figure 6. Average DSC
+	Figure 7. Average DSC
 </p>
 
 You can also access the notebook [here](./notebooks/driver-notebook-improvedUnet.ipynb).
