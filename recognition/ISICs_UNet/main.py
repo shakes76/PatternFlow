@@ -4,6 +4,8 @@
 Driver script for ISICs UNet recognition problem.
 
 Created by Christopher Bailey (45576430) for COMP3710 Report.
+
+Segments of code in this file are based on code from TensorFlow documentation pages
 """
 
 

@@ -7,15 +7,18 @@ Data is extracted from the Preprocessed ISIC 2018 Melanoma Dermoscopy Dataset
 provided on course blackboard.
 
 Segments of code in this file are based on code from COMP3710-demo-code.ipynb
-from COMP3710 Guest Lecture and code from TensorFlow tutorial pages.
+from COMP3710 Guest Lecture, code written by written by Karan Jakhar and code
+from TensorFlow tutorial pages.
 """
 
 import tensorflow as tf
 
+# Image size specification
 IMAGE_WIDTH = 256  # requires 256 instead of 512 with 6GB VRAM
 IMAGE_HEIGHT = 192  # requires 192 instead of 384 with 6GB VRAM
 IMAGE_CHANNELS = 3
 
+# Mask size specification
 MASK_WIDTH = 256  # requires 256 instead of 512 with 6GB VRAM
 MASK_HEIGHT = 192  # requires 192 instead of 384 with 6GB VRAM
 MASK_CHANNELS = 1
