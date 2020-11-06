@@ -36,6 +36,6 @@ Combined model is built by sequential adding generator and discriminator togethe
 
 Whole Training takes 20-25 minutes for 15000 Epochs to complete. Below represents the Training loss for DCGAN and generated images for each epochs(mentioned on top), 4 noise vectors are given as input to generator network and crossponding 4 predicted image results are shown.
 
-![](https://github.com/Pragatheeswari/epic1/blob/master/Training_loss_plot.jpg)
+![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-4/Training_loss_plot.jpg)
 
-![](https://github.com/Pragatheeswari/epic1/blob/master/DCGAN_generator_images.jpg)
+![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-4/DCGAN_generator_images.jpg)
