@@ -133,23 +133,30 @@ def train_step(images,BATCH_SIZE,noise_dim,generator,discriminator,generator_opt
 
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+    
+    return(gen_loss,disc_loss)
 
 
 # In[10]:
 
 
-def train(dataset, epochs):
+def train(dataset, epochs,generator,discriminator,generator_optimizer,discriminator_optimizer) :
     for epoch in range(epochs):
         start = time.time()
+        
+        g_loss = []
+        d_loss = []
 
         for image_batch in dataset:
-            train_step(image_batch)
+            (gen_loss,disc_loss)=train_step(image_batch,128,100,generator,discriminator,generator_optimizer,discriminator_optimizer)
 
         # Produce images 
         display.clear_output(wait=True)
         generate_and_save_images(generator,
                              epoch + 1,
                              seed)
+        g_loss.append(g_loss)
+        d_loss.append(d_loss)
 
        # Save the model every 20 epochs
         if (epoch + 1) % 20 == 0:
@@ -162,12 +169,13 @@ def train(dataset, epochs):
     generate_and_save_images(generator,
                            epochs,
                            seed)
+    return(g_loss,d_loss)
 
 
 # In[11]:
 
 
-# genearte images
+# generate images
 
 
 # In[12]:
