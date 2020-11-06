@@ -8,6 +8,13 @@ import random
 
 
 def proof_no_set_overlap(train_image_names, test_image_names):
+    """
+    A method for proving the training and validation sets have no overlapping
+    patients, and hence no data-leakage.
+    Args:
+        train_image_names: a list of names of images in training set
+        test_image_names: a list of names of images in validation set
+    """
     unique_train_patients = []
     unique_test_patients = []
 
@@ -28,6 +35,19 @@ def proof_no_set_overlap(train_image_names, test_image_names):
 
 
 def split_by_patients(image_names, N_train, N_test):
+    """
+    A method for splitting the dataset into training and testing sets.
+    The returned sets have no data leakage by ensuring that a patient is unique
+    to only 1 of the sets. This is verified by proof_no_set_overlap().
+    Args:
+        image_names: A list of all the image names in the full dataset
+        N_train: The number of images to have in the training set
+        N_test: The number of images to have in the validation set
+
+    Returns:
+        training_image_names: A list of image names apart of training set
+        testing_image_names: A list of image names apart of validation set
+    """
     patient_batches = dict()
     train_image_names = []
     test_image_names = []
@@ -62,12 +82,25 @@ def split_by_patients(image_names, N_train, N_test):
 
 
 def process_dataset(dir_data, N_train, N_test):
+    """
+    A function for creating the tf arrays for the X and y training and
+    validation sets from the image files in this directory 'dir_data'.
+    Ensures no data leakage in sets by calling split_by_patients()
+    Args:
+        dir_data: A directory where all images in the dataset are located
+        N_train: The number of images to have in the training set
+        N_test: The number of images to have in the validation set
+
+    Returns:
+        X_train, y_train: The tf array formatted images and their labels
+         for the training set
+        X_test, y_test: The tf array formatted images and their labels
+         for the validation set
+    """
     all_image_names = os.listdir(data_dir)
     # num_total: 18680
     # num left found: 7,760
     # num_right found: 10,920
-
-    # random.shuffle(all_image_names)
 
     train_image_names, test_image_names = split_by_patients(all_image_names,
                                                             N_train, N_test)
@@ -80,6 +113,14 @@ def process_dataset(dir_data, N_train, N_test):
     img_shape = (228, 260, 3)
 
     def get_data(image_names):
+        """
+        Helper function for loading a X and y set based of the image names
+        Args:
+            image_names: The image names to build the data set from
+
+        Returns:
+            X_set, y_set: the tf array of the X and y set built
+        """
         X_set = []
         y_set = []
         for i, name in enumerate(image_names):
@@ -110,6 +151,19 @@ def process_dataset(dir_data, N_train, N_test):
 
 
 def visualise_images(X, y, set_size, title, seed=0):
+    """
+    A method for visualising random images from the X set with their given
+    y labels in a plot
+    Args:
+        X: a tf array of greyscale images
+        y: a tf array of binary labels
+        set_size: the number of images/labels in the set
+        title: the string title to give the plot
+        seed: a seed to give the random image picker
+
+    Returns:
+        Nothing, but shows a plot.
+    """
     random.seed(seed)
 
     plt.figure(figsize=(10, 10))
@@ -127,6 +181,19 @@ def visualise_images(X, y, set_size, title, seed=0):
 
 
 def mean_square_error(predictions, actual):
+    """
+    A function to calculate the mean square error between a set of predictions
+    and the actual labels.
+
+    MSE = sum((prediction - actual)^2) / num_labels
+
+    Args:
+        predictions:
+        actual:
+
+    Returns:
+        A float value of the MSE
+    """
     square_diff_sum = 0
 
     if len(predictions) != len(actual):
@@ -139,6 +206,17 @@ def mean_square_error(predictions, actual):
 
 
 def build_train_model(classifier, X_train, y_train, X_test, y_test):
+    """
+    A function for building/compiling/training the classifier keras model,
+    and then calculating/reporting the accuracy on the validation set, matched
+    with visualisation of predictions.
+    Args:
+        classifier: An instance of a LateralityClassifier object
+        X_train: the tf array of images to train on
+        y_train: the tf array of labels to train on
+        X_test: the tf array of images to validate with
+        y_test: the tf array of labels to validate with
+    """
     model = classifier.build_simple_model()
 
     model.summary()
@@ -180,6 +258,11 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
 
 
 if __name__ == "__main__":
+    """
+    The main function, downloads the dataset from the url, picks the set sizes,
+    processes the downloaded dataset in sets, visualises samples from the each 
+    set, initialises the classifier instance, and runs build_train_model().
+    """
     # data_dir = "H:/Desktop/AKOA_Analysis/"
 
     # load up dataset, download if necessary
