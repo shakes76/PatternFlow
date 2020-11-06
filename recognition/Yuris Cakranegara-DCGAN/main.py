@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 import os
 
 def main():
+    # Replace the train_dataset_dir with the actual directory of the training dataset
     train_dataset_dir = "../../../keras_png_slices_data/keras_png_slices_train/"
+
+    # Define where to store the resulting images
     result_dir = "result_images/"
     os.makedirs(result_dir, exist_ok=True)
 

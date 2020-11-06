@@ -35,7 +35,7 @@ class ImageDatasetLoader:
         Returns:
             np.ndarray: The images list in the form of a numpy array.
         """
-        
+
         imgs = np.sort(os.listdir(self.dir_data))
         if (nm_images != None):
             assert type(nm_images) == int, \

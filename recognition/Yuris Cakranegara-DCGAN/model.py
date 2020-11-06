@@ -153,7 +153,6 @@ class OasisDCGAN:
                 # Train the discriminator on this batch
                 discriminator.train_on_batch(X_fake_vs_real, y1)
                 
-                
                 #####################################
                 ## TRAINING THE GENERATOR     ######
                 ###################################
@@ -177,4 +176,4 @@ class OasisDCGAN:
             if (epoch+1)%5 == 0:
                 self.__save_image_result(epoch+1)
                 
-        print("TRAINING COMPLETE")            
+        print("TRAINING COMPLETE")
