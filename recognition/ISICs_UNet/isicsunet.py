@@ -29,7 +29,7 @@ class IsicsUnet:
         self.model = None
 
     @staticmethod
-    def dice_coefficient(y_true, y_pred):
+    def dice_coefficient(y_true, y_pred, smooth=1):
         """
         Calculate Dice similarity coeefficient for use as a metric
 
@@ -37,12 +37,15 @@ class IsicsUnet:
          2*(number of pixels with same class in both masks, ie the union)
          /2*(number of pixels in each mask)
 
-        Based on definition given by https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+        Code for this function written by Karan Jakhar (2019). Retrieved from:
+        https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
         """
-        union = tf.math.equal(y_true, y_pred)
-        numerator = 2*tf.math.reduce_sum(tf.cast(union, tf.float32))
-        denominator = 2*MASK_WIDTH*MASK_HEIGHT
-        return numerator/denominator
+        y_true = tf.keras.backend.flatten(y_true)
+        y_pred = tf.keras.backend.flatten(y_pred)
+        intersection = tf.keras.backend.sum(y_true * y_pred)
+        return (2.*intersection+smooth) / (tf.keras.backend.sum(y_true)
+                                          + tf.keras.backend.sum(y_pred)
+                                          + smooth)
 
     @staticmethod
     def map_fn(image, mask):
