@@ -15,6 +15,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 BATCH_SIZE = 4
 noise_dim = 100
 smooth = 0.8
+EPOCHS = 40
 
 generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
@@ -141,5 +142,8 @@ def generate_image(model, epoch, test_input, images):
     plt.axis('off')
 
     plt.show()
+    
+def run_GAN(dataset):
+    train(dataset, EPOCHS)
 
 

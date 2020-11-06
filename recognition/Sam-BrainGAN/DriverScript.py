@@ -3,6 +3,7 @@ import numpy as np
 import os
 from PIL import Image
 from tqdm import tqdm
+from GANModule import run_GAN
 
 
 input_path = 'input'
@@ -33,3 +34,5 @@ BUFFER_SIZE = 60000
 BATCH_SIZE = 32
 
 train_dataset = tf.data.Dataset.from_tensor_slices(training_data).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+
+run_GAN(train_dataset)
