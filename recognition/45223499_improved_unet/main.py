@@ -117,27 +117,17 @@ print(ave)
 
 # plot test images, masks and predict masks
 #test_X
-plt.figure(figsize=(10, 10))
-for i in range(8):
-    ax = plt.subplot(1, 8, i+1)
-    plt.imshow(test_X[i])
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-plt.show()
-#test_y
-plt.figure(figsize=(10, 10))
-for i in range(8):
-    ax = plt.subplot(1, 8, i+1)
-    plt.imshow(test_y[i], cmap='gray')
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-plt.show()
-# predict_test
-plt.figure(figsize=(10, 10))
-for i in range(8):
-    ax = plt.subplot(1, 8, i+1)
-    plt.imshow(np.round(pred_test[i]), cmap='gray')
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-plt.show() 
+fig, ax = plt.subplots(3,3,figsize=(10, 10))
+ax[0,0].imshow(test_X[12])
+ax[0,1].imshow(test_y[12], cmap='gray')
+ax[0,2].imshow(np.round(pred_test[12]), cmap='gray')
+ax[1,0].imshow(test_X[13])
+ax[1,1].imshow(test_y[13], cmap='gray')
+ax[1,2].imshow(np.round(pred_test[13]), cmap='gray')
+ax[2,0].imshow(test_X[0])
+ax[2,1].imshow(test_y[0], cmap='gray')
+ax[2,2].imshow(np.round(pred_test[0]), cmap='gray')
+ax[0,0].title.set_text("images")
+ax[0,1].title.set_text("ground truth")
+ax[0,2].title.set_text("mask") 
 
