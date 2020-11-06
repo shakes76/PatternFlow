@@ -116,13 +116,10 @@ def generator_loss(fake_output):
 
 
 # In[9]:
-
 @tf.function
-def train_step(images):
-    BATCH_SIZE = 128
-    noise_dim = 100
+def train_step(images,BATCH_SIZE,noise_dim,generator,discriminator,generator_optimizer,discriminator_optimizer):
     noise = tf.random.normal([BATCH_SIZE, noise_dim])
-
+    
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         generated_images = generator(noise, training=True)
         real_output = discriminator(images, training=True)
@@ -146,7 +143,7 @@ def train(dataset, epochs):
         start = time.time()
 
         for image_batch in dataset:
-        train_step(image_batch)
+            train_step(image_batch)
 
         # Produce images 
         display.clear_output(wait=True)
@@ -156,7 +153,7 @@ def train(dataset, epochs):
 
        # Save the model every 20 epochs
         if (epoch + 1) % 20 == 0:
-        checkpoint.save(file_prefix = checkpoint_prefix)
+            checkpoint.save(file_prefix = checkpoint_prefix)
 
         print ('Time for epoch {} is {} sec'.format(epoch + 1, time.time()-start))
 
@@ -177,19 +174,19 @@ def train(dataset, epochs):
 
 
 def generate_and_save_images(model, epoch, test_input):
-  # Notice `training` is set to False.
-  # This is so all layers run in inference mode (batchnorm).
-  predictions = model(test_input, training=False)
+    # Notice `training` is set to False.
+    # This is so all layers run in inference mode (batchnorm).
+    predictions = model(test_input, training=False)
 
-  fig = plt.figure(figsize=(70,70))
+    fig = plt.figure(figsize=(70,70))
 
-  for i in range(predictions.shape[0]):
-      plt.subplot(5, 5, i+1)
-      plt.imshow(predictions[i, :, :, 0], cmap='gray')
-      plt.axis('off')
+    for i in range(predictions.shape[0]):
+        plt.subplot(5, 5, i+1)
+        plt.imshow(predictions[i, :, :, 0], cmap='gray')
+        plt.axis('off')
 
-  plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-  plt.show()
+    plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
+    plt.show()
 
 
 # In[ ]:
