@@ -26,7 +26,7 @@ The network architecture of UNET consists of two main parts. First path is the c
 
 The U-NET architecture is shown below: -
 
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/UNET_architecture.png
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/UNET_architecture.png)
 
 In a nutshell, we have the following relationship: Input (128x128x1) =\&gt; Encoder =\&gt;(8x8x256) =\&gt; Decoder =\&gt;Output (128x128x1).
 
@@ -52,27 +52,27 @@ To run the code in command line we will follow the below steps:
 
 3.All files should be in same path.
 
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Driving_Script_Command.PNG
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Driving_Script_Command.PNG)
 
 **Training Model:**
 
 I have attached few snippets of network architecture and converging stages from model training session as follows:
 
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Model_Archi.png
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Converging_and_Output.PNG
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Model_Archi.png)
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Converging_and_Output.PNG)
 
 **Output:**
 
 - Dice Loss with respect to the number of epochs (Samples shown below).
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_1_Dice_Loss.png
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_1_Dice_Loss.png)
 
 - Accuracy plot with respect to the number of epochs (Samples attached below).
 
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_2_Classification_Accuracy.png
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_2_Classification_Accuracy.png)
 
 - Dice scores as CSV file for all predicted segmentation images (saves in the selected path during training), attached in repository as Dice\_Coefficients\_Test.csv.
 - A random ISIC test sample with lesion image, actual or ground truth segmentation image and predicted segmentation image (Sample attached below).
-https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_3_Segmentation_output.png
+![](https://github.com/smitraDA/PatternFlow/blob/topic-recognition/recognition/s4552215_shobhan/Figure_3_Segmentation_output.png)
 
 - **Conclusion:**
 
