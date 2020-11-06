@@ -15,3 +15,4 @@ The model is a convolutional neural network that consists of one 2d convolutiona
 ## DATA SPLIT
 The dataset had over 18,000 images, each labeled left or right. The training data was 60% of the dataset, the testing data was 25% of the dataset and the validation data was 15% of the dataset. For more information on the dataset, refer to https://nda.nih.gov/oai/ for more information.
 ## EXAMPLE OUTPUTS
+![Accuracy graph](https://raw.githubusercontent.com/josh-lim1234/PatternFlow/topic-recognition/recognition/AKOA_Analysis/graphs/accuracy.png)
