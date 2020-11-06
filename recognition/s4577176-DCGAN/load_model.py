@@ -13,4 +13,5 @@ noise = get_noise(1)
 #generate the random image of size(x*x*3)
 rnd_img = generator_model.predict(noise)[0]
 
-print(rnd_img)
+plt.imshow(rnd_img)
+
