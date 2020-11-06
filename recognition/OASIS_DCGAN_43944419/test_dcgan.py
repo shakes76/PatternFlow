@@ -18,23 +18,15 @@ import modules.losses as losses
 # Check Tensorflow version
 print("Tensorflow version " + tf.__version__)
 
-# Check Current GPU for Google Colab
-# gpu_info = !nvidia-smi
-# gpu_info = '\n'.join(gpu_info)
-# if gpu_info.find('failed') >= 0:
-#   print('No GPU')
-# else:
-#   print(gpu_info)
-
 #parameters
 PATH = '/content/drive/My Drive/Datasets/keras_png_slices_data/keras_png_slices_train/*'
 BATCH_SIZE = 64
-#BATCH_SIZE=16 #OOM ERROR COLAB
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 IMG_SIZE = [256, 256]
 EPOCHS = 1200
 
 # Load the dataset
+print('Loading the OASIS Brain dataset.....')
 image_file_paths = tf.io.gfile.glob(PATH)
 BUFFER_SIZE = len(image_file_paths) + 1
 #shuffle the image file paths.
@@ -62,11 +54,6 @@ noise_dimensions = 100
 gen_input_shape = (noise_dimensions, )
 disc_input_shape = (input_width, input_height, input_channels)
 
-#model parameters
-noise_dimensions = 100
-gen_input_shape = (noise_dimensions, )
-disc_input_shape = (input_width, input_height, input_channels)
-
 # Build the networks
 def generator_network(input_shape):
     '''
@@ -82,16 +69,13 @@ def generator_network(input_shape):
     conv3 = layers.Generator_Norm_Conv2DTranspose(conv2, filters=128)
     conv4 = layers.Generator_Norm_Conv2DTranspose(conv3, filters=128)
     conv5 = layers.Generator_Tanh_Conv2DTranspose(conv4, filters=1)
-    conv6 = layers.Generator_Dilated_Conv2D(conv5, filters=128, dilation_rate=(2,2)) #denoise
-    conv7 = layers.Generator_Dilated_Conv2D(conv6, filters=256, dilation_rate=(3,3)) #denoise
-    conv8 = layers.Generator_Dilated_Conv2D(conv7, filters=1, dilation_rate=(4,4))
-
-    return Model(inputs=input, outputs=conv8)
+   
+    return Model(inputs=input, outputs=conv5, name="generator")
 
 def discriminator_network(input_shape):
     '''
     Receive generator output image and real images from dataset.
-    Outputs binary classficiation: real or fake.
+    Outputs binary classficiation.
     '''
     input = Input(shape=input_shape)
     conv1 = layers.Discriminator_Norm_Dropout_Conv2D(input, filters=64, dropout=0.15)
@@ -119,9 +103,9 @@ def gen_loss(generated_outputs):
 def disc_loss(generated_outputs, real_outputs):
     return losses.discriminator_crossentropy(generated_outputs, real_outputs)
 
-#discriminator fake detection accuracy
+#discriminator fake detection accuracy with threshold > 0.5
 def disc_acc(generated_outputs, real_outputs):
-  return losses.discriminator_accuracy(generated_outputs, real_outputs)
+    return losses.discriminator_accuracy(generated_outputs, real_outputs)
 
 #optimizers
 gen_opt = Adam(learning_rate = 0.0002)
@@ -129,7 +113,7 @@ disc_opt = Adam(learning_rate = 0.0001)
 
 #prediction parameters
 no_gen_images = 9
-seed = tf.random.normal([no_gen_images, noise_dimensions])
+seed = tf.random.normal([no_gen_images, noise_dimensions]) #allows us to track progress of generated brains.
 generated_images_path = '/content/drive/My Drive/dilated_test/'
 
 #Training
@@ -174,10 +158,7 @@ def train(dataset, epochs):
                                                                                time.time()-start))
         print('Disc generated acc {}, real acc {}'.format(generated_acc, real_acc))
         # Produce images for the GIF as we go
-        generate_and_save_images(generator, epoch, seed)
-
-        
-                                                            
+        generate_and_save_images(generator, epoch, seed)                                         
         gen_losses.append(generator_loss)
         disc_losses.append(discriminator_loss)
         generated_accuracy.append(generated_acc)
@@ -198,16 +179,15 @@ def generate_and_save_images(model, epoch, test_input):
         plt.imshow(predictions[i, :, :, 0], cmap='gray')
         plt.axis('off')
         
-    #plt.savefig(generated_images_path+'epoch_{:04d}.png'.format(epoch))
     plt.savefig(generated_images_path + 'epoch_{:04d}.png'.format(epoch), transparent=True)
     plt.show()
 
 #training
-gen_losses, disc_losses, generated_accuracy, real_accuracy = train(training_ds, EPOCHS)
+all_losses = train(training_ds, EPOCHS)
 
 #plot
-plt.plot(np.arange(EPOCHS), gen_losses, label = 'gen_ce_loss')
-plt.plot(np.arange(EPOCHS), disc_losses, label = 'disc_ce_loss')
+plt.plot(np.arange(EPOCHS), all_losses[0], label = 'gen_loss')
+plt.plot(np.arange(EPOCHS), all_losses[1], label = 'disc_loss')
 plt.xlabel('epochs (64 Images per epoch)')
 plt.ylabel('Binary Cross Entropy Loss')
 plt.title('DCGAN Cross Entropy Loss')
