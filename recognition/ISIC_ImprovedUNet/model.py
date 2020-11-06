@@ -1,10 +1,17 @@
 import tensorflow as tf
 from tensorflow import keras
 
+# Global constants
 ConvProp = dict(padding = 'same')
 leakyReLU = tf.keras.layers.LeakyReLU(alpha = 0.01)
 
 def unet():
+	"""
+	The Improved UNet model, based on that of https://arxiv.org/pdf/1802.10508v1.pdf
+
+	Returns:
+		The trained UNet
+	"""
 	start = keras.Input(shape=(256,256,1))
 
 	# Left Side of UNet
