@@ -48,6 +48,16 @@ class IsicsUnet:
                                           + smooth)
 
     @staticmethod
+    def dice_loss(ytrue, y_pred):
+        """
+        Calculate dice distance for use as a loss function
+
+        Interpreted as what proportion of the predictied mask does not match the
+         true mask.
+        """
+        return 1 - IsicsUnet.dice_coefficient(ytrue, y_pred)
+
+    @staticmethod
     def map_fn(image, mask):
         """
         Helper function to map dataset filenames to the actual image data arrays

@@ -15,6 +15,8 @@ def main():
     print(tf.__version__)
 
     # TensorFlow provided code to limit GPU memory growth
+    # Retrieved from:
+    # https://www.tensorflow.org/guide/gpu
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -27,26 +29,28 @@ def main():
             # Memory growth must be set before GPUs have been initialized
             print(e)
 
+    # Initialise and load data into model
     model = IsicsUnet()
-
     model.load_data()
-    #model.visualise_loaded_data()
+    #model.visualise_loaded_data()  # sanity check
 
+    # Set up model
     model.build_model()
     model.model.summary()
-
     model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
-                        loss='binary_crossentropy',
-                        metrics=['accuracy', IsicsUnet.dice_coefficient])
-    #model.show_predictions()
+                        loss=IsicsUnet.dice_loss,
+                        metrics=IsicsUnet.dice_coefficient)
+    #model.show_predictions()  # sanity check
 
+    # Train model
     history = model.model.fit(x=model.train_ds.batch(1),
                               validation_data=model.val_ds.batch(1),
-                              epochs=10)
+                              epochs=3)
     model.show_predictions()
 
+    # Get dice similarity for test set and show result
     print("Evaluate")
-    result = model.evaluate(model.test_ds)
+    result = model.model.evaluate(model.test_ds)
     print(result)
 
     print("END")
