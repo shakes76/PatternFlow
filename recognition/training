@@ -105,3 +105,9 @@ val_loss = history_dict["val_loss"] # loss value of validation set
 val_accuracy = history_dict["val_accuracy"] # accuracy of validation set
 
     
+plt.figure()
+plt.plot(range(epochs),train_loss,label = 'train_loss')
+plt.plot(range(epochs),val_loss, label = 'val_loss')
+plt.legend()
+plt.xlabel('epochs')
+plt.ylabel('loss')
