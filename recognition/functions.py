@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-
+#author : shivajiparala 
+#student.no: 45512746
 # In[1]:
 
 import tensorflow as tf
