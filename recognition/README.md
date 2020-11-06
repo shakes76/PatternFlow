@@ -44,7 +44,9 @@ I will be using batch normalization in both generator and discriminator as it no
 
 ## Activation functions:
 
-In both generator and discriminator i will be using leakyrelu activation function after convolutional and batch normalization layers.For last convolutional layer in generator tanh function is used.
+In both generator and discriminator. i will be using leaky relu activation function after convolutional and batch normalization layers.For last convolutional layer in generator tanh function is used.
+
+In original paper it was metioned that using relu activation function in generator an leaky relu activation whould give better results.I find using leaky relu in both models generate more clear images.Even the Network structure i have initialized differ from the original paper.
 
 # Training process of GAN network:
 
