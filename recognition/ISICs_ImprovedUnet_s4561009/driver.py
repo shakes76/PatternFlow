@@ -230,8 +230,8 @@ def main():
     NUM_OF_EPOCH = 10
 
     TRAIN_SIZE = int(0.7 * DATASET_SIZE)
-    VAL_SIZE = int(0.2 * DATASET_SIZE)
-    TEST_SIZE = int(0.1 * DATASET_SIZE)
+    VAL_SIZE = int(0.15 * DATASET_SIZE)
+    TEST_SIZE = int(0.15 * DATASET_SIZE)
 
     ## Splitting up the dataset for training, validation, and testing
     full_ds = tf.data.Dataset.from_tensor_slices((isic_input, isic_groundTruth))
@@ -273,9 +273,10 @@ def main():
                         epochs=NUM_OF_EPOCH)
     show_plots(history, result_images_dir)
     print()
-
+    print("FINISHED TRAINING...")
+    print()
+    
     ## Show some predictions result
-    print("Close the images to continue...")
     show_predictions(model, processed_test_ds, result_images_dir, output_class_num)
     print()
 
