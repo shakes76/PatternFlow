@@ -1,29 +1,23 @@
 # **Segment the ISICs data set with the Improved UNet**
+
 ## Problem
-The problem is to build an Improved UNet model. And Segment the ISICs data set with all labels having a minimum Dice similarity coefficient of 0.8 on the test set.
+The problem is to build an Improved UNet model to segment the ISICs data set with all labels having a minimum Dice similarity coefficient of 0.8 on the test set.
       
 ##  Algorithm
-The algorithm is to implement a "U-shape" model
+The algorithm is to implement a "U-shape" model which is composed of *Encoder*, *Bridge*, and *Decoder*. 
 
-The input is the normalized image data which resized to (256,256), and split it into train, validation and test dataset. 
+-The Encoder is built with context modules, which lets the UNet go deeper.
 
-The Encoder is built with context modules, which lets the UNet go deeper.
+-The Bridge is built with a upsampling module, which reduces the number of feature maps.
 
-The Bridge is built with upsampling modules, which reduces the number of feature maps.
+-The Decoder is built with localization modules, which reduces the number of feature maps and let the data be the original size.
 
-The Decoder is built with localization modules, which reduces the number of feature maps and let the data be original size.
+The input in this algorithm is the normalized image data which resized to (256,256,3), and split it into train, validation and test dataset. 
+
 ## How it works
 ![unet_structure](./image/unet.png) 
 The context module consists two convolutional layers(convolution kernel is 3 × 3 and padding is 1). And there is a dropout layer to avoid overfitting.Besides, Relu is the activation layer.
 
-The upsampling modules is a unsampling2D layer.
-
-The localization module is a convolutional layer.
-
-## Dependency 
-- Python = 3.7
-- Tensorflow = 2.1.0
-- Tensorflow-Addons
 ## Example 
 ```python
 # build context module
@@ -109,6 +103,11 @@ def improved_u_net(img_size):
 ![output](./image/output.png) 
 
 Average DSC:  0.8534447895381826
+
+## Dependency 
+- Python = 3.7
+- Tensorflow = 2.1.0
+- Tensorflow-Addons
 
 ## Reference
 1. F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
