@@ -54,7 +54,7 @@ def main():
     # Get dice similarity for test set and show result
     print("Evaluate")
     result = model.model.evaluate(model.test_ds.batch(BATCH_SIZE))
-    print(result)
+    print(dict(zip(model.model.metrics_names,result)))
 
     print("END")
 
