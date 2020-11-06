@@ -14,7 +14,7 @@ In the driver.py, it provides a main function to demonstrate how to utilize the 
 
 The dataset used in driver.py is ISIC 2018 challenge data for skin cancer. More information can be found on https://challenge2018.isic-archive.com/. 
 
-In the commond line, type in
+In the command line, type in
 
 ```bash
 python driver.py
@@ -26,7 +26,7 @@ to run the driver.py script. It will print the final DSC score on testing set an
 
 ------
 
-The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. There are two phases fro this model. The frist phase is context aggregation pathway that encodes increasingly abstract representations of the input. The second phase is localization pathway that recombines these representations with shallower features to precisely localize the structures of interest.
+The improved Unet is similar to classical Unet. Compared to U-net, I add BatchNormalization and Dropout into the model. Also, the Relu activation on Convelution layer is changed to Leaky_relu activation. There are two phases for this model. The frist phase is context aggregation pathway that encodes increasingly abstract representations of the input. The second phase is localization pathway that recombines these representations with shallower features to precisely localize the structures of interest.
 
 ## **The problem that it solves**
 
@@ -44,7 +44,7 @@ The whole datset has 2594 raw images and corresponding 2594 ground truth images.
 
 ------
 
-The final DEC in testing set is 0.8296 and the common line output is shown in the next picture.
+The final DSC in testing set is 0.8296 and the command line output is shown in the next picture.
 
 ![screenshoot_of_output](image_results/screenshoot_of_output.png)
 
