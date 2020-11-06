@@ -13,7 +13,7 @@ class DataLoader():
             source = "{}/{}".format(which_file_abs_path, i)
             image_read = mpimg.imread(source)
             # Normalising value
-            image_read = image_read * 2 - 1
+            image_read = image_read * 2 - 1.0
             self.train_set.append(
                 image_read
             )

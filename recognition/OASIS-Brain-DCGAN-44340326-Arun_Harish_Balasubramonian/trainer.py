@@ -109,6 +109,7 @@ class TrainLoader():
             mkdir(path.abspath("./images"))
         
         try:
+            final_epoch = None
             for current_epoch in range(training_epoch):
                 print("STARTED EPOCH {}".format(current_epoch))
                 for idx in range(total_dataset):
@@ -125,7 +126,30 @@ class TrainLoader():
                     # Reverse normalisation
                     generated_image = (generated_image + 1) / 2.0
                     # Save the image
+                    image_title = "{}.png".format(current_epoch)
+                    # Saving epoch
+                    print("Saving image:{}".format(image_title))
+                    # Setting title
+                    plt.title("EPOCH {}".format(idx))
                     plt.imshow(generated_image, cmap="gray")
-                    plt.savefig(path.abspath("./images/{}.png".format(current_epoch)))
+                    plt.savefig(path.abspath("./images/{}".format(image_title)))
+
+                final_epoch = current_epoch
+            if final_epoch is not None:
+                # Save it finally
+                self.generator.save(path.abspath("./output/generator"))
+                self.discriminator.save(path.abspath("./output/discriminator"))
+                # Test samples
+                noise = tf.random.normal([1, NOISE_INPUT_DIM])
+                generated_image = self.generator(noise)[0]
+                # Reverse normalisation
+                generated_image = (generated_image + 1) / 2.0
+                # Save the final image
+                image_title = "{}.png".format(final_epoch + 1)
+                # Saving epoch
+                print("Saving image:{}".format(image_title))
+                # Save the image
+                plt.imshow(generated_image, cmap="gray")
+                plt.savefig(path.abspath("./images/{}".format(image_title)))
         except:
             print("ERROR: Something went wrong during training")

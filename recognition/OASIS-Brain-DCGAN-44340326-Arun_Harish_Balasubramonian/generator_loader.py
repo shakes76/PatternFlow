@@ -11,7 +11,7 @@ class GeneratorLoader():
     def generate(self):
         output_path = path.abspath("./output")
         print_image_path = "{}/image".format(output_path)
-        noise_source = tf.random.uniform([1, NOISE_INPUT_DIM], minval=-1, maxval=1)
+        noise_source = tf.random.normal([1, NOISE_INPUT_DIM])
         image = self.generator_model(noise_source)[0]
         # Reverse normalisation
         image = (image + 1) / 2.0
