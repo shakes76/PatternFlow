@@ -36,7 +36,7 @@ This module contains all the required libraries to run this code.
 
 ### check-gpu.py 
 
-This module is used to check to whether your enviroment is using GPU or not.
+This module is used to check to whether your environment is using GPU or not.
 
 ### helper_functions.py 
 
@@ -64,7 +64,7 @@ This module contains the following functions:
 
 ### main.py 
 
-Module used to store the core algorithm of DACGAN. This function conatins the follwoing functions.
+Module used to store the core algorithm of DACGAN. This function contains the follwoing functions.
     
     1. get_npdata: Used to reszie and rescale the original images.
         required input: size of the training dataset.
@@ -112,7 +112,7 @@ used to store the images going to use in README.md
 
 >>Physical requirements: Windows os 64-bit
 
->>Pthon version used: 3.7.9
+>>Python version used: 3.7.9
 
 ### Requried libraries:
 
@@ -124,7 +124,7 @@ used to store the images going to use in README.md
 6. PIL 
 7. tqdm
 
-please make sure you install all these libraries using pip or conda.
+please make sure you install all these libraries in your working environment using pip or conda.
 
 
 ## How to run the code?
@@ -135,7 +135,9 @@ please make sure you install all these libraries using pip or conda.
 
 >step 3: Go to the end of main.py module and change the model saving directory to appropriate location based on your desktop. the recommendation would be save the trained model in saved_models directory.
 
->step 4: Run the main.py function and you can see that your model will be saved in saved_folders directory(generator64.h5),where 64 represents the size of the image. we can also the plots of generator and discrimiantor loss.
+>step 4: Run the main.py function and you can see that your model will be saved in saved_folders directory(generator-64.h5),where 64 represents the size of the image. we can also the plots of generator and discrimiantor loss.
+
+for example, if you change the image shape to 128 and the train the main.py function, then generator-128.h5 file would be saved in the saved_models folder.
 
 >step 5: Open the load_model.py. the first thing to do is changing the directory in the load_model function to an appropriate place and generate fake images.
 
