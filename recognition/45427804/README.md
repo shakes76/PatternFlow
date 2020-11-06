@@ -47,6 +47,7 @@ References
 Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
 [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)
 
+The biggest difference between the old model and the new model is that the new model saves a lot of time.
 
 
 # Prediction results
