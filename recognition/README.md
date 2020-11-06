@@ -13,5 +13,5 @@
 Version: Tensorflow >=2.20
 
 ## Algorithm:
-###DenseNet
+### DenseNet
 ![image](https://github.com/Alexu0506/PatternFlow/blob/topic-recognition/recognition/p1.png)
