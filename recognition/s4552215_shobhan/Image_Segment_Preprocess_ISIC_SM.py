@@ -10,7 +10,7 @@ import Data_Load_ISIC_SM as IDL
 from keras.utils import to_categorical
 
 
-# To Process the lesion images and to split them into train,validation and test sets
+# To Process the lesion images and to split them into train,validation and test datasets
 def proc_img(img_path,img_width,img_height):
     X_all = IDL.loading_img(img_path,img_width,img_height)
     train_split = int(round(0.6*len(X_all),0))
@@ -20,7 +20,7 @@ def proc_img(img_path,img_width,img_height):
     XISIC_test = X_all[train_split + test_val_split:train_split + 2*test_val_split]
     return (XISIC_train, XISIC_val, XISIC_test)
 
-# To Process the segmentation images and to split them into train,validation and test sets
+# To Process the segmentation images and to split them into train,validation and test datasets
 def proc_seg(seg_path,img_width,img_height):
     Y_all = IDL.loading_seg(seg_path,img_width,img_height)
     train_split = int(round(0.6*len(Y_all),0))
