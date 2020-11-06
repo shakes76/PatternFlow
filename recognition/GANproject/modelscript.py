@@ -4,6 +4,7 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import *
+
 ###defining the generator###
 def define_generator():
 
