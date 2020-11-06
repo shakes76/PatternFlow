@@ -1,29 +1,45 @@
-# Foobar
+# Image Segmentation on ISICs dataset using Improved Unet
 
-Foobar is a Python library for dealing with word pluralization.
+## Backgournd
+### Problem Statement
+ISICs dataset contains images of Melanoma, a serious form of skin cancer. The aim of this project is to conduct image segmentation, creating pixel-wise binary mask for Melanoma. The dataset contains 2594 photos of Melanoma and 2594 masks. 
+Dataset can be downloaded from https://challenge2018.isic-archive.com/
 
-## Installation
+### Algorithm
+U-Net is a convolutional network architecture, designed for biomedical image segmentation. It consists of one contraction part, bottleneck and expansion part. Any contraction block and expansion block at the same level will be concatenated. (Ronneberger, Fischer, Brox, 2015)
+<a href="url"><img src="images/unet.png" height="300" width="500" ></a>
+We are using the improved U-Net, developed based on U-Net in 2017. The following features are added to normal U-Net:
+1. Context modules for activations
+2. Localization pathway to transfer features from lower level to higher spatial resolution
+3. Segmentation layers integration at different levels for deep supervision
+![improved_unet](images/improved-unet.png)
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+## Implementations
+### Data Split
+70% for training, 15% for validation, 15% for testing.
 
-```bash
-pip install foobar
-```
+### Model Training Parameters
+Activation function: Sigmoid
+Optimizer: Adam (learning rate at 0.0001)
+Loss function: BinaryCrossEntrypy
+Checkpoint Callback: Maximum validation accuracy
+Training Epoch: 250
 
-## Usage
+### Result
+![Accuracy](images/acc1.png)
+![Loss](images/loss1.png)
+![dsc](images/dsc1.png)
+![Predictions](images/predictions.png)
+(First row: row images; Second row: ground truth; Third row: predictions)
 
-```python
-import foobar
+## Dependencies
+* Python=3.7
+* Tensorflow-gpu(2.1)
+* Opencv
+* Matplotlib
+* PIL
 
-foobar.pluralize('word') # returns 'words'
-foobar.pluralize('goose') # returns 'geese'
-foobar.singularize('phenomena') # returns 'phenomenon'
-```
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
+## Author
+Name: Wenjun Zhang
+Student Number: s4469251
