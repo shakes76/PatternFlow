@@ -3,6 +3,9 @@ from tensorflow.keras import layers
 
 # Generator
 def make_generator_model():
+    """
+    Create a generator model
+    """
     model = tf.keras.Sequential()
     model.add(layers.Dense(4*4*512, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
@@ -45,6 +48,9 @@ def make_generator_model():
 
 # Discriminator
 def make_discriminator_model():
+    """
+    Create a discriminator model
+    """
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(16, (4, 4), strides=(2, 2), padding='same',
                                      input_shape=[256, 256, 1]))
@@ -74,12 +80,18 @@ def make_discriminator_model():
 
 
 def discriminator_loss(real_output, fake_output):
+    """
+    Define discriminator loss function
+    """
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
     return real_loss + fake_loss
 
 def generator_loss(fake_output):
+    """
+    Define generator loss function
+    """
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
