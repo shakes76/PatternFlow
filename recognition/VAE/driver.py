@@ -158,7 +158,7 @@ if __name__ == '__main__':
     # use an Adam optimiser
     optimizer = Adam(1e-4)
     # load training and test datasets
-    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=544)
+    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=5)
 
     # initialize a new VAE model
     model = VAE.VAENetwork(latent_dimension)

@@ -49,7 +49,7 @@ The stride size and kernel size are 2 and 3, respectively.
 Batch normalisation layers are used to because it has been found that they can (slightly) improve the SSIM and speed up the training process.
 The architecture of the VAE is visualised below. 
 <p align="center">
-    <img src='Architecture.JPG' width=80%>
+    <img src='images/Architecture.JPG' width=80%>
 </p>
 
 
@@ -59,15 +59,15 @@ The generated images are evaluated by SSIM.
 The SSIM and ELBO after the first epoch are 0.4773 and 17951.17. 
 Let’s plot four of the images generated in the first epoch below.
 <p align="center">
-    <img src='first_epoch.png' width=40%>
+    <img src='images/first_epoch.png' width=40%>
 </p>
 After 30 epochs, the SSIM and loss are 0.6467 and 17051.21. Let’s plot four of the generated images：
 <p align="center">
-    <img src='30th epoch.png' width=40%>
+    <img src='images/30th epoch.png' width=40%>
 </p>
 The ELBO and SSIM over the 30 epochs are shown below. 
 <p align="center">
-    <img src='evaluation.png' width=80%>
+    <img src='images/evaluation.png' width=80%>
 </p>
 
 
