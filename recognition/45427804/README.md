@@ -68,7 +68,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 each label's dice coefficient score from 0 to 3:
 [0.99867845, 0.9177439 , 0.9392264 , 0.9650791 ]
 
-![](images/valisation loss.png)
+![](images/validation_loss.png)
 
 
 
