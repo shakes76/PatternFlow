@@ -33,10 +33,12 @@ y_test (labels) has 544 images which are 256*256 pixels(black and white photo)
 ![](images/UNET.jpg)
 The shape of Unet network structure is similar to U like the picture above. It contains convolution and pooling layer. The left half is the encoder which is down-sampling in the traditional classification network, and the right half is the decoder is the up-sampling. The gray arrow in the middle is a jump connection, which captures the shallow features with the deep features, because the shallow layer can usually capture some simple features of the image, such as borders and colors. The deep convolution operation captures some unexplainable abstract features of the image. It is best to use the shallow and deep at the same time, while also allowing the decoder to learn to lose relevant features in the encoder pooling downsampling.
 
-# UNET++
-![](images/unet++.png)
-* The blue and green parts are the parts added by Unet++ to UNet. There are L1, L2, L3 and L4 on the right, these are the settings of Unet++ for different depths of the network. The green arrow indicates up-sampling, the same as UNet, and the black down arrow indicates down-sampling, the same as UNet.
-* The blue arrow indicates skip connection, and each level is a very standard DenseNet structure. Each prototype unit represents a series of operations of convolution + activation function.
+# Improved Unet
+![](images/unet.png)
+* context modules: it is a pre-activation residual block with two convolutional layers and a dropout layer (drop = 0.3) in between, and it conected by 3x3x3 convolutions with input stride 2. The purpose is to allow more features while downing to the aggregation pathway and to reduce the
+resolution of the feature maps.
+
+
 
 # Prediction results
 The plot below shows the prediction results and y_test_label truth pictures on the 470th picture
