@@ -1,4 +1,4 @@
-#HUMAN BRAIN MRI IMAGE SEGMENTATION with UNET
+#HUMAN BRAIN MRI IMAGE SEGMENTATION with UNET Demo/prac2
 from sklearn.datasets import fetch_lfw_people
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
