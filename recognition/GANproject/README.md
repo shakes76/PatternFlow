@@ -30,7 +30,7 @@ I also did not follow several specifications as I found they either did not work
 
 ## Data:
 Data consists of all the non-segmented OASIS data (9664 training images, 544 test images, 1120 validation images). The size of these images are 256x256 and are greyscale with pixel values ranging from 0 to 255.
-
+![sample real images](https://github.com/amyzhao11/PatternFlow/blob/master/recognition/GANproject/Resources/sample%20real%20images.PNG)
 ## Model script
 The model script contains 2 functions, a generator and discriminator
 
