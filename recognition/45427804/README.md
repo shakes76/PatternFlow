@@ -40,7 +40,12 @@ resolution of the feature maps. There are 5 context modules in the model.
 * Upsampling modul: it is to upsampling the low-resolution feature maps and connected by a 3x3x3 convolution that halves the number of feature
 maps.
 *  locolization module: it contains a 3x3x3 convolution and a 1x1x1 convolution which reduces half of number of feature maps.
-* Leaky ReLU
+* Leaky ReLU: for all feature map computing convolution should use Leaky ReLU activation with a negative slope of 0.01.
+
+References
+[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
+Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available:
+[https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)
 
 
 
