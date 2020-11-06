@@ -4,7 +4,6 @@ Model architecture for UNet.
 @author Declan Healey
 @email declan.healey@uqconnect.edu.au
 """
-
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *

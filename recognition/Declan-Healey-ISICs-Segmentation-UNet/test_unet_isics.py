@@ -9,11 +9,11 @@ and mask predictions of the test dataset.
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import glob
+import sklearn as sk
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from layers import *
 from IPython.display import clear_output
-import matplotlib.pyplot as plt
 
 print('TensorFlow version:', tf.__version__)
 
@@ -21,6 +21,10 @@ print('TensorFlow version:', tf.__version__)
 # location of the dataset.
 IMAGE_PATH = "C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2\*.jpg"
 MASK_PATH = "C:\\data\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2\*.png"
+
+# Update image dimensions for model
+IMG_HEIGHT = 256
+IMG_WIDTH = 192
 
 def load_data():
     """
@@ -39,7 +43,7 @@ def load_data():
     test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test))
     val_ds = tf.data.Dataset.from_tensor_slices((X_val, y_val))
 
-    return train_ds.shuffle(len(X_train)), test_ds.shuffle(len(X_test)), val_ds = val_ds.shuffle(len(X_val))
+    return train_ds.shuffle(len(X_train)), test_ds.shuffle(len(X_test)), val_ds.shuffle(len(X_val))
 
 def decode_image(path):
     """
@@ -48,7 +52,7 @@ def decode_image(path):
     """
     img = tf.io.read_file(path)
     img = tf.image.decode_jpeg(img, channels = 1)
-    img = tf.image.resize(img, [256, 192])
+    img = tf.image.resize(img, [IMG_HEIGHT, IMG_WIDTH])
     img = tf.cast(img, tf.float32) / 255.0
     return img
 
@@ -59,7 +63,7 @@ def decode_mask(path):
     """
     img = tf.io.read_file(path)
     img = tf.image.decode_png(img, channels = 1)
-    img = tf.image.resize(img, [256, 192])
+    img = tf.image.resize(img, [IMG_HEIGHT, IMG_WIDTH])
     img = tf.cast(img, tf.float32) / 255.0
 
     # Round pixel values to be strictly 0 or 1.
@@ -73,8 +77,8 @@ def process_path(image_path, mask_path):
     """
     image = decode_image(image_path)
     mask = decode_mask(mask_path)
-    image = tf.reshape(image, (256, 192, 1))
-    mask = tf.reshape(mask, (256, 192, 1))
+    image = tf.reshape(image, (IMG_HEIGHT, IMG_WIDTH, 1))
+    mask = tf.reshape(mask, (IMG_HEIGHT, IMG_WIDTH, 1))
     return image, mask
 
 # Pre-process the ISICS dataset.
@@ -112,7 +116,7 @@ def dice_coef(y_true, y_pred, smooth=0.00001):
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 # Compile the UNET, introducing the Dice coefficient in metrics.
-model = unet((256, 192, 1))
+model = unet(input_size = (IMG_HEIGHT, IMG_WIDTH, 1))
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
 
 def show_predictions(ds, num = 1):
@@ -125,14 +129,13 @@ def show_predictions(ds, num = 1):
         pred_mask = model.predict(image[tf.newaxis, ...])[0]
         display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
 
-
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = None):
         clear_output(wait=True)
         show_predictions(val_ds)
 
 # Train the compiled UNet with a batch size of 8.
-history = model.fit(train_ds.batch(8), epochs = 40, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
+history = model.fit(train_ds.batch(8), epochs = 30, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
 
 def plot_accuracy():
     """
