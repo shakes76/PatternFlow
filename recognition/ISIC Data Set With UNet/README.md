@@ -5,43 +5,43 @@
 **Student Email**: m.hornigold@uq.net.au
 
 # Segmentation of ISIC data set with U-Net
-This is my solution to the ISIC data set using a U-Net model. The aim of this solution is to train a convolutional neural network to segment the ISIC data, which is a collection of photographs of skin lesions. A U-Net model was used as the convolutional neural network and is a great choice for this type of segmentation problem. In the end, I was able to make predictions with a dice similarity coefficient of 0.79. An example prediction made using the model is shown below. From left to right we have: the original skin lesion image, the correct segmentation, and my model's predicted segmentation. As you can see, my model is clearly capable of producing accuracy and very usable results
+This repository contains my solution to the problem of accurately segmenting the ISIC data set using a U-Net model. The aim of this solution is to train a convolutional neural network to segment the ISIC data, which is a collection of photographs of skin lesions. I have decided to use a U-Net model as the convolutional neural network as it is relatively simple to implement and can achieve reasonably accurate and usable results. The model I have created is able to make predictions with a dice similarity coefficient of 0.79. I have included an example prediction below. From left to right we have: the original skin lesion image, the correct segmentation, and my model's predicted segmentation. As you can see, my model is clearly capable of identifying the skin lesion and outlines it quite accurately.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Prediction%20Images/Figure%202020-11-03%20165549.png">
 <p align="center">Prediction made using U-Net model.</p>
 </p>
 
-I will now outline the contents of this repository, before discussing how the model was trained and whether it can made useful predictions for this type of problem.
-
 ## Contents of this Repository
-The contents of this repository are detailed below.
+The contents of this repository are detailed in the table below.
 
-| Scripts | Folders |
-| ------- | ------- |
-| `driver_script.py` `solution.py` | `Images` |
+**Scrips**: `solution.py` `driver_script.py`
 
-`driver_script.py` imports the ISIC data, creates, compiles and trains the U-Net model, and analyses the performance of this model.
+**Images**: `Images`
 
-`solution.py` contains the actual U-Net model used by driver_script.py.
+`solution.py` contains the structure for the actual U-Net model. This script does not need to be run, and is simply imported by `driver_script.py`.
 
-This `Images` folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this README.md file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
+`driver_script.py` does most of the work. It imports the ISIC data, creates, compiles and trains the U-Net model, makes some predictions, and analyses the performance of the model.
 
-## solution.py
-This file is used to create the U-Net model. It is implemented entirely in TensorFlow. This file does not need to be run. Instead, it is imported into driver_script.py
+The `Images` folder contains a number of images relating to the training, predicting and analysing of the model. Many of these images are included in this `README.md` file. Feel free to view the images in this folder to explore more examples of the training data, predictions made and training history.
 
-| Dependencies | Functions |
-| --- | --- |
-| `tensorflow` `tensorflow.keras.layers` | `unet_model` |
+## `solution.py`
+This script contains one function which is used to create the U-Net model. The model is is implemented entirely in TensorFlow. This script does not need to be run and is instead imported into `driver_script.py`.
 
-`model` creates the U-Net model using the structure specified.
+**Dependencies**: `tensorflow` `tensorflow.keras.layers`
 
-## driver_script.py
-This is the driver script. This file imports the data, manipulates the data into various datasets for training, validating and testing, imports the model from solution.py and compiles this model, trains the model using the datasets, makes and plots predictions using the model.
+**Functions**: `unet_model`
 
-| Dependencies                            | Classes (and their methods)      | Functions                                                     |
-| --------------------------------------- | -------------------------------- | ------------------------------------------------------------- |
-| `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend`  | `DisplayCallback` `on_epoch_end` | `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient` |
+`unet_model(f=16)` creates the U-Net model using the structure specified.
+
+## `driver_script.py`
+This is the driver script. This script: imports the data; manipulates the data into various datasets for training, validating and testing; creates and compiles the model from `solution.py`; trains the model using the datasets; and finally, makes and plots predictions using the model.
+
+**Dependencies**: `tensorflow` `matplotlib.pyplot` `math` `glob` `IPython.display.clear_output` `tensorflow.keras.backend`
+
+**Classes (and their methods)**: `DisplayCallback` `on_epoch_end`
+
+**Functions**: `import_ISIC_data` `process_path` `decode_jpg` `decode_png` `analyse_training_history` `display_predictions` `display_data` `display` `compute_dice_coefficients` `dice_coefficient_loss` `dice_coefficient`
 
 `import_ISIC_data()` downloads the ISIC dataset from a specified location. Manipulates the data into training, validating and testind datasets.
 
@@ -66,17 +66,19 @@ This is the driver script. This file imports the data, manipulates the data into
 `dice_coefficient(y_true, y_pred, smooth = 0.)` computes the dice similarity coefficient for a prediction.
 
 ## How to Run the File
-In order to train this model as I have, follow the next steps:
-* You will firstly need to download the ISIC data locally.
-* Then, you will need to edit `driver_script.py` so that the images and masks are imported correctly.
-* Then, you will need to make sure that all the dependencies listed previously are present in the environment.
-* Then, you will need to simply run `driver_script.py`, and do not require any commandline arguments.
+In order to train this model as I have, you will need to follow the steps below. Once you have downloaded `solution.py` and `driver_script.py`:
+* Firstly, you will want to check that you have all the dependencies listed previously in the environment you wish to work in. This primarily includes `tensorflow` and `matplotlib`.
+* Next, you will need to download the ISIC data locally. You can download the dataset from the following website https://www.isic-archive.com/#!/topWithHeader/wideContentTop/main. Make sure that you have two folders, one for the images and one for the masks. Once the images are downloaded, you will want to record their paths.
+* Then, you will need to edit `driver_script.py` so that the images and masks are imported correctly. The logic for this is completely contained with the `import_ISIC_data` function. You will simply need to change the path where the images are imported from. Also make sure that the datasets are created properly.
+* Then, you will need to simply run `driver_script.py`. You do not need to provide any commandline arguments.
+
+If your environment is setup and the paths you have provided for the images are correct, then your model should start training at this point. Before spending time training your model, it is important to check that your datasets are working as expected by displaying some images. You may also wish to play around with some variables, such as the number of epochs and the batch sizes depending on your time limit and computational power.
 
 ## Results
-Below is an outline of how I used the driver script to import the ISIC data, train the U-Net model, and segment the data using this model, alongside some results and images.
+Below is an outline of how I used the `driver_script.py` to import the ISIC data, train the U-Net model, and segment the data using this model, alongside some results and images.
 
 ### Checking the Images
-When we run the driver script, the first thing it does it output an example image and mask from the training dataset. Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
+When I ran the driver script, the first thing wanted to do was output some example images and masks from the training dataset to check that this process was working well. Below are a few of these example images. Note that I have converted the images into black and white, which makes segmenting the images far simpler.
 
 <p align="center">
   <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Example%20Images/Figure%202020-11-03%20162140%20(0).png">
@@ -86,7 +88,7 @@ When we run the driver script, the first thing it does it output an example imag
 </p>
 
 ### Creating the Model & Outputting Structure
-Next, the model itself is created by using the `unet_model` function imported from `solution.py`. I have included the model summary output below. This model is a direct match to a vanilla U-Net model, which includes downsampling (the encoder), upsampling (the decoder) and the important skip connections.
+Next, I created the model itself by using the `unet_model` function imported from `solution.py`. I have included the model summary output below.
 
 | Layer (type)   | Output Shape    | Param #  | Connected to              |
 | -------------- | --------------- | -------- | ------------------------- |
@@ -122,6 +124,14 @@ Next, the model itself is created by using the `unet_model` function imported fr
 | `Conv2D 17`      | `(256, 256, 6)`   | `978`      | `Concatenate 4`             |
 | `Conv2D 18`      | `(256, 256, 6)`   | `330`      | `Conv2D 17`                 |
 | `Conv2D 19`      | `(256, 256, 1)`   | `7`        | `Conv2D 18`                 |
+
+This model is a direct match to a vanilla U-Net model, which includes downsampling (the encoder), upsampling (the decoder) and the important skip connections. A diagram of the standard U-Net model is shown below.
+
+<p align="center">
+  <img src="https://github.com/maxhornigold/PatternFlow/blob/topic-recognition/recognition/ISIC%20Data%20Set%20With%20UNet/Images/Training%20History/Training%20History.png">
+</p>
+<p align="center">Standard U-Net model architecture</p>
+<p align="center">riagram from https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/</p>
 
 ### Compiling the Model
 Next, I compiled the model with the following parameters.
