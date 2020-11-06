@@ -11,7 +11,7 @@ from keras.models import *
 from keras.losses import binary_crossentropy
 from keras import backend as K
 import keras.backend as K
-#print(tf.__version__) 
+print(tf.__version__) 
 
 #Load data
 train_images = sorted(glob.glob("D:\keras_png_slices_data\keras_png_slices_train/*.png"))
