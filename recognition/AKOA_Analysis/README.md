@@ -10,3 +10,5 @@ The lateral classification of the OAI AKOA knee dataset(left or right sided knee
   * train_test_split
 * PIL
   * Image
+## ALGORITHM
+
