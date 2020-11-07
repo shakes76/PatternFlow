@@ -68,7 +68,7 @@ Output Images | Real Images
 ![output](./readme_images/image_at_epoch_100.png)  |  ![real](./readme_images/real_images.png)
 
 #### Structural Similarity
-![ssim](./readme_images/max_ssim.png)
+![ssim](./readme_images/ssim.png)
 
 ## Reference
 [1] A. Radford, L. Metz, and S. Chintala, “Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks,” arXiv:1511.06434 [cs], Jan. 2016, arXiv: 1511.06434. [Online]. Available: http://arxiv.org/abs/1511.06434
