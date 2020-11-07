@@ -1,7 +1,5 @@
 import tensorflow as tf
-import numpy as np
 import os
-import matplotlib as plt
 import improvedUNetModel
 
 IMG_SIZE = (256, 256)
