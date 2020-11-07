@@ -1,6 +1,7 @@
+/images/*
 /img_align_celeba/*
 /AKOA_Analysis/*
 /Gan/*
 /imagestore/*
 /.ipynb_checkpoints/*
-/__pycache__/*
+
