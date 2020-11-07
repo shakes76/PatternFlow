@@ -153,6 +153,9 @@ Thus, it is clear to see that we acheive an average DSC > 90% and the visualisat
 ### [visualisation.py](./visualisation.py)
 - Contains Plotting and Visualisation module code.
 
+### [unet_im_test.ipynb](./unet_im_test.ipynb)
+- Jupyter notebook version of code.
+
 ### train_output folder
 - Created upon running training in driver. Contains saved images of plots and visualisations.
 
