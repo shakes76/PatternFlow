@@ -132,5 +132,7 @@ Results:
 
 ![image info](images/testing_images.png)
 
-
+@Author
+===========================================================
+# Shivaji parala , 45512746 , Pattern recognition
 
