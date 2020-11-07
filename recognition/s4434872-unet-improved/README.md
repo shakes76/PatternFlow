@@ -48,7 +48,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
 
  ## Network Architecture  
  ### Improved UNet
- The model used to solve this problem is that of an improved UNet from [1]. Based on the original UNet, this network has been carefully modified to maximize brain tumor segmentation performance. Presented in the paper as a 3D version, in this project it has been converted to work with 2D images.
+ The model used to solve this problem is that of an improved UNet from [[1]](#References). Based on the original UNet, this network has been carefully modified to maximize brain tumor segmentation performance. Presented in the paper as a 3D version, in this project it has been converted to work with 2D images.
 
  - Input image shape: [256, 256, 1]  
  - Output image shape: [256, 256, 4]
