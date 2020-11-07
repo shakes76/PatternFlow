@@ -1,67 +1,64 @@
 """
-Loads images from the ISIC dataset.
+Loads images from the ISIC dataset and displays some example images.
 Creates and trains a UNet model to segment these images.
-
-@author: s4537175
+Evaluates the model on the test set and displays some example results.
 """
-
-
 #%%
-### VARIABLES TO CHANGE ###
+### LOCATIONS TO CHANGE ###
 
 # Code folder location
 code_root_folder = 'H:\\COMP3710\\PatternFlow\\recognition\\ISIC_UNET'
 # Image folder location
 image_root_folder = 'C:\\Users\\s4537175\\Downloads\\COMP3710'
 
-
-
 #%%
+### Imports ###
 import tensorflow as tf
 
+#%%
+# Add code location to system location to enable local imports
 import sys
 print(sys.path)
 sys.path.append(code_root_folder)
 print(sys.path)
 
 #%%
-
+# Local imports
 from load_images import get_datasets, view_imgs, view_preds
-from model import *
+from model import UNetModel
+from improved_model import ImprovedUNetModel
+from metrics import *
 
-
-### VARIABLES TO CHANGE ###
-
+#%%
+### Loading and splitting image set ###
 
 # Proportions of image set to use
 total_prop = 1
 val_prop = 0.1
 test_prop = 0.1
 
-
-#%%
-
+# Create datasets from images, based on given proportions
 train_ds, val_ds, test_ds = get_datasets(image_root_folder, 
                                          total_prop, val_prop, test_prop)
 
+# View some training images and their segmentation
 view_imgs(train_ds, 3)
 
 #%%
+### Creating and training model ###
 
-# Number of filters
-d = 12
-
-model = UNetModel(d)
-
-
-#%%
+# Number of filters in first layer of model
+filters = 16
+# Batch size model will train on
 batch_size = 16
+# Build model
+model = UNetModel(filters)
 model.build((batch_size, 512,512,3))
 model.summary() 
 
 #%%
 
-adam_opt = tf.keras.optimizers.Adam(learning_rate= 5*10**(-5))
+adam_opt = tf.keras.optimizers.Adam(learning_rate=5*10**(-5))
 
 model.compile(optimizer=adam_opt,
               loss='categorical_crossentropy',
@@ -73,16 +70,15 @@ history = model.fit(train_ds.batch(batch_size),
                     epochs=3)
 
 #%%
+### Evaluating model and viewing results ###
 
-test_loss, test_acc, b = model.evaluate(test_ds.batch(batch_size))
-print('Test accuracy:', test_acc)
+# Evalute model metrics on test set
+model.evaluate(test_ds.batch(batch_size))
 
 #%%
+# View some test images, their true segmentations, and their unrounded and
+# rounded predicted segmentations
 view_preds(model, test_ds, 3)
-
-#%%
-model.evaluate(train_ds.batch(batch_size))
-
 
 #%%
 k = 10
