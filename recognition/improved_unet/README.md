@@ -8,6 +8,7 @@ This project is created by
 This is a project realted to do a segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
 similarity coefficient of 0.9 on the test set.
 Under the improved_unet file it will contain two python scripy, which call Script.py and model.py
+
 ## The problem:
 Given three dataset (train, test, validate)
 The goal of this problem is to perform a magnetic resonance image segmentation of the brain (aka outline the brain)
@@ -24,6 +25,13 @@ Here are the predict image with our unet with over 90% accuracy
 * python = 3.7.7
 
 Also need to create a file under C drive call content in order to load and save the dataset
+
+# Split Data set
+As I am using the preprocessed dataset
+So the data have split to Train, Test, Validate
+* Train contain 9664 images
+* Test contain 544 images
+* Validate contain 1120 images
 
 ## Algorithm
 In this project, I have build a improved_unet base on this paper:https://arxiv.org/abs/1802.10508v1
