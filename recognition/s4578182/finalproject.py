@@ -214,7 +214,7 @@ model.summary()
 # In[20]:
 
 
-history = model.fit(X_train,y_train, epochs=20,batch_size=10, verbose=1)
+history = model.fit(X_train,y_train, epochs=100,batch_size=10, verbose=1)
 
 
 # In[21]:
@@ -233,7 +233,7 @@ plt.legend(loc='lower right')
 ypred = model.predict(X_test)
 
 
-# In[28]:
+# In[42]:
 
 
 def dice_coef2(y_true, y_pred):
@@ -245,7 +245,7 @@ def dice_coef2(y_true, y_pred):
     return 2. * intersection / union
 
 
-# In[29]:
+# In[43]:
 
 
 dice_coef2(y_test,ypred)
