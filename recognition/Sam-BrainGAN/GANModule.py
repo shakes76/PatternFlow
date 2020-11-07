@@ -155,11 +155,11 @@ def generate_image(model, epoch, test_input, dataset, images):
     real_output = discriminator(images, training=False)
     fake_output = discriminator(predictions, training=False)
 
-    gen_loss[epoch] = generator_loss(fake_output)
-    disc_loss[epoch] = discriminator_loss(real_output, fake_output)
-    ssim[epoch] = ssimmax
+    gen_loss[epoch - 1] = generator_loss(fake_output)
+    disc_loss[epoch - 1] = discriminator_loss(real_output, fake_output)
+    ssim[epoch - 1] = ssimmax
 
-    print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss[epoch], disc_loss[epoch]))
+    print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss[epoch - 1], disc_loss[epoch - 1]))
 
     print("SSIM: {}".format(tf.math.reduce_mean(ssimmax)))
                
@@ -169,6 +169,7 @@ def generate_image(model, epoch, test_input, dataset, images):
     plt.show()
     
 def run_GAN(dataset):
+    
     train(dataset, EPOCHS)
     plt.plot(epochs, gen_loss, label = 'Generator Loss')
     plt.plot(epochs, disc_loss, label = 'Discriminator Loss')
