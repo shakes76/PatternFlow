@@ -59,3 +59,38 @@ label = io.imread(example_label, as_gray=True)
 plt.imshow(label)
 plt.title('Groundtruth')
 plt.show()
+
+testGen = dataGenerator(
+    1,
+    './data/',
+    'keras_png_slices_test',
+    'keras_png_slices_seg_test',
+    {},
+    save_to_dir=None
+)
+
+predictions = []
+labels = []
+images = []
+
+cnt = 0
+for img, mask in testGen:
+    cnt += 1
+    if cnt > test_size:
+        break
+    
+    # Get the images.
+    images.append(img)
+    
+    # Get the predictions.
+    prob_predictions = model.predict(img)
+    final_predicitons = np.argmax(prob_predictions, axis=-1)
+    final_labels = np.argmax(mask, axis=-1)
+    predictions.append(final_predicitons)
+    labels.append(final_labels)
+    
+
+predictions = np.stack(predictions, axis=0)
+labels = np.stack(labels, axis=0)
+predictions = np.squeeze(predictions, axis=1)
+labels = np.squeeze(labels, axis=1)
