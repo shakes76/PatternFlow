@@ -1,13 +1,11 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 import time
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 tf.__version__
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
-
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
@@ -15,11 +13,15 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 BATCH_SIZE = 4
 noise_dim = 100
 smooth = 0.8
-EPOCHS = 40
+EPOCHS = 2
 
 generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
+gen_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+disc_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+ssim = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+epochs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 
 def make_generator_model():
     model = tf.keras.Sequential()
@@ -119,25 +121,39 @@ def train(dataset, epochs):
             train_step(image_batch)
             if (i == 0):
                seed = tf.random.normal([BATCH_SIZE, noise_dim])
-               generate_image(generator, epoch + 1, seed, image_batch)
+               generate_image(generator, epoch + 1, seed, dataset, image_batch)
+               i = i + 1
+            
             
         print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
 
-def generate_image(model, epoch, test_input, images):
+def generate_image(model, epoch, test_input, dataset, images):
     predictions = model(test_input, training=False)
-
+    
+    ssimmax = 0
+    i = 0
+    for image_batch in dataset:
+            ssim1 = tf.image.ssim(predictions, image_batch, 2)
+            ssimmax = max(ssimmax, tf.math.reduce_max(ssim1))
+            i = i + 1;
+            if(i >= 7):
+                break
+            
+                    
+    
+    
     real_output = discriminator(images, training=False)
     fake_output = discriminator(predictions, training=False)
 
-    gen_loss = generator_loss(fake_output)
-    disc_loss = discriminator_loss(real_output, fake_output)
+    gen_loss[epoch] = generator_loss(fake_output)
+    disc_loss[epoch] = discriminator_loss(real_output, fake_output)
+    ssim[epoch] = ssimmax
 
-    print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss, disc_loss))
+    print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss[epoch], disc_loss[epoch]))
 
-    ssim1 = tf.image.ssim(predictions, images, 2)
-    print("SSIM: {}".format(tf.math.reduce_mean(ssim1)))
-
+    print("SSIM: {}".format(tf.math.reduce_mean(ssimmax)))
+               
     plt.imshow(predictions[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
     plt.axis('off')
 
@@ -145,5 +161,9 @@ def generate_image(model, epoch, test_input, images):
     
 def run_GAN(dataset):
     train(dataset, EPOCHS)
-
-
+    plt.plot(epochs, gen_loss, label = 'Generator Loss')
+    plt.plot(epochs, disc_loss, label = 'Discriminator Loss')
+    plt.plot(epochs, ssim, label = 'SSIM')
+    plt.xlabel('EPOCHS')
+    plt.legend(loc = "upper right")
+    plt.show()

@@ -31,7 +31,7 @@ else:
     training_data = np.load(save_path)
 
 BUFFER_SIZE = 60000
-BATCH_SIZE = 32
+BATCH_SIZE = 4
 
 train_dataset = tf.data.Dataset.from_tensor_slices(training_data).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
