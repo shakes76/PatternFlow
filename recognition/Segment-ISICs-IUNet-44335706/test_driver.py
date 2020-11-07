@@ -27,7 +27,7 @@ def main():
 	if len(sys.argv) == 2 and sys.argv[1] == 'default':
 		train_model(X_DATA_LOCATION, Y_DATA_LOCATION, 'jpg', 'png', EPOCHS, 10)
 	elif len(sys.argv) == 7:
-		train_model(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+		train_model(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]), int(sys.argv[6]))
 	else:
 		print_usage()
 
