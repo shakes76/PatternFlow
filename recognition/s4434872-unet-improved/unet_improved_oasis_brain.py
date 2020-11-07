@@ -100,10 +100,19 @@ history = model.fit(train_ds.batch(BATCH_SIZE), epochs=EPOCHS,
 print("> Training Finished")
 
 
+# Evaluate trained model on the test set
+print("> Evaluating Trained Model on Test Set ...")
+test_DSC_loss, test_acc, test_DSC = model.evaluate(train_ds.batch(BATCH_SIZE), verbose=2)
 
+# Display Test Set Results (Average over batches)
+print("----- Test Set Results -----")
+print("DSC Loss: ", test_DSC_loss)
+print("DSC: ", test_DSC)
+print("Accuracy: ", test_acc)
 
-
-
+# Show some test set predictions
+print("> Showing Some Test Set Predictions ...")
+visualisation.show_predictions(model, test_ds, 3)
 
 
 
