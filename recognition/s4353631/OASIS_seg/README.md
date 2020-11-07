@@ -51,7 +51,7 @@ failure of such segmentation models to generalize. Training with the Adam optimi
 schedule implemented in `driver.py` and `OASIS_seg.ipynb`, `My_Unet` was able to reliably achieve a dice coefficient on the 
 validation set of ~0.95 after a single epoch. The training (over 5 epochs as in the implementation) below resulted in a 
 reliable mean test set dice coefficient of ~0.96. Similar results were achievable with a much smaller network of only 
-3 `Downshift` layers, indicating the effectiveness of the network's residual design as well as its ability to learn efficient 
+3 `Downshift` layers, indicating the effectiveness of the architecture's residual design as well as its ability to learn efficient 
 feature mappings.
 
 ![](dice_graph.png)
@@ -61,7 +61,7 @@ Below are ground truth and modelled segmentations as a result of the training im
 ![](ground_vs_pred.png)
 
 The robustness of `My_UNet` in combination with its simple construction from arbitrarily many `Downshift` and `Upshift` layers 
-would make it an interesting candidate for research into the generalizability of such segmentation models. While these models 
+could make it an interesting candidate for research into the generalizability of such segmentation models. While these models 
 perform admirably on the test, validation and test sets, they often fail when applied to images from a different MRI machine 
 for example. Perhaps a high level of data augmentation and increased regularization (here L2 regularization was incorporated into 
 the design of `My_Conv2D` but not used) could yield intriguing results.
