@@ -1,21 +1,27 @@
 import tensorflow as tf
 from tensorflow.keras import layers
+
+# time is used to time the epochs. 
+# matplotlib is used to display the fake brain images and figures
 import time
 import matplotlib.pyplot as plt
 
+# Allows more of the GPU's memory to be used
 tf.__version__
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
-
+# Batch size of 4 is the maximum we can set with our network complexity
+# without overloading the GPU's memory
 BATCH_SIZE = 4
-noise_dim = 100
-smooth = 0.8
-EPOCHS = 2
 
-generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+noise_dim = 100 # How many noise values we use 
+smooth = 0.8 # Smoothing parameter attempts to stop the Generator/Discriminator from becoming too powerful (loss converge to 0 too fast).
+EPOCHS = 40 # More epochs that this do not yield better results
+
+generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5) # learing rate and beta_1 set to avoid oscilating convergence
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
 gen_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -23,6 +29,8 @@ disc_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ssim = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 epochs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 
+# Generator model upsamples from a 4x4x1024 network to a 256x256x1 tensor. 
+# Each time we increase the resolution, we have to half the depth/number of filters so as not to overload the GPU memory.
 def make_generator_model():
     model = tf.keras.Sequential()
     model.add(layers.Dense(4 * 4 * 1024, use_bias=False, input_shape=(noise_dim,)))
@@ -55,7 +63,7 @@ def make_generator_model():
 
     return model
 
-
+# Generator takes input of 256x256x1, downsamples through convolution and outputs single value between 0 and 1.
 def make_discriminator_model():
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
@@ -74,12 +82,7 @@ def make_discriminator_model():
 
 generator = make_generator_model()
 
-noise = tf.random.normal([1, noise_dim])
-generated_image = generator(noise, training=False)
-
 discriminator = make_discriminator_model()
-decision = discriminator(generated_image)
-print(decision)
 
 
 def discriminator_loss(real_output, fake_output):
@@ -92,11 +95,14 @@ def discriminator_loss(real_output, fake_output):
 def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output * smooth), fake_output)
 
-
+# Using tf.function here greatly increases the speed of the algorithm. 
 @tf.function
 def train_step(images):
+    
+    # We use a standard normal distribution for our generators input
     noise = tf.random.normal([BATCH_SIZE, noise_dim])
 
+    # Performs the main training loop, training the parameters with each batch
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         generated_images = generator(noise, training=True)
 
@@ -113,18 +119,21 @@ def train_step(images):
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
     
 
+# Performs the training loop for each batch in each epoch.
 def train(dataset, epochs):
     for epoch in range(epochs):
         start = time.time()
         i = 0;
         for image_batch in dataset:
             train_step(image_batch)
+            
+            # Outputs a generated image and other information at the beginning of each epoch.
             if (i == 0):
                seed = tf.random.normal([BATCH_SIZE, noise_dim])
                generate_image(generator, epoch + 1, seed, dataset, image_batch)
                i = i + 1
-            
-            
+               
+        # Outputs the time for each epoch.       
         print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
 
