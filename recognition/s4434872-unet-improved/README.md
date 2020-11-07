@@ -48,7 +48,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
 
  ## Network Architecture  
  ### Improved UNet
- The model used to solve this problem is that of an improved UNet from [[1]](#References). Based on the original UNet, this network has been carefully modified to maximize brain tumor segmentation performance. Presented in the paper as a 3D version, in this project it has been converted to work with 2D images.
+ The model used to solve this problem is that of an improved UNet from [1]. Based on the original UNet, this network has been carefully modified to maximize brain tumor segmentation performance. Presented in the paper as a 3D version, in this project it has been converted to work with 2D images.
 
  - Input image shape: [256, 256, 1]  
  - Output image shape: [256, 256, 4]
@@ -96,16 +96,20 @@ The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the 
 <p align="center"> 
 	<img src="./doc_images/dsc.png" />
 </p>
+
 <p align="center"> 
 	Figure 4. DSC Equation Used
 </p>
 
 ## Results
 ### Training and Validation  
+
 Used the default training and validation splits given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.
+
 <p align="center"> 
 	<img src="./doc_images/train_plot2.png" />
 </p>
+
 <p align="center"> 
 	Figure 5. Training Performance Plot
 </p>
@@ -113,6 +117,7 @@ Used the default training and validation splits given in the OASIS preprocessed 
 <p align="center"> 
 	<img src="./doc_images/train_visualise.png" />
 </p>
+
 <p align="center"> 
 	Figure 6. Training Visualisation
 </p>
@@ -120,6 +125,7 @@ Used the default training and validation splits given in the OASIS preprocessed 
 Thus, it is clear to see that after only 3 epochs with a batch size of 32, we achieve > 90% DSC.
 
 ### Testing  
+
 Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.
 <p align="center"> 
 	<img src="./doc_images/test_results.png" />
