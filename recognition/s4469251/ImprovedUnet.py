@@ -11,15 +11,13 @@ from tensorflow.keras.layers import Input, LeakyReLU, Conv2D as conv2D, Dropout,
 def improved_unet(W, H):
     input_size = (W, H, 3)
     inputs = Input(input_size)
-    print(inputs)
-    #W*H*16
+    # Down sampling
     conv1 = conv2D(16, 3, activation = tf.keras.layers.LeakyReLU(alpha=0.01), padding = 'same')(inputs)
     cont1 = conv2D(16, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(conv1)
     cont1 = Dropout(0.5)(cont1)
     cont1 = conv2D(16, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(cont1)
     conc1 = Add()([conv1, cont1]) #W*H*16
-    # W/2 * H/2 * 32
-  
+
     conv2 = conv2D(32, 3, strides = (2,2), activation = LeakyReLU(alpha=0.01), padding = 'same')(conc1)
     cont2 = conv2D(32, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(conv2)
     cont2 = Dropout(0.5)(cont2)
@@ -43,10 +41,11 @@ def improved_unet(W, H):
     cont5 = Dropout(0.4)(cont5)
     cont5 = conv2D(256, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(cont5)
     conc5 = Add()([conv5, cont5]) #W/16*H/16*256
-
+    
     uconv5 = UpSampling2D(size = (2,2))(conc5)
     uconv5 = conv2D(128, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(uconv5)
- 
+     
+    # Up sampling
     uconv4 = concatenate([uconv5, conc4])
     lconv4 = conv2D(128, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(uconv4)
     lconv4 = conv2D(128, 1, activation = LeakyReLU(alpha=0.01), padding = 'same')(lconv4)
@@ -72,6 +71,7 @@ def improved_unet(W, H):
     uconv1 = concatenate([uconv2, conc1])
     uconv1 = conv2D(32, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(uconv1)
     
+    # Segementation layers
     sconv3 = conv2D(1, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(lconv3)
     sconv3 = UpSampling2D(size = (2,2))(sconv3) 
     sconv2 = conv2D(1, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(lconv2) 
