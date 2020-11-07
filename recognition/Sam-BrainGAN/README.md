@@ -16,7 +16,7 @@ The optimizers are optimzing in the direction which minimizes some loss function
 
 Below is a graph of the evolution of the Generator Loss, Discriminator Loss and SSIM at each EPOCH. For this run, we used 40 EPOCHS. 
 
-![alt text](http://url/to/img.png)
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Figure.png)
 
 ## Dependencies:
 
