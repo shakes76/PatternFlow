@@ -6,13 +6,14 @@ import time
 import matplotlib.pyplot as plt
 import imageio
 import glob
+from pathlib import Path
 
-tf.__version__
 physical_devices = tf.config.list_physical_devices('GPU') 
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 image_res = (256,256)
 
+#Saves a PNG of the real batch 
 def real_png(images):
     fig = plt.figure(figsize=(4,4), dpi=200)
     for i in range(len(images)):
@@ -22,7 +23,8 @@ def real_png(images):
             plt.axis('off')
             
     plt.savefig('real_batch.png')
-    
+
+#Model Explained in README
 def make_generator_model():
     model = tf.keras.Sequential()
         
@@ -52,6 +54,7 @@ def make_generator_model():
         
     return model
 
+#Model Explained in README
 def make_discriminator_model():
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(64, (3, 3), strides=(2, 2), padding='same', input_shape=[image_res[0], image_res[1], 1]))
@@ -98,6 +101,7 @@ seed = tf.random.normal([16, 100])
 gen_history = tf.Variable(0.00)
 disc_history = tf.Variable(0.00)
 
+#Train the model using batches inside TF function for increased speed
 @tf.function
 def train_step(images):
     noise = tf.random.normal([16, 100])
@@ -122,7 +126,8 @@ def train_step(images):
 
 def load_checkpoint():
     checkpoint.restore(tf.train.latest_checkpoint('./checkpoints/'))
-    
+
+#Saves Loss Graph
 def model_loss_graph(gen_history, disc_history, save):
     plt.plot(gen_history)
     plt.plot(disc_history)
@@ -133,13 +138,9 @@ def model_loss_graph(gen_history, disc_history, save):
     plt.legend(['generator', 'discriminator'], loc='upper left')
     if (save):
         plt.savefig("loss_graph.png")
-    plt.show()
 
-
+#Saves generated images at every epoch
 def generate_and_save_images(model, epoch, test_input):
-  # Notice `training` is set to False.
-  # This is so all layers run in inference mode (batchnorm).
-    
     prediction = model(test_input, training=False)
     
     fig = plt.figure(figsize=(4,4), dpi=200)
@@ -148,10 +149,11 @@ def generate_and_save_images(model, epoch, test_input):
         plt.subplot(4, 4, i + 1)
         plt.imshow(prediction[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
         plt.axis('off')
-        
-    plt.savefig('epoch_images/image_at_epoch_{:04d}.png'.format(epoch))
-    plt.show()
     
+    path_to_save = os.path.join('/epoch_images/', "image_at_epoch_{:04d}.png".format(epoch))
+    plt.savefig(path_to_save)
+
+#Calculates SSIM at every epoch as outlined in README
 def current_ssim(generator, real_images):
     temp_ssim = []
     generated_image = generator(seed, training=False)
@@ -161,14 +163,15 @@ def current_ssim(generator, real_images):
         
     return tf.math.reduce_max(temp_ssim).numpy()
 
+#Saves the SSIM Graph Upon Completion
 def generate_ssim_graph(ssim_list):
     plt.plot(ssim_list)
     plt.title("Max SSIM of Generated Image vs Training Set Per Epoch")
     plt.ylabel('SSIM')
     plt.xlabel('Epoch')
     plt.savefig("ssim_graph.png")
-    plt.show()
 
+#Generates a gif of the training
 def gif_generator():
     images = []
     filenames = glob.glob("D:\epoch_images\*.png")    
@@ -195,7 +198,7 @@ def train_model(dataset, epochs, real_images):
         if (epoch + 1) % 10 == 0:
             checkpoint.save(file_prefix = checkpoint_prefix)
         
-        ssim_list.append(current_ssim(generator), real_images)
+        ssim_list.append(current_ssim(generator, real_images))
         gen_loss_list.append(gen_history.numpy())
         disc_loss_list.append(disc_history.numpy())
         model_loss_graph(gen_loss_list, disc_loss_list, False)

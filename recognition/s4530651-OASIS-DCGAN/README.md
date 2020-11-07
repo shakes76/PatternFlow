@@ -88,3 +88,22 @@ Comparing epoch 50 directly with a batch of real images side by side:
 - IPython
 - OASIS Dataset (https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ)
 
+To run the model, simply call driver.py with the command line arguments formatted as follows:
+
+driver.py dataset_path epochs
+
+<img src="example_run.PNG">
+
+The model will save:
+- SSIM Graph (Upon Completion)
+- Loss Graph (Upon Completion)
+- Model Progress GIF (Upon Completion)
+- Generated Batch at Every Epoch
+- Saved Model Checkpoints (Every 10 Epochs)
+
+Additionally, at every epoch, the following will be printed:
+- Current Epoch 
+- Discriminator loss history
+- Generator loss history
+- Time Taken for Last Epoch
+- Last SSIM

@@ -12,10 +12,13 @@ def process_data(path):
     train = train.shuffle(len(train_dir))
     test = test.shuffle(len(test_dir))
 
+    train = train.map(process_path).batch(16)
+    test = test.map(process_path).batch(16)
+
     train_images = train.take(50)
     real_images = tf.convert_to_tensor(list(train_images.as_numpy_iterator()))
 
-    return train.map(process_path).batch(16), test.map(process_path).batch(16), real_images
+    return train, test , real_images
 
 def process_path(path):
     img = tf.io.read_file(path)
