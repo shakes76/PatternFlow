@@ -17,7 +17,7 @@ def dsc(true_segs, pred_segs):
     # results are probabilities between 0 and 1
     intersect = tf.keras.backend.sum(pred_flat * true_flat)
     # Denominator is sum elements in both vectors
-    return ((2.0 * intersect)/tf.keras.backend.sum(pred_flat + true_flat))
+    return (2.0 * intersect)/tf.keras.backend.sum(pred_flat + true_flat)
 
 def dsc_fore(true_segs, pred_segs):
     """
@@ -49,7 +49,8 @@ def avg_dsc_loss(true_segs, pred_segs):
     Returns average DSC loss of the foreground and background segmentation
     results.
     """
-    return (0.5 * dsc_loss(true_segs[:,:,0], pred_segs[:,:,0])
-            + 0.5 * dsc_loss(true_segs[:,:,1], pred_segs[:,:,1]))
+    return 1 - avg_dsc(true_segs, pred_segs)
+    '''return (0.5 * dsc_loss(true_segs[:,:,0], pred_segs[:,:,0])
+            + 0.5 * dsc_loss(true_segs[:,:,1], pred_segs[:,:,1]))'''
 
 

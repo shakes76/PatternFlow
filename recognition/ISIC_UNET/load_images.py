@@ -101,8 +101,8 @@ def make_datasets(train_img, train_seg, val_img, val_seg, test_img, test_seg):
     test_ds = tf.data.Dataset.from_tensor_slices((test_img, test_seg))
     
     # Shuffle datasets
-    train_ds = train_ds.shuffle(len(train_img))
-    val_ds = val_ds.shuffle(len(val_img))
+    train_ds = train_ds.shuffle(round(len(train_img)/4))
+    val_ds = val_ds.shuffle(round(len(val_img)/4))
 
     # Map filenames into actual images
     train_ds = train_ds.map(load_data)

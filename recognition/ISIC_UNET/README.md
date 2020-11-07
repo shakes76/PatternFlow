@@ -3,12 +3,14 @@
 **Author:** Isabel Peters  
 **Student number:** 45371756
 
-The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer, and accompanying segmentationg maps. The skin cancer images are in colour, and the segmenation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [Improved UNet architecture](https://arxiv.org/abs/1802.10508v1) to produce these segmentation maps.
+The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer, and accompanying segmentationg maps. The skin cancer images are in colour, and the segmenation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [Improved UNet](https://arxiv.org/abs/1802.10508v1) architecture to produce these segmentation maps.
 
-The Improved UNet architecture comprises of two pathways - the context pathway, and the localisation pathway. The context pathway repeats the same layers 5 times, with the number of filters doubling and the layer size halving between them. The localisation pathway repeats the same layers 4 times, with the number of filters halving and the layer size doubling during these layers. This results in the output prior to the final segmentaion being the same size as the first context layer. 
+![Improved UNet model architecture diagram](figures/Improved_UNet_architecture.png)
 
+The Improved UNet architecture comprises of two pathways - the context pathway, and the localisation pathway. The context pathway repeats the same layers 5 times, with the number of filters doubling and the layer size halving between them. The localisation pathway repeats the same layers 4 times, with the number of filters halving and the layer size doubling during these layers. This results in the output prior to the final segmentaion being the same size as the first context layer.  
 As in standard UNet, skip connections, in the form of concatenation, link the context layer and the localiation layer of the same depth. Improved UNet also has connections within each level of the context pathway. After layer size is reduced, a series of convolutions and a dropout layer is applied - the 'context module'. The result of the layer after the context module is then summed element-wise with the layer prior to the application.  
 The final step of Improved UNet is producing the segmentation map. This incorporates the segmentation results of the final 3 localisation layers, by upsampling and element-wise summation, to produce the overall segmentation output.  
+This algorithm implements an Improved UNet architecture similar to the above image. However, convolutions were 2D not 3D; the activation function ReLU was used instead of leaky ReLU; and the number of filters in the first layer was 8, instead of 16.
 
 ## Installation
 
@@ -36,6 +38,4 @@ Note that the ISIC dataset contains only 2,596 images. Thus small validation and
 The size of the images used can also be changed. Currently, all images are resized to squares with side length `image_size = 256`. Note `image_size` must be specified in both `driver.py` and `load_images.py`.
 
 Example model results:
-
-
-
+![Model segmentation results](figures/example_results.png)
