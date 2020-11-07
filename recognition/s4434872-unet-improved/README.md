@@ -54,7 +54,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
  - Output image shape: [256, 256, 4]  
 
 <p align="center"> 
-	<img src="./doc_images/improved_unet_network.png" />
+	<img src="./doc_images/improved_unet_network.PNG" />
 </p>  
 <p align="center"> 
 	Figure 3. Improved UNet Network Architecture
@@ -94,7 +94,7 @@ To handle class imbalance that is notably present in medical imaging data, imple
 The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the similarities between two sets of data. Most broadly used tool in the validation of image segmentation algorithms.    
 
 <p align="center"> 
-	<img src="./doc_images/dsc.png" />
+	<img src="./doc_images/dsc.PNG" />
 </p>  
 
 <p align="center"> 
@@ -107,7 +107,7 @@ The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the 
 Used the default training and validation splits given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.
 
 <p align="center"> 
-	<img src="./doc_images/train_plot2.png" />
+	<img src="./doc_images/train_plot2.PNG" />
 </p>  
 
 <p align="center"> 
@@ -115,12 +115,14 @@ Used the default training and validation splits given in the OASIS preprocessed 
 </p>  
 
 <p align="center"> 
-	<img src="./doc_images/train_visualise.png" />
+	<img src="./doc_images/train_visualise.PNG" />
 </p>  
 
 <p align="center"> 
 	Figure 6. Training Visualisation
 </p>  
+
+
 
 Thus, it is clear to see that after only 3 epochs with a batch size of 32, we achieve > 90% DSC.
 
@@ -129,14 +131,14 @@ Thus, it is clear to see that after only 3 epochs with a batch size of 32, we ac
 Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.  
 
 <p align="center"> 
-	<img src="./doc_images/test_results.png" />
+	<img src="./doc_images/test_results.PNG" />
 </p>  
 <p align="center"> 
 	Figure 7. Test Set Evaluation Results (Average)
 </p>  
 
 <p align="center"> 
-	<img src="./doc_images/test_predictions.png" />
+	<img src="./doc_images/test_predictions.PNG" />
 </p>  
 <p align="center"> 
 	Figure 8. Test Set Predictions
