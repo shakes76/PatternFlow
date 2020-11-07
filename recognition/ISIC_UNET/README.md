@@ -3,7 +3,7 @@
 **Author:** Isabel Peters  
 **Student number:** 45371756
 
-The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer, and accompanying segmentation maps. The skin cancer images are in colour, and the segmenation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [UNet](https://arxiv.org/abs/1802.10508v1) architecture to produce these segmentation maps.
+The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer, and accompanying segmentation maps. The skin cancer images are in colour, and the segmentation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [UNet](https://arxiv.org/abs/1802.10508v1) architecture to produce these segmentation maps.
 
 ![UNet model architecture diagram](figures/UNet_architecture.png)
 
