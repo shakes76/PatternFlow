@@ -55,6 +55,8 @@ small to get a consistent representative sample of the whole dataset. The presen
 these issues.
 
 ## Usage
+The driver script is set up with all required calls in its main routine. With the below dependencies available simply
+call "python driver.py". The ISIC data must be in the path data/ISIC2018_... relative to driver.py.
 ### Dependencies
 Beyond standard python libraries, the model and its driver script require the following packages:
 
