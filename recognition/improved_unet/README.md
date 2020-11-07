@@ -8,6 +8,8 @@ This project is created by
 This is a project realted to do a segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
 similarity coefficient of 0.9 on the test set.
 Under the improved_unet file it will contain two python scripy, which call Script.py and model.py
+Driver script = Script.py
+Model script = model.py
 
 ## The problem:
 Given three dataset (train, test, validate)
