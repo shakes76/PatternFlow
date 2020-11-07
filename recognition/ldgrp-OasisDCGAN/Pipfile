@@ -9,7 +9,6 @@ verify_ssl = true
 tensorflow = "*"
 matplotlib = "*"
 numpy = "*"
-tqdm = "*"
 
 [requires]
 python_version = "3.8"

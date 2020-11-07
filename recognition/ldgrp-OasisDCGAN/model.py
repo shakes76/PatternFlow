@@ -2,7 +2,6 @@ from pathlib import Path
 from utils import Config, plot, preview_images, hms_string
 from tensorflow.keras import initializers, layers, metrics, \
                              models, optimizers, losses
-from tqdm import tqdm
 import logging
 import tensorflow as tf
 import time
@@ -126,7 +125,6 @@ class GAN:
         
         total_loss_g, total_loss_d, total_d_real, total_d_fake = 0, 0, 0, 0
         batches = 0
-        #for batch in tqdm(images):
         for batch in images:
             loss_g, loss_d, d_real, d_fake = self.distributed_epoch_step(batch)
             total_loss_g += loss_g
