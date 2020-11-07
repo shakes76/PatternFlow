@@ -56,6 +56,7 @@ Training is done with:
 Output:
 
 **Training and validation DSC**
+
 <img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/dsc_plot.png" width=500 align=center>
 
 **DSC on the testing set**
