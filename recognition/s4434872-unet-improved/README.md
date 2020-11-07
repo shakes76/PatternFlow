@@ -31,7 +31,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
     - 2 = Gray Matter
     - 3 = White Matter 
 
-- These images can then be appropriately one-hot encoded pixel wise to have shape [256, 256, 4], where each pixel belongs to one of these four classes. For example if a pixel were to belong to class 0 it would have values in axis 3 of [1, 0, 0, 0].
+- These images can then be appropriately one-hot encoded pixel wise to have shape [256, 256, 4], where each pixel belongs to one of these four classes. For example if a pixel were to belong to class 0 it would have values in axis 3 of [1, 0, 0, 0].   
 
 <p align="center"> 
 	<img src="./doc_images/seg_001_slice_0.nii.png" />
@@ -54,7 +54,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
  - Output image shape: [256, 256, 4]  
 
 <p align="center"> 
-	<img src="./doc_images/improved_unet_network.png" width="800" />
+	<img src="./doc_images/improved_unet_network.png" />
 </p>  
 <p align="center"> 
 	Figure 3. Improved UNet Network Architecture
@@ -94,7 +94,7 @@ To handle class imbalance that is notably present in medical imaging data, imple
 The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the similarities between two sets of data. Most broadly used tool in the validation of image segmentation algorithms.    
 
 <p align="center"> 
-	<img src="./doc_images/dsc.png" width="800" />
+	<img src="./doc_images/dsc.png" />
 </p>  
 
 <p align="center"> 
@@ -142,7 +142,7 @@ Again using the default testing split given in the OASIS preprocessed dataset. U
 	Figure 8. Test Set Predictions
 </p>  
 
-Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very VERY close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.  
+Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very VERY close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.
 
 ## Files and Folders
 ### [model.py](./model.py)
