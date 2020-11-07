@@ -10,18 +10,18 @@ Student ID: 45616738
 	<img src="./images/unet_structure.PNG" />
 </p>
 
-Following the UNET design[1] from <https://arxiv.org/pdf/1802.10508.pdf>. The UNET consists of 2 main parts, the left part considered as the contracting path where the resolution of the images are decreased. This is done by the convolutional layers with a stride of 2, essentially halving the resolution each time. This is followed by a context module which consists of 2 3x3x3 convulutional layers with a dropout layer in between the 2 to prevent overfitting. This repeats 3 more times. Afterwards is the second part, the right part is called the expansive part which reconstructs the image back to its original resolution. This is done by Upsampling the image. As it does this, the image is concatenated by a part from the contracted path in order to get a more accurate prediction of what it should look like. After a localization module is used, which consists of 2 more convulution layers. This process is similarly repeated 3 more times in order to gain the original shape. While the paper states, "Throughout the network we use leaky ReLU nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions", I applied only a few LeakyRelu at an alpha value as stated of 0.01 because when I it applied too many of them, it caused a Resource Error when training started. Therefore, I limited the calls of LeakyRelu to around the middle of the left part, the center and the middle of right part.
+Following the UNET design[1] from <https://arxiv.org/pdf/1802.10508.pdf>. The UNET consists of 2 main parts, the left part considered as the contracting path where the resolution of the images are decreased. This is done by the convolutional layers with a stride of 2, essentially halving the resolution each time. This is followed by a context module which consists of 2 3x3x3 convolutional layers with a dropout layer in between the 2 to prevent overfitting. This repeats 3 more times. Afterwards is the second part, the right part is called the expansive part which reconstructs the image back to its original resolution. This is done by Upsampling the image. As it does this, the image is concatenated by a part from the contracted path in order to get a more accurate prediction of what it should look like. After a localization module is used, which consists of 2 more convolutional layers. This process is similarly repeated 3 more times in order to gain the original shape. While the paper states, "Throughout the network we use leaky ReLU nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions", I applied only a few LeakyRelu at an alpha value as stated of 0.01 because when I it applied too many of them, it caused a Resource Error when training started. Therefore, I limited the calls of LeakyRelu to around the middle of the left part, the center and the middle of right part.
 
 **Context Module**
-BatchNormalization
-Conv2D 3x3
-dropout layer (drop rate = 0.3)
-Conv2D 3x3
-Leaky ReLU nonlinearities with a negative slope of 10^−2 (sometimes)
+- BatchNormalization
+- Conv2D 3x3
+- dropout layer (drop rate = 0.3)
+- Conv2D 3x3
+- Leaky ReLU nonlinearities with a negative slope of 10^−2 (sometimes)
 
 **Localization Module**
-Conv2D 3x3 with Leaky ReLU as activation function
-Conv2D 1x1 with Leaky ReLU as activation function
+- Conv2D 3x3 with Leaky ReLU as activation function
+- Conv2D 1x1 with Leaky ReLU as activation function
 
 ## Training Parameters:
 For the loss and metric I have changed it to use a Dice Coefficient as the problem demanded. 
@@ -81,6 +81,10 @@ While evaluating using the test set, the dice coefficient was 0.9904.
     <td><img src="./images/true_seg4.PNG" /></td>
   </tr>
 </table>
+
+From these comparisons, we can see that the predicted as a very high degree of similarity with the test images given its 0.9904 dice coefficient across all labels and the final output.
+
+
 
 The plot of the model is in the Models_and_functions.ipynb file, plot of predictions vs test segmented images are in the Driver.ipynb and images.
 
