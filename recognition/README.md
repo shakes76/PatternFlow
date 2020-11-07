@@ -85,7 +85,7 @@ pip install skimage
 
 # Details regarding code:
 "function.py" consists of all functions used to implement the model.
-"main.ipynb" contains all the code needed to implement the model and to choose right hyperparameters. Based on necessicity, parameters can be tuned in this script to achieve 
+"DCGAN_mainfile.ipynb" or "DCGAN_mainfile.py" contains all the code needed to implement the model and to choose right hyperparameters. Based on necessicity, parameters can be tuned in this script to achieve 
 required goal.'
 
 Procedure followed in implementing the DCGAN model:
