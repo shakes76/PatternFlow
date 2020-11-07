@@ -56,8 +56,11 @@ def data_part_normal(test_ratio=0.10, val_ratio=0.20):
     print("\nMany Thanks :))")
     print("Now loading images to be followed by model training")
     print("This might take a bit longer (depending on your system)\n")
+    # load input image data
     X = load_image(image_path=input_path)
+    # load ground truth image data
     y = load_image(image_path=gt_path)
+    # get  index up to which alidation set will be separated
     val_size = int(X.shape[0] * val_ratio)
     # partitioning test test from others
     X_tr_full, X_test_, y_tr_full, y_test_ = train_test_split(X, y, 
