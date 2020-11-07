@@ -12,10 +12,10 @@ Under the improved_unet file it will contain two python scripy, which call Scrip
 Given three dataset (train, test, validate)
 The goal of this problem is to perform a magnetic resonance image segmentation of the brain (aka outline the brain)
 Here are the predict image with our unet with over 90% accuracy
-<img src="./improved_unet/image/Predict.JPG" alt="model1" width="500"/>
+<img src="./image/Predict.JPG" alt="model1" width="500"/>
 
 ### And a example output after training
-<img src="./improved_unet/image/expect_output.JPG" alt="model1" width="500"/>
+<img src="./image/expect_output.JPG" alt="model1" width="500"/>
 
 # Requirement
 
@@ -54,15 +54,15 @@ This improved_unet have few important module
   
 ### Here are the model summary
 
-<img src="./improved_unet/image/model1.JPG" alt="model1" width="500"/>
-<img src="./improved_unet/image/model2.JPG" alt="model2" width="500"/>
-<img src="./improved_unet/image/model3.JPG" alt="model3" width="500"/>
-<img src="./improved_unet/image/model4.JPG" alt="model4" width="500"/>
-<img src="./improved_unet/image/model5.JPG" alt="model5" width="500"/>
+<img src="./image/model1.JPG" alt="model1" width="500"/>
+<img src="./image/model2.JPG" alt="model2" width="500"/>
+<img src="./image/model3.JPG" alt="model3" width="500"/>
+<img src="./image/model4.JPG" alt="model4" width="500"/>
+<img src="./image/model5.JPG" alt="model5" width="500"/>
 
 And the newwork architecture form the paper
 
-<img src="./improved_unet/image/overall.JPG" alt="All" width="500"/>
+<img src="./image/overall.JPG" alt="All" width="500"/>
 
 
 # How to use it
