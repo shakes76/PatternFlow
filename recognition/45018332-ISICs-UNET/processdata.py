@@ -9,9 +9,6 @@ def move_files(flist, dest):
 
 def rearr_folders(data_path, img_path, mask_path):
     #new split folders for images
-    data_path = './ISIC2018_Task1-2_Training_Data'
-    img_path = '/ISIC2018_Task1-2_Training_Input_x2'
-    mask_path = '/ISIC2018_Task1_Training_GroundTruth_x2'
 
     folders = ['/train_img', '/train_mask', '/test_img', '/test_mask', '/val_img', '/val_mask']
     for folder in folders:
@@ -45,3 +42,5 @@ def rearr_folders(data_path, img_path, mask_path):
     move_files(test_masks, (data_path+folders[3]))
     move_files(val_imgs, (data_path+folders[4]))
     move_files(val_masks, (data_path+folders[5]))
+
+    return (len(train_imgs), len(val_imgs), len(test_imgs))

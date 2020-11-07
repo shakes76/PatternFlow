@@ -5,11 +5,11 @@ from tensorflow.keras import layers as krl
 def model_unet(rows, cols, channels=1):
     #this is an exact implementation of the model described in (Ronneberger et al, 2015)
     #Input
-    ins = kr.Input(rows,cols,channels)
+    ins = kr.Input((rows,cols,channels))
 
     #downsample part of UNET
     #step 1
-    conv1 = krl.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(inputs)
+    conv1 = krl.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(ins)
     conv1 = krl.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv1)
     mp1 = krl.MaxPool2D(pool_size=(2,2))(conv1)
     #step 2
