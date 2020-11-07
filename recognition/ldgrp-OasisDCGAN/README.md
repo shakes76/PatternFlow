@@ -7,7 +7,7 @@ The model has been designed with distributed training in mind. Specifically,
 it uses [`MirroredStrategy`][tf-mirroredstrategy] which creates a replica of the
 model on each GPU to enable multi-GPU training on a machine.
 
-### Dependencies
+## Dependencies
 
 |Library   |Version|
 |----------|-------|
@@ -17,6 +17,9 @@ model on each GPU to enable multi-GPU training on a machine.
 
 `matplotlib` is used to visualize and plot the loss functions and discriminator
 outputs. `numpy` is used in the image preprocessing and output stages. 
+
+## Configuration
+See `utils.py` for the configuration settings.
 
 ## Running
 
@@ -64,20 +67,44 @@ with strategy.scope():
     gan.discriminator.save(config.output_dir / 'models' / 'discriminator')
 ```
 
-## Results
+## Running on SLURM
 
-The model was trained on resized 128x128 images from the segmented OASIS brain
+This model is able to take advantage of multi-GPU machines. A sample
+script is available at `resources/slurm_job.sh`. UQ students can access the
+Goliath compute cluster. The following script will use 4x NVIDIA K80s to run
+train the GAN.
+
+```
+sbatch slurm_job.sh
+```
+
+## Algorithm
+
+The model was trained on resized 128x128 images from the **segmented** OASIS brain
 dataset. A similar training set can be recovered by running the command
 ```
 python process_images.py 128 --output input128
 ```
-and running `driver.py` with the config in `output/config.json`.
+and running `driver.py` with the config in `resources/config.json`.
 ```
-python driver.py --config=output/config.json
+python driver.py --config=resources/config.json
 ```
 
-![plot](output/plot.png)
-![preview](output/preview.gif)
+|Parameter| |
+|---------|-|
+|image_size|128|
+|kernel_size|5|
+|generator_beta1 (adam optimizer)|0.5|
+|generator_lr (learning rate)|6e-05|
+|discriminator_beta1 (adam optimizer)|0.5|
+|discriminator_lr (learning_rate)|4e-05|
+|epochs|50|
+|batch_size|128|
+|momentum|0.8|
+|dropout|0.25|
+
+![plot](resources/plot.png)
+![preview](resources/preview.gif)
 
 ## Network Architecture
 
