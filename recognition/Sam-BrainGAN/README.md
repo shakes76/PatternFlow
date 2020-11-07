@@ -14,9 +14,19 @@ The optimizers are optimzing in the direction which minimizes some loss function
 
 ## Figures:
 
-Below is a graph of the evolution of the Generator Loss, Discriminator Loss and SSIM at each EPOCH. For this run, we used 40 EPOCHS. 
+Below is a graph of the evolution of the Generator Loss, Discriminator Loss and SSIM at each EPOCH. For this run, we used 40 EPOCHS. As you can see, the Generator and Discriminator Loss fluctuates quite heavily. The SSIM hovers around 0.58-0.65 fairly consistently. 
 
 ![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Figure.png)
+
+## Example Outputs
+
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Brain1.png)
+
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Brain2.png)
+
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Brain3.png)
+
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Brain4.png)
 
 ## Dependencies:
 
