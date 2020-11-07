@@ -8,7 +8,7 @@ The Improved UNet model is a variation on the standard UNet model as defined by 
 
 ![unet](images/improved_unet.png)
 
-The model has a similar contracting and expansive path as the standard model.
+The Improved UNet model has a similar contracting and expansive path structure as the standard model.
 
 Contracting path:
 - Context module: two 3x3x3 convolutions with a dropout layer in between
