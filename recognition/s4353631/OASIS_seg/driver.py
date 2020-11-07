@@ -109,7 +109,6 @@ history = model.fit(data_dict['train'].batch(2), epochs=5,
 
 # VISUALISE PERFORMANCE
 
-
 fig, ax = plt.subplots(figsize=(8, 6))
 
 ax.plot(history.history['dice_coe'], 'k', label='Train')
@@ -121,7 +120,6 @@ ax.set_title('Performance vs Epoch')
 ax.legend()
 
 plt.show()
-
 
 # Following our previous plotting example:
 test_x, test_y_ground = next(iter(data_dict['validate'].batch(1)))
@@ -145,7 +143,6 @@ for i in range(3):
 
 fig.suptitle('Ground Truth vs Predictions')  
 plt.show()
-
 
 # Finally we compute the dice coefficient on the test set.
 test_performance = model.evaluate(data_dict['test'].batch(2), verbose=2)
