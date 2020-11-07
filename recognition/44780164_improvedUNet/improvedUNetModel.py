@@ -26,7 +26,7 @@ def improvedUNet():
     -------
 
     """
-    input_shape = tf.keras.Input(shape=(256, 256, 3))
+    input_shape = tf.keras.Input((256, 256, 1))
 
     # Going Down
     connector1 = tf.keras.layers.Conv2D(16, (3, 3), activation=leakyReLU, **CONV_ARGUMENTS)(input_shape)
@@ -109,8 +109,8 @@ def improvedUNet():
     segment_out = tf.keras.layers.Add()([segment1, segment2])
 
     # Output
-    final = tf.keras.layers.Conv2D(2, (1, 1), activation='softmax')(segment_out)
+    final = tf.keras.layers.Conv2D(1, (1, 1), activation='softmax')(segment_out)
     model = tf.keras.Model(inputs=input_shape, outputs=final)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), loss=dice_coe_loss,
-                  metrics=['Dice Similarity Coefficient', dice_similarity_coefficient])
+                  metrics=['accuracy', dice_similarity_coefficient])
     return model
