@@ -1,12 +1,17 @@
-#  OASIS brain DCGAN
+#  Problem 6
 
 This library utilizes DCGAN structure in Tensorflow to attempt to produce OASIS brain segment slice images.
 
 ## Dependencies
-Before usage instructions can begin, dependencies need to be presented as for the user to install. With your choice of environment initialises, the following dependencies need to be added:
-* Tensorflow / tensorflow-gpu - If the system you are utilising has a GPU, then Tensorflow-GPU is the best option, otherwise Tensorflow.
+Before usage instructions can begin, dependencies need to be presented as for the user to install. With your choice of environment initialisers, the following dependencies need to be added:
+* Tensorflow / Tensorflow-gpu - If the system you are utilising has a GPU, then Tensorflow-GPU is the best option, otherwise Tensorflow.
 * Pillow - Image processing library
 * Numpy
+
+## Algorithm Description
+As was previously eluded to, this model utilises a DCGAN model. This model is typically known for being fully connected and making use of upsampling and downsampling layers. The following image will detail the general structure for both generator and discriminator models:
+![g](https://gluon.mxnet.io/_images/dcgan.png)
+[Image](https://gluon.mxnet.io/_images/dcgan.png)
 
 ## Usage
 Before usage steps can be listed, it is important to understand how folder structures need to be arranged in order for correct processing. Data that is going to be loaded into the GAN will need to be of the following folder structure:
