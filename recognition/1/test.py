@@ -94,3 +94,40 @@ predictions = np.stack(predictions, axis=0)
 labels = np.stack(labels, axis=0)
 predictions = np.squeeze(predictions, axis=1)
 labels = np.squeeze(labels, axis=1)
+
+print("Pixel accuracy per class: ")
+PAs = []
+for i in range(1, class_number):
+    intersection = np.sum((predictions==labels) & (labels==i))
+    union = np.sum(labels==i)
+    PAs.append(intersection/union)
+    print("Label {} accuracy: {}".format(i, intersection/union))
+    
+print()
+print("mean pixel accuracy: ", np.mean(np.array(PAs)))
+
+print("IOU per class: ")
+IOUs = []
+for i in range(1, class_number):
+    intersection = np.sum((predictions==i) & (labels==i))
+    union = np.sum((predictions==i) | (labels==i))
+    IOUs.append(intersection/union)
+    print("Label {} accuracy: {}".format(i, intersection/union))
+
+print()
+print("mean IOU: ", np.mean(np.array(IOUs)))
+
+# Random select a image and its prediction and groundtruth.
+i = random.choice(range(0, len(images)))
+
+plt.subplot(131)
+plt.imshow(images[i][0, :, :, 0])
+plt.title('Image')
+plt.subplot(132)
+plt.imshow(predictions[0])
+plt.title('Prediction')
+plt.subplot(133)
+plt.imshow(labels[0])
+plt.title('Groundtruth')
+
+plt.show()
