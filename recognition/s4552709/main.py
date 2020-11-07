@@ -19,14 +19,12 @@ def main():
     # load image data and normalize them
     data_pre()
     # train the model
-
+    model = adv_model(4) 
     history = model.fit(x_train_af, y_seg_train, epochs=10, batch_size=16,
                     validation_data=(x_validate_af, y_seg_validate))
 
     # do model prediction and calculate dice coefficient 
-    predict_y = model_prediction(x_test)
-    dice = dice_coefficient(y_seg_test, predict_y, smooth=0.0001) 
-    print("Dice coefficient is : ",dice)
+    
 
     # visual the outcome  (show the 10th image outcome)
     outcome_visual(x_test,x_seg_test,predict_y,10)
