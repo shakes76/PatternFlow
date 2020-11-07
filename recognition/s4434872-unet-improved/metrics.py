@@ -5,6 +5,7 @@ Metrics module.
 
 Created: 07/11/2020
 """
+import tensorflow as tf
 from tensorflow.keras import backend as K
 
 def dice_coefficient(y_true, y_pred, smooth=0.1):

@@ -13,17 +13,10 @@ import tensorflow as tf
 from IPython.display import clear_output
 import glob
 import preprocess
-import model
+import model as mdl
 import metrics
 import visualisation
 
-# Fill in some of the blank by default callback functions
-class DisplayCallback(tf.keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        clear_output(wait=True)
-        visualisation.show_predictions(model, val_ds)
-    # can fill in another function on_epoch_start() if need
-    # to perform some action at the start of an epoch.
 
 def main():
     """
@@ -85,7 +78,7 @@ def main():
     
     # Create Improved UNet Model
     print("> Building Model ...")
-    model = model.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
+    model = mdl.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
 
     # Compile Model using DSC as loss function and a metric
     model.compile(optimizer='adam',
@@ -96,6 +89,14 @@ def main():
     # Training Hyperparameters
     BATCH_SIZE = 32
     EPOCHS = 3
+
+    # Fill in some of the blank by default callback functions
+    class DisplayCallback(tf.keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs=None):
+            clear_output(wait=True)
+            visualisation.show_predictions(model, val_ds)
+        # can fill in another function on_epoch_start() if need
+        # to perform some action at the start of an epoch.
 
     # Train model for epochs=EPOCHS with data batched as BATCH_SIZE
     print("> Start Training Model ...")
