@@ -150,7 +150,7 @@ def generate_and_save_images(model, epoch, test_input):
         plt.imshow(prediction[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
         plt.axis('off')
     
-    path_to_save = os.path.join('/epoch_images/', "image_at_epoch_{:04d}.png".format(epoch))
+    path_to_save = os.path.join('epoch_images/', "image_at_epoch_{:04d}.png".format(epoch))
     plt.savefig(path_to_save)
 
 #Calculates SSIM at every epoch as outlined in README

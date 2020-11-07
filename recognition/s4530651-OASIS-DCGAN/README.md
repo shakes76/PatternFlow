@@ -107,3 +107,5 @@ Additionally, at every epoch, the following will be printed:
 - Generator loss history
 - Time Taken for Last Epoch
 - Last SSIM
+
+Before running the model, please ensure a folder called "epoch_images" exists in the same directory as dcgan.py, otherwise the model will not be able to save the generated images at every epoch and will not run.
