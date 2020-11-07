@@ -72,6 +72,11 @@ Non-trainable params: 0
 The driver python file is where all dataset processing, usage of the 
 LateralityClassifier class and performance analysis takes place.
 
+#### Usage
+To use the driver, simply run it as the main python file. There is a section
+of code in the main() function called "TWEAK PARAMETERS" featuring parameters
+that can be tweaked for a different model or sets - if desired.
+
 #### Process
 When ran as the main file, the driver does the following:
 1. Downloads the AKOA dataset from the cloudstor URL (if it isn't already 
@@ -158,11 +163,12 @@ to ensure no data leakage occurred in across training and testing sets.
 
 It is likely just the simplistic nature of this image set and the fact that it
 is only a binary classification that makes it perform so well. It could very
-well be possible that in all the image there is a single pixel discrepancy
+well be possible that in all 18,600 images there is a single pixel discrepancy
 that gives away the classification. This would explain why even the simple 
 model (without any convolution layers) can still perform extremely well. Which
-of course would be slightly disappointing, however it is the best that can be
-done with this entire dataset.
+of course would be slightly disappointing as it would mean no complicated 
+pattern recognition is happening, however it is the best that can be done with 
+this entire dataset.
 
 ## Appendix
 ### Appendix A

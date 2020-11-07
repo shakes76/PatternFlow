@@ -177,7 +177,7 @@ def visualise_images(X, y, set_size, title, seed=0):
         plt.axis('off')
 
     plt.suptitle(title + "\n\n\n")
-    plt.savefig(title.replace(" ", "_") + ".png")
+    # plt.savefig(title.replace(" ", "_") + ".png")
     plt.show()
 
 
@@ -206,7 +206,7 @@ def mean_square_error(predictions, actual):
     return square_diff_sum / len(actual)
 
 
-def build_train_model(classifier, X_train, y_train, X_test, y_test):
+def build_train_model(classifier, X_train, y_train, X_test, y_test, simple=False):
     """
     A function for building/compiling/training the classifier keras model,
     and then calculating/reporting the accuracy on the validation set, matched
@@ -218,7 +218,10 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
         X_test: the tf array of images to validate with
         y_test: the tf array of labels to validate with
     """
-    model = classifier.build_model()
+    if simple:
+        model = classifier.build_simple_model()
+    else:
+        model = classifier.build_model()
 
     model.summary()
 
@@ -238,7 +241,7 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['training', 'validation'])
-    plt.savefig("acc_over_time.png")
+    # plt.savefig("acc_over_time.png")
     plt.show()
 
     # assess the models accuracy with several metrics
@@ -266,6 +269,15 @@ if __name__ == "__main__":
     processes the downloaded dataset in sets, visualises samples from the each 
     set, initialises the classifier instance, and runs build_train_model().
     """
+
+    # TWEAKING PARAMETERS  #########
+    train_size = 15000  # training set size
+    test_size = 3500  # validation set size
+    use_simple_model = True  # use simple model or normal CNN model?
+    use_dropout = False  # use dropout layers on normal CNN model?
+    drop_rate = 0.3  # drop rate to use if use_dropout is true
+    #################################
+
     # data_dir = "H:/Desktop/AKOA_Analysis/"
 
     # load up dataset, download if necessary
@@ -274,10 +286,7 @@ if __name__ == "__main__":
                                        fname='AKOA_Analysis',
                                        untar=True)
 
-    train_size = 15000
-    test_size = 3500
-
-    # split up dataset, 12000 images for training, 3000 for testing
+    # split up dataset
     X_train, y_train, X_test, y_test = process_dataset(data_dir, train_size, test_size)
 
     print("proportion of right knee in training set:",
@@ -289,6 +298,8 @@ if __name__ == "__main__":
     visualise_images(X_train, y_train, train_size, "visualisation of training set")
     visualise_images(X_test, y_test, test_size, "visualisation of testing set")
 
-    classifier = LateralityClassifier((228, 260, 1))
+    classifier = LateralityClassifier((228, 260, 1), use_dropout=use_dropout,
+                                      drop_rate=drop_rate)
 
-    build_train_model(classifier, X_train, y_train, X_test, y_test)
+    build_train_model(classifier, X_train, y_train, X_test, y_test,
+                      simple=use_simple_model)
