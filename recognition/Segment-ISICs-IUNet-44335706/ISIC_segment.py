@@ -17,8 +17,17 @@ X_DATA_LOCATION = 'H:\COMP3710\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_T
 Y_DATA_LOCATION = 'H:\COMP3710\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2'
 TRAIN_SIZE = 0.8
 VALIDATE_SIZE = 0.1
-TRAIN_BATCH_SIZE = 80
-VALIDATE_BATCH_SIZE = 200
+TRAIN_BATCH_SIZE = 10
+VALIDATE_BATCH_SIZE = 10
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        print(e)
 
 
 # Import data
@@ -49,7 +58,7 @@ model.compile(
 # Train model
 history = model.fit(
     train_seq,
-    epochs=2,
+    epochs=6,
     validation_data=validate_seq,
 )
 
@@ -60,6 +69,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0.0, 1])
 plt.legend(loc='upper left')
+plt.show()
 
 # Evaluate model
 model.evaluate(test_seq)
