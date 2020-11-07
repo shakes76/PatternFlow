@@ -31,7 +31,7 @@ network could not achieve the desired accuracy. It appeared to achieve an optima
 providing predictions close to 0.5 for each of the two classes. As an alternative, a custom loss function
 was implemented to optimise the Dice coefficient directly. This loss function is,
 
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;L=1 - \frac{2\times|y_{pred}\cap y_{truth}|}{|y_{pred}|+|y_{truth}|+\epsilon}" title="Loss function" />
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;L=1-\frac{2\times|y_{pred}\cap y_{truth}|}{|y_{pred}|+|y_{truth}|+\epsilon}" title="Loss function" />
 
 where y<sub>pred</sub> is the predicted segmentation probabilities produced by the network, 
 y<sub>truth</sub> is the actual ground-truth segmentation, and &epsilon; is a small constant to ensure we get
@@ -55,9 +55,16 @@ small to get a consistent representative sample of the whole dataset. The presen
 these issues.
 
 ## Usage
-
 ### Dependencies
+Beyond standard python libraries, the model and its driver script require the following packages:
 
+- TensorFlow
+- Keras (API used to build model)
+- Pillow (Python imaging library)
+- Matplotlib (For plotting outputs)
+- Numpy (For pre-processing inputs)
+
+It is recommended to install these packages within an Anaconda environment.
 
 ## Example Outputs
 ### Training behaviour
