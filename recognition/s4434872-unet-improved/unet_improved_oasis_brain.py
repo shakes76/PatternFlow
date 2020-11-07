@@ -8,10 +8,12 @@ of 0.9 on the test set.
 Start Date: 01/11/2020
 """
 import tensorflow as tf
+from IPython.display import clear_output
 import glob
 import preprocess
 import model
 import metrics
+import visualisation
 
 print('Tensorflow Version:', tf.version.VERSION)
 
@@ -78,43 +80,29 @@ model.compile(optimizer='adam',
 model.summary()
 
 
-
-import matplotlib.pyplot as plt
-
-def display(display_list):
-    """
-    Plotting function.
-    """
-    plt.figure(figsize=(10, 10))
-    for i in range(len(display_list)):
-        plt.subplot(1, len(display_list), i+1)
-        plt.imshow(display_list[i], cmap='gray')
-        plt.axis('off')
-    plt.show()
-
-def show_predictions(ds, num=1):
-    for image, mask in ds.take(num):
-        pred_mask = model.predict(image[tf.newaxis, ...])
-        pred_mask = tf.argmax(pred_mask[0], axis=-1)
-        display([tf.squeeze(image), tf.argmax(tf.cast(mask, tf.uint8), axis=-1), pred_mask])
-
-
+# Training Hyperparameters
 BATCH_SIZE = 32
 EPOCHS = 3
-
-from IPython.display import clear_output
 
 # Fill in some of the blank by default callback functions
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
-        show_predictions(val_ds)
+        visualisation.show_predictions(model, val_ds)
     # can fill in another function on_epoch_start() if need
     # to perform some action at the start of an epoch.
 
+# Train model for epochs=EPOCHS with data batched as BATCH_SIZE
+print("> Start Training Model ...")
 history = model.fit(train_ds.batch(BATCH_SIZE), epochs=EPOCHS,
                     validation_data=val_ds.batch(BATCH_SIZE),
                     callbacks=[DisplayCallback()])
+print("> Training Finished")
+
+
+
+
+
 
 
 
