@@ -112,7 +112,7 @@ def load_seg(img_shape, seg_file):
     return tf.cast(bin_seg, tf.float32)
 
 def load_data(img_file, seg_file):
-    img_shape = (512, 512)
+    img_shape = (256, 256)
     img = load_img(img_shape, img_file)
     seg = load_seg(img_shape, seg_file)
     return img, seg
@@ -131,8 +131,8 @@ def view_preds(model, ds, n):
     plt.figure(figsize=(4*4,n*4))
     i = 0
     for img, true_segs in ds.take(n):
-        predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
-        pred_segs = tf.reshape(predictions, [512, 512, 2])
+        predictions = model.predict(tf.reshape(img, [1, 256, 256, 3]))
+        pred_segs = tf.reshape(predictions, [256, 256, 2])
         
         print(pred_segs[:,:,1])
         print(tf.math.round(pred_segs[:,:,1]))

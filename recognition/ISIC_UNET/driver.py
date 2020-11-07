@@ -52,8 +52,9 @@ filters = 16
 # Batch size model will train on
 batch_size = 16
 # Build model
-model = UNetModel(filters)
-model.build((batch_size, 512,512,3))
+#model = UNetModel(filters)
+model = ImprovedUNetModel(filters)
+model.build((batch_size, 256,256,3))
 model.summary() 
 
 #%%
@@ -61,7 +62,7 @@ model.summary()
 adam_opt = tf.keras.optimizers.Adam(learning_rate=5*10**(-5))
 
 model.compile(optimizer=adam_opt,
-              loss='categorical_crossentropy',
+              loss='binary_crossentropy',
               metrics=[dsc_fore, dsc_back])
 
 #%%
@@ -85,8 +86,8 @@ k = 10
 eek1 = 0
 eek2 = 0
 for img, true_segs in train_ds.take(k):
-        predictions = model.predict(tf.reshape(img, [1, 512, 512, 3]))
-        pred_segs = tf.reshape(predictions, [512, 512, 2])
+        predictions = model.predict(tf.reshape(img, [1, 256, 256, 3]))
+        pred_segs = tf.reshape(predictions, [256, 256, 2])
         #print(true_segs[200:210,200:220,1])
         #print(pred_segs[200:210,200:220,1])
         #print(pred_segs[200:210,200:220,0])
