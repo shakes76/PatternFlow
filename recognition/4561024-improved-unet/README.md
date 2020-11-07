@@ -8,16 +8,16 @@ The Improved UNet model is a variation on the standard UNet model as defined by 
 
 ![unet](images/improved_unet.png)
 
-The Improved UNet model has a similar contracting and expansive path structure as the standard model.
+It has a similar contracting and expansive path structure as the standard UNet model.
 
 Contracting path:
-- Context module: two 3x3x3 convolutions with a dropout layer in between
+- **Context module**: two 3x3x3 convolutions with a dropout layer in between
 - Downsampling: 3x3x3 convolutions with input stride 2
 
 Expansive path:
-- Upsampling module: UpSampling2D operation "that repeats the feature voxels twice in each spatial
+- **Upsampling module**: UpSampling2D operation "that repeats the feature voxels twice in each spatial
 dimension" [1]
-- Localization module: 3x3x3 convolution followed by 1x1x1 that halves the number of features
+- **Localization module**: 3x3x3 convolution followed by 1x1x1 that halves the number of features
 - Deep supervision by using **segmentation layers** and combining them with elementwise summation
 
 Activation function is LeakyReLU.
