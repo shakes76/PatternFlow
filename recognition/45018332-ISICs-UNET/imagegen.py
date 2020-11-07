@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras as kr
 from tensorflow.keras import preprocessing as krp
 
-def create_train_generator(data_path)
+def create_train_generator(data_path):
     folders = ['/train_img', '/train_mask']
 
     img_gen = krp.ImageDataGenerator(rescale=1/255)
@@ -25,7 +25,7 @@ def create_val_generator(data_path):
 
 def create_test_generator(data_path):
     folders=['/test_img', '/test_mask']
-    test_gen = krp.ImageDataGenerator(rescale=1/255)
+    img_gen = krp.ImageDataGenerator(rescale=1/255)
 
     new_size = (256,256)
     test_img_gen = img_gen.flow_from_directory((data_path+folders[0]), target_size=new_size, color_mode="grayscale", batch_size=16, class_mode = None, seed=69)

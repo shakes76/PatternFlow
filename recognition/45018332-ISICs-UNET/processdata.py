@@ -7,7 +7,7 @@ def move_files(flist, dest):
     for f in flist:
         shutil.move(f, dest)
 
-def rearr_folders():
+def rearr_folders(data_path, img_path, mask_path):
     #new split folders for images
     data_path = './ISIC2018_Task1-2_Training_Data'
     img_path = '/ISIC2018_Task1-2_Training_Input_x2'
