@@ -1,7 +1,9 @@
 '''
-OASIS Brains DCGAN
+OASIS Brains DCGAN Implementation
 
 @author Peter Ngo
+
+7/11/2020
 '''
 import tensorflow as tf
 from tensorflow import keras
