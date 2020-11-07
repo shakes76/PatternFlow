@@ -8,11 +8,15 @@ The generator works by performing transpose convolution (a form of upsampling co
 
 The optimizers are optimzing in the direction which minimizes some loss functions. The Generators loss function is higher if the discriminator outputs values closer to 0 (identifies them as fake). The discriminators loss function is higher if it assigns a batch of real images values close to 0 or assigns a batch of fake images values close to 1. 
 
+## Uses of the GAN:
+
+
+
 ## Figures:
 
 Below is a graph of the evolution of the Generator Loss, Discriminator Loss and SSIM at each EPOCH. For this run, we used 40 EPOCHS. 
 
-![alt text](http://url/to/img.png)
+![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Figure.png)
 
 ## Dependencies:
 
