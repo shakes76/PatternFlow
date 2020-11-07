@@ -1,14 +1,14 @@
-# Recognition Problems
-Various image analysis / pattern recognition problems solved in Tensorflow (TF)
+# Introduction
 
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
+This is a project realted to do a segment the OASIS brain data set with an Improved UNet with all labels having a minimum Dice
+similarity coefficient of 0.9 on the test set.
+Under the improved_unet file it will contain two python scripy, which call Script.py and model.py
 
-## Contributing
-* Fork the dedicated 'topic-recognition' branch
-* Create a directory for your problem and place your code into it.
-* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
-* The driver script should preferably either plot or save an image of the generated results
-* Add a README.md file that describes the problem, its solution and shows a picture of it.
-* You may upload a low res image (< 2 MB) into a folder called 'resources' in your problem directory for displaying on the README.md file
-* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
-* Then put in a pull request for the repository owner to approve and that's it!
+# Requirement
+tensorflow = 2.3.0
+python = 3.7.7
+
+Also need to create a file under C drive call content in order to load and save the dataset
+<img src="./imageFigure1.png" alt="MeMa Welcome Image" width="200"/>
+## Algorithm
+In this 
