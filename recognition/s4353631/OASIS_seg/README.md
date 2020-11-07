@@ -1,6 +1,6 @@
 ## OASIS MRI Segmentation
 
 Reference-style: 
-![][oasis.png]
+![](oasis.png)
 
 
