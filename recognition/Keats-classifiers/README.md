@@ -25,10 +25,18 @@ Upon generating the model, the file will draw (using pyplot)
 
 ### Network Architecture
 
-The network consists of 3 Convolutional layers, each followed by a Max pooling and using a Relu activation function. This was trial and error- it wasn't converging to a nice enough solution with 2 layers and maybe that's because the problem can't accurately be solved with only two layers, but I was also quite tired towards the end of writing this up and I may have made a mistake somewere there. For the last part, I was watching some MIT lectures and they spoke of the benefits of having a dense layer after your feature extraction layers, so I have a final dense layer consisting of 100 neurons. These all connect to the final neuron which outputs the probability that the network believes the picture is a right knee.
+![Network Structure](https://github.com/harrykeightley/PatternFlow/blob/topic-recognition/recognition/Keats-classifiers/images/layer_summary.png)
+
+
+The network consists of 3 Convolutional layers, each followed by a Max pooling and using a Relu activation function. This was trial and error- it wasn't converging to a nice enough solution with 2 layers and maybe that's because the problem can't accurately be solved with only two layers, but I was also quite tired towards the end of writing this up and I may have made a mistake somewere there. For the last part, I was watching some MIT lectures and they spoke of the benefits of having a dense layer after your feature extraction layers, so I have a final hidden dense layer consisting of 100 neurons. These all connect to the final neuron which outputs the probability that the network believes the picture is a right knee.
 
 The Activation of the final layer uses a sigmoid function to cap the probability between 0 and 1, and for the corresponding loss function it made sense to use binary_crossentropy since this is a 2 class classification problem.
 
+The split between validation and training data was 20/80, for no real scientific reason, but because from playing around with it this seemed to give a solid amount of data to train on while not compromising the validation set. 
+
 ### Results
 
-The network converged incredibly quickly and I actually stopped it after 10/40 epochs since it was already close to optimal from what I was seeing. An image of proper classifications performed by the network has been included below. p refers to predicted and t to true labels. 
+The network converged incredibly quickly and I actually stopped it after 10/40 epochs since it was already close to optimal from what I was seeing. Images of  classifications performed on random validation_set data by the network has been included below. __p__ refers to predicted and __t__ to true labels. The accuracy it gave on the validation data converged quite quickly to 100%, which is cool but I still feel like that's a little too high and that I did something wrong.
+
+![Knee Data](https://github.com/harrykeightley/PatternFlow/blob/topic-recognition/recognition/Keats-classifiers/images/knee_data.png)
+
