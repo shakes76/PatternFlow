@@ -1,5 +1,5 @@
 # OASIS Brain Dataset Generative DCGAN Model 
-This model aims to generate accurate brain scans through the utilisation of a DCGAN trained on the OASIS Brain dataset. The completed model  results in a "reasonably clear image" and a Structured Similarity (SSIM) of approximately 0.65 when comparing a batch of iamges produced by the generator with 50 different batches of images from the training set.
+This model aims to generate accurate brain scans through the utilisation of a DCGAN trained on the OASIS Brain dataset. The completed model  results in a "reasonably clear image" and a Structured Similarity (SSIM) of approximately 0.65 when comparing a batch of images produced by the generator with 50 different batches of images from the training set.
 
 ## OASIS Dataset Processing
 The OASIS brain dataset is preprocessed, consisting of 9,664 brain scans for training purposes and 544 for testing. 
@@ -7,9 +7,9 @@ The OASIS brain dataset is preprocessed, consisting of 9,664 brain scans for tra
 The images in the dataset were converted to gray-scale, clipped to a resolution of 256x256, and normalised to (-1,1) for the purposes of training. A batch size of 16 was used to train the model, and 50 batches were randomly chosen from the training set in order to generate an SSIM value for every epoch the model was ran.
 
 ## DCGAN Model Explanation
-GANs are an approach to generative modelling which achieve their goal by utilising two sub-models. The generator, and the discriminator. The generator's job is to generate new images, which in this context means brain scans. The discriminator's job is to decide whether the generated images are real (in this case, from the OASIS dataset) or fake (generated). The two models are trained simultaneously, with the goal that the generator eventually gets good enough to successfully trick the discriminator most of the time.
+GANs are an approach to generative modelling which achieve their goal by utilising two sub-models: the generator, and the discriminator. The generator's job is to generate new images, which in this context means brain scans. The discriminator's job is to decide whether the generated images are real (in this case, from the OASIS dataset) or fake (generated). The two models are trained simultaneously, with the goal that the generator eventually gets good enough to successfully trick the discriminator most of the time.
 
-The DCGAN model is a direct application of the GAN, using convolutional layers in both the disriminator and generator. The DCGAN model utilised in this model is based on the one outlined by Radford et. al. in the paper "Unsupervised Representation Learning With Deep Convolutional Generative Adversarial Networks".
+The DCGAN model is a direct application of the GAN, using convolutional layers in both the discriminator and generator. The DCGAN model utilised in this model is based on the one outlined by Radford et. al. in the paper "Unsupervised Representation Learning With Deep Convolutional Generative Adversarial Networks".
 
 ### Model
 
