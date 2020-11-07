@@ -22,36 +22,8 @@ def unet_model(output_channels):
    
     #Encoding
     con1 = tf.keras.layers.Conv2D(16, (3,3) , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(inputs)    
-    con2 = context_module(con1, 16)
-    add1 = tf.keras.layers.Add()([con1, con2])
-    
-    con3 = tf.keras.layers.Conv2D(32, (3,3), strides = 2 ,padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add1)    
-    con4 = context_module(con3, 32)
-    add2 = tf.keras.layers.Add()([con3, con4])
-    
-    con5 = tf.keras.layers.Conv2D(64, (3,3), strides = 2 ,padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add2)    
-    con6 = context_module(con5, 64)
-    add3 = tf.keras.layers.Add()([con5, con6])
-    
-    con7 = tf.keras.layers.Conv2D(128, (3,3), strides = 2 , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add3)    
-    con8 = context_module(con7, 128)
-    add4 = tf.keras.layers.Add()([con7, con8])
-    
-    con9 = tf.keras.layers.Conv2D(256, (3,3), strides = 2 , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add4)    
-    con10 = context_module(con9, 256)
-    add5 = tf.keras.layers.Add()([con9, con10])
-  
-
     up1 = upsampling_module(add5, 128)
-    concat1 = tf.keras.layers.concatenate([up1, add4])
-       
-    loca1 = localiztion_module(concat1, 128)
-    up2 = upsampling_module(loca1, 64)
-    concat2 = tf.keras.layers.concatenate([up2, add3])
-   
-    loca2 = localiztion_module(concat2, 64)
-    up3 = upsampling_module(loca2, 32)
-    concat3 = tf.keras.layers.concatenate([up3, add2])
+
    
     loca3 = localiztion_module(concat3, 32)
     up4 = upsampling_module(loca3, 16)
