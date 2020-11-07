@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 def dice_coefficient(y_true, y_pred, smooth=0.0001):
     #change the dimension to tree
     y_true_f =tf.keras.backend.flatten(y_true)
