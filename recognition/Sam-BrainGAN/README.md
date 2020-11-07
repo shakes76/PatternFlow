@@ -10,7 +10,7 @@ The optimizers are optimzing in the direction which minimizes some loss function
 
 ## Uses of the GAN:
 
-
+The purpose of creating a generative model of the human brain is it can offer us a greater insight into how the human brain can be formed out of randommness, and subsequently how that randomness affects the final product. This includes potentially the source of some diseases or irregularities in the brain. 
 
 ## Figures:
 
@@ -18,7 +18,7 @@ Below is a graph of the evolution of the Generator Loss, Discriminator Loss and 
 
 ![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Figure.png)
 
-## Example Outputs
+## Example Outputs:
 
 ![alt text](https://github.com/samnolan4/PatternFlow/blob/topic-recognition/recognition/Sam-BrainGAN/Output_Brain1.png)
 
@@ -36,7 +36,7 @@ Below is a list of conda commands to set up the virtual environment for this pro
 * conda install tqdm
 * conda install matplotlib
 
-This program was also ran and tested and ran in the spyder environment although other IDE's should also work.
+This program was also ran and tested and ran in the spyder environment although other IDE's should also work. To run the program, simply run the DriverScript.py program.
 
 ## Training-testing split:
 
