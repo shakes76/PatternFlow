@@ -24,10 +24,8 @@ def normalize(image_path, mask):
 
 
 def decode_img(image_path, mask_path):
-    # convert the compressed string to a 3D uint8 tensor
     image = normalize(image_path, False)
     mask = normalize(mask_path, True)
-    # resize the image to the desired size
     return image, mask
 
 
