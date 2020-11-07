@@ -61,7 +61,7 @@ The model will output various information, including the model layers and result
 
 ## Results
 ***
-This model was trained using a batch size of 32 over 20 epochs. After training, the Dice similarity score was 0.8821 on the validation set. The total training time was 51 minutes using an Nvidia P100 GPU running on [Google Colab](colab.research.google.com).
+This model was trained using a batch size of 32 over 20 epochs. After training, the Dice similarity score was 0.8821 on the validation set. The total training time was 51 minutes using an Nvidia P100 GPU running on [Google Colab](https://colab.research.google.com).
 
 Example output of the model can be seen below, with the input image on the left and its segmentation mask on the right.
 
