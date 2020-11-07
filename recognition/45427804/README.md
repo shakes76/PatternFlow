@@ -62,7 +62,7 @@ Local1 = Conv2D(128, (1, 1), activation=LeakyReLU(alpha=0.01), padding='same')
 * segmentation layer
 For example:
 ```python
-Seg2 = Conv2D(4, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(up3)
+Seg2 = Conv2D(4, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')
 ```
 
 * concatenation: using **concatenate() function**
@@ -88,12 +88,27 @@ The Dice coefficient is a ensemble similarity measurement function, usually used
 ![](images/dice.png)
 
 Where |X∩Y| is the intersection between X and Y, and |X| and |Y| sub-tables represent the number of elements of X and Y. Among them, the coefficient of the numerator is 2, because the denominator has repeated calculations of X and Reasons for common elements among Y.
+
+This task is multi-classes so the function will be:
+```python
+def dice_coeff(y_true, y_pred):
+    
+    intersection = tf.math.reduce_sum(y_true * y_pred, axis=[1,2])
+    union = tf.math.reduce_sum(y_true, axis=[1,2]) + tf.math.reduce_sum(y_pred, axis=[1,2])
+    mean_loss = (2. * intersection) / (union + 1e-6)
+    return tf.reduce_mean(mean_loss, axis=0)
+```
 # Dice Loss
 Dice loss = 1 - dice_coefficient
 
 The use of Dice Loss and the sample are extremely unbalanced. If Dice Loss is used under normal circumstances, it will have an adverse effect on back propagation and make training unstable.
 
 Because the background color 0 accounts for more than 80%. It is a severely unbalanced data. So we need to use dice coefficient to evaluate the model.
+
+```python
+def dice_coeff_loss(y_true, y_pred):
+  return 1- tf.reduce_mean(dice_coeff(y_true, y_pred))
+```
 
 # The result
 
