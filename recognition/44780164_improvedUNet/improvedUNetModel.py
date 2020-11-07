@@ -8,12 +8,34 @@ leakyReLU = tf.keras.layers.LeakyReLU(alpha=0.01)
 
 
 def dice_similarity_coefficient(prediction, actual):
+    """
+    The Dice Similarity Coefficient of the real mask and the predicted mask.
+    Parameters
+    ----------
+    prediction : the predicted mask
+    actual : the actual mask
+
+    Returns
+    -------
+    float : The dice similarity coefficient of the two masks
+    """
     x = tf.keras.backend.flatten(actual)
     y = tf.keras.backend.flatten(prediction)
     return (2.0 * tf.math.reduce_sum(x * y)) / (tf.math.reduce_sum(x) + tf.math.reduce_sum(y))
 
 
 def dice_coe_loss(prediction, actual):
+    """
+
+    Parameters
+    ----------
+    prediction
+    actual
+
+    Returns
+    -------
+    float : the dice similarity coeffiient loss
+    """
     return 1 - dice_similarity_coefficient(prediction, actual)
 
 
@@ -24,7 +46,7 @@ def improvedUNet():
     All values were taken from the paper.
     Returns
     -------
-
+    tf.keras.Model : The improved UNet model
     """
     input_shape = tf.keras.Input((256, 256, 1))
 

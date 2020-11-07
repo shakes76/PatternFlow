@@ -17,6 +17,18 @@ masks_list = tf.io.gfile.glob(str(MASK_FOLDER + '/*.png'))
 
 
 def normalize(image_path):
+    """
+    Reads and normalizes the input images
+
+    Parameters
+    ----------
+    image_path
+    the path to the image.
+
+    Returns
+    -------
+    float32 : the normalized image
+    """
     image = tf.io.read_file(image_path)
     image = tf.image.decode_jpeg(image, channels=1)
     image = tf.image.resize(image, IMG_SIZE)
@@ -46,8 +58,7 @@ remaining = image_data.skip(1000)
 val_dataset = remaining.take(500)
 train_dataset = remaining.skip(500)
 
-
 model = improvedUNetModel.improvedUNet()
 model.fit(train_dataset.batch(16), epochs=8, validation_data=val_dataset.batch(16))
 
-print(image_data)
+model.evaluate(test_dataset.bacth(16))
