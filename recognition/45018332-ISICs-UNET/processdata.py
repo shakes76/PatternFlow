@@ -10,7 +10,7 @@ def move_files(flist, dest):
 def rearr_folders(data_path, img_path, mask_path):
     #new split folders for images
 
-    folders = ['/train_img', '/train_mask', '/test_img', '/test_mask', '/val_img', '/val_mask']
+    folders = ['/train_img/data', '/train_mask/data', '/test_img/data', '/test_mask/data', '/val_img/data', '/val_mask/data']
     for folder in folders:
         os.makedirs(data_path+folder)
 

@@ -30,27 +30,27 @@ def model_unet(rows, cols, channels=1):
     
     #upsampling part of UNET
     #step6
-    ups6 = krl.Conv2DTranspose(filters=512, kernel_size=2, strides=(2,2), padding="same")(conv5)
+    ups6 = krl.Conv2DTranspose(filters=512, kernel_size=3, strides=(2,2), padding="same")(conv5)
     conc6 = krl.concatenate([conv4, ups6], axis=3)
     conv6 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc6)
     conv6 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv6)
     #step7
-    ups7 = krl.Conv2DTranspose(filters=256, kernel_size=2, strides=(2,2), padding="same")(conv6)
+    ups7 = krl.Conv2DTranspose(filters=256, kernel_size=3, strides=(2,2), padding="same")(conv6)
     conc7 = krl.concatenate([conv3, ups7], axis=3)
-    conv7 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc7)
-    conv7 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv7)
+    conv7 = krl.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conc7)
+    conv7 = krl.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv7)
     #step8
-    ups8 = krl.Conv2DTranspose(filters=128, kernel_size=2, strides=(2,2), padding="same")(conv7)
+    ups8 = krl.Conv2DTranspose(filters=128, kernel_size=3, strides=(2,2), padding="same")(conv7)
     conc8 = krl.concatenate([conv2, ups8], axis=3)
-    conv8 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc8)
-    conv8 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv8)
+    conv8 = krl.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conc8)
+    conv8 = krl.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv8)
     #step9
-    ups9 = krl.Conv2DTranspose(filters=64, kernel_size=2, strides=(2,2), padding="same")(conv8)
+    ups9 = krl.Conv2DTranspose(filters=64, kernel_size=3, strides=(2,2), padding="same")(conv8)
     conc9 = krl.concatenate([conv1, ups9], axis=3)
-    conv9 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc9)
-    conv9 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv9)
+    conv9 = krl.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conc9)
+    conv9 = krl.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv9)
 
-    outs = krl.Conv2D(filters=2, kernel_size=1, padding="same", activation="sigmoid")(conv9)
+    outs = krl.Conv2D(filters=1, kernel_size=1, padding="same", activation="sigmoid")(conv9)
     
     model = kr.Model(inputs=ins, outputs=outs)
 

@@ -40,42 +40,27 @@ def main():
     #UNET training model
     model = model_unet(rows,cols,channels)
     model.summary()
-    model.compile(optimizer=kro.Adam(learning_rate=0.001), loss=dsc_loss, metrics=[dsc])
+    model.compile(optimizer=kro.Adam(learning_rate=0.00001), loss=dsc_loss, metrics=[dsc])
 
-    training_results = model.fit_generator(train_generator, epochs=epoch_no, steps_per_epoch=(train_no//batch_size),validation_data=val_generator, validation_steps=(val_no//batch_size))
+    training_results = model.fit(train_generator, epochs=epoch_no, steps_per_epoch=(train_no//batch_size),validation_data=val_generator, validation_steps=(val_no//batch_size))
     #plot loss and dsc against epoch
-    plt.figure(1)
-    plt.plot(range(len(training_results.history['loss'])),training_results.history['dsc_loss'], label='dsc_loss')
-    plt.plot(range(len(training_results.history['accuracy'])),training_results.history['dsc'], label='dsc')
+    plt.figure(1, figsize=(20,10))
+    plt.plot(range(len(training_results.history['loss'])),training_results.history['loss'], label='loss')
+    plt.plot(range(len(training_results.history['dsc'])),training_results.history['dsc'], label='dsc')
     plt.plot(range(len(training_results.history['val_loss'])),training_results.history['val_loss'], label='val_loss')
-    plt.plot(range(len(training_results.history['val_accuracy'])),training_results.history['val_accuracy'], label='val_accuracy')
+    plt.plot(range(len(training_results.history['val_dsc'])),training_results.history['val_dsc'], label='val_dsc')
     plt.legend()
+    plt.show()
 
     #get DSC of trained model on testing dataset
-    eval_results = model.evaluate_generator(test_generator, steps=(test_no//batch_size))
+    eval_results = model.evaluate(test_generator, steps=(test_no//batch_size))
     print(eval_results)
 
     #prediction on testing dataset to visualize
     #code is adapted from COMP3710-demo-code.ipynb as shown in lecture
     img_batch, mask_batch = create_test_batch(data_path)
 
-    predictions = model.predict_generator(test_generator, steps=(test_no//batch_size))
-
-    plt.figure(2)
-    for i in range(3):
-        plt.subplot(3,3,i+1)
-        plt.imshow(img_batch[i])
-        plt.axis('off')
-
-        plt.subplot(3,3,i+4)
-        plt.imshow(mask_batch[i])
-        plt.axis('off')
-
-        plt.subplot(3,3,i+7)
-        plt.imshow(predictions[i])
-        plt.axis('off')
-    
-    plt.show()
+    predictions = model.predict(test_generator, steps=(test_no//batch_size))
 
 if __name__ == "__main__":
     main()
