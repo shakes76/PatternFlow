@@ -10,7 +10,9 @@ from imagegen import create_train_generator, create_test_generator, create_val_g
 from unet import model_unet
 from dice import dsc, dsc_loss
 
+
 def main():
+    #this is the driver script for this report
     #limit GPU memory growth, failed to run on my gpu without this part
     physical_devices = tf.config.list_physical_devices('GPU')
     for gpu in physical_devices:
@@ -21,12 +23,12 @@ def main():
     mask_path = '/ISIC2018_Task1_Training_GroundTruth_x2'
 
     #target image size and color channels
-    rows = 256
-    cols = 256
+    rows = 128
+    cols = 128
     channels = 1
 
-    epoch_no = 10
-    batch_size = 16
+    epoch_no = 5
+    batch_size = 8
     
     #assuming images (preprocessed ISICs2018 from BB) already downloaded and unzipped as is in the root directory
     #split images into train-test-validation folders
@@ -61,6 +63,22 @@ def main():
     img_batch, mask_batch = create_test_batch(data_path)
 
     predictions = model.predict(test_generator, steps=(test_no//batch_size))
+
+    plt.figure(2)
+    for i in range(3):
+        plt.subplot(3,3,i+1)
+        plt.imshow(img_batch[i])
+        plt.axis('off')
+
+        plt.subplot(3,3,i+4)
+        plt.imshow(mask_batch[i])
+        plt.axis('off')
+
+        plt.subplot(3,3,i+7)
+        plt.imshow(predictions[i])
+        plt.axis('off')
+    
+    plt.show()
 
 if __name__ == "__main__":
     main()
