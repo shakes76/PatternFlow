@@ -12,6 +12,7 @@ import sys
 matplotlib.use('Agg')
 
 class Config:
+    '''Configurable options for the DCGAN model'''
     image_size: int = 64
     image_channels: int = 1
     image_count: int = 11328
@@ -100,7 +101,10 @@ def plot(loss_g: List[float], loss_d: List[float], d_real: List[float],
     return f, (ax1, ax2)
 
 
-def save_images(config: Config, images, epoch: int):
+def preview_images(config: Config, images, epoch: int):
+    '''
+    Renders an image preview
+    '''
     # Preview image
     margin = config.preview_margin
     rows = config.preview_rows
@@ -113,8 +117,6 @@ def save_images(config: Config, images, epoch: int):
         margin + (cols * (size + margin))
         ), 255, dtype=np.uint8)
 
-    print(image_array.size)
-
     images = 0.5 * images + 0.5
 
     i = 0
@@ -125,15 +127,14 @@ def save_images(config: Config, images, epoch: int):
             image_array[r:r+size, c:c+size] = images[i].reshape(size, size) * 255
             i += 1
 
-    output_path = config.output_dir / 'output'
-    output_path.mkdir(exist_ok=True)
-
-    filename =  output_path / f"train-{epoch}.png"
     im = Image.fromarray(image_array)
 
     return im
 
 def hms_string(sec_elapsed):
+    '''
+    Converts seconds into a string with format hh:mm:ss.ms
+    '''
     h = int(sec_elapsed / (60 * 60))
     m = int((sec_elapsed % (60 * 60)) / 60)
     s = sec_elapsed % 60
