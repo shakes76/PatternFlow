@@ -13,7 +13,7 @@ from model import *
 devices = tf.config.list_physical_devices('GPU') 
 tf.config.experimental.set_memory_growth(devices[0], True)
 
-#Path
+#Path (change the path as necessary)
 images_source = pathlib.Path("D:\s4532664\COMP3710\ISIC2018_Task1-2_Training_Data")
 
 #Input images

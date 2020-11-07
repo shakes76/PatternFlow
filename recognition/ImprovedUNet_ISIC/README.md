@@ -2,8 +2,7 @@
 # Application of an Improved U-Net Neural Network on the ISIC 2018 dataset
 
 ## Author
-Name: Navin Sivasankaran<br>
-Student Number: 45326644
+Navin Sivasankaran<br>
 
 ## Overview/Summary
 This repository contains the code for the application of the Improved U-Net [1] on the ISIC 2018 dataset, which contains the data of images, related to dermoscopy. These images can be, "...used to evaluate pigmented skin lesions... [which can] make it easier to diagnose melanoma." [2]. The segmentation masks are also provided in this dataset as well. 
@@ -21,6 +20,8 @@ The requirement for this segmentation task challenge was to achieve a minimum Di
     - Tested with version 3.3.1
 - Scikit-Learn
     - Tested with version 0.23.2
+- ISIC 2018 challenge dataset for skin cancer
+    - https://cloudstor.aarnet.edu.au/sender/?s=download&token=f0d763f9-d847-4150-847c-e0ec92d38cc5
 
 ## Explanation of Files
 - main.py
@@ -32,10 +33,11 @@ The requirement for this segmentation task challenge was to achieve a minimum Di
 - report.ipynb
     - The Jupyter Notebook containing both main.py and model.py in one file.
     - Will show outputs in a cleaner format.
+    - All the graphs and outputs will be here to see, for easier access.
 
 ## How to Run the Script?
 1. Call the file 'main.py' through Python without any arguments.
-    - If you want to set the number of epochs to run it for, go to the start of the main() function in the  'main.py' file and change the variable/constant 'EPOCHS' to the number that you desire.
+    - If you want to set the number of epochs to run it for, go to the start of the main() function in the 'main.py' file and change the variable/constant 'EPOCHS' to the number that you desire.
 
 
 
