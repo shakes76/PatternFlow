@@ -9,6 +9,6 @@ tensorflow = 2.3.0
 python = 3.7.7
 
 Also need to create a file under C drive call content in order to load and save the dataset
-<img src="./imageFigure1.png" alt="MeMa Welcome Image" width="200"/>
+<img src="./image/Figure1.png" alt="Data" width="200"/>
 ## Algorithm
 In this 
