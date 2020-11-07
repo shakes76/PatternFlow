@@ -4,48 +4,55 @@ Created on Sat Nov  7 11:55:46 2020
 
 @author: danny
 """
+import tensorflow as tf
+import zipfile
+import glob
 
-def unet_model(output_channels, f=64):
+def context_module(input, filter):
+    d1 = tf.keras.layers.BatchNormalization()(input)
+    d1 = tf.keras.layers.Conv2D(filter, (3, 3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(d1)
+    d2 = tf.keras.layers.Dropout(0.3)(d1)
+    d3 = tf.keras.layers.BatchNormalization()(d2)
+    d3 = tf.keras.layers.Conv2D(filter, (3, 3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(d3)
+    return d3
+
+def upsampling_module(input, filter):
+    u1 = tf.keras.layers.UpSampling2D(size=(2,2))(input)
+    u2 = tf.keras.layers.Conv2D(filter, (3, 3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(u1)
+    return u2
+
+def localiztion_module(input, filter):
+    c1 = tf.keras.layers.Conv2D(filter, (3, 3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(input)
+    c2 = tf.keras.layers.Conv2D(filter, (3, 3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(c1)
+    return c2
+
+def unet_model(output_channels):
     inputs = tf.keras.layers.Input(shape=(256,256,1))
     
-    d1 = tf.keras.layers.Conv2D(1*f, 3, padding='same', activation='relu')(inputs)
-    d1 = tf.keras.layers.Conv2D(1*f, 3, padding='same', activation='relu')(d1)
+    #Encoding
+    con1 = tf.keras.layers.Conv2D(16, (3, 3),strides = 2 , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(inputs)     
+    con2 = context_module(con1, 16)
+    add1 = tf.keras.layers.Add()([con1, con2])
     
-    d2 = tf.keras.layers.MaxPooling2D()(d1)
-    d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(d2)
-    d2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(d2)
+    con3 = tf.keras.layers.Conv2D(32, (3, 3), strides = 2 ,padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add1)     
+    con4 = context_module(con3, 32)
+    add2 = tf.keras.layers.Add()([con3, con4])
     
-    d3 = tf.keras.layers.MaxPooling2D()(d2)
-    d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(d3)
-    d3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(d3)
+    con5 = tf.keras.layers.Conv2D(64, (3, 3), strides = 2 ,padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add2)     
+    con6 = context_module(con5, 64)
+    add3 = tf.keras.layers.Add()([con5, con6])
     
-    d4 = tf.keras.layers.MaxPooling2D()(d3)
-    d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(d4)
-    d4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(d4)
+    con7 = tf.keras.layers.Conv2D(128, (3, 3), strides = 2 , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add3)     
+    con8 = context_module(con7, 128)
+    add4 = tf.keras.layers.Add()([con7, con8])
     
-    d5 = tf.keras.layers.MaxPooling2D()(d4)
-    d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
-    d5 = tf.keras.layers.Conv2D(16*f, 3, padding='same', activation='relu')(d5)
+    con9 = tf.keras.layers.Conv2D(256, (3, 3), strides = 2 , padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(add4)     
+    con10 = context_module(con9, 256)
+    add5 = tf.keras.layers.Add()([con9, con10])
     
-    u4 = tf.keras.layers.UpSampling2D()(d5)
-    u4 = tf.keras.layers.concatenate([u4, d4])
-    u4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
-    u4 = tf.keras.layers.Conv2D(8*f, 3, padding='same', activation='relu')(u4)
-    
-    u3 = tf.keras.layers.UpSampling2D()(u4)
-    u3 = tf.keras.layers.concatenate([u3, d3])
-    u3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
-    u3 = tf.keras.layers.Conv2D(4*f, 3, padding='same', activation='relu')(u3)
-    
-    u2 = tf.keras.layers.UpSampling2D()(u3)
-    u2 = tf.keras.layers.concatenate([u2, d2])
-    u2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
-    u2 = tf.keras.layers.Conv2D(2*f, 3, padding='same', activation='relu')(u2)
-    
-    u1 = tf.keras.layers.UpSampling2D()(u2)
-    u1 = tf.keras.layers.concatenate([u1, d1])
-    u1 = tf.keras.layers.Conv2D(1*f, 3, padding='same', activation='relu')(u1)
-    u1 = tf.keras.layers.Conv2D(1*f, 3, padding='same', activation='relu')(u1)
+
     
     outputs = tf.keras.layers.Conv2D(output_channels, 1, activation='softmax')(u1)
-    return tf.keras.Model(inputs=inputs, outputs = outputs)
+    model = tf.keras.Model(inputs=inputs, outputs = outputs)
+    
+    return model
