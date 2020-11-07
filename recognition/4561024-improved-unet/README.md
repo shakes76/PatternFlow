@@ -8,6 +8,20 @@ The Improved UNet model is a variation on the standard UNet model as defined by 
 
 ![unet](images/improved_unet.png)
 
+The model has a similar contracting and expansive path as the standard model.
+
+Contracting path:
+- Context module: two 3x3x3 convolutions with a dropout layer in between
+- Downsampling: 3x3x3 convolutions with input stride 2
+
+Expansive path:
+- Upsampling module: UpSampling2D operation "that repeats the feature voxels twice in each spatial
+dimension" [1]
+- Localization module: 3x3x3 convolution followed by 1x1x1 that halves the number of features
+- Deep supervision by using **segmentation layers** and combining them with elementwise summation
+
+Activation function is LeakyReLU.
+
 ## Dice Similarity Coefficient (DSC)
 Dice similarity coefficient (DSC) is a statistic used to measure the similarity between a predicted image and the ground truth. It can be expressed as:
 
