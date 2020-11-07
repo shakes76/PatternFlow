@@ -10,8 +10,7 @@ along the way.
 
 as well as some images of output from `driver.py`. The recognition task I approached was a semantic segmentation 
 of the OASIS brain MRI library, with the 3D scans separated into 2D images. As can be seen below, four categories 
-were considered including the background.
+were considered including the background. Note that these are 2D MRI slices taken from three separate brains.
 
 ![Ground truth input images and segmentation masks.](oasis.png)
-
 
