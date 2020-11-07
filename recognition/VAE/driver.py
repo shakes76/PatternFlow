@@ -116,9 +116,10 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
         for test_x in test_dataset:
             loss(calculate_loss(model, test_x))
         elbo = -loss.result()
-        # evaluate the model using Structural Similarity between generated images and test samples
+        # evaluate the model using Structural Similarity between generated images and test samples and ELBO
         ssim = calculate_ssim(predictions, test_dataset)
         print("> " + str(epoch) + ": SSIM=" + str(ssim) + ', ELBO=' + str(elbo))
+        # add the evaluatons to a list and plot the results later
         ssims.append(ssim)
         elbos.append(elbo)
     # return the trained model
