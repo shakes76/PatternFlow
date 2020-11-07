@@ -15,7 +15,7 @@ def dice_coef_loss(y_act, y_pred):
 
 
 def iunet_model():
-	inputs = tf.keras.Input((256, 256, 1))
+	inputs = tf.keras.Input((256, 256, 3))
 
 	# Start block
 	layer = tf.keras.layers.Conv2D(32, 3, padding="same", activation="relu")(inputs)
@@ -59,7 +59,6 @@ def iunet_model():
 		layer = tf.keras.layers.BatchNormalization()(layer)
 		
 		# Normalise the batch and upsample
-		
 		layer = tf.keras.layers.UpSampling2D(2)(layer)
 		layer = tf.keras.layers.Concatenate(axis=3)([layer, layers[-i-1]])
 
