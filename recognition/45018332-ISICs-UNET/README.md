@@ -36,7 +36,7 @@ Testing results:
 [0.24397906474769115, 0.756021]
 
 The following plot was also obtained:
-![Alt text](plot/graph.png?raw=true "Training results")
+![Alt text](plots/graph.png?raw=true "Training results")
 
 ## Program structure
 The program has 5 modules: processdata.py processed the raw data and rearrange the folder structure into training, test, and validation sets for easier processing, imagegen.py creates image generator using Keras ImageDataGenerator function on the processed folder to obtain the data from images in batches for training, unet.py creates the U-Net model and dice.py calculates DSC and Dice loss. The driver script is main.py which runs all the other modules and obtain the results.
