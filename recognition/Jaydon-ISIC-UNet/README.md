@@ -5,11 +5,10 @@ This directory contains a U-Net model for image segmentation of melanoma images.
 
 ## Dependencies
 ***
-* TensorFlow >= 2.3
-* Keras >= 2.4
-* Numpy
-* Matplotlib
-* PIL
+* TensorFlow 2.3.0
+* Numpy 1.18.5
+* Matplotlib 3.3.2
+* Pillow 8.0.1 (PIL fork)
 
 
 
