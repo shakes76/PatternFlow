@@ -122,15 +122,15 @@ Results:
 ===========================================================
 # Loss plots
   
-![image info](/images/loss_plots.png)
+![image info](images/loss_plots.png)
 
 # images generated in traning at 100th epoch
   
-![image info](/images/training_100.png)
+![image info](images/training_100.png)
 
 # Generated images after traning:
 
-![image info](/images/testing_images.png)
+![image info](images/testing_images.png)
 
 
 
