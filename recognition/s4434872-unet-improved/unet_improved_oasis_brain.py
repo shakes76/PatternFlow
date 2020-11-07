@@ -11,6 +11,7 @@ import tensorflow as tf
 import glob
 import preprocess
 import model
+import metrics
 
 print('Tensorflow Version:', tf.version.VERSION)
 
@@ -69,6 +70,16 @@ image_channels = 1
 # Create Improved UNet Model
 print("> Building Model ...")
 model = model.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
+model.summary()
+
+
+# Losses
+
+
+
+
+
+
 
 
 
