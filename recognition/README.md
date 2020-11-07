@@ -9,7 +9,7 @@ Deep convolutional Generative Adversive Networks
 ===========================================================
 
 Generative Adversial networks or GAN's use generator framework to generate new image from noise and discriminator framework classfies the generated image into real or fake on 
-comparision with original data. As trainig goes on, weight in both generator and discriminator are adjusted to optimal values to give desired output.End goal is generating images 
+comparision with original data. As training phase goes on, weight in both generator and discriminator are adjusted to optimal values to give desired output.End goal is generating images 
 similar to training image data.
 
 Deep convolutional Generative Adversive Networks or DCGAN's are most fundamental implementaion of GAN'S involving deep convolutional layers in the network to generate image and 
@@ -29,7 +29,7 @@ In this project, Initially noise of shape (100,) is passed through the network a
 
 ## discriminator:
 
-This can be viewed a simple binary classifier containing many convolutional layers .finally flattened data is used to generate probability to classify the images,i.e, real or 
+This can be viewed a simple binary classifier containing many convolutional layers .finally flattened data is used to generate probabilities to classify the images,i.e, real or 
 fake.
 
 # Internal components of Generator and Discriminator:
