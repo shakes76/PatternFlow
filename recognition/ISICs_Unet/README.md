@@ -37,6 +37,17 @@ The Sørensen–Dice coefficient is a statistic used to gauge the similarity of 
 
 Further information in https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
 
+## Dependencies
+
+- python 3
+- tensorflow 2.1.0
+- pandas 1.1.4
+- numpy 1.19.2
+- matplotlib 3.3.2
+- scikit-learn 0.23.2
+- pillow 8.0.1
+
+
 ## Usages
 
 - Run `train.py` for training the UNet on ISIC data.
@@ -51,7 +62,7 @@ Further information in https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_
 
 - data set: 
     - The data set we used is the training set of ISIC 2018 challenge data which has segmentation labels.
-    - Training: Validation: Test = 1660: 415: 519 = 0.64: 0.16 : 0.2
+    - Training: Validation: Test = 1660: 415: 519 = 0.64: 0.16 : 0.2 (Training: Test = 4: 1 and in Training, further split 4: 1 for Training: Validation)
     - Training data augmentations: rescale, rotate, shift, zoom, grayscale
 - model: 
     - Original UNet with padding which can keep the shape of input and output same.
