@@ -5,7 +5,6 @@ from tensorflow.keras.layers import (
     UpSampling2D,
     Concatenate,
     BatchNormalization,
-    Input,
 )
 from tensorflow.keras.initializers import HeNormal
 

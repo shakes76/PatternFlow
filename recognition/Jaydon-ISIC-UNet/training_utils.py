@@ -14,7 +14,9 @@ class DataGenerator(Sequence):
         self.batch_size = batch_size  # Training batch size, increase or decrease depending on memory needs
         self.ids = ids
         self.path = path
-        self.image_size = image_size  # Defaults at 128x128, change if memory or time is an issue
+        self.image_size = (
+            image_size  # Defaults at 128x128, change if memory or time is an issue
+        )
         self.on_epoch_end()
 
     def __len__(self):
@@ -24,10 +26,10 @@ class DataGenerator(Sequence):
     def __load__(self, id):
         """Loads the images from the dataset using the specified file path"""
         img_path = (
-            os.path.join(self.path, "ISIC2018_Task1-2_Training_Input_x2", id) + ".jpg"
+            os.path.join(self.path, "images", id) + ".jpg"
         )  # training images
         mask_path = (
-            os.path.join(self.path, "ISIC2018_Task1_Training_GroundTruth_x2", id)
+            os.path.join(self.path, "masks", id)
             + "_segmentation.png"
         )  # training masks
 
@@ -79,4 +81,6 @@ def dice_coef(y_true, y_pred, smooth=1):
     y_true_f = Keras.flatten(y_true)
     y_pred_f = Keras.flatten(y_pred)
     intersection = Keras.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (Keras.sum(y_true_f) + Keras.sum(y_pred_f) + smooth)
+    return (2.0 * intersection + smooth) / (
+        Keras.sum(y_true_f) + Keras.sum(y_pred_f) + smooth
+    )
