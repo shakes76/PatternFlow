@@ -1,6 +1,10 @@
 
 # Segmentation of ISICs dermatology dataset with UNet
 
+Author: Matthew Jones (44335706)
+
+Date: 2020-11-07
+
 This module uses an improved UNet structure to segment the ISICs 2018 dermatological dataset into foreground and background segments. This module was written to solve the 4th problem which aims to have a minimum Dice similarity coefficient of 0.8 on the test set which this model structure has achieved in every training thus far. Admittedly the model does reduce all inputs to a size of 256 x 256 pixels which helps boost accuracy paticularly of larger images. Below this are the dependencies that the module requires in order to operate, usage of the test_driver.py script and the internal workings of the algorithm.
 
 ### Dependencies
@@ -10,6 +14,7 @@ The following packages are required to run the module correctly
 - Matplotlib
 - Scikit-image
 - Scikit-learn
+
 Note that the model relies on Tensorflow only with the remaining packages used to process or display the data.
 
 ### Usage
@@ -51,9 +56,18 @@ These were chosen because the dataset only contains 2594 images and so is not ti
 #### Model Structure
 These images were fed into the model structure as can be seen below:
 
-<img src="resources/model_structure.png"> 
+<img src="resources/model_structure.png">
 
 The model has a depth of three and has managed to achieve DICE similarity scores as high as 0.9125 on the test set. Below we can see the accuracy of the model with only 6 epochs.
 
 <img src="resources/Accuracy_data.png" width="500"> 
+
+We also see the corresponding accuracy on the test dataset of 0.8951
+
+<img src="resources/test_result.PNG" width="600">
+
+We can see an example of a the model's output compared to the true segmentation (note that this was only a partially trained model)
+
+
+<img src="resources/ISIC_0014600_segmentation.png" width="256" height="256"> <img src="resources/ISIC_0014600_output.png" width="300">
 
