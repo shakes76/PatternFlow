@@ -85,10 +85,15 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_coef_loss(train_ds, test_ds):
     return 1-dice_coef(train_ds, test_ds)
-"Compile the model with the DSC loss function"
+"""
+Compile the model with the DSC loss function
+"""
 model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
 
-"A fucntion used for show the prediction output, example image can find in Readme"
+"""
+A fucntion used for show the prediction output, example image can find in Readme
+"""
+
 def show_predictions(ds, num=1):
     for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])
@@ -98,17 +103,24 @@ def show_predictions(ds, num=1):
 
 from IPython.display import clear_output
 
-"A callback function use it at epochs, clear_out for clean the past epochs"
+"""
+A callback function use it at epochs, clear_out for clean the past epochs
+"""
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
         #show_predictions(val_ds)
 
 history = model.fit(train_ds.batch(32), epochs=5, validation_data=val_ds.batch(32),callbacks=[DisplayCallback()])
-"Show the prediction"
+"""
+Show the prediction
+"""
 show_predictions(test_ds, 1)
 
-"Added function for showing graph"
+"""
+Added function for showing graph
+"""
+
 def plot_accuracy():
     plt.plot(history.history['accuracy'], 'seagreen', label='train')
     plt.plot(history.history['val_accuracy'], label = 'validation')
