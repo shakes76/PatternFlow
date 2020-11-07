@@ -41,6 +41,8 @@ val_ds = val_ds.shuffle(len(val_images))
 test_ds = test_ds.shuffle(len(test_images))
 
 """
+decode the dataset for futher propuse
+Also apply one hot encoding for all dataset
 """
 
 def decode_png(file_path):
@@ -96,13 +98,17 @@ def show_predictions(ds, num=1):
 
 from IPython.display import clear_output
 
+"A callback function use it at epochs, clear_out for clean the past epochs"
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
         #show_predictions(val_ds)
 
 history = model.fit(train_ds.batch(32), epochs=5, validation_data=val_ds.batch(32),callbacks=[DisplayCallback()])
+"Show the prediction"
 show_predictions(test_ds, 1)
+
+"Added function for showing graph"
 def plot_accuracy():
     plt.plot(history.history['accuracy'], 'seagreen', label='train')
     plt.plot(history.history['val_accuracy'], label = 'validation')
@@ -136,4 +142,5 @@ plot_accuracy()
 plot_dice()
 plot_loss()
 
+"Show a complete model summary"
 model.summary()
