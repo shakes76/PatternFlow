@@ -6,7 +6,7 @@ This script segments the OASIS brain dataset with an Improved UNet model. All la
 ## Improved UNet
 The Improved UNet model is a variation on the standard UNet model as defined by "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge" [1].
 
-![dsc_plot](images/improved_unet.png)
+![unet](images/improved_unet.png)
 
 ## Dice Similarity Coefficient (DSC)
 Dice similarity coefficient (DSC) is a statistic used to measure the similarity between a predicted image and the ground truth. It can be expressed as:
@@ -56,13 +56,13 @@ Training is done with:
 Output:
 
 **Training and validation DSC**
-![dsc_plot](images/dsc_plot.png)
+![dsc_plot](images/dsc_plot.png | width=250)
 
 **DSC on the testing set**
-![dsc_plot](images/dsc.png)
+![dsc](images/dsc.png)
 
 **Prediction result on the testing set**
-![dsc_plot](images/prediction.png)
+![prediction](images/prediction.png)
 
 ## References
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge," Feb. 2018. [Online]. Available:
