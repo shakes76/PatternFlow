@@ -12,7 +12,7 @@ def main():
     result_dir = "result_images/"
     os.makedirs(result_dir, exist_ok=True)
 
-    epochs = 250
+    epochs = 100
     batch_size = 64
     img_shape = (256, 256, 1)
 
