@@ -2,7 +2,7 @@ from pathlib import Path
 from utils import Config, plot, preview_images, hms_string
 from tensorflow.keras import initializers, layers, metrics, \
                              models, optimizers, losses
-#from tqdm import tqdm
+from tqdm import tqdm
 import logging
 import tensorflow as tf
 import time
@@ -10,6 +10,9 @@ import time
 log = logging.getLogger(__name__)
 
 class GAN:
+    '''
+    A DCGAN for 128x128 images
+    '''
     def __init__(self, config: Config):
         self.config = config
         self.strategy = tf.distribute.get_strategy()
@@ -74,6 +77,12 @@ class GAN:
 
     @tf.function
     def distributed_epoch_step(self, images):
+        '''
+        A step in the epoch. This function takes the variables from all copies
+        of the model (replicas) and reduces it to a summary value.
+        
+        See: https://www.tensorflow.org/tutorials/distribute/keras#overview
+        '''
         strategy = self.strategy
 
         loss_g, loss_d, d_real, d_fake = strategy.run(self.epoch_step, args=(images, ))
@@ -83,6 +92,7 @@ class GAN:
                 strategy.reduce(tf.distribute.ReduceOp.MEAN, d_fake, axis=None)
 
     def epoch_step(self, images):
+        '''A step in the epoch.'''
         generator = self.generator
         discriminator = self.discriminator
         generator_optimizer = self.generator_optimizer
@@ -111,8 +121,8 @@ class GAN:
         return loss_g, loss_d, tf.reduce_mean(d_real), tf.reduce_mean(d_fake)
 
     def epoch(self, images, epoch: int):
+        '''An epoch'''
         start = time.time()
-
         
         total_loss_g, total_loss_d, total_d_real, total_d_fake = 0, 0, 0, 0
         batches = 0
@@ -151,6 +161,7 @@ class GAN:
         return loss_g, loss_d, d_real, d_fake
 
     def train(self, images, epochs):
+        '''Train the DCGAN'''
         start = time.time()
 
         for i in range(epochs):
@@ -173,6 +184,9 @@ class GAN:
         log.info (f'Training time: {hms_string(elapsed)}')
 
 def build_generator(config: Config) -> models.Model:
+    '''
+    A generator network
+    '''
     seed_size = config.seed_size
     channels = config.image_channels
     kernel_size = config.kernel_size
@@ -228,6 +242,9 @@ def build_generator(config: Config) -> models.Model:
     return model
 
 def build_discriminator(config: Config) -> models.Model:
+    '''
+    A discriminator network
+    '''
     kernel_size = config.kernel_size
     alpha = config.discriminator_alpha
     momentum = config.momentum
