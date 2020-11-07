@@ -4,12 +4,17 @@ from model import *
 import numpy as np
 from PIL import Image
 import os
+import shutil
 
 if __name__ == "__main__":
     #gets inputed path
     path = sys.argv[1]
     #produces directory for generated images
-    save_dir = os.path.join(path,'gen_images_01')
+    save_dir = os.path.join(path,'gen_images')
+    try:
+        shutil.rmtree(save_dir)
+    except:
+        pass
     #changes path for where data should be located
     path = os.path.join(path, 'keras_png_slices_data')
     path = os.path.join(path, 'keras_png_slices_seg_train')
