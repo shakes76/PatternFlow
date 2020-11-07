@@ -10,15 +10,21 @@ from sklearn.utils import shuffle
 from glob import glob
 from math import ceil
 
-# One hot encode segmented images
+
 def process_segs(seg_image):
+    '''
+    Process segmentation images into one-hot encoded tensors
+    '''
     seg_image = resize(seg_image, (256, 256, 1))
     seg_image = tf.dtypes.cast(tf.math.ceil(seg_image), dtype=tf.uint8)
     return tf.one_hot(seg_image, 2, axis=2)[:, :, :, 0]
 
 
 class iunet_sequence(tf.keras.utils.Sequence):
-    
+    '''
+    Custom sequence class for processing and supplying ISIC image data to a 
+    Keras model as tensors
+    '''
     def __init__(self, x_data, y_data, batch_size):
         self.x_data, self.y_data = x_data, y_data
         self.batch_size = batch_size
@@ -39,7 +45,10 @@ class iunet_sequence(tf.keras.utils.Sequence):
         return tf.constant(x), tf.constant(y)
 
 
-def split_data(x_data_location, y_data_location, x_filetype, y_filetype, train_size, val_test_size, train_batch_size, val_test_batch_size):
+def split_data(x_data_location, y_data_location, x_filetype, y_filetype, train_size, val_test_size, batch_size):
+    '''
+    Split the data into train, validate and test Keras sequences randomly
+    '''
     x_images = glob(x_data_location + '/*.' + x_filetype)
     y_images = glob(y_data_location + '/*.' + y_filetype)
 
@@ -50,7 +59,8 @@ def split_data(x_data_location, y_data_location, x_filetype, y_filetype, train_s
     train_index = ceil(len(x_images) * train_size)
     validate_index = ceil(len(x_images) * (train_size + val_test_size))
 
-    train_seq = iunet_sequence(x_images[:train_index], y_images[:train_index], train_batch_size)
-    validate_seq = iunet_sequence(x_images[train_index:validate_index], y_images[train_index:validate_index], val_test_batch_size)
-    test_seq = iunet_sequence(x_images[validate_index:], y_images[validate_index:], val_test_batch_size)
+    train_seq = iunet_sequence(x_images[:train_index], y_images[:train_index], batch_size)
+    validate_seq = iunet_sequence(x_images[train_index:validate_index], y_images[train_index:validate_index], batch_size)
+    test_seq = iunet_sequence(x_images[validate_index:], y_images[validate_index:], batch_size)
     return train_seq, validate_seq, test_seq
+

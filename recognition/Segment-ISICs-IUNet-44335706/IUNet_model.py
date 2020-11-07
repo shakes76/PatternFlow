@@ -4,6 +4,7 @@ Module for building an improved UNet model using Keras layers
 
 import tensorflow as tf
 
+
 def dice_coef_loss(y_act, y_pred):
 	'''
 	Return the dice coefficient loss of two images
@@ -15,6 +16,9 @@ def dice_coef_loss(y_act, y_pred):
 
 
 def iunet_model():
+	'''
+	Function for building an iunet Keras model
+	'''
 	inputs = tf.keras.Input((256, 256, 3))
 
 	# Start block
@@ -74,11 +78,10 @@ def iunet_model():
 		# Upsample and concatenate layers
 		layer = tf.keras.layers.UpSampling2D(2)(layer)
 		layer = tf.keras.layers.Concatenate(axis=3)([layer, layers[-i-1]])
-		
-		
 
 	# Classify at the final output layer with softmax
 	outputs = tf.keras.layers.Conv2D(2, 3, activation="softmax", padding="same")(layer)
 
 	# Define the model
 	return tf.keras.Model(inputs, outputs)
+
