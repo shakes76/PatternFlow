@@ -57,5 +57,18 @@ def unet_model(output_channels):
     up4 = upsampling_module(loca3, 16)
     concat4 = tf.keras.layers.concatenate([up4, add1])
 
+    con11 = tf.keras.layers.Conv2D(32, (3,3), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(concat4)
+    seg1 = tf.keras.layers.Conv2D(1, (1,1), activation = tf.keras.layers.LeakyReLU(alpha=0.01), padding='same')(loca2)
+
+    up5 = tf.keras.layers.UpSampling2D(size=(2,2))(seg1)
+    seg2 = tf.keras.layers.Conv2D(1, (1,1), activation = tf.keras.layers.LeakyReLU(alpha=0.01), padding='same')(loca3)
+    add6 = tf.keras.layers.Add()([up5, seg2])
+
+    up6 = tf.keras.layers.UpSampling2D(size =(2,2))(add6)
+    con12 = tf.keras.layers.Conv2D(1, (1,1), padding = 'same', activation=tf.keras.layers.LeakyReLU(alpha=0.01))(con11)
+    add7 = tf.keras.layers.Add()([up6, con12])
+  
+    outputs = tf.keras.layers.Conv2D(4, (1,1),  activation='softmax')(add7)
+    model = tf.keras.Model(inputs=inputs, outputs =outputs)
    
     return model
