@@ -18,9 +18,9 @@ decrease training time.
 Below are example of left and right knees prior to 
 re-sizing.
 
-![Left Right Knee Image Example](readmeImages\left_right_example.png)
+![Left Right Knee Image Example](readmeImages/left_right_example.png)
 
-#Train-Test Splits
+# Train-Test Splits
 The dataset was split into training and testing using
 sklearn.train_test_split(). 
 
@@ -56,7 +56,7 @@ is binary_crossentropy. Relu was used as the activation function
 for the hidden layers as it works well with this classification
 style problem. 
 
-![Neural Network Diagram](readmeImages\nn_diagram.PNG)
+![Neural Network Diagram](readmeImages/nn_diagram.PNG)
 Note that the diagram was generated using: 
 http://alexlenail.me/NN-SVG/LeNet.html
 
@@ -78,11 +78,11 @@ The summary of the model given through tensorflow is as below:
     Trainable params: 7,873,217
     Non-trainable params: 0
 
-#Output Accuracy and Loss Plots
+# Output Accuracy and Loss Plots
 Example plots of the Accuracy and Loss after training the
 model for 5 epochs. 
 
-![Accuracy Loss Image Example](readmeImages\accuracy_loss_output_example.png)
+![Accuracy Loss Image Example](readmeImages/accuracy_loss_output_example.png)
 
 
 
