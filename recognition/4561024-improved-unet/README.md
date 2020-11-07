@@ -63,6 +63,7 @@ Output:
 ![dsc](images/dsc.png)
 
 **Prediction result on the testing set**
+
 <img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/prediction.png" width=700 align=center>
 
 ## References
