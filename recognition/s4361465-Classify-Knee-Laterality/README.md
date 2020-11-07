@@ -4,7 +4,7 @@ s4361465 Kelsey McGahan
 
 Binary CNN classification of left and right sidedness of images of knees.
 
-- [ ] Description of algorithm
+- [ ] Description of algorithms
 
 - [ ] Problem that algorithm slves
 
@@ -16,4 +16,8 @@ Binary CNN classification of left and right sidedness of images of knees.
 
 - [ ] describe and justify your training, validation adn testing split of the data
 
+
+Dependencies:
+* Tensorflow 
+* Python 
 
