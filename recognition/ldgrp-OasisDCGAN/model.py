@@ -165,15 +165,15 @@ class GAN:
         for i in range(epochs):
             loss_g, loss_d, d_real, d_fake = self.epoch(images, i)
 
-            output_path = self.config.output_dir / 'output'
-            output_path.mkdir(exist_ok=True)
-            filename = output_path / f"train-{i}.png"
-            self.images[-1].save(filename)
-            filename = output_path / f"train.png"
-            self.images[-1].save(filename)
+            #output_path = self.config.output_dir / 'output'
+            #output_path.mkdir(exist_ok=True)
+            #filename = output_path / f"train-{i}.png"
+            #self.images[-1].save(filename)
+            #filename = output_path / f"train.png"
+            #self.images[-1].save(filename)
 
-            plot(self.loss_gs, self.loss_ds, self.d_reals, 
-                self.d_fakes, self.config.output_dir / 'plot.png')
+            #plot(self.loss_gs, self.loss_ds, self.d_reals, 
+            #    self.d_fakes, self.config.output_dir / 'plot.png')
             if d_real < 1e-4:
                 log.info(f'EARLY STOP.')
                 break
