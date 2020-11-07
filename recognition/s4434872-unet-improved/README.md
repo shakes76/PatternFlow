@@ -54,7 +54,7 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
  - Output image shape: [256, 256, 4]  
 
 <p align="center"> 
-	<img src="./doc_images/improved_unet_network.png" />
+	<img src="./doc_images/improved_unet_network.png" width="800" />
 </p>  
 <p align="center"> 
 	Figure 3. Improved UNet Network Architecture
@@ -94,7 +94,7 @@ To handle class imbalance that is notably present in medical imaging data, imple
 The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the similarities between two sets of data. Most broadly used tool in the validation of image segmentation algorithms.    
 
 <p align="center"> 
-	<img src="./doc_images/dsc.png" />
+	<img src="./doc_images/dsc.png" width="800" />
 </p>  
 
 <p align="center"> 
