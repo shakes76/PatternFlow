@@ -2,6 +2,7 @@ from pathlib import Path
 from utils import Config, plot, save_images, hms_string
 from tensorflow.keras import initializers, layers, metrics, \
                              models, optimizers, losses
+from tqdm import tqdm
 import logging
 import numpy as np
 import tensorflow as tf
@@ -116,7 +117,7 @@ class GAN:
         
         total_loss_g, total_loss_d, total_d_real, total_d_fake = 0, 0, 0, 0
         batches = 0
-        for batch in images:
+        for batch in tqdm(images):
             loss_g, loss_d, d_real, d_fake = self.distributed_epoch_step(batch)
             total_loss_g += loss_g
             total_loss_d += loss_d
@@ -180,66 +181,50 @@ def build_generator(config: Config) -> models.Model:
 
     normal = initializers.RandomNormal(mean=0.0, stddev=0.02)
 
-    #model = tf.keras.Sequential()
-    #model.add(layers.Dense(4*4*256, use_bias=False, input_shape=(seed_size,)))
-    #model.add(layers.BatchNormalization())
-    #model.add(layers.LeakyReLU())
+    model = tf.keras.Sequential()
+    model.add(layers.Dense(4*4*256, use_bias=False, input_dim=seed_size))
+    model.add(layers.Reshape((4, 4, 256)))
+    assert model.output_shape == (None, 4, 4, 256)
 
-    #model.add(layers.Reshape((4, 4, 256)))
-    #assert model.output_shape == (None, 4, 4, 256) # Note: None is the batch size
+    model.add(layers.UpSampling2D())
+    model.add(layers.Conv2D(128, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
+    model.add(layers.BatchNormalization(momentum=0.8))
+    model.add(layers.LeakyReLU(alpha=alpha))
 
-    #model.add(layers.Conv2DTranspose(128, kernel_size=kernel_size, strides=2, padding='same', use_bias=False))
-    #assert model.output_shape == (None, 8, 8, 128)
-    #model.add(layers.BatchNormalization())
-    #model.add(layers.LeakyReLU())
+    assert model.output_shape == (None, 8, 8, 128)
+    model.add(layers.UpSampling2D())
+    model.add(layers.Conv2D(64, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
+    model.add(layers.BatchNormalization(momentum=0.8))
+    model.add(layers.LeakyReLU(alpha=alpha))
 
-    #model.add(layers.Conv2DTranspose(128, kernel_size=kernel_size, strides=2, padding='same', use_bias=False))
-    #assert model.output_shape == (None, 16, 16, 128)
-    #model.add(layers.BatchNormalization())
-    #model.add(layers.LeakyReLU())
+    assert model.output_shape == (None, 16, 16, 64)
+    model.add(layers.UpSampling2D())
+    model.add(layers.Conv2D(32, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
+    model.add(layers.BatchNormalization(momentum=0.8))
+    model.add(layers.LeakyReLU(alpha=alpha))
 
-    #model.add(layers.Conv2DTranspose(64, kernel_size=kernel_size, strides=2, padding='same', use_bias=False))
-    #assert model.output_shape == (None, 32, 32, 64)
-    #model.add(layers.BatchNormalization())
-    #model.add(layers.LeakyReLU())
+    assert model.output_shape == (None, 32, 32, 32)
+    model.add(layers.UpSampling2D())
+    model.add(layers.Conv2D(16, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
+    model.add(layers.BatchNormalization(momentum=0.8))
+    model.add(layers.LeakyReLU(alpha=alpha))
 
-    #model.add(layers.Conv2DTranspose(1, kernel_size=kernel_size, strides=2, padding='same', use_bias=False, activation='tanh'))
-    #assert model.output_shape == (None, 64, 64, 1)
+    assert model.output_shape == (None, 64, 64, 16)
+    model.add(layers.UpSampling2D())
+    model.add(layers.Conv2D(4, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
+    model.add(layers.BatchNormalization(momentum=0.8))
+    model.add(layers.LeakyReLU(alpha=alpha))
 
-    #return model
+    assert model.output_shape == (None, 128, 128, 4)
+    model.add(layers.Conv2D(channels, kernel_size=kernel_size, use_bias=False, 
+        padding="same", kernel_initializer=normal))
 
-    model = models.Sequential([
-        layers.Dense(4*4*256, use_bias=False, input_dim=seed_size),
-        layers.Reshape((4, 4, 256)),
-
-        layers.UpSampling2D(),
-        layers.Conv2D(128, kernel_size=kernel_size, use_bias=False, 
-            padding="same", kernel_initializer=normal),
-        layers.BatchNormalization(momentum=0.8),
-        layers.LeakyReLU(alpha=alpha),
-
-        layers.UpSampling2D(),
-        layers.Conv2D(128, kernel_size=kernel_size, use_bias=False, 
-            padding="same", kernel_initializer=normal),
-        layers.BatchNormalization(momentum=0.8),
-        layers.LeakyReLU(alpha=alpha),
-
-        layers.UpSampling2D(),
-        layers.Conv2D(64, kernel_size=kernel_size, use_bias=False, 
-            padding="same", kernel_initializer=normal),
-        layers.BatchNormalization(momentum=0.8),
-        layers.LeakyReLU(alpha=alpha),
-
-        layers.UpSampling2D(size=(size//32, size//32)),
-        layers.Conv2D(128, kernel_size=kernel_size, use_bias=False, 
-            padding="same", kernel_initializer=normal),
-        layers.BatchNormalization(momentum=0.8),
-        layers.LeakyReLU(alpha=alpha),
-
-        layers.Conv2D(channels, kernel_size=kernel_size, use_bias=False, 
-            padding="same", kernel_initializer=normal),
-        layers.Activation('tanh'),
-    ])
+    model.add(layers.Activation('tanh'))
     return model
 
 def build_discriminator(config: Config) -> models.Model:
@@ -252,9 +237,15 @@ def build_discriminator(config: Config) -> models.Model:
     normal = initializers.RandomNormal(mean=0.0, stddev=0.02)
 
     model = tf.keras.Sequential()
-    model.add(layers.Conv2D(64, kernel_size=kernel_size, strides=2, 
+    model.add(layers.Conv2D(32, kernel_size=kernel_size, strides=2, 
         padding='same', kernel_initializer=normal, 
         input_shape=image_shape))
+    model.add(layers.BatchNormalization(momentum=momentum, epsilon=1e-5))
+    model.add(layers.LeakyReLU(alpha=alpha))
+    model.add(layers.Dropout(dropout))
+
+    model.add(layers.Conv2D(64, kernel_size=kernel_size, strides=2, 
+        padding="same", kernel_initializer=normal))
     model.add(layers.BatchNormalization(momentum=momentum, epsilon=1e-5))
     model.add(layers.LeakyReLU(alpha=alpha))
     model.add(layers.Dropout(dropout))
@@ -266,12 +257,6 @@ def build_discriminator(config: Config) -> models.Model:
     model.add(layers.Dropout(dropout))
 
     model.add(layers.Conv2D(256, kernel_size=kernel_size, strides=2, 
-        padding="same", kernel_initializer=normal))
-    model.add(layers.BatchNormalization(momentum=momentum, epsilon=1e-5))
-    model.add(layers.LeakyReLU(alpha=alpha))
-    model.add(layers.Dropout(dropout))
-
-    model.add(layers.Conv2D(512, kernel_size=kernel_size, strides=1, 
         padding="same", kernel_initializer=normal))
     model.add(layers.BatchNormalization(momentum=momentum, epsilon=1e-5))
     model.add(layers.LeakyReLU(alpha=alpha))
