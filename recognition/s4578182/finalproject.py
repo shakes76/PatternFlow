@@ -217,7 +217,7 @@ model.summary()
 history = model.fit(X_train,y_train, epochs=20,batch_size=10, verbose=1)
 
 
-# In[22]:
+# In[21]:
 
 
 plt.plot(history.history['accuracy'], label='accuracy')
@@ -227,25 +227,32 @@ plt.ylim([0.5, 1])
 plt.legend(loc='lower right')
 
 
-# In[26]:
+# In[22]:
 
 
 ypred = model.predict(X_test)
 
 
-# In[32]:
+# In[28]:
 
 
-smooth=1
-intersection = Keras.sum(y_test * ypred, axis=[1,2,3])
-union = Keras.sum(y_test, axis=[1,2,3]) + Keras.sum(ypred, axis=[1,2,3])
-dice = mean((2.0 * intersection + smooth)/(union + smooth), axis=0)
+def dice_coef2(y_true, y_pred):
+    y_true_f = y_true.flatten()
+    y_pred_f = y_pred.flatten()
+    union = np.sum(y_true_f) + np.sum(y_pred_f)
+    if union==0: return 1
+    intersection = np.sum(y_true_f * y_pred_f)
+    return 2. * intersection / union
+
+
+# In[29]:
+
+
+dice_coef2(y_test,ypred)
 
 
 # In[ ]:
 
 
-dice = np.sum(seg[gt==k])*2.0 / (np.sum(seg) + np.sum(gt))
 
-print 'Dice similarity score is {}'.format(dice)
 
