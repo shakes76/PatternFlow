@@ -51,14 +51,14 @@ The OASIS brain dataset is a labelled collection of human brain MRI images and s
  The model used to solve this problem is that of an improved UNet from [[1]](#References). Based on the original UNet, this network has been carefully modified to maximize brain tumor segmentation performance. Presented in the paper as a 3D version, in this project it has been converted to work with 2D images.
 
  - Input image shape: [256, 256, 1]  
- - Output image shape: [256, 256, 4]
+ - Output image shape: [256, 256, 4]  
 
 <p align="center"> 
 	<img src="./doc_images/improved_unet_network.png" />
-</p>
+</p>  
 <p align="center"> 
 	Figure 3. Improved UNet Network Architecture
-</p>
+</p>  
 
 Similar to the UNet, the architecture described in Fig. 3 comprises of:  
 - A Context Aggregation Pathway
@@ -91,15 +91,15 @@ the aggregation pathway
 ### Metrics  
 #### Dice Similarity Coefficient (DSC)  
 To handle class imbalance that is notably present in medical imaging data, implement the Dice Similarity Coefficient as a loss function and metric.  
-The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the similarities between two sets of data. Most broadly used tool in the validation of image segmentation algorithms.  
+The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the similarities between two sets of data. Most broadly used tool in the validation of image segmentation algorithms.    
 
 <p align="center"> 
 	<img src="./doc_images/dsc.png" />
-</p>
+</p>  
 
 <p align="center"> 
 	Figure 4. DSC Equation Used
-</p>
+</p>  
 
 ## Results
 ### Training and Validation  
@@ -108,40 +108,41 @@ Used the default training and validation splits given in the OASIS preprocessed 
 
 <p align="center"> 
 	<img src="./doc_images/train_plot2.png" />
-</p>
+</p>  
 
 <p align="center"> 
 	Figure 5. Training Performance Plot
-</p>
+</p>  
 
 <p align="center"> 
 	<img src="./doc_images/train_visualise.png" />
-</p>
+</p>  
 
 <p align="center"> 
 	Figure 6. Training Visualisation
-</p>
+</p>  
 
 Thus, it is clear to see that after only 3 epochs with a batch size of 32, we achieve > 90% DSC.
 
 ### Testing  
 
-Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.
+Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.  
+
 <p align="center"> 
 	<img src="./doc_images/test_results.png" />
-</p>
+</p>  
 <p align="center"> 
 	Figure 7. Test Set Evaluation Results (Average)
-</p>
+</p>  
 
 <p align="center"> 
 	<img src="./doc_images/test_predictions.png" />
-</p>
+</p>  
 <p align="center"> 
 	Figure 8. Test Set Predictions
-</p>
+</p>  
 
-Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very VERY close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.
+Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very VERY close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.  
 
 ## Files and Folders
 ### [model.py](./model.py)
