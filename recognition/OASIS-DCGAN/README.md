@@ -1,13 +1,13 @@
 # OASIS-DCGAN
 *By Reece Jocumsen (44786803)*
 
-Deep Convolutional Generative Adversarial Network using the OASIS brain MRI scans. DCGAN structure following [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/pdf/1511.06434.pdf), particularly Section 3 - Approach and Model Architecture.
+Deep Convolutional Generative Adversarial Network using the OASIS brain MRI scans. DCGAN structure following [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/pdf/1511.06434.pdf), particularly Section 3 - Approach and Model Architecture. Deep Convolutional GANs are based on the traditional GAN structure, with a few key structural differences: minimal use of fully connected layers, transposed convolutional layers instead of upsampling, and strides instead of pooling layers. They are comprised of two seperate models - a generator and a discriminator. The generator, given random noise, tries to fool the discriminator into thinking what it's been given is a real image, and the discriminator learns how to tell the different between real and fake images throughout the process, becoming better and better at spotting fakes. 
 
 ## Usage
-OASIS-DCGAN requires the following libraries:
-* tensorflow-gpu or tensorflow for the model
-* numpy for image preprocessing
-* matplotlib for image plotting and saving
+OASIS-DCGAN is written in Python 3.7.6 and requires the following libraries:
+* tensorflow-gpu or tensorflow for the model (1.14.0)
+* numpy for image preprocessing (1.18.1)
+* matplotlib for image plotting and saving (3.1.3)
 
 To run from command prompt:
 `py driver.py train_dir test_dir optional_result_dir`
