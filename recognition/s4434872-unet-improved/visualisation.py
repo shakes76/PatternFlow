@@ -73,7 +73,6 @@ def save_predictions(model, ds, num=1):
             plt.subplot(1, len(disp_list), i+1)
             plt.imshow(disp_list[i], cmap='gray')
             plt.axis('off')
-        plt.tight_layout()
         plt.show()
         plt.savefig(test_output_dir + "visualisation" + counter + ".png")
 
