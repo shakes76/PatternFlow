@@ -70,14 +70,51 @@ image_channels = 1
 # Create Improved UNet Model
 print("> Building Model ...")
 model = model.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
+
+# Compile Model using DSC as loss function and a metric
+model.compile(optimizer='adam',
+              loss=metrics.dice_coefficient_loss,
+              metrics=['accuracy', metrics.dice_coefficient])
 model.summary()
 
 
-# Losses
+
+import matplotlib.pyplot as plt
+
+def display(display_list):
+    """
+    Plotting function.
+    """
+    plt.figure(figsize=(10, 10))
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.imshow(display_list[i], cmap='gray')
+        plt.axis('off')
+    plt.show()
+
+def show_predictions(ds, num=1):
+    for image, mask in ds.take(num):
+        pred_mask = model.predict(image[tf.newaxis, ...])
+        pred_mask = tf.argmax(pred_mask[0], axis=-1)
+        display([tf.squeeze(image), tf.argmax(tf.cast(mask, tf.uint8), axis=-1), pred_mask])
 
 
+BATCH_SIZE = 32
+EPOCHS = 3
 
+from IPython.display import clear_output
 
+# Fill in some of the blank by default callback functions
+class DisplayCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        clear_output(wait=True)
+        show_predictions(val_ds)
+    # can fill in another function on_epoch_start() if need
+    # to perform some action at the start of an epoch.
+
+history = model.fit(train_ds.batch(BATCH_SIZE), epochs=EPOCHS,
+                    validation_data=val_ds.batch(BATCH_SIZE),
+                    callbacks=[DisplayCallback()])
 
 
 

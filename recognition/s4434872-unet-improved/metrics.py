@@ -7,7 +7,7 @@ Created: 07/11/2020
 """
 from tensorflow.keras import backend as K
 
-def dice_coefficient(y_true, y_pred, smooth=0.):
+def dice_coefficient(y_true, y_pred, smooth=0.1):
     """
     The Dice Similarity Coefficient (DSC) is a statistical tool used to measure
     the similarities between two sets of data. Most broadly used tool in the 
@@ -37,8 +37,8 @@ def dice_coefficient(y_true, y_pred, smooth=0.):
     y_pred_f = K.flatten(y_pred)
 
     # Calculation for the loss function
-    intersection = K.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    intersection = K.sum(tf.cast(y_true_f, tf.float32) * tf.cast(y_pred_f, tf.float32))
+    return (tf.cast(2., tf.float32) * tf.cast(intersection + smooth, tf.float32)) / (K.sum(tf.cast(y_true_f, tf.float32)) + K.sum(tf.cast(y_pred_f, tf.float32)) + smooth)
 
 def dice_coefficient_loss(y_true, y_pred):
     """

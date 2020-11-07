@@ -9,7 +9,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Activation, ReLU, LeakyReLU, Conv2D, BatchNormalization, Flatten, Dense, Dropout, UpSampling2D, concatenate, Add
 from tensorflow_addons.layers import InstanceNormalization
 
-
 # Activation used throughout, with negative slope of 10^-2 
 leakyReLu = LeakyReLU(alpha=1e-2)
 # Use dropout rate of 0.3 throughout
