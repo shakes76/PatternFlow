@@ -2,7 +2,7 @@
 # Application of an Improved U-Net Neural Network on the ISIC 2018 dataset
 
 ## Author
-Name: Navin Sivasankaran
+Name: Navin Sivasankaran<br>
 Student Number: 45326644
 
 ## Overview/Summary
@@ -13,6 +13,29 @@ Using this dataset, a variation of a U-Net network was applied, which allowed fo
 The requirement for this segmentation task challenge was to achieve a minimum Dice similarity coefficient of 0.8 on the test set [3].
 
 ## Dependencies of the Scripts
+- Python
+    - Tested with Python 3.7.7
+- TensorFlow
+    - Tested with TF GPU 2.1.0
+- Matplotlib
+    - Tested with version 3.3.1
+- Scikit-Learn
+    - Tested with version 0.23.2
+
+## Explanation of Files
+- main.py
+    - The main driver script, which can be called. 
+    - Contains everything, except for the model.
+- model.py
+    - The script containing the Improved U-Net model
+    - Called automatically by main.py
+- report.ipynb
+    - The Jupyter Notebook containing both main.py and model.py in one file.
+    - Will show outputs in a cleaner format.
+
+## How to Run the Script?
+1. Call the file 'main.py' through Python without any arguments.
+    - If you want to set the number of epochs to run it for, go to the start of the main() function in the  'main.py' file and change the variable/constant 'EPOCHS' to the number that you desire.
 
 
 
@@ -40,8 +63,7 @@ In the expanding pathway, the localisation modules uses a 3x3x3 convolution laye
 
 #### An example of what the Improved U-Net will be working with
 
-<table>
-<tr>
+<table><tr>
 <td>Input image (scan)</td>
 <td>Segmentation image (label/mask)</td>
 </tr>
@@ -168,30 +190,13 @@ Furthermore, when considering the main challenge of this task, it was to achieve
 
 This model achieved a DSC of 0.92 after being run on the testing dataset, with a loss of approximately 0.23. This surpasses the expected value of 0.8 for this challenge.
 
+## References
+
+[1] 	F. Isensee, P. Kickingereder, W. Wick, M. Bendszus and K. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge," in Brainlesion: Glioma, Multiple Sclerosis, Stroke and Traumatic Brain Injuries, Heidelberg, 2018. 
+
+[2] 	A. Oakley, "Dermoscopy," Dermnet NZ, 2004. [Online]. Available: https://dermnetnz.org/topics/dermoscopy/. [Accessed 2020].
+
+[3] 	S. Chandra, "COMP3710 Report Task Sheet," 2020. [Online]. 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[1] https://arxiv.org/abs/1802.10508v1
-[2] https://dermnetnz.org/topics/dermoscopy/
-[3] https://learn.uq.edu.au/bbcswebdav/pid-5540999-dt-content-rid-30984306_1/courses/COMP3710S_7060_60145/COMP3710_Report_v1.01.pdf
