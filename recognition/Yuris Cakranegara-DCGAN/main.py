@@ -1,6 +1,7 @@
 from dataset_loader import ImageDatasetLoader
 from model import OasisDCGAN
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import tensorflow as tf
 
@@ -19,7 +20,7 @@ def main():
     # Load dataset
     print("Loading dataset ...")
     loader = ImageDatasetLoader(train_dataset_dir, img_shape)
-    X_train = loader.load_data()
+    X_train = loader.load_data().astype(np.float32)
 
     # Reshape and Rescale Images for DCGAN
     # Generator will use tanh activation function for the last layer, 
@@ -36,7 +37,7 @@ def main():
     for i in range(len(images)):
         a[i//3][i%3].set_xticks([])
         a[i//3][i%3].set_yticks([])
-        a[i//3][i%3].imshow(images[i], cmap="gray")
+        a[i//3][i%3].imshow(images[i][:,:,0], cmap="gray")
     plt.savefig(img_dir)
 
     # Create and train the model
