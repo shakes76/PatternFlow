@@ -157,30 +157,36 @@ model.fit(
 
 # # Time for some predictions
 
-# In[51]:
+# In[59]:
 
 
 import matplotlib.pyplot as plt
 
-for images, labels in testing_data.cache().repeat().take(1):
-    predictions = model.predict(images[:6])
-    print(predictions)
-    print(len(predictions))
-    plt.figure(num=None, figsize=(14, 8), dpi=80, facecolor='w', edgecolor='k')
+def show_results(model, images_per_row, rows):
+    for images, labels in testing_data.cache().repeat().take(1):
+        predictions = model.predict(images[:images_per_row + 1])
+        plt.figure(num=None, figsize=(14, 8), dpi=80, facecolor='w', edgecolor='k')
 
-    for i in range(1, len(predictions)):
-        for j in range(3):
-            ax = plt.subplot(3, len(predictions), i + j * len(predictions))
-            ax.set_title(f"p: {round(predictions[i, 0], 1)}, t: {labels[i].numpy()}")
-            plt.imshow(tf.reshape(images[i + j * len(predictions)], (HEIGHT, WIDTH)))
-            plt.gray()
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-    
+        for i in range(1, len(predictions)):
+            for j in range(rows):
+                ax = plt.subplot(3, len(predictions), i + j * len(predictions))
+                ax.set_title(f"p: {round(predictions[i, 0], 1)}, t: {labels[i].numpy()}")
+                plt.imshow(tf.reshape(images[i + j * len(predictions)], (HEIGHT, WIDTH)))
+                plt.gray()
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
 
-
-# In[ ]:
+show_results(model, 5, 3)
 
 
+# In[52]:
 
+
+model.summary()
+
+
+# In[55]:
+
+
+model.save_weights('./checkpoints/result')
 
