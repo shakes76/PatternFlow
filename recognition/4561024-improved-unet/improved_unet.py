@@ -4,9 +4,9 @@ Improved UNet model
 @author Aghnia Prawira (45610240)
 '''
 import tensorflow as tf
-from keras import backend as k
-from keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, concatenate
-from keras.models import Model
+from tensorflow.keras import backend as k
+from tensorflow.keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, concatenate
+from tensorflow.keras.models import Model
 
 def unet():
     inputs = Input(shape=(256, 256, 1))

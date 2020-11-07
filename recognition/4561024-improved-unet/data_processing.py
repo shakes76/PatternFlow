@@ -5,17 +5,15 @@ Load and process OASIS brain data set
 '''
 
 import tensorflow as tf
-from tensorflow.io import read_file
-from tensorflow.image import decode_png, resize
 
 def decode_image(filename):
     '''
     Load and resize an image.
     '''
     # Load and resize image
-    image = read_file(filename)
-    image = decode_png(image, channels=1)
-    image = resize(image, (256, 256))
+    image = tf.io.read_file(filename)
+    image = tf.image.decode_png(image, channels=1)
+    image = tf.image.resize(image, (256, 256))
     return image
 
 def process_image(image, seg):
