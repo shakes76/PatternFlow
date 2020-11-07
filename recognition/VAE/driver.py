@@ -27,11 +27,11 @@ def calculate_ssim(predictions, test_sample):
 
 
 # compute the log probability
-def log_normal_pdf(sample, mean, log_var, raxis=1):
+def log_normal_pdf(sample, mean, log_var, ax=1):
     pi = 3.1415926536
     log_2pi = tf.math.log(2.0 * pi)
     p = -0.5 * ((sample - mean) ** 2.0 * tf.exp(-log_var) + log_var + log_2pi)
-    return tf.reduce_sum(p, axis=raxis)
+    return tf.reduce_sum(p, axis=ax)
 
 
 def calculate_loss(model, x):
@@ -106,7 +106,7 @@ def train(model, train_dataset, test_dataset, epochs, optimizer):
         # feed the network test samples to generate new images
         predictions = model.generate_images(model, test_dataset)
 
-        # display the results.
+        # display the results
         try:
             display_result(predictions)
         except:
@@ -147,7 +147,7 @@ def save_model(model, encoder_name, decoder_name):
 
 if __name__ == '__main__':
     # define constants
-    epochs = 5
+    epochs = 30
     latent_dimension = 2
 
     # train_img_dir stores the training images
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     # use an Adam optimiser
     optimizer = Adam(1e-4)
     # load training and test datasets
-    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=5)
+    train_dataset, test_dataset = get_dataset(train_img_dir, test_img_dir, test_size=554)
 
     # initialize a new VAE model
     model = VAE.VAENetwork(latent_dimension)
@@ -172,8 +172,7 @@ if __name__ == '__main__':
 
     # plot the ssim and elbo.
     try:
-
-        xs = range(0, 31)
+        xs = range(0, epochs + 1)
         fig = plt.figure(figsize=(13, 5))
         plt.subplot(1, 2, 1)
         plt.title('SSIM of Each Epoch')
@@ -187,5 +186,5 @@ if __name__ == '__main__':
         plt.ylabel('ELBO')
         fig.tight_layout()
     except:
-        print('matplotlib is not supported')
+        print("matplotlib not supported")
 
