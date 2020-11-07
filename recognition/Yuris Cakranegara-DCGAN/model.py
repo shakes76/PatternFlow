@@ -81,7 +81,9 @@ class OasisDCGAN:
             a[i//3][i%3].set_xticks([])
             a[i//3][i%3].set_yticks([])
             a[i//3][i%3].imshow(images[i], cmap='gray')
-        plt.savefig(self.result_dir + 'image_at_epoch_{epoch}.png'.format(epoch=epoch))
+        img_dir = self.result_dir + 'image_at_epoch_{epoch}.png'.format(epoch=epoch)
+        print('Storing image to: ' + img_dir)
+        plt.savefig(img_dir)
 
     def __create_batched_dataset(self, dataset, batch_size):
         """Create a batched dataset from the input dataset.
