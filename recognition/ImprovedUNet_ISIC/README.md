@@ -12,6 +12,10 @@ Using this dataset, a variation of a U-Net network was applied, which allowed fo
 
 The requirement for this segmentation task challenge was to achieve a minimum Dice similarity coefficient of 0.8 on the test set [3].
 
+## Dependencies of the Scripts
+
+
+
 ## Explanation of the Architecture
 
 ### Description of a U-Net
@@ -101,11 +105,11 @@ After the combination of the data pre-processing, helper modules and other layer
 
 Furthermore, the optimiser that was used to compile this model was 'Adam' with the default learning rate of 0.01. The loss function that was used was the Binary Cross-entropy function, as there are only 2 possible values for the mask. Lastly, the metric that was used to measure the performance of the model was the Dice Similarity Coefficient. 
 
-Initially, when the model was being run on this dataset, it was realisable that the data was being overfitted to. Therefore, the number of filters were decreased by a factor of 2 in hopefulness. This change brought better results,as the model seemed to be fitting the data just about right.
+Initially, when the model was being run on this dataset, it was realisable that the data was being overfitted to. Therefore, the number of filters were decreased by a factor of 2 in hopefulness. This change brought better results, as the model seemed to be fitting the data just about right.
 
-The model was trained for 30 epochs to preserve a balance of efficiency and performance.
+The model was trained for 30 epochs (with a batch size of 10) to preserve a balance of efficiency and performance.
 
-## Results
+## Discussion of Results
 
 After running the model for 30 epochs on the training dataset, comparing against the validation dataset, the following results were attained:
 
@@ -121,6 +125,53 @@ After running the model for 30 epochs on the training dataset, comparing against
 </table>
 
 *Table 2: The graphs for the accuracy and the loss on the training and validation datasets, after the model has run for 30 epochs*
+
+The first thing that can be observed is that the model comfortably goes past a DSC of 0.9 after the 10th epoch, for both the training and validation datasets. Both accuracies follow a similar pathway (mimicking an asymptotic exponential function), as they seem to start to plateau as the number of epochs increase. 
+
+Furthermore, when considering the graph of losses, it can be seen that the training and test data losses start off in a similar shape. However, towards the 15th epoch, the test data loss begins to reach its elbow point and starts increasing in rather a jagged manner. What this indicates is the potential instability of the model in having to handle certain images. One interesting thought to consider is if the data wasn't shuffled and if that would have any drastic effect on the performance on the model. 
+
+<table>
+<tr>
+<td></td>
+<td>Order: Actual input image | Ground truth segmentation mask | Predicted segmentation mask</td>
+<tr>
+<td>Testing sample 1</td>
+<td><img src="images/predictions/1.png"></td>
+</tr>
+<tr>
+<td>Testing sample 2</td>
+<td><img src="images/predictions/2.png"></td>
+</tr>
+<tr>
+<td>Testing sample 3</td>
+<td><img src="images/predictions/3.png"></td>
+</tr>
+<tr>
+<td>Testing sample 4</td>
+<td><img src="images/predictions/4.png"></td>
+</tr>
+<tr>
+<td>Testing sample 5</td>
+<td><img src="images/predictions/5.png"></td>
+</tr>
+</table>
+
+*Table 3: The comparison of the actual input image, the ground truth segmentation mask and the predicted segmentation mask for 5 samples from the testing dataset*
+
+From the above comparisons, it can be seen that the Improved U-Net is quite successful in detecting lesions from the input image. However, there are some unstable parts of the model, due to specific input images being fed in. For example, in Testing sample 4 of Table 3, it can be seen that the input image has some hairs covering the lesion. Even though the ground truth mask shows the region that the lesion is in, the model's generated prediction did not succeed at all in finding the lesion. Therefore, this indicates that this model does not succeed with scenarios with such visual distractions. A thing to consider for the future is to potentially train it for more epochs or to get more samples like these and feed it into the U-Net.
+
+Furthermore, when considering the main challenge of this task, it was to achieve a minimum Dice Similarity Coefficient of 0.8 on the testing dataset. This was successfully achieved and the results are as follows:
+
+<img src="images/README/test_results.png">
+
+*Figure 2: Results of the DSC and the loss, based on the testing dataset*
+
+This model achieved a DSC of 0.92 after being run on the testing dataset, with a loss of approximately 0.23. This surpasses the expected value of 0.8 for this challenge.
+
+
+
+
+
 
 
 
