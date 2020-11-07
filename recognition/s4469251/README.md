@@ -2,8 +2,9 @@
 
 ## Backgournd
 ### Problem Statement
-ISICs dataset contains images of Melanoma, a serious form of skin cancer. The aim of this project is to conduct image segmentation, creating pixel-wise binary mask for Melanoma. The dataset contains 2594 photos of Melanoma and 2594 masks. <br />
-Dataset can be downloaded from https://challenge2018.isic-archive.com/
+ISICs dataset contains images of Melanoma, a serious form of skin cancer. The aim of this project is to conduct image segmentation, creating pixel-wise binary mask for Melanoma. The dataset contains 2594 photos of Melanoma and 2594 masks. <br /> Improved unet model is used to map raw images to binary masks. For the binary mask, places with Melanoma infections are mapped to 1 and those uninfected area are mapped to 0. Some examples of the original images and their corresponding masks are shown below. <br />
+![Data](images/data.png) <br />
+More information about the ISICS Dataset can be found at https://challenge2018.isic-archive.com/.
 
 ### Algorithm
 U-Net is a convolutional network architecture, designed for biomedical image segmentation. It consists of one contraction part, bottleneck and expansion part. Any contraction block and expansion block at the same level will be concatenated. (Ronneberger, Fischer, Brox, 2015)
@@ -12,7 +13,12 @@ We are using the improved U-Net, developed based on U-Net in 2017. The following
 1. Context modules for activations
 2. Localization pathway to transfer features from lower level to higher spatial resolution
 3. Segmentation layers integration at different levels for deep supervision
+4. Leaky ReLU is used to add nonlinearities to the model.
 <br /><br /><a href="url"><img src="images/improved-unet.png" height="300" width="600" ></a><br /><br />
+
+### How It Works
+As the unet goes deep, more abstract information of the input is encoded. With the help of localization pathway, we can recombine the information with shallower features to localize the infected area. Information before and after context module are recombined, before and after the encoding, latend space, decoding as a whole are recombined. Segmentation layers at different levels are also integrated and combined with elementwise summation to form results, so connections among different localization layer are kept. 
+
 
 ## Implementations
 ### Data Split
@@ -50,4 +56,5 @@ Name: Wenjun Zhang<br />
 Student Number: s4469251
 
 ## Reference
-..
+* Fabian Isensee and Philipp Kickingereder and Wolfgang Wick and Martin Bendszus and Klaus H. Maier-Hein, Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge, 2017, arXiv:1802.10508 
+* Olaf Ronneberger and Philipp Fischer and Thomas Brox, U-Net: Convolutional Networks for Biomedical Image Segmentation, 2015, arXiv: 1505.04597
