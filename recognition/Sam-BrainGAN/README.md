@@ -6,7 +6,7 @@ The Generative Adversarial Network uses two competing models - a generator and a
 
 The generator works by performing transpose convolution (a form of upsampling convolution) on the noise. The discriminator works by performing several convolutional layers followed by a dense layer to output a single value between 0 and 1; values closer to 1 indicate the discriminator believes the image is real.  These convolution models provide millions of trainable paramenters which are optimized using the Adam Optimizer.
 
-The optimizers are optimzing in the direction which minimizes some loss functions. The Generators loss function is higher if the discriminator outputs values closer to 0 (identifies them as fake). The discriminators loss function is higher it assigns a batch of real images values close to 0 or assigns a batch of fake images values close to 1. 
+The optimizers are optimzing in the direction which minimizes some loss functions. The Generators loss function is higher if the discriminator outputs values closer to 0 (identifies them as fake). The discriminators loss function is higher if it assigns a batch of real images values close to 0 or assigns a batch of fake images values close to 1. 
 
 ## Figures:
 
