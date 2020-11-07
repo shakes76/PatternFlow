@@ -1,10 +1,11 @@
 {
     "image_size": 128,
-    "kernel_size": 3,
-    "generator_lr": 5e-05,
-    "discriminator_lr": 5e-05,
-    "epochs": 30,
-    "input_dir": "dataset",
-    "output_dir": "output",
-    "checkpoint_freq": 10
+    "kernel_size": 5,
+    "generator_lr": 6e-05,
+    "discriminator_lr": 4e-05,
+    "epochs": 100,
+    "input_dir": "input128",
+    "output_dir": "output8",
+    "checkpoint_freq": 10,
+    "batch_size": 128
 }
