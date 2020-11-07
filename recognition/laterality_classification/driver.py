@@ -31,7 +31,7 @@ def proof_no_set_overlap(train_image_names, test_image_names):
     matches = len([x for x in unique_train_patients
                    if x in unique_test_patients])
 
-    print("number of patients in training and testing: ", matches)
+    print("number of unique patients in both training and testing: ", matches)
 
 
 def split_by_patients(image_names, N_train, N_test):
@@ -218,7 +218,7 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
         X_test: the tf array of images to validate with
         y_test: the tf array of labels to validate with
     """
-    model = classifier.build_simple_model()
+    model = classifier.build_model()
 
     model.summary()
 
@@ -231,13 +231,14 @@ def build_train_model(classifier, X_train, y_train, X_test, y_test):
 
     model_history = model.fit(x=X_train, y=y_train,
                               validation_data=(X_test, y_test),
-                              epochs=3)
+                              epochs=5)
     plt.plot(model_history.history['accuracy'])
     plt.plot(model_history.history['val_accuracy'])
     plt.title('accurary over epoch')
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['training', 'validation'])
+    plt.savefig("acc_over_time.png")
     plt.show()
 
     # assess the models accuracy with several metrics
@@ -273,8 +274,8 @@ if __name__ == "__main__":
                                        fname='AKOA_Analysis',
                                        untar=True)
 
-    train_size = 6000
-    test_size = 1500
+    train_size = 15000
+    test_size = 3500
 
     # split up dataset, 12000 images for training, 3000 for testing
     X_train, y_train, X_test, y_test = process_dataset(data_dir, train_size, test_size)

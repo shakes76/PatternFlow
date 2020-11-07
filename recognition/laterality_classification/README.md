@@ -12,10 +12,10 @@ The implementation of classification solution is divided into two parts/files;
 ### LateralityClassifier Class
 The LateralityClassifier class is what builds the Tensorflow Keras CNN model
 capable of binary classification of laterality in these images. The class
-has two keras model options, the normal model and an overly simplified model
-(for comparision purposes). 
+has two keras model options, the CNN normal model and an overly simplified
+ model (for comparision purposes). 
 
-#### Normal Model Architecture
+#### Normal CNN Model Architecture
 The following architecture was naturally converged towards after 
 multiple rounds of testing different structures.
 ```
@@ -109,24 +109,60 @@ same unique patient.
 * MatPlotLib
 * NumPy
 
-## Results/Output
-### Normal Model
+## Example Results/Output
+
+The following are examples of typical results when trained on the full dataset
+(15,000 images for training, 3,500 for validation).
+
+### Normal CNN Model
+After 2-5 epochs, it is usually expected that this model will reach 95-99%
+validation when training on the full set.
+
+#### Model Training History
+![](resources/normal/acc_over_time.png)
+
+#### Metric Output
+```
+mean square error of predictions =  0.029035156915955644
+validation acc = 0.9685714285714285
+```
+
+#### Visualisation Output
+![](resources/normal/Model_predictions_on_validation_set.png)
+![](resources/normal/Actual_labels_of_validation_set.png)
 
 ### Simplified Model
 Although the normal model performed considerably well on the dataset, it may
 be over-estimating the difficulty of the problem as using 
 LateralityClassifier's simple model usually performs just as well.
 
-#### Example Metric Output
+After 2-5 epochs, it is usually expected that this model will reach 94-98%
+validation when training on the full set.
+
+#### Model Training History
+![](resources/simple/acc_over_time.png)
+
+#### Metric Output
 ```
 mean square error of predictions =  0.02686644094643213
 validation acc = 0.9693333333333334
 ```
-#### Example Visualisation Output
+#### Visualisation Output
 ![](resources/simple/Model_predictions_on_validation_set.png)
 ![](resources/simple/Actual_labels_of_validation_set.png)
 
+### Analysis
+The behaviour of these models results may appear suspiciously high, especially
+in the case of the simplified model. However, the driver was written carefully
+to ensure no data leakage occurred in across training and testing sets.
 
+It is likely just the simplistic nature of this image set and the fact that it
+is only a binary classification that makes it perform so well. It could very
+well be possible that in all the image there is a single pixel discrepancy
+that gives away the classification. This would explain why even the simple 
+model (without any convolution layers) can still perform extremely well. Which
+of course would be slightly disappointing, however it is the best that can be
+done with this entire dataset.
 
 ## Appendix
 ### Appendix A
@@ -138,10 +174,10 @@ Example output after initial dataset inspection
 
 ```
 unique patients in entire dataset:  101
-unique patients in training set:  38
-unique patients in testing set:  8
-number of patients in training and testing:  0
+unique patients in training set:  84
+unique patients in testing set:  17
+number of unique patients in both training and testing:  0
 
-proportion of right knee in training set: 3920 6000
-proportion of right knee in test set: 560 1500
+proportion of right knee in training set: 8720 15000
+proportion of right knee in test set: 2160 3500
 ```
