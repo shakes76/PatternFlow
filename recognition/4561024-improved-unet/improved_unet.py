@@ -149,8 +149,6 @@ def dice_coefficient(y_true, y_pred):
     Dice similarity coefficient (DSC) of each label.
     '''
     intersection = k.sum((y_true * y_pred), axis=[1,2,3])
-#     y_true_sum = k.sum(k.square(y_true), axis=[1,2,3])
-#     y_pred_sum = k.sum(k.square(y_pred), axis=[1,2,3])
     y_true_sum = k.sum(y_true, axis=[1,2,3])
     y_pred_sum = k.sum(y_pred, axis=[1,2,3])
     coefficient = (2.0 * intersection) / (y_true_sum + y_pred_sum)
