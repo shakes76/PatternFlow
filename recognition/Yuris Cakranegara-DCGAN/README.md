@@ -44,6 +44,9 @@ OASIS Brain data set provided by COMP3710 team. In the training set, there are 9
 - [model.py](./model.py): Script to build and train the DCGAN model
 - [main.py](./main.py): Script to setup and run all the processes
 
+**Usage**:
+Execute ```python main.py``` to start training the model and look into ```./result_images/``` directory to see the result.
+
 **Dependencies Required:**
 - Python = 3.7
 - Tensorflow = 2.1.0
