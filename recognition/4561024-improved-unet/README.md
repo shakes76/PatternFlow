@@ -56,13 +56,13 @@ Training is done with:
 Output:
 
 **Training and validation DSC**
-![dsc_plot](images/dsc_plot.jpg)
+![dsc_plot](images/dsc_plot.png)
 
 **DSC on the testing set**
 ![dsc](images/dsc.png)
 
 **Prediction result on the testing set**
-![prediction](images/prediction.jpg)
+![prediction](images/prediction.png)
 
 ## References
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge," Feb. 2018. [Online]. Available:
