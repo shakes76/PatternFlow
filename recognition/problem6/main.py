@@ -3,6 +3,7 @@ from load_data import *
 from model import *
 import numpy as np
 from PIL import Image
+import os
 
 if __name__ == "__main__":
     #gets inputed path
