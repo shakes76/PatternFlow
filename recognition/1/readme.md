@@ -21,12 +21,15 @@ I divided this project into five parts. The first part is to create a data loade
 
 
 
+
 ![Getting Started](output3.PNG)
 
 
 
 
+
 ![Getting Started](accuarcy.png)
+
 
 
 
