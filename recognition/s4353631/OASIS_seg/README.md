@@ -1,5 +1,3 @@
 ## OASIS MRI Segmentation
-This is my README.md, it will cover the:
-* Jupyter notebook
-* OASIS_seg.py
-* main.py
+
+[my_img]: https://github.com/sambethune/PatternFlow/blob/topic-recognition/recognition/s4353631/OASIS_seg/ground_vs_pred.png 'my_img'
