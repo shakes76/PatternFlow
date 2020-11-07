@@ -1,7 +1,6 @@
 import os
 import random
 import glob
-import PIL
 import shutil
 
 def move_files(flist, dest):
