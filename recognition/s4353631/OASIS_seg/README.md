@@ -14,3 +14,6 @@ were considered including the background. Note that these are 2D MRI slices take
 
 ![Ground truth input images and segmentation masks.](oasis.png)
 
+In response to this problem, my network architecture of choice was an [https://arxiv.org/abs/1802.10508](improved UNet). 
+A standard Unet consists of a convolutional autoencoder with residual connections added between ingoing and outgoing 
+layers of the same size feature space. In addition to this underlying frame, my UNet was augmented with 
