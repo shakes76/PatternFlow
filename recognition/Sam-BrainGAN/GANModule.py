@@ -24,6 +24,7 @@ EPOCHS = 40 # More epochs that this do not yield better results
 generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5) # learing rate and beta_1 set to avoid oscilating convergence
 discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
+# Arrays used for the figure
 gen_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 disc_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ssim = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -137,11 +138,14 @@ def train(dataset, epochs):
         print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
 
+# Generates the image at the beginning of each epoch. Also calculates the SSIM and loss functions.
 def generate_image(model, epoch, test_input, dataset, images):
     predictions = model(test_input, training=False)
     
     ssimmax = 0
     i = 0
+    # Compares the generated image to one from each cross section of the brain.
+    # Returns the maximum SSIM as the closest representation from the GAN.
     for image_batch in dataset:
             ssim1 = tf.image.ssim(predictions, image_batch, 2)
             ssimmax = max(ssimmax, tf.math.reduce_max(ssim1))
@@ -151,7 +155,6 @@ def generate_image(model, epoch, test_input, dataset, images):
             
                     
     
-    
     real_output = discriminator(images, training=False)
     fake_output = discriminator(predictions, training=False)
 
@@ -159,15 +162,17 @@ def generate_image(model, epoch, test_input, dataset, images):
     disc_loss[epoch - 1] = discriminator_loss(real_output, fake_output)
     ssim[epoch - 1] = ssimmax
 
+    # Prints the loss and the SSIM
     print('Generator Loss {}      Discriminator Loss {}'.format(gen_loss[epoch - 1], disc_loss[epoch - 1]))
-
     print("SSIM: {}".format(tf.math.reduce_mean(ssimmax)))
-               
+    
+    # Prints the generated brain           
     plt.imshow(predictions[0, :, :, 0] * 127.5 + 127.5, cmap='gray')
     plt.axis('off')
 
     plt.show()
     
+# Function called by the Driver Script. Runs the train function and outputs the final figure.
 def run_GAN(dataset):
     
     train(dataset, EPOCHS)
