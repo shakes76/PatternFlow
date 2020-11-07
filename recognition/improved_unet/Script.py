@@ -10,12 +10,21 @@ import zipfile
 import glob
 from model import unet_model
 
+"""
+Download the data from url which provide user can still run this program whil they don't
+have the dataset
+
+Notethat: You will need to create a file call content under your C drive
+"""
 dataset_url = "https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download"
 data_path = tf.keras.utils.get_file(origin = dataset_url, fname="/content/keras_png_slices_data.zip")
 
 with zipfile.ZipFile(data_path) as zf:
     zf.extractall()     
-    
+
+"""
+Process data and combine the images with masks
+"""
 train_images = sorted(glob.glob("keras_png_slices_data/keras_png_slices_train/*.png"))
 train_masks = sorted(glob.glob("keras_png_slices_data/keras_png_slices_seg_train/*.png"))
 val_images = sorted(glob.glob("keras_png_slices_data/keras_png_slices_validate/*.png"))
@@ -30,6 +39,9 @@ test_ds = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
 train_ds = train_ds.shuffle(len(train_images))
 val_ds = val_ds.shuffle(len(val_images))
 test_ds = test_ds.shuffle(len(test_images))
+
+"""
+"""
 
 def decode_png(file_path):
     png = tf.io.read_file(file_path)
@@ -61,6 +73,9 @@ def display(display_list):
 
 model = unet_model(4)
 
+"""
+Implent DSC base on the formula DSC = 2|X intersect Y|\ |X|Union|Y|
+"""
 def dice_coef(y_true, y_pred, smooth=1):
     intersection = tf.keras.backend.sum(y_true * y_pred, axis=[1,2,3])
     union = tf.keras.backend.sum(y_true, axis=[1,2,3]) + tf.keras.backend.sum(y_pred, axis=[1,2,3])
@@ -68,9 +83,10 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_coef_loss(train_ds, test_ds):
     return 1-dice_coef(train_ds, test_ds)
-
+"Compile the model with the DSC loss function"
 model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
 
+"A fucntion used for show the prediction output, example image can find in Readme"
 def show_predictions(ds, num=1):
     for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])
