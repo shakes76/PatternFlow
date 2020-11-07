@@ -1,3 +1,11 @@
+'''
+    train.py
+    Author: Jaydon Hansen
+    Date created: 4/11/2020
+    Date last modified: 7/11/2020
+    Python Version: 3.8
+'''
+
 from math import floor
 import os
 from tensorflow.keras.utils import plot_model

@@ -1,3 +1,11 @@
+'''
+    layers.py
+    Author: Jaydon Hansen
+    Date created: 26/10/2020
+    Date last modified: 7/11/2020
+    Python Version: 3.8
+'''
+
 from tensorflow.keras import Model
 from tensorflow.keras.layers import (
     Conv2D,

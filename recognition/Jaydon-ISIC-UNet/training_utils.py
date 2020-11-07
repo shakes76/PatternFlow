@@ -1,3 +1,11 @@
+'''
+    training_utils.py
+    Author: Jaydon Hansen
+    Date created: 4/11/2020
+    Date last modified: 7/11/2020
+    Python Version: 3.8
+'''
+
 import numpy as np
 from tensorflow.keras.utils import Sequence
 import tensorflow.keras.backend as Keras
