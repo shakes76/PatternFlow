@@ -63,7 +63,7 @@ Output:
 ![dsc](images/dsc.png)
 
 **Prediction result on the testing set**
-<img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/prediction.png" width=800 align=center>
+<img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/prediction.png" width=700 align=center>
 
 ## References
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge," Feb. 2018. [Online]. Available:
