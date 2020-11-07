@@ -31,7 +31,7 @@ network could not achieve the desired accuracy. It appeared to achieve an optima
 providing predictions close to 0.5 for each of the two classes. As an alternative, a custom loss function
 was implemented to optimise the Dice coefficient directly. This loss function is,
 
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;L=1-\frac{2\times|y_{pred}\cap y_{truth}|}{|y_{pred}|+|y_{truth}|+\epsilon}" title="Loss function" />
+<img src="https://latex.codecogs.com/svg.latex?L=1-\frac{2\times|y_{pred}\cap y_{truth}|}{|y_{pred}|+|y_{truth}|+\epsilon}" title="Loss function" />
 
 where y<sub>pred</sub> is the predicted segmentation probabilities produced by the network, 
 y<sub>truth</sub> is the actual ground-truth segmentation, and &epsilon; is a small constant to ensure we get
