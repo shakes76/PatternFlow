@@ -15,7 +15,7 @@ def dice_coef_loss(y_act, y_pred):
 
 
 def iunet_model():
-	inputs = tf.keras.Input((256, 256, 1))
+	inputs = tf.keras.Input((256, 256, 3))
 
 	# Start block
 	layer = tf.keras.layers.Conv2D(32, 3, padding="same", activation="relu")(inputs)
@@ -43,10 +43,23 @@ def iunet_model():
 		
 		# Pool down
 		layer = tf.keras.layers.MaxPooling2D((2, 2))(layer)
+	
+	# Central block
+	# First convolutional layer
+	layer = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu")(layer)
+	layer = tf.keras.layers.BatchNormalization()(layer)
+	
+	# Add dropout in between blocks to prevent overfitting
+	layer = tf.keras.layers.Dropout(0.2)(layer)
+
+	# First convolutional layer
+	layer = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu")(layer)
+	layer = tf.keras.layers.BatchNormalization()(layer)
 
 	# Upsampling phase
-	depths = (128, 64, 32)
+	depths = (256, 128, 64)
 	for i in range(3):
+
 		# First convolutional layer
 		layer = tf.keras.layers.Conv2DTranspose(depths[i], 3, padding="same", activation="relu")(layer)
 		layer = tf.keras.layers.BatchNormalization()(layer)
@@ -57,11 +70,12 @@ def iunet_model():
 		# Second convolutional layer
 		layer = tf.keras.layers.Conv2DTranspose(depths[i], 3, padding="same", activation="relu")(layer)
 		layer = tf.keras.layers.BatchNormalization()(layer)
-		
-		# Normalise the batch and upsample
-		
+
+		# Upsample and concatenate layers
 		layer = tf.keras.layers.UpSampling2D(2)(layer)
 		layer = tf.keras.layers.Concatenate(axis=3)([layer, layers[-i-1]])
+		
+		
 
 	# Classify at the final output layer with softmax
 	outputs = tf.keras.layers.Conv2D(2, 3, activation="softmax", padding="same")(layer)
