@@ -4,11 +4,9 @@ Aghnia Prawira (45610240)
 This script segments the OASIS brain dataset with an Improved UNet model. All labels should have a minimum Dice Similarity Coefficient of 0.9 on the test set.
 
 ## Improved UNet
-The Improved UNet model is a variation on the standard UNet model as defined by "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge" [1].
+The Improved UNet model is a variation on the standard UNet model as defined by "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge" [1]. It has a similar contracting and expansive path structure as the standard UNet model.
 
 ![unet](images/improved_unet.png)
-
-It has a similar contracting and expansive path structure as the standard UNet model.
 
 Contracting path:
 - **Context module**: two 3x3x3 convolutions with a dropout layer in between
