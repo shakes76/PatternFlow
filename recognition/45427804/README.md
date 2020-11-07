@@ -36,9 +36,37 @@ The shape of Unet network structure is similar to U like the picture above. It c
 ![](images/unet.png)
 * context module: it is a pre-activation residual block with two 3X3X3 convolutional layers and a dropout layer (drop = 0.3) in between, and it is followed by 3x3x3 convolutions with input stride 2. The purpose is to allow more features while downing to the aggregation pathway and to reduce the
 resolution of the feature maps. There are 5 context modules in the model.
-* Upsampling modul: it is to upsampling the low-resolution feature maps and connected by a 3x3x3 convolution that halves the number of feature
-maps.
+
+For example:
+```python
+Cont1 = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')
+D1 = Dropout(0.3)(Cont1)
+Cont1 = Conv2D(16, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')
+
+down1 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same', strides=(2, 2))
+```
+* Upsampling modul: it is to upsampling the low-resolution feature maps and connected by a 3x3x3 convolution that halves the number of feature maps.
+
+For example:
+```python
+up1 = UpSampling2D()
+up1 = Conv2D(128, (3, 3), padding='same')
+```
 *  locolization module: it contains a 3x3x3 convolution and a 1x1x1 convolution which reduces half of number of feature maps.
+
+For example:
+```python
+Local1 = Conv2D(128, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')
+Local1 = Conv2D(128, (1, 1), activation=LeakyReLU(alpha=0.01), padding='same')
+```
+* segmentation layer
+For example:
+```python
+Seg2 = Conv2D(4, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(up3)
+```
+
+* concatenation: using **concatenate() function**
+* element-wise sum: using **Add() function**
 * Leaky ReLU: for all feature map computing convolution should use Leaky ReLU activation with a negative slope of 0.01.
 
 References
