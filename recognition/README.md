@@ -5,16 +5,16 @@ Student no.45512746
 Pattern Recognition
 ===========================================================
 
-Deep convolutional Generative Adversive Networks
+Deep convolutional Generative Aadversarial Networks
 ===========================================================
 
-Generative Adversial networks or GAN's use generator framework to generate new image from noise and discriminator framework classfies the generated image into real or fake on 
-comparision with original data. As training phase goes on, weight in both generator and discriminator are adjusted to optimal values to give desired output.End goal is generating images 
+Generative adversarial networks or GAN's use generator framework to generate images from noise and discriminator framework classifies the generated image into real or fake on 
+comparision with original data. As training phase goes on, weights and biases in both generator and discriminator are adjusted to optimal values to give desired output.End goal is generating images 
 similar to training image data.
 
-Deep convolutional Generative Adversive Networks or DCGAN's are most fundamental implementaion of GAN'S involving deep convolutional layers in the network to generate image and 
-classify the generated image."DCGAN.s" were introduced by Alec Radford & Luke Metz in their article "Unsupervised representative learning with Deep convolutional geneartive  
-adversalnetworks.
+Deep convolutional Generative Adversarial Networks or DCGAN's are most fundamental implementaion of GAN'S, involving network with deep convolutional layers to generate image  
+and classify the generated image.Deep convolutional Generative Adversarial Networks were introduced by Alec Radford & Luke Metz in their article "Unsupervised representative 
+learning with Deep convolutional geneartive adversalnetworks". https://arxiv.org/pdf/1511.06434.pdf provide direct access to article.
 
 ![DCGAN](https://gluon.mxnet.io/_images/dcgan.png)
 
@@ -29,7 +29,7 @@ In this project, Initially noise of shape (100,) is passed through the network a
 
 ## discriminator:
 
-This can be viewed a simple binary classifier containing many convolutional layers .finally flattened data is used to generate probabilities to classify the images,i.e, real or 
+This can be viewed a simple binary classifier containing many convolutional layers .In the final dense layer, flattened data is used to generate probabilities to classify the images,i.e, real or 
 fake.
 
 # Internal components of Generator and Discriminator:
@@ -131,6 +131,7 @@ Results:
 # Generated images after traning:
 
 ![image info](images/testing_images.png)
+
 
 @Author
 ===========================================================
