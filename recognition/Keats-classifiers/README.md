@@ -31,4 +31,7 @@ The Activation of the final layer uses a sigmoid function to cap the probability
 
 ### Results
 
-The network converged incredibly quickly and I actually stopped it after 10/40 epochs since it was already close to optimal from what I was seeing. An image of proper classifications performed by the network has been included below. p refers to predicted and t to true labels. 
+The network converged incredibly quickly and I actually stopped it after 10/40 epochs since it was already close to optimal from what I was seeing. Images of  classifications performed on random validation_set data by the network has been included below. __p__ refers to predicted and __t__ to true labels. 
+
+![Knee Data](https://github.com/harrykeightley/PatternFlow/blob/topic-recognition/recognition/Keats-classifiers/images/knee_data.png)
+
