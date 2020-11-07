@@ -56,13 +56,13 @@ Training is done with:
 Output:
 
 **Training and validation DSC**
-![dsc_plot](images/dsc_plot.png)
+<img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/dsc_plot.png" width=500 align=center>
 
 **DSC on the testing set**
 ![dsc](images/dsc.png)
 
 **Prediction result on the testing set**
-![prediction](images/prediction.png)
+<img src="https://github.com/fwrhine/PatternFlow/blob/topic-recognition/recognition/4561024-improved-unet/images/prediction.png" width=800 align=center>
 
 ## References
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge," Feb. 2018. [Online]. Available:
