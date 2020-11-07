@@ -8,13 +8,13 @@ Created on Tue Sep 22 15:13:46 2020
 import tensorflow as tf
 import zipfile
 import glob
-from Model import unet_model
+from model import unet_model
 
 dataset_url = "https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download"
 data_path = tf.keras.utils.get_file(origin = dataset_url, fname="/content/keras_png_slices_data.zip")
 
 with zipfile.ZipFile(data_path) as zf:
-    zf.extractall()
+    zf.extractall()     
     
 train_images = sorted(glob.glob("keras_png_slices_data/keras_png_slices_train/*.png"))
 train_masks = sorted(glob.glob("keras_png_slices_data/keras_png_slices_seg_train/*.png"))
@@ -42,6 +42,7 @@ def process_path(image_fp, mask_fp):
     image = tf.cast(image, tf.float32)/255
     mask = decode_png(mask_fp)
     mask = mask == [0,85,170,255]
+    mask = tf.cast(mask, tf.float32)
     return image, mask
 
 train_ds = train_ds.map(process_path)
@@ -57,33 +58,66 @@ def display(display_list):
         plt.imshow(display_list[i], cmap='gray')
         plt.axis('off')
     plt.show()    
-    
-for image, mask in train_ds.take(1):
-    display([tf.squeeze(image), tf.argmax(mask, axis=-1)])
-    
-    
-model = unet_model(4, f=4)
-model.compile(optimizer='adam', 
-              loss='categorical_crossentropy',
-              metrics = ['accuracy'])
+
+model = unet_model(4)
+
+def dice_coef(y_true, y_pred, smooth=1):
+    intersection = tf.keras.backend.sum(y_true * y_pred, axis=[1,2,3])
+    union = tf.keras.backend.sum(y_true, axis=[1,2,3]) + tf.keras.backend.sum(y_pred, axis=[1,2,3])
+    return tf.keras.backend.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
+
+def dice_coef_loss(train_ds, test_ds):
+    return 1-dice_coef(train_ds, test_ds)
+
+model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
 
 def show_predictions(ds, num=1):
     for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])
         pred_mask = tf.argmax(pred_mask[0], axis=-1)
         display([tf.squeeze(image), tf.argmax(mask, axis=-1), pred_mask])
-        
-show_predictions(val_ds)
+        show_predictions(val_ds)
 
 from IPython.display import clear_output
 
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         clear_output(wait=True)
-        show_predictions(val_ds)
-        
-history = model.fit(train_ds.batch(32), epochs=3, 
-                    validation_data=val_ds.batch(32), callbacks=[DisplayCallback()])
+        #show_predictions(val_ds)
 
+history = model.fit(train_ds.batch(32), epochs=5, validation_data=val_ds.batch(32),callbacks=[DisplayCallback()])
+show_predictions(test_ds, 1)
+def plot_accuracy():
+    plt.plot(history.history['accuracy'], 'seagreen', label='train')
+    plt.plot(history.history['val_accuracy'], label = 'validation')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    plt.ylim([0.5, 1])
+    plt.title("Training Accuracy vs Validation Accuracy")
+    plt.show()
 
-show_predictions(test_ds, 3)
+def plot_dice():
+    plt.plot(history.history['dice_coef'],'seagreen', label='dice_coef')
+    plt.plot(history.history['val_dice_coef'], label='val_dice_coef')
+    plt.xlabel("Epoch")
+    plt.ylabel("Dice Coefficient")
+    plt.legend(loc='lower right')
+    plt.ylim([0.5, 1])
+    plt.title("Training Dice Coefficient vs Validation Dice Coefficient")
+    plt.show()
+
+def plot_loss():
+    plt.plot(history.history['loss'],'seagreen', label='loss')
+    plt.plot(history.history['val_loss'], label='val_loss')
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend(loc='lower right')
+    plt.title("Training Loss vs Validation Loss")
+    plt.show()
+
+plot_accuracy()
+plot_dice()
+plot_loss()
+
+model.summary()
