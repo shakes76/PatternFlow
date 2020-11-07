@@ -34,9 +34,9 @@ layers, which provided further context aggregation by combining upsampled segmen
 The ingoing and outgoing layers were implemented as `Downshift` and `Upshift` subclasses of the `tf.keras.layers.Layer` 
 class. In the case of the `Downshift` subclass this allowed for the incorporation of a context module passing to a 
 stride 2X2 convolution, while the `Upshift` combines an upsampling module with a localization module as described 
-[https://arxiv.org/abs/1802.10508](here). Both `Downshift` and `Upshift` subclasses are subsumed by a subclassed 
+[here](https://arxiv.org/abs/1802.10508). Both `Downshift` and `Upshift` subclasses are subsumed by a subclassed 
 `My_UNet` model and are themselves composed primarily of highly flexible, again subclassed `My_Conv2D` convolutional 
-layers. Lower level details are included in the relevant docstrings.
+layers. Lower level details are included in the relevant docstrings, including in-depth descriptions of each module.
 
 ![](model.png)
 
@@ -44,7 +44,7 @@ The `My_Conv2D` layers are key to the network's success, providing a very high l
 the easy construction of performant autoencoding models. Particularly important is the standard `My_Conv2D` configuration, 
 including leaky ReLU activation, uniform Kaiming (He) initialization (optimized for the leaky ReLU activations) and 
 pre-activation batch normalization. The loss function employed for training was a 
-[https://journals.plos.org/ploscompbiol/article/file?type=supplementary&id=info:doi/10.1371/journal.pcbi.1006388.s002](smoothed Jaccard distance), 
+[smoothed Jaccard distance](https://journals.plos.org/ploscompbiol/article/file?type=supplementary&id=info:doi/10.1371/journal.pcbi.1006388.s002), 
 trained with a batch size of 2 over an 85% (4832 images), 10% (560 images), 5% (272 images) train, test, validation split. 
 This train-heavy split was chosen so as to prevent the need for data augmentation or similar measures, given the common 
 failure of such segmentation models to generalize. Training with the Adam optimizer over the swiftly decaying learning rate 
@@ -59,3 +59,9 @@ feature mappings.
 Below are ground truth and modelled segmentations as a result of the training implemented.
 
 ![](ground_vs_pred.png)
+
+The robustness of `My_UNet` in combination with its simple construction from arbitrarily many `Downshift` and `Upshift` layers 
+would make it an interesting candidate for research into the generalizability of such segmentation models. While these models 
+perform admirably on the test, validation and test sets, they often fail when applied to images from a different MRI machine 
+for example. Perhaps a high level of data augmentation and increased regularization (here L2 regularization was incorporated into 
+the design of `My_Conv2D` but not used) could yield intriguing results.
