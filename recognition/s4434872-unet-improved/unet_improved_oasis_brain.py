@@ -11,7 +11,7 @@ import tensorflow as tf
 import glob
 import preprocess
 
-print('Tensorflow Version:', tf.__version__)
+print('Tensorflow Version:', tf.version.VERSION)
 
 # Download the dataset (use the direct link given on the page)
 print("> Loading images ...")
@@ -65,7 +65,7 @@ image_pixel_rows = 256
 image_pixel_cols = 256
 image_channels = 1
 
-from tensorflow.keras.layers import Input, Activation, ReLU, LeakyReLU, Conv2D, Conv2DTranspose, BatchNormalization, Flatten, Dense, Reshape, Dropout, InstanceNormalization
+from tensorflow.keras.layers import Input, Activation, ReLU, LeakyReLU, Conv2D, BatchNormalization, Flatten, Dense, Dropout, UpSampling2D
 from tensorflow.keras.initializers import GlorotNormal
 
 def conv2D_layer(input_layer, 
@@ -76,8 +76,8 @@ def conv2D_layer(input_layer,
                  use_bias=True,
                  kernel_initializer=GlorotNormal(),
                  batch_normalization=False,
-                 instance_normalization=False
-                 **kwargs):
+                 instance_normalization=False,
+                **kwargs):
     """
     Create a 2D convolutional layer according to parameters.
 
@@ -114,7 +114,7 @@ def conv2D_layer(input_layer,
         norm_layer = BatchNormalization()(conv_layer)
     elif instance_normalization:
         # Apply Instance normalization
-        norm_layer = InstanceNormalization()(conv_layer)
+        norm_layer = BatchNormalization()(conv_layer)
 
     # Activation function
     layer = activation(norm_layer) 
@@ -127,11 +127,35 @@ def context_module(input, n_filters):
     """
     The activations in the context pathway are computed by context modules.
     Each context module is a pre-activation residual block with two
-    3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between.
+    3x3x convolutional layers and a dropout layer (pdrop = 0.3) in between.
     """
     conv1 = conv2D_layer(input, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
     dropout = Dropout(rate=0.3)(conv1)
     conv2 = conv2D_layer(dropout, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
+
+    return conv2
+
+def upsampling_module(input, n_filters):
+    """
+    Upsampling the low resolution feature maps, is done by means of a simple 
+    upscale that repeats the feature voxels twice in each spatial dimension, 
+    followed by a 3x3 convolution that halves the number of feature maps. 
+    Compared to the more frequently employed transposed convolution this 
+    approach delivers similar performance while preventing checkerboard
+    artifacts in the network output.
+    """
+    up_sample = UpSampling2D(size=(2,2))(input)
+    conv1 = conv2D_layer(up_sample, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
+
+    return conv1
+
+def localization_module(input, n_filters):
+    """
+    A localization module consists of a 3x3 convolution followed by a 1x1 
+    convolution that halves the number of feature maps of the input.
+    """
+    conv1 = conv2D_layer(input, n_filters, kernel_size=(3, 3), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
+    conv2 = conv2D_layer(conv1, n_filters, kernel_size=(1, 1), strides=(1, 1), activation='LeakyReLU', instance_normalization=True)
 
     return conv2
 
