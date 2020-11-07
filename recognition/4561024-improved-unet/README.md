@@ -56,7 +56,7 @@ Training is done with:
 Output:
 
 **Training and validation DSC**
-<img src="images/dsc_plot" width="250">
+![dsc_plot](images/dsc_plot.png)
 
 **DSC on the testing set**
 ![dsc](images/dsc.png)
