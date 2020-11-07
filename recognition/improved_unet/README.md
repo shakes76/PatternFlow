@@ -15,7 +15,7 @@ Here are the predict image with our unet with over 90% accuracy
 <img src="./image/Predict.JPG" alt="model1" width="500"/>
 
 ### And a example output after training
-<img src="./image/expect_output.JPG" alt="model1" width="500"/>
+<img src="./image/expect_output.JPG" alt="model1" width="1000"/>
 
 # Requirement
 
