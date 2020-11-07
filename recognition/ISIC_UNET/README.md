@@ -34,8 +34,8 @@ Note that the ISIC dataset contains only 2,596 images. Thus small validation and
 
 The size of the images used can also be changed. Currently, all images are resized to squares with side length `image_size = 256`. Note `image_size` must be specified in both `driver.py` and `load_images.py`.
 
-####Example test set results:
+#### Example test set results:
 ![Model segmentation results](figures/example_results.png)
 
-####Test set evaluation results:
+#### Test set evaluation results:
 `17/17 [==============================] - 17s 984ms/step - loss: 0.2945 - dsc_fore: 0.9724 - dsc_back: 0.9541`
