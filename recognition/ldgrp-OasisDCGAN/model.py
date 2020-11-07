@@ -1,10 +1,9 @@
 from pathlib import Path
-from utils import Config, plot, save_images, hms_string
+from utils import Config, plot, preview_images, hms_string
 from tensorflow.keras import initializers, layers, metrics, \
                              models, optimizers, losses
-from tqdm import tqdm
+#from tqdm import tqdm
 import logging
-import numpy as np
 import tensorflow as tf
 import time
 
@@ -117,7 +116,8 @@ class GAN:
         
         total_loss_g, total_loss_d, total_d_real, total_d_fake = 0, 0, 0, 0
         batches = 0
-        for batch in tqdm(images):
+        #for batch in tqdm(images):
+        for batch in images:
             loss_g, loss_d, d_real, d_fake = self.distributed_epoch_step(batch)
             total_loss_g += loss_g
             total_loss_d += loss_d
@@ -146,7 +146,7 @@ class GAN:
             self.checkpoint.save(file_prefix=self.checkpoint_prefix)
         
         preview = self.generator.predict(self.config.fixed_seed)
-        self.images.append(save_images(self.config, preview, epoch))
+        self.images.append(preview_images(self.config, preview, epoch))
 
         return loss_g, loss_d, d_real, d_fake
 
