@@ -50,7 +50,7 @@ def model_unet(rows, cols, channels=1):
     conv9 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc9)
     conv9 = krl.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv9)
 
-    outs = krl.Conv2D(filters=1, kernel_size=1, padding="same", activation="sigmoid")(conv9)
+    outs = krl.Conv2D(filters=2, kernel_size=1, padding="same", activation="sigmoid")(conv9)
     
     model = kr.Model(inputs=ins, outputs=outs)
 
