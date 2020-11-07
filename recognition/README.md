@@ -62,7 +62,7 @@ The Open Access Series of Imaging Studies (OASIS) is collection of neuroimaging 
 longitudinal collections of brain images.Majorly images containing obtained from the subjects are used to study Alzheimer's disease.But i will be using nearly 9000 of these 
 images to train a DCGAN model and generate new brain images.For futher detailed description of dataset refer http://www.oasis-brains.org.
 
-![image info](training_images.png)
+![image info](images/training_images.png)
 
 # Prerequirements : 
 
