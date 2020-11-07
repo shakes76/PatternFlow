@@ -3,6 +3,8 @@ OASIS Brain Dataset Segmentation with Improved UNet,
 with all labels having a minimum Dice Similarity Coefficient 
 of 0.9 on the test set.
 
+Driver script.
+
 @author Dhilan Singh (44348724)
 
 Start Date: 01/11/2020
@@ -69,21 +71,6 @@ image_pixel_rows = 256
 image_pixel_cols = 256
 image_channels = 1
 
-# Create Improved UNet Model
-print("> Building Model ...")
-model = model.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
-
-# Compile Model using DSC as loss function and a metric
-model.compile(optimizer='adam',
-              loss=metrics.dice_coefficient_loss,
-              metrics=['accuracy', metrics.dice_coefficient])
-model.summary()
-
-
-# Training Hyperparameters
-BATCH_SIZE = 32
-EPOCHS = 3
-
 # Fill in some of the blank by default callback functions
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -92,30 +79,59 @@ class DisplayCallback(tf.keras.callbacks.Callback):
     # can fill in another function on_epoch_start() if need
     # to perform some action at the start of an epoch.
 
-# Train model for epochs=EPOCHS with data batched as BATCH_SIZE
-print("> Start Training Model ...")
-history = model.fit(train_ds.batch(BATCH_SIZE), epochs=EPOCHS,
-                    validation_data=val_ds.batch(BATCH_SIZE),
-                    callbacks=[DisplayCallback()])
-print("> Training Finished")
+
+def main():
+    """
+    Main function.
+    """
+        # Create Improved UNet Model
+    print("> Building Model ...")
+    model = model.improved_unet_model(4, n_filters=16, input_size=(image_pixel_rows, image_pixel_cols, image_channels))
+
+    # Compile Model using DSC as loss function and a metric
+    model.compile(optimizer='adam',
+                loss=metrics.dice_coefficient_loss,
+                metrics=['accuracy', metrics.dice_coefficient])
+    model.summary()
+
+    # Training Hyperparameters
+    BATCH_SIZE = 32
+    EPOCHS = 3
+
+    # Train model for epochs=EPOCHS with data batched as BATCH_SIZE
+    print("> Start Training Model ...")
+    history = model.fit(train_ds.batch(BATCH_SIZE), epochs=EPOCHS,
+                        validation_data=val_ds.batch(BATCH_SIZE),
+                        callbacks=[DisplayCallback()])
+    print("> Training Finished")
+
+    # Plot training and validation results
+    visualisation.visualise_training(history, EPOCHS)
+
+    # Evaluate trained model on the test set
+    print("> Evaluating Trained Model on Test Set ...")
+    test_DSC_loss, test_acc, test_DSC = model.evaluate(train_ds.batch(BATCH_SIZE), verbose=2)
+
+    # Display Test Set Results (Average over batches)
+    print("----- Test Set Results -----")
+    print("DSC Loss: ", test_DSC_loss)
+    print("DSC: ", test_DSC)
+    print("Accuracy: ", test_acc)
+
+    # Show some test set predictions
+    print("> Showing Some Test Set Predictions ...")
+    visualisation.save_predictions(model, test_ds, 3)
+
+    # End of operation
+    print('End')
 
 
-# Evaluate trained model on the test set
-print("> Evaluating Trained Model on Test Set ...")
-test_DSC_loss, test_acc, test_DSC = model.evaluate(train_ds.batch(BATCH_SIZE), verbose=2)
 
-# Display Test Set Results (Average over batches)
-print("----- Test Set Results -----")
-print("DSC Loss: ", test_DSC_loss)
-print("DSC: ", test_DSC)
-print("Accuracy: ", test_acc)
-
-# Show some test set predictions
-print("> Showing Some Test Set Predictions ...")
-visualisation.show_predictions(model, test_ds, 3)
+if __name__ == "__main__":
+    # Enter main loop (not really a loop though)
+    main()
 
 
 
 
-# End of operation
-print('End')
+

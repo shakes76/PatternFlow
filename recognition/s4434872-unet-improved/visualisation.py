@@ -9,10 +9,13 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
 
-
 # Make new folder in current working directory to store training outputs
 train_output_dir = "training_output/"
 os.makedirs(train_output_dir, exist_ok=True)
+
+# Make new folder in current working directory to store testing outputs
+test_output_dir = "testing_output/"
+os.makedirs(test_output_dir, exist_ok=True)
 
 
 def display(display_list):
@@ -47,6 +50,34 @@ def show_predictions(model, ds, num=1):
         pred_mask = tf.argmax(pred_mask[0], axis=-1)
         display([tf.squeeze(image), tf.argmax(tf.cast(mask, tf.uint8), axis=-1), pred_mask])
 
+def save_predictions(model, ds, num=1):
+    """
+    Uses model to predict and plot the segmentation results of a dataset.
+    Save to folder.
+
+    @param ds:
+        Tensorflow Dataset.
+    @param num:
+        Number of predictions to make using dataset. Defaults to 1.
+
+    Reference: Adapted from Siyu Liu's tutorial code.
+    """
+    counter = 0
+    for image, mask in ds.take(num):
+        pred_mask = model.predict(image[tf.newaxis, ...])
+        pred_mask = tf.argmax(pred_mask[0], axis=-1)
+        disp_list = [tf.squeeze(image), tf.argmax(tf.cast(mask, tf.uint8), axis=-1), pred_mask]
+        
+        plt.figure(figsize=(10, 10))
+        for i in range(len(disp_list)):
+            plt.subplot(1, len(disp_list), i+1)
+            plt.imshow(disp_list[i], cmap='gray')
+            plt.axis('off')
+        plt.tight_layout()
+        plt.show()
+        plt.savefig(test_output_dir + "visualisation" + counter + ".png")
+
+        counter = counter + 1
 
 def visualise_training(history, epochs):
     """
