@@ -136,4 +136,7 @@ def adv_model(f):
 
     # config the model with losses and metrics
     # use a dice loss function to cope with class imbalances 
+    model.compile(optimizer='adam',
+                  loss= 'categorical_crossentropy')
+
     return model
