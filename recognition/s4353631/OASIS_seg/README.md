@@ -5,16 +5,13 @@ along the way.
 * `input_line.py` - Module containing functions for the data input line.
 * `layers.py` - Module containing subclassed layers for the model.
 * `model.py' - Module containing subclassed model.
-* 'metrics.py` - Module containing custom metric and loss functions.
+* `metrics.py` - Module containing custom metric and loss functions.
 * `OASIS_seg.ipynb` - Contents of all modules displayed as a cohesive Jupyter Notebook.
 
-as well as some images of output from `driver.py`.
+as well as some images of output from `driver.py`. The recognition task I approached was a semantic segmentation 
+of the OASIS brain MRI library, with the 3D scans separated into 2D images. As can be seen below, four categories 
+were considered including the background.
 
-
-
-
-
-
-![](oasis.png)
+![Ground truth input images and segmentation masks.](oasis.png)
 
 
