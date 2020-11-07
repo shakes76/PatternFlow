@@ -12,8 +12,18 @@ from keras.layers.merge import concatenate
 
 
 def get_conv_block(tensor, n_filters, size=3, padding='same', 
-               initializer="he_normal", batch_norm=True, alpha=0.2):
-    """two consecutive convolutional layers followed by batch normalization"""
+               initializer="he_normal"):
+    """two consecutive convolutional layers followed by batch normalization
+    
+    Parameters:
+        tensor [float] : multi-dimensional array having input image data
+        n_filters (int) : number of channels in the convolutional block
+        size (int) : size of the kernel used for convolution of the images
+        padding (str) : type of padding to build convolutional blocks
+        initializer (str) : type of kernel initializer to be used 
+        
+    Return: blocks in expansion path for the UNet architecture
+    """
     x = Conv2D(filters=n_filters, kernel_size=(size, size), padding=padding, 
                kernel_initializer=initializer)(tensor)
     x = Activation("relu")(x)
@@ -26,7 +36,19 @@ def get_conv_block(tensor, n_filters, size=3, padding='same',
 def get_deconv_block(tensor, residual, n_filters, size=2, padding='same', 
                  strides=(2, 2), initializer="he_normal"):
     """first create deconvolutional layer and joined with corresponding layers 
-    in the contraction path and finally adds convolutional block."""
+    in the contraction path and finally adds convolutional block.
+    
+    Parameters:
+        tensor [float] : multi-dimensional array having input image data
+        residual [float] : corresponding tensor in contration path
+        n_filters (int) : number of channels in the convolutional block
+        size (int) : size of the kernel and strides
+        padding (str) : type of padding to build convolutional blocks
+        strides (int, int) : number of cells for horizontal & vertical strides
+        initializer (str) : type of kernel initializer to be used 
+        
+    Return: blocks in expansion path for the UNet architecture 
+    """
     y = Conv2DTranspose(n_filters, kernel_size=(size, size), padding=padding, 
                         strides=strides, kernel_initializer=initializer)(tensor)
     y = concatenate([y, residual], axis=3)
@@ -35,7 +57,16 @@ def get_deconv_block(tensor, residual, n_filters, size=2, padding='same',
 
 
 def my_unet(n_filters=32, size=(2,2), drop_out=0.10):
-    """build and return UNet model"""
+    """build and return UNet model contraction and expansio path
+    
+    Parameters:
+        n_filters (int): number of filters for each convolutional block
+        size (int, int) : size of pool and strides
+        drop_out (float) : proportion of units to drop from proving output
+            to limit overfitting the training inputs.
+            
+    Return: UNet model
+    """
     #input 
     img_height = img_width = 256
     input_layer = Input(shape=(img_height, img_width, 1), name='image_input')

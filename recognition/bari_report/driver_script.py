@@ -11,8 +11,8 @@ from train_test_eval import model_train_test, plot_sample_image, get_loss_plot
 
 def main():
     """Provide model performance and pertinent plots"""
+    #
     res_dict, hist_dict = model_train_test(n_epochs=50, batch_size=32)
-    #class_back, class_fore = res_dict["class_dsc"]
     class_dsc = res_dict["class_dsc"]
     dsc_back = class_dsc[0]
     dsc_fore = class_dsc[1]
@@ -25,7 +25,7 @@ def main():
     print(df_dsc.to_string(index=False))
     # store results in .csv format
     df_dsc.to_csv("45420065_test_dsc.csv", index=False)
-    # plot of model training and validation loss
+    # store and plot model training and validation loss
     history = hist_dict["history"]
     get_loss_plot(hist=history)
     # sample plots of input, ground truth and predicted images from testset
