@@ -29,14 +29,20 @@ The images were all resized to 256x256 to give them a uniform standard shape wel
 
 ![Resized input image](resources/ISIC_000256_resized.jpg) ![Resized segmented image](resources/ISIC_000256_segmentation_resized.png)
 
-These images were provided to the model using a custom Keras Sequence class named iunet_sequence that provides the data in batches and avoided loading too many images into memory at once. These images were fed into the model structure as can be seen below:
-
-MODEL STRUCTURE IMAGE HERE
-
 #### Data Splits
 The data was split into portions of 
 - Training data (80%)
 - Validation data (10%)
 - Test data (10%)
 
-These were chosen because the dataset only contains 2594 images and so is not tiny but also not overly large. Cross-validation or other methods such as bootstrapping were not used as they were deemed unnecessary but could be added to boost training size.
+These were chosen because the dataset only contains 2594 images and so is not tiny but also not overly large. Cross-validation or other methods such as bootstrapping were not used as they were deemed unnecessary but could be added to boost training size. These images were provided to the model using a custom Keras Sequence class named iunet_sequence that provides the data in batches and avoided loading too many images into memory at once. 
+
+#### Model Structure
+These images were fed into the model structure as can be seen below:
+
+<img src="resources/model_structure.png"> 
+
+The model has a depth of three and has managed to achieve DICE similarity scores as high as 0.9125 on the test set. Below we can see the accuracy of the model with only 6 epochs.
+
+<img src="Accuracy_data.png" width="500"> 
+
