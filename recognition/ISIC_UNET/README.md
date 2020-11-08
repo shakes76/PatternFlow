@@ -3,11 +3,11 @@
 **Author:** Isabel Peters  
 **Student number:** 45371756
 
-The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer, and accompanying segmentation maps. The skin cancer images are in colour, and the segmentation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [UNet](https://arxiv.org/abs/1802.10508v1) architecture to produce these segmentation maps.
+The ISIC (International Skin Imaging Collaboration) dataset is a collection of images of skin cancer and their corresponding segmentation maps. The skin cancer images are in colour, and the segmentation maps have two classes - the foreground/cancer in white, and the background in black. This algorithm trains a deep-learning model based on the [UNet](https://arxiv.org/abs/1802.10508v1) architecture to produce these segmentation maps.
 
 ![UNet model architecture diagram](figures/UNet_architecture.png)
 
-This algorithm implements the UNet architecture similar to the above image. The UNet architecture comprises of two pathways - the context (down/encoding) pathway, and the localisation (up/decoding) pathway. The context pathway repeats the same layers 4 times, with the number of filters doubling and the layer size halving each time. The localisation pathway repeats the same layers 4 times, with the number of filters halving and the layer size doubling each time. This results in the output prior to the final convolution and segmentaion layers being the same size as the first context layer. Skip connections, in the form of concatenation, link the context layer and the localiation layer of the same depth, aid in recovering lost information and enhance model performance.
+This algorithm implements the UNet architecture similar to the above image. The UNet architecture comprises of two pathways - the context (down/encoding) pathway, and the localisation (up/decoding) pathway. The context pathway repeats the same layers 4 times, with the number of filters doubling and the layer size halving each time. The localisation pathway repeats the same layers 4 times, with the number of filters halving and the layer size doubling each time. This results in the output prior to the final convolution and segmentaion layers being the same size as the first context layer. Skip connections, in the form of concatenation, link the context layer and the localiation layer of the same depth and aid in recovering lost information to enhance model performance. Segmentation output is done via a convolution with 2 filters (as there are two segmentation classes) and a softmax activation to output probabilities.
 
 ## Installation
 
@@ -22,7 +22,7 @@ This algorithm implements the UNet architecture similar to the above image. The 
 
 ## How to use
 
-The driver script `driver.py` downloads the images; and creates and trains the model; and prints results.
+The driver script `driver.py` downloads the images; creates and trains the model; and prints test set results.
 
 Parameters that can be altered in this script include:
 * `filters = 12` - The number of filters the first layer of the model will have
@@ -33,6 +33,8 @@ Parameters that can be altered in this script include:
 Note that the ISIC dataset contains only 2,596 images. Thus small validation and test proportions (both 0.1) were chosen as defaults to ensure adequate data remained for training. Images are allocated at random to training, validation and test sets each time the images are loaded.
 
 The size of the images used can also be changed. Currently, all images are resized to squares with side length `image_size = 256`. Note `image_size` must be specified in both `driver.py` and `load_images.py`.
+
+The training of the model can also be altered as required. Note that the model has a tendency to converge to assigning only the background class. To minimise this, an adam optimiser with a low learning rate ($5 \times 10^(-5)$) is used by default. Categorical crossentropy loss was found to improve model performance compared to average Dice Similarity Coefficient (DSC) loss (although this metric is defined in `metrics.py` if required). The metrics of foregound DSC and background DSC are currently passed to the model. 
 
 #### Example test set results:
 ![Model segmentation results](figures/example_results.png)
