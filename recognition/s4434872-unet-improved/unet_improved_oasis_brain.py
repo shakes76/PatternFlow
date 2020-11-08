@@ -87,8 +87,8 @@ def main():
     model.summary()
 
     # Training Hyperparameters
-    BATCH_SIZE = 32
-    EPOCHS = 3
+    BATCH_SIZE = 12
+    EPOCHS = 8
 
     # Fill in some of the blank by default callback functions
     class DisplayCallback(tf.keras.callbacks.Callback):
@@ -110,7 +110,7 @@ def main():
 
     # Evaluate trained model on the test set
     print("> Evaluating Trained Model on Test Set ...")
-    test_DSC_loss, test_acc, test_DSC = model.evaluate(train_ds.batch(BATCH_SIZE), verbose=2)
+    test_DSC_loss, test_acc, test_DSC = model.evaluate(test_ds.batch(BATCH_SIZE), verbose=2)
 
     # Display Test Set Results (Average over batches)
     print("----- Test Set Results -----")
