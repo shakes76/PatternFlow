@@ -30,6 +30,7 @@ Parameters that can be altered in this script include:
 * `total_prop = 1` - The proportion of the total image set to use
 * `val_prop = 0.1` - The proportion of the (reduced) image set to use as a validation set
 * `test_prop = 0.1` - The proportion of the (reduced) image set to use as a test set
+
 Note that the ISIC dataset contains only 2,596 images. Thus small validation and test proportions (both 0.1) were chosen as defaults to ensure adequate data remained for training. Images are allocated at random to training, validation and test sets each time the images are loaded.
 
 The size of the images used can also be changed. Currently, all images are resized to squares with side length `image_size = 256`. Note `image_size` must be specified in both `driver.py` and `load_images.py`.
@@ -39,5 +40,5 @@ The training of the model can also be altered as required. Note that the model h
 #### Example test set results:
 ![Model segmentation results](figures/example_results.png)
 
-#### Test set evaluation results:
+#### Example test set evaluation results:
 `17/17 [==============================] - 17s 984ms/step - loss: 0.2945 - dsc_fore: 0.9724 - dsc_back: 0.9541`
