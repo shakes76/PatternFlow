@@ -21,6 +21,16 @@ The structure of the model is
 *  A Dense layer with SoftMax function as output layer
 *The diagram below is the Summary of model
         ![Image of Summary of Model](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%2011.54.59%20AM.png)
+        
+Example code of the model is 
+```python
+       self.conv1 = tf.keras.layers.Conv2D(16, 1,input_shape=(256,256,1), activation = 'relu') 
+       self.conv2 = tf.keras.layers.Conv2D(32, 1,input_shape=(256,256,1),activation = 'relu')
+       self.flatten = tf.keras.layers.Flatten()
+       self.outputLayer = tf.keras.layers.Dense(2,activation = 'softmax')
+```
+
+
 ### Prerequest
 Tensorflow V2.0+ and Python V3.5+. Download the Glob and matplotlib library. Download Tensorflow [here](https://www.tensorflow.org/install)
 
