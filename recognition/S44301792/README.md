@@ -35,4 +35,6 @@ The accuracy of the model on the final test set reached 100%
 ### Prerequest
 Tensorflow V2.0+ and Python V3.5+. Download the Glob and matplotlib library. Download Tensorflow [here](https://www.tensorflow.org/install)
 
-
+## Appendix
+### Data set 
+OAI Acelerated Osteoarthritis knee data set (18K images) - This is part of the Osteoarthritis Initiative and comes with only labelled laterality (left/right knee labelling) in the [file](https://nda.nih.gov/oai/). The preprocessed version of this data set can be found on the course Blackboard site (under Course Help/Resources).
