@@ -3,25 +3,20 @@ This algorithm Model.ipynb is tried to classify laterality (left or right sided 
 of 0.9 on the test set. 
 
 ### Introduction
-At the the start, the Algorithm get the data from AKOA_Analysis Data set And Separated into Three data sets which are 
-* Training Data 
-* Testing Data 
-* Validation Data
+The Data set used for this algorithm is AKOA_Analysis. The algorithm separated the data set into three data sets, the test dataset, the training data set and the validation data set.
 
-Also the Algorihtm converting the image channels from Three channels into one channel. The examples of images after change are labeled below
+After separating the dataset, the algorithm starts to get the label of Image based on the name of each file. And divided data into two different groups, left and right. Also, the algorithm decreases the channel of images from three channels into one channel. 
+
+The pictures below are the example of images after changed
 ![Image of Exmaples](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-07%20at%203.36.20%20PM.png)
-        
-This algorithm Model.ipynb is tried to classify laterality (left or right sided knee) of the OAI AKOA knee data set having a minimum accuracy
-of 0.9 on the test set. 
-
+       
 The structure of the model is 
-*  A 16 filters Convolutional Layers with relu as the activation function 
-*  A 32 filters Convolutional Layers with relu as the activation function 
+*  A 16 filters convolutional neural network which used ReLU function as the activation function 
+*  A 32 filters convolutional neural network which used ReLU function as the activation function 
 *  A flatten Layer
-*  A Dense layer with SoftMax function as output layer
+*  An output layer which used Softmax as the output function 
 *The diagram below is the Summary of model
-        ![Image of Summary of Model](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%2011.54.59%20AM.png)
-        
+        ![Image of Summary of Model](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%2011.54.59%20AM.png)        
 Example code of the model is 
 ```python
        self.conv1 = tf.keras.layers.Conv2D(16, 1,input_shape=(256,256,1), activation = 'relu') 
@@ -29,7 +24,10 @@ Example code of the model is
        self.flatten = tf.keras.layers.Flatten()
        self.outputLayer = tf.keras.layers.Dense(2,activation = 'softmax')
 ```
-
+To better observe the accuracy of the training model. We increased the number of epochs.The figure below shows the accuracy and loss of the model's prediction on the training set and validation set during each training.
+![Image of acc and loss](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%201.10.21%20PM.png)   
+The accuracy of the model on the final test set reached 100%
+> 456/456 - 10s - loss: 1.2994e-05 - accuracy: 1.0000
 
 ### Prerequest
 Tensorflow V2.0+ and Python V3.5+. Download the Glob and matplotlib library. Download Tensorflow [here](https://www.tensorflow.org/install)
