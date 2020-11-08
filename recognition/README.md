@@ -8,8 +8,8 @@ The propose of the model is to remove the noise and segment the Brain images int
 * Our Network architecture is based on the U-Net model. Here I propose my contribution to essay 'Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge'.
 ![avatar](/Users/duan/Desktop/improved unet7.32.56.png)
 
-* The segmentation peerformance of participating algorithms is measured based on the DICE coefficient. After perdict, the Dice similarity coefficient is up to 
-
+* The segmentation peerformance of participating algorithms is measured based on the DICE coefficient. After perdict, the Dice similarity coefficient is up to 99.5%
+![avatar](/Users/duan/PatternFlow/recognition/s4552709/resources/dice coef.png)
 
 ###The process of my work:
 
