@@ -13,28 +13,28 @@ matplotlib.use('Agg')
 
 class Config:
     '''Configurable options for the DCGAN model'''
-    image_size: int = 64
+    image_size: int = 128
     image_channels: int = 1
     image_count: int = 11328
     seed_size: int = 100
     buffer_size: int = 100000
     batch_size: int = 128
-    kernel_size: int = 3
+    kernel_size: int = 5
     generator_alpha: float = 0.3
-    generator_lr: float = 0.0001
+    generator_lr: float = 6e-05
     generator_beta1: float = 0.5
     discriminator_alpha: float = 0.3
-    discriminator_lr: float = 0.0001
+    discriminator_lr: float = 4e-5
     discriminator_beta1: float = 0.5
     momentum: float = 0.8
     dropout: float = 0.25
-    epochs: int = 40
+    epochs: int =2
     checkpoint_freq: int = 10
     global_batch_size: int
     preview_margin: int = 15
     preview_cols: int = 6
     preview_rows: int = 4
-    input_dir: Path = Path('dataset')
+    input_dir: Path = Path('input128')
     output_dir: Path = Path('output')
 
     fixed_seed: np.ndarray

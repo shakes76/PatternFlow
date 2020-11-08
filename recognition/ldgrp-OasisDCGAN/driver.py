@@ -1,6 +1,6 @@
 from typing import Optional
 from pathlib import Path
-from utils import Config, set_logger
+from utils import Config, set_logger, preview_images
 from tensorflow.data.experimental import AUTOTUNE
 from model import GAN
 import argparse
@@ -67,6 +67,10 @@ if __name__ == '__main__':
         gan.generator.summary()
         gan.discriminator.summary()
         gan.train(dataset, config.epochs)
+
+        preview = gan.generator.predict(config.fixed_seed)
+        image = preview_images(config, preview, config.epochs)
+        image.save(config.output_dir / "final.png")
 
         gan.generator.save(config.output_dir / 'models' / 'generator')
         gan.discriminator.save(config.output_dir / 'models' / 'discriminator')

@@ -153,8 +153,8 @@ class GAN:
             log.info('Saving checkpoint...')
             self.checkpoint.save(file_prefix=self.checkpoint_prefix)
         
-        preview = self.generator.predict(self.config.fixed_seed)
-        self.images.append(preview_images(self.config, preview, epoch))
+        #preview = self.generator.predict(self.config.fixed_seed)
+        #self.images.append(preview_images(self.config, preview, epoch))
 
         return loss_g, loss_d, d_real, d_fake
 
