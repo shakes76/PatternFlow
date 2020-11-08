@@ -115,6 +115,14 @@ def unet():
 
 def predictions(data, model, num=4):
     image_batch, mask_batch = next(iter(data.batch(num)))
+
+    #input images
+    plt.figure(figsize =(11, 11))
+    for i in range(num):
+        plt.subplot(2, num, i+1)
+        #plot real images
+        plt.imshow(image_batch[i])
+        plt.axis('off')
     #prediction using our model
     predict = model.predict(image_batch)
     plt.figure(figsize = (11, 11))
@@ -129,8 +137,10 @@ def predictions(data, model, num=4):
         #plotting prediction mask
         plt.imshow(tf.argmax(predict[i], axis=-1), cmap = 'gray')
         plt.axis('off')
+    print("Dice coefficient for images left to right")
     for i in range(num):
-        print(dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy())
+        text = "Dice Coefficient image {num} :{dice}"
+        print(text.format(num = i+1, dice = dice_coef(tf.argmax(mask_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy()))
 def average_dice(data, model):
     image_batch, mask_batch = next(iter(data.batch(259)))
     #Prediction on all the images in the test set
