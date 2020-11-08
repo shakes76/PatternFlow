@@ -49,8 +49,5 @@ def avg_dsc_loss(true_segs, pred_segs):
     Returns average DSC loss of the foreground and background segmentation
     results.
     """
-    return 1 - avg_dsc(true_segs, pred_segs)
-    '''return (0.5 * dsc_loss(true_segs[:,:,0], pred_segs[:,:,0])
-            + 0.5 * dsc_loss(true_segs[:,:,1], pred_segs[:,:,1]))'''
-
-
+    return (0.5 * dsc_loss(true_segs[:,:,0], pred_segs[:,:,0])
+            + 0.5 * dsc_loss(true_segs[:,:,1], pred_segs[:,:,1]))
