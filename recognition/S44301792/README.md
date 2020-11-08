@@ -7,8 +7,13 @@ At the the start, the Algorithm get the data from AKOA_Analysis Data set And Sep
 * Training Data 
 * Testing Data 
 * Validation Data
+
+Also the Algorihtm converting the image channels from Three channels into one channel. The examples of images after change are labeled below
+![Image of Exmaples](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-07%20at%203.36.20%20PM.png)
+        
 This algorithm Model.ipynb is tried to classify laterality (left or right sided knee) of the OAI AKOA knee data set having a minimum accuracy
 of 0.9 on the test set. 
+
 The structure of the model is 
 *  A 16 filters Convolutional Layers with relu as the activation function 
 *  A 32 filters Convolutional Layers with relu as the activation function 
