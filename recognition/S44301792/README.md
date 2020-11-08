@@ -27,6 +27,9 @@ Example code of the model is
 To better observe the accuracy of the training model. We increased the number of epochs.The figure below shows the accuracy and loss of the model's prediction on the training set and validation set during each training.
 ![Image of acc and loss](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%201.10.21%20PM.png)   
 The accuracy of the model on the final test set reached 100%
+``` python 
+       test_loss, test_acc = model.evaluate(test_ds.batch(8), verbose=2)
+```
 > 456/456 - 10s - loss: 1.2994e-05 - accuracy: 1.0000
 
 ### Prerequest
