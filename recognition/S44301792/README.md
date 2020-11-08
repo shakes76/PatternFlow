@@ -4,9 +4,9 @@ of 0.9 on the test set.
 
 ### Introduction
 At the the start, the Algorithm get the data from AKOA_Analysis Data set And Separated into Three data sets which are 
-*       Training Data 
-*       Testing Data 
-*       Validation Data
+* Training Data 
+* Testing Data 
+* Validation Data
 This algorithm Model.ipynb is tried to classify laterality (left or right sided knee) of the OAI AKOA knee data set having a minimum accuracy
 of 0.9 on the test set. 
 The structure of the model is 
