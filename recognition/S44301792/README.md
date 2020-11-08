@@ -10,6 +10,6 @@ of 0.9 on the test set.
        *  A 32 filters Convolutional Layers with relu as the activation function 
        *  A flatten Layer
        *  A Dense layer with SoftMax function as output layer
-        The diagram below is the Summary of model
+*The diagram below is the Summary of model
         ![Image of Summary of Model](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%2011.54.59%20AM.png)
 
