@@ -22,5 +22,9 @@ The structure of the model is
 *The diagram below is the Summary of model
         ![Image of Summary of Model](https://github.com/theHughJin/PatternFlow/blob/master/recognition/S44301792/Image/Screen%20Shot%202020-11-08%20at%2011.54.59%20AM.png)
         
+        
+ ### Prerequest
+ 
+Tensorflow V2.0+ and Python V3.5+. Download the Glob and matplotlib library. Download Tensorflow herehttp://github.com - automatic![GitHub](http://github.com)
 
 
