@@ -12,7 +12,7 @@ Email: d.singh@uq.net.au
 
 ## Problem Description
 ### Dataset
-The OASIS brain dataset is a labelled collection of human brain MRI images and segmentation masks, as part of the [OASIS brain study](https://www.oasis-brains.org/). It contains ~9000 preprocessed images, seperated into training, validation and testing splits. Each split contains two types of images. A 2D MRI slice image and it corresponding 2D segmentation mask.
+The OASIS brain dataset is a labelled collection of human brain MRI images and segmentation masks, as part of the [OASIS brain study](https://www.oasis-brains.org/). It contains ~9000 preprocessed images, seperated into training, validation and testing splits. Each split contains two types of images. A 2D MRI slice image and its corresponding 2D segmentation mask.
 #### MRI Slice Images
 - Grayscale png with shape [256, 256, 1].  
 
@@ -64,7 +64,7 @@ Similar to the UNet, the architecture described in Fig. 3 comprises of:
 - A Context Aggregation Pathway
     - Encodes increasingly abstract representations of the input as we progress deeper into the network.
     - Activations computed by Context modules.
-    - Context modules are connected by 3x3x3 convolutions with input stride 2 to reduce the resolution of the feature maps and allow for more features while descending down.
+    - Context modules are connected by 3x3 convolutions with input stride 2 to reduce the resolution of the feature maps and allow for more features while descending down.
 the aggregation pathway 
 - Followed by a Localization Pathway: 
     - Recombines these representations with shallower features to precisely localize the structures of interest.
@@ -104,7 +104,7 @@ The Dice Similarity Coefficient (DSC) is a statistical tool used to measure the 
 ## Results
 ### Training and Validation  
 
-Used the default training and validation splits given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.
+Using the default training and validation splits given in the OASIS preprocessed dataset. Upon running the driver script, get the following output.
 
 <p align="center"> 
 	<img src="./doc_images/train_plot2.PNG" />
@@ -128,7 +128,7 @@ Thus, it is clear to see that after only 3 epochs with a batch size of 32, we ac
 
 ### Testing  
 
-Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver scrip, get the following output.  
+Again using the default testing split given in the OASIS preprocessed dataset. Upon running the driver script, get the following output.  
 
 <p align="center"> 
 	<img src="./doc_images/test_results.PNG" />
@@ -144,7 +144,7 @@ Again using the default testing split given in the OASIS preprocessed dataset. U
 	Figure 8. Test Set Predictions
 </p>  
 
-Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very VERY close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.
+Thus, it is clear to see that we acheive an average DSC > 90% and the visualisations of the predictions are crisp and clear. Very close to the original. It is expected that as the number of epochs increases, should approach 100% accuracy.
 
 ## Files and Folders
 ### [model.py](./model.py)
