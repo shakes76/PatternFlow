@@ -30,6 +30,8 @@ if gpus:
     except RuntimeError as e:
         # Memory growth must be set before GPUs have been initialized
         print(e)
+    except Exception as error:
+        print(e)
 
 def _get_unique_values():
     '''
@@ -118,7 +120,7 @@ def _image_generator(img_files, mask_files):
 def display(display_list):
     plt.figure(figsize=(15, 15))
 
-    title = ['Input Image', 'True Mask', 'Predicted Mask']
+    title = ['Input Image', 'True Mask', 'Predicted Mask', 'Difference Mask']
 
     for i in range(len(display_list)):
         plt.subplot(1, len(display_list), i+1)
@@ -142,7 +144,7 @@ def show_predictions(dataset=None, num=1):
         count = 0
         for image, mask in dataset:
             pred_mask = create_mask(model.predict(image))
-            display([image[0], mask[0], pred_mask]) #pred_mask
+            display([image[0], mask[0], pred_mask, np.absolute(mask[0] - pred_mask)]) #pred_mask
             count += 1
             if count > num:
                 break
@@ -150,7 +152,7 @@ def show_predictions(dataset=None, num=1):
         norm_sample = sample_image / 255
         norm_sample = norm_sample[tf.newaxis, ...]
         pred_mask = create_mask(model.predict(norm_sample))
-        display([sample_image, sample_mask, sample_mask])
+        display([sample_image, sample_mask, pred_mask, np.absolute(sample_mask - pred_mask)])
 
 def dice_coef_multilabel(y_true, y_pred, numClass = 4):
     dice=0
@@ -172,8 +174,9 @@ def dice_loss(y_true, y_pred, num_class = 4):
 BATCH_SIZE = 1
 
 # Dataset directory in same directory as file. OASIS images is in datasets/OASIS
-# dataset_path = pathlib.Path(__file__).parent.absolute() / 'datasets/OASIS'
-dataset_path = pathlib.Path("/home/long/projects/COMP3710/Assignment3/PatternFlow/recognition/Segmentation/datasets/OASIS")
+folder_path = pathlib.Path(__file__).parent.absolute()
+dataset_path = folder_path / 'datasets/OASIS'
+model_path = folder_path / 'Model'
 # Load data
 # Each will contains all image directories
 train_images = sorted(glob.glob(str(dataset_path / "keras_png_slices_train/*.png")))
@@ -210,21 +213,23 @@ dependencies = {
 }
 
 try:
-    model = load_model("/home/long/projects/COMP3710/ass3/PatternFlow/recognition/Segmentation/Model", custom_objects=dependencies)
+    model = load_model(str(model_path), custom_objects=dependencies)
 except OSError:
+    TRAINING = 1
+except IOError:
+    TRAINING = 1
+except ImportError:
     TRAINING = 1
 
 if TRAINING:
     model = improved_unet(width=256, height=256, channels=1, output_classes=4, batch_size=BATCH_SIZE)
 
-    model.summary()
     model.compile(
         optimizer=Adam(learning_rate=0.0005), 
         loss=dice_loss, 
         metrics=[dice_coef_multilabel])
 
     checkpoint = ModelCheckpoint(filepath='model_OASIS_IUNET.h5')
-    # earlystopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',patience=2, mode='min', baseline=0.1)
     model_history = model.fit(train_img_generator, epochs=EPOCHS,
                           steps_per_epoch=STEPS_PER_EPOCH,
                           validation_steps=VALIDATION_STEPS,
@@ -246,6 +251,6 @@ if TRAINING:
     plt.legend()
     plt.show()
 
-
+model.summary()
 test_history = model.evaluate(test_img_generator, steps=STEPS_PER_EPOCH_TEST)
-show_predictions()
+show_predictions(test_img_generator, 1)
