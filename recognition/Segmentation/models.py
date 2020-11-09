@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dropout, UpSampling2D, Input, concatenate, LeakyReLU, Add
 from tensorflow.keras import Model
 
+# context module for improved unet
 def _context_module(input_layer, filters):
     conv1 = Conv2D(filters, (3,3), padding='same',activation=LeakyReLU(0.01))(input_layer)
     dropout = Dropout(0.3)(conv1)
@@ -25,7 +26,7 @@ def _localization_module(input_layer, filters):
     
 def improved_unet(width, height, channels, output_classes, batch_size):
     inputs = Input((width, height, channels), batch_size)
-
+    # inputs = Input((width, height, channels))
     # Level1 - Left
     conv1 = Conv2D(16, (3,3), padding='same',activation=LeakyReLU(0.01))(inputs)
     context_module1 = _context_module(conv1, 16)
@@ -61,7 +62,7 @@ def improved_unet(width, height, channels, output_classes, batch_size):
     conc3 = concatenate([upsampling_module4, conv_layer3])
     local_module3 = _localization_module(conc3, 64)
     upsampling_module3 = _upsampling_module(local_module3, 32)
-    #Segmentation layer returns the segmented image
+    #Segmentation layer returns the segmented image with same channels as input image
     seg3 = Conv2D(channels, (1, 1), padding='same',activation=LeakyReLU(0.01))(local_module3)
 
     # Level2 - Right
