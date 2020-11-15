@@ -19,6 +19,7 @@ from tensorflow.keras.optimizers import Adam
 
 # Setting to GPU usage rather than CPU
 physical_devices = tf.config.list_physical_devices('GPU') 
+print(physical_devices)
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
