@@ -1,22 +1,31 @@
 import tensorflow as tf
 import glob
-import matplotlib.pyplot as plt
 import os
 
-#Set up directories for dataset
-test_directory = sorted(glob.glob( path + "\keras_png_slices_test\*.png"))
-train_directory = sorted(glob.glob( path + "\keras_png_slices_train\*.png"))
+def pre_processing_data(input):
 
-train = tf.data.Dataset.from_tensor_slices(train_directory)
-test = tf.data.Dataset.from_tensor_slices(test_directory)
+    #Set up directories for dataset
+    test_directory = sorted(glob.glob( input + "\keras_png_slices_test\*.png"))
+    train_directory = sorted(glob.glob( input + "\keras_png_slices_train\*.png"))
 
-train = train.shuffle(len(train_directory))
-test = test.shuffle(len(test_directory))
+    train = tf.data.Dataset.from_tensor_slices(train_directory)
+    train = train.shuffle(len(train_directory))
+    train_data = map_and_batch(train, pre_processing_dir, 16)
+    take = train_data.take(50)
+    images = tf.convert_to_tensor(list(take.as_numpy_iterator()))
+
+    test = tf.data.Dataset.from_tensor_slices(test_directory)
+    test = test.shuffle(len(test_directory))
+    test_data = map_and_batch(test, pre_processing_dir, 16)
+
+    return test_data, train_data, images
+
+
 
 # Pre processing and image displaying functions
 # Map function
 
-def pre_processing(input):
+def pre_processing_dir(input):
     # Read/output contents of filename
     data = tf.io.read_file(input)
     # Convert images to grayscale
@@ -35,26 +44,3 @@ def map_and_batch(input, map_func, batch_size):
     return input
 
 
-# Functions to display images
-
-
-# Process single
-
-def show_image(input):
-    # Configure output figure's dpi and size
-    output = plt.figure(dpi = 300, figsize = (4,4))
-    # Iterate over input to display
-    input_range = range(len(input))
-    for i in input_range:
-        plt.subplot(4,4, i + 1)
-        for j in range(16):
-            plt.axis("off")
-            plt.imshow(input[i], cmap = "gray")
-    plt.show()
-
-# Process multiple
-
-def show_images(input):
-    # Iterate over a batch of images
-    for image in input:
-        show_image([tf.squeeze(image)][0])
