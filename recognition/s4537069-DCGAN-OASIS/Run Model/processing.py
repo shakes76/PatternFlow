@@ -35,6 +35,7 @@ def pre_processing_dir(input):
     # Normalise to (-1,1)
     data = tf.cast(data, tf.float32) - 127.5
     data = data / 127.5
+    
     return data
 
 # Function to map datasets and set batch sizes
