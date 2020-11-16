@@ -37,7 +37,7 @@ Both models utilise BinaryCrossentropy. The generator's loss function is the Bin
 ## Evaluation of The Model
 This model was evaluated through the application of Maximum SSIM and the analysis of its loss on a graph over time. The time measurement here being the amount of epochs the model was ran for. The loss graph over epochs can be seen below for both sub models.
 
-<img src="Loss_Graph.png">)
+<img src="Loss_Graph.png">
 
 Analysis of this graph shows that the loss upon the early epochs starts off high due to the random input but then lowers. It of course fluctuates as the two sub models are learning and competing against each other, evident through their almost inverse relationship. In moments where the inverse relationship is not evident, it is likely that new patterns were learnt by either of the models. 
 
