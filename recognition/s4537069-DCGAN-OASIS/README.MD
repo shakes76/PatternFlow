@@ -29,8 +29,17 @@ The discriminator downsamples the provided input (image) until a single scalar v
 
 
 ### Execution of Training
+Training this DCGAN was executed by firstly feeding the discriminator one batch of images from the dataset labelled as 1s, meaning they are real images. Simultaneously, the generator receives random noise correlating to the batch size. The output of the generator is then provided as input the discriminator thus starting the training cycle.
 
-## Evaluation of Model
+#### Loss Functions
+Both models utilise BinaryCrossentropy. The generator's loss function is the BinaryCrossentropy of 1s and the generator's output. The discriminator's loss function is the sum of two losses, one being the loss between an array of 1s and real images, and the other being an array of 0s with the generated images created by the generator.
+
+## Evaluation of The Model
+This model was evaluated through the application of Maximum SSIM and the analysis of its loss on a graph over time. The time measurement here being the amount of epochs the model was ran for. The loss graph over epochs can be seen below for both sub models.
+
+![Loss_Graph](Loss_Graph.PNG)
+
+Analysis of this graph shows that the loss upon the early epochs starts off high due to the random input but then lowers. It of course fluctuates as the two sub models are learning and competing against each other, evident through their almost inverse relationship. In moments where the inverse relationship is not evident, it is likely that new patterns were learnt by either of the models. 
 
 ## Final Results
 
