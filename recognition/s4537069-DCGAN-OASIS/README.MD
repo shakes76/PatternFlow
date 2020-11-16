@@ -15,10 +15,18 @@ Generative Adversarial Networks (GANs) are an approach for generative modelling 
 The DCGAN created by Radford et. al. in the article, "Unsupervised Representation Learning With Deep Convolutional Generative Adversarial Networks is an adaptation of the original GAN, using convolutional layers in both the discriminator and generator models.
 
 ## Model Summary and Explanation
+Below is an explanation an of the DCGAN used in this repository to train the OASIS Brain Dataset. It explains each sub-model and the layers used to create them. A summary of the execution of training can also be found below.
 
 ### Generator
+The generator starts off with a Dense layer that is fed a vector of random noise. This is then upsampled to a single 256 by 256 image. This upsampling is achieved via Conv2DTranspose layers which is a strided convolution transpose layer, followed by a batch normalisation layer to create stability via rescaling and recentering. For each upsample stage we use LeakyReLU activation. Although being another strided convolution tranpose layer, the final layer of the generator uses a tanh activation to guarantee the output to be normalised. Strides of (2,2) and kernel sizes of (3,3) were consistently used in the generator. Below is a screenshot of the model.summary() which outlines the order of the layers used in the generator and has some other minor details.
+
+![Gen Summary](Generator_Summary.PNG)
 
 ### Discriminator
+The discriminator downsamples the provided input (image) until a single scalar value is reached and then outputted. This is achieved via Conv2D layers, also known as convolution layers. This discriminator uses three convolution layers, each with LeakyReLU activation and dropout layers. A strided convolution is executed downsampling the image until the last layer. This last layer is a dense layer which outputs the single sclar value aforementioned. This value correlates to the probability of the input being real or fake. Below is a screenshot of the model.summary() which outlines the order of the layers used in the discriminator and has some other minor details.
+
+![Disc Summary](Discriminator_Summary.PNG)
+
 
 ### Execution of Training
 
@@ -26,4 +34,4 @@ The DCGAN created by Radford et. al. in the article, "Unsupervised Representatio
 
 ## Final Results
 
-## Running the model locally
+## Running the Model Locally
