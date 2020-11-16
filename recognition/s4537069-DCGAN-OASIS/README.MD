@@ -37,10 +37,36 @@ Both models utilise BinaryCrossentropy. The generator's loss function is the Bin
 ## Evaluation of The Model
 This model was evaluated through the application of Maximum SSIM and the analysis of its loss on a graph over time. The time measurement here being the amount of epochs the model was ran for. The loss graph over epochs can be seen below for both sub models.
 
-![Loss_Graph](Loss_Graph.PNG)
+<img src="Loss_Graph.png">)
 
 Analysis of this graph shows that the loss upon the early epochs starts off high due to the random input but then lowers. It of course fluctuates as the two sub models are learning and competing against each other, evident through their almost inverse relationship. In moments where the inverse relationship is not evident, it is likely that new patterns were learnt by either of the models. 
 
+The max SSIM was another form of evaluation used. SSIM measures the similarity between images and is easily applied as a TF function. Initially, a single batch was compared to the training data, however it was quickly realised that this is a poor use of SSIM due to the amount of fluctuations in patterns within the brain images. Thus, many batches were used and the maximum value of this was used as a means of evaluation. The final SSIM was apparoximately 0.67, evident in the graph below. In general the trend of the SSIM was that as the more epochs passed, the higher it got. It did of course fluctuate too given the variety in features of each image.
+
+<img src="SSIM_Graph.png">)
+
 ## Final Results
+A GIF of the model over all 50 epochs is below. It can be seen that the model significantly increased in the early epochs, with some almost redundant looking changes and loops in the last few epochs. It did have some significant turning points which can be explored in the folder of images called "Images at Each Epoch".
+
+<img src="model.gif" width=45%>
 
 ## Running the Model Locally
+To run the model locally, a file named driver.py should be executed via the command line. It takes the path to the OASIS dataset and the number of epochs you would like to run the model for as input.
+
+The model does require for a folder within the same directory to exist that is named, 'Images at Each Epoch'. It will output each epoch's batch to this folder for reference. It will also output a gif of the model, as well as printing SSIM, Generator Loss and Discriminator Loss per epoch on the command line.
+
+### Examples
+python driver.py path epochs
+python driver.py D:/User/Documents/ ... 25
+
+(where ... refers to further extension down the path)
+
+### Dependencies
+For this to run you must have the following installed.
+- TensorFlow-GPU (v2.1)
+- Python (v3.7)
+- IPython
+- imageio
+- Matplotlib
+
+and have the Oasis Brain Dataset downloaded (https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ).
