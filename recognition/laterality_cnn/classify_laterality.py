@@ -17,8 +17,6 @@ def main(arglist):
         
     #Load all the filenames
     filenames = glob.glob(os.path.join(data_dir, '*.png'))
-    # print(filenames[0].split(os.path.sep)[-1].split('_')[-2].split('.')[0])
-    # image_count = len(filenames)
 
     #Split filenames by patiend id
     patient_files = dict()
@@ -59,9 +57,6 @@ def main(arglist):
         for pid in train_patients:
             train_images.extend(patient_files[pid])
 
-        # print(len(val_patients), len(test_patients), len(train_patients))
-        # print(len(val_images), len(test_images), len(train_images))
-
         #Extract labels
         train_labels = [fn.replace('R_I_G_H_T', 'right').replace('L_E_F_T', 'left').split(os.path.sep)[-1].split('_')[-2].split('.')[0].lower()
                 for fn in train_images]
@@ -89,7 +84,6 @@ def main(arglist):
 
         #Ratios of 'right' labelled to 'left' labelled
         right_ratios = [train_right_count/len(train_labels), val_right_count/len(val_labels), test_right_count/len(test_labels)]
-        # print(right_ratios)
 
         #If too many or too few 'right' images, re-shuffle and re-split datasets.
         for ratio in right_ratios:
@@ -129,19 +123,6 @@ def main(arglist):
     val_ds = val_ds.map(map_fn)
     test_ds = test_ds.map(map_fn)
 
-    # #Visualise data
-    # val_ds = val_ds.shuffle(len(val_images))
-    # image_batch, label_batch = next(iter(val_ds.batch(9)))
-
-    # plt.figure(figsize=(10, 10))
-    # for i in range(9):
-    #     plt.subplot(3, 3, i+1)
-    #     plt.imshow(image_batch[i][:,:,0])
-    #     label = tf.argmax(label_batch[i])
-    #     plt.title(class_names[label])
-    #     plt.axis('off')
-    # plt.show()
-
     #Configure dataset for performance and shuffling. Shuffle buffer = number of images
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     train_ds = train_ds.cache()
@@ -174,13 +155,11 @@ def main(arglist):
     image_batch, label_batch = next(iter(val_ds.take(1)))
     model.predict(image_batch)
 
-    #Check model summary
     model.summary()
 
     #Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
 
-    #Compile the model
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), #Hyperparameter
         loss=loss_fn,
