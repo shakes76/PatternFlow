@@ -1,4 +1,5 @@
 import tensorflow as tf
+
 tf.random.Generator = None
 from tensorflow_addons.layers import InstanceNormalization
 from tensorflow.keras.layers import Add, Activation, concatenate, Conv2D, Dropout, LeakyReLU, Input, UpSampling2D
