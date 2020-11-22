@@ -29,6 +29,10 @@ Among several tweaks to the original structure are:
 * The addition of three segmentation layers which fork off the network's expansive path and are element-wise summed back before the softmax.
 * Use of leaky ReLU activations for all convolutional layers in the model, rather than using standard ReLU activations.
 
+Through the use of this model and a driver script (detailed later), I was able to achieve a Dice Similarity Coefficient of over 0.92 on a test set sampled from the ISIC 2018 dataset. The results from the driver script are shown below.
+
+![Quantitative Results](images/quantitative_results.PNG)
+
 # Dependencies
 
 ## To use the model.py file

@@ -120,43 +120,44 @@ class SequenceGenerator(keras.utils.Sequence):
 
         return batch_x, batch_y
 
-# makes arrays of the images and label names
-x_names = get_filenames_from_dir("ISIC2018_Task1-2_Training_Input_x2")
-y_names = get_filenames_from_dir("ISIC2018_Task1_Training_GroundTruth_x2")
+if __name__ == "__main__":
+    # makes arrays of the images and label names
+    x_names = get_filenames_from_dir("ISIC2018_Task1-2_Training_Input_x2")
+    y_names = get_filenames_from_dir("ISIC2018_Task1_Training_GroundTruth_x2")
 
-# 15% of all the images are set aside as the test set
-x_train_val, x_test, y_train_val, y_test = train_test_split(x_names, y_names, test_size=0.15, random_state=42)
+    # 15% of all the images are set aside as the test set
+    x_train_val, x_test, y_train_val, y_test = train_test_split(x_names, y_names, test_size=0.15, random_state=42)
 
-# 17% of the non-test images are set aside as the validation set
-x_train, x_val, y_train, y_val = train_test_split(x_train_val, y_train_val, test_size=0.17, random_state=42)
+    # 17% of the non-test images are set aside as the validation set
+    x_train, x_val, y_train, y_val = train_test_split(x_train_val, y_train_val, test_size=0.17, random_state=42)
 
-# make generators with batch size 4 for each set
-train_gen = SequenceGenerator(x_train, y_train, 4)
-val_gen = SequenceGenerator(x_val, y_val, 4)
-test_gen = SequenceGenerator(x_test, y_test, 4)
+    # make generators with batch size 4 for each set
+    train_gen = SequenceGenerator(x_train, y_train, 4)
+    val_gen = SequenceGenerator(x_val, y_val, 4)
+    test_gen = SequenceGenerator(x_test, y_test, 4)
 
-# train the model
-model = make_model()
-model.fit(train_gen, validation_data=val_gen, epochs=15)
+    # train the model
+    model = make_model()
+    model.fit(train_gen, validation_data=val_gen, epochs=15)
 
-# evaluate the model on the test set
-model.evaluate(test_gen)
+    # evaluate the model on the test set
+    model.evaluate(test_gen)
 
-# show 4 generated images from the test set and compare with expected output
-test_images_x, test_images_y = test_gen.__getitem__(0)
-prediction = model.predict(test_images_x)
-plt.figure(figsize=(10, 10))
-for i in range(4):
-    plt.subplot(4, 3, i*3+1)
-    plt.imshow(test_images_x[i])
-    plt.axis('off')
-    plt.title("Original", size=12)
-    plt.subplot(4, 3, i*3+2)
-    plt.imshow(tf.argmax(prediction[i], axis=2))
-    plt.axis('off')
-    plt.title("Predicted", size=12)
-    plt.subplot(4, 3, i*3+3)
-    plt.imshow(tf.argmax(test_images_y[i], axis=2))
-    plt.axis('off')
-    plt.title("Expected", size=12)
-plt.show()
+    # show 4 generated images from the test set and compare with expected output
+    test_images_x, test_images_y = test_gen.__getitem__(0)
+    prediction = model.predict(test_images_x)
+    plt.figure(figsize=(10, 10))
+    for i in range(4):
+        plt.subplot(4, 3, i*3+1)
+        plt.imshow(test_images_x[i])
+        plt.axis('off')
+        plt.title("Original", size=12)
+        plt.subplot(4, 3, i*3+2)
+        plt.imshow(tf.argmax(prediction[i], axis=2))
+        plt.axis('off')
+        plt.title("Predicted", size=12)
+        plt.subplot(4, 3, i*3+3)
+        plt.imshow(tf.argmax(test_images_y[i], axis=2))
+        plt.axis('off')
+        plt.title("Expected", size=12)
+    plt.show()
