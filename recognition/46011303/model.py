@@ -1,3 +1,15 @@
+# -------------------------------------------------------------------------------------------------------------
+# Author : Sivangi Mund
+# Student id : 46011303
+# Email : s.mund@uqconnect.edu.au
+# Topic : Segmenting ISIC images using Improved Unet
+#--------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 import tensorflow
 from tensorflow import keras
 from tensorflow.keras import layers
