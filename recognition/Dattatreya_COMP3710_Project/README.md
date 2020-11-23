@@ -21,7 +21,7 @@ _Dice Score = (2\*Area of Overlap between the Images)/(Total number of pixels on
 
 The U-Net is a convolutional network architecture designed for fast and precise segmentation of images. The algorithm has outperformed the prior best method of sliding-window convolutional network and won various international challenges. The network architecture is U-shaped which is symmetrically designed and consists of two major parts – the left part is called the contracting path which comprises of the general convolutional processes while the right part is expansive path which is constituted by transposed 2d convolutional layers. One of the major features of U-NET is that it comprises of skip connections between the contraction and expansion path which applies a concatenation operator instead of a sum. These skip connections assist in transferring local information to the global information while upsampling. The U-NET architecture is shown below: -
 
-![UNET Image](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/UNET.png)
+![UNET Image](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Images/UNET.png)
 
 **Contracting Path Components**
 
@@ -73,7 +73,7 @@ The developed UNET model is trained on the ISIC training data set and the best m
 
 The code execution command line snippet is provided below for reference: -
 
-![Code Execution](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Code_Exec.PNG)
+![Code Execution](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Images/Code_Exec.PNG)
 
 **List of Packages Required**
 
@@ -93,12 +93,12 @@ The code execution command line snippet is provided below for reference: -
 
 - Dice Loss and Accuracy Plots with respect to the number of epochs for training and validation data set along with marker for best model(Samples shown below)
 
-![Dice Loss](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Dice_Loss_Plots.png)
+![Dice Loss](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Images/Dice_Loss_Plots.png)
 
-![Accuracy](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Accuracy_Plots.png)
+![Accuracy](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Images/Accuracy_Plots.png)
 
 - Overall Dice Score of the ISIC test data set
 - CSV file with individual dice scores for all predicted segmentation images for the test data set (will be saved in the path where the code is executed, Sample Provided)
 - Plot of a random ISIC test sample with lesion image, actual segmentation image and predicted segmentation image (Sample shown below)
 
-![Predicted Segmentation](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Sample_ISIC_Predicted_Plot.png)
+![Predicted Segmentation](https://github.com/Dattatreya-45586327/PatternFlow/blob/topic-recognition/recognition/Dattatreya_COMP3710_Project/Images/Sample_ISIC_Predicted_Plot.png)
