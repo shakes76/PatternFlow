@@ -12,12 +12,6 @@ Builds a model of the OASIS OKOA dataset.
 
 # Import libraries.
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import Input, Conv2D, Dense, Activation, Flatten, Dropout, MaxPooling2D, BatchNormalization, ReLU, LeakyReLU, Conv2D, Conv2DTranspose, BatchNormalization, Flatten, Dense, Reshape
-from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras import regularizers, optimizers
-from tensorflow.keras.callbacks import EarlyStopping
 
 # Print the current version.
 print('TensorFlow version:', tf.__version__)
