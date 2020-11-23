@@ -130,6 +130,3 @@ dmypy.json
 # no tracking mypy config file
 mypy.ini
 
-# images folders
-**/ISIC2018_Task1_Training_GroundTruth_x2/*
-**/ISIC2018_Task1-2_Training_Input_x2/*
