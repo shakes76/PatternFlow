@@ -6,11 +6,9 @@ This is a temporary script file.
 """
 
 import os
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+from keras.preprocessing.image import img_to_array, load_img
 import numpy as np
-from tqdm import tqdm_notebook, tnrange
-from itertools import chain
-from skimage.io import imread, imshow, concatenate_images
+from tqdm import tqdm_notebook
 from skimage.transform import resize
 
 # Loading lesion images for ISIC data set

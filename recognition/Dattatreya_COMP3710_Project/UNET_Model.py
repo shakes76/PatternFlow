@@ -6,12 +6,11 @@ Created on Mon Oct 26 19:30:30 2020
 """
 
 
-from keras.models import Model, load_model
-from keras.layers import Input, BatchNormalization, Activation, Dense, Dropout
-from keras.layers.core import Lambda, RepeatVector, Reshape
+from keras.models import Model
+from keras.layers import  BatchNormalization, Activation, Dropout
 from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D, GlobalMaxPool2D
-from keras.layers.merge import concatenate, add
+from keras.layers.pooling import MaxPooling2D
+from keras.layers.merge import concatenate
 
 def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
     
