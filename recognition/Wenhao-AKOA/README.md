@@ -29,11 +29,11 @@
     load the save model
 ## result
 * accuracy plot<br>
-![Image of accuray](accuracy_visu.png)
+![Image of accuray](image/accuracy_visu.png)
 * loss plot<br>
-![Image of loss](loss_visu.png)
+![Image of loss](image/loss_visu.png)
 * evaluation<br>
-![evaluation](evaluation.jpg)
+![evaluation](image/evaluation.jpg)
 * predict<br>
-![predict](predict.png)
+![predict](image/predict.png)
 
