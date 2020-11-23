@@ -24,6 +24,7 @@ with zipfile.ZipFile(data_path) as zf:
 
 """
 Process data and combine the images with masks
+This part was taking Siyu tutorial as a reference 
 """
 train_images = sorted(glob.glob("keras_png_slices_data/keras_png_slices_train/*.png"))
 train_masks = sorted(glob.glob("keras_png_slices_data/keras_png_slices_seg_train/*.png"))
