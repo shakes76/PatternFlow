@@ -63,6 +63,18 @@ here the orange lines denote the validation accuracy and loss, while the blue li
 
 ![plots](Resources/plots.PNG)
 
+## Steps to reproduce the results:
+1. Make sure both model.py and DriverScript.ipynb are loaded in jupyter.
+
+2. Make sure all the libraries are imported.
+
+3.In the first code block, replace the path with the path of the dataset.
+
+4. Serially, run all the blocks of code in the DriverScript.
+
+5. INFORMATION : In the "compiling model" block, the model function has been called from the python file "model.py".
+
+6. INFORMATION : After that the model has been trained and outputs are predicted on test set, the last few blocks of the jupyter notebook can be run for visualisation of results as per the comments.
 
 ## Implementation timeline
 1. To start with, I implemented the improved u-net structure.
