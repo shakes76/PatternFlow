@@ -106,7 +106,6 @@ def my_unet(n_filters=32, size=(2,2), drop_out=0.10):
     
     # output
     output_layer = Conv2D(1, kernel_size=(1, 1))(deconv9)
-    output_layer = BatchNormalization()(output_layer)
     output_layer = Activation('sigmoid')(output_layer)
     # create and return an instance of the UNET model
     model = Model(inputs=input_layer, outputs=output_layer, name='my_unet')
