@@ -15,12 +15,7 @@ Plots the results from the trained model.
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import Input, Conv2D, Dense, Activation, Flatten, Dropout, MaxPooling2D, BatchNormalization
-from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras import regularizers, optimizers
-from tensorflow.keras.callbacks import EarlyStopping
+
 
 def plotResults(model, test_images, test_images_y):
     # Plot a graph accuracy vs validation accuracy.
