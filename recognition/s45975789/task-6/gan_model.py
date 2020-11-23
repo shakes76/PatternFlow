@@ -7,7 +7,7 @@ Credits: Pragatheeswari Velraj, Shakes and Team
 License: COMP3710
 Version: 1.0.1
 Maintainer: Pragatheeswari Velraj
-Email: arushi.p.velraj@uqconnect.edu.au
+Email: p.velraj@uqconnect.edu.au
 Status: Dev
 Date Created: 1/11/2020
 Date Modified: 24/11/2020
