@@ -128,7 +128,6 @@ seed = tf.random.normal([no_gen_images, noise_dimensions]) # track progress of g
 
 
 #Training
-@tf.function # compile the function for faster training.
 def train_step_dcgan(image_batch):
     #create 64 BATCH_SIZE latent variables sampled from a Gaussian with 100 Dimensions = noise dimensions.
     noise = tf.random.normal([BATCH_SIZE, noise_dimensions])
