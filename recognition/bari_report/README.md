@@ -57,7 +57,7 @@ Altogether, there are 23 convolutional layers of varied number of feature channe
 <div style="text-align: justify">The model is compiled with Adam optimizer, as it’s the ability to adapt the learning rate during the course of training the model and is very handy in reaching local and global minima very fast. Besides, ‘binary_crossentropy’ loss was chosen since this is a binary classification problem. In the course of model fitting, callbacks were applied to save best model along with parameter weights, which would be loaded once the training was over. Though the model is expected to be trained in 50 epochs, the training might stop early if loss doesn’t improve in ten consecutive epochs even after lowering the learning rates after 5 epochs. The learning curve showing how training and validation loss changes with increased number of epochs is appended below:</div>
 
 <p align=center>
-<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/loss_curve.png" width="750" title="learning curve">
+<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/image/loss_curve.png" width="750" title="learning curve">
 </p>
 <div style="text-align: justify">This is obvious from the above curve that both training and validation loss curves gradually decline with the number of epochs increases and eventually start to become flat just before reaching the fortieth epoch. Another important observation from the plot is that the deviation between training and validation curves has all the way remained in a narrow corridor hinting a very limited overfitting problem of the model trained here.</div>
 
@@ -83,8 +83,8 @@ Overall | 0.8789
 Couple of predicted (segmented) images in grey scale along with corresponding images in input and ground truth of the test set are appended below.
 
 <p align = center>
-<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/plot_1.png" width="900" title="sample test images">
-<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/plot_2.png" width="900" title="sample test images">
+<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/image/sample_predicted_image_1.png" width="900" title="sample test images">
+<img src="https://github.com/s4542006/PatternFlow/blob/topic-recognition/recognition/bari_report/image/sample_predicted_image_2.png" width="900" title="sample test images">
 </p>
 
 ### Conclusion
