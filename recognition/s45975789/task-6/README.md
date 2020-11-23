@@ -11,7 +11,7 @@ DCGAN is an extension to the GAN architecture with the use of convolutional neur
 Generating new brain images can be seen as a random variable generation problem, a probabilistic experiment. The sample image from the input OASIS brain dataset is shown below. Its 256 X 256 size with 1 grey-scale channel. Each image is a vector of 65,536-dimensions. We build a space with 65,536 axes, where each image will be a point in this space. Having a probability distribution function, maps the each input brain images to the non-negative real number and sums to 1. GAN generates the new brain image by generating the new vector following this probability distribution over the 65,536-dimensional vector space, which is very complex one and we dont know how to generate this complex random variables. The idea here is an transform method, generating 65,536 standard random normal variables(as a noise vector) and apply the complex function to this variable, where this complex functions are approximated by the CNN in the generator part and produce the 65,536-dimensional random variable that follows the input brain images probability distribution.
 
 
-![](https://github.com/Pragatheeswari/epic1/blob/master/input_samples.png)
+![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-6/Images/input_samples.png)
 
 ## Modeling
 
@@ -36,6 +36,6 @@ Combined model is built by sequential adding generator and discriminator togethe
 
 Whole Training takes 20-25 minutes for 15000 Epochs to complete. Below represents the Training loss for DCGAN and generated images for each epochs(mentioned on top), 4 noise vectors are given as input to generator network and crossponding 4 predicted image results are shown.
 
-![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-4/Training_loss_plot.jpg)
+![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-6/Images/Training_loss_plot.jpg)
 
-![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-4/DCGAN_generator_images.jpg)
+![](https://github.com/Pragatheeswari-dev/PatternFlow/blob/topic-recognition/recognition/s45975789/task-6/Images/DCGAN_generator_images.jpg)
