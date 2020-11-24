@@ -1,0 +1,1 @@
+Place the FOLDER containing the training input/original images, e.g. 'ISIC2018_Task1-2_Training_Input_x2' within this directory.
