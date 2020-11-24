@@ -1,3 +1,5 @@
+import tensorflow as tf
+
 def unet_model(output_channel=4, f=4):
     inputs = tf.keras.layers.Input(shape=(256, 256, 1))
 
