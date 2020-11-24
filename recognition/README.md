@@ -1,20 +1,14 @@
-Name: Alexander Bayusuto Wanengkirtyo
+# Recognition Problems
+Various image analysis / pattern recognition problems solved in Tensorflow (TF)
 
-Student ID: 45616738
+This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
 
-# OASIS brain data set with an Improved UNet (1)
-
-## Model:
-
-Following the UNET design from <https://arxiv.org/pdf/1802.10508.pdf>. The UNET consists of 2 main parts, the left part considered as the contracting path where the resolution of the images are decreased. This is done by the convultion layers with a stride of 2, essentially halving the resolution each time. This is followed by a context module which consists of 2 3x3x3 convulutional layers with a dropout layer in between the 2 to prevent overfitting. This repeats 3 more times. Afterwards is the second part, the right part is called the expansive part which reconstructs the image back to its original resolution. This is done by Upsampling the image. As it does this, the image is concatenated by a part from the contracted path in order to get a more accurate prediction of what it should look like. After a localization module is used, which consists of 2 more convulution layers. This process is similarly repeated 3 more times in order to gain the original shape. While the paper "Throughout the network we use leaky ReLU nonlinearities with a negative slope of 10^−2 for all feature map computing convolutions", I applied only a few LeakyRelu at an alpha value as stated of 0.01 because when i applied too many of them, it caused a Resource Error when training started. Therefore, I limited the calls of LeakyRelu to around the middle of the left part, the center and the middle of right part.
-
-## Training Parameters:
-For the loss and metric I have changed it to Dice Coefficient as the question demands. 
-
-Originally, I was using the DSC = (2|X intersect Y|) / |X|+|Y|. This however peaked at around 0.85, after changing it to the vector version of the formula s = (2|a .* b|)/(|a^2|+|b^2|) the dice coefficient finally broke past the 0.9 mark. The loss function was simply 1 - s. For the opitimizer, using the original adam optimizer was sufficient as before switch to the vector dice, changing the learning rate did not really help improve the limit of the dice coefficient. 
-
-
-## Final Output of Dice Coefficient:
-After 10 epochs, it seemed the limit of using my current model peaked at 0.9189.
-
-The plot of the model is in the Models_and_functions.ipynb file, plot of predictions in the Driver.ipynb.
+## Contributing
+* Fork the dedicated 'topic-recognition' branch
+* Create a directory for your problem and place your code into it.
+* Your code should have functions in a separate module and a driver (main) script that runs it with parameters defined.
+* The driver script should preferably either plot or save an image of the generated results
+* Add a README.md file that describes the problem, its solution and shows a picture of it.
+* You may upload a low res image (< 2 MB) into a folder called 'resources' in your problem directory for displaying on the README.md file
+* You can see an example of this in the [SMILI repository](https://github.com/shakes76/smili).
+* Then put in a pull request for the repository owner to approve and that's it!
