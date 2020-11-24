@@ -1,3 +1,12 @@
+"""
+    File name : trainer.py
+    Author : Arun Harish Balasubramonian
+    Student Number : 44340326
+    Description : Trainer module that takes the image stored on memory to 
+                  train the model. It saves periodically for every 5th
+                  iteration along with the saved image.
+"""
+
 import tensorflow as tf
 from tensorflow.keras import layers, Sequential, optimizers, losses
 from tensorflow.keras.layers import Dense, BatchNormalization, Reshape, Conv2DTranspose\

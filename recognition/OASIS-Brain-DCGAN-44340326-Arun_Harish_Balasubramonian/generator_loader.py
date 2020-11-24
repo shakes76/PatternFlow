@@ -1,3 +1,11 @@
+"""
+    File name : generator_loader.py
+    Author : Arun Harish Balasubramonian
+    Student Number : 44340326
+    Description : Generator module that uses the model generated to generate
+                  a new image.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from os import path, mkdir

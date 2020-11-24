@@ -1,3 +1,11 @@
+"""
+    File name : data_loader.py
+    Author : Arun Harish Balasubramonian
+    Student Number : 44340326
+    Description : A common module that loads the given dataset onto memory 
+                  for model training.
+"""
+
 from os import listdir, path
 import matplotlib.image as mpimg
 

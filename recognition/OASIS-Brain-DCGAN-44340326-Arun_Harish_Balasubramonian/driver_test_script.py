@@ -1,3 +1,12 @@
+"""
+    File name : driver_test_script.py
+    Author : Arun Harish Balasubramonian
+    Student Number : 44340326
+    Description : Test script where the argument is parsed and actions
+                  are evaluated. Possible option includes model training and
+                  image generation.
+"""
+
 import sys
 from data_loader import DataLoader
 from trainer import TrainLoader
