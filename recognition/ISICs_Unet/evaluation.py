@@ -1,9 +1,9 @@
 """
-    File name: evaluation.py
-    Author: Thomas Chen
-    Date created: 11/3/2020
-    Date last modified: 11/24/2020
-    Python Version: 3
+File name: evaluation.py
+Author: Thomas Chen
+Date created: 11/3/2020
+Date last modified: 11/24/2020
+Python Version: 3
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +12,9 @@ from data import test_generator, test_data
 from setting import *
 from unet import UNet
 
+"""
+Do evaluation with result from train.py
+"""
 model = UNet((IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS))
 model.load_weights("unet.hdf5")
 results = model.evaluate(test_generator,
@@ -20,6 +23,9 @@ results = model.evaluate(test_generator,
                          return_dict=True)
 print('Evaluation dice coefficient is', results['dice_coef'])
 
+"""
+plot image for samples
+"""
 batches = 2
 plt.figure(figsize=(10, 10))
 for i in range(batches):

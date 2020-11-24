@@ -1,9 +1,9 @@
 """
-    File name: train.py
-    Author: Thomas Chen
-    Date created: 11/3/2020
-    Date last modified: 11/24/2020
-    Python Version: 3
+File name: train.py
+Author: Thomas Chen
+Date created: 11/3/2020
+Date last modified: 11/24/2020
+Python Version: 3
 """
 import matplotlib.pyplot as plt
 import shutil
@@ -13,7 +13,9 @@ from data import train_generator, val_generator
 from setting import *
 from unet import UNet
 
-
+"""
+train data with unet provided with unet.py, data preprocessed with data.py and global setting set in the setting.py
+"""
 model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', verbose=1, save_best_only=True)
 model = UNet((IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS))
 hist = model.fit(
@@ -41,6 +43,9 @@ def plot_history(history, key):
     plt.show()
 
 
+"""
+plot the train history
+"""
 plot_history(hist.history, 'loss')
 plot_history(hist.history, 'accuracy')
 plot_history(hist.history, 'dice_coef')
