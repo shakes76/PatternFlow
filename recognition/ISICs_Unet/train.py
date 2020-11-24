@@ -1,3 +1,10 @@
+"""
+    File name: train.py
+    Author: Thomas Chen
+    Date created: 11/3/2020
+    Date last modified: 11/24/2020
+    Python Version: 3
+"""
 import matplotlib.pyplot as plt
 import shutil
 from tensorflow.keras.callbacks import *

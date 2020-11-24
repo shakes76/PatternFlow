@@ -1,3 +1,10 @@
+"""
+    File name: unet.py
+    Author: Thomas Chen
+    Date created: 11/3/2020
+    Date last modified: 11/24/2020
+    Python Version: 3
+"""
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf

@@ -1,5 +1,11 @@
 """
-global settings
+    File name: setting.py
+    Author: Thomas Chen
+    Date created: 11/3/2020
+    Date last modified: 11/24/2020
+    Python Version: 3
+
+    global setting
 """
 RANDOM_STATE = 7
 TEST_SIZE = 0.2
