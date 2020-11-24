@@ -1,3 +1,10 @@
+"""
+File name: evaluation.py
+Author: Thomas Chen
+Date created: 11/3/2020
+Date last modified: 11/24/2020
+Python Version: 3
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
