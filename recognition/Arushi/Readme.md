@@ -16,7 +16,7 @@ The dataset contains the largest collection of quality-controlled dermoscopic im
 U-Net is a convolution network architecture that is used for precise and fast image segmentation. The architecture looks like a ‘U-shaped’ and majorly consists of two parts: encoder network and decoder network. The encoder(contracting path) is the left part of the diagram which is usually pre-trained classification network where convolution blocks and maxpool downsampling is applied to encode the input images into feature representations and the decoder(expansion path) is the right part of the diagram where upsampling and concatenation is performed by regular operations to get the features learned by encoder into dense classification. The basic concept of the model is to incorporate a ‘U’ shaped model in which the input images are first downsampled by decreasing their dimensions and then upsampling them back to their original scale. The model discovers and executes the segmentation process of the image during the course. This architecture consists of the following sections: contraction, bottleneck, expansion section and the skip connection.  
 Below is the U-Net architecture image:
 
-![U-Net architecture](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/u-net_architecture.png)
+![U-Net architecture](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/images/u-net_architecture.png)
 
 In this model:
 1.	The contracting path is composed of 4 blocks. It consists of two 3x3 convolutions with ReLu activation function and batch normalization and a 2x2 max pooling operation with stride 2 for downsampling. At each downsampling step, we double the number of feature channels so that the architecture can learn the complex structures effectively. 
@@ -49,17 +49,17 @@ In this model:
 # Model Output:
 -	Accuracy plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
 
-![Accuracy plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/accuracy_plot.png)
+![Accuracy plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/images/accuracy_plot.png)
 
 -	Dice loss plot with respect to Epochs for training and validation dataset with marker ‘x’ for best model.
 
-![Dice loss plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/loss_plot.png)
+![Dice loss plot](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/images/loss_plot.png)
 
 -	Overall dice score of the dataset: *0.8878574*
 
 -	Plot input image, true image and predicted image
 
-![final image](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/final_output.JPG)
+![final image](https://github.com/arushi-mah/PatternFlow/blob/topic-recognition/recognition/Arushi/images/final_output.JPG)
 
 
 # Reference:
