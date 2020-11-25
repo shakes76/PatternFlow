@@ -9,7 +9,7 @@ from tensorflow.keras import datasets, layers, models
 # output: predict_y
 
 def model_prediction(x_test):
-    unetmodel = model.adv_model(4) 
+    unetmodel = adv_model(4) 
     predict_y = unetmodel.predict(x_test, verbose=0)
     return predict_y
 
