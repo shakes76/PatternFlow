@@ -1,8 +1,3 @@
-from model import *
-from dice import *
-from tensorflow.keras import datasets, layers, models
-
-
 # do prediction on test data - x 
 # use function adv_model to create a model named unetmodel
 # input: x_test
