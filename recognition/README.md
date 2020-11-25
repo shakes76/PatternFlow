@@ -4,7 +4,7 @@ Zhifang Zheng(45788167)
 Pattern Recognition
 ==============================================================================================
 
-Description
+Basic Description 
 --------------------------------------------------------------------------------------------------
 
 This report illustrates how to train a U-Net for OASIS brain tumor segmentation, using a minimum   
@@ -37,5 +37,3 @@ Alogrithm
 	- dice_coef_loss  
 --------------------------------------------------------------------------------------------------
 The final test result will show in ReadMe.md. Pleast reference it to test whether this Unet_model is good.
----------------------------------------------------------------------------------------------------------
-
