@@ -1,14 +1,3 @@
-import tensorflow as tf
-import matplotlib as plt
-from tensorflow import keras
-from tensorflow.keras import datasets, layers, models
-from sklearn.metrics import classification_report
-from sklearn.preprocessing import OneHotEncoder
-from PIL import Image
-import glob
-import numpy as np
-
-#
     # f  class = 4
 def adv_model(f): 
     input_layer = layers.Input(shape= (h,w,1))

@@ -3,8 +3,20 @@ import glob
 import numpy as np
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import matplotlib as plt
+from tensorflow import keras
+from tensorflow.keras import datasets, layers, models
+from sklearn.metrics import classification_report
+from sklearn.preprocessing import OneHotEncoder
 
 
+from dice import *
+from data_prepare import *
+from model import *
+from predict import *
+
+#
 filelist_train = glob.glob('C:/Users/s4552709/dataset/keras_png_slices_data/keras_png_slices_train/*.png')
 # uses image data in the form of a NumPy array
 x_train = np.array([np.array(Image.open(fname)) for fname in filelist_train])

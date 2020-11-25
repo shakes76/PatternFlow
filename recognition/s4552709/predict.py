@@ -8,8 +8,10 @@ from tensorflow.keras import datasets, layers, models
 # input: x_test
 # output: predict_y
 
-def model_prediction(x_test):
-    unetmodel = adv_model(4) 
-    predict_y = unetmodel.predict(x_test, verbose=0)
+def model_prediction(x_test,model_name):
+    predict_y = model_name.predict(x_test, verbose=0)
     return predict_y
 
+
+
+    
