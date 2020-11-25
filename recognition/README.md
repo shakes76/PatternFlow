@@ -22,15 +22,7 @@ Alogrithm
 --------------------------------------------------------------------------------------------------
 * Unet_Model: Depending on the U-Net architecure, we designed the network to process large 2D input block of 256 * 256 voxsels.  
 	*Parameters:
-	- out_channel
-	- input_data
-	- activation
-	- epoches  
-	- train_ds.batch  
-	- val_ds.batch
-
    *Loss Function:  
-	- dice_coef: metrics 
-	- dice_coef_loss  
+	
 --------------------------------------------------------------------------------------------------
 The final test result will show in ReadMe.md. Pleast reference it to test whether this Unet_model is good.
