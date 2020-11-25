@@ -4,7 +4,7 @@
 Our dataset is ISIC 2018 challenge data for skin cancer - This is part of the ISIC 2018 challenge and comes with segmentation labels. 
 The following images is the example of the original image and the corresponding ground truth image.
 
-![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/S4549518/Images/Image_1.png)
+![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/recognition/S4549518/Images/Image_1.png)
 
 ## Model
 
@@ -15,12 +15,12 @@ The U-shaped structure of U-Net is shown in the figure below. The network is a c
 
 The right part of the network is called the expansive path in the paper. It is also composed of 4 blocks. Before the start of each block, the size of the Feature Map is multiplied by 2 through deconvolution, and the number is halved (the last layer is slightly different), and then the Feature of the symmetrical compression path on the left Map is merged. Because the size of the Feature Map of the compressed path on the left and the expanded path on the right are different, U-Net normalizes the Feature Map by clipping the Feature Map of the compressed path to the Feature Map of the same size as the extended path (ie 1). The convolution operation of the extended path still uses the effective convolution operation, and the final Feature Map size is 388x388. Since the task is a two-classification task, the network has two output Feature Maps.
 
-![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/S4549518/Images/Image_2.png)
+![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/recognition/S4549518/Images/Image_2.png)
 
 ### Improved U-net model
 From the essay "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge", we get a improved U-NET model. There are several adjustments compared to the original U-net model. A network architecture of the Improved U-Net is shown below.
 
-![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/S4549518/Images/Image_3.png)
+![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/recognition/S4549518/Images/Image_3.png)
 
 There are 4 important adjustments:
  * Use context modules to compute he activations in the context pathway. Each context module is in fact a pre-activation residual block with two 3x3x3 convolutional layers and a dropout layer in between.
@@ -49,7 +49,7 @@ What needs to be pointed out is the training dataset and test dataset. The origi
 # Result
 After using improved model, we get the result of segemantation on test dataset. One example of result as below:
 
-![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/S4549518/Images/Image_4.png)
+![image](https://github.com/TTTZP/PatternFlow/blob/topic-recognition/recognition/S4549518/Images/Image_4.png)
 
 
 # References
