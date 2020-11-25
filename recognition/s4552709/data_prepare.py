@@ -4,7 +4,6 @@ import numpy as np
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import matplotlib as plt
 from tensorflow import keras
 from tensorflow.keras import datasets, layers, models
 from sklearn.metrics import classification_report
@@ -12,7 +11,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 from dice import *
-from data_prepare import *
 from model import *
 from predict import *
 
@@ -92,7 +90,6 @@ train_ds = train_ds.shuffle(len(x_train))
 val_ds = val_ds.shuffle(len(x_validate))
 test_ds = test_ds.shuffle(len(x_test))
 
-
 def display_pre(x_test, predict_y,num):
     # display a model's prediction
     mask = np.argmax(predict_y[num],axis = -1)
@@ -131,8 +128,6 @@ def outcome_visual(x_test,x_seg_test,predict_y,i):
     plt.show()
 
 
-
-
 def main():
     unet_model = adv_model(4)
     
@@ -149,6 +144,8 @@ def main():
 
     # visual the outcome  (show the 10th image outcome)
     outcome_visual(x_test,x_seg_test,predict_y,10)
+
+
 
 if __name__ == "__main__":
     main()

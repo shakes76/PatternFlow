@@ -37,14 +37,23 @@ For the labled images, every image are segmentited four color, which means four 
 
 
 ## Script
-#### main.py
-The main function which includes execute data prepare function, use neural network model to do prediction, and plot the outcome images.
+
 #### data_prepare.py
-Load data from dataset, and transfer the images into array list, in order to be used in model training, validating, and testing process.
+It includes the main function of the whloe progress. The main function which includes importing the data set, using neural network model to do prediction, and plotting the outcome images.
+
+When run the code, it loading data from dataset, and then transfer the images into array list, which in order to be used in model training, validating, and testing process.
+
+
 #### model.py
 Build a model which based on u-net architecture (not the same, it is after improved u-net model)
+
+
 #### predict.py
 Defind the model predict function.
+
+#### dice.py
+In this document, it define the dice function to calucale dice coefficience and dice coefficience loss to calculate the accuracy of the model performance.
+
 #### resources
 Save the images that README.md used.
 
