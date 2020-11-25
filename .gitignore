@@ -130,6 +130,4 @@ dmypy.json
 # no tracking mypy config file
 mypy.ini
 
-# My ignore
-recognition/OASIS_DCGAN_Ziyan/models/
-recognition/OASIS_DCGAN_Ziyan/images/
+
