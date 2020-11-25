@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 
+
 filelist_train = glob.glob('C:/Users/s4552709/dataset/keras_png_slices_data/keras_png_slices_train/*.png')
 # uses image data in the form of a NumPy array
 x_train = np.array([np.array(Image.open(fname)) for fname in filelist_train])

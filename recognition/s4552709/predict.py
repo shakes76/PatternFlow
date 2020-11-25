@@ -1,7 +1,15 @@
+from model import *
+from dice import *
+from tensorflow.keras import datasets, layers, models
+
+
+# do prediction on test data - x 
+# use function adv_model to create a model named unetmodel
+# input: x_test
+# output: predict_y
+
 def model_prediction(x_test):
-    predict_y = model.predict(x_test, verbose=0)
+    unetmodel = model.adv_model(4) 
+    predict_y = unetmodel.predict(x_test, verbose=0)
     return predict_y
 
-predict_y = model_prediction(x_test)
-dice = dice_coefficient(y_seg_test, predict_y, smooth=0.0001) 
-print("Dice coefficient is : ",dice)
