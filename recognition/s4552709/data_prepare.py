@@ -90,6 +90,7 @@ train_ds = train_ds.shuffle(len(x_train))
 val_ds = val_ds.shuffle(len(x_validate))
 test_ds = test_ds.shuffle(len(x_test))
 
+
 def display_pre(x_test, predict_y,num):
     # display a model's prediction
     mask = np.argmax(predict_y[num],axis = -1)
