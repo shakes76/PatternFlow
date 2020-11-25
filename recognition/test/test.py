@@ -2,7 +2,6 @@
 test infor
 '''
 
-import tensorflow as tf
 import glob
 import matplotlib
 import matplotlib.pyplot as plt
