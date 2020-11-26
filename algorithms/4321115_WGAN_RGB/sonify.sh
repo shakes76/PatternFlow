@@ -1,0 +1,1 @@
+python sonify_images.py ./images
