@@ -186,7 +186,7 @@ def unet_model():
     
     segmentation_1 = segmentation_layer(localise_2, localise_3, conv2D_6)
     
-    conv2D_final = Conv2D(2, (1, 1), activation = 'sigmoid', padding = 'same')(segmentation_1)
+    conv2D_final = Conv2D(1, (1, 1), activation = 'sigmoid', padding = 'same')(segmentation_1)
 
     model = tf.keras.Model(inputs=inputs, outputs=conv2D_final)
     
