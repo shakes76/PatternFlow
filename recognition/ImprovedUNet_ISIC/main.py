@@ -1,3 +1,10 @@
+# Filename: main.py
+# Author: Navin Sivasankaran
+# Date created: 6/11/2020
+# Date last modified (addressing feedback): 26/11/2020
+# Python Version: 3.7.7
+# Description: The main driver script, which is to be called. Contains everything, except for the model.
+
 #Import libraries
 import matplotlib.pyplot as plt
 import tensorflow as tf
