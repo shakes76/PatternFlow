@@ -1,3 +1,10 @@
+# Filename: model.py
+# Author: Navin Sivasankaran
+# Date created: 6/11/2020
+# Date last modified (addressing feedback): 26/11/2020
+# Python Version: 3.7.7
+# Description: The script containing the Improved U-Net model. Called automatically by main.py
+
 #Import libraries
 import tensorflow as tf
 from tensorflow.keras.layers import *
