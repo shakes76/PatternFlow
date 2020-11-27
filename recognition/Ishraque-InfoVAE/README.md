@@ -22,7 +22,7 @@ InfoVAEs (Information Maximising VAEs) improved on this using MMD (Maximum-Mean 
 
 This implementation uses a simple auto encoder model that uses convolutional layers to scale down/up the data while inferring structure and a few fully connected dense layers to map to/from the latent space. The size of the dense layers are scaled according to the input image size (256 by default). The decoder is symmetrical to the encoder. The MMD loss function used for the encoder is adapted from Shengjia Zhao's InfoVAE implementation.<sup>3</sup> The decoder uses a MSE (Mean Squared Error) loss to minimise the difference between the reconstruction and original image. The model is defined in `model.py`.
 
-We use the [OASIS MRI scan dataset](https://learn.uq.edu.au/webapps/blackboard/content/listContent.jsp?course_id=_132224_1&content_id=_5540995_1) to demonstrate the genration of images that look like brain scans. Data imports are handled by `data.py`
+We use the [OASIS MRI scan dataset](https://learn.uq.edu.au/webapps/blackboard/content/listContent.jsp?course_id=_132224_1&content_id=_5540995_1) to demonstrate the generation of images that look like brain scans. Data imports are handled by `data.py`
 
 The script for the training loop, plotting images, and random latent encoding generation have been adapted from the Tensorflow CVAE tutorial<sup>4</sup>, and are used in the driver notebook/script `run.ipynb`.
 
