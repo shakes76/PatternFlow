@@ -13,7 +13,7 @@ The propose of the model is to remove the noise and segment the Brain images int
 
 <div align=center>
 
-![Getting Started](recognition/s4552709/resources/improved_unet7.32.56.png)
+![Getting Started](../s4552709/resources/improved_unet7.32.56.png)
 
 </div>
 
@@ -24,7 +24,7 @@ The propose of the model is to remove the noise and segment the Brain images int
 <br/>
 <div align=center>
 
-![Getting Started](recognition/s4552709/resources/model_training.png)
+![Getting Started](../s4552709/resources/model_training.png)
 
 </div>
 
@@ -35,7 +35,7 @@ The propose of the model is to remove the noise and segment the Brain images int
 
 <div align=center>
 
-![Getting Started](recognition/s4552709/resources/dice_coef.png)
+![Getting Started](../s4552709/resources/dice_coef.png)
 
 </div>
 
