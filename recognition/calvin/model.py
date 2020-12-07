@@ -97,9 +97,9 @@ def train_model(data_dir, train_dir, mask_dir):
     ups9 = Conv2D(filters=64, kernel_size=2, padding='same', activation='relu', kernel_initializer='he_normal')(UpSampling2D(size=(2, 2))(conv8))
     conv9 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(concatenate([conv1, ups9], axis=3))
     conv9 = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv9)
-    conv9 = Conv2D(filters=2, kernel_size=3, padding='same', activation='relu', kernel_initializer='he_normal')(conv9)
-
-    conv10 = Conv2D(filters=1, kernel_size=1, padding='valid', activation='sigmoid', kernel_initializer='glorot_uniform')(conv9)
+    
+    # MODIFIED IN RESPONSE TO REQUIRED FEEDBACK
+    conv10 = Conv2D(filters=4, kernel_size=(1, 1), padding='same', activation='softmax', kernel_initializer='he_normal')(conv9)
 
     # train unet model
     model = Model(inputs=inputs, outputs=conv10)
