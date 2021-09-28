@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import os
 import random
 import math
+import time
+import tensorflow as tf
 
-''' LOAD IN DATA. Organize by patient, to prevent data leakage. '''
+'''
+# LOAD IN DATA. Organize by patient, to prevent data leakage. 
 
 DIR = "AKOA_Analysis/"
 file_paths = [DIR + x for x in os.listdir(DIR)]
@@ -28,7 +31,7 @@ for file in file_paths:
         data[new_id] = ([img], [label])
 
 
-''' SPLIT DATA. Get train/test split based on patients. '''
+# SPLIT DATA. Get train/test split based on patients. 
 
 TEST_SPLIT = 0.4
 num_patients = len(list(data.keys()))
@@ -50,7 +53,7 @@ print(len(xtrain), len(xtest), len(ytrain), len(ytest))
 del data
 
 
-''' SHUFFLE DATA AND SAVE. '''
+# SHUFFLE DATA AND SAVE. 
 
 indices_train = list(range(0, len(xtrain)))
 indices_test = list(range(0, len(xtest)))
@@ -73,25 +76,23 @@ ytest = ytest[indices_test]
 #np.save("ytest", ytest)
 del ytest
 
-''' GET FOURIER FEATURES FOR POSITIONAL ENCODINGS. '''
+'''
+#xtrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtrain.npy")
+xtest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtest.npy")
+#ytrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytrain.npy")
+#ytest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytest.npy")
 
-def get_positional_encodings(img_data, bands=64, sampling_rate=10):
+
+# GET FOURIER FEATURES FOR POSITIONAL ENCODINGS. 
+
+# img_data: tensor of shape (rows, cols)
+def get_positional_encodings(img_data, bands=4, sampling_rate=10):
     # assume 2 dimensions, using single channel images
-    #flattened = img_data.flatten()
     rows, cols = img_data.shape
-    encodings = []
-    xr = [2*(idx//cols)/(rows-1) - 1 for idx in list(range(rows*cols))] # rows in [-1,1] range
-    xc = [2*(idx % cols)/(cols-1) - 1 for idx in list(range(rows*cols))] # cols in [-1,1] range
-    for input in range(rows*cols):
-        encoding = []
-        for xd in [xr[input], xc[input]]:
-            # logscale for frequencies, 0 start as 10**0 = 1
-            frequencies = np.logspace(0.0,math.log((sampling_rate/2))/math.log(10), num = bands, dtype = np.float32)
-            enc_d = []
-            for k in range(bands):
-                enc_d.append(math.sin(frequencies[k]*math.pi*xd))
-                enc_d.append(math.cos(frequencies[k]*math.pi*xd))
-            enc_d.append(xd)
-            encoding.extend(enc_d)
-        encodings.append(encoding)
-    return encodings
+    xr, xc = tf.linspace(-1,1,rows), tf.linspace(-1,1,cols)
+    xd = tf.reshape(tf.stack(tf.reverse(tf.meshgrid(xr,xc), axis=[-3]),axis=2),(rows,cols,2))
+    xd = tf.repeat(tf.expand_dims(xd, -1), repeats=[2*bands + 1], axis=3) # (rows, cols, 2, 2F + 1)
+    # logscale for frequencies ( * pi) , 0 start as 10**0 = 1
+    frequencies = tf.experimental.numpy.logspace(0.0,(tf.math.log(sampling_rate/2)/tf.math.log(10.)).numpy(), num = bands, dtype = tf.float32) * math.pi
+    return xd * tf.cast(tf.reshape(tf.concat([tf.math.sin(frequencies), tf.math.cos(frequencies), tf.constant([1.])], axis=0), (1,1,1,2*bands+1)), dtype=tf.double)
+
