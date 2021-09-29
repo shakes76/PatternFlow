@@ -1,43 +1,16 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
-
+import math
 class FourierEncode(layers.Layer):
     def __init__(self, max_freq=10, num_bands=4):
         super(FourierEncode, self).__init__()
         self.max_freq = max_freq
         self.num_bands = num_bands
 
-    def call(self, images):
-        batch_size = tf.shape(images)[0]
-        patches = tf.image.extract_patches(
-            images=images,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        patch_dims = patches.shape[-1]
-        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-        return patches
+    def call(self, patches):
+        # TODO: fourier algo, combining encoded with data
+        pass
 
-# def fourier_transform(img, bands, sampling_rate):
-#     # data has 2 dimensions 
-#     num_row, num_col, _ = img.shape
-#     encodings = []
-#     x_row = [(idx // num_col)/ (num_row - 1) * 2 - 1 for idx in list(range(num_row*num_col))] # row, col in range -1 1
-#     x_col = [(idx % num_col)/ (num_col - 1) * 2 - 1 for idx in list(range(num_row*num_col))]
-#     for input in range(num_col*num_row):
-#         encoding = []
-#         for xd in [x_row[input], x_col[input]]:
-#             freq = np.logspace(0.0, math.log(sampling_rate/2) / math.log(10), bands, dtype=np.float32)
-#             encoded_concat = []
-#             for i in range(bands):
-#                 encoded_concat.append(math.sin(freq[i] * math.pi * xd))
-#                 encoded_concat.append(math.cos(freq[i] * math.pi * xd))
-#             encoded_concat.append(xd)
-#             encoding.extend(encoded_concat)
-#         encodings.append(encoding)
-#     return encodings
 
 def fourier_encode(x, max_freq=10, num_bands=4):
     rows = x.shape[0]
@@ -62,3 +35,26 @@ def fourier_encode(x, max_freq=10, num_bands=4):
     # x = x * scales 
     # return tf.concat((tf.concat([tf.math.sin(x), tf.math.cos(x)], axis=-1), orig_x), axis=-1)
     # return x
+
+
+
+    
+
+# def fourier_transform(img, bands, sampling_rate):
+#     # data has 2 dimensions 
+#     num_row, num_col, _ = img.shape
+#     encodings = []
+#     x_row = [(idx // num_col)/ (num_row - 1) * 2 - 1 for idx in list(range(num_row*num_col))] # row, col in range -1 1
+#     x_col = [(idx % num_col)/ (num_col - 1) * 2 - 1 for idx in list(range(num_row*num_col))]
+#     for input in range(num_col*num_row):
+#         encoding = []
+#         for xd in [x_row[input], x_col[input]]:
+#             freq = np.logspace(0.0, math.log(sampling_rate/2) / math.log(10), bands, dtype=np.float32)
+#             encoded_concat = []
+#             for i in range(bands):
+#                 encoded_concat.append(math.sin(freq[i] * math.pi * xd))
+#                 encoded_concat.append(math.cos(freq[i] * math.pi * xd))
+#             encoded_concat.append(xd)
+#             encoding.extend(encoded_concat)
+#         encodings.append(encoding)
+#     return encodings
