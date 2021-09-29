@@ -1,6 +1,4 @@
 import tensorflow as tf
-# import math
-# import numpy as np
 from tensorflow.keras import layers
 from cross_attention import cross_attention_layer
 from transformer import transformer_layer
