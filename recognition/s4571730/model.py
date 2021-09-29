@@ -4,6 +4,13 @@ from cross_attention import cross_attention_layer
 from transformer import transformer_layer
 from dense_net import dense_block
 from fourier_encode import FourierEncode
+import tensorflow_addons as tfa
+
+
+def augment():
+    # TODO
+    pass
+
 
 class Patches(layers.Layer):
     def __init__(self, patch_size):
@@ -64,7 +71,7 @@ class Perceiver(tf.keras.Model):
         self.patcher = Patches(self.patch_size)
 
         # Create patch encoder.
-        self.patch_encoder = FourierEncode(input_shape, self.max_freq, self.num_bands)
+        self.fourier_encoder = FourierEncode(input_shape, self.max_freq, self.num_bands)
 
         # Create cross-attenion module.
         self.cross_attention = cross_attention_layer(
@@ -87,7 +94,7 @@ class Perceiver(tf.keras.Model):
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # Create a classification head.
-        self.classification_head = dense_block(
+        self.classify = dense_block(
             hidden_units=self.classifier_units, dropout_rate=self.dropout_rate
         )
 
@@ -99,28 +106,71 @@ class Perceiver(tf.keras.Model):
         # Create patches.
         patches = self.patcher(augmented)
         # Encode patches.
-        encoded_patches = self.patch_encoder(patches)
+        encoded_patches = self.fourier_encoder(patches)
+
         # Prepare cross-attention inputs.
-        cross_attention_inputs = {
-            "latent_array": tf.expand_dims(self.latent_array, 0),
-            "data_array": encoded_patches,
-        }
+        cross_attention_inputs = [
+            tf.expand_dims(self.latent_array, 0),
+            encoded_patches
+        ]
+
         # Apply the cross-attention and the Transformer modules iteratively.
         for _ in range(self.num_iterations):
-            # Apply cross-attention from the latent array to the data array.
             latent_array = self.cross_attention(cross_attention_inputs)
-            # Apply self-attention Transformer to the latent array.
             latent_array = self.transformer(latent_array)
-            # Set the latent array of the next iteration.
-            cross_attention_inputs["latent_array"] = latent_array
+            cross_attention_inputs[0] = latent_array
 
-        # Apply global average pooling to generate a [batch_size, projection_dim] repesentation tensor.
-        representation = self.global_average_pooling(latent_array)
+        # Apply global average pooling
+        outputs = self.global_average_pooling(latent_array)
+
         # Generate logits.
-        logits = self.classification_head(representation)
+        logits = self.classify(outputs)
         return logits
 
 def data_augmentation():
     pass
+
+
+## trainning
+def train(model, train_set, val_set, test_set, lr=0.004, weight_decay=0.0001, num_epoch=10):
+
+    optimizer = tfa.optimizers.LAMB(
+        learning_rate=lr, weight_decay_rate=weight_decay,
+    )
+
+    # Compile the model.
+    model.compile(
+        optimizer=optimizer,
+        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        metrics=[
+            tf.keras.metrics.BinaryAccuracy(name="acc"),
+            # tf.keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
+        ],
+    )
+
+    # Create a learning rate scheduler callback.
+    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+        monitor="val_loss", factor=0.2, patience=3
+    )
+
+    # Create an early stopping callback.
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=15, restore_best_weights=True
+    )
+
+    # Fit the model.
+    history = model.fit(
+        x=train_set,
+        validation_data=val_set,
+        epochs=num_epoch,
+        callbacks=[early_stopping, reduce_lr],
+    )
+
+    _, accuracy = model.evaluate(test_set)
+    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+    # print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
+
+    # Return history to plot learning curves.
+    return history
 
 
