@@ -1,14 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
-from model import fourier_encode
+from model import train, Perceiver
 
 # Constants
 IMAGE_DIR = 's4571730/AKOA_Analysis'
 BATCH_SIZE = 32
 IMG_SIZE = (260, 228)
 IMG_SHAPE = (260, 228, 3)
-LR = 0.0001
 TEST_PORTION = 5
 SHUFFLE_RATE = 512
 AUTO_TUNE = tf.data.experimental.AUTOTUNE
@@ -63,22 +62,39 @@ if __name__ == "__main__":
     # generate dataset
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, BATCH_SIZE, IMG_SIZE)
 
-    for image, label in training_set:
-        # train_image = image[0]
-        b, *axis, _ = image.shape
-        axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
-        pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
-        encode = fourier_encode(pos, 4, 10)
-        print(encode.shape)
-        break
+    # for image, label in training_set:
+    #     # train_image = image[0]
+    #     b, *axis, _ = image.shape
+    #     axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
+    #     pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
+    #     encode = fourier_encode(pos, 4, 10)
+    #     print(encode.shape)
+    #     break
 
-    # print('Number of Train batches: %d' % tf.data.experimental.cardinality(training_set))
-    # print('Number of validation batches: %d' % tf.data.experimental.cardinality(validation_set))
-    # print('Number of test batches: %d' % tf.data.experimental.cardinality(test_set))
+    # Initialize the model
+    knee_model = Perceiver(patch_size=,
+                            data_dim=, 
+                            latent_dim=,
+                            projection_dim=, 
+                            num_heads=,
+                            num_bands=,
+                            num_transformer_blocks=,
+                            dense_layers=,
+                            num_iterations=,
+                            classifier_units=,
+                            max_freq=)
 
-    # # Initialize the model
-    # knee_model = KneeClassifier(img_shape=IMG_SHAPE, no_epochs=10, train_dataset=training_set,
-    #                             validation_dataset=validation_set, test_dataset=test_set, learning_rate=LEARNING_RATE)
+    LR = 0.0001
+    WEIGHT_DECAY = 0.0001
+    EPOCHS = 10
+
+    history = train(knee_model, 
+                    train_set=training_set,
+                    val_set=validation_set,
+                    test_set=test_set,
+                    lr=LR,
+                    weight_decay=WEIGHT_DECAY,
+                    num_epoch=EPOCHS)
 
     # # Train the model
     # history_data = knee_model.train_knee_classifier()
