@@ -12,5 +12,8 @@
 #SBATCH -e DCGANs-celeba.err
 
 nvidia-smi
-export PYTHONPATH=~/.local/lib/python3.6/site-packages
-python3 ./dcgan_celeba.py
+
+export PYTHONPATH=/usr/lib64/python3.6/site-packages
+export PYTHONPATH=/usr/lib/python3.6/site-packages
+
+python3 ./AD-Perceiver.py
