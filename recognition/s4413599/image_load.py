@@ -30,13 +30,15 @@ def load_image(inputPath, seg = False):
     return tf.convert_to_tensor(train_ds)
 
 def get_train_test_data(train_img = '/Users/anqiyan/Desktop/COMP3710Report/Training_Data_JPG/JPG', seg_img = '/Users/anqiyan/Desktop/COMP3710Report/Training_Data_Seg/SEG'):
+    '''
+    :param train_img: path to the training image
+    :param seg_img: path to the segmentation image
+    :return: splited imaeg
+    '''
     train_ds= load_image(train_img)
     seg_ds = load_image(seg_img, seg=True)
     X_train, X_test, y_train, y_test = train_test_split(train_ds.numpy(), seg_ds.numpy(), test_size=0.33, random_state=42)
     return X_train, X_test, y_train, y_test
-
-X_train, X_test, y_train, y_test = get_train_test_data()
-
 
 
 
