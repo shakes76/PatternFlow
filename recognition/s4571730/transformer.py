@@ -3,8 +3,8 @@ import tensorflow as tf
 import copy
 from dense_net import dense_block
 
-def transformer_layer(latent_size, projection_size, num_heads, num_transformer_blocks, dense_layers):
-    inputs_orig = layers.Input(shape=(latent_size, projection_size))
+def transformer_layer(latent_size, proj_size, num_heads, num_transformer_blocks, dense_layers):
+    inputs_orig = layers.Input(shape=(latent_size, proj_size))
 
     input_plus_output = copy.deepcopy(inputs_orig)
     # Create multiple layers of the Transformer block.
@@ -15,10 +15,10 @@ def transformer_layer(latent_size, projection_size, num_heads, num_transformer_b
     # Create QKV self-attention layer.
     # Multihead becomes self-attetion when q = k = v. v = k if not supplied
     attention_output = layers.MultiHeadAttention(
-        num_heads, projection_size)(norm, norm)
+        num_heads, proj_size)(norm, norm)
 
     # pass to a linear layer
-    attention_output = layers.Dense(projection_size) # ?
+    attention_output = layers.Dense(proj_size) # ?
 
     # Add output to input
     attention_output = layers.Add()([attention_output, inputs_orig])
