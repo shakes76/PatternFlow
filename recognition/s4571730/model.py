@@ -6,29 +6,6 @@ from dense_net import dense_block
 from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
 
-
-def augment():
-    # TODO
-    pass
-
-# class Patches(layers.Layer):
-#     def __init__(self, patch_size):
-#         super(Patches, self).__init__()
-#         self.patch_size = patch_size
-
-#     def call(self, images):
-#         batch_size = tf.shape(images)[0]
-#         patches = tf.image.extract_patches(
-#             images=images,
-#             sizes=[1, self.patch_size, self.patch_size, 1],
-#             strides=[1, self.patch_size, self.patch_size, 1],
-#             rates=[1, 1, 1, 1],
-#             padding="VALID",
-#         )
-#         patch_dims = patches.shape[-1]
-#         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-#         return patches
-
 class Perceiver(tf.keras.Model):
     def __init__(
         self,
@@ -42,7 +19,10 @@ class Perceiver(tf.keras.Model):
         num_iterations,
         classifier_units,
         max_freq, 
-        num_bands
+        num_bands,
+        lr,
+        epoch,
+        weight_decay
     ):
         super(Perceiver, self).__init__()
 
@@ -53,10 +33,13 @@ class Perceiver(tf.keras.Model):
         self.num_heads = num_heads
         self.num_transformer_blocks = num_transformer_blocks
         self.dense_layers = dense_layers
-        self.interations = num_iterations
+        self.iterations = num_iterations
         self.classifier_units = classifier_units
         self.max_freq = max_freq
         self.num_bands = num_bands
+        self.lr = lr
+        self.epoch = epoch
+        self.weight_decay = weight_decay
 
     def build(self, input_shape):
         # Create latent array.
@@ -105,15 +88,15 @@ class Perceiver(tf.keras.Model):
         # Create patches.
         # patches = self.patcher(augmented)
         # Encode patches.
-        encoded_patches = self.fourier_encoder(inputs)
+        encoded_imgs = self.fourier_encoder(inputs)
 
         cross_attention_inputs = [
             tf.expand_dims(self.latent_array, 0),
-            encoded_patches
+            encoded_imgs
         ]
         # Apply the cross-attention and the Transformer modules iteratively.
-        for _ in range(self.interations):
-            latent_array = self.cross_attention()
+        for _ in range(self.iterations):
+            latent_array = self.cross_attention(cross_attention_inputs)
             latent_array = self.transformer(latent_array)
             cross_attention_inputs[0] = latent_array
 
@@ -137,14 +120,10 @@ class ModelCallback(tf.keras.callbacks.Callback):
         self.ckpt_manager.save()
 
 ## trainning
-def train(model, 
-            # checkpoint, 
-            # ckpt_manager,
-            train_set, val_set, test_set, lr=0.004, 
-            weight_decay=0.0001, num_epoch=10):
+def train(model, train_set, val_set, test_set):
 
     optimizer = tfa.optimizers.LAMB(
-        learning_rate=lr, weight_decay_rate=weight_decay,
+        learning_rate=model.lr, weight_decay_rate=model.weight_decay,
     )
 
     # Compile the model.
@@ -173,7 +152,7 @@ def train(model,
     history = model.fit(
         x=train_set,
         validation_data=val_set,
-        epochs=num_epoch,
+        epochs=model.epoch,
         callbacks=[early_stopping, reduce_lr],
     )
 
