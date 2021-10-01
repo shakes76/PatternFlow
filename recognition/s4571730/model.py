@@ -33,9 +33,9 @@ class Perceiver(tf.keras.Model):
     def __init__(
         self,
         patch_size,
-        data_dim,
-        latent_dim,
-        projection_dim,
+        data_size,
+        latent_size,
+        proj_size,
         num_heads,
         num_transformer_blocks,
         dense_layers,
@@ -46,14 +46,14 @@ class Perceiver(tf.keras.Model):
     ):
         super(Perceiver, self).__init__()
 
-        self.latent_dim = latent_dim
-        self.data_dim = data_dim
+        self.latent_size = latent_size
+        self.data_size = data_size
         self.patch_size = patch_size
-        self.projection_dim = projection_dim
+        self.proj_size = proj_size
         self.num_heads = num_heads
         self.num_transformer_blocks = num_transformer_blocks
         self.dense_layers = dense_layers
-        self.num_iterations = num_iterations
+        self.interations = num_iterations
         self.classifier_units = classifier_units
         self.max_freq = max_freq
         self.num_bands = num_bands
@@ -61,7 +61,7 @@ class Perceiver(tf.keras.Model):
     def build(self, input_shape):
         # Create latent array.
         self.latent_array = self.add_weight(
-            shape=(self.latent_dim, self.projection_dim),
+            shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
             trainable=True,
         )
@@ -74,16 +74,16 @@ class Perceiver(tf.keras.Model):
 
         # Create cross-attenion module.
         self.cross_attention = cross_attention_layer(
-            self.latent_dim,
-            self.data_dim,
-            self.projection_dim,
+            self.latent_size,
+            self.data_size,
+            self.proj_size,
             self.dense_layers,
         )
 
         # Create Transformer module.
         self.transformer = transformer_layer(
-            self.latent_dim,
-            self.projection_dim,
+            self.latent_size,
+            self.proj_size,
             self.num_heads,
             self.num_transformer_blocks,
             self.dense_layers,
@@ -101,21 +101,19 @@ class Perceiver(tf.keras.Model):
 
     def call(self, inputs):
         # Augment data.
-        augmented = data_augmentation(inputs)
+        # augmented = data_augmentation(inputs)
         # Create patches.
-        patches = self.patcher(augmented)
+        # patches = self.patcher(augmented)
         # Encode patches.
-        encoded_patches = self.fourier_encoder(patches)
+        encoded_patches = self.fourier_encoder(inputs)
 
-        # Prepare cross-attention inputs.
         cross_attention_inputs = [
             tf.expand_dims(self.latent_array, 0),
             encoded_patches
         ]
-
         # Apply the cross-attention and the Transformer modules iteratively.
-        for _ in range(self.num_iterations):
-            latent_array = self.cross_attention(cross_attention_inputs)
+        for _ in range(self.interations):
+            latent_array = self.cross_attention()
             latent_array = self.transformer(latent_array)
             cross_attention_inputs[0] = latent_array
 
@@ -182,6 +180,8 @@ def train(model,
     _, accuracy = model.evaluate(test_set)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
     # print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
+
+    ## plot stuff here
 
     # Return history to plot learning curves.
     return history
