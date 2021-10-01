@@ -68,9 +68,6 @@ class FourierEncode(layers.Layer):
         return pos
 
 
-
-
-
         # batch_size, rows, cols, dim = tf.shape(imgs)
         # x_row = tf.linspace(-1, 1, rows) 
         # x_col = tf.linspace(-1, 1, cols) 
