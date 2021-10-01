@@ -7,54 +7,30 @@ class FourierEncode(layers.Layer):
         self.max_freq = max_freq
         self.num_bands = num_bands
 
-    def call(self, patches):
-        # TODO: fourier algo, combining encoded with data
-        pass
+    def call(self, imgs):
+        batch_size, rows, cols, dim = tf.shape(imgs)
+        x_row = tf.linspace(-1, 1, rows) 
+        x_col = tf.linspace(-1, 1, cols) 
 
+        # Create a grid of positional encodings
+        x_d = tf.reshape(tf.stack(tf.reverse(tf.meshgrid(x_row, x_col), axis=[-3]), axis=2), (rows,cols,2))
+        x_d = tf.expand_dims(x_d, -1)
 
-def fourier_encode(x, max_freq=10, num_bands=4):
-    rows = x.shape[0]
-    cols = x.shape[1]
-    xr = tf.linspace(-1, 1, rows)
-    xc = tf.linspace(-1, 1, cols)
-    xd = tf.reshape(tf.stack(tf.reverse(tf.meshgrid(xr, xc), axis=[-3]),axis=2), (rows, cols, 2))
-    xd = tf.repeat(tf.expand_dims(xd, -1), repeats=[2*bands + 1], axis=3)
+        # repeat it to size 2bands + 1
+        xd = tf.repeat(x_d, repeats=[2 * self.num_bands + 1], axis=3)   # (r, c, 2, 2bands + 1)
 
-    freq = tf.experimental.numpy.logspace()
-    # x = tf.expand_dims(x, -1)
-    # x = tf.cast(x, dtype=tf.float32)
-    # orig_x = x
+        # log_scale
+        log_sample = tf.math.log(self.max_freq/2) / tf.math.log(10)
 
-    # scales = tf.reshape(tf.experimental.numpy.logspace(
-    #     1.0,
-    #     tf.math.log(max_freq / 2) / math.log(10),
-    #     num=num_bands,
-    #     dtype=tf.float32,
-    # ), (1,1,1,2 * max_freq - 1) )
-    # scales *= math.pi
-    # x = x * scales 
-    # return tf.concat((tf.concat([tf.math.sin(x), tf.math.cos(x)], axis=-1), orig_x), axis=-1)
-    # return x
+        # get frequency fk
+        freqs = math.pi * tf.experimental.numpy.logspace(0, log_sample.numpy(), self.bands, dtype=tf.float32) 
 
+        # get fourier features: sin(fkπxd), cos(fkπxd)]
+        ff = xd * tf.cast(tf.reshape(tf.concat([tf.math.sin(freqs), tf.math.cos(freqs), tf.constant(1)], axis=0), 
+                    shape=(1,1,1,2*self.bands+1)), dtype=tf.double)
 
-
-    
-
-# def fourier_transform(img, bands, sampling_rate):
-#     # data has 2 dimensions 
-#     num_row, num_col, _ = img.shape
-#     encodings = []
-#     x_row = [(idx // num_col)/ (num_row - 1) * 2 - 1 for idx in list(range(num_row*num_col))] # row, col in range -1 1
-#     x_col = [(idx % num_col)/ (num_col - 1) * 2 - 1 for idx in list(range(num_row*num_col))]
-#     for input in range(num_col*num_row):
-#         encoding = []
-#         for xd in [x_row[input], x_col[input]]:
-#             freq = np.logspace(0.0, math.log(sampling_rate/2) / math.log(10), bands, dtype=np.float32)
-#             encoded_concat = []
-#             for i in range(bands):
-#                 encoded_concat.append(math.sin(freq[i] * math.pi * xd))
-#                 encoded_concat.append(math.cos(freq[i] * math.pi * xd))
-#             encoded_concat.append(xd)
-#             encoding.extend(encoded_concat)
-#         encodings.append(encoding)
-#     return encodings
+        # shape = (batch, img_row, img_col, 2*(2*bands + 1))
+        ff = tf.repeat(tf.reshape(ff, (1, rows, cols, 2*(2*self.bands+1))), repeats=[batch_size], axis=0)
+        # concat with data and flatten
+        ff = tf.reshape(tf.concat((imgs, ff), axis=-1), (batch_size, rows*cols, -1)) 
+        return ff
