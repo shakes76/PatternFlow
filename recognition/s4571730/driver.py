@@ -72,29 +72,50 @@ if __name__ == "__main__":
     #     break
 
     # Initialize the model
-    knee_model = Perceiver(patch_size=,
-                            data_dim=, 
-                            latent_dim=,
-                            projection_dim=, 
+    knee_model = Perceiver(patch_size=0,
+                            data_dim=228*260, 
+                            latent_dim=512,
+                            num_bands=4,
+                            projection_dim=2*(2*4+1)+1, 
                             num_heads=,
-                            num_bands=,
                             num_transformer_blocks=,
                             dense_layers=,
                             num_iterations=,
                             classifier_units=,
-                            max_freq=)
+                            max_freq=10)
 
     LR = 0.0001
     WEIGHT_DECAY = 0.0001
     EPOCHS = 10
+    START_EPOCH = tf.Variable(1)
 
-    history = train(knee_model, 
+    # Checkpoint stuff
+    # history = None
+    # checkpoint_dir = './ckpts'
+    # checkpoint = tf.train.Checkpoint(
+    #             # start_epoch=tf.Variable(1),
+    #             knee_model=knee_model,
+    #             history=history)
+
+    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    # RETRAIN = False
+    # EVAL_ONLY = False
+
+    # if RETRAIN:
+    #     checkpoint.restore(ckpt_manager.latest_checkpoint)
+    #     START_EPOCH = checkpoint.start_epoch.numpy()
+
+    # if not EVAL_ONLY:
+    history = train(knee_model,
+                    # checkpoint,
+                    # ckpt_manager, 
                     train_set=training_set,
                     val_set=validation_set,
                     test_set=test_set,
                     lr=LR,
                     weight_decay=WEIGHT_DECAY,
-                    num_epoch=EPOCHS)
+                    num_epoch=EPOCHS,
+                    )
 
     # # Train the model
     # history_data = knee_model.train_knee_classifier()

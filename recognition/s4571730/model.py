@@ -129,9 +129,21 @@ class Perceiver(tf.keras.Model):
 def data_augmentation():
     pass
 
+class ModelCallback(tf.keras.callbacks.Callback):
+    def __init__(self, ckpt, ckpt_manager):
+        self.ckpt_manager = ckpt_manager
+        self.ckpt = ckpt
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.ckpt.start_epoch.assign_add(1)
+        self.ckpt_manager.save()
 
 ## trainning
-def train(model, train_set, val_set, test_set, lr=0.004, weight_decay=0.0001, num_epoch=10):
+def train(model, 
+            # checkpoint, 
+            # ckpt_manager,
+            train_set, val_set, test_set, lr=0.004, 
+            weight_decay=0.0001, num_epoch=10):
 
     optimizer = tfa.optimizers.LAMB(
         learning_rate=lr, weight_decay_rate=weight_decay,
@@ -156,6 +168,8 @@ def train(model, train_set, val_set, test_set, lr=0.004, weight_decay=0.0001, nu
     early_stopping = tf.keras.callbacks.EarlyStopping(
         monitor="val_loss", patience=15, restore_best_weights=True
     )
+
+    # epoch_end = ModelCallback(checkpoint, ckpt_manager)
 
     # Fit the model.
     history = model.fit(
