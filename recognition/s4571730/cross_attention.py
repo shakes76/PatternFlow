@@ -2,27 +2,26 @@ from tensorflow.keras import layers
 import tensorflow as tf 
 from dense_net import dense_block
 
-def cross_attention_layer(latent_dim, data_dim, projection_dim, dense_units):
-    input_latent = layers.Input(shape=(latent_dim, projection_dim))
-    input_data = layers.Input(shape=(data_dim, projection_dim))
-
-    # Input first processed with a norm layer
+def cross_attention_layer(latent_size, data_size, proj_size, dense_units):
+    # projection_dim = data (1) + 2 * (2*bands + 1)
+    # Input processed with a norm layer
+    input_latent = layers.Input((latent_size, proj_size))
     latent_array = layers.LayerNormalization()(input_latent)
+
+    input_data = layers.Input((data_size, proj_size))
     data_array = layers.LayerNormalization()(input_data)
 
     # QKV cross attention
     # K and V are projections of the input byte array, Q is a projection of a learned latent array
-    q = layers.Dense(projection_dim)(latent_array)
-    k = layers.Dense(projection_dim)(data_array)
-    v = layers.Dense(projection_dim)(data_array)
+    q = layers.Dense(proj_size)(latent_array)
+    k = layers.Dense(proj_size)(data_array)
+    v = layers.Dense(proj_size)(data_array)
     
     # Generate cross-attention outputs: [batch_size, latent_dim, projection_dim].
-    attention = layers.Attention(use_scale=True)(
-        [q, k ,v]
-    )
+    attention = layers.Attention(use_scale=True)([q, k ,v])
     
     # pass to a linear layer
-    attention = layers.Dense(projection_dim) # ?
+    attention = layers.Dense(proj_size) # TODO ?
     # Add input to output
     attention = layers.Add()([attention, latent_array])
 
