@@ -11,24 +11,23 @@ def augment():
     # TODO
     pass
 
+# class Patches(layers.Layer):
+#     def __init__(self, patch_size):
+#         super(Patches, self).__init__()
+#         self.patch_size = patch_size
 
-class Patches(layers.Layer):
-    def __init__(self, patch_size):
-        super(Patches, self).__init__()
-        self.patch_size = patch_size
-
-    def call(self, images):
-        batch_size = tf.shape(images)[0]
-        patches = tf.image.extract_patches(
-            images=images,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        patch_dims = patches.shape[-1]
-        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-        return patches
+#     def call(self, images):
+#         batch_size = tf.shape(images)[0]
+#         patches = tf.image.extract_patches(
+#             images=images,
+#             sizes=[1, self.patch_size, self.patch_size, 1],
+#             strides=[1, self.patch_size, self.patch_size, 1],
+#             rates=[1, 1, 1, 1],
+#             padding="VALID",
+#         )
+#         patch_dims = patches.shape[-1]
+#         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+#         return patches
 
 class Perceiver(tf.keras.Model):
     def __init__(
@@ -68,7 +67,7 @@ class Perceiver(tf.keras.Model):
         )
 
         # Create patching module.
-        self.patcher = Patches(self.patch_size)
+        # self.patcher = Patches(self.patch_size)
 
         # Create patch encoder.
         self.fourier_encoder = FourierEncode(input_shape, self.max_freq, self.num_bands)
@@ -95,7 +94,7 @@ class Perceiver(tf.keras.Model):
 
         # Create a classification head.
         self.classify = dense_block(
-            hidden_units=self.classifier_units, dropout_rate=self.dropout_rate
+            hidden_units=self.classifier_units
         )
 
         super(Perceiver, self).build(input_shape)
