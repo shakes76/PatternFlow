@@ -21,12 +21,12 @@ def cross_attention_layer(latent_size, data_size, proj_size, dense_units):
     attention = layers.Attention(use_scale=True)([q, k ,v])
     
     # pass to a linear layer
-    attention = layers.Dense(proj_size) # TODO ?
+    attention = layers.Dense(proj_size)(attention)
     # Add input to output
     attention = layers.Add()([attention, latent_array])
 
     # Normalize
-    # attention = layers.LayerNormalization()(attention)
+    attention = layers.LayerNormalization()(attention)
 
     # Pass the attention to a Dense block (MLPs)
     outputs = dense_block(dense_units)(attention)

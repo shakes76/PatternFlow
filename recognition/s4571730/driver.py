@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from model import train, Perceiver
 
 # Constants
-IMAGE_DIR = 's4571730/AKOA_Analysis'
+IMAGE_DIR = 'AKOA_Analysis'
 BATCH_SIZE = 32
 IMG_SIZE = (260, 228)
 ROWS, COLS = IMG_SIZE[0], IMG_SIZE[1]
@@ -63,18 +63,19 @@ if __name__ == "__main__":
     # generate dataset
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, BATCH_SIZE, IMG_SIZE)
 
-    for image, label in training_set:
+    # for image, label in training_set:
         # train_image = image[0]
         # b, *axis, _ = image.shape
         # axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
         # pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
         # encode = fourier_encode(pos, 4, 10)
         # print(encode.shape)
-        break
+        # break
 
 
     LATENT_SIZE = 256  # Size of the latent array.
     NUM_BANDS = 4
+    NUM_CLASS = 1
     PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
     NUM_HEADS = 8  # Number of Transformer heads.
     DENSE_UNITS = [
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     NUM_ITER = 2  # Repetitions of the cross-attention and Transformer modules.
     CLASSIFIER_UNITS = [
         PROJ_SIZE,
-        2,
+        NUM_CLASS,
     ]  # Size of the Feedforward network of the final classifier.
     MAX_FREQ = 10
     LR = 0.0001
@@ -109,7 +110,7 @@ if __name__ == "__main__":
                             weight_decay=WEIGHT_DECAY,
                             epoch=EPOCHS)
 
-   
+    # knee_model.build((32,260,228,1))
 
     checkpoint_dir = './ckpts'
 
@@ -117,9 +118,7 @@ if __name__ == "__main__":
     history = train(knee_model,
                     train_set=training_set,
                     val_set=validation_set,
-                    test_set=test_set,
-
-                    )
+                    test_set=test_set)
 
     knee_model.save(checkpoint_dir)
 

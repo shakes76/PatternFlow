@@ -41,8 +41,7 @@ class Perceiver(tf.keras.Model):
         self.epoch = epoch
         self.weight_decay = weight_decay
 
-    def build(self, input_shape):
-        # Create latent array.
+         # Create latent array.
         self.latent_array = self.add_weight(
             shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
@@ -53,7 +52,7 @@ class Perceiver(tf.keras.Model):
         # self.patcher = Patches(self.patch_size)
 
         # Create patch encoder.
-        self.fourier_encoder = FourierEncode(input_shape, self.max_freq, self.num_bands)
+        self.fourier_encoder = FourierEncode(self.max_freq, self.num_bands)
 
         # Create cross-attenion module.
         self.cross_attention = cross_attention_layer(
@@ -76,11 +75,11 @@ class Perceiver(tf.keras.Model):
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # Create a classification head.
-        self.classify = dense_block(
-            hidden_units=self.classifier_units
-        )
+        self.classify = dense_block(self.classifier_units)
 
-        super(Perceiver, self).build(input_shape)
+    # def build(self, input_shape):
+       
+    #     super(Perceiver, self).build((32,260,228,1))
 
     def call(self, inputs):
         # Augment data.
@@ -129,7 +128,7 @@ def train(model, train_set, val_set, test_set):
     # Compile the model.
     model.compile(
         optimizer=optimizer,
-        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=[
             tf.keras.metrics.BinaryAccuracy(name="acc"),
             # tf.keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
@@ -147,13 +146,13 @@ def train(model, train_set, val_set, test_set):
     )
 
     # epoch_end = ModelCallback(checkpoint, ckpt_manager)
-
+    print(type(train_set))
     # Fit the model.
     history = model.fit(
-        x=train_set,
-        validation_data=val_set,
-        epochs=model.epoch,
+        train_set,
+        epochs=5,
         callbacks=[early_stopping, reduce_lr],
+        validation_data=val_set,
     )
 
     _, accuracy = model.evaluate(test_set)

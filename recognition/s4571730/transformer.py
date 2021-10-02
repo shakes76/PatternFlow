@@ -18,13 +18,13 @@ def transformer_layer(latent_size, proj_size, num_heads, num_transformer_blocks,
         num_heads, proj_size)(norm, norm)
 
     # pass to a linear layer
-    attention_output = layers.Dense(proj_size) # ?
+    attention_output = layers.Dense(proj_size)(attention_output)
 
     # Add output to input
     attention_output = layers.Add()([attention_output, inputs_orig])
 
     # Apply layer normalization 2.
-    # x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
+    attention_output = layers.LayerNormalization()(attention_output)
 
     # Dense MLP block
     output = dense_block(dense_layers)(attention_output)

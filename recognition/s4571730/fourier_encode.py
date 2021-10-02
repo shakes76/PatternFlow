@@ -11,7 +11,8 @@ class FourierEncode(layers.Layer):
 
     def call(self, imgs):
         # Based on fourier encode from https://github.com/Rishit-dagli/Perceiver/blob/main/perceiver/
-        batch_size, *axis, _ = imgs.shape
+        xxx, *axis, _ = imgs.shape
+        batch_size = 32
         rows, cols = axis[0], axis[1]
 
         # scales positions to [-1,1] and stack it
@@ -21,17 +22,15 @@ class FourierEncode(layers.Layer):
         pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
 
         # get the encoded fourier features
-        enc_pos = self._fourier_encode(
-            pos, self.max_freq, self.num_bands
-        )
-
+        enc_pos = self._fourier_encode(pos)
+        del pos
         # concat 
         # enc_pos = rearrange(enc_pos, "... n d -> ... (n d)")
-        enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.bands+1)))
+        enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.num_bands+1)))
 
         # repeat batch_size times
         # enc_pos = repeat(enc_pos, "... -> b ...", b=batch)
-        enc_pos = tf.repeat(enc_pos, repeats=[batch_size], axis=0)
+        enc_pos = tf.repeat(enc_pos, repeats=batch_size, axis=0)
 
         img_encode = tf.concat((imgs, enc_pos), axis=-1)
 
