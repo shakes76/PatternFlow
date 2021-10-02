@@ -11,10 +11,8 @@ class FourierEncode(layers.Layer):
 
     def call(self, imgs):
         # Based on fourier encode from https://github.com/Rishit-dagli/Perceiver/blob/main/perceiver/
-        xxx, *axis, _ = imgs.shape
-        batch_size = 32
+        batch_size, *axis, _ = imgs.shape
         rows, cols = axis[0], axis[1]
-
         # scales positions to [-1,1] and stack it
         # shape = list(tensor, tensor)
         axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
@@ -24,7 +22,6 @@ class FourierEncode(layers.Layer):
         # get the encoded fourier features
         enc_pos = self._fourier_encode(pos)
         del pos
-        # concat 
         # enc_pos = rearrange(enc_pos, "... n d -> ... (n d)")
         enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.num_bands+1)))
 

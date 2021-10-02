@@ -120,6 +120,9 @@ class ModelCallback(tf.keras.callbacks.Callback):
 
 ## trainning
 def train(model, train_set, val_set, test_set):
+    X_train, y_train = train_set
+    X_val, y_val = val_set
+    X_test, y_test = test_set
 
     optimizer = tfa.optimizers.LAMB(
         learning_rate=model.lr, weight_decay_rate=model.weight_decay,
@@ -146,16 +149,17 @@ def train(model, train_set, val_set, test_set):
     )
 
     # epoch_end = ModelCallback(checkpoint, ckpt_manager)
-    print(type(train_set))
     # Fit the model.
     history = model.fit(
-        train_set,
+        X_train, y_train,
         epochs=5,
         callbacks=[early_stopping, reduce_lr],
-        validation_data=val_set,
+        validation_data=(X_val, y_val),
+        batch_size=32,
+        validation_batch_size=32
     )
 
-    _, accuracy = model.evaluate(test_set)
+    _, accuracy = model.evaluate(X_test, y_test)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
     # print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
 

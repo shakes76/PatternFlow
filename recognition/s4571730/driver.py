@@ -6,8 +6,8 @@ from model import train, Perceiver
 # Constants
 IMAGE_DIR = 'AKOA_Analysis'
 BATCH_SIZE = 32
-IMG_SIZE = (260, 228)
-ROWS, COLS = IMG_SIZE[0], IMG_SIZE[1]
+IMG_SIZE = (64, 64)
+ROWS, COLS = IMG_SIZE
 IMG_SHAPE = (*(IMG_SIZE), 3)
 TEST_PORTION = 5
 SHUFFLE_RATE = 512
@@ -30,11 +30,11 @@ def create_dataset(image_dir, batch_size, img_size):
     # Training dataset, shuffle is True by default
     training_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
                                                     subset="training", seed=46, label_mode='int',
-                                                    batch_size=batch_size, image_size=img_size)
+                                                    batch_size=1, image_size=img_size)
     # Validation dataset
     validation_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
                                                       subset="validation", seed=46, label_mode='int',
-                                                      batch_size=batch_size, image_size=img_size)
+                                                      batch_size=1, image_size=img_size)
 
     # Test dataset, taking 1/5 of the validation set
     val_batches = tf.data.experimental.cardinality(validation_dataset)
@@ -47,6 +47,15 @@ def create_dataset(image_dir, batch_size, img_size):
     test_dataset = test_dataset.map(process).prefetch(AUTO_TUNE)
 
     return training_dataset, validation_dataset, test_dataset
+
+def dataset_to_numpy_util(dataset, N):
+  dataset = dataset.batch(N)
+  for images, labels in dataset:
+    numpy_images = images.numpy()
+    numpy_labels = labels.numpy()
+    break
+
+  return numpy_images, numpy_labels
 
 """
 Normalize image to range [0,1]
@@ -62,15 +71,15 @@ if __name__ == "__main__":
 
     # generate dataset
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, BATCH_SIZE, IMG_SIZE)
-
-    # for image, label in training_set:
-        # train_image = image[0]
-        # b, *axis, _ = image.shape
-        # axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
-        # pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
-        # encode = fourier_encode(pos, 4, 10)
-        # print(encode.shape)
-        # break
+    X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
+    X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
+    X_val, y_val = dataset_to_numpy_util(validation_set, len(validation_set))
+    X_val = X_val.reshape((len(validation_set), ROWS, COLS, 1))
+    X_test, y_test = dataset_to_numpy_util(test_set, len(test_set))
+    X_test = X_test.reshape((len(test_set), ROWS, COLS, 1))
+    del training_set
+    del validation_set
+    del test_set
 
 
     LATENT_SIZE = 256  # Size of the latent array.
@@ -116,9 +125,9 @@ if __name__ == "__main__":
 
     # if not EVAL_ONLY:
     history = train(knee_model,
-                    train_set=training_set,
-                    val_set=validation_set,
-                    test_set=test_set)
+                    train_set=(X_train, y_train),
+                    val_set=(X_val, y_val),
+                    test_set=(X_test, y_test))
 
     knee_model.save(checkpoint_dir)
 
