@@ -41,11 +41,15 @@ class Perceiver(tf.keras.Model):
         self.epoch = epoch
         self.weight_decay = weight_decay
 
-         # Create latent array.
+       
+
+    def build(self, input_shape):
+          # Create latent array.
         self.latent_array = self.add_weight(
             shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
             trainable=True,
+            name='latent'
         )
 
         # Create patching module.
@@ -76,17 +80,11 @@ class Perceiver(tf.keras.Model):
 
         # Create a classification head.
         self.classify = dense_block(self.classifier_units)
-
-    # def build(self, input_shape):
-       
-    #     super(Perceiver, self).build((32,260,228,1))
+        super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
-        # Augment data.
-        # augmented = data_augmentation(inputs)
-        # Create patches.
-        # patches = self.patcher(augmented)
-        # Encode patches.
+        # if inputs.shape[0] == None:
+        #     return
         encoded_imgs = self.fourier_encoder(inputs)
 
         cross_attention_inputs = [
@@ -106,6 +104,10 @@ class Perceiver(tf.keras.Model):
         logits = self.classify(outputs)
         return logits
 
+    # def train_step(self, imgs):
+    #     print(len(imgs))
+    #     super(Perceiver, self).train_step(imgs)
+
 def data_augmentation():
     pass
 
@@ -122,7 +124,9 @@ class ModelCallback(tf.keras.callbacks.Callback):
 def train(model, train_set, val_set, test_set):
     X_train, y_train = train_set
     X_val, y_val = val_set
+    X_val, y_val = X_val[0:len(X_val) // 32 * 32], y_val[0:len(X_val) // 32 * 32]
     X_test, y_test = test_set
+    X_test, y_test = X_test[0:len(X_test) // 32 * 32], y_test[0:len(X_test) // 32 * 32]
 
     optimizer = tfa.optimizers.LAMB(
         learning_rate=model.lr, weight_decay_rate=model.weight_decay,
@@ -131,7 +135,7 @@ def train(model, train_set, val_set, test_set):
     # Compile the model.
     model.compile(
         optimizer=optimizer,
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=[
             tf.keras.metrics.BinaryAccuracy(name="acc"),
             # tf.keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
@@ -152,10 +156,10 @@ def train(model, train_set, val_set, test_set):
     # Fit the model.
     history = model.fit(
         X_train, y_train,
-        epochs=5,
+        epochs=model.epoch,
         callbacks=[early_stopping, reduce_lr],
-        validation_data=(X_val, y_val),
         batch_size=32,
+        validation_data=(X_val, y_val),
         validation_batch_size=32
     )
 

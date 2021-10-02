@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from model import train, Perceiver
 
 # Constants
-IMAGE_DIR = 'AKOA_Analysis'
+# IMAGE_DIR = 'AKOA_Analysis'
+IMAGE_DIR = 'C:/Users/s4571730/Downloads/AKOA_Analysis'
 BATCH_SIZE = 32
 IMG_SIZE = (64, 64)
 ROWS, COLS = IMG_SIZE
@@ -98,10 +99,9 @@ if __name__ == "__main__":
         NUM_CLASS,
     ]  # Size of the Feedforward network of the final classifier.
     MAX_FREQ = 10
-    LR = 0.0001
+    LR = 0.001
     WEIGHT_DECAY = 0.0001
     EPOCHS = 10
-    START_EPOCH = tf.Variable(1)
 
     # Initialize the model
     knee_model = Perceiver(patch_size=0,
@@ -119,18 +119,20 @@ if __name__ == "__main__":
                             weight_decay=WEIGHT_DECAY,
                             epoch=EPOCHS)
 
-    # knee_model.build((32,260,228,1))
 
     checkpoint_dir = './ckpts'
+    checkpoint = tf.train.Checkpoint(
+            knee_model=knee_model)
+    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    # if not EVAL_ONLY:
+    # checkpoint.restore(ckpt_manager.latest_checkpoint)
     history = train(knee_model,
                     train_set=(X_train, y_train),
                     val_set=(X_val, y_val),
                     test_set=(X_test, y_test))
-
-    knee_model.save(checkpoint_dir)
-
+    # knee_model.save(checkpoint_dir)
+    ckpt_manager.save()
+    # preds = knee_model.predict(X_test[0:len(X_test) // 32 * 32])
 
     # # Train the model
     # history_data = knee_model.train_knee_classifier()
@@ -141,31 +143,31 @@ if __name__ == "__main__":
     # # View model summary
     # knee_model.get_model_summary(model_type='complete')
 
-    # # Plotting the Learning curves
-    # acc = history_data.history['accuracy']
-    # val_acc = history_data.history['val_accuracy']
+    # Plotting the Learning curves
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
 
-    # loss = history_data.history['loss']
-    # val_loss = history_data.history['val_loss']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
 
-    # plt.figure(figsize=(8, 8))
-    # plt.subplot(2, 1, 1)
-    # plt.plot(acc, label='Training Accuracy')
-    # plt.plot(val_acc, label='Validation Accuracy')
-    # plt.legend(loc='lower right')
-    # plt.ylabel('Accuracy')
-    # plt.ylim([min(plt.ylim()), 1])
-    # plt.title('Training and Validation Accuracy')
+    plt.figure(figsize=(8, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(acc, label='Training Accuracy')
+    plt.plot(val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.ylabel('Accuracy')
+    plt.ylim([min(plt.ylim()), 1])
+    plt.title('Training and Validation Accuracy')
 
-    # plt.subplot(2, 1, 2)
-    # plt.plot(loss, label='Training Loss')
-    # plt.plot(val_loss, label='Validation Loss')
-    # plt.legend(loc='upper right')
-    # plt.ylabel('Cross Entropy')
-    # plt.ylim([0, 1.0])
-    # plt.title('Training and Validation Loss')
-    # plt.xlabel('epoch')
-    # plt.show()
+    plt.subplot(2, 1, 2)
+    plt.plot(loss, label='Training Loss')
+    plt.plot(val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.ylabel('Cross Entropy')
+    plt.ylim([0, 1.0])
+    plt.title('Training and Validation Loss')
+    plt.xlabel('epoch')
+    plt.show()
 
     # # Compare predicted and class labels
 

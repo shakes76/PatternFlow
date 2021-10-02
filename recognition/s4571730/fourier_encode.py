@@ -12,6 +12,7 @@ class FourierEncode(layers.Layer):
     def call(self, imgs):
         # Based on fourier encode from https://github.com/Rishit-dagli/Perceiver/blob/main/perceiver/
         batch_size, *axis, _ = imgs.shape
+        axis = tuple(axis)
         rows, cols = axis[0], axis[1]
         # scales positions to [-1,1] and stack it
         # shape = list(tensor, tensor)
@@ -62,7 +63,6 @@ class FourierEncode(layers.Layer):
         pos = tf.concat([tf.math.sin(pos), tf.math.cos(pos)], axis=-1)
         pos = tf.concat((pos, orig_pos), axis=-1)
         return pos
-
 
         # batch_size, rows, cols, dim = tf.shape(imgs)
         # x_row = tf.linspace(-1, 1, rows) 
