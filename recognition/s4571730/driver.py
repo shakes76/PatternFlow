@@ -171,14 +171,14 @@ if __name__ == "__main__":
     predictions = tf.where(predictions < 0.5, 0, 1).numpy()
     class_names = {0: "left", 1: "right"}
 
-    print('Predictions:\n', predictions)
-    print('Labels:\n', label_batch)
+    # print('Predictions:\n', predictions)
+    # print('Labels:\n', label_batch)
 
     plt.figure(figsize=(10, 10))
     for i in range(9):
         ax = plt.subplot(3, 3, i + 1)
         plt.imshow(image_batch[i], cmap="gray")
-        plt.title(class_names[predictions[i]])
+        plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
         plt.axis("off")
     plt.show()
 
