@@ -81,12 +81,7 @@ def process(image,label):
     image = tf.cast(image / 255. ,tf.float32)
     return image,label
 
-def runner_code():
-    pass
-
-if __name__ == "__main__":
-
-    # generate dataset. Convert to numpy array for eaiser batch size tracking (needed in fourier encode)
+def get_numpy_ds():
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, IMG_SIZE)
     X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
     X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
@@ -99,6 +94,39 @@ if __name__ == "__main__":
     del training_set
     del validation_set
     del test_set
+    return (X_train, y_train, X_val, y_val, X_test, y_test)
+
+def plot_data(history):
+    # Plotting the Learning curves
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
+
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(acc, label='Training Accuracy')
+    plt.plot(val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.ylabel('Accuracy')
+    plt.ylim([min(plt.ylim()), 1])
+    plt.title('Training and Validation Accuracy')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(loss, label='Training Loss')
+    plt.plot(val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.ylabel('Cross Entropy')
+    plt.ylim([0, 1.0])
+    plt.title('Training and Validation Loss')
+    plt.xlabel('epoch')
+    plt.show()
+
+if __name__ == "__main__":
+
+    # generate dataset. Convert to numpy array for eaiser batch size tracking (needed in fourier encode)
+    X_train, y_train, X_val, y_val, X_test, y_test = get_numpy_ds()
 
     # Initialize the model
     knee_model = Perceiver(patch_size=0,
@@ -128,53 +156,30 @@ if __name__ == "__main__":
                     val_set=(X_val, y_val),
                     test_set=(X_test, y_test),
                     batch_size=BATCH_SIZE)
-    # knee_model.save(checkpoint_dir)
+    knee_model.save(checkpoint_dir)
     ckpt_manager.save()
+    plot_data(history)
 
-    # Plotting the Learning curves
-    acc = history.history['acc']
-    val_acc = history.history['val_acc']
+    # Visualize predictions on a test batch
 
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
+    # Retrieve a batch of images from the test set
+    image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
+    image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    predictions = knee_model.predict_on_batch(image_batch).flatten()
+    label_batch = label_batch.flatten()
 
-    plt.figure(figsize=(8, 8))
-    plt.subplot(2, 1, 1)
-    plt.plot(acc, label='Training Accuracy')
-    plt.plot(val_acc, label='Validation Accuracy')
-    plt.legend(loc='lower right')
-    plt.ylabel('Accuracy')
-    plt.ylim([min(plt.ylim()), 1])
-    plt.title('Training and Validation Accuracy')
+    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
+    class_names = {0: "left", 1: "right"}
 
-    plt.subplot(2, 1, 2)
-    plt.plot(loss, label='Training Loss')
-    plt.plot(val_loss, label='Validation Loss')
-    plt.legend(loc='upper right')
-    plt.ylabel('Cross Entropy')
-    plt.ylim([0, 1.0])
-    plt.title('Training and Validation Loss')
-    plt.xlabel('epoch')
+    print('Predictions:\n', predictions)
+    print('Labels:\n', label_batch)
+
+    plt.figure(figsize=(10, 10))
+    for i in range(9):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(image_batch[i], cmap="gray")
+        plt.title(class_names[predictions[i]])
+        plt.axis("off")
     plt.show()
-
-    # # Compare predicted and class labels
-
-    # # Retrieve a batch of images from the test set
-    # image_batch, label_batch = test_set.as_numpy_iterator().next()
-    # predictions = knee_model.complete_model.predict_on_batch(image_batch).flatten()
-
-    # # Apply a sigmoid since our model returns logits
-    # predictions = tf.nn.sigmoid(predictions)
-    # predictions = tf.where(predictions < 0.5, 0, 1)
-
-    # print('Predictions:\n', predictions.numpy())
-    # print('Labels:\n', label_batch)
-
-    # plt.figure(figsize=(10, 10))
-    # for i in range(9):
-    #     ax = plt.subplot(3, 3, i + 1)
-    #     plt.imshow(image_batch[i].astype("uint8"))
-    #     plt.title(class_names[predictions[i]])
-    #     plt.axis("off")
 
 
