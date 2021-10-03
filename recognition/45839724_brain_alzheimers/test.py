@@ -112,42 +112,66 @@ latent_size = 512
 data_size = 228*260
 bands = 4
 channel_size = 2*(2*bands + 1) + 1 # data (1) + 2 dim * (2F + 1)
+transformer_heads = 4
 
-data_input = layers.Input((data_size, channel_size))
-latent_input = layers.Input((latent_size, channel_size))
+def get_attention_module():
+    data_input = layers.Input((data_size, channel_size))
+    latent_input = layers.Input((latent_size, channel_size))
 
-# Q, K & V linear networks
-query_mlp = latent_input
-query_mlp = layers.LayerNormalization()(query_mlp)
-latent_output = query_mlp
-query_mlp = layers.Dense(channel_size)(query_mlp)
+    # Q, K & V linear networks
+    query_mlp = latent_input
+    query_mlp = layers.LayerNormalization()(query_mlp)
+    latent_output = query_mlp
+    query_mlp = layers.Dense(channel_size)(query_mlp)
 
-key_mlp = data_input
-key_mlp = layers.LayerNormalization()(key_mlp)
-key_mlp = layers.Dense(channel_size)(key_mlp)
+    key_mlp = data_input
+    key_mlp = layers.LayerNormalization()(key_mlp)
+    key_mlp = layers.Dense(channel_size)(key_mlp)
 
-value_mlp = data_input
-value_mlp = layers.LayerNormalization()(value_mlp)
-value_mlp = layers.Dense(channel_size)(value_mlp)
+    value_mlp = data_input
+    value_mlp = layers.LayerNormalization()(value_mlp)
+    value_mlp = layers.Dense(channel_size)(value_mlp)
 
-# QKV cross-attention
-attention_module = layers.Attention(use_scale=True)([query_mlp, key_mlp, value_mlp])
-attention_module = layers.Dense(channel_size)(attention_module)
-attention_module = layers.Add()([latent_output, attention_module])
-attention_module = layers.LayerNormalization()(attention_module)
+    # QKV cross-attention
+    attention_module = layers.Attention(use_scale=True)([query_mlp, key_mlp, value_mlp])
+    attention_module = layers.Dense(channel_size)(attention_module)
+    attention_module = layers.Add()([latent_output, attention_module])
+    attention_module = layers.LayerNormalization()(attention_module)
 
-# New query from attention module 
-new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(attention_module)
-new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(new_query)
-new_query = layers.Dense()(new_query)
-new_query = layers.Add()([attention_module, new_query])
+    # New query from attention module 
+    new_latent = layers.Dense(channel_size, activation=tf.nn.gelu)(attention_module)
+    new_latent = layers.Dense(channel_size, activation=tf.nn.gelu)(new_latent)
+    new_latent = layers.Dense()(new_latent)
+    new_latent = layers.Add()([attention_module, new_latent])
 
-cross_attention = keras.Model(inputs=[data_input, latent_input], outputs = new_query)
+    cross_attention = keras.Model(inputs=[data_input, latent_input], outputs = new_latent)
+    return cross_attention
+
+def get_transformer_module():
+    latent_input = layers.Input((latent_size, channel_size))
+    layer_init = latent_input
+    for i in range(6): # 6 transformer blocks
+        transformer = layers.LayerNormalization()(layer_init)
+        transformer = layers.MultiHeadAttention(num_heads = transformer_heads, key_dim = channel_size)(transformer, transformer, \
+            return_attention_scores = False)
+        transformer = layers.Add()([latent_input, transformer])
+        transformer = layers.LayerNormalization()(transformer)
+        
+        new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(transformer)
+        new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(new_query)
+        new_query = layers.Dense()(new_query)
+        transformer = layers.Add()([new_query, transformer])
+        layer_init = transformer
+
+    return keras.Model(inputs = latent_input, outputs = transformer)
+
+def get_classifier_module(final_latent):
+    classifier = layers.GlobalAveragePooling1D()(final_latent)
+    classifier = layers.Dense(1, activation='sigmoid')(classifier) # binary crossentropy
+    return classifier
 
 ''' TODO:
-    1. Transformer module w/ skip connections
-    2. Classifier network
-    3. Training code
-    4. Tuning (dropout, data augmentation etc.)
-    5. Plots, accuracy
+    2. Training code
+    3. Tuning (dropout, data augmentation etc.)
+    4. Plots, accuracy
 '''
