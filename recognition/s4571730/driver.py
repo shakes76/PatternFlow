@@ -5,29 +5,42 @@ from model import train, Perceiver
 
 # Constants
 # IMAGE_DIR = 'AKOA_Analysis'
-IMAGE_DIR = 'C:/Users/s4571730/Downloads/AKOA_Analysis'
+IMAGE_DIR = 'D:/AKOA_Analysis'
 BATCH_SIZE = 32
-IMG_SIZE = (64, 64)
+IMG_SIZE = (64, 64) # image resize
 ROWS, COLS = IMG_SIZE
-IMG_SHAPE = (*(IMG_SIZE), 3)
-TEST_PORTION = 5
+TEST_PORTION = 5 # portion of validation set to become test set
 SHUFFLE_RATE = 512
 AUTO_TUNE = tf.data.experimental.AUTOTUNE
+
+LATENT_SIZE = 256  # Size of the latent array.
+NUM_BANDS = 4
+NUM_CLASS = 1
+PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
+NUM_HEADS = 8  # Number of Transformer heads.
+DENSE_UNITS = [PROJ_SIZE, PROJ_SIZE]  # Size of the dense network following cross-attention and transformer
+NUM_TRANS_BLOCKS = 4
+NUM_ITER = 2  # Repetitions of the cross-attention and Transformer modules.
+CLASSIFIER_UNITS = [PROJ_SIZE, NUM_CLASS]  # Size of the dense network of the binary classifier.
+MAX_FREQ = 10
+LR = 0.001
+WEIGHT_DECAY = 0.0001
+EPOCHS = 10
 
 """
 Create train, validate and test dataset
 Images have to be in left and right folders 
 
-    AKOA_Analysis/
-    ...left/
-    ......left_image_1.jpg
-    ......left_image_2.jpg
-    ...right/
-    ......right_image_1.jpg
-    ......right_image_2.jpg
+AKOA_Analysis/
+...left/
+......left_image_1.jpg
+......left_image_2.jpg
+...right/
+......right_image_1.jpg
+......right_image_2.jpg
 
 """
-def create_dataset(image_dir, batch_size, img_size):
+def create_dataset(image_dir, img_size):
     # Training dataset, shuffle is True by default
     training_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
                                                     subset="training", seed=46, label_mode='int',
@@ -49,8 +62,11 @@ def create_dataset(image_dir, batch_size, img_size):
 
     return training_dataset, validation_dataset, test_dataset
 
-def dataset_to_numpy_util(dataset, N):
-  dataset = dataset.batch(N)
+"""
+Convert dataset object to numpy array
+"""
+def dataset_to_numpy_util(dataset, len_ds):
+  dataset = dataset.batch(len_ds)
   for images, labels in dataset:
     numpy_images = images.numpy()
     numpy_labels = labels.numpy()
@@ -70,38 +86,19 @@ def runner_code():
 
 if __name__ == "__main__":
 
-    # generate dataset
-    training_set, validation_set, test_set = create_dataset(IMAGE_DIR, BATCH_SIZE, IMG_SIZE)
+    # generate dataset. Convert to numpy array for eaiser batch size tracking (needed in fourier encode)
+    training_set, validation_set, test_set = create_dataset(IMAGE_DIR, IMG_SIZE)
     X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
     X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
+
     X_val, y_val = dataset_to_numpy_util(validation_set, len(validation_set))
     X_val = X_val.reshape((len(validation_set), ROWS, COLS, 1))
+
     X_test, y_test = dataset_to_numpy_util(test_set, len(test_set))
     X_test = X_test.reshape((len(test_set), ROWS, COLS, 1))
     del training_set
     del validation_set
     del test_set
-
-
-    LATENT_SIZE = 256  # Size of the latent array.
-    NUM_BANDS = 4
-    NUM_CLASS = 1
-    PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
-    NUM_HEADS = 8  # Number of Transformer heads.
-    DENSE_UNITS = [
-        PROJ_SIZE,
-        PROJ_SIZE,
-    ]  # Size of the Transformer Feedforward network.
-    NUM_TRANS_BLOCKS = 4
-    NUM_ITER = 2  # Repetitions of the cross-attention and Transformer modules.
-    CLASSIFIER_UNITS = [
-        PROJ_SIZE,
-        NUM_CLASS,
-    ]  # Size of the Feedforward network of the final classifier.
-    MAX_FREQ = 10
-    LR = 0.001
-    WEIGHT_DECAY = 0.0001
-    EPOCHS = 10
 
     # Initialize the model
     knee_model = Perceiver(patch_size=0,
@@ -129,19 +126,10 @@ if __name__ == "__main__":
     history = train(knee_model,
                     train_set=(X_train, y_train),
                     val_set=(X_val, y_val),
-                    test_set=(X_test, y_test))
+                    test_set=(X_test, y_test),
+                    batch_size=BATCH_SIZE)
     # knee_model.save(checkpoint_dir)
     ckpt_manager.save()
-    # preds = knee_model.predict(X_test[0:len(X_test) // 32 * 32])
-
-    # # Train the model
-    # history_data = knee_model.train_knee_classifier()
-
-    # # Test set evaluation
-    # knee_model.model_evaluation(eval_type='final')
-
-    # # View model summary
-    # knee_model.get_model_summary(model_type='complete')
 
     # Plotting the Learning curves
     acc = history.history['acc']
