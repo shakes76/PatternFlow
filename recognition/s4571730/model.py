@@ -111,22 +111,14 @@ class Perceiver(tf.keras.Model):
 def data_augmentation():
     pass
 
-class ModelCallback(tf.keras.callbacks.Callback):
-    def __init__(self, ckpt, ckpt_manager):
-        self.ckpt_manager = ckpt_manager
-        self.ckpt = ckpt
-
-    def on_epoch_end(self, epoch, logs=None):
-        self.ckpt.start_epoch.assign_add(1)
-        self.ckpt_manager.save()
-
-## trainning
-def train(model, train_set, val_set, test_set):
+# training
+def train(model, train_set, val_set, test_set, batch_size):
     X_train, y_train = train_set
     X_val, y_val = val_set
-    X_val, y_val = X_val[0:len(X_val) // 32 * 32], y_val[0:len(X_val) // 32 * 32]
+    # Make sure ds length is a factor of 32, for fourier encoding (it becomes None otherwise)
+    X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], y_val[0:len(X_val) // batch_size * batch_size]
     X_test, y_test = test_set
-    X_test, y_test = X_test[0:len(X_test) // 32 * 32], y_test[0:len(X_test) // 32 * 32]
+    X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], y_test[0:len(X_test) // batch_size * batch_size]
 
     optimizer = tfa.optimizers.LAMB(
         learning_rate=model.lr, weight_decay_rate=model.weight_decay,
@@ -142,25 +134,25 @@ def train(model, train_set, val_set, test_set):
         ],
     )
 
-    # Create a learning rate scheduler callback.
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-        monitor="val_loss", factor=0.2, patience=3
-    )
+    # # Create a learning rate scheduler callback.
+    # reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+    #     monitor="val_loss", factor=0.2, patience=3
+    # )
 
-    # Create an early stopping callback.
-    early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", patience=15, restore_best_weights=True
-    )
+    # # Create an early stopping callback.
+    # early_stopping = tf.keras.callbacks.EarlyStopping(
+    #     monitor="val_loss", patience=15, restore_best_weights=True
+    # )
 
     # epoch_end = ModelCallback(checkpoint, ckpt_manager)
     # Fit the model.
     history = model.fit(
         X_train, y_train,
         epochs=model.epoch,
-        callbacks=[early_stopping, reduce_lr],
-        batch_size=32,
+        # callbacks=[early_stopping, reduce_lr],
+        batch_size=batch_size,
         validation_data=(X_val, y_val),
-        validation_batch_size=32
+        validation_batch_size=batch_size
     )
 
     _, accuracy = model.evaluate(X_test, y_test)
