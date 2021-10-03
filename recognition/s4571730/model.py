@@ -79,7 +79,8 @@ class Perceiver(tf.keras.Model):
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # Create a classification head.
-        self.classify = dense_block(self.classifier_units)
+        # self.classify = dense_block(self.classifier_units)
+        self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
         super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):

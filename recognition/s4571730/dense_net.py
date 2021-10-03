@@ -10,9 +10,6 @@ def dense_block(dense_layers):
     block.add(layers.Dense(dense_layers[0], activation=tf.nn.gelu))
 
     # Final linear layer
-    if dense_layers[-1] == 1:
-        block.add(layers.Dense(units=dense_layers[-1], activation=tf.nn.sigmoid))
-    else:
-        block.add(layers.Dense(units=dense_layers[-1]))
+    block.add(layers.Dense(units=dense_layers[-1]))
     # block.add(layers.Dropout(dropout_rate))
     return block
