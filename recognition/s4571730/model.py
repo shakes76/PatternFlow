@@ -130,26 +130,13 @@ def train(model, train_set, val_set, test_set, batch_size):
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=[
             tf.keras.metrics.BinaryAccuracy(name="acc"),
-            # tf.keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
         ],
     )
 
-    # # Create a learning rate scheduler callback.
-    # reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-    #     monitor="val_loss", factor=0.2, patience=3
-    # )
-
-    # # Create an early stopping callback.
-    # early_stopping = tf.keras.callbacks.EarlyStopping(
-    #     monitor="val_loss", patience=15, restore_best_weights=True
-    # )
-
-    # epoch_end = ModelCallback(checkpoint, ckpt_manager)
     # Fit the model.
     history = model.fit(
         X_train, y_train,
         epochs=model.epoch,
-        # callbacks=[early_stopping, reduce_lr],
         batch_size=batch_size,
         validation_data=(X_val, y_val),
         validation_batch_size=batch_size
