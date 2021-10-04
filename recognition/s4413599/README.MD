@@ -13,5 +13,5 @@ Running result shows below
 <p align="center"> 
 	<img src="./IMG_Folder/history_dsc.png" />
 	<img src="./IMG_Folder/loss_valoss.png" />
-	<img src="./IMG_Folder/loss_train_acc.png" />
+	<img src="./IMG_Folder/val_train_acc.png" />
 </p>
