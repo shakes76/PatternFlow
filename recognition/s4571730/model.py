@@ -14,10 +14,8 @@ class Perceiver(tf.keras.Model):
         latent_size,
         proj_size,
         num_heads,
-        num_transformer_blocks,
-        # dense_layers,
+        num_trans_blocks,
         num_iterations,
-        # classifier_units,
         max_freq, 
         num_bands,
         lr,
@@ -31,10 +29,8 @@ class Perceiver(tf.keras.Model):
         self.patch_size = patch_size
         self.proj_size = proj_size
         self.num_heads = num_heads
-        self.num_transformer_blocks = num_transformer_blocks
-        # self.dense_layers = dense_layers
+        self.num_trans_blocks = num_trans_blocks
         self.iterations = num_iterations
-        # self.classifier_units = classifier_units
         self.max_freq = max_freq
         self.num_bands = num_bands
         self.lr = lr
@@ -44,7 +40,7 @@ class Perceiver(tf.keras.Model):
        
 
     def build(self, input_shape):
-          # Create latent array.
+        # Create latent array.
         self.latent_array = self.add_weight(
             shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
@@ -55,7 +51,7 @@ class Perceiver(tf.keras.Model):
         # Create patching module.
         # self.patcher = Patches(self.patch_size)
 
-        # Create patch encoder.
+        # Create fourier encoder
         self.fourier_encoder = FourierEncode(self.max_freq, self.num_bands)
 
         # Create cross-attenion module.
@@ -70,7 +66,7 @@ class Perceiver(tf.keras.Model):
             self.latent_size,
             self.proj_size,
             self.num_heads,
-            self.num_transformer_blocks,
+            self.num_trans_blocks,
         )
 
         # Create global average pooling layer.
@@ -82,8 +78,6 @@ class Perceiver(tf.keras.Model):
         super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
-        # if inputs.shape[0] == None:
-        #     return
         encoded_imgs = self.fourier_encoder(inputs)
 
         cross_attention_inputs = [
@@ -103,22 +97,21 @@ class Perceiver(tf.keras.Model):
         logits = self.classify(outputs)
         return logits
 
-    # def train_step(self, imgs):
-    #     print(len(imgs))
-    #     super(Perceiver, self).train_step(imgs)
 
-def data_augmentation():
-    pass
-
-# training
+"""
+Training function
+"""
 def train(model, train_set, val_set, test_set, batch_size):
     X_train, y_train = train_set
     X_val, y_val = val_set
     # Make sure ds length is a factor of 32, for fourier encoding (it becomes None otherwise)
-    X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], y_val[0:len(X_val) // batch_size * batch_size]
+    X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], \
+            y_val[0:len(X_val) // batch_size * batch_size]
     X_test, y_test = test_set
-    X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], y_test[0:len(X_test) // batch_size * batch_size]
+    X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], \
+            y_test[0:len(X_test) // batch_size * batch_size]
 
+    # Using LAMB optimizer for the model, as in the paper
     optimizer = tfa.optimizers.LAMB(
         learning_rate=model.lr, weight_decay_rate=model.weight_decay,
     )
@@ -143,9 +136,6 @@ def train(model, train_set, val_set, test_set, batch_size):
 
     _, accuracy = model.evaluate(X_test, y_test)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    # print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
-
-    ## plot stuff here
 
     # Return history to plot learning curves.
     return history

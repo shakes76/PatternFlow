@@ -26,7 +26,6 @@ def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
         attention = layers.LayerNormalization()(attention)
 
         # Dense MLP block
-        # output = dense_block(dense_layers)(attention)
         outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
 
         # Final linear layer

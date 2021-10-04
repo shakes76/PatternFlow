@@ -135,10 +135,8 @@ if __name__ == "__main__":
                             num_bands=NUM_BANDS,
                             proj_size=PROJ_SIZE, 
                             num_heads=NUM_HEADS,
-                            num_transformer_blocks=NUM_TRANS_BLOCKS,
-                            # dense_layers=DENSE_UNITS,
+                            num_trans_blocks=NUM_TRANS_BLOCKS,
                             num_iterations=NUM_ITER,
-                            # classifier_units=CLASSIFIER_UNITS,
                             max_freq=MAX_FREQ,
                             lr=LR,
                             weight_decay=WEIGHT_DECAY,
@@ -168,9 +166,6 @@ if __name__ == "__main__":
 
     predictions = tf.where(predictions < 0.5, 0, 1).numpy()
     class_names = {0: "left", 1: "right"}
-
-    # print('Predictions:\n', predictions)
-    # print('Labels:\n', label_batch)
 
     plt.figure(figsize=(10, 10))
     for i in range(9):

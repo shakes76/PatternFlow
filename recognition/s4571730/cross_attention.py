@@ -29,7 +29,6 @@ def cross_attention_layer(latent_size, data_size, proj_size):
     attention = layers.LayerNormalization()(attention)
 
     # Pass the attention to a Dense block (MLPs)
-    # outputs = dense_block(dense_units)(attention)
     outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
 
     # Final linear layer
