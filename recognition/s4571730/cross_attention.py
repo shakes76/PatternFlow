@@ -37,6 +37,5 @@ def cross_attention_layer(latent_size, data_size, proj_size):
     # Add input to output
     outputs = layers.Add()([outputs, attention])
 
-    # Create the Keras model.
-    model = tf.keras.Model(inputs=[input_latent, input_data], outputs=outputs)
-    return model
+    # Create the Keras model and return it
+    return tf.keras.Model(inputs=[input_latent, input_data], outputs=outputs)
