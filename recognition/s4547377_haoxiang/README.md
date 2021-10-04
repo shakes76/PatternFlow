@@ -1,4 +1,4 @@
-<h1>Implement the style based GAN model with pytorch.</h1>
+<h1 style="color:Tomato;">Implement the style based GAN model with pytorch.</h1>
 
 <h1>This repository contains the pytorch implementation of the Style-Based Generator Architecture for Generative Adversarial Networks.</h1>
 
@@ -6,7 +6,7 @@ Abstract: We propose an alternative generator architecture for generative advers
 
 If you know nothing about the GAN model, please have a look at the file demo2Part3.ipynb, which contains the normal GAN model implementation with the pytorch.
 
-<h1>Resources:</h1>
+<h1 style="color:Tomato;">Resources:</h1>
 
 The origin image sets can be downloaded via : https://www.oasis-brains.org/
 
@@ -24,6 +24,6 @@ One or more high-end NVIDIA GPUs with at least 11GB of DRAM. We recommend NVIDIA
 NVIDIA driver 391.35 or newer, CUDA toolkit 9.0 or newer, cuDNN 7.3.1 or newer.
 
 
-<h1>Explanation:</h1>
+<h1 style="color:Tomato;">Explanation:</h1>
 
 The style based GAN model is an extension to the GAN architecture that proposes large changes to the generator model, including the use of a mapping network to map points in latent space to an intermediate latent space, the use of the intermediate latent space to control style at each point in the generator model, and the introduction to noise as a source of variation at each point in the generator model.
