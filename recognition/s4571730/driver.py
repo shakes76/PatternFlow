@@ -18,10 +18,8 @@ NUM_BANDS = 4 # Number of bands in Fourier encode. Used in the paper
 NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
 PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
 NUM_HEADS = 8  # Number of Transformer heads.
-# DENSE_UNITS = [PROJ_SIZE, PROJ_SIZE]  # Size of the dense network following cross-attention and transformer
 NUM_TRANS_BLOCKS = 6 # Number of transformer blocks in the transformer layer. Used in the paper
 NUM_ITER = 8  # Repetitions of the cross-attention and Transformer modules. Used in the paper
-# CLASSIFIER_UNITS = [PROJ_SIZE, NUM_CLASS]  # Size of the dense network of the binary classifier.
 MAX_FREQ = 10 # Max frequency in Fourier encode
 LR = 0.001
 WEIGHT_DECAY = 0.0001
@@ -109,6 +107,7 @@ def plot_data(history):
     plt.plot(acc, label='Training Accuracy')
     plt.plot(val_acc, label='Validation Accuracy')
     plt.legend(loc='lower right')
+    plt.xlabel("Epochs")
     plt.ylabel('Accuracy')
     plt.ylim([min(plt.ylim()), 1])
     plt.title('Training and Validation Accuracy')
@@ -117,6 +116,7 @@ def plot_data(history):
     plt.plot(loss, label='Training Loss')
     plt.plot(val_loss, label='Validation Loss')
     plt.legend(loc='upper right')
+    plt.xlabel("Epochs")
     plt.ylabel('Cross Entropy')
     plt.ylim([0, 1.0])
     plt.title('Training and Validation Loss')
