@@ -160,8 +160,6 @@ if __name__ == "__main__":
     ckpt_manager.save()
     plot_data(history)
 
-    # Visualize predictions on a test batch
-
     # Retrieve a batch of images from the test set
     image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
     image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
