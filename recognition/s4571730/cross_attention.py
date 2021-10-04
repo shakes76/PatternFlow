@@ -1,6 +1,5 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
-from dense_net import dense_block
 
 def cross_attention_layer(latent_size, data_size, proj_size):
     # projection_dim = data (1) + 2 * (2*bands + 1)

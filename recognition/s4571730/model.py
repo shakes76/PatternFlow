@@ -2,10 +2,12 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from cross_attention import cross_attention_layer
 from transformer import transformer_layer
-from dense_net import dense_block
 from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
 
+"""
+Perceiver model, based on the paper by Andrew Jaegle et. al.
+"""
 class Perceiver(tf.keras.Model):
     def __init__(
         self,
@@ -48,9 +50,6 @@ class Perceiver(tf.keras.Model):
             name='latent'
         )
 
-        # Create patching module.
-        # self.patcher = Patches(self.patch_size)
-
         # Create fourier encoder
         self.fourier_encoder = FourierEncode(self.max_freq, self.num_bands)
 
@@ -73,17 +72,18 @@ class Perceiver(tf.keras.Model):
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # Create a classification head.
-        # self.classify = dense_block(self.classifier_units)
         self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
+
+        # Build the model
         super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
         encoded_imgs = self.fourier_encoder(inputs)
-
         cross_attention_inputs = [
             tf.expand_dims(self.latent_array, 0),
             encoded_imgs
         ]
+
         # Apply the cross-attention and the Transformer modules iteratively.
         for _ in range(self.iterations):
             latent_array = self.cross_attention(cross_attention_inputs)

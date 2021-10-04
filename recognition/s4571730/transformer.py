@@ -1,7 +1,6 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
 import copy
-from dense_net import dense_block
 
 def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
     inputs_orig = layers.Input(shape=(latent_size, proj_size))
