@@ -2,7 +2,7 @@ from tensorflow.keras import layers
 import tensorflow as tf 
 from dense_net import dense_block
 
-def cross_attention_layer(latent_size, data_size, proj_size, dense_units):
+def cross_attention_layer(latent_size, data_size, proj_size):
     # projection_dim = data (1) + 2 * (2*bands + 1)
     # Input processed with a norm layer
     input_latent = layers.Input((latent_size, proj_size))
@@ -30,10 +30,10 @@ def cross_attention_layer(latent_size, data_size, proj_size, dense_units):
 
     # Pass the attention to a Dense block (MLPs)
     # outputs = dense_block(dense_units)(attention)
-    outputs = layers.Dense(dense_units[0], activation=tf.nn.gelu)(attention)
+    outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
 
     # Final linear layer
-    outputs = layers.Dense(dense_units[-1])(outputs)
+    outputs = layers.Dense(proj_size)(outputs)
 
     # Add input to output
     outputs = layers.Add()([outputs, attention])

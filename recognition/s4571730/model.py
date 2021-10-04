@@ -15,9 +15,9 @@ class Perceiver(tf.keras.Model):
         proj_size,
         num_heads,
         num_transformer_blocks,
-        dense_layers,
+        # dense_layers,
         num_iterations,
-        classifier_units,
+        # classifier_units,
         max_freq, 
         num_bands,
         lr,
@@ -32,9 +32,9 @@ class Perceiver(tf.keras.Model):
         self.proj_size = proj_size
         self.num_heads = num_heads
         self.num_transformer_blocks = num_transformer_blocks
-        self.dense_layers = dense_layers
+        # self.dense_layers = dense_layers
         self.iterations = num_iterations
-        self.classifier_units = classifier_units
+        # self.classifier_units = classifier_units
         self.max_freq = max_freq
         self.num_bands = num_bands
         self.lr = lr
@@ -63,7 +63,6 @@ class Perceiver(tf.keras.Model):
             self.latent_size,
             self.data_size,
             self.proj_size,
-            self.dense_layers,
         )
 
         # Create Transformer module.
@@ -72,7 +71,6 @@ class Perceiver(tf.keras.Model):
             self.proj_size,
             self.num_heads,
             self.num_transformer_blocks,
-            self.dense_layers,
         )
 
         # Create global average pooling layer.

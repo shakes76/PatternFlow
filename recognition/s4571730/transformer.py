@@ -3,7 +3,7 @@ import tensorflow as tf
 import copy
 from dense_net import dense_block
 
-def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks, dense_layers):
+def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
     inputs_orig = layers.Input(shape=(latent_size, proj_size))
 
     input_plus_output = copy.deepcopy(inputs_orig)
@@ -22,15 +22,15 @@ def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks, dense
         # Add output to input
         attention = layers.Add()([attention, inputs_orig])
 
-        # Apply layer normalization 2.
+        # Apply layer normalizationn
         attention = layers.LayerNormalization()(attention)
 
         # Dense MLP block
         # output = dense_block(dense_layers)(attention)
-        outputs = layers.Dense(dense_layers[0], activation=tf.nn.gelu)(attention)
+        outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
 
         # Final linear layer
-        outputs = layers.Dense(dense_layers[-1])(outputs)
+        outputs = layers.Dense(proj_size)(outputs)
 
         # Skip connection 2.
         input_plus_output = layers.Add()([outputs, attention])
