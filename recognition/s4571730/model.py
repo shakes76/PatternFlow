@@ -102,11 +102,15 @@ class Perceiver(tf.keras.Model):
 Training function
 """
 def train(model, train_set, val_set, test_set, batch_size):
+    # Make sure ds length is a factor of batch_size, for fourier encoding (it becomes None otherwise)
     X_train, y_train = train_set
+    X_train, y_train = X_train[0:len(X_train) // batch_size * batch_size], \
+            y_train[0:len(X_train) // batch_size * batch_size]
+    
     X_val, y_val = val_set
-    # Make sure ds length is a factor of 32, for fourier encoding (it becomes None otherwise)
     X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], \
             y_val[0:len(X_val) // batch_size * batch_size]
+
     X_test, y_test = test_set
     X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], \
             y_test[0:len(X_test) // batch_size * batch_size]
