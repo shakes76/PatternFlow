@@ -1,4 +1,4 @@
-<h1>Implement the style based GAN model with pytorch.
+#Implement the style based GAN model with pytorch.
 
 This repository contains the pytorch implementation of the Style-Based Generator Architecture for Generative Adversarial Networks.
 
