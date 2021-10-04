@@ -1,7 +1,6 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
 import math
-# from einops import rearrange, repeat
 
 class FourierEncode(layers.Layer):
     def __init__(self, max_freq=10, num_bands=4):
