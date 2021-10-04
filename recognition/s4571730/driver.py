@@ -156,7 +156,7 @@ if __name__ == "__main__":
                     val_set=(X_val, y_val),
                     test_set=(X_test, y_test),
                     batch_size=BATCH_SIZE)
-    knee_model.save(checkpoint_dir)
+
     ckpt_manager.save()
     plot_data(history)
 
