@@ -23,7 +23,6 @@ class FourierEncode(layers.Layer):
         # get the encoded fourier features
         enc_pos = self._fourier_encode(pos)
         del pos
-        # enc_pos = rearrange(enc_pos, "... n d -> ... (n d)")
         enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.num_bands+1)))
 
         # repeat batch_size times
