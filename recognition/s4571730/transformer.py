@@ -30,7 +30,7 @@ def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
         # Final linear layer
         outputs = layers.Dense(proj_size)(outputs)
 
-        # Skip connection 2.
+         # Add output to input
         input_plus_output = layers.Add()([outputs, attention])
 
     # Create the Keras model.
