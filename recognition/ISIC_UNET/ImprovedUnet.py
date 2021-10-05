@@ -96,4 +96,6 @@ def model():
     model.compile(tf.keras.optimizers.Adam(), loss=dsc_loss, metrics=['accuracy'])
     model.summary()
 
-model()
+
+if __name__ == '__main__':
+    model()
