@@ -98,50 +98,50 @@ class Perceiver(tf.keras.Model):
         return logits
 
 
-"""
-Training function
-"""
-def train(model, train_set, val_set, test_set, batch_size):
-    # Make sure ds length is a factor of batch_size, for fourier encoding (it becomes None otherwise)
-    X_train, y_train = train_set
-    X_train, y_train = X_train[0:len(X_train) // batch_size * batch_size], \
-            y_train[0:len(X_train) // batch_size * batch_size]
-    
-    X_val, y_val = val_set
-    X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], \
-            y_val[0:len(X_val) // batch_size * batch_size]
+    """
+    Training function
+    """
+    def train(self, train_set, val_set, test_set, batch_size):
+        # Make sure ds length is a factor of batch_size, for fourier encoding (it becomes None otherwise)
+        X_train, y_train = train_set
+        X_train, y_train = X_train[0:len(X_train) // batch_size * batch_size], \
+                y_train[0:len(X_train) // batch_size * batch_size]
+        
+        X_val, y_val = val_set
+        X_val, y_val = X_val[0:len(X_val) // batch_size * batch_size], \
+                y_val[0:len(X_val) // batch_size * batch_size]
 
-    X_test, y_test = test_set
-    X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], \
-            y_test[0:len(X_test) // batch_size * batch_size]
+        X_test, y_test = test_set
+        X_test, y_test = X_test[0:len(X_test) // batch_size * batch_size], \
+                y_test[0:len(X_test) // batch_size * batch_size]
 
-    # Using LAMB optimizer for the model, as in the paper
-    optimizer = tfa.optimizers.LAMB(
-        learning_rate=model.lr, weight_decay_rate=model.weight_decay,
-    )
+        # Using LAMB optimizer for the model, as in the paper
+        optimizer = tfa.optimizers.LAMB(
+            learning_rate=self.lr, weight_decay_rate=self.weight_decay,
+        )
 
-    # Compile the model.
-    model.compile(
-        optimizer=optimizer,
-        loss=tf.keras.losses.BinaryCrossentropy(),
-        metrics=[
-            tf.keras.metrics.BinaryAccuracy(name="acc"),
-        ],
-    )
+        # Compile the model.
+        self.compile(
+            optimizer=optimizer,
+            loss=tf.keras.losses.BinaryCrossentropy(),
+            metrics=[
+                tf.keras.metrics.BinaryAccuracy(name="acc"),
+            ],
+        )
 
-    # Fit the model.
-    history = model.fit(
-        X_train, y_train,
-        epochs=model.epoch,
-        batch_size=batch_size,
-        validation_data=(X_val, y_val),
-        validation_batch_size=batch_size
-    )
+        # Fit the model.
+        history = self.fit(
+            X_train, y_train,
+            epochs= self.epoch,
+            batch_size=batch_size,
+            validation_data=(X_val, y_val),
+            validation_batch_size=batch_size
+        )
 
-    _, accuracy = model.evaluate(X_test, y_test)
-    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+        _, accuracy = self.evaluate(X_test, y_test)
+        print(f"Test accuracy: {round(accuracy * 100, 2)}%")
 
-    # Return history to plot learning curves.
-    return history
+        # Return history to plot learning curves.
+        return history
 
 
