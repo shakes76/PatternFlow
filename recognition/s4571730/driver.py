@@ -275,8 +275,25 @@ if __name__ == "__main__":
     # generate dataset. Convert to numpy array for eaiser batch size tracking (needed in fourier encode)
     # X_train, y_train, X_val, y_val, X_test, y_test = get_numpy_ds()
     # img_num = 14944
-    train_split = 0.8
-    X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
+    SAVE_DATA = False
+    if SAVE_DATA:
+        train_split = 0.8
+        X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
+        np.save("D:/np/X_train.npy, X_train")
+        np.save("D:/np/y_train.npy, y_train")
+        np.save("D:/np/X_val.npy, X_val")
+        np.save("D:/np/y_val.npy, X_val")
+        np.save("D:/np/X_test.npy, X_test")
+        np.save("D:/np/y_test.npy, X_test")
+        
+    else:
+        X_train = np.load("D:/np/X_train.npy")
+        y_train = np.load("D:/np/y_train.npy")
+        X_val = np.load("D:/np/X_val.npy")
+        y_val = np.load("D:/np/y_val.npy")
+        X_test = np.load("D:/np/X_test.npy")
+        y_test = np.load("D:/np/y_test.npy")
+
     # Initialize the model
     knee_model = Perceiver(patch_size=0,
                             data_size=ROWS*COLS, 
