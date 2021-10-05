@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
 from model import Perceiver
 import random, os
@@ -8,7 +7,6 @@ from tensorflow.keras.preprocessing.image import img_to_array
 import numpy as np
 
 # Constants
-# IMAGE_DIR = 'AKOA_Analysis'
 IMAGE_DIR = 'D:/AKOA_Analysis_orig/'
 BATCH_SIZE = 32
 IMG_SIZE = (73, 64) # image resize
@@ -31,194 +29,15 @@ EPOCHS = 10
 TRAIN_SPLIT = 0.8
 
 """
-Create train, validate and test dataset
-Images have to be in left and right folders 
-
-AKOA_Analysis/
-...left/
-......left_image_1.jpg
-......left_image_2.jpg
-...right/
-......right_image_1.jpg
-......right_image_2.jpg
-
-"""
-
-def proof_no_set_overlap(train_image_names, test_image_names):
-    """
-    A method for proving the training and validation sets have no overlapping
-    patients, and hence no data-leakage.
-    Args:
-        train_image_names: a list of names of images in training set
-        test_image_names: a list of names of images in validation set
-    """
-    unique_train_patients = []
-    unique_test_patients = []
-
-    for train_name in train_image_names:
-        if train_name[:10] not in unique_train_patients:
-            unique_train_patients.append(train_name[:10])
-    for test_name in test_image_names:
-        if test_name[:10] not in unique_test_patients:
-            unique_test_patients.append(test_name[:10])
-
-    print("unique patients in training set: ", len(unique_train_patients))
-    print("unique patients in testing set: ", len(unique_test_patients))
-
-    matches = len([x for x in unique_train_patients
-                   if x in unique_test_patients])
-
-    print("number of unique patients in both training and testing: ", matches)
-
-
-def split_by_patients(image_names, train_split):
-    """
-    A method for splitting the dataset into training and testing sets.
-    The returned sets have no data leakage by ensuring that a patient is unique
-    to only 1 of the sets. This is verified by proof_no_set_overlap().
-    Args:
-        image_names: A list of all the image names in the full dataset
-        N_train: The number of images to have in the training set
-        N_test: The number of images to have in the validation set
-
-    Returns:
-        training_image_names: A list of image names apart of training set
-        testing_image_names: A list of image names apart of validation set
-    """
-    patient_batches = dict()
-    train_image_names = []
-    test_image_names = []
-
-    for name in image_names:
-        patient_id = name.split('_')[0]
-        if patient_id in patient_batches:
-            patient_batches[patient_id].append(name)
-        else:
-            patient_batches[patient_id] = [name]
-    print("unique patients in entire dataset: ", len(patient_batches))
-
-    building_train = True
-    for patient_batch in patient_batches.values():
-        for name in patient_batch:
-            if building_train:  # first step: building training set
-                if len(train_image_names) <= len(image_names) * train_split:
-                    train_image_names.append(name)
-                else:
-                    building_train = False  # start building test set now
-                    break
-            else:  # second step: building testing set
-                if len(test_image_names) <= len(image_names) * (1-train_split):
-                    test_image_names.append(name)
-                else:
-                    break  # done building test set
-
-    return train_image_names, test_image_names
-
-"""
-Helper function for loading a X and y set based of the image names
+Shuffle the train and test ds, then split test ds into validation and test
 Params:
-    image_names: The image names to build the data set from
-
-Returns:
-    X_set, y_set: numpy array of X (image data) and y (labels)
+    X_train: train ds
+    y_train: train labels
+    X_test: test ds
+    y_test: test labels
+Returns: a tuple of train, val and test ds, with labels
 """
-def get_data(dir, image_names):
-    X_set = []
-    y_set = []
-    for file_name in image_names:
-        # Greyscale is used since the images are black and white only
-        image = load_img(dir + file_name,
-                         target_size=IMG_SIZE,
-                         color_mode="grayscale")
-
-        # convert an image to numpy array
-        X_set.append(img_to_array(image))
-
-        # Determine left or right label based on dataset filename
-        # left: 0, right: 1
-        y_set.append(1) if \
-            "RIGHT" in file_name or "R_I_G_H_T" in file_name or \
-            "Right" in file_name or "right" in file_name \
-        else y_set.append(0)
-            
-
-    X_set = np.array(X_set)
-    X_set /= 255.0
-    y_set = np.array(y_set).flatten()
-    return X_set, y_set
-
-"""
-Create numpy array of images data and labels, using the supplied directory path.
-Ensure no data leakage in the process. 
-Params:
-    dir_data: A directory where all images in the dataset are located
-    train_split: Split ratio of training dataset (the remaining is for
-    validation and test)
-
-Returns:
-    A tuple of training, validation and testing dataset, with their labels.
-"""
-def process_dataset(dir, train_split):
-
-    # List of all file names in the directory
-    all_files = os.listdir(dir)
-
-    # Map patient ID to their files
-    patient_id_to_files = dict()
-
-    # IDs in train and test set, for overlap checking
-    train_ids = set()
-    test_ids = set()
-
-    X_train, y_train, X_test, y_test = [], [], [], []
-
-    for file_name in all_files:
-        # ID is OAIxxxxxxxx, ends before the first _
-        patient_id = file_name.split('_')[0]
-        if patient_id in patient_id_to_files:
-            patient_id_to_files[patient_id].append(file_name) 
-        else:
-            patient_id_to_files[patient_id] = [file_name]
-            
-    # Lambda function to determine label based on filename
-    # left: 0, right: 1
-    label = lambda file_name: 1 if \
-        "RIGHT" in file_name or "R_I_G_H_T" in file_name or \
-        "Right" in file_name or "right" in file_name \
-            else 0
-
-    # Lambda function to load an image in greyscale mode
-    img_load = lambda file_name: load_img(dir + file_name,
-                         target_size=IMG_SIZE,
-                         color_mode="grayscale")
-
-    # Loop each group of files belonging to a patient
-    change_to_test = False
-
-    for patient_id, patient_files in patient_id_to_files.items():
-        # Loop each file in that group
-        train_ids.add(patient_id) if not change_to_test else test_ids.add(patient_id)
-        for file_name in patient_files:
-            if not change_to_test:
-                if len(X_train) <= len(all_files) * train_split:
-                    img = img_to_array(img_load(file_name))
-                    X_train.append(img)
-                    y_train.append(label(file_name))
-                else:
-                    change_to_test = True
-                    break
-            else:
-                img = img_to_array(img_load(file_name))
-                X_test.append(img)
-                y_test.append(label(file_name))
-                
-
-    # Proof that train ids and test ids dont overlap
-    print("Unique patients in dataset: ", len(patient_id_to_files))
-    print("Unique patients in train ds: ", len(train_ids))
-    print("Unique patients in test ds: ", len(test_ids))
-    print("Overlap: ", train_ids.intersection(test_ids))
-
+def split_and_shuffle(X_train, y_train, X_test, y_test):
     # Shuffle the dataset
     indices_train = list(range(0, len(X_train)))
     indices_test = list(range(0, len(X_test)))
@@ -243,69 +62,104 @@ def process_dataset(dir, train_split):
     # split the test set into validation and test, with 1/TEST_PORTION values in test set
     len_val = len(X_test) // TEST_PORTION * (TEST_PORTION - 1)
     X_val, y_val = X_test[0:len_val], y_test[0:len_val]
-
     X_test, y_test = X_test[len_val:], y_test[len_val:]
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-def create_dataset(image_dir, img_size):
-    # Training dataset, shuffle is True by default
-    training_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
-                                                    subset="training", seed=46, label_mode='int',
-                                                    batch_size=1, image_size=img_size)
-    # Validation dataset
-    validation_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
-                                                      subset="validation", seed=46, label_mode='int',
-                                                      batch_size=1, image_size=img_size)
+"""
+Verify that no train patient ids get into test patient ids
+Params:
+    patient_ids: Dict mapping id to a list of files
+    train_ids: Set containing train patient ids
+    test_ids: Set containing test patient ids
+Returns: 
+    nothing, but assert that the intersection between train and test patients is 0
+"""
+def verify_no_leakage(patient_ids, train_ids, test_ids):
+    # Proof that train ids and test ids dont overlap
+    print("Unique patients in dataset: ", len(patient_ids))
+    print("Unique patients in train ds: ", len(train_ids))
+    print("Unique patients in test ds: ", len(test_ids))
+    print("Overlap: ", train_ids.intersection(test_ids))
 
-    # Test dataset, taking 1/5 of the validation set
-    val_batches = tf.data.experimental.cardinality(validation_dataset)
-    test_dataset = validation_dataset.take(val_batches // TEST_PORTION)
-    validation_dataset = validation_dataset.skip(val_batches // TEST_PORTION)
-
-    # normalize and prefetch images for faster training
-    training_dataset = training_dataset.map(process).prefetch(AUTO_TUNE)
-    validation_dataset = validation_dataset.map(process).prefetch(AUTO_TUNE)
-    test_dataset = test_dataset.map(process).prefetch(AUTO_TUNE)
-
-    return training_dataset, validation_dataset, test_dataset
+    assert len(train_ids.intersection(test_ids)) == 0
 
 """
-Convert dataset object to numpy array
+Create numpy array of images data and labels, using the supplied directory path.
+Ensure no data leakage in the process. 
+Params:
+    dir_data: A directory where all images in the dataset are located
+    train_split: Split ratio of training dataset (the remaining is for
+    validation and test)
+
+Returns:
+    A tuple of training, validation and testing dataset, with their labels.
 """
-def dataset_to_numpy_util(dataset, len_ds):
-  dataset = dataset.batch(len_ds)
-  for images, labels in dataset:
-    numpy_images = images.numpy()
-    numpy_labels = labels.numpy()
-    break
+def process_dataset(dir, train_split):
 
-  return numpy_images, numpy_labels
+    # List of all file names in the directory
+    all_files = os.listdir(dir)
 
-"""
-Normalize image to range [0,1]
-"""
-def process(image,label):
-    image = tf.cast(image / 255. ,tf.float32)
-    return image,label
+    # Map patient ID to their files
+    patient_id_to_files = dict()
+    # Load file names to respective patients
+    for file_name in all_files:
+        # ID is OAIxxxxxxxx, ends before the first _
+        patient_id = file_name.split('_')[0]
+        if patient_id in patient_id_to_files:
+            patient_id_to_files[patient_id].append(file_name) 
+        else:
+            patient_id_to_files[patient_id] = [file_name]
 
-def get_numpy_ds():
-    training_set, validation_set, test_set = create_dataset(IMAGE_DIR, IMG_SIZE)
-    X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
-    X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
+    # Shuffle the dict for better training    
+    shuffled = list(patient_id_to_files.items())
+    random.shuffle(shuffled)
+    patient_id_to_files = dict(shuffled)
 
-    X_val, y_val = dataset_to_numpy_util(validation_set, len(validation_set))
-    X_val = X_val.reshape((len(validation_set), ROWS, COLS, 1))
+    # Lambda function to determine label based on filename
+    # left: 0, right: 1
+    label = lambda file_name: 1 if \
+        "RIGHT" in file_name or "R_I_G_H_T" in file_name or \
+        "Right" in file_name or "right" in file_name \
+            else 0
 
-    X_test, y_test = dataset_to_numpy_util(test_set, len(test_set))
-    X_test = X_test.reshape((len(test_set), ROWS, COLS, 1))
-    del training_set
-    del validation_set
-    del test_set
-    return (X_train, y_train, X_val, y_val, X_test, y_test)
+    # Lambda function to load an image in greyscale mode
+    load_image = lambda file_name: img_to_array(load_img(dir + file_name,
+                         target_size=IMG_SIZE,
+                         color_mode="grayscale"))
 
-def plot_data(history):
+    # Flag marking when to switch to test set
+    change_to_test = False
+
+    X_train, y_train, X_test, y_test = [], [], [], []
+    # IDs in train and test set, for overlap checking
+    train_ids = set()
+    test_ids = set()
+
+    # Loop each group of files belonging to a patient
+    for patient_id, patient_files in patient_id_to_files.items():
+        # Loop each file in that group
+        train_ids.add(patient_id) if not change_to_test else test_ids.add(patient_id)
+        for file_name in patient_files:
+            if not change_to_test:
+                if len(X_train) <= len(all_files) * train_split:
+                    X_train.append(load_image(file_name))
+                    y_train.append(label(file_name))
+                else:
+                    change_to_test = True
+                    # Break ensures moving to the next patient
+                    break
+            else:
+                X_test.append(load_image(file_name))
+                y_test.append(label(file_name))
+    
+    verify_no_leakage(patient_id_to_files, train_ids, test_ids)
+
+    # Shuffle the ds, split test into test and val and return
+    return split_and_shuffle(X_train, y_train, X_test, y_test)
+
+def plot_history(history):
     # Plotting the Learning curves
     acc = history.history['acc']
     val_acc = history.history['val_acc']
@@ -345,7 +199,8 @@ if __name__ == "__main__":
         np.save("D:/np/y_val.npy", y_val)
         np.save("D:/np/X_test.npy", X_test)
         np.save("D:/np/y_test.npy", y_test)
-        print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
+
+        print(len(X_train), len(X_test), len(X_val), len(y_train), len(y_test), len(y_val))
 
     else:
         X_train = np.load("D:/np/X_train.npy")
@@ -355,7 +210,7 @@ if __name__ == "__main__":
         X_test = np.load("D:/np/X_test.npy")
         y_test = np.load("D:/np/y_test.npy")
 
-        print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
+        print(len(X_train), len(X_test), len(X_val), len(y_train), len(y_test), len(y_val))
 
     # Initialize the model
     knee_model = Perceiver(patch_size=0,
@@ -385,7 +240,7 @@ if __name__ == "__main__":
                     batch_size=BATCH_SIZE)
 
     ckpt_manager.save()
-    plot_data(history)
+    plot_history(history)
 
     # Retrieve a batch of images from the test set
     image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
