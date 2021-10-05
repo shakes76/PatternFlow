@@ -9,7 +9,7 @@ import numpy as np
 
 # Constants
 # IMAGE_DIR = 'AKOA_Analysis'
-IMAGE_DIR = 'D:/AKOA_Analysis_orig'
+IMAGE_DIR = 'D:/AKOA_Analysis_orig/'
 BATCH_SIZE = 32
 IMG_SIZE = (73, 64) # image resize
 ROWS, COLS = IMG_SIZE
@@ -28,6 +28,7 @@ MAX_FREQ = 10 # Max frequency in Fourier encode
 LR = 0.001
 WEIGHT_DECAY = 0.0001
 EPOCHS = 10
+TRAIN_SPLIT = 0.8
 
 """
 Create train, validate and test dataset
@@ -113,72 +114,137 @@ def split_by_patients(image_names, train_split):
 
     return train_image_names, test_image_names
 
-###### (test commit)
-def process_dataset(dir_data, train_split):
-    """
-    A function for creating the tf arrays for the X and y training and
-    validation sets from the image files in this directory 'dir_data'.
-    Ensures no data leakage in sets by calling split_by_patients()
-    Args:
-        dir_data: A directory where all images in the dataset are located
-        N_train: The number of images to have in the training set
-        N_test: The number of images to have in the validation set
+"""
+Helper function for loading a X and y set based of the image names
+Params:
+    image_names: The image names to build the data set from
 
-    Returns:
-        X_train, y_train: The tf array formatted images and their labels
-         for the training set
-        X_test, y_test: The tf array formatted images and their labels
-         for the validation set
-    """
-    all_image_names = os.listdir(dir_data)
-    # num_total: 18680
-    # num left found: 7,760
-    # num_right found: 10,920
+Returns:
+    X_set, y_set: numpy array of X (image data) and y (labels)
+"""
+def get_data(dir, image_names):
+    X_set = []
+    y_set = []
+    for file_name in image_names:
+        # Greyscale is used since the images are black and white only
+        image = load_img(dir + file_name,
+                         target_size=IMG_SIZE,
+                         color_mode="grayscale")
 
-    train_image_names, test_image_names = split_by_patients(all_image_names,
-                                                            train_split)
+        # convert an image to numpy array
+        X_set.append(img_to_array(image))
 
-    random.shuffle(train_image_names)
-    random.shuffle(test_image_names)
+        # Determine left or right label based on dataset filename
+        # left: 0, right: 1
+        y_set.append(1) if \
+            "RIGHT" in file_name or "R_I_G_H_T" in file_name or \
+            "Right" in file_name or "right" in file_name \
+        else y_set.append(0)
+            
 
-    proof_no_set_overlap(train_image_names, test_image_names)
+    X_set = np.array(X_set)
+    X_set /= 255.0
+    y_set = np.array(y_set).flatten()
+    return X_set, y_set
 
-    def get_data(image_names):
-        """
-        Helper function for loading a X and y set based of the image names
-        Args:
-            image_names: The image names to build the data set from
+"""
+Create numpy array of images data and labels, using the supplied directory path.
+Ensure no data leakage in the process. 
+Params:
+    dir_data: A directory where all images in the dataset are located
+    train_split: Split ratio of training dataset (the remaining is for
+    validation and test)
 
-        Returns:
-            X_set, y_set: the tf array of the X and y set built
-        """
-        X_set = []
-        y_set = []
-        for i, name in enumerate(image_names):
-            image = load_img(dir_data + "/" + name,
-                             target_size=IMG_SIZE, color_mode="grayscale")
+Returns:
+    A tuple of training, validation and testing dataset, with their labels.
+"""
+def process_dataset(dir, train_split):
 
-            # normalise image pixels
-            image = img_to_array(image)
+    # List of all file names in the directory
+    all_files = os.listdir(dir)
 
-            X_set.append(image)
-            if "LEFT" in name or "L_E_F_T" in name or \
-                    "Left" in name or "left" in name:
-                label = 0
+    # Map patient ID to their files
+    patient_id_to_files = dict()
+
+    # IDs in train and test set, for overlap checking
+    train_ids = set()
+    test_ids = set()
+
+    X_train, y_train, X_test, y_test = [], [], [], []
+
+    for file_name in all_files:
+        # ID is OAIxxxxxxxx, ends before the first _
+        patient_id = file_name.split('_')[0]
+        if patient_id in patient_id_to_files:
+            patient_id_to_files[patient_id].append(file_name) 
+        else:
+            patient_id_to_files[patient_id] = [file_name]
+            
+    # Lambda function to determine label based on filename
+    # left: 0, right: 1
+    label = lambda file_name: 1 if \
+        "RIGHT" in file_name or "R_I_G_H_T" in file_name or \
+        "Right" in file_name or "right" in file_name \
+            else 0
+
+    # Lambda function to load an image in greyscale mode
+    img_load = lambda file_name: load_img(dir + file_name,
+                         target_size=IMG_SIZE,
+                         color_mode="grayscale")
+
+    # Loop each group of files belonging to a patient
+    change_to_test = False
+    for patient_id, patient_files in patient_id_to_files.items():
+        # Loop each file in that group
+        train_ids.add(patient_id) if not change_to_test else test_ids.add(patient_id)
+        for file_name in patient_files:
+            if not change_to_test:
+                if len(X_train) <= len(all_files) * train_split:
+                    img = img_to_array(img_load(file_name))
+                    X_train.append(img)
+                    y_train.append(label(file_name))
+                else:
+                    change_to_test = True
+                    break
             else:
-                label = 1
+                img = img_to_array(img_load(file_name))
+                X_test.append(img)
+                y_test.append(label(file_name))
+                
 
-            y_set.append(label)
+    # Proof that train ids and test ids dont overlap
+    print("Unique patients in dataset: ", len(patient_id_to_files))
+    print("Unique patients in train ds: ", len(train_ids))
+    print("Unique patients in test ds: ", len(test_ids))
+    print("Overlap: ", train_ids.intersection(test_ids))
 
-        X_set = np.array(X_set)
-        X_set /= 255.0
+    # Shuffle the dataset
+    indices_train = list(range(0, len(X_train)))
+    indices_test = list(range(0, len(X_test)))
 
-        return X_set, np.array(y_set, dtype=np.uint8).flatten()
+    random.shuffle(indices_train)
+    random.shuffle(indices_test)
 
-    X_train, y_train = get_data(train_image_names)
-    X_val, y_val = get_data(test_image_names)
-    X_test, y_test = X_val[len(X_val) // TEST_PORTION * 4:], y_val[len(y_val) // TEST_PORTION * 4:]
-    X_val, y_val = X_val[0:len(X_val) // TEST_PORTION * 4], y_val[0:len(y_val) // TEST_PORTION * 4]
+    X_train = np.array(X_train)
+    X_train /= 255.0
+    X_train = X_train[indices_train]
+
+    y_train = np.array(y_train)
+    y_train = y_train[indices_train]
+
+    X_test = np.array(X_test)
+    X_test /= 255.0
+    X_test = X_test[indices_test]
+
+    y_test = np.array(y_test)
+    y_test = y_test[indices_test]
+
+    # split the test set into validation and test, with 1/TEST_PORTION values in test set
+    X_val, y_val = X_test[0:len(X_test) // TEST_PORTION * (TEST_PORTION - 1)], \
+        y_test[0:len(y_test) // TEST_PORTION * (TEST_PORTION - 1)]
+
+    X_test, y_test = X_val[len(X_val) // TEST_PORTION * (TEST_PORTION - 1):], \
+        y_test[len(y_test) // TEST_PORTION * (TEST_PORTION - 1):]
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -270,13 +336,9 @@ def plot_data(history):
 
 if __name__ == "__main__":
 
-    # generate dataset. Convert to numpy array for eaiser batch size tracking (needed in fourier encode)
-    # X_train, y_train, X_val, y_val, X_test, y_test = get_numpy_ds()
-    # img_num = 14944
-    SAVE_DATA = False
+    SAVE_DATA = True
     if SAVE_DATA:
-        train_split = 0.8
-        X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
+        X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, TRAIN_SPLIT)
         np.save("D:/np/X_train.npy", X_train)
         np.save("D:/np/y_train.npy", y_train)
         np.save("D:/np/X_val.npy", X_val)
@@ -292,51 +354,51 @@ if __name__ == "__main__":
         X_test = np.load("D:/np/X_test.npy")
         y_test = np.load("D:/np/y_test.npy")
 
-    # Initialize the mo del
-    knee_model = Perceiver(patch_size=0,
-                            data_size=ROWS*COLS, 
-                            latent_size=LATENT_SIZE,
-                            num_bands=NUM_BANDS,
-                            proj_size=PROJ_SIZE, 
-                            num_heads=NUM_HEADS,
-                            num_trans_blocks=NUM_TRANS_BLOCKS,
-                            num_iterations=NUM_ITER,
-                            max_freq=MAX_FREQ,
-                            lr=LR,
-                            weight_decay=WEIGHT_DECAY,
-                            epoch=EPOCHS)
+    # Initialize the model
+    # knee_model = Perceiver(patch_size=0,
+    #                         data_size=ROWS*COLS, 
+    #                         latent_size=LATENT_SIZE,
+    #                         num_bands=NUM_BANDS,
+    #                         proj_size=PROJ_SIZE, 
+    #                         num_heads=NUM_HEADS,
+    #                         num_trans_blocks=NUM_TRANS_BLOCKS,
+    #                         num_iterations=NUM_ITER,
+    #                         max_freq=MAX_FREQ,
+    #                         lr=LR,
+    #                         weight_decay=WEIGHT_DECAY,
+    #                         epoch=EPOCHS)
 
 
-    checkpoint_dir = './ckpts'
-    checkpoint = tf.train.Checkpoint(
-            knee_model=knee_model)
-    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    # checkpoint_dir = './ckpts'
+    # checkpoint = tf.train.Checkpoint(
+    #         knee_model=knee_model)
+    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    history = knee_model.train(
-                    train_set=(X_train, y_train),
-                    val_set=(X_val, y_val),
-                    test_set=(X_test, y_test),
-                    batch_size=BATCH_SIZE)
+    # # checkpoint.restore(ckpt_manager.latest_checkpoint)
+    # history = knee_model.train(
+    #                 train_set=(X_train, y_train),
+    #                 val_set=(X_val, y_val),
+    #                 test_set=(X_test, y_test),
+    #                 batch_size=BATCH_SIZE)
 
-    ckpt_manager.save()
-    plot_data(history)
+    # ckpt_manager.save()
+    # plot_data(history)
 
-    # Retrieve a batch of images from the test set
-    image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
-    image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
-    predictions = knee_model.predict_on_batch(image_batch).flatten()
-    label_batch = label_batch.flatten()
+    # # Retrieve a batch of images from the test set
+    # image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
+    # image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    # predictions = knee_model.predict_on_batch(image_batch).flatten()
+    # label_batch = label_batch.flatten()
 
-    # Fix the preds into 0 (left) or 1 (right)
-    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
-    class_names = {0: "left", 1: "right"}
+    # # Fix the preds into 0 (left) or 1 (right)
+    # predictions = tf.where(predictions < 0.5, 0, 1).numpy()
+    # class_names = {0: "left", 1: "right"}
 
-    # Plot preds
-    plt.figure(figsize=(10, 10))
-    for i in range(9):
-        ax = plt.subplot(3, 3, i + 1)
-        plt.imshow(image_batch[i], cmap="gray")
-        plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
-        plt.axis("off")
-    plt.show()
+    # # Plot preds
+    # plt.figure(figsize=(10, 10))
+    # for i in range(9):
+    #     ax = plt.subplot(3, 3, i + 1)
+    #     plt.imshow(image_batch[i], cmap="gray")
+    #     plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
+    #     plt.axis("off")
+    # plt.show()
