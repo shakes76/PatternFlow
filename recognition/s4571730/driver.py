@@ -113,7 +113,7 @@ def split_by_patients(image_names, train_split):
 
     return train_image_names, test_image_names
 
-
+###### (test commit)
 def process_dataset(dir_data, train_split):
     """
     A function for creating the tf arrays for the X and y training and
