@@ -143,7 +143,7 @@ def process_dataset(dir_data, train_split):
 
     proof_no_set_overlap(train_image_names, test_image_names)
 
-    img_shape = (64, 64, 3)
+    img_shape = (64, 64)
 
     def get_data(image_names):
         """
@@ -158,12 +158,12 @@ def process_dataset(dir_data, train_split):
         y_set = []
         for i, name in enumerate(image_names):
             image = load_img(dir_data + "/" + name,
-                             target_size=img_shape[:2])
+                             target_size=(img_shape), color_mode="grayscale")
 
             # normalise image pixels
             image = img_to_array(image)
 
-            X_set.append(image[:, :, 0])
+            X_set.append(image)
             if "LEFT" in name or "L_E_F_T" in name or \
                     "Left" in name or "left" in name:
                 label = 0
