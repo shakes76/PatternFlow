@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
-from model import train, Perceiver
+from model import Perceiver
 import random, os
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -11,14 +11,14 @@ import numpy as np
 # IMAGE_DIR = 'AKOA_Analysis'
 IMAGE_DIR = 'D:/AKOA_Analysis_orig'
 BATCH_SIZE = 32
-IMG_SIZE = (64, 64) # image resize
+IMG_SIZE = (73, 64) # image resize
 ROWS, COLS = IMG_SIZE
 TEST_PORTION = 5 # portion of validation set to become test set
 SHUFFLE_RATE = 512
 AUTO_TUNE = tf.data.experimental.AUTOTUNE
 
 LATENT_SIZE = 256  # Size of the latent array.
-NUM_BANDS = 4 # Number of bands in Fourier encode. Used in the paper
+NUM_BANDS = 6 # Number of bands in Fourier encode. Used in the paper
 NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
 PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
 NUM_HEADS = 8  # Number of Transformer heads.
@@ -143,8 +143,6 @@ def process_dataset(dir_data, train_split):
 
     proof_no_set_overlap(train_image_names, test_image_names)
 
-    img_shape = (64, 64)
-
     def get_data(image_names):
         """
         Helper function for loading a X and y set based of the image names
@@ -158,7 +156,7 @@ def process_dataset(dir_data, train_split):
         y_set = []
         for i, name in enumerate(image_names):
             image = load_img(dir_data + "/" + name,
-                             target_size=(img_shape), color_mode="grayscale")
+                             target_size=IMG_SIZE, color_mode="grayscale")
 
             # normalise image pixels
             image = img_to_array(image)
@@ -179,8 +177,8 @@ def process_dataset(dir_data, train_split):
 
     X_train, y_train = get_data(train_image_names)
     X_val, y_val = get_data(test_image_names)
-    X_test, y_test = X_val[len(X_val) // 5 * 4:], y_val[len(y_val) // 5 * 4:]
-    X_val, y_val = X_val[0:len(X_val) // 5 * 4], y_val[0:len(y_val) // 5 * 4]
+    X_test, y_test = X_val[len(X_val) // TEST_PORTION * 4:], y_val[len(y_val) // TEST_PORTION * 4:]
+    X_val, y_val = X_val[0:len(X_val) // TEST_PORTION * 4], y_val[0:len(y_val) // TEST_PORTION * 4]
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -279,13 +277,13 @@ if __name__ == "__main__":
     if SAVE_DATA:
         train_split = 0.8
         X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
-        np.save("D:/np/X_train.npy, X_train")
-        np.save("D:/np/y_train.npy, y_train")
-        np.save("D:/np/X_val.npy, X_val")
-        np.save("D:/np/y_val.npy, X_val")
-        np.save("D:/np/X_test.npy, X_test")
-        np.save("D:/np/y_test.npy, X_test")
-        
+        np.save("D:/np/X_train.npy", X_train)
+        np.save("D:/np/y_train.npy", y_train)
+        np.save("D:/np/X_val.npy", X_val)
+        np.save("D:/np/y_val.npy", y_val)
+        np.save("D:/np/X_test.npy", X_test)
+        np.save("D:/np/y_test.npy", y_test)
+
     else:
         X_train = np.load("D:/np/X_train.npy")
         y_train = np.load("D:/np/y_train.npy")
@@ -294,7 +292,7 @@ if __name__ == "__main__":
         X_test = np.load("D:/np/X_test.npy")
         y_test = np.load("D:/np/y_test.npy")
 
-    # Initialize the model
+    # Initialize the mo del
     knee_model = Perceiver(patch_size=0,
                             data_size=ROWS*COLS, 
                             latent_size=LATENT_SIZE,
@@ -315,7 +313,7 @@ if __name__ == "__main__":
     ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
     # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    history = train(knee_model,
+    history = knee_model.train(
                     train_set=(X_train, y_train),
                     val_set=(X_val, y_val),
                     test_set=(X_test, y_test),
@@ -330,9 +328,11 @@ if __name__ == "__main__":
     predictions = knee_model.predict_on_batch(image_batch).flatten()
     label_batch = label_batch.flatten()
 
+    # Fix the preds into 0 (left) or 1 (right)
     predictions = tf.where(predictions < 0.5, 0, 1).numpy()
     class_names = {0: "left", 1: "right"}
 
+    # Plot preds
     plt.figure(figsize=(10, 10))
     for i in range(9):
         ax = plt.subplot(3, 3, i + 1)
@@ -340,5 +340,3 @@ if __name__ == "__main__":
         plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
         plt.axis("off")
     plt.show()
-
-
