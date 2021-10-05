@@ -194,7 +194,7 @@ def process_dataset(dir, train_split):
 
     # Loop each group of files belonging to a patient
     change_to_test = False
-    
+
     for patient_id, patient_files in patient_id_to_files.items():
         # Loop each file in that group
         train_ids.add(patient_id) if not change_to_test else test_ids.add(patient_id)
@@ -241,11 +241,10 @@ def process_dataset(dir, train_split):
     y_test = y_test[indices_test]
 
     # split the test set into validation and test, with 1/TEST_PORTION values in test set
-    X_val, y_val = X_test[0:len(X_test) // TEST_PORTION * (TEST_PORTION - 1)], \
-        y_test[0:len(y_test) // TEST_PORTION * (TEST_PORTION - 1)]
+    len_val = len(X_test) // TEST_PORTION * (TEST_PORTION - 1)
+    X_val, y_val = X_test[0:len_val], y_test[0:len_val]
 
-    X_test, y_test = X_val[len(X_val) // TEST_PORTION * (TEST_PORTION - 1):], \
-        y_test[len(y_test) // TEST_PORTION * (TEST_PORTION - 1):]
+    X_test, y_test = X_test[len_val:], y_test[len_val:]
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -346,6 +345,7 @@ if __name__ == "__main__":
         np.save("D:/np/y_val.npy", y_val)
         np.save("D:/np/X_test.npy", X_test)
         np.save("D:/np/y_test.npy", y_test)
+        print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
 
     else:
         X_train = np.load("D:/np/X_train.npy")
@@ -355,51 +355,53 @@ if __name__ == "__main__":
         X_test = np.load("D:/np/X_test.npy")
         y_test = np.load("D:/np/y_test.npy")
 
+        print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
+
     # Initialize the model
-    # knee_model = Perceiver(patch_size=0,
-    #                         data_size=ROWS*COLS, 
-    #                         latent_size=LATENT_SIZE,
-    #                         num_bands=NUM_BANDS,
-    #                         proj_size=PROJ_SIZE, 
-    #                         num_heads=NUM_HEADS,
-    #                         num_trans_blocks=NUM_TRANS_BLOCKS,
-    #                         num_iterations=NUM_ITER,
-    #                         max_freq=MAX_FREQ,
-    #                         lr=LR,
-    #                         weight_decay=WEIGHT_DECAY,
-    #                         epoch=EPOCHS)
+    knee_model = Perceiver(patch_size=0,
+                            data_size=ROWS*COLS, 
+                            latent_size=LATENT_SIZE,
+                            num_bands=NUM_BANDS,
+                            proj_size=PROJ_SIZE, 
+                            num_heads=NUM_HEADS,
+                            num_trans_blocks=NUM_TRANS_BLOCKS,
+                            num_iterations=NUM_ITER,
+                            max_freq=MAX_FREQ,
+                            lr=LR,
+                            weight_decay=WEIGHT_DECAY,
+                            epoch=EPOCHS)
 
 
-    # checkpoint_dir = './ckpts'
-    # checkpoint = tf.train.Checkpoint(
-    #         knee_model=knee_model)
-    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    checkpoint_dir = './ckpts'
+    checkpoint = tf.train.Checkpoint(
+            knee_model=knee_model)
+    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    # # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    # history = knee_model.train(
-    #                 train_set=(X_train, y_train),
-    #                 val_set=(X_val, y_val),
-    #                 test_set=(X_test, y_test),
-    #                 batch_size=BATCH_SIZE)
+    # checkpoint.restore(ckpt_manager.latest_checkpoint)
+    history = knee_model.train(
+                    train_set=(X_train, y_train),
+                    val_set=(X_val, y_val),
+                    test_set=(X_test, y_test),
+                    batch_size=BATCH_SIZE)
 
-    # ckpt_manager.save()
-    # plot_data(history)
+    ckpt_manager.save()
+    plot_data(history)
 
-    # # Retrieve a batch of images from the test set
-    # image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
-    # image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
-    # predictions = knee_model.predict_on_batch(image_batch).flatten()
-    # label_batch = label_batch.flatten()
+    # Retrieve a batch of images from the test set
+    image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
+    image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    predictions = knee_model.predict_on_batch(image_batch).flatten()
+    label_batch = label_batch.flatten()
 
-    # # Fix the preds into 0 (left) or 1 (right)
-    # predictions = tf.where(predictions < 0.5, 0, 1).numpy()
-    # class_names = {0: "left", 1: "right"}
+    # Fix the preds into 0 (left) or 1 (right)
+    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
+    class_names = {0: "left", 1: "right"}
 
-    # # Plot preds
-    # plt.figure(figsize=(10, 10))
-    # for i in range(9):
-    #     ax = plt.subplot(3, 3, i + 1)
-    #     plt.imshow(image_batch[i], cmap="gray")
-    #     plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
-    #     plt.axis("off")
-    # plt.show()
+    # Plot preds
+    plt.figure(figsize=(10, 10))
+    for i in range(9):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(image_batch[i], cmap="gray")
+        plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
+        plt.axis("off")
+    plt.show()
