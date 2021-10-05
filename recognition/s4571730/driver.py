@@ -194,6 +194,8 @@ def process_dataset(dir, train_split):
 
     # Loop each group of files belonging to a patient
     change_to_test = False
+
+    #### Test commit 
     for patient_id, patient_files in patient_id_to_files.items():
         # Loop each file in that group
         train_ids.add(patient_id) if not change_to_test else test_ids.add(patient_id)
