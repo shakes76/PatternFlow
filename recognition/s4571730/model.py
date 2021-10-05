@@ -11,7 +11,6 @@ Perceiver model, based on the paper by Andrew Jaegle et. al.
 class Perceiver(tf.keras.Model):
     def __init__(
         self,
-        patch_size,
         data_size,
         latent_size,
         proj_size,
@@ -28,7 +27,6 @@ class Perceiver(tf.keras.Model):
 
         self.latent_size = latent_size
         self.data_size = data_size
-        self.patch_size = patch_size
         self.proj_size = proj_size
         self.num_heads = num_heads
         self.num_trans_blocks = num_trans_blocks
@@ -38,8 +36,6 @@ class Perceiver(tf.keras.Model):
         self.lr = lr
         self.epoch = epoch
         self.weight_decay = weight_decay
-
-       
 
     def build(self, input_shape):
         # Create latent array.
