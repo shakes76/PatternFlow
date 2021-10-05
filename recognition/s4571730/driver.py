@@ -277,53 +277,51 @@ if __name__ == "__main__":
     # img_num = 14944
     train_split = 0.8
     X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
-    print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
-    print(X_train.shape)
-    # # Initialize the model
-    # knee_model = Perceiver(patch_size=0,
-    #                         data_size=ROWS*COLS, 
-    #                         latent_size=LATENT_SIZE,
-    #                         num_bands=NUM_BANDS,
-    #                         proj_size=PROJ_SIZE, 
-    #                         num_heads=NUM_HEADS,
-    #                         num_trans_blocks=NUM_TRANS_BLOCKS,
-    #                         num_iterations=NUM_ITER,
-    #                         max_freq=MAX_FREQ,
-    #                         lr=LR,
-    #                         weight_decay=WEIGHT_DECAY,
-    #                         epoch=EPOCHS)
+    # Initialize the model
+    knee_model = Perceiver(patch_size=0,
+                            data_size=ROWS*COLS, 
+                            latent_size=LATENT_SIZE,
+                            num_bands=NUM_BANDS,
+                            proj_size=PROJ_SIZE, 
+                            num_heads=NUM_HEADS,
+                            num_trans_blocks=NUM_TRANS_BLOCKS,
+                            num_iterations=NUM_ITER,
+                            max_freq=MAX_FREQ,
+                            lr=LR,
+                            weight_decay=WEIGHT_DECAY,
+                            epoch=EPOCHS)
 
 
-    # checkpoint_dir = './ckpts'
-    # checkpoint = tf.train.Checkpoint(
-    #         knee_model=knee_model)
-    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
+    checkpoint_dir = './ckpts'
+    checkpoint = tf.train.Checkpoint(
+            knee_model=knee_model)
+    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=3)
 
-    # # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    # history = train(knee_model,
-    #                 train_set=(X_train, y_train),
-    #                 val_set=(X_val, y_val),
-    #                 test_set=(X_test, y_test),
-    #                 batch_size=BATCH_SIZE)
+    # checkpoint.restore(ckpt_manager.latest_checkpoint)
+    history = train(knee_model,
+                    train_set=(X_train, y_train),
+                    val_set=(X_val, y_val),
+                    test_set=(X_test, y_test),
+                    batch_size=BATCH_SIZE)
 
-    # ckpt_manager.save()
-    # plot_data(history)
+    ckpt_manager.save()
+    plot_data(history)
 
-    # # Retrieve a batch of images from the test set
-    # image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
-    # image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
-    # predictions = knee_model.predict_on_batch(image_batch).flatten()
-    # label_batch = label_batch.flatten()
+    # Retrieve a batch of images from the test set
+    image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
+    image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    predictions = knee_model.predict_on_batch(image_batch).flatten()
+    label_batch = label_batch.flatten()
 
-    # predictions = tf.where(predictions < 0.5, 0, 1).numpy()
-    # class_names = {0: "left", 1: "right"}
+    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
+    class_names = {0: "left", 1: "right"}
 
-    # plt.figure(figsize=(10, 10))
-    # for i in range(9):
-    #     ax = plt.subplot(3, 3, i + 1)
-    #     plt.imshow(image_batch[i], cmap="gray")
-    #     plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
-    #     plt.axis("off")
-    # plt.show()
+    plt.figure(figsize=(10, 10))
+    for i in range(9):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(image_batch[i], cmap="gray")
+        plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
+        plt.axis("off")
+    plt.show()
 
 
