@@ -52,3 +52,8 @@ The images contain the training image and the ground truth images
 - ISICs 2018 Challenge dataset (The download link is provided in the Resources)
 
 ## Explanation: 
+
+
+## References
+
+Ronneberger, O., Fischer, P., Brox, T. (2015). *U-Net: Convolutional Networks for Biomedical Image Segmentation.* Retrieved from: https://arxiv.org/pdf/1505.04597.pdf.
