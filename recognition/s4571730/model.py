@@ -7,21 +7,24 @@ import tensorflow_addons as tfa
 
 """
 Perceiver model, based on the paper by Andrew Jaegle et. al.
-
-Params:
-    data_size: int, rows * cols (total number of pixel in an image)
-    latent_size: int, size of the latent dimension
-    proj_size: int, embedding size of fourier features, applied to
-                    each element in the data and latent arrays
-    num_heads: int number of heads in the MultiHeadAttention layer of transformer
-    num_trans_blocks: int, number of transformer blocks in the model
-    max_freq: int, Nyquist frequency of the Fourier features
-    num_bands: int, number of frequency bands in fourier features
-    lr: float, learning rate for optimizer
-    epoch: int, mumber of epochs in training
-    weight_decay: int, weight decay for optimizer
 """
 class Perceiver(tf.keras.Model):
+    """
+    Initate the perceiver model
+    
+    Params:
+        data_size: int, rows * cols (total number of pixel in an image)
+        latent_size: int, size of the latent dimension
+        proj_size: int, embedding size of fourier features, applied to
+                        each element in the data and latent arrays
+        num_heads: int number of heads in the MultiHeadAttention layer of transformer
+        num_trans_blocks: int, number of transformer blocks in the model
+        max_freq: int, Nyquist frequency of the Fourier features
+        num_bands: int, number of frequency bands in fourier features
+        lr: float, learning rate for optimizer
+        epoch: int, mumber of epochs in training
+        weight_decay: int, weight decay for optimizer
+    """
     def __init__(
         self,
         data_size,
