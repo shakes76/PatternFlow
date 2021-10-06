@@ -3,11 +3,11 @@ This repository contains the tensorflow implementation of the Improved UNet.
 
 ## Instructions:
 Modules:
-matplotlib.pyplot: pip install matplotlib
-tensorflow: pip install tensorflow
-cv2: pip install opencv-python
+- matplotlib.pyplot: pip install matplotlib
+- tensorflow: pip install tensorflow
+- cv2: pip install opencv-python
 
-##Guides:
+## Guides:
 1.Before running the codes, please check whether you are using the GPU for this task.
 Here is a simple way to check it:
 - Open the anaconda terminal shell
@@ -42,6 +42,7 @@ The images contain the training image and the ground truth images
 
 ## Basic UNET structure:
 ![](./u-net-architecture.png)
+
 *Figure 3: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
 
 ## Requirements:
