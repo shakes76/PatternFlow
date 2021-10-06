@@ -4,13 +4,13 @@ def context_module(input, conv):
     """Context module architecture modelled from https://www.researchgate.net/figure/Architecture-of-normal-residual-block-a-and-pre-activation-residual-block-b_fig2_337691625"""
 
     block = tf.keras.layers.BatchNormalization()(input)
-    block = tf.keras.layers.ReLu()(block)
+    block = tf.keras.layers.ReLU()(block)
     block = tf.keras.layers.Conv2D(conv, (3,3), padding='same')(block)
     
     block = tf.keras.layers.Dropout(0.3)(block)
 
     block = tf.keras.layers.BatchNormalization()(block)
-    block = tf.keras.layers.ReLu()(block)
+    block = tf.keras.layers.ReLU()(block)
     block = tf.keras.layers.Conv2D(conv, (3,3), padding='same')(block)
 
     return block
@@ -24,23 +24,23 @@ def model(height, width, channel):
     #block 1
     conv1 = tf.keras.layers.Conv2D(16, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(input)
     context_module1 = context_module(conv1, 16)
-    sum1 = tf.keras.layers.Add([conv1, context_module1])
+    sum1 = tf.keras.layers.Add()([conv1, context_module1])
     #block 2
     conv2 = tf.keras.layers.Conv2D(32, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum1)
     context_module2 = context_module(conv2, 32)
-    sum2 = tf.keras.layers.Add([conv2, context_module2])
+    sum2 = tf.keras.layers.Add()([conv2, context_module2])
     #block 3
     conv3 = tf.keras.layers.Conv2D(64, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum2)
     context_module3 = context_module(conv3, 64)
-    sum3 = tf.keras.layers.Add([conv3, context_module3])
+    sum3 = tf.keras.layers.Add()([conv3, context_module3])
     #block 4
     conv4 = tf.keras.layers.Conv2D(128, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum3)
     context_module4 = context_module(conv4, 128)
-    sum4 = tf.keras.layers.Add([conv4, context_module4])
+    sum4 = tf.keras.layers.Add()([conv4, context_module4])
     #block 5
     conv5 = tf.keras.layers.Conv2D(256, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum4)
     context_module5 = context_module(conv5, 256)
-    sum5 = tf.keras.layers.Add([conv4, context_module5])
+    sum5 = tf.keras.layers.Add()([conv5, context_module5])
     
     #recombine representations to localise notable features used in segmentation
 
@@ -65,7 +65,7 @@ def model(height, width, channel):
     localization_3 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat3)
     localization_3 = tf.keras.layers.Conv2D(32, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(localization_3)
     segmentation2 = tf.keras.layers.Conv2D(1, (1,1), activation='softmax')(localization_3)
-    segmentation2 = tf.keras.layers.Add([segmentation1, segmentation2])
+    segmentation2 = tf.keras.layers.Add()([segmentation1, segmentation2])
     segmentation2 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation2)
     upsampling4 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_3) # upscale by factor of 2
 
@@ -74,9 +74,10 @@ def model(height, width, channel):
     conv6 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat4)
     segmentation3 = tf.keras.layers.Conv2D(1, (1,1), activation = 'softmax')(conv6)
     #segmentation3 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation3)
-    segmentation3 = tf.keras.layers.Add([segmentation3, segmentation2])
+    segmentation3 = tf.keras.layers.Add()([segmentation3, segmentation2])
     output = tf.keras.layers.Conv2D(1, (1,1),  activation='softmax')(segmentation3)
 
     model = tf.keras.Model(inputs=input, outputs=output)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 5*(10**-4)), loss=["binary_crossentropy"], metrics=["accuracy"])
+    
     return model
