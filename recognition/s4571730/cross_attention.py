@@ -1,6 +1,19 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
 
+"""
+Create a cross attention layer, with structure mirroring the paper's spec
+
+Params:
+    latent_size: int, size of the latent dimension
+    data_size: int, rows * cols (total number of pixel in an image)
+    proj_size: int, embedding size of fourier features, applied to
+                    each element in the data and latent arrays
+                    
+Returns:
+    a cross-attention model, taking in an img and a latent array 
+    and outputing QKV cross-attention
+"""
 def cross_attention_layer(latent_size, data_size, proj_size):
     # projection_dim = data (1) + 2 * (2*bands + 1)
     # Input processed with a norm layer

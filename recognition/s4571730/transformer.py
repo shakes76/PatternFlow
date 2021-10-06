@@ -2,6 +2,20 @@ from tensorflow.keras import layers
 import tensorflow as tf 
 import copy
 
+"""
+Create a self-attention (transformer) layer, with structure mirroring the paper's spec
+
+Params:
+    latent_size: int, size of the latent dimension
+    proj_size: int, embedding size of fourier features, applied to
+                    each element in the data and latent arrays
+    num_heads: int number of heads in the MultiHeadAttention layer
+    num_trans_blocks: int, number of transformer blocks in the model
+    
+Returns:
+    a transformer model, taking in an img and a latent array 
+    and outputing QKV self-attention
+"""
 def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
     inputs_orig = layers.Input(shape=(latent_size, proj_size))
 

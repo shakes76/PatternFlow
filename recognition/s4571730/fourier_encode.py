@@ -2,12 +2,31 @@ from tensorflow.keras import layers
 import tensorflow as tf 
 import math
 
+"""
+Fourier class to embed image data with fourier encoding, as described in the paper
+"""
 class FourierEncode(layers.Layer):
+    """
+    Init the Fourier class
+
+    Params:
+        max_freq: int, Nyquist frequency of the Fourier features
+        num_bands: int, number of frequency bands in fourier features
+    """
     def __init__(self, max_freq=10, num_bands=4):
         super(FourierEncode, self).__init__()
         self.max_freq = max_freq
         self.num_bands = num_bands
 
+    """
+    Process a call to the class with supplied data
+
+    Params:
+        imgs: an array containing img data
+
+    Returns:
+        img_encode: img encoded with its fourier features
+    """
     def call(self, imgs):
         # Based on fourier encode from https://github.com/Rishit-dagli/Perceiver/blob/main/perceiver/
         batch_size, *axis, _ = imgs.shape
@@ -35,6 +54,12 @@ class FourierEncode(layers.Layer):
 
     """
     Calculate the Fourier features and concat it into original position labels
+
+    Params:
+        pos: a tf matrix containing the positions scaled to range (-1, 1)
+
+    Returns:
+        concatenation of fourier feature and original position matrix
     """
     def _fourier_encode(self, pos):
         # shape = (*axis, 2 , 1)
