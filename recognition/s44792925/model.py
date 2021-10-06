@@ -21,23 +21,23 @@ def model(height, width, channel):
     input = tf.keras.layers.Input((height, width, channel))
 
     #encode data
-
+    #block 1
     conv1 = tf.keras.layers.Conv2D(16, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(input)
     context_module1 = context_module(conv1, 16)
     sum1 = tf.keras.layers.Add([conv1, context_module1])
-
+    #block 2
     conv2 = tf.keras.layers.Conv2D(32, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum1)
     context_module2 = context_module(conv2, 32)
     sum2 = tf.keras.layers.Add([conv2, context_module2])
-    
+    #block 3
     conv3 = tf.keras.layers.Conv2D(64, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum2)
     context_module3 = context_module(conv3, 64)
     sum3 = tf.keras.layers.Add([conv3, context_module3])
-
+    #block 4
     conv4 = tf.keras.layers.Conv2D(128, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum3)
     context_module4 = context_module(conv4, 128)
     sum4 = tf.keras.layers.Add([conv4, context_module4])
-
+    #block 5
     conv5 = tf.keras.layers.Conv2D(256, (3,3), strides=(2,2), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(sum4)
     context_module5 = context_module(conv5, 256)
     sum5 = tf.keras.layers.Add([conv4, context_module5])
@@ -52,6 +52,7 @@ def model(height, width, channel):
     localization_1 = tf.keras.layers.Conv2D(128, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(localization_1)
     upsampling2 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_1)
 
+    #possibly need a conv2d ehre
     concat2 = tf.keras.layers.concatenate([sum3, upsampling2])
     localization_2 = tf.keras.layers.Conv2D(64, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat2)
     localization_2 = tf.keras.layers.Conv2D(64, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(localization_2)
