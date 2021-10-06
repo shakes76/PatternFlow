@@ -1,4 +1,4 @@
-# Tensorflow Implementation of  VQVAE
+# Tensorflow Implementation of  Improved UNET
 
 ## Description 
 
@@ -6,7 +6,7 @@
 
 This model has been developed using Google Colab. Henceforth, all of the logic (such as mounting drives) assumes that setup. There are some preliminary steps if you would like to run it within that environment.
 
-1. You will need to upload the OASIS dataset to your Google Drive, along with model.py. This coudl take acouple of hours depending on your internet speeds.
+1. You will need to upload the ISIC dataset to your Google Drive, along with model.py. This coudl take acouple of hours depending on your internet speeds.
 2. You will also need to update the directory strings to be the relative location of your dataset
 
 ### Running on Personal Computer
