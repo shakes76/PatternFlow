@@ -5,19 +5,23 @@ Segment the ISICs data set with the Improved UNet
 <br><br><br>
 <p>
 This project uses Improved UNet to segment the ISICs dataset into foreground and
-background segmentations. The ISICs dataset contains skin disease images and its
-segmentation images. The Improved UNet will take the actual skin disease images
+background segmentations. The ISICs dataset contains skin disease images which contains
+some cutaneous tumors on the skin and its segmentation images. The Improved UNet will take the actual skin disease images
 as input and take its segmentation images as output to fit the Improved UNet model. 
-Then use the trained model to segment the test skin images into foreground and
-background. Finally. This model aims to achieve above 80% of Dice Similarity Coefficient.<br><br>
+Then use the trained model to segment the cutaneous tumors on the test skin images
+into foreground and background. 
+Finally. This model aims to achieve above 80% of Dice Similarity Coefficient.<br><br>
 </p>
-<br><br><br>
+<br><br>
 <h3>Improved UNet</h3>
 The project used Improved UNet model which is derived from the U-Net to do the segmentation.
+
 <p align = "center">
     <img src = "./IMG_Folder/improved_unet.png" />
+    The Improved UNet diagram shows above. 
 </p>
-The Improved UNet diagram shows above. <br>
+<br>
+Key components in the improved UNet
 * The CONTEXT module is a pre-activation residual block
 which contains 3*3*3 convolutional layers and a dropout layer with 
 0.3 drop rate<br>
@@ -28,9 +32,9 @@ convolution layer<br>
 <h3>
 Evaluation Metrics of the Improved UNet
 </h3>
-Dice Similarity Coefficient used to measure the similarities between the datasets
-THE Dice coefficient is 86.95%
-
+Dice Similarity Coefficient used to measure the similarities between the predicted
+dataset and actual segmentation dataset.
+THE Dice coefficient achieves higher than 80% in the end of the epochs.
 ```sh
 Epoch 1/20
 20/20 [==============================] - 38s 2s/step - loss: 0.6971 - DSC: 0.3374 - accuracy: 0.6762 - val_loss: 0.6821 - val_DSC: 0.3235 - val_accuracy: 0.7589
@@ -76,10 +80,9 @@ Epoch 20/20
 
 <br>
 <h3>
-Running result shows below
+Accuracy and loss graphs show below
 </h3>
 <p align="center"> 
-	<img src="./IMG_Folder/history_dsc.png" />
 	<img src="./IMG_Folder/loss_valoss.png" />
 	<img src="./IMG_Folder/val_train_acc.png" />
 </p>
