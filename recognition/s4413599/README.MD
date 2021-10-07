@@ -43,6 +43,8 @@ dataset and actual segmentation dataset. The algorithm uses DSC as a metrics<br>
 <h3>
 THE Dice coefficient achieves higher than 80% in the end of the epochs.<br>
 </h3>
+<br>
+
 ```sh
 Epoch 1/20
 20/20 [==============================] - 38s 2s/step - loss: 0.6971 - DSC: 0.3374 - accuracy: 0.6762 - val_loss: 0.6821 - val_DSC: 0.3235 - val_accuracy: 0.7589
