@@ -47,7 +47,6 @@ Function explanations:
 complete_dataset=tf.data.Dataset.from_tensor_slices((training_images, groundTruth_images))
 complete_dataset=complete_dataset.shuffle(s_dataset, reshuffle_each_iteration=False)
 training_dataset=complete_dataset.take(s_train)
-# skip the dataset for train
 test_dataset=complete_dataset.skip(s_train)
 validation_dataset=complete_dataset.skip(s_validation)
 test_dataset=complete_dataset.take(s_test)
@@ -72,9 +71,9 @@ process_training(): This function takes training images as input, and pre-proces
 def process_training(inputs):
     #Change the input image into tensor
     inputs=tf.image.decode_jpeg(inputs,channels=3)
-    # resize the image 256*256 
+    #Resize the image
     inputs=tf.image.resize(inputs,[height,width])
-    # Standardise values to be in the [0, 1] range.
+    #Standardise values
     inputs=tf.cast(inputs,tf.float32)/255.0   
     return inputs
 
@@ -96,8 +95,17 @@ def process_groundtruth(inputs):
 This function simply uses the function above to process all the image data
 '''
 def process_images(training, groundtruth):
-    training = tf.io.read_file(training)
-    training = process_training(training)  
-    groundtruth = tf.io.read_file(groundtruth)
-    groundtruth = process_groundtruth(groundtruth)    
+    training=tf.io.read_file(training)
+    training=process_training(training)  
+    groundtruth=tf.io.read_file(groundtruth)
+    groundtruth=process_groundtruth(groundtruth)    
     return training, groundtruth
+
+'''
+Dataset.map():This transformation applies map_func to each element of this dataset, 
+and returns a new dataset containing the transformed elements, in the same order as they appeared in the input.
+In this case, it is the same as the "apply()" function.
+'''
+treated_training_set=training_dataset.map(process_images)
+treated_validation_set=validation_dataset.map(process_images)
+treated_test_set=test_dataset.map(process_images)
