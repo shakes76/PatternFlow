@@ -1,4 +1,4 @@
-# Segment the ISICs data set with the Improved UNet
+### Segment the ISICs data set with the Improved UNet
 This repository contains the tensorflow implementation of the Improved UNet.
 
 ## Instructions:
@@ -8,7 +8,7 @@ Modules:
 - cv2: pip install opencv-python
 
 ## Guides:
-1.Before running the codes, please check whether you are using the GPU for this task.
+1. Before running the codes, please check whether you are using the GPU for this task.
 Here is a simple way to check it:
 - Open the anaconda terminal shell
 - Type "python"
@@ -23,11 +23,12 @@ Otherwise:
 - Type "pip install xxx" to install other necessary patches
 Note: Please use "pip" command only after using "conda install jupyter", because "conda" command will have conflicts.
 
-2.After setting the proper environment, please follow the steps below:
+2. After setting the proper environment, please follow the steps below:
 - Download the images sets from the given download link 
 - Download the main.py and the model.py
 - Change the paths to the image sets in the main.py
 - Run the main.py
+
 Alternative approach:
 - Create a new file via jupyter notebook
 - Copy the codes from main.py and model.py
@@ -50,14 +51,13 @@ The images contain the training images and the ground truth images
 
 *Figure 2: Improved U-Net architecture. 
 
+## Results Demonstration:
+
 ## Requirements:
 - Python 3.7
 - TensorFlow 2.1.0
 - matplotlib 3.3.1
 - ISICs 2018 Challenge dataset (The download link is provided in the Resources)
-
-## Explanation: 
-
 
 ## References
 
