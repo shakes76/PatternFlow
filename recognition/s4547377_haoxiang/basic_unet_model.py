@@ -4,7 +4,7 @@ from tensorflow.keras import models, layers, Model, Input
 from tensorflow.keras.layers import Activation, Add, Conv2D 
 from tensorflow.keras.layers import BatchNormalization, Dropout, LeakyReLU, UpSampling2D, MaxPooling2D, concatenate
 
-def upsample(layer_previous, size, activ_mode):   
+def upsample(layer_previous, size, activation):   
     upsample_layer=UpSampling2D()(layer_previous)
     upsample_layer=Conv2D(size,(3,3),activation=activ_mode,padding="same")(upsample_layer)
     return upsample_layer
