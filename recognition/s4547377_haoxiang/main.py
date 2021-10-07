@@ -109,3 +109,33 @@ In this case, it is the same as the "apply()" function.
 treated_training_set=training_dataset.map(process_images)
 treated_validation_set=validation_dataset.map(process_images)
 treated_test_set=test_dataset.map(process_images)
+
+'''
+This section aims to find the sizes of input and output
+'''
+input_size=(0, 0, 0)
+number_output_classes=0
+#Only take one set is enough
+for image, label in treated_training_set.take(1):
+    input_size=image.numpy().shape
+    number_output_classes=label.numpy().shape[2]
+plt.figure(figsize=(25, 25))
+plt.subplot(1, 4, 1)
+plt.imshow(image.numpy())
+plt.axis('off')
+plt.subplot(1, 4, 2)
+if (number_output_classes>1):
+    plt.imshow(tf.argmax(label.numpy(),axis=2))
+else:
+    plt.imshow(label.numpy())
+plt.axis('off')
+
+
+
+
+
+
+
+
+
+
