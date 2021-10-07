@@ -30,7 +30,8 @@ Evaluation Metrics of the Improved UNet
 </h3>
 Dice Similarity Coefficient used to measure the similarities between the datasets
 THE Dice coefficient is 86.95%
-```
+
+```sh
 Epoch 1/20
 20/20 [==============================] - 38s 2s/step - loss: 0.6971 - DSC: 0.3374 - accuracy: 0.6762 - val_loss: 0.6821 - val_DSC: 0.3235 - val_accuracy: 0.7589
 Epoch 2/20
