@@ -56,7 +56,7 @@ The images contain the training images and the ground truth images
 </p>
 
 Note: This picture is taken from the document: Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge.
-In this document, this structure is used to process three dimensional inputs. (3*3*3) But in my project, two dimensional inputs are required. (3*3)
+In this document, this structure is used to process three dimensional inputs. (3 * 3 * 3) But in my project, two dimensional inputs are required. (3 * 3)
 
 ## Results Demonstration:
 
