@@ -1,4 +1,4 @@
-###### Segment the ISICs data set with the Improved UNet
+# Segment the ISICs data set with the Improved UNet
 This repository contains the tensorflow implementation of the Improved UNet.
 
 ## Instructions:
