@@ -2,6 +2,8 @@ from matplotlib import image
 from pathlib import Path
 from PIL import Image
 from numpy import asarray
+from tensorflow.keras import backend
+from IPython.display import clear_output 
 import glob
 import cv2
 import tensorflow as tf
@@ -130,7 +132,70 @@ else:
     plt.imshow(label.numpy())
 plt.axis('off')
 
+'''
+This section aims to create functions for the DSC: Dice similarity coefficient, DSC's images display, predication function 
+and the call back function.
+'''
+'''
+Functions Explanations:
+1.backend.flatten(): Flatten a tensor.
+2.backend.sum(): Sum of the values in a tensor, alongside the specified axis.
+'''
+#DC lore: The Dice Coefficient is 2 * the Area of Overlap divided by the total number of pixels in both images.
+def DSC(y_true, y_pred, smooth=1):
+    flatten_y_true=backend.flatten(y_true)
+    flatten_y_pred=backend.flatten(y_pred)
+    intersection=backend.sum(flatten_y_true*flatten_y_pred)
+    return (2.0*intersection+smooth)/(backend.sum(flatten_y_true*flatten_y_true)+backend.sum(flatten_y_pred*flatten_y_pred)+smooth)
 
+#Loss function
+def loss_DSC(y_true, y_pred):
+    return 1-DSC(y_true, y_pred)
+
+#This function aims to display images
+def display_images(image, groundtruth, prediction, number):
+    plt.figure(figsize=(20, 20))
+    colors = ['maroon', 'navy', 'fuchsia']
+    for i in range(number):
+        plt.subplot(4, 3, 3*i+1)
+        plt.imshow(image[i])
+        title = plt.title('Origin Image')
+        plt.setp(title, color=colors[0])
+        plt.axis('off')
+        plt.subplot(4, 3, 3*i+2)
+        if (number_output_classes > 1):
+            plt.imshow(tf.argmax(groundtruth[i], axis=2))
+        else:
+            plt.imshow(groundtruth[i])
+        title = plt.title('Ground Truth Segmentation')
+        plt.setp(title, color=colors[1])
+        plt.axis('off')
+        plt.subplot(4, 3, 3*i+3)
+        if (number_output_classes > 1):
+            plt.imshow(tf.argmax(prediction[i], axis=2))
+        else:
+            plt.imshow(prediction[i] > 0.5)
+        title = plt.title('Prediction Segmentation')
+        plt.setp(title, color=colors[2])
+        plt.axis('off')
+        print("Dice similarity {}: {}".format(i, DSC(groundtruth[i], prediction[i])))
+    plt.show()
+
+def get_predictions(treated_test_set, num=3):
+    image_test_batch, label_test_batch = next(iter(treated_test_set.batch(num)))
+    prediction = model.predict(image_test_batch)
+    display_images(image_test_batch, label_test_batch, prediction, num)
+
+#Call back
+'''
+tf.keras.callbacks.Callback: Abstract base class used to build new callbacks.
+This class is necessary since I need to use it in the training loops.
+'''
+class DisplayCallback(tf.keras.callbacks.Callback):
+    #Called at the end of an epoch. Subclasses should override for any actions to run. 
+    def on_epoch_end(self, epoch, logs=None):
+        clear_output(wait=True)#clear the output of a cell.
+        get_predictions(treated_test_set)
 
 
 
