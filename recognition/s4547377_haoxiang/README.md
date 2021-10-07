@@ -38,7 +38,7 @@ The International Skin Imaging Collaboration (ISIC) aims to improve melanoma dia
 
 ## Resources: 
 The origin image sets can be downloaded via: https://challenge.isic-archive.com/data
-The images contain the training image and the ground truth images
+The images contain the training images and the ground truth images
 
 ## Basic UNET structure:
 ![](./u-net-architecture.png)
