@@ -29,12 +29,20 @@ which contains 3*3*3 convolutional layers and a dropout layer with
 layer<br>
 * The Localization module contains a 3*3*3 convolutional and a 1*1*1
 convolution layer<br>
+* The activation function used in the model is Leaky Relu with the slope 10^-2<br>
 <h3>
-Evaluation Metrics of the Improved UNet
+Metrics
 </h3>
-Dice Similarity Coefficient used to measure the similarities between the predicted
-dataset and actual segmentation dataset.
+Dice Similarity Coefficient(DSC) used to measure the similarities between the predicted
+dataset and actual segmentation dataset. The algorithm uses DSC as a metrics<br>
+<p align = "center">
+    <img src = "./IMG_Folder/DSC_formula.png" />
+    The Dice Similarity Coefficient formula shows above 
+</p>
+
+<h3>
 THE Dice coefficient achieves higher than 80% in the end of the epochs.<br>
+</h3>
 ```sh
 Epoch 1/20
 20/20 [==============================] - 38s 2s/step - loss: 0.6971 - DSC: 0.3374 - accuracy: 0.6762 - val_loss: 0.6821 - val_DSC: 0.3235 - val_accuracy: 0.7589
@@ -78,11 +86,37 @@ Epoch 20/20
 20/20 [==============================] - 36s 2s/step - loss: 0.1498 - DSC: 0.8305 - accuracy: 0.9390 - val_loss: 0.1763 - val_DSC: 0.7936 - val_accuracy: 0.9282
 ```
 
-<br>
-<h3>
-Accuracy and loss graphs show below
-</h3>
+<h2>
+Images output
+</h2>
 <p align="center"> 
-	<img src="./IMG_Folder/loss_valoss.png" />
+	<img src="./IMG_Folder/image_output.png" />
+</p>
+Above image shows the test image, the segmentation image and predicted image segmentation.
+<br>
+<br>
+<h2>
+Results
+</h2>
+<h4>
+Train accuracy and validation accuracy
+</h4>
+<p align="center"> 
 	<img src="./IMG_Folder/val_train_acc.png" />
 </p>
+
+<h4>
+Train loss and Validation loss
+</h4>
+<p align="center">
+	<img src="./IMG_Folder/loss_valoss.png" />
+</p>
+
+
+<h3>
+Dependencies
+</h3>
+* Python <br>
+* Matplotlib <br>
+* Tensorflow <br>
+* Sklearn <br>
