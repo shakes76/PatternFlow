@@ -42,6 +42,7 @@ The origin image sets can be downloaded via: https://challenge.isic-archive.com/
 The images contain the training images and the ground truth images
 
 ## Basic UNET structure:
+There is a python file called "basic_unet_model.py", you can have a look at this before using the improved UNET model if you want.
 ![](./u-net-architecture.png)
 
 <p align="center"> 
