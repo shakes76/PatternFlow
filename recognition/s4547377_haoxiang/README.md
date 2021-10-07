@@ -44,12 +44,19 @@ The images contain the training images and the ground truth images
 ## Basic UNET structure:
 ![](./u-net-architecture.png)
 
+<p align="center"> 
 *Figure 1: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
+</p>
 
 ## Improved UNET structure:
 ![](./improvedunet.png)
 
+<p align="center"> 
 *Figure 2: Improved U-Net architecture. 
+</p>
+
+Note: This picture is taken from the document: Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge.
+In this document, this structure is used to process three dimensional inputs. (3*3*3) But in my project, two dimensional inputs are required. (3*3)
 
 ## Results Demonstration:
 
