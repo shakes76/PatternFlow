@@ -43,7 +43,12 @@ The images contain the training image and the ground truth images
 ## Basic UNET structure:
 ![](./u-net-architecture.png)
 
-*Figure 3: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
+*Figure 1: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
+
+## Improved UNET structure:
+![](./improvedunet.png)
+
+*Figure 2: Improved U-Net architecture. 
 
 ## Requirements:
 - Python 3.7
