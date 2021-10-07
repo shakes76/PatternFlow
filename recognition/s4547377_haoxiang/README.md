@@ -39,11 +39,15 @@ The International Skin Imaging Collaboration (ISIC) aims to improve melanoma dia
 
 ## Resources: 
 The origin image sets can be downloaded via: https://challenge.isic-archive.com/data
+
 The images contain the training images and the ground truth images
 
 ## Basic UNET structure:
 There is a python file called "basic_unet_model.py", you can have a look at this before using the improved UNET model if you want.
+
+<p align="center"> 
 ![](./u-net-architecture.png)
+</p>
 
 <p align="center"> 
 *Figure 1: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
