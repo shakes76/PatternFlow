@@ -64,10 +64,10 @@ In this document, this structure is used to process three dimensional inputs. (3
 ## Results Demonstration:
 
 ## Requirements:
-- Python 3.7
-- TensorFlow 2.1.0
-- matplotlib 3.3.1
-- ISICs 2018 Challenge dataset (The download link is provided in the Resources)
+- Python 3.9.7
+- TensorFlow 2.5.0
+- matplotlib 3.4.3
+- ISICs 2018 Challenge dataset (The download link is provided in [here](https://challenge.isic-archive.com/data))
 
 ## References
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and
