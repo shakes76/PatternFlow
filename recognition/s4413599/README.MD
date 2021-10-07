@@ -1,8 +1,12 @@
+<br>
 <h2>
 Segment the ISICs data set with the Improved UNet 
 </h2>
 <b>Created by Anqi Yan, S4413599</b>
-<br><br><br>
+<br><br>
+<h3>
+Introduction
+</h3>
 <p>
 This project uses Improved UNet to segment the ISICs dataset into foreground and
 background segmentations. The ISICs dataset contains skin disease images which contains
@@ -12,7 +16,7 @@ Then use the trained model to segment the cutaneous tumors on the test skin imag
 into foreground and background. 
 Finally. This model aims to achieve above 80% of Dice Similarity Coefficient.<br><br>
 </p>
-<br><br>
+<br>
 <h3>Improved UNet</h3>
 The project used Improved UNet model which is derived from the U-Net to do the segmentation.
 
@@ -34,14 +38,15 @@ convolution layer<br>
 Metrics
 </h3>
 Dice Similarity Coefficient(DSC) used to measure the similarities between the predicted
-dataset and actual segmentation dataset. The algorithm uses DSC as a metrics<br>
+dataset and actual segmentation dataset. The algorithm uses DSC as the metric<br>
 <p align = "center">
-    <img src = "./IMG_Folder/DSC_formula.png" />
+    <img src = "./IMG_Folder/DSC_formula.png" /><br>
     The Dice Similarity Coefficient formula shows above 
 </p>
 
 <h3>
-THE Dice coefficient achieves higher than 80% in the end of the epochs.<br>
+<br>
+Training result of 20 epochs<br>
 </h3>
 <br>
 
@@ -89,7 +94,7 @@ Epoch 20/20
 ```
 
 <h2>
-Images output
+Images output sample
 </h2>
 <p align="center"> 
 	<img src="./IMG_Folder/image_output.png" />
@@ -98,7 +103,7 @@ Above image shows the test image, the segmentation image and predicted image seg
 <br>
 <br>
 <h2>
-Results
+Result Graphs
 </h2>
 <h4>
 Train accuracy and validation accuracy
@@ -122,3 +127,9 @@ Dependencies
 * Matplotlib <br>
 * Tensorflow <br>
 * Sklearn <br>
+
+<h3>
+Conclusion
+</h3>
+The improved UNet achieves the 83.05% on the Dice Similarity Coefficient after 20 epochs. It
+could segment the test data with high accuracy.
