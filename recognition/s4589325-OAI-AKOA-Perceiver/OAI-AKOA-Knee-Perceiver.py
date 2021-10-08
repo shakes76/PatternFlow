@@ -113,12 +113,12 @@ if SAVE_DATA:
 
 # Load Data
 print("Loading Data")
-xtrain = np.load('../../../xtrain.npy')
-ytrain = np.load('../../../ytrain.npy')
+#xtrain = np.load('../../../xtrain.npy')
+#ytrain = np.load('../../../ytrain.npy')
 xtest = np.load('../../../xtest.npy')
-ytest = np.load('../../../ytest.npy')
+#ytest = np.load('../../../ytest.npy')
 
-print(xtrain)
+print(xtest.shape)
 
 ''' # Cannot use this code because it leaks data between training/test sets
 dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
@@ -143,3 +143,34 @@ dataset_validation = tf.keras.preprocessing.image_dataset_from_directory(
 )
 '''
 
+def pos_encoding(img, bands, Fs):
+	# Create grid
+	n, x_size, y_size = img.shape
+	x = tf.linspace(-1, 1, x_size)
+	y = tf.linspace(-1, 1, y_size)
+	xy_mesh = tf.meshgrid(x,y)
+	xy_mesh = tf.transpose(xy_mesh)
+	xy_mesh = tf.expand_dims(xy_mesh, -1)
+	xy_mesh = tf.reshape(xy_mesh, [x_size,y_size,2,1])
+	# Frequency logspace of nyquist f for bands
+	up_lim = tf.math.log(Fs/2)/tf.math.log(10.)
+	low_lim = math.log(1)
+	f_sin = tf.math.sin(tf.experimental.numpy.logspace(low_lim, up_lim, bands) * math.pi)
+	f_cos = tf.math.cos(tf.experimental.numpy.logspace(low_lim, up_lim, bands) * math.pi)
+	t = tf.concat([f_sin, f_cos], axis=0)
+	t = tf.concat([t, [1.]], axis=0) # Size is now 2K+1
+	# Get encoding/features
+	encoding = xy_mesh * t
+	encoding = tf.reshape(encoding, [1, x_size, y_size, (2 * bands + 1) * 2])
+	encoding = tf.repeat(encoding, n, 0) # Repeat for all images (on first axis)
+	out = tf.concat([img, encoding], axis=-1)
+	out = tf.reshape(out, [n, x_size*y_size, -1]) # Linearise (doesn't work!)
+	print(out)
+	print(out.shape)
+	out = tf.reshape(out, [n, x_size * y_size, -1])
+	return out
+
+pos_encoding(xtest, 4, 500)
+
+
+# ##### Define Modules #####
