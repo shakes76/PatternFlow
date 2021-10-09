@@ -173,6 +173,52 @@ pos_encoding(xtest, 4, 500)
 
 # ##### Define Modules #####
 
+# Feed Forward Network
+
+def network_feedforward():
+	'''
+	Layer Structure:
+		Dense (Input: x, Output: y)
+		Dropout
+		Dense (Input: y, Output: x)
+	'''
+	model = models.Sequential()
+	model.add(layers.Dense(8 * 8 * 128, input_dim=dim))
+	model.add(layers.Dropout(0.2))
+	model.add(layers.Dense(8 * 8 * 128, input_dim=dim))
+
+
+'''
+Need to define:
+	query dimension
+	inner dimension
+'''
+
+def network_attention():
+	# Data and Latent input
+	#
+	#
+	# Query tensor
+	# Key Tensor
+	# Value tensor
+
+	queries = tf.keras.layers.Dense(, input_dim=, use_bias=False)
+
+	# Cross attention outputs
+
+	# Should probably also normalize
+
+	# Apply feedforward network from above
+
+
+def network_transformer():
+
+
+
+def network_classifier():
+	
+
+# ##### Create Perceiver Module #####
 
 
 
