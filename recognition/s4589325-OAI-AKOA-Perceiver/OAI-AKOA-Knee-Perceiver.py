@@ -163,14 +163,19 @@ def pos_encoding(img, bands, Fs):
 	encoding = xy_mesh * t
 	encoding = tf.reshape(encoding, [1, x_size, y_size, (2 * bands + 1) * 2])
 	encoding = tf.repeat(encoding, n, 0) # Repeat for all images (on first axis)
-	out = tf.concat([img, encoding], axis=-1)
-	out = tf.reshape(out, [n, x_size*y_size, -1]) # Linearise (doesn't work!)
-	print(out)
-	print(out.shape)
-	out = tf.reshape(out, [n, x_size * y_size, -1])
+	img = tf.expand_dims(img, axis=-1) # resize image data so that it fits
+	out = tf.concat([img, encoding], axis=-1) # Add image data
+	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
 	return out
 
 pos_encoding(xtest, 4, 500)
 
 
 # ##### Define Modules #####
+
+
+
+
+
+# ##### Finish #####
+print("Finished with no errors")
