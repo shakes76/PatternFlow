@@ -8,8 +8,9 @@ import time
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow import keras
-from tensorflow.keras import initializers
+from tensorflow.python.keras.engine import input_layer
 import tensorflow_addons as tfa
+tf.compat.v1.enable_eager_execution()
 
 def save_data():
     # LOAD IN DATA. Organize by patient, to prevent data leakage. 
@@ -90,46 +91,53 @@ if SAVE_DATA:
     save_data()
 else:
     xtrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtrain.npy")
+    xtrain = xtrain[0:400]
     xtest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtest.npy")
+    xtest = xtest[0:400]
     plt.imshow(xtest[0])
     plt.show()
     ytrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytrain.npy")
+    ytrain = ytrain[0:400]
     ytest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytest.npy")
+    ytest = ytest[0:400]
 
 
 # GET FOURIER FEATURES FOR POSITIONAL ENCODINGS. 
 
 # img_data: tensor of shape (datapoints, rows, cols)
 def get_positional_encodings(img_data, bands=4, sampling_rate=10):
+    print(type(img_data), img_data.shape)
     # assume 2 dimensions, using single channel images
     data_points, rows, cols = img_data.shape
     xr, xc = tf.linspace(-1,1,rows), tf.linspace(-1,1,cols)
-    xd = tf.reshape(tf.stack(tf.reverse(tf.meshgrid(xr,xc), axis=[-3]),axis=2),(rows,cols,2))
+    xd = tf.expand_dims(tf.reverse(tf.meshgrid(xr,xc), axis=[-3]),3)
+    xd = tf.reshape(tf.concat([xd[0], xd[1]], axis=2),(rows,cols,2))
     xd = tf.repeat(tf.expand_dims(xd, -1), repeats=[2*bands + 1], axis=3) # (rows, cols, 2, 2F + 1)
     # logscale for frequencies ( * pi) , 0 start as 10**0 = 1
-    frequencies = tf.experimental.numpy.logspace(0.0,(tf.math.log(sampling_rate/2)/tf.math.log(10.)).numpy(), num = bands, dtype = tf.float32) * math.pi
+    frequencies = tf.experimental.numpy.logspace(0.0,(tf.math.log(sampling_rate/2)/tf.math.log(10.)), num = bands, dtype = tf.float32) * math.pi
     # (228,260,2,9)
     f_features = xd * tf.cast(tf.reshape(tf.concat([tf.math.sin(frequencies), tf.math.cos(frequencies), tf.constant([1.])], axis=0), (1,1,1,2*bands+1)), dtype=tf.double)
     f_features = tf.repeat(tf.reshape(f_features, (1,rows,cols,2*(2*bands + 1))), repeats=[data_points],axis=0) # (data_points, 228, 260, 18)
-    return tf.reshape(tf.concat((img_data,f_features),axis=-1), (data_points, rows*cols, -1)) # add data in and flatten images
+    f_features = tf.cast(f_features, tf.float32)
+    return tf.reshape(tf.concat((tf.expand_dims(tf.cast(img_data, tf.float32), 3),f_features),axis=-1), (data_points, rows*cols, -1)) # add data in and flatten images
 
 # DEFINE MODELS
 
 def get_attention_module(channel_size, data_size, latent_size):
-    data_input = layers.Input((data_size, channel_size))
-    latent_input = layers.Input((latent_size, channel_size))
+
+    inputss = [layers.Input((data_size, channel_size)), layers.Input((latent_size, channel_size))]
 
     # Q, K & V linear networks
-    query_mlp = latent_input
+    query_mlp = inputss[1]
     query_mlp = layers.LayerNormalization()(query_mlp)
     latent_output = query_mlp
     query_mlp = layers.Dense(channel_size)(query_mlp)
 
-    key_mlp = data_input
+    key_mlp = inputss[0]
     key_mlp = layers.LayerNormalization()(key_mlp)
     key_mlp = layers.Dense(channel_size)(key_mlp)
 
-    value_mlp = data_input
+    value_mlp = inputss[0]
     value_mlp = layers.LayerNormalization()(value_mlp)
     value_mlp = layers.Dense(channel_size)(value_mlp)
 
@@ -141,11 +149,11 @@ def get_attention_module(channel_size, data_size, latent_size):
 
     # New query from attention module 
     new_latent = layers.Dense(channel_size, activation=tf.nn.gelu)(attention_module)
-    new_latent = layers.Dense(channel_size, activation=tf.nn.gelu)(new_latent)
-    new_latent = layers.Dense()(new_latent)
+    #new_latent = layers.Dense(channel_size, activation=tf.nn.gelu)(new_latent)
+    new_latent = layers.Dense(channel_size)(new_latent)
     new_latent = layers.Add()([attention_module, new_latent])
 
-    cross_attention = keras.Model(inputs=[data_input, latent_input], outputs = new_latent)
+    cross_attention = keras.Model(inputs=inputss, outputs = new_latent)
     return cross_attention
 
 def get_transformer_module(latent_size, channel_size, transformer_heads):
@@ -159,8 +167,8 @@ def get_transformer_module(latent_size, channel_size, transformer_heads):
         transformer = layers.LayerNormalization()(transformer)
         
         new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(transformer)
-        new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(new_query)
-        new_query = layers.Dense()(new_query)
+        #new_query = layers.Dense(channel_size, activation=tf.nn.gelu)(new_query)
+        new_query = layers.Dense(channel_size)(new_query)
         transformer = layers.Add()([new_query, transformer])
         layer_init = transformer
 
@@ -174,10 +182,10 @@ def get_classifier_module(final_latent):
 def truncated_initializer(shape, dtype=None):
     norm = tf.random.normal(shape, mean=0.0, stddev=0.02, dtype=dtype)
     # truncation
-    return tf.math.min(tf.math.max(norm, tf.constant(-2, dtype=tf.float32, shape=norm.shape)),tf.constant(2, dtype=tf.float32, shape=norm.shape)) 
+    return tf.math.minimum(tf.math.maximum(norm, tf.constant(-2, dtype=tf.float32, shape=norm.shape)),tf.constant(2, dtype=tf.float32, shape=norm.shape)) 
 
 class Perceiver(tf.keras.Model):
-    def __init__(self, latent_size = 512, data_size = 228*260, bands = 4, transformer_heads = 4, 
+    def __init__(self, latent_size = 256, data_size = 228*260, bands = 4, transformer_heads = 4, 
                 sampling_rate = 10, iterations = 3):
         super(Perceiver, self).__init__()
         self.bands = bands
@@ -186,30 +194,59 @@ class Perceiver(tf.keras.Model):
         self.transformer_heads = transformer_heads
         self.channel_size = 2*(2*bands + 1) + 1 # data (1) + 2 dim * (2F + 1)
         self.sampling_rate = sampling_rate
-        self.init_latent = self.add_weight(shape=(latent_size, self.channel_size), initializer= truncated_initializer, trainable=True)
-        self.init_latent = tf.reshape(self.init_latent, (1,*self.init_latent.shape))
         self.iterations = iterations
+
+    def build(self, input_shape):
+        self.init_latent = self.add_weight(shape=(self.latent_size, self.channel_size), initializer= truncated_initializer, trainable=True)
+        self.init_latent = tf.reshape(self.init_latent, (1,*self.init_latent.shape))
+        self.attention_module = get_attention_module(channel_size=self.channel_size, data_size=self.data_size, latent_size=self.latent_size)
+        self.transformer_module = get_transformer_module(self.latent_size, self.channel_size, self.transformer_heads)
+        super(Perceiver, self).build(input_shape)
 
     def call(self, xdata):
         encoded_data = get_positional_encodings(xdata, bands=self.bands, sampling_rate=self.sampling_rate)
-        input_data = [self.init_latent, encoded_data]
-        attention_module = get_attention_module(self.channel_size, self.data_size, self.latent_size)
-        transformer_module = get_transformer_module(self.latent_size, self.channel_size, self.transformer_heads)
-        for layer_num in self.iterations:
-            new_latent = attention_module(input_data)
-            new_query = transformer_module(new_latent)
+        print(encoded_data.shape)
+        input_data = [encoded_data, self.init_latent] # fix input
+        for layer_num in range(self.iterations):
+            new_latent = self.attention_module(input_data)
+            new_query = self.transformer_module(new_latent)
             input_data[0] = new_query
         return get_classifier_module(new_query)
 
-def start_training(model, optimizer, xtrain, xtest, ytrain, ytest):
-    pass
+def learning_rate_decay(epoch):
+    lr = 0.004
+    decay_epochs = [84, 102, 114]
+    for ep in decay_epochs:
+        if epoch >= ep:
+            lr /= 10
+    return (lr)
 
-optimizer = tfa.optimizers.LAMB(learning_rate=0.001)
+def start_training(model, optimizer, xtrain, xtest, ytrain, ytest, loss_fnc, epochs, learning_rate_fnc, metric, batch_size = 8, val_split = 0.2):
+    model.compile(optimizer = optimizer, loss = loss_fnc, metrics=[metric], run_eagerly=True)
+    history = model.fit(
+        x = xtrain,
+        y = ytrain,
+        batch_size = batch_size,
+        epochs = epochs,
+        validation_split = val_split,
+        callbacks=[learning_rate_fnc]
+    )
+    #_, accuracy, top_5_accuracy = model.evaluate(x_test, y_test)
+    #print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+    #print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
+
+
+optimizer = tfa.optimizers.LAMB(learning_rate=0.004)
+loss_fnc = keras.losses.BinaryCrossentropy(from_logits = False)
+metric = tf.keras.metrics.BinaryAccuracy()
+epochs = 120
+learning_rate_fnc = tf.keras.callbacks.LearningRateScheduler(learning_rate_decay)
+model = Perceiver()
+
+start_training(model, optimizer, xtrain, xtest, ytrain, ytest, loss_fnc, epochs, learning_rate_fnc, metric)
 
 ''' TODO:
-    1. Training code
+    1. Fix training shape error
     2. Tuning (dropout, data augmentation etc.)
     3. Plots, accuracy
 '''
-
-# initial learning rate of 0.004, decaying it by a factor of 10 at [84, 102, 114] epochs.
