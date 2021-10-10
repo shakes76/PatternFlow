@@ -5,6 +5,7 @@
 # Libraries needed for model
 import tensorflow as tf
 import tensorflow.keras
+import tensorflow_addons as tfa
 import PIL
 
 # Libraries needed for data importing
@@ -180,6 +181,7 @@ DROPOUT_RATE		= 0.2
 
 TRANSFOMER_NUM		= 2
 MODULES_NUM			= 2
+OUT_SIZE			= 1 # binary as only left or right knee
 
 def network_attention():
 	# Network structure starting at latent array
@@ -229,13 +231,25 @@ def network_transformer():
 		return out
 
 
-
-
-def network_classifier():
-	
-
 # ##### Create Perceiver Module #####
 
+# Make the model
+perceiver = tf.keras.Model
+
+# Global pooling step
+classify = layers.GlobalAveragePooling1D()(in)
+
+# Classification step
+final = layers.Dense(OUT_SIZE, activation='softmax')(classify)
+
+
+# ##### Run Training/Validation #####
+
+# Compile the model
+perceiver.compile(
+	optimizer=tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
+	loss=tf.keras.losses.SparseCategoricalCrossentropy,
+	metrics=tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy"))
 
 
 
