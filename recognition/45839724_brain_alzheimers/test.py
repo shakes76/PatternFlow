@@ -106,7 +106,6 @@ else:
 
 # img_data: tensor of shape (datapoints, rows, cols)
 def get_positional_encodings(img_data, bands=4, sampling_rate=10):
-    print(type(img_data), img_data.shape)
     # assume 2 dimensions, using single channel images
     data_points, rows, cols = img_data.shape
     xr, xc = tf.linspace(-1,1,rows), tf.linspace(-1,1,cols)
@@ -185,7 +184,7 @@ def truncated_initializer(shape, dtype=None):
     return tf.math.minimum(tf.math.maximum(norm, tf.constant(-2, dtype=tf.float32, shape=norm.shape)),tf.constant(2, dtype=tf.float32, shape=norm.shape)) 
 
 class Perceiver(tf.keras.Model):
-    def __init__(self, latent_size = 256, data_size = 228*260, bands = 4, transformer_heads = 4, 
+    def __init__(self, latent_size = 128, data_size = 228*260, bands = 4, transformer_heads = 4, 
                 sampling_rate = 10, iterations = 3):
         super(Perceiver, self).__init__()
         self.bands = bands
@@ -205,12 +204,11 @@ class Perceiver(tf.keras.Model):
 
     def call(self, xdata):
         encoded_data = get_positional_encodings(xdata, bands=self.bands, sampling_rate=self.sampling_rate)
-        print(encoded_data.shape)
         input_data = [encoded_data, self.init_latent] # fix input
         for layer_num in range(self.iterations):
             new_latent = self.attention_module(input_data)
             new_query = self.transformer_module(new_latent)
-            input_data[0] = new_query
+            input_data[1] = new_query
         return get_classifier_module(new_query)
 
 def learning_rate_decay(epoch):
@@ -231,10 +229,6 @@ def start_training(model, optimizer, xtrain, xtest, ytrain, ytest, loss_fnc, epo
         validation_split = val_split,
         callbacks=[learning_rate_fnc]
     )
-    #_, accuracy, top_5_accuracy = model.evaluate(x_test, y_test)
-    #print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    #print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
-
 
 optimizer = tfa.optimizers.LAMB(learning_rate=0.004)
 loss_fnc = keras.losses.BinaryCrossentropy(from_logits = False)
