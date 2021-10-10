@@ -17,6 +17,7 @@ import numpy as np # just need this for a single array conversion in the preproc
 #print("Tensorflow Version:", tf.__version__)
 
 # ##### Macros #####
+
 SAVE_DATA			= False
 BATCH_SIZE			= 32
 TEST_TRAINING_SPLIT	= 0.8
@@ -167,27 +168,6 @@ pos_encoding(xtest, 4, 500)
 
 # ##### Define Modules #####
 
-# Feed Forward Network
-
-def network_feedforward():
-	'''
-	Layer Structure:
-		Dense (Input: x, Output: y)
-		Dropout
-		Dense (Input: y, Output: x)
-	'''
-	model = models.Sequential()
-	model.add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))
-	model.add(tf.keras.layers.Dropout(0.2))
-	model.add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))
-
-
-'''
-Need to define:
-	query dimension
-	inner dimension
-'''
-
 LATENT_ARRAY_SIZE	= 512 # Same as paper
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 C_DIM				= 256
@@ -198,10 +178,10 @@ LEARNING_RATE		= 0.001
 EPOCHS				= 50
 DROPOUT_RATE		= 0.2
 
-def network_attention():
-	# Structure: latent, query -> cross-attention (+ query, + key, +value)
-	# byte array -> key, value -> ^^^^^^^^^^^^^^^
+TRANSFOMER_NUM		= 2
+MODULES_NUM			= 2
 
+def network_attention():
 	# Network structure starting at latent array
 	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, D_DIM])
 	latent_layer = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(latent_layer) # Add a cheeky normalization layer
@@ -220,16 +200,34 @@ def network_attention():
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
 	# Combine latent array into cross attention node thingy
-	attention_layer = tf.keras.layers.Add([latent_layer, attention_layer])
+	attention_layer = tf.keras.layers.Add([attention_layer, latent_layer])
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
-
+	# Add dense part onto cross-attention part
+	attention_connect_layer = tf.keras.layers.Add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))(attention_layer)
+	attention_connect_layer = tf.keras.layers.Add(tf.keras.layers.Dropout(0.2))(attention_connect_layer)
 	# Should probably also normalize
-
-	# Apply feedforward network from above
-
+	return attention_connect_layer
 
 def network_transformer():
+	# Get latent_size and d_dim
+	input = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, D_DIM])
+	input = tf.keras.layers.LayerNormalization()(input)
+	x = input
+	# Create as many transformer modules as necessary
+	for i in range(TRANSFOMER_NUM):
+		x = tf.keras.layers.LayerNormalization()(x) # probs remove above normalization
+		# Multihead attention layer
+		x = tf.keras.layers.MultiHeadAttention(TRANSFOMER_NUM, key_dim=C_DIM)(x,x)
+		# Add passthrough connection from input
+		x = tf.keras.layers.Add()([x, input])
+		x = tf.keras.layers.LayerNormalization()(x)
+		x = tf.keras.layers.Add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))(x)
+		x = tf.keras.layers.Add(tf.keras.layers.Dropout(0.2))(x)
+		# Add another passthrough connection from input
+		out = tf.keras.layers.Add()([x, input])
+		return out
+
 
 
 
