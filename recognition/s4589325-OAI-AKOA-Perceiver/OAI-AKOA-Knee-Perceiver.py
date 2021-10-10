@@ -4,7 +4,7 @@
 
 # Libraries needed for model
 import tensorflow as tf
-from tensorflow.keras import layers, models
+import tensorflow.keras
 import PIL
 
 # Libraries needed for data importing
@@ -23,12 +23,6 @@ TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
 SEED				= 123
-LATENT_SIZE			= 512 # Same as paper
-LEARNING_RATE		= 0.001
-WEIGHT_DECAY		= 0.0001
-EPOCHS				= 50
-DROPOUT_RATE		= 0.2
-PATCH_DIM			= 2
 
 # ##### Import Data #####
 
@@ -183,9 +177,9 @@ def network_feedforward():
 		Dense (Input: y, Output: x)
 	'''
 	model = models.Sequential()
-	model.add(layers.Dense(8 * 8 * 128, input_dim=dim))
-	model.add(layers.Dropout(0.2))
-	model.add(layers.Dense(8 * 8 * 128, input_dim=dim))
+	model.add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))
+	model.add(tf.keras.layers.Dropout(0.2))
+	model.add(tf.keras.layers.Dense(8 * 8 * 128, input_dim=dim))
 
 
 '''
@@ -194,17 +188,41 @@ Need to define:
 	inner dimension
 '''
 
+LATENT_ARRAY_SIZE	= 512 # Same as paper
+BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
+C_DIM				= 256
+D_DIM				= 256
+QKV_DIM				= C_DIM
+EPSILON				= 1e-5
+LEARNING_RATE		= 0.001
+EPOCHS				= 50
+DROPOUT_RATE		= 0.2
+
 def network_attention():
-	# Data and Latent input
-	#
-	#
-	# Query tensor
-	# Key Tensor
-	# Value tensor
+	# Structure: latent, query -> cross-attention (+ query, + key, +value)
+	# byte array -> key, value -> ^^^^^^^^^^^^^^^
 
-	queries = tf.keras.layers.Dense(, input_dim=, use_bias=False)
+	# Network structure starting at latent array
+	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, D_DIM])
+	latent_layer = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(latent_layer) # Add a cheeky normalization layer
+	query_layer  = tf.keras.layers.Dense(QKV_DIM)(latent_layer) # Query tensor (dense layer)
 
-	# Cross attention outputs
+	# Network structure starting at byte array
+	byte_layer  = tf.keras.layers.Input(shape = [BYTE_ARRAY_SIZE, C_DIM])
+	byte_layer  = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(byte_layer) # Add a cheeky normalization layer
+	key_layer   = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Key tensor (dense layer)
+	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
+
+	# Combine byte part into cross attention node thingy
+	attention_layer = tf.keras.layers.Attention(use_scale=True, dropout=DROPOUT_RATE)([query, key, value], return_attention_scores=False))
+	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
+	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
+	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
+
+	# Combine latent array into cross attention node thingy
+	attention_layer = tf.keras.layers.Add([latent_layer, attention_layer])
+	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
+
 
 	# Should probably also normalize
 
