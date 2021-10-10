@@ -1,5 +1,10 @@
 #!/bin/python3
 
+# General References:
+# - https://keras.io/examples/vision/perceiver_image_classification/ (good resource to see general structure)
+# - https://github.com/Rishit-dagli/Perceiver (decent for seeing how some functions are implemented)
+# - https://keras.io/api/layers/base_layer/ (how to use classes with tf)
+
 # ##### Setup #####
 
 # Libraries needed for model
@@ -61,8 +66,7 @@ def save_data():
 	# Sort by substring
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
-	print('Patients:', len(patients))
-
+	# TEMPORARY: REDUCE AMOUNT OF DATA USED!
 	patients = patients[0:math.floor(len(patients) * 0.1)]
 
 	# Split data
@@ -166,9 +170,9 @@ def pos_encoding(img, bands, Fs):
 
 pos_encoding(xtest, 4, 500)
 
-
 # ##### Define Modules #####
 
+INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
 LATENT_ARRAY_SIZE	= 512 # Same as paper
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 C_DIM				= 256
@@ -176,6 +180,7 @@ D_DIM				= 256
 QKV_DIM				= C_DIM
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
+VALIDATION_SPLIT	= 0.2
 EPOCHS				= 50
 DROPOUT_RATE		= 0.2
 
@@ -228,22 +233,46 @@ def network_transformer():
 		x = tf.keras.layers.Add(tf.keras.layers.Dropout(0.2))(x)
 		# Add another passthrough connection from input
 		out = tf.keras.layers.Add()([x, input])
-		return out
-
+	# Add global pooling layer (not really part of transformer, but I don't care)
+	out = layers.GlobalAveragePooling1D()(1)
+	return out
 
 # ##### Create Perceiver Module #####
 
+# Perceiver class
+class Perceiver(tf.keras.Model):
+	def __init__(self):
+		super(Perceiver, self).__init__()
+
+	def build(self, input_shape):
+		# Intialise input
+		self.input = self.add_weight(shape = (LATENT_ARRAY_SIZE, D_DIM), initializer = 'random_normal', trainable = True)
+		# Add attention module
+		self.attention = network_attention()
+		# Add transformer module
+		self.transformer = network_transformer()
+		# Build
+		super(Perceiver, self).build(input_shape)
+
+
+	def call(self, inputs):
+		# Attention input
+		attention_inputs = {"latent_array": tf.expand_dims(input, axis=0)
+							"byte_array"  : inputs}
+		# Add a bunch of attention/transformer layers
+		
+		return logits
+
+
 # Make the model
-perceiver = tf.keras.Model
+perceiver = Perceiver()
 
 # Global pooling step
-classify = layers.GlobalAveragePooling1D()(in)
 
 # Classification step
 final = layers.Dense(OUT_SIZE, activation='softmax')(classify)
 
-
-# ##### Run Training/Validation #####
+# ##### Run Training/Evaluation #####
 
 # Compile the model
 perceiver.compile(
@@ -251,7 +280,16 @@ perceiver.compile(
 	loss=tf.keras.losses.SparseCategoricalCrossentropy,
 	metrics=tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy"))
 
+# Non-constant learning rate
+adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
 
+# Perform model fit
+model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+
+_, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
+
+print("Accuracy:", accuracy)
+print("Top 5 Accuracy:", top_5_accuracy)
 
 # ##### Finish #####
 print("Finished with no errors")
