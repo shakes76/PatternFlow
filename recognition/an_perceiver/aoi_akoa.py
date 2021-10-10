@@ -1,5 +1,8 @@
 """AOI AKOA Knee MRI Images Dataset.
 
+This dataset has no pre-defined splits, so a 70/15/15 split is used from the population.
+Patients (identified by the OAI prefix in the filename) are assigned one split.
+
 @author Anthony North
 """
 
