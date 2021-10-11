@@ -201,7 +201,7 @@ def network_attention():
 	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
 
 	# Combine byte part into cross attention node thingy
-	attention_layer = tf.keras.layers.Attention(use_scale=True, dropout=DROPOUT_RATE)([query, key, value], return_attention_scores=False))
+	attention_layer = tf.keras.layers.Attention(use_scale=True, dropout=DROPOUT_RATE)([query, key, value], return_attention_scores=False)
 	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
 	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
@@ -256,7 +256,7 @@ class Perceiver(tf.keras.Model):
 
 	def call(self, inputs):
 		# Attention input
-		attention_in = {"latent_layer": tf.expand_dims(input, axis=0)
+		attention_in = {"latent_layer": tf.expand_dims(input, axis=0),
 						"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
 		for i in range(MODULES_NUM):
