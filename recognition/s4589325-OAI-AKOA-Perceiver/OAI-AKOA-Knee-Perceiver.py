@@ -180,6 +180,7 @@ LATENT_ARRAY_SIZE	= 512 # Same as paper
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 DATA_LENGTH			= 2 * (2 * BANDS + 1) + 1
 QKV_DIM				= DATA_LENGTH
+CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
 VALIDATION_SPLIT	= 0.2
@@ -190,15 +191,23 @@ TRANSFOMER_NUM		= 2
 MODULES_NUM			= 2
 OUT_SIZE			= 1 # binary as only left or right knee
 
+def network_connection(hidden_layers):
+	connection_model = tf.keras.models.Sequential()
+    for layer in hidden_layers[:-1]:
+		connection_model.add(tf.keras.layers.Dense(units, activation='relu'))
+    connection_model.add(tf.keras.layers.Dense(units = hidden_layers[-1]))
+    connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
+    return connection_model
+
 def network_attention():
 	# Network structure starting at latent array
 	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, DATA_LENGTH])
-	latent_layer = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(latent_layer) # Add a cheeky normalization layer
+	#latent_layer = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(latent_layer) # Add a cheeky normalization layer
 	query_layer  = tf.keras.layers.Dense(QKV_DIM)(latent_layer) # Query tensor (dense layer)
 
 	# Network structure starting at byte array
 	byte_layer  = tf.keras.layers.Input(shape = [BYTE_ARRAY_SIZE, DATA_LENGTH])
-	byte_layer  = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(byte_layer) # Add a cheeky normalization layer
+	#byte_layer  = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(byte_layer) # Add a cheeky normalization layer
 	key_layer   = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Key tensor (dense layer)
 	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
 
@@ -209,12 +218,13 @@ def network_attention():
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
 	# Combine latent array into cross attention node thingy
-	attention_layer = tf.keras.layers.Add()([attention_layer, latent_layer])
+	attention_layer = tf.keras.layers.Add()([attention_layer, latent_layer]) # Add a sneaky connection straight from latent
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
-	# Add dense part onto cross-attention part
-	attention_connect_layer = tf.keras.layers.Dense(256, input_dim = DATA_LENGTH)(attention_layer)
-	attention_connect_layer = tf.keras.layers.Dropout(0.2)(attention_connect_layer)
+	# Need to now add a connecting layer
+	connector_layer = network_connection([CD_DIM, CD_DIM])
+	attention_connect_layer = connector_layer(attention_layer)
+	
 	# Should probably also normalize
 	return attention_connect_layer
 
