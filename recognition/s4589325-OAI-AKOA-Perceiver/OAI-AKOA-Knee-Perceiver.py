@@ -121,7 +121,8 @@ ytrain = np.load('../../../ytrain.npy')
 xtest = np.load('../../../xtest.npy')
 ytest = np.load('../../../ytest.npy')
 
-print(xtest.shape)
+ytest = np.squeeze(ytest)
+ytrain = np.squeeze(ytrain)
 
 ''' # Cannot use this code because it leaks data between training/test sets
 dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
@@ -171,8 +172,6 @@ def pos_encoding(img, bands, Fs):
 	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
 	return out
 
-pos_encoding(xtest, 4, 500)
-
 # ##### Define Modules #####
 
 INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
@@ -193,11 +192,11 @@ OUT_SIZE			= 1 # binary as only left or right knee
 
 def network_connection(hidden_layers):
 	connection_model = tf.keras.models.Sequential()
-    for layer in hidden_layers[:-1]:
-		connection_model.add(tf.keras.layers.Dense(units, activation='relu'))
-    connection_model.add(tf.keras.layers.Dense(units = hidden_layers[-1]))
-    connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
-    return connection_model
+	for i in hidden_layers[:-1]:
+		connection_model.add(tf.keras.layers.Dense(i, activation='relu'))
+	connection_model.add(tf.keras.layers.Dense(units = hidden_layers[-1]))
+	connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
+	return connection_model
 
 def network_attention():
 	# Network structure starting at latent array
@@ -212,7 +211,7 @@ def network_attention():
 	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
 
 	# Combine byte part into cross attention node thingy
-	attention_layer = tf.keras.layers.Attention(use_scale=True, dropout=DROPOUT_RATE)([query_layer, key_layer, value_layer], return_attention_scores=False)
+	attention_layer = tf.keras.layers.Attention(use_scale=True, dropout=DROPOUT_RATE)([query_layer, key_layer, value_layer])
 	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
 	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
@@ -232,7 +231,6 @@ def network_transformer():
 	# Get latent_size and DATA_LENGTH
 	latent_input_initial = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, DATA_LENGTH])
 	latent_input = latent_input_initial
-	x = latent_input
 	# Create as many transformer modules as necessary
 	for i in range(TRANSFOMER_NUM):
 		transformer_layer = tf.keras.layers.LayerNormalization()(latent_input) # probs remove above normalization
@@ -245,7 +243,7 @@ def network_transformer():
 		# Get query
 		x = tf.keras.layers.Dense(DATA_LENGTH, input_dim=DATA_LENGTH)(transformer_layer)
 		x = tf.keras.layers.Dense(DATA_LENGTH, input_dim=DATA_LENGTH)(x)
-		x = tf.keras.layers.Dropout(0.2)(x)
+		x = tf.keras.layers.Dropout(DROPOUT_RATE)(x)
 		# Add passthrough connection from transformer_layer
 		transformer_layer = tf.keras.layers.Add()([x, transformer_layer])
 		latent_input = transformer_layer # sketchy but also works
@@ -263,32 +261,40 @@ class Perceiver(tf.keras.Model):
 	def build(self, input_shape):
 		# Intialise input
 		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, DATA_LENGTH), initializer = 'random_normal', trainable = True)
+		#self.in_layer = tf.reshape(self.in_layer, (1,*self.in_layer.shape))
 		# Add attention module
-		self.attention = network_attention()
+		#self.attention = network_attention()
 		# Add transformer module
-		self.transformer = network_transformer()
+		#self.transformer = network_transformer()
 		# Build
 		super(Perceiver, self).build(input_shape)
 
 	def call(self, inputs):
 		# Attention input
-		attention_in = {"latent_layer": tf.expand_dims(self.in_layer, axis=0),
-						"byte_layer"  : inputs}
+		frequency_data = pos_encoding(xtrain, 4, 20)
+		#attention_in = [self.in_layer, frequency_data]
+		attention_in = self.in_layer
+		#attention_in = {"latent_layer": tf.expand_dims(self.in_layer, axis=0),
+		#				"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
-		for i in range(MODULES_NUM):
-			latent_layer = self.attention(attention_in) # Latent array -> attention layer
-			latent_layer = self.transformer(latent_layer)
-			attention_in["latent_layer"] = latent_layer
+		#for i in range(MODULES_NUM):
+		#latent = self.attention(attention_in)
+		#	query = self.transformer(latent)
+		#	attention_in[1] = query
+		#for i in range(MODULES_NUM):
+		#	latent_layer = self.attention(attention_in) # Latent array -> attention layer
+		#	latent_layer = self.transformer(latent_layer)
+		#	attention_in["latent_layer"] = latent_layer
 		# Pooling
-		out = tf.keras.layers.GlobalAveragePooling1D(1, latent_layer)
-		out = tf.keras.layers.LayerNormalization()
-		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
+		#out = tf.keras.layers.GlobalAveragePooling1D(1, query)
+		#out = tf.keras.layers.LayerNormalization()(out)
+		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(attention_in)
 		return final
+
+# ##### Run Training/Evaluation #####
 
 # Make the model using the perceiver class
 perceiver = Perceiver()
-
-# ##### Run Training/Evaluation #####
 
 # Compile the model
 perceiver.compile(
@@ -303,7 +309,7 @@ print("xtrain shape:", xtrain.shape)
 print("ytrain shape:", ytrain.shape)
 
 # Perform model fit
-model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+model_history = perceiver.fit(x = xtrain, y = ytrain)#, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT)#, callbacks = [adjust_learning_rate])
 
 _, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
 
