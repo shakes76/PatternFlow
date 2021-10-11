@@ -235,7 +235,10 @@ def visualize_preds(knee_model, X_test, y_test):
     plt.show()
 
 
-if __name__ == "__main__":
+"""
+Main function of the driver code
+"""
+def main():
     # True if need togenerate and save data from the dataset
     # False if only need to load processed data from disk
     SAVE_DATA = False
@@ -301,4 +304,10 @@ if __name__ == "__main__":
     ckpt_manager.save()
     plot_history(history)
     visualize_preds(knee_model, X_test, y_test)
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+    
 
