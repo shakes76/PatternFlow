@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Images 
+recognition/MySolution/s4484282_task_1/data
+
 # C extensions
 *.so
 
