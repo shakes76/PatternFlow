@@ -1,12 +1,16 @@
 """AOI AKOA Knee MRI Images Dataset.
 
-This dataset has no pre-defined splits, so a 70/15/15 split is used from the population.
+The dataset has no pre-defined splits, these have instead been assigned by:
+- 70/15/15 for train/validation/test
+- balanced laterality for test
+- remaining population laterality ratios for train and validation
+
 Patients (identified by the OAI prefix in the filename) are assigned one split.
 
 @author Anthony North
 """
 
-from itertools import accumulate, groupby, chain
+import itertools
 import re
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -19,7 +23,23 @@ _DESCRIPTION = """
 _CITATION = """
 """
 
-_SPLIT_RATIOS = (0.70, 0.15, 0.15)
+# test patient ids
+_TEST = [
+    # fmt: off
+    9031930, 9251077, 9252629, 9099363, 9258864, 9282203, 9325209, 9298541,
+    9369286, 9302260, 9453364, 9443223, 9519044, 9465298, 9560051, 9581241,
+    9890414, 9014797, 9036287, 9055361, 9062645, 9081858, 9275309, 9210230,
+    9357383, 9278158, 9423086, 9362264, 9574271
+    # fmt: on
+]
+
+# validation patient ids
+_VALIDATION = [
+    # fmt: off
+    9479978, 9375317, 9819744, 9844581, 9849372, 9502938, 9281187, 9806950,
+    9171097, 9406033, 9658152
+    # fmt: on
+]
 
 
 class AoiAkoa(tfds.core.GeneratorBasedBuilder):
@@ -60,37 +80,15 @@ class AoiAkoa(tfds.core.GeneratorBasedBuilder):
         # open archive at manual download dir
         archive_path = dl_manager.manual_dir / "akoa_analysis.zip"
         archive = dl_manager.iter_archive(archive_path)
+        examples = list(self._generate_examples(archive))
+        subset_archive = lambda predicate: filter(lambda x: predicate(x[1]), examples)
 
-        # group by patient, ensuring no patient can fall into > 1 split
-        examples_by_patient = [
-            list(examples)
-            for _, examples in groupby(
-                self._generate_examples(archive), key=lambda x: x[1]["patient_id"]
-            )
-        ]
-
-        # cumulative total of images will determine split breaks
-        cumulative_lens = accumulate(map(len, examples_by_patient))
-        examples_by_patient = list(zip(examples_by_patient, cumulative_lens))
-
-        n_examples = max((x[-1] for x in examples_by_patient))
-        split_thresholds = [ratio * n_examples for ratio in accumulate(_SPLIT_RATIOS)]
-
-        # slice examples by begin & end
-        slice_examples = lambda begin, end: chain.from_iterable(
-            imgs
-            for imgs, cumlen in examples_by_patient
-            if cumlen > begin and cumlen <= end
-        )
-
-        # return train, test & validate splits
         return {
-            split: slice_examples(begin, end)
-            for split, begin, end in zip(
-                ["train", "validation", "test"],
-                [-1, *split_thresholds[:-1]],
-                split_thresholds,
-            )
+            "train": subset_archive(
+                lambda x: x["patient_id"] not in itertools.chain(_VALIDATION, _TEST)
+            ),
+            "validation": subset_archive(lambda x: x["patient_id"] in _VALIDATION),
+            "test": subset_archive(lambda x: x["patient_id"] in _TEST),
         }
 
     def _generate_examples(self, archive):
@@ -108,11 +106,8 @@ class AoiAkoa(tfds.core.GeneratorBasedBuilder):
     def _get_laterality(self, name: str) -> str:
         """Get knee laterality from image name."""
 
-        _name = name.lower()
-        any_in = lambda words, text: any(w in text for w in words)
-
-        is_left = any_in(["left.nii", "l_e_f_t.nii"], _name)
-        is_right = not is_left and any_in(["right.nii", "r_i_g_h_t.nii"], _name)
+        is_left = re.search(r"left\.nii|l_e_f_t\.nii", name, re.IGNORECASE)
+        is_right = re.search(r"right\.nii|r_i_g_h_t\.nii", name, re.IGNORECASE)
 
         assert is_left or is_right
         return "left" if is_left else "right"
