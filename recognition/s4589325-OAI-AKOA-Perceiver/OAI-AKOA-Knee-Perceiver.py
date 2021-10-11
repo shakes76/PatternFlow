@@ -20,10 +20,10 @@ from PIL import Image
 import math
 import numpy as np # just need this for a single array conversion in the preprocessing step - please don't roast me
 
-#print("Tensorflow Version:", tf.__version__)
+print("Tensorflow Version:", tf.__version__)
+tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-
 SAVE_DATA			= False
 BATCH_SIZE			= 32
 TEST_TRAINING_SPLIT	= 0.8
@@ -38,11 +38,13 @@ def save_data():
 	print("Saving Data...")
 
 	dataDirectory = '../../../AKOA_Analysis/'
+	print("Data Directory:", dataDirectory)
 
 	# Need to sort data by patient so that we aren't leaking data between training and validation sets
 	allPics = [dataDirectory + f for f in os.listdir(dataDirectory)]
 
 	patients = [[0] * 2 for _ in range(len(allPics))]
+	print("Number of Patients:", len(patients))
 
 	i = 0
 	for pic in allPics:
@@ -65,14 +67,16 @@ def save_data():
 		ii += 1
 
 	print('Right Knees:', sum([i[1] for i in patients]))
+	print('Left Knees:', len(patients) - sum([i[1] for i in patients]))
 
 	# Sort by substring
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
 	# TEMPORARY: REDUCE AMOUNT OF DATA USED!
-	patients = patients[0:math.floor(len(patients) * 0.1)]
+	patients = patients[0:math.floor(len(patients) * 0.01)]
 
 	# Split data
+	print("Splitting data into training and testing sets")
 	patients_train	= patients[0:math.floor(len(patients) * TEST_TRAINING_SPLIT)]
 	patents_test	= patients[math.floor(len(patients) * TEST_TRAINING_SPLIT):-1]
 
@@ -81,6 +85,7 @@ def save_data():
 	patients_test	= [item for sublist in patents_test for item in sublist]
 
 	# Import/Load images
+	print("Importing training images")
 	xtrain = []
 	ytrain = []
 	for i in patients_train:
@@ -89,22 +94,25 @@ def save_data():
 				xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
 				ytrain.append(i[1])
 				break
+	print("Importing testing images")
 	xtest = []
 	ytest = []
 	for i in patients_test:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
 				xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
-				ytrain.append(i[1])
+				ytest.append(i[1])
 				break
 
 	# Normalize the data to [0,1]
+	print("Normalizing data")
 	xtrain = np.array(xtrain, dtype=float)
 	xtest  = np.array(xtest, dtype=float)
 	xtrain[:] /= 255
 	xtest[:] /= 255
 
 	# Save the data to local drive
+	print("Saving data to disk")
 	np.save('../../../xtrain', xtrain)
 	np.save('../../../ytrain', ytrain)
 	np.save('../../../xtest', xtest)
@@ -299,17 +307,19 @@ perceiver = Perceiver()
 # Compile the model
 perceiver.compile(
 	optimizer=tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
-	loss=tf.keras.losses.SparseCategoricalCrossentropy,
+	#loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+	loss='categorical_crossentropy',
 	metrics=tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy"))
-
-# Non-constant learning rate
-adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
 
 print("xtrain shape:", xtrain.shape)
 print("ytrain shape:", ytrain.shape)
 
+# Non-constant learning rate
+adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
+
 # Perform model fit
-model_history = perceiver.fit(x = xtrain, y = ytrain)#, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT)#, callbacks = [adjust_learning_rate])
+#model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+model_history = perceiver.fit(x = xtest, y = ytest)
 
 _, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
 
