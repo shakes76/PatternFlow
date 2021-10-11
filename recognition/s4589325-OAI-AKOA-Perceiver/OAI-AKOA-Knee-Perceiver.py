@@ -254,23 +254,23 @@ class Perceiver(tf.keras.Model):
 		# Build
 		super(Perceiver, self).build(input_shape)
 
-
 	def call(self, inputs):
 		# Attention input
-		attention_inputs = {"latent_array": tf.expand_dims(input, axis=0)
-							"byte_array"  : inputs}
+		attention_in = {"latent_layer": tf.expand_dims(input, axis=0)
+						"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
-		
-		return logits
+		for i in range(MODULES_NUM):
+			latent_layer = self.attention(attention_in) # Latent array -> attention layer
+			latent_layer = self.transformer(latent_layer)
+			attention_in["latent_layer"] = latent_layer
+		# Pooling
+		out = tf.keras.layers.GlobalAveragePooling1D(1, latent_layer)
+		out = tf.keras.layers.LayerNormalization()
+		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
+		return final
 
-
-# Make the model
+# Make the model using the perceiver class
 perceiver = Perceiver()
-
-# Global pooling step
-
-# Classification step
-final = layers.Dense(OUT_SIZE, activation='softmax')(classify)
 
 # ##### Run Training/Evaluation #####
 
