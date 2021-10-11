@@ -60,7 +60,7 @@ There is a python file called "basic_unet_model.py", you can have a look at this
 
 Note: This picture is taken from the document: Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge.
 In this document, this structure is used to process three dimensional inputs. (3 * 3 * 3) But in my project, two dimensional inputs are required. (3 * 3)
-
+Difference: The improved UNET has many short cut connections and summation. 
 ## Results Demonstration:
 
 ## Requirements:
