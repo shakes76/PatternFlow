@@ -73,7 +73,7 @@ def save_data():
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
 	# TEMPORARY: REDUCE AMOUNT OF DATA USED!
-	patients = patients[0:math.floor(len(patients) * 0.01)]
+	patients = patients[0:math.floor(len(patients) * 0.0025)]
 
 	# Split data
 	print("Splitting data into training and testing sets")
@@ -178,6 +178,7 @@ def pos_encoding(img, bands, Fs):
 	img = tf.expand_dims(img, axis=-1) # resize image data so that it fits
 	out = tf.concat([img, encoding], axis=-1) # Add image data
 	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
+	out = tf.cast(out, tf.float32)
 	return out
 
 # ##### Define Modules #####
@@ -301,7 +302,7 @@ class Perceiver(tf.keras.Model):
 			#attention_in["latent_layer"] = latent_layer
 		# Pooling
 		print("EEEEEEEEEEEEEe", query.shape)
-		out = tf.keras.layers.GlobalAveragePooling1D(OUT_SIZE, query)
+		out = tf.keras.layers.GlobalAveragePooling1D()(query)
 		print("DDDDDDDDDDDDDDddd", out.shape)
 		out = tf.keras.layers.LayerNormalization()(out)
 		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
@@ -326,8 +327,8 @@ print("ytrain shape:", ytrain.shape)
 adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
 
 # Perform model fit
-#model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
-model_history = perceiver.fit(x = xtest, y = ytest)
+model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+#model_history = perceiver.fit(x = xtest, y = ytest)
 
 _, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
 
