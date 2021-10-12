@@ -198,12 +198,13 @@ TRANSFOMER_NUM		= 2
 MODULES_NUM			= 2
 OUT_SIZE			= 1 # binary as only left or right knee
 
-def network_connection(hidden_layers):
+def network_connection():
 	connection_model = tf.keras.models.Sequential()
-	for i in hidden_layers[:-1]:
-		connection_model.add(tf.keras.layers.Dense(i, activation='relu'))
-	connection_model.add(tf.keras.layers.Dense(units = hidden_layers[-1]))
-	connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
+	#for i in layers[:-1]:
+	#	connection_model.add(tf.keras.layers.Dense(i, activation='relu'))
+	print("CCCCCCCCCCCCCCCC", CHANNEL_LENGTH)
+	connection_model.add(tf.keras.layers.Dense(CHANNEL_LENGTH))
+	#connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
 	return connection_model
 
 def network_attention():
@@ -229,10 +230,10 @@ def network_attention():
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
 	# Need to now add a connecting layer
-	connector_layer = network_connection([CD_DIM, CD_DIM])
+	connector_layer = network_connection()
 	attention_connect_layer = connector_layer(attention_layer)
-	
-	out = tf.keras.Model(inputs = [latent_layer, byte_layer], outputs = tranattention_connect_layersformer_layer)
+
+	out = tf.keras.Model(inputs = [latent_layer, byte_layer], outputs = attention_connect_layer)
 	# Should probably also normalize
 	return out
 
@@ -271,6 +272,7 @@ class Perceiver(tf.keras.Model):
 		# Intialise input
 		# TODO: Custom initializer to get truncated standard deviation thingy
 		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, CHANNEL_LENGTH), initializer = 'random_normal', trainable = True)
+		self.in_layer = tf.expand_dims(self.in_layer, axis = 0)
 		#self.in_layer = tf.reshape(self.in_layer, (1,*self.in_layer.shape))
 		# Add attention module
 		self.attention = network_attention()
@@ -281,14 +283,16 @@ class Perceiver(tf.keras.Model):
 
 	def call(self, inputs):
 		# Attention input
-		frequency_data = pos_encoding(xtrain, 4, 20)
+		frequency_data = pos_encoding(xtrain, BANDS, 20)
 		attention_in = [self.in_layer, frequency_data]
 		#attention_in = self.in_layer
 		#attention_in = {"latent_layer": tf.expand_dims(self.in_layer, axis=0),
 		#				"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
+		print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.in_layer.shape)
 		for i in range(MODULES_NUM):
 			latent = self.attention(attention_in)
+			print("BBBBBBBBBBBBBBBBBB", latent.shape)
 			query = self.transformer(latent)
 			attention_in[0] = query
 		#for i in range(MODULES_NUM):
@@ -296,7 +300,9 @@ class Perceiver(tf.keras.Model):
 			#latent_layer = self.transformer(latent_layer)
 			#attention_in["latent_layer"] = latent_layer
 		# Pooling
-		out = tf.keras.layers.GlobalAveragePooling1D(1, query)
+		print("EEEEEEEEEEEEEe", query.shape)
+		out = tf.keras.layers.GlobalAveragePooling1D(OUT_SIZE, query)
+		print("DDDDDDDDDDDDDDddd", out.shape)
 		out = tf.keras.layers.LayerNormalization()(out)
 		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
 		return final
