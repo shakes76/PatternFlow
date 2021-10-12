@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from keras.models import Model
-from keras.layers import Concatenate, Dropout, MaxPooling2D, Conv2D, LSTM, Input, concatenate, Cropping2D, Lambda, Conv2DTranspose
+from keras.layers import Concatenate, Dropout, MaxPooling2D, Conv2D, LSTM, Input, concatenate, Cropping2D, Lambda, Conv2DTranspose, add, Softmax
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from keras.preprocessing.image import load_img, img_to_array
 import keras.backend as K
@@ -93,15 +93,119 @@ def ISIC_data_loader(numTrain: int):
 
     return (training_pil_img_array, test_pil_img_array)
 
-def jacard_coef(y_true, y_pred):
-    y_true_flat = K.flatten(y_true)
-    y_pred_flat = K.flatten(y_pred)
-    intersection = K.sum(y_true_flat * y_pred_flat)
-    return (intersection + 1.0) / (K.sum(y_true_flat) + K.sum(y_pred_flat) - intersection + 1.0);
+def dice_coef(y_true, y_pred, smooth=1):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
-def jacard_coef_loss(y_true, y_pred):
-    # x -1, as we want to minimise this value
-    return -jacard_coef(y_true, y_pred);
+def dice_coeff_loss(y_true, y_pred):
+    return (1 - dice_coef(y_true, y_pred))
+
+def build_ISIC_cnn_improved_model():
+    # ! Model inputs and normalisation
+    # Input images are 511 x 384 x 3 (colour images)
+    inputs = Input(shape=(384,384,3))
+    # crop = Cropping2D(cropping=((64,63),(0,0)))(inputs)
+    # s = Lambda(lambda x: x / 255)(inputs)
+
+    # ! Contraction path (first half of the 'U')
+    # * 24
+    con1Temp = Conv2D(filters=24, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(inputs)
+
+    con1 = Dropout(0.1)(con1Temp)
+    con1 = Conv2D(filters=24, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con1)
+    con1 = add([con1, con1Temp])
+    pool1 = MaxPooling2D((2,2))(con1)
+
+    # * 48
+    con2Temp = Conv2D(filters=48, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(pool1)
+    con2 = Dropout(0.1)(con2Temp)
+    con2 = Conv2D(filters=48, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con2)
+    con2 = add([con2,con2Temp])
+    pool2 = MaxPooling2D((2,2))(con2)
+
+    # * 96
+    con3Temp = Conv2D(filters=96, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(pool2)
+    con3 = Dropout(0.1)(con3Temp)
+    con3 = Conv2D(filters=96, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con3)
+    con3 = add([con3, con3Temp])
+    pool3 = MaxPooling2D((2,2))(con3)
+
+    # * 192
+    con4Temp = Conv2D(filters=192, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(pool3)
+    con4 = Dropout(0.1)(con4Temp)
+    con4 = Conv2D(filters=192, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con4)
+    con4 = add([con4, con4Temp])
+    pool4 = MaxPooling2D((2,2))(con4)
+
+    # * 384
+    con5Temp = Conv2D(filters=384, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(pool4)
+    con5 = Dropout(0.1)(con5Temp)
+    con5 = Conv2D(filters=384, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con5)
+    con5 = add([con5, con5Temp])
+    
+    # ! Expansive path (second half of the 'U')
+
+    # * 192
+    ups6 = Conv2DTranspose(192, (2,2), strides=(2,2), padding='same')(con5)
+    ups6 = concatenate([ups6, con4])
+    con6 = Conv2D(filters=192, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(ups6)
+    con6 = Dropout(0.2)(con6)
+    con6 = Conv2D(filters=192, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con6)
+    
+    # * 96
+    ups7 = Conv2DTranspose(96, (2,2), strides=(2,2), padding='same')(con6)
+    ups7 = concatenate([ups7, con3])
+    con7 = Conv2D(filters=96, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(ups7)
+    con7 = Dropout(0.2)(con7)
+    con7 = Conv2D(filters=96, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con7)
+
+    # * 48
+    ups8 = Conv2DTranspose(48, (2,2), strides=(2,2), padding='same')(con7)
+    ups8 = concatenate([ups8, con2])
+    con8 = Conv2D(filters=48, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(ups8)
+    con8 = Dropout(0.1)(con8)
+    con8 = Conv2D(filters=48, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con8)
+
+    # ? Add two segmentation layers together
+    seg1 = Conv2DTranspose(24, (4,4), strides=(4,4), padding='same')(ups7)
+    seg2 = Conv2DTranspose(24, (2,2), strides=(2,2), padding='same')(ups8)
+    segAdd = add([seg1, seg2])
+
+    # * 24
+    ups9 = Conv2DTranspose(24, (2,2), strides=(2,2), padding='same')(con8)
+    ups9 = concatenate([ups9, con1])
+    con9 = Conv2D(filters=24, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(ups9)
+    con9 = Dropout(0.1)(con9)
+    con9 = Conv2D(filters=24, kernel_size=(3,3), 
+            kernel_initializer='he_normal', activation='relu', padding='same')(con9)
+
+    outSeg = add([segAdd, con9])
+
+    outputs = Conv2D(1, (1, 1), activation='sigmoid')(outSeg)
+
+    model = Model(inputs=[inputs], outputs=[outputs])
+    model.compile(optimizer='adam', loss=dice_coeff_loss, metrics=[dice_coef])
+    model.summary()
+    return model
 
 def build_ISIC_cnn_model():
     """ Builds a unet
@@ -193,13 +297,15 @@ def build_ISIC_cnn_model():
 
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(con9)
 
+    outputs = Softmax()(outputs)
+
     model = Model(inputs=[inputs], outputs=[outputs])
     model.compile(optimizer='adam', loss=sm.losses.DiceLoss(), metrics=[sm.metrics.FScore()])
     model.summary()
     return model
     
 if __name__ == '__main__':
-    model = build_ISIC_cnn_model()
+    model = build_ISIC_cnn_improved_model()
 
     # Model checkpoint
     checkpointer = ModelCheckpoint('ISIC_model_snapshot.h5', verbose=1, 
