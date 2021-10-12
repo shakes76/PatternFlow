@@ -1,3 +1,13 @@
+"""
+    Model module for AKOA StyleGAN.
+    Defines the class StyleGan which contains 
+    discriminator, generator, and other 
+    relevant models.
+    
+    author: Richard Marron
+    status: Development
+"""
+
 import tensorflow as tf
 from tensorflow.keras import Sequential, layers
 
