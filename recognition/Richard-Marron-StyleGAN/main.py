@@ -15,6 +15,7 @@ os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/b
 import tensorflow as tf
 from PIL import Image
 import cv2
+import imageio
 import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ import matplotlib.pyplot as plt
 import glob
 import natsort as ns
 
-def process_samples(img_paths: list, status: int):
+def process_samples(img_paths: list, status: int) -> dict:
     """
     Find all 2D images pertaining to
     each sample and combine them into a 3D tensor
@@ -34,12 +35,15 @@ def process_samples(img_paths: list, status: int):
     """
     if status == 0:
         # Train
+        print("Processing Training Dataset...")
         path_header = "./Data/keras_png_slices_data/keras_png_slices_train/case_"
     elif status == 1:
         # Test
+        print("Processing Test Dataset...")
         path_header = "./Data/keras_png_slices_data/keras_png_slices_test/case_"
     elif status == 2:
         # Validation
+        print("Processing Validation Dataset...")
         path_header = "./Data/keras_png_slices_data/keras_png_slices_validate/case_"
     else:
         raise ValueError("Incorrect Status Value! Valid Values: 0, 1, 2")
@@ -65,7 +69,22 @@ def process_samples(img_paths: list, status: int):
         # Collect each slice of a sample into a 3D matrix 
         full_sample[num] = tf.stack(tuple([tf.convert_to_tensor(cv2.imread(dir, cv2.IMREAD_GRAYSCALE)) for dir in dir_list]), axis=-1)
         # Add a channel dimension to make sample 4D
-        full_sample[num] = tf.expand_dims(full_sample[num], axis=-1)
+        full_sample[num] = tf.expand_dims(full_sample[num], axis=-1) 
+
+    return full_sample
+
+def show_example(name: str, sample):
+    """
+    Creates a gif of 3D sample
+    
+    Params:
+        name   : The name of the file to create
+        sample : The sample from which to create a gif
+    """
+    print(f"Now creating {name}.gif")
+    with imageio.get_writer(f"{name}.gif", mode='I') as writer:
+        for i in range(sample.shape[2]):
+            writer.append_data(sample[:, :, i, 0].numpy())
 
 def main():
     """
@@ -77,40 +96,12 @@ def main():
     test_file_paths = glob.glob("./Data/keras_png_slices_data/keras_png_slices_test/*")
     valid_file_paths = glob.glob("./Data/keras_png_slices_data/keras_png_slices_validate/*")
         
-    process_samples(train_file_paths, 0)
+    train_samples = process_samples(train_file_paths, 0)
+    test_samples = process_samples(test_file_paths, 1)
+    valid_samples = process_samples(valid_file_paths, 2)
     
-    # test = nib.load(img_dir)
-    # print(test)
+    show_example("example_test", list(train_samples.values())[0])
     
-    # Get training set
-    # train_images = tf.keras.utils.image_dataset_from_directory(img_dir,
-                                                            #    labels=None,
-                                                            #    color_mode="grayscale",
-                                                            #    image_size=(260, 228),
-                                                            #    seed=456,
-                                                            #    shuffle=True,
-                                                            #    subset="training",
-                                                            #    validation_split=0.2)
-    # 
-    # Get validation set
-    # valid_images = tf.keras.utils.image_dataset_from_directory(img_dir,
-                                                            #    labels=None,
-                                                            #    color_mode="grayscale",
-                                                            #    image_size=(260, 228),
-                                                            #    seed=456,
-                                                            #    shuffle=True,
-                                                            #    subset="validation",
-                                                            #    validation_split=0.2)
-    # 
-    # Normalise the data
-    # train_images = train_images.map(lambda x: (tf.divide(x, 255)))
-    # valid_images = valid_images.map(lambda x: (tf.divide(x, 255)))
-    # 
-    # Have a look at an image
-    # for e in train_images:
-        # plt.imshow(e[0].numpy(), cmap="gray")
-        # break
-    # plt.show()
 
 if __name__ == "__main__":
     # Begin the program
