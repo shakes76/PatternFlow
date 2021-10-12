@@ -16,9 +16,28 @@ class StyleGan():
         pass
     
     
+    def mapping_network(self):
+        """
+        Create the mapping network which takes 
+        a point from latent space and transforms
+        it into a style vector.
+        
+        Return: Model
+        """
+        model = Sequential()
+        # model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(64, activation='relu'))
+        
+        return model
+    
+    
     def discriminator_model(self):
         """
         Define the discriminator model for the Style GAN
+        
+        Return: Discriminator Model
         """
         model = Sequential()
         #model.add(layers.Dense())
@@ -27,6 +46,8 @@ class StyleGan():
     def generator_model(self):
         """
         Define the generator model for the Style GAN
+        
+        Return: Generator Model
         """
         model = Sequential()
         pass
@@ -37,6 +58,8 @@ class StyleGan():
         Params: 
             x : Vector which corresponds to feature map
             y : Tuple of vectors (y_s, y_b) called styles
+            
+        Return: AdaIN value (float)
         """
         y_s, y_b = y
         mu_x = tf.math.reduce_mean(x)
