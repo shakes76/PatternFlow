@@ -15,6 +15,8 @@ from keras.models import Model
 from keras.layers import Concatenate, Dropout, MaxPooling2D, Conv2D, LSTM, Input, concatenate, Cropping2D, Lambda, Conv2DTranspose
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from keras.preprocessing.image import load_img, img_to_array
+import keras.backend as K
+import segmentation_models as sm
 
 def img_name_formatter(prefix: str, suffix: str, 
         imageNum: int, extension: str):
@@ -31,15 +33,15 @@ def img_name_formatter(prefix: str, suffix: str,
     elif imageNum >= 100000 and imageNum <= 999999:
         return "{}0{}{}.{}".format(prefix, imageNum, suffix, extension)
 
-def image_plotter_helper(Train_X):
-    fig = plt.figure(figsize=(30,10))
-    nplot = 7
-    for count in range(1,nplot):
-        ax = fig.add_subplot(1,nplot,count)
-        ax.imshow(Train_X[count])
+def image_plotter_helper(Train_X, Test_X):
+    f, axarr = plt.subplots(2,2)
+    axarr[0,0].imshow(Train_X[0])
+    axarr[0,1].imshow(Train_X[1])
+    axarr[1,0].imshow(Test_X[0])
+    axarr[1,1].imshow(Test_X[1])
     plt.show()
 
-def ISIC_data_loader(numTrain: int, numTest: int):
+def ISIC_data_loader(numTrain: int):
     """ Loads in the ISIC training and ground-truth data
     """
     minImg = 1
@@ -50,42 +52,39 @@ def ISIC_data_loader(numTrain: int, numTest: int):
     buffer = 10000
  
     # Ensure that there are enough images
-    if (numTrain + numTest) > maxImg:
+    if (numTrain + buffer) > maxImg:
         print("Not enough images in dataset: [{}] max".format(maxImg))
         sys.exit()
 
-    training_pil_img_array = np.zeros((numTrain, 384, 384, 3), dtype=np.uint8)
+    training_pil_img_array = np.zeros((numTrain, 384, 384, 3), dtype=np.float32)
 
     # Since the data is either black or white, we interpret it as 
-    test_pil_img_array = np.zeros((numTest, 384, 384, 1), dtype=np.bool)
+    test_pil_img_array = np.zeros((numTrain, 384, 384, 1), dtype=np.float32)
 
-    choices = list(range(1,numTrain + numTest + buffer))
+    choices = list(range(1,numTrain + buffer))
+    choicesTrain = choices
+    choicesTest = choices
     random.shuffle(choices)
     counter = 0
     while counter < numTrain:
         try:
-            print("Loading training images: {}%    ".format(round(counter/numTrain*100,2)), end="")
-            image = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
-                    .format(img_name_formatter('ISIC_', '', choices.pop(), 'jpg')),
+            imgNumToTry = choices.pop()
+            print("Loading training and testing images: {}%    ".format(round(counter/numTrain*100,2)), end="")
+            imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
+                    .format(img_name_formatter('ISIC_', '', imgNumToTry, 'jpg')),
                     target_size=targetSize)
-            image = img_to_array(image)
-            training_pil_img_array[counter,:,:,:] = image
-            counter += 1
-            print("\r", end="")
-        except FileNotFoundError as fnfe:
-            print("\r", end="")
-    print("\nDone")
+            imageTrain = img_to_array(imageTrain) / 255.0
+            
 
-    counter = 0
-    while counter < numTest:
-        try:
-            print("Loading test images: {}%    ".format(round(counter/numTest*100,2)), end="")
-            image = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
-                    .format(img_name_formatter('ISIC_', '_segmentation', choices.pop(), 'png')),
+            imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
+                    .format(img_name_formatter('ISIC_', '_segmentation', imgNumToTry, 'png')),
                     target_size=targetSize,
                     color_mode='grayscale')
-            image = img_to_array(image)
-            test_pil_img_array[counter,:,:,:] = image
+            imageTest = img_to_array(imageTest) / 255.0
+
+            training_pil_img_array[counter,:,:,:] = imageTrain
+            test_pil_img_array[counter,:,:,:] = imageTest
+
             counter += 1
             print("\r", end="")
         except FileNotFoundError as fnfe:
@@ -94,20 +93,30 @@ def ISIC_data_loader(numTrain: int, numTest: int):
 
     return (training_pil_img_array, test_pil_img_array)
 
+def jacard_coef(y_true, y_pred):
+    y_true_flat = K.flatten(y_true)
+    y_pred_flat = K.flatten(y_pred)
+    intersection = K.sum(y_true_flat * y_pred_flat)
+    return (intersection + 1.0) / (K.sum(y_true_flat) + K.sum(y_pred_flat) - intersection + 1.0);
+
+def jacard_coef_loss(y_true, y_pred):
+    # x -1, as we want to minimise this value
+    return -jacard_coef(y_true, y_pred);
+
 def build_ISIC_cnn_model():
     """ Builds a unet
     """
     # ! Model inputs and normalisation
     # Input images are 511 x 384 x 3 (colour images)
-    inputs = Input(shape=(511,384,3))
-    crop = Cropping2D(cropping=((64,63),(0,0)))(inputs)
-    s = Lambda(lambda x: x / 255)(inputs)
+    inputs = Input(shape=(384,384,3))
+    # crop = Cropping2D(cropping=((64,63),(0,0)))(inputs)
+    # s = Lambda(lambda x: x / 255)(inputs)
     
 
     # ! Contraction path (first half of the 'U')
     # * 24
     con1 = Conv2D(filters=24, kernel_size=(3,3), 
-            kernel_initializer='he_normal', activation='relu', padding='same')(s)
+            kernel_initializer='he_normal', activation='relu', padding='same')(inputs)
     con1 = Dropout(0.1)(con1)
     con1 = Conv2D(filters=24, kernel_size=(3,3), 
             kernel_initializer='he_normal', activation='relu', padding='same')(con1)
@@ -185,30 +194,34 @@ def build_ISIC_cnn_model():
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(con9)
 
     model = Model(inputs=[inputs], outputs=[outputs])
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss=sm.losses.DiceLoss(), metrics=[sm.metrics.FScore()])
     model.summary()
+    return model
     
 if __name__ == '__main__':
-    # model = build_ISIC_cnn_model()
+    model = build_ISIC_cnn_model()
 
-    # # Model checkpoint
-    # checkpointer = ModelCheckpoint('ISIC_model_snapshot.h5', verbose=1, 
-    #         save_freq=5)
-
-    # callbacks = [
-    #     EarlyStopping(patience=2, monitor='val_loss'),
-    #     TensorBoard(log_dir='logs/log_file')
-    # ]
+    # Model checkpoint
+    checkpointer = ModelCheckpoint('ISIC_model_snapshot.h5', verbose=1, 
+            save_freq=5)
 
     # Load data
-    Train_X, Test_X = ISIC_data_loader(500, 100)
+    Train_X, Train_Y = ISIC_data_loader(1000)
 
     print("Train_X.shape = {}".format(Train_X.shape))
-    print("Test_X.shape = {}".format(Test_X.shape))
+    print("Test_X.shape = {}".format(Train_Y.shape))
 
-    image_plotter_helper(Train_X)
+    image_plotter_helper(Train_X, Train_Y)
 
-    # results = model.fit(X,Y, validation_split=0.1, batch_size=16, epochs=25, 
-    #         callbacks=callbacks)
+    results = model.fit(Train_X, Train_Y, validation_split=0.1, batch_size=4, 
+            epochs=50)
+
+    plt.plot(results.history['accuracy'])
+    plt.plot(results.history['f_score'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.show()
 
     
