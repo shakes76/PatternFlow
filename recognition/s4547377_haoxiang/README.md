@@ -65,7 +65,8 @@ Difference: The improved UNET has many short cut connections and summation.
 
 ## Results Demonstration:
 
-###1. Firstly, I will show two examples of my results:
+### 1. Firstly, I will show two examples of my results:
+
 ![](./ResultImages/origin1.png)
 
 <p align="center"> 
@@ -110,7 +111,7 @@ Difference: The improved UNET has many short cut connections and summation.
 *Figure 9: The average value for the Dice similarity coefficient.
 </p>
 
-###3. The value graph and the value loss graph of the Dice similarity coefficient:
+### 3. The value graph and the value loss graph of the Dice similarity coefficient:
 
 ![](./ResultImages/loss.png)
 
