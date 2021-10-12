@@ -5,6 +5,8 @@ from PIL import Image
 import tensorflow_probability as tfp
 import matplotlib.pyplot as plt
 
+from driver.py import *
+
 #Define key parameters
 batch_size = 50
 image_height = 256
@@ -77,3 +79,14 @@ for element in example_batch:
 
 print("Image shape: ", ex_image.numpy().shape)
 plt.imshow(ex_image[0, :, :, 0], cmap='gray')
+
+
+# Print a summary of our encoder and decoder network
+encoder = encoder()
+print(encoder.summary)
+
+decoder = decoder()
+print(decoder.summary)
+
+VQ_VAE = VQ_VAE_network()
+print(VQ_VAE.summary())
