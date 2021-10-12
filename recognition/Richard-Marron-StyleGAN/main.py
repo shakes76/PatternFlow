@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 import glob
 import natsort as ns
 
+from styleganmodule import StyleGan
+
 def process_samples(img_paths: list, status: int) -> dict:
     """
     Find all 2D images pertaining to
