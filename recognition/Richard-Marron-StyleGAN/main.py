@@ -56,16 +56,16 @@ def process_samples(img_paths: list, status: int):
     for num in iter(unique_nums):
         # Collect paths for each sample number
         sample_dict[num] = glob.glob(path_header + num + "*")
-        
+    
+    full_sample = dict()
     for num, dir_list in sample_dict.items():
         # Sort the directories alphanumerically (natural sort)
         dir_list = ns.natsorted(dir_list)
         
         # Collect each slice of a sample into a 3D matrix 
-        full_sample = dict()
-        full_sample[num] = np.stack(tuple([cv2.imread(dir, cv2.IMREAD_GRAYSCALE) for dir in dir_list]), axis=-1)
-        # Add a channel dimension because tensorflow will need a 5D vector when training
-        full_sample[num] = np.expand_dims(full_sample[num], axis=-1)
+        full_sample[num] = tf.stack(tuple([tf.convert_to_tensor(cv2.imread(dir, cv2.IMREAD_GRAYSCALE)) for dir in dir_list]), axis=-1)
+        # Add a channel dimension to make sample 4D
+        full_sample[num] = tf.expand_dims(full_sample[num], axis=-1)
 
 def main():
     """
