@@ -25,7 +25,7 @@ tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
 SAVE_DATA			= True
-BATCH_SIZE			= 8
+BATCH_SIZE			= 33
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
@@ -200,7 +200,7 @@ QKV_DIM				= CHANNEL_LENGTH
 CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
-VALIDATION_SPLIT	= 0.2
+VALIDATION_SPLIT	= 0
 EPOCHS				= 4
 DROPOUT_RATE		= 0.5
 
@@ -313,8 +313,8 @@ class Perceiver(tf.keras.Model):
 		print("EEEEEEEEEEEEEe", query.shape)
 		out = tf.keras.layers.GlobalAveragePooling1D()(query)
 		print("DDDDDDDDDDDDDDddd", out.shape)
-		out = tf.keras.layers.LayerNormalization()(out)
-		print("FFFFFFFFFFFFffffff", out.shape)
+		#out = tf.keras.layers.LayerNormalization()(out)
+		#print("FFFFFFFFFFFFffffff", out.shape)
 		#final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
 		final = tf.keras.layers.Dense(1, activation='sigmoid')(out)
 		#final = tf.keras.layers.Flatten()(out)
@@ -331,7 +331,8 @@ perceiver.compile(
 	optimizer = tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
 	loss = tf.keras.losses.BinaryCrossentropy(),
 	#loss='categorical_crossentropy',
-	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy"))
+	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy"),
+	run_eagerly = True)
 
 print("xtrain shape:", xtrain.shape)
 print("ytrain shape:", ytrain.shape)
