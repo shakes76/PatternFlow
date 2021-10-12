@@ -185,8 +185,8 @@ def pos_encoding(img, bands, Fs):
 INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
 LATENT_ARRAY_SIZE	= 512 # Same as paper
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
-DATA_LENGTH			= 2 * (2 * BANDS + 1) + 1
-QKV_DIM				= DATA_LENGTH
+CHANNEL_LENGTH		= 2 * (2 * BANDS + 1) + 1
+QKV_DIM				= CHANNEL_LENGTH
 CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
@@ -208,12 +208,12 @@ def network_connection(hidden_layers):
 
 def network_attention():
 	# Network structure starting at latent array
-	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, DATA_LENGTH])
+	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, CHANNEL_LENGTH])
 	#latent_layer = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(latent_layer) # Add a cheeky normalization layer
 	query_layer  = tf.keras.layers.Dense(QKV_DIM)(latent_layer) # Query tensor (dense layer)
 
 	# Network structure starting at byte array
-	byte_layer  = tf.keras.layers.Input(shape = [BYTE_ARRAY_SIZE, DATA_LENGTH])
+	byte_layer  = tf.keras.layers.Input(shape = [BYTE_ARRAY_SIZE, CHANNEL_LENGTH])
 	#byte_layer  = tf.keras.layers.LayerNormalization(epsilon=EPSILON)(byte_layer) # Add a cheeky normalization layer
 	key_layer   = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Key tensor (dense layer)
 	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
@@ -232,25 +232,26 @@ def network_attention():
 	connector_layer = network_connection([CD_DIM, CD_DIM])
 	attention_connect_layer = connector_layer(attention_layer)
 	
+	out = tf.keras.Model(inputs = [latent_layer, byte_layer], outputs = tranattention_connect_layersformer_layer)
 	# Should probably also normalize
-	return attention_connect_layer
+	return out
 
 def network_transformer():
-	# Get latent_size and DATA_LENGTH
-	latent_input_initial = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, DATA_LENGTH])
+	# Get latent_size and CHANNEL_LENGTH
+	latent_input_initial = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, CHANNEL_LENGTH])
 	latent_input = latent_input_initial
 	# Create as many transformer modules as necessary
 	for i in range(TRANSFOMER_NUM):
 		transformer_layer = tf.keras.layers.LayerNormalization()(latent_input) # probs remove above normalization
 		# Multihead attention layer
-		transformer_layer = tf.keras.layers.MultiHeadAttention(num_heads = TRANSFOMER_NUM, key_dim = DATA_LENGTH)(transformer_layer,transformer_layer)
+		transformer_layer = tf.keras.layers.MultiHeadAttention(num_heads = TRANSFOMER_NUM, key_dim = CHANNEL_LENGTH)(transformer_layer,transformer_layer)
 		# Add passthrough connection from input
 		transformer_layer = tf.keras.layers.Add()([latent_input, transformer_layer])
 		# Normalize for the fun of it
 		transformer_layer = tf.keras.layers.LayerNormalization()(transformer_layer)
 		# Get query
-		x = tf.keras.layers.Dense(DATA_LENGTH, input_dim=DATA_LENGTH)(transformer_layer)
-		x = tf.keras.layers.Dense(DATA_LENGTH, input_dim=DATA_LENGTH)(x)
+		x = tf.keras.layers.Dense(CHANNEL_LENGTH, input_dim=CHANNEL_LENGTH)(transformer_layer)
+		x = tf.keras.layers.Dense(CHANNEL_LENGTH, input_dim=CHANNEL_LENGTH)(x)
 		x = tf.keras.layers.Dropout(DROPOUT_RATE)(x)
 		# Add passthrough connection from transformer_layer
 		transformer_layer = tf.keras.layers.Add()([x, transformer_layer])
@@ -268,35 +269,36 @@ class Perceiver(tf.keras.Model):
 
 	def build(self, input_shape):
 		# Intialise input
-		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, DATA_LENGTH), initializer = 'random_normal', trainable = True)
+		# TODO: Custom initializer to get truncated standard deviation thingy
+		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, CHANNEL_LENGTH), initializer = 'random_normal', trainable = True)
 		#self.in_layer = tf.reshape(self.in_layer, (1,*self.in_layer.shape))
 		# Add attention module
-		#self.attention = network_attention()
+		self.attention = network_attention()
 		# Add transformer module
-		#self.transformer = network_transformer()
+		self.transformer = network_transformer()
 		# Build
 		super(Perceiver, self).build(input_shape)
 
 	def call(self, inputs):
 		# Attention input
 		frequency_data = pos_encoding(xtrain, 4, 20)
-		#attention_in = [self.in_layer, frequency_data]
-		attention_in = self.in_layer
+		attention_in = [self.in_layer, frequency_data]
+		#attention_in = self.in_layer
 		#attention_in = {"latent_layer": tf.expand_dims(self.in_layer, axis=0),
 		#				"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
+		for i in range(MODULES_NUM):
+			latent = self.attention(attention_in)
+			query = self.transformer(latent)
+			attention_in[0] = query
 		#for i in range(MODULES_NUM):
-		#latent = self.attention(attention_in)
-		#	query = self.transformer(latent)
-		#	attention_in[1] = query
-		#for i in range(MODULES_NUM):
-		#	latent_layer = self.attention(attention_in) # Latent array -> attention layer
-		#	latent_layer = self.transformer(latent_layer)
-		#	attention_in["latent_layer"] = latent_layer
+			#latent_layer = self.attention(attention_in) # Latent array -> attention layer
+			#latent_layer = self.transformer(latent_layer)
+			#attention_in["latent_layer"] = latent_layer
 		# Pooling
-		#out = tf.keras.layers.GlobalAveragePooling1D(1, query)
-		#out = tf.keras.layers.LayerNormalization()(out)
-		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(attention_in)
+		out = tf.keras.layers.GlobalAveragePooling1D(1, query)
+		out = tf.keras.layers.LayerNormalization()(out)
+		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
 		return final
 
 # ##### Run Training/Evaluation #####
@@ -306,10 +308,10 @@ perceiver = Perceiver()
 
 # Compile the model
 perceiver.compile(
-	optimizer=tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
-	#loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-	loss='categorical_crossentropy',
-	metrics=tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy"))
+	optimizer = tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
+	loss = tf.keras.losses.BinaryCrossentropy(),
+	#loss='categorical_crossentropy',
+	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy"))
 
 print("xtrain shape:", xtrain.shape)
 print("ytrain shape:", ytrain.shape)
