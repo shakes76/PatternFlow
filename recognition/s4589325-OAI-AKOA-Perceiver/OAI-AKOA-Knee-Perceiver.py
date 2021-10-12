@@ -24,8 +24,8 @@ print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-SAVE_DATA			= False
-BATCH_SIZE			= 32
+SAVE_DATA			= True
+BATCH_SIZE			= 8
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
@@ -129,8 +129,17 @@ ytrain = np.load('../../../ytrain.npy')
 xtest = np.load('../../../xtest.npy')
 ytest = np.load('../../../ytest.npy')
 
-ytest = np.squeeze(ytest)
-ytrain = np.squeeze(ytrain)
+'''
+#xtrain = np.asarray(xtrain).astype('float32').reshape((-1,BATCH_SIZE))
+ytrain = np.asarray(ytrain).astype('float32').reshape((-1,BATCH_SIZE))
+#xtest = np.asarray(xtest).astype('float32').reshape((-1,BATCH_SIZE))
+ytest = np.asarray(ytest).astype('float32').reshape((-1,BATCH_SIZE))
+'''
+
+print("xtrain shape:", xtrain.shape)
+print("ytrain shape:", ytrain.shape)
+print("xtest shape:", xtest.shape)
+print("ytest shape:", ytest.shape)
 
 ''' # Cannot use this code because it leaks data between training/test sets
 dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
@@ -184,7 +193,7 @@ def pos_encoding(img, bands, Fs):
 # ##### Define Modules #####
 
 INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
-LATENT_ARRAY_SIZE	= 512 # Same as paper
+LATENT_ARRAY_SIZE	= 32 # Paper uses 512
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 CHANNEL_LENGTH		= 2 * (2 * BANDS + 1) + 1
 QKV_DIM				= CHANNEL_LENGTH
@@ -192,11 +201,11 @@ CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
 VALIDATION_SPLIT	= 0.2
-EPOCHS				= 50
-DROPOUT_RATE		= 0.2
+EPOCHS				= 4
+DROPOUT_RATE		= 0.5
 
-TRANSFOMER_NUM		= 2
-MODULES_NUM			= 2
+TRANSFOMER_NUM		= 1
+MODULES_NUM			= 1
 OUT_SIZE			= 1 # binary as only left or right knee
 
 def network_connection():
@@ -305,7 +314,11 @@ class Perceiver(tf.keras.Model):
 		out = tf.keras.layers.GlobalAveragePooling1D()(query)
 		print("DDDDDDDDDDDDDDddd", out.shape)
 		out = tf.keras.layers.LayerNormalization()(out)
-		final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
+		print("FFFFFFFFFFFFffffff", out.shape)
+		#final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
+		final = tf.keras.layers.Dense(1, activation='sigmoid')(out)
+		#final = tf.keras.layers.Flatten()(out)
+		print("GGGGGGGGGGGGGGGGggg", final.shape)
 		return final
 
 # ##### Run Training/Evaluation #####
@@ -329,6 +342,8 @@ adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", 
 # Perform model fit
 model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
 #model_history = perceiver.fit(x = xtest, y = ytest)
+
+perceiver.summary()
 
 _, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
 
