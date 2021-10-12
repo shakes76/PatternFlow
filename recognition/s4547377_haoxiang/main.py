@@ -3,7 +3,8 @@ from pathlib import Path
 from PIL import Image
 from numpy import asarray
 from tensorflow.keras import backend
-from IPython.display import clear_output 
+from IPython.display import clear_output
+from model.py import *
 import glob
 import cv2
 import tensorflow as tf
@@ -182,9 +183,9 @@ def display_images(image, groundtruth, prediction, number):
     plt.show()
 
 def get_predictions(treated_test_set, num=3):
-    image_test_batch, label_test_batch = next(iter(treated_test_set.batch(num)))
-    prediction = model.predict(image_test_batch)
-    display_images(image_test_batch, label_test_batch, prediction, num)
+    batch_image, batch_label = next(iter(treated_test_set.batch(num)))
+    prediction = model.predict(batch_image)
+    display_images(batch_image, batch_label, prediction, num)
 
 #Call back
 '''
@@ -197,9 +198,42 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         clear_output(wait=True)#clear the output of a cell.
         get_predictions(treated_test_set)
 
+#Create improved UNET variable 
+model=improved_unet(number_output_classes, size)
+#Compile the improved UNET model with adam optimizer
+model.compile(optimizer='adam', loss=loss_DSC, metrics=['accuracy', DSC])
+#Train the model
+model_history=model.fit(treated_training_set.batch(s_batch), validation_data=treated_validation_set.batch(s_batch), epochs=40, callbacks=[DisplayCallback()])
+#Evaluate
+result=model.evaluate(treated_test_set.batch(s_batch), verbose=1)
+#Predications
+batch_image, batch_label=next(iter(treated_test_set.batch(s_test)))
+prediction=model.predict(batch_image)
+#Calculate the average DSC value
+total_values=0
+length=prediction.shape[0]
+for i in range(length):
+    each_DSC_value=DSC(batch_label[i], prediction[i])
+    total_values+=each_DSC_value
+print("Average DSC value is ", total_values/length)
 
-
-
+#plots
+plt.subplot(211)
+plt.title('DSC loss Graph')
+plt.plot(model_history.history['loss'], label='training_set')
+plt.plot(model_history.history['val_loss'], label='validation_set')
+plt.legend()
+plt.xlabel("Iterations")
+plt.ylabel("Loss value")
+plt.subplot(212)
+plt.title('DSC Graph')
+plt.plot(model_history.history['DSC'], label='training_set')
+plt.plot(model_history.history['val_DSC'], label='validation_set')
+plt.legend()
+plt.xlabel("Iterations")
+plt.ylabel("Accuracy")
+plt.tight_layout()
+plt.show()
 
 
 
