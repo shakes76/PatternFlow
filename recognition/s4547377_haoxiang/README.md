@@ -62,7 +62,67 @@ Note: This picture is taken from the document: Brain Tumor Segmentation and Radi
 In this document, this structure is used to process three dimensional inputs. (3 * 3 * 3) But in my project, two dimensional inputs are required. (3 * 3)
 
 Difference: The improved UNET has many short cut connections and summation. 
+
 ## Results Demonstration:
+
+###1. Firstly, I will show two examples of my results:
+![](./ResultImages/origin1.png)
+
+<p align="center"> 
+*Figure 3: The origin image for the first example.
+</p>
+
+![](./ResultImages/groundtruth1.png)
+
+<p align="center"> 
+*Figure 4: The ground truth image for the first example.
+</p>
+
+![](./ResultImages/predication1.png)
+
+<p align="center"> 
+*Figure 5: The predication image for the first example.
+</p>
+
+![](./ResultImages/origin2.png)
+
+<p align="center"> 
+*Figure 6: The origin image for the secondexample.
+</p>
+
+![](./ResultImages/groundtruth2.png)
+
+<p align="center"> 
+*Figure 7: The ground truth image for the second example.
+</p>
+
+![](./ResultImages/predication2.png)
+
+<p align="center"> 
+*Figure 8: The predication image for the second example.
+</p>
+
+### 2.  The average value of the Dice similarity coefficient:
+
+![](./ResultImages/averge.png)
+
+<p align="center"> 
+*Figure 9: The average value for the Dice similarity coefficient.
+</p>
+
+###3. The value graph and the value loss graph of the Dice similarity coefficient:
+
+![](./ResultImages/loss.png)
+
+<p align="center"> 
+*Figure 10: The loss graph for the Dice similarity coefficient.
+</p>
+
+![](./ResultImages/value.png)
+
+<p align="center"> 
+*Figure 11: The value graph for the Dice similarity coefficient.
+</p>
 
 ## Requirements:
 - Python 3.9.7
