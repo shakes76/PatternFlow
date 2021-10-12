@@ -13,7 +13,8 @@ import os
 os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/bin")
 
 import tensorflow as tf
-import PIL
+from PIL import Image
+import cv2
 import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
@@ -53,13 +54,18 @@ def process_samples(img_paths: list, status: int):
     
     sample_dict = dict()
     for num in iter(unique_nums):
+        # Collect paths for each sample number
         sample_dict[num] = glob.glob(path_header + num + "*")
         
-    for k, v in sample_dict.items():
-        print("\n")
-        for p in ns.natsorted(v):
-            print(p)
-    
+    for num, dir_list in sample_dict.items():
+        # Sort the directories alphanumerically (natural sort)
+        dir_list = ns.natsorted(dir_list)
+        
+        # Collect each slice of a sample into a 3D matrix 
+        full_sample = dict()
+        full_sample[num] = np.stack(tuple([cv2.imread(dir, cv2.IMREAD_GRAYSCALE) for dir in dir_list]), axis=-1)
+        # Add a channel dimension because tensorflow will need a 5D vector when training
+        full_sample[num] = np.expand_dims(full_sample[num], axis=-1)
 
 def main():
     """
