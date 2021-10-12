@@ -30,7 +30,7 @@ def process_samples(img_paths: list, status: int) -> dict:
     each sample and combine them into a 3D tensor
     
     Params:
-        img_paths : List image paths
+        img_paths : List of image paths
         status    : 0 = train, 1 = test, 2 = validation
     """
     if status == 0:
@@ -65,11 +65,13 @@ def process_samples(img_paths: list, status: int) -> dict:
     for num, dir_list in sample_dict.items():
         # Sort the directories alphanumerically (natural sort)
         dir_list = ns.natsorted(dir_list)
-        
+                
         # Collect each slice of a sample into a 3D matrix 
-        full_sample[num] = tf.stack(tuple([tf.convert_to_tensor(cv2.imread(dir, cv2.IMREAD_GRAYSCALE)) for dir in dir_list]), axis=-1)
+        full_sample[num] = tf.stack(tuple([tf.convert_to_tensor(cv2.imread(dir, cv2.IMREAD_GRAYSCALE), dtype=tf.float32) for dir in dir_list]), axis=-1)
         # Add a channel dimension to make sample 4D
-        full_sample[num] = tf.expand_dims(full_sample[num], axis=-1) 
+        full_sample[num] = tf.expand_dims(full_sample[num], axis=-1)
+        # Normalise the data between -1 and 1
+        full_sample[num] = full_sample[num] / 127.5 - 1
 
     return full_sample
 
@@ -84,7 +86,8 @@ def show_example(name: str, sample):
     print(f"Now creating {name}.gif")
     with imageio.get_writer(f"{name}.gif", mode='I') as writer:
         for i in range(sample.shape[2]):
-            writer.append_data(sample[:, :, i, 0].numpy())
+            writer.append_data(tf.cast((sample[:, :, i, 0] + 1) * 127.5, dtype=tf.uint8).numpy())
+    print("Creation complete!")
 
 def main():
     """
@@ -95,11 +98,13 @@ def main():
     train_file_paths = glob.glob("./Data/keras_png_slices_data/keras_png_slices_train/*")
     test_file_paths = glob.glob("./Data/keras_png_slices_data/keras_png_slices_test/*")
     valid_file_paths = glob.glob("./Data/keras_png_slices_data/keras_png_slices_validate/*")
-        
+    
+    # Process the data
     train_samples = process_samples(train_file_paths, 0)
     test_samples = process_samples(test_file_paths, 1)
     valid_samples = process_samples(valid_file_paths, 2)
     
+    # Create a gif of one of the samples
     show_example("example_test", list(train_samples.values())[0])
     
 

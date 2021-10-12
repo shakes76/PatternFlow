@@ -25,10 +25,10 @@ class StyleGan():
         Return: Model
         """
         model = Sequential()
-        # model.add(layers.Dense(64, activation='relu'))
-        # model.add(layers.Dense(64, activation='relu'))
-        # model.add(layers.Dense(64, activation='relu'))
-        # model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
         
         return model
     
