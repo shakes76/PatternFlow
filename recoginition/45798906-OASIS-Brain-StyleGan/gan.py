@@ -16,6 +16,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import (
     Activation,
     add,
+    AveragePooling2D,
     Conv2D,
     Dense,
     Input,
@@ -99,6 +100,24 @@ def gen_block(
     out = Conv2D(filters, kernel_size=3, padding="same")(out)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
+    out = LeakyReLU(0.01)(out)
+
+    return out
+
+
+def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
+    """
+    For each block, we want to: (In order)
+        - Conv2D
+        - AveragePool2D
+        - Conv2D
+    """
+
+    # Begin the discriminator block
+    out = Conv2D(filters, kernel_size=3, padding="same")(input)
+    out = AveragePooling2D()(out)
+    out = LeakyReLU(0.01)(out)
+    out = Conv2D(filters, kernel_size=3, padding="same")(out)
     out = LeakyReLU(0.01)(out)
 
     return out
