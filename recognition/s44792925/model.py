@@ -52,7 +52,7 @@ def model(height, width, channel):
     localization_1 = tf.keras.layers.Conv2D(128, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(localization_1)
     upsampling2 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_1)
 
-    #possibly need a conv2d ehre
+    #possibly need a conv2d here
     concat2 = tf.keras.layers.concatenate([sum3, upsampling2])
     localization_2 = tf.keras.layers.Conv2D(64, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat2)
     localization_2 = tf.keras.layers.Conv2D(64, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(localization_2)
