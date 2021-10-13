@@ -203,7 +203,7 @@ model=improved_unet(number_output_classes, size)
 #Compile the improved UNET model with adam optimizer
 model.compile(optimizer='adam', loss=loss_DSC, metrics=['accuracy', DSC])
 #Train the model
-model_history=model.fit(treated_training_set.batch(s_batch), validation_data=treated_validation_set.batch(s_batch), epochs=10, callbacks=[DisplayCallback()])
+model_history=model.fit(treated_training_set.batch(s_batch), validation_data=treated_validation_set.batch(s_batch), epochs=60, callbacks=[DisplayCallback()])
 #Evaluate
 result=model.evaluate(treated_test_set.batch(s_batch), verbose=1)
 #Predications
