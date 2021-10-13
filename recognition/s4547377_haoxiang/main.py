@@ -199,7 +199,7 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         get_predictions(treated_test_set)
 
 #Create improved UNET variable 
-model=improved_unet(number_output_classes, size)
+model=improved_unet(number_output_classes, input_size)
 #Compile the improved UNET model with adam optimizer
 model.compile(optimizer='adam', loss=loss_DSC, metrics=['accuracy', DSC])
 #Train the model
@@ -234,7 +234,3 @@ plt.xlabel("Iterations")
 plt.ylabel("Accuracy")
 plt.tight_layout()
 plt.show()
-
-
-
-
