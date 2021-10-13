@@ -68,9 +68,11 @@ def gen_block(
         - Conv 3x3
         - Add noise
         - AdaIN
+        - LeakyReLU
         - Conv 3x3
         - Add noise
         - AdaIN
+        - LeakyReLU
     """
 
     beta = Dense(filters)(style)
