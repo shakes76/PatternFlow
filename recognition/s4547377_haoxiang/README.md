@@ -65,7 +65,7 @@ Difference: The improved UNET has many short cut connections and summation.
 
 ## Results Demonstration:
 
-### 1. Firstly, I will show two examples of my results:
+### 1. Here are two examples from the results:
 
 ![](./ResultImages/origin1.png)
 
@@ -125,7 +125,7 @@ Difference: The improved UNET has many short cut connections and summation.
 *Figure 11: The value graph for the Dice similarity coefficient.
 </p>
 
-## Requirements:
+## Dependencies:
 - Python 3.9.7
 - TensorFlow 2.5.0
 - matplotlib 3.4.3
