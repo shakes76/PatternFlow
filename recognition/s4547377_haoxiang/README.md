@@ -34,7 +34,9 @@ Alternative approach:
 Note: This is recommended because the original version of these codes is on the jupyter notebook.
 
 - Create a new file via jupyter notebook
-- Copy the codes from main.py and model.py
+- Copy the codes from model.py and paste it into the first block
+- Copy the codes from the main.py and paste it into the second block
+- Important: Please use "#" to ignore the line "from model.py import *" 
 - Run the file
 
 ## Information about ISICs:
