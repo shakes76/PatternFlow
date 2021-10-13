@@ -2,7 +2,7 @@
 This repository contains the tensorflow implementation of the Improved UNet.
 
 ## Instructions:
-Modules:
+*Modules*:
 - matplotlib.pyplot: pip install matplotlib
 - tensorflow: pip install tensorflow
 - cv2: pip install opencv-python
