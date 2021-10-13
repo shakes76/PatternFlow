@@ -24,20 +24,22 @@ print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-SAVE_DATA			= True
-BATCH_SIZE			= 33
+SAVE_DATA			= False
+BATCH_SIZE			= 8 #33
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
 SEED				= 123
 BANDS				= 10
+VALIDATION_SPLIT	= 0.2
 
 # ##### Import Data #####
+
+dataDirectory = '../../../AKOA_Analysis/'
 
 def save_data():
 	print("Saving Data...")
 
-	dataDirectory = '../../../AKOA_Analysis/'
 	print("Data Directory:", dataDirectory)
 
 	# Need to sort data by patient so that we aren't leaking data between training and validation sets
@@ -91,7 +93,7 @@ def save_data():
 	for i in patients_train:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
+				#xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
 				ytrain.append(i[1])
 				break
 	print("Importing testing images")
@@ -100,7 +102,7 @@ def save_data():
 	for i in patients_test:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
+				#xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
 				ytest.append(i[1])
 				break
 
@@ -141,10 +143,20 @@ print("ytrain shape:", ytrain.shape)
 print("xtest shape:", xtest.shape)
 print("ytest shape:", ytest.shape)
 
-''' # Cannot use this code because it leaks data between training/test sets
+'''
+# Batch the train and test datset and put them in dataset variable types
+# train dataset
+dataset_train = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
+dataset_train = dataset_train.batch(BATCH_SIZE)
+# test dataset
+dataset_validation = tf.data.Dataset.from_tensor_slices((xtest, ytest))
+dataset_validation = dataset_validation.batch(BATCH_SIZE)
+'''
+
+# Cannot use this code because it leaks data between training/test sets
 dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
     dataDirectory,
-	validation_split=0.2,
+	validation_split=VALIDATION_SPLIT,
 	subset="training",
 	seed=SEED,
 	label_mode=None,
@@ -154,7 +166,7 @@ dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
 )
 dataset_validation = tf.keras.preprocessing.image_dataset_from_directory(
     dataDirectory,
-	validation_split=0.2,
+	validation_split=VALIDATION_SPLIT,
 	subset="validation",
 	seed=SEED,
 	label_mode=None,
@@ -162,7 +174,8 @@ dataset_validation = tf.keras.preprocessing.image_dataset_from_directory(
 	batch_size=BATCH_SIZE,
 	color_mode='grayscale'
 )
-'''
+
+print(dataset_train)
 
 def pos_encoding(img, bands, Fs):
 	# Create grid
@@ -200,7 +213,6 @@ QKV_DIM				= CHANNEL_LENGTH
 CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
-VALIDATION_SPLIT	= 0
 EPOCHS				= 4
 DROPOUT_RATE		= 0.5
 
@@ -212,7 +224,6 @@ def network_connection():
 	connection_model = tf.keras.models.Sequential()
 	#for i in layers[:-1]:
 	#	connection_model.add(tf.keras.layers.Dense(i, activation='relu'))
-	print("CCCCCCCCCCCCCCCC", CHANNEL_LENGTH)
 	connection_model.add(tf.keras.layers.Dense(CHANNEL_LENGTH))
 	#connection_model.add(tf.keras.layers.Dropout(DROPOUT_RATE))
 	return connection_model
@@ -293,11 +304,16 @@ class Perceiver(tf.keras.Model):
 
 	def call(self, inputs):
 		# Attention input
+		print(dataset_train)
+		print(dataset_train)
+		#print(dataset_train.shape)
+		#xtrain, = dataset_train.take(1)
+		#xtrain = tf.data.Dataset.get_single_element(dataset_train)
+		#print(xtrain)
+		#print("RRRRRRRRRRRRRRRRRRRRR", xtrain.shape)
 		frequency_data = pos_encoding(xtrain, BANDS, 20)
 		attention_in = [self.in_layer, frequency_data]
 		#attention_in = self.in_layer
-		#attention_in = {"latent_layer": tf.expand_dims(self.in_layer, axis=0),
-		#				"byte_layer"  : inputs}
 		# Add a bunch of attention/transformer layers
 		print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.in_layer.shape)
 		for i in range(MODULES_NUM):
@@ -330,23 +346,21 @@ perceiver = Perceiver()
 perceiver.compile(
 	optimizer = tfa.optimizers.LAMB(learning_rate=LEARNING_RATE),
 	loss = tf.keras.losses.BinaryCrossentropy(),
-	#loss='categorical_crossentropy',
 	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy"),
 	run_eagerly = True)
-
-print("xtrain shape:", xtrain.shape)
-print("ytrain shape:", ytrain.shape)
-
+ 
 # Non-constant learning rate
 adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
 
 # Perform model fit
-model_history = perceiver.fit(x = xtrain, y = ytrain, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+print("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", dataset_train)
+#model_history = perceiver.fit(train_dataset, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
+model_history = perceiver.fit(dataset_train, epochs = EPOCHS)
 #model_history = perceiver.fit(x = xtest, y = ytest)
 
 perceiver.summary()
 
-_, accuracy, top_5_accuracy = perceiver.evaluate(xtest, ytest)
+_, accuracy, top_5_accuracy = perceiver.evaluate(dataset_validation)
 
 print("Accuracy:", accuracy)
 print("Top 5 Accuracy:", top_5_accuracy)
