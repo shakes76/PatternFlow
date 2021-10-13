@@ -78,6 +78,6 @@ def model(height, width, channel):
     output = tf.keras.layers.Conv2D(1, (1,1),  activation='softmax')(segmentation3)
 
     model = tf.keras.Model(inputs=input, outputs=output)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 5*(10**-4)), loss=["binary_crossentropy"], metrics=["accuracy"]) # could also use dice coefficient as loss function
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 5*(10**-4)), loss=["binary_crossentropy"], metrics=["accuracy"])
     
     return model
