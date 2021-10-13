@@ -66,7 +66,40 @@ There is a python file called "basic_unet_model.py", you can have a look at this
 Note: This picture is taken from the document: Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge.
 In this document, this structure is used to process three dimensional inputs. (3 * 3 * 3) But in my project, two dimensional inputs are required. (3 * 3)
 
-Difference: The improved UNET has many short cut connections and summation. 
+Explanation on the improved UNET model:
+
+The improved UNET model has the **context module**, which can encode the abstract representations of the inputs progressively as it goes deeper into the whole network.
+
+In order to accurately localize the structures of interest, the improved UNET model also has the **localization module**, which can make the recombination of the representations only with shallower features .
+
+In the different levels of the whole network, there are **segmentation layers**  in there. And element wise summation approach is used to combine them and form the network output.
+
+The main feature: In the **context module**, the input is upsampled, and the results are concatenated within the module. And this is followed by a **localization module**.
+
+### Context Module:
+
+- Convolution layer (3 * 3)
+- Drop out layer (Probability of droping is 0.3)
+- Convolution layer (3 * 3)
+
+### Localization Module:
+
+- Convolution layer (3 * 3)
+- Convolution layer (1 * 1)
+
+Note: The activation functions are all Leaky ReLU.
+
+Since it is a binary classification (0 or 1), the ouput layer's activation function is **sigmoid**.
+
+Optimizer: **adam** optimizer.
+
+### Metrics: 
+
+[Dice Similarity Coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) is used as the mertics.
+
+The Dice Similarity Coefficient in this project is following this:
+
+![](./ResultImages/formula.png)
 
 ## Results Demonstration:
 
