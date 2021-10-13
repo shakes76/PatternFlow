@@ -30,6 +30,7 @@ Note: Please use "pip" command only after using "conda install jupyter", because
 - Run the main.py
 
 Alternative approach:
+Note: This is recommended because the origin version of these codes is on the jupyter notebook.
 - Create a new file via jupyter notebook
 - Copy the codes from main.py and model.py
 - Run the file
