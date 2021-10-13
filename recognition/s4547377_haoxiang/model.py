@@ -15,33 +15,6 @@ def upsample(layer_previous, size, activ_mode):
     upsample_layer=Conv2D(size,(3,3),activation=activ_mode,padding="same")(upsample_layer)
     return upsample_layer
 
-def context(layer_previous, size, activation=leakyReLu):
-    '''
-    This function contains a convolutional layer followed by a drop out layer and a convolutional layer.
-    For the convolutional layers, the kernel size is 3 * 3.
-    For the drop out layers, the probability is 0.3
-    Return: A layer after the context block.
-    '''
-    context=tensorflow_addons.layers.InstanceNormalization()(layer_previous)
-    context=Activation(activation=activation)(context)
-    context=Conv2D(size, (3, 3), padding="same")(context)
-    context=Dropout(drop_prob)(context)
-    context=tensorflow_addons.layers.InstanceNormalization()(context)
-    context=Activation(activation=activation)(context)
-    context=Conv2D(size, (3, 3), padding="same")(context)
-    return context
-    
-def localization(layer_previous, size, activation=leakyReLu):
-    '''
-    This function contains a convolutional layer with 3 * 3 kernel size and another convolutional layer
-    with 1 * 1 kernel size.
-    The second convolutional layer can half the number of the feature maps.
-    Return: A layer after the localization block.
-    '''
-    localization=Conv2D(size, (3, 3), activation = activation, padding="same")(layer_previous)        
-    localization=Conv2D(size, (1, 1), activation = activation, padding="same")(localization)
-    return localization
-
 def improved_unet(n_classes, size=(256,256,3)):
     '''
     Replace the traditional bathc with the instance normalization.
@@ -50,6 +23,33 @@ def improved_unet(n_classes, size=(256,256,3)):
     number_filter=16
     drop_prob=0.3
     leakyReLu=LeakyReLU(alpha=1e-2)
+    
+    def context(layer_previous, size, activation=leakyReLu):
+        '''
+        This function contains a convolutional layer followed by a drop out layer and a convolutional layer.
+        For the convolutional layers, the kernel size is 3 * 3.
+        For the drop out layers, the probability is 0.3
+        Return: A layer after the context block.
+        '''
+        context=tensorflow_addons.layers.InstanceNormalization()(layer_previous)
+        context=Activation(activation=activation)(context)
+        context=Conv2D(size, (3, 3), padding="same")(context)
+        context=Dropout(drop_prob)(context)
+        context=tensorflow_addons.layers.InstanceNormalization()(context)
+        context=Activation(activation=activation)(context)
+        context=Conv2D(size, (3, 3), padding="same")(context)
+        return context
+    
+    def localization(layer_previous, size, activation=leakyReLu):
+        '''
+        This function contains a convolutional layer with 3 * 3 kernel size and another convolutional layer
+        with 1 * 1 kernel size.
+        The second convolutional layer can half the number of the feature maps.
+        Return: A layer after the localization block.
+        '''
+        localization=Conv2D(size, (3, 3), activation = activation, padding="same")(layer_previous)        
+        localization=Conv2D(size, (1, 1), activation = activation, padding="same")(localization)
+        return localization
 
     init=Input(size)
     convo_layer1=Conv2D(number_filter*1, (3, 3), activation=leakyReLu, padding="same")(init)
