@@ -17,12 +17,12 @@ from tensorflow.keras.layers import (
     Activation,
     add,
     Conv2D,
-    Conv2DTranspose,
     Dense,
     Input,
     Layer,
     LeakyReLU,
     Reshape,
+    UpSampling2D,
 )
 
 # Custom layers
@@ -56,6 +56,50 @@ class AdaIN(Layer):
         normalised = (x - mean) / stddev
 
         return normalised * gamma + beta
+
+
+# Layer blocks
+def gen_block(
+    input: tf.Tensor, style: tf.Tensor, noise: tf.Tensor, filters: int
+) -> tf.Tensor:
+    """
+    For each block, we want to: (In order)
+        - Upscale
+        - Conv 3x3
+        - Add noise
+        - AdaIN
+        - Conv 3x3
+        - Add noise
+        - AdaIN
+    """
+
+    beta = Dense(filters)(style)
+    beta = Reshape([1, 1, filters])(beta)
+    gamma = Dense(filters)(style)
+    gamma = Reshape([1, 1, filters])(gamma)
+    n = Conv2D(filters, kernel_size=1, padding="same")(noise)
+
+    # Begin the generator block
+    out = UpSampling2D(interpolation="bilinear")(input)
+    out = Conv2D(filters, kernel_size=3, padding="same")(out)
+    out = add([out, n])
+    out = AdaIN()([out, beta, gamma])
+    out = LeakyReLU(0.01)(out)
+
+    # Compute new beta, gamma and noise
+    beta = Dense(filters)(style)
+    beta = Reshape([1, 1, filters])(beta)
+    gamma = Dense(filters)(style)
+    gamma = Reshape([1, 1, filters])(gamma)
+    n = Conv2D(filters, kernel_size=1, padding="same")(noise)
+
+    # Continue the generator block
+    out = Conv2D(filters, kernel_size=3, padding="same")(out)
+    out = add([out, n])
+    out = AdaIN()([out, beta, gamma])
+    out = LeakyReLU(0.01)(out)
+
+    return out
 
 
 # Models
