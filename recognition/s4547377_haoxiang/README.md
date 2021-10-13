@@ -67,40 +67,56 @@ Difference: The improved UNET has many short cut connections and summation.
 
 ### 1. Here are two examples from the results:
 
+First example's similarity:
+
+![](./ResultImages/similarity1.png)
+
+<p align="center"> 
+*Figure 3: The Dice similarity of the first example
+</p>
+
 ![](./ResultImages/origin1.png)
 
 <p align="center"> 
-*Figure 3: The origin image for the first example.
+*Figure 4: The origin image for the first example.
 </p>
 
 ![](./ResultImages/groundtruth1.png)
 
 <p align="center"> 
-*Figure 4: The ground truth image for the first example.
+*Figure 5: The ground truth image for the first example.
 </p>
 
 ![](./ResultImages/predication1.png)
 
 <p align="center"> 
-*Figure 5: The predication image for the first example.
+*Figure 6: The predication image for the first example.
+</p>
+
+Second example's Dice similarity:
+
+![](./ResultImages/similarity2.png)
+
+<p align="center"> 
+*Figure 7: The Dice similarity of the second example
 </p>
 
 ![](./ResultImages/origin2.png)
 
 <p align="center"> 
-*Figure 6: The origin image for the secondexample.
+*Figure 8: The origin image for the secondexample.
 </p>
 
 ![](./ResultImages/groundtruth2.png)
 
 <p align="center"> 
-*Figure 7: The ground truth image for the second example.
+*Figure 9: The ground truth image for the second example.
 </p>
 
 ![](./ResultImages/predication2.png)
 
 <p align="center"> 
-*Figure 8: The predication image for the second example.
+*Figure 10: The predication image for the second example.
 </p>
 
 ### 2.  The average value of the Dice similarity coefficient:
@@ -108,7 +124,7 @@ Difference: The improved UNET has many short cut connections and summation.
 ![](./ResultImages/averge.png)
 
 <p align="center"> 
-*Figure 9: The average value for the Dice similarity coefficient.
+*Figure 11: The average value for the Dice similarity coefficient.
 </p>
 
 ### 3. The value graph and the value loss graph of the Dice similarity coefficient:
@@ -116,13 +132,13 @@ Difference: The improved UNET has many short cut connections and summation.
 ![](./ResultImages/loss.png)
 
 <p align="center"> 
-*Figure 10: The loss graph for the Dice similarity coefficient.
+*Figure 12: The loss graph for the Dice similarity coefficient.
 </p>
 
 ![](./ResultImages/value.png)
 
 <p align="center"> 
-*Figure 11: The value graph for the Dice similarity coefficient.
+*Figure 13: The value graph for the Dice similarity coefficient.
 </p>
 
 ## Dependencies:
