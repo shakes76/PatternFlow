@@ -34,7 +34,7 @@ class AdaIN(Layer):
         super(AdaIN, self).__init__()
         self.epsilon = epsilon
 
-    def build(self, input_shape: tf.TensorShape) -> None:
+    def build(self, input_shape: list[tf.TensorShape]) -> None:
 
         dim = input_shape[0][-1]
         if dim == None:
