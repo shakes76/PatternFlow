@@ -21,6 +21,7 @@ from tensorflow.keras.layers import (
     Cropping2D,
     Dense,
     Input,
+    Lambda,
     Layer,
     LeakyReLU,
     Reshape,
@@ -157,7 +158,8 @@ def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
     # Starting block
     curr_size = 4
     input = Input(shape=[1])
-    x = Dense(curr_size * curr_size * NUM_FILTERS)(input)
+    x = Lambda(lambda x: x * 0 + 1)(input)  # Set the constant value to be 1
+    x = Dense(curr_size * curr_size * NUM_FILTERS)(x)
     x = Reshape([curr_size, curr_size, NUM_FILTERS])(x)
     x = gen_block(x, mapping, noise[-1], NUM_FILTERS, upSample=False)
 
