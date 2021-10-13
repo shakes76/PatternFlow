@@ -82,7 +82,7 @@ def show_example(name: str, sample):
     Creates a gif of 3D sample
     
     Params:
-        name   : The name of the file to create
+        name   : The name of the file to create (excluding filetype)
         sample : The sample from which to create a gif
     """
     print(f"Now creating {name}.gif")
@@ -109,6 +109,12 @@ def main():
     # Create a gif of one of the samples
     show_example("example_test", list(train_samples.values())[0])
     
+    dataset = tf.data.Dataset(tf.convert_to_tensor(list(train_samples.values())))
+    print(dataset.shape)
+    # Create the StyleGAN Model
+    # img_shape = (256, 256, 1)
+    # sg = StyleGan(input_shape=img_shape, noise_dim=100)
+    # sg.create_mapping_network()    
 
 if __name__ == "__main__":
     # Begin the program
