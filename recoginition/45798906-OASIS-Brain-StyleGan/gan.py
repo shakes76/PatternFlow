@@ -163,8 +163,10 @@ def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
 
     # Add upscaling blocks till the output size is reached
     block = 1
+    curr_filters = NUM_FILTERS
     while curr_size < output_size:
-        x = gen_block(x, mapping, noise[-(1 + block)], NUM_FILTERS // 2)
+        curr_filters //= 2
+        x = gen_block(x, mapping, noise[-(1 + block)], curr_filters)
         block += 1
         curr_size *= 2
 
