@@ -21,7 +21,7 @@ def get_generator(
     pass
 
 
-def get_generator(
+def get_discriminator(
     input_dim: tuple[int, int, int], output_dim: int
 ) -> tf.keras.Model:
     pass
