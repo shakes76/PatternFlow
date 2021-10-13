@@ -61,7 +61,11 @@ class AdaIN(Layer):
 
 # Layer blocks
 def gen_block(
-    input: tf.Tensor, style: tf.Tensor, noise: tf.Tensor, filters: int
+    input: tf.Tensor,
+    style: tf.Tensor,
+    noise: tf.Tensor,
+    filters: int,
+    upSample: bool = True,
 ) -> tf.Tensor:
     """
     For each block, we want to: (In order)
@@ -83,8 +87,11 @@ def gen_block(
     n = Conv2D(filters, kernel_size=1, padding="same")(noise)
 
     # Begin the generator block
-    out = UpSampling2D(interpolation="bilinear")(input)
-    out = Conv2D(filters, kernel_size=3, padding="same")(out)
+    if upSample:
+        out = UpSampling2D(interpolation="bilinear")(input)
+        out = Conv2D(filters, kernel_size=3, padding="same")(out)
+    else:
+        out = Activation("linear")(input)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
     out = LeakyReLU(0.01)(out)
