@@ -11,9 +11,11 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
+'''
+Define the paths to the image sets
+'''
 training_images_path='H:/githubcomp3710/PatternFlow/recognition/s4547377_haoxiang/ISBI2016_ISIC_Part1_Training_Data/ISBI2016_ISIC_Part1_Training_Data/*.jpg'
 groundTruth_path='H:/githubcomp3710/PatternFlow/recognition/s4547377_haoxiang/ISBI2016_ISIC_Part1_Training_GroundTruth/ISBI2016_ISIC_Part1_Training_GroundTruth/*.png'
-
 
 '''
 Function explanations:
@@ -23,6 +25,7 @@ Function explanations:
 '''
 training_images=sorted(glob.glob(training_images_path))
 groundTruth_images=sorted(glob.glob(groundTruth_path))
+
 '''
 Define the batch size, image height, image width, image channels and the size of data set
 '''
@@ -53,7 +56,6 @@ training_dataset=complete_dataset.take(s_train)
 test_dataset=complete_dataset.skip(s_train)
 validation_dataset=complete_dataset.skip(s_validation)
 test_dataset=complete_dataset.take(s_test)
-
 
 '''
 This section aims to pre-process the training images and the ground truth images
@@ -118,7 +120,7 @@ This section aims to find the sizes of input and output
 '''
 input_size=(0, 0, 0)
 number_output_classes=0
-#Only take one set is enough
+#Taking only one is enough
 for image, label in treated_training_set.take(1):
     input_size=image.numpy().shape
     number_output_classes=label.numpy().shape[2]
