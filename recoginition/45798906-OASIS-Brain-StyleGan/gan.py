@@ -43,7 +43,7 @@ class AdaIN(Layer):
                 f"Excepted axis {-1} of the input tensor be defined, but got an input with shape {input_shape}."
             )
 
-        super(AdaIn, self).build(input_shape)
+        super(AdaIN, self).build(input_shape)
 
     def call(self, inputs: tuple[tf.Tensor, tf.Tensor, tf.Tensor]) -> tf.Tensor:
         """Apply the normalisation formula: gamma * (x - mean) / stddev + beta."""
