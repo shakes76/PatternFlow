@@ -31,7 +31,7 @@ Note: Please use "pip" command only after using "conda install jupyter", because
 
 Alternative approach:
 
-Note: This is recommended because the original version of these codes is on the jupyter notebook.
+Note: This is **recommended** because the original version of these codes is written with the jupyter notebook.
 
 - Create a new file via jupyter notebook
 - Copy the codes from model.py and paste it into the first block
@@ -66,7 +66,7 @@ There is a python file called "basic_unet_model.py", you can have a look at this
 Note: This picture is taken from the document: Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge.
 In this document, this structure is used to process three dimensional inputs. (3 * 3 * 3) But in my project, two dimensional inputs are required. (3 * 3)
 
-Explanation on the improved UNET model:
+## Brief Explanations:
 
 The improved UNET model has the **context module**, which can encode the abstract representations of the inputs progressively as it goes deeper into the whole network.
 
@@ -74,7 +74,7 @@ In order to accurately localize the structures of interest, the improved UNET mo
 
 In the different levels of the whole network, there are **segmentation layers**  in there. And element wise summation approach is used to combine them and form the network output.
 
-The main feature: In the **context module**, the input is upsampled, and the results are concatenated within the module. And this is followed by a **localization module**.
+The feature: In the **context module**, the input is upsampled, and the results are concatenated within the module. And this is followed by a **localization module**.
 
 ### Context Module:
 
