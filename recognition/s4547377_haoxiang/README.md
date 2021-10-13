@@ -124,7 +124,7 @@ Second example's Dice similarity:
 
 ### 2.  The average value of the Dice similarity coefficient:
 
-![](./ResultImages/averge.png)
+![](./ResultImages/average.png)
 
 <p align="center"> 
 *Figure 11: The average value for the Dice similarity coefficient.
