@@ -18,6 +18,7 @@ from tensorflow.keras.layers import (
     add,
     AveragePooling2D,
     Conv2D,
+    Cropping2D,
     Dense,
     Input,
     Layer,
@@ -131,10 +132,50 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
 
 
 # Models
-def get_generator(
-    input_dim: int, output_dim: tuple[int, int, int]
-) -> tf.keras.Model:
-    pass
+def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
+
+    # Constants
+    NUM_FILTERS = 512
+
+    # Mapping network
+    input_mapping = Input(shape=[latent_dim])
+    mapping = input_mapping
+    mapping_layers = 8
+    for _ in range(mapping_layers):
+        mapping = Dense(NUM_FILTERS)(mapping)
+        mapping = LeakyReLU(0.01)(mapping)
+
+    # Crop the noise image for each resolution
+    input_noise = Input(shape=[output_size, output_size, 1])
+    noise = [Activation("linear")(input_noise)]
+    curr_size = output_size
+    while curr_size > 4:
+        curr_size //= 2
+        noise.append(Cropping2D(curr_size // 2)(noise[-1]))
+
+    # Generator network
+    # Starting block
+    curr_size = 4
+    input = Input(shape=[1])
+    x = Dense(curr_size * curr_size * NUM_FILTERS)(input)
+    x = Reshape([curr_size, curr_size, NUM_FILTERS])(x)
+    x = gen_block(x, mapping, noise[-1], NUM_FILTERS, upSample=False)
+
+    # Add upscaling blocks till the output size is reached
+    block = 1
+    while curr_size < output_size:
+        x = gen_block(x, mapping, noise[-(1 + block)], NUM_FILTERS // 2)
+        block += 1
+        curr_size *= 2
+
+    # To greyscale
+    x = Conv2D(1, kernel_size=1, padding="same", activation="sigmoid")(x)
+
+    generator = tf.keras.Model(
+        inputs=[input_mapping, input_noise, input], outputs=x
+    )
+
+    return generator
 
 
 def get_discriminator(
