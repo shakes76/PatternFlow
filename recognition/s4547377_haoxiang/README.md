@@ -8,28 +8,29 @@ This repository contains the tensorflow implementation of the Improved UNet.
 - cv2: pip install opencv-python
 
 ## Guides:
-1. Before running the codes, please check whether you are using the GPU for this task.
+*1. Before running the codes, please check whether you are using the GPU for this task.*
 Here is a simple way to check it:
 - Open the anaconda terminal shell
 - Type "python"
 - Type "import tensorflow as tf"
 - Type "tf.ones((2,2))"
-- Check the outcoming message
+- Check out the outcoming message
 In the last step, if the message mentions the GPU usage, then the running environment is proper.
-Otherwise:
+
+*Otherwise:*
 - Create a new virtual environment
 - Type "conda install jupyter"
 - Type "pip install tensorflow"
 - Type "pip install xxx" to install other necessary patches
 Note: Please use "pip" command only after using "conda install jupyter", because "conda" command will have conflicts.
 
-2. After setting the proper environment, please follow the steps below:
+*2. After setting the proper environment, please follow the steps below:*
 - Download the images sets from the given download link 
 - Download the main.py and the model.py
 - Change the paths to the image sets in the main.py
 - Run the main.py
 
-Alternative approach:
+**Alternative approach:**
 
 Note: This is **recommended** because the original version of these codes is written with the jupyter notebook.
 
@@ -42,10 +43,12 @@ Note: This is **recommended** because the original version of these codes is wri
 ## Information about ISICs:
 The International Skin Imaging Collaboration (ISIC) aims to improve melanoma diagnosis. The ISIC Archive contains the largest publicly available collection of quality-controlled dermoscopic images of skin lesions.
 
-## Resources: 
-The origin image sets can be downloaded via: https://challenge.isic-archive.com/data
+While the initial focus of the ISIC collaboration is on melanoma diagnosis, the goals being pursued by ISIC are critical to advancing the broader landscape of skin imaging and artificial intelligence in Dermatology, including non-melanoma skin cancer and inflammatory dermatoses.
 
-The images contain the training images and the ground truth images
+## Resources: 
+The original image sets can be downloaded via the archive on the official site: https://challenge.isic-archive.com/data
+
+These images contain the training images and the ground truth images
 
 ## Basic UNET structure:
 There is a python file called "basic_unet_model.py", you can have a look at this before using the improved UNET model if you want.
@@ -70,7 +73,7 @@ In this document, this structure is used to process three dimensional inputs. (3
 
 The improved UNET model has the **context module**, which can encode the abstract representations of the inputs progressively as it goes deeper into the whole network.
 
-In order to accurately localize the structures of interest, the improved UNET model also has the **localization module**, which can make the recombination of the representations only with shallower features .
+In order to accurately localize the structures of interest, the improved UNET model also has the **localization module**, which can make the recombination of the representations only with shallower features.
 
 In the different levels of the whole network, there are **segmentation layers**  in there. And element wise summation approach is used to combine them and form the network output.
 
@@ -79,7 +82,7 @@ The feature: In the **context module**, the input is upsampled, and the results 
 ### Context Module:
 
 - Convolution layer (3 * 3)
-- Drop out layer (Probability of droping is 0.3)
+- Drop out layer (Probability of dropping is 0.3)
 - Convolution layer (3 * 3)
 
 ### Localization Module:
@@ -89,7 +92,7 @@ The feature: In the **context module**, the input is upsampled, and the results 
 
 Note: The activation functions are all Leaky ReLU.
 
-Since it is a binary classification (0 or 1), the ouput layer's activation function is **sigmoid**.
+Since it is a binary classification (0 or 1), the output layer's activation function is **sigmoid**.
 
 Optimizer: **adam** optimizer.
 
@@ -142,7 +145,7 @@ Second example's Dice similarity:
 ![](./ResultImages/origin2.png)
 
 <p align="center"> 
-*Figure 8: The origin image for the secondexample.
+*Figure 8: The origin image for the second example.
 </p>
 
 ![](./ResultImages/groundtruth2.png)
