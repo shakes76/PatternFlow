@@ -34,9 +34,9 @@ class AdaIN(Layer):
         super(AdaIN, self).__init__()
         self.epsilon = epsilon
 
-    def build(self, input_shape):
+    def build(self, input_shape: tf.TensorShape) -> None:
 
-        dim = input_shape[-1]
+        dim = input_shape[0][-1]
         if dim == None:
             raise ValueError(
                 f"Excepted axis {-1} of the input tensor be defined, but got an input with shape {input_shape}."
@@ -44,7 +44,7 @@ class AdaIN(Layer):
 
         super(AdaIn, self).build(input_shape)
 
-    def call(self, inputs):
+    def call(self, inputs: tuple[tf.Tensor, tf.Tensor, tf.Tensor]) -> tf.Tensor:
         """Apply the normalisation formula: gamma * (x - mean) / stddev + beta."""
 
         x, beta, gamma = inputs
