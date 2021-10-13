@@ -29,7 +29,7 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         quantized_vectors = tf.matmul(one_hot_indices, self._embeddings, transpose_b=True)
         
         return quantized_vectors
-    
+
     def call(self, encoder_outputs):
         #Flatten all dimensions of the encoded vectors except the channels
         #Encoded vectors = (B,H,W,C) -> (B*H*W, C) i.e. flattened, each of which will be quantized independently
@@ -45,7 +45,7 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         # Going forward, output = encoder_output + quantized_vectors - encoder_output = quantized vectors (as desired)
         # Going backward, we copy the gradients at the decoder back to the encoder
         output = encoder_outputs + tf.stop_gradient(reshaped_quantized_vectors - encoder_outputs)
-        return output
+        return output, reshaped_quantized_vectors
 
 
 # Define the encoder and decoder networks
@@ -62,19 +62,12 @@ def encoder_network():
     #conv = tf.keras.layers.Conv2D(128, kernel_size=3, strides=2, activation='relu', padding = "same")(conv)
     
     #Final conv layer - image is now encoded into size of latent space
-    hidden = tf.keras.layers.Conv2D(latent_dims, kernel_size = 1, padding = "same")(conv) #******************
-    
-    #Quantize the vectors through the Vector Quantizer Layer
-    output = Vector_Quantizer()(hidden)
+    output = tf.keras.layers.Conv2D(latent_dims, kernel_size = 1, padding = "same")(conv) #******************
 
     # Build the encoder
     final_network = tf.keras.Model(inputs, output, name="Encoder")
 
     return final_network
-    
-    
-#def encoder_loss():
-
 
 def decoder_network():
     # Takes the latent space and upsamples until original size is reached
@@ -94,8 +87,6 @@ def decoder_network():
     final_network = tf.keras.Model(inputs, output, name="Decoder")
     return final_network
 
-#def decoder_loss()
-
 def VQ_VAE_network():
     #Create the encoder and decoder components of VQ-VAE Model
     encoder = encoder_network()
@@ -109,6 +100,13 @@ def VQ_VAE_network():
     vq_vae = tf.keras.Model(inputs=inputs, outputs=output, name="VQ-VAE Model")
     
     return vq_vae
+
+#Define a reconstruction loss
+def reconstruction_loss(inputs, outputs):
+    # Log likelihood, assuming likelihood is Gaussian
+    mse = tf.keras.losses.MeanSquaredError()
+    loss = mse(inputs, outputs)
+    return loss
 
 #Replace kl-divergence in traditional VAE with two terms as kl-divergence can't be minimized (is a constant)
 def latent_loss(encoder_output, quantized_vectors):
@@ -124,5 +122,65 @@ def latent_loss(encoder_output, quantized_vectors):
     
     return q_loss + e_loss
 
-#First term of loss function - reconstruction loss
-#def reconstruction_loss()
+#Create the encoder and decoder components of VQ-VAE Model
+encoder = encoder_network()
+decoder = decoder_network()
+quantizer_layer = Vector_Quantizer()
+
+optimizer = tf.keras.optimizers.Adam(1e-5)
+
+# create a training step
+@tf.function
+def training_step(images):
+    with tf.GradientTape(persistent=True) as vae_tape:
+        #Get the latent space
+        z = encoder(images, training=True)
+        #Get the quantized latent space
+        z_quantized, z1 = quantizer_layer(z, training=True)
+        #Get the reconstructions
+        reconstructions = decoder(z_quantized, training=True)        
+
+        #determine overall loss: recon_l
+        oss + latent_loss
+        total_loss = tf.reduce_mean(reconstruction_loss(images, reconstructions) )
+        latent_loss1 = latent_loss(z, z1)
+
+    #get all the gradients for the model
+    gradients = vae_tape.gradient(total_loss, encoder.trainable_variables)
+    
+    #apply the gradients to the optimizer
+    optimizer.apply_gradients(zip(gradients, encoder.trainable_variables))
+    
+    gradients = vae_tape.gradient(total_loss, decoder.trainable_variables)
+    
+    #apply the gradients to the optimizer
+    optimizer.apply_gradients(zip(gradients, decoder.trainable_variables))
+    
+    gradients = vae_tape.gradient(latent_loss1, quantizer_layer.trainable_variables)
+    
+    #apply the gradients to the optimizer
+    optimizer.apply_gradients(zip(gradients, quantizer_layer.trainable_variables))
+    
+    return total_loss
+    
+# Training
+losses = []
+for epoch in range(1, epochs+1):
+    print(epoch)
+    loss = -1
+    batch_losses = 0
+    count = 0
+        
+    for image_batch in training_ds:
+        
+        loss = training_step(image_batch)
+        
+        #print(loss)
+        batch_losses += loss
+        count += 1 
+        
+        losses.append(batch_losses/count)
+
+plt.title('Loss curve for training')
+plt.plot(losses)
+plt.show()
