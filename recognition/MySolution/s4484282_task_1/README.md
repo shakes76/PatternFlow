@@ -23,7 +23,7 @@ We can improve the original Unet model by introducing residual connections, whic
 The Changes made are based off the 2017 BRATS challenge report listed above.
 
 # Testing accuracy
-Accuracy was determined by largely using the [Dice loss coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
+Accuracy was determined by largely using the [Dice loss coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient). This was done via the `dice_coef()` and `dice_coeff_loss()` methods which were included as metrics in both the improved and regular models. 
 
 # Colab document
 
