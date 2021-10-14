@@ -2,6 +2,7 @@ import os
 import re
 
 import cv2
+import imgaug.augmenters as iaa
 import numpy as np
 from sklearn.model_selection import train_test_split
 
@@ -28,21 +29,40 @@ class ProcessDataset:
         # test labels
         self.y_test = None
 
+        self.mixed_images = None
+
     def get_dataset(self):
-        """walk over the image dataset directory, and search image caption with regex. If the caption contains
+        """walk over the image dataset directory, and search image
+        caption with regex. If the caption contains
         left or l_e_f_t, it is assigned to 0. Else it is assigned 1.
         Finally load the image file, resize and append to a list."""
         for root, _, images in os.walk(PATH):
             for image in images:
                 if image not in UNWANTED_FILES:
+                    print(f'Image: {image}')
                     if re.search(fr'{RIGHT_TEXT}', image.lower()) or \
-                            re.search(fr'{RIGHT_UNDERSCORE_TEXT}', image.lower()):
+                            re.search(fr'{RIGHT_UNDERSCORE_TEXT}',
+                                      image.lower()):
                         self.classes.append(RIGHT)
                     elif re.search(fr'{LEFT_TEXT}', image.lower()) or \
-                            re.search(fr'{LEFT_UNDERSCORE_TEXT}', image.lower()):
+                            re.search(fr'{LEFT_UNDERSCORE_TEXT}',
+                                      image.lower()):
                         self.classes.append(LEFT)
 
-                    self.load_images.append(cv2.resize(cv2.imread(PATH + image), IMAGE_SIZE))
+                    self.load_images.append(cv2.resize(
+                        cv2.imread(PATH + image), IMAGE_SIZE))
+
+    def augment_dataset(self):
+        """Add image augmentation"""
+        data_augmentation = iaa.Sequential([
+            iaa.Fliplr(AUG_VAL), iaa.Flipud(AUG_FACTOR),
+            iaa.GaussianBlur((0, BLUR_AUG))
+        ])
+
+        augmented_images = data_augmentation(
+            images=np.array(self.load_images))
+        self.mixed_images = self.load_images + \
+                            [image for image in augmented_images]
 
     def save_dataset(self):
         """save dataset x_train, y_train, x_test and y_test as numpy file."""
@@ -54,13 +74,19 @@ class ProcessDataset:
 
     def split_dataset(self):
         """Split dataset into training and test set."""
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.load_images, self.classes,
-                                                                                shuffle=True,
-                                                                                test_size=TEST_SPLIT,
-                                                                                random_state=RANDOM_STATE)
+        self.x_train, self.x_test, \
+        self.y_train, self.y_test = \
+            train_test_split(
+                self.mixed_images if self.mixed_images else self.load_images,
+                self.classes + self.classes if self.mixed_images
+                else self.classes,
+                shuffle=True,
+                test_size=TEST_SPLIT,
+                random_state=RANDOM_STATE)
 
     def do_action(self):
         """sequential set of actions."""
         self.get_dataset()
+        self.augment_dataset()
         self.split_dataset()
         self.save_dataset()

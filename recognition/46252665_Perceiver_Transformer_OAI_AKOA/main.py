@@ -1,4 +1,4 @@
-from pre_process.process_dataset import ProcessDataset
+from pre_process.dataset_processor import ProcessDataset
 
 
 def run():
