@@ -20,7 +20,7 @@ import tensorflow as tf
 import sys
 import matplotlib.pyplot as plt
 
-# Image functions
+# Loader
 def load_images(
     directories: list[str],
     batch_size: int,
@@ -48,6 +48,7 @@ def load_images(
     return images
 
 
+# Visualisation
 def visualise_images(
     images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
 ) -> None:
@@ -58,6 +59,30 @@ def visualise_images(
         ax = plt.subplot(4, 8, i + 1)
         plt.imshow(images[i].numpy(), cmap="gray")
         plt.axis("off")
+    plt.show()
+
+
+def visualise_loss(
+    losses: tuple[list[float], list[float]], starting_epoch: int = 0
+) -> None:
+
+    gen_losses, disc_losses = losses
+    x_range = tf.range(starting_epoch, starting_epoch + len(gen_losses))
+
+    # Plot
+    ax = plt.gca()
+    ax.plot(x_range, gen_losses, label="Generator")
+    ax.plot(x_range, disc_losses, label="Discriminator")
+
+    # Axis labels
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.legend()
+
+    # x axis
+    plt.xlim([0, starting_epoch + len(gen_losses) - 1])
+    plt.xticks(tf.range(0, starting_epoch + len(gen_losses)))
+
     plt.show()
 
 
