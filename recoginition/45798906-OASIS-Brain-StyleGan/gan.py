@@ -133,9 +133,9 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
 
 
 # Optimisers
-def get_optimizer(**kwargs) -> tf.keras.optimizers.Optimizer:
+def get_optimizer(**hyperparameters) -> tf.keras.optimizers.Optimizer:
 
-    return tf.keras.optimizers.Adam(**kwargs)
+    return tf.keras.optimizers.Adam(**hyperparameters)
 
 
 # Models
