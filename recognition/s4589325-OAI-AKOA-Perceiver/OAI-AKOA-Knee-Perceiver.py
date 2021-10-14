@@ -24,14 +24,14 @@ print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-SAVE_DATA			= False
+SAVE_DATA			= True
 BATCH_SIZE			= 8 #33
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
 SEED				= 123
 BANDS				= 10
-VALIDATION_SPLIT	= 0.2
+VALIDATION_SPLIT	= 0.5
 
 # ##### Import Data #####
 
@@ -75,7 +75,7 @@ def save_data():
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
 	# TEMPORARY: REDUCE AMOUNT OF DATA USED!
-	patients = patients[0:math.floor(len(patients) * 0.0025)]
+	patients = patients[0:math.floor(len(patients) * 0.01)]
 
 	# Split data
 	print("Splitting data into training and testing sets")
@@ -93,7 +93,7 @@ def save_data():
 	for i in patients_train:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				#xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
+				xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
 				ytrain.append(i[1])
 				break
 	print("Importing testing images")
@@ -102,7 +102,7 @@ def save_data():
 	for i in patients_test:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				#xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
+				xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
 				ytest.append(i[1])
 				break
 
@@ -143,6 +143,12 @@ print("ytrain shape:", ytrain.shape)
 print("xtest shape:", xtest.shape)
 print("ytest shape:", ytest.shape)
 
+train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
+train_dataset = train_dataset.batch(BATCH_SIZE, drop_remainder = True)
+
+test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
+test_dataset = test_dataset.batch(BATCH_SIZE, drop_remainder = True)
+
 '''
 # Batch the train and test datset and put them in dataset variable types
 # train dataset
@@ -152,7 +158,7 @@ dataset_train = dataset_train.batch(BATCH_SIZE)
 dataset_validation = tf.data.Dataset.from_tensor_slices((xtest, ytest))
 dataset_validation = dataset_validation.batch(BATCH_SIZE)
 '''
-
+'''
 # Cannot use this code because it leaks data between training/test sets
 dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
     dataDirectory,
@@ -174,8 +180,7 @@ dataset_validation = tf.keras.preprocessing.image_dataset_from_directory(
 	batch_size=BATCH_SIZE,
 	color_mode='grayscale'
 )
-
-print(dataset_train)
+'''
 
 def pos_encoding(img, bands, Fs):
 	# Create grid
@@ -206,18 +211,18 @@ def pos_encoding(img, bands, Fs):
 # ##### Define Modules #####
 
 INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
-LATENT_ARRAY_SIZE	= 32 # Paper uses 512
+LATENT_ARRAY_SIZE	= 64 # Paper uses 512
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 CHANNEL_LENGTH		= 2 * (2 * BANDS + 1) + 1
 QKV_DIM				= CHANNEL_LENGTH
 CD_DIM				= 256
 EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
-EPOCHS				= 4
+EPOCHS				= 50
 DROPOUT_RATE		= 0.5
 
-TRANSFOMER_NUM		= 1
-MODULES_NUM			= 1
+TRANSFOMER_NUM		= 2
+MODULES_NUM			= 2
 OUT_SIZE			= 1 # binary as only left or right knee
 
 def network_connection():
@@ -290,8 +295,7 @@ class Perceiver(tf.keras.Model):
 		super(Perceiver, self).__init__()
 
 	def build(self, input_shape):
-		# Intialise input
-		# TODO: Custom initializer to get truncated standard deviation thingy
+		# TODO: Custom initializer to get truncated standard deviation thingy from paper
 		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, CHANNEL_LENGTH), initializer = 'random_normal', trainable = True)
 		self.in_layer = tf.expand_dims(self.in_layer, axis = 0)
 		#self.in_layer = tf.reshape(self.in_layer, (1,*self.in_layer.shape))
@@ -302,23 +306,25 @@ class Perceiver(tf.keras.Model):
 		# Build
 		super(Perceiver, self).build(input_shape)
 
-	def call(self, inputs):
+	def call(self, to_encode):
 		# Attention input
-		print(dataset_train)
-		print(dataset_train)
+		#print(dataset_train)
+		#print(dataset_train)
 		#print(dataset_train.shape)
 		#xtrain, = dataset_train.take(1)
 		#xtrain = tf.data.Dataset.get_single_element(dataset_train)
 		#print(xtrain)
 		#print("RRRRRRRRRRRRRRRRRRRRR", xtrain.shape)
-		frequency_data = pos_encoding(xtrain, BANDS, 20)
+		#print("HHHHHMMMMMMMMMMMMMMMMMMMMMM", to_encode.shape)
+		frequency_data = pos_encoding(to_encode, BANDS, 20)
+		#print("OOOOOOOOOOOOOOOOOOOOOO", )
 		attention_in = [self.in_layer, frequency_data]
 		#attention_in = self.in_layer
 		# Add a bunch of attention/transformer layers
-		print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.in_layer.shape)
+		#print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.in_layer.shape, frequency_data.shape)
 		for i in range(MODULES_NUM):
 			latent = self.attention(attention_in)
-			print("BBBBBBBBBBBBBBBBBB", latent.shape)
+			#print("BBBBBBBBBBBBBBBBBB", latent.shape)
 			query = self.transformer(latent)
 			attention_in[0] = query
 		#for i in range(MODULES_NUM):
@@ -326,15 +332,15 @@ class Perceiver(tf.keras.Model):
 			#latent_layer = self.transformer(latent_layer)
 			#attention_in["latent_layer"] = latent_layer
 		# Pooling
-		print("EEEEEEEEEEEEEe", query.shape)
+		#print("EEEEEEEEEEEEEe", query.shape)
 		out = tf.keras.layers.GlobalAveragePooling1D()(query)
-		print("DDDDDDDDDDDDDDddd", out.shape)
+		#print("DDDDDDDDDDDDDDddd", out.shape)
 		#out = tf.keras.layers.LayerNormalization()(out)
 		#print("FFFFFFFFFFFFffffff", out.shape)
 		#final = tf.keras.layers.Dense(OUT_SIZE, activation='softmax')(out)
 		final = tf.keras.layers.Dense(1, activation='sigmoid')(out)
 		#final = tf.keras.layers.Flatten()(out)
-		print("GGGGGGGGGGGGGGGGggg", final.shape)
+		#print("GGGGGGGGGGGGGGGGggg", final.shape)
 		return final
 
 # ##### Run Training/Evaluation #####
@@ -352,18 +358,17 @@ perceiver.compile(
 # Non-constant learning rate
 adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor = 0.1, patience = 1, restore_best_weights = False)
 
+print(train_dataset)
+print(test_dataset)
+
 # Perform model fit
-print("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM", dataset_train)
-#model_history = perceiver.fit(train_dataset, batch_size = BATCH_SIZE, epochs = EPOCHS, validation_split = VALIDATION_SPLIT, callbacks = [adjust_learning_rate])
-model_history = perceiver.fit(dataset_train, epochs = EPOCHS)
+model_history = perceiver.fit(train_dataset, batch_size = BATCH_SIZE, epochs = EPOCHS, callbacks = [adjust_learning_rate])
+#model_history = perceiver.fit(train_dataset, epochs = EPOCHS)#, batch_size = BATCH_SIZE)
 #model_history = perceiver.fit(x = xtest, y = ytest)
 
 perceiver.summary()
 
-_, accuracy, top_5_accuracy = perceiver.evaluate(dataset_validation)
+accuracy, top_5_accuracy = perceiver.evaluate(test_dataset)
 
 print("Accuracy:", accuracy)
 print("Top 5 Accuracy:", top_5_accuracy)
-
-# ##### Finish #####
-print("Finished with no errors")
