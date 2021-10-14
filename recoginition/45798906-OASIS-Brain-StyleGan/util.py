@@ -49,7 +49,7 @@ def load_images(
 
 
 def visualise_images(
-    images: tf.Tensors, fig_size: tuple[int, int] = (16, 10)
+    images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
 ) -> None:
 
     batch_size = images.shape[0]
