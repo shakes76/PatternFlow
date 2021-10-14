@@ -97,7 +97,7 @@ def train(
     weight_save_interval: int = 5,
     save_images: bool = False,
     image_save_path: str = None,
-) -> dict[str, list[float]]:
+) -> tuple[list[float], list[float]]:
 
     if save_images:
         tf.io.gfile.makedirs(image_save_path)
@@ -105,7 +105,8 @@ def train(
     if save_weights:
         tf.io.gfile.makedirs(weight_save_path)
 
-    history = {"gen": [], "disc": []}
+    gen_loss_history = []
+    disc_loss_history = []
     for epoch in range(total_epochs):
 
         # Save the losses for each batch
@@ -126,8 +127,8 @@ def train(
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
 
-        history["gen"].append(tf.reduce_mean(gen_losses))
-        history["disc"].append(tf.reduce_mean(disc_losses))
+        gen_loss_history.append(tf.reduce_mean(gen_losses))
+        disc_loss_history.append(tf.reduce_mean(disc_losses))
 
         print(
             f"Epoch {epoch+1+epoch_offset}: Generator Loss = {mean_gen_loss:.4f}, "
@@ -155,4 +156,4 @@ def train(
                 f"{weight_save_path}discriminator/{epoch + epoch_offset + 1}"
             )
 
-    return history
+    return gen_loss_history, disc_loss_history
