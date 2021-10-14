@@ -106,7 +106,7 @@ def train(
         tf.io.gfile.makedirs(weight_save_path)
 
     history = {"gen": [], "disc": []}
-    for epoch in range(epochs):
+    for epoch in range(total_epochs):
 
         # Save the losses for each batch
         gen_losses = []
