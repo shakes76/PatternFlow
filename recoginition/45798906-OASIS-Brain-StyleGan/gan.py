@@ -132,6 +132,12 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
     return out
 
 
+# Optimisers
+def get_optimizer(**kwargs) -> tf.keras.optimizers.Optimizer:
+
+    return tf.keras.optimizers.Adam(**kwargs)
+
+
 # Models
 def get_generator(
     latent_dim: int,
