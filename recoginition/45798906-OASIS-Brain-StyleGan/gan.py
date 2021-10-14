@@ -182,7 +182,25 @@ def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
     return generator
 
 
-def get_discriminator(
-    input_dim: tuple[int, int, int], output_dim: int
-) -> tf.keras.Model:
-    pass
+def get_discriminator(image_size: int) -> tf.keras.Model:
+
+    # Constants
+    NUM_FILTERS = 512
+
+    # Discriminator network
+    input = Input(shape=[image_size, image_size, 1])
+    x = input
+    while image_size > 4:
+        print(image_size)
+        x = disc_block(x, NUM_FILTERS // (image_size // 8))
+        image_size //= 2
+
+    discriminator = tf.keras.Model(inputs=[input], outputs=x)
+
+    return discriminator
+
+
+# disc = get_discriminator([128, 128, 1])
+# print(disc.summary())
+gen = get_generator(512, 128)
+print(gen.summary())
