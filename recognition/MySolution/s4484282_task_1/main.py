@@ -2,21 +2,23 @@
 
 """
 
-import tensorflow as tf
 import random
 import sys
-# Pyplot for having a look at our image data
+import numpy as np
 import matplotlib.pyplot as plt
 
-# ! NOTE - Using numpy for importing images (NOTHING ELES)
-import numpy as np
+# Tensorflow
+import tensorflow as tf
 
+# Keras
+import keras
 from keras.models import Model
-from keras.layers import Concatenate, Dropout, MaxPooling2D, Conv2D, LSTM, Input, concatenate, Cropping2D, Lambda, Conv2DTranspose, add, Softmax
+from keras.layers import Concatenate, Dropout, MaxPooling2D, Conv2D, LSTM, \
+    Input, concatenate, Cropping2D, Lambda, Conv2DTranspose, add
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from keras.preprocessing.image import load_img, img_to_array
 import keras.backend as K
-import segmentation_models as sm
+
 
 def img_name_formatter(prefix: str, suffix: str, 
         imageNum: int, extension: str):
@@ -49,7 +51,7 @@ def ISIC_data_loader(numTrain: int):
     targetSize = (384,384)
     # Some images (like 90.jpg) are missing, hence add a buffer
     # in case we need more
-    buffer = 10000
+    buffer = abs(numTrain - maxImg)
  
     # Ensure that there are enough images
     if (numTrain + buffer) > maxImg:
@@ -70,13 +72,13 @@ def ISIC_data_loader(numTrain: int):
         try:
             imgNumToTry = choices.pop()
             print("Loading training and testing images: {}%    ".format(round(counter/numTrain*100,2)), end="")
-            imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
+            imageTrain = load_img('/data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
                     .format(img_name_formatter('ISIC_', '', imgNumToTry, 'jpg')),
                     target_size=targetSize)
             imageTrain = img_to_array(imageTrain) / 255.0
             
 
-            imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
+            imageTest = load_img('/data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
                     .format(img_name_formatter('ISIC_', '_segmentation', imgNumToTry, 'png')),
                     target_size=targetSize,
                     color_mode='grayscale')
@@ -100,12 +102,12 @@ def dice_coef(y_true, y_pred, smooth=1):
     return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 def dice_coeff_loss(y_true, y_pred):
-    return (1 - dice_coef(y_true, y_pred))
+    return 1-dice_coef(y_true, y_pred)
 
 def build_ISIC_cnn_improved_model():
     # ! Model inputs and normalisation
     # Input images are 511 x 384 x 3 (colour images)
-    inputs = Input(shape=(384,384,3))
+    inputs = Input((384,384,3))
     # crop = Cropping2D(cropping=((64,63),(0,0)))(inputs)
     # s = Lambda(lambda x: x / 255)(inputs)
 
@@ -203,7 +205,7 @@ def build_ISIC_cnn_improved_model():
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(outSeg)
 
     model = Model(inputs=[inputs], outputs=[outputs])
-    model.compile(optimizer='adam', loss=dice_coeff_loss, metrics=[dice_coef])
+    model.compile(optimizer='adam', loss=keras.losses.BinaryCrossentropy(from_logits=True), metrics=['accuracy', dice_coef])
     model.summary()
     return model
 
@@ -215,7 +217,6 @@ def build_ISIC_cnn_model():
     inputs = Input(shape=(384,384,3))
     # crop = Cropping2D(cropping=((64,63),(0,0)))(inputs)
     # s = Lambda(lambda x: x / 255)(inputs)
-    
 
     # ! Contraction path (first half of the 'U')
     # * 24
@@ -297,37 +298,125 @@ def build_ISIC_cnn_model():
 
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(con9)
 
-    outputs = Softmax()(outputs)
-
     model = Model(inputs=[inputs], outputs=[outputs])
-    model.compile(optimizer='adam', loss=sm.losses.DiceLoss(), metrics=[sm.metrics.FScore()])
+    model.compile(optimizer='adam', loss=keras.losses.BinaryCrossentropy(from_logits=True), metrics=['accuracy', dice_coef])
     model.summary()
     return model
-    
-if __name__ == '__main__':
-    model = build_ISIC_cnn_improved_model()
+
+def train_unet():
+    model = build_ISIC_cnn_model()
 
     # Model checkpoint
     checkpointer = ModelCheckpoint('ISIC_model_snapshot.h5', verbose=1, 
             save_freq=5)
 
+    callbacks = [
+    TensorBoard(log_dir='logs')
+    ]
+
     # Load data
-    Train_X, Train_Y = ISIC_data_loader(1000)
+    Train_X, Train_Y = ISIC_data_loader(1600)
 
-    print("Train_X.shape = {}".format(Train_X.shape))
-    print("Test_X.shape = {}".format(Train_Y.shape))
+    # plt.imshow(Train_X[0])
+    # plt.show()
 
-    image_plotter_helper(Train_X, Train_Y)
+    # print("Train_X.shape = {}".format(Train_X.shape))
+    # print("Test_X.shape = {}".format(Train_Y.shape))
 
-    results = model.fit(Train_X, Train_Y, validation_split=0.1, batch_size=4, 
-            epochs=50)
+    # #image_plotter_helper(Train_X, Train_Y)
 
-    plt.plot(results.history['accuracy'])
-    plt.plot(results.history['f_score'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'val'], loc='upper left')
+    results = model.fit(Train_X, Train_Y, validation_split=0.1, batch_size=16, 
+            epochs=100, callbacks=callbacks)
+
+    model.save('models/Regular_model_2')
+
+def test_unet():
+    """ Runs the improved unet model with the a set of input data.
+    """
+    model = keras.models.load_model('testModel2', custom_objects={'dice_coef':dice_coef, 'dice_coeff_loss': dice_coeff_loss})
+
+    Train_X, Train_Y = ISIC_data_loader(5)
+
+    plt.imshow(Train_X[0])
     plt.show()
+
+    plt.imshow(Train_Y[0,:,:,0])
+    plt.show()
+
+    origImg = Train_X[0]
+
+    train_images1 = origImg[None,:,:,:]
+
+    print(train_images1.shape)
+
+    model.save('drive/MyDrive/COMP3710_report/Regular_model')
+
+    result = model.predict(train_images1)
+
+    plt.imshow(result[0,:,:,0])
+    plt.show()
+
+def train_unet_improved():
+    """ Trains the original unet architecture.
+    """
+    model = build_ISIC_cnn_improved_model()
+
+    # Model checkpoint
+    checkpointer = ModelCheckpoint('ISIC_model_snapshot_improved.h5', verbose=1, 
+            save_freq=5)
+
+    callbacks = [
+        TensorBoard(log_dir='logs_improved')
+    ]
+
+    # Load data
+    Train_X, Train_Y = ISIC_data_loader(1600)
+
+    # plt.imshow(Train_X[0])
+    # plt.show()
+
+    # print("Train_X.shape = {}".format(Train_X.shape))
+    # print("Test_X.shape = {}".format(Train_Y.shape))
+
+    # #image_plotter_helper(Train_X, Train_Y)
+
+    results = model.fit(Train_X, Train_Y, validation_split=0.1, batch_size=16, 
+            epochs=100, callbacks=callbacks)
+
+    model.save('/models/Improved_model_2')
+
+def test_unet_improved():
+    """ Runs the improved unet model with the a set of input data.
+    """
+    model = keras.models.load_model('models/Improved_model.h5', custom_objects={'dice_coef':dice_coef, 'dice_coeff_loss': dice_coeff_loss})
+
+    targetSize = (384,384)
+
+    imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
+            .format(img_name_formatter('ISIC_', '', 1, 'jpg')),
+            target_size=targetSize)
+    imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
+            .format(img_name_formatter('ISIC_', '_segmentation', 1, 'png')),
+            target_size=targetSize,
+            color_mode='grayscale')
+
+    plt.imshow(imageTrain)
+    plt.show()
+
+    plt.imshow(imageTest[0,:,:,0])
+    plt.show()
+
+    origImg = imageTrain
+
+    train_images1 = origImg[None,:,:,:]
+
+    result = model.predict(train_images1)
+
+    plt.imshow(result[0,:,:,0])
+    plt.show()
+
+if __name__ == '__main__':
+    test_unet()
+    test_unet_improved()
 
     

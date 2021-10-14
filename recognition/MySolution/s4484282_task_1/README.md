@@ -31,17 +31,33 @@ The report and a large percentage of the code used is documented in the [Colab d
 
 # Test scripts
 
-The model can be tested by cloning the repository and running the `script name` in the `directory name` directory. The test script uses a pre-trained model, and selects a particular image 
+The model can be tested by cloning the repository and running the `main.py` file in the `s4484282_task_1` directory. The test script uses a pre-trained model (stored in the h5 format).
 
-# Test Script example output
+**NOTE**:
+This model was trained using Keras 2.6.0 on Google Colab. Many users have reported some issues loading these models on their local machines.
 
-here is some example output.
+If this happens, either ensure your version is the same, or if not, retrain the model and verify for yourself.
+
+The models are also available in the standard format as zip files.
+
+If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-#scrollTo=Cihc63yObw1s) 
+
+# Regular Unet model output
+
+![](example_output/regular_out_1.png)
+![](example_output/regular_out_2.png)
+![](example_output/regular_out_2.png)
+
+# Improved Unet model output
+![](example_output/Improved_out_1.png)
+![](example_output/Improved_out_2.png)
+![](example_output/Improved_out_3.png)
 
 # Result
 
-The results are as follows:
+The results (which were gathered from observing the validation output during training) are as follows:
 
-Standard Unet:
+Regular Unet:
 accuracy: 0.9854 - dice_coef: 0.9568 - val_loss: 0.3785 - val_accuracy: 0.9270 - val_dice_coef: 0.8269
 
 Improved Unet:
@@ -49,3 +65,7 @@ accuracy: 0.9801 - dice_coef: 0.9377 - val_loss: 0.3218 - val_accuracy: 0.9317 -
 
 In terms of validation accuracy, the improved Unet is better than the original on average by approximately 1%.
 This improvement is consistent with the 2017 BRATS challenge report in which the improved Unet version was based off.
+
+As with many ML models, the training accuracy (~98%) is far higher than the validation accuracy (~92%).
+
+However in both cases, the validation dice coefficient were above the 0.8 score as per requirement.
