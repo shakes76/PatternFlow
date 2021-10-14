@@ -136,7 +136,6 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
 def get_generator(
     latent_dim: int,
     output_size: int,
-    num_filters: int,
     optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
     loss: tf.keras.losses.Loss = tf.keras.losses.BinaryCrossentropy(),
 ) -> tf.keras.Model:
