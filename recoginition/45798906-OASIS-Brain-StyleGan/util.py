@@ -20,7 +20,7 @@ import tensorflow as tf
 import sys
 import matplotlib.pyplot as plt
 
-# Data functions
+# Image functions
 def load_images(
     directories: list[str],
     batch_size: int,
@@ -49,17 +49,16 @@ def load_images(
 
 
 def visualise_images(
-    images: tf.data.Dataset, fig_size: tuple[int, int] = (16, 10)
+    images: tf.Tensors, fig_size: tuple[int, int] = (16, 10)
 ) -> None:
 
+    batch_size = images.shape[0]
     plt.figure(figsize=fig_size)
-    for imgs in images.take(1):
-        batch_size = imgs.shape[0]
-        for i in range(min(batch_size, 32)):
-            ax = plt.subplot(4, 8, i + 1)
-            plt.imshow(imgs[i].numpy(), cmap="gray")
-            plt.axis("off")
-        plt.show()
+    for i in range(min(batch_size, 32)):
+        ax = plt.subplot(4, 8, i + 1)
+        plt.imshow(images[i].numpy(), cmap="gray")
+        plt.axis("off")
+    plt.show()
 
 
 # Error messages functions
