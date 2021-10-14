@@ -1,5 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, UpSampling2D, Conv2DTranspose, Concatinate, Input, LeakyReLU, SpatialDropout2D, InstanceNormalisation, Softmax
+from tensorflow.keras.layers import Conv2D, UpSampling2D, Conv2DTranspose, Concatenate, Input, LeakyReLU, SpatialDropout2D, Softmax
+from tensorflow_addons.layers import InstanceNormalisation
 from tensorflow.keras.models import models, Sequential
 
 # Reference: https://github.com/pykao/Modified-3D-UNet-Pytorch/blob/63f0489e8d1fdd7ec6a203bcff095f12ea030824/model.py#L70
@@ -48,7 +49,7 @@ class Unet():
         ])
 
     def localisation_module(input_layer, context, filters):
-        cat = Concatinate()([input_layer, context])
+        cat = Concatenate()([input_layer, context])
         conv_layer = Conv2D(filters, 3, stride=1, padding="same")(cat)
         norm = InstanceNormalisation()(conv_layer)
         norm = LeakyReLU()(norm)
@@ -93,7 +94,7 @@ class Unet():
         out = upsample_module(out, 64)
 
         # Level 4 localisation pathway
-        out, dump = localisation_moduleout, context_1, 64)
+        out, dump = localisation_module(out, context_1, 64)
 
         # Deep supervision
         seg_1 = Conv2D(256, 3, stride=1, padding="same")(seg_1)
