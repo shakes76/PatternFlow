@@ -15,12 +15,18 @@ The main idea is through progressive pooling down to a specified point, and then
 An important modification in Unets over conventional CNNs in general is the large number of feature channels in the upsampling stage.
 This allows for context information to propagate up the network to the higher resolution layers (which ultimately improves predictive accuracy).
 
-As a consequence, the expansive path (the upsampling part) is more or less symmetrical to the contracting path (the pooling part).
+As a consequence, the expansive path (the upsampling part) is more or less symmetrical to the contracting path (the pooling part). This is also why the method forms a 'U' shape and is why it's called a 'Unet'.
 
 # [Improving the system](https://arxiv.org/pdf/1802.10508v1.pdf)
 
 We can improve the original Unet model by introducing residual connections, which yeild minor improvements.
 The Changes made are based off the 2017 BRATS challenge report listed above.
+
+Taken from the report as well, the model we wish to implement is as follows.
+
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/thing_we_implemented.PNG)
+
+This model, as stated previously, improves the accuracy (slightly) of the original Unet through the addition of small element wise summing of the convolutional layers at various stages of the contracting path.
 
 # Testing accuracy
 Accuracy was determined by largely using the [Dice loss coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient). This was done via the `dice_coef()` and `dice_coeff_loss()` methods which were included as metrics in both the improved and regular models. 
@@ -40,7 +46,7 @@ If this happens, either ensure your version is the same, or if not, retrain the 
 
 The models are also available in the standard format as zip files.
 
-If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) 
+Note that this model was largely developed and tested using google Colab. As such, you can verify the originality of the document, the integrity of the training and testing outcomes by viewing the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) without the need to run the scripts. Note however that you will not have access my google drive, so you'll need to setup your own with the same training dataset offered by UQ.
 
 # Regular Unet model output
 
