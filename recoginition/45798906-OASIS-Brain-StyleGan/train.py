@@ -6,8 +6,7 @@
     Requirements:
         - Tensorflow 2.0
         - tqdm
-        - gan.py
-    
+
     Author: Keith Dao
     Date created: 14/10/2021
     Date last modified: 14/10/2021
