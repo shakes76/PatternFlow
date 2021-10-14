@@ -23,11 +23,11 @@ We can improve the original Unet model by introducing residual connections, whic
 The Changes made are based off the 2017 BRATS challenge report listed above.
 
 # Testing accuracy
-Accuracy was determined by largely using the [Dice loss coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient).
+Accuracy was determined by largely using the [Dice loss coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient). This was done via the `dice_coef()` and `dice_coeff_loss()` methods which were included as metrics in both the improved and regular models. 
 
 # Colab document
 
-The report and a large percentage of the code used is documented in the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-#scrollTo=Cihc63yObw1s) (which was also used to train the model).
+The report and a large percentage of the code used is documented in the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) (which was also used to train the model).
 
 # Test scripts
 
@@ -40,18 +40,18 @@ If this happens, either ensure your version is the same, or if not, retrain the 
 
 The models are also available in the standard format as zip files.
 
-If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-#scrollTo=Cihc63yObw1s) 
+If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) 
 
 # Regular Unet model output
 
-![](example_output/regular_out_1.png)
-![](example_output/regular_out_2.png)
-![](example_output/regular_out_2.png)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_1.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_2.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_3.PNG)
 
 # Improved Unet model output
-![](example_output/Improved_out_1.png)
-![](example_output/Improved_out_2.png)
-![](example_output/Improved_out_3.png)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_1.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_2.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_3.PNG)
 
 # Result
 
