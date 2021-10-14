@@ -149,10 +149,10 @@ def train(
         # Save the weights
         if save_weights and (epoch + 1) % weight_save_interval == 0:
             generator.save_weights(
-                f"{weight_save_path}generator-{epoch + epoch_offset + 1}"
+                f"{weight_save_path}generator/{epoch + epoch_offset + 1}"
             )
             discriminator.save_weights(
-                f"{weight_save_path}discriminator-{epoch + epoch_offset + 1}"
+                f"{weight_save_path}discriminator/{epoch + epoch_offset + 1}"
             )
 
     return history
