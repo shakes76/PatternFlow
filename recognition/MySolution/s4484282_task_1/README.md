@@ -44,14 +44,14 @@ If you don't want to do that, then you can verify the integrity of the accuracy 
 
 # Regular Unet model output
 
-![](/example_output/regular_out_1.png)
-![](/example_output/regular_out_2.png)
-![](/example_output/regular_out_2.png)
+![](./example_output/regular_out_1.png)
+![](./example_output/regular_out_2.png)
+![](./example_output/regular_out_2.png)
 
 # Improved Unet model output
-![](/example_output/Improved_out_1.png)
-![](/example_output/Improved_out_2.png)
-![](/example_output/Improved_out_3.png)
+![](./example_output/Improved_out_1.png)
+![](./example_output/Improved_out_2.png)
+![](./example_output/Improved_out_3.png)
 
 # Result
 
