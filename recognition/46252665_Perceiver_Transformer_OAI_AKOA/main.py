@@ -10,8 +10,8 @@ def run():
     dataset.do_action()
 
     # Train
-    # transformer = TransformerTrainer()
-    # transformer.do_action()
+    transformer = TransformerTrainer()
+    transformer.do_action()
 
     # Plot Patches
     plot = PlotPatches()
