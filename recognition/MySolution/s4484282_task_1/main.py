@@ -27,7 +27,6 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from keras.preprocessing.image import load_img, img_to_array
 import keras.backend as K
 
-
 def img_name_formatter(prefix: str, suffix: str, 
         imageNum: int, extension: str):
     """ Name formatting helper in order to iterate through the ISIC directory.
@@ -117,13 +116,13 @@ def ISIC_data_loader(numTrain: int):
         try:
             imgNumToTry = choices.pop()
             print("Loading training and testing images: {}%    ".format(round(counter/numTrain*100,2)), end="")
-            imageTrain = load_img('/data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
+            imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
                     .format(img_name_formatter('ISIC_', '', imgNumToTry, 'jpg')),
                     target_size=targetSize)
             imageTrain = img_to_array(imageTrain) / 255.0
             
 
-            imageTest = load_img('/data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
+            imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
                     .format(img_name_formatter('ISIC_', '_segmentation', imgNumToTry, 'png')),
                     target_size=targetSize,
                     color_mode='grayscale')
@@ -384,23 +383,30 @@ def train_unet():
 def test_unet():
     """ Runs the improved unet model with the a set of input data.
     """
-    model = keras.models.load_model('testModel2', custom_objects={'dice_coef':dice_coef, 'dice_coeff_loss': dice_coeff_loss})
+    model = keras.models.load_model('models/Regular_model.h5', custom_objects={'dice_coef':dice_coef, 'dice_coeff_loss': dice_coeff_loss})
 
-    Train_X, Train_Y = ISIC_data_loader(5)
+    targetSize = (384,384)
 
-    plt.imshow(Train_X[0])
+    imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
+            .format(img_name_formatter('ISIC_', '', 1, 'jpg')),
+            target_size=targetSize)
+    imageTrain = img_to_array(imageTrain) / 255.0
+
+    imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
+            .format(img_name_formatter('ISIC_', '_segmentation', 1, 'png')),
+            target_size=targetSize,
+            color_mode='grayscale')
+    imageTest = img_to_array(imageTest) / 255.0
+
+    plt.imshow(imageTrain)
     plt.show()
 
-    plt.imshow(Train_Y[0,:,:,0])
+    plt.imshow(imageTest[0:,:,0])
     plt.show()
 
-    origImg = Train_X[0]
+    origImg = imageTrain
 
     train_images1 = origImg[None,:,:,:]
-
-    print(train_images1.shape)
-
-    model.save('drive/MyDrive/COMP3710_report/Regular_model')
 
     result = model.predict(train_images1)
 
@@ -446,15 +452,18 @@ def test_unet_improved():
     imageTrain = load_img('data/ISIC2018_training_data/ISIC2018_Task1-2_Training_Input_x2/{}'\
             .format(img_name_formatter('ISIC_', '', 1, 'jpg')),
             target_size=targetSize)
+    imageTrain = img_to_array(imageTrain) / 255.0
+
     imageTest = load_img('data/ISIC2018_training_data/ISIC2018_Task1_Training_GroundTruth_x2/{}'\
             .format(img_name_formatter('ISIC_', '_segmentation', 1, 'png')),
             target_size=targetSize,
             color_mode='grayscale')
+    imageTest = img_to_array(imageTest) / 255.0
 
     plt.imshow(imageTrain)
     plt.show()
 
-    plt.imshow(imageTest[0,:,:,0])
+    plt.imshow(imageTest[0:,:,0])
     plt.show()
 
     origImg = imageTrain
