@@ -1,4 +1,12 @@
 """
+    FILENAME: main.py
+
+    AUTHOR: Harry Nowakowski
+
+    DESCRIPTION: Implementation and testing of the Unet Improved problem.
+
+    ACKNOWLEDGEMENTS: This method uses numpy in order to visualise data and load
+        from the target data folder. It in no way uses numpy for anything else.
 
 """
 
@@ -22,6 +30,18 @@ import keras.backend as K
 
 def img_name_formatter(prefix: str, suffix: str, 
         imageNum: int, extension: str):
+    """ Name formatting helper in order to iterate through the ISIC directory.
+
+    ARGS:
+    - prefix: The prefix we want on the front (e.g. 'ISIC_')
+    - suffix: The suffix we want on the back (e.g. '_segmentation')
+    - imageNum: The number of the image we want to pad with zeros
+    - extension: e.g. 'jpg', 'png', etc.
+
+    RETURNS:
+    - The formatted image name.
+
+    """
     if imageNum >= 1 and imageNum <= 9:
         return "{}000000{}{}.{}".format(prefix, imageNum, suffix, extension)
     elif imageNum >= 10 and imageNum <= 99:
@@ -36,6 +56,15 @@ def img_name_formatter(prefix: str, suffix: str,
         return "{}0{}{}.{}".format(prefix, imageNum, suffix, extension)
 
 def image_plotter_helper(Train_X, Test_X):
+    """ A small helper to plot a series of train and test images top to bottom. 
+    
+    ARGS:
+    - Train_X: The actual images being fed into the model
+    - Test_X: The expected/target output we want
+
+    RETURNS:
+    Nothing, it plots images :)
+    """
     f, axarr = plt.subplots(2,2)
     axarr[0,0].imshow(Train_X[0])
     axarr[0,1].imshow(Train_X[1])
@@ -44,7 +73,23 @@ def image_plotter_helper(Train_X, Test_X):
     plt.show()
 
 def ISIC_data_loader(numTrain: int):
-    """ Loads in the ISIC training and ground-truth data
+    """ Loads in the ISIC training and ground-truth data.
+
+    Because the ISIC database contains only ~2900 files, yet it is indexed up to
+    16k, I wanted to ensure people could use the original dataset directly with
+    this program. Hence this program 'guesses' what the index of a particular
+    file is iteratively.
+
+    If the file exists in BOTH the train and test directory, then great, add it
+    to the return arrays.
+
+    If not, skip can find another one.
+
+    ARGS:
+    - numTrain: The number of training images we want.
+
+    RETURN:
+    - Returns two arrays of training and their corresponding test images.
     """
     minImg = 1
     maxImg = 16072
@@ -96,12 +141,15 @@ def ISIC_data_loader(numTrain: int):
     return (training_pil_img_array, test_pil_img_array)
 
 def dice_coef(y_true, y_pred, smooth=1):
+    """ Dice coefficient implementation. """
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
     return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 def dice_coeff_loss(y_true, y_pred):
+    """ Dice coefficient loss implementation (nice for training models maybe). 
+    """
     return 1-dice_coef(y_true, y_pred)
 
 def build_ISIC_cnn_improved_model():
@@ -304,6 +352,9 @@ def build_ISIC_cnn_model():
     return model
 
 def train_unet():
+    """ Trains the original unet model on the test set (note that the directory
+        is configured for this test script and NOT google colab)
+    """
     model = build_ISIC_cnn_model()
 
     # Model checkpoint
@@ -311,7 +362,7 @@ def train_unet():
             save_freq=5)
 
     callbacks = [
-    TensorBoard(log_dir='logs')
+    TensorBoard(log_dir='logs/regular_log_data')
     ]
 
     # Load data
@@ -366,7 +417,7 @@ def train_unet_improved():
             save_freq=5)
 
     callbacks = [
-        TensorBoard(log_dir='logs_improved')
+        TensorBoard(log_dir='logs/improved_log_data')
     ]
 
     # Load data
@@ -416,6 +467,7 @@ def test_unet_improved():
     plt.show()
 
 if __name__ == '__main__':
+    # Test functions
     test_unet()
     test_unet_improved()
 
