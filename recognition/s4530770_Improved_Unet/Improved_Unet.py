@@ -1,10 +1,10 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, UpSampling2D, Conv2DTranspose, Concatinate, Input, LeakyReLU, SpatialDropout2D, InstanceNormalisation
+from tensorflow.keras.layers import Conv2D, UpSampling2D, Conv2DTranspose, Concatinate, Input, LeakyReLU, SpatialDropout2D, InstanceNormalisation, Softmax
 from tensorflow.keras.models import models, Sequential
 
 # Reference: https://github.com/pykao/Modified-3D-UNet-Pytorch/blob/63f0489e8d1fdd7ec6a203bcff095f12ea030824/model.py#L70
 class Unet():
-    
+
     def context_module(input_layer, filters, stride):
         return Sequential([
             input_layer,
@@ -96,4 +96,10 @@ class Unet():
         out, dump = localisation_moduleout, context_1, 64)
 
         # Deep supervision
-        
+        seg_1 = Conv2D(256, 3, stride=1, padding="same")(seg_1)
+        seg_1 = UpSampling2D(2, interpolation="nearest")(seg_1)
+        seg_2 = Conv2D(256, 3, stride=1, padding="same")(seg_2)
+        seg_layer = seg_1 + seg_2
+        seg_layer = UpSampling2D(2, interpolation="nearest")(seg_layer)
+        out = out + seg_layer
+        return Softmax()(out)
