@@ -133,7 +133,12 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
 
 
 # Models
-def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
+def get_generator(
+    latent_dim: int,
+    output_size: int,
+    optimizer: tf.keras.optimizers = tf.keras.optimizers.Adam(),
+    loss: tf.keras.losses = tf.keras.losses.BinaryCrossentropy(),
+) -> tf.keras.Model:
 
     # Constants
     NUM_FILTERS = 512
@@ -178,11 +183,16 @@ def get_generator(latent_dim: int, output_size: int) -> tf.keras.Model:
     generator = tf.keras.Model(
         inputs=[input_mapping, input_noise, input], outputs=x
     )
+    generator.compile(optimizer=optimizer, loss=loss)
 
     return generator
 
 
-def get_discriminator(image_size: int) -> tf.keras.Model:
+def get_discriminator(
+    image_size: int,
+    optimizer: tf.keras.optimizers = tf.keras.optimizers.Adam(),
+    loss: tf.keras.losses = tf.keras.losses.BinaryCrossentropy(),
+) -> tf.keras.Model:
 
     # Constants
     NUM_FILTERS = 512
@@ -195,11 +205,6 @@ def get_discriminator(image_size: int) -> tf.keras.Model:
         image_size //= 2
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
+    discriminator.compile(optimizer=optimizer, loss=loss)
 
     return discriminator
-
-
-# disc = get_discriminator([128, 128, 1])
-# print(disc.summary())
-gen = get_generator(512, 128)
-print(gen.summary())
