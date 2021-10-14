@@ -191,7 +191,6 @@ def get_discriminator(image_size: int) -> tf.keras.Model:
     input = Input(shape=[image_size, image_size, 1])
     x = input
     while image_size > 4:
-        print(image_size)
         x = disc_block(x, NUM_FILTERS // (image_size // 8))
         image_size //= 2
 
