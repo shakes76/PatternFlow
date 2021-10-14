@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 def load_images(
     directories: list[str],
     batch_size: int,
-    image_size: tuple[int, int],
+    image_size: int,
 ) -> tf.data.Dataset:
 
     # Gather all the images and place into a dataset
@@ -33,7 +33,7 @@ def load_images(
         img_dataset = tf.keras.preprocessing.image_dataset_from_directory(
             directory,
             labels=None,
-            image_size=image_size,
+            image_size=[image_size, image_size],
             shuffle=True,
             batch_size=batch_size,
             color_mode="grayscale",
