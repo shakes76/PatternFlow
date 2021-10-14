@@ -53,6 +53,11 @@ If you don't want to do that, then you can verify the integrity of the accuracy 
 ![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_2.PNG)
 ![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_3.PNG)
 
+# Improved Unet Tensorboard results
+The results for training both models was about the same, so only the improved version was added in this readme
+
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/improved_tensorboard_out.PNG)
+
 # Result
 
 The results (which were gathered from observing the validation output during training) are as follows:
