@@ -136,19 +136,17 @@ def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
 def get_generator(
     latent_dim: int,
     output_size: int,
+    num_filters: int,
     optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
     loss: tf.keras.losses.Loss = tf.keras.losses.BinaryCrossentropy(),
 ) -> tf.keras.Model:
-
-    # Constants
-    NUM_FILTERS = 512
 
     # Mapping network
     input_mapping = Input(shape=[latent_dim])
     mapping = input_mapping
     mapping_layers = 8
     for _ in range(mapping_layers):
-        mapping = Dense(NUM_FILTERS)(mapping)
+        mapping = Dense(num_filters)(mapping)
         mapping = LeakyReLU(0.01)(mapping)
 
     # Crop the noise image for each resolution
@@ -164,13 +162,13 @@ def get_generator(
     curr_size = 4
     input = Input(shape=[1])
     x = Lambda(lambda x: x * 0 + 1)(input)  # Set the constant value to be 1
-    x = Dense(curr_size * curr_size * NUM_FILTERS)(x)
-    x = Reshape([curr_size, curr_size, NUM_FILTERS])(x)
-    x = gen_block(x, mapping, noise[-1], NUM_FILTERS, upSample=False)
+    x = Dense(curr_size * curr_size * num_filters)(x)
+    x = Reshape([curr_size, curr_size, num_filters])(x)
+    x = gen_block(x, mapping, noise[-1], num_filters, upSample=False)
 
     # Add upscaling blocks till the output size is reached
     block = 1
-    curr_filters = NUM_FILTERS
+    curr_filters = num_filters
     while curr_size < output_size:
         curr_filters //= 2
         x = gen_block(x, mapping, noise[-(1 + block)], curr_filters)
@@ -190,18 +188,16 @@ def get_generator(
 
 def get_discriminator(
     image_size: int,
+    num_filters: int,
     optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
     loss: tf.keras.losses.Loss = tf.keras.losses.BinaryCrossentropy(),
 ) -> tf.keras.Model:
-
-    # Constants
-    NUM_FILTERS = 512
 
     # Discriminator network
     input = Input(shape=[image_size, image_size, 1])
     x = input
     while image_size > 4:
-        x = disc_block(x, NUM_FILTERS // (image_size // 8))
+        x = disc_block(x, num_filters // (image_size // 8))
         image_size //= 2
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
