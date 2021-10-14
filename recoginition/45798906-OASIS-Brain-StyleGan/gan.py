@@ -196,9 +196,10 @@ def get_discriminator(
     # Discriminator network
     input = Input(shape=[image_size, image_size, 1])
     x = input
-    while image_size > 4:
-        x = disc_block(x, num_filters // (image_size // 8))
-        image_size //= 2
+    curr_size = image_size
+    while curr_size > 4:
+        x = disc_block(x, num_filters // (curr_size // 8))
+        curr_size //= 2
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
     discriminator.compile(optimizer=optimizer, loss=loss)
