@@ -27,7 +27,7 @@ Accuracy was determined by largely using the [Dice loss coefficient](https://en.
 
 # Colab document
 
-The report and a large percentage of the code used is documented in the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-#scrollTo=Cihc63yObw1s) (which was also used to train the model).
+The report and a large percentage of the code used is documented in the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) (which was also used to train the model).
 
 # Test scripts
 
@@ -40,7 +40,7 @@ If this happens, either ensure your version is the same, or if not, retrain the 
 
 The models are also available in the standard format as zip files.
 
-If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-#scrollTo=Cihc63yObw1s) 
+If you don't want to do that, then you can verify the integrity of the accuracy of the models when they were tested using the Google [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) 
 
 # Regular Unet model output
 
