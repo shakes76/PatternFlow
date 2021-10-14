@@ -44,14 +44,14 @@ If you don't want to do that, then you can verify the integrity of the accuracy 
 
 # Regular Unet model output
 
-![](./example_output/regular_out_1.png)
-![](./example_output/regular_out_2.png)
-![](./example_output/regular_out_2.png)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_1.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_2.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/regular_out_3.PNG)
 
 # Improved Unet model output
-![](./example_output/Improved_out_1.png)
-![](./example_output/Improved_out_2.png)
-![](./example_output/Improved_out_3.png)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_1.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_2.PNG)
+![](https://github.com/Despicable-bee/PatternFlow/blob/s4484282_task_1_unet_improved/recognition/MySolution/s4484282_task_1/example_output/Improved_out_3.PNG)
 
 # Result
 
