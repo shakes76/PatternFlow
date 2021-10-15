@@ -84,3 +84,6 @@ However in both cases, the validation dice coefficient were above the 0.8 score 
 ## [EXTRA CREDIT STUFF](https://colab.research.google.com/drive/1NYo8jk9Rxc8qzklIroveVWH7CO-22n_6?usp=sharing)
 
 I didn't do the stylegan2 implementation from scratch, but I did implement the model and train it using Nvidia's official implementation in pytorch. Take a look, I've added some nice documentation on SLURM for anyone who wants it.
+
+HEY EVERY      !
+IT'S ME, SPAMTON G. SPAMTON!
