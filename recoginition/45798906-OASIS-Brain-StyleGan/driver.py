@@ -109,7 +109,7 @@ def main():
             BATCH_SIZE,
             IMAGE_SIZE,
             EPOCHS,
-            epoch_offset=TOTAL_PREVIOUS_EPOCHS,
+            epoch_offset=TOTAL_PREVIOUS_EPOCHS if LOAD_WEIGHTS else 0,
             save_weights=SAVE_WEIGHTS,
             weight_save_path=WEIGHT_PATH,
             weight_save_interval=WEIGHT_SAVING_INTERVAL,
