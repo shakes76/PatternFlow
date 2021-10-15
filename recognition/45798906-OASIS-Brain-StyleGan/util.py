@@ -64,7 +64,7 @@ def visualise_images(
 
 
 def visualise_loss(
-    losses: tuple[list[float], list[float]], starting_epoch: int = 0
+    losses: tuple[list[float], list[float]], starting_epoch: int = 1
 ) -> None:
 
     gen_losses, disc_losses = losses
