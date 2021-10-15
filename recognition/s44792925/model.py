@@ -43,39 +43,37 @@ def model(height, width, channel):
     sum5 = tf.keras.layers.Add()([conv5, context_module5])
     
     #recombine representations to localise notable features used in segmentation
-
     upsampling1 = tf.keras.layers.UpSampling2D(size=(2,2))(sum5)
-    
-    #possibly need a conv2d here
+    upsampling1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(upsampling1)
     concat1 = tf.keras.layers.concatenate([sum4, upsampling1])
     localization_1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(concat1)
     localization_1 = tf.keras.layers.Conv2D(128, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(localization_1)
     upsampling2 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_1)
 
-    #possibly need a conv2d here
+    upsampling2 = tf.keras.layers.Conv2D(64, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(upsampling2)
     concat2 = tf.keras.layers.concatenate([sum3, upsampling2])
     localization_2 = tf.keras.layers.Conv2D(64, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat2)
     localization_2 = tf.keras.layers.Conv2D(64, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(localization_2)
-    segmentation1 = tf.keras.layers.Conv2D(1, (1,1), activation='softmax')(localization_2)
+    segmentation1 = tf.keras.layers.Conv2D(1, (1,1), activation='sigmoid')(localization_2)
     segmentation1 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation1)
     upsampling3 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_2)
 
-    #possibly need a conv2d here
+    upsampling3 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(upsampling3)
     concat3 = tf.keras.layers.concatenate([sum2, upsampling3])
     localization_3 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat3)
     localization_3 = tf.keras.layers.Conv2D(32, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(localization_3)
-    segmentation2 = tf.keras.layers.Conv2D(1, (1,1), activation='softmax')(localization_3)
+    segmentation2 = tf.keras.layers.Conv2D(1, (1,1), activation='sigmoid')(localization_3)
     segmentation2 = tf.keras.layers.Add()([segmentation1, segmentation2])
     segmentation2 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation2)
     upsampling4 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_3) # upscale by factor of 2
 
-    #possibly need a conv2d here
+    upsampling4 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(upsampling4)
     concat4 = tf.keras.layers.concatenate([sum1, upsampling4])
     conv6 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat4)
-    segmentation3 = tf.keras.layers.Conv2D(1, (1,1), activation = 'softmax')(conv6)
+    segmentation3 = tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(conv6)
     #segmentation3 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation3)
     segmentation3 = tf.keras.layers.Add()([segmentation3, segmentation2])
-    output = tf.keras.layers.Conv2D(1, (1,1),  activation='softmax')(segmentation3)
+    output = tf.keras.layers.Conv2D(1, (1,1),  activation='sigmoid')(segmentation3)
 
     model = tf.keras.Model(inputs=input, outputs=output)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 5*(10**-4)), loss=["binary_crossentropy"], metrics=["accuracy"])
