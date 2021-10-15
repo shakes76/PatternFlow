@@ -119,7 +119,7 @@ def train(
                 discriminator,
                 gen_optimizer,
                 disc_optimizer,
-                real_images,
+                images,
                 latent_dimension,
                 batch_size,
                 img_size,
