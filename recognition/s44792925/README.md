@@ -27,11 +27,16 @@ If you would like to run this on your computer then please just do not run the f
 
 ## Results
 
-### Loss Function Plot
+### Loss Function and Accuracy Plot
 
-A Binary Cross Entropy Loss function is used as we are aiming for a Dice similarity of over 0.8. The Dice Coefficient was chosen as the metric to evaluate the model as it is a straightforward mechanism used to evaluate the similarity of two images. A higher value represents higher similarity. 
+A Dice Similarity Loss function is used as we are aiming for a Dice similarity of over 0.8. The Dice Coefficient was chosen as the metric to evaluate the model as it is a straightforward mechanism used to evaluate the similarity of two images. A higher value represents higher similarity. 
+<p align="center"><img src='images/training_info.png'></p>
 
-### Accuracy Plot
+
+### Data Visualisation
+
+The below image demonstrates the model predicting the mask of 3 different skin lesion images.
+<p align="center"><img src='images/visualisation.png'></p>
 
 ### Dependencies 
 
