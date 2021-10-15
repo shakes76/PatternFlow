@@ -14,7 +14,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 15/10/2021
+    Date last modified: 16/10/2021
     Python version: 3.9.7
 """
 
@@ -69,7 +69,7 @@ DISCRIMINATOR_WEIGHT_PATH = ""
 # Training variables
 TRAIN = True
 EPOCHS = 100
-TOTAL_PREVIOUS_EPOCHS = 0
+TOTAL_PREVIOUS_EPOCHS = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
 LOAD_WEIGHTS = False
 SAVE_WEIGHTS = True
 WEIGHT_SAVING_INTERVAL = 5
