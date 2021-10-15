@@ -211,3 +211,19 @@ def get_discriminator(
     discriminator.compile(optimizer=optimizer, loss=loss)
 
     return discriminator
+
+
+# Samples
+def generate_samples(
+    generator: tf.keras.Model,
+    latent_dimension: int,
+    sample_size: int,
+    img_size: int,
+):
+
+    # Generate noise for the generator
+    latent_noise = tf.random.normal([sample_size, latent_dimension])
+    noise_images = tf.random.normal([sample_size, img_size, img_size, 1])
+
+    samples = generator([latent_noise, noise_images, tf.ones([sample_size, 1])])
+    return samples
