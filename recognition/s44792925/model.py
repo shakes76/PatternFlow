@@ -43,7 +43,7 @@ def model(height, width, channel):
     sum5 = tf.keras.layers.Add()([conv5, context_module5])
     
     #recombine representations to localise notable features used in segmentation
-    upsampling1 = tf.keras.layers.UpSampling2D(size=(2,2))(sum5)
+    upsampling1 = tf.keras.layers.UpSampling2D(size=(2,2))(sum5) # upsample by a factor of 2
     upsampling1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(upsampling1)
     concat1 = tf.keras.layers.concatenate([sum4, upsampling1])
     localization_1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(concat1)
@@ -71,17 +71,15 @@ def model(height, width, channel):
     segmentation2 = tf.keras.layers.Conv2D(1, (1,1))(localization_3)
     segmentation2 = tf.keras.layers.Add()([segmentation1, segmentation2])
     segmentation2 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation2)
-    upsampling4 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_3) # upscale by factor of 2
+    upsampling4 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_3)
 
     upsampling4 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(upsampling4)
     concat4 = tf.keras.layers.concatenate([sum1, upsampling4])
     conv6 = tf.keras.layers.Conv2D(32, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding='same')(concat4)
     segmentation3 = tf.keras.layers.Conv2D(1, (1,1))(conv6)
-    #segmentation3 = tf.keras.layers.UpSampling2D(size=(2,2))(segmentation3)
     segmentation3 = tf.keras.layers.Add()([segmentation3, segmentation2])
-    output = tf.keras.layers.Conv2D(1, (1,1),  activation='sigmoid')(segmentation3)
+    output = tf.keras.layers.Conv2D(1, (1,1),  activation='sigmoid')(segmentation3) # sigmoid activation as we either have 0 or 1 for each pixel.
 
     model = tf.keras.Model(inputs=input, outputs=output)
-    #model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 5*(10**-4)), loss=["binary_crossentropy"], metrics=["accuracy", dice])
     
     return model
