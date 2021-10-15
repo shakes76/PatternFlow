@@ -12,13 +12,14 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 14/10/2021
+    Date last modified: 16/10/2021
     Python version: 3.9.7
 """
 
 import tensorflow as tf
 import sys
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 # Loader
 def load_images(
@@ -81,7 +82,7 @@ def visualise_loss(
 
     # x axis
     plt.xlim([0, starting_epoch + len(gen_losses) - 1])
-    plt.xticks(tf.range(0, starting_epoch + len(gen_losses)))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.show()
 
