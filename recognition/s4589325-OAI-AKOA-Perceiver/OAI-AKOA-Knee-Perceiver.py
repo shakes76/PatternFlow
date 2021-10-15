@@ -24,7 +24,7 @@ print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-SAVE_DATA			= True
+SAVE_DATA			= False
 BATCH_SIZE			= 8 #33
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
@@ -149,48 +149,18 @@ train_dataset = train_dataset.batch(BATCH_SIZE, drop_remainder = True)
 test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
 test_dataset = test_dataset.batch(BATCH_SIZE, drop_remainder = True)
 
-'''
-# Batch the train and test datset and put them in dataset variable types
-# train dataset
-dataset_train = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
-dataset_train = dataset_train.batch(BATCH_SIZE)
-# test dataset
-dataset_validation = tf.data.Dataset.from_tensor_slices((xtest, ytest))
-dataset_validation = dataset_validation.batch(BATCH_SIZE)
-'''
-'''
-# Cannot use this code because it leaks data between training/test sets
-dataset_train = tf.keras.preprocessing.image_dataset_from_directory(
-    dataDirectory,
-	validation_split=VALIDATION_SPLIT,
-	subset="training",
-	seed=SEED,
-	label_mode=None,
-	image_size=(IMG_WIDTH, IMG_HEIGHT),
-	batch_size=BATCH_SIZE,
-	color_mode='grayscale'
-)
-dataset_validation = tf.keras.preprocessing.image_dataset_from_directory(
-    dataDirectory,
-	validation_split=VALIDATION_SPLIT,
-	subset="validation",
-	seed=SEED,
-	label_mode=None,
-	image_size=(IMG_WIDTH, IMG_HEIGHT),
-	batch_size=BATCH_SIZE,
-	color_mode='grayscale'
-)
-'''
-
 def pos_encoding(img, bands, Fs):
 	# Create grid
 	n, x_size, y_size = img.shape
+	img = tf.cast(img, tf.float32)
 	x = tf.linspace(-1, 1, x_size)
 	y = tf.linspace(-1, 1, y_size)
 	xy_mesh = tf.meshgrid(x,y)
 	xy_mesh = tf.transpose(xy_mesh)
 	xy_mesh = tf.expand_dims(xy_mesh, -1)
 	xy_mesh = tf.reshape(xy_mesh, [x_size,y_size,2,1])
+	xy_mesh = tf.repeat(xy_mesh, 2*bands + 1, axis = 3)
+	#print(xy_mesh)
 	# Frequency logspace of nyquist f for bands
 	up_lim = tf.math.log(Fs/2)/tf.math.log(10.)
 	low_lim = math.log(1)
@@ -202,10 +172,10 @@ def pos_encoding(img, bands, Fs):
 	encoding = xy_mesh * t
 	encoding = tf.reshape(encoding, [1, x_size, y_size, (2 * bands + 1) * 2])
 	encoding = tf.repeat(encoding, n, 0) # Repeat for all images (on first axis)
-	img = tf.expand_dims(img, axis=-1) # resize image data so that it fits
-	out = tf.concat([img, encoding], axis=-1) # Add image data
+	img = tf.expand_dims(img, axis=3) # resize image data so that it fits
+	out = tf.cast(encoding, tf.float32)
+	out = tf.concat([img, out], axis=-1) # Add image data
 	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
-	out = tf.cast(out, tf.float32)
 	return out
 
 # ##### Define Modules #####
