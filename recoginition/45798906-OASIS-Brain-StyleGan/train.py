@@ -9,7 +9,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 14/10/2021
+    Date last modified: 15/10/2021
     Python version: 3.9.7
 """
 
@@ -97,6 +97,7 @@ def train(
     weight_save_interval: int = 5,
     save_images: bool = False,
     image_save_path: str = None,
+    image_save_interval: str = 1,
 ) -> tuple[list[float], list[float]]:
 
     if save_images:
@@ -137,7 +138,7 @@ def train(
 
         # Save one of the fake images
         # Generate noise for the generator
-        if save_images:
+        if save_images and (epoch + 1) % image_save_interval == 0:
             latent_noise = tf.random.normal([1, latent_dimension])
             noise_images = tf.random.normal([1, img_size, img_size, 1])
             save_img = tf.keras.preprocessing.image.array_to_img(
