@@ -6,6 +6,7 @@
     Requirements:
         - Tensorflow 2.0
         - tqdm
+        - matplotlib
         - os
         - util.py
         - train.py
