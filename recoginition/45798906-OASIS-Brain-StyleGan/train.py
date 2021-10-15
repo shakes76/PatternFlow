@@ -6,6 +6,7 @@
     Requirements:
         - Tensorflow 2.0
         - tqdm
+        - time
 
     Author: Keith Dao
     Date created: 14/10/2021
@@ -15,6 +16,7 @@
 
 import tensorflow as tf
 from tqdm import tqdm
+import time
 
 # Loss functions
 def generator_loss(fakes: tf.Tensor) -> float:
@@ -100,11 +102,12 @@ def train(
     image_save_interval: str = 1,
 ) -> tuple[list[float], list[float]]:
 
+    train_code = time.time()
     if save_images:
-        tf.io.gfile.makedirs(image_save_path)
+        tf.io.gfile.makedirs(f"{image_save_path}{train_code}/")
 
     if save_weights:
-        tf.io.gfile.makedirs(weight_save_path)
+        tf.io.gfile.makedirs(f"{weight_save_path}{train_code}/")
 
     gen_loss_history = []
     disc_loss_history = []
@@ -145,16 +148,16 @@ def train(
                 generator([latent_noise, noise_images, tf.ones([1, 1])])[0]
             )
             save_img.save(
-                f"{image_save_path}epoch-{epoch + epoch_offset + 1}.png"
+                f"{image_save_path}{train_code}/epoch-{epoch + epoch_offset + 1}.png"
             )
 
         # Save the weights
         if save_weights and (epoch + 1) % weight_save_interval == 0:
             generator.save_weights(
-                f"{weight_save_path}generator/{epoch + epoch_offset + 1}"
+                f"{weight_save_path}{train_code}/generator/{epoch + epoch_offset + 1}"
             )
             discriminator.save_weights(
-                f"{weight_save_path}discriminator/{epoch + epoch_offset + 1}"
+                f"{weight_save_path}{train_code}/discriminator/{epoch + epoch_offset + 1}"
             )
 
     return gen_loss_history, disc_loss_history
