@@ -19,7 +19,7 @@ from tqdm import tqdm
 # Loss functions
 def generator_loss(fakes: tf.Tensor) -> float:
 
-    return tf.keras.losses.BinaryCrossEntropy(tf.ones_like(fakes), fakes)
+    return tf.keras.losses.BinaryCrossentropy()(tf.ones_like(fakes), fakes)
 
 
 def discriminator_loss(reals: tf.Tensor, fakes: tf.Tensor) -> float:
