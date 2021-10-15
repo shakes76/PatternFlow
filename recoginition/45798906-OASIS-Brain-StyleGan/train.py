@@ -131,8 +131,8 @@ def train(
         disc_loss_history.append(tf.reduce_mean(disc_losses))
 
         print(
-            f"Epoch {epoch+1+epoch_offset}: Generator Loss = {mean_gen_loss:.4f}, "
-            f"Discriminator Loss = {mean_disc_loss:.4f}"
+            f"Epoch {epoch+1+epoch_offset}: Generator Loss = {gen_loss_history[-1]:.4f}, "
+            f"Discriminator Loss = {disc_loss_history[-1]:.4f}"
         )
 
         # Save one of the fake images
