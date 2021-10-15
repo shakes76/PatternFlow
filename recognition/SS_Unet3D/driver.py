@@ -17,12 +17,16 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
     nib.save(img, os.path.join(folder, name))
     pass
 
+# Standardizes the NP array (0 Mean & Unit Variance)
+def standardize(given_np_arr):
+    return (given_np_arr - given_np_arr.mean()) / given_np_arr.std()
 
 # Pre-process and Augment the CSIRO 3D Male Pelvic dataset
 # Original data is expected in two sub-folders, but is outputted to a single directory
-def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath):
+def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
+                            verbose=False):
     aug_count = 3
-    flip_augs = [0, 1]
+    flip_augs = [0]
 
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
     orig_data_y_dirpath = orig_data_dirpath + '/' + orig_data_y_subdirname
@@ -45,7 +49,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
 
     # Process each image
     for idx, datum in enumerate(data_filenames):
-        print('Observation #{} of {}: {}'.format(idx, len(data_filenames), datum))
+        print('Augmenting observation #{} of {}: {}'.format(idx + 1, len(data_filenames), datum)) if verbose else None
         # Load files into memory
         curr_x = nib.load(orig_data_x_dirpath + '/' + datum[0]).get_fdata()
         curr_y = nib.load(orig_data_y_dirpath + '/' + datum[1]).get_fdata()
@@ -66,10 +70,9 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
         # Begin Augmentation
         # ####################################
         for aug_num in range(aug_count):
-            # Create augmentor
+            # Create augmenter
             aug = ImageSegmentationAugmenter()
             if aug_num in flip_augs:
-                pass
                 # Apply a flip on the specified Axis
                 aug.add_augmentation(Flip(aug_num + 1))
                 aug_type = 'FLIP'
@@ -77,7 +80,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
                 # Apply a warp
                 aug.add_augmentation(GridWarp())
                 aug_type = 'WARP'
-                pass
+
             # Filename manipulation
             save_name_x = datum[0].replace('_LFOV.nii.gz', '') \
                           + '_AUG_{}_{}'.format(aug_num + 1, aug_type) + '_LFOV.nii.gz'
@@ -85,32 +88,47 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
                           + '_AUG_{}_{}'.format(aug_num + 1, aug_type) + '_SEMANTIC_LFOV.nii.gz'
             # Augmentation is applied to X and Y simultaneously to ensure sync
             curr_x_aug, curr_y_aug = aug([curr_x, curr_y])
-            # Warp returns float32 which does errors on save
-            if aug_type == 'WARP':
-                curr_x_aug = np.array(curr_x_aug, dtype=np.float64)
-                curr_y_aug = np.array(curr_y_aug, dtype=np.float64)
+            # Convert to Numpy Float32 Arrays
+            curr_x_aug = np.array(curr_x_aug, dtype=np.float32)
+            curr_y_aug = np.array(curr_y_aug, dtype=np.float32)
+            # Standardize
+            curr_x_aug = standardize(curr_x_aug)
+            curr_y_aug = standardize(curr_y_aug)
+            # Round to 0 decimals to match original data
+            # curr_x_aug = np.round(curr_x_aug, decimals=0)
+            # curr_y_aug = np.round(curr_y_aug, decimals=0)
             # Save augmented X and Y
             save_as_nifti(curr_x_aug, output_data_dirpath, save_name_x)
             save_as_nifti(curr_y_aug, output_data_dirpath, save_name_y)
             pass
+    pass
+
+
+def main():
+
+    print(np.__version__)
+    # need 1.18.5
+
+    augment_required = True
+
+    # Augment the dataset if required
+    if augment_required:
+        orig_data_dir = ''
+        x_subdir = '/semantic_MRs_anon'
+        y_subdir = '/semantic_labels_anon'
+        output_dir = orig_data_dir + '/processed'
+        data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, verbose=True)
+
+    # Crate the model
+    the_model = UNetCSIROMalePelvic("My Model")
+
+    print(the_model.mdl.summary())
+
+    for layer in the_model.mdl.layers:
+        print(layer.input_shape, '-->', layer.name, '-->', layer.output_shape)
 
     pass
 
 
-
-#orig_data_dir = ''
-#X_subdir = '/semantic_MRs_anon'
-#Y_subdir = '/semantic_labels_anon'
-#X_dir = data_dir + X_subdir
-#Y_dir = data_dir + Y_subdir
-
-#output_dir = data_dir + '/processed'
-
-
-the_model = UNetCSIROMalePelvic("My Model")
-
-print(the_model.mdl.summary())
-
-for layer in the_model.mdl.layers:
-    print(layer.input_shape, '-->', layer.name, '-->', layer.output_shape)
-
+# Run the program
+main()
