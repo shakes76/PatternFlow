@@ -1,6 +1,8 @@
 """
 Model architecture for improved UNet.
 
+Code reference: https://arxiv.org/pdf/1802.10508v1.pdf
+
 @author Yin Peng
 @email yin.peng@uqconnect.edu.au
 """
@@ -9,92 +11,78 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Sequential,Model
 
 def get_improved_unet(input_shape):
+  def context_module(input,size):
+    """
+    function to get context model
+    """
+    out = Conv2D(size, 3, activation = 'relu', padding = 'same')(out)
+    out = Dropout(0.3)(out)
+    out = tfa.layers.InstanceNormalization()(out)
+    out = Conv2D(size, 3, activation = 'relu', padding = 'same')(out)
+    return out
+
+  def segmentation_layer(layer):
+    """
+    return segmentation layers
+    """
+    return tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(layer)
+
   inputs = Input(input_shape)
+
   conv1_1 = Conv2D(16, 3, activation = 'relu', padding = 'same')(inputs)
-  conv1_2 = Conv2D(16, 3, activation = 'relu', padding = 'same')(conv1_1)
-  # (None, 256, 128, 16)
-  merg1 = Add()([conv1_1,conv1_2])
+  conv1_2 = context_module(conv1_1,16)
+  add1 = Add()([conv1_1,conv1_2])
 
-  # (None, 256, 128, 16)
+  # pool1 = MaxPooling2D(pool_size = (2, 2))(merg1)
 
-  pool1 = MaxPooling2D(pool_size = (2, 2))(merg1)
-  # (None, 128, 64, 16)
-  
-  conv2_1 = Conv2D(32, 3, activation = 'relu', padding = 'same')(pool1)
-  conv2_2 = Conv2D(32, 3, activation = 'relu', padding = 'same')(conv2_1)
-  # (None, 128, 64, 32)
+  conv2_1 = Conv2D(32, 3, activation = 'relu', padding = 'same', strides = 2)(add1)
+  conv2_2 = context_module(conv2_1,32)
+  add2 = Add()([conv2_1,conv2_2])
+  # (None, 128, 96, 32)
 
-  merg2 = Add()([conv2_1,conv2_2])
-  pool2 = MaxPooling2D(pool_size = (2, 2))(merg2)
-  # (None, 64, 32, 32)
+  conv3_1 = Conv2D(64, 3, activation = 'relu', padding = 'same', strides = 2)(add2)
+  conv3_2 = context_module(conv3_1,64)
+  add3 = Add()([conv3_1,conv3_2])
 
-  conv3_1 = Conv2D(64, 3, activation = 'relu', padding = 'same')(pool2)
-  conv3_2 = Conv2D(64, 3, activation = 'relu', padding = 'same')(conv3_1)
-  # (None, 64, 32, 64)
-  merg3 = Add()([conv3_1,conv3_2])
+  conv4_1 = Conv2D(128, 3, activation = 'relu', padding = 'same', strides = 2)(add3)
+  conv4_2 = context_module(conv4_1,128)
+  add4 = Add()([conv4_1,conv4_2])
 
-  pool3 = MaxPooling2D(pool_size = (2, 2))(merg3)
-  # (None, 32, 16, 64)
+  conv5_1 = Conv2D(256, 3, activation = 'relu', padding = 'same', strides = 2)(add4)
+  conv5_2 = context_module(conv5_1,256)
+  add5 = Add()([conv5_1,conv5_2])
+  # (None, 16, 12, 256)
 
-  conv4_1 = Conv2D(128, 3, activation = 'relu', padding = 'same')(pool3)
-  conv4_2 = Conv2D(128, 3, activation = 'relu', padding = 'same')(conv4_1)
+  up1 = Conv2D(128, 2, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(add5))
 
-  # (None, 32, 16, 128)
+  merge1 = concatenate([add4, up1])
+  up_conv1 = tf.keras.layers.Conv2D(128, 3, activation = 'relu', padding ='same')(merge1)
+  up_conv1 = tf.keras.layers.Conv2D(128, 1, activation = 'relu', padding ='same')(up_conv1)
 
-  merg4 = Add()([conv4_1,conv4_2])
+  up2 = Conv2D(64, 3, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(up_conv1))
+  merge2 = concatenate([add3, up2])
+  up_conv2 = tf.keras.layers.Conv2D(64, 3, activation = 'relu', padding ='same')(merge2)
+  up_conv2 = tf.keras.layers.Conv2D(64, 1, activation = 'relu', padding ='same')(up_conv2)
 
-  drop4 = Dropout(0.3)(merg4)
-  # (None, 32, 16, 128)
-  pool4 = MaxPooling2D(pool_size = (2, 2))(drop4)
+  up3 = Conv2D(32, 3, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(up_conv2))
+  merge3 = concatenate([add2, up3])
+  up_conv3 = tf.keras.layers.Conv2D(32, 3, activation = 'relu', padding ='same')(merge3)
+  up_conv3 = tf.keras.layers.Conv2D(32, 1, activation = 'relu', padding ='same')(up_conv3)
 
-  # (None, 16, 8, 128)
-  
-  conv5_1 = Conv2D(256, 3, activation = 'relu', padding = 'same')(pool4)
-  conv5_2 = Conv2D(256, 3, activation = 'relu', padding = 'same')(conv5_1)
-  # (None, 16, 8, 256)
-  merg5 = Add()([conv5_1,conv5_2])
+  up4 = Conv2D(16, 3, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(up_conv3))
+  merge4 = concatenate([add1, up4])
+  up_conv4 = tf.keras.layers.Conv2D(16, 3, activation = 'relu', padding ='same')(merge4)
 
-  drop5 = Dropout(0.3)(merg5)
+  seg1 = segmentation_layer(up_conv2)
+  seg2 = segmentation_layer(up_conv3)
 
-  up6 = Conv2D(128, 2, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(drop5))
-  # (None, 32, 16, 128)
+  add_seg1 = Add()([UpSampling2D(size = (2, 2))(seg1),seg2])
 
-  merge6 = concatenate([drop4, up6], axis = 3)
-  # (None, 32, 16, 256)
-  conv6 = Conv2D(128, 3, activation = 'relu', padding = 'same')(merge6)
-  # (None, 32, 16, 128)
+  seg4 = segmentation_layer(up_conv4)
+  add_seg2 = Add()([UpSampling2D(size = (2, 2))(add_seg1),seg4])
 
-  up7 = Conv2D(64, 2, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(conv6))
-  # (None, 64, 32, 64)
-  merge7 = concatenate([merg3, up7], axis = 3)
-  # (None, 64, 32, 128)
-  conv7 = Conv2D(64, 3, activation = 'relu', padding = 'same')(merge7)
-  # (None, 64, 32, 64)
+  output = Conv2D(1, 1, activation = 'sigmoid')(add_seg2)
 
-  up8 = Conv2D(32, 2, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(conv7))
-  #(None, 128, 64, 32)
-  merge8 = concatenate([merg2, up8], axis = 3)
-  #(None, 128, 64, 64)
-  conv8 = Conv2D(32, 3, activation = 'relu', padding = 'same')(merge8)
-  #(None, 128, 64, 32)
-
-  up9 = Conv2D(16, 2, activation = 'relu', padding = 'same')(UpSampling2D(size = (2, 2))(conv8))
-  # (None, 256, 128, 16)
-  merge9 = concatenate([merg1, up9], axis = 3)
-  # (None, 256, 128, 32)
-  conv9 = Conv2D(32, 3, activation = 'relu', padding = 'same')(merge9)
-  # (None, 256, 128, 32)
-  
-  conv_on_7 = Conv2D(32, 2, activation = 'relu', padding = 'same')(conv7)
-  # (None, 64, 32, 32)
-  add1 = Add()([UpSampling2D(size = (2, 2))(conv_on_7),conv8])
-  # (None, 128, 64, 32)
-  add2 = Add()([UpSampling2D(size = (2, 2))(add1),conv9])
-  # (None, 256, 128, 32)
-
-  conv10 = Conv2D(1, 1, activation = 'softmax')(add2)
-  # (None, 256, 128, 1)
-
-  model = Model(inputs = inputs, outputs = conv10)
+  model = Model(inputs = inputs, outputs = output)
 
   return model
