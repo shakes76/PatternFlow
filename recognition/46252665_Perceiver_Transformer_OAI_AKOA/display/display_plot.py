@@ -1,9 +1,16 @@
+"""
+Plots random image and extracted patches from processed dataset
+
+@author: Pritish Roy
+@email: pritish.roy@uq.edu.au
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-
 from perceiver.extract_patches import Patches
 from perceiver.load_data import LoadDataset
+from perceiver.patch_encoder import PatchEncoder
 from settings.config import *
 
 
@@ -12,8 +19,8 @@ class PlotPatches:
     def __init__(self):
         self.data = LoadDataset()
 
-        self.image = self.data.x_train[np.random.choice(
-            range(self.data.x_train.shape[0]))]
+        self.image = self.data.x_test[np.random.choice(
+            range(self.data.x_test.shape[0]))]
 
     def plot_sample(self):
         """Plot sample image"""

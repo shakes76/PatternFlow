@@ -1,12 +1,21 @@
-import os
-import re
+"""
+Processes OAI AKOA Dataset:
+    * Creates Labels
+    * Augments Data
+    * Splits into Train, Test
+    * Saves as .npy files
+
+@author: Pritish Roy
+@email: pritish.roy@uq.edu.au
+"""
 
 import cv2
 import imgaug.augmenters as iaa
 import numpy as np
-from sklearn.model_selection import train_test_split
-
+import os
+import re
 from settings.config import *
+from sklearn.model_selection import train_test_split
 
 
 class ProcessDataset:
