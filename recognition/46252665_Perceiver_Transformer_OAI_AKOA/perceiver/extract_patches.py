@@ -1,3 +1,10 @@
+"""
+Extracts patches from input array
+
+@author: Pritish Roy
+@email: pritish.roy@uq.edu.au
+"""
+
 import tensorflow as tf
 
 from settings.config import *

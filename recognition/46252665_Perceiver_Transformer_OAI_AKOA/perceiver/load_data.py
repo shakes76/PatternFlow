@@ -1,3 +1,10 @@
+"""
+Load processed dataset
+
+@author: Pritish Roy
+@email: pritish.roy@uq.edu.au
+"""
+
 import numpy as np
 
 from settings.config import *
