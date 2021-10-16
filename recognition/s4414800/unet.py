@@ -10,7 +10,7 @@ Original file is located at
 from google.colab import drive
 drive.mount('/content/drive/')
 
-!pip install tensorflow_addons
+# !pip install tensorflow_addons
 
 import numpy as np
 import tensorflow as tf
@@ -54,6 +54,9 @@ test_data = test_data.shuffle(len(test_data))
 val_data = val_data.shuffle(len(val_data))
 
 def display_image(data,num):
+  """
+  Show the comparison between the input image and the mask image
+  """
   plt.figure(figsize=(10,3*num))
   i = 1
   for X,Y in data.take(num):
@@ -71,10 +74,14 @@ def display_image(data,num):
 display_image(train_data,5)
 
 def get_improved_unet(input_shape):
+   """
+   Generate the improved Unet
+   code reference: https://arxiv.org/pdf/1802.10508v1.pdf
+   """
   def context_module(input,size):
     """
     context module is pre-activation residual block with two
-      3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between.
+    3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between.
     """
     out = tfa.layers.InstanceNormalization()(input)
     out = Conv2D(size,3 , activation = LeakyReLU(alpha=0.01), padding = 'same')(out)
@@ -86,6 +93,9 @@ def get_improved_unet(input_shape):
     return out
   
   def segmentation_layer(layer):
+    """
+    Segmentation layter need to use sigmoid to output features.
+    """
     return tf.keras.layers.Conv2D(1, (1,1), activation = 'sigmoid')(layer)
   
   inputs = Input(input_shape)
@@ -94,12 +104,10 @@ def get_improved_unet(input_shape):
   conv1_2 = context_module(conv1_1,16)
   add1 = Add()([conv1_1,conv1_2])
   
-  # pool1 = MaxPooling2D(pool_size = (2, 2))(merg1)
-  
   conv2_1 = Conv2D(32, 3, activation = LeakyReLU(alpha=0.01), padding = 'same', strides = 2)(add1)
   conv2_2 = context_module(conv2_1,32)
   add2 = Add()([conv2_1,conv2_2])
-  # (None, 128, 96, 32)
+  # input shape : (None, 128, 96, 32)
 
   conv3_1 = Conv2D(64, 3, activation = LeakyReLU(alpha=0.01), padding = 'same', strides = 2)(add2)
   conv3_2 = context_module(conv3_1,64)
@@ -112,7 +120,7 @@ def get_improved_unet(input_shape):
   conv5_1 = Conv2D(256, 3, activation = LeakyReLU(alpha=0.01), padding = 'same', strides = 2)(add4)
   conv5_2 = context_module(conv5_1,256)
   add5 = Add()([conv5_1,conv5_2])
-  # (None, 16, 12, 256)
+  # input shape : (None, 16, 12, 256)
 
   up1 = Conv2D(128, 2, activation = LeakyReLU(alpha=0.01), padding = 'same')(UpSampling2D(size = (2, 2))(add5))
   
@@ -133,7 +141,8 @@ def get_improved_unet(input_shape):
   up4 = Conv2D(16, 3, activation = LeakyReLU(alpha=0.01), padding = 'same')(UpSampling2D(size = (2, 2))(up_conv3))
   merge4 = concatenate([add1, up4])
   up_conv4 = tf.keras.layers.Conv2D(16, 3, activation = LeakyReLU(alpha=0.01), padding ='same')(merge4)
-
+    
+  # Add layers after segmentation layer
   seg1 = segmentation_layer(up_conv2)
   seg2 = segmentation_layer(up_conv3)
   
@@ -143,6 +152,7 @@ def get_improved_unet(input_shape):
   add_seg2 = Add()([UpSampling2D(size = (2, 2))(add_seg1),seg4])
 
   output = Conv2D(1, 1, activation = 'sigmoid')(add_seg2)
+  # input shape: (None, 258, 192, 1)
 
   model = Model(inputs = inputs, outputs = output)
 
@@ -165,8 +175,8 @@ def dice_coef(y_true, y_pred, smooth=0):
   intersection = K.sum(y_true_f * y_pred_f)
   return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
-# model.compile(optimizer = 'adam', loss=tf.keras.losses.CategoricalCrossentropy(), metrics = [dice_coef])
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = [dice_coef])
+# dice_coef_loss function
 # model.compile(optimizer = 'adam', loss = dice_coef_loss, metrics = ["accuracy",dice_coef])
 history = model.fit(train_data.batch(10), epochs = 40, validation_data = val_data.batch(10))
 
