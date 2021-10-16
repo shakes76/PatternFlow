@@ -23,10 +23,19 @@ from tensorflow.keras.layers import Input, Add, Dense, Flatten, Reshape, LeakyRe
 import numpy as np
 
 
-inputs = Input(shape=(9))
-reshape1 = Reshape(target_shape=(3,3))(inputs)
+class StandardDeviation(tf.keras.layers.Layer):
+    def __init__(self):
+        super(StandardDeviation, self).__init__()
 
-model = Model(inputs=inputs, outputs=reshape1)
+    def call(self, inputs, *args, **kwargs):
+        std = tf.math.reduce_std(inputs)
+        return tf.math.multiply(std, inputs)
 
-ones = np.ones(shape=(1, 9))
-res = model(ones, training=False)
+
+array = np.random.random(size=(5, 5))
+print(array.shape)
+
+layer = StandardDeviation()
+res = layer(array)
+
+print(res)
