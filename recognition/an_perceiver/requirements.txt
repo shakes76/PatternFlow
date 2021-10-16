@@ -35,11 +35,13 @@ tensorboard==2.6.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.0
 tensorflow==2.6.0
+tensorflow-addons==0.14.0
 tensorflow-datasets==4.4.0
 tensorflow-estimator==2.6.0
 tensorflow-metadata==1.2.0
 termcolor==1.1.0
 tqdm==4.62.3
+typeguard==2.13.0
 typing-extensions==3.7.4.3
 urllib3==1.26.7
 Werkzeug==2.0.2
