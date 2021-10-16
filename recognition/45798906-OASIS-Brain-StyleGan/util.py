@@ -21,7 +21,7 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
-# Loader
+# Data
 def load_images(
     directories: list[str],
     batch_size: int,
@@ -47,6 +47,19 @@ def load_images(
     images = images.map(lambda x: x / 255.0)
 
     return images
+
+
+def augment_images(images: tf.data.Dataset) -> tf.data.Dataset:
+
+    return (
+        images.cache()
+        .map(
+            lambda image: tf.image.random_flip_up_down(image),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+        .shuffle(images.cardinality())
+        .repeat(2)
+    )
 
 
 # Visualisation
