@@ -44,7 +44,9 @@ def load_images(
         )
 
     # Normalise the images
-    images = images.map(lambda x: x / 255.0)
+    images = images.map(
+        lambda x: x / 255.0, num_parallel_calls=tf.data.AUTOTUNE
+    )
 
     return images
 
