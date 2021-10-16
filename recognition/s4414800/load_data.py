@@ -1,3 +1,11 @@
+"""
+Loading the data locally, generate numpy file so that data 
+can be easily used by other high-performance compilers.
+
+@author Yin Peng
+@email yin.peng@uqconnect.edu.au
+"""
+
 import cv2
 import glob
 import numpy as np
