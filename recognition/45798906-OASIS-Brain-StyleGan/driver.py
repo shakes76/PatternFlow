@@ -30,7 +30,7 @@ os.environ[
     "TF_CPP_MIN_LOG_LEVEL"
 ] = "1"  # Must be done before TensorFlow import
 
-from util import load_images, visualise_images, visualise_loss
+from util import load_images, augment_images, visualise_images, visualise_loss
 from gan import (
     get_generator,
     get_discriminator,
@@ -98,13 +98,14 @@ def main():
 
     # Train
     if TRAIN:
-        dataset = load_images(IMAGE_PATHS, BATCH_SIZE, IMAGE_SIZE)
+        images = load_images(IMAGE_PATHS, BATCH_SIZE, IMAGE_SIZE)
+        images = augment_images(images)
         history = train(
             generator,
             discriminator,
             gen_optimizer,
             disc_optimizer,
-            dataset,
+            images,
             LATENT_DIMENSION,
             BATCH_SIZE,
             IMAGE_SIZE,
