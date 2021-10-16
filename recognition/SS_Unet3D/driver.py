@@ -4,11 +4,13 @@ import os
 import nibabel as nib
 import numpy as np
 import pandas as pd
+import datetime
 
 from model import UNetCSIROMalePelvic
 
 from pyimgaug3d.augmentation import GridWarp, Flip
 from pyimgaug3d.augmenters import ImageSegmentationAugmenter
+
 
 # Credit: Taken from demo.py in pyimgaug3d
 def save_as_nifti(data, folder, name, affine=np.eye(4)):
@@ -18,12 +20,16 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
     nib.save(img, os.path.join(folder, name))
     pass
 
+
 # Standardizes the NP array (0 Mean & Unit Variance)
 def standardize(given_np_arr):
     return (given_np_arr - given_np_arr.mean()) / given_np_arr.std()
 
+
 # Pre-process and Augment the CSIRO 3D Male Pelvic dataset
 # Original data is expected in two sub-folders, but is outputted to a single directory
+# Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
+# alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
                             verbose=False):
     aug_count = 3
@@ -104,6 +110,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
             pass
     pass
 
+
 def read_and_split_data(processed_data_dir, split_perc_arr, split_names_arr, verbose=False):
     x_files = np.array(fnmatch.filter(sorted(os.listdir(processed_data_dir)), '*.nii.gz'))
     x_files = x_files[np.array([not fnmatch.fnmatch(filename, '*SEMANTIC*') for filename in x_files])]
@@ -143,7 +150,7 @@ def read_and_split_data(processed_data_dir, split_perc_arr, split_names_arr, ver
     actual_splits = np.empty(num_unique_cases, dtype='<U11')
     i = 0
     for idx, curr_split_count in enumerate(split_counts):
-        actual_splits[i: i + curr_split_count] = split_names_arr[idx]
+        actual_splits[i: i + curr_split_count] = str(split_names_arr[idx])
         i += curr_split_count
         pass
 
@@ -159,9 +166,6 @@ def read_and_split_data(processed_data_dir, split_perc_arr, split_names_arr, ver
     data_files = pd.merge(data_files, unique_cases, how='inner', left_on='case_num', right_on='case_num')
 
     return data_files
-
-
-
 
 
 def main():
@@ -204,10 +208,22 @@ def main():
     curr_x = nib.load(sample.x_filepath.item()).get_fdata()
     curr_y = nib.load(sample.y_filepath.item()).get_fdata()
 
+    print("Start Training at {}".format(datetime.datetime.now()))
+    # Add a dimension at the start for Batch Size of 1
+    curr_x = curr_x[None, ...]
+    curr_y = curr_y[None, ...]
+
     print(curr_x.shape)
     print(curr_y.shape)
 
-    the_model.mdl.train_on_batch(x=curr_x, y=curr_y)
+    #print(curr_y)
+
+    result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y)
+    the_model.train_batch_count += 1
+    print("Finish Training at {}".format(datetime.datetime.now()))
+
+    print('result of training:')
+    print(result)
 
     pass
 
