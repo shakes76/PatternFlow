@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import scipy.sparse as sp
+import torch.optim as optim
 
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
@@ -45,6 +46,7 @@ class Facebook_Node_Classifier():
         
         self.data_process(facebook_file)
         self.create_adj()
+        self.model = GCNModel(self.n_class, self.n_features)
         
     def data_process(self, facebook_file: str):
         data = np.load(facebook_file)
@@ -55,7 +57,7 @@ class Facebook_Node_Classifier():
 
         self.n_edges = edges.shape[0]
         self.n_features = features.shape[1]
-        self.n_target = target.shape[0]
+        self.n_node = target.shape[0]
         self.n_class = len(np.unique(target))
 
         self.node_features = torch.FloatTensor(features)
@@ -82,7 +84,29 @@ class Facebook_Node_Classifier():
 
         self.adj = torch.FloatTensor(adj_m)
 
-    
+    def get_acc(self, output:torch.FloatTensor):
+        prediction = output.argmax(1)
+        correct = output == self.target
+        
+        return sum(correct)/len(self.n_node)
+        
+
+    def train_modle(self, n_epoch=30, lr=0.01):
+        optimizer = optim.Adam(self.model.parameters(), lr=lr)
+
+        for epoch in range(n_epoch):
+            self.model.train()
+            optimizer.zero_grad()
+            
+            output = self.model(self.node_features, self.adj)
+            prediction_prob = output[self.target]
+            loss = -torch.mean(torch.log(prediction_prob))
+
+            loss.backward()
+            optimizer.step()
+
+            print("Epoch: " + str(epoch) + " Loss: " + str(loss))
+
 
 
 if __name__ == "__main__":
@@ -91,6 +115,6 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    print(classifer.adj.type())
+    #classifer.train_modle()
 
     
