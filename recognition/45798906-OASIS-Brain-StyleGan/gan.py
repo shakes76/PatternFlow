@@ -8,7 +8,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 15/10/2021
+    Date last modified: 17/10/2021
     Python version: 3.9.7
 """
 
@@ -209,8 +209,6 @@ def get_discriminator(
         x = disc_block(x, num_filters // (curr_size // 8))
         curr_size //= 2
     x = Flatten()(x)
-    x = Dense(512)(x)
-    x = LeakyReLU(0.2)(x)
     x = Dropout(0.5)(x)
     x = Dense(1)(x)
     x = Activation("sigmoid")(x)
