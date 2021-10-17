@@ -25,16 +25,18 @@ class GCNLayer(Module):
         return output
 
 class GCNModel(nn.Module):
-    def __init__(self, n_class, n_in_features, drop_p:0.5):
+    def __init__(self, n_class, n_in_features, drop_p=0.5):
         super(GCNModel, self).__init__()
 
         self.gcn1 = GCNLayer(n_in_features, 64)
         self.gcn2 = GCNLayer(64, 32)
         self.ffn = nn.Linear(32, n_class)
+        self.drop_p = drop_p
 
     def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor):
         x1 = F.relu(self.gcn1(input, adj))
-        x2 = F.relu(self.gcn2(x1, adj))
+        x1_drop = F.dropout(x1, self.drop_p, training=self.training)
+        x2 = F.relu(self.gcn2(x1_drop, adj))
         x3 = self.ffn(x2)
         
         log_softmax = nn.LogSoftmax(dim=1)
@@ -118,6 +120,6 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    classifer.train_modle(n_epoch=100)
+    classifer.train_modle(n_epoch=200)
 
     
