@@ -62,8 +62,10 @@ def main(debugging=False):
                             ground_truth=True, truncate=debugging)
     
     # Print out some useful information
-    print(f"Input images shape: {input_images.shape}")
-    print(f"Ground truth images shape: {gt_images.shape}")
+    print(f"Total input images: {input_images.shape}")
+    print(f"Total ground truth images: {gt_images.shape}")
+    print(f"Input image shape: {input_images[0].shape}")
+    print(f"Ground truth image shape: {gt_images[0].shape}")
     # Show example of image and it's segmentation
     plt.imshow(input_images[0][:, :])
     plt.figure()
