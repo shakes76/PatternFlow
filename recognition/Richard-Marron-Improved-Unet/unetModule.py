@@ -11,10 +11,29 @@ import tensorflow as tf
 class ImprovedUNet():
     """Implements the Improved U-Net Model"""
     def __init__(self, learning_rate=1e-4, 
-                 optimiser=tf.keras.optimizers.Adam(1e-4), loss="CategoricalCrossentropy",
-                 metrics=["dice_coefficient"]):
+                 optimiser=tf.keras.optimizers.Adam(1e-4), loss="CategoricalCrossentropy"):
         self.learning_rate = learning_rate
         self.optimizer = optimiser
-        self.metrics = metrics
+        self.metric = self.dice_function
     
+    def model(self):
+        """Create the Improved U-Net Model"""
+        pass
+    
+    def dice_function(self, y_true, y_pred):
+        """
+        Calculate the dice coefficient
+            Params:
+                y_true : The true values to compare
+                y_pred : The predicted values to compare
+            
+            Return : Dice coefficient of the images
+        """
+        # Convert the milti-dim. tensors into vectors
+        y_true = tf.keras.flatten(y_true)
+        y_pred = tf.keras.flatten(y_pred)
+        
+        # Calculate the dice coefficient over binary vectors
+        return 2*tf.keras.sum(y_true*y_pred)/(tf.keras.sum(tf.keras.square(y_true)) + tf.keras.sum(tf.keras.square(y_pred)))
+        
     
