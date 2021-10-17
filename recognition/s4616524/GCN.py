@@ -9,13 +9,35 @@ import scipy.sparse as sp
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
+class GCNLayer(Module):
+    def __init__(self, n_in_features, n_out_features):
+        super(GCNLayer, self).__init__()
+        self.n_in_features = n_in_features
+        self.n_out_features = n_out_features
+        self.weights = Parameter(torch.FloatTensor(n_in_features, n_out_features))
+
+    def forward(self, input, adj):
+        linear = torch.mm(input, self.weights) #WX
+        output =  torch.mm(adj, linear) #D^-1*A*WX
+
+        return output
+
 class GCNModel(nn.Module):
     def __init__(self, n_class, n_in_features):
         super(GCNModel, self).__init__()
 
+        self.gcn1 = GCNLayer(n_in_features, 64)
+        self.gcn2 = GCNLayer(64, 32)
+        self.ffn = nn.Linear(32, n_class)
 
     def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor):
-        input.dot(adj)
+        x1 = F.relu(self.gcn1(input, adj))
+        x2 = F.relu(self.gcn2(x1, adj))
+        x3 = self.ffn(x2)
+        
+        result = F.softmax(x3, dim=1)
+
+        return result
         
 
 class Facebook_Node_Classifier():
