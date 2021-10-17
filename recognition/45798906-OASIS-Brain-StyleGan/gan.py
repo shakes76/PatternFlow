@@ -20,6 +20,8 @@ from tensorflow.keras.layers import (
     Conv2D,
     Cropping2D,
     Dense,
+    Dropout,
+    Flatten,
     Input,
     Lambda,
     Layer,
@@ -206,6 +208,12 @@ def get_discriminator(
     while curr_size > 4:
         x = disc_block(x, num_filters // (curr_size // 8))
         curr_size //= 2
+    x = Flatten()(x)
+    x = Dense(512)(x)
+    x = LeakyReLU(0.2)(x)
+    x = Dropout(0.5)(x)
+    x = Dense(1)(x)
+    x = Activation("sigmoid")(x)
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
     discriminator.compile(optimizer=optimizer, loss=loss)
