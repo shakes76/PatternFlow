@@ -42,7 +42,15 @@ class Facebook_Node_Classifier():
         #check adj is semetric or not
         assert sum(sum(adj_t != adj_t.T)) == 0, 'Adjacency matrix is not symetric'
 
-        self.adj = adj_t
+        #normalise 
+        rowsum = np.array(adj_t.sum(1))
+        inv = np.ma.power(rowsum, -1) #creaet D^-1
+        inv[inv == np.inf] = 0.#if 0 is inv 
+        D_inv = sp.diags(inv)
+        adj_m = D_inv.dot(adj_t) #D^-1*A
+
+        self.adj = torch.FloatTensor(adj_m)
+
 
 if __name__ == "__main__":
     
@@ -50,6 +58,6 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    print(torch.unique(classifer.adj.unique()))
+    print(classifer.adj.type())
 
     
