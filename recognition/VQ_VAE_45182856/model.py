@@ -72,7 +72,7 @@ def createResidualBlock(inputs, n_latent_channels, n_last_channels, latent_kerne
     return x
 
 class VQ_VAE(tfk.Model):
-    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, train_variance, **kwargs):
+    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, **kwargs):
         super(VQ_VAE, self).__init__(**kwargs)
         self.img_h = img_h # Height of an input image
         self.img_w = img_w # Width of an input image
@@ -80,7 +80,6 @@ class VQ_VAE(tfk.Model):
         self.embedding_dim = embedding_dim
         self.n_embeddings = n_embeddings
         self.n_encoded_features = n_encoded_features # Number of features/channels for the pernultimate layer of the encoder
-        self.train_variance = train_variance
         self.encoder, encoder_h, encoder_w = self.create_encoder()
         self.decoder = self.create_decoder(encoder_h, encoder_w)
         self.quantizer = VectorQuantizer(self.n_embeddings, self.embedding_dim, 0.25)
@@ -156,9 +155,9 @@ class VQ_VAE(tfk.Model):
             encoded_imgs = self.encoder(imgs)
             quantized_imgs = self.quantizer(encoded_imgs)
             reconstructed_imgs = self.decoder(quantized_imgs)
-            # Calculate the reconstruction loss using Normalized RMSE
+            # Calculate the reconstruction loss using MSE
             recon_loss = tf.reduce_mean(
-                ((imgs - reconstructed_imgs) ** 2) / self.train_variance
+                ((imgs - reconstructed_imgs) ** 2)
             )
             # VQ loss = code book loss + commitment loss
             vq_loss = sum(self.quantizer.losses)
