@@ -25,7 +25,7 @@ class GCNLayer(Module):
         return output
 
 class GCNModel(nn.Module):
-    def __init__(self, n_class, n_in_features):
+    def __init__(self, n_class, n_in_features, drop_p:0.5):
         super(GCNModel, self).__init__()
 
         self.gcn1 = GCNLayer(n_in_features, 64)
@@ -86,9 +86,9 @@ class Facebook_Node_Classifier():
 
     def get_acc(self, output:torch.FloatTensor):
         prediction = output.argmax(1)
-        correct = output == self.target
+        correct = prediction == self.target
         
-        return sum(correct)/len(self.n_node)
+        return sum(correct)/self.n_node
         
 
     def train_modle(self, n_epoch=30, lr=0.01):
@@ -99,14 +99,16 @@ class Facebook_Node_Classifier():
             optimizer.zero_grad()
             
             output = self.model(self.node_features, self.adj)
-            prediction_prob = output[self.target]
+            #Compute loss
             loss = nn.NLLLoss()
             loss_out = loss(output, self.target)
-
+            #Back Propregation
             loss_out.backward()
             optimizer.step()
 
-            print("Epoch: " + str(epoch) + " Loss: " + str(loss_out))
+            acc = self.get_acc(output)
+
+            print("Epoch: " + str(epoch) +" Accuracy: " + str(acc) + " Loss: " + str(loss_out))
 
 
 
@@ -116,6 +118,6 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    classifer.train_modle()
+    classifer.train_modle(n_epoch=100)
 
     
