@@ -38,12 +38,14 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
     else:
         # Images have JPG format
         path += f"*.jpg"
-        
+    
+    print("Loading image paths...")
     img_paths = glob.glob(path)
     if truncate:
         # Only take the first 1/3 of the images
         img_paths = img_paths[:len(img_paths)//3]
-        
+    print("Successfully loaded paths!") 
+    print("Converting images into numpy arrays...")
     # Read in images from path and return numpy array
     return np.array([plt.imread(path).astype(np.float32) for path in img_paths], dtype=object)
 
