@@ -1,4 +1,4 @@
-from model import VectorQuantizer, ResidualBlock
+from model import VectorQuantizer, createResidualBlock
 import tensorflow as tf
 
 # Fix memory growth issue encountered when using tensorflow
@@ -9,8 +9,7 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 print('Test if the resetnet block is executable and produces the correct output shape')
 var = tf.random.uniform(shape=[10, 28, 28, 1])
 var_shape = tf.shape(var)
-resblock = ResidualBlock(var_shape, n_latent_channels=8, n_last_channels=1, latent_kernel_size=3)
-var_output = resblock(var)
+var_output = createResidualBlock(var, n_latent_channels=8, n_last_channels=1, latent_kernel_size=3)
 print(var_shape == tf.shape(var_output))
 
 
