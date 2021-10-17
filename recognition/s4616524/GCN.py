@@ -1,5 +1,6 @@
 import math
 import torch
+
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
@@ -8,6 +9,14 @@ import scipy.sparse as sp
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
+class GCNModel(nn.Module):
+    def __init__(self, n_class, n_in_features):
+        super(GCNModel, self).__init__()
+
+
+    def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor):
+        input.dot(adj)
+        
 
 class Facebook_Node_Classifier():
     def __init__(self, facebook_file: str):
@@ -50,6 +59,8 @@ class Facebook_Node_Classifier():
         adj_m = D_inv.dot(adj_t) #D^-1*A
 
         self.adj = torch.FloatTensor(adj_m)
+
+    
 
 
 if __name__ == "__main__":
