@@ -1,5 +1,11 @@
+"""
+Perceiver Transformer configuration
 
-################################## DATASET CONFIG ##############################
+@author: Pritish Roy
+@email: pritish.roy@uq.edu.au
+"""
+
+############################ DATASET CONFIG ####################################
 
 PATH = './data/AKOA_Analysis/'
 DATASET_PATH = './data/processed/'
@@ -34,11 +40,31 @@ BLUR_AUG = 0.5
 
 ################################################################################
 
-########################## TRANSFORMER HYPERPARAMETERS #########################
+######################### TRANSFORMER HYPERPARAMETERS ##########################
 
-
-PATCH_SIZE = 8
+PADDING = 'VALID'
+CLASSES = 2
+LEARNING_RATE = 0.0005
+MOMENTUM = 0.9
+BATCH_SIZE = 32
+EPOCHS = 100
+DROPOUT = 0.25
+PATCH_SIZE = 40
 PATCHES = (IMAGE_SIZES // PATCH_SIZE) ** 2
+LATENT_DIMENSION = 256
+PROJECTION_DIMENSION = 256
+TRANSFORMER_HEADS = 8
+FEED_FORWARD_NETWORK_UNITS = [PROJECTION_DIMENSION, PROJECTION_DIMENSION]
+TRANSFORMER_BLOCKS = 4
+ITERATIONS = 2
 
+EPSILON = 1e-6
+MONITOR = 'val_loss'
+PATIENCE = 10
+VALIDATION_SPLIT = 0.2
+
+GRAPHS_PLOT = ['loss', 'accuracy']
+LEGEND = ['Train', 'Validation']
+PLOT_Y_LABEL = 'epoch'
 
 ################################################################################
