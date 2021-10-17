@@ -90,8 +90,8 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
             curr_x_aug = np.array(curr_x_aug, dtype=np.float32)
             curr_y_aug = np.array(curr_y_aug, dtype=np.float32)
             # Round to 0 decimals to match original data
-            # curr_x_aug = np.round(curr_x_aug, decimals=0)
-            # curr_y_aug = np.round(curr_y_aug, decimals=0)
+            curr_x_aug = np.round(curr_x_aug, decimals=0)
+            curr_y_aug = np.round(curr_y_aug, decimals=0)
             # Save augmented X and Y
             save_as_nifti(curr_x_aug, output_data_dirpath, save_name_x)
             save_as_nifti(curr_y_aug, output_data_dirpath, save_name_y)
