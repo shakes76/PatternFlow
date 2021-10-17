@@ -57,19 +57,18 @@ class VectorQuantizer(tfk.layers.Layer):
 def createResidualBlock(inputs, n_latent_channels, n_last_channels, latent_kernel_size):
     '''
         This function defines a residual block, which contains the following layers in order:
-        1. Apply LeakyReLU to the input
-        2. A convolutional layer with kernel size = latent_kernel_size, and the output channel is n_latent_channels
-        3. Apply Batch Normalization then LeakyReLU
-        4. Another convolutional layer with kernel size = 1, and the output channel is n_last_channels
-        5. Add the original input to the output produced in the 4th step
+        1. A convolutional layer with kernel size = latent_kernel_size, and the output channel is n_latent_channels
+        2. Apply Batch Normalization then LeakyReLU
+        3. Another convolutional layer with kernel size = 1, and the output channel is n_last_channels
+        4. Add the original input to the output produced in the 3rd step and then apply LeakyReLU
         Note that the shape of the output will be as same as the shape of the input
     '''
-    x = tf.nn.leaky_relu(inputs)
-    x = tfk.layers.Conv2D(filters=n_latent_channels, kernel_size=latent_kernel_size, padding='same')(x)
+    x = tfk.layers.Conv2D(filters=n_latent_channels, kernel_size=latent_kernel_size, padding='same')(inputs)
     x = tfk.layers.BatchNormalization()(x)
     x = tf.nn.leaky_relu(x)
     x = tfk.layers.Conv2D(filters=n_last_channels, kernel_size=1)(x)
     x = tfk.layers.add([inputs, x])
+    x =  tf.nn.leaky_relu(x)
     return x
 
 class VQ_VAE(tfk.Model):
@@ -81,10 +80,13 @@ class VQ_VAE(tfk.Model):
         self.embedding_dim = embedding_dim
         self.n_embeddings = n_embeddings
         self.n_encoded_features = n_encoded_features # Number of features/channels for the pernultimate layer of the encoder
-        self.encoder = self.create_encoder()
-        self.decoder = self.create_decoder()
+        self.encoder, encoder_h, encoder_w = self.create_encoder()
+        self.decoder = self.create_decoder(encoder_h, encoder_w)
     
     def create_encoder(self):
+        '''
+            This function creates the encoder part of the VQ-VAE and returns the encoder as well as the height and the width of an encoded image
+        '''
         inputs = tfk.Input(shape=(self.img_h, self.img_w, self.img_c), name='encoder_input')
         ## First CNN block
         x = tfk.layers.Conv2D(filters=32, kernel_size=4, strides=2, padding='same')(inputs)
@@ -98,9 +100,33 @@ class VQ_VAE(tfk.Model):
         x =  createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
         ## Second Residual block
         x =  createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
-        print(tfk.backend.int_shape(x))
+        # Extract the height and the width of an encoded image
+        encoder_shape = tfk.backend.int_shape(x)
+        encoder_h, encoder_w = encoder_shape[1], encoder_shape[2]
+        # Create model
         encoder = tfk.Model(inputs, x, name='encoder')
-        return encoder
-    def create_decoder(self):
-        #inputs = tfk.Input(shape=())
-        return
+        return encoder, encoder_h, encoder_w
+
+    def create_decoder(self, encoder_h, encoder_w):
+        '''
+            This function creates the decoder part of the VQ-VAE and returns the decoder, where the input shape of the decoder
+            corresponds to the height, the width, and the number of channels == embedding size of an encoded image
+        '''
+        inputs = tfk.Input(shape=(encoder_h, encoder_w, self.embedding_dim))
+        ## First Residual block
+        x = createResidualBlock(inputs, self.n_encoded_features, self.n_embeddings, 3)
+        ## Second Residual block
+        x = createResidualBlock(x, self.n_encoded_features, self.n_embeddings, 3)
+        ## First Transpose CNN block
+        x = tfk.layers.Conv2DTranpose(filters=64, kernel_size=4, strides=2, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.leaky_relu(x)
+        ## Second Transpose CNN block
+        x=  tfk.layers.Conv2DTranpose(filters=32, kernel_size=4, strides=2, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.leaky_relu(x)
+        ## Output layer
+        outputs = tfk.layers.Conv2DTranpose(filters=self.img_c, kernel_size=3, strides=2, padding='same', name='output_decoder')(x)
+        decoder = tfk.Model(inputs, outputs, name='decoder')
+        return decoder
+    
