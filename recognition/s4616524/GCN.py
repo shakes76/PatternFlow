@@ -1,5 +1,6 @@
 import math
 import torch
+from torch._C import dtype
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +16,7 @@ class GCNLayer(Module):
         super(GCNLayer, self).__init__()
         self.n_in_features = n_in_features
         self.n_out_features = n_out_features
-        self.weights = Parameter(torch.FloatTensor(n_in_features, n_out_features))
+        self.weights = Parameter(torch.ones([n_in_features, n_out_features], dtype=torch.float32))
 
     def forward(self, input, adj):
         linear = torch.mm(input, self.weights) #WX
@@ -36,10 +37,9 @@ class GCNModel(nn.Module):
         x2 = F.relu(self.gcn2(x1, adj))
         x3 = self.ffn(x2)
         
-        result = F.softmax(x3, dim=1)
+        log_softmax = nn.LogSoftmax(dim=1)
 
-        return result
-        
+        return log_softmax(x3)
 
 class Facebook_Node_Classifier():
     def __init__(self, facebook_file: str):
@@ -100,12 +100,13 @@ class Facebook_Node_Classifier():
             
             output = self.model(self.node_features, self.adj)
             prediction_prob = output[self.target]
-            loss = -torch.mean(torch.log(prediction_prob))
+            loss = nn.NLLLoss()
+            loss_out = loss(output, self.target)
 
-            loss.backward()
+            loss_out.backward()
             optimizer.step()
 
-            print("Epoch: " + str(epoch) + " Loss: " + str(loss))
+            print("Epoch: " + str(epoch) + " Loss: " + str(loss_out))
 
 
 
@@ -115,6 +116,6 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    #classifer.train_modle()
+    classifer.train_modle()
 
     
