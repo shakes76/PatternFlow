@@ -16,19 +16,13 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
     pass
 
 
-# Standardizes the NP array (0 Mean & Unit Variance)
-def standardize(given_np_arr):
-    return (given_np_arr - given_np_arr.mean()) / given_np_arr.std()
-
-
 # Pre-process and Augment the CSIRO 3D Male Pelvic dataset
 # Original data is expected in two sub-folders, but is outputted to a single directory
 # Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
 # alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
                             verbose=False):
-    aug_count = 3
-    flip_augs = [0]
+    aug_count = 1
 
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
     orig_data_y_dirpath = orig_data_dirpath + '/' + orig_data_y_subdirname
@@ -74,27 +68,27 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
         for aug_num in range(aug_count):
             # Create augmenter
             aug = ImageSegmentationAugmenter()
-            if aug_num in flip_augs:
-                # Apply a flip on the specified Axis
+            aug_type_str = ''
+            aug_type_int = np.random.randint(0,3)  # 0 = Flip, 1 = Warp, 2 = Both
+            # Pick the augmentation type(s) randomly via a coin toss
+            if aug_type_int in (0, 2):
+                # Apply a flip
                 aug.add_augmentation(Flip(aug_num + 1))
-                aug_type = 'FLIP'
-            else:
+                aug_type_str = aug_type_str + 'FLIP'
+            if aug_type_int in (1, 2):
                 # Apply a warp
                 aug.add_augmentation(GridWarp())
-                aug_type = 'WARP'
-            # Filename manipulation
+                aug_type_str = aug_type_str + 'WARP'
+        # Filename manipulation
             save_name_x = datum[0].replace('_LFOV.nii.gz', '') \
-                          + '_AUG_{}_{}'.format(aug_num + 1, aug_type) + '_LFOV.nii.gz'
+                          + '_AUG_{}_{}'.format(aug_num + 1, aug_type_str) + '_LFOV.nii.gz'
             save_name_y = datum[1].replace('_SEMANTIC_LFOV.nii.gz', '') \
-                          + '_AUG_{}_{}'.format(aug_num + 1, aug_type) + '_SEMANTIC_LFOV.nii.gz'
+                          + '_AUG_{}_{}'.format(aug_num + 1, aug_type_str) + '_SEMANTIC_LFOV.nii.gz'
             # Augmentation is applied to X and Y simultaneously to ensure sync
             curr_x_aug, curr_y_aug = aug([curr_x, curr_y])
             # Convert to Numpy Float32 Arrays
             curr_x_aug = np.array(curr_x_aug, dtype=np.float32)
             curr_y_aug = np.array(curr_y_aug, dtype=np.float32)
-            # Standardize
-            curr_x_aug = standardize(curr_x_aug)
-            curr_y_aug = standardize(curr_y_aug)
             # Round to 0 decimals to match original data
             # curr_x_aug = np.round(curr_x_aug, decimals=0)
             # curr_y_aug = np.round(curr_y_aug, decimals=0)

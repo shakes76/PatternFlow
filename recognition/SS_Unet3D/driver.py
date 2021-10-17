@@ -8,6 +8,11 @@ import datetime
 from model import UNetCSIROMalePelvic
 
 
+# Standardizes the NP array (0 Mean & Unit Variance)
+def standardize(given_np_arr):
+    return (given_np_arr - given_np_arr.mean()) / given_np_arr.std()
+
+
 def read_and_split_data(processed_data_dir, split_perc_arr, split_names_arr, verbose=False):
     x_files = np.array(fnmatch.filter(sorted(os.listdir(processed_data_dir)), '*.nii.gz'))
     x_files = x_files[np.array([not fnmatch.fnmatch(filename, '*SEMANTIC*') for filename in x_files])]
@@ -94,6 +99,10 @@ def main():
     # Load it into memory
     curr_x = nib.load(sample.x_filepath.item()).get_fdata()
     curr_y = nib.load(sample.y_filepath.item()).get_fdata()
+
+    # Standardize
+    curr_x = standardize(curr_x)
+    curr_y = standardize(curr_y)
 
     print("Start Training at {}".format(datetime.datetime.now()))
     # Add a dimension at the start for Batch Size of 1
