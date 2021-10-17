@@ -72,7 +72,7 @@ def createResidualBlock(inputs, n_latent_channels, n_last_channels, latent_kerne
     return x
 
 class VQ_VAE(tfk.Model):
-    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, **kwargs):
+    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, train_variance, **kwargs):
         super(VQ_VAE, self).__init__(**kwargs)
         self.img_h = img_h # Height of an input image
         self.img_w = img_w # Width of an input image
@@ -80,9 +80,14 @@ class VQ_VAE(tfk.Model):
         self.embedding_dim = embedding_dim
         self.n_embeddings = n_embeddings
         self.n_encoded_features = n_encoded_features # Number of features/channels for the pernultimate layer of the encoder
+        self.train_variance = train_variance
         self.encoder, encoder_h, encoder_w = self.create_encoder()
         self.decoder = self.create_decoder(encoder_h, encoder_w)
-    
+        self.quantizer = VectorQuantizer(self.n_embeddings, self.embedding_dim, 0.25)
+        self.total_loss_tracker = tfk.metrics.Mean(name='total_loss')
+        self.vq_loss_tracker = tfk.metrics.Mean(name='vq_loss')
+        self.recon_loss_tracker = tfk.metrics.Mean(name='recon_loss')
+
     def create_encoder(self):
         '''
             This function creates the encoder part of the VQ-VAE and returns the encoder as well as the height and the width of an encoded image
@@ -94,6 +99,10 @@ class VQ_VAE(tfk.Model):
         x = tf.nn.leaky_relu(x)
         ## Second CNN block
         x = tfk.layers.Conv2D(filters=64, kernel_size=4, strides=2, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.leaky_relu(x)
+        ## Third CNN block
+        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.leaky_relu(x)
         ## First Residual block
@@ -114,19 +123,56 @@ class VQ_VAE(tfk.Model):
         '''
         inputs = tfk.Input(shape=(encoder_h, encoder_w, self.embedding_dim))
         ## First Residual block
-        x = createResidualBlock(inputs, self.n_encoded_features, self.n_embeddings, 3)
+        x = createResidualBlock(inputs, self.n_encoded_features, self.embedding_dim, 3)
         ## Second Residual block
-        x = createResidualBlock(x, self.n_encoded_features, self.n_embeddings, 3)
-        ## First Transpose CNN block
-        x = tfk.layers.Conv2DTranpose(filters=64, kernel_size=4, strides=2, padding='same')(x)
+        x = createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
+        ## First CNN block
+        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.leaky_relu(x)
-        ## Second Transpose CNN block
-        x=  tfk.layers.Conv2DTranpose(filters=32, kernel_size=4, strides=2, padding='same')(x)
+        ## Second CNN block
+        x=  tfk.layers.Conv2D(filters=64, kernel_size=4, strides=1, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.leaky_relu(x)
+        ## Third Transpose CNN block
+        x=  tfk.layers.Conv2DTranspose(filters=32, kernel_size=4, strides=2, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.leaky_relu(x)
         ## Output layer
-        outputs = tfk.layers.Conv2DTranpose(filters=self.img_c, kernel_size=3, strides=2, padding='same', name='output_decoder')(x)
+        outputs = tfk.layers.Conv2DTranspose(filters=self.img_c, kernel_size=3, strides=2, padding='same', name='output_decoder')(x)
         decoder = tfk.Model(inputs, outputs, name='decoder')
         return decoder
     
+    @property
+    def metrics(self):
+        return [
+            self.total_loss_tracker,
+            self.recon_loss_tracker,
+            self.vq_loss_tracker
+        ]
+    
+    def train_step(self, imgs):
+        with tf.GradientTape() as tape:
+            encoded_imgs = self.encoder(imgs)
+            quantized_imgs = self.quantizer(encoded_imgs)
+            reconstructed_imgs = self.decoder(quantized_imgs)
+            # Calculate the reconstruction loss using Normalized RMSE
+            recon_loss = tf.reduce_mean(
+                ((imgs - reconstructed_imgs) ** 2) / self.train_variance
+            )
+            # VQ loss = code book loss + commitment loss
+            vq_loss = sum(self.quantizer.losses)
+            # Total loss = recon loss + vq loss
+            total_loss = recon_loss + vq_loss
+        # Backpropagation
+        grads = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        # Trak the new loss values
+        self.total_loss_tracker.update_state(total_loss)
+        self.vq_loss_tracker.update_state(vq_loss)
+        self.recon_loss_tracker.update_state(recon_loss)
+        return {
+            'total loss': self.total_loss_tracker.result(),
+            'reconstruction loss': self.recon_loss_tracker.result(),
+            'VQ loss': self.vq_loss_tracker.result()
+        }
