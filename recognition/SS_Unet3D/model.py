@@ -1,11 +1,7 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, Conv3D, Conv3DTranspose
-from tensorflow.keras.layers import Dropout, Input, MaxPooling3D, BatchNormalization, Concatenate
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv3D, Conv3DTranspose
+from tensorflow.keras.layers import Input, MaxPooling3D, BatchNormalization, concatenate
 from tensorflow import keras
-from tensorflow.keras.layers import concatenate
-
-import tensorflow_addons as tfa
 
 
 @tf.function()
