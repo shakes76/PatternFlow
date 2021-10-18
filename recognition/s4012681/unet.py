@@ -22,14 +22,15 @@ IMG_CHANNELS = 1
 def get_nifti_data(file_name):
     # tf.string(file_name)
     # bits = tf.io.read_file(file_name)
-    #print(file_name)
+    print()
+    print(file_name)
     img = nibabel.load(file_name).get_fdata()
     return img
 
 
 def one_hot(file_name):
     mask = get_nifti_data(file_name)
-    bg = mask == 0
+    bg = tf.logical_or(mask < 1, mask > 5)
     bg = tf.where(bg == True, 1, 0)
     body = mask == 1
     body = tf.where(body == True, 1, 0)
@@ -41,6 +42,7 @@ def one_hot(file_name):
     rectum = tf.where(rectum == True, 1, 0)
     prostate = mask == 5
     prostate = tf.where(prostate == True, 1, 0)
+    
     return tf.concat((bg, body, bones, bladder, rectum, prostate), axis=-1)
 
 
@@ -73,7 +75,7 @@ def map_fn(image, mask):
     return image, mask
 
 def scheduler(epoch, lr):
-    if epoch < 10:
+    if epoch < 3:
         return lr
     else:
         return lr * tf.math.exp(-0.1)
@@ -143,6 +145,22 @@ def unet(filters):
     outputs = Conv3D(6, (1, 1, 1), activation='softmax') (c9)
 
     return Model(inputs=[inputs], outputs=[outputs])
+
+
+def dice(y_test, y_predict, smooth=1):
+    y_test_f = K.flatten(y_test)
+    y_test_f = y_test_f.numpy()
+    y_predict_f = K.flatten(y_predict)
+    y_predict_f = y_predict_f.numpy()
+    intersect = K.sum(y_test_f * y_predict_f)
+    a = 2 * intersect + smooth
+    a = a.numpy()
+    b = K.sum(y_test_f)
+    c = K.sum(y_predict_f)
+    d = b.numpy() + c.numpy() + smooth
+    e = a / d
+    return e
+
 
 
 
