@@ -19,11 +19,16 @@ def get_adj_mat(edges):
     for i in range(size):
         adj_mat[i][i] = 1.
     return tf.constant(adj_mat)
-
-
-def get_deg_mat(adj_mat):
+    
+    
+def get_half_norm_deg_mat(adj_mat):
     size = len(adj_mat)
     degrees = tf.reduce_sum(adj_mat, 1)
-    deg_mat = tf.linalg.diag(degrees)
-    return tf.constant(deg_mat)
+    half_norm_degrees = tf.math.sqrt(tf.math.reciprocal(degrees))
+    half_norm_deg_mat = tf.linalg.diag(half_norm_degrees)
+    return tf.constant(half_norm_deg_mat)
 
+
+def get_adj_mat_hat(adj_mat):
+    D_half_norm = get_half_norm_deg_mat(adj_mat)
+    return tf.linalg.matmul(tf.linalg.matmul(D_half_norm, adj_mat, a_is_sparse=True), D_half_norm, b_is_sparse=True)
