@@ -37,11 +37,11 @@ class GCNModel(nn.Module):
         x1 = F.relu(self.gcn1(input, adj))
         x1_drop = F.dropout(x1, self.drop_p, training=self.training)
         x2 = F.relu(self.gcn2(x1_drop, adj))
-        x3 = self.ffn(x2)
+        #x3 = self.ffn(x2)
         
         log_softmax = nn.LogSoftmax(dim=1)
 
-        return log_softmax(x3)
+        return log_softmax(x2)
 
 class Facebook_Node_Classifier():
     def __init__(self, facebook_file: str):
