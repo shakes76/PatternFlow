@@ -35,40 +35,40 @@ def load_data(path):
     labels = data['target']
       
     features = sp.csr_matrix(features)
-    adj = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),shape=(labels.shape[0], labels.shape[0]))#.toarray()
+    A = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),shape=(labels.shape[0], labels.shape[0]))#.toarray()
       
     #normalize
-    colsum = np.array(adj.sum(0))
+    colsum = np.array(A.sum(0))
     D = np.power(colsum, -1)[0]
     D[np.isinf(D)] = 0
     D_inv = sp.diags(D)
-    adj_trans = D_inv.dot(adj)
+    A_trans = D_inv.dot(A)
     
     #transform data type
-    indices = torch.LongTensor(np.vstack((adj_trans.tocoo().row, adj_trans.tocoo().col)))
-    values = torch.FloatTensor(adj_trans.data)
-    shape = adj_trans.shape
+    indices = torch.LongTensor(np.vstack((A_trans.tocoo().row, A_trans.tocoo().col)))
+    values = torch.FloatTensor(A_trans.data)
+    shape = A_trans.shape
       
-    adj_trans = torch.sparse_coo_tensor(indices, values, shape)
+    A_trans = torch.sparse_coo_tensor(indices, values, shape)
     features = torch.FloatTensor(np.array(features.todense()))
     labels = torch.LongTensor(labels)
        
-    return adj_trans, features, labels
+    return A_trans, features, labels
 
 
 class GCN(nn.Module):
     
-    def __init__(self, nfeat, nhid, nclass, dropout):
+    def __init__(self, n_feature, n_hidden, n_class, dropout):
         super(GCN, self).__init__()
 
-        self.gc1 = GraphConvolution(nfeat, nhid)
-        self.gc2 = GraphConvolution(nhid, nclass)
+        self.gc_layer1 = GraphConvolution(n_feature, n_hidden)
+        self.gc_layer2 = GraphConvolution(n_hidden, n_class)
         self.dropout = dropout
 
-    def forward(self, x, adj):
-        x = F.relu(self.gc1(x, adj))
+    def forward(self, x, A):
+        x = F.relu(self.gc_layer1(x, A))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = self.gc2(x, adj)
+        x = self.gc_layer2(x, A)
         
         return F.log_softmax(x, dim=1)
     
@@ -82,9 +82,9 @@ class GraphConvolution(Module):
         self.out_features = out_features
         self.W = torch.ones((in_features, out_features), requires_grad = True)
     
-    def forward(self, input, adj):
+    def forward(self, input, A):
         weighted_feature = torch.mm(input, self.W)
-        output = torch.mm(adj, weighted_feature)
+        output = torch.mm(A, weighted_feature)
         
         return output
     
@@ -156,7 +156,7 @@ def train_model(n_epochs):
         #train
         model.train() 
         optimizer.zero_grad()
-        output = model(features, adj)
+        output = model(features, A)
         loss_ = loss(output[tra], labels[tra])
         accuracy_ = accuracy(output[tra], labels[tra])
         loss_.backward()
@@ -182,7 +182,7 @@ def test_model():
         
     """
     model.load_state_dict(torch.load('train_model.pth'))
-    output = model(features, adj)
+    output = model(features, A)
     loss_ = loss(output[test], labels[test])
     accuracy_ = accuracy(output[test], labels[test])
     print('test - loss:',loss_,', accuracy', accuracy_)
@@ -190,17 +190,17 @@ def test_model():
 
 if __name__ == '__main__':
     #load data
-    adj, features, labels = load_data('facebook.npz')
+    A, features, labels = load_data('facebook.npz')
     #split data index 
     #tra: val: test /0.2: 0.2: 0.6
     tra, val, test = data_index(0.2,0.2)
     #size of hidden layer
     hidden = 32
 
-    model = GCN(nfeat=features.shape[1], nhid=hidden,
-                nclass=labels.max().item() + 1, dropout=0.5)
+    model = GCN(n_feature=features.shape[1], n_hidden=hidden,
+                n_class=labels.max().item() + 1, dropout=0.5)
     
-    optimizer = optim.Adam([model.gc1.W,model.gc2.W], lr=0.01)
+    optimizer = optim.Adam([model.gc_layer1.W,model.gc_layer2.W], lr=0.01)
     
     train_model(200)
     test_model()
