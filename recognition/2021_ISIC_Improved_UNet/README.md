@@ -12,6 +12,10 @@
 
 ### Improved UNet
 
+## Optimizer & Loss
+
+### Dice Similarity Coefficient
+
 ## Results
 
 ## Dependencies
