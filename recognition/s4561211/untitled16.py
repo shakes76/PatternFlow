@@ -48,3 +48,19 @@ def load_data(path):
        
     return adj_trans, features, labels
 
+
+class GraphConvolution(Module):
+    
+    def __init__(self, in_features, out_features):
+        super(GraphConvolution, self).__init__()
+        
+        self.in_features = in_features
+        self.out_features = out_features
+        self.W = torch.ones((in_features, out_features), requires_grad = True)
+    
+    def forward(self, input, adj):
+        weighted_feature = torch.mm(input, self.W)
+        output = torch.mm(adj, weighted_feature)
+        
+        return output
+
