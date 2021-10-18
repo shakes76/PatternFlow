@@ -3,7 +3,7 @@ import mrcnn
 import mrcnn.config
 from mrcnn.model import MaskRCNN as TF2_MaskRCNN
 from mrcnn.visualize import display_instances
-import csv
+from skimage import io
 import os
 
 class BaseConfig(mrcnn.config.Config):
@@ -45,12 +45,14 @@ class MaskRCNN():
         model = TF2_MaskRCNN(mode="inference", 
                                     config=BaseConfig(),
                                     model_dir=os.getcwd())
-        # Using COCO dataset trained weights
+        # Using COCO dataset trained weights, but must exclude some layers as we only have 2 classes
+        # instead of 81.
         model.load_weights(filepath="./mrcnn/mask_rcnn_coco.h5", 
-                        by_name=True)
+                        by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"]) 
         # load the input image, convert it from BGR to RGB channel
-        image = csv.imread("sample_image.jpg")
-        image = csv.cvtColor(image, csv.COLOR_BGR2RGB)
+        image = io.imread("sample_image.jpg")
+        print(image.shape)
+        #image = skimage.io.cvtColor(image, csv.COLOR_BGR2RGB)
         r = model.detect([image], verbose=1)
         r = r[0]
         # visualise result
