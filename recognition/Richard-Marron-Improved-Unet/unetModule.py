@@ -40,7 +40,7 @@ class ImprovedUNet():
         # Initial convolution layer
         block_1 = layers.Conv2D(filters=16, kernel_size=3, padding="same", activation="relu")(in_layer)
         
-        # Context Module (Pre-activation residual block)
+        # First Context Module (Pre-activation residual block)
         ctx_1 = layers.Conv2D(filters=16, kernel_size=3, padding="same", activation="relu")(block_1)
         ctx_1 = layers.LeakyReLU(alpha=self.leaky)(ctx_1)
         ctx_1 = layers.Dropout(rate=self.drop)(ctx_1)
@@ -50,6 +50,30 @@ class ImprovedUNet():
         
         # Merge/Connect path before context block to after block
         ctx_1 = layers.Add()([block_1, ctx_1])
+        
+        # Go down a level in the U-Net using strided convolution
+        s_conv_1 = layers.Conv2D(filters=32, kernel_size=3, strides=2,
+                                 padding="same", activation="relu")(ctx_1)
+        
+        # Second Context Module (Pre-activation residual block)
+        ctx_2 = layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(s_conv_1)
+        ctx_2 = layers.LeakyReLU(alpha=self.leaky)(ctx_2)
+        ctx_2 = layers.Dropout(rate=self.drop)(ctx_2)
+        ctx_2 = layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(ctx_2)
+        ctx_2 = layers.LeakyReLU(alpha=self.leaky)(ctx_2)
+        ctx_2 = layers.Dropout(rate=self.drop)(ctx_2)
+        
+        # Merge/Connect path before context block to after block
+        ctx_1 = layers.Add()([s_conv_1, ctx_2])
+        
+        # Go down a level in the U-Net using strided convolution
+        s_conv_2 = layers.Conv2D(filters=64, kernel_size=3, strides=2,
+                                 padding="same", activation="relu")(ctx_2)
+        
+        
+        
+        
+        
     
     def dice_function(self, y_true, y_pred):
         """
