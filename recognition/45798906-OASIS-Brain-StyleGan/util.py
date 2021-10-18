@@ -79,11 +79,14 @@ def visualise_images(
 
 
 def visualise_loss(
-    losses: tuple[list[float], list[float]], starting_epoch: int = 1
+    losses: tuple[list[float], list[float]], starting_epoch: int = 0
 ) -> None:
 
     gen_losses, disc_losses = losses
-    x_range = tf.range(starting_epoch, starting_epoch + len(gen_losses))
+    x_range = tf.range(
+        1 if starting_epoch == 0 else starting_epoch,
+        starting_epoch + len(gen_losses),
+    )
 
     # Plot
     ax = plt.gca()
