@@ -1,6 +1,6 @@
+import random
 import math
 import torch
-from torch._C import dtype
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -29,7 +29,7 @@ class GCNModel(nn.Module):
         super(GCNModel, self).__init__()
 
         self.gcn1 = GCNLayer(n_in_features, 64)
-        self.gcn2 = GCNLayer(64, 32)
+        self.gcn2 = GCNLayer(64, n_class)
         self.ffn = nn.Linear(32, n_class)
         self.drop_p = drop_p
 
@@ -44,13 +44,13 @@ class GCNModel(nn.Module):
         return log_softmax(x2)
 
 class Facebook_Node_Classifier():
-    def __init__(self, facebook_file: str):
+    def __init__(self, facebook_file: str, train_ratio=.6, val_ratio=0.2):
         
-        self.data_process(facebook_file)
+        self.data_process(facebook_file, train_ratio, val_ratio)
         self.create_adj()
         self.model = GCNModel(self.n_class, self.n_features)
         
-    def data_process(self, facebook_file: str):
+    def data_process(self, facebook_file: str, train_ratio, val_ratio):
         data = np.load(facebook_file)
 
         edges = data['edges']
@@ -65,6 +65,20 @@ class Facebook_Node_Classifier():
         self.node_features = torch.FloatTensor(features)
         self.target = torch.LongTensor(target)
         self.edges = edges
+
+        ##Split traing val test index
+        n_train = math.floor(self.n_node*train_ratio)
+        n_val = math.floor(self.n_node*val_ratio)
+        total_idx = list(range(self.n_node))
+        train_idx = random.sample(total_idx, n_train)
+        valtest = list(set(total_idx).difference(set(train_idx)))
+        val_idx = random.sample(valtest, n_val)
+        test_idx = list(set(valtest).difference(set(val_idx)))           
+        
+        self.train_idx = train_idx
+        self.val_idx = val_idx
+        self.test_idx = test_idx
+
         
     def create_adj(self):
         #create an iniitial adj matrix for sparse matrix
@@ -86,9 +100,9 @@ class Facebook_Node_Classifier():
 
         self.adj = torch.FloatTensor(adj_m)
 
-    def get_acc(self, output:torch.FloatTensor):
+    def get_acc(self, output:torch.FloatTensor, target):
         prediction = output.argmax(1)
-        correct = prediction == self.target
+        correct = prediction == target
         
         return sum(correct)/self.n_node
         
@@ -103,14 +117,18 @@ class Facebook_Node_Classifier():
             output = self.model(self.node_features, self.adj)
             #Compute loss
             loss = nn.NLLLoss()
-            loss_out = loss(output, self.target)
+            loss_out = loss(output[self.train_idx], self.target[self.train_idx])
             #Back Propregation
             loss_out.backward()
             optimizer.step()
 
-            acc = self.get_acc(output)
+            acc = self.get_acc(output[self.train_idx], self.target[self.train_idx])
 
             print("Epoch: " + str(epoch) +" Accuracy: " + str(acc) + " Loss: " + str(loss_out))
+
+            val_acc = self.get_acc(output[self.val_idx], self.target[self.val_idx])
+
+            print("Val Acc:" + str(val_acc))
 
 
 
