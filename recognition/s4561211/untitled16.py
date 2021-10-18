@@ -188,6 +188,21 @@ def test_model():
     print('test - loss:',loss_,', accuracy', accuracy_)
     
 
+if __name__ == '__main__':
+    #load data
+    adj, features, labels = load_data('facebook.npz')
+    #split data index 
+    #tra: val: test /0.2: 0.2: 0.6
+    tra, val, test = data_index(0.2,0.2)
+    #size of hidden layer
+    hidden = 32
 
+    model = GCN(nfeat=features.shape[1], nhid=hidden,
+                nclass=labels.max().item() + 1, dropout=0.5)
+    
+    optimizer = optim.Adam([model.gc1.W,model.gc2.W], lr=0.01)
+    
+    train_model(200)
+    test_model()
 
 
