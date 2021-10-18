@@ -2,12 +2,18 @@
 """
 Created on Sat Oct 16 21:31:12 2021
 
-@author: yayu kang
+@author: Ya-Yu Kang
 """
-
 import numpy as np
 import scipy.sparse as sp
-import torch 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+from torch.nn.parameter import Parameter
+from torch.nn.modules.module import Module
+import torch.optim as optim
+from random import sample
 
 def load_data(path):
     """
@@ -135,4 +141,53 @@ def loss(output,labels):
     prab = output.gather(1, labels.view(-1,1))
     loss = -torch.mean(prab)
     return loss
+
+def train_model(n_epochs):
+    """
+        Train the model and save the model with the largest accuracy for validation data
+
+        Parameters:
+        n_epochs (int): the number of iteration
+        
+    """
+    acc_pre = 0
+    
+    for epoch in range(n_epochs):
+        #train
+        model.train() 
+        optimizer.zero_grad()
+        output = model(features, adj)
+        loss_ = loss(output[tra], labels[tra])
+        accuracy_ = accuracy(output[tra], labels[tra])
+        loss_.backward()
+        optimizer.step()
+    
+        #validation
+        loss_val = loss(output[val], labels[val])
+        accuracy_val = accuracy(output[val], labels[val])
+        print('validation - Epoch:',epoch, ', loss:',loss_val,', accuracy', accuracy_val)
+        
+        if acc_pre < accuracy_val:
+            #save model
+            torch.save(model.state_dict(), 'train_model.pth')
+    
+        acc_pre = accuracy_val
+        
+def test_model():
+    """
+        Train the model and save the model with the largest accuracy for validation data
+
+        Parameters:
+        n_epochs (int): the number of iteration
+        
+    """
+    model.load_state_dict(torch.load('train_model.pth'))
+    output = model(features, adj)
+    loss_ = loss(output[test], labels[test])
+    accuracy_ = accuracy(output[test], labels[test])
+    print('test - loss:',loss_,', accuracy', accuracy_)
+    
+
+
+
 
