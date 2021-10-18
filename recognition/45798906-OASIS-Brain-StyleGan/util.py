@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 16/10/2021
+    Date last modified: 19/10/2021
     Python version: 3.9.7
 """
 
@@ -96,7 +96,12 @@ def visualise_loss(
     ax.legend()
 
     # x axis
-    plt.xlim([0, starting_epoch + len(gen_losses) - 1])
+    plt.xlim(
+        [
+            0 if starting_epoch == 1 else start_epoch,
+            starting_epoch + len(gen_losses) - 1,
+        ]
+    )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.show()
