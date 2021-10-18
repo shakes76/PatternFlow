@@ -7,7 +7,7 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 
 class ImprovedUNet():
     """Implements the Improved U-Net Model"""
@@ -112,9 +112,76 @@ class ImprovedUNet():
         ctx_5 = layers.Add()([s_conv_4, ctx_5])
         
         ################### UPSAMPLING ###################
+        # First Upsampling Module 
+        up_1 = layers.Conv2DTranspose(filters=128, kernel_size=3, padding="same", activation="relu")(ctx_5)
+        up_1 = layers.LeakyReLU(alpha=self.leaky)(up_1)
+        
+        # Link across U-Net via concatenation to define first localisation module
+        loc_1 = layers.concatenate([ctx_4, up_1])
+        loc_1 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(loc_1)
+        loc_1 = layers.LeakyReLU(alpha=self.leaky)(loc_1)
+        # Halve the number of filters
+        loc_1 = layers.Conv2D(filters=64, kernel_size=1, padding="same", activation="relu")(loc_1)
+        loc_1 = layers.LeakyReLU(alpha=self.leaky)(loc_1)
+
+        # Second Upsampling Module 
+        up_2 = layers.Conv2DTranspose(filters=64, kernel_size=3, padding="same", activation="relu")(loc_1)
+        up_2 = layers.LeakyReLU(alpha=self.leaky)(up_2)
+        
+        # Link across U-Net via concatenation to define second localisation module
+        loc_2 = layers.concatenate([ctx_3, up_2])
+        loc_2 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(loc_2)
+        loc_2 = layers.LeakyReLU(alpha=self.leaky)(loc_2)
+        
+        # Add peripheral connection for segmentation and then upscale
+        seg_1 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(loc_2)
+        seg_1 = layers.Conv2DTranspose(filters=32)(seg_1)
+        
+        # Halve the number of filters
+        loc_2 = layers.Conv2D(filters=32, kernel_size=1, padding="same", activation="relu")(loc_2)
+        loc_2 = layers.LeakyReLU(alpha=self.leaky)(loc_2)
+        
+        # Third Upsampling Module 
+        up_3 = layers.Conv2DTranspose(filters=32, kernel_size=3, padding="same", activation="relu")(loc_2)
+        up_3 = layers.LeakyReLU(alpha=self.leaky)(up_3)
+        
+        # Link across U-Net via concatenation to define third localisation module
+        loc_3 = layers.concatenate([ctx_2, up_3])
+        loc_3 = layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(loc_3)
+        loc_3 = layers.LeakyReLU(alpha=self.leaky)(loc_3)
+        
+        # Add peripheral connection for segmentation
+        seg_2 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(loc_3)
+        seg_2 = layers.Conv2DTranspose(filters=32)(seg_2)
+        # Sum first segmentation layer with this one and upscale
+        seg_partial = layers.Add()([seg_1, seg_2])
+        seg_partial = layers.Conv2DTranspose(filters=16, kernel_size=3, padding="same", activation="relu")(seg_partial)
+        
+        # Halve the number of filters
+        loc_3 = layers.Conv2D(filters=16, kernel_size=1, padding="same", activation="relu")(loc_3)
+        loc_3 = layers.LeakyReLU(alpha=self.leaky)(loc_3)
+        
+        # Fourth Upsampling Module 
+        up_4 = layers.Conv2DTranspose(filters=16, kernel_size=3, padding="same", activation="relu")(loc_3)
+        up_4 = layers.LeakyReLU(alpha=self.leaky)(up_4)
+        
+        # Link across U-Net via concatenation and define the last convolution block
+        block_2 = layers.concatenate([ctx_1, up_4])
+        block_2 = layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(block_2)
         
         
-    
+        # Segmentation layer
+        seg_3 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(block_2)
+        # Sum all segmentation layers
+        total = layers.Add()([seg_partial, seg_3])
+        
+        # Define output layer
+        out_layer = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(total)
+        
+        # Return the model created from all of these layers
+        return Model(in_layer, out_layer)
+        
+        
     def dice_function(self, y_true, y_pred):
         """
         Calculate the dice coefficient
