@@ -72,7 +72,7 @@ def createResidualBlock(inputs, n_latent_channels, n_last_channels, latent_kerne
     return x
 
 class VQ_VAE(tfk.Model):
-    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, **kwargs):
+    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, recon_loss_type, commitment_factor, **kwargs):
         super(VQ_VAE, self).__init__(**kwargs)
         self.img_h = img_h # Height of an input image
         self.img_w = img_w # Width of an input image
@@ -80,12 +80,14 @@ class VQ_VAE(tfk.Model):
         self.embedding_dim = embedding_dim
         self.n_embeddings = n_embeddings
         self.n_encoded_features = n_encoded_features # Number of features/channels for the pernultimate layer of the encoder
+        self.recon_loss_type = recon_loss_type
         self.encoder, encoder_h, encoder_w = self.create_encoder()
         self.decoder = self.create_decoder(encoder_h, encoder_w)
-        self.quantizer = VectorQuantizer(self.n_embeddings, self.embedding_dim, 0.25)
+        self.quantizer = VectorQuantizer(self.n_embeddings, self.embedding_dim, commitment_factor)
         self.total_loss_tracker = tfk.metrics.Mean(name='total_loss')
         self.vq_loss_tracker = tfk.metrics.Mean(name='vq_loss')
         self.recon_loss_tracker = tfk.metrics.Mean(name='recon_loss')
+        self.val_ssim_tracker = tfk.metrics.Mean(name='SSIM')
 
     def create_encoder(self):
         '''
@@ -155,10 +157,16 @@ class VQ_VAE(tfk.Model):
             encoded_imgs = self.encoder(imgs)
             quantized_imgs = self.quantizer(encoded_imgs)
             reconstructed_imgs = self.decoder(quantized_imgs)
-            # Calculate the reconstruction loss using MSE
-            recon_loss = tf.reduce_mean(
-                ((imgs - reconstructed_imgs) ** 2)
-            )
+            if self.recon_loss_type == 'SSIM':
+                # Calculate the reconstruction loss using SSIM
+                # The idea is basically taken from https://arxiv.org/pdf/1511.08861.pdf
+                recon_loss = 1 - tf.reduce_mean(
+                    tf.image.ssim(imgs, reconstructed_imgs, max_val=1.0)
+                )
+            else:
+                recon_loss = tf.reduce_mean(
+                    (imgs - reconstructed_imgs) ** 2
+                )
             # VQ loss = code book loss + commitment loss
             vq_loss = sum(self.quantizer.losses)
             # Total loss = recon loss + vq loss
@@ -174,4 +182,17 @@ class VQ_VAE(tfk.Model):
             'total loss': self.total_loss_tracker.result(),
             'reconstruction loss': self.recon_loss_tracker.result(),
             'VQ loss': self.vq_loss_tracker.result()
+        }
+    
+    def test_step(self, imgs):
+        encoded_imgs = self.encoder(imgs, training=False)
+        quantized_imgs = self.quantizer(encoded_imgs, training=False)
+        reconstructed_imgs = self.decoder(quantized_imgs, training=False)
+        # Compute the SSIM of validation images
+        val_ssim = tf.reduce_mean(
+            tf.image.ssim(imgs, reconstructed_imgs, max_val=1.0)
+        )
+        self.val_ssim_tracker.update_state(val_ssim)
+        return {
+            'SSIM': self.val_ssim_tracker.result()
         }
