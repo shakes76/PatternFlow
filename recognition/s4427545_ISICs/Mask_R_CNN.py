@@ -4,6 +4,7 @@ import mrcnn.config
 from mrcnn.model import MaskRCNN as TF2_MaskRCNN
 from mrcnn.visualize import display_instances
 from skimage import io
+from isics_data_loader import *
 import os
 import imgaug
 
@@ -26,13 +27,14 @@ class BaseConfig(mrcnn.config.Config):
 class MaskRCNN():
     CLASS_NAMES = ['BG', 'Lesion']
 
-    def __init__(self, dir, batch_size):
+    def __init__(self, dir, batch_size, valid_split=0.2):
         self.dir = dir
         self.batch_size = batch_size
-        self.__build_model()
+        self.get_and_split_data(valid_split)
+        self.build_model()
 
-    def __build_model(self):
-        self.model = TF2_MaskRCNN(mode="inference", 
+    def build_model(self):
+        self.model = TF2_MaskRCNN(mode="training", 
                                     config=BaseConfig(),
                                     model_dir=os.getcwd())
         # Using COCO dataset trained weights, but must exclude some layers as we only have 2 classes
@@ -40,67 +42,18 @@ class MaskRCNN():
         self.model.load_weights(filepath="./mrcnn/mask_rcnn_coco.h5", 
                         by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"])
 
-        # load the input image, convert it from BGR to RGB channel
+    def get_and_split_data(self, valid_split):
+        training_image_id_map, training_mask_id_map, validation_image_id_map, validation_mask_id_map =\
+            training_validation_ids(self.dir, valid_split)
+        self.training_data = ISICsDataLoader(training_image_id_map, training_mask_id_map)
+        self.validation_data = ISICsDataLoader(validation_image_id_map, validation_mask_id_map)
 
     def train(self):
         self.print_info()
-        train_images, valid_images, train_masks, valid_masks = self.get_and_split_data()
         # Basic 50% left and right flip augmentation
         augmentation = imgaug.augmenters.Sometimes(0.5, [
                     imgaug.augmenters.Fliplr(0.5)])
-        self.model.train(train_images, valid_images, BaseConfig.LEARNING_RATE, 10, 'all', augmentation=augmentation)
-        
-    def get_and_split_data(self):
-        train_images = tf.keras.preprocessing.image_dataset_from_directory(
-            self.dir + 'ISIC2018_Task1-2_Training_Input_x2',
-            label_mode=None,
-            color_mode='rgb',
-            seed=42,
-            image_size=(512, 512),
-            shuffle=False, # shuffle false so masks match the images... need a better workaround
-            batch_size=self.batch_size,
-            validation_split=0.2,
-            subset='training') # just do training and valid. for now, work out how to do test later
-
-        valid_images = tf.keras.preprocessing.image_dataset_from_directory(
-            self.dir + 'ISIC2018_Task1-2_Training_Input_x2',
-            label_mode=None,
-            color_mode='rgb',
-            seed=42,
-            image_size=(512, 512),
-            shuffle=False,
-            batch_size=self.batch_size,
-            validation_split=0.2,
-            subset='validation')
-
-        train_masks = tf.keras.preprocessing.image_dataset_from_directory(
-            self.dir + 'ISIC2018_Task1_Training_GroundTruth_x2',
-            label_mode=None,
-            color_mode='rgb',
-            seed=42,
-            image_size=(512, 512),
-            shuffle=False,
-            batch_size=self.batch_size,
-            validation_split=0.2,
-            subset='training')
-
-        valid_masks = tf.keras.preprocessing.image_dataset_from_directory(
-            self.dir + 'ISIC2018_Task1_Training_GroundTruth_x2',
-            label_mode=None,
-            color_mode='rgb',
-            seed=42,
-            image_size=(512, 512),
-            shuffle=False,
-            batch_size=self.batch_size,
-            validation_split=0.2,
-            subset='validation')
-        # Allows files to be fetched asynchronously
-        AUTOTUNE = tf.data.AUTOTUNE
-        train_images = train_images.prefetch(buffer_size=AUTOTUNE)
-        valid_images = valid_images.prefetch(buffer_size=AUTOTUNE)
-        train_masks = train_masks.prefetch(buffer_size=AUTOTUNE)
-        valid_masks = valid_masks.prefetch(buffer_size=AUTOTUNE)
-        return train_images, valid_images, train_masks, valid_masks
+        self.model.train(self.training_data, self.validation_data, BaseConfig.LEARNING_RATE, 10, 'all', augmentation=augmentation)
     
     def display_sample(self):
         image = io.imread("sample_image.jpg")
