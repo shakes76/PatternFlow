@@ -64,14 +64,39 @@ class ImprovedUNet():
         ctx_2 = layers.Dropout(rate=self.drop)(ctx_2)
         
         # Merge/Connect path before context block to after block
-        ctx_1 = layers.Add()([s_conv_1, ctx_2])
+        ctx_2 = layers.Add()([s_conv_1, ctx_2])
         
         # Go down a level in the U-Net using strided convolution
         s_conv_2 = layers.Conv2D(filters=64, kernel_size=3, strides=2,
                                  padding="same", activation="relu")(ctx_2)
         
+        # Third Context Module (Pre-activation residual block)
+        ctx_3 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(s_conv_2)
+        ctx_3 = layers.LeakyReLU(alpha=self.leaky)(ctx_3)
+        ctx_3 = layers.Dropout(rate=self.drop)(ctx_3)
+        ctx_3 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(ctx_3)
+        ctx_3 = layers.LeakyReLU(alpha=self.leaky)(ctx_3)
+        ctx_3 = layers.Dropout(rate=self.drop)(ctx_3)
         
+        # Merge/Connect path before context block to after block
+        ctx_3 = layers.Add()([s_conv_2, ctx_3])
         
+        # Go down a level in the U-Net using strided convolution
+        s_conv_3 = layers.Conv2D(filters=128, kernel_size=3, strides=2,
+                                 padding="same", activation="relu")(ctx_3)
+        
+        # Fourth Context Module (Pre-activation residual block)
+        ctx_4 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(s_conv_3)
+        ctx_4 = layers.LeakyReLU(alpha=self.leaky)(ctx_4)
+        ctx_4 = layers.Dropout(rate=self.drop)(ctx_4)
+        ctx_4 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(ctx_4)
+        ctx_4 = layers.LeakyReLU(alpha=self.leaky)(ctx_4)
+        ctx_4 = layers.Dropout(rate=self.drop)(ctx_4)
+        
+        # Merge/Connect path before context block to after block
+        ctx_4 = layers.Add()([s_conv_3, ctx_4])
+        
+        ################### UPSAMPLING ###################
         
         
     
