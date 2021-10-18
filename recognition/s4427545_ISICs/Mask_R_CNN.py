@@ -1,8 +1,8 @@
 import tensorflow as tf
 import mrcnn
 import mrcnn.config
-import mrcnn.model
-import mrcnn.visualize
+from mrcnn.model import MaskRCNN as TF2_MaskRCNN
+from mrcnn.visualize import display_instances
 import csv
 import os
 
@@ -10,6 +10,7 @@ class BaseConfig(mrcnn.config.Config):
     # static vars for config
     NAME = "ISIC"
     GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
 	# Number of classes = number of classes + 1 (+1 for the background). The background class is named BG
     NUM_CLASSES = 2
 
@@ -41,11 +42,11 @@ class MaskRCNN():
         self.build_model()
 
     def build_model(self):
-        model = mrcnn.model.MaskRCNN(mode="inference", 
+        model = TF2_MaskRCNN(mode="inference", 
                                     config=BaseConfig(),
                                     model_dir=os.getcwd())
         # Using COCO dataset trained weights
-        model.load_weights(filepath="mask_rcnn_coco.h5", 
+        model.load_weights(filepath="./mrcnn/mask_rcnn_coco.h5", 
                         by_name=True)
         # load the input image, convert it from BGR to RGB channel
         image = csv.imread("sample_image.jpg")
@@ -53,12 +54,12 @@ class MaskRCNN():
         r = model.detect([image], verbose=1)
         r = r[0]
         # visualise result
-        mrcnn.visualize.display_instances(image=image, 
-                                        boxes=r['rois'], 
-                                        masks=r['masks'], 
-                                        class_ids=r['class_ids'], 
-                                        class_names=self.CLASS_NAMES, 
-                                        scores=r['scores'])
+        display_instances(image=image, 
+                        boxes=r['rois'], 
+                        masks=r['masks'], 
+                        class_ids=r['class_ids'], 
+                        class_names=self.CLASS_NAMES, 
+                        scores=r['scores'])
 
     def print_info(self):
         print(f"TF Version: {tf.__version__}")
