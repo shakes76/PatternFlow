@@ -20,7 +20,8 @@ def load_data(path):
         (scipy.sparse.coo.coo_matrix): Return adjacency matrix
         (scipy.sparse.csr.csr_matrix): Return features
         (torch.Tensor): Return labels
-    """
+        
+    """ 
     data = np.load(path)
     edges = data['edges']
     edges = np.unique(edges, axis=0)
@@ -50,6 +51,7 @@ def load_data(path):
 
 
 class GCN(nn.Module):
+    
     def __init__(self, nfeat, nhid, nclass, dropout):
         super(GCN, self).__init__()
 
@@ -79,4 +81,58 @@ class GraphConvolution(Module):
         output = torch.mm(adj, weighted_feature)
         
         return output
+    
+def data_index(tra_ratio,val_ratio):
+    """
+        Split the data into index
+        
+        Parameters:
+        tra_ratio (float): ratio of training data
+        val_ratio (float): ratio of validation data
+    
+        Returns:
+        (list): the list of index for training data
+        (list): the list of index for validation data
+        (list): the list of index for test data
+        
+    """   
+    sequence = [i for i in range(labels.shape[0])]
+    tra = sample(sequence, int(labels.shape[0]*tra_ratio))
+    rem = list(set(sequence).difference(set(tra)))
+    val = sample(rem, int(labels.shape[0]*val_ratio))
+    test = list(set(rem).difference(set(val)))
+    return tra, val, test
+  
+def accuracy(output, labels):
+    """
+        Calculate accuracy 
+
+        Parameters:
+        output (Tensor): the log probability for each class
+        labels (Tensor): the true labels
+    
+        Returns:
+        (Tensor) : the accuracy 
+
+    """
+    pred = output.max(1)[1].type_as(labels)
+    #= pred.eq(labels).sum()/ labels.shape[0]
+    acc_ = torch.div(pred.eq(labels).sum(), labels.shape[0])
+    return acc_
+
+def loss(output,labels):
+    """
+        Calculate loss
+
+        Parameters:
+        output (Tensor): the log probability for each class
+        labels (Tensor): the true labels
+    
+        Returns:
+        (Tensor) : the loss
+
+    """
+    prab = output.gather(1, labels.view(-1,1))
+    loss = -torch.mean(prab)
+    return loss
 
