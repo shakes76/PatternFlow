@@ -40,7 +40,18 @@ train_img = skio.imread_collection(os.path.join(train_path,img_spec),conserve_me
 seg_img = skio.imread_collection(os.path.join(train_gt_path,seg_spec),conserve_memory=True)
 
 check_seg = seg_img[0]
-    
+#%%
+# how many images
+print(len(train_img))
+
+# resolution distribution
+all_res = []
+
+for res in train_img:
+    all_res.append(res.shape[0]*res.shape[1])
+
+plt.hist(np.divide(all_res,1000000)); plt.xlabel('megapixels'); plt.ylabel('No. of Images')
+
 #%%
 
 # Visualize
