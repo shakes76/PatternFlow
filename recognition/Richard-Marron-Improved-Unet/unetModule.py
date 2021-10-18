@@ -96,6 +96,21 @@ class ImprovedUNet():
         # Merge/Connect path before context block to after block
         ctx_4 = layers.Add()([s_conv_3, ctx_4])
         
+        # Go down a level in the U-Net using strided convolution
+        s_conv_4 = layers.Conv2D(filters=256, kernel_size=3, strides=2,
+                                 padding="same", activation="relu")(ctx_4)
+        
+        # Fifth Context Module (Pre-activation residual block)
+        ctx_5 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(s_conv_4)
+        ctx_5 = layers.LeakyReLU(alpha=self.leaky)(ctx_5)
+        ctx_5 = layers.Dropout(rate=self.drop)(ctx_5)
+        ctx_5 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(ctx_5)
+        ctx_5 = layers.LeakyReLU(alpha=self.leaky)(ctx_5)
+        ctx_5 = layers.Dropout(rate=self.drop)(ctx_5)
+        
+        # Merge/Connect path before context block to after block
+        ctx_5 = layers.Add()([s_conv_4, ctx_5])
+        
         ################### UPSAMPLING ###################
         
         
