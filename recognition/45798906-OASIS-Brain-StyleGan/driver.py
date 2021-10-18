@@ -14,7 +14,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 16/10/2021
+    Date last modified: 19/10/2021
     Python version: 3.9.7
 """
 
@@ -41,40 +41,48 @@ from train import train
 
 
 # Optimiser hyperparameters
-GENERATOR_LR = 3e-5
-DISCRIMINATOR_LR = 4e-5
+GENERATOR_LR: float = 1e-6
+DISCRIMINATOR_LR: float = 4e-6
 # Additional hyperparameters
 # key : hyperparameter name, value : hyperparameter value
-GENERATOR_HYPERPARAMETERS = {}
+GENERATOR_HYPERPARAMETERS = {
+    # The following are valid parameters with their default values
+    # "beta_1": 0.9,
+    # "beta_2": 0.999,
+    # "epsilon": 1e-7,
+    # "amsgrad": False,
+}
 DISCRIMINATOR_HYPERPARAMETERS = {}
 
 # Model hyperparameters
-IMAGE_SIZE = 256
-BATCH_SIZE = 32
-SAMPLE_SIZE = 32
-NUM_FILTERS = 512
-LATENT_DIMENSION = 512
+IMAGE_SIZE: int = 256
+BATCH_SIZE: int = 32
+SAMPLE_SIZE: int = 32
+NUM_FILTERS: int = 512
+LATENT_DIMENSION: int = 512
 
 # Paths
 # End all paths with a file seperator
-IMAGE_PATHS = [
+IMAGE_PATHS: list[str] = [
     "./keras_png_slices_data/unsegmented/"
 ]  # List of all image directories
 # The following can be set to None
-SAMPLE_IMAGES_PATH = "./training/"  # If None, set SAVE_SAMPLE_IMAGES to False
-WEIGHT_PATH = "./weights/"  # If None, set SAVE_WEIGHTS to False
-GENERATOR_WEIGHT_PATH = ""
-DISCRIMINATOR_WEIGHT_PATH = ""
+SAMPLE_IMAGES_PATH: str = (
+    "./training/"  # If None, set SAVE_SAMPLE_IMAGES to False
+)
+WEIGHT_PATH: str = "./weights/"  # If None, set SAVE_WEIGHTS to False
+GENERATOR_WEIGHT_PATH: str = ""
+DISCRIMINATOR_WEIGHT_PATH: str = ""
 
 # Training variables
-TRAIN = True
-EPOCHS = 100
-TOTAL_PREVIOUS_EPOCHS = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-LOAD_WEIGHTS = False
-SAVE_WEIGHTS = True
-WEIGHT_SAVING_INTERVAL = 5
-SAVE_SAMPLE_IMAGES = True
-IMAGE_SAVING_INTERVAL = 1
+TRAIN: bool = True
+EPOCHS: int = 100
+TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
+LOAD_WEIGHTS: bool = False
+SAVE_WEIGHTS: bool = True
+WEIGHT_SAVING_INTERVAL: int = 5
+SAVE_SAMPLE_IMAGES: bool = True
+IMAGE_SAVING_INTERVAL: int = 1
 
 
 def main():
