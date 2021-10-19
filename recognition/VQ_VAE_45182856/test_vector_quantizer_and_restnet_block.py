@@ -9,7 +9,7 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 print('Test if the resetnet block is executable and produces the correct output shape')
 var = tf.random.uniform(shape=[10, 28, 28, 1])
 var_shape = tf.shape(var)
-var_output = createResidualBlock(var, n_latent_channels=8, n_last_channels=1, latent_kernel_size=3)
+var_output = createResidualBlock(var, n_channels=1, latent_kernel_size=3)
 print(var_shape == tf.shape(var_output))
 
 
