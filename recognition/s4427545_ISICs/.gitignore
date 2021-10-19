@@ -1,1 +1,5 @@
 *.h5
+*.DS_Store
+/datasets/**/*.jpg
+/datasets/**/*.png
+/datasets/**/*.txt
