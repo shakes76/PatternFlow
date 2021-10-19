@@ -9,7 +9,9 @@ import tensorflow as tf
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
+import cv2
 from sklearn.model_selection import train_test_split
+from unetModule import ImprovedUNet
 
 def normalise_images(image_set):
     """
@@ -28,7 +30,7 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
             path : Path to the dataset
             ground_truth : Whether the folder is the ground truth data
                            (These have images of format PNG)
-            truncate : Whether to use the full dataset or only 1/3
+            truncate : Whether to use the full dataset or only 1/4
         
         Return : Numpy array of images which are also Numpy arrays
     """
@@ -42,18 +44,19 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
     print("Loading image paths...")
     img_paths = glob.glob(path)
     if truncate:
-        # Only take the first 1/3 of the images
-        img_paths = img_paths[:len(img_paths)//3]
+        # Only take the first 1/4 of the images
+        img_paths = img_paths[:len(img_paths)//4]
     print("Successfully loaded paths!") 
     print("Converting images into numpy arrays...")
     # Read in images from path and return numpy array
-    return np.array([plt.imread(path).astype(np.float32) for path in img_paths], dtype=object)
+    return np.array([cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR), 
+                                dsize=(512, 384)) for path in img_paths], dtype=np.float32)
 
 def main(debugging=False):
     """
     Main program entry
         Params:
-            debugging : When True, the data is truncated to 1/3
+            debugging : When True, the data is truncated to 1/4
                         of original size so program runs faster
     """
     # Load normalised images
@@ -69,10 +72,14 @@ def main(debugging=False):
     print(f"Input image shape: {input_images[0].shape}")
     print(f"Ground truth image shape: {gt_images[0].shape}")
     # Show example of image and it's segmentation
-    plt.imshow(input_images[0][:, :])
+    plt.imshow(input_images[0])
     plt.figure()
-    plt.imshow(gt_images[0][:, :])
+    plt.imshow(gt_images[0])
     plt.show()
+    
+    unet = ImprovedUNet(input_shape=input_images[0].shape)
+    unet_model = unet.model()
+    unet_model.summary()
     
 
 if __name__ == "__main__":
