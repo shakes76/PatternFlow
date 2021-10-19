@@ -1,10 +1,17 @@
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
+#  File: IUNet_train_test.py
+#  Author: Hideki WAKAYAMA
+#  Contact: h.wakayama@uq.net.au
+#  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
+#  Time: 19/10/2021, 15:47
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 from IUNet_criterion import dice_coef, dice_loss
 from tqdm import tqdm
 
-
 def model_train_test(model, optimizer, EPOCHS, train_loader, test_loader):
-  """
-  function for model training and test
+  """function for model training and test
   :return: list of train and test dice coefficients and dice losses by epochs
   """
   TRAIN_LOSS = []
