@@ -196,9 +196,7 @@ class VQ_VAE(tfk.Model):
     def test_step(self, imgs):
         reconstructed_imgs = self.vq_vae(imgs, training=False)
         # Compute the SSIM of validation images
-        val_ssim = tf.reduce_mean(
-            tf.image.ssim(imgs, reconstructed_imgs, max_val=1.0)
-        )
+        val_ssim = tf.image.ssim(imgs, reconstructed_imgs, max_val=1.0)
         self.val_ssim_tracker.update_state(val_ssim)
         return {
             'SSIM': self.val_ssim_tracker.result()
