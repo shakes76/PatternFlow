@@ -101,7 +101,7 @@ def visualise_loss(
     # x axis
     plt.xlim(
         [
-            0 if starting_epoch == 1 else start_epoch,
+            0 if starting_epoch == 1 else starting_epoch,
             starting_epoch + len(gen_losses) - 1,
         ]
     )
