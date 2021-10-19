@@ -44,7 +44,6 @@ def get_min_imageshape(path):
 
     for img_path in img_paths:
         img = cv2.imread(img_path)
-        img = np.array(img)
         img_shape = img.shape
         shape_info = [img_shape[0]*img_shape[1], [img_shape[0], img_shape[1]]]
         image_shapes.append(shape_info)
