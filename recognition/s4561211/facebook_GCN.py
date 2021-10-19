@@ -121,7 +121,8 @@ def accuracy(output, labels):
         (Tensor) : the accuracy 
 
     """
-    pred = output.max(1)[1].type_as(labels)
+    #pred = output.max(1)[1].type_as(labels)
+    pred = output.argmax(1)
     #= pred.eq(labels).sum()/ labels.shape[0]
     acc_ = torch.div(pred.eq(labels).sum(), labels.shape[0])
     return acc_
@@ -161,11 +162,12 @@ def train_model(n_epochs):
         accuracy_ = accuracy(output[tra], labels[tra])
         loss_.backward()
         optimizer.step()
-    
+        print('train - Epoch:',epoch, ', loss:',loss_,', accuracy', accuracy_)
+     
         #validation
         loss_val = loss(output[val], labels[val])
         accuracy_val = accuracy(output[val], labels[val])
-        print('validation - Epoch:',epoch, ', loss:',loss_val,', accuracy', accuracy_val)
+        #print('validation - Epoch:',epoch, ', loss:',loss_val,', accuracy', accuracy_val)
         
         if acc_pre < accuracy_val:
             #save model
@@ -193,7 +195,7 @@ if __name__ == '__main__':
     A, features, labels = load_data('facebook.npz')
     #split data index 
     #tra: val: test /0.2: 0.2: 0.6
-    tra, val, test = data_index(0.2,0.2)
+    tra, val, test = data_index(0.1,0.45)
     #size of hidden layer
     hidden = 32
 
