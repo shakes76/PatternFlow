@@ -28,7 +28,7 @@ train_loader = tf.keras.preprocessing.image_dataset_from_directory(
 normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./255, offset=-0.5)
 normalized_train_loader = train_loader.map(lambda x: normalization_layer(x))
 
-vq_vae = VQ_VAE(img_h=h, img_w=w, img_c=1, n_encoded_features=96, embedding_dim=64, n_embeddings=128, recon_loss_type='SSIM', commitment_factor=0.25)
+vq_vae = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=1.0, embedding_dim=64, n_embeddings=128, recon_loss_type='SSIM', commitment_factor=0.25)
 # Print out the architecture of the VQ VAE
 vq_vae.vq_vae.summary()
 
