@@ -56,7 +56,7 @@ There is a python file called "basic_unet_model.py", you can have a look at this
 ![](./u-net-architecture.png)
 
 <p align="center"> 
-*Figure 1: U-Net architecture. Each blue box corresponds to a multi-channel feature map. The number of channels is denoted on top of the box. The x-y size is provided at the lower left edge of the box. White boxes represent copied feature maps. The arrows denote the different operations (Ronneberger, O., Fischer, P., Brox, T., 2015).*
+*Figure 1: Basic U-Net architecture. 
 </p>
 
 ## Improved UNET structure:
