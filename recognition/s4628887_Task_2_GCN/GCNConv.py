@@ -1,10 +1,30 @@
-import tensorflow as tf
 from tensorflow.keras.layers import Layer
 from tensorflow.keras import regularizers, activations, initializers, constraints, backend
 
 
 class GCNConv(Layer):
+    """
+    A graph convolutional layer (GCN)
 
+    Input:
+    Node features of shape `([batch], n_nodes, n_node_features)`;
+    Normalised adjacency matrix of shape `([batch], n_nodes, n_nodes)`; can be computed with
+
+    Output:
+    New Node features of shape `([batch], n_nodes, channels)`;
+
+    **Arguments**
+    - `channels`: number of output channels;
+    - `activation`: activation function;
+    - `use_bias`: bool, add a bias vector to the output;
+    - `kernel_initializer`: initializer for the weights;
+    - `bias_initializer`: initializer for the bias vector;
+    - `kernel_regularizer`: regularization applied to the weights;
+    - `bias_regularizer`: regularization applied to the bias vector;
+    - `activity_regularizer`: regularization applied to the output;
+    - `kernel_constraint`: constraint applied to the weights;
+    - `bias_constraint`: constraint applied to the bias vector.
+    """
 
     def __init__(self,
                channels,
@@ -32,7 +52,6 @@ class GCNConv(Layer):
         self.bias_regularizer = regularizers.get(bias_regularizer)
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
-
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
