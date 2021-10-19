@@ -6,11 +6,11 @@
     Requirements:
         - Tensorflow 2.0
         - tqdm
+        - time
         - matplotlib
         - os
         - util.py
         - train.py
-        - gan.py
 
     Author: Keith Dao
     Date created: 14/10/2021
@@ -36,9 +36,8 @@ from gan import (
     get_discriminator,
     get_optimizer,
     generate_samples,
+    train,
 )
-from train import train
-
 
 # Optimiser hyperparameters
 GENERATOR_LR: float = 1e-6
