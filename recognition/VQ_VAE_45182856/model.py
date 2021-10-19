@@ -54,32 +54,31 @@ class VectorQuantizer(tfk.layers.Layer):
         return quantized_codes
 
 
-def createResidualBlock(inputs, n_latent_channels, n_last_channels, latent_kernel_size):
+def createResidualBlock(inputs, n_channels, latent_kernel_size):
     '''
         This function defines a residual block, which contains the following layers in order:
-        1. A convolutional layer with kernel size = latent_kernel_size, and the output channel is n_latent_channels
-        2. Apply Batch Normalization then LeakyReLU
-        3. Another convolutional layer with kernel size = 1, and the output channel is n_last_channels
-        4. Add the original input to the output produced in the 3rd step and then apply LeakyReLU
+        1. A convolutional layer with kernel size = latent_kernel_size, and the output channel is n_channels. Then apply Batch Norm & ReLU
+        2. Another convolutional layer with kernel size = 1, and the output channel is n_channels, then follow by Batch Norm
+        3. Add the original input to the output produced in the 2nd step then apply ReLU
         Note that the shape of the output will be as same as the shape of the input
     '''
-    x = tfk.layers.Conv2D(filters=n_latent_channels, kernel_size=latent_kernel_size, padding='same')(inputs)
+    x = tfk.layers.Conv2D(filters=n_channels, kernel_size=latent_kernel_size, padding='same')(inputs)
     x = tfk.layers.BatchNormalization()(x)
-    x = tf.nn.leaky_relu(x)
-    x = tfk.layers.Conv2D(filters=n_last_channels, kernel_size=1)(x)
+    x = tf.nn.relu(x)
+    x = tfk.layers.Conv2D(filters=n_channels, kernel_size=1)(x)
+    x = tfk.layers.BatchNormalization()(x)
     x = tfk.layers.add([inputs, x])
-    x =  tf.nn.leaky_relu(x)
-    return x
+    return tf.nn.relu(x)
 
 class VQ_VAE(tfk.Model):
-    def __init__(self, img_h, img_w, img_c, n_encoded_features, embedding_dim, n_embeddings, recon_loss_type, commitment_factor, **kwargs):
+    def __init__(self, img_h, img_w, img_c, train_variance, embedding_dim, n_embeddings, recon_loss_type, commitment_factor, **kwargs):
         super(VQ_VAE, self).__init__(**kwargs)
         self.img_h = img_h # Height of an input image
         self.img_w = img_w # Width of an input image
         self.img_c = img_c # Number of channels of an input image
         self.embedding_dim = embedding_dim
         self.n_embeddings = n_embeddings
-        self.n_encoded_features = n_encoded_features # Number of features/channels for the pernultimate layer of the encoder
+        self.train_variance = train_variance
         self.recon_loss_type = recon_loss_type
         self.commitment_factor = commitment_factor
         self.vq_vae = self.create_vq_vae()
@@ -87,6 +86,7 @@ class VQ_VAE(tfk.Model):
         self.vq_loss_tracker = tfk.metrics.Mean(name='vq_loss')
         self.recon_loss_tracker = tfk.metrics.Mean(name='recon_loss')
         self.val_ssim_tracker = tfk.metrics.Mean(name='SSIM')
+        self.val_mse_tracker = tfk.metrics.Mean(name='MSE')
 
     def create_encoder(self):
         '''
@@ -94,21 +94,27 @@ class VQ_VAE(tfk.Model):
         '''
         inputs = tfk.Input(shape=(self.img_h, self.img_w, self.img_c), name='encoder_input')
         ## First CNN block
-        x = tfk.layers.Conv2D(filters=32, kernel_size=4, strides=2, padding='same')(inputs)
+        x = tfk.layers.Conv2D(filters=32, kernel_size=3, strides=2, padding='same')(inputs)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
+        x = tf.nn.relu(x)
         ## Second CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=4, strides=2, padding='same')(x)
+        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
+        x = tf.nn.relu(x)
         ## Third CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same')(x)
+        x = tfk.layers.Conv2D(filters=96, kernel_size=3, strides=2, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
+        x = tf.nn.relu(x)
+        ## Fourth CNN block
+        x = tfk.layers.Conv2D(filters=self.embedding_dim, kernel_size=3, strides=2, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.relu(x)
         ## First Residual block
-        x =  createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
+        x =  createResidualBlock(x, self.embedding_dim, 3)
         ## Second Residual block
-        x =  createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
+        x =  createResidualBlock(x, self.embedding_dim, 3)
+        ## Third Residual block
+        x =  createResidualBlock(x, self.embedding_dim, 3)
         # Extract the height and the width of an encoded image
         encoder_shape = tfk.backend.int_shape(x)
         encoder_h, encoder_w = encoder_shape[1], encoder_shape[2]
@@ -123,21 +129,27 @@ class VQ_VAE(tfk.Model):
         '''
         inputs = tfk.Input(shape=(encoder_h, encoder_w, self.embedding_dim))
         ## First Residual block
-        x = createResidualBlock(inputs, self.n_encoded_features, self.embedding_dim, 3)
+        x = createResidualBlock(inputs, self.embedding_dim, 3)
         ## Second Residual block
-        x = createResidualBlock(x, self.n_encoded_features, self.embedding_dim, 3)
+        x = createResidualBlock(x, self.embedding_dim, 3)
+        ## Third Residual block
+        x =  createResidualBlock(x, self.embedding_dim, 3)
         ## First CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same')(x)
+        x = tfk.layers.Conv2D(filters=self.embedding_dim, kernel_size=3, strides=1, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
+        x = tf.nn.relu(x)
         ## Second CNN block
-        x=  tfk.layers.Conv2D(filters=64, kernel_size=4, strides=1, padding='same')(x)
+        x = tfk.layers.Conv2DTranspose(filters=96, kernel_size=3, strides=2, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
-        ## Third Transpose CNN block
-        x=  tfk.layers.Conv2DTranspose(filters=32, kernel_size=4, strides=2, padding='same')(x)
+        x = tf.nn.relu(x)
+        ## Third CNN block
+        x=  tfk.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same')(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.leaky_relu(x)
+        x = tf.nn.relu(x)
+        ## Fourth Transpose CNN block
+        x=  tfk.layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same')(x)
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.relu(x)
         ## Output layer
         outputs = tfk.layers.Conv2DTranspose(filters=self.img_c, kernel_size=3, strides=2, padding='same', name='output_decoder')(x)
         decoder = tfk.Model(inputs, outputs, name='decoder')
@@ -174,7 +186,7 @@ class VQ_VAE(tfk.Model):
                 )
             else:
                 recon_loss = tf.reduce_mean(
-                    (imgs - reconstructed_imgs) ** 2
+                    ((imgs - reconstructed_imgs) ** 2) / self.train_variance
                 )
             # VQ loss = code book loss + commitment loss
             vq_loss = sum(self.vq_vae.losses)
@@ -197,7 +209,10 @@ class VQ_VAE(tfk.Model):
         reconstructed_imgs = self.vq_vae(imgs, training=False)
         # Compute the SSIM of validation images
         val_ssim = tf.image.ssim(imgs, reconstructed_imgs, max_val=1.0)
+        val_mse = tf.reduce_mean((imgs - reconstructed_imgs) ** 2, axis=(1, 2, 3))
         self.val_ssim_tracker.update_state(val_ssim)
+        self.val_mse_tracker.update_state(val_mse)
         return {
-            'SSIM': self.val_ssim_tracker.result()
+            'SSIM': self.val_ssim_tracker.result(),
+            'MSE': self.val_mse_tracker.result()
         }
