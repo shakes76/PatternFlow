@@ -53,6 +53,31 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
                                              dsize=(512, 384)), 
                                   cv2.COLOR_BGR2RGB) for path in img_paths], dtype=np.float32)
 
+def get_splits(input_set, truth_set):
+    """
+    Generates train/test/validation splits from the given dataset
+        Params:
+            image_set : Set of input images we want to get the splits from.
+            truth_set : Set of ground truth images which act as labels
+        
+        Require : Image sets must have shape (N, h, w, c)
+        
+        Return: 
+            in_train : The training portion of the data, including ground truth
+             in_test : The testing portion of the data, including ground truth
+            in_valid : The validation portion of the data, including ground truth
+    """
+    print("Splitting the data...")
+    # Get the training and test splits
+    in_train, in_test, truth_train, truth_test = train_test_split(input_set, truth_set,
+                                                                  test_size=0.4, random_state=123)
+    print("Got training set!\nGenerating test and validation...")
+    # From the test split, get the validation split
+    in_test, in_valid, truth_test, truth_valid = train_test_split(in_test, truth_test,
+                                                                  test_size=0.6, random_state=123)
+    
+    return (in_train, truth_train), (in_test, truth_test), (in_valid, truth_valid)
+
 def main(debugging=False):
     """
     Main program entry
@@ -78,9 +103,27 @@ def main(debugging=False):
     plt.imshow(gt_images[0][:, :])
     plt.show()
     
+    # Create an instance of an Improved U-Net
     unet = ImprovedUNet(input_shape=input_images[0].shape)
+    # Get the model
     unet_model = unet.model()
+    # Have a look at the model summary
     unet_model.summary()
+    # Compile the model
+    unet_model.compile(optimizer=unet.optimizer,
+                       loss=unet.loss,
+                       metrics=unet.metric)
+    
+    # Generate train/test/validation sets
+    train, test, valid = get_splits(input_images, gt_images)
+    print(f"Train Set Shape \t: {train[0].shape}")
+    print(f"Test Set Shape  \t: {test[0].shape}")
+    print(f"Validation Set Shape \t: {valid[0].shape}")
+    
+    hist = unet_model.fit(train[0], train[1], validation_data=valid, epochs=100)
+    
+    unet_model.evaluate(test[0], test[1])
+    unet_model.save_weights("./weights/test")
     
 
 if __name__ == "__main__":

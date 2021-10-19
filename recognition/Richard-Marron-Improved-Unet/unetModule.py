@@ -26,7 +26,7 @@ class ImprovedUNet():
         self.leaky = leaky
         # Drop-out rate
         self.drop = drop
-        self.metric = self.dice_function
+        self.metric = [self.dice_function]
     
     def model(self):
         """
