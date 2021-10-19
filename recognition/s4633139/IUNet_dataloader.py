@@ -1,3 +1,12 @@
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
+#  File: IUNet_dataloader.py
+#  Author: Hideki WAKAYAMA
+#  Contact: h.wakayama@uq.net.au
+#  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
+#  Time: 19/10/2021, 15:47
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 import os
 from torch.utils.data import Dataset
 from PIL import Image

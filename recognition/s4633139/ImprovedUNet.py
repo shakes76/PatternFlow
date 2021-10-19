@@ -1,12 +1,19 @@
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
+#  File: ImprovedUNet.py
+#  Author: Hideki WAKAYAMA
+#  Contact: h.wakayama@uq.net.au
+#  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
+#  Time: 19/10/2021, 15:47
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class Context(nn.Module):
-    """
-    context module
-    """
+    """context"""
     def __init__(self, in_channels, out_channels):
         super(Context, self).__init__()
         self.context = nn.Sequential(
@@ -25,9 +32,7 @@ class Context(nn.Module):
 
 
 class Localization(nn.Module):
-    """
-    localization module
-    """
+    """localization"""
     def __init__(self, in_channels, out_channels):
         super(Localization, self).__init__()
         self.localization = nn.Sequential(
@@ -44,9 +49,7 @@ class Localization(nn.Module):
 
 
 class Upsampling(nn.Module):
-    """
-    upsampling module
-    """
+    """upsampling"""
     def __init__(self, in_channels, out_channels):
         super(Upsampling, self).__init__()
         self.upsampling = nn.Sequential(
@@ -61,9 +64,7 @@ class Upsampling(nn.Module):
 
 
 class Segment(nn.Module):
-    """
-    segmentation layer
-    """
+    """segmentation layer"""
     def __init__(self, in_channels, out_channels):
         super(Segment, self).__init__()
         self.segment = nn.Sequential(
@@ -77,9 +78,7 @@ class Segment(nn.Module):
 
 
 class Conv2(nn.Module):
-    """
-    convolution stride=2
-    """
+    """convolution stride=2"""
     def __init__(self, in_channels, out_channels):
         super(Conv2, self).__init__()
         self.conv2 = nn.Sequential(
@@ -93,9 +92,7 @@ class Conv2(nn.Module):
 
 
 class IUNet(nn.Module):
-    """
-    Improved Unet (International MICCAI Brainlesion Workshop(pp. 287-297). Springer, Cham.)
-    """
+    """Improved Unet (International MICCAI Brainlesion Workshop(pp. 287-297). Springer, Cham.)"""
     def __init__(self, in_channels=3, out_channels=1, feature_size=[16, 32, 64, 128]):
         super(IUNet, self).__init__()
         self.Conv1 = nn.Conv2d(in_channels=3, out_channels=feature_size[0], kernel_size=3, stride=1, padding=1, bias=False)
