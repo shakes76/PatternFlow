@@ -98,10 +98,11 @@ def load_rgbimages(path, height, width):
 
 def main():
     image_path = r"C:\Users\masa6\Desktop\UQMasterDS\COMP3710\OpenProject\Project\Data\ISIC2018_Task1-2_Training_Input_x2\*.jpg"
+    mask_path = r"C:\Users\masa6\Desktop\UQMasterDS\COMP3710\OpenProject\Project\Data\ISIC2018_Task1_Training_GroundTruth_x2\*.png"
 
     print("Getting minimum image shape...")
     # Image shapes are not consistent, get the minimum image shape. Shape of [283, 340] in this case.
-    min_img_shape = get_min_imageshape(image_path)
+    min_img_shape = get_min_imageshape(mask_path)
     img_height = min_img_shape[0]
     img_width = min_img_shape[1]
     print("\nMin Image Height:", img_height)
