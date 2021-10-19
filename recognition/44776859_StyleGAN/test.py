@@ -116,19 +116,52 @@ class AdaInstanceNormalization(tf.keras.layers.Layer):
 #         return tf.ones(shape=((BATCH_SIZE,) + START_DIMS + (IMAGE_SIZE,)))
 
 
-class ConstLayer(tf.keras.layers.Layer):
-    def __init__(self, **kwargs):
-        super(ConstLayer, self).__init__(**kwargs)
+# class ConstLayer(tf.keras.layers.Layer):
+#     def __init__(self, **kwargs):
+#         super(ConstLayer, self).__init__(**kwargs)
+#
+#     # def build(self, input_shape):
+#     #     super(ConstLayer, self).build(input_shape)
+#     #     self.shape = input_shape
+#
+#     def call(self, inputs, *args, **kwargs):
+#         input_shape = K.int_shape(inputs)
+#         return tf.ones(shape=((input_shape[0],) + START_DIMS + (IMAGE_SIZE,)))
+#         # return tf.ones(shape=((self.shape[0],) + START_DIMS + (IMAGE_SIZE,)))
 
-    # def build(self, input_shape):
-    #     super(ConstLayer, self).build(input_shape)
-    #     self.shape = input_shape
+class ConstOnes(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super(ConstOnes, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        super(ConstOnes, self).build(input_shape)
+        output_dim = input_shape[-1]
+        self.kernel = self.add_weight(
+            shape=(output_dim, output_dim),
+            trainable=False
+        )
 
     def call(self, inputs, *args, **kwargs):
         input_shape = K.int_shape(inputs)
-        return tf.ones(shape=((input_shape[0],) + START_DIMS + (IMAGE_SIZE,)))
-        # return tf.ones(shape=((self.shape[0],) + START_DIMS + (IMAGE_SIZE,)))
+        print(input_shape)
+        # if input_shape[0] is not None:
 
+        # sh = tf.shape(input_shape)
+        # print(sh)
+        # x = tf.ones(shape=((tf.shape(input_shape)[0],) + START_DIMS + (IMAGE_SIZE,)))
+        # print(x)
+        # return tf.ones(shape=((tf.shape(input_shape)[0],) + START_DIMS + (IMAGE_SIZE,)))
+
+        print(inputs.get_shape())
+        print(inputs.get_shape()[0])
+        ones = tf.ones(shape=input_shape[-1])
+        print(ones)
+        # x = inputs[None, :, :, :]
+        # x = tf.reshape(inputs, shape=(None, 7,7,28))
+        return ones
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0]
 
 # class SynthBlock(tf.keras.layers.Layer):
 #     def __init__(self):
@@ -153,7 +186,9 @@ dense3 = Dense(IMAGE_SIZE, activation='linear')(dense2)
 
 # -------------------------------------------------------------------------------------------------
 
-const = ConstLayer()(inputs)
+# const = ConstLayer()(inputs)
+const = ConstOnes(input_shape=(IMAGE_SIZE,), name='Constant')
+const = const(inputs)
 
 a1scale = Dense(IMAGE_SIZE, activation='linear')(dense3)
 a1bias = Dense(IMAGE_SIZE, activation='linear')(dense3)
