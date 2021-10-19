@@ -49,8 +49,9 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
     print("Successfully loaded paths!") 
     print("Converting images into numpy arrays...")
     # Read in images from path and return numpy array
-    return np.array([cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR), 
-                                dsize=(512, 384)) for path in img_paths], dtype=np.float32)
+    return np.array([cv2.cvtColor(cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR),
+                                             dsize=(512, 384)), 
+                                  cv2.COLOR_BGR2RGB) for path in img_paths], dtype=np.float32)
 
 def main(debugging=False):
     """
@@ -72,9 +73,9 @@ def main(debugging=False):
     print(f"Input image shape: {input_images[0].shape}")
     print(f"Ground truth image shape: {gt_images[0].shape}")
     # Show example of image and it's segmentation
-    plt.imshow(input_images[0])
+    plt.imshow(input_images[0][:, :])
     plt.figure()
-    plt.imshow(gt_images[0])
+    plt.imshow(gt_images[0][:, :])
     plt.show()
     
     unet = ImprovedUNet(input_shape=input_images[0].shape)
