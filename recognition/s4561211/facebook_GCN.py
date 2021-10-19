@@ -15,6 +15,8 @@ from torch.nn.modules.module import Module
 import torch.optim as optim
 from random import sample
 
+from plot_TSNE import plot
+
 def load_data(path):
     """
         Load data data and transform adjacency matrix
@@ -204,5 +206,9 @@ if __name__ == '__main__':
     
     train_model(200)
     test_model()
+    
+    plot(A, features, labels, type_ = 'truth')
+    
+    
 
 
