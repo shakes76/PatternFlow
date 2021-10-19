@@ -171,7 +171,6 @@ def train_model(n_epochs):
         if acc_pre < accuracy_val:
             #save model
             torch.save(model.state_dict(), 'train_model.pth')
-    
             acc_pre = accuracy_val
         
 def test_model():
