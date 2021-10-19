@@ -1,7 +1,7 @@
 import torch
 import torchvision
 from skimage import io
-from isics_data_loader import *
+from isics_data_setup import *
 
 class YOLO():
     CLASS_NAMES = ['BG', 'Lesion']
@@ -13,7 +13,7 @@ class YOLO():
         self.build_model()
 
     def build_model(self):
-        # Medium size model given the simplicity of dataset
+        # Medium size model is used given the simplicity of dataset
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5m')
 
     def train(self):
