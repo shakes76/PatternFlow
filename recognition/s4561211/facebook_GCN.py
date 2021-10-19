@@ -162,18 +162,17 @@ def train_model(n_epochs):
         accuracy_ = accuracy(output[tra], labels[tra])
         loss_.backward()
         optimizer.step()
-        print('train - Epoch:',epoch, ', loss:',loss_,', accuracy', accuracy_)
      
         #validation
         loss_val = loss(output[val], labels[val])
         accuracy_val = accuracy(output[val], labels[val])
-        #print('validation - Epoch:',epoch, ', loss:',loss_val,', accuracy', accuracy_val)
+        print('validation - Epoch:',epoch, ', loss:',loss_val,', accuracy', accuracy_val)
         
         if acc_pre < accuracy_val:
             #save model
             torch.save(model.state_dict(), 'train_model.pth')
     
-        acc_pre = accuracy_val
+            acc_pre = accuracy_val
         
 def test_model():
     """
@@ -195,12 +194,12 @@ if __name__ == '__main__':
     A, features, labels = load_data('facebook.npz')
     #split data index 
     #tra: val: test /0.2: 0.2: 0.6
-    tra, val, test = data_index(0.1,0.45)
+    tra, val, test = data_index(0.2,0.2)
     #size of hidden layer
     hidden = 32
 
     model = GCN(n_feature=features.shape[1], n_hidden=hidden,
-                n_class=labels.max().item() + 1, dropout=0.5)
+                n_class=len(np.unique(labels)), dropout=0.5)
     
     optimizer = optim.Adam([model.gc_layer1.W,model.gc_layer2.W], lr=0.01)
     
