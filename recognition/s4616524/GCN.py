@@ -104,12 +104,13 @@ class Facebook_Node_Classifier():
         prediction = output.argmax(1)
         correct = prediction == target
         
-        return sum(correct)/self.n_node
+        return sum(correct)/len(target)
         
-
     def train_modle(self, n_epoch=30, lr=0.01):
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
+        best_acc = 0
+        
         for epoch in range(n_epoch):
             self.model.train()
             optimizer.zero_grad()
@@ -130,6 +131,22 @@ class Facebook_Node_Classifier():
 
             print("Val Acc:" + str(val_acc))
 
+            if best_acc < val_acc:
+                best_acc = val_acc
+
+                torch.save(self.model.state_dict(), 'model_w.pth')
+                print("Save model parameters----------------------------------------")
+
+    def test_model(self):
+        self.model.load_state_dict(torch.load('model_w.pth'))
+        output = self.model(self.node_features, self.adj)
+        loss = nn.NLLLoss()
+        loss_out = loss(output[self.test_idx], self.target[self.test_idx])
+        acc = self.get_acc(output[self.test_idx], self.target[self.test_idx])
+
+        print("Test Performance: \n")
+        print("Accuracy: " + str(acc) + " Loss: " + str(loss_out))
+
 
 
 if __name__ == "__main__":
@@ -138,6 +155,8 @@ if __name__ == "__main__":
 
     classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
 
-    classifer.train_modle(n_epoch=200)
+    #classifer.train_modle(n_epoch=200)
+
+    classifer.test_model()
 
     
