@@ -1,6 +1,7 @@
 import random
 import math
 import torch
+from torch._C import FloatTensor
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -30,14 +31,12 @@ class GCNModel(nn.Module):
 
         self.gcn1 = GCNLayer(n_in_features, 64)
         self.gcn2 = GCNLayer(64, n_class)
-        self.ffn = nn.Linear(32, n_class)
         self.drop_p = drop_p
 
     def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor):
         x1 = F.relu(self.gcn1(input, adj))
         x1_drop = F.dropout(x1, self.drop_p, training=self.training)
-        x2 = F.relu(self.gcn2(x1_drop, adj))
-        #x3 = self.ffn(x2)
+        x2 = self.gcn2(x1_drop, adj)
         
         log_softmax = nn.LogSoftmax(dim=1)
 
@@ -144,18 +143,17 @@ class Facebook_Node_Classifier():
         loss_out = loss(output[self.test_idx], self.target[self.test_idx])
         acc = self.get_acc(output[self.test_idx], self.target[self.test_idx])
 
-        print("Test Performance: \n")
+        print("Test Performance: ")
         print("Accuracy: " + str(acc) + " Loss: " + str(loss_out))
-
 
 
 if __name__ == "__main__":
     
     facebook_path = 'facebook.npz'
 
-    classifer = Facebook_Node_Classifier(facebook_file=facebook_path)
+    classifer = Facebook_Node_Classifier(facebook_file=facebook_path, train_ratio=0.2, val_ratio=0.2)
 
-    #classifer.train_modle(n_epoch=200)
+    classifer.train_modle(n_epoch=200)
 
     classifer.test_model()
 
