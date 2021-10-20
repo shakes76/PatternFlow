@@ -406,11 +406,3 @@ def generate_samples(
 
     samples = generator([latent_noise, noise_images, tf.ones([sample_size, 1])])
     return samples
-
-
-disc = get_discriminator(256, 512, 4, 0.2)
-disc_file = "./tmp/disc.png"
-tf.keras.utils.plot_model(disc, to_file=disc_file, show_shapes=True)
-gen = get_generator(512, 256, 512, 4)
-gen_file = "./tmp/gen.png"
-tf.keras.utils.plot_model(gen, to_file=gen_file, show_shapes=True)
