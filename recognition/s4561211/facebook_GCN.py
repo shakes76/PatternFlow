@@ -123,9 +123,7 @@ def accuracy(output, labels):
         (Tensor) : the accuracy 
 
     """
-    #pred = output.max(1)[1].type_as(labels)
     pred = output.argmax(1)
-    #= pred.eq(labels).sum()/ labels.shape[0]
     acc_ = torch.div(pred.eq(labels).sum(), labels.shape[0])
     return acc_
 
