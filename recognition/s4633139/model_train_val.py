@@ -4,7 +4,7 @@
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
-#  Time: 19/10/2021, 15:47
+#  Time: 20/10/2021, 09:52
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from criterion import dice_coef, dice_loss
@@ -12,9 +12,18 @@ from tqdm import tqdm
 import torch
 
 def model_train_val(model, optimizer, EPOCHS, train_loader, val_loader):
-  """function for model training and validation
-  :return: list of train and validation dice coefficients and dice losses by epochs
   """
+  function for model training and validation
+  :param----
+    model: model
+    optimizer: optimizer
+    EPOCHS(int):number of epochs
+    train_loader: train loader
+    val_loader: validation loader
+  :return----
+    list of train and validation dice coefficients and dice losses by epochs
+  """
+
   TRAIN_LOSS = []
   TRAIN_DICE = []
   VAL_LOSS =[]
