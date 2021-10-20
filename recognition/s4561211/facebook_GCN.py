@@ -14,6 +14,7 @@ from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 import torch.optim as optim
 from random import sample
+import matplotlib.pyplot as plt
 
 from plot_TSNE import plot
 
@@ -152,7 +153,8 @@ def train_model(n_epochs):
         
     """
     acc_pre = 0
-    
+    acc_tra = []
+    acc_val = []
     for epoch in range(n_epochs):
         #train
         model.train() 
@@ -164,17 +166,21 @@ def train_model(n_epochs):
         optimizer.step()
         print('Epoch:',epoch,)
         print('train - loss:',loss_, ', accuracy', accuracy_)
+        acc_tra += accuracy_,
         
         #validation
         loss_val = loss(output[val], labels[val])
         accuracy_val = accuracy(output[val], labels[val])
         print('validation - loss:',loss_val,', accuracy', accuracy_val)
         print('--------------------------------------------------')
+        acc_val += accuracy_val,
         
         if acc_pre < accuracy_val:
             #save model
             torch.save(model.state_dict(), 'train_model.pth')
             acc_pre = accuracy_val
+        
+    return acc_tra, acc_val
         
 def test_model():
     """
@@ -205,10 +211,19 @@ if __name__ == '__main__':
     
     optimizer = optim.Adam([model.gc_layer1.W,model.gc_layer2.W], lr=0.01)
     
-    train_model(200)
+    acc_tra, acc_val = train_model(200)
     test_model()
     
+    #plot accuracy
+    plt.plot(range(200), acc_tra, 'b')
+    plt.plot(range(200), acc_val, 'r')
+    plt.legend(['accuracy_train', 'accuracy_validation'])
+    plt.show()
+    
+    #plot tsne
     plot(labels, outputs = model.gc_layer1(features, A).detach().numpy())
+    
+    
     
     
 

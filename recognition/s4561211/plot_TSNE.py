@@ -7,7 +7,7 @@ Created on Tue Oct 19 21:10:24 2021
 from sklearn.manifold import TSNE
 import seaborn as sns
 
-def plot(labels, outputs ):
+def plot(labels, outputs):
     """
         Plot TSNE embeddings 
 
