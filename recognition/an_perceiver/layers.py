@@ -2,6 +2,10 @@ import tensorflow as tf
 from tensorflow.keras import layers, initializers
 
 
+def layer_norm(input):
+    return layers.LayerNormalization(epsilon=1e-5)(input)
+
+
 class Latent(layers.Layer):
     """Trainable latent array, initialised with truncated normal."""
 
@@ -46,15 +50,51 @@ class FeedForwardNetwork(layers.Layer):
 
 
 class CrossAttention(layers.Layer):
-    def __init__(self, num_heads=1, name="cross_attention"):
+    """Cross-Attention followed by feed-forward network."""
+
+    def __init__(self, num_heads: int = 1, name="cross_attention"):
         super().__init__(name=name)
+        self.num_heads = num_heads
+
+    def build(self, input_q_shape: tuple[int, ...]):
+        self.attention = layers.MultiHeadAttention(
+            num_heads=self.num_heads, key_dim=input_q_shape[-1]
+        )
+        self.feed_forward = FeedForwardNetwork()
+
+    def call(self, inputs_q: tf.Tensor, inputs_kv: tf.Tensor):
+        q = layer_norm(inputs_q)
+        kv = layer_norm(inputs_kv)
+        attend_result = self.attention(q, kv)
+        return self.feed_forward(attend_result)
 
 
 class SelfAttention(layers.Layer):
-    def __init__(self, num_heads=8, name="self_attention"):
+    """Self-Attention followed by feed-forward network."""
+
+    def __init__(self, num_heads: int = 8, name="self_attention"):
         super().__init__(name=name)
+        self.num_heads = num_heads
+
+    def build(self, input_shape: tuple[int, ...]):
+        self.attention = layers.MultiHeadAttention(
+            num_heads=self.num_heads, key_dim=input_shape[-1]
+        )
+        self.feed_forward = FeedForwardNetwork()
+
+    def call(self, inputs: tf.Tensor):
+        qkv = layer_norm(inputs)
+        attend_result = self.attention(qkv)
+        return self.feed_forward(attend_result)
 
 
 class ClassificationDecoder(layers.Layer):
-    def __init__(self, num_classes=2, name="logits"):
+    """Classification decoder block."""
+
+    def __init__(self, num_classes: int = 2, name="logits"):
         super().__init__(name=name)
+        self.logits = layers.Dense(num_classes, activation=tf.nn.softmax)
+
+    def call(self, inputs: tf.Tensor):
+        x = tf.reduce_mean(inputs, -2)
+        return self.logits(x)
