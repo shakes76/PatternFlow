@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from data_utils import get_min_imageshape, train_val_test_split
 from SegmentationMetrics import dice_coef, dice_loss
+from misc_utils import get_close2power
 
 
 def main():
@@ -16,9 +17,13 @@ def main():
     print("\nMin Image Height:", img_height)
     print("Min Image Width:", img_width)
 
+    # Get the maximum possible squared image shape
+    new_imageshape = get_close2power(min(img_height, img_width))
+    print("\nThe maximum possible squared image shape is " + str(new_imageshape) + "x" + str(new_imageshape))
+
     # Load, preprocess and split the data into 60% train, 20% validation and 20% test set
     split_ratio = [0.6, 0.2, 0.2]
-    X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(image_path, mask_path, img_height, img_width, split_ratio, randomstate=42)
+    X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(image_path, mask_path, new_imageshape, new_imageshape, split_ratio, randomstate=42)
 
     # Plot the data
     print("\nPlotting the first preprocessed RGB image and preprocessed mask of the train, validation and test set...")
