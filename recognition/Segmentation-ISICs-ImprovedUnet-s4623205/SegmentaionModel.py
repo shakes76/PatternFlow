@@ -102,6 +102,32 @@ class SegModel:
         self.model.summary()
 
     def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs):
+        """
+        Function to train the current segmentation model in SegModel class
+
+        Parameters
+        ----------
+        X_train : float32 numpy array
+          The train set of data type float32 numpy array of the preprocessed images
+        X_val : float32 numpy array
+          The validation set of data type float32 numpy array of the preprocessed images
+        y_train : float32 numpy array
+          The train set of data type float32 numpy array of the preprocessed masks
+        y_val : float32 numpy array
+          The validation set of data type float32 numpy array of the preprocessed masks
+        optimizer : string
+          The parameter to decide which optimizer to use. "adam" is using the Adam optimizer.
+        lr : float
+          The parameter of the learning rate
+        loss : function
+          The loss function used for training
+        metrics : list
+          A list of metric functions to evaluate train and validation when training
+        batch_size : integer
+          Number of samples to take in to calculate then update weights
+        epochs : integer
+          Number to decide how many iterations of the model is train over the whole train data set
+        """
         if optimizer == 'adam':
             opt = Adam(learning_rate=lr)
         else:
