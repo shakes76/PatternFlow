@@ -15,6 +15,7 @@ Here is a simple way to check it:
 - Type "import tensorflow as tf"
 - Type "tf.ones((2,2))"
 - Check out the outcoming message
+
 In the last step, if the message mentions the GPU usage, then the running environment is proper.
 
 *Otherwise:*
@@ -22,6 +23,7 @@ In the last step, if the message mentions the GPU usage, then the running enviro
 - Type "conda install jupyter"
 - Type "pip install tensorflow"
 - Type "pip install xxx" to install other necessary patches
+
 Note: Please use "pip" command only after using "conda install jupyter", because "conda" command will have conflicts.
 
 *2. After setting the proper environment, please follow the steps below:*
@@ -40,7 +42,7 @@ Note: This is **recommended** because the original version of these codes is wri
 - Important: Please use "#" to ignore the line "from model.py import *" 
 - Run the file
 
-## Information about ISICs:
+## Information about ISIC:
 The International Skin Imaging Collaboration (ISIC) aims to improve melanoma diagnosis. The ISIC Archive contains the largest publicly available collection of quality-controlled dermoscopic images of skin lesions.
 
 While the initial focus of the ISIC collaboration is on melanoma diagnosis, the goals being pursued by ISIC are critical to advancing the broader landscape of skin imaging and artificial intelligence in Dermatology, including non-melanoma skin cancer and inflammatory dermatoses.
