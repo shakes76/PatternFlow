@@ -9,7 +9,6 @@ import scipy.sparse as sp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 import torch.optim as optim
