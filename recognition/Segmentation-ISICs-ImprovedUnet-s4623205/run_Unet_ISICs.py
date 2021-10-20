@@ -31,7 +31,40 @@ def main():
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Unet")
     # Test run of the baseline Unet model
     print("Training model...")
-    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0001, loss=dice_loss, metrics=[dice_coef], batch_size=16, epochs=10)
+    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0001, loss=dice_loss, metrics=[dice_coef], batch_size=16, epochs=3)
+
+    # Predict and plot test set
+    print("\nPredicting test set...")
+    y_pred = model.predict(X_test, batch_size=32)
+    print("Plotting First test set and predicted mask...")
+    plt.subplot(1, 3, 1)
+    plt.imshow(X_test[0])
+    plt.title("Image")
+    plt.subplot(1, 3, 2)
+    plt.imshow(y_test[0, :, :, 0], cmap="gray")
+    plt.title("True mask")
+    plt.subplot(1, 3, 3)
+    plt.imshow(y_pred[0, :, :, 0], cmap="gray")
+    plt.title("Predict mask")
+    plt.suptitle("First test data")
+    plt.tight_layout()
+    plt.show()
+    print("Plotting Second test set and predicted mask...")
+    plt.subplot(1, 3, 1)
+    plt.imshow(X_test[1])
+    plt.title("Image")
+    plt.subplot(1, 3, 2)
+    plt.imshow(y_test[1, :, :, 0], cmap="gray")
+    plt.title("True mask")
+    plt.subplot(1, 3, 3)
+    plt.imshow(y_pred[1, :, :, 0], cmap="gray")
+    plt.title("Predict mask")
+    plt.suptitle("Second test data")
+    plt.tight_layout()
+    plt.show()
+
+    # Calculate dice coefficient on test set
+    print("\nTest set Dice Coefficient:", dice_coef(y_test, y_pred).numpy())
 
 
 if __name__ == "__main__":
