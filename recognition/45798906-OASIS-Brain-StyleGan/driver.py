@@ -80,6 +80,7 @@ DISCRIMINATOR_WEIGHT_PATH: str = ""
 TRAIN: bool = True
 EPOCHS: int = 100
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
+MODEL_NAME: str = "Trial 2"
 LOAD_WEIGHTS: bool = False
 SAVE_WEIGHTS: bool = True
 WEIGHT_SAVING_INTERVAL: int = 5
@@ -122,8 +123,8 @@ def main():
             BATCH_SIZE,
             IMAGE_SIZE,
             EPOCHS,
-            epoch_offset=TOTAL_PREVIOUS_EPOCHS if LOAD_WEIGHTS else 0,
             model_name=MODEL_NAME,
+            epoch_offset=TOTAL_PREVIOUS_EPOCHS if LOAD_WEIGHTS else 0,
             save_weights=SAVE_WEIGHTS,
             weight_save_path=WEIGHT_PATH,
             weight_save_interval=WEIGHT_SAVING_INTERVAL,

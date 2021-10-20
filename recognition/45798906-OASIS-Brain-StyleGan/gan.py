@@ -321,8 +321,8 @@ def train(
     batch_size: int,
     img_size: int,
     total_epochs: int,
-    epoch_offset: int = 0,  # Number of previous completed epochs
     model_name: str,
+    epoch_offset: int = 0,  # Number of previous completed epochs
     save_weights: bool = False,
     weight_save_path: bool = None,
     weight_save_interval: int = 5,
