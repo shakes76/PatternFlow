@@ -117,7 +117,7 @@ class SelfAttention(layers.Layer):
 
     def call(self, inputs: tf.Tensor):
         qkv = layer_norm(inputs)
-        attend_result = self.attention(qkv)
+        attend_result = self.attention(qkv, qkv)
         return self.feed_forward(attend_result)
 
 
