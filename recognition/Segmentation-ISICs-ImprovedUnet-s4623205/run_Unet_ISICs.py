@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from data_utils import get_min_imageshape, train_val_test_split
 from SegmentationMetrics import dice_coef, dice_loss
 from misc_utils import get_close2power
+from SegmentaionModel import SegModel
 
 
 def main():
@@ -17,9 +18,9 @@ def main():
     print("\nMin Image Height:", img_height)
     print("Min Image Width:", img_width)
 
-    # Get the maximum possible squared image shape
+    # Get the maximum possible square image shape. 256x256 in this case.
     new_imageshape = get_close2power(min(img_height, img_width))
-    print("\nThe maximum possible squared image shape is " + str(new_imageshape) + "x" + str(new_imageshape))
+    print("\nThe maximum possible square image shape is " + str(new_imageshape) + "x" + str(new_imageshape))
 
     # Load, preprocess and split the data into 60% train, 20% validation and 20% test set
     split_ratio = [0.6, 0.2, 0.2]
@@ -60,6 +61,10 @@ def main():
     print("Dice coefficient between the first train mask and first test mask:", dice_coef(y_train[0, :, :, 0], y_test[0, :, :, 0]).numpy())
     # This is expected to be between 0 and 1, but not 0
     print("Dice loss between the first train mask and first test mask:", dice_loss(y_train[0, :, :, 0], y_test[0, :, :, 0]).numpy())
+
+    # Construct baseline Unet model
+    model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Unet")
+    model.summary()
 
 
 if __name__ == "__main__":
