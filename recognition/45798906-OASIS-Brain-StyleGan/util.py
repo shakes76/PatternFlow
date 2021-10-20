@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 19/10/2021
+    Date last modified: 20/10/2021
     Python version: 3.9.7
 """
 
@@ -84,8 +84,8 @@ def visualise_loss(
 
     gen_losses, disc_losses = losses
     x_range = tf.range(
-        1 if starting_epoch == 0 else starting_epoch,
-        starting_epoch + len(gen_losses),
+        starting_epoch + 1,
+        starting_epoch + len(gen_losses) + 1,
     )
 
     # Plot
