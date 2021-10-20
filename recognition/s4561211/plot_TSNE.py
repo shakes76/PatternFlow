@@ -7,7 +7,7 @@ Created on Tue Oct 19 21:10:24 2021
 from sklearn.manifold import TSNE
 import seaborn as sns
 
-def plot(A, features, labels, type_ = 'truth'):
+def plot(labels, outputs ):
     """
         Plot TSNE embeddings 
 
@@ -18,17 +18,9 @@ def plot(A, features, labels, type_ = 'truth'):
         
     """
     
-    tsne = TSNE().fit_transform(features)
+    tsne = TSNE().fit_transform(outputs)
     
     sns.set(rc={'figure.figsize':(11,8)})
     palette = sns.color_palette("muted", 4)
-    
-    if type_ == 'truth':
-        y = labels
-        
-    elif type_ =='pred':
-        output = model(features, A)
-        pred = output.argmax(1)
-        y = pred
-        
-    sns.scatterplot(tsne[:,0], tsne[:,1], hue=y , legend='full', palette=palette, s=10)
+          
+    sns.scatterplot(tsne[:,0], tsne[:,1], hue=labels, legend='full', palette=palette, s=10)

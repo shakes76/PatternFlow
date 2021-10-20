@@ -207,7 +207,7 @@ if __name__ == '__main__':
     train_model(200)
     test_model()
     
-    plot(A, features, labels, type_ = 'truth')
+    plot(labels, outputs = model.gc_layer1(features, A).detach().numpy())
     
     
 
