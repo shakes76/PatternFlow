@@ -7,9 +7,9 @@ from tensorflow.keras.layers import UpSampling2D, MaxPooling2D, concatenate
 tf.random.Generator = None
 def upsample(layer_previous, size, activ_mode):
     '''
-    This function can upsample the maps with the lower resolution.
-    For the convolutional layer, the kernel size is 3 * 3.
-    Return: A layer after being upsampled.
+    Upsample the maps with lower resolution.
+    The kernel size of the convolutional layer is 3*3.
+    Return the upsampled layer.
     '''
     upsample_layer=UpSampling2D()(layer_previous)
     upsample_layer=Conv2D(size,(3,3),activation=activ_mode,padding="same")(upsample_layer)
@@ -17,8 +17,8 @@ def upsample(layer_previous, size, activ_mode):
 
 def improved_unet(n_classes, size=(256,256,3)):
     '''
-    Replace the traditional bathc with the instance normalization.
-    Return: An improved UNET model.
+    This is the main part of the improved Unet model.
+    Return the improved Unet model.
     '''
     number_filter=16
     drop_prob=0.3
@@ -26,10 +26,10 @@ def improved_unet(n_classes, size=(256,256,3)):
     
     def context(layer_previous, size, activation=leakyReLu):
         '''
-        This function contains a convolutional layer followed by a drop out layer and a convolutional layer.
-        For the convolutional layers, the kernel size is 3 * 3.
-        For the drop out layers, the probability is 0.3
-        Return: A layer after the context block.
+        Context module's structure: a convolutional layer followed by a drop out layer and a convolutional layer.
+        The kernel size of the convolutional layer is 3*3.
+        The drop probability is 0.3 for drop out layers.
+        Return the layer after entering the context module.
         '''
         context=tensorflow_addons.layers.InstanceNormalization()(layer_previous)
         context=Activation(activation=activation)(context)
@@ -42,10 +42,8 @@ def improved_unet(n_classes, size=(256,256,3)):
     
     def localization(layer_previous, size, activation=leakyReLu):
         '''
-        This function contains a convolutional layer with 3 * 3 kernel size and another convolutional layer
-        with 1 * 1 kernel size.
-        The second convolutional layer can half the number of the feature maps.
-        Return: A layer after the localization block.
+        localization module's structure: a convolutional layer (kernel size is 3*3) and another convolutional layer (kernel size is 1*1).
+        Return the layer after entering the localization module.
         '''
         localization=Conv2D(size, (3, 3), activation = activation, padding="same")(layer_previous)        
         localization=Conv2D(size, (1, 1), activation = activation, padding="same")(localization)
