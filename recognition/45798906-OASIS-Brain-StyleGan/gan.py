@@ -140,11 +140,12 @@ def disc_block(
     if downSample:
         out = AveragePooling2D()(out)
         out = LeakyReLU(0.01)(out)
-
-    for _ in range(2):
         out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
         out = LeakyReLU(0.01)(out)
         out = Dropout(dropout)(out)
+    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
+    out = LeakyReLU(0.01)(out)
+    out = Dropout(dropout)(out)
 
     return out
 
