@@ -25,6 +25,39 @@ For a semi supervised model, data is split into train, validation and test in th
 
 ### Model 
 #### Graph Convolutional Network Model
-![](https://github.com/SandyKang/PatternFlow/raw//topic-recognition/s4561211/Resource/GCN_model.png)
+![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/GCN_model.png)
+
+Loss functions: log loss <br>
+
+Optimizer: Adam optimizer with learning rate 0.01 <br>
+
+Best Model Selection: Save the best model which has the largest accuracy for validation data. <br>
+
+#### List of Packages Required
+* numpy
+* scipy.sparse
+* torch
+* sample
+* imatplotlib
+* sklearn
+* seaborn
+
+### Outputs
+Accuracy for training and validation set <br>
+200 iterations: <br>
+![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/accuracy200.png) <br>
+
+500 iterations: <br>
+![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/accuracy500.png) <br>
+
+#### Accuracy for test set <br>
+200 iterations: <br>
+test - loss: tensor(0.4834, grad_fn=<NegBackward>) , accuracy tensor(0.8432) <br>
+    
+500 iterations: <br>
+test - loss: tensor(0.3858, grad_fn=<NegBackward>) , accuracy tensor(0.8830) <br>
+
+
+
 
     
