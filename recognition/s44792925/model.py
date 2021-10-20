@@ -47,7 +47,7 @@ def model(height, width, channel):
     upsampling1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(upsampling1)
     concat1 = tf.keras.layers.concatenate([sum4, upsampling1])
     localization_1 = tf.keras.layers.Conv2D(128, (3,3), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(concat1)
-    localization_1 = tf.keras.layers.BatchNormalization()(localization_1)
+    localization_1 = tf.keras.layers.BatchNormalization()(localization_1) #BatchNormalization layers used to avoid overfitting
     localization_1 = tf.keras.layers.Conv2D(128, (1,1), activation=tf.keras.layers.LeakyReLU(alpha=10**-2), padding ='same')(localization_1)
     localization_1 = tf.keras.layers.BatchNormalization()(localization_1)
     upsampling2 = tf.keras.layers.UpSampling2D(size=(2,2))(localization_1)

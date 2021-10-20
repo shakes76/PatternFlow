@@ -8,10 +8,10 @@ The ISIC dataset is a open source dataset seeking to advance melonoma research. 
 
 
 ## Architecture
-The Improved UNet Architecture is displayed below. The model works by continously encoding the data in higher abstract forms through convolution, before recombining the representations to identify features used to form a segmentation mask. Like the standard UNET, the Improved UNet model can thought of as containing two separate parts - encoding and decoding. The encoding section of the network is broken into a series of blocks with increasing filter size, whilst the decoding section essentially performs the inverse. Inside each context module is 2 layers of Batch Normalization, ReLU, and Convolution with a dropout layer between.
+The Improved UNet Architecture is displayed below. The model works by continously encoding the data in higher abstract forms through convolution, before recombining the representations to identify features used to form a segmentation mask. Like the standard UNET, the Improved UNet model can thought of as containing two separate parts - encoding and decoding. The encoding section of the network is broken into a series of blocks with increasing filter size, whilst the decoding section essentially performs the inverse. Inside each context module is 2 layers of Batch Normalization, ReLU, and Convolution with a dropout layer between. Additional layers of Batch Normalization have been added to avoid overfitting. 
 <p align="center"><img src='images/improved_unet.png'></p>
 
-The model was trained with a 80:10:10 train/test/validation split for 100 epochs to achieve a >0.8 dice similarity. The data was preprocessed through normalization and resizing to 256x256 with 3 channels for input data, and 1 channel for the mask data.
+The model was trained with a 80:10:10 train/test/validation split for 100 epochs to achieve a >0.8 dice similarity. The data was preprocessed through normalization and resizing to 256x256 with 3 channels for input data, and 1 channel for the mask data. The model is trained with a dice coefficient loss function.
 
 ## Running the Model
 
