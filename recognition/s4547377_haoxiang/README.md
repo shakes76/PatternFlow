@@ -40,6 +40,7 @@ Note: This is **recommended** because the original version of these codes is wri
 - Copy the codes from model.py and paste it into the first block
 - Copy the codes from the main.py and paste it into the second block
 - Important: Please use "#" to ignore the line "from model.py import *" 
+- Change the paths of images to the paths on your local computer
 - Run the file
 
 ## Information about ISIC:
