@@ -1,101 +1,91 @@
-# https://echo360.org.au/lesson/G_c55b0d11-15c0-4b87-b69d-7410edfb5a76_38ecd661-9fca-4df3-9d60-51f440fd1f5c_2021-09-20T12:00:00.000_2021-09-20T14:00:00.000/classroom#sortDirection=desc
-# pseudo code
-# conv2d relu twice, max pool, do this 4 times; then conv1x1 twice ad then up-conv2x2.
-# then conv2d relu and up conv4 times and on the last time just conv2d twice and then conv1x1.
-# this is the typical UNet
-
-# data: fetaures (images), labels ( segmentatuon masks)
-# preprocessing: normalise the images, one hot encode the labels - split mask image into multiple ones with 0 and 1's
-# use softmax (not sigmoid) for unet
-# need to define loss model (dice loss in this case) - ranges from 0 to 1 where 1 is best, DSC = (2|X intersect Y|)/(|X|+|Y|)
-# have to report the dice for each class
-
-# class notes
-# unet, isic you have 2 types of images, demoscopy and the mask
-# demoscopy is the input, mask is the output (labels)
-# mask is binary image (black background, white is legion etc.)
-# binary classification at the pixel level, classify each pixel as background or legion
-#
-# ground truth is the mask
-# demoscopy is the input, train it with the mask as the output
-#
-# binary use the sigmoid
-#
-# look at the improved unet paper linked
-#
-# they just have additional residual connections
-# paper is 3d, just make 2d, just need to implement the residual ones
-#
-# different size of images, just resize
-#
-# look at github to see sample solutions
-#
-# dice is the loss in the paper too, it has formula too
-#
-# watch lecture
-
-
 import tensorflow as tf
 
+def IUNET_model():
+    inputs = tf.keras.Input(shape=[256, 256, 1])
 
-def dsc_loss(ytrue, ypred):
-    true_flat = tf.keras.backend.flatten(ytrue)
-    pred_flat = tf.keras.backend.flatten(ypred)
-    inter = tf.keras.backend.sum(true_flat * pred_flat)
-    return 1 - (2*(inter + 1) / (tf.reduce_sum(true_flat) + tf.reduce_sum(pred_flat) + 1))
-
-def model():
-
-    inputs = tf.keras.Input((256, 256, 1))
     # step 1
-    conv1 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(inputs)
-    conv1 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv1)
-    pool1 = tf.keras.layers.MaxPool2D((2, 2))(conv1)
+    conv1 = tf.keras.layers.Conv2D(filters=16, kernel_size=3, padding="same", activation="relu")(inputs)
 
-    conv2 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(pool1)
-    conv2 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv2)
-    pool2 = tf.keras.layers.MaxPool2D((2, 2))(conv2)
+    context1 = tf.keras.layers.Conv2D(filters=16, kernel_size=3, padding="same", activation="relu")(conv1)
+    drop1 = tf.keras.layers.Dropout(0.3)(context1)
+    context1 = tf.keras.layers.Conv2D(filters=16, kernel_size=3, padding="same", activation="relu")(drop1)
 
-    conv3 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(pool2)
-    conv3 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv3)
-    pool3 = tf.keras.layers.MaxPool2D((2, 2))(conv3)
+    sum1 = tf.math.add(conv1, context1)
 
-    conv4 = tf.keras.layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(pool3)
-    conv4 = tf.keras.layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv4)
-    pool4 = tf.keras.layers.MaxPool2D((2, 2))(conv4)
+    # step 2
 
-    conv5 = tf.keras.layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(pool4)
-    conv5 = tf.keras.layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(conv5)
+    stride2 = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", strides=2, activation="relu")(sum1)
 
-    # up sampling
-    up6 = tf.keras.layers.Conv2DTranspose(filters=512, kernel_size=3, padding="same", activation="relu", strides=(2,2))(conv5)
-    m6 = tf.keras.layers.concatenate([conv4, up6], axis=3)
-    conv6 = tf.keras.layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(m6)
-    conv6 = tf.keras.layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv6)
+    context2 = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(stride2)
+    drop2 = tf.keras.layers.Dropout(0.3)(context2)
+    context2 = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(drop2)
 
-    up7 = tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=3, padding="same", activation="relu", strides=(2,2))(conv6)
-    m7 = tf.keras.layers.concatenate([conv3, up7], axis=3)
-    conv7 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(m7)
-    conv7 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv7)
+    sum2 = tf.math.add(stride2, context2)
 
-    up8 = tf.keras.layers.Conv2DTranspose(filters=128, kernel_size=3, padding="same", activation="relu", strides=(2,2))(conv7)
-    m8 = tf.keras.layers.concatenate([conv2, up8], axis=3)
-    conv8 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(m8)
-    conv8 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv8)
+    # step 3
 
-    up9 = tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=3, padding="same", activation="relu", strides=(2,2))(conv8)
-    m9 = tf.keras.layers.concatenate([conv1, up9], axis=3)
-    conv9 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(m9)
-    conv9 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv9)
+    stride3 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", strides=2, activation="relu")(sum2)
 
-    conv10 = tf.keras.layers.Conv2D(filters=1, kernel_size=1, activation='sigmoid')(conv9)
+    context3 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(stride3)
+    drop3 = tf.keras.layers.Dropout(0.3)(context3)
+    context3 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(drop3)
 
-    model = tf.keras.Model(inputs, conv10)
+    sum3 = tf.math.add(stride3, context3)
+
+    # step 4
+
+    stride4 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", strides=2, activation="relu")(sum3)
+
+    context4 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(stride4)
+    drop4 = tf.keras.layers.Dropout(0.3)(context4)
+    context4 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(drop4)
+
+    sum4 = tf.math.add(stride4, context4)
+
+    # step 5 lowest one
+    stride5 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", strides=2, activation="relu")(sum4)
+
+    context5 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(stride5)
+    drop5 = tf.keras.layers.Dropout(0.3)(context5)
+    context5 = tf.keras.layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(drop5)
+
+    sum5 = tf.math.add(stride5, context5)
+
+    up5 = tf.keras.layers.UpSampling2D(size=(2, 2))(sum5)
+
+    # step 6 up 1
+    conc6 = tf.keras.layers.concatenate([up5, sum4])
+    loc6 = tf.keras.layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu") (conc6)
+    loc6 = tf.keras.layers.Conv2D(filters=128, kernel_size=1, padding="same", activation="relu") (loc6)
+    up6 = tf.keras.layers.UpSampling2D(size=(2, 2))(loc6)
+
+    # step 7 up 2
+    conc7 = tf.keras.layers.concatenate([up6, sum3])
+    loc7 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conc7)
+    loc7 = tf.keras.layers.Conv2D(filters=64, kernel_size=1, padding="same", activation="relu")(loc7)
+    up7 = tf.keras.layers.UpSampling2D(size=(2, 2))(loc7)
+
+    uploc7 = tf.keras.layers.Conv2DTranspose(filters=32, kernel_size=3, padding='same')(up7)  # tf.keras.layers.UpSampling2D(size=(2, 2))(loc7)
+
+    # step 8 up 3
+    conc8 = tf.keras.layers.concatenate([up7, sum2])
+    loc8 = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(conc8)
+    loc8 = tf.keras.layers.Conv2D(filters=32, kernel_size=1, padding="same", activation="relu")(loc8)
+    up8 = tf.keras.layers.UpSampling2D(size=(2, 2))(loc8)
+
+    seg8 = tf.math.add(uploc7, loc8)
+
+    # step 9 up 4
+    conc9 = tf.keras.layers.concatenate([up8, sum1])
+    conv9 = tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu")(conc9)
+
+    upseg8 = tf.keras.layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding="same")(seg8)
+    seg9 = tf.math.add(upseg8, conv9)
+
+    sig = tf.keras.layers.Conv2D(filters=1, kernel_size=1, activation='sigmoid')(seg9)
+
+    finalModel = tf.keras.Model(inputs, sig)
+
+    return finalModel
 
 
-    model.compile(tf.keras.optimizers.Adam(), loss=dsc_loss, metrics=['accuracy'])
-    model.summary()
-
-
-if __name__ == '__main__':
-    model()
