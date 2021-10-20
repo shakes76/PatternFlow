@@ -2,10 +2,14 @@ import numpy as np
 import scipy
 import scipy.sparse as spr
 import tensorflow as tf
+import tensorflow.keras as ks
 
 
-def get_neighbours(self, node):
-    print(node)
+@tf.function
+def printIncident(incident):
+    print("MyFunc")
+    print(incident)
+    return incident
 
 
 def denseNDArrayToSparseTensor(arr):
@@ -27,13 +31,13 @@ def coo_matrix_to_sparse_tensor(coo):
 def Model(input_data):
 
     # This is the model
-    page_one = [0, 0, 1, 2, 0]
-    page_two = [4, 2, 3, 3, 1]
+    page_one = [0, 0, 1, 2, 0, 4, 2, 3, 3, 1]
+    page_two = [4, 2, 3, 3, 1, 0, 0, 1, 2, 0]
 
-    identity = [0, 1, 2, 3, 4]
+    name = [0, 1, 2, 3, 4]
 
-    page_one += identity
-    page_two += identity
+    page_one += name
+    page_two += name
 
     print("ID")
     print(page_one)
@@ -47,36 +51,31 @@ def Model(input_data):
              [2.0, 5.2, -0.6]
              ]
 
-    # Pick a Node V
-    # node = input_data[0]
-
     # Construct Adjacency matrix
-    A = spr.coo_matrix((ones, (page_one, page_two)))
+    a_bar = spr.coo_matrix((ones, (page_one, page_two)))
+    a_bar.setdiag(1)
+
+    print(a_bar.toarray())
 
     print("Running Model")
-    print(A)
-    print("=====  =====")
-    print(A.data)
-    print(A.dtype)
-    print(A.shape)
-    print(A.col)
-    print(A.row)
-
-    A_spr = coo_matrix_to_sparse_tensor(A)
-
-    # feats_sparse = spr.csr_matrix(feats)
-    # A_sp = tf.sparse.from_dense(A)
-    # F = tf.sparse.from_dense(feats)
-    # print(F.shape)
+    print("===== Sparse =====")
+    a_bar_spr = coo_matrix_to_sparse_tensor(a_bar)
 
     print("===== Result =====")
+    ax = tf.sparse.sparse_dense_matmul(tf.cast(a_bar_spr, float), feats)
+    print(ax.dtype)
+    print(ax)
 
+    tf.nn.relu(ax)
+    feats = np.array(feats)
 
-    # newA = tf.sparse.SparseTensor(A)
-    #
-    res = tf.sparse.sparse_dense_matmul(tf.cast(A_spr, float), feats)
-    print(res.dtype)
-    print(res)
+    weights = tf.random.normal(feats.shape, mean=0.0, stddev=1.0, dtype=tf.dtypes.float32, seed=None, name=None)
+
+    print(weights)
+
+    z = ax * weights
+
+    print(z)
 
 
 
