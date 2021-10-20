@@ -1,15 +1,15 @@
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
-#  File: main.py
+#  File: driver.py
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
 #  Time: 19/10/2021, 17:30
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from IUNet_dataloader import UNet_dataset
-from ImprovedUNet import IUNet
-from IUNet_train_test import model_train_test
+from dataloader import UNet_dataset
+from model import IUNet
+from model_train_val import model_train_val
 from visualse import dice_coef_vis, segment_pred_mask, plot_gallery
 
 import torch
@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 def main():
     """execute model training and return dice coefficient plots"""
 
-    #PARAMETERS#
+    #PARAMETERS
     FEATURE_SIZE=[16, 32, 64, 128]
     IN_CHANEL=3
     OUT_CHANEL=1
@@ -39,43 +39,51 @@ def main():
                         ])
 
     BATCH_SIZE = 64
-    EPOCHS = 15
+    EPOCHS = 1
     LR = 0.001
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     #DATA PREPARATION
     dataset = UNet_dataset(img_transforms=IMG_TF, mask_transforms=MASK_TF)
 
     #shuffle index
     sample_size = len(dataset.imgs)
-    train_size = int(sample_size * 0.8)
-    test_size = sample_size - train_size
+    train_size = int(sample_size * 0.5)
+    split_size = sample_size - train_size
 
-    #train and test set
-    train_set, test_set = random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(123))
+    val_size = split_size//2
+    test_size = split_size - val_size
+
+    #train, validation, test
+    train_set, split_set = random_split(dataset, [train_size, split_size], generator=torch.Generator().manual_seed(123))
+    val_set, test_set = random_split(split_set, [val_size, test_size], generator=torch.Generator().manual_seed(123))
 
     #data loader
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
 
-    #MODEL#
+    #MODEL
     model = IUNet(in_channels=IN_CHANEL, out_channels=OUT_CHANEL, feature_size=FEATURE_SIZE)
+    model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=LR)
 
     #train,test
-    TRAIN_DICE, TEST_DICE, TRAIN_LOSS, TEST_LOSS = model_train_test(model, optimizer, EPOCHS, train_loader, test_loader)
+    TRAIN_DICE, VAL_DICE, VAL_LOSS, VAL_LOSS = model_train_val(model, optimizer, EPOCHS, train_loader, val_loader)
 
     #plot dice coefficient
-    dice_coef_vis(EPOCHS, TRAIN_DICE, TEST_DICE)
+    dice_coef_vis(EPOCHS, TRAIN_DICE, VAL_DICE)
 
     #segmentation
-    for batch in train_loader:
+    for batch in test_loader:
         images, masks = batch
         break
 
     model.eval()
     pred_masks = model(images)
 
-    plot_gallery(images, masks, pred_masks, n_row=6, n_col=4)
+    plot_gallery(images, masks, pred_masks, n_row=5, n_col=4)
 
 if __name__ == main():
     main()

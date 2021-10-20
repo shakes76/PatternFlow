@@ -1,6 +1,6 @@
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
-#  File: IUNet_dataloader.py
+#  File: dataloader.py
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
