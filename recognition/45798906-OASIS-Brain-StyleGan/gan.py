@@ -322,6 +322,7 @@ def train(
     img_size: int,
     total_epochs: int,
     epoch_offset: int = 0,  # Number of previous completed epochs
+    model_name: str,
     save_weights: bool = False,
     weight_save_path: bool = None,
     weight_save_interval: int = 5,
@@ -330,12 +331,11 @@ def train(
     image_save_interval: str = 1,
 ) -> tuple[list[float], list[float]]:
 
-    train_code = time.time()
     if save_images:
-        tf.io.gfile.makedirs(f"{image_save_path}{train_code}/")
+        tf.io.gfile.makedirs(f"{image_save_path}{model_name}/")
 
     if save_weights:
-        tf.io.gfile.makedirs(f"{weight_save_path}{train_code}/")
+        tf.io.gfile.makedirs(f"{weight_save_path}{model_name}/")
 
     gen_loss_history = []
     disc_loss_history = []
@@ -376,16 +376,16 @@ def train(
                 generator([latent_noise, noise_images, tf.ones([1, 1])])[0]
             )
             save_img.save(
-                f"{image_save_path}{train_code}/epoch-{epoch + epoch_offset + 1}.png"
+                f"{image_save_path}{model_name}/epoch-{epoch + epoch_offset + 1}.png"
             )
 
         # Save the weights
         if save_weights and (epoch + 1) % weight_save_interval == 0:
             generator.save_weights(
-                f"{weight_save_path}{train_code}/generator/{epoch + epoch_offset + 1}"
+                f"{weight_save_path}{model_name}/generator/{epoch + epoch_offset + 1}"
             )
             discriminator.save_weights(
-                f"{weight_save_path}{train_code}/discriminator/{epoch + epoch_offset + 1}"
+                f"{weight_save_path}{model_name}/discriminator/{epoch + epoch_offset + 1}"
             )
 
     return gen_loss_history, disc_loss_history
