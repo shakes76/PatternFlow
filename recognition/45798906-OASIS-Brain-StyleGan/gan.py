@@ -319,6 +319,7 @@ def train(
     real_images: tf.data.Dataset,
     latent_dimension: int,
     batch_size: int,
+    batches: int,
     img_size: int,
     total_epochs: int,
     model_name: str,
@@ -345,7 +346,7 @@ def train(
         gen_losses = []
         disc_losses = []
 
-        for images in tqdm(real_images):
+        for images in tqdm(real_images.take(batches)):
             gen_loss, disc_loss = train_step(
                 generator,
                 discriminator,

@@ -51,16 +51,17 @@ def load_images(
     return images
 
 
-def augment_images(images: tf.data.Dataset) -> tf.data.Dataset:
+def augment_images(images: tf.data.Dataset) -> tuple[int, tf.data.Dataset]:
 
     return (
+        images.cardinality().numpy(),
         images.cache()
         .map(
             lambda image: tf.image.random_flip_up_down(image),
             num_parallel_calls=tf.data.AUTOTUNE,
         )
         .shuffle(images.cardinality())
-        .repeat(2)
+        .repeat(),
     )
 
 

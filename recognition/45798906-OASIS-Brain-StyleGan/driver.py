@@ -112,7 +112,7 @@ def main():
     # Train
     if TRAIN:
         images = load_images(IMAGE_PATHS, BATCH_SIZE, IMAGE_SIZE)
-        images = augment_images(images)
+        batches, images = augment_images(images)
         history = train(
             generator,
             discriminator,
@@ -121,6 +121,7 @@ def main():
             images,
             LATENT_DIMENSION,
             BATCH_SIZE,
+            batches,
             IMAGE_SIZE,
             EPOCHS,
             model_name=MODEL_NAME,
