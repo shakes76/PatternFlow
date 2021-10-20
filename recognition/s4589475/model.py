@@ -47,7 +47,6 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         output = encoder_outputs + tf.stop_gradient(reshaped_quantized_vectors - encoder_outputs)
         return output, reshaped_quantized_vectors
 
-
 # Define the encoder and decoder networks
 def encoder_network():
 
@@ -101,11 +100,10 @@ def VQ_VAE_network():
     
     return vq_vae
 
-#Define a reconstruction loss
-def reconstruction_loss(inputs, outputs):
-    # Log likelihood, assuming likelihood is Gaussian
-    mse = tf.keras.losses.MeanSquaredError()
-    loss = mse(inputs, outputs)
+def reconstruction_loss(inputs, outputs):    
+    #Calculate ssim to use as reconstruction loss - better than mse which is thrown off by the large background
+    loss = 1 - tf.image.ssim(inputs, outputs, max_val = 1)
+    
     return loss
 
 #Replace kl-divergence in traditional VAE with two terms as kl-divergence can't be minimized (is a constant)
@@ -127,7 +125,14 @@ encoder = encoder_network()
 decoder = decoder_network()
 quantizer_layer = Vector_Quantizer()
 
-optimizer = tf.keras.optimizers.Adam(1e-5)
+#Create overall vqvae model
+inputs = tf.keras.Input(shape=(256, 256, 1))
+encoder_outputs = encoder(inputs)
+quantized_latents,z1 = quantizer_layer(encoder_outputs)
+reconstructions = decoder(quantized_latents)
+vq_vae_model_overall = tf.keras.Model(inputs, reconstructions, name="overall model")
+
+optimizer = tf.keras.optimizers.Adam(1e-4)
 
 # create a training step
 @tf.function
@@ -138,49 +143,62 @@ def training_step(images):
         #Get the quantized latent space
         z_quantized, z1 = quantizer_layer(z, training=True)
         #Get the reconstructions
+        
+        #print(z[0])
+        #print(z1[0])
         reconstructions = decoder(z_quantized, training=True)        
 
-        #determine overall loss: recon_l
-        oss + latent_loss
-        total_loss = tf.reduce_mean(reconstruction_loss(images, reconstructions) )
-        latent_loss1 = latent_loss(z, z1)
-
-    #get all the gradients for the model
-    gradients = vae_tape.gradient(total_loss, encoder.trainable_variables)
+        #determine overall loss: recon_loss + latent_loss
+        recon_loss = tf.reduce_mean(reconstruction_loss(images, reconstructions) )
+        #recon_loss = reconstruction_loss(images, reconstructions)
+        latent_loss1 = tf.reduce_mean(latent_loss(z, z1))
+        
+        total_loss = recon_loss + latent_loss1    
+    
+    gradients = vae_tape.gradient(total_loss, vq_vae_model_overall.trainable_variables)
     
     #apply the gradients to the optimizer
-    optimizer.apply_gradients(zip(gradients, encoder.trainable_variables))
+    optimizer.apply_gradients(zip(gradients, vq_vae_model_overall.trainable_variables))
     
-    gradients = vae_tape.gradient(total_loss, decoder.trainable_variables)
-    
-    #apply the gradients to the optimizer
-    optimizer.apply_gradients(zip(gradients, decoder.trainable_variables))
-    
-    gradients = vae_tape.gradient(latent_loss1, quantizer_layer.trainable_variables)
-    
-    #apply the gradients to the optimizer
-    optimizer.apply_gradients(zip(gradients, quantizer_layer.trainable_variables))
-    
-    return total_loss
+    return recon_loss, latent_loss1, total_loss
     
 # Training
+recon_loss_list = []
+latent_loss_list = []
+
 losses = []
 for epoch in range(1, epochs+1):
     print(epoch)
     loss = -1
     batch_losses = 0
+    
+    batch_losses_recon = 0
+    batch_losses_latent = 0
+    
     count = 0
         
     for image_batch in training_ds:
         
-        loss = training_step(image_batch)
+        recon_loss, latent_loss_results, total_loss = training_step(image_batch)
         
-        #print(loss)
-        batch_losses += loss
+        #print(recon_loss.numpy())
+        #print(latent_loss_results.numpy())
+        #print(total_loss.numpy())
+
+        batch_losses += total_loss
+        batch_losses_recon += recon_loss
+        batch_losses_latent += latent_loss_results
         count += 1 
         
         losses.append(batch_losses/count)
+        recon_loss_list.append(batch_losses_recon/count)
+        latent_loss_list.append(batch_losses_latent/count)
 
-plt.title('Loss curve for training')
+
+# Plot the loss curves
+plt.title('Loss curves for training')
 plt.plot(losses)
+plt.plot(recon_loss_list)
+plt.plot(latent_loss_list)
+
 plt.show()
