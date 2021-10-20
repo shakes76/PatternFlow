@@ -135,3 +135,23 @@ class SegModel:
 
         self.model.compile(optimizer=opt, loss=loss, metrics=metrics)
         self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
+
+    def predict(self, X_test, batch_size):
+        """
+        Function to predict masks on images using the current segmentation model in SegModel class
+
+        Parameters
+        ----------
+        X_test : float32 numpy array
+          The test set of data type float32 numpy array of the preprocessed images
+        batch_size : integer
+          Number of samples to take to predict at once
+
+        Returns
+        -------
+        y_pred : float32 tensor
+          Returns all the predicted masks
+        """
+        y_pred = self.model.predict(X_test, batch_size=batch_size)
+
+        return y_pred
