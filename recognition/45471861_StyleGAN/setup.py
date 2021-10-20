@@ -5,6 +5,10 @@ setup(
     author='Zhien Zhang',
     author_email='zhien.zhang@uqconnect.edu.au',
     install_requires=[
-        'tensorflow'
+        'tensorflow',
+        'matplotlib',
+        "neptune-client",
+        "neptune-tensorflow-keras",
+
     ]
 )
