@@ -1,16 +1,17 @@
 import random
 import math
 import torch
-from torch._C import FloatTensor
 
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import scipy.sparse as sp
 import torch.optim as optim
+import seaborn as sns
 
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
+from sklearn.manifold import TSNE
 
 class GCNLayer(Module):
     def __init__(self, n_in_features, n_out_features):
@@ -33,18 +34,22 @@ class GCNModel(nn.Module):
         self.gcn2 = GCNLayer(64, n_class)
         self.drop_p = drop_p
 
-    def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor):
-        x1 = F.relu(self.gcn1(input, adj))
-        x1_drop = F.dropout(x1, self.drop_p, training=self.training)
+    def forward(self, input:torch.FloatTensor, adj:torch.FloatTensor, TSNE_collect=False):
+        x1 = self.gcn1(input, adj)
+        x1_relu = F.relu(x1)
+        x1_drop = F.dropout(x1_relu, self.drop_p, training=self.training)
         x2 = self.gcn2(x1_drop, adj)
         
         log_softmax = nn.LogSoftmax(dim=1)
 
+        if TSNE_collect:
+            self.gcn1_embed = x1
+
         return log_softmax(x2)
 
 class Facebook_Node_Classifier():
-    def __init__(self, facebook_file: str, train_ratio=.6, val_ratio=0.2):
-        
+    def __init__(self, facebook_file: str, train_ratio=.6, val_ratio=0.2, random_state=25):
+        self.seed = 25
         self.data_process(facebook_file, train_ratio, val_ratio)
         self.create_adj()
         self.model = GCNModel(self.n_class, self.n_features)
@@ -66,6 +71,7 @@ class Facebook_Node_Classifier():
         self.edges = edges
 
         ##Split traing val test index
+        random.seed(self.seed)
         n_train = math.floor(self.n_node*train_ratio)
         n_val = math.floor(self.n_node*val_ratio)
         total_idx = list(range(self.n_node))
@@ -147,6 +153,27 @@ class Facebook_Node_Classifier():
         print("Accuracy: " + str(acc) + " Loss: " + str(loss_out))
 
 
+    def plot_truth_TSNE(self):
+        tsne = TSNE(random_state=self.seed).fit_transform(self.node_features)
+        palette = sns.color_palette("muted", self.n_class)
+        tsne_plot = sns.scatterplot(tsne[:,0], tsne[:,1], hue=self.target.numpy(), legend='full', palette=palette, s=10)
+        fig = tsne_plot.get_figure()
+        fig.savefig("tsne_original_plot")
+
+    def plot_GCN_TSNE(self):
+
+        self.model.load_state_dict(torch.load('model_w.pth'))
+        _ = self.model(self.node_features, self.adj, TSNE_collect=True)
+
+        embedding = self.model.gcn1_embed.detach().numpy()
+        
+        tsne = TSNE(random_state=self.seed).fit_transform(embedding)
+        palette = sns.color_palette("muted", self.n_class)
+        
+        tsne_plot = sns.scatterplot(tsne[:,0], tsne[:,1], hue=self.target.numpy(), legend='full', palette=palette, s=10)
+        fig = tsne_plot.get_figure()
+        fig.savefig("tsne_embedding_plot") 
+
 if __name__ == "__main__":
     
     facebook_path = 'facebook.npz'
@@ -157,4 +184,7 @@ if __name__ == "__main__":
 
     classifer.test_model()
 
+    classifer.plot_truth_TSNE()
+    
+    classifer.plot_GCN_TSNE()
     
