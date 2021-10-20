@@ -47,6 +47,7 @@ Best Model Selection: Save the best model which has the largest accuracy for val
 
 ### Outputs
 Accuracy for training and validation set <br>
+Both accuracies increase steadily so no overfitting happens.
 
 200 iterations: <br>
 ![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/accuracy200.png) <br>
@@ -63,6 +64,8 @@ test - loss: tensor(0.3858, grad_fn=<NegBackward>) , accuracy tensor(0.8830) <br
 
 #### TSNE embedding with true labels
 t-Distributed Stochastic Neighbor Embedding (outputs of first graph convolution layer) <br>
+We can find that categories are clearly clustered in groups. <br>
+    
 ![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/tsne200.png) <br>
    
 ### References
