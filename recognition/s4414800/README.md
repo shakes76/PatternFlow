@@ -59,6 +59,13 @@ Dice coefficient is a numerical value that expresses the similarity of pictures.
   Average DSC on the test set is:0.8174641226808518
 ```
 
+## Dependencies
+1. Python: 3.7.12
+2. Tensorflow: 2.6.0
+3. Tensorflow_addons: 0.14.0
+4. Numpy: 1.19.5
+5. keras
+
 ## Reference
 > 1.K. He, X. Zhang, S. Ren, and J. Sun, “Identity mappings in deep residual networks,” in European Conference on Computer Vision. Springer, 2016, pp. 630–
 
