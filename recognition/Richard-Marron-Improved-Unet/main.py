@@ -89,18 +89,18 @@ def main(debugging=False):
     input_images = normalise_images(load_images(path="./Data/ISIC2018_Task1-2_Training_Input_x2/", 
                                                 ground_truth=False, truncate=debugging))
     # Load ground truth segmentation
-    gt_images = load_images(path="./Data/ISIC2018_Task1_Training_GroundTruth_x2/", 
-                            ground_truth=True, truncate=debugging)
-    
+    gt_images = normalise_images(load_images(path="./Data/ISIC2018_Task1_Training_GroundTruth_x2/", 
+                                             ground_truth=True, truncate=debugging))
+        
     # Print out some useful information
     print(f"Total input images: {input_images.shape}")
     print(f"Total ground truth images: {gt_images.shape}")
     print(f"Input image shape: {input_images[0].shape}")
     print(f"Ground truth image shape: {gt_images[0].shape}")
     # Show example of image and it's segmentation
-    plt.imshow(input_images[0][:, :])
+    plt.imshow(input_images[0])
     plt.figure()
-    plt.imshow(gt_images[0][:, :])
+    plt.imshow(gt_images[0])
     plt.show()
     
     # Create an instance of an Improved U-Net
@@ -112,7 +112,7 @@ def main(debugging=False):
     # Compile the model
     unet_model.compile(optimizer=unet.optimizer,
                        loss=unet.loss,
-                       metrics=unet.metric)
+                       metrics=unet.metrics)
     
     # Generate train/test/validation sets
     train, test, valid = get_splits(input_images, gt_images)
@@ -120,10 +120,11 @@ def main(debugging=False):
     print(f"Test Set Shape  \t: {test[0].shape}")
     print(f"Validation Set Shape \t: {valid[0].shape}")
     
-    hist = unet_model.fit(train[0], train[1], validation_data=valid, epochs=100)
+    hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=100)
     
     unet_model.evaluate(test[0], test[1])
     unet_model.save_weights("./weights/test")
+    print("STOP")
     
 
 if __name__ == "__main__":

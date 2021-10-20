@@ -7,7 +7,7 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras import layers, Model
+from tensorflow.keras import layers, Model, backend
 
 class ImprovedUNet():
     """Implements the Improved U-Net Model"""
@@ -21,12 +21,12 @@ class ImprovedUNet():
         self.learning_rate = learning_rate
         self.optimizer = optimiser
         self.loss = loss
+        self.metrics = [self.dice_function]
         
         # Leaky ReLU rate
         self.leaky = leaky
         # Drop-out rate
         self.drop = drop
-        self.metric = [self.dice_function]
     
     def model(self):
         """
@@ -136,8 +136,8 @@ class ImprovedUNet():
         loc_2 = layers.LeakyReLU(alpha=self.leaky)(loc_2)
         
         # Add peripheral connection for segmentation and then upscale
-        seg_1 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(loc_2)
-        seg_1 = layers.Conv2DTranspose(filters=2, kernel_size=3, padding="same", 
+        seg_1 = layers.Conv2D(filters=3, kernel_size=3, padding="same", activation="softmax")(loc_2)
+        seg_1 = layers.Conv2DTranspose(filters=3, kernel_size=3, padding="same", 
                                        strides=2, activation="relu")(seg_1)
         
         # Halve the number of filters
@@ -155,11 +155,11 @@ class ImprovedUNet():
         loc_3 = layers.LeakyReLU(alpha=self.leaky)(loc_3)
         
         # Add peripheral connection for segmentation
-        seg_2 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(loc_3)
+        seg_2 = layers.Conv2D(filters=3, kernel_size=3, padding="same", activation="softmax")(loc_3)
         
         # Sum first segmentation layer with this one and upscale
         seg_partial = layers.Add()([seg_1, seg_2])
-        seg_partial = layers.Conv2DTranspose(filters=2, kernel_size=3, padding="same", 
+        seg_partial = layers.Conv2DTranspose(filters=3, kernel_size=3, padding="same", 
                                              strides=2, activation="relu")(seg_partial)
         
         # Halve the number of filters
@@ -178,17 +178,16 @@ class ImprovedUNet():
         
         
         # Segmentation layer
-        seg_3 = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(block_2)
+        seg_3 = layers.Conv2D(filters=3, kernel_size=3, padding="same", activation="softmax")(block_2)
         # Sum all segmentation layers
         total = layers.Add()([seg_partial, seg_3])
         
         # Define output layer
-        out_layer = layers.Conv2D(filters=2, kernel_size=3, padding="same", activation="softmax")(total)
+        out_layer = layers.Conv2D(filters=3, kernel_size=3, padding="same", activation="softmax")(total)
         
         # Return the model created from all of these layers
         return Model(in_layer, out_layer)
-        
-        
+    
     def dice_function(self, y_true, y_pred):
         """
         Calculate the dice coefficient
@@ -199,10 +198,8 @@ class ImprovedUNet():
             Return : Dice coefficient between y_true and y_pred
         """
         # Convert the milti-dim. tensors into vectors
-        y_true = tf.keras.flatten(y_true)
-        y_pred = tf.keras.flatten(y_pred)
+        y_true = backend.flatten(y_true)
+        y_pred = backend.flatten(y_pred)
         
         # Calculate the dice coefficient over binary vectors
-        return 2*tf.keras.sum(y_true*y_pred)/(tf.keras.sum(tf.keras.square(y_true)) + tf.keras.sum(tf.keras.square(y_pred)))
-        
-    
+        return 2*backend.sum(y_true*y_pred)/(backend.sum(backend.square(y_true)) + backend.sum(backend.square(y_pred)))
