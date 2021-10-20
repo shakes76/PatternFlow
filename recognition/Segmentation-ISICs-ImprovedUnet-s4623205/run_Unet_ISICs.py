@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from data_utils import get_min_imageshape, train_val_test_split
+from SegmentationMetrics import dice_coef, dice_loss
 
 
 def main():
@@ -44,6 +45,16 @@ def main():
     plt.title("First test mask")
     plt.tight_layout()
     plt.show()
+
+    # Test the dice coefficient and dice loss function
+    # This is expected to be 1
+    print("\nDice coefficient between the first train mask:", dice_coef(y_train[0, :, :, 0], y_train[0, :, :, 0]).numpy())
+    # This is expected to be 0
+    print("Dice loss between the first train mask:", dice_loss(y_train[0, :, :, 0], y_train[0, :, :, 0]).numpy())
+    # This is expected to be between 0 and 1, but not 1
+    print("Dice coefficient between the first train mask and first test mask:", dice_coef(y_train[0, :, :, 0], y_test[0, :, :, 0]).numpy())
+    # This is expected to be between 0 and 1, but not 0
+    print("Dice loss between the first train mask and first test mask:", dice_loss(y_train[0, :, :, 0], y_test[0, :, :, 0]).numpy())
 
 
 if __name__ == "__main__":
