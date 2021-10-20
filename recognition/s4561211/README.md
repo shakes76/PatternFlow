@@ -25,5 +25,6 @@ For a semi supervised model, data is split into train, validation and test in th
 
 ### Model 
 #### Graph Convolutional Network Model
+![](https://github.com/SandyKang/PatternFlow/raw//topic-recognition/s4561211/Resource/GCN_model.png)
 
     
