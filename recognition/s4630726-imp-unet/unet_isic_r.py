@@ -1,9 +1,11 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D, Concatenate, Conv2DTranspose, Reshape, Permute, Activation
-from tensorflow.keras.models import Model
 import os
 import cv2
 import matplotlib.pyplot as plt
+from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D, Concatenate, Conv2DTranspose, Reshape, Permute, Activation
+from tensorflow.keras.models import Model
+from sklearn.model_selection import train_test_split
+
 
 X = [] #list to store the input images for cnn
 Y = [] #list to store the ground truth to comapre the output of the cnn to.
@@ -26,4 +28,6 @@ for img in os.listdir(path):
 print(img)
 plt.imshow(img_array,cmap="gray")
 plt.show()
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42) #split the data into training and testing sets validations sets made in model.fit
 
