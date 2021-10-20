@@ -1,4 +1,5 @@
 # Graph Gonvolutional Network
+### Ya-Yu Kang
 
 ### Objective
 The aim is to create a multi-layer graph convolutional network model to implement node classification with multi-class using dataset - Facebook Large Page-Page Network to receive reasonable accuracy and plot a TSNE embedding with labels.
