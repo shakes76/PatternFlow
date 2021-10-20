@@ -4,7 +4,7 @@
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
-#  Time: 19/10/2021, 15:47
+#  Time: 20/10/2021, 13:09
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import torch
@@ -153,7 +153,7 @@ class IUNet(nn.Module):
             x = self.Ups[idx + 1](concatnate_skip)
 
             #segmentation
-            if idx == 2 or idx == 4:
+            if idx != idxs[0] and idx != idxs[-1]:
                 x_segment = self.Segmentations[idx // 2](x)
                 segmentation_layers.append(x_segment)
 
