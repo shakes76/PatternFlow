@@ -102,8 +102,8 @@ class ISICDataset(utils.Dataset):
         #         bool_mask = mask_seg>0
         #         instance_masks.append(bool_mask)
         #         class_ids.append(1)
-        # mask = np.dstack(instance_masks)
-        mask = instance_masks
+        mask = np.dstack(instance_masks)
+        # mask = instance_masks
         class_ids = np.array(class_ids,dtype=np.int32)
         
         return mask, class_ids
@@ -115,7 +115,7 @@ dataset_train.prepare()
 #%%
 
 dataset = dataset_train
-image_ids = [0]
+image_ids = [0,1,2,3]
 # image_ids = dataset.image_ids
 for image_id in image_ids:
     image = dataset.load_image(image_id)
