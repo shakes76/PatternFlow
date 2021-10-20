@@ -2,6 +2,8 @@ import cv2
 import glob
 import numpy as np
 from misc_utils import progressbar
+from sklearn.model_selection import train_test_split
+from math import isclose
 
 
 def get_min_imageshape(path):
@@ -116,3 +118,58 @@ def load_masks(path, height, width):
     masks = masks[:, :, :, np.newaxis]
 
     return masks
+
+def train_val_test_split(image_path, mask_path, height, width, split_ratio, randomstate):
+    """
+    Function to load and preprocess images and mask from path to memory.
+    Then split the data according to the split_ratio into train, validation and test sets.
+
+    Parameters
+    ----------
+    image_path : string
+      Directory of where the target masks are
+    mask_path : string
+      Directory of where the target masks are
+    height : integer
+      Parameter to resize the image height
+    width : integer
+      Parameter to resize the image width
+    split_ratio : list
+      List of the data split condition in the format of [train_ratio, validation_ratio, test_ratio].
+      The list must sum up to 1.
+    randomstate : integer
+      The random seed
+
+    Returns
+    -------
+    X_train : float32 numpy array
+      The train set of data type float32 numpy array of the preprocessed images
+    X_val : float32 numpy array
+      The validation set of data type float32 numpy array of the preprocessed images
+    X_test : float32 numpy array
+      The test set of data type float32 numpy array of the preprocessed images
+    y_train : float32 numpy array
+      The train set of data type float32 numpy array of the preprocessed masks
+    y_val : float32 numpy array
+      The validation set of data type float32 numpy array of the preprocessed masks
+    y_test : float32 numpy array
+      The test set of data type float32 numpy array of the preprocessed masks
+    """
+    # Check if the split ratio is summed up to 1
+    if not isclose(sum(split_ratio), 1.):
+        raise ValueError("Sum of split_ratio must be 1!")
+
+    # Load the images and masks
+    print("\nLoad and preprocess RGB images...")
+    images = load_rgbimages(image_path, height, width)
+    print("\nLoad and preprocess masks...")
+    masks = load_masks(mask_path, height, width)
+
+    # Split the train, validation and test set according to split_ratio
+    print("\nSplitting train set...")
+    X_train, X_test, y_train, y_test = train_test_split(images, masks, train_size=split_ratio[0], random_state=randomstate)
+    print("Splitting validation and test set...")
+    val_split_ratio = split_ratio[1] / (split_ratio[1] + split_ratio[2])
+    X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=val_split_ratio, random_state=randomstate)
+
+    return X_train, X_val, X_test, y_train, y_val, y_test
