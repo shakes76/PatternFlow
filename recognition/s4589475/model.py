@@ -202,3 +202,91 @@ plt.plot(recon_loss_list)
 plt.plot(latent_loss_list)
 
 plt.show()
+
+
+# Generate comaprison input and reconstruction images for the training and testing datasets
+test_batch = testing_ds_batched.take(1)
+train_batch = training_ds.take(1)
+test_image = 0
+train_image = 0
+for element in test_batch:
+    for image in element:
+        test_image = image[tf.newaxis, :]
+        break
+    break
+
+for element in train_batch:
+    for image in element:
+        train_image = image[tf.newaxis, :]
+        break
+    break
+
+z = encoder(test_image, training=False)
+#Get the quantized latent space
+z_quantized, z1 = quantizer_layer(z, training=False)
+#Get the reconstructions
+result = decoder(z_quantized, training=False)
+
+
+#Plot the resulting image compared to original
+plt.subplot(1,2,1)
+plt.imshow(test_image[0, :, :, 0], cmap='gray')
+
+plt.subplot(1,2,2)
+plt.imshow(result[0, :, :, 0], cmap='gray')
+plt.show()
+
+ssim = tf.image.ssim(test_image, result, max_val = 1)
+print(ssim.numpy())
+
+
+#Check a reconstruction of a training image
+z = encoder(train_image, training=False)
+#Get the quantized latent space
+z_quantized, z1 = quantizer_layer(z, training=False)
+#Get the reconstructions
+result = decoder(z_quantized, training=False)
+
+#Plot the resulting image compared to original
+plt.subplot(1,2,1)
+plt.imshow(train_image[0, :, :, 0], cmap='gray')
+plt.subplot(1,2,2)
+plt.imshow(result[0, :, :, 0], cmap='gray')
+plt.show()
+
+
+ssim = tf.image.ssim(train_image, result, max_val = 1)
+print(ssim.numpy())
+
+
+# Calculate SSIM for the entire testing dataset
+ssim_scores_testing = []
+
+for batch in testing_ds_batched:
+    for n,image in enumerate(batch):
+        test_image = image[tf.newaxis, :]
+
+        #result = vq_vae_model_overall(test_image, training=False)
+        
+        z = encoder(test_image, training=False)
+        #Get the quantized latent space
+        z_quantized, z1 = quantizer_layer(z, training=False)
+        #Get the reconstructions
+        result = decoder(z_quantized, training=False)
+        
+        ssim = tf.image.ssim(test_image, result, max_val = 1)
+        ssim_scores_testing.append(ssim)
+
+        # Show an example every 100th image
+        if n % 100 == 0:
+            #Plot the resulting image compared to original
+            plt.subplot(1,2,1)
+            plt.imshow(test_image[0, :, :, 0], cmap='gray')
+
+            plt.subplot(1,2,2)
+            plt.imshow(result[0, :, :, 0], cmap='gray')
+            plt.show()
+            print(ssim.numpy())
+
+#Display the mean ssim
+print("Average SSIM on the test dataset:"+ (tf.reduce_mean(ssim_scores_testing)).numpy())
