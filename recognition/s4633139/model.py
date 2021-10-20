@@ -1,6 +1,6 @@
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #  Copyright (c) 2021, H.WAKAYAMA, All rights reserved.
-#  File: ImprovedUNet.py
+#  File: model.py
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
@@ -161,6 +161,6 @@ class IUNet(nn.Module):
         seg_scale2 = self.upscale(segmentation_layers[1] + seg_scale1)
         x = self.final_conv(x)
         x = x + seg_scale2
-        output = F.sigmoid(x)
+        output = torch.sigmoid(x)
 
         return output

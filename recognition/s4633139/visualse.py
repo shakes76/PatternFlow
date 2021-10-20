@@ -11,19 +11,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def dice_coef_vis(EPOCHS, TRAIN_COEFS, TEST_COEFS):
+def dice_coef_vis(EPOCHS, TRAIN_COEFS, VAL_COEFS):
     """
     function for dice coefficient
     :param
         EPOCHS(array): epochs
         TRAIN_COEFS(array): train dice coefficients
-        TEST_COEFS(array): test dice coefficients
+        VAL_COEFS(array): validation dice coefficients
     :return
         plot with dice coefficients by epochs
     """
     X = np.arange(1, EPOCHS+1)
     plt.plot(X, TRAIN_COEFS, marker='.', markersize=10, label='train')
-    plt.plot(X, TEST_COEFS, marker='.', markersize=10, label='test')
+    plt.plot(X, VAL_COEFS, marker='.', markersize=10, label='validation')
     plt.xlabel('Epochs')
     plt.ylabel('Dice coefficient')
     plt.xticks(X)
@@ -31,24 +31,36 @@ def dice_coef_vis(EPOCHS, TRAIN_COEFS, TEST_COEFS):
     plt.show()
 
 
-def dice_loss_vis(EPOCHS, TRAIN_LOSS, TEST_LOSS):
+def dice_loss_vis(EPOCHS, TRAIN_LOSS, VAL_LOSS):
     """
     function for dice loss
     :param
         EPOCHS(array): epochs
         TRAIN_LOSS(array): train dice losses
-        TEST_LOSS(array): test dice losses
+        VAL_LOSS(array): validation dice losses
     :return
         plot with dice loss by epochs
     """
     X = np.arange(1, EPOCHS+1)
     plt.plot(X, TRAIN_LOSS, marker='.', markersize=10, label='train')
-    plt.plot(X, TEST_LOSS, marker='.', markersize=10, label='test')
+    plt.plot(X, VAL_LOSS, marker='.', markersize=10, label='validation')
     plt.xlabel('Epochs')
     plt.ylabel('Dice Loss')
     plt.xticks(X)
     plt.legend()
     plt.show()
+
+
+def eval_dice_coef(target, pred_masks, idx):
+  batch_size = len(pred_masks)
+  somooth = 1.
+
+  pred_flat = pred_masks.view(batch_size, -1)
+  target_flat = target.view(batch_size, -1)
+
+  intersection = (pred_flat*target_flat)
+  dice_coef = (2.*intersection.sum(dim=1)+somooth)/(pred_flat.sum(dim=1)+target_flat.sum(dim=1)+somooth)
+  return dice_coef[idx]
 
 
 def segment_pred_mask(imgs, pred_masks, idx, alpha):
@@ -68,7 +80,7 @@ def segment_pred_mask(imgs, pred_masks, idx, alpha):
     return seg_img
 
 
-def plot_gallery(images, masks, pred_masks, n_row=6, n_col=4):
+def plot_gallery(images, masks, pred_masks, n_row=5, n_col=4):
     """
     function to generate gallery
     :parameters
@@ -108,6 +120,6 @@ def plot_gallery(images, masks, pred_masks, n_row=6, n_col=4):
         seg_img = segment_pred_mask(imgs=images, pred_masks=pred_masks, idx=i, alpha=0.5)
         plt.subplot(n_row, n_col, i + 4)
         plt.imshow(seg_img.permute(1, 2, 0))
-        plt.title('segmentation', fontsize=10)
+        plt.title('dice_coef: {:.2f}'.format(eval_dice_coef(masks, pred_masks, i)), fontsize=10)
         plt.axis('off')
     plt.show()
