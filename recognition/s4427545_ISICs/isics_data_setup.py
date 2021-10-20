@@ -31,12 +31,12 @@ def split_and_write_files(ids, new_dir, train_dir, valid_dir, test_dir, file_ext
 def training_validation_test_write(dir, valid_split, test_split):
     print('Copying ISICs training dataset files into local directory split into training, validation, and test folders')
     cwd = os.getcwd()
-    img_train_dir = cwd + '/datasets/ISIC/training/images/'
-    img_valid_dir = cwd + '/datasets/ISIC/validation/images/'
-    img_test_dir = cwd + '/datasets/ISIC/test/images/'
-    mask_train_dir = cwd + '/datasets/ISIC/training/masks/'
-    mask_valid_dir = cwd + '/datasets/ISIC/validation/masks/'
-    mask_test_dir = cwd + '/datasets/ISIC/test/masks/'
+    img_train_dir = cwd + '/yolov5/datasets/ISIC/training/images/'
+    img_valid_dir = cwd + '/yolov5/datasets/ISIC/validation/images/'
+    img_test_dir = cwd + '/yolov5/datasets/ISIC/test/images/'
+    mask_train_dir = cwd + '/yolov5/datasets/ISIC/training/masks/'
+    mask_valid_dir = cwd + '/yolov5/datasets/ISIC/validation/masks/'
+    mask_test_dir = cwd + '/yolov5/datasets/ISIC/test/masks/'
     ids = list(range(1, NUM_FILES + 1))
     random.seed(42)
     random.shuffle(ids)
@@ -76,17 +76,18 @@ def generate_bounding_box(image):
 
     return norm_x_avg, norm_y_avg, box_width, box_height
 
-def generate_mask_datum(img_dir, mask_dir):
+def generate_mask_datum(img_dir : str, mask_dir):
     files_created = 0
+    labels_dir = img_dir.replace('images','labels')
     for filename in os.listdir(mask_dir):
         if filename.endswith('.png'): # masks are .png for ISICs
             image = np.array(Image.open(mask_dir + filename))
             bound_box_info = generate_bounding_box(image)
             image_filename = filename[0:12]
-            file = open(img_dir + image_filename + '.txt', 'w')
+            file = open(labels_dir + image_filename + '.txt', 'w')
             file.write(f'0 {bound_box_info[0]} {bound_box_info[1]} {bound_box_info[2]} {bound_box_info[3]}')
             files_created += 1
-    print(f'{files_created} files written from ...{mask_dir[-20:]} to ...{img_dir[-20:]}')
+    print(f'{files_created} files written from ...{mask_dir[-20:]} to ...{labels_dir[-20:]}')
     return files_created
 
 def cleanup(img_dir):
