@@ -49,7 +49,7 @@ class GCNModel(nn.Module):
 
 class Facebook_Node_Classifier():
     def __init__(self, facebook_file: str, train_ratio=.6, val_ratio=0.2, random_state=25):
-        self.seed = 25
+        self.seed = random_state
         self.data_process(facebook_file, train_ratio, val_ratio)
         self.create_adj()
         self.model = GCNModel(self.n_class, self.n_features)
