@@ -1,3 +1,7 @@
+# !/user/bin/env python
+"""
+The module controls the StyleGAN training
+"""
 import os.path
 
 import tensorflow as tf
@@ -8,141 +12,146 @@ import neptune.new as neptune
 from datetime import datetime
 from tensorflow.keras.utils import image_dataset_from_directory
 
-
-def train_g(generator: Generator, discriminator: Discriminator, batch_size: int, latent_dim: int):
-    latent = tf.random.normal([batch_size, latent_dim])
-
-    with tf.GradientTape() as tape:
-        fake = generator.model(latent, training=True)
-        fake_score = discriminator.model(fake, training=False)
-        loss = generator.loss(fake_score)
-
-    gradient = tape.gradient(loss, generator.model.trainable_variables)
-    generator.optimizer.apply_gradients(zip(gradient, generator.model.trainable_variables))
-
-    score = tf.reduce_mean(fake_score)
-    return score
+__author__ = "Zhien Zhang"
+__email__ = "zhien.zhang@uqconnect.edu.au"
 
 
-def train_d(real, generator: Generator, discriminator: Discriminator, batch_size: int, latent_dim: int):
-    latent = tf.random.normal([batch_size, latent_dim])
-    with tf.GradientTape() as tape:
-        fake = generator.model(latent, training=False)
-        fake_score = discriminator.model(fake, training=True)
-        real_score = discriminator.model(real, training=True)
-        loss = discriminator.loss(real_score, fake_score)
+class Trainer:
+    def __init__(self, data_folder: str, output_dir: str, width=64, height=64, channels=1, latent_dim=100, batch=128,
+                 epochs=20, checkpoint=1, lr=0.0002, beta_1=0.5, validation_images=16, seed=1):
+        self.width = width
+        self.height = height
+        self.channels = channels
+        self.rgb = (channels == 3)
+        self.latent_dim = latent_dim
+        self.batch = batch
+        self.epochs = epochs
+        self.checkpoint = checkpoint
+        self.lr = lr
+        self.beta_1 = beta_1
+        self.num_of_validation_images = validation_images
+        self.output_dir = self._create_output_folder(output_dir)
 
-    gradient = tape.gradient(loss, discriminator.model.trainable_variables)
-    discriminator.optimizer.apply_gradients(zip(gradient, discriminator.model.trainable_variables))
+        # initialize models
+        self.generator = Generator(lr, beta_1, latent_dim)
+        self.generator.build()
+        self.discriminator = Discriminator(lr, beta_1)
+        self.discriminator.build()
 
-    score = 1/2 * tf.reduce_mean(real_score) + 1/2 * tf.reduce_mean(1 - fake_score)
-    return score
-
-
-def show_images(generator: Generator, epoch, test_input, folder, save=True, rgb=False):
-    predictions = generator.model(test_input, training=False)
-
-    fig = plt.figure(figsize=(5, 5))
-
-    if rgb:
-        channels = 3
-    else:
-        channels = 1
-
-    predictions = tf.reshape(predictions, (-1, 64, 64, channels))
-    for i in range(predictions.shape[0]):
-        plt.subplot(4, 4, i + 1)
-
-        if rgb:
-            plt.imshow(predictions[i, :, :, :] * 0.5 + 0.5)
+        # data
+        self.dataset = None
+        if channels == 1:
+            color_mod = "grayscale"
         else:
-            plt.imshow(predictions[i, :, :, :] * 127.5 + 127.5, cmap='gray')
-        plt.axis('off')
+            color_mod = "rgb"
+        self.load_data(data_folder, (width, height), color_mod=color_mod)
 
-    if save:
-        path = os.path.join(folder, 'image_at_epoch_{}.png'.format(epoch))
-        plt.savefig(path)
+        # latent code for validation
+        self.validation_latent = tf.random.normal([self.num_of_validation_images, latent_dim], seed=seed)
 
-    plt.show()
+        # credential for neptune
+        with open("neptune_credential.txt", 'r') as credential:
+            token = credential.readline()
 
-    return fig
+        self.run = neptune.init(
+            project="zhien.zhang/styleGAN",
+            api_token=token,
+        )
 
+    @staticmethod
+    def _create_output_folder(upper_folder: str):
+        run_folder = datetime.now().strftime("%d-%m/%Y_%H_%M_%S")
+        output_folder = os.path.join(upper_folder, run_folder)
+        os.makedirs(output_folder, exist_ok=True)
+        return output_folder
 
-def train(dataset, generator: Generator, discriminator: Discriminator, validate_latent, log, output_folder: str,
-          epochs: int, batch_size: int, latent_dim: int):
-    iter = 0
-    for epoch in range(epochs):
-        start = time()
+    def load_data(self, image_folder, image_size: tuple, color_mod="grayscale"):
+        train_batches = image_dataset_from_directory(
+            image_folder, labels=None, label_mode=None,
+            class_names=None, color_mode=color_mod, batch_size=self.batch, image_size=image_size, shuffle=True,
+            seed=None,
+            validation_split=None, subset=None,
+            interpolation='bilinear', follow_links=False,
+            crop_to_aspect_ratio=False
+        )
+        self.dataset = train_batches
 
-        for image_batch in dataset:
-            # normalize to the range [-1, 1] to match the generator output
-            image_batch = (image_batch - 255 / 2) / (255 / 2)
+    def _train_g(self):
+        latent = tf.random.normal([self.batch, self.latent_dim])
 
-            d_score = train_d(image_batch, generator, discriminator, batch_size, latent_dim)
-            g_score = train_g(generator, discriminator, batch_size, latent_dim)
+        with tf.GradientTape() as tape:
+            fake = self.generator.model(latent, training=True)
+            fake_score = self.discriminator.model(fake, training=False)
+            loss = self.generator.loss(fake_score)
 
-            # log to neptune
-            log["Generator_Score"].log(g_score)
-            log["Discriminator_Score"].log(d_score)
+        gradient = tape.gradient(loss, self.generator.model.trainable_variables)
+        self.generator.optimizer.apply_gradients(zip(gradient, self.generator.model.trainable_variables))
 
-            iter += 1
+        score = tf.reduce_mean(fake_score)
+        return score
 
-            # showing the result every 100 iterations
-            if iter % 100 == 0:
-                fig = show_images(generator, 0, validate_latent, output_folder, save=False)
-                log["Validation"].upload(fig)
+    def _train_d(self, real):
+        latent = tf.random.normal([self.batch, self.latent_dim])
+        with tf.GradientTape() as tape:
+            fake = self.generator.model(latent, training=False)
+            fake_score = self.discriminator.model(fake, training=True)
+            real_score = self.discriminator.model(real, training=True)
+            loss = self.discriminator.loss(real_score, fake_score)
 
-        # show and save the result every epoch
-        show_images(generator, epoch, validate_latent, output_folder, save=True)
-        print('Time for epoch {} is {} sec'.format(epoch + 1, time() - start))
-        print("Discriminator score: {}\t Generator score: {}".format(d_score, g_score))
+        gradient = tape.gradient(loss, self.discriminator.model.trainable_variables)
+        self.discriminator.optimizer.apply_gradients(zip(gradient, self.discriminator.model.trainable_variables))
 
+        score = 1/2 * tf.reduce_mean(real_score) + 1/2 * tf.reduce_mean(1 - fake_score)
+        return score
 
-if __name__ == "__main__":
-    with open("neptune_credential.txt", 'r') as credential:
-        token = credential.readline()
+    def _show_images(self, epoch, save=True):
+        predictions = self.generator.model(self.validation_latent, training=False)
 
-    run = neptune.init(
-        project="zhien.zhang/styleGAN",
-        api_token=token,
-    )
+        fig = plt.figure(figsize=(5, 5))
 
-    batch_size = 128
-    alpha = 0
-    lr = 0.0002
-    beta_1 = 0.5
-    num_of_epochs = 20
-    latent_dim = 100
-    num_examples_to_generate = 16
-    log_freq = 5
-    dropout = 0.3
+        predictions = tf.reshape(predictions, (-1, self.width, self.height, self.channels))
+        for i in range(predictions.shape[0]):
+            plt.subplot(4, 4, i + 1)
 
-    # setup models
-    generator = Generator(alpha, lr, beta_1, latent_dim)
-    generator.build()
-    discriminator = Discriminator(dropout, lr, beta_1)
-    discriminator.build()
+            if self.rgb:
+                plt.imshow(predictions[i, :, :, :] * 0.5 + 0.5)
+            else:
+                plt.imshow(predictions[i, :, :, :] * 127.5 + 127.5, cmap='gray')
+            plt.axis('off')
 
-    # prepare datasets
-    image_folder = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
-    train_batches = image_dataset_from_directory(
-        image_folder, labels=None, label_mode=None,
-        class_names=None, color_mode='grayscale', batch_size=batch_size, image_size=(64, 64), shuffle=True, seed=None,
-        validation_split=None, subset=None,
-        interpolation='bilinear', follow_links=False,
-        crop_to_aspect_ratio=False
-    )
+        if save:
+            path = os.path.join(self.output_dir, 'image_at_epoch_{}.png'.format(epoch))
+            plt.savefig(path)
 
-    # latent code for validation
-    validation_latent = tf.random.normal([num_examples_to_generate, latent_dim], seed=1)
+        plt.show()
 
-    # output folder
-    run_folder = datetime.now().strftime("%d-%m/%Y_%H_%M_%S")
-    upper_folder = "C:\\Users\\Zhien Zhang\\Desktop\\Other\\COMP3710\\StyleGAN\\Output\\image_in_training"
-    output_folder = os.path.join(upper_folder, run_folder)
-    os.makedirs(output_folder, exist_ok=True)
+        return fig
 
-    train(train_batches, generator, discriminator, validation_latent, run, output_folder, num_of_epochs, batch_size,
-          latent_dim)
+    def train(self):
+        iter = 0
+        for epoch in range(self.epochs):
+            start = time()
 
-    run.stop()
+            for image_batch in self.dataset:
+                # normalize to the range [-1, 1] to match the generator output
+                image_batch = (image_batch - 255 / 2) / (255 / 2)
+
+                d_score = self._train_d(image_batch)
+                g_score = self._train_g()
+
+                # log to neptune
+                self.run["Generator_Score"].log(g_score)
+                self.run["Discriminator_Score"].log(d_score)
+
+                iter += 1
+
+                # showing the result every 100 iterations
+                if iter % 100 == 0:
+                    fig = self._show_images(0, save=False)
+                    self.run["Validation"].upload(fig)
+
+            # show and save the result
+            if epoch % self.checkpoint == 1:
+                self._show_images(epoch, save=True)
+                print('Time for epoch {} is {} sec'.format(epoch + 1, time() - start))
+                print("Discriminator score: {}\t Generator score: {}".format(d_score, g_score))
