@@ -120,7 +120,11 @@ def gen_block(
 
 
 def disc_block(
-    input: tf.Tensor, filters: int, kernel_size: int, downSampling: bool = True
+    input: tf.Tensor,
+    filters: int,
+    kernel_size: int,
+    dropout: float,
+    downSample: bool = True,
 ) -> tf.Tensor:
     """
     If we are down sampling, start with the following layer:
@@ -128,17 +132,19 @@ def disc_block(
     For each block, we want to: (In order)
         - Conv2D
         - Conv2D
+        - Dropout
     """
 
     # Begin the discriminator block
     out = input
-    if downSampling:
+    if downSample:
         out = AveragePooling2D()(out)
         out = LeakyReLU(0.01)(out)
 
     for _ in range(2):
         out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
         out = LeakyReLU(0.01)(out)
+        out = Dropout(dropout)(out)
 
     return out
 
@@ -204,6 +210,7 @@ def get_discriminator(
     image_size: int,
     num_filters: int,
     kernel_size: int,
+    dropout: float,
 ) -> tf.keras.Model:
 
     # Discriminator network
@@ -211,10 +218,14 @@ def get_discriminator(
     x = input
     curr_size = image_size
     x = disc_block(
-        x, num_filters // (curr_size // 4), kernel_size, downscale=False
+        x,
+        num_filters // (curr_size // 4),
+        kernel_size,
+        dropout,
+        downSample=False,
     )
     while curr_size > 4:
-        x = disc_block(x, num_filters // (curr_size // 8), kernel_size)
+        x = disc_block(x, num_filters // (curr_size // 8), kernel_size, dropout)
         curr_size //= 2
     x = Flatten()(x)
     x = Dropout(0.5)(x)
@@ -395,3 +406,11 @@ def generate_samples(
 
     samples = generator([latent_noise, noise_images, tf.ones([sample_size, 1])])
     return samples
+
+
+disc = get_discriminator(256, 512, 4, 0.2)
+disc_file = "./tmp/disc.png"
+tf.keras.utils.plot_model(disc, to_file=disc_file, show_shapes=True)
+gen = get_generator(512, 256, 512, 4)
+gen_file = "./tmp/gen.png"
+tf.keras.utils.plot_model(gen, to_file=gen_file, show_shapes=True)
