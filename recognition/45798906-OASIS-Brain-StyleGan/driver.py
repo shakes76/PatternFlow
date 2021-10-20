@@ -59,6 +59,8 @@ BATCH_SIZE: int = 32
 SAMPLE_SIZE: int = 32
 NUM_FILTERS: int = 512
 LATENT_DIMENSION: int = 512
+KERNEL_SIZE: int = 4
+DROPOUT: float = 0.2
 
 # Paths
 # End all paths with a file seperator
@@ -70,6 +72,7 @@ SAMPLE_IMAGES_PATH: str = (
     "./training/"  # If None, set SAVE_SAMPLE_IMAGES to False
 )
 WEIGHT_PATH: str = "./weights/"  # If None, set SAVE_WEIGHTS to False
+# Error would be thrown if LOAD_WEIGHTS is True and GENERATOR_WEIGHT_PATH or DISCRIMINATOR_WEIGHT_PATH is invalid
 GENERATOR_WEIGHT_PATH: str = ""
 DISCRIMINATOR_WEIGHT_PATH: str = ""
 
@@ -96,9 +99,11 @@ def main():
 
     # Models
     generator = get_generator(
-        LATENT_DIMENSION, IMAGE_SIZE, NUM_FILTERS, gen_optimizer
+        LATENT_DIMENSION, IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE
     )
-    discriminator = get_discriminator(IMAGE_SIZE, NUM_FILTERS, disc_optimizer)
+    discriminator = get_discriminator(
+        IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE, DROPOUT
+    )
     if LOAD_WEIGHTS:
         generator.load_weights(GENERATOR_WEIGHT_PATH).expect_partial()
         discriminator.load_weights(DISCRIMINATOR_WEIGHT_PATH).expect_partial()
