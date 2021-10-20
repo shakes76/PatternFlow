@@ -4,10 +4,6 @@ from tensorflow.keras import layers, initializers
 from position_encoding import fourier_position_encode
 
 
-def layer_norm(input):
-    return layers.LayerNormalization(epsilon=1e-5)(input)
-
-
 class Latent(layers.Layer):
     """Trainable latent array, initialised with truncated normal."""
 
@@ -19,14 +15,11 @@ class Latent(layers.Layer):
         )
 
     def call(self, inputs: tf.Tensor):
-        batch_size = inputs.shape[0]
+        batch_size = tf.shape(inputs)[0]
 
-        return (
-            self.latent_array
-            if batch_size is None
-            else tf.broadcast_to(
-                self.latent_array, [batch_size, *self.latent_array.shape]
-            )
+        # broadcast to batch
+        return tf.broadcast_to(
+            self.latent_array, [batch_size, *self.latent_array.shape]
         )
 
 
@@ -39,25 +32,23 @@ class FourierPositionEmbedding(layers.Layer):
 
     def build(self, input_shape: tuple[int, ...]):
         index_shape = input_shape[1:-1]
-        self.pos_encodings = fourier_position_encode(
-            index_shape=index_shape, num_bands=self.num_bands
-        )
+        self.pos_encodings = fourier_position_encode(index_shape, self.num_bands)
 
     def call(self, inputs: tf.Tensor):
-        batch_size = inputs.shape[0]
+        batch_size = tf.shape(inputs)[0]
         index_shape = inputs.shape[1:-1]
+        dim = inputs.shape[-1]
 
-        pos_encodings = (
-            self.pos_encodings
-            if batch_size is None
-            else tf.broadcast_to(
-                self.pos_encodings, [batch_size, *self.pos_encodings.shape]
-            )
+        # broadcast to batch
+        pos_encodings = tf.broadcast_to(
+            self.pos_encodings, [batch_size, *self.pos_encodings.shape]
         )
 
+        # unroll image
         inputs_unrolled = tf.reshape(
-            inputs, [batch_size, tf.reduce_prod(index_shape), -1]
+            inputs, [batch_size, tf.reduce_prod(index_shape), dim]
         )
+
         return tf.concat([inputs_unrolled, pos_encodings], axis=-1)
 
 
@@ -90,14 +81,17 @@ class CrossAttention(layers.Layer):
         self.num_heads = num_heads
 
     def build(self, input_q_shape: tuple[int, ...]):
+        layer_norm = lambda: layers.LayerNormalization(epsilon=1e-5)
+        self.q_norm = layer_norm()
+        self.kv_norm = layer_norm()
         self.attention = layers.MultiHeadAttention(
             num_heads=self.num_heads, key_dim=input_q_shape[-1]
         )
         self.feed_forward = FeedForwardNetwork()
 
     def call(self, inputs_q: tf.Tensor, inputs_kv: tf.Tensor):
-        q = layer_norm(inputs_q)
-        kv = layer_norm(inputs_kv)
+        q = self.q_norm(inputs_q)
+        kv = self.kv_norm(inputs_kv)
         attend_result = self.attention(q, kv)
         return self.feed_forward(attend_result)
 
@@ -110,13 +104,14 @@ class SelfAttention(layers.Layer):
         self.num_heads = num_heads
 
     def build(self, input_shape: tuple[int, ...]):
+        self.qkv_norm = layers.LayerNormalization(epsilon=1e-5)
         self.attention = layers.MultiHeadAttention(
             num_heads=self.num_heads, key_dim=input_shape[-1]
         )
         self.feed_forward = FeedForwardNetwork()
 
     def call(self, inputs: tf.Tensor):
-        qkv = layer_norm(inputs)
+        qkv = self.qkv_norm(inputs)
         attend_result = self.attention(qkv, qkv)
         return self.feed_forward(attend_result)
 
@@ -126,8 +121,9 @@ class ClassificationDecoder(layers.Layer):
 
     def __init__(self, num_classes: int = 2, name="logits"):
         super().__init__(name=name)
-        self.logits = layers.Dense(num_classes, activation=tf.nn.softmax)
+        self.dense = layers.Dense(num_classes)
 
     def call(self, inputs: tf.Tensor):
-        x = tf.reduce_mean(inputs, -2)
-        return self.logits(x)
+        x = tf.reduce_mean(inputs, axis=-2)
+        x = self.dense(x)
+        return tf.nn.softmax(x, axis=-1)

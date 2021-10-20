@@ -2,11 +2,8 @@ import tensorflow as tf
 import math
 
 
-def fourier_position_encode(input_shape: tuple[int, int, int], num_bands: int):
+def fourier_position_encode(index_shape: tuple[int, ...], num_bands: int):
     """Uniformly sampled Fourier frequency position encodings."""
-
-    # drop num_channels from input_shape
-    index_shape = input_shape[:-1]
 
     positions = get_spatial_positions(index_shape)
     bands = tf.stack([tf.linspace(1.0, dim / 2, num_bands) for dim in index_shape])
@@ -21,7 +18,7 @@ def fourier_position_encode(input_shape: tuple[int, int, int], num_bands: int):
     return tf.concat([positions, encodings], axis=-1)
 
 
-def get_spatial_positions(index_shape: tuple[int, int]):
+def get_spatial_positions(index_shape: tuple[int, ...]):
     """Get spatial positions between -1 and 1."""
 
     coords = [tf.linspace(-1.0, 1.0, dim) for dim in index_shape]
