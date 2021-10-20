@@ -87,7 +87,6 @@ class GCNConv(Layer):
 
         return output
 
-    @property
-    def config(self):
-        return {"channels": self.channels}
-
+    def get_config(self):
+        cfg = super().get_config()
+        return cfg    
