@@ -6,7 +6,7 @@ Student ID: 44148009
 This program is to solve the problem of image segmentation. The training data is the ISICs dataset and the model is Improved Unet. This file will introduce the implementation of the model and the results of prediction, also the performance on the test set.
 ## Improved Unet
 The structure of the model
-![The structure of the model](https://user-images.githubusercontent.com/61039100/138032671-16258f81-ad7e-4a6d-aee2-7d5857eb4e2b.png)
+![The structure of the model](images/unet.png)
 >image reference: https://arxiv.org/pdf/1802.10508v1.pdf
 </BR>
 Improved Unet has a similar structure to the original Unet. The difference is that in the encoder phase, Context Module is added. Each context module is a pre-activation residual block[1] with two convolutional layers and a dropout layer (Pdrop = 0.3) in between. In addition, the context modules are connected by a convolutional layer with a stride = 2, so in the model I define a function that returns context modules:
@@ -34,7 +34,7 @@ In the decoder stage, Improved Unet sums cross-layer outputs and realizes the se
 ## Data preparation and training
 The original image size is 511 X 384. In order to reduce the amount of calculation, the image is resized to (258,192,1) grayscale images and normalized. Original picture display
 
-![display1](https://user-images.githubusercontent.com/61039100/138036000-dc33864e-fd93-4b3e-9224-0dac5be88c5a.png)
+![display1](images/display1.png)
 
 I split the data into training, validation and test dataset by the ratio of 4:1:1. In the training process of the model, I set the dice coefficient to judge the similarity between the predicted value and the true value, and the loss function is set to binary_crossentropy or 1-DCS, which have the similar result. After 40 epoch training, 
 
@@ -46,11 +46,11 @@ I split the data into training, validation and test dataset by the ratio of 4:1:
 
 The prediction:
 
-![display2](https://user-images.githubusercontent.com/61039100/138036436-eeb7c72a-62f8-4c4f-a24c-b8c1990fdc4f.png)
+![display2](images/display2.png)
 
 ### Training DCS and validation DCS:
 
-![display3](https://user-images.githubusercontent.com/61039100/138036611-4224bf25-c98c-4dbd-9eff-bb00911ae3d1.png)
+![display3](images/display3.png)
 
 Dice coefficient is a numerical value that expresses the similarity of pictures. The value is between 0 and 1. The closer to 1, the higher the similarity between the two pictures. In addition, calculating all test data sets, the average DCS is 0.817
 
