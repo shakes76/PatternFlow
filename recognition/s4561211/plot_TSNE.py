@@ -12,9 +12,8 @@ def plot(labels, outputs ):
         Plot TSNE embeddings 
 
         Parameters:
-        A (scipy.sparse.coo.coo_matrix): adjacency matrix
-        features (scipy.sparse.csr.csr_matrix): features
         labels (torch.Tensor): labels
+        outputs (array): output of first graph convolution layer (gc_layer1)
         
     """
     
