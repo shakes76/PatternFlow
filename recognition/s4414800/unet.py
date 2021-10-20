@@ -219,8 +219,8 @@ def numpy_dice_coef(y_true, y_pred,smooth = 1e-5):
 test_dice_coef = []
 for pre,test in zip(y_pred,Y_test):
   test_dice_coef.append(numpy_dice_coef(pre,test))
-
-print(np.mean(test_dice_coef))
+avg_DSC = np.mean(test_dice_coef)
+print(f"Average DSC on the test set is:{avg_DSC}")
 
 def plot_similarity():
   """
