@@ -28,7 +28,17 @@ For a semi supervised model, data is split into train, validation and test in th
 
 ### Model 
 #### Graph Convolutional Network Model
-![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/GCN_model.png)
+It is a powerful neural network on graphs and can produce useful feature representations of nodes. <br>
+
+This is my Graph Convolutional Network model: <br>
+
+![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/GCN_model.png) <br>
+
+* 1st graph Convolutional layer: 128*32 <br>
+* Activation Function: ReLU
+* Dropout: 0.5
+* 2nd graph Convolutional layer: 32*4 
+* Activation Function: log softmax <br>
 
 Loss functions: log loss <br>
 
