@@ -4,7 +4,7 @@
 #  Author: Hideki WAKAYAMA
 #  Contact: h.wakayama@uq.net.au
 #  Platform: macOS Big Sur Ver 11.2.1, Pycharm pro 2021.1
-#  Time: 19/10/2021, 17:30
+#  Time: 20/10/2021, 12:49
 #  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import matplotlib.pyplot as plt
@@ -14,11 +14,11 @@ import numpy as np
 def dice_coef_vis(EPOCHS, TRAIN_COEFS, VAL_COEFS):
     """
     function for dice coefficient
-    :param
+    param----
         EPOCHS(array): epochs
         TRAIN_COEFS(array): train dice coefficients
         VAL_COEFS(array): validation dice coefficients
-    :return
+    return----
         plot with dice coefficients by epochs
     """
     X = np.arange(1, EPOCHS+1)
@@ -34,11 +34,11 @@ def dice_coef_vis(EPOCHS, TRAIN_COEFS, VAL_COEFS):
 def dice_loss_vis(EPOCHS, TRAIN_LOSS, VAL_LOSS):
     """
     function for dice loss
-    :param
+    param----
         EPOCHS(array): epochs
         TRAIN_LOSS(array): train dice losses
         VAL_LOSS(array): validation dice losses
-    :return
+    return----
         plot with dice loss by epochs
     """
     X = np.arange(1, EPOCHS+1)
@@ -52,25 +52,36 @@ def dice_loss_vis(EPOCHS, TRAIN_LOSS, VAL_LOSS):
 
 
 def eval_dice_coef(target, pred_masks, idx):
-  batch_size = len(pred_masks)
-  somooth = 1.
+    """
+    function to return dice coefficient of the image
+    param----
+        target(tensor[B,C,W,H]):target mask images
+        pred_masks:(tensor[B,C,W,H]):predicted mask images
+        idx(int): index
+    return----
+        dice coefficient
+    """
+    batch_size = len(pred_masks)
+    somooth = 1.
 
-  pred_flat = pred_masks.view(batch_size, -1)
-  target_flat = target.view(batch_size, -1)
+    pred_flat = pred_masks.view(batch_size, -1)
+    target_flat = target.view(batch_size, -1)
 
-  intersection = (pred_flat*target_flat)
-  dice_coef = (2.*intersection.sum(dim=1)+somooth)/(pred_flat.sum(dim=1)+target_flat.sum(dim=1)+somooth)
-  return dice_coef[idx]
+    intersection = (pred_flat*target_flat)
+    dice_coef = (2.*intersection.sum(dim=1)+somooth)/(pred_flat.sum(dim=1)+target_flat.sum(dim=1)+somooth)
+    return dice_coef[idx]
 
 
 def segment_pred_mask(imgs, pred_masks, idx, alpha):
     """
     function to make a covered image with the predicted mask
-    :param imgs(tensor[B,C,W,H]): 3 channels image
-    :param pred_masks(tensor[B,C,W,H]): predicted mask
-    :param idx(int): image index
-    :param alpha(float): ratio for segmentation
-    :return: segmentation image
+    param----
+        imgs(tensor[B,C,W,H]): 3 channels image
+        pred_masks(tensor[B,C,W,H]): predicted mask
+        idx(int): image index
+        alpha(float): ratio for segmentation
+    return----
+        segmentation image
     """
     seg_img = imgs[idx].clone()
     image_r = seg_img[0]
@@ -83,14 +94,14 @@ def segment_pred_mask(imgs, pred_masks, idx, alpha):
 def plot_gallery(images, masks, pred_masks, n_row=5, n_col=4):
     """
     function to generate gallery
-    :parameters
-     images(tensor[B,C,W,H]): images
-     masks(tensor[B,C,W,H]): target masks
-     pred_masks(tensor[B,C,W,H]): predicted masks
-     n_row: number of the row for the gallery
-     n_col:  number of the column for the gallery
-    :return
-     gallery images
+    parameters----
+        images(tensor[B,C,W,H]): images
+        masks(tensor[B,C,W,H]): target masks
+        pred_masks(tensor[B,C,W,H]): predicted masks
+        n_row: number of the row for the gallery
+        n_col:  number of the column for the gallery
+    return----
+        gallery images
     """
     idxs = n_col * n_row
     plt.figure(figsize=(1.5 * n_col, 1.5 * n_row))
