@@ -80,7 +80,7 @@ class GCNConv(Layer):
         output = backend.dot(a, output)
 
         if self.use_bias:
-            output = K.bias_add(output, self.bias)
+            output = backend.bias_add(output, self.bias)
         if mask is not None:
             output *= mask[0]
         output = self.activation(output)
