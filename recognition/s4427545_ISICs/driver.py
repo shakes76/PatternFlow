@@ -12,7 +12,7 @@ def main(arg):
         batch_size = int(arg[1])
         mode = arg[2]
         epochs = int(arg[3])
-    yolo = YOLO(batch_size)
+    yolo = YOLO(batch_size, epochs)
     if (mode == 'training'):
         print(f'Beginning training with {epochs} epochs and a batch size of {batch_size}')
         yolo.train()
