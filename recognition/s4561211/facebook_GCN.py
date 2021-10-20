@@ -150,6 +150,10 @@ def train_model(n_epochs):
         Parameters:
         n_epochs (int): the number of iteration
         
+        Returns:
+        (list) : the accuracy for training data
+        (list) : the accuracy for validation data
+        
     """
     acc_pre = 0
     acc_tra = []
