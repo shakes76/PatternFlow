@@ -10,7 +10,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 19/10/2021
+    Date last modified: 20/10/2021
     Python version: 3.9.7
 """
 
@@ -74,46 +74,44 @@ def gen_block(
     style: tf.Tensor,
     noise: tf.Tensor,
     filters: int,
+    kernel_size: int,
     upSample: bool = True,
 ) -> tf.Tensor:
     """
-    For each block, we want to: (In order)
+    If we are upscaling, start with the following layers:
         - Upscale
-        - Conv 3x3
+        - Conv 4x4
+    For every block, we want to: (In order)
         - Add noise
         - AdaIN
         - LeakyReLU
-        - Conv 3x3
+        - Conv 4x4
         - Add noise
         - AdaIN
         - LeakyReLU
     """
 
-    beta = Dense(filters)(style)
-    beta = Reshape([1, 1, filters])(beta)
-    gamma = Dense(filters)(style)
-    gamma = Reshape([1, 1, filters])(gamma)
-    n = Conv2D(filters, kernel_size=1, padding="same")(noise)
+    def compute_random_input() -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+
+        beta = Dense(filters)(style)
+        beta = Reshape([1, 1, filters])(beta)
+        gamma = Dense(filters)(style)
+        gamma = Reshape([1, 1, filters])(gamma)
+        n = Conv2D(filters, kernel_size=1, padding="same")(noise)
+        return beta, gamma, n
 
     # Begin the generator block
+    beta, gamma, n = compute_random_input()
     if upSample:
         out = UpSampling2D(interpolation="bilinear")(input)
-        out = Conv2D(filters, kernel_size=3, padding="same")(out)
+        out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     else:
         out = Activation("linear")(input)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
     out = LeakyReLU(0.01)(out)
-
-    # Compute new beta, gamma and noise
-    beta = Dense(filters)(style)
-    beta = Reshape([1, 1, filters])(beta)
-    gamma = Dense(filters)(style)
-    gamma = Reshape([1, 1, filters])(gamma)
-    n = Conv2D(filters, kernel_size=1, padding="same")(noise)
-
-    # Continue the generator block
-    out = Conv2D(filters, kernel_size=3, padding="same")(out)
+    beta, gamma, n = compute_random_input()
+    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
     out = LeakyReLU(0.01)(out)
@@ -121,29 +119,28 @@ def gen_block(
     return out
 
 
-def disc_block(input: tf.Tensor, filters: int) -> tf.Tensor:
+def disc_block(
+    input: tf.Tensor, filters: int, kernel_size: int, downSampling: bool = True
+) -> tf.Tensor:
     """
+    If we are down sampling, start with the following layer:
+        - AveragePool2D
     For each block, we want to: (In order)
         - Conv2D
-        - AveragePool2D
         - Conv2D
     """
 
     # Begin the discriminator block
-    out = Conv2D(filters, kernel_size=3, padding="same")(input)
-    out = AveragePooling2D()(out)
-    out = LeakyReLU(0.01)(out)
-    out = Conv2D(filters, kernel_size=3, padding="same")(out)
-    out = LeakyReLU(0.01)(out)
+    out = input
+    if downSampling:
+        out = AveragePooling2D()(out)
+        out = LeakyReLU(0.01)(out)
+
+    for _ in range(2):
+        out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
+        out = LeakyReLU(0.01)(out)
 
     return out
-
-
-# ==========================================================
-# Optimisers
-def get_optimizer(**hyperparameters) -> tf.keras.optimizers.Optimizer:
-
-    return tf.keras.optimizers.Adam(**hyperparameters)
 
 
 # ==========================================================
@@ -152,8 +149,7 @@ def get_generator(
     latent_dim: int,
     output_size: int,
     num_filters: int,
-    optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
-    loss: tf.keras.losses.Loss = tf.keras.losses.BinaryCrossentropy(),
+    kernel_size: int,
 ) -> tf.keras.Model:
 
     # Mapping network
@@ -179,14 +175,18 @@ def get_generator(
     x = Lambda(lambda x: x * 0 + 1)(input)  # Set the constant value to be 1
     x = Dense(curr_size * curr_size * num_filters)(x)
     x = Reshape([curr_size, curr_size, num_filters])(x)
-    x = gen_block(x, mapping, noise[-1], num_filters, upSample=False)
+    x = gen_block(
+        x, mapping, noise[-1], num_filters, kernel_size, upSample=False
+    )
 
-    # Add upscaling blocks till the output size is reached
+    # Add upsampling blocks till the output size is reached
     block = 1
     curr_filters = num_filters
     while curr_size < output_size:
         curr_filters //= 2
-        x = gen_block(x, mapping, noise[-(1 + block)], curr_filters)
+        x = gen_block(
+            x, mapping, noise[-(1 + block)], curr_filters, kernel_size
+        )
         block += 1
         curr_size *= 2
 
@@ -196,7 +196,6 @@ def get_generator(
     generator = tf.keras.Model(
         inputs=[input_mapping, input_noise, input], outputs=x
     )
-    generator.compile(optimizer=optimizer, loss=loss)
 
     return generator
 
@@ -204,16 +203,18 @@ def get_generator(
 def get_discriminator(
     image_size: int,
     num_filters: int,
-    optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
-    loss: tf.keras.losses.Loss = tf.keras.losses.BinaryCrossentropy(),
+    kernel_size: int,
 ) -> tf.keras.Model:
 
     # Discriminator network
     input = Input(shape=[image_size, image_size, 1])
     x = input
     curr_size = image_size
+    x = disc_block(
+        x, num_filters // (curr_size // 4), kernel_size, downscale=False
+    )
     while curr_size > 4:
-        x = disc_block(x, num_filters // (curr_size // 8))
+        x = disc_block(x, num_filters // (curr_size // 8), kernel_size)
         curr_size //= 2
     x = Flatten()(x)
     x = Dropout(0.5)(x)
@@ -221,9 +222,15 @@ def get_discriminator(
     x = Activation("sigmoid")(x)
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
-    discriminator.compile(optimizer=optimizer, loss=loss)
 
     return discriminator
+
+
+# ==========================================================
+# Optimisers
+def get_optimizer(**hyperparameters) -> tf.keras.optimizers.Optimizer:
+
+    return tf.keras.optimizers.Adam(**hyperparameters)
 
 
 # ==========================================================
