@@ -17,7 +17,7 @@ def plot(labels, outputs ):
         
     """
     
-    tsne = TSNE(random_state=42).fit_transform(outputs)
+    tsne = TSNE().fit_transform(outputs)
     
     sns.set(rc={'figure.figsize':(11,8)})
     palette = sns.color_palette("muted", 4)
