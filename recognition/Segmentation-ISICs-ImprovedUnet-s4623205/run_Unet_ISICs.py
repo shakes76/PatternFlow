@@ -63,8 +63,11 @@ def main():
     print("Dice loss between the first train mask and first test mask:", dice_loss(y_train[0, :, :, 0], y_test[0, :, :, 0]).numpy())
 
     # Construct baseline Unet model
+    print("\nConstructing model...")
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Unet")
-    model.summary()
+    # Test run of the baseline Unet model
+    print("Training model...")
+    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0001, loss=dice_loss, metrics=[dice_coef], batch_size=16, epochs=10)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, Conv2DTranspose, concatenate
 from tensorflow.keras.initializers import he_normal
+from tensorflow.keras.optimizers import Adam
 
 
 class SegModel:
@@ -88,7 +89,7 @@ class SegModel:
         conv9 = Conv2D(64, 3, strides=1, padding='same', activation='relu', kernel_initializer=he_norm)(conv9)
 
         conv10 = Conv2D(2, 3, strides=1, padding='same', activation='relu', kernel_initializer=he_norm)(conv9)
-        outputs = Conv2D(1, 1, activation='sigmoid')(conv10)
+        outputs = Conv2D(1, 1, activation='sigmoid', kernel_initializer=he_norm)(conv10)
 
         model = Model(inputs=inputs, outputs=outputs)
 
@@ -99,3 +100,12 @@ class SegModel:
         Print the summary of the current segmentation model in SegModel class
         """
         self.model.summary()
+
+    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs):
+        if optimizer == 'adam':
+            opt = Adam(learning_rate=lr)
+        else:
+            raise ValueError("Optimizer doesn't exists!")
+
+        self.model.compile(optimizer=opt, loss=loss, metrics=metrics)
+        self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
