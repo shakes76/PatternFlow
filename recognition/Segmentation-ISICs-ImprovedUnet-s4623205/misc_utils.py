@@ -44,4 +44,4 @@ def get_close2power(value):
         else:
             break
 
-    return result
+    return int(result)
