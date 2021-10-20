@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers, initializers
 
+from position_encoding import fourier_position_encode
+
 
 def layer_norm(input):
     return layers.LayerNormalization(epsilon=1e-5)(input)
@@ -26,6 +28,37 @@ class Latent(layers.Layer):
                 self.latent_array, [batch_size, *self.latent_array.shape]
             )
         )
+
+
+class FourierPositionEmbedding(layers.Layer):
+    """Fourier position encoding."""
+
+    def __init__(self, num_bands: int = 64, name: str = "fourier_encode"):
+        super().__init__(name=name)
+        self.num_bands = num_bands
+
+    def build(self, input_shape: tuple[int, ...]):
+        index_shape = input_shape[1:-1]
+        self.pos_encodings = fourier_position_encode(
+            index_shape=index_shape, num_bands=self.num_bands
+        )
+
+    def call(self, inputs: tf.Tensor):
+        batch_size = inputs.shape[0]
+        index_shape = inputs.shape[1:-1]
+
+        pos_encodings = (
+            self.pos_encodings
+            if batch_size is None
+            else tf.broadcast_to(
+                self.pos_encodings, [batch_size, *self.pos_encodings.shape]
+            )
+        )
+
+        inputs_unrolled = tf.reshape(
+            inputs, [batch_size, tf.reduce_prod(index_shape), -1]
+        )
+        return tf.concat([inputs_unrolled, pos_encodings], axis=-1)
 
 
 class FeedForwardNetwork(layers.Layer):
