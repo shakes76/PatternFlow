@@ -32,11 +32,11 @@ In addition, the output of each layer of the encoder is the sum of the convoluti
 In the decoder stage, Improved Unet sums cross-layer outputs and realizes the segmentation layer. In addition, the leaky ReLU used by Improved Unet in the network is more friendly when dealing with negative numbers (negative slope = 1e-2)
 
 ## Data preparation and training
-The original image size is 511X384. In order to reduce the amount of calculation, the picture is resized to (258,192,1) grayscale pictures and normalized. Original picture display
+The original image size is 511 X 384. In order to reduce the amount of calculation, the image is resized to (258,192,1) grayscale images and normalized. Original picture display
 
 ![display1](https://user-images.githubusercontent.com/61039100/138036000-dc33864e-fd93-4b3e-9224-0dac5be88c5a.png)
 
-In the training process of the model, I set the dice coefficient to judge the similarity between the predicted value and the true value, and the loss function is set to binary_crossentropy or 1-DCS, which have the similar result. After 40 epoch training, 
+I split the data into training, validation and test dataset by the ratio of 4:1:1. In the training process of the model, I set the dice coefficient to judge the similarity between the predicted value and the true value, and the loss function is set to binary_crossentropy or 1-DCS, which have the similar result. After 40 epoch training, 
 
 ```
   model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = [dice_coef])
