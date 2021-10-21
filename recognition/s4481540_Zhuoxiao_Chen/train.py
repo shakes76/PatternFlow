@@ -2,8 +2,7 @@ import argparse
 import random
 import math
 
-from dataset import MultiResolutionDataset
-from model import StyledGenerator, Discriminator
+from data_loader import Dataset
 
 import torch
 from torch import nn, optim
