@@ -29,7 +29,7 @@ class GCNConv(Layer):
     def __init__(self,
                channels,
                activation=None,
-               use_bias=True,
+               use_bias=False,
                kernel_initializer='glorot_uniform',
                bias_initializer='zeros',
                kernel_regularizer=None,
