@@ -21,7 +21,7 @@ Here is a simple way to check it:
 
 In the last step, if the message mentions the GPU usage, then the running environment is proper.
 
-Here is an example for the output message:
+Here is an example of the output message:
 
 ![](./gpu_usage.png)
 
