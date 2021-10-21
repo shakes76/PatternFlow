@@ -1,7 +1,7 @@
-    """
-    code for the algorithm
-    by: Kexin Peng, 4659241
-    """
+"""
+code for the algorithm
+by: Kexin Peng, 4659241
+"""
 import math
 import torch
 import torch.nn as nn

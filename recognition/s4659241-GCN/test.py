@@ -1,7 +1,7 @@
-    """
-    code for testing the algorithm
-    by: Kexin Peng, 4659241
-    """
+"""
+code for testing the algorithm
+by: Kexin Peng, 4659241
+"""
 import numpy as np
 import scipy.sparse as sp
 import torch.optim as optim
