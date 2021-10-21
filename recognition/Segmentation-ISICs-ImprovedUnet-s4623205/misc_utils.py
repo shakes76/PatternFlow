@@ -1,3 +1,10 @@
+"""
+Misc functions to use in the project
+
+@author: Jeng-Chung Lien
+@student id: 46232050
+@email: jengchung.lien@uqconnect.edu.au
+"""
 import sys
 from math import ceil, pow
 

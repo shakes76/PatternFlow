@@ -1,3 +1,10 @@
+"""
+Functions to load and preprocess data
+
+@author: Jeng-Chung Lien
+@student id: 46232050
+@email: jengchung.lien@uqconnect.edu.au
+"""
 import cv2
 import glob
 import numpy as np

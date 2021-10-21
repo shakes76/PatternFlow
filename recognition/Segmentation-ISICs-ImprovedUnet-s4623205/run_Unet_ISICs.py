@@ -1,3 +1,10 @@
+"""
+Driver script to show the example of the model usage
+
+@author: Jeng-Chung Lien
+@student id: 46232050
+@email: jengchung.lien@uqconnect.edu.au
+"""
 import matplotlib.pyplot as plt
 from data_utils import get_min_imageshape, train_val_test_split
 from SegmentationMetrics import dice_coef, dice_loss

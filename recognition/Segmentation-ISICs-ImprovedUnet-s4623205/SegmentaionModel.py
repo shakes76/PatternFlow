@@ -1,3 +1,10 @@
+"""
+Unet based models to perform on segmentation tasks
+
+@author: Jeng-Chung Lien
+@student id: 46232050
+@email: jengchung.lien@uqconnect.edu.au
+"""
 import os
 # Suppress the INFO message
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
