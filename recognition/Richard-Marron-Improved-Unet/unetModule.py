@@ -7,19 +7,19 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras import layers, Model, backend, losses
+from tensorflow.keras import layers, Model, backend, optimizers
 
 class ImprovedUNet():
     """Implements the Improved U-Net Model"""
     def __init__(self, input_shape: tuple, learning_rate: float=1e-4, 
-                 optimiser=tf.keras.optimizers.Adam(1e-4), loss=losses.BinaryCrossentropy(),
+                 optimizer=optimizers.Adam(1e-3), loss="binary_crossentropy",
                  leaky: float=1e-2, drop: float=3e-1):
         
         # Input must be 3-dimensional
         assert len(input_shape) == 3
         self.input_shape = input_shape
         self.learning_rate = learning_rate
-        self.optimizer = optimiser
+        self.optimizer = optimizer
         self.loss = loss
         self.metrics = [self.dice_function]
         
@@ -140,7 +140,7 @@ class ImprovedUNet():
         loc_2 = layers.LeakyReLU(alpha=self.leaky)(loc_2)
         
         # Add peripheral connection for segmentation and then upscale
-        seg_1 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="softmax")(loc_2)
+        seg_1 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="sigmoid")(loc_2)
         seg_1 = layers.Conv2DTranspose(filters=1, kernel_size=3, padding="same", 
                                        strides=2)(seg_1)
         
@@ -160,11 +160,11 @@ class ImprovedUNet():
         loc_3 = layers.LeakyReLU(alpha=self.leaky)(loc_3)
         
         # Add peripheral connection for segmentation
-        seg_2 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="softmax")(loc_3)
+        seg_2 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="sigmoid")(loc_3)
         
         # Sum first segmentation layer with this one and upscale
         seg_partial = layers.Add()([seg_1, seg_2])
-        seg_partial = layers.Conv2DTranspose(filters=3, kernel_size=3, padding="same", 
+        seg_partial = layers.Conv2DTranspose(filters=1, kernel_size=3, padding="same", 
                                              strides=2)(seg_partial)
         
         # Fourth Upsampling Module 
@@ -177,12 +177,12 @@ class ImprovedUNet():
         block_2 = layers.Conv2D(filters=32, kernel_size=3, padding="same")(block_2)
         
         # Segmentation layer
-        seg_3 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="softmax")(block_2)
+        seg_3 = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="sigmoid")(block_2)
         # Sum all segmentation layers
         total = layers.Add()([seg_partial, seg_3])
         
         # Define output layer
-        out_layer = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="softmax")(total)
+        out_layer = layers.Conv2D(filters=1, kernel_size=3, padding="same", activation="sigmoid")(total)
         
         # Return the model created from all of these layers
         return Model(in_layer, out_layer)
@@ -201,4 +201,4 @@ class ImprovedUNet():
         y_pred = backend.flatten(y_pred)
         
         # Calculate the dice coefficient over binary vectors
-        return (2.0*backend.sum(y_true*y_pred))/(backend.sum(backend.square(y_true)) + backend.sum(backend.square(y_pred)))
+        return 2.0*backend.sum(y_true*y_pred)/(backend.sum(backend.square(y_true)) + backend.sum(backend.square(y_pred)))
