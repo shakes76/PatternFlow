@@ -12,7 +12,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, Conv2DTranspose, concatenate, LeakyReLU, Dropout, Add, UpSampling2D
 from tensorflow.keras.initializers import he_normal
 from tensorflow.keras.optimizers import Adam
-from  tensorflow_addons.layers import InstanceNormalization
+from tensorflow_addons.layers import InstanceNormalization
 
 
 class SegModel:
@@ -141,6 +141,34 @@ class SegModel:
 
         return context
 
+    def localization_module(self, filters, inputs, kernel_initializer):
+        """
+        Function of the localization module in the Improved Unet model.
+        Layers in the order of 3x3Conv, Instance Normalization, Leaky Relu, 1x1Conv, Instance Normalization, Leaky Relu.
+
+        Parameters
+        ----------
+        filters : integer
+          Number of the filters of the Convolution layer
+        inputs : keras layer
+          The input of the context module expected from another layer's output
+        kernel_initializer : keras initializers
+          Random distribution to decide the random weights in the model
+
+        Returns
+        -------
+        local : keras layer
+          The output of the localization module
+        """
+        local = Conv2D(filters, 3, strides=1, padding='same', kernel_initializer=kernel_initializer)(inputs)
+        local = InstanceNormalization()(local)
+        local = LeakyReLU(alpha=0.01)(local)
+        local = Conv2D(filters, 1, strides=1, padding='same', kernel_initializer=kernel_initializer)(local)
+        local = InstanceNormalization()(local)
+        local = LeakyReLU(alpha=0.01)(local)
+
+        return local
+
     def Improved_Unet(self, input_shape, random_seed):
         """
         Function to construct the Improved Unet model
@@ -198,36 +226,21 @@ class SegModel:
         up6 = InstanceNormalization()(up6)
         up6 = LeakyReLU(alpha=0.01)(up6)
         concat6 = concatenate([add4, up6], axis=3)
-        local6 = Conv2D(128, 3, strides=1, padding='same', kernel_initializer=he_norm)(concat6)
-        local6 = InstanceNormalization()(local6)
-        local6 = LeakyReLU(alpha=0.01)(local6)
-        local6 = Conv2D(128, 1, strides=1, padding='same', kernel_initializer=he_norm)(local6)
-        local6 = InstanceNormalization()(local6)
-        local6 = LeakyReLU(alpha=0.01)(local6)
+        local6 = self.localization_module(128, inputs=concat6, kernel_initializer=he_norm)
 
         up7 = UpSampling2D(2)(local6)
         up7 = Conv2D(64, 3, strides=1, padding='same', kernel_initializer=he_norm)(up7)
         up7 = InstanceNormalization()(up7)
         up7 = LeakyReLU(alpha=0.01)(up7)
         concat7 = concatenate([add3, up7], axis=3)
-        local7 = Conv2D(64, 3, strides=1, padding='same', kernel_initializer=he_norm)(concat7)
-        local7 = InstanceNormalization()(local7)
-        local7 = LeakyReLU(alpha=0.01)(local7)
-        local7 = Conv2D(64, 1, strides=1, padding='same', kernel_initializer=he_norm)(local7)
-        local7 = InstanceNormalization()(local7)
-        local7 = LeakyReLU(alpha=0.01)(local7)
+        local7 = self.localization_module(64, inputs=concat7, kernel_initializer=he_norm)
 
         up8 = UpSampling2D(2)(local7)
         up8 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(up8)
         up8 = InstanceNormalization()(up8)
         up8 = LeakyReLU(alpha=0.01)(up8)
         concat8 = concatenate([add2, up8], axis=3)
-        local8 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(concat8)
-        local8 = InstanceNormalization()(local8)
-        local8 = LeakyReLU(alpha=0.01)(local8)
-        local8 = Conv2D(32, 1, strides=1, padding='same', kernel_initializer=he_norm)(local8)
-        local8 = InstanceNormalization()(local8)
-        local8 = LeakyReLU(alpha=0.01)(local8)
+        local8 = self.localization_module(32, inputs=concat8, kernel_initializer=he_norm)
 
         up9 = UpSampling2D(2)(local8)
         up9 = Conv2D(16, 3, strides=1, padding='same', kernel_initializer=he_norm)(up9)
