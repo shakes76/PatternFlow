@@ -39,9 +39,11 @@ python test.py
 
 ## Result of 3 layers GCN model
 - The accuracy history:
+
 ![accuracy](./images/accuracy.png)
 
 - The loss history:
+
 ![loss](./images/loss.png)
 
 ## Dependencies
@@ -49,3 +51,8 @@ python test.py
 - numpy 1.17.3
 - PyTorch 1.5.0
 - matplotlib 3.0.2
+- scipy 1.5.2
+
+## Reference
+The paper [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
+[Reference code](https://github.com/tkipf/pygcn/tree/1600b5b748b3976413d1e307540ccc62605b4d6d)
