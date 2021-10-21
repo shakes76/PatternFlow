@@ -4,6 +4,7 @@
     """
 import numpy as np
 import scipy.sparse as sp
+import torch.optim as optim
 from algorithm import *
 
 # load data
@@ -45,3 +46,55 @@ adj_matrix = sp.coo_matrix((edge_data, (row, col)),
 new_matrix = adj_matrix + sp.eye(adj_matrix.shape[0])
 # normalize the matrix
 new_matrix = normalize(new_matrix) 
+
+# transform scipy sparse matrix to torch tensor
+def sparse_to_tensor(sparse):
+    sparse = sparse.tocoo().astype(np.float32)
+    indices = torch.from_numpy(np.vstack((sparse.row, sparse.col)).astype(np.int64))
+    values = torch.from_numpy(sparse.data)
+    shape = torch.Size(sparse.shape)
+    return torch.sparse.FloatTensor(indices, values, shape)
+
+new_matrix = sparse_to_tensor(new_matrix)
+
+# split data into train:validation:test = 2:2:6
+train_index = torch.LongTensor(range(int(num_nodes/10*2)))
+val_index = torch.LongTensor(range(int(num_nodes/10*2),int(num_nodes/10*4)))
+test_index = torch.LongTensor(range(int(num_nodes/10*4),num_nodes))
+
+# initiate model
+model = GCN(n_feature = num_features, n_hidden = 32, n_class = num_classes, dropout = 0.5)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(),lr=0.01, weight_decay=5e-4)
+model.train()
+
+def test(index):
+    model.eval()
+    with torch.no_grad():
+        output = model(norm_features,new_matrix)
+        test_output = output[index]
+        predict_y = test_output.max(1)[1]
+        accuarcy = torch.eq(predict_y, target[index]).float().mean()
+    return accuarcy, test_output.cpu().numpy(), target[index].cpu().numpy()
+
+loss_history = []
+train_acc_history = []
+val_acc_history = []
+train_y = target[train_index]
+for epoch in range(200):
+    outputs = model(norm_features,new_matrix) 
+    train_out = outputs[train_index]
+    # calculate loss
+    loss = criterion(train_out, train_y)
+    optimizer.zero_grad()
+    loss.backward() 
+    optimizer.step()
+    # calculate accuracy on train and validation set
+    train_acc, _, _ = test(train_index)
+    val_acc, _, _ = test(val_index) 
+    # store the loss and accuracy
+    loss_history.append(loss.item())
+    train_acc_history.append(train_acc.item())
+    val_acc_history.append(val_acc.item())
+    print("Epoch {:03d}: Loss {:.4f}, TrainAcc {:.4}, ValAcc {:.4f}".format(
+        epoch, loss.item(), train_acc.item(), val_acc.item()))
