@@ -18,7 +18,7 @@ __email__ = "zhien.zhang@uqconnect.edu.au"
 
 class Trainer:
     def __init__(self, data_folder: str, output_dir: str, width=64, height=64, channels=1, latent_dim=100, batch=128,
-                 epochs=20, checkpoint=1, lr=0.0002, beta_1=0.5, validation_images=16, seed=1):
+                 epochs=20, checkpoint=1, lr=0.0002, beta_1=0.5, validation_images=16, seed=1, neptune=False):
         self.width = width
         self.height = height
         self.channels = channels
@@ -50,13 +50,16 @@ class Trainer:
         self.validation_latent = tf.random.normal([self.num_of_validation_images, latent_dim], seed=seed)
 
         # credential for neptune
-        with open("neptune_credential.txt", 'r') as credential:
-            token = credential.readline()
+        self.neptune = neptune
+        self.run = None
+        if self.neptune:
+            with open("neptune_credential.txt", 'r') as credential:
+                token = credential.readline()
 
-        self.run = neptune.init(
-            project="zhien.zhang/styleGAN",
-            api_token=token,
-        )
+            self.run = neptune.init(
+                project="zhien.zhang/styleGAN",
+                api_token=token,
+            )
 
     @staticmethod
     def _create_output_folder(upper_folder: str):
@@ -140,15 +143,17 @@ class Trainer:
                 g_score = self._train_g()
 
                 # log to neptune
-                self.run["Generator_Score"].log(g_score)
-                self.run["Discriminator_Score"].log(d_score)
+                if self.neptune:
+                    self.run["Generator_Score"].log(g_score)
+                    self.run["Discriminator_Score"].log(d_score)
 
                 iter += 1
 
                 # showing the result every 100 iterations
                 if iter % 100 == 0:
                     fig = self._show_images(0, save=False)
-                    self.run["Validation"].upload(fig)
+                    if self.neptune:
+                        self.run["Validation"].upload(fig)
 
             # show and save the result
             if epoch % self.checkpoint == 1:

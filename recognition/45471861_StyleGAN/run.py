@@ -9,9 +9,13 @@ __author__ = "Zhien Zhang"
 __email__ = "zhien.zhang@uqconnect.edu.au"
 
 # Command Line Argument Method
+# Local
 DATA = "keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
 OUTPUT_DIR = "C:\\Users\\Zhien Zhang\\Desktop\\Other\\COMP3710\\StyleGAN\\recognition\\45471861_StyleGAN\\Output\\" \
              "image_in_training"
+# Goliath
+# DATA = "~/45471861_StyleGAN/keras_png_slices_data/keras_png_slices_data/keras_png_slices_train"
+# OUTPUT_DIR = "~/45471861_StyleGAN/Output/image_in_training"
 
 trainer = Trainer(DATA, OUTPUT_DIR)
 
