@@ -8,6 +8,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch.optim as optim
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
@@ -114,6 +115,8 @@ class Facebook_Node_Classifier():
     def train_modle(self, n_epoch=30, lr=0.01):
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
+        self.train_accs = []
+        self.val_accs = []
         best_acc = 0
         
         for epoch in range(n_epoch):
@@ -129,11 +132,11 @@ class Facebook_Node_Classifier():
             optimizer.step()
 
             acc = self.get_acc(output[self.train_idx], self.target[self.train_idx])
-
+            self.train_accs.append(float(acc))
             print("Epoch: " + str(epoch) +" Accuracy: " + str(acc) + " Loss: " + str(loss_out))
 
             val_acc = self.get_acc(output[self.val_idx], self.target[self.val_idx])
-
+            self.val_accs.append(float(val_acc))
             print("Val Acc:" + str(val_acc))
 
             if best_acc < val_acc:
@@ -174,6 +177,18 @@ class Facebook_Node_Classifier():
         fig = tsne_plot.get_figure()
         fig.savefig("tsne_embedding_plot") 
 
+    def plot_accuracy(self):
+        plt.plot(list(range(len(self.train_accs))), self.train_accs , label = "Training Acc")
+        plt.plot(list(range(len(self.val_accs))), self.val_accs, label = "Validation Acc")
+        plt.xlabel('Epoch')
+        # Set the y axis label of the current axis.
+        plt.ylabel('Accuracy')
+        # Set a title of the current axes.
+        plt.title('Accuracy trend')
+        # show a legend on the plot
+        plt.legend()
+        plt.savefig("Accuracy_Trend.png")
+
 if __name__ == "__main__":
     
     facebook_path = 'facebook.npz'
@@ -183,6 +198,8 @@ if __name__ == "__main__":
     classifer.train_modle(n_epoch=200)
 
     classifer.test_model()
+
+    classifer.plot_accuracy()
 
     classifer.plot_truth_TSNE()
     
