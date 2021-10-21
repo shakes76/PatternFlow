@@ -112,6 +112,35 @@ class SegModel:
 
         return model
 
+    def context_module(self, filters, inputs, kernel_initializer):
+        """
+        Function of the context module in the Improved Unet model.
+        Layers in the order of 3x3Conv, Instance Normalization, Leaky Relu, Dropout, 3x3Conv, Instance Normalization, Leaky Relu.
+
+        Parameters
+        ----------
+        filters : integer
+          Number of the filters of the Convolution layer
+        inputs : keras layer
+          The input of the context module expected from another layer's output
+        kernel_initializer : keras initializers
+          Random distribution to decide the random weights in the model
+
+        Returns
+        -------
+        context : keras layer
+          The output of the context module
+        """
+        context = Conv2D(filters, 3, strides=1, padding='same', kernel_initializer=kernel_initializer)(inputs)
+        context = InstanceNormalization()(context)
+        context = LeakyReLU(alpha=0.01)(context)
+        context = Dropout(0.3)(context)
+        context = Conv2D(filters, 3, strides=1, padding='same', kernel_initializer=kernel_initializer)(context)
+        context = InstanceNormalization()(context)
+        context = LeakyReLU(alpha=0.01)(context)
+
+        return context
+
     def Improved_Unet(self, input_shape, random_seed):
         """
         Function to construct the Improved Unet model
@@ -136,61 +165,31 @@ class SegModel:
         conv1 = Conv2D(16, 3, strides=1, padding='same', kernel_initializer=he_norm)(inputs)
         conv1 = InstanceNormalization()(conv1)
         conv1 = LeakyReLU(alpha=0.01)(conv1)
-        context1 = Conv2D(16, 3, strides=1, padding='same', kernel_initializer=he_norm)(conv1)
-        context1 = InstanceNormalization()(context1)
-        context1 = LeakyReLU(alpha=0.01)(context1)
-        context1 = Dropout(0.3)(context1)
-        context1 = Conv2D(16, 3, strides=1, padding='same', kernel_initializer=he_norm)(context1)
-        context1 = InstanceNormalization()(context1)
-        context1 = LeakyReLU(alpha=0.01)(context1)
+        context1 = self.context_module(16, inputs=conv1, kernel_initializer=he_norm)
         add1 = Add()([conv1, context1])
 
         conv2 = Conv2D(32, 3, strides=2, padding='same', kernel_initializer=he_norm)(add1)
         conv2 = InstanceNormalization()(conv2)
         conv2 = LeakyReLU(alpha=0.01)(conv2)
-        context2 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(conv2)
-        context2 = InstanceNormalization()(context2)
-        context2 = LeakyReLU(alpha=0.01)(context2)
-        context2 = Dropout(0.3)(context2)
-        context2 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(context2)
-        context2 = InstanceNormalization()(context2)
-        context2 = LeakyReLU(alpha=0.01)(context2)
+        context2 = self.context_module(32, inputs=conv2, kernel_initializer=he_norm)
         add2 = Add()([conv2, context2])
 
         conv3 = Conv2D(64, 3, strides=2, padding='same', kernel_initializer=he_norm)(add2)
         conv3 = InstanceNormalization()(conv3)
         conv3 = LeakyReLU(alpha=0.01)(conv3)
-        context3 = Conv2D(64, 3, strides=1, padding='same', kernel_initializer=he_norm)(conv3)
-        context3 = InstanceNormalization()(context3)
-        context3 = LeakyReLU(alpha=0.01)(context3)
-        context3 = Dropout(0.3)(context3)
-        context3 = Conv2D(64, 3, strides=1, padding='same', kernel_initializer=he_norm)(context3)
-        context3 = InstanceNormalization()(context3)
-        context3 = LeakyReLU(alpha=0.01)(context3)
+        context3 = self.context_module(64, inputs=conv3, kernel_initializer=he_norm)
         add3 = Add()([conv3, context3])
 
         conv4 = Conv2D(128, 3, strides=2, padding='same', kernel_initializer=he_norm)(add3)
         conv4 = InstanceNormalization()(conv4)
         conv4 = LeakyReLU(alpha=0.01)(conv4)
-        context4 = Conv2D(128, 3, strides=1, padding='same', kernel_initializer=he_norm)(conv4)
-        context4 = InstanceNormalization()(context4)
-        context4 = LeakyReLU(alpha=0.01)(context4)
-        context4 = Dropout(0.3)(context4)
-        context4 = Conv2D(128, 3, strides=1, padding='same', kernel_initializer=he_norm)(context4)
-        context4 = InstanceNormalization()(context4)
-        context4 = LeakyReLU(alpha=0.01)(context4)
+        context4 = self.context_module(128, inputs=conv4, kernel_initializer=he_norm)
         add4 = Add()([conv4, context4])
 
         conv5 = Conv2D(256, 3, strides=2, padding='same', kernel_initializer=he_norm)(add4)
         conv5 = InstanceNormalization()(conv5)
         conv5 = LeakyReLU(alpha=0.01)(conv5)
-        context5 = Conv2D(256, 3, strides=1, padding='same', kernel_initializer=he_norm)(conv5)
-        context5 = InstanceNormalization()(context5)
-        context5 = LeakyReLU(alpha=0.01)(context5)
-        context5 = Dropout(0.3)(context5)
-        context5 = Conv2D(256, 3, strides=1, padding='same', kernel_initializer=he_norm)(context5)
-        context5 = InstanceNormalization()(context5)
-        context5 = LeakyReLU(alpha=0.01)(context5)
+        context5 = self.context_module(256, inputs=conv5, kernel_initializer=he_norm)
         add5 = Add()([conv5, context5])
 
         # Right side
