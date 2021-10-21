@@ -19,7 +19,7 @@ print(f'Tensorflow {"is" if tf.executing_eagerly() else "is not"} executing eage
 
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer, Input, Add, Multiply, Dense, Flatten, Reshape, LeakyReLU, Conv2D, \
-    Conv2DTranspose
+    Conv2DTranspose, UpSampling2D
 from tensorflow.keras import backend as K
 
 import numpy as np
@@ -36,6 +36,11 @@ IMAGE_DIMS = (IMAGE_SIZE, IMAGE_SIZE)
 NUM_CHANNELS = 1
 
 START_DIMS = (7,7)
+
+
+x = np.array([[[[5,5]]]])
+up = UpSampling2D()
+x2 = up(x)
 
 
 # Input b and g should be 1x1xC
