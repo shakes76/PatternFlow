@@ -1,0 +1,56 @@
+    """
+    code for the algorithm
+    by: Kexin Peng, 4659241
+    """
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.nn.modules.module import Module
+from torch.nn.parameter import Parameter
+
+
+class GraphConvolution(Module):
+    """
+    Graph Convolution layer
+    references: 
+    https://arxiv.org/abs/1609.02907
+    https://github.com/tkipf/pygcn/tree/1600b5b748b3976413d1e307540ccc62605b4d6d
+
+    """
+
+    def __init__(self, input_features, output_features, bias=True):
+        super(GraphConvolution, self).__init__()
+        self.input_features = input_features
+        self.output_features = output_features
+        # weight in the layer
+        self.weight = Parameter(torch.FloatTensor(input_features, output_features))
+        # bias in the layer
+        if bias:
+            self.bias = Parameter(torch.FloatTensor(output_features))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+        
+    # initialize parameters using kaiming-uniform
+    def reset_parameters(self):
+        self.weight = nn.init.kaiming_uniform_(self.weight)
+        if self.bias is not None:
+            self.bias = nn.init.kaiming_uniform_(self.bias)
+
+
+    def forward(self, in_feature, adj_matrix):
+        # input * weight
+        support = torch.mm(in_feature, self.weight) 
+        output = torch.sparse.mm(adj_matrix, support)
+        if self.bias is not None:
+            return output + self.bias
+        else:
+            return output
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' (' \
+               + str(self.input_features) + ' -> ' \
+               + str(self.output_features) + ')'
+
+
