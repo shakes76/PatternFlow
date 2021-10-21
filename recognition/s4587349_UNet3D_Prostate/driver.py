@@ -76,18 +76,24 @@ print(W)
 def main():
     """ """
 
-    # Display raw data and label info
-    sm.data_info()
+    # # Display raw data and label info
+    # sm.data_info()
+    #
+    # # display images of raw data
+    # sm.slices(img_mr)
+    # # display images of labels
+    # sm.slices(img_label)
 
-    # display images of raw data
-    sm.slices(img_mr)
-    # display images of labels
-    sm.slices(img_label)
-
+    # attempt to compile model
     mdl.unet3d()
 
     # todo
-    # find original work
+    # files to laptop (git)
+    # winscp to laptop
+    # need UQ vpn on laptop
+    # upsampling not increasing size, it remains at (None, 32, 32, 16, 256) p2, u6
+    #     expect (None, 64, 64, 32, 256)
+    # find my original work
     # generator
     # normalise data, - mean / stdev
     # labels tf.one_hot( )
@@ -104,6 +110,7 @@ def main():
     #   siu's github library
     #   see augmentation lib in lab sheets
     #   https://github.com/SiyuLiu0329/pyimgaug3d
+    # delete jupyter files from repo
     # save images to add to readme
 
     # todo Issues non -critical
