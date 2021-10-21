@@ -265,6 +265,7 @@ class SegModel:
         conv9 = InstanceNormalization()(conv9)
         conv9 = LeakyReLU(alpha=0.01)(conv9)
 
+        # Segmentation layers
         seg7 = Conv2D(1, 1, strides=1, padding='same', kernel_initializer=he_norm)(local7)
         seg7 = InstanceNormalization()(seg7)
         seg7 = LeakyReLU(alpha=0.01)(seg7)
