@@ -11,6 +11,7 @@ import numpy as np
 from misc_utils import progressbar
 from sklearn.model_selection import train_test_split
 from math import isclose
+from time import process_time
 
 
 def get_min_imageshape(path):
@@ -27,6 +28,7 @@ def get_min_imageshape(path):
     min_shape : list
       A list of the minimum image shape [height, width]
     """
+    start_time = process_time()
     img_paths = sorted(glob.glob(path))
     length = len(img_paths)
     count = 0
@@ -43,6 +45,7 @@ def get_min_imageshape(path):
     image_shapes = np.array(image_shapes, dtype=object)
     index = np.where(image_shapes[:, 0] == min(image_shapes[:, 0]))
     min_shape = image_shapes[index][0][1]
+    print("\nFinished! (Runtime: %s seconds)" % (process_time() - start_time))
 
     return min_shape
 
@@ -65,6 +68,7 @@ def load_rgbimages(path, height, width):
     images : float32 numpy array
       A data type float32 numpy array of the preprocessed images
     """
+    start_time = process_time()
     img_paths = sorted(glob.glob(path))
     length = len(img_paths)
     count = 0
@@ -82,6 +86,7 @@ def load_rgbimages(path, height, width):
 
     images = np.array(images, np.float32)
     images = images / 255.
+    print("\nFinished! (Runtime: %s seconds)" % (process_time() - start_time))
 
     return images
 
@@ -104,6 +109,7 @@ def load_masks(path, height, width):
     images : float32 numpy array
       A data type float32 numpy array of the preprocessed masks
     """
+    start_time = process_time()
     mask_paths = sorted(glob.glob(path))
     length = len(mask_paths)
     count = 0
@@ -123,6 +129,7 @@ def load_masks(path, height, width):
     masks = np.array(masks, np.float32)
     masks = masks / 255.
     masks = masks[:, :, :, np.newaxis]
+    print("\nFinished! (Runtime: %s seconds)" % (process_time() - start_time))
 
     return masks
 
@@ -169,11 +176,11 @@ def train_val_test_split(image_path, mask_path, height, width, split_ratio, rand
     # Load the images and masks
     print("\nLoad and preprocess RGB images...")
     images = load_rgbimages(image_path, height, width)
-    print("\nLoad and preprocess masks...")
+    print("Load and preprocess masks...")
     masks = load_masks(mask_path, height, width)
 
     # Split the train, validation and test set according to split_ratio
-    print("\nSplitting train set...")
+    print("Splitting train set...")
     X_train, X_test, y_train, y_test = train_test_split(images, masks, train_size=split_ratio[0], random_state=randomstate)
     print("Splitting validation and test set...")
     val_split_ratio = split_ratio[1] / (split_ratio[1] + split_ratio[2])
