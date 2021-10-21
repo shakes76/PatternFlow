@@ -28,10 +28,10 @@ def main():
 
     # Construct baseline Unet model
     print("\nConstructing model...")
-    model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Unet")
+    model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Improved_Unet")
     # Test run of the baseline Unet model
     print("Training model...")
-    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0001, loss=dice_loss, metrics=[dice_coef], batch_size=16, epochs=3)
+    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.00001, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=35)
 
     # Predict and plot test set
     print("\nPredicting test set...")
