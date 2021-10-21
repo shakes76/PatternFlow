@@ -16,7 +16,7 @@ The partially processed [dataset](https://graphmining.ai/datasets/ptg/facebook.n
 ### data preprocessing
 The preprocessing steps are included in the test.py file. The steps mainly include: build adjacency matrix based on the 'edges' data, transform the data into the format of PyTorch tensor and normalize matrix data.
 
-In order to implement semi-supervised classification, the proportion of train:validation:test data is: 2:2:6
+In order to implement semi-supervised classification, the proportion of **train : validation : test data** is: **2 : 2 : 6**
 If you want to change the proportion, you can change the code for `train_index`, `val_index` and `test_index` in `test.py` file.
 
 ## GCN model
@@ -31,6 +31,7 @@ The structure of 3 layers GCN used in my implementation is:
 You can change parameters for your 3 layers GCN(or 2 layers GCN) by changing the n_hidden1, n_hidden2(or n_hidden for 2 layers GCN) and dropout in the `test.py` file.
 
 ## Run the code
+***
 Put the dataset file `facebook.npz` with code files `algorithm.py` and `test.py` into the same folder, you can run the test script by using:
 ```
 python test.py
@@ -38,6 +39,7 @@ python test.py
 *You can copy and paste the code to Jupyter notebook and run `test(test_index)` after the training to see the test accuracy.*
 
 ## Result of 3 layers GCN model
+***
 - The accuracy history:
 
 ![accuracy](./images/accuracy.png)
@@ -47,6 +49,7 @@ python test.py
 ![loss](./images/loss.png)
 
 ## Dependencies
+***
 - Python 3.7.1
 - numpy 1.17.3
 - PyTorch 1.5.0
@@ -54,5 +57,7 @@ python test.py
 - scipy 1.5.2
 
 ## Reference
+***
 The paper [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
+
 [Reference code](https://github.com/tkipf/pygcn/tree/1600b5b748b3976413d1e307540ccc62605b4d6d)
