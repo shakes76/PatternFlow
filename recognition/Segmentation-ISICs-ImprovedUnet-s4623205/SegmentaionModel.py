@@ -151,7 +151,7 @@ class SegModel:
         filters : integer
           Number of the filters of the Convolution layer
         inputs : keras layer
-          The input of the context module expected from another layer's output
+          The input of the localization module expected from another layer's output
         kernel_initializer : keras initializers
           Random distribution to decide the random weights in the model
 
@@ -168,6 +168,32 @@ class SegModel:
         local = LeakyReLU(alpha=0.01)(local)
 
         return local
+
+    def upsampling_module(self, filters, inputs, kernel_initializer):
+        """
+        Function of the upsampling module in the Improved Unet model.
+        Layers in the order of size(2, 2) Upsampling, 3x3Conv, Instance Normalization, Leaky Relu.
+
+        Parameters
+        ----------
+        filters : integer
+          Number of the filters of the Convolution layer
+        inputs : keras layer
+          The input of the upsampling module expected from another layer's output
+        kernel_initializer : keras initializers
+          Random distribution to decide the random weights in the model
+
+        Returns
+        -------
+        up : keras layer
+          The output of the upsampling module
+        """
+        up = UpSampling2D(2)(inputs)
+        up = Conv2D(filters, 3, strides=1, padding='same', kernel_initializer=kernel_initializer)(up)
+        up = InstanceNormalization()(up)
+        up = LeakyReLU(alpha=0.01)(up)
+
+        return up
 
     def Improved_Unet(self, input_shape, random_seed):
         """
@@ -221,31 +247,19 @@ class SegModel:
         add5 = Add()([conv5, context5])
 
         # Right side
-        up6 = UpSampling2D(2)(add5)
-        up6 = Conv2D(128, 3, strides=1, padding='same', kernel_initializer=he_norm)(up6)
-        up6 = InstanceNormalization()(up6)
-        up6 = LeakyReLU(alpha=0.01)(up6)
+        up6 = self.upsampling_module(128, inputs=add5, kernel_initializer=he_norm)
         concat6 = concatenate([add4, up6], axis=3)
         local6 = self.localization_module(128, inputs=concat6, kernel_initializer=he_norm)
 
-        up7 = UpSampling2D(2)(local6)
-        up7 = Conv2D(64, 3, strides=1, padding='same', kernel_initializer=he_norm)(up7)
-        up7 = InstanceNormalization()(up7)
-        up7 = LeakyReLU(alpha=0.01)(up7)
+        up7 = self.upsampling_module(64, inputs=local6, kernel_initializer=he_norm)
         concat7 = concatenate([add3, up7], axis=3)
         local7 = self.localization_module(64, inputs=concat7, kernel_initializer=he_norm)
 
-        up8 = UpSampling2D(2)(local7)
-        up8 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(up8)
-        up8 = InstanceNormalization()(up8)
-        up8 = LeakyReLU(alpha=0.01)(up8)
+        up8 = self.upsampling_module(32, inputs=local7, kernel_initializer=he_norm)
         concat8 = concatenate([add2, up8], axis=3)
         local8 = self.localization_module(32, inputs=concat8, kernel_initializer=he_norm)
 
-        up9 = UpSampling2D(2)(local8)
-        up9 = Conv2D(16, 3, strides=1, padding='same', kernel_initializer=he_norm)(up9)
-        up9 = InstanceNormalization()(up9)
-        up9 = LeakyReLU(alpha=0.01)(up9)
+        up9 = self.upsampling_module(16, inputs=local8, kernel_initializer=he_norm)
         concat9 = concatenate([add1, up9], axis=3)
         conv9 = Conv2D(32, 3, strides=1, padding='same', kernel_initializer=he_norm)(concat9)
         conv9 = InstanceNormalization()(conv9)
