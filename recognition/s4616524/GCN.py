@@ -157,6 +157,7 @@ class Facebook_Node_Classifier():
 
 
     def plot_truth_TSNE(self):
+        plt.figure(figsize=(15, 8))
         tsne = TSNE(random_state=self.seed).fit_transform(self.node_features)
         palette = sns.color_palette("muted", self.n_class)
         tsne_plot = sns.scatterplot(tsne[:,0], tsne[:,1], hue=self.target.numpy(), legend='full', palette=palette, s=10)
@@ -164,7 +165,7 @@ class Facebook_Node_Classifier():
         fig.savefig("tsne_original_plot")
 
     def plot_GCN_TSNE(self):
-
+        plt.figure(figsize=(15, 8))
         self.model.load_state_dict(torch.load('model_w.pth'))
         _ = self.model(self.node_features, self.adj, TSNE_collect=True)
 
@@ -178,6 +179,7 @@ class Facebook_Node_Classifier():
         fig.savefig("tsne_embedding_plot") 
 
     def plot_accuracy(self):
+        plt.figure(figsize=(15, 8))
         plt.plot(list(range(len(self.train_accs))), self.train_accs , label = "Training Acc")
         plt.plot(list(range(len(self.val_accs))), self.val_accs, label = "Validation Acc")
         plt.xlabel('Epoch')
