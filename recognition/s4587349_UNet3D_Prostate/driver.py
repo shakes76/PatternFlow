@@ -9,8 +9,13 @@ from skimage.io import imread, imshow
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from model import *
-from support_methods import *
+import model as mdl
+import support_methods as sm
+
+"""
+Sources
+"""
+
 
 """
 All images are 3D MRi's of shape (256, 256, 128) in nibabel format (*.nii.gz).
@@ -19,6 +24,10 @@ MRi voxel values vary from 0.0 upwards.
 The labels have 6 classes, labelled from 0.0 to 5.0.
 """
 
+W = 256
+D = 256
+H = 128
+CLASSES = 6
 
 
 """
@@ -28,6 +37,7 @@ one sample. All up there are 38 patients, and these have been distributed
 between training, validation and testing at 27:7:4 with the number of images
 at 158:35:18.
 """
+
 # Data Sources Windows
 # Data sources
 X_TRAIN_DIR = 'D:\\prostate\\mr_train'
@@ -37,6 +47,7 @@ X_TEST_DIR = 'D:\\prostate\\mr_test'
 Y_TRAIN_DIR = 'D:\\prostate\\label_train'
 Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
 Y_TEST_DIR = 'D:\\prostate\\label_test'
+
 
 # # Data sources Goliath
 # # Data sources
@@ -56,7 +67,7 @@ img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).ge
 
 
 
-
+print(W)
 
 
 
@@ -64,19 +75,22 @@ img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).ge
 
 def main():
     """ """
+
     # Display raw data and label info
-    data_info()
+    sm.data_info()
 
     # display images of raw data
-    slices(img_mr)
+    sm.slices(img_mr)
     # display images of labels
-    slices(img_label)
+    sm.slices(img_label)
 
-
+    mdl.unet3d()
 
     # todo
+    # find original work
     # generator
     # normalise data, - mean / stdev
+    # labels tf.one_hot( )
     # sort / shuffle
     # model 3d
     # dsc
@@ -86,6 +100,10 @@ def main():
     # model save / recover
     # plot predicted labels post
     # augmentation (distortion, slight rotations, horizontal flip
+    #   translation (flip?), need to do same to label but siu's does that auto
+    #   siu's github library
+    #   see augmentation lib in lab sheets
+    #   https://github.com/SiyuLiu0329/pyimgaug3d
     # save images to add to readme
 
     # todo Issues non -critical
