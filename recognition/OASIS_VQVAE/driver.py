@@ -1,6 +1,27 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
-from vqvae import VQVAE 
+from vqvae import VQVAE, get_closest_embedding_indices
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def show_image_and_reconstruction(original, cb, reconstructed):
+    plt.subplot(1, 3, 1)
+    plt.imshow(original, cmap="gray")
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 3, 2)
+    plt.imshow(cb)
+    plt.title("Codebook")
+    plt.axis("off")
+
+    plt.subplot(1, 3, 3)
+    plt.imshow(reconstructed, cmap="gray")
+    plt.title("Reconstructed")
+    plt.axis("off")
+
+    plt.show()
 
 if __name__ == "__main__":
     IMG_SIZE = 256
@@ -22,11 +43,11 @@ if __name__ == "__main__":
 
     # initial hyperparameters to get it working. 
     # Need to be tuned!
-    learning_rate = 2e-4
+    learning_rate = 1e-3
     beta = 0.25
     latent_dim = 64
     num_embeddings = 128
-    epochs = 10
+    epochs = 30
     batch_size = 128
 
     input_size = (IMG_SIZE, IMG_SIZE, 1)
@@ -37,3 +58,27 @@ if __name__ == "__main__":
 
     # fit it
     vqvae_model.fit(dataset, epochs=epochs, batch_size=batch_size)
+
+    # visualise some reconstructions
+
+    num_batches_to_show = 2
+    num_images_per_batch_to_show = 5
+
+    test_images_batches = dataset.take(num_batches_to_show)
+    for test_images in test_images_batches.as_numpy_iterator():
+        reconstructions = vqvae_model.predict(test_images)
+
+        encoder_outputs = vqvae_model.encoder().predict(test_images)
+        encoder_outputs_flat = encoder_outputs.reshape(-1, encoder_outputs.shape[-1])
+
+        codebook_indices = get_closest_embedding_indices(vqvae_model.quantizer().embeddings(), encoder_outputs_flat)
+        codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
+
+        for i in range(num_images_per_batch_to_show):
+            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1))
+            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1))
+            codebook_image = codebook_indices[i]
+
+            show_image_and_reconstruction(tf.squeeze(original_image), codebook_image, tf.squeeze(reconstructed_image))
+            ssim = tf.math.reduce_sum(tf.image.ssim(original_image, reconstructed_image, max_val=1.0)).numpy()
+            print("SSIM: ", ssim)
