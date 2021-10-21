@@ -33,12 +33,31 @@ def main():
     split_ratio = [0.6, 0.2, 0.2]
     X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(image_path, mask_path, new_imageshape, new_imageshape, split_ratio, randomstate=42)
 
-    # Construct baseline Unet model
+    # Construct Improved Unet model
     print("\nConstructing model...")
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Improved_Unet")
-    # Test run of the baseline Unet model
+    # Test run of the Improved Unet model
     print("Training model...")
-    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.00001, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=35)
+    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0005, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=35)
+
+    # Plot the train, validation loss and dice coefficient
+    print("\nPlotting train, validation loss and dice coefficient...")
+    plt.subplot(1, 2, 1)
+    plt.plot(model.history['loss'], label='train')
+    plt.plot(model.history['val_loss'], label='validation')
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Dice Loss")
+    plt.subplot(1, 2, 2)
+    plt.plot(model.history['dice_coef'], label='train')
+    plt.plot(model.history['val_dice_coef'], label='validation')
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Dice")
+    plt.title("Dice Coefficient")
+    plt.tight_layout()
+    plt.show()
 
     # Predict and plot test set
     print("\nPredicting test set...")
