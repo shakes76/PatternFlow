@@ -36,7 +36,8 @@ class GraphConvolution(Module):
     def reset_parameters(self):
         self.weight = nn.init.kaiming_uniform_(self.weight)
         if self.bias is not None:
-            self.bias = nn.init.kaiming_uniform_(self.bias)
+            p = 1./math.sqrt(len(self.bias))
+            self.bias.data.uniform_(-p, p)
 
 
     def forward(self, in_feature, adj_matrix):
