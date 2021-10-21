@@ -3,6 +3,7 @@ import random
 import math
 
 from data_loader import Dataset
+from network import Style_G, D
 
 import torch
 from torch import nn, optim
