@@ -53,7 +53,9 @@ According to the following image, the accuracy increases rapidly after 40 epochs
 ![Accuracy_trend]( Accuracy_Trend_readme.png)
 
 The model will keep the best performance learnable weight, and the parameters can be implemented into model to predict the testing data set. The final testing accuracy will be printed after the training process done.
- 
+
+![Test_acc](Test_acc.png)
+
 In the semi-supervised scenario, although 60% of the data is without labelled, GCN model still got more than 0.8 accuracy for the testing data. Its’ a reasonable accuracy comparing with the result from [Semi-Supervised Classification with Graph Convolutional Networks]( https://arxiv.org/abs/1609.02907). 
 
 To demonstrate the performance of the GCN layer, TSNE is a good tool to show how the GCN separate the different class data in embedding space. 
