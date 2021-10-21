@@ -21,7 +21,7 @@ This dataset is a page-page graph of Facebook sites collected via Facebook Graph
     ----------------------------------------
 
 #### Data pre-processing
-Obtain the adjacency matrix from the information of Edges and normalize it
+Obtain the adjacency matrix from the information of Edges and normalize by node degree by multiplying adjacency matrix with the inverse degree matrix.
 
 #### Data splits
 For a semi supervised model, data is split into train, validation and test in the ratio of 20, 20 and 60 respectively.
@@ -29,6 +29,12 @@ For a semi supervised model, data is split into train, validation and test in th
 ### Model 
 #### Graph Convolutional Network Model
 It is a powerful neural network on graphs and can produce useful feature representations of nodes. <br>
+
+GCN (graph convolutional network) is a neural network operating on graphs. <br>
+Given a graph G = (V, E) as input where V is nodes and E is edges. <br>
+* Input matrix: |V|* F⁰ where F⁰ is the number of input features and |V| is the number of nodes. <br>
+* Adjacency matrix: |V|*|V| <br>
+* Hidden layers Hⁱ = f(Hⁱ⁻¹, A): |V|*Fⁱ where H⁰ = V and f is a propagation. <br>
 
 This is my Graph Convolutional Network model: <br>
 
@@ -56,8 +62,32 @@ Best Model Selection: Save the best model which has the largest accuracy for val
 * seaborn
 
 ### Outputs
-Accuracy for training and validation set <br>
-Both accuracies increase steadily so no overfitting happens.
+Accuracy about node classification which is the prediction of Facebook sites <br>
+
+#### Output for each epoch
+        Epoch: 195 
+        train - loss: tensor(0.4785, grad_fn=<NegBackward>) , accuracy tensor(0.8407) 
+        validation - loss: tensor(0.4874, grad_fn=<NegBackward>) , accuracy tensor(0.8405) 
+        -------------------------------------------------- 
+        Epoch: 196
+        train - loss: tensor(0.4763, grad_fn=<NegBackward>) , accuracy tensor(0.8469) 
+        validation - loss: tensor(0.4962, grad_fn=<NegBackward>) , accuracy tensor(0.8376) 
+        -------------------------------------------------- 
+        Epoch: 197 
+        train - loss: tensor(0.4634, grad_fn=<NegBackward>) , accuracy tensor(0.8402) 
+        validation - loss: tensor(0.4852, grad_fn=<NegBackward>) , accuracy tensor(0.8382) 
+        -------------------------------------------------- 
+        Epoch: 198 
+        train - loss: tensor(0.4671, grad_fn=<NegBackward>) , accuracy tensor(0.8482) 
+        validation - loss: tensor(0.4791, grad_fn=<NegBackward>) , accuracy tensor(0.8431) 
+        -------------------------------------------------- 
+        Epoch: 199 
+        train - loss: tensor(0.4735, grad_fn=<NegBackward>) , accuracy tensor(0.8402) 
+        validation - loss: tensor(0.4688, grad_fn=<NegBackward>) , accuracy tensor(0.8425) 
+        -------------------------------------------------- 
+
+#### Accuracy for training and validation set
+Both accuracies increase steadily so no overfitting happens. Furthermore, we got reasonable accuracy (0.8) after 150 iterations.
 
 200 iterations: <br>
 ![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/accuracy200.png) <br>
