@@ -8,10 +8,12 @@ Unet based models to perform on segmentation tasks
 import os
 # Suppress the INFO message
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+from tensorflow import pow
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, Conv2DTranspose, concatenate, LeakyReLU, Dropout, Add, UpSampling2D
 from tensorflow.keras.initializers import he_normal
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 from tensorflow_addons.layers import InstanceNormalization
 
 
@@ -293,7 +295,7 @@ class SegModel:
         """
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs):
+    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs, lr_decay=False, decay_rate=0.985):
         """
         Function to train the current segmentation model in SegModel class
 
@@ -319,13 +321,33 @@ class SegModel:
           Number of samples to take in to calculate then update weights
         epochs : integer
           Number to decide how many iterations of the model is train over the whole train data set
+        lr_decay : bool
+          Decide whether to use learning rate decay or not
+        decay_rate : float
+          The decay rate of the learning rate each epoch. Is used if lr_decay is true.
         """
+        # The learning rate epoch decay
+        if lr_decay:
+            length = len(X_train)
+            steps = length / batch_size
+            boundaries = []
+            values = []
+            for i in range(epochs):
+                boundaries.append(int(steps * (i+1)))
+                values.append(lr * pow(decay_rate, i))
+            boundaries.pop()
+
+            lr = PiecewiseConstantDecay(boundaries=boundaries, values=values)
+
+        # Apply optimizer
         if optimizer == 'adam':
             opt = Adam(learning_rate=lr)
         else:
             raise ValueError("Optimizer doesn't exists!")
 
+        # Compile model
         self.model.compile(optimizer=opt, loss=loss, metrics=metrics)
+        # Train model and record training history
         history = self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
         self.history = history.history
 
