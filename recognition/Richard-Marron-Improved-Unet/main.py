@@ -13,15 +13,21 @@ import cv2
 from sklearn.model_selection import train_test_split
 from unetModule import ImprovedUNet
 
-def normalise_images(image_set):
+def normalise_images(image_set, ground_truth=False):
     """
     Normalise images between 0 and 1
         Params:
             image_set : Numpy array of images
+            ground_truth : If the set is the ground truth data
             
         Return : Normalised version of image_set
     """
-    return image_set / 255.0
+    if not ground_truth:
+        # Normalise without rounding
+        return image_set / 255.0
+    else:
+        # Round the normalisation since we want just 0 or 1 values
+        return np.around(image_set / 255.0)
 
 def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
     """
@@ -47,11 +53,20 @@ def load_images(path: str, ground_truth: bool=False, truncate: bool=False):
         # Only take the first 1/4 of the images
         img_paths = img_paths[:len(img_paths)//4]
     print("Successfully loaded paths!") 
-    print("Converting images into numpy arrays...")
     # Read in images from path and return numpy array
-    return np.array([cv2.cvtColor(cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR),
-                                             dsize=(512, 384)), 
-                                  cv2.COLOR_BGR2RGB) for path in img_paths], dtype=np.float32)
+    if not ground_truth:
+        # Read in RGB and resize to 512x384
+        print("Converting training images into numpy arrays...")
+        return np.array([cv2.cvtColor(cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR),
+                                                 dsize=(512, 384)), 
+                                      cv2.COLOR_BGR2RGB) for path in img_paths], dtype=np.float32)
+    else:
+        # Read in grayscale and resize to 512x384
+        print("Converting ground truth images into numpy arrays...")
+        return np.expand_dims(np.array([cv2.resize(cv2.imread(path, cv2.IMREAD_GRAYSCALE),
+                                                             dsize=(512, 384)) for path in img_paths], 
+                                                 dtype=np.float32), 
+                                        axis=-1)
 
 def get_splits(input_set, truth_set):
     """
@@ -87,10 +102,10 @@ def main(debugging=False):
     """
     # Load normalised images
     input_images = normalise_images(load_images(path="./Data/ISIC2018_Task1-2_Training_Input_x2/", 
-                                                ground_truth=False, truncate=debugging))
+                                                ground_truth=False, truncate=debugging), ground_truth=False)
     # Load ground truth segmentation
-    gt_images = normalise_images(load_images(path="./Data/ISIC2018_Task1_Training_GroundTruth_x2/", 
-                                             ground_truth=True, truncate=debugging))
+    gt_images = normalise_images(load_images(path="./Data/ISIC2018_Task1_Training_GroundTruth_x2/",
+                                             ground_truth=True, truncate=debugging), ground_truth=True)
         
     # Print out some useful information
     print(f"Total input images: {input_images.shape}")
@@ -120,10 +135,18 @@ def main(debugging=False):
     print(f"Test Set Shape  \t: {test[0].shape}")
     print(f"Validation Set Shape \t: {valid[0].shape}")
     
-    hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=100)
+    load_weights = False
+    if not load_weights:
+        hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=100)
+    else:
+        # Load weights into model
+        unet_model.load_weights("./weights/test.h5")
     
-    unet_model.evaluate(test[0], test[1])
-    unet_model.save_weights("./weights/test")
+    unet_model.evaluate(test[0], test[1], batch_size=10)
+    test_image = unet_model.predict(test[0][0])
+    plt.figure()
+    plt.imshow(test_image)
+    unet_model.save_weights("./weights/test.h5")
     print("STOP")
     
 
