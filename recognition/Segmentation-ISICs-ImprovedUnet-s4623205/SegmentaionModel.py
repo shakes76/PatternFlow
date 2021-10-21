@@ -43,6 +43,8 @@ class SegModel:
         else:
             raise ValueError("Model doesn't exist!")
 
+        self.history = None
+
     def Unet(self, input_shape, random_seed):
         """
         Function to construct the baseline Unet model
@@ -324,7 +326,8 @@ class SegModel:
             raise ValueError("Optimizer doesn't exists!")
 
         self.model.compile(optimizer=opt, loss=loss, metrics=metrics)
-        self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
+        history = self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
+        self.history = history.history
 
     def predict(self, X_test, batch_size):
         """
