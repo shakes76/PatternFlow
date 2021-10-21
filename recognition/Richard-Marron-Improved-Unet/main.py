@@ -137,17 +137,13 @@ def main(debugging=False):
     
     load_weights = False
     if not load_weights:
-        hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=100)
+        hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=50)
     else:
         # Load weights into model
         unet_model.load_weights("./weights/test.h5")
     
     unet_model.evaluate(test[0], test[1], batch_size=10)
-    test_image = unet_model.predict(test[0][0])
-    plt.figure()
-    plt.imshow(test_image)
     unet_model.save_weights("./weights/test.h5")
-    print("STOP")
     
 
 if __name__ == "__main__":
