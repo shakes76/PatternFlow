@@ -14,7 +14,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 19/10/2021
+    Date last modified: 21/10/2021
     Python version: 3.9.7
 """
 
@@ -59,7 +59,7 @@ BATCH_SIZE: int = 32
 SAMPLE_SIZE: int = 32
 NUM_FILTERS: int = 512
 LATENT_DIMENSION: int = 512
-KERNEL_SIZE: int = 4
+KERNEL_SIZE: int = 3
 DROPOUT: float = 0.2
 
 # Paths
@@ -80,7 +80,7 @@ DISCRIMINATOR_WEIGHT_PATH: str = ""
 TRAIN: bool = True
 EPOCHS: int = 100
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-MODEL_NAME: str = "Train 2"
+MODEL_NAME: str = "Trial 3"
 LOAD_WEIGHTS: bool = False
 SAVE_WEIGHTS: bool = True
 WEIGHT_SAVING_INTERVAL: int = 5
