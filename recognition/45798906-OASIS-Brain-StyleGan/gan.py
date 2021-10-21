@@ -10,7 +10,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 20/10/2021
+    Date last modified: 21/10/2021
     Python version: 3.9.7
 """
 
@@ -33,6 +33,7 @@ from tensorflow.keras.layers import (
 )
 from tqdm import tqdm
 import time
+from typing import Union
 
 # Custom layers
 class AdaIN(Layer):
@@ -326,11 +327,11 @@ def train(
     model_name: str,
     epoch_offset: int = 0,  # Number of previous completed epochs
     save_weights: bool = False,
-    weight_save_path: bool = None,
+    weight_save_path: str = None,
     weight_save_interval: int = 5,
     save_images: bool = False,
     image_save_path: str = None,
-    image_save_interval: str = 1,
+    image_save_interval: int = 1,
 ) -> tuple[list[float], list[float]]:
 
     if save_images:
