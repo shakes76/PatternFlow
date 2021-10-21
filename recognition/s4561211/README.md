@@ -103,10 +103,15 @@ test - loss: tensor(0.4834, grad_fn=<NegBackward>) , accuracy tensor(0.8432) <br
 test - loss: tensor(0.3858, grad_fn=<NegBackward>) , accuracy tensor(0.8830) <br>
 
 #### TSNE embedding with true labels
-t-Distributed Stochastic Neighbor Embedding (outputs of first graph convolution layer) <br>
-We can find that categories are clearly clustered in groups. <br>
+TSNE is t-Distributed Stochastic Neighbor Embedding. <br>
+We can find that categories are clearly clustered in groups compared to original features TSNE. <br>
+
+#### original features
+![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/no_tsne.png) <br>
     
+#### outputs of first graph convolution layer
 ![](https://github.com/SandyKang/PatternFlow/raw/topic-recognition/recognition/s4561211/Resource/tsne200.png) <br>
+
    
 ### References
 [1] Kipf, Thomas N., and Max Welling. 2021. "Semi-Supervised Classification With Graph Convolutional Networks". Arxiv.Org. https://arxiv.org/abs/1609.02907. <br>
