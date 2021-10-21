@@ -7,6 +7,15 @@ import scipy.sparse as sp
 import torch.optim as optim
 from algorithm import *
 
+
+hidden = 32
+hidden1 = 64
+hidden2 = 32
+dropout_rate = 0.5
+decay = 5e-4
+epochs = 200
+learning_rate = 0.01
+
 # load data
 facebook = np.load('facebook.npz')
 edges = facebook['edges']
@@ -64,11 +73,12 @@ test_index = torch.LongTensor(range(int(num_nodes/10*4),num_nodes))
 
 # initiate model
 # 2 layers mode:
-# model = GCN(n_feature = num_features, n_hidden = 32, n_class = num_classes, dropout = 0.5)
+# model = GCN(n_feature = num_features, n_hidden = hidden, n_class = num_classes, dropout = 0.5)
 # 3 layers model
-model = GCN_3l(n_feature = num_features, n_hidden1 = 64, n_hidden2 = 32, n_class = num_classes, dropout = 0.5)
+model = GCN_3l(n_feature = num_features, n_hidden1 = hidden1, n_hidden2 = hidden2, n_class = num_classes, 
+    dropout = dropout_rate)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(),lr=0.01, weight_decay=5e-4)
+optimizer = optim.Adam(model.parameters(),lr=learning_rate, weight_decay=decay)
 model.train()
 
 def test(index):
@@ -84,7 +94,7 @@ loss_history = []
 train_acc_history = []
 val_acc_history = []
 train_y = target[train_index]
-for epoch in range(200):
+for epoch in range(epochs):
     outputs = model(norm_features,new_matrix) 
     train_out = outputs[train_index]
     # calculate loss
