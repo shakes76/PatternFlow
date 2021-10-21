@@ -82,8 +82,7 @@ class Discriminator:
     class ConvLayer(layers.Layer):
         def __init__(self, filters, kernel, stride):
             super(Discriminator.ConvLayer, self).__init__()
-            self.conv = layers.Conv2D(filters, (kernel, kernel), strides=(stride, stride), padding='same',
-                                       use_bias=False)
+            self.conv = layers.Conv2D(filters, (kernel, kernel), strides=(stride, stride), padding='same')
             self.activation = layers.LeakyReLU()
             self.dropout = layers.Dropout(0.3)
 
