@@ -63,7 +63,10 @@ val_index = torch.LongTensor(range(int(num_nodes/10*2),int(num_nodes/10*4)))
 test_index = torch.LongTensor(range(int(num_nodes/10*4),num_nodes))
 
 # initiate model
-model = GCN(n_feature = num_features, n_hidden = 32, n_class = num_classes, dropout = 0.5)
+# 2 layers mode:
+# model = GCN(n_feature = num_features, n_hidden = 32, n_class = num_classes, dropout = 0.5)
+# 3 layers model
+model = GCN_3l(n_feature = num_features, n_hidden1 = 64, n_hidden2 = 32, n_class = num_classes, dropout = 0.5)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(),lr=0.01, weight_decay=5e-4)
 model.train()
