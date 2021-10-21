@@ -3,7 +3,10 @@
     by: Kexin Peng, 4659241
     """
 import numpy as np
+import scipy.sparse as sp
+from algorithm import *
 
+# load data
 facebook = np.load('facebook.npz')
 edges = facebook['edges']
 features = facebook['features']
@@ -25,3 +28,20 @@ def normalize(matrix):
     # normalized matrix: D^-1 * matrix
     normalized = diag_mat.dot(matrix) 
     return normalized
+
+# normalize features and transform data to tensor
+norm_features = normalize(features)
+norm_features = torch.from_numpy(norm_features)
+target = torch.from_numpy(target)
+
+# Adjacency matrix A-- n*n
+edge_data = np.ones(num_edges)
+row = edges[:, 0]
+col = edges[:, 1]
+adj_matrix = sp.coo_matrix((edge_data, (row, col)),
+                        shape=(num_nodes, num_nodes),
+                        dtype=np.float32)
+# A+I add identity matrix
+new_matrix = adj_matrix + sp.eye(adj_matrix.shape[0])
+# normalize the matrix
+new_matrix = normalize(new_matrix) 
