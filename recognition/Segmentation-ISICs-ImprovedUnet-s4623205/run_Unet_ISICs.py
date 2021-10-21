@@ -22,7 +22,7 @@ def main():
     min_img_shape = get_min_imageshape(mask_path)
     img_height = min_img_shape[0]
     img_width = min_img_shape[1]
-    print("\nMin Image Height:", img_height)
+    print("Min Image Height:", img_height)
     print("Min Image Width:", img_width)
 
     # Get the maximum possible square image shape. 256x256 in this case.
@@ -38,7 +38,7 @@ def main():
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Improved_Unet")
     # Test run of the Improved Unet model
     print("Training model...")
-    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0005, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=35)
+    model.train(X_train, X_val, y_train, y_val, optimizer='adam', lr=0.0005, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=50, lr_decay=True)
 
     # Plot the train, validation loss and dice coefficient
     print("\nPlotting train, validation loss and dice coefficient...")
