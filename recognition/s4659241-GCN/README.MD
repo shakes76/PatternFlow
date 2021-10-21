@@ -28,7 +28,9 @@ The `algorithm.py` includes codes for Graph Convolution layer and GCN model of b
 The structure of 3 layers GCN used in my implementation is:
 ![3 layers GCN](./images/GCN-3l_structure.png)
 
-You can change parameters for your 3 layers GCN(or 2 layers GCN) by changing the n_hidden1, n_hidden2(or n_hidden for 2 layers GCN) and dropout in the `test.py` file.
+You can change parameters for your 3 layers GCN(or 2 layers GCN) by changing the hidden1, hidden2(or hidden for 2 layers GCN) and dropout in the `test.py` file.
+
+In my implementation, I train for 200 epochs with 0.01 learning rate. You can change the `epochs` and `learning_rate` in `test.py` file.
 
 ## Run the code
 ***
