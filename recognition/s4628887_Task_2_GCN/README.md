@@ -1,13 +1,17 @@
 # Semi-supervised multi-layer GCN node classification model for Facebook Large Page-Page Network dataset
 
-A semi-supervised multi-layer GCN model is built to classify nodes in Facebook Large Page-Page Network dataset. The algorithm firstly computes the self-loop adjacency matrix from the edges in the dataset, and then normalise it by D^{\frac{1}{2}}AD^{\frac{1}{2}}, where D is the degree matrix. The model has 3 GCN layers. It takes the normalised adjacency matrix and the features inputs and classsify the nodes. The total accuracy of the model is 0.92.
+A semi-supervised multi-layer GCN model is built to classify nodes in Facebook Large Page-Page Network dataset. The algorithm firstly computes the self-loop adjacency matrix from the edges in the dataset, and then normalise it by D^{\frac{1}{2}}AD^{\frac{1}{2}}, where D is the degree matrix. The model has 3 GCN layers. It takes the normalised adjacency matrix and the features as inputs and classsify the nodes. The total accuracy of the model is 0.92.
 
 ## Facebook Large Page-Page Network dataset
 
 This webgraph is a page-page graph of verified Facebook sites. Nodes represent official Facebook pages while the links are mutual likes between sites. Node features are extracted from the site descriptions that the page owners created to summarize the purpose of the site.
+
 Nodes: 22,470
+
 Edges: 171,002
+
 Features: 128
+
 Classes: 4
 
 ### Data pre-processing
