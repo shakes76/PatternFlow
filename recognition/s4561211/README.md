@@ -33,8 +33,8 @@ It is a powerful neural network on graphs and can produce useful feature represe
 GCN (graph convolutional network) is a neural network operating on graphs. <br>
 Given a graph G = (V, E) as input where V is nodes and E is edges. <br>
 * Input matrix: |V|* F⁰ where F⁰ is the number of input features and |V| is the number of nodes. <br>
-* Adjacency matrix: |V|*|V| <br>
-* Hidden layers Hⁱ = f(Hⁱ⁻¹, A): |V|*Fⁱ where H⁰ = V and f is a propagation. <br>
+* Adjacency matrix: |V|* |V| <br>
+* Hidden layers Hⁱ = f(Hⁱ⁻¹, A): |V|* Fⁱ where H⁰ = V and f is a propagation. <br>
 
 This is my Graph Convolutional Network model: <br>
 
