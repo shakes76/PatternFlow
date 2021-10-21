@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 20/10/2021
+    Date last modified: 21/10/2021
     Python version: 3.9.7
 """
 
@@ -42,6 +42,9 @@ def load_images(
         images = (
             img_dataset if images == None else images.concatenate(img_dataset)
         )
+
+    if images == None:
+        raise IOError("No directories were provided.")
 
     # Normalise the images
     images = images.map(
