@@ -3,13 +3,16 @@ This repository contains the tensorflow implementation of the Improved UNet.
 
 ## Instructions:
 *Modules*:
-- matplotlib.pyplot: pip install matplotlib
+
 - tensorflow: pip install tensorflow
 - cv2: pip install opencv-python
+- matplotlib.pyplot: pip install matplotlib
 
 ## Guides:
-*1. Before running the codes, please check whether you are using the GPU for this task.*
+*1. Before running the codes, please make sure your current virtual environment uses GPU.*
+
 Here is a simple way to check it:
+
 - Open the anaconda terminal shell
 - Type "python"
 - Type "import tensorflow as tf"
@@ -17,6 +20,11 @@ Here is a simple way to check it:
 - Check out the outcoming message
 
 In the last step, if the message mentions the GPU usage, then the running environment is proper.
+
+Here is an example for the output message:
+
+![](./gpu_usage.png)
+
 
 *Otherwise:*
 - Create a new virtual environment
@@ -27,7 +35,7 @@ In the last step, if the message mentions the GPU usage, then the running enviro
 Note: Please use "pip" command only after using "conda install jupyter", because "conda" command will have conflicts.
 
 *2. After setting the proper environment, please follow the steps below:*
-- Download the images sets from the given download link 
+- Download the images sets from this download [link](https://challenge.isic-archive.com/data)
 - Download the main.py and the model.py
 - Change the paths to the image sets in the main.py
 - Run the main.py
@@ -36,6 +44,7 @@ Note: Please use "pip" command only after using "conda install jupyter", because
 
 Note: This is **recommended** because the original version of these codes is written with the jupyter notebook.
 
+- Download the images sets from this download [link](https://challenge.isic-archive.com/data)
 - Create a new file via jupyter notebook
 - Copy the codes from model.py and paste it into the first block
 - Copy the codes from the main.py and paste it into the second block
