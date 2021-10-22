@@ -6,7 +6,6 @@
     status: Development
 """
 
-import tensorflow as tf
 from tensorflow.keras import layers, Model, backend, optimizers
 
 class ImprovedUNet():
