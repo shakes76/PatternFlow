@@ -1,11 +1,12 @@
 """
-Driver script to show the example of the model usage
+Driver script to show train model and prediction example
 
 @author: Jeng-Chung Lien
 @student id: 46232050
 @email: jengchung.lien@uqconnect.edu.au
 """
 import matplotlib.pyplot as plt
+from numpy.random import choice
 from Modules.data_utils import get_min_imageshape, train_val_test_split
 from Modules.SegmentationMetrics import dice_coef, dice_loss
 from Modules.misc_utils import get_close2power
@@ -36,22 +37,25 @@ def main():
     # Construct Improved Unet model
     print("\nConstructing model...")
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Improved_Unet")
-    # Test run of the Improved Unet model
+    # Train the Improved Unet model
     print("Training model...")
     model.train(X_train, X_val, y_train, y_val, optimizer='adamW', lr=0.0005, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=50, lr_decay=True)
 
     # Plot the train, validation loss and dice coefficient
     print("\nPlotting train, validation loss and dice coefficient...")
+    epoch_range = range(1, len(model.history['loss']) + 1)
     plt.subplot(1, 2, 1)
-    plt.plot(model.history['loss'], label='train')
-    plt.plot(model.history['val_loss'], label='validation')
+    plt.plot(epoch_range, model.history['loss'], label='train')
+    plt.plot(epoch_range, model.history['val_loss'], label='validation')
+    plt.xticks(epoch_range)
     plt.legend()
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Dice Loss")
     plt.subplot(1, 2, 2)
-    plt.plot(model.history['dice_coef'], label='train')
-    plt.plot(model.history['val_dice_coef'], label='validation')
+    plt.plot(epoch_range, model.history['dice_coef'], label='train')
+    plt.plot(epoch_range, model.history['val_dice_coef'], label='validation')
+    plt.xticks(epoch_range)
     plt.legend()
     plt.xlabel("Epoch")
     plt.ylabel("Dice")
@@ -62,30 +66,19 @@ def main():
     # Predict and plot test set
     print("\nPredicting test set...")
     y_pred = model.predict(X_test, batch_size=32)
-    print("Plotting First test set and predicted mask...")
-    plt.subplot(1, 3, 1)
-    plt.imshow(X_test[0])
-    plt.title("Image")
-    plt.subplot(1, 3, 2)
-    plt.imshow(y_test[0, :, :, 0], cmap="gray")
-    plt.title("True mask")
-    plt.subplot(1, 3, 3)
-    plt.imshow(y_pred[0, :, :, 0], cmap="gray")
-    plt.title("Predict mask")
-    plt.suptitle("First test data")
-    plt.tight_layout()
-    plt.show()
-    print("Plotting Second test set and predicted mask...")
-    plt.subplot(1, 3, 1)
-    plt.imshow(X_test[1])
-    plt.title("Image")
-    plt.subplot(1, 3, 2)
-    plt.imshow(y_test[1, :, :, 0], cmap="gray")
-    plt.title("True mask")
-    plt.subplot(1, 3, 3)
-    plt.imshow(y_pred[1, :, :, 0], cmap="gray")
-    plt.title("Predict mask")
-    plt.suptitle("Second test data")
+    print("Plotting three random test set and predicted mask...")
+    indexs = choice(len(X_test), 3, replace=False)
+    for i in range(len(indexs)):
+        plt.subplot(len(indexs), 3, i * 3 + 1)
+        plt.imshow(X_test[indexs[i]])
+        plt.title("Image")
+        plt.subplot(len(indexs), 3, i * 3 + 2)
+        plt.imshow(y_test[indexs[i], :, :, 0], cmap="gray")
+        plt.title("True mask")
+        plt.subplot(len(indexs), 3, i * 3 + 3)
+        plt.imshow(y_pred[indexs[i], :, :, 0], cmap="gray")
+        plt.title("Predict mask")
+    plt.suptitle("Test set Predictions")
     plt.tight_layout()
     plt.show()
 
