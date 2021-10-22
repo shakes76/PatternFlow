@@ -60,16 +60,16 @@ def image_mask_combiner(image, mask):
 
     Parameters
     ----------
-    image : numpy array or tensors
-      The image shape (h, w, 3) is required.
+    image : float32 numpy array or tensors
+      The image shape (h, w, 3) is required. Values must be between [0, 1].
     mask : numpy array or tensors
-      The mask shape (h, w) is required.
+      The mask shape (h, w) is required. Values must be between [0, 1].
 
     Returns
     -------
-    image : numpy array or tensors
+    image : float32 numpy array or tensors
       The combined image with mask area as color blue
     """
-    image[:, :, 2] = image[:, :, 2] * (1 - mask) + (255 * mask * mask)
+    image[:, :, 2] = (255 * image[:, :, 2] * (1 - mask) + (255 * mask * mask)) / 255
 
     return image
