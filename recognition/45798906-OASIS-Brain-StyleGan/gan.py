@@ -10,7 +10,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 21/10/2021
+    Date last modified: 22/10/2021
     Python version: 3.9.7
 """
 
@@ -278,7 +278,7 @@ def train_step(
 
     # Generate noise for the generator
     latent_noise = tf.random.normal([batch_size, latent_dimension])
-    noise_images = tf.random.normal([batch_size, img_size, img_size, 1])
+    noise_images = tf.random.uniform([batch_size, img_size, img_size, 1])
 
     # Train the models
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -405,7 +405,7 @@ def generate_samples(
 
     # Generate noise for the generator
     latent_noise = tf.random.normal([sample_size, latent_dimension])
-    noise_images = tf.random.normal([sample_size, img_size, img_size, 1])
+    noise_images = tf.random.uniform([sample_size, img_size, img_size, 1])
 
     samples = generator([latent_noise, noise_images, tf.ones([sample_size, 1])])
     return samples
