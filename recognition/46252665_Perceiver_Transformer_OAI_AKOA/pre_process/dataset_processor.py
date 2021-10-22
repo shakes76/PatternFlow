@@ -1,7 +1,8 @@
 """
 Processes OAI AKOA Dataset:
     * Creates Labels
-    * Augments Data
+    * Augments Data (switch-on function call for
+                    processing dataset with augmentation)
     * Splits into Train, Test
     * Saves as .npy files
 
@@ -96,6 +97,10 @@ class ProcessDataset:
     def do_action(self):
         """sequential set of actions."""
         self.get_dataset()
-        self.augment_dataset()
+
+        # switch-on this function call for processing dataset
+        # with augmentation
+        # self.augment_dataset()
+
         self.split_dataset()
         self.save_dataset()
