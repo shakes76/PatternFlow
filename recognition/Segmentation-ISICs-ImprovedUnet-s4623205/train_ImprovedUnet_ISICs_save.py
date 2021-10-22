@@ -48,12 +48,13 @@ def main():
                 y_train=y_train,
                 y_val=y_val,
                 optimizer='adamW',
-                lr=0.0005,
+                lr=0.001,
                 loss=dice_loss,
                 metrics=[dice_coef],
                 batch_size=2,
                 epochs=50,
                 lr_decay=True,
+                decay_rate=0.95,
                 save_model=True,
                 save_path=save_path,
                 monitor='val_dice_coef',
@@ -65,7 +66,7 @@ def main():
     plt.subplot(1, 2, 1)
     plt.plot(epoch_range, model.history['loss'], label='train')
     plt.plot(epoch_range, model.history['val_loss'], label='validation')
-    plt.xticks(epoch_range)
+    plt.xticks(epoch_range, fontsize=6, rotation=315)
     plt.legend()
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -73,7 +74,7 @@ def main():
     plt.subplot(1, 2, 2)
     plt.plot(epoch_range, model.history['dice_coef'], label='train')
     plt.plot(epoch_range, model.history['val_dice_coef'], label='validation')
-    plt.xticks(epoch_range)
+    plt.xticks(epoch_range, fontsize=6, rotation=315)
     best_val_dice = max(model.history['val_dice_coef'])
     plt.axvline(model.history['val_dice_coef'].index(best_val_dice)+1, color='r', linestyle='--', linewidth=1)
     min_ylim, max_ylim = plt.ylim()

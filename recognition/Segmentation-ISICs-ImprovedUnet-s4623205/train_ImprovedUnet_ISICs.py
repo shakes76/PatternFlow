@@ -39,7 +39,7 @@ def main():
     model = SegModel((new_imageshape, new_imageshape, 3), random_seed=42, model="Improved_Unet")
     # Train the Improved Unet model
     print("Training model...")
-    model.train(X_train, X_val, y_train, y_val, optimizer='adamW', lr=0.0005, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=50, lr_decay=True)
+    model.train(X_train, X_val, y_train, y_val, optimizer='adamW', lr=0.001, loss=dice_loss, metrics=[dice_coef], batch_size=2, epochs=50, lr_decay=True, decay_rate=0.95)
 
     # Plot the train, validation loss and dice coefficient
     print("\nPlotting train, validation loss and dice coefficient...")
