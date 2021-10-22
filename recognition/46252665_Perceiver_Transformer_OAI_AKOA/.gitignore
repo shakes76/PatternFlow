@@ -131,4 +131,4 @@ dmypy.json
 .idea/
 Thumbs
 .DS_Store
-.h5
+logs/perceiver_transformer.h5
