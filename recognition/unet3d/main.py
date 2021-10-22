@@ -1,7 +1,6 @@
 from nibabel.testing import data_path
 import os
 import re
-data_dir = "/Users/xiaofangchen/data/Labelled_weekly_MR_images_of_the_male_pelvis/HipMRI_study_complete_release_v1/semantic_MRs_anon"
 
 raw_images = os.listdir(data_dir)
 raw_images = [fname for fname in raw_images if fname.endswith('nii.gz')]
@@ -13,12 +12,9 @@ import nibabel as nib
 img = nib.load(example_filename[0])
 all_shapes =set([nib.load(img).shape for img in example_filename])
 
+# Case_019_Week1_LFOV.nii.gz has diff shape ()
+
 for f in example_filename:
     if nib.load(f).shape != (256, 256, 128):
         print(f)
 
-
-# print(all)
-# print(img.shape)
-def load_images():
-    print('hi')
