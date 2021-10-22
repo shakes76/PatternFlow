@@ -10,7 +10,7 @@ from tensorflow.keras import layers, Model, backend, optimizers
 
 class ImprovedUNet():
     """Implements the Improved U-Net Model"""
-    def __init__(self, input_shape: tuple, learning_rate: float=1e-4, 
+    def __init__(self, input_shape: tuple, learning_rate: float=1e-3, 
                  optimizer=optimizers.Adam(1e-3), loss="binary_crossentropy",
                  leaky: float=1e-2, drop: float=3e-1):
         
