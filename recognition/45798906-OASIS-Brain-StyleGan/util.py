@@ -7,7 +7,6 @@
 
     Requirements:
         - TensorFlow 2.0
-        - sys
         - Matplotlib
 
     Author: Keith Dao
@@ -17,7 +16,6 @@
 """
 
 import tensorflow as tf
-import sys
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
@@ -114,11 +112,3 @@ def visualise_loss(
     plt.show()
 
 
-# Error messages functions
-def raise_path_error(info: str) -> None:
-    to_red = "\033[91m"
-    to_default = "\033[0m"
-    sys.stderr.write(
-        f"{to_red}{info}\nPlease make sure the file path is correct.\nIf you are on a Windows system, use '\\\\' as your file seperator.\nIf you are on a UNIX system, use '/' as your file seperator.\n{to_default}"
-    )
-    raise IOError(info)
