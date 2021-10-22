@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 import scipy.sparse as spr
 import tensorflow as tf
+import tensorflow.keras.layers as lyr
 import tensorflow.keras as ks
 
 
@@ -28,7 +29,7 @@ def coo_matrix_to_sparse_tensor(coo):
     return tf.SparseTensor(indices, coo.data, coo.shape)
 
 
-def Model(input_data):
+def test_layer(input_data):
 
     # This is the model
     page_one = [0, 0, 1, 2, 0, 4, 2, 3, 3, 1]
@@ -64,9 +65,11 @@ def Model(input_data):
     print("===== Result =====")
     ax = tf.sparse.sparse_dense_matmul(tf.cast(a_bar_spr, float), feats)
     print(ax.dtype)
-    print(ax)
 
-    tf.nn.relu(ax)
+    print("AX")
+    print(ax)
+    print("AX - post ReLu")
+    print(tf.nn.relu(ax))
     feats = np.array(feats)
 
     weights = tf.random.normal(feats.shape, mean=0.0, stddev=1.0, dtype=tf.dtypes.float32, seed=None, name=None)
@@ -78,4 +81,46 @@ def Model(input_data):
     print(z)
 
 
+class MyLayer(tf.keras.layers.Layer):
+    def __init__(self, units=32, input_dim=32):
+        super(MyLayer, self).__init__()
+        w_init = tf.random_normal_initializer()
+        self.w = tf.Variable(
+            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
+            trainable=True,
+        )
+        b_init = tf.zeros_initializer()
+        self.b = tf.Variable(
+            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
+        )
 
+        self.kernal = 9
+
+    def build(self):
+        self.kernal = 9
+
+    def call(self, inputs):
+
+        return tf.matmul(inputs, self.w) + self.b
+
+
+class FacebookGCN(tf.keras.Model):
+    def __init__(self, kernel_size, filters):
+        super(FacebookGCN, self).__init__(name='')
+        filters1, filters2, filters3 = filters
+
+        self.graph_layer = MyLayer()
+        self.softmax = tf.keras.layers.Softmax()
+
+    def call(self, input_tensor, training=False):
+
+        x = MyLayer(input_tensor)
+        x = self.softmax(x)
+
+        x = MyLayer(x)
+        x = self.softmax(x)
+
+        x = lyr.Dense()
+
+        x += input_tensor
+        return tf.nn.relu(x)

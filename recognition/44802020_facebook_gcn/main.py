@@ -1,6 +1,10 @@
 from typing import Any
 import model
 import tensorflow as tf
+import tensorflow.keras.optimizers as op
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Dense, Softmax
+from tensorflow.keras import losses, layers, models
 import numpy as np
 
 
@@ -33,6 +37,9 @@ def main():
     edges = data['edges']
     target = data['target']
 
+    x_train = features
+    y_train = features
+
     # summarise_data(data, 'features')
     # summarise_data(data, 'edges')
     # summarise_data(data, 'target')
@@ -42,7 +49,17 @@ def main():
     # Each falls into 1 of 4 categories
     # There are 342 004 Edges between the pages
 
-    model.Model(data)
+    model.test_layer(data)
+    my_model = Sequential
+    loss_fn = losses.SparseCategoricalCrossentropy(from_logits=True)
+
+    my_model.add(model.test_layer())
+    my_model.add(model.test_layer())
+
+    my_model.add(Dense(4, activation='ReLu'))
+
+    my_model.compile(optimizer=op.Adam(0.001), loss=loss_fn)
+    my_model.fit(x_train, y_train, epochs=5)
 
 
 if __name__ == '__main__':
