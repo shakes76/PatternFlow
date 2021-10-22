@@ -25,6 +25,14 @@ or
 pip install -r requirements.txt
 ```
 
+## Train
+
+Run the driver file to pre-process, train and visualise.
+
+```
+python main.py
+```
+
 ## Perceiver Transformer
 
 ![Sample](display/figures/perceiver_transformer.png)
