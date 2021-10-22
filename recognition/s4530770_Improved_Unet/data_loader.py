@@ -15,7 +15,7 @@ class DataLoader:
         list_ds = tf.data.Dataset.list_files(self.path + "ISIC2018_Task1-2_Training_Input_x2\\*.jpg", shuffle=False)
 
         data_dir = pathlib.Path(self.path)
-        image_count = len(list(self.data_dir.glob('ISIC2018_Task1-2_Training_Input_x2\\*.jpg')))
+        image_count = len(list(data_dir.glob('ISIC2018_Task1-2_Training_Input_x2\\*.jpg')))
 
         # Validation size: 0.2, Test size: 0.1
         val_size = int(image_count * validation_size)
@@ -30,7 +30,7 @@ class DataLoader:
             parts = tf.strings.split(file_path, os.path.sep)
             file_name = tf.strings.split(parts[-1], '.')[0]
             file_name = file_name + '_segmentation.png'
-            return 'ISIC2018_Task1-2_Training_Data\\ISIC2018_Task1_Training_GroundTruth_x2\\' + file_name
+            return self.path + 'ISIC2018_Task1_Training_GroundTruth_x2\\' + file_name
 
         @tf.function
         def process_path(file_path):
@@ -43,14 +43,14 @@ class DataLoader:
             mask = tf.cast(mask, tf.float32) / 255.0
 
             img = tf.reshape(img, tuple(self.image_shape + [3]))
-            img = tf.reshape(mask, tuple(self.image_shape + [1]))
+            mask = tf.reshape(mask, tuple(self.image_shape + [1]))
             return img, mask
 
         @tf.function
         def configure_for_performance(ds):
             ds = ds.cache()
             ds = ds.shuffle(buffer_size=200)
-            ds = ds.batch(32)
+            ds = ds.batch(self.batch_size)
             ds = ds.prefetch(self.AUTOTUNE)
 
             return ds
@@ -66,22 +66,18 @@ class DataLoader:
         self.val_ds = configure_for_performance(val_ds)
         self.test_ds = configure_for_performance(test_ds)
 
-    def get_data_size(self):
-        print("Training set: " + tf.data.experimental.cardinality(self.train_ds).numpy())
-        print("Validation set: " + tf.data.experimental.cardinality(self.val_ds).numpy())
-        print("Test set: " + tf.data.experimental.cardinality(self.test_ds).numpy())
-
     def show_images(self):
         image_batch, label_batch = next(iter(self.train_ds))
 
         plt.figure(figsize=(10, 10))
         for i in [1,3,5]:
             ax = plt.subplot(3, 2, i)
-            plt.imshow(image_batch[i].numpy().astype("uint8"))
+            plt.imshow(tf.squeeze(image_batch[i]))
             plt.axis("off")
             ax = plt.subplot(3, 2, i + 1)
             plt.imshow(label_batch[i].numpy().astype("uint8"))
             plt.axis("off")
+        plt.savefig('test_data.png')
 
     def get_training_set(self):
         return self.train_ds
