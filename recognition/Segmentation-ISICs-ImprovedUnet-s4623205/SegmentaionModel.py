@@ -15,6 +15,7 @@ from tensorflow.keras.initializers import he_normal
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
 from tensorflow_addons.layers import InstanceNormalization
+from tensorflow_addons.optimizers import AdamW
 
 
 class SegModel:
@@ -295,7 +296,7 @@ class SegModel:
         """
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs, lr_decay=False, decay_rate=0.985):
+    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs, lr_decay=False, decay_rate=0.985, weight_decay=0.00001):
         """
         Function to train the current segmentation model in SegModel class
 
@@ -325,6 +326,12 @@ class SegModel:
           Decide whether to use learning rate decay or not
         decay_rate : float
           The decay rate of the learning rate each epoch. Is used if lr_decay is true.
+        weight_decay : float
+          Decoupled weight decay parameter when using "adamW" optimizer
+
+        References
+        ----------
+        "adamW", https://arxiv.org/abs/1711.05101
         """
         # The learning rate epoch decay
         if lr_decay:
@@ -342,6 +349,8 @@ class SegModel:
         # Apply optimizer
         if optimizer == 'adam':
             opt = Adam(learning_rate=lr)
+        elif optimizer == 'adamW':
+            opt = AdamW(weight_decay=weight_decay, learning_rate=lr)
         else:
             raise ValueError("Optimizer doesn't exists!")
 
