@@ -9,6 +9,8 @@ segmentation on the aforementioned ISICs dataset.
 
 ### Data preprocessing
 
+#### Training, Test & Validation Split.
+
 ### Segmentation
 
 ## Architecture
@@ -26,6 +28,10 @@ The Improved UNet is composed of two main sections, the encoding path and the de
 ### Dice Similarity Coefficient
 
 ## Results
+
+### Model Output
+
+### Accuracy & Loss
 
 ## Dependencies
 
