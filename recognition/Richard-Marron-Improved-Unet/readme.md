@@ -51,3 +51,21 @@ There are several parameters used in the model's creation which are vital to hav
 * `drop` : Default is 3e-1. This conrols the drop-out percentage in the [Dropout](https://keras.io/api/layers/regularization_layers/dropout/) layer.
 
 # Results
+
+
+After training an instance of the U-Net, we get a plot of the [dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) which shows the similarity score on the training and validation set. This graph can be seen below.
+
+![Dice Image](./Figures/dice_acc.png)
+
+The model was also evaluated on the test set and the resulting dice coefficient was above 0.8 which is a great result. 
+
+![Evaluation Image](./Figures/eval.png)
+
+Here is a plot of the predicted image segmentation from the model, compared with the true mask and the full RGB image. This is the test set so the model has not seen these images before. 
+
+![Testing Image](./Figures/testing.png)
+![Testing Image2](./Figures/testing_small.png)
+
+In the first set of images, we see strange artifact patterns which is most likely due to the Conv2DTranspose layers. The paper for this model noted that they used [up-sampling layers](https://keras.io/api/layers/reshaping_layers/up_sampling2d/) to avoid this "checkerboard" effect. The second set of images seem to be less affected by the artifacts but you can still see a little bit of it happening. 
+
+Full training output can be seen in the "output.txt" file.
