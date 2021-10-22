@@ -70,6 +70,29 @@ fixed-width vector. The query and key tensors are then scaled and dot-produced.
 
 ![summary](display/figures/perceiver_summary.png)
 
+## Dataset
+
+OAI AKOA Knee MRI Images
+Osteoarthritis Initiative (OAI) Accelerated Osteoarthritis (OA) Knee MRI 2D 
+Images (~16K images, 1.7 GB). The caption of the images contained the 
+information regarding the left or right knee information. Original resolution
+of the image were 260 x 288.
+
+## Installation
+
+Install Conda/Miniconda
+
+```
+conda activate tf
+conda env update --file tf.yml --prune
+```
+
+or
+
+```
+pip install -r requirements.txt
+```
+
 ## Results
 
 ```
