@@ -10,6 +10,7 @@ This algorithm uses the improved U-Net model as descibed by [this paper](https:/
     * [Down-sampling](#Down-sampling_Stage)
     * [Up-sampling](#Up-sampling_Stage)
     * [Model Parameters](#Model_Parameters) 
+* [Results](#Results)
 
 # Setup
 In this section, we will look at how to get this model up and running by using a driver script to communicate with our module.
@@ -39,8 +40,14 @@ The name U-Net comes from the shape because the network appears in the shape of 
 Here, we take the image we want to segment and feed it into the network. It then passes through several two-dimensional convolution layers ([Conv2D](https://keras.io/api/layers/convolution_layers/convolution2d/)) which shrinks the image resolution and increases the number of filters which provides information. Notice in the figure above that there are several connections which jump over the context modules. These help retain some information from before the convolutions and therefore help with performance of the model.
 
 ### Up-sampling Stage
-After the image has been processed by the down-sampling stage, we move to up-sample the image back to its original resolution. We introduce up-sampling modules witch apply a transposed two-dimensional convolution ([Conv2DTranspose](https://keras.io/api/layers/convolution_layers/convolution2d_transpose/)) which increases the resolution such that it matches the previous level of the U-Net. 
-
-
+After the image has been processed by the down-sampling stage, we move to up-sample the image back to its original resolution. We introduce up-sampling modules witch apply a transposed two-dimensional convolution ([Conv2DTranspose](https://keras.io/api/layers/convolution_layers/convolution2d_transpose/)) which increases the resolution such that it matches the previous level of the U-Net. After this up-scale, a skip connection is created by concatenating the down-sampling level with the same up-sampling level. On levels 2 and 3 - starting at 1 from the top - we add in segmentation paths which extract segmentations of the images at each of those levels, and add them together to produce the final image we see. These connections are extremely useful and provide the U-Net with much better performance.
 
 ### Model Parameters
+There are several parameters used in the model's creation which are vital to having it converge using training. The parameters seen by default in the module are as follows.
+* `learning_rate` : Default is 1e-4. This controls how fast the model will change over time, so we want choose a "small enough" number.
+* `optimizer` : Default is `Adam` with a learning rate of 1e-3. The [Adam](https://keras.io/api/optimizers/adam/) optimiser is a fairly standard optimiser which worked well in training.
+* `loss` : Default is "binary_crossentropy". This was chosen because we are only classifying pixels as two classes: either "lesion" or "not lesion" for the segmentation. If there were more classes, we would use "categorical_crossentropy".
+* `leaky` : Default is 1e-2. This controls the `alpha` parameter in the [LeakyReLU](https://keras.io/api/layers/activation_layers/leaky_relu/) layer which acts as the activation in this model.
+* `drop` : Default is 3e-1. This conrols the drop-out percentage in the [Dropout](https://keras.io/api/layers/regularization_layers/dropout/) layer.
+
+# Results
