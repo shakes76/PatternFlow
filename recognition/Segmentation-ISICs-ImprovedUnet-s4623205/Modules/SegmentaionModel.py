@@ -14,6 +14,7 @@ from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, Conv2DTranspose, c
 from tensorflow.keras.initializers import he_normal
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
+from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow_addons.layers import InstanceNormalization
 from tensorflow_addons.optimizers import AdamW
 
@@ -296,7 +297,7 @@ class SegModel:
         """
         self.model.summary()
 
-    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs, lr_decay=False, decay_rate=0.985, weight_decay=0.00001):
+    def train(self, X_train, X_val, y_train, y_val, optimizer, lr, loss, metrics, batch_size, epochs, lr_decay=False, decay_rate=0.985, weight_decay=0.00001, save_model=False, save_path=None, monitor='loss', mode='min'):
         """
         Function to train the current segmentation model in SegModel class
 
@@ -328,6 +329,14 @@ class SegModel:
           The decay rate of the learning rate each epoch. Is used if lr_decay is true.
         weight_decay : float
           Decoupled weight decay parameter when using "adamW" optimizer
+        save_model : bool
+          Set True to enable saving the best model weights
+        save_path : string
+          If save_model is True. Path to save the best model weights
+        monitor : string
+          If save_model is True. Metric to decide the best model weights
+        mode : string
+          If save_model is True. Decide the 'min' or 'max' of metric value to decide the best model weights
 
         References
         ----------
@@ -357,7 +366,17 @@ class SegModel:
         # Compile model
         self.model.compile(optimizer=opt, loss=loss, metrics=metrics)
         # Train model and record training history
-        history = self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
+        if save_model:
+            # Add save best model weights checkpoint
+            model_checkpoint_callback = ModelCheckpoint(
+                filepath=save_path,
+                save_weights_only=True,
+                monitor=monitor,
+                mode=mode,
+                save_best_only=True)
+            history = self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val), callbacks=[model_checkpoint_callback])
+        else:
+            history = self.model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_data=(X_val, y_val))
         self.history = history.history
 
     def predict(self, X_test, batch_size):
