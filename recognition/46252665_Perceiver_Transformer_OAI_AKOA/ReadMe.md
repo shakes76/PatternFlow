@@ -1,5 +1,32 @@
 # OAI AKOA Perveiver Transformer
 
+## Dataset
+
+OAI AKOA Knee MRI Images
+Osteoarthritis Initiative (OAI) Accelerated Osteoarthritis (OA) Knee MRI 2D 
+Images (~16K images, 1.7 GB). The caption of the images contained the 
+information regarding the left or right knee information. Original resolution
+of the image were 260 x 288.
+
+![Sample](display/figures/sample.png) 
+
+## Installation
+
+Install Conda/Miniconda
+
+```
+conda activate tf
+conda env update --file tf.yml --prune
+```
+
+or
+
+```
+pip install -r requirements.txt
+```
+
+## Perceiver Transformer
+
 ![Sample](display/figures/perceiver_transformer.png)
 
 The perceiver mixes the latent self-attention mechanism with the cross-attention
@@ -11,15 +38,11 @@ size than the data array and solves the transformer quadratic compute bottleneck
 
 The perceiver transformer works for inputs such as images, videos, and
 audio. No prior assumption or changes is required for any input modality, 
-for the model to work. 
-
-Given an image, it will do transformer like attention but since images are of 
-large shape it is too much to put it in one transformer. Therefore, it 
-sub-divides the image into patches, and for each patch, it makes a vector out 
-of it. All the pixels are close together goes into one vector, thus treated as 
-a group.
-
-![Sample](display/figures/sample.png) ![Patches](display/figures/patches.png)
+for the model to work. Given an image, it will do transformer like attention 
+but since images are of large shape it is too much to put it in one transformer.
+Therefore, it sub-divides the image into patches, and for each patch, it makes 
+a vector out of it. All the pixels are close together goes into one vector, 
+thus treated as a group.
 
 The perceiver goal is to have a low dimension latent array N. The top row
 is a regular self-attention transformer as in the original paper with the 
@@ -33,7 +56,13 @@ same image behaving like a recurrent neural network(RNN) with weight sharing
 options. The data that flows through influences the queries and is refined 
 multiple times.
 
-## Positional Encoding
+## Patches & Positional Encoding
+
+Patches are created of 40 x 40 with stride length 40. Thus creating 
+IMAGE_SIZE // PATCH_SIZE = 228 / 40 = 5 patches in each stride's and a total of 
+25 patches across the image.
+
+![Patches](display/figures/patches.png)
 
 Positional Encoding are generally applicable to all input modality. The original
 paper implemented the fourier feature positional embedding. The position used 
@@ -70,28 +99,6 @@ fixed-width vector. The query and key tensors are then scaled and dot-produced.
 
 ![summary](display/figures/perceiver_summary.png)
 
-## Dataset
-
-OAI AKOA Knee MRI Images
-Osteoarthritis Initiative (OAI) Accelerated Osteoarthritis (OA) Knee MRI 2D 
-Images (~16K images, 1.7 GB). The caption of the images contained the 
-information regarding the left or right knee information. Original resolution
-of the image were 260 x 288.
-
-## Installation
-
-Install Conda/Miniconda
-
-```
-conda activate tf
-conda env update --file tf.yml --prune
-```
-
-or
-
-```
-pip install -r requirements.txt
-```
 
 ## Results
 
