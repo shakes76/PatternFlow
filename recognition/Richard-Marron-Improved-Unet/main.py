@@ -143,8 +143,8 @@ def plot_results(model, test, hist=None):
     if hist is not None:
         # Plot the training curves
         plt.figure()
-        plt.plot(hist["dice_function"], label="Training")
-        plt.plot(hist["val_dice_function"], label="Validation")
+        plt.plot(hist.history["dice_function"], label="Training")
+        plt.plot(hist.history["val_dice_function"], label="Validation")
         plt.legend(loc="upper left")
         plt.title("Dice Similarity Coefficient During Training")
         plt.xlabel("Epoch")
