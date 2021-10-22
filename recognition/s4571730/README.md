@@ -4,24 +4,25 @@
 ## Purpose
 The aim of this project is to create and assess the performance of a binary 
 classifier of the OAI AKOA Knee dataset, using the Perceiver model as described
-by Andrew Jaegle et. al.
+by Andrew Jaegle et al.
 
 The Perceiver paper can be downloaded [here](https://arxiv.org/abs/2103.03206).
 
 This dataset contains 18680 preprocessed X-Ray images of left and right knees of
 101 patients. The created model is supposed to distinguish between left and 
-right laterity of the knee X-ray images. 7760 images are labelled as Left, 10920 as Right.
+right laterality of the knee X-ray images. 7760 images are labelled as Left, 10920 as Right.
 
 ## Instructions
 - Download the source code and grab the dataset from the cloudstore link
 - Extract and place the dataset in the same directory as the source code
+- Modify the hyperparameters in `driver.py` if needed.
 - Run `driver.py`
 
 ## Dependencies
 - Tensorflow (2.6 used in the experimentation)
-- Tensorflow Addons
+- Tensorflow Add-ons
 - Keras (included in tensorflow package)
-- Numpy (for processing the dataset)
+- NumPy (for processing the dataset)
 
 ## Implementation
 The implementation is divided into 5 main components:
@@ -188,6 +189,32 @@ TRAIN_SPLIT = 0.8 # Portion for training set
 ```
 
 ### Results
-94% accuracy
+- Using the Perceiver model, with the listed hyperparameters, achieved test accuracy is 
+approximately 94%
+![](/imgs/test_acc.png)
+
+- These are the plots illustrating the training process
+![](/imgs/Figure_plots.png)
+
+From the plots, the model exhibited some overfitting behaviors, as in epoch 8, 
+it experienced a considerable loss in validation accuracy and an increase in 
+validation loss. Nevertheless, the final accuracy is still pretty high, considering
+that the model was trained for only 10 epochs and data leakage prevention is 
+guaranteed. This is perhaps due to the simplistic nature of the dataset, where
+it is only a binary classification, and each label has a fairly distinctive feature
+that makes the learning process easier. (The knee seems to lean towards the opposite
+direction of the label, as can be seen in Appendix A).
+
+### Appendix
+#### Appendix A: Visualization of 9 samples in the dataset
+![](/imgs/Figure_ds.png)
+#### Appendix A: Visualization of 9 predictions of test sets
+![](/imgs/Figure_pred.png)
+#### Appendix C: Dataset specifications
+- Number of images: 18680
+- Number of right knee images: 10920
+- Number of left knee images: 7760
+- Number of unique patient IDs: 101
+
 
 
