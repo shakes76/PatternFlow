@@ -39,7 +39,7 @@ def main():
                         ])
 
     BATCH_SIZE = 64
-    EPOCHS = 1
+    EPOCHS = 20
     LR = 0.001
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
