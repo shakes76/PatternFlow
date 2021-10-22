@@ -16,10 +16,10 @@ class FeedForward(tf.keras.layers.Layer):
     @staticmethod
     def feed_forward_network():
         return tf.keras.Sequential([
-                tf.keras.layers.Dense(units=FEED_FORWARD_NETWORK_UNITS[0],
+                tf.keras.layers.Dense(units=PROJECTION_DIMENSION,
                                       activation='relu'),
                 tf.keras.layers.Dropout(DROPOUT),
-                tf.keras.layers.Dense(units=FEED_FORWARD_NETWORK_UNITS[-1],
+                tf.keras.layers.Dense(units=PROJECTION_DIMENSION,
                                       use_bias=True, bias_initializer='zeros'),
             ]
         )

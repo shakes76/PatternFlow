@@ -1,4 +1,4 @@
-# OAI AKOA Perveiver Transformer
+# | OAI AKOA | Perveiver Transformer | 46252665 |
 
 ## Dataset
 
@@ -25,13 +25,53 @@ or
 pip install -r requirements.txt
 ```
 
-## Train
+## Step's
+
+Download OAI AKOA Knee dataset, unzip images in `/data/` folder.
 
 Run the driver file to pre-process, train and visualise.
 
 ```
 python main.py
 ```
+
+Hyper-parameters can be controlled in `settings/congfig.py`
+
+| Parameter     | Description   |
+| ------------- |--------------:|
+| PATH      | Path of the OAI AKOA Knee Dataset|
+| TEST_SPLIT | Split for test/train |
+| IMAGE_SIZE | Size of image for training |
+| AUG_FACTOR | Value for flipping upside down in augmentation |
+| AUG_VAL | Value for flipping left right in augmentation |
+| BLUR_AUG | Blur intensity value |
+| CLASSES | Number of classes to detect by the perceiver transformer |
+| LEARNING_RATE | Step size at each iteration |
+| MOMENTUM | Accumulates the gradient of the past steps to determine direction|
+| BATCH_SIZE | Number of training examples utilized in one iteration |
+| EPOCHS | Number of passes of the entire training dataset |
+| DROPOUT | Number of randomly selected neurons are ignored during training |
+| PATCH_SIZE | Size of a patch eg: 40x40 |
+| LATENT_DIMENSION | Size of the latent array |
+| PROJECTION_DIMENSION | Size of the positional embedding |
+| TRANSFORMER_HEADS | Number of times attention module repeats its computations in parallel |
+| TRANSFORMER_BLOCKS | Number of transformer stacks in the perceiver |
+| ITERATIONS | Number of iterations in the perceiver |
+| EPSILON | Factor for numerical stability |
+| MONITOR | Specify the performance measure to monitor |
+| PATIENCE | Number of epochs to wait before early stop if no progress on the validation set |
+| VALIDATION_SPLIT | Ration of hypothetical testing set to predict the fit of the model |
+
+## Dependencies
+
+* tensorflow
+* numpy
+* imgaug
+* scikit-learn
+* opencv-python
+* graphviz
+* pydot
+* matplotlib
 
 ## Perceiver Transformer
 
@@ -52,7 +92,7 @@ Therefore, it sub-divides the image into patches, and for each patch, it makes
 a vector out of it. All the pixels are close together goes into one vector, 
 thus treated as a group.
 
-The perceiver goal is to have a low dimension latent array N. The top row
+The perceiver's goal is to have a low dimension latent array, N. The top row
 is a regular self-attention transformer as in the original paper with the 
 quadratic blowup along with multiple transformer blocks. The image input to the 
 Perceiver is a byte array, M i.e. (228x228=51984), which is of higher dimension,
@@ -67,7 +107,7 @@ multiple times.
 ## Patches & Positional Encoding
 
 Patches are created of 40 x 40 with stride length 40. Thus creating 
-IMAGE_SIZE // PATCH_SIZE = 228 / 40 = 5 patches in each stride's and a total of 
+IMAGE_SIZE // PATCH_SIZE = 228 // 40 = 5 patches in each stride's and a total of 
 25 patches across the image.
 
 ![Patches](display/figures/patches.png)
@@ -107,7 +147,6 @@ fixed-width vector. The query and key tensors are then scaled and dot-produced.
 
 ![summary](display/figures/perceiver_summary.png)
 
-
 ## Results
 
 ```
@@ -141,18 +180,14 @@ Batch size: 32
   publisher = {arXiv},
   GitHub Repository = {\url{https://github.com/Rishit-dagli/Perceiver}},
 }
-```
 
-```
 @misc{Keras,
   author = {Khalid Salama},
   title = {Image classification with Perceiver},
   year = {2021},
   Url = {\url{https://keras.io/examples/vision/perceiver_image_classification/}},
 }
-```
 
-```
 @misc{YouTube,
   author = {Yannic Kilcher},
   title = {Perceiver: General Perception with Iterative Attention (Google DeepMind Research Paper Explained)},
