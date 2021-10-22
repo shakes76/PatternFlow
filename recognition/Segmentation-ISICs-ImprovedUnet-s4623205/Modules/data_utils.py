@@ -8,7 +8,7 @@ Functions to load and preprocess data
 import cv2
 import glob
 import numpy as np
-from misc_utils import progressbar
+from Modules.misc_utils import progressbar
 from sklearn.model_selection import train_test_split
 from math import isclose
 from time import process_time

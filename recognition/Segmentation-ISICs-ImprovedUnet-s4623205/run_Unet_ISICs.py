@@ -6,10 +6,10 @@ Driver script to show the example of the model usage
 @email: jengchung.lien@uqconnect.edu.au
 """
 import matplotlib.pyplot as plt
-from data_utils import get_min_imageshape, train_val_test_split
-from SegmentationMetrics import dice_coef, dice_loss
-from misc_utils import get_close2power
-from SegmentaionModel import SegModel
+from Modules.data_utils import get_min_imageshape, train_val_test_split
+from Modules.SegmentationMetrics import dice_coef, dice_loss
+from Modules.misc_utils import get_close2power
+from Modules.SegmentaionModel import SegModel
 
 
 def main():
