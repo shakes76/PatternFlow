@@ -202,4 +202,4 @@ def main(debugging=False):
     plt.show()
 
 if __name__ == "__main__":
-    main(debugging=True)
+    main(debugging=False)
