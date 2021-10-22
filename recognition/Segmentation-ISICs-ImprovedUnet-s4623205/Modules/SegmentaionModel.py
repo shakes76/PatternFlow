@@ -19,7 +19,7 @@ from tensorflow_addons.optimizers import AdamW
 
 
 class SegModel:
-    def __init__(self, input_shape, random_seed, model="Unet"):
+    def __init__(self, input_shape, random_seed, model="Improved_Unet"):
         """
         Initialize SegModel class which constructs the segmentation model
 
