@@ -40,8 +40,8 @@ from gan import (
 )
 
 # Optimiser hyperparameters
-GENERATOR_LR: float = 1e-6
-DISCRIMINATOR_LR: float = 5e-7
+GENERATOR_LR: float = 2e-6
+DISCRIMINATOR_LR: float = 1e-6
 # Additional hyperparameters
 # key : hyperparameter name, value : hyperparameter value
 GENERATOR_HYPERPARAMETERS = {
@@ -78,9 +78,9 @@ DISCRIMINATOR_WEIGHT_PATH: str = ""
 
 # Training variables
 TRAIN: bool = True
-EPOCHS: int = 100
+EPOCHS: int = 50
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-MODEL_NAME: str = "Trial 8"
+MODEL_NAME: str = "Trial 9"
 LOAD_WEIGHTS: bool = False
 SAVE_WEIGHTS: bool = True
 WEIGHT_SAVING_INTERVAL: int = 5
