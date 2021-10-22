@@ -52,3 +52,24 @@ def get_close2power(value):
             break
 
     return int(result)
+
+
+def image_mask_combiner(image, mask):
+    """
+    Function to combine the image and mask, showing the mask as blue area on the image
+
+    Parameters
+    ----------
+    image : numpy array or tensors
+      The image shape (h, w, 3) is required.
+    mask : numpy array or tensors
+      The mask shape (h, w) is required.
+
+    Returns
+    -------
+    image : numpy array or tensors
+      The combined image with mask area as color blue
+    """
+    image[:, :, 2] = image[:, :, 2] * (1 - mask) + (255 * mask * mask)
+
+    return image
