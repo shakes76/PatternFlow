@@ -14,7 +14,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 21/10/2021
+    Date last modified: 22/10/2021
     Python version: 3.9.7
 """
 
@@ -41,7 +41,7 @@ from gan import (
 
 # Optimiser hyperparameters
 GENERATOR_LR: float = 1e-6
-DISCRIMINATOR_LR: float = 1e-6
+DISCRIMINATOR_LR: float = 5e-7
 # Additional hyperparameters
 # key : hyperparameter name, value : hyperparameter value
 GENERATOR_HYPERPARAMETERS = {
@@ -80,7 +80,7 @@ DISCRIMINATOR_WEIGHT_PATH: str = ""
 TRAIN: bool = True
 EPOCHS: int = 100
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-MODEL_NAME: str = "Trial 7"
+MODEL_NAME: str = "Trial 8"
 LOAD_WEIGHTS: bool = False
 SAVE_WEIGHTS: bool = True
 WEIGHT_SAVING_INTERVAL: int = 5
