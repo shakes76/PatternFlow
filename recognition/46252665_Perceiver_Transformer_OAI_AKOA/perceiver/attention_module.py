@@ -8,7 +8,6 @@ https://github.com/Rishit-dagli/Perceiver
 @email: pritish.roy@uq.edu.au
 """
 
-
 import tensorflow as tf
 
 from perceiver.feed_forward import FeedForward
@@ -48,9 +47,9 @@ class TransformerModule:
                                          dropout=DROPOUT)(
             [query, key, value], return_attention_scores=False) if attention \
             else tf.keras.layers.MultiHeadAttention(
-                num_heads=TRANSFORMER_HEADS,
-                key_dim=PROJECTION_DIMENSION,
-                dropout=DROPOUT)(x1, x1)
+            num_heads=TRANSFORMER_HEADS,
+            key_dim=PROJECTION_DIMENSION,
+            dropout=DROPOUT)(x1, x1)
 
     def create_cross_attention_module(self):
         """Attention performed on queries generated from embedding and
@@ -109,8 +108,12 @@ class TransformerModule:
         # skip connection
         outputs = self.skip_connection(outputs, attention_output)
 
-        # Return Keras model
-        return tf.keras.Model(inputs=inputs, outputs=outputs)
+        # return keras model
+        return tf.keras.Model(
+            inputs=inputs,
+            outputs=outputs,
+            name='Cross_Attention'
+        )
 
     def create_transformer_module(self):
         """Applies MultiHeadAttention to the cross attention module to
@@ -148,5 +151,9 @@ class TransformerModule:
             # skip connection
             x0 = self.skip_connection(x3, x2)
 
-        # Return Keras model
-        return tf.keras.Model(inputs=inputs, outputs=x0)
+        # return keras model
+        return tf.keras.Model(
+            inputs=inputs,
+            outputs=x0,
+            name='Latent_Transformer'
+        )

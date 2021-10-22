@@ -99,5 +99,5 @@ class PerceiverTransformer(tf.keras.Model):
         # (batch_size, projection_dim) representation tensor
         representation = self.global_average_pooling(latent_array)
 
-        # Return Logits
+        # return logits
         return self.classification_head(representation)

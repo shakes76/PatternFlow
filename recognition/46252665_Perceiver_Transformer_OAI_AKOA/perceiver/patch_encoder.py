@@ -22,7 +22,7 @@ class PatchEncoder(tf.keras.layers.Layer):
         """Patch Encoder constructor method initialises the
         num_patches: PATCHES,
         projection: PROJECTION_DIMENSION,
-        the postional_embedding of input_dim PATCHES,
+        the positional_embedding of input_dim PATCHES,
         and output_dim PROJECTION_DIMENSION"""
         super(PatchEncoder, self).__init__()
 
