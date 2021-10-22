@@ -10,7 +10,7 @@ from numpy.random import choice
 import matplotlib.pyplot as plt
 from Modules.data_utils import get_min_imageshape, train_val_test_split
 from Modules.SegmentationMetrics import dice_coef
-from Modules.misc_utils import get_close2power
+from Modules.misc_utils import get_close2power, image_mask_combiner
 from Modules.SegmentaionModel import SegModel
 
 
@@ -52,15 +52,18 @@ def main():
     print("Plotting three random test set and predicted mask...")
     indexs = choice(len(X_test), 3, replace=False)
     for i in range(len(indexs)):
-        plt.subplot(len(indexs), 3, i*3+1)
+        plt.subplot(len(indexs), 4, i*4+1)
         plt.imshow(X_test[indexs[i]])
         plt.title("Image")
-        plt.subplot(len(indexs), 3, i*3+2)
+        plt.subplot(len(indexs), 4, i*4+2)
         plt.imshow(y_test[indexs[i], :, :, 0], cmap="gray")
         plt.title("True mask")
-        plt.subplot(len(indexs), 3, i*3+3)
+        plt.subplot(len(indexs), 4, i*4+3)
         plt.imshow(y_pred[indexs[i], :, :, 0], cmap="gray")
         plt.title("Predict mask")
+        plt.subplot(len(indexs), 4, i*4+4)
+        plt.imshow(image_mask_combiner(X_test[indexs[i]], y_pred[indexs[i], :, :, 0]))
+        plt.title("Combined image")
     plt.suptitle("Test set Predictions")
     plt.tight_layout()
     plt.show()
