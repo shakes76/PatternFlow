@@ -398,3 +398,14 @@ class SegModel:
         y_pred = self.model.predict(X_test, batch_size=batch_size)
 
         return y_pred
+
+    def load_weights(self, load_path):
+        """
+        Function to load weights to model
+
+        Parameters
+        ----------
+        load_path : string
+          Path to load the model weights
+        """
+        self.model.load_weights(load_path)
