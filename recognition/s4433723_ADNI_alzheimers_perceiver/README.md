@@ -2,6 +2,7 @@
 
 Requirements:
 - Tensorflow version >= 2.6
+  - conda install tensorflow-gpu=2.6
 - tensorflow-addons i.e. pip install -U tensorflow-addons
 - med2image i.e. pip3 install med2image
 

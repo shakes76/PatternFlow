@@ -8,14 +8,25 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
+import os
+import cv2
+from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
+from sklearn.model_selection import train_test_split
 
 # check tf version etc.
 print("Tensorflow version: ", tf.__version__)
 
 # =============== PREPARE DATA ===============
 
+DATASET_FOLDER = 'AKOA_Analysis/'
+imgWidth = 260
+imgHeight = 228
+
 num_classes = 100
 input_shape = (32, 32, 3)
+
+
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
@@ -26,14 +37,14 @@ print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
 learning_rate = 0.001
 weight_decay = 0.0001
-batch_size = 1
+batch_size = 8
 num_epochs = 50
 dropout_rate = 0.2
 image_size = 32  # We'll resize input images to this size.
 patch_size = 2  # Size of the patches to be extract from the input images.
 num_patches = (image_size // patch_size) ** 2  # Size of the data array.
-latent_dim = 256  # Size of the latent array.
-projection_dim = 256  # Embedding size of each element in the data and latent arrays.
+latent_dim = 128  # Size of the latent array.
+projection_dim = 128  # Embedding size of each element in the data and latent arrays.
 num_heads = 8  # Number of Transformer heads.
 ffn_units = [
     projection_dim,
