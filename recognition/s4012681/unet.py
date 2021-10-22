@@ -25,12 +25,14 @@ def get_nifti_data(file_name):
     # print()
     # print(file_name)
     img = nibabel.load(file_name).get_fdata()
+    print(img.shape)
     return img
 
 
 def one_hot(file_name):
     mask = get_nifti_data(file_name)
-    bg = tf.logical_or(mask < 1, mask > 5)
+    bg = mask == 0
+    # bg = tf.logical_or(mask < 1, mask > 5)
     bg = tf.where(bg == True, 1, 0)
     body = mask == 1
     body = tf.where(body == True, 1, 0)
@@ -62,8 +64,28 @@ def normalise(image):
     return image
 
 
+def trim(image, diff, axis):
+    s_diff = diff // 2
+    e_diff = s_diff + diff % 2
+    for i in range(s_diff):
+        image = np.delete(image, 0, axis=axis)
+    for i in range(e_diff):
+        image = np.delete(image, -1, axis=axis)
+    return image
+
+
 def reshape(batch_size, dimension, image):
-    return np.reshape(image, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
+    # h, d, w = image.shape
+    # print("whd", w, h, d)
+    # if w_diff := w - IMG_WIDTH > 0:
+    #     image = trim(image, w_diff, 0)
+    # if h_diff := h - IMG_HEIGHT > 0:
+    #     image = trim(image, h_diff, 1)
+    # if d_diff := d - IMG_DEPTH > 0:
+    #     image = trim(image, d_diff, 2)
+    #
+    return np.reshape(image, (IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, dimension))
+
 
 
 # def reshape_mask(batch_size, dimension, image):

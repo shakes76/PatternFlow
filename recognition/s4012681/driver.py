@@ -26,8 +26,10 @@ IMG_HEIGHT = 256
 IMG_DEPTH = 256
 IMG_CHANNELS = 1
 BATCH_SIZE = 1
-FILTERS = 1
-EPOCHS = 1
+FILTERS = 4
+EPOCHS = 70
+
+current_epoch = 0
 
 
 class MRISequence(Sequence):
@@ -50,6 +52,19 @@ class MRISequence(Sequence):
 
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
+
+
+class CustomCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        keys = list(logs.keys())
+        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
+        pred = model.predict(test)
+        print(pred[0].shape)
+        mask = pred[0]
+        mask = np.argmax(mask, axis=-1)
+        fig, ax1 = plt.subplots(1, 1)
+        ax1.imshow(mask[mask.shape[0] // 2], cmap='gray')
+        fig.savefig("img.png")
 
 
 mri_location = "/home/Student/s4012681/semantic_MRs_anon/*.nii.gz"
@@ -110,10 +125,11 @@ model.compile(optimizer=Adam(lr=1e-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08, d
               loss='binary_crossentropy', metrics=['accuracy'])
 model.summary(line_length=120)
 
-callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
+# callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
 # Fit the training data and store for the plot
-curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[callback])
+curves = model.fit(train, epochs=EPOCHS, steps_per_epoch=1, validation_data=val, batch_size=BATCH_SIZE, callbacks=[
+    CustomCallback()])
 # Evaluate the model with the test data
 print()
 print("Evaluation:")
