@@ -103,23 +103,27 @@ def fit_or_load(model, train, valid, path:str, fit:bool=True):
             valid     : The validation dataset
             path      : Path to weights file
             fit       : True if we want to fit the model. False if we want to load
+        
+        Return: History of the training process if fit = True
     """
     if fit:
         # Fit and then save weights of the model
         hist = model.fit(train[0], train[1], 
                          validation_data=valid, batch_size=10, epochs=100)
         model.save_weights(path)
+        return hist
     else:
         # Load weights into model
         model.load_weights(path)
         
-def plot_results(model, test):
+def plot_results(model, test, hist=None):
     """
     Plot some of the predicted values from the model
     
         Params:
             model : The model that is being used to predict
             test  : The test dataset
+            hist  : The history of the training process
     """
     p_test = model.predict(test[0], batch_size=10)
     fig, axs = plt.subplots(nrows=3, ncols=6)
@@ -135,7 +139,16 @@ def plot_results(model, test):
             axs[i, j+2].imshow(test[0][(j+1)*(2*i+1) - 10])
             axs[i, j+2].set_title("Reality")  
             axs[i, j+2].axis("off")  
-            
+    
+    if hist is not None:
+        # Plot the training curves
+        plt.figure()
+        plt.plot(hist["dice_function"], label="Training")
+        plt.plot(hist["val_dice_function"], label="Validation")
+        plt.legend(loc="upper left")
+        plt.title("Dice Similarity Coefficient During Training")
+        plt.xlabel("Epoch")
+        plt.ylabel("Similarity Score")
 
 def main(debugging=False):
     """
@@ -178,13 +191,13 @@ def main(debugging=False):
     print(f"Test Set Shape  \t: {test[0].shape}")
     print(f"Validation Set Shape \t: {valid[0].shape}")
     
-    fit_or_load(unet_model, train, 
-                valid, path="./weights/test.h5", fit=False)
+    hist = fit_or_load(unet_model, train, 
+                       valid, path="./weights/test.h5", fit=True)
     
     # Test model on the test set
     unet_model.evaluate(test[0], test[1], batch_size=10)
     
-    plot_results(unet_model, test)
+    plot_results(unet_model, test, hist)
     
     plt.show()
 
