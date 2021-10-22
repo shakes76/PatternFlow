@@ -58,7 +58,7 @@ ISIC 2018 Task1 is a dataset with skin cancer images shared by the International
 “driver.py” calls all files in the repository to train the model and to evaluate the performance. ISIC dataset is needed to be set in the same directory including the files. After that, put the command ‘python driver.py’ in the terminal and execute the command.
 
 
-## Dependency
+## Dependencies
 The model training and evaluation was executed under the environment.
 * Pytorch 1.9.0+cu111
 * Python 3.7.12
