@@ -5,7 +5,6 @@
     author: Richard Marron
     status: Development
 """
-import tensorflow as tf
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
@@ -93,6 +92,51 @@ def get_splits(input_set, truth_set):
     
     return (in_train, truth_train), (in_test, truth_test), (in_valid, truth_valid)
 
+def fit_or_load(model, train, valid, path:str, fit:bool=True):
+    """
+    Choose whether to fit the model or, if the model is already trained,
+    load the saved weight
+    
+        Params:
+            model     : The model we want to fit or load
+            train     : The training dataset
+            valid     : The validation dataset
+            path      : Path to weights file
+            fit       : True if we want to fit the model. False if we want to load
+    """
+    if fit:
+        # Fit and then save weights of the model
+        hist = model.fit(train[0], train[1], 
+                         validation_data=valid, batch_size=10, epochs=100)
+        model.save_weights(path)
+    else:
+        # Load weights into model
+        model.load_weights(path)
+        
+def plot_results(model, test):
+    """
+    Plot some of the predicted values from the model
+    
+        Params:
+            model : The model that is being used to predict
+            test  : The test dataset
+    """
+    p_test = model.predict(test[0], batch_size=10)
+    fig, axs = plt.subplots(nrows=3, ncols=6)
+    
+    for i in range(0, 3):
+        for j in range(0, 6, 3):
+            axs[i, j].imshow(p_test[(j+1)*(2*i+1) - 10])
+            axs[i, j].set_title("Predicted Mask")
+            axs[i, j].axis("off")
+            axs[i, j+1].imshow(test[1][(j+1)*(2*i+1) - 10])
+            axs[i, j+1].set_title("True Mask")  
+            axs[i, j+1].axis("off")
+            axs[i, j+2].imshow(test[0][(j+1)*(2*i+1) - 10])
+            axs[i, j+2].set_title("Reality")  
+            axs[i, j+2].axis("off")  
+            
+
 def main(debugging=False):
     """
     Main program entry
@@ -116,7 +160,6 @@ def main(debugging=False):
     plt.imshow(input_images[0])
     plt.figure()
     plt.imshow(gt_images[0])
-    plt.show()
     
     # Create an instance of an Improved U-Net
     unet = ImprovedUNet(input_shape=input_images[0].shape)
@@ -135,16 +178,15 @@ def main(debugging=False):
     print(f"Test Set Shape  \t: {test[0].shape}")
     print(f"Validation Set Shape \t: {valid[0].shape}")
     
-    load_weights = False
-    if not load_weights:
-        hist = unet_model.fit(train[0], train[1], validation_data=valid, batch_size=10, epochs=50)
-    else:
-        # Load weights into model
-        unet_model.load_weights("./weights/test.h5")
+    fit_or_load(unet_model, train, 
+                valid, path="./weights/test.h5", fit=False)
     
+    # Test model on the test set
     unet_model.evaluate(test[0], test[1], batch_size=10)
-    unet_model.save_weights("./weights/test.h5")
     
+    plot_results(unet_model, test)
+    
+    plt.show()
 
 if __name__ == "__main__":
     main(debugging=True)
