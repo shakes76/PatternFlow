@@ -18,8 +18,9 @@ import sys
 import time
 from PIL import Image, ImageDraw
 import gc
-
 #%%
+
+# Load Mask RCNN Library
 ROOT_DIR = 'D:/Python/mask_rcnn_aktwelve/Mask_RCNN/'
 assert os.path.exists(ROOT_DIR), 'ROOT_DIR does not exist. Did you forget to read the instructions above? ;)'
 
@@ -28,6 +29,68 @@ from mrcnn.config import Config
 import mrcnn.utils as utils
 from mrcnn import visualize
 import mrcnn.model as modellib
+#%%
+# Directory to save logs and trained model
+MODEL_DIR = os.path.join(ROOT_DIR, "logs")
+
+# Local path to trained weights file
+COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
+
+# Download COCO trained weights from Releases if needed
+if not os.path.exists(COCO_MODEL_PATH):
+    utils.download_trained_weights(COCO_MODEL_PATH)
+
+
+#%%
+# Create Config
+
+class ISICConfig(Config):
+    """Configuration for training on the cigarette butts dataset.
+    Derives from the base Config class and overrides values specific
+    to the cigarette butts dataset.
+    """
+    # Give the configuration a recognizable name
+    NAME = 'isic_orig'
+
+    # Train on 1 GPU and 1 image per GPU. Batch size is 1 (GPUs * images/GPU).
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
+
+    # Number of classes (including background)
+    NUM_CLASSES = 1 + 1 # background + 5 (net-pot, true-leaf, small-leaf, young-leaf, plant)
+
+    # All of our training images are resized to 512x512
+    IMAGE_MIN_DIM = 512
+    IMAGE_MAX_DIM = 512
+
+    # You can experiment with this number to see if it improves training
+    STEPS_PER_EPOCH = 5 #500
+
+    # This is how often validation is run. If you are using too much hard drive space
+    # on saved models (in the MODEL_DIR), try making this value larger.
+    VALIDATION_STEPS = 5
+    
+    # Matterport originally used resnet101, but I downsized to fit it on my graphics card
+    BACKBONE = 'resnet50'
+    
+    
+    IMAGE_RESIZE_MODE = "square"
+
+    # To be honest, I haven't taken the time to figure out what these do
+    RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)
+    TRAIN_ROIS_PER_IMAGE = 32
+    MAX_GT_INSTANCES = 50 
+    POST_NMS_ROIS_INFERENCE = 250 
+    POST_NMS_ROIS_TRAINING = 500
+    USE_MINI_MASK = True
+    MINI_MASK_SHAPE = (56,56)
+    
+    # LEARNING_MOMENTUM = 0.9
+    # LEARNING_RATE = 0.0008
+    
+config = ISICConfig()
+config.display()
+
 
 #%%
 train_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
@@ -92,16 +155,7 @@ class ISICDataset(utils.Dataset):
         bool_mask = mask_seg>0
         instance_masks.append(bool_mask)
         class_ids.append(1)
-        
 
-        # for segfile in os.listdir(self.masks_dir):
-        #     if segfile.endswith('.png') or segfile.endswith('.jpg') or segfile.endswith('.jpeg'):
-        #         seg_names.append(segfile[:-4])
-        #         mask_seg = cv2.imread(os.path.join(self.masks_dir,segfile))
-        #         mask_seg = np.where(mask_seg>0,255,mask_seg)
-        #         bool_mask = mask_seg>0
-        #         instance_masks.append(bool_mask)
-        #         class_ids.append(1)
         mask = np.dstack(instance_masks)
         # mask = instance_masks
         class_ids = np.array(class_ids,dtype=np.int32)
@@ -109,9 +163,26 @@ class ISICDataset(utils.Dataset):
         return mask, class_ids
 
 #%%
+
+# Full Train set
+# dataset_train = ISICDataset()
+# dataset_train.load_data(seg_path,train_path)
+# dataset_train.prepare()
+
+# Sample Set 15 images
+
+samp_train_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_train_img'
+samp_train_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_train_seg'
+samp_val_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_val_img'
+samp_val_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_val_seg'
+
 dataset_train = ISICDataset()
-dataset_train.load_data(train_gt_path,train_path)
+dataset_train.load_data(samp_train_seg_path,samp_train_img_path)
 dataset_train.prepare()
+
+dataset_val = ISICDataset()
+dataset_val.load_data(samp_val_seg_path,samp_val_img_path)
+dataset_val.prepare()
 #%%
 
 dataset = dataset_train
@@ -124,81 +195,79 @@ for image_id in image_ids:
 
 #%%
 
-annotations_test = {}
+#Generate Model
+gc.collect()
+# Create model in training mode
+model = modellib.MaskRCNN(mode="training", config=config,
+                          model_dir=MODEL_DIR)
 
-# populate image dictionary
-
-isic_dict = {}
-
-img_names = []
-seg_names = []
-
-# Create a list of train, and gt filenames to exclude any non image files and retain correct sequence
-for imgfile in os.listdir(train_path):
-    if imgfile.endswith('.png') or imgfile.endswith('.jpg') or imgfile.endswith('.jpeg'):
-        img_names.append(imgfile)
-
-for segfile in os.listdir(train_gt_path):
-    if segfile.endswith('.png') or segfile.endswith('.jpg') or segfile.endswith('.jpeg'):
-        seg_names.append(segfile)
-
-seg_spec = '*.png'
-seg_masks = skio.imread_collection(os.path.join(train_gt_path,seg_spec),conserve_memory=True)
-
-for idx, img_name in enumerate(img_names):
-    image_id = img_name[:-4]
-    mask = seg_masks[idx]
-    
-    isic_dict[idx] = {
-        'mask':segmentation,
-        'iscrowd':0,
-        'image_id': image,
-        'category_id':1,
-        }
-    
-
-    
-
-# for seg in seg_names:
-#     print(seg)
-#     image = seg[:12]
-#     segmentation = cv2.imread(os.path.join(train_gt_path,seg))
-#     annotations_test[image].append(segmentation)
-
-#%%
-import json
-plant_path = 'D:/UQ Data Science/Subjects/Semester 4/DATA7902/Basil/New_Basil/leaf_and_plant/train_3_leaf_plant_crop_coco_instances.json' 
-plant_img = 'D:/UQ Data Science/Subjects/Semester 4/DATA7902/Basil/New_Basil/leaf_and_plant/train_3'
-
-# Load json from file
-json_file = open(plant_path)
-coco_json = json.load(json_file)
-json_file.close()
+print('model generated')
 #%%
 
-from shapely.geometry import Polygon, MultiPolygon
+# Load Pre-trained weights
 
-instance_masks = []
+# Which weights to start with?
+init_with = "coco"  # coco, or last
 
-img = cv2.imread(os.path.join(plant_img,'IMG_20210902_140626_2.jpg'))
-segmentation = coco_json['annotations'][0]['segmentation']
-segmentation = np.array(segmentation).reshape(-1,)
-print(segmentation.shape)
-w = img.shape[1]
-h = img.shape[0]
-mask = Image.new('1', (w,h))
-mask_draw = ImageDraw.ImageDraw(mask, '1')
+if init_with == "coco":
+    # Load weights trained on MS COCO, but skip layers that
+    # are different due to the different number of classes
+    # See README for instructions to download the COCO weights
+    model.load_weights(COCO_MODEL_PATH, by_name=True,
+                       exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                                "mrcnn_bbox", "mrcnn_mask"]
+                       )
+    print('coco weights loaded')
+elif init_with == "last":
+    # Load the last model you trained and continue training
+    model.load_weights(model.find_last(), by_name=True)
 
-poly = mask_draw.polygon(segmentation, fill=1)
-bool_array = np.array(mask) >0
-instance_masks.append(bool_array)
-
+elif init_with == "specific":
+    modelh5_path = 'ready_not_ready_using_plant_wt_aug_color20211007T0249/mask_rcnn_ready_not_ready_using_plant_wt_aug_color_0040.h5'
+    model.load_weights(os.path.join(MODEL_DIR,modelh5_path)
+                        # ,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                        #           "mrcnn_bbox", "mrcnn_mask"]
+                       )
+    
+    #ValueError: Layer #192 (named "anchors"), weight <tf.Variable 'Variable:0' shape=(1, 65472, 4) dtype=float32> has shape (1, 65472, 4), but the saved weight has shape (1, 16368, 4).
+    
+    # model.load_weights(os.path.join(MODEL_DIR,'basil_leaf20210818T0348/mask_rcnn_basil_leaf_0021.h5'))
+    print('model loaded from',modelh5_path)
 #%%
 
-img = train_img[0]
-print(img.shape)
-mask_seg = seg_img[0]
-mask_seg = np.where(mask_seg>0,255,mask_seg)
-print(mask_seg.shape)
-bool_mask = mask_seg > 0
-print(bool_mask.shape)
+# Training
+
+import winsound                                                        
+# Train the head branches
+# Passing layers="heads" freezes all layers except the head
+# layers. You can also pass a regular expression to select
+# which layers to train by name pattern.
+start_train = time.time()
+# model.train(dataset_train, dataset_val, 
+#             learning_rate=config.LEARNING_RATE, 
+#             epochs=20, 
+#             layers='heads')
+
+#LAYERS
+              # heads: The RPN, classifier and mask heads of the network
+              # all: All the layers
+              # 3+: Train Resnet stage 3 and up
+              # 4+: Train Resnet stage 4 and up
+              # 5+: Train Resnet stage 5 and up
+
+model.train(dataset_train,
+            dataset_val, 
+            learning_rate=config.LEARNING_RATE, 
+            epochs=1, 
+            layers='heads'
+            # ,augmentation = augment_strat
+            )
+
+end_train = time.time()
+minutes = round((end_train - start_train) / 60, 2)
+print(f'Training took {minutes} minutes')
+
+
+winsound.Beep(450,400)
+
+#%%
