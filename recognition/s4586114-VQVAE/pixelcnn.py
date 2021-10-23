@@ -64,6 +64,7 @@ class ResidualBlock(keras.layers.Layer):
         x = self.conv1(inputs)
         x = self.pixel_conv(x)
         x = self.conv2(x)
+        return keras.layers.add([inputs, x])
         
 
 # PixelCNN Model
@@ -102,9 +103,7 @@ def get_pixelcnn(vqvae_trainer, encoded_outputs):
     out = keras.layers.Conv2D(filters=vqvae_trainer.num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
 
     pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
-    pixel_cnn.summary()
     
     return pixel_cnn
     
-    
-            return keras.layers.add([inputs, x])
+     
