@@ -65,7 +65,7 @@ def run_experiment(opts):
     loss, accuracy = perceiver.evaluate(test)
 
     eval_result = {"loss": loss, "accuracy": accuracy}
-    with open(os.path.join(opts.out_dir, "w")) as file:
+    with open(os.path.join(opts.out_dir, "eval.txt"), "w") as file:
         print(eval_result, file=file)
 
     print("\n", "evaluation:", eval_result)
