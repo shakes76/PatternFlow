@@ -64,7 +64,7 @@ class ISICConfig(Config):
     IMAGE_MAX_DIM = 512
 
     # You can experiment with this number to see if it improves training
-    STEPS_PER_EPOCH = 5 #500
+    STEPS_PER_EPOCH = 100 #500
 
     # This is how often validation is run. If you are using too much hard drive space
     # on saved models (in the MODEL_DIR), try making this value larger.
@@ -258,7 +258,7 @@ start_train = time.time()
 model.train(dataset_train,
             dataset_val, 
             learning_rate=config.LEARNING_RATE, 
-            epochs=1, 
+            epochs=10, 
             layers='heads'
             # ,augmentation = augment_strat
             )
@@ -271,3 +271,57 @@ print(f'Training took {minutes} minutes')
 winsound.Beep(450,400)
 
 #%%
+
+# Inferencing
+
+gc.collect()
+
+class InferenceConfig(ISICConfig):
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
+    # IMAGE_MIN_DIM = 256
+    # IMAGE_MAX_DIM = 256
+    IMAGE_MIN_DIM = 512
+    IMAGE_MAX_DIM = 512
+    DETECTION_MIN_CONFIDENCE = 0.85
+    USE_MINI_MASK = True
+    MINI_MASK_SHAPE = (56,56)
+    
+
+inference_config = InferenceConfig()
+#%%
+# Recreate the model in inference mode
+model = modellib.MaskRCNN(mode="inference", 
+                          config=inference_config,
+                          model_dir=MODEL_DIR)
+
+print('Inference Mode')
+#%%
+
+model_path = model.find_last()
+
+# Load trained weights (fill in path to trained weights here)
+assert model_path != "", "Provide path to trained weights"
+print("Loading weights from ", model_path)
+model.load_weights(model_path, by_name=True
+                   # ,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                   # "mrcnn_bbox", "mrcnn_mask"]
+                   )
+#%%
+import skimage
+
+real_test_dir = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/val_img'
+image_paths = []
+for filename in os.listdir(real_test_dir):
+    if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
+        image_paths.append(os.path.join(real_test_dir, filename))
+
+for image_path in image_paths:
+    img = skimage.io.imread(image_path)
+    img_arr = np.array(img)
+    results = model.detect([img_arr], verbose=1)
+    r = results[0]
+    all_result.append(r)
+    visualize.display_instances(img, r['rois'], r['masks'], r['class_ids'], 
+                                dataset_train.class_names, r['scores'], figsize=(10,15))
+    
