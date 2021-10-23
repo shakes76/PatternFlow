@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 22/10/2021
+    Date last modified: 23/10/2021
     Python version: 3.9.7
 """
 
@@ -199,7 +199,9 @@ def get_generator(
         curr_size *= 2
 
     # To greyscale
-    x = Conv2D(1, kernel_size=1, padding="same", activation="sigmoid")(x)
+    x = Conv2D(
+        1, kernel_size=kernel_size, padding="same", activation="sigmoid"
+    )(x)
 
     generator = tf.keras.Model(
         inputs=[input_mapping, input_noise, input], outputs=x
@@ -230,8 +232,8 @@ def get_discriminator(
         x = disc_block(x, num_filters // (curr_size // 8), kernel_size, dropout)
         curr_size //= 2
     x = Flatten()(x)
-    x = Dropout(0.5)(x)
     x = Dense(1)(x)
+    x = Dropout(0.5)(x)
     x = Activation("sigmoid")(x)
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
