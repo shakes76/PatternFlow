@@ -6,16 +6,14 @@ from tensorflow import keras
 
 @tf.function()
 def f1_score(y_pred, y_actual):
-    print("Hi!")
     # This line does not work with floating point tensors!
     # numerator = 2 * tf.size(tf.sets.intersection(y_pred, y_actual)).numpy()
     print(y_pred)
     print(y_actual)
-    numerator = tf.reduce_sum(tf.cast(y_pred == y_actual, tf.int8))
-    print("numerator is {}".format(numerator))
-    print("Hi! 2")
+    numerator = tf.reduce_sum(tf.cast(y_pred == y_actual, tf.int32))
+    print("Numerator: {}".format(numerator))
     denominator = tf.size(y_pred) + tf.size(y_actual)
-    print("Hi! 3")
+    print("Denominator: {}".format(denominator))
     return tf.constant(numerator / denominator, dtype=tf.float64)
 
 
@@ -27,7 +25,7 @@ class UNetCSIROMalePelvic:
     train_batch_count = None
 
     # Holds a dictionary of nodes and the last node to be added to the DAG
-    class ModelNodes():
+    class ModelNodes:
         nodes = [{}, None]
 
         def __init__(self):
@@ -106,7 +104,7 @@ class UNetCSIROMalePelvic:
 
         # ==========================================================================================
         # Begin creating model
-        input_shape = (256, 256, 128, 1)
+        input_shape = (128, 128, 64, 1)
         # Create a model nodes tracker
         mdl_nodes = self.ModelNodes()
         # Input Layer
@@ -114,15 +112,15 @@ class UNetCSIROMalePelvic:
         mdl_nodes.add("Input", mdl_input)
 
         # Build Analysis Arm of UNet
-        _analysis_block(mdl_nodes, layer_num=1, num_maps=[32, 64])
-        _analysis_block(mdl_nodes, layer_num=2, num_maps=[64, 128])
-        _analysis_block(mdl_nodes, layer_num=3, num_maps=[128, 256])
+        _analysis_block(mdl_nodes, layer_num=1, num_maps=[16, 32])
+        _analysis_block(mdl_nodes, layer_num=2, num_maps=[32, 64])
+        _analysis_block(mdl_nodes, layer_num=3, num_maps=[64, 128])
         # Last layer does not have a trailer
-        _conv_block(mdl_nodes, layer_num=4, num_maps=[256, 512])
+        _conv_block(mdl_nodes, layer_num=4, num_maps=[128, 256])
         # Build Synthesis Arm of UNet
-        _synthesis_block(mdl_nodes, layer_num=4, num_maps=[256, 256])
-        _synthesis_block(mdl_nodes, layer_num=3, num_maps=[128, 128])
-        _synthesis_block(mdl_nodes, layer_num=2, num_maps=[64, 64])
+        _synthesis_block(mdl_nodes, layer_num=4, num_maps=[128, 128])
+        _synthesis_block(mdl_nodes, layer_num=3, num_maps=[64, 64])
+        _synthesis_block(mdl_nodes, layer_num=2, num_maps=[32, 32])
         # Final Convolution Layer
         new_node_name = "L{}_{}_FinalConv3D".format(1, 'SYN')
         new_node = Conv3D(name=new_node_name, kernel_size=1, strides=1, padding='same',
@@ -131,7 +129,7 @@ class UNetCSIROMalePelvic:
 
         # Instantiate & compile model object
         self.mdl = tf.keras.Model(inputs=mdl_input, outputs=mdl_nodes.last())
-        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[tf.metrics.binary_accuracy, f1_score],
+        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[tf.metrics.binary_accuracy],#, f1_score],
                          run_eagerly=True)
         # , tfa.metrics.F1Score(num_classes=2, threshold=0.5)],
         pass
