@@ -49,27 +49,52 @@ X_val = tf.keras.utils.image_dataset_from_directory(dir, validation_split=0.2,
   batch_size=batch_size,
   color_mode='grayscale')
 
+X_train = X_train.unbatch()
+a = tf.zeros([0, img_height, img_width, 1])
+for image in X_train:
+  a = tf.concat([a, [image]], axis = 0)
+X_train = a
 
-import matplotlib.pyplot as plt
+X_val = X_val.unbatch()
+a = tf.zeros([0, img_height, img_width, 1])
+for image in X_val:
+  a = tf.concat([a, [image]], axis = 0)
+X_val = a
+
+y_train = y_train.unbatch()
+a = tf.zeros([0, img_height, img_width, 1])
+for image in y_train:
+  a = tf.concat([a, [image]], axis = 0)
+y_train = a
+
+y_val = y_val.unbatch()
+a = tf.zeros([0, img_height, img_width, 1])
+for image in y_val:
+  a = tf.concat([a, [image]], axis = 0)
+y_val = a
+
+print(y_train)
 
 plt.figure(figsize=(10, 10))
-for images in y_train.take(1):
-  for i in range(9):
-    ax = plt.subplot(3, 3, i + 1)
-    plt.imshow(images[i].numpy().astype("uint8"), cmap='gray')
-    plt.axis("off")
-
+for i in range(9):
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(y_train.numpy()[i].astype("uint8"), cmap='gray')
+  plt.axis("off")
 plt.show()
+
 
 plt.figure(figsize=(10, 10))
-for images in X_train.take(1):
-  for i in range(9):
-    ax = plt.subplot(3, 3, i + 1)
-    plt.imshow(images[i].numpy().astype("uint8"), cmap='gray')
-    plt.axis("off")
-
+for i in range(9):
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(X_train.numpy()[i].astype("uint8"), cmap='gray')
+  plt.axis("off")
 plt.show()
 
+
+
+model = improved_unet(img_height, img_width)
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+model.fit(X_train, y_train, validation_data =(X_val, y_val), epochs = 30)
 
 #no_train = 15
 #no_test         = 5
