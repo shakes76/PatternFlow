@@ -117,6 +117,9 @@ class DownsamplingLayperByFusing(nn.Module):
 
 class PixelNorm(nn.Module):
     def __init__(self):
+        """
+        Normalisation process for the input data.
+        """
         super().__init__()
 
     def forward(self, input):
