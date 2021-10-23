@@ -18,7 +18,7 @@ The Perceiver iteratively attends to the input byte array by alternating cross-a
 and latent self-attention blocks." The final results are passed through an 
 average pooling layer and a dense layer for classification.
 
-![](./imgs/perceiver.png)
+<img src="./imgs/perceiver.png" width="450">
 
 This dataset contains 18680 preprocessed X-Ray images of left and right knees of
 101 patients. The created model is supposed to distinguish between left and 
@@ -188,10 +188,10 @@ layer.
 ### Results
 - Using the Perceiver model, with the listed hyperparameters, achieved test accuracy is 
 approximately 94%
-![](./imgs/test_acc.png)
+<img src="./imgs/test_acc.png" width="250">
 
 - These are the plots illustrating the training process
-![](./imgs/Figure_plots.png)
+<img src="./imgs/Figure_plots.png" width="400">
 
 From the plots, the model exhibited some overfitting behaviors, as in epoch 8, 
 it experienced a considerable loss in validation accuracy and an increase in 
@@ -204,9 +204,13 @@ direction of the label, as can be seen in Appendix A).
 
 ### Appendix
 #### Appendix A: Visualization of 9 samples in the dataset
-![](./imgs/Figure_ds.png)
-#### Appendix A: Visualization of 9 predictions of test sets
-![](./imgs/Figure_pred.png)
+
+<img src="./imgs/Figure_ds.png" width="400">
+
+#### Appendix B: Visualization of 9 predictions of test sets
+
+<img src="./imgs/Figure_pred.png" width="400">
+
 #### Appendix C: Dataset specifications
 - Number of images: 18680
 - Number of right knee images: 10920
