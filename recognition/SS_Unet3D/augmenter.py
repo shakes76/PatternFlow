@@ -21,12 +21,12 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
 # Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
 # alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
-                            verbose=False):
-    aug_count = 1
-
+                            ds_factor=1, verbose=False):
+    aug_count = 2
+    expected_img_size = (256, 256, 128)
+    # Set up paths
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
     orig_data_y_dirpath = orig_data_dirpath + '/' + orig_data_y_subdirname
-
     # Fetch .nii.gz files
     x_filenames = np.array(fnmatch.filter(sorted(os.listdir(orig_data_x_dirpath)), '*.nii.gz'))
     y_filenames = np.array(fnmatch.filter(sorted(os.listdir(orig_data_y_dirpath)), '*.nii.gz'))
@@ -35,20 +35,61 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
     y_filenames = y_filenames[np.array([not fnmatch.fnmatch(filename, '*AUG*') for filename in y_filenames])]
     # Combine into a 2D Array
     data_filenames = np.vstack((x_filenames, y_filenames)).T
-
+    num_files = len(data_filenames)
     # Make the output directory if needed
     if not os.path.exists(output_data_dirpath):
         os.mkdir(output_data_dirpath)
-
     # Lambda function to merge all classes except 5 (Prostate)
     simplify_labels = np.vectorize(lambda x: float(x == 5))
-
     # Process each image
     for idx, datum in enumerate(data_filenames):
-        print('Augmenting observation #{} of {}: {}'.format(idx + 1, len(data_filenames), datum)) if verbose else None
-        # Load files into memory
+        print('Processing observation #{} of {}: {}'.format(idx + 1, num_files, datum))
+        # Load X Y file pair into memory
         curr_x = nib.load(orig_data_x_dirpath + '/' + datum[0]).get_fdata()
         curr_y = nib.load(orig_data_y_dirpath + '/' + datum[1]).get_fdata()
+        ################################################################################################################
+        # DATA CLEANSING AND DOWN-SAMPLING #############################################################################
+        ################################################################################################################
+        # Check X Y shapes match
+        if curr_x.shape != curr_y.shape:
+            print("X,Y have different shapes. Skipping...") if verbose else None
+            continue
+        # Check dimensions match expectation
+        if len(curr_x.shape) != len(expected_img_size):
+            print("X,Y have incompatible dimensions. Skipping...") if verbose else None
+            continue
+        # Find unexpected shapes
+        size_diffs = np.subtract(curr_x.shape, expected_img_size)
+        # Skip if image is smaller than expected
+        if np.min(size_diffs) < 0:
+            print("Image is smaller than expected. Skipping...") if verbose else None
+            continue
+        # Trim if image is larger than expected
+        if np.max(size_diffs) > 0:
+            print("Image is larger than expected. Trimming edges...") if verbose else None
+            # Calculate how much to trim off the edges to match desired shape
+            # If deviation is odd, trims one more pixel from the end to compensate
+            trims = [[int(np.floor(i / 2)), int(np.ceil(i / 2))] for i in size_diffs]
+            shp = curr_x.shape
+            curr_x = curr_x[
+                     trims[0][0]:shp[0] - trims[0][1],
+                     trims[1][0]:shp[1] - trims[1][1],
+                     trims[2][0]:shp[2] - trims[2][1]
+                     ]
+            curr_y = curr_y[
+                     trims[0][0]:shp[0] - trims[0][1],
+                     trims[1][0]:shp[1] - trims[1][1],
+                     trims[2][0]:shp[2] - trims[2][1]
+                     ]
+            pass
+        # Down-sample the image now
+        if ds_factor != 1:
+            curr_x = curr_x[0::ds_factor, 0::ds_factor, 0::ds_factor]
+            curr_y = curr_y[0::ds_factor, 0::ds_factor, 0::ds_factor]
+        print('New shape: {}'.format(curr_x.shape)) if verbose else None
+        ################################################################################################################
+        ################################################################################################################
+        ################################################################################################################
         # Add a dimension
         curr_x = curr_x[..., None]
         curr_y = curr_y[..., None]
@@ -105,9 +146,9 @@ def main():
     orig_data_dir = ''
     x_subdir = '/semantic_MRs_anon'
     y_subdir = '/semantic_labels_anon'
-    output_dir = orig_data_dir + '/processed'
+    output_dir = orig_data_dir + '/processed_downsampled'
     # Augment!
-    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, verbose=True)
+    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, ds_factor=2, verbose=True)
     pass
 
 
