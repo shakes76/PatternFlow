@@ -2,16 +2,18 @@
 REFERENCE FOR PERCEIVER HELP ON CIFAR10
 https://keras.io/examples/vision/perceiver_image_classification/
 """
-
+import numpy
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
+import tensorflow_datasets as tfds
+from PIL import Image
 import os
-import cv2
+#import cv2
 from matplotlib import pyplot as plt
-import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 # check tf version etc.
@@ -19,26 +21,87 @@ print("Tensorflow version: ", tf.__version__)
 
 # =============== PREPARE DATA ===============
 
-DATASET_FOLDER = 'AKOA_Analysis/'
-imgWidth = 260
-imgHeight = 228
+DATASET_FOLDER = 'datasets/'
+imgSize = 228
+IMG_HEIGHT = 260
+IMG_WIDTH = 228
 
-num_classes = 100
-input_shape = (32, 32, 3)
+# load AKOA dataset from processed datasets directory
+akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_FOLDER,
+                                                                shuffle=True,
+                                                                seed=999,
+                                                                image_size=(imgSize, imgSize),
+                                                                batch_size=1,
+                                                                labels="inferred",
+                                                                label_mode="categorical",
+                                                                color_mode="grayscale",
+                                                                ),
 
 
+# extract dataset from tuple
+akoa_ds = akoa_ds_tuple[0]
+assert isinstance(akoa_ds, tf.data.Dataset)
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
+# convert to numpy array
+x_data = []
+y_data = []
+for image, label in akoa_ds:
+    #print(image.shape, label)
+    x_data.append(image)
+    y_data.append(label)
+    #print(type(image), type(label), label)
+
+# format data into np arrays and remove batch column
+print(np.array(x_data).shape)
+x_data = np.array(x_data)
+new_x_shape = [x_data.shape[0]] + list(x_data.shape[2:])
+x_data = x_data.reshape(new_x_shape)
+print(x_data.shape)
+y_data = np.array(y_data)
+
+# train test split
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
+#print(numpy.array(tfds.as_numpy(akoa_ds)))
+
+# def create_np_dataset_from_directory(img_dir):
+#     img_data_array = []
+#     labels = []
+#     for sub_dir in os.listdir(img_dir):
+#         for file in os.listdir(os.path.join(img_dir, sub_dir)):
+#             image_path = os.path.join(img_dir, sub_dir, file)
+#             image = np.array(Image.open(image_path))
+#             image = np.resize(image, (IMG_HEIGHT, IMG_WIDTH, 1))
+#             image = image.astype('float32')
+#             image /= 255
+#             img_data_array.append(image)
+#             labels.append(sub_dir)
+#     return np.array(img_data_array), np.array(labels)
+
+#print("Converting images to np arrays...")
+#x_train, y_train = create_np_dataset_from_directory(DATASET_FOLDER)
+#print(pil_img_data)
+#print(labels)
+
+# eg_data, = akoa_ds.take(1)
+# image, label = eg_data["image"], eg_data["label"]
+
+NUM_CLASSES = 2
+#INPUT_SHAPE = (32, 32, 3)
+INPUT_SHAPE = (260, 228, 1)
+NUM_CHANNELS = 1
+
+
+#(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
 print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
-print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
+#print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
 # =============== CONFIGURE HYPERPARAMETERS ===============
 
 learning_rate = 0.001
 weight_decay = 0.0001
-batch_size = 8
-num_epochs = 50
+num_epochs = 3
+batch_size = 32
 dropout_rate = 0.2
 image_size = 32  # We'll resize input images to this size.
 patch_size = 2  # Size of the patches to be extract from the input images.
@@ -54,13 +117,13 @@ num_transformer_blocks = 4
 num_iterations = 2  # Repetitions of the cross-attention and Transformer modules.
 classifier_units = [
     projection_dim,
-    num_classes,
+    NUM_CLASSES,
 ]  # Size of the Feedforward network of the final classifier.
 
 print(f"Image size: {image_size} X {image_size} = {image_size ** 2}")
 print(f"Patch size: {patch_size} X {patch_size} = {patch_size ** 2} ")
 print(f"Patches per image: {num_patches}")
-print(f"Elements per patch (3 channels): {(patch_size ** 2) * 3}")
+print(f"Elements per patch (3 channels): {(patch_size ** 2) * NUM_CHANNELS}")
 print(f"Latent array shape: {latent_dim} X {projection_dim}")
 print(f"Data array shape: {num_patches} X {projection_dim}")
 
@@ -346,7 +409,7 @@ def run_experiment(model):
 
     # Fit the model.
     history = model.fit(
-        x=x_train,
+        x=x_train,#x=x_train,
         y=y_train,
         batch_size=batch_size,
         epochs=num_epochs,
@@ -354,7 +417,7 @@ def run_experiment(model):
         callbacks=[early_stopping, reduce_lr],
     )
 
-    _, accuracy, top_5_accuracy = model.evaluate(x_test, y_test)
+    _, accuracy, top_5_accuracy = model.evaluate(akoa_ds)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
     print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
 
@@ -376,5 +439,15 @@ perceiver_classifier = Perceiver(
 
 
 history = run_experiment(perceiver_classifier)
+
+print(history.history.keys())
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
 
 

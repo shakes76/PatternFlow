@@ -20,7 +20,7 @@ def create_sorted_data_directory(img_dir, classes):
         except OSError as e:
             print(e)
 
-    # move files from input dataset into datasets folder
+    # move files from input dataset into datasets folder, in class sub-dirs
     for file_name in os.listdir(IMG_DIR):
         print(file_name)
         file_path = os.path.join(IMG_DIR, file_name)
