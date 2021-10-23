@@ -1,4 +1,6 @@
 import tensorflow as tf
+import tensorflow.keras.preprocessing.image as image_preprocessing
+from functools import partial
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -22,23 +24,68 @@ def image_norm(image, label):
     return tf.image.per_image_standardization(image), label
 
 
-def preprocess(train, validation, test):
+@tf.function
+def one_hot(image, label, num_classes=2):
+    """One-hot label encoding."""
+    return image, tf.one_hot(label, depth=num_classes)
+
+
+@tf.function
+def smart_resize(image, label, image_shape):
+    """Resize image to image_shape without distortion."""
+    resized = image_preprocessing.smart_resize(image, size=image_shape)
+    return resized, label
+
+
+def preprocess(
+    train,
+    validation,
+    test,
+    batch_size: int = 64,
+    num_classes: int = 2,
+    image_shape: tuple[int, int] = None,
+):
     """Preprocess images for each split.
 
-    Applies image normalisation to all splits.
-    Duplicates all train and validation samples by:
+    Applied to all splits:
+    - image normalisation
+    - one-hot label encoding
+    - crop and resize
+
+    If num_classes = 2, training and validation is duplicated by:
     - horizontally flipping images
     - flipping the label
     - concatenating with input
     """
+
+    identity = lambda image, label: (image, label)
+    _hflip_concat = hflip_concat if num_classes == 2 else identity
+    _one_hot = partial(one_hot, num_classes=num_classes)
+    _smart_resize = (
+        partial(smart_resize, image_shape=image_shape)
+        if image_shape is not None
+        else identity
+    )
+
     train, validation = (
-        split.map(image_norm, num_parallel_calls=AUTOTUNE)
-        .map(hflip_concat, num_parallel_calls=AUTOTUNE)
+        split.map(image_norm, AUTOTUNE)
+        .map(_smart_resize, AUTOTUNE)
+        .map(_one_hot, AUTOTUNE)
+        .map(_hflip_concat, AUTOTUNE)
         .unbatch()
+        .cache()
+        .batch(batch_size)
         .prefetch(AUTOTUNE)
         for split in [test, validation]
     )
 
-    test = test.map(image_norm, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
+    test = (
+        test.map(image_norm, AUTOTUNE)
+        .map(_smart_resize, AUTOTUNE)
+        .map(_one_hot, AUTOTUNE)
+        .cache()
+        .batch(batch_size)
+        .prefetch(AUTOTUNE)
+    )
 
     return train, validation, test
