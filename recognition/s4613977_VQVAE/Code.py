@@ -142,3 +142,43 @@ def vqvae(dim=128,N=512):
   return keras.Model(input,reconstructed_images,name='VQVAE')
 
 vqvae().summary()
+
+#On to the training module
+
+class vqvae_trainer(keras.models.Model):
+
+  def __init__(self,var,dim=128,N=512,**kwargs):
+    super(vqvae_trainer,self).__init__(**kwargs)
+    self.var = var
+    self.dim = dim
+    self.N = N
+    self.vq_vae = vqvae(self.dim,self.N)
+    
+    #Tracking the losses
+    self.loss = keras.metrics.Mean(name="total_loss")
+    self.reconstruction_loss = keras.metrics.Mean(name="reconstruction_loss")
+    self.vq_loss = keras.metrics.Mean(name='VQ_loss')
+
+    @property
+    def metrics(self):
+      return [self.loss,self.reconstruction_loss,self.vq_loss]
+
+    def train_step(self,input):
+      with tf.GradientTape() as gt:
+        rec = self.vq_vae(input)
+        rec_loss = (tf.reduce_mean((input - rec) ** 2) / self.var)
+        loss = rec_loss + sum(self.vq_vae.losses)
+      
+      #Time to backprop
+      gradients = gt.gradient(loss,self.vq_vae.trainable_variables)
+      self.optimizer.apply_gradients(zip(gradients,self.vq_vae.trainable_variables))
+
+      self.loss.update_state(loss)
+      self.reconstruction_loss.update_state(rec_loss)
+      self.vq_loss.update_state(sum(self.vq_vae.losses))
+
+      return {"Total loss": self.loss.result(),
+            "reconstruction loss": self.reconstruction_loss.result(),
+            "VQVAE loss": self.vq_loss.result(),}
+      
+      
