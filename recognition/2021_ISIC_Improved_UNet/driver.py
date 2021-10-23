@@ -21,14 +21,11 @@ BATCH_SIZE = 32
 DATASET_SIZE = 2594
 
 
-def preprocess(filenames):
+def preprocessData(filenames):
     raw_data = tf.io.read_file(filenames)
-    raw_image = []
     
-    if PREPROCESS_STATUS == "DATA":
-        raw_image = tf.io.decode_jpeg(raw_data, channels=3)
-    else:
-        raw_image = tf.image.decode_png(raw_data, channels=1)
+    # Decode images
+    raw_image = tf.io.decode_jpeg(raw_data, channels=3)
         
     # Resize the images
     raw_image = tf.image.resize(raw_image, [256,256])
@@ -38,27 +35,44 @@ def preprocess(filenames):
     return raw_image
     
     
-
+def preprocessMasks(filenames):
+    raw_data = tf.io.read_file(filenames)
+    
+    # Decode images
+    raw_image = tf.io.decode_jpeg(raw_data, channels=1)
+        
+    # Resize the images
+    raw_image = tf.image.resize(raw_image, [256,256])
+    
+    # Normalise
+    raw_image = raw_image / 255.0
+    return raw_image
+    
+    
 def loadData():
     print("Function handling the loading, preprocessing and returning of ready-to-use data.")
     # Get the dataset contents
     isics_data = tf.data.Dataset.list_files(ISIC_DATA)
-    processedData = isics_data.map(preprocess)
+    processedData = isics_data.map(preprocessData)
     print("Finished processing ISICs data...")
     
     # Get the corresponding segmentation masks
     PREPROCESS_STATUS = "MASKS"
     masks_data = tf.data.Dataset.list_files(ISIC_MASKS)
-    processedMasks = masks_data.map(preprocess)
+    processedMasks = masks_data.map(preprocessMasks)
     print("Finished processing ISICs masks...")
     
     
     # Testing that pre-processing was successful
     for elem in processedData.take(1):
+        print(elem)
+        print(elem.shape)
         plt.imshow(elem.numpy())
         plt.show()
         
     for elem in processedMasks.take(1):
+        print(elem)
+        print(elem.shape)
         plt.imshow(elem.numpy())
         plt.show()
     
