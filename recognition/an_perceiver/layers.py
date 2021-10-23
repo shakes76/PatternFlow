@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras import layers, initializers
-
 from position_encoding import fourier_position_encode
 
 
@@ -125,5 +124,4 @@ class ClassificationDecoder(layers.Layer):
 
     def call(self, inputs: tf.Tensor):
         x = tf.reduce_mean(inputs, axis=-2)
-        x = self.dense(x)
-        return tf.nn.softmax(x, axis=-1)
+        return self.dense(x)
