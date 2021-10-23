@@ -1,6 +1,6 @@
 import os
 import random
-from PIL import Image
+from PIL import Image as im
 import numpy as np
 from shutil import copyfile
 import sys
@@ -19,12 +19,19 @@ def split_and_write_files(ids, new_dir, train_dir, valid_dir, test_dir, file_ext
         if filename.endswith(file_ext):
             id = ids[index]
             src = new_dir + filename
-            if id < training_stop_id:
-                copyfile(src, train_dir + filename)
-            elif id < valid_stop_id:
-                copyfile(src, valid_dir + filename)
-            else:
-                copyfile(src, test_dir + filename)
+            with im.open(src) as image:
+                width, height = image.size
+                # resize with max axis being 1024 and keep aspect ratio
+                if width > height:
+                    image = image.resize((1024, round(height * (1024/width))))
+                else:
+                    image = image.resize((round(width * (1024/height)), 1024))
+                if id < training_stop_id:
+                    image.save(train_dir + filename)
+                elif id < valid_stop_id:
+                    image.save(valid_dir + filename)
+                else:
+                    image.save(test_dir + filename)
             index += 1
     print(f'{index} files written')
 
@@ -81,8 +88,10 @@ def generate_mask_datum(img_dir : str, mask_dir):
     labels_dir = img_dir.replace('images','labels')
     for filename in os.listdir(mask_dir):
         if filename.endswith('.png'): # masks are .png for ISICs
-            image = np.array(Image.open(mask_dir + filename))
-            bound_box_info = generate_bounding_box(image)
+            image_arr = None
+            with im.open(mask_dir + filename) as image:
+                image_arr = np.array(image)
+            bound_box_info = generate_bounding_box(image_arr)
             image_filename = filename[0:12]
             file = open(labels_dir + image_filename + '.txt', 'w')
             file.write(f'0 {bound_box_info[0]} {bound_box_info[1]} {bound_box_info[2]} {bound_box_info[3]}')
