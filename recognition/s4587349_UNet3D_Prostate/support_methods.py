@@ -1,15 +1,78 @@
+import keras.utils.data_utils
 import numpy as np
 from matplotlib import pyplot as plt
+from skimage.io import imread
+from skimage.transform import resize
+import math
+import nibabel as nib
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+# from keras.utils import Sequence
+import tensorflow.keras.utils
+from keras.models import Sequential
+import os
+import sys
 
-from driver import *
+import unet_model as mdl
+import driver as drv
+
+
+
+
+
+class prostateSequence(keras.utils.Sequence):
+    """Data generator"""
+    def __init__(self, x_set, y_set, batch_size = 1, dim = (256, 256, 128), n_channels=1,
+                 n_classes=6, shuffle=False):
+        """
+        
+        :param x_set:
+        :param y_set:
+        :param batch_size:
+        :param dim:
+        :param n_channels:
+        :param n_classes:
+        :param shuffle:
+        """
+        self.x, self.y = x_set, y_set
+        self.batch_size = batch_size
+        self.dim = dim
+        self.n_channels = n_channels
+        self.n_classes = n_classes
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        """Number of batches per epoch"""
+        return math.ceil(len(self.x) / self.batch_size)
+
+    def __getitem__(self, idx):  #todo setup for shuffle
+        # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
+        """Gets one batch"""
+        batch_x = self.x[idx * self.batch_size:(idx + 1) *
+                                               self.batch_size]
+        batch_y = self.y[idx * self.batch_size:(idx + 1) *
+                                               self.batch_size]
+
+        return np.array([                           #todo setup for
+            resize(imread(file_name), (200, 200))
+            for file_name in batch_x]), np.array(batch_y)
+
+    def on_epoch_end(self):  #todo currently set to false
+        'Shuffles indexes at end of each epoch'
+        self.indexes = np.arange(len(self.list_IDs))
+        if self.shuffle == True:
+            np.random.shuffle(self.indexes)
+
 
 
 def data_info():
     # data info
-    img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
+    img_mr = (nib.load(drv.X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
     raw_data_info(img_mr)
     # label info
-    img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
+    img_label = (nib.load(drv.Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
     raw_data_info(img_label)
 
 
@@ -32,8 +95,90 @@ def show_slices(sliced):
         plt.imshow(i.T)
         plt.show()
 
-    # not working
+    # todo put into subplots (if works in pycharm)
     # fig, axes = plt.subplots(1, len(sliced))
     # for i, slice in enumerate(sliced):
     #     axes[i].imshow(slice.T, cmap="gray", origin="lower")
 
+
+
+def dim_per_directory():
+    print("image_train")
+    dim_check(drv.image_train)
+    print("image_validate")
+    dim_check(drv.image_validate)
+    print("image_test")
+    dim_check(drv.image_test)
+    print("label_train")
+    dim_check(drv.label_train)
+    print("label_validate")
+    dim_check(drv.label_validate)
+    print("label_test")
+    dim_check(drv.label_test)
+
+
+def dim_check(filepath):
+    """ Expected dim of each image and label is (256,256,128)
+    Case_019_week1 has dimensions (256,256,144)
+    :param filepath:
+    :return: None
+    """
+    for i in filepath:
+        tups = read_nii(i).shape
+        x, y, z = tups
+        if x != 256:
+            print("flag x: ", i, x)
+        if y != 256:
+            print("flag y: ", i, y)
+        if z != 128:
+            print("flag z: ", i, z)
+
+
+
+def min_max_value(file_path):
+    """ Return min and max voxel value"""
+    min_value = 1000
+    max_value = 0
+    for i in file_path:
+        maxv = np.amax(read_nii(i))
+        minv = np.amin(read_nii(i))
+        if maxv > max_value:
+            max_value = maxv
+        if minv < min_value:
+            min_value = minv
+    return min_value, max_value
+
+
+def read_nii(filepath):
+    img = nib.load(filepath)
+    img_data = img.get_fdata()
+    return img_data
+
+
+def normalise(image):   #todo test
+    """ If minv = 0, then is equiv to dividing all values by image maximum value
+    :param image: data image
+    :param minv: minimum voxel value
+    :param maxv: maximum voxel value
+    :return: normalised image
+    """
+    maxv = np.amax(image)
+    minv = np.amin(image)
+    img_norm = (image - minv) / (maxv - minv)
+    img_norm = img_norm.astype("float64")
+    return img_norm
+
+def normalise2(path):  #todo test
+    image = read_nii(path)
+    maxv = np.amax(image)
+    minv = np.amin(image)
+    img_norm = (image - minv) / (maxv - minv)
+    img_norm = img_norm.astype("float64")
+    return img_norm
+
+def z_norm(image):    #todo test
+    """
+    :param image:
+    :return: z normalised image
+    """
+    return (image - np.mean(image)) / np.std(image)

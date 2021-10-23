@@ -9,7 +9,7 @@ from skimage.io import imread, imshow
 from tensorflow import keras
 from tensorflow.keras import layers
 
-import model as mdl
+import unet_model as mdl
 import support_methods as sm
 
 """
@@ -49,6 +49,9 @@ Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
 Y_TEST_DIR = 'D:\\prostate\\label_test'
 
 
+
+
+
 # # Data sources Goliath
 # # Data sources
 # X_TRAIN_DIR = '~/prostate/mr_train'
@@ -64,6 +67,22 @@ img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
 img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
 
 
+image_train = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
+               for x in os.listdir('D:\\prostate\\mr_train')]
+image_validate = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_validate', x)
+                  for x in os.listdir('D:\\prostate\\mr_validate')]
+image_test = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_test', x)
+          for x in os.listdir('D:\\prostate\\mr_test')]
+
+
+label_train = [os.path.join(os.getcwd(),'D:\\prostate\\label_train', x)
+               for x in os.listdir('D:\\prostate\\label_train')]
+label_validate = [os.path.join(os.getcwd(),'D:\\prostate\\label_validate', x)
+                  for x in os.listdir('D:\\prostate\\label_validate')]
+label_test = [os.path.join(os.getcwd(),'D:\\prostate\\label_test', x)
+              for x in os.listdir('D:\\prostate\\label_test')]
+
+
 
 
 
@@ -75,28 +94,32 @@ print(W)
 
 def main():
     """ """
+    # """ Checks dimensions of each image and label against expected."""
+    # sm.dim_per_directory()
 
     # # Display raw data and label info
     # sm.data_info()
     #
-    # # display images of raw data
+    # # display images of data
     # sm.slices(img_mr)
     # # display images of labels
     # sm.slices(img_label)
 
-    # attempt to compile model
-    mdl.unet3d()
+    # # attempt to compile model    #update with BN, Relu
+    # mdl.unet3d()
+
+
 
     # todo
     # files to laptop (git)
-    # winscp to laptop
-    # need UQ vpn on laptop
-    # upsampling not increasing size, it remains at (None, 32, 32, 16, 256) p2, u6
-    #     expect (None, 64, 64, 32, 256)
+    # upsampling vs conc3DTranspose
+    # check size of each image
     # find my original work
-    # generator
-    # normalise data, - mean / stdev
-    # labels tf.one_hot( )
+    # generator / sequence
+    # normalise data, - mean / stdev  - tf.keras.utils.normalize(
+    # https://www.tensorflow.org/api_docs/python/tf/keras/utils/normalize
+    # labels tf.one_hot( )  - tf.keras.utils.to_categorical
+    # https://www.tensorflow.org/api_docs/python/tf/keras/utils/to_categorical
     # sort / shuffle
     # model 3d
     # dsc
@@ -110,8 +133,10 @@ def main():
     #   siu's github library
     #   see augmentation lib in lab sheets
     #   https://github.com/SiyuLiu0329/pyimgaug3d
+    # cross validation
     # delete jupyter files from repo
     # save images to add to readme
+    # customer 19, week 1 outsize, fix / resize / reshape...?
 
     # todo Issues non -critical
     # 1. Not printing images in subplots, works in jupyter
