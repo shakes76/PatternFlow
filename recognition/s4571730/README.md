@@ -8,6 +8,18 @@ by Andrew Jaegle et al.
 
 The Perceiver paper can be downloaded [here](https://arxiv.org/abs/2103.03206).
 
+As proposed in the paper, "The Perceiver is an architecture based on attentional 
+principles that scales to high-dimensional inputs such as images, videos, audio, 
+point-clouds, and multimodal combinations without making domain-specific assumptions. 
+The Perceiver uses a cross-attention module to project a high-dimensional input 
+byte array to a fixed-dimensional latent bottleneck before processing it using 
+a deep stack of Transformer-style self-attention blocks in the latent space. 
+The Perceiver iteratively attends to the input byte array by alternating cross-attention
+and latent self-attention blocks." The final results are passed through an 
+average pooling layer and a dense layer for classification.
+
+![](/imgs/perceiver.png)
+
 This dataset contains 18680 preprocessed X-Ray images of left and right knees of
 101 patients. The created model is supposed to distinguish between left and 
 right laterality of the knee X-ray images. 7760 images are labelled as Left, 10920 as Right.
@@ -56,7 +68,8 @@ loading the files into datasets, it is easy to keep track of the patient ID,
 making sure that no overlapping patient ID is found in the testing set
 - The dataset is split into 80% training, 16% validation and 4% testing.
 - During the processing, the ratio between left and right labels are also
-calculated. There are 7760 left images and 10920 right images.
+calculated. There are 7760 left images and 10920 right images, which is slightly 
+skewed towards the right labels.
 
 ### Cross Attention module
 This module is implemented according to the specification listed in the paper.
