@@ -15,13 +15,17 @@ right laterality of the knee X-ray images. 7760 images are labelled as Left, 109
 ## Instructions
 - Download the source code and grab the dataset from the cloudstore link
 - Extract and place the dataset in the same directory as the source code
-- Modify the hyperparameters in `driver.py` if needed.
-- Run `driver.py`
+(by default, it is `D:/AKOA_Analysis`)
+- Modify the hyperparameters (as in Appendix D) in `driver.py` if needed.
+- Run `driver.py`. 
+- Note: During the training process, train, validation and test 
+dataset will be saved in `D:/np` as NumPy files. For future run, SAVE_DATA can be
+edited to False if NumPy datasets are already available at said path.
 
 ## Dependencies
-- Tensorflow (2.6 used in the experimentation)
+- Tensorflow (2.6 used in the report)
 - Tensorflow Add-ons
-- Keras (included in tensorflow package)
+- Keras (included in Tensorflow package)
 - NumPy (for processing the dataset)
 
 ## Implementation
@@ -167,26 +171,6 @@ of the results.
 - Before classification the output is passed through a global average pooling
 layer.
 - A binary classification dense layer is used, with sigmoid activation function.
-### Hyperparameters
-These are the tunable parameters used in the training process
-```
-BATCH_SIZE = 32 # Batch size in traning
-IMG_SIZE = (73, 64) # image resize
-ROWS, COLS = IMG_SIZE
-TEST_PORTION = 5 # 1/n of test set to become real test set (the rest becomes validation)
-LATENT_SIZE = 256  # Size of the latent array.
-NUM_BANDS = 6 # Number of bands in Fourier encode. Used in the paper
-NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
-PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
-NUM_HEADS = 8  # Number of Transformer heads.
-NUM_TRANS_BLOCKS = 6 # Number of transformer blocks in the transformer layer. Used in the paper
-NUM_ITER = 8  # Repetitions of the cross-attention and Transformer modules. Used in the paper
-MAX_FREQ = 10 # Max frequency in Fourier encode
-LR = 0.001 # Learning rate for optimizer
-WEIGHT_DECAY = 0.0001 # Weight decay for optimizer
-EPOCHS = 10 # Number of epochs in training
-TRAIN_SPLIT = 0.8 # Portion for training set
-```
 
 ### Results
 - Using the Perceiver model, with the listed hyperparameters, achieved test accuracy is 
@@ -215,6 +199,26 @@ direction of the label, as can be seen in Appendix A).
 - Number of right knee images: 10920
 - Number of left knee images: 7760
 - Number of unique patient IDs: 101
+#### Appendix D: Hyperparameters
+These are the tunable parameters used in the training process
+```
+BATCH_SIZE = 32 # Batch size in traning
+IMG_SIZE = (73, 64) # image resize
+ROWS, COLS = IMG_SIZE
+TEST_PORTION = 5 # 1/n of test set to become real test set (the rest becomes validation)
+LATENT_SIZE = 256  # Size of the latent array.
+NUM_BANDS = 6 # Number of bands in Fourier encode. Used in the paper
+NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
+PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
+NUM_HEADS = 8  # Number of Transformer heads.
+NUM_TRANS_BLOCKS = 6 # Number of transformer blocks in the transformer layer. Used in the paper
+NUM_ITER = 8  # Repetitions of the cross-attention and Transformer modules. Used in the paper
+MAX_FREQ = 10 # Max frequency in Fourier encode
+LR = 0.001 # Learning rate for optimizer
+WEIGHT_DECAY = 0.0001 # Weight decay for optimizer
+EPOCHS = 10 # Number of epochs in training
+TRAIN_SPLIT = 0.8 # Portion for training set
+```
 
 
 
