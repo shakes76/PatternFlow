@@ -1,0 +1,10 @@
+# Directory to files after running isics_data_setup.py. Must use YAML file of this style for YOLOv5.
+# Must sit in yolov5/utils but putting here because the inner GitHub cannot be seen from repo
+path: ./datasets/ISIC/  # dataset root dir
+train: training/images  # train images
+val: validation/images  # val images
+test:  test/images # test images
+
+# Classes
+nc: 1  # number of classes
+names: [ 'lesion' ]

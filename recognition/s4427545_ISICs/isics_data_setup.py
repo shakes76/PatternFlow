@@ -11,6 +11,7 @@ NUM_FILES = 2594
 
 # TODO: Python doc
 
+# Should make 8 times the data by doing all rotations and a flip from the base
 def split_and_write_files(ids, new_dir, train_dir, valid_dir, test_dir, file_ext, training_stop_id, valid_stop_id):
     index = 0
     ordered_file_names = os.listdir(new_dir)
