@@ -25,27 +25,34 @@ def get_nifti_data(file_name):
     # print()
     # print(file_name)
     img = nibabel.load(file_name).get_fdata()
-    print(img.shape)
     return img
 
 
-def one_hot(file_name):
-    mask = get_nifti_data(file_name)
-    bg = mask == 0
-    # bg = tf.logical_or(mask < 1, mask > 5)
-    bg = tf.where(bg == True, 1, 0)
-    body = mask == 1
-    body = tf.where(body == True, 1, 0)
-    bones = mask == 2
-    bones = tf.where(bones == True, 1, 0)
-    bladder = mask == 3
-    bladder = tf.where(bladder == True, 1, 0)
-    rectum = mask == 4
-    rectum = tf.where(rectum == True, 1, 0)
-    prostate = mask == 5
-    prostate = tf.where(prostate == True, 1, 0)
+# def one_hot2(file_name):
+#     mask = get_nifti_data(file_name)
+#     bg = mask == 0
+#     # bg = tf.logical_or(mask < 1, mask > 5)
+#     bg = tf.where(bg == True, 1, 0)
+#     body = mask == 1
+#     body = tf.where(body == True, 1, 0)
+#     bones = mask == 2
+#     bones = tf.where(bones == True, 1, 0)
+#     bladder = mask == 3
+#     bladder = tf.where(bladder == True, 1, 0)
+#     rectum = mask == 4
+#     rectum = tf.where(rectum == True, 1, 0)
+#     prostate = mask == 5
+#     prostate = tf.where(prostate == True, 1, 0)
+#
+#     return tf.concat((bg, body, bones, bladder, rectum, prostate), axis=-1)
 
-    return tf.concat((bg, body, bones, bladder, rectum, prostate), axis=-1)
+
+def one_hot(file_name):
+    img = get_nifti_data(file_name)
+    encoding = np.zeros((IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, 6))
+    for i, unique_value in enumerate(np.unique(img)):
+        encoding[:, :, :, i][img == unique_value] = 1
+    return encoding
 
 
 def normalise(image):

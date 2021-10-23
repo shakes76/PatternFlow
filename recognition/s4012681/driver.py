@@ -59,12 +59,12 @@ class CustomCallback(tf.keras.callbacks.Callback):
         keys = list(logs.keys())
         print("End epoch {} of training; got log keys: {}".format(epoch, keys))
         pred = model.predict(test)
-        print(pred[0].shape)
+        # print(pred[0].shape)
         mask = pred[0]
         mask = np.argmax(mask, axis=-1)
         fig, ax1 = plt.subplots(1, 1)
         ax1.imshow(mask[mask.shape[0] // 2], cmap='gray')
-        fig.savefig("img.png")
+        fig.savefig("img{}.png".format(epoch))
 
 
 mri_location = "/home/Student/s4012681/semantic_MRs_anon/*.nii.gz"
@@ -128,7 +128,7 @@ model.summary(line_length=120)
 # callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
 # Fit the training data and store for the plot
-curves = model.fit(train, epochs=EPOCHS, steps_per_epoch=1, validation_data=val, batch_size=BATCH_SIZE, callbacks=[
+curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[
     CustomCallback()])
 # Evaluate the model with the test data
 print()
@@ -158,7 +158,7 @@ classifications = model.predict(test)
 print(classifications.shape)
 print(type(classifications))
 
-test_labels = np.empty((len(test), 128, 256, 256, 6))
+test_labels = np.empty((len(test), IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, 6))
 for i in range(len(test)):
     test_labels[i] = test[i][1]
 
