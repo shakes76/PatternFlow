@@ -6,7 +6,8 @@
     Requirements:
         - TensorFlow 2.0
         - tqdm
-        - time
+        - Matplotlib
+        - util.py
 
     Author: Keith Dao
     Date created: 13/10/2021
@@ -32,8 +33,7 @@ from tensorflow.keras.layers import (
     UpSampling2D,
 )
 from tqdm import tqdm
-import time
-from typing import Union
+from util import generate_image_grid, save_figure
 
 # Custom layers
 class AdaIN(Layer):
@@ -344,6 +344,7 @@ def train(
     disc_loss_history = []
     for epoch in range(total_epochs):
 
+        print(f"Epoch {epoch+1+epoch_offset}:")
         # Save the losses for each batch
         gen_losses = []
         disc_losses = []
@@ -366,20 +367,20 @@ def train(
         disc_loss_history.append(tf.reduce_mean(disc_losses))
 
         print(
-            f"Epoch {epoch+1+epoch_offset}: Generator Loss = {gen_loss_history[-1]:.4f}, "
+            f"Generator Loss = {gen_loss_history[-1]:.4f}, "
             f"Discriminator Loss = {disc_loss_history[-1]:.4f}"
         )
 
-        # Save one of the fake images
+        # Save some of the generated images
         # Generate noise for the generator
         if save_images and (epoch + 1) % image_save_interval == 0:
-            latent_noise = tf.random.normal([1, latent_dimension])
-            noise_images = tf.random.normal([1, img_size, img_size, 1])
-            save_img = tf.keras.preprocessing.image.array_to_img(
-                generator([latent_noise, noise_images, tf.ones([1, 1])])[0]
+            images = generate_samples(
+                generator, latent_dimension, batch_size, img_size
             )
-            save_img.save(
-                f"{image_save_path}{model_name}/epoch-{epoch + epoch_offset + 1}.png"
+            img_grid = generate_image_grid(images)
+            save_figure(
+                img_grid,
+                f"{image_save_path}{model_name}/epoch-{epoch + epoch_offset + 1}.png",
             )
 
         # Save the weights
@@ -401,7 +402,7 @@ def generate_samples(
     latent_dimension: int,
     sample_size: int,
     img_size: int,
-):
+) -> tf.Tensor:
 
     # Generate noise for the generator
     latent_noise = tf.random.normal([sample_size, latent_dimension])

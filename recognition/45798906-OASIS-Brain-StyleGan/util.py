@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 21/10/2021
+    Date last modified: 23/10/2021
     Python version: 3.9.7
 """
 
@@ -66,24 +66,28 @@ def augment_images(images: tf.data.Dataset) -> tuple[int, tf.data.Dataset]:
     )
 
 
-# Visualisation
-def visualise_images(
+# ==========================================================
+# Generation
+def generate_image_grid(
     images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
-) -> None:
+) -> plt.Figure:
 
     batch_size = images.shape[0]
-    plt.figure(figsize=fig_size)
+    figure = plt.figure(figsize=fig_size)
     for i in range(min(batch_size, 32)):
         ax = plt.subplot(4, 8, i + 1)
         plt.imshow(images[i].numpy(), cmap="gray")
         plt.axis("off")
-    plt.show()
+    return figure
 
 
-def visualise_loss(
+def generate_loss_history(
     losses: tuple[list[float], list[float]], starting_epoch: int = 0
-) -> None:
+):
 
+    figure = plt.figure()
+
+    # Extract and setup data
     gen_losses, disc_losses = losses
     x_range = tf.range(
         starting_epoch + 1,
@@ -109,6 +113,30 @@ def visualise_loss(
     )
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
+    return figure
+
+
+# ==========================================================
+# Visualisation
+def visualise_images(
+    images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
+) -> None:
+
+    figure = generate_image_grid(images, fig_size)
     plt.show()
 
 
+def visualise_loss(
+    losses: tuple[list[float], list[float]], starting_epoch: int = 0
+) -> None:
+
+    figure = generate_loss_history(losses, starting_epoch)
+    plt.show()
+
+
+# ==========================================================
+# Saving
+def save_figure(figure: plt.Figure, file_path: str, close: bool = True) -> None:
+
+    figure.savefig(file_path, bbox_inches="tight")
+    plt.close(figure)
