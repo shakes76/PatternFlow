@@ -23,15 +23,24 @@ print(tf.config.list_physical_devices('GPU'))
 
 # Parameters for the network
 
-# In[2]:
+# In[269]:
 
 
 depth = 32 #how much encoding to apply, compression of factor 24.5 if MNIST 28*28
 length = 256*256
-batch_size = 16
+batch_size = 256
 
 original_dim = 256*256
 latent_dim = 128
+
+
+
+num_hiddens = 128
+num_residual_hiddens = 32
+num_residual_layers = 2
+embedding_dim = 64
+num_embeddings = 128
+commitment_cost = 0.25
 
 
 # In[3]:
@@ -99,110 +108,62 @@ plt.show()
 mean, var = tf.nn.moments(x_train, axes=[1])
 
 
+# In[92]:
 
- class VectorQuantizer(layers.Layer):  
-     def __init__(self, embedding_dim, num_embeddings, commitment_cost=0.25, epsilon=1e-10, **kwargs):
-         self.embedding_dim = embedding_dim
-         self.num_embeddings = num_embeddings
-         self.commitment_cost = commitment_cost
-         super(VectorQuantizer, self).__init__(**kwargs)
 
-     def build(self, input_shape):
-         # Add embedding weights.
-         self.w = self.add_weight(name='embedding',
-                                   shape=(self.embedding_dim, self.num_embeddings),
-                                   initializer='uniform',
-                                   trainable=True)
-         # Finalize building.
-         super(VectorQuantizer, self).build(input_shape)
+class VectorQuantizer(layers.Layer):  
+    def __init__(self, embedding_dim, num_embeddings, commitment_cost=0.25, epsilon=1e-10, **kwargs):
+        self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
+        self.commitment_cost = commitment_cost
+        super(VectorQuantizer, self).__init__(**kwargs)
 
-     def call(self, x):
-         # Covert into flatten representation (eg. (14944, 128, 128, 3) to (x, y))
-         flat_inputs = K.reshape(x, (-1, self.embedding_dim))
+    def build(self, input_shape):
+        # Add embedding weights.
+        self.w = self.add_weight(name='embedding',
+                                  shape=(self.embedding_dim, self.num_embeddings),
+                                  initializer='uniform',
+                                  trainable=True)
+        # Finalize building.
+        super(VectorQuantizer, self).build(input_shape)
 
-         # Calculate distances of input by calcuating the distance of every encoded vector to the embedding space.
-         distances = (K.sum(flat_inputs**2, axis=1, keepdims=True)
-                      - 2 * K.dot(flat_inputs, self.w)
-                      + K.sum(self.w ** 2, axis=0, keepdims=True))
+    def call(self, x):
+        # Covert into flatten representation (eg. (14944, 128, 128, 3) to (x, y))
+        flat_inputs = K.reshape(x, (-1, self.embedding_dim))
 
-         # Retrieve encoding indices.
-         encoding_indices = K.argmax(-distances, axis=1)
-         encodings = K.one_hot(encoding_indices, self.num_embeddings)
-         encoding_indices = K.reshape(encoding_indices, K.shape(x)[:-1])
-         quantized = self.quantize(encoding_indices)
+        # Calculate distances of input by calcuating the distance of every encoded vector to the embedding space.
+        distances = (K.sum(flat_inputs**2, axis=1, keepdims=True)
+                     - 2 * K.dot(flat_inputs, self.w)
+                     + K.sum(self.w ** 2, axis=0, keepdims=True))
 
-         # Metrics.
-         #avg_probs = K.mean(encodings, axis=0)
-         #perplexity = K.exp(- K.sum(avg_probs * K.log(avg_probs + epsilon)))
+        # Retrieve encoding indices.
+        encoding_indices = K.argmax(-distances, axis=1)
+        encodings = K.one_hot(encoding_indices, self.num_embeddings)
+        encoding_indices = K.reshape(encoding_indices, K.shape(x)[:-1])
+        quantized = self.quantize(encoding_indices)
+
+        # Metrics.
+        #avg_probs = K.mean(encodings, axis=0)
+        #perplexity = K.exp(- K.sum(avg_probs * K.log(avg_probs + epsilon)))
         
-         commitment_loss = 1 * tf.reduce_mean(
-              (tf.stop_gradient(quantized) - x) ** 2)
-         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
-         self.add_loss(commitment_loss + codebook_loss)
+        commitment_loss = 1 * tf.reduce_mean(
+             (tf.stop_gradient(quantized) - x) ** 2)
+        codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
+        self.add_loss(commitment_loss + codebook_loss)
         
-         return x + K.stop_gradient(quantized- x)
+        return x + K.stop_gradient(quantized- x)
 
-     @property
-     def embeddings(self):
-         return self.w
+    @property
+    def embeddings(self):
+        return self.w
 
-     def quantize(self, encoding_indices):
-         w = K.transpose(self.embeddings.read_value())
-         return tf.nn.embedding_lookup(w, encoding_indices)
+    def quantize(self, encoding_indices):
+        w = K.transpose(self.embeddings.read_value())
+        return tf.nn.embedding_lookup(w, encoding_indices)
     
 
 
-# In[11]:
-
-
-# # Calculate vq-vae loss.
-# def vq_vae_loss_wrapper(data_variance, commitment_cost, quantized, x_inputs):
-#     def vq_vae_loss(x, x_hat):
-#         print(x.shape)
-#         print(x_hat.shape)
-#         recon_loss = mse(x, x_hat)
-        
-#         e_latent_loss = K.mean((K.stop_gradient(quantized) - x_inputs) ** 2)
-#         q_latent_loss = K.mean((quantized - K.stop_gradient(x_inputs)) ** 2)
-#         loss = q_latent_loss + commitment_cost * e_latent_loss
-        
-#         return recon_loss + loss #* beta
-#     return vq_vae_loss
-
-# class ScaleLayer(tf.keras.layers.Layer):
-#     def __init__(self):
-#       super(ScaleLayer, self).__init__()
-
-#     def call(self, enc, enc_inputs):
-#       return enc_inputs + K.stop_gradient(enc - enc_inputs)
-
-
-# In[12]:
-
-
-# # Encoder
-# input_img = layers.Input(shape=(128, 128, 3))
-# x = Encoder(input_img)
-
-# # VQVAELayer.
-# enc = layers.Conv2D(3, kernel_size=(1, 1), strides=(1, 1), name="pre_vqvae")(x)
-# enc_inputs = enc
-# enc = VectorQuantizer(3, latent_dim, name="vqvae")(enc)
-# #x = layers.Lambda(lambda enc: enc_inputs + K.stop_gradient(enc - enc_inputs), name="encoded")(enc)
-# x = ScaleLayer()(enc, enc_inputs)
-
-# loss = vq_vae_loss_wrapper(var, 0.25, enc, enc_inputs)
-
-# # Decoder.
-# x = Decoder(x)
-
-# # Autoencoder.
-# vqvae = Model(input_img, x)
-# vqvae.compile(loss=loss, optimizer='adam')
-# vqvae.summary()
-
-
-# In[177]:
+# In[252]:
 
 
 #Images encdoer
@@ -243,20 +204,8 @@ Decoder = keras.Sequential(
 )
 Decoder.summary()
 
-# #Images decoder
-# VQVAE = keras.Sequential(
-#     [
-#         keras.Input(shape=(128, 128, 3)),
-#         Encoder,
-#         VectorQuantizer(128, latent_dim),
-#         Decoder,
-        
-#     ],
-#     name="VQVAE",
-# )
-# VQVAE.summary()
 
-#Images decoder
+#Images VQVAE
 VQVAE = keras.Sequential(
     [
         keras.Input(shape=(128, 128, 3)),
@@ -322,51 +271,14 @@ class VQVAETrainer(keras.models.Model):
         return r
 
 
-# In[66]:
-
-
-print(x_train.shape)
-
-
-# In[176]:
-
-
-
-# e = Encoder
-# v = VectorQuantizer(128, latent_dim)
-# d = Decoder
-# optimizer = tf.keras.optimizers.Adam()
-
-# for i in range(x_train.shape[0]):
-#     x = x_train[i: i+1]
-#     with tf.GradientTape() as tape:
-#         # Outputs from the VQ-VAE.
-
-#         e_out = e(x)
-# #         print(e_out)
-#         v_out = v(e_out)
-# #         print(v_out)
-
-#         r = d(v_out)
-#         lr = tf.keras.losses.MSE(x, r) + sum(v.losses)
-#         print(tf.reduce_mean(lr))
-        
-#     grads = tape.gradient(lr, v.trainable_variables)
-#     optimizer.apply_gradients(zip(grads, v.trainable_variables))
-
-
-# In[217]:
-
-
 vqvae_trainer = VQVAETrainer(var)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size)
+history = vqvae_trainer.fit(x_train, epochs=20, batch_size=batch_size)
 
 
-# history = vqvae.fit(x_train, x_train, epochs=3, batch_size=batch_size)
 
 
-# In[218]:
+# In[273]:
 
 
 def show_subplot(original, reconstructed):
@@ -393,18 +305,9 @@ xtrain = tf.expand_dims(x_train, axis=1)
 print(xtrain[1].shape)
 
 
-#trained_vqvae_model = vqvae_trainer
-# e_out = e(tf.reshape(x_train[1000], (1,128,128,3)))
-# v_out = v(e_out)
-# r = d(v_out)
-
-# recon = r
-
 recon = vqvae_trainer.predict(tf.reshape(x_validate[1000], (1,128,128,3)))
 
 print((recon).shape)
-# for test_image in test_images:
-#     show_subplot(test_image)
 
 show_subplot(x_validate[1000], tf.squeeze(recon))
 
