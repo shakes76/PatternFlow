@@ -115,38 +115,36 @@ class DownsamplingLayperByFusing(nn.Module):
         return out
 
 
-class PixelNorm(nn.Module):
+class PixelWiseNormalisation(nn.Module):
     def __init__(self):
         """
         Normalisation process for the input data.
         """
         super().__init__()
 
-    def forward(self, input):
-        return input / torch.sqrt(
-            torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
+    def forward(self, data):
+        return data / torch.sqrt(
+            torch.mean(data ** 2, dim=1, keepdim=True) + 1e-8)
 
 
 class BlurFunctionBackward(Function):
+    """
+    This class is used to return the gradient of the data.
+    """
     @staticmethod
-    def forward(ctx, grad_output, kernel, kernel_flip):
-        ctx.save_for_backward(kernel, kernel_flip)
-
-        grad_input = F.conv2d(
-            grad_output, kernel_flip, padding=1, groups=grad_output.shape[1]
-        )
-
-        return grad_input
+    def forward(ctx, gradient_output, filter, flipping_kernel):
+        """The forward direction"""
+        ctx.save_for_backward(filter, flipping_kernel)
+        return F.conv2d(gradient_output, flipping_kernel, padding=1, groups=gradient_output.shape[1])
 
     @staticmethod
     def backward(ctx, gradgrad_output):
-        kernel, kernel_flip = ctx.saved_tensors
-
-        grad_input = F.conv2d(
-            gradgrad_output, kernel, padding=1, groups=gradgrad_output.shape[1]
+        """The backward direction"""
+        filter, flipping_filter = ctx.saved_tensors
+        gradient_in = F.conv2d(
+            gradgrad_output, filter, padding=1, groups=gradgrad_output.shape[1]
         )
-
-        return grad_input, None, None
+        return gradient_in, None, None
 
 
 class BlurFunction(Function):
@@ -477,7 +475,7 @@ class Styled_G(nn.Module):
 
         self.generator = G(code_dim)
 
-        layers = [PixelNorm()]
+        layers = [PixelWiseNormalisation()]
         for i in range(n_mlp):
             layers.append(EqualLinear(code_dim, code_dim))
             layers.append(nn.LeakyReLU(0.2))
