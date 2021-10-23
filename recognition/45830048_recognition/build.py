@@ -51,6 +51,9 @@ X_val = tf.keras.utils.image_dataset_from_directory(dir, validation_split=0.2,
   batch_size=batchs,
   color_mode='grayscale')
 
+normalization_layer = tf.keras.layers.Rescaling(1./255)
+
+
 X_train = X_train.unbatch()
 X_val = X_val.unbatch()
 y_train = y_train.unbatch()
@@ -64,31 +67,37 @@ y_train = y_train.skip(test_size)
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in X_train:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 X_train = a
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in X_val:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 X_val = a
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in X_test:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 X_test = a
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in y_train:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 y_train = a
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in y_val:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 y_val = a
 
 a = tf.zeros([0, img_height, img_width, 1])
 for image in y_test:
+  image /= 255.0
   a = tf.concat([a, [image]], axis = 0)
 y_test = a
 

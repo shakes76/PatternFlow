@@ -8,10 +8,13 @@ from tensorflow import keras
 """layers for context module"""
 def context_module(last, dims):
     # Each context_module consists of two 3x3 conv layers and a dropout(0.3) in between.
-    
     context = keras.layers.Conv2D(dims, kernel_size =3, padding = 'same')(last)
+    context = keras.layers.BatchNormalization()(context)
+    context = keras.layers.LeakyReLU(alpha=0.01)(context)
     context = keras.layers.Dropout(.3)(context)
     context = keras.layers.Conv2D(dims, kernel_size =3, padding = 'same')(context)
+    context = keras.layers.BatchNormalization()(context)
+    context = keras.layers.LeakyReLU(alpha=0.01)(context)
 
     return context
 
@@ -22,6 +25,8 @@ def segmentation_block(x):
 
 def encode_block(last, dims, activation_function, stride_num):
     conv = keras.layers.Conv2D(dims, (3,3), activation = activation_function, padding ='same', strides=stride_num)(last)
+    conv = keras.layers.BatchNormalization()(conv)
+    conv = keras.layers.LeakyReLU(alpha=0.01)(conv)
     context = context_module(conv, dims)
     sum = keras.layers.Add()([context, conv])
     return sum
@@ -32,12 +37,17 @@ def upsample_block(last, dims, activation_function):
     # what twice means in paper (Answer from Piazza: kernel size 2 by 2)?
     up = keras.layers.UpSampling2D( size=(2, 2) )(last)
     conv = keras.layers.Conv2D(dims, (3,3), activation = activation_function, padding ='same')(up)
-    
+    conv = keras.layers.BatchNormalization()(conv)
+    conv = keras.layers.LeakyReLU(alpha=0.01)(conv)
     return conv
 
 def local_block(last, dims, activation_function):
     local = keras.layers.Conv2D(dims, (3,3), activation = activation_function, padding ='same')(last)
+    local = keras.layers.BatchNormalization()(local)
+    local = keras.layers.LeakyReLU(alpha=0.01)(local)
     local = keras.layers.Conv2D(dims, (1,1), activation = activation_function, padding ='same')(local)
+    local = keras.layers.BatchNormalization()(local)
+    local = keras.layers.LeakyReLU(alpha=0.01)(local)
     return local
 
 """
