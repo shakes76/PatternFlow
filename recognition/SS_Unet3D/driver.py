@@ -71,51 +71,38 @@ def read_and_split_data(processed_data_dir, split_perc_arr, split_names_arr, ver
 
 
 def main():
-
-    cleaned_data_dir = ''
-
     print(np.__version__)
-    # need 1.18.5
-
+    cleaned_data_dir = ''
     # Create the model
     the_model = UNetCSIROMalePelvic("My Model")
-
-    print(the_model.mdl.summary())
-
+    print(the_model.mdl.summary(line_length=200))
     for layer in the_model.mdl.layers:
         print(layer.input_shape, '-->', layer.name, '-->', layer.output_shape)
         pass
-
     # Create Train / Val / Test splits
     split_perc_arr = np.array([0.4, 0.4, 0.2], dtype=np.float32)
     split_names_arr = np.array(['train', 'val', 'test'])
     master_df = read_and_split_data(cleaned_data_dir, split_perc_arr, split_names_arr)
-
     print(master_df.info(verbose=True))
-
     # Collect a training sample
     sample = master_df[master_df['split_type'] == 'train'].sample(n=1)
-
     # Load it into memory
     curr_x = nib.load(sample.x_filepath.item()).get_fdata()
     curr_y = nib.load(sample.y_filepath.item()).get_fdata()
-
     # Standardize
     curr_x = standardize(curr_x)
     curr_y = standardize(curr_y)
-
     print("Start Training at {}".format(datetime.datetime.now()))
     # Add a dimension at the start for Batch Size of 1
     curr_x = curr_x[None, ...]
     curr_y = curr_y[None, ...]
-
     print(curr_x.shape)
     print(curr_y.shape)
 
     #print(curr_y)
 
-    result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y)
-    the_model.train_batch_count += 1
+    result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y, reset_metrics=False, return_dict=True)
+    #the_model.train_batch_count += 1
     print("Finish Training at {}".format(datetime.datetime.now()))
 
     print('result of training:')
