@@ -3,6 +3,7 @@ from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D
 
 
 def model():
+
     #encoder part
     input_layer = tf.keras.layers.Input(shape=(256,256,3))
 
