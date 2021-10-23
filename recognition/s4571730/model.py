@@ -53,17 +53,6 @@ class Perceiver(tf.keras.Model):
         self.epoch = epoch
         self.weight_decay = weight_decay
 
-    """
-    Build the model. Override the build() method in Model class
-
-    Params:
-        input_shape: a tuple containing the input dimensions
-
-    Returns
-        nothing, but build the model
-    """
-    def build(self, input_shape):
-        # Create latent array.
         self.latent_array = self.add_weight(
             shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
@@ -92,11 +81,9 @@ class Perceiver(tf.keras.Model):
         # Create global average pooling layer.
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
-        # Create a classification head.
+        # Create a binary classification head.
         self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
-
-        # Build the model
-        super(Perceiver, self).build(input_shape)
+        
 
     """
     Perform operations when model(data) is called.
