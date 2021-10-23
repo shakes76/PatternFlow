@@ -31,9 +31,9 @@ def one_hot(image, label, num_classes=2):
 
 
 @tf.function
-def smart_resize(image, label, image_shape):
-    """Resize image to image_shape without distortion."""
-    resized = image_preprocessing.smart_resize(image, size=image_shape)
+def smart_resize(image, label, image_dims):
+    """Resize image to image_dims without distortion."""
+    resized = image_preprocessing.smart_resize(image, size=image_dims)
     return resized, label
 
 
@@ -43,7 +43,7 @@ def preprocess(
     test,
     batch_size: int = 64,
     num_classes: int = 2,
-    image_shape: tuple[int, int] = None,
+    image_dims: tuple[int, int] = None,
 ):
     """Preprocess images for each split.
 
@@ -62,8 +62,8 @@ def preprocess(
     _hflip_concat = hflip_concat if num_classes == 2 else identity
     _one_hot = partial(one_hot, num_classes=num_classes)
     _smart_resize = (
-        partial(smart_resize, image_shape=image_shape)
-        if image_shape is not None
+        partial(smart_resize, image_dims=image_dims)
+        if image_dims is not None
         else identity
     )
 
