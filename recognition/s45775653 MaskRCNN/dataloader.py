@@ -68,10 +68,10 @@ class ISICConfig(Config):
 
     # This is how often validation is run. If you are using too much hard drive space
     # on saved models (in the MODEL_DIR), try making this value larger.
-    VALIDATION_STEPS = 5
+    VALIDATION_STEPS = 10
     
     # Matterport originally used resnet101, but I downsized to fit it on my graphics card
-    BACKBONE = 'resnet50'
+    BACKBONE = 'resnet50' #'resnet50'
     
     
     IMAGE_RESIZE_MODE = "square"
@@ -80,11 +80,11 @@ class ISICConfig(Config):
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)
     TRAIN_ROIS_PER_IMAGE = 32
     MAX_GT_INSTANCES = 50 
-    POST_NMS_ROIS_INFERENCE = 250 
-    POST_NMS_ROIS_TRAINING = 500
+    POST_NMS_ROIS_INFERENCE = 500
+    POST_NMS_ROIS_TRAINING = 1000
+    # USE_MINI_MASK = False
     USE_MINI_MASK = True
-    MINI_MASK_SHAPE = (56,56)
-    
+    MINI_MASK_SHAPE = (128,128)    
     # LEARNING_MOMENTUM = 0.9
     # LEARNING_RATE = 0.0008
     
@@ -185,7 +185,7 @@ dataset_val.load_data(samp_val_seg_path,samp_val_img_path)
 dataset_val.prepare()
 #%%
 
-dataset = dataset_train
+dataset = dataset_val
 image_ids = [0,1,2,3]
 # image_ids = dataset.image_ids
 for image_id in image_ids:
@@ -258,8 +258,8 @@ start_train = time.time()
 model.train(dataset_train,
             dataset_val, 
             learning_rate=config.LEARNING_RATE, 
-            epochs=10, 
-            layers='heads'
+            epochs=5, 
+            layers='all'
             # ,augmentation = augment_strat
             )
 
@@ -284,8 +284,8 @@ class InferenceConfig(ISICConfig):
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
     DETECTION_MIN_CONFIDENCE = 0.85
-    USE_MINI_MASK = True
-    MINI_MASK_SHAPE = (56,56)
+    # USE_MINI_MASK = True
+    # MINI_MASK_SHAPE = (56,56)
     
 
 inference_config = InferenceConfig()
@@ -310,7 +310,7 @@ model.load_weights(model_path, by_name=True
 #%%
 import skimage
 
-real_test_dir = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/val_img'
+real_test_dir = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_test_img'
 image_paths = []
 for filename in os.listdir(real_test_dir):
     if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
@@ -321,7 +321,6 @@ for image_path in image_paths:
     img_arr = np.array(img)
     results = model.detect([img_arr], verbose=1)
     r = results[0]
-    all_result.append(r)
     visualize.display_instances(img, r['rois'], r['masks'], r['class_ids'], 
                                 dataset_train.class_names, r['scores'], figsize=(10,15))
     
