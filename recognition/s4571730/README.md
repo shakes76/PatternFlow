@@ -55,7 +55,7 @@ binary classification head.
 ## Data pre-processing
 - Download the data from the supplied cloudstore link
 - The dataset contain the label (left/right) in each filename, so no manual
-labelling is required
+labelling is required.
 - The dataset is extremely vulnerable to data leakage, since a patient 
 (identified by the patient ID OAIxxxxxx) can have several images, each one being
 only slightly different from each other. As there are 18680 images but only 101 
@@ -188,10 +188,10 @@ layer.
 ### Results
 - Using the Perceiver model, with the listed hyperparameters, achieved test accuracy is 
 approximately 94%
-![](/imgs/test_acc.png)
+![](./imgs/test_acc.png)
 
 - These are the plots illustrating the training process
-![](/imgs/Figure_plots.png)
+![](./imgs/Figure_plots.png)
 
 From the plots, the model exhibited some overfitting behaviors, as in epoch 8, 
 it experienced a considerable loss in validation accuracy and an increase in 
@@ -204,9 +204,9 @@ direction of the label, as can be seen in Appendix A).
 
 ### Appendix
 #### Appendix A: Visualization of 9 samples in the dataset
-![](/imgs/Figure_ds.png)
+![](./imgs/Figure_ds.png)
 #### Appendix A: Visualization of 9 predictions of test sets
-![](/imgs/Figure_pred.png)
+![](./imgs/Figure_pred.png)
 #### Appendix C: Dataset specifications
 - Number of images: 18680
 - Number of right knee images: 10920
