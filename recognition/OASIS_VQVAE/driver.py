@@ -33,22 +33,21 @@ if __name__ == "__main__":
                                           color_mode="grayscale",
                                           batch_size=32)
 
-    # normalize pixels between [0,1]
-    dataset = dataset.map(lambda x: (x / 255.0))
+    # normalize pixels between [-0.5, 0.5]
+    dataset = dataset.map(lambda x: (x / 255.0) - 0.5)
 
     # calculate variance of training data (at a individual pixel level) to pass into VQVAE
     count = dataset.unbatch().reduce(tf.cast(0, tf.int64), lambda x,_: x + 1 ).numpy()
     mean = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + y ).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE)
     var = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + tf.math.pow(y - mean,2)).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE - 1)
 
-    # initial hyperparameters to get it working. 
-    # Need to be tuned!
-    learning_rate = 1e-3
-    beta = 0.25
-    latent_dim = 64
-    num_embeddings = 128
+    # hyperparameters which seem to give the best results so far
+    learning_rate = 2e-4
+    beta = 1.5
+    latent_dim = 2
+    num_embeddings = 512
     epochs = 30
-    batch_size = 128
+    batch_size = 32
 
     input_size = (IMG_SIZE, IMG_SIZE, 1)
 
@@ -75,8 +74,9 @@ if __name__ == "__main__":
         codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
 
         for i in range(num_images_per_batch_to_show):
-            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1))
-            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1))
+            # add 0.5 back to the images to undo the initial scaling (i.e. go from [-0.5, 0.5] to [0,1])
+            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1)) + 0.5
+            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1)) + 0.5
             codebook_image = codebook_indices[i]
 
             show_image_and_reconstruction(tf.squeeze(original_image), codebook_image, tf.squeeze(reconstructed_image))
