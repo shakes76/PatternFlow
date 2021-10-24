@@ -25,6 +25,7 @@ Compared with u-net, the improved u-net architecture comprises a context module 
 
 ## Data Processing
 
+
 #### Data Split
 There are almost 2700 pictures in ISICs dataset.
 The ratio of training data : validation data : testing data : 0.6 : 0.2 : 0.2 
@@ -34,6 +35,10 @@ All images are resized, and the size of input is (256,256).
 
 #### Output data (label)
 The output have 2 classes.
+
+
+##Reference
+
 
 
 
