@@ -1,6 +1,7 @@
 import tensorflow as tf
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import model
 import os
 from model import *
@@ -10,15 +11,19 @@ from model import *
 # io code: https://www.tensorflow.org/api_docs/python/tf/io/read_file
 # image resizing: https://www.tensorflow.org/api_docs/python/tf/image/resize
 # jpeg decoding: https://www.tensorflow.org/api_docs/python/tf/io/decode_jpeg
+# image thresholding: https://www.tensorflow.org/api_docs/python/tf/where
+# optimizer: https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
+# dice coefficient: https://towardsdatascience.com/metrics-to-evaluate-your-semantic-segmentation-model-6bcb99639aa2
+# input dataset to fit(): https://www.tensorflow.org/guide/data
 
 # Data loading variables
 ISIC_DATA = "./ISIC2018_Task1-2_Training_Input_x2/*.jpg" 
 ISIC_MASKS = "./ISIC2018_Task1_Training_GroundTruth_x2/*.png"
-PREPROCESS_STATUS = "DATA"
 
 # Data managing variables
 BATCH_SIZE = 32
 DATASET_SIZE = 2594
+EPOCHS = 10
 
 
 def preprocessData(filenames):
@@ -39,13 +44,16 @@ def preprocessMasks(filenames):
     raw_data = tf.io.read_file(filenames)
     
     # Decode images
-    raw_image = tf.io.decode_jpeg(raw_data, channels=1)
+    raw_image = tf.io.decode_png(raw_data, channels=1)
         
     # Resize the images
     raw_image = tf.image.resize(raw_image, [256,256])
     
     # Normalise
     raw_image = raw_image / 255.0
+    
+    # Threshold image to 0-1
+    raw_image = tf.where(raw_image > 0.5, 1.0, 0.0)
     return raw_image
     
     
@@ -57,7 +65,6 @@ def loadData():
     print("Finished processing ISICs data...")
     
     # Get the corresponding segmentation masks
-    PREPROCESS_STATUS = "MASKS"
     masks_data = tf.data.Dataset.list_files(ISIC_MASKS)
     processedMasks = masks_data.map(preprocessMasks)
     print("Finished processing ISICs masks...")
@@ -73,6 +80,7 @@ def loadData():
     for elem in processedMasks.take(1):
         print(elem)
         print(elem.shape)
+        print(np.unique(elem.numpy()))
         plt.imshow(elem.numpy())
         plt.show()
     
@@ -99,17 +107,52 @@ def splitData(dataset):
     validation_set = dataset.skip(test_size)
     
     # Perform batching
-    training_set.batch(BATCH_SIZE)
-    testing_set.batch(BATCH_SIZE)
-    validation_set.batch(BATCH_SIZE)
+    training_set = training_set.batch(BATCH_SIZE)
+    testing_set = testing_set.batch(BATCH_SIZE)
+    validation_set = validation_set.batch(BATCH_SIZE)
     
     return training_set, testing_set, validation_set
     
+    
+def diceCoefficient(y_true, y_pred):
+    """  
+        Defines the dice coefficient.
+        
+        The dice coefficient is defined as:
+            2 * (Pixel Overlap)
+         -----------------------------
+          Total pixels in both images
+          
+        @param y_true: the true output
+        @param y_pred: the output predicted by the model
+        @return the dice coefficient for the prediction, based on the true output.
+    """
+    overlap = tf.keras.backend.sum(y_true * y_pred, axis=[1, 2, 3])
+    
+    totalPixels = tf.keras.backend.sum(y_true, axis=[1, 2, 3]) +  tf.keras.backend.sum(y_pred, axis=[1, 2, 3])
+    
+    diceCoeff = tf.keras.backend.mean((2.0 * overlap + 1) / (totalPixels + 1), axis=0)
+    
+    return diceCoeff
+    
+    
+def diceLoss(y_true, y_pred):
+    """
+        Defines the dice coefficient loss function, ie 1 - Dice Coefficient.
+        
+        @param y_true: the true output
+        @param y_pred: the output predicted by the model
+        @return the dice coefficient subtracted from one. This allows dice similarity 
+                to be used as a loss function.
+    """
+    return 1 - diceCoefficient(y_true, y_pred)
+
 
 def main():
     # Dependencies
     print("Tensorflow: " + tf.__version__)
     print("Matplotlib: " + mpl.__version__)
+    print("Numpy: " + np.__version__)
     
     # Data loading and processing
     entire_dataset = loadData()
@@ -118,6 +161,19 @@ def main():
     # Create the model
     iunet = IUNET()
     model = iunet.createPipeline()
+    
+    # Compile the model, model.compile()
+    print("Compiling model...")
+    adamOptimizer = tf.keras.optimizers.Adam()
+    model.compile(optimizer=adamOptimizer, loss=diceLoss, metrics=[diceCoefficient, 'accuracy'])
+    print("Model compilation complete.")
+    
+    # Train the model, model.fit()
+    print("Training the model...")
+    history = model.fit(train_data, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=validation_data)
+    print("Model training complete.")
+    
+    # Perform predictions, model.predict()
     
 
 
