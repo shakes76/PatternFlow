@@ -6,14 +6,10 @@ AUTOTUNE = tf.data.AUTOTUNE
 
 
 @tf.function
-def hflip_concat(image, label):
-    """Horizontal flip images and labels, concat with input."""
+def hflip(image, label):
+    """Horizontally flip image and reverse label."""
     assert len(image.shape) == 3
-
-    flipped_image = tf.image.flip_left_right(image)
-    flipped_label = 1 - label
-
-    return tf.stack([image, flipped_image]), tf.stack([label, flipped_label])
+    return tf.image.flip_left_right(image), 1 - label
 
 
 @tf.function
@@ -41,51 +37,57 @@ def preprocess(
     train,
     validation,
     test,
-    batch_size: int = 64,
     num_classes: int = 2,
     image_dims: tuple[int, int] = None,
+    hflip_concat: bool = True,
+    train_batch_size: int = 64,
+    eval_batch_size: int = 16,
 ):
     """Preprocess images for each split.
 
     Applied to all splits:
     - image normalisation
     - one-hot label encoding
-    - crop and resize
+    - crop and resize (without distortion)
 
-    If num_classes = 2, training and validation is duplicated by:
+    If `hflip_concat`, training and validation is duplicated by:
     - horizontally flipping images
     - flipping the label
-    - concatenating with input
+    - concatenating with original splits
     """
 
-    identity = lambda image, label: (image, label)
-    _hflip_concat = hflip_concat if num_classes == 2 else identity
     _one_hot = partial(one_hot, num_classes=num_classes)
     _smart_resize = (
         partial(smart_resize, image_dims=image_dims)
         if image_dims is not None
-        else identity
+        else lambda image, label: (image, label)
     )
 
-    train, validation = (
+    # common preprocessing
+    train, validation, test = [
         split.map(image_norm, AUTOTUNE)
         .map(_smart_resize, AUTOTUNE)
         .map(_one_hot, AUTOTUNE)
-        .map(_hflip_concat, AUTOTUNE)
-        .unbatch()
-        .cache()
+        for split in [train, validation, test]
+    ]
+
+    # TRAIN & VALIDATION: flip images and labels, concat with originals
+    if hflip_concat:
+        train, validation = [
+            split.concatenate(split.map(hflip, AUTOTUNE))
+            for split in [train, validation]
+        ]
+
+    # cache, shuffle, batch, prefetch
+    return [
+        split.cache()
+        # arbitrary max buffer size
+        .shuffle(max(split.cardinality() // 4, 5120))
         .batch(batch_size)
         .prefetch(AUTOTUNE)
-        for split in [test, validation]
-    )
-
-    test = (
-        test.map(image_norm, AUTOTUNE)
-        .map(_smart_resize, AUTOTUNE)
-        .map(_one_hot, AUTOTUNE)
-        .cache()
-        .batch(batch_size)
-        .prefetch(AUTOTUNE)
-    )
-
-    return train, validation, test
+        for split, batch_size in [
+            (train, train_batch_size),
+            (validation, train_batch_size),
+            (test, eval_batch_size),
+        ]
+    ]
