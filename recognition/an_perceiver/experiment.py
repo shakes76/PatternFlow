@@ -153,7 +153,7 @@ def get_opts():
     dataset.add_argument(
         "--hflip-concat",
         action="store_true",
-        default=True,
+        default=False,
         help="train and validation: horizontally flip images, reverse labels and concat with input",
     )
 
