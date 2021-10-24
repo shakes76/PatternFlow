@@ -4,6 +4,7 @@ Improved UNet implementation (2D version)
 Reference: https://arxiv.org/abs/1802.10508v1
 """
 import tensorflow as tf
+import tensorflow_addons as tfa
 from tensorflow.keras import layers, models
 
 
@@ -12,12 +13,11 @@ def encoder_module(input, num_filters, strides=(1, 1)):
                          padding="same", activation=layers.LeakyReLU(0.01))(input)
 
     # context module (pre-activation residual blocks)
-    # todo: replace with instance normalization
-    ctx1 = layers.BatchNormalization()(conv)
+    ctx1 = tfa.layers.InstanceNormalization()(conv)
     ctx1 = layers.Activation(layers.LeakyReLU(0.01))(ctx1)
     ctx1 = layers.Conv2D(num_filters, (3, 3), padding="same")(ctx1)
     ctx_drop = layers.Dropout(0.3)(ctx1)
-    ctx2 = layers.BatchNormalization()(ctx_drop)
+    ctx2 = tfa.layers.InstanceNormalization()(ctx_drop)
     ctx2 = layers.Activation(layers.LeakyReLU(0.01))(ctx2)
     ctx2 = layers.Conv2D(num_filters, (3, 3), padding="same")(ctx2)
 
@@ -82,5 +82,3 @@ def build_model(input_shape):
 class AdvUNet:
     def __init__(self, input_shape=(256, 256, 3)):
         self.model = build_model(input_shape)
-
-    
