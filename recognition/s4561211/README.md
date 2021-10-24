@@ -1,4 +1,4 @@
-# Graph Gonvolutional Network
+# Graph Convolutional Network
 ### Ya-Yu Kang
 
 ### Objective
