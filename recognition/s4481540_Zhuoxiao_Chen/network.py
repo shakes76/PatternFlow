@@ -188,8 +188,9 @@ class Blur(nn.Module):
         # return F.conv2d(input, self.weight, padding=1, groups=input.shape[1])
 
 
-class EqualConv2d(nn.Module):
+class ConvLayerEqual(nn.Module):
     def __init__(self, *args, **kwargs):
+        """ A basic 2D Convolution Layer"""
         super().__init__()
 
         conv = nn.Conv2d(*args, **kwargs)
@@ -240,7 +241,7 @@ class ConvBlock(nn.Module):
             kernel2 = kernel_size2
 
         self.conv1 = nn.Sequential(
-            EqualConv2d(in_channel, out_channel, kernel1, padding=pad1),
+            ConvLayerEqual(in_channel, out_channel, kernel1, padding=pad1),
             nn.LeakyReLU(0.2),
         )
 
@@ -256,7 +257,7 @@ class ConvBlock(nn.Module):
             else:
                 self.conv2 = nn.Sequential(
                     Blur(out_channel),
-                    EqualConv2d(out_channel, out_channel, kernel2,
+                    ConvLayerEqual(out_channel, out_channel, kernel2,
                                 padding=pad2),
                     nn.AvgPool2d(2),
                     nn.LeakyReLU(0.2),
@@ -264,7 +265,7 @@ class ConvBlock(nn.Module):
 
         else:
             self.conv2 = nn.Sequential(
-                EqualConv2d(out_channel, out_channel, kernel2, padding=pad2),
+                ConvLayerEqual(out_channel, out_channel, kernel2, padding=pad2),
                 nn.LeakyReLU(0.2),
             )
 
@@ -349,7 +350,7 @@ class StyledConvBlock(nn.Module):
                 else:
                     self.conv1 = nn.Sequential(
                         nn.Upsample(scale_factor=2, mode='nearest'),
-                        EqualConv2d(
+                        ConvLayerEqual(
                             in_channel, out_channel, kernel_size,
                             padding=padding
                         ),
@@ -357,7 +358,7 @@ class StyledConvBlock(nn.Module):
                     )
 
             else:
-                self.conv1 = EqualConv2d(
+                self.conv1 = ConvLayerEqual(
                     in_channel, out_channel, kernel_size, padding=padding
                 )
 
@@ -365,7 +366,7 @@ class StyledConvBlock(nn.Module):
         self.adain1 = AdaptiveInstanceNorm(out_channel, style_dim)
         self.lrelu1 = nn.LeakyReLU(0.2)
 
-        self.conv2 = EqualConv2d(out_channel, out_channel, kernel_size,
+        self.conv2 = ConvLayerEqual(out_channel, out_channel, kernel_size,
                                  padding=padding)
         self.noise2 = equal_learning_rate(NoiseInjection(out_channel))
         self.adain2 = AdaptiveInstanceNorm(out_channel, style_dim)
@@ -409,15 +410,15 @@ class G(nn.Module):
 
         self.to_rgb = nn.ModuleList(
             [
-                EqualConv2d(512, 3, 1),
-                EqualConv2d(512, 3, 1),
-                EqualConv2d(512, 3, 1),
-                EqualConv2d(512, 3, 1),
-                EqualConv2d(256, 3, 1),
-                EqualConv2d(128, 3, 1),
-                EqualConv2d(64, 3, 1),
-                EqualConv2d(32, 3, 1),
-                EqualConv2d(16, 3, 1),
+                ConvLayerEqual(512, 3, 1),
+                ConvLayerEqual(512, 3, 1),
+                ConvLayerEqual(512, 3, 1),
+                ConvLayerEqual(512, 3, 1),
+                ConvLayerEqual(256, 3, 1),
+                ConvLayerEqual(128, 3, 1),
+                ConvLayerEqual(64, 3, 1),
+                ConvLayerEqual(32, 3, 1),
+                ConvLayerEqual(16, 3, 1),
             ]
         )
 
@@ -551,11 +552,11 @@ class D(nn.Module):
 
         def make_from_rgb(out_channel):
             if from_rgb_activate:
-                return nn.Sequential(EqualConv2d(3, out_channel, 1),
+                return nn.Sequential(ConvLayerEqual(3, out_channel, 1),
                                      nn.LeakyReLU(0.2))
 
             else:
-                return EqualConv2d(3, out_channel, 1)
+                return ConvLayerEqual(3, out_channel, 1)
 
         self.from_rgb = nn.ModuleList(
             [
@@ -571,7 +572,8 @@ class D(nn.Module):
             ]
         )
 
-        self.n_layer = len(self.progression)
+        self.n_layer = len(self.progression) 
+        # layers depend on the progress step
 
         self.linear = EqualLinear(512, 1)
 
