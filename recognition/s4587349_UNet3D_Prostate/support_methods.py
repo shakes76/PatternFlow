@@ -1,6 +1,7 @@
 import keras.utils.data_utils
 import numpy as np
 from matplotlib import pyplot as plt
+from nibabel.brikhead import filepath
 from skimage.io import imread
 from skimage.transform import resize
 import math
@@ -16,6 +17,7 @@ import sys
 
 import unet_model as mdl
 import driver as drv
+
 
 
 
@@ -39,11 +41,11 @@ class ProstateSequence(keras.utils.Sequence):
         """
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
-        # self.dim = dim
-        # self.n_channels = n_channels
-        # self.n_classes = n_classes
-        # self.shuffle = shuffle
-        # self.on_epoch_end()
+        self.dim = (256,256,128)
+        self.n_channels = 1
+        self.n_classes = 6
+        self.shuffle = False
+        self.on_epoch_end()
 
     def __len__(self):
         """Number of batches per epoch"""
@@ -83,9 +85,21 @@ class ProstateSequence(keras.utils.Sequence):
         :param list_data_tmp:
         :return: One batch of nparray of data.
         """
-        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        print("hi L88: ", self.dim) #
+        # print(list_data_tmp.type)
+        # print(list_data_tmp.dim)
+        X = np.empty((self.batch_size, *self.dim))
+        # X = np.empty((self.batch_size, *self.dim, self.n_channels))  # not working
+        print("L92: ", X.dtype)
+        print("X.shape: ", X.shape)
+        # k = self.read_nii(list_data_tmp)
+        # print("k: ", k.shape)
+
 
         for i, id in enumerate(list_data_tmp):
+            print("i, id: ", i, id) #
+            k = self.read_nii(id) #
+            print("k: ", k.shape) #
             X[i, ] = self.read_nii(id)
         return X
 
@@ -103,9 +117,17 @@ class ProstateSequence(keras.utils.Sequence):
         return y
 
 
+    def read_nii(self, file_path):
+        """ Reads and returns nparray data from single .nii image"""
+        img = nib.load(file_path)
+        img_data = img.get_fdata()
+        return img_data
+
+
+
     def on_epoch_end(self):  #todo currently set to false
         'Shuffles indexes at end of each epoch'
-        self.indexes = np.arange(len(self.list_IDs))
+        self.indexes = np.arange(len(self.y))
         if self.shuffle:
             np.random.shuffle(self.indexes)
 

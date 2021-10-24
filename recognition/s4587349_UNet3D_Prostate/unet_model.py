@@ -72,6 +72,7 @@ def unet3d(inputsize= (256,256,128,1), kernelSize=3):
     outputs = Conv3D(drv.CLASSES, (1,1,1), activation="softmax")(c7)
 
     model = Model(inputs=[inputs], outputs = [outputs])
+    return model
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
     model.summary()
 

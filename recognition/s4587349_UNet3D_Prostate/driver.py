@@ -99,14 +99,14 @@ def main():
 
     # list_wish = [(x for x in training_generator)]
     # # print(*training_generator, sep='\n')
-    # print(*(n for n in training_generator))
+    print(*(n for n in training_generator))
 
+    """ Model """
     """ Attempt to compile model"""    # todo update with BN, Relu
-    mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
-    # print(type(model))
-    # model.summary()
-
-# mdl.unet3d.compile()
+    model = mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
+    model.summary()
+    model.fit(training_generator)
 
 
 
