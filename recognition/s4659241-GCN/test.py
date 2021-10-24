@@ -111,3 +111,30 @@ for epoch in range(epochs):
     val_acc_history.append(val_acc.item())
     print("Epoch {:03d}: Loss {:.4f}, TrainAcc {:.4}, ValAcc {:.4f}".format(
         epoch, loss.item(), train_acc.item(), val_acc.item()))
+
+# code for TSNE embeddings plot
+# from sklearn.decomposition import PCA
+# from sklearn.manifold import TSNE
+# import matplotlib.pyplot as plt
+# def plot_embedding(data, label, title):
+#     x_min, x_max = np.min(data, 0), np.max(data, 0)
+#     data = (data - x_min) / (x_max - x_min)
+
+#     fig = plt.figure()
+#     ax = plt.subplot(111)
+#     for i in range(data.shape[0]):
+#         plt.text(data[i, 0], data[i, 1], str(label[i]),
+#                  color=plt.cm.Set2(label[i] / 10.),
+#                  fontdict={'weight': 'bold', 'size': 9})
+#     plt.xticks([])
+#     plt.yticks([])
+#     plt.title(title)
+#     return fig
+
+# pca_50 = PCA(n_components=50) 
+# pca_result_50 = pca_50.fit_transform(features)
+# tsne = TSNE(perplexity=30, n_components=2, init='pca')
+# result = tsne.fit_transform(pca_result_50)
+# result = tsne.fit_transform(features) # without using PCA first
+# fig = plot_embedding(transfromed, facebook['target']+1,'t-SNE')
+# plt.show(fig)
