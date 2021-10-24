@@ -26,12 +26,14 @@ imgSize = 228
 IMG_HEIGHT = 260
 IMG_WIDTH = 228
 
+INPUT_DS_SIZE = 18680
+
 # load AKOA dataset from processed datasets directory
 akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_FOLDER,
                                                                 shuffle=True,
                                                                 seed=999,
                                                                 image_size=(imgSize, imgSize),
-                                                                batch_size=1,
+                                                                batch_size=INPUT_DS_SIZE,
                                                                 labels="inferred",
                                                                 label_mode="categorical",
                                                                 color_mode="grayscale",
@@ -42,22 +44,32 @@ akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DA
 akoa_ds = akoa_ds_tuple[0]
 assert isinstance(akoa_ds, tf.data.Dataset)
 
+#print(akoa_ds["train"])
+#print(list())
+for image_array, label_array in tfds.as_numpy(akoa_ds):
+    x_data = image_array
+    y_data = label_array
+
+#np_data = tfds.as_numpy(akoa_ds)
+
 # convert to numpy array
-x_data = []
-y_data = []
-for image, label in akoa_ds:
-    #print(image.shape, label)
-    x_data.append(image)
-    y_data.append(label)
+# x_data = []
+# y_data = []
+# for image, label in akoa_ds:
+#     #print(image.shape, label)
+#     x_data.append(image)
+#     y_data.append(label)
     #print(type(image), type(label), label)
 
+
+
 # format data into np arrays and remove batch column
-print(np.array(x_data).shape)
-x_data = np.array(x_data)
-new_x_shape = [x_data.shape[0]] + list(x_data.shape[2:])
-x_data = x_data.reshape(new_x_shape)
 print(x_data.shape)
-y_data = np.array(y_data)
+# x_data = np.array(x_data)
+# new_x_shape = [x_data.shape[0]] + list(x_data.shape[2:])
+# x_data = x_data.reshape(new_x_shape)
+print(y_data.shape)
+# y_data = y_data
 
 # train test split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
