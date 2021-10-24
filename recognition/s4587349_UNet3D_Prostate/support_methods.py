@@ -1,4 +1,6 @@
+import tensorflow as tf
 import keras.utils.data_utils
+import tensorflow.keras.utils
 import numpy as np
 from matplotlib import pyplot as plt
 from nibabel.brikhead import filepath
@@ -19,17 +21,15 @@ import unet_model as mdl
 import driver as drv
 
 
-
-
-
 # todo need to input X_set, y_set whish are x_
 class ProstateSequence(keras.utils.Sequence):
     # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
     # https://towardsdatascience.com/keras-data-generators-and-how-to-use-them-b69129ed779c
     """Data generator"""
+
     def __init__(self, x_set, y_set, batch_size=1):
-    # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
-    #              n_classes=6, shuffle=False):
+        # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
+        #              n_classes=6, shuffle=False):
         """
         :param x_set:
         :param y_set:
@@ -41,7 +41,7 @@ class ProstateSequence(keras.utils.Sequence):
         """
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
-        self.dim = (256,256,128)
+        self.dim = (256, 256, 128)
         self.n_channels = 1
         self.n_classes = 6
         self.shuffle = False
@@ -51,7 +51,7 @@ class ProstateSequence(keras.utils.Sequence):
         """Number of batches per epoch"""
         return math.ceil(len(self.x) / self.batch_size)
 
-    def __getitem__(self, idx):  #todo setup for shuffle
+    def __getitem__(self, idx):  # todo setup for shuffle
         # https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
         """
         Gets one batch
@@ -66,7 +66,7 @@ class ProstateSequence(keras.utils.Sequence):
 
         # Instead indexes same for train & label, or validate & label, or test & label
         # create tmp list of image/label names for batch
-        indexes = self.indexes[idx*self.batch_size:(idx+1)*self.batch_size]
+        indexes = self.indexes[idx * self.batch_size:(idx + 1) * self.batch_size]
         list_data_tmp = [self.x[k] for k in indexes]
         list_label_tmp = [self.y[k] for k in indexes]
         # generate data
@@ -85,22 +85,20 @@ class ProstateSequence(keras.utils.Sequence):
         :param list_data_tmp:
         :return: One batch of nparray of data.
         """
-        print("hi L88: ", self.dim) #
-        # print(list_data_tmp.type)
-        # print(list_data_tmp.dim)
+        # print("hi L88: ", self.dim) #
         X = np.empty((self.batch_size, *self.dim))
         # X = np.empty((self.batch_size, *self.dim, self.n_channels))  # not working
-        print("L92: ", X.dtype)
-        print("X.shape: ", X.shape)
+        # print("L92: ", X.dtype)
+        # print("X.shape: ", X.shape)
         # k = self.read_nii(list_data_tmp)
         # print("k: ", k.shape)
 
-
         for i, id in enumerate(list_data_tmp):
-            print("i, id: ", i, id) #
-            k = self.read_nii(id) #
-            print("k: ", k.shape) #
-            X[i, ] = self.read_nii(id)
+            # print("i, id: ", i, id) #
+            k = self.read_nii(id)  #
+            print("L100 kx: ", k.shape)  #
+            X[i,] = self.read_nii(id)
+            print("L102 X.shape, i: ", X.shape, i)
         return X
 
     def _generation_y(self, list_label_tmp):
@@ -110,12 +108,18 @@ class ProstateSequence(keras.utils.Sequence):
         :param list_data_tmp:
         :return: One batch of nparray of data.
         """
-        y = np.empty((self.batch_size, *self.dim), dtype=int)
+        y = np.empty((self.batch_size, *self.dim, self.n_classes), dtype=int)
 
         for i, id in enumerate(list_label_tmp):
-            y[i, ] = self.read_nii(id)   #todo investigate
-        return y
+            k = self.read_nii(id)  #
+            slices(k)
+            print("L115 ky: ", k.shape)  #
+            y2 = self.read_nii(id)  # todo investigate
 
+            y[i,] = tf.keras.utils.to_categorical(y2, num_classes=self.n_classes,
+                                                  dtype='float64')
+            print("L119 y.shape, i : ", y.shape, i)
+        return y
 
     def read_nii(self, file_path):
         """ Reads and returns nparray data from single .nii image"""
@@ -123,9 +127,7 @@ class ProstateSequence(keras.utils.Sequence):
         img_data = img.get_fdata()
         return img_data
 
-
-
-    def on_epoch_end(self):  #todo currently set to false
+    def on_epoch_end(self):  # todo currently set to false
         'Shuffles indexes at end of each epoch'
         self.indexes = np.arange(len(self.y))
         if self.shuffle:
@@ -133,7 +135,7 @@ class ProstateSequence(keras.utils.Sequence):
 
     # todo join _dg_x & _dg_y
     def _data_generation(self, list_IDs_temp):
-        'Generates data containing batch_size samples' # X : (n_samples, *dim, n_channels)
+        'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
         # Initialization
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty(self.batch_size, dtype=int)
@@ -147,7 +149,6 @@ class ProstateSequence(keras.utils.Sequence):
             y[i] = self.labels[ID]
             # label shape (256,256,128) -> (256,256,128,6) <class 'numpy.ndarray'>
         return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
-
 
 
 def data_info():
@@ -244,7 +245,7 @@ def read_nii(filepath):
     return img_data
 
 
-def normalise(image):   #todo test
+def normalise(image):  # todo test
     """ If minv = 0, then is equiv to dividing all values by image maximum value
     :param image: data image
     :param minv: minimum voxel value
@@ -258,7 +259,7 @@ def normalise(image):   #todo test
     return img_norm
 
 
-def normalise2(path):  #todo test, not complete, needs to iterate thru path
+def normalise2(path):  # todo test, not complete, needs to iterate thru path
     """ """
     image = read_nii(path)
     maxv = np.amax(image)
@@ -268,7 +269,7 @@ def normalise2(path):  #todo test, not complete, needs to iterate thru path
     return img_norm
 
 
-def z_norm(image):    #todo test
+def z_norm(image):  # todo test
     """ Returns z normalised image. This will involve negative values. May require adjusted
     colour palette to avoid all neg values being coloured black.
     :param image:

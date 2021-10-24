@@ -97,14 +97,14 @@ def main():
     training_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
     validation_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
 
-    # list_wish = [(x for x in training_generator)]
-    # # print(*training_generator, sep='\n')
-    print(*(n for n in training_generator))
+    print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
+                                            # need to visualise
 
     """ Model """
     """ Attempt to compile model"""    # todo update with BN, Relu
     model = mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
+    # model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
     model.summary()
     model.fit(training_generator)
 
