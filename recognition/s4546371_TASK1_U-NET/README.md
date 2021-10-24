@@ -15,13 +15,13 @@ Compared with u-net, the improved u-net architecture comprises a context module 
 
 ## Dependencies
 
-1.python3
-2.numpy
-3.scikit-image
-4.opencv-python
-5.tensorflow2.0 or higher
-6.matplotlib
-7.io
+* python3
+* numpy
+* scikit-image
+* opencv-python
+* tensorflow2.0 or higher
+* matplotlib
+* io
 
 ## Data Processing
 
@@ -36,8 +36,18 @@ All images are resized, and the size of input is (256,256).
 #### Output data (label)
 The output have 2 classes.
 
+## File Description
 
-##Reference
+* model.py （U-NET Improved architecture built using TensorFlow Keras Layers）
+* data_cleaning.py (Importing data, creating masks, and partitioning training, validation and testing sets.
+* dice_cofficient (Function of dice_coefficient)
+* test.ipynb
+
+
+
+## Reference
+
+[1]F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation andRadiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online].Available: https://arxiv.org/abs/1802.10508v1
 
 
 
