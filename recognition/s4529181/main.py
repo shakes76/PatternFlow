@@ -2,7 +2,9 @@
 
 import glob
 import tensorflow as tf
-from dice_coefficiency import dice
+from unet import *
+import keras.backend as K
+import matplotlib.pyplot as plt
 
 # process the images and labels
 def process_images_labels(image, label):
@@ -20,6 +22,17 @@ def process_images_labels(image, label):
     mylabel = tf.keras.backend.round(mylabel / 255.0)
     mylabel.set_shape([256, 256, 1])
     return myimage, mylabel
+
+# Displays n images and labels from the ds dataset.
+def display_data(ds, n=1):
+    for image, label in ds.take(n):
+        draws = [tf.squeeze(image), tf.squeeze(label)]
+        plt.figure(figsize=(10, 6))
+        for i in range(len(draws)):
+            plt.subplot(1, len(draws), i+1)
+            plt.imshow(draws[i], cmap='gray')
+            plt.axis('off')
+        plt.show()
 
 # to get data
 images = glob.glob(
@@ -48,6 +61,12 @@ train_ds = train_ds.map(process_images_labels)
 val_ds = val_ds.map(process_images_labels)
 test_ds = test_ds.map(process_images_labels)
 
-# Build, Train, Evaluate model
-# write unet
-#
+# plot example image
+display_data(train_ds)
+
+# Build model
+model = model_unet(16)
+model.summary()
+model.compile(optimizer='adam',
+              loss='binary_crossentropy', 
+              metrics=['dice']) #or accuracy
