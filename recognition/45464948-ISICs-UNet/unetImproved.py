@@ -21,21 +21,35 @@ def unetmodel():
 
     #encoder part
     input_layer = Input(shape=(256,256,3))
-
+    #convolution
     conv1 = Conv2D(16,(3,3), padding='same')(input_layer)
+    # context module
     contextModel1 = contextModel(conv1,16)
+    #element wise sum
     ews1 = Add()([conv1,contextModel1])# ews = element wise sum
+    #convolution stride2
     conv2 = Conv2D(32, (3, 3), strides=(2,2), padding='same')(ews1)
+    # context module
     contextModel2 = contextModel(conv2, 32)
+    # element wise sum
     ews2 = Add()([conv2, contextModel2])  # ews = element wise sum
+    # convolution stride2
     conv3 = Conv2D(64, (3, 3), strides=(2,2), padding='same')(ews2)
+    # context module
     contextModel3 = contextModel(conv3, 64)
+    # element wise sum
     ews3 = Add()([conv3, contextModel3])  # ews = element wise sum
+    # convolution stride2
     conv4 = Conv2D(128, (3, 3), strides=(2, 2), padding='same')(ews3)
+    # context module
     contextModel4 = contextModel(conv4, 128)
+    # element wise sum
     ews4 = Add()([conv4, contextModel4])  # ews = element wise sum
+    # convolution stride2
     conv5 = Conv2D(256, (3, 3), strides=(2, 2), padding='same')(ews4)
+    # context module
     contextModel5 = contextModel(conv5, 256)
+    # element wise sum
     ews5 = Add()([conv5, contextModel5])  # ews = element wise sum
 
 
