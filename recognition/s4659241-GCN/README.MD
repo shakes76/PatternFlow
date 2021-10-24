@@ -28,7 +28,7 @@ The `algorithm.py` includes codes for Graph Convolution layer and GCN model of b
 The structure of 3 layers GCN used in my implementation is:
 ![3 layers GCN](./images/GCN-3l_structure.png)
 
-You can change parameters for your 3 layers GCN(or 2 layers GCN) by changing the hidden1, hidden2(or hidden for 2 layers GCN) and dropout in the `test.py` file.
+You can change parameters for your 3 layers GCN(or 2 layers GCN) by changing the `hidden1`, `hidden2`(or `hidden` for 2 layers GCN) and dropout in the `test.py` file.
 
 In my implementation, I train for 200 epochs with 0.01 learning rate. You can change the `epochs` and `learning_rate` in `test.py` file.
 
@@ -50,6 +50,21 @@ python test.py
 
 ![loss](./images/loss.png)
 
+## TSNE embeddings plot
+***
+The code for showing TSNE embeddings plot is in `test.py` and you can uncomment the code at last of the file to implement TSNE and plot the figure. Since it's recommended to implement PCA first to reduce the number of dimensions to resonable amount (e.g. 50), I tried to implemented PCA and reduce dimensions to 90 and 50 separately. The first 90 components can hold around 84% of the total variation in the data and the first 50 components hold 56%. I also tried directly implrmrnt TSNE. The plots are listed below:
+- Direct TSNE:
+
+![tsne](./images/tsne.png)
+
+- TSNE after PCA to 90 dimensions:
+
+![tsne90](./images/tsne90.png)
+
+- TSNE after PCA to 50 dimensions:
+
+![tsne_pca50](./images/tsne_pca50.png)
+
 ## Dependencies
 ***
 - Python 3.7.1
@@ -62,4 +77,4 @@ python test.py
 ***
 The paper [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
 
-[Reference code](https://github.com/tkipf/pygcn/tree/1600b5b748b3976413d1e307540ccc62605b4d6d)
+[Reference code for Graph Convolutional Network](https://github.com/tkipf/pygcn/tree/1600b5b748b3976413d1e307540ccc62605b4d6d)
