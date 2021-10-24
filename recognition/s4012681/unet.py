@@ -4,6 +4,7 @@ import nibabel
 from tensorflow.keras.layers import Input, Conv3D, Conv3DTranspose, concatenate, Dropout, MaxPooling3D, BatchNormalization
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
+from scipy.ndimage import rotate
 
 # Labels:
 # Background = 0
@@ -57,17 +58,18 @@ def one_hot(file_name):
 
 def normalise(image):
     # subtract mean
-    # mean = np.average(image)
-    # image = image - mean
+    mean = np.average(image)
+    image = image - mean
 
     # divide by sd
-    # sd = np.std(image)
-    # image = image / sd
+    sd = np.std(image)
+    image = image / sd
+    # image = rotate(image, rotation)
 
     # unity-based normalisation
-    max_val = np.amax(image)
-    min_val = np.amin(image)
-    image = (image - min_val) / (max_val - min_val)
+    # max_val = np.amax(image)
+    # min_val = np.amin(image)
+    # image = (image - min_val) / (max_val - min_val)
     return image
 
 
