@@ -61,7 +61,16 @@ X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)/255
 Y_train = tf.convert_to_tensor(Y_train, dtype=tf.int16)
 Y_test = tf.convert_to_tensor(Y_test, dtype=tf.int16)
 
+#Add extra dimension needed for cnn input
+X_train = tf.expand_dims(X_train,-1)
+X_test = tf.expand_dims(X_test,-1)
+Y_train = tf.expand_dims(Y_train,-1)
+Y_test = tf.expand_dims(Y_test,-1)
+
 print(X_train.shape)
 print(X_test.shape)
 print(Y_train.shape)
 print(Y_test.shape)
+
+tf.print(X_test[0][80],summarize=-1)
+tf.print(Y_test[0][80],summarize=-1)
