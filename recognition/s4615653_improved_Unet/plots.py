@@ -6,23 +6,21 @@ def plots(data, model):
 
     prediction = model.predict(inputs_batch)
 
-    # inputs images
     plt.figure(figsize =(15, 15))
     for i in range(3):
+        # inputs images
         plt.subplot(3, 3, 3*i+1)
         plt.imshow(inputs_batch[i])
         plt.axis('off')
 
-    # ground-truth images
-    plt.figure(figsize = (15, 15))
-    for i in range(3):
+        # ground-truth images
         plt.subplot(3, 3, 3*i+2)
-        plt.imshow(tf.argmax(truth_batch[i]))
+        plt.imshow(tf.argmax(truth_batch[i],axis=-1),camp="gray")
         plt.axis('off')
 
-    # predict images
-    plt.figure(figsize = (15, 15))
-    for i in range(3):
-        plt.subplot(3, 3, 3*i+2)
-        plt.imshow(tf.argmax(prediction[i]))
+        # predict images
+        plt.subplot(3, 3, 3*i+3)
+        plt.imshow(tf.argmax(prediction[i],axis=-1),camp="gray")
         plt.axis('off')
+
+    plt.show()
