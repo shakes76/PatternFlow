@@ -18,17 +18,103 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from google.colab import drive
+from tensorflow.keras.preprocessing.image import load_img
+import PIL.Image
 
 print(tf.__version__)
 
 # Some stuff to bug fix.
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
-assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+assert len(physical_devices) > 0, 'Not enough GPU hardware devices available'
 config = tf.config.experimental.set_memory_growth(physical_devices[0], True)
 # os.getcwd()
 drive.mount('/content/gdrive')
 
 # Import the data files from Google Drive to colab.
 
+input_dir = '/content/gdrive/MyDrive/ISIC_Data/train/'
+mask_dir = '/content/gdrive/MyDrive/ISIC_Data/mask/'
+
+root_input_dir = pathlib.Path(input_dir)
+root_mask_dir = pathlib.Path(mask_dir)
+
+# Count the number of images in both directories.
+train_count = len(list(root_train_dir.glob('*.jpg')))
+mask_count = len(list(root_mask_dir.glob('*.png')))
+print('Number of training images: ', train_count)
+print('Number of mask images: ', mask_count)
+
+# for f in train_dataset.take(5):
+#   print(f.numpy())
+
+# Some more testing
+# PIL.Image.open(list(root_train_dir.glob('*.jpg'))[0])
+
+# The above works, we can go to the next step!
+
+
+# The following code is inspired by 
+# https://keras.io/examples/vision/oxford_pets_image_segmentation/
+
+img_size = (256,256)
+batch_size = 32
+input_paths = sorted(
+    [
+      os.path.join(root_input_dir, fname)
+      for fname in os.listdir(root_input_dir)
+      if fname.endswith(".jpg")
+    ]
+)
+mask_paths = sorted(
+    [
+      os.path.join(root_mask_dir, fname)
+      for fname in os.listdir(root_mask_dir)
+      if fname.endswith(".png") and not fname.startswith(".")
+    ]
+)
+
+print("Number of samples:", len(input_paths))
+for input_path, mask_path in zip(input_paths[:5], mask_paths[:5]):
+    print(input_path, "|", mask_path)
+
+# Sequence class to load and vectorize batches of data. Numpy is allowed here.
+# This code is similar to the Keras example.
+
+class ISIC_Data(keras.utils.Sequence):
+    """Helper to iterate over the data."""
+
+    def __init__(self, batch_size, img_size, input_img_paths, target_img_paths):
+        self.batch_size = batch_size
+        self.img_size = img_size
+        self.input_img_paths = input_img_paths
+        self.target_img_paths = target_img_paths
+
+    def __len__(self):
+        return len(self.target_img_paths) // self.batch_size
+
+    def __getitem__(self, idx):
+        """Returns tuple (input, target) correspond to batch #idx."""
+        i = idx * self.batch_size
+        batch_input_img_paths = self.input_img_paths[i : i + self.batch_size]
+        batch_target_img_paths = self.target_img_paths[i : i + self.batch_size]
+        x = np.zeros((self.batch_size,) + self.img_size + (3,), dtype="float32")
+        for j, path in enumerate(batch_input_img_paths):
+            img = load_img(path, target_size=self.img_size)
+            x[j] = img
+        y = np.zeros((self.batch_size,) + self.img_size + (1,), dtype="uint8")
+        for j, path in enumerate(batch_target_img_paths):
+            img = load_img(path, target_size=self.img_size, color_mode="grayscale")
+            y[j] = np.expand_dims(img, 2)
+            # Ground truth labels are 0, 1.:
+        return x, y
+
 # Pre-process the data.
+# The dataset is pre-processed, so this should be fine for now.
+
+def normalize(input_image, input_mask):
+  input_image = tf.cast(input_image, tf.float32) / 255.0
+  return input_image, input_mask
+
+
+# Start by creating a basic U-NET model.
