@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 23/10/2021
+    Date last modified: 24/10/2021
     Python version: 3.9.7
 """
 
@@ -110,12 +110,12 @@ def gen_block(
         out = Activation("linear")(input)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
-    out = LeakyReLU(0.01)(out)
+    out = LeakyReLU(0.20)(out)
     beta, gamma, n = compute_random_input()
     out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     out = add([out, n])
     out = AdaIN()([out, beta, gamma])
-    out = LeakyReLU(0.01)(out)
+    out = LeakyReLU(0.2)(out)
 
     return out
 
@@ -140,12 +140,12 @@ def disc_block(
     out = input
     if downSample:
         out = AveragePooling2D()(out)
-        out = LeakyReLU(0.01)(out)
+        out = LeakyReLU(0.2)(out)
         out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
-        out = LeakyReLU(0.01)(out)
+        out = LeakyReLU(0.2)(out)
         out = Dropout(dropout)(out)
     out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
-    out = LeakyReLU(0.01)(out)
+    out = LeakyReLU(0.2)(out)
     out = Dropout(dropout)(out)
 
     return out
@@ -166,7 +166,7 @@ def get_generator(
     mapping_layers = 8
     for _ in range(mapping_layers):
         mapping = Dense(num_filters)(mapping)
-        mapping = LeakyReLU(0.01)(mapping)
+        mapping = LeakyReLU(0.2)(mapping)
 
     # Crop the noise image for each resolution
     input_noise = Input(shape=[output_size, output_size, 1])
