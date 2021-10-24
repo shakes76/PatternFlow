@@ -9,9 +9,10 @@ class Latent(layers.Layer):
     def __init__(self, dim: int, num_channels: int, name: str = "latent"):
         super().__init__(name=name)
         self.latent_array = self.add_weight(
-            name="latent_array",
+            name="latent",
             shape=(dim, num_channels),
             initializer=initializers.TruncatedNormal(stddev=0.02),
+            trainable=True
         )
 
     def call(self, inputs: tf.Tensor):
