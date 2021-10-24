@@ -529,6 +529,10 @@ class Styled_G(nn.Module):
 
 class D(nn.Module):
     def __init__(self, fused=True, from_rgb_activate=False):
+        """
+        The networl of the discriminator. This models follows the paper carefully.
+        This network is also progressive, which supports multiple size of input image.
+        """
         super().__init__()
 
         self.progression = nn.ModuleList(
