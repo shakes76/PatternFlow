@@ -29,7 +29,8 @@ CLASSES = 6
 
 def main():
     """ """
-
+    """ Show reachable GPUs"""
+    print(tf.config.list_physical_devices(device_type='GPU'))
 
 
 
@@ -42,7 +43,7 @@ def main():
     at 158:35:18.
     """
 
-    # """ Data Sources Windows """
+    # """ Data Sources Windows D: """
     # Data sources
     X_TRAIN_DIR = 'D:\\prostate\\mr_train'
     X_VALIDATE_DIR = 'D:\\prostate\\mr_validate'
@@ -52,8 +53,15 @@ def main():
     Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
     Y_TEST_DIR = 'D:\\prostate\\label_test'
 
-
-
+    # """ Data Sources Windows C: """
+    # Data sources
+    X_TRAIN_DIR = 'C:\\prostate\\mr_train'
+    X_VALIDATE_DIR = 'C:\\prostate\\mr_validate'
+    X_TEST_DIR = 'C:\\prostate\\mr_test'
+    # Label sources
+    Y_TRAIN_DIR = 'C:\\prostate\\label_train'
+    Y_VALIDATE_DIR = 'C:\\prostate\\label_validate'
+    Y_TEST_DIR = 'C:\\prostate\\label_test'
 
 
     # """ Data sources Goliath """
@@ -69,6 +77,7 @@ def main():
     # Example data & label
     img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
     img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
+
 
 
     image_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
@@ -87,15 +96,40 @@ def main():
                   for x in os.listdir('D:\\prostate\\label_test')])
 
 
-    img_gen_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\data', x)
-                           for x in os.listdir('D:\\p\\data')])
 
-    label_train = sorted([os.path.join(os.getcwd(), 'D:\\p\\label', x)
+    """ Small test set D:"""
+    data_small_train = sorted([os.path.join(os.getcwd(), 'D:\\p\\data', x)
+                           for x in os.listdir('D:\\p\\data')])
+    label_small_train = sorted([os.path.join(os.getcwd(), 'D:\\p\\label', x)
                           for x in os.listdir('D:\\p\\label')])
+    data_small_validate = sorted([os.path.join(os.getcwd(), 'D:\\p\\data_validate', x)
+                               for x in os.listdir('D:\\p\\data_validate')])
+    label_small_validate = sorted([os.path.join(os.getcwd(), 'D:\\p\\label_validate', x)
+                                for x in os.listdir('D:\\p\\label_validate')])
+    data_small_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\data_test', x)
+                                  for x in os.listdir('D:\\p\\data_test')])
+    label_small_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\label_test', x)
+                                   for x in os.listdir('D:\\p\\label_test')])
+
+    """ Small test set C:"""
+    data_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\data', x)
+                               for x in os.listdir('C:\\p\\data')])
+    label_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\label', x)
+                                for x in os.listdir('D:\\p\\label')])
+    data_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_validate', x)
+                                  for x in os.listdir('C:\\p\\data_validate')])
+    label_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_validate', x)
+                                   for x in os.listdir('C:\\p\\label_validate')])
+    data_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_test', x)
+                              for x in os.listdir('C:\\p\\data_test')])
+    label_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_test', x)
+                               for x in os.listdir('C:\\p\\label_test')])
+
+
 
     """ Test generator, try to visualise"""
-    training_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
-    validation_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
+    training_generator = sm.ProstateSequence(data_small_train, label_train, batch_size=1)
+    validation_generator = sm.ProstateSequence(label_small_train, label_train, batch_size=1)
 
     print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
                                             # need to visualise
