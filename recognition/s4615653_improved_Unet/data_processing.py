@@ -15,15 +15,15 @@ def load_data():
 def decode_jpeg(inputs_fn):
     # function used to decode jpeg
     jpeg = tf.io.read_file(inputs_fn)
-    jpeg = tf.image.decode_jpeg(jpeg, channels=1)
-    jpeg = tf.image.resize(jpeg, (256, 256))
+    jpeg = tf.image.decode_jpeg(jpeg, channels=3)
+    jpeg = tf.image.resize(jpeg, (512, 512))
     return jpeg
 
 def decode_png(truth_fn):
     # function used to decode png
     png = tf.io.read_file(truth_fn)
     png = tf.image.decode_png(png, channels=1)
-    png = tf.image.resize(png, (256, 256))
+    png = tf.image.resize(png, (512, 512))
     return png
 
 def map_fn(inputs_fp,truth_fp):
