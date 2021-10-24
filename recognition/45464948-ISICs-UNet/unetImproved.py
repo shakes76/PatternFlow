@@ -52,7 +52,6 @@ def unetmodel():
     # element wise sum
     ews5 = Add()([conv5, contextModel5])  # ews = element wise sum
 
-
     #decoder part
     # upsampling module
     up_layer6 = UpSampling2D((2, 2))(ews5)
