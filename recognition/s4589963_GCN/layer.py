@@ -2,19 +2,17 @@ import torch
 
 """
 Graph convolution network layer.
-
 """
 
 
 class GCNLayer(torch.nn.Module):
     """
-    initialiser of graph convolution layer.
+    initializer of graph convolution layer.
 
     Params:
     input_dim: input dimension of this layer.
     out_dim: output dimension of this layer.
     use_bias: if use bias(optional).
-
     """
 
     def __init__(self, input_dim, output_dim, use_bias=True):
