@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras import models
-from functools import reduce
 import layers
 
 
@@ -33,12 +32,10 @@ class Perceiver(models.Model):
         latent_array = self.latent(inputs)
         inputs_enc = self.fourier_enc(inputs)
 
-        def attn_block(z: tf.Tensor, *args):
-            return reduce(
-                lambda z, attend: attend(z),
-                self.self_attentions,
-                self.cross_attention(z, inputs_enc),
-            )
+        z = latent_array
+        for _ in range(self.num_blocks):
+            z = self.cross_attention(z, inputs_enc)
+            for self_attention in self.self_attentions:
+                z = self_attention(z)
 
-        z = reduce(attn_block, range(self.num_blocks), latent_array)
         return self.logits(z)

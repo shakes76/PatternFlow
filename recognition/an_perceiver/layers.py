@@ -12,7 +12,7 @@ class Latent(layers.Layer):
             name="latent",
             shape=(dim, num_channels),
             initializer=initializers.TruncatedNormal(stddev=0.02),
-            trainable=True
+            trainable=True,
         )
 
     def call(self, inputs: tf.Tensor):
@@ -74,6 +74,10 @@ class FeedForwardNetwork(layers.Layer):
         return self.dense2(x)
 
 
+def layer_norm(epsilon=1e-5, **kwargs):
+    return layers.LayerNormalization(epsilon=epsilon, **kwargs)
+
+
 class CrossAttention(layers.Layer):
     """Cross-Attention followed by feed-forward network."""
 
@@ -81,20 +85,24 @@ class CrossAttention(layers.Layer):
         super().__init__(name=name)
         self.num_heads = num_heads
 
-    def build(self, input_q_shape: tuple[int, ...]):
-        layer_norm = lambda: layers.LayerNormalization(epsilon=1e-5)
         self.q_norm = layer_norm()
         self.kv_norm = layer_norm()
+        self.residual_add = layers.Add()
+        self.add_norm = layer_norm()
+        self.feed_forward = FeedForwardNetwork()
+
+    def build(self, input_q_shape: tuple[int, ...]):
         self.attention = layers.MultiHeadAttention(
             num_heads=self.num_heads, key_dim=input_q_shape[-1]
         )
-        self.feed_forward = FeedForwardNetwork()
 
     def call(self, inputs_q: tf.Tensor, inputs_kv: tf.Tensor):
         q = self.q_norm(inputs_q)
         kv = self.kv_norm(inputs_kv)
         attend_result = self.attention(q, kv)
-        return self.feed_forward(attend_result)
+        x = self.residual_add([inputs_q, attend_result])
+
+        return self.feed_forward(self.add_norm(x))
 
 
 class SelfAttention(layers.Layer):
@@ -104,17 +112,22 @@ class SelfAttention(layers.Layer):
         super().__init__(name=name)
         self.num_heads = num_heads
 
+        self.qkv_norm = layer_norm()
+        self.residual_add = layers.Add()
+        self.add_norm = layer_norm()
+        self.feed_forward = FeedForwardNetwork()
+
     def build(self, input_shape: tuple[int, ...]):
-        self.qkv_norm = layers.LayerNormalization(epsilon=1e-5)
         self.attention = layers.MultiHeadAttention(
             num_heads=self.num_heads, key_dim=input_shape[-1]
         )
-        self.feed_forward = FeedForwardNetwork()
 
     def call(self, inputs: tf.Tensor):
         qkv = self.qkv_norm(inputs)
         attend_result = self.attention(qkv, qkv)
-        return self.feed_forward(attend_result)
+        x = self.residual_add([inputs, attend_result])
+
+        return self.feed_forward(self.add_norm(x))
 
 
 class ClassificationDecoder(layers.Layer):
