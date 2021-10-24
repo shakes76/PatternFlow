@@ -24,15 +24,14 @@ Data and labels are in numpy arrays, float64.
 MRi voxel values vary from 0.0 upwards.
 The labels have 6 classes, labelled from 0.0 to 5.0.
 """
+dim = (256, 256, 128)
+CLASSES = 6
+
 def main():
     """ """
 
 
 
-    W = 256
-    D = 256
-    H = 128
-    CLASSES = 6
 
 
     """ 
@@ -95,10 +94,20 @@ def main():
                           for x in os.listdir('D:\\p\\label')])
 
     """ Test generator, try to visualise"""
-    training_generator = sm.ProstateSequence(img_gen_test, label_train, 1)
-    list_wish = [(x for x in training_generator)]
-    # print(*training_generator, sep='\n')
-    print(*(n for n in training_generator))
+    training_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
+    validation_generator = sm.ProstateSequence(img_gen_test, label_train, batch_size=1)
+
+    # list_wish = [(x for x in training_generator)]
+    # # print(*training_generator, sep='\n')
+    # print(*(n for n in training_generator))
+
+    """ Attempt to compile model"""    # todo update with BN, Relu
+    mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
+    # print(type(model))
+    # model.summary()
+
+# mdl.unet3d.compile()
+
 
 
 
@@ -130,8 +139,6 @@ def main():
     # # display images of labels
     # sm.slices(img_label)
 
-    # # attempt to compile model    # todo update with BN, Relu
-    # mdl.unet3d()
 
 
 
