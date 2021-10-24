@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 23/10/2021
+    Date last modified: 24/10/2021
     Python version: 3.9.7
 """
 
@@ -83,7 +83,7 @@ def generate_image_grid(
 
 def generate_loss_history(
     losses: tuple[list[float], list[float]], starting_epoch: int = 0
-):
+) -> plt.Figure:
 
     figure = plt.figure()
 
