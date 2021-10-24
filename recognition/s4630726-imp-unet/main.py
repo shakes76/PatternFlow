@@ -70,5 +70,21 @@ model = unet(height,width,2)
 
 model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=20, shuffle=True, validation_split=0.1)
+unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
+
+predictions = model.predict(X_test)
+
+
+#tf.print(predictions)
+
+match = tf.math.argmax(predictions,axis=3)
+
+#tf.print(match)
+
+plt.imshow(X_test[0,:,:,0],cmap="gray")
+plt.show()
+plt.imshow(Y_test[0,:,:,0],cmap="gray")
+plt.show()
+plt.imshow(match[0,:,:],cmap="gray")
+plt.show()
 
