@@ -2,11 +2,15 @@ import tensorflow as tf
 import os
 import cv2
 import matplotlib.pyplot as plt
-from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D, Concatenate, Conv2DTranspose, Reshape, Permute, Activation
 from tensorflow.keras.models import Model
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
+from model import unet 
 
+#Defining dimensions for cnn input and resizing
+width = 256 
+height = 192
+resize_dim = (height, width) 
 
 #List to store the input images for cnn
 X = [] 
@@ -15,11 +19,6 @@ Y = []
 
 #Directory where ISIC data is stored
 root = "C:/Users/s4630726/Downloads" 
-
-#Defining dimensions for cnn input and resizing
-width = 256 
-height = 192
-resize_dim = (height, width) 
 
 print("Iterating through training input...")
 #Iterate through folder reading each image and resizing them to a 4:3 aspect ratio of 256 x 192 then adding them to a global list
@@ -67,10 +66,9 @@ X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-print(X_train.shape)
-print(X_test.shape)
-print(Y_train.shape)
-print(Y_test.shape)
+model = unet(height,width,2)
 
-tf.print(X_test[0][80],summarize=-1)
-tf.print(Y_test[0][80],summarize=-1)
+model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=20, shuffle=True, validation_split=0.1)
+
