@@ -81,20 +81,14 @@ def layer_norm(epsilon=1e-5, **kwargs):
 class CrossAttention(layers.Layer):
     """Cross-Attention followed by feed-forward network."""
 
-    def __init__(self, num_heads: int = 1, name="cross_attention"):
+    def __init__(self, num_heads: int = 1, key_dim: int = 1024, name="cross_attention"):
         super().__init__(name=name)
-        self.num_heads = num_heads
-
         self.q_norm = layer_norm()
         self.kv_norm = layer_norm()
+        self.attention = layers.MultiHeadAttention(num_heads=num_heads, key_dim=key_dim)
         self.residual_add = layers.Add()
         self.add_norm = layer_norm()
         self.feed_forward = FeedForwardNetwork()
-
-    def build(self, input_q_shape: tuple[int, ...]):
-        self.attention = layers.MultiHeadAttention(
-            num_heads=self.num_heads, key_dim=input_q_shape[-1]
-        )
 
     def call(self, inputs_q: tf.Tensor, inputs_kv: tf.Tensor):
         q = self.q_norm(inputs_q)
@@ -108,19 +102,13 @@ class CrossAttention(layers.Layer):
 class SelfAttention(layers.Layer):
     """Self-Attention followed by feed-forward network."""
 
-    def __init__(self, num_heads: int = 8, name="self_attention"):
+    def __init__(self, num_heads: int = 8, key_dim: int = 128, name="self_attention"):
         super().__init__(name=name)
-        self.num_heads = num_heads
-
         self.qkv_norm = layer_norm()
+        self.attention = layers.MultiHeadAttention(num_heads=num_heads, key_dim=key_dim)
         self.residual_add = layers.Add()
         self.add_norm = layer_norm()
         self.feed_forward = FeedForwardNetwork()
-
-    def build(self, input_shape: tuple[int, ...]):
-        self.attention = layers.MultiHeadAttention(
-            num_heads=self.num_heads, key_dim=input_shape[-1]
-        )
 
     def call(self, inputs: tf.Tensor):
         qkv = self.qkv_norm(inputs)
