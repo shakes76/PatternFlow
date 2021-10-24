@@ -1,11 +1,9 @@
-"""
-Improved UNet implementation (2D version)
+"""Improved UNet implementation (2D version)
 
 Reference: https://arxiv.org/abs/1802.10508v1
 """
-import tensorflow as tf
-import tensorflow_addons as tfa
 from tensorflow.keras import layers, models
+import tensorflow_addons as tfa
 
 
 def encoder_module(input, num_filters, strides=(1, 1)):
@@ -52,7 +50,7 @@ def build_model(input_shape):
     down2 = encoder_module(down1, 32, strides=(2, 2))  # todo: strides=2?
     down3 = encoder_module(down2, 64, strides=(2, 2))
     down4 = encoder_module(down3, 128, strides=(2, 2))
-    down5 = encoder_module(down3, 256, strides=(2, 2))
+    down5 = encoder_module(down4, 256, strides=(2, 2))
 
     # upsampling
     up1 = decoder_module(down5, down4, 128)
