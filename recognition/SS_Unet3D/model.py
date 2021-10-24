@@ -1,20 +1,27 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv3D, Conv3DTranspose
-from tensorflow.keras.layers import Input, MaxPooling3D, BatchNormalization, concatenate
+from tensorflow.keras.layers import Input, MaxPooling3D, BatchNormalization, ReLU, concatenate, Softmax
 from tensorflow import keras
 
 
-@tf.function()
-def f1_score(y_pred, y_actual):
+# TODO: F1 Score (Dice Similarity) TF FUNCTION DECORATOR causes errors so disabled
+# @tf.function
+def f1_score(y_true, y_pred):
     # This line does not work with floating point tensors!
     # numerator = 2 * tf.size(tf.sets.intersection(y_pred, y_actual)).numpy()
     print(y_pred)
-    print(y_actual)
-    numerator = tf.reduce_sum(tf.cast(y_pred == y_actual, tf.int32))
+    print(y_true)
+    numerator = tf.reduce_sum(tf.cast(y_pred == y_true, tf.int32))
     print("Numerator: {}".format(numerator))
-    denominator = tf.size(y_pred) + tf.size(y_actual)
+    denominator = tf.size(y_pred) + tf.size(y_true)
     print("Denominator: {}".format(denominator))
     return tf.constant(numerator / denominator, dtype=tf.float64)
+
+
+# TODO: Weighted loss so background voxels do not over-influence learning
+def weighted_cross_entropy_loss(y_true, y_pred):
+    class_weights = tf.constant([0, 1, 1, 1, 1, 1, 1])
+    return 0
 
 
 class UNetCSIROMalePelvic:
@@ -45,7 +52,7 @@ class UNetCSIROMalePelvic:
         # Set up model parameters
         self.__init = keras.initializers.RandomNormal(stddev=0.02)
         self.__opt = tf.keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5)
-        self.__loss = tf.keras.losses.BinaryCrossentropy()
+        self.__loss = tf.keras.losses.CategoricalCrossentropy()
         self.train_batch_count = 0
         # Create Model
         self._create_model(given_name)
@@ -60,12 +67,16 @@ class UNetCSIROMalePelvic:
                 # Create Conv3D Layer
                 new_node_name = "L{}_{}_Conv3D_{}".format(layer_num, stage, i)
                 new_node = Conv3D(name=new_node_name, kernel_size=3, filters=num_maps[i-1],
-                                  activation='relu', kernel_initializer=self.__init,
+                                  kernel_initializer=self.__init,
                                   padding='same')(mdl_nodes.last())
                 mdl_nodes.add(name=new_node_name, node=new_node)
                 # Create Batch Normalization Layer
                 new_node_name = "L{}_{}_BN_{}".format(layer_num, stage, i)
                 new_node = BatchNormalization(name=new_node_name)(mdl_nodes.last())
+                mdl_nodes.add(name=new_node_name, node=new_node)
+                # Create ReLU Layer
+                new_node_name = "L{}_{}_ReLU_{}".format(layer_num, stage, i)
+                new_node = ReLU(name=new_node_name)(mdl_nodes.last())
                 mdl_nodes.add(name=new_node_name, node=new_node)
             pass
 
@@ -110,42 +121,37 @@ class UNetCSIROMalePelvic:
         # Input Layer
         mdl_input = Input(name="Input", shape=input_shape)
         mdl_nodes.add("Input", mdl_input)
-
+        scale = 1
         # Build Analysis Arm of UNet
-        _analysis_block(mdl_nodes, layer_num=1, num_maps=[16, 32])
-        _analysis_block(mdl_nodes, layer_num=2, num_maps=[32, 64])
-        _analysis_block(mdl_nodes, layer_num=3, num_maps=[64, 128])
+        _analysis_block(mdl_nodes, layer_num=1, num_maps=[16*scale, 32*scale])
+        _analysis_block(mdl_nodes, layer_num=2, num_maps=[32*scale, 64*scale])
+        _analysis_block(mdl_nodes, layer_num=3, num_maps=[64*scale, 128*scale])
         # Last layer does not have a trailer
-        _conv_block(mdl_nodes, layer_num=4, num_maps=[128, 256])
+        _conv_block(mdl_nodes, layer_num=4, num_maps=[128*scale, 256*scale])
         # Build Synthesis Arm of UNet
-        _synthesis_block(mdl_nodes, layer_num=4, num_maps=[128, 128])
-        _synthesis_block(mdl_nodes, layer_num=3, num_maps=[64, 64])
-        _synthesis_block(mdl_nodes, layer_num=2, num_maps=[32, 32])
+        _synthesis_block(mdl_nodes, layer_num=4, num_maps=[128*scale, 128*scale])
+        _synthesis_block(mdl_nodes, layer_num=3, num_maps=[64*scale, 64*scale])
+        _synthesis_block(mdl_nodes, layer_num=2, num_maps=[32*scale, 32*scale])
         # Final Convolution Layer
         new_node_name = "L{}_{}_FinalConv3D".format(1, 'SYN')
         new_node = Conv3D(name=new_node_name, kernel_size=1, strides=1, padding='same',
-                          filters=1, activation='softmax')(mdl_nodes.last())
+                          filters=6, activation='softmax')(mdl_nodes.last())
         mdl_nodes.add(name=new_node_name, node=new_node)
-
         # Instantiate & compile model object
         self.mdl = tf.keras.Model(inputs=mdl_input, outputs=mdl_nodes.last())
-        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[tf.metrics.binary_accuracy],#, f1_score],
+        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[None],
                          run_eagerly=True)
         # , tfa.metrics.F1Score(num_classes=2, threshold=0.5)],
         pass
 
-    @tf.function()
+    # TODO: Decide if required or not
     def train_batch(self, batch_size=32):
         print("Training '{}' on a batch of {}...".format(self.mdl.name, batch_size))
         return self.mdl.train_on_batch()
         pass
 
-    def save_model(self, loc):
-        # Save Model
-        pass
-
-    @tf.function()
-    def save_model(model, model_series, curr_epoch):
+    # TODO: Yet to implement saving feature
+    def save_model(self, model, model_series, curr_epoch, loc):
         save_name = model_series + "_" + model.name + "_AtEpoch_" + str(curr_epoch)
         model.save(r"models\{}".format(save_name))
         pass

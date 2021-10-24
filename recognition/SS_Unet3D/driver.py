@@ -4,8 +4,17 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import datetime
+from tensorflow.keras.utils import to_categorical
 
 from model import UNetCSIROMalePelvic
+
+# Credit: Taken from demo.py in pyimgaug3d
+def save_as_nifti(data, folder, name, affine=np.eye(4)):
+    img = nib.Nifti1Image(data, affine)
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    nib.save(img, os.path.join(folder, name))
+    pass
 
 
 # Standardizes the NP array (0 Mean & Unit Variance)
@@ -84,29 +93,46 @@ def main():
     split_names_arr = np.array(['train', 'val', 'test'])
     master_df = read_and_split_data(cleaned_data_dir, split_perc_arr, split_names_arr)
     print(master_df.info(verbose=True))
-    # Collect a training sample
-    sample = master_df[master_df['split_type'] == 'train'].sample(n=1)
-    # Load it into memory
-    curr_x = nib.load(sample.x_filepath.item()).get_fdata()
-    curr_y = nib.load(sample.y_filepath.item()).get_fdata()
-    # Standardize
-    curr_x = standardize(curr_x)
-    curr_y = standardize(curr_y)
-    print("Start Training at {}".format(datetime.datetime.now()))
-    # Add a dimension at the start for Batch Size of 1
-    curr_x = curr_x[None, ...]
-    curr_y = curr_y[None, ...]
-    print(curr_x.shape)
-    print(curr_y.shape)
 
-    #print(curr_y)
+    # Main Training Loop
+    for i in range(10):
 
-    result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y, reset_metrics=False, return_dict=True)
-    #the_model.train_batch_count += 1
-    print("Finish Training at {}".format(datetime.datetime.now()))
+        # Collect a training sample
+        sample = master_df[master_df['split_type'] == 'train'].sample(n=1)
+        # Load it into memory
+        curr_x = nib.load(sample.x_filepath.item()).get_fdata()
+        curr_y = nib.load(sample.y_filepath.item()).get_fdata()
+        # Standardize
+        curr_x = standardize(curr_x)
+        #curr_y = standardize(curr_y)
 
-    print('result of training:')
-    print(result)
+
+        #print("unique vals in y:", np.unique(curr_y))
+
+        # One-hot Encode Y (mask)
+        class_count = 6
+        #print("curr_y shape:", curr_y.shape)
+        curr_y = to_categorical(curr_y, num_classes=class_count, dtype=np.int32)
+
+        #print("categorical curr_y shape:", curr_y.shape)
+        #print("categorical curr_y:", curr_y)
+
+        print("Start Training at {}".format(datetime.datetime.now()))
+        # Add a dimension at the start for Batch Size of 1
+        curr_x = curr_x[None, ...]
+        curr_y = curr_y[None, ...]
+        print(curr_x.shape)
+        print(curr_y.shape)
+
+        #print(curr_y)
+
+        result = None
+
+        result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y, reset_metrics=False, return_dict=True)
+        the_model.train_batch_count += 1
+        print("Finish Training at {}".format(datetime.datetime.now()))
+        print('result of training:')
+        print(result)
 
     pass
 
