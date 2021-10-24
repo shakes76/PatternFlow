@@ -6,15 +6,13 @@
     Requirements:
         - Tensorflow 2.0
         - tqdm
-        - time
         - matplotlib
-        - os
         - util.py
         - train.py
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 22/10/2021
+    Date last modified: 24/10/2021
     Python version: 3.9.7
 """
 
@@ -30,7 +28,14 @@ os.environ[
     "TF_CPP_MIN_LOG_LEVEL"
 ] = "1"  # Must be done before TensorFlow import
 
-from util import load_images, augment_images, visualise_images, visualise_loss
+from util import (
+    load_images,
+    augment_images,
+    save_figure,
+    visualise_images,
+    visualise_loss,
+    generate_loss_history,
+)
 from gan import (
     get_generator,
     get_discriminator,
@@ -39,64 +44,55 @@ from gan import (
     train,
 )
 
-# Optimiser hyperparameters
-GENERATOR_LR: float = 8e-6
-DISCRIMINATOR_LR: float = 1e-6
-# Additional hyperparameters
-# key : hyperparameter name, value : hyperparameter value
-GENERATOR_HYPERPARAMETERS = {
-    # The following are valid parameters with their default values
-    # "beta_1": 0.9,
-    # "beta_2": 0.999,
-    # "epsilon": 1e-7,
-    # "amsgrad": False,
-}
-DISCRIMINATOR_HYPERPARAMETERS = {}
-
-# Model hyperparameters
-IMAGE_SIZE: int = 256
-BATCH_SIZE: int = 32
-SAMPLE_SIZE: int = 32
-NUM_FILTERS: int = 512
-LATENT_DIMENSION: int = 512
-KERNEL_SIZE: int = 3
-DROPOUT: float = 0.2
-
-# Paths
-# End all paths with a file seperator
+# Training image paths
 IMAGE_PATHS: list[str] = [
+    # List of all image directories
+    # NOTE: All paths must end with a file seperator
     "./keras_png_slices_data/unsegmented/"
-]  # List of all image directories
-# The following can be set to None
-SAMPLE_IMAGES_PATH: str = (
-    "./training/"  # If None, set SAVE_SAMPLE_IMAGES to False
-)
-WEIGHT_PATH: str = "./weights/"  # If None, set SAVE_WEIGHTS to False
-# Error would be thrown if LOAD_WEIGHTS is True and GENERATOR_WEIGHT_PATH or DISCRIMINATOR_WEIGHT_PATH is invalid
-GENERATOR_WEIGHT_PATH: str = ""
-DISCRIMINATOR_WEIGHT_PATH: str = ""
+]
 
 # Training variables
 TRAIN: bool = True
-EPOCHS: int = 50
+EPOCHS: int = 200
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
 MODEL_NAME: str = "Trial 12"
+
+# Model weight loading
 LOAD_WEIGHTS: bool = False
+GENERATOR_WEIGHT_PATH: str = ""
+DISCRIMINATOR_WEIGHT_PATH: str = ""
+
+# Model weight saving
 SAVE_WEIGHTS: bool = True
 WEIGHT_SAVING_INTERVAL: int = 5
+WEIGHT_PATH: str = "./weights/"
+
+# Sample images
 SAVE_SAMPLE_IMAGES: bool = True
+SHOW_FINAL_SAMPLE_IMAGES: bool = False
 IMAGE_SAVING_INTERVAL: int = 1
+SAMPLE_IMAGES_PATH: str = "./training/"
 
+# Model losses
+VISUALISE_LOSS: bool = False
+SAVE_LOSS: bool = True
+LOSS_PATH: str = "./resources/"
 
+# ==========================================================
 def main():
 
     # Optimizers
-    gen_optimizer = get_optimizer(
-        learning_rate=GENERATOR_LR, **GENERATOR_HYPERPARAMETERS
-    )
-    disc_optimizer = get_optimizer(
-        learning_rate=DISCRIMINATOR_LR, **DISCRIMINATOR_HYPERPARAMETERS
-    )
+    gen_optimizer = get_optimizer(learning_rate=1e-7)
+    disc_optimizer = get_optimizer(learning_rate=1e-7)
+
+    # Model hyperparameters
+    IMAGE_SIZE: int = 256
+    BATCH_SIZE: int = 32
+    SAMPLE_SIZE: int = 32
+    NUM_FILTERS: int = 512
+    LATENT_DIMENSION: int = 512
+    KERNEL_SIZE: int = 3
+    DROPOUT: float = 0.2
 
     # Models
     generator = get_generator(
@@ -111,8 +107,15 @@ def main():
 
     # Train
     if TRAIN:
+        print("Loading images.")
         images = load_images(IMAGE_PATHS, BATCH_SIZE, IMAGE_SIZE)
+        print("Done loading images.")
+
+        print("Augmenting images.")
         batches, images = augment_images(images)
+        print("Done augmenting images.")
+
+        print("Starting GAN training.")
         history = train(
             generator,
             discriminator,
@@ -133,13 +136,24 @@ def main():
             image_save_path=SAMPLE_IMAGES_PATH,
             image_save_interval=IMAGE_SAVING_INTERVAL,
         )
-        visualise_loss(history, TOTAL_PREVIOUS_EPOCHS)
+        print("Done training.")
 
-    # Show sample images
-    samples = generate_samples(
-        generator, LATENT_DIMENSION, SAMPLE_SIZE, IMAGE_SIZE
-    )
-    visualise_images(samples)
+        if VISUALISE_LOSS:
+            visualise_loss(history, TOTAL_PREVIOUS_EPOCHS)
+
+        if SAVE_LOSS:
+            figure = generate_loss_history(history, TOTAL_PREVIOUS_EPOCHS)
+            save_figure(
+                figure,
+                f"{LOSS_PATH}Loss_{'_'.join([s.lower() for s in MODEL_NAME.split()])}.png",
+            )
+
+    if SHOW_FINAL_SAMPLE_IMAGES:
+        # Show sample images
+        samples = generate_samples(
+            generator, LATENT_DIMENSION, SAMPLE_SIZE, IMAGE_SIZE
+        )
+        visualise_images(samples)
 
 
 if __name__ == "__main__":
