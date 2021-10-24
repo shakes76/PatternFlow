@@ -67,3 +67,13 @@ if __name__ == '__main__':
     )
     D_optimiser = optim.Adam(D_net.parameters(), lr=args.lr,
                              betas=(beta_0, beta_1))
+
+    norm = 0.5
+    transform = transforms.Compose(
+        [
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((norm, norm, norm), (norm, norm, norm), inplace=True),
+        ]
+    )
+    
