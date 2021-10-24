@@ -19,14 +19,17 @@ def run_experiment(opts):
         data_dir=opts.data_dir,
         with_info=True,
         as_supervised=True,
+        shuffle_files=True,
     )
 
     num_classes = info.features["label"].num_classes
     train, validation, test = preprocess(
         *splits,
-        batch_size=opts.batch_size,
         num_classes=num_classes,
-        image_dims=opts.image_dims
+        image_dims=opts.image_dims,
+        hflip_concat=opts.hflip_concat,
+        train_batch_size=opts.train_batch_size,
+        eval_batch_size=opts.eval_batch_size,
     )
 
     perceiver = Perceiver(
@@ -45,8 +48,13 @@ def run_experiment(opts):
             learning_rate=opts.learning_rate,
             weight_decay_rate=opts.weight_decay_rate,
         ),
-        loss=losses.CategoricalCrossentropy(from_logits=True),
-        metrics=[metrics.CategoricalAccuracy(name="accuracy")],
+        loss=losses.CategoricalCrossentropy(
+            from_logits=True, label_smoothing=opts.label_smoothing
+        ),
+        metrics=[
+            metrics.CategoricalAccuracy(name="accuracy"),
+            metrics.TopKCategoricalAccuracy(1, name="top1_accuracy"),
+        ],
     )
 
     csv_logger = callbacks.CSVLogger(filename=os.path.join(opts.out_dir, "history.csv"))
@@ -55,16 +63,17 @@ def run_experiment(opts):
     )
 
     history = perceiver.fit(
-        x=train,
-        epochs=opts.epochs,
+        train,
+        batch_size=opts.train_batch_size,
         validation_data=validation,
+        validation_batch_size=opts.train_batch_size,
+        epochs=opts.epochs,
         callbacks=[model_checkpointer, csv_logger],
     )
 
-    perceiver.save(os.path.join(opts.out_dir, "perceiver"), save_format="h5")
-    loss, accuracy = perceiver.evaluate(test)
+    perceiver.save_weights(os.path.join(opts.out_dir, "perceiver"))
+    eval_result = perceiver.evaluate(test, return_dict=True)
 
-    eval_result = {"loss": loss, "accuracy": accuracy}
     with open(os.path.join(opts.out_dir, "eval.txt"), "w") as file:
         print(eval_result, file=file)
 
@@ -87,7 +96,6 @@ def get_opts():
         choices=["DEBUG", "INFO", "WARN", "ERROR"],
         help="tensorflow log level",
     )
-
     parser.add_argument(
         "--show-config",
         action="store_true",
@@ -104,10 +112,22 @@ def get_opts():
         help="number of training epochs",
     )
     training.add_argument(
-        "--batch-size",
+        "--train-batch-size",
         type=int,
         default=64,
-        help="batch size for all splits, in training and evaluation",
+        help="batch size for train and validation splits during training",
+    )
+    training.add_argument(
+        "--eval-batch-size",
+        type=int,
+        default=16,
+        help="batch size for test during evaluation",
+    )
+    training.add_argument(
+        "--label-smoothing",
+        type=float,
+        default=0.1,
+        help="label smoothing for categorical loss",
     )
     training.add_argument(
         "--out-dir",
@@ -129,6 +149,12 @@ def get_opts():
         type=int,
         nargs="+",
         help="resize images without distortion",
+    )
+    dataset.add_argument(
+        "--hflip-concat",
+        action="store_true",
+        default=True,
+        help="train and validation: horizontally flip images, reverse labels and concat with input",
     )
 
     # perceiver options
