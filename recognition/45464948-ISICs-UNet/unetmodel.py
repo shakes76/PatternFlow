@@ -1,47 +1,95 @@
-from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D
-from tensorflow.keras.layers import UpSampling2D , concatenate
+from tensorflow.keras.layers import BatchNormalization , ReLU ,Dropout
+from tensorflow.keras.layers import Input , Conv2D, Add
+from tensorflow.keras.layers import UpSampling2D , concatenate, LeakyReLU
 from tensorflow.keras.models import Model
 
-def model():
+def contextModel(input_layer,conv):
+    # from easy, each context module is in fact a pre-activation residual block with two
+    # 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between
+    block = BatchNormalization()(input_layer)
+    block = ReLU()(block)
+    block = Conv2D(conv, (3, 3), padding='same')(block)
+    # dropout layer (pdrop = 0.3) in between
+    block = Dropout(0.3)(block)
+    block = BatchNormalization()(block)
+    block = ReLU()(block)
+    block = Conv2D(conv, (3, 3), padding='same')(block)
+    return block
+
+
+def unetmodel():
 
     #encoder part
     input_layer = Input(shape=(256,256,3))
 
-    conv1 = Conv2D(64,(3,3), activation='relu', padding='same')(input_layer)
-    conv1 = Conv2D(64,(3,3), activation='relu', padding='same')(conv1)
-    pool1 = MaxPooling2D((2,2), padding='same')(conv1)
-    conv2 = Conv2D(128,(3,3), activation='relu', padding='same')(pool1)
-    conv2 = Conv2D(128,(3,3), activation='relu', padding='same')(conv2)
-    pool2 = MaxPooling2D((2,2), padding='same')(conv2)
-    conv3 = Conv2D(256,(3,3), activation='relu', padding='same')(pool2)
-    conv3 = Conv2D(256,(3,3), activation='relu', padding='same')(conv3)
-    pool3 = MaxPooling2D((2,2), padding='same')(conv3)
-    conv4 = Conv2D(512,(3,3), activation='relu', padding='same')(pool3)
-    conv4 = Conv2D(512,(3,3), activation='relu', padding='same')(conv4)
-    pool4 = MaxPooling2D((2,2), padding='same')(conv4)
-    conv5 = Conv2D(1024,(3,3), activation='relu', padding='same')(pool4)
-    encoded = Conv2D(1024,(3,3), activation='relu', padding='same')(conv5)
+    conv1 = Conv2D(16,(3,3), padding='same')(input_layer)
+    contextModel1 = contextModel(conv1,16)
+    ews1 = Add()([conv1,contextModel1])# ews = element wise sum
+    conv2 = Conv2D(32, (3, 3), strides=(2,2), padding='same')(ews1)
+    contextModel2 = contextModel(conv2, 32)
+    ews2 = Add()([conv2, contextModel2])  # ews = element wise sum
+    conv3 = Conv2D(64, (3, 3), strides=(2,2), padding='same')(ews2)
+    contextModel3 = contextModel(conv3, 64)
+    ews3 = Add()([conv3, contextModel3])  # ews = element wise sum
+    conv4 = Conv2D(128, (3, 3), strides=(2, 2), padding='same')(ews3)
+    contextModel4 = contextModel(conv4, 128)
+    ews4 = Add()([conv4, contextModel4])  # ews = element wise sum
+    conv5 = Conv2D(256, (3, 3), strides=(2, 2), padding='same')(ews4)
+    contextModel5 = contextModel(conv5, 256)
+    ews5 = Add()([conv5, contextModel5])  # ews = element wise sum
+
 
     #decoder part
-    up_layer6 = UpSampling2D((2, 2))(encoded)
-    conc6 = concatenate([conv4, up_layer6])
-    conv6 = Conv2D(1024, (3, 3), activation='relu', padding='same')(conc6)
-    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
-    up_layer7 = UpSampling2D((2, 2))(conv6)
-    conc7 = concatenate([conv3, up_layer7])
-    conv7 = Conv2D(512, (3, 3), activation='relu', padding='same')(conc7)
-    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
-    up_layer8 = UpSampling2D((2, 2))(conv7)
-    conc8 = concatenate([conv2, up_layer8])
-    conv8 = Conv2D(256, (3, 3), activation='relu', padding='same')(conc8)
-    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
-    up_layer9 = UpSampling2D((2, 2))(conv8)
-    conc9 = concatenate([conv1, up_layer8])
-    conv9 = Conv2D(128, (3, 3), activation='relu', padding='same')(conc9)
-    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
-    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+    # upsampling module
+    up_layer6 = UpSampling2D((2, 2))(ews5)
+    up_layer6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= .02), padding='same')(up_layer6)
+    # concatenate
+    conc6 = concatenate([ews4, up_layer6])
+    # localization module
+    loca6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= .02), padding='same')(conc6)
+    loca6 = BatchNormalization()(loca6)
+    loca6 = Conv2D(128, (1, 1), activation= LeakyReLU(alpha= .02),padding='same')(loca6)
+    loca6 = BatchNormalization()(loca6)
+    # upsampling module
+    up_layer7 = UpSampling2D((2, 2))(loca6)
+    up_layer7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer7)
+    # concatenate
+    conc7 = concatenate([ews3, up_layer7])
+    # localization module
+    loca7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(conc7)
+    loca7 = BatchNormalization()(loca7)
+    loca7 = Conv2D(64, (1, 1), activation=LeakyReLU(alpha=.02), padding='same')(loca7)
+    loca7 = BatchNormalization()(loca7)
+    #segmentation layer
+    seg7 = Conv2D(1,(1,1))(loca7)
+    seg7 = UpSampling2D((2,2))(seg7)
+    # upsampling module
+    up_layer8 = UpSampling2D((2, 2))(loca7)
+    up_layer8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer8)
+    # concatenate
+    conc8 = concatenate([ews2, up_layer8])
+    # localization module
+    loca8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(conc8)
+    loca8 = BatchNormalization()(loca8)
+    loca8 = Conv2D(32, (1, 1), activation=LeakyReLU(alpha=.02), padding='same')(loca8)
+    loca8 = BatchNormalization()(loca8)
+    # segmentation layer
+    seg8 = Conv2D(1, (1, 1))(loca8)
+    seg8 = Add()([seg7, seg8])
+    seg8 = UpSampling2D((2, 2))(seg8)
+    # upsampling module
+    up_layer9 = UpSampling2D((2, 2))(loca8)
+    up_layer9 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer9)
+    # concatenate
+    conc9 = concatenate([ews1, up_layer9])
+    #convolution
+    conv9 = Conv2D(32, (3,3), activation = LeakyReLU(alpha=.02), padding='same')(conc9)
+    #segmentation layer
+    seg9 = Conv2D(1, (1, 1))(conv9)
+    seg9 = Add()([seg9, seg8])
 
-    decoded = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    output_layer = Conv2D(1, (1,1),activation='softmax')(seg9)
 
-    unetmodel = Model(input_layer,decoded)
+
+    unetmodel = Model(input_layer,output_layer)
     return unetmodel
