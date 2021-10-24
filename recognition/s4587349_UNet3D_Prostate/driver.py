@@ -3,7 +3,7 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from skimage.io import imread, imshow
+# from skimage.io import imread, imshow
 
 
 from tensorflow import keras

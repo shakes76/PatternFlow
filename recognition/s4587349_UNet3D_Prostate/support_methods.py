@@ -1,11 +1,11 @@
 import tensorflow as tf
-import keras.utils.data_utils
+# import keras.utils.data_utils
 import tensorflow.keras.utils
 import numpy as np
 from matplotlib import pyplot as plt
 from nibabel.brikhead import filepath
-from skimage.io import imread
-from skimage.transform import resize
+# from skimage.io import imread
+# from skimage.transform import resize
 import math
 import nibabel as nib
 import tensorflow as tf
@@ -13,7 +13,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 # from keras.utils import Sequence
 import tensorflow.keras.utils
-from keras.models import Sequential
+from tensorflow.keras.models import Sequential
 import os
 import sys
 
