@@ -11,6 +11,7 @@ from tensorflow.keras import layers
 
 import unet_model as mdl
 import support_methods as sm
+# from support_methods import ProstateSequence
 
 """
 Sources
@@ -23,77 +24,101 @@ Data and labels are in numpy arrays, float64.
 MRi voxel values vary from 0.0 upwards.
 The labels have 6 classes, labelled from 0.0 to 5.0.
 """
-
-W = 256
-D = 256
-H = 128
-CLASSES = 6
-
-
-"""
-Patients had from 1 to 8 MRI scans, a week apart. As scans for a given
-patient are expected to be similar each patients scans have been considered as
-one sample. All up there are 38 patients, and these have been distributed
-between training, validation and testing at 27:7:4 with the number of images
-at 158:35:18.
-"""
-
-# Data Sources Windows
-# Data sources
-X_TRAIN_DIR = 'D:\\prostate\\mr_train'
-X_VALIDATE_DIR = 'D:\\prostate\\mr_validate'
-X_TEST_DIR = 'D:\\prostate\\mr_test'
-# Label sources
-Y_TRAIN_DIR = 'D:\\prostate\\label_train'
-Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
-Y_TEST_DIR = 'D:\\prostate\\label_test'
-
-
-
-
-
-# # Data sources Goliath
-# # Data sources
-# X_TRAIN_DIR = '~/prostate/mr_train'
-# X_VALIDATE_DIR = '~/prostate/mr_validate'
-# X_TEST_DIR = '~/prostate/mr_test'
-# # Label sources
-# Y_TRAIN_DIR = '~/prostate?label_train'
-# Y_VALIDATE_DIR = '~/prostate/label_validate'
-# Y_TEST_DIR = '~/prostate/label_test'
-
-# Example data & label
-img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
-img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
-
-
-image_train = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
-               for x in os.listdir('D:\\prostate\\mr_train')]
-image_validate = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_validate', x)
-                  for x in os.listdir('D:\\prostate\\mr_validate')]
-image_test = [os.path.join(os.getcwd(), 'D:\\prostate\\mr_test', x)
-          for x in os.listdir('D:\\prostate\\mr_test')]
-
-
-label_train = [os.path.join(os.getcwd(),'D:\\prostate\\label_train', x)
-               for x in os.listdir('D:\\prostate\\label_train')]
-label_validate = [os.path.join(os.getcwd(),'D:\\prostate\\label_validate', x)
-                  for x in os.listdir('D:\\prostate\\label_validate')]
-label_test = [os.path.join(os.getcwd(),'D:\\prostate\\label_test', x)
-              for x in os.listdir('D:\\prostate\\label_test')]
-
-
-
-
-
-print(W)
-
-
-
-
-
 def main():
     """ """
+
+
+
+    W = 256
+    D = 256
+    H = 128
+    CLASSES = 6
+
+
+    """ 
+    Patients had from 1 to 8 MRI scans, a week apart. As scans for a given
+    patient are expected to be similar each patients scans have been considered as
+    one sample. All up there are 38 patients, and these have been distributed
+    between training, validation and testing at 27:7:4 with the number of images
+    at 158:35:18.
+    """
+
+    # """ Data Sources Windows """
+    # Data sources
+    X_TRAIN_DIR = 'D:\\prostate\\mr_train'
+    X_VALIDATE_DIR = 'D:\\prostate\\mr_validate'
+    X_TEST_DIR = 'D:\\prostate\\mr_test'
+    # Label sources
+    Y_TRAIN_DIR = 'D:\\prostate\\label_train'
+    Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
+    Y_TEST_DIR = 'D:\\prostate\\label_test'
+
+
+
+
+
+    # """ Data sources Goliath """
+    # # Data sources
+    # X_TRAIN_DIR = '~/prostate/mr_train'
+    # X_VALIDATE_DIR = '~/prostate/mr_validate'
+    # X_TEST_DIR = '~/prostate/mr_test'
+    # # Label sources
+    # Y_TRAIN_DIR = '~/prostate?label_train'
+    # Y_VALIDATE_DIR = '~/prostate/label_validate'
+    # Y_TEST_DIR = '~/prostate/label_test'
+
+    # Example data & label
+    img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
+    img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
+
+
+    image_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
+                   for x in os.listdir('D:\\prostate\\mr_train')])
+    image_validate = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_validate', x)
+                      for x in os.listdir('D:\\prostate\\mr_validate')])
+    image_test = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_test', x)
+              for x in os.listdir('D:\\prostate\\mr_test')])
+
+
+    label_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_train', x)
+                   for x in os.listdir('D:\\prostate\\label_train')])
+    label_validate = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_validate', x)
+                      for x in os.listdir('D:\\prostate\\label_validate')])
+    label_test = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_test', x)
+                  for x in os.listdir('D:\\prostate\\label_test')])
+
+
+    img_gen_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\data', x)
+                           for x in os.listdir('D:\\p\\data')])
+
+    label_train = sorted([os.path.join(os.getcwd(), 'D:\\p\\label', x)
+                          for x in os.listdir('D:\\p\\label')])
+
+    """ Test generator, try to visualise"""
+    training_generator = sm.ProstateSequence(img_gen_test, label_train, 1)
+    list_wish = [(x for x in training_generator)]
+    # print(*training_generator, sep='\n')
+    print(*(n for n in training_generator))
+
+
+
+    # # test print of list of label names which include path
+    # print(label_test)
+
+    # # test to_categorical
+    # y = np.array([[[1,2,3,4],[3,4,5,2]],[[1,2,3,4],[3,4,5,3]]])
+    # ohe = keras.utils.to_categorical(y, num_classes = 6)
+    # print(y)
+    # print(ohe)
+    # print(y.shape, ohe.shape)
+
+    # #  check shape for to_categorical for single label
+    # ohe = keras.utils.to_categorical(img_label, num_classes = 6)
+    # print(img_label.shape, ohe.shape)
+    # print(type(img_label), type(img_mr), type(ohe))
+
+
+
     # """ Checks dimensions of each image and label against expected."""
     # sm.dim_per_directory()
 
@@ -105,13 +130,12 @@ def main():
     # # display images of labels
     # sm.slices(img_label)
 
-    # # attempt to compile model    #update with BN, Relu
+    # # attempt to compile model    # todo update with BN, Relu
     # mdl.unet3d()
 
 
 
     # todo
-    # files to laptop (git)
     # upsampling vs conc3DTranspose
     # check size of each image
     # find my original work
@@ -137,6 +161,7 @@ def main():
     # delete jupyter files from repo
     # save images to add to readme
     # customer 19, week 1 outsize, fix / resize / reshape...?
+    # files to laptop (git)
 
     # todo Issues non -critical
     # 1. Not printing images in subplots, works in jupyter
