@@ -131,7 +131,7 @@ for epoch in range(epochs):
 #     plt.title(title)
 #     return fig
 
-# pca_50 = PCA(n_components=50) 
+# pca_50 = PCA(n_components=50) # change to 90 if reduce dimensions to 90
 # pca_result_50 = pca_50.fit_transform(features)
 # tsne = TSNE(perplexity=30, n_components=2, init='pca')
 # result = tsne.fit_transform(pca_result_50)
