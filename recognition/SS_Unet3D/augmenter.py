@@ -22,7 +22,7 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
 # alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
                             ds_factor=1, verbose=False):
-    aug_count = 2
+    aug_count = 0
     expected_img_size = (256, 256, 128)
     # Set up paths
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
@@ -47,6 +47,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
         # Load X Y file pair into memory
         curr_x = nib.load(orig_data_x_dirpath + '/' + datum[0]).get_fdata()
         curr_y = nib.load(orig_data_y_dirpath + '/' + datum[1]).get_fdata()
+        print("unique vals in y:", np.unique(curr_y))
         ################################################################################################################
         # DATA CLEANSING AND DOWN-SAMPLING #############################################################################
         ################################################################################################################
@@ -100,7 +101,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
         save_as_nifti(curr_x, output_data_dirpath, datum[0].replace('_LFOV.nii.gz', '') \
                       + '_AUG_0_ORIG' + '_LFOV.nii.gz')
         # Convert Y (segmented file) to Binary Class (0/1 Prostate) and save to processed folder
-        curr_y = simplify_labels(curr_y)
+        # curr_y = simplify_labels(curr_y)
         save_as_nifti(curr_y, output_data_dirpath, datum[1].replace('_SEMANTIC_LFOV.nii.gz', '') \
                       + '_AUG_0_ORIG' + '_SEMANTIC_LFOV.nii.gz')
         # ####################################
