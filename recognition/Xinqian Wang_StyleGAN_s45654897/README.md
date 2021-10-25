@@ -29,6 +29,12 @@ w1,w2,w3,w4 = mapNet(z1), mapNet(z2), mapNet(z3), mapNet(z4)
 | z4 | 45018.316   | 20201.037  |
 
 **We learned that one of the Mapping Network's function is to transform the random vector to a particular distribution with fixed mean and standard deviation.**
-We also made two plots
-![alt-text-1](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_mean_std.png) ![alt-text-2](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_mean_std.png)
+
+We also made two plots, with the number of 500 x,y sets which represents mean,std. For each set, these mean and std are calculated from a number of 2000 vectors we made. The plot on the left is for the latent code z and right is for the intermediate latent code w.
+
+Latent code (Z)         |  Intermediate latent code (W)
+:-------------------------:|:-------------------------:
+![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_mean_std.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_mean_std.png)
+
+**We can see for the latent vector without going into the mapping network, it takes up most of the plot. However, for the intermediate latent code coming after the mapping network, it presents a linear format, when the mean higher, the std is ten to go increase too.**
 ## Search for connection between different columns
