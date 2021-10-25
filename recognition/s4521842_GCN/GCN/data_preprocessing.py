@@ -1,9 +1,3 @@
-import numpy as np
-import scipy.sparse as sp
-
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.model_selection import train_test_split
-
 class DataPreprocessing():
     def __init__(self, path='dataset/facebook.npz'):
         
@@ -43,7 +37,7 @@ class DataPreprocessing():
         degree = np.array(adjacency.sum(1))
         d_hat = sp.diags(np.power(degree, -0.5).flatten())
 
-        return d_hat.dot(adjacency).dot(d_hat).tocoo()
+        return d_hat.dot(adjacency).dot(d_hat).tocsr().todense()
     
     def data_split(self, n_nodes):
         train_idx = range(int((n_nodes)*0.5))
@@ -68,7 +62,7 @@ class DataPreprocessing():
         
         label_encoder = LabelBinarizer()
         encoded_labels = label_encoder.fit_transform(labels)
-        return encoded_labels
+        return tf.convert_to_tensor(encoded_labels, dtype=tf.float32)
         
     def data_processing(self):
         
@@ -89,9 +83,11 @@ class DataPreprocessing():
         
         train_mask, val_mask, test_mask, train_labels, val_labels, test_labels= self.data_split(self.n_nodes)
         
-        return self.data_features, self.data_target, adjacency_norm, train_mask, val_mask, test_mask, train_labels, val_labels, test_labels
+        train_labels = self.one_hot_encoding(train_labels)
+        val_labels = self.one_hot_encoding(val_labels)
+        test_labels = self.one_hot_encoding(test_labels)
+        
+        return self.data_features, onehot_labels, adjacency_norm, train_mask, val_mask, test_mask, train_labels, val_labels, test_labels
         
     def get_data(self):
         return self.dataset
-
-        
