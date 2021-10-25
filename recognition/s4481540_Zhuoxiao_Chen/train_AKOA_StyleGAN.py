@@ -15,11 +15,16 @@ from network import Styled_G, D
 # import all required libraries.
 
 
+def learning_rate_decay(optim, learning_rate):
+    """
+    The learning rate decay is used to multiplicate the learning rate with a 
+    multiplier in the optimser. 
+    """
+    index = 1
+    for prameters in optim.param_groups:
+        prameters['lr'] = learning_rate * prameters.get('mult', index)
 
-def adjust_lr(optimizer, lr):
-    for group in optimizer.param_groups:
-        mult = group.get('mult', 1)
-        group['lr'] = lr * mult
+
 
 def stacking_parameters(net_0, net_1, weight_decay=0.999):
     """Accumulate the parameters of two models based on the weight decay"""
@@ -50,7 +55,7 @@ def train(args, generator, discriminator):
 
     step = int(math.log2(args.init_size)) - 2
     resolution = 4 * 2 ** step
-    loader = sample_data(
+    loader = shuffle_samples(
         dataset, args.batch.get(resolution, args.batch_default), resolution
     )
     data_loader = iter(loader)
@@ -96,7 +101,7 @@ def train(args, generator, discriminator):
 
             resolution = 4 * 2 ** step
 
-            loader = sample_data(
+            loader = shuffle_samples(
                 dataset, args.batch.get(resolution, args.batch_default), resolution
             )
             data_loader = iter(loader)
@@ -252,7 +257,7 @@ def train(args, generator, discriminator):
         )
 
         pbar.set_description(state_msg)
-        
+
 
 def change_gradient_status(network, status=True):
     """
@@ -264,11 +269,16 @@ def change_gradient_status(network, status=True):
     for prameters in network.parameters():
         prameters.requires_grad = status
 
-def sample_data(dataset, batch_size, image_size=4):
-    dataset.resolution = image_size
-    loader = DataLoader(dataset, shuffle=True, batch_size=batch_size, num_workers=1, drop_last=True)
-
-    return loader
+def shuffle_samples(samples, batch_size, feature_map_size=4):
+    """
+    This function is used to shuffle the whole dataset, given the
+    specific batch size and feature_map_size. The final sampled dataset
+    is also loaded into the DataLoader, which will be used for later
+    Pytorch usage.
+    """
+    samples.resolution = feature_map_size
+    return DataLoader(samples, shuffle=True, 
+        batch_size=batch_size, num_workers=1, drop_last=True)
 
 if __name__ == '__main__':
 
