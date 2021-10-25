@@ -22,7 +22,9 @@ If G is represented is as the generator and D is the discriminator, the loss fun
 <img src="https://user-images.githubusercontent.com/50613939/138630901-2ded07f0-7f62-4ebd-9eb0-8fb5537608f6.png" alt="drawing" width="600"/>
 
 ### Progressive GAN
-The key focus of Progressive GAN is a training process approach for GANs, where at the beginning, the images are always in low resolutions. However, the resolution of the networks can be slowly raised via equipping them with more convolution layers. StyleGAN is also progressive because there are quite a few benifits of progressive GAN. As there is less category knowledge and fewer styles slightly earlier on, the generation of lower resolution is significantly more steady. By incrementally raising the resolution, a more straightforward ultimate objective: identifying a mapping between latent vectors and images is pursued. In exercise, it allows creating megapixel-scale images with confidence because it stabilises the training. 
+The key focus of [Progressive GAN](https://arxiv.org/pdf/1710.10196.pdf) is a training process approach for GANs, where at the beginning, the images are always in low resolutions. However, the resolution of the networks can be slowly raised via equipping them with more convolution layers. StyleGAN is also progressive because there are quite a few benifits of progressive GAN. As there is less category knowledge and fewer styles slightly earlier on, the generation of lower resolution is significantly more steady. By incrementally raising the resolution, a more straightforward ultimate objective: identifying a mapping between latent vectors and images is pursued. In exercise, it allows creating megapixel-scale images with confidence because it stabilises the training. 
+
+<img src="https://user-images.githubusercontent.com/50613939/138632015-a2b95a65-60c7-45d3-a5cb-ba3db8df9891.png" alt="drawing" width="600"/>
 
 ### StyleGAN
 The motivation of StyleGAN is to find effective methods to control the image synthesis process by inserting latent code into each intermediate convolution later to control the image features at a different size. 
