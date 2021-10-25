@@ -168,8 +168,10 @@ def process_data(data, vqvae):
     Returns:
         The data after preprocessing(map to its closest latent embedding vector in the latent space)
     """
+    #predict the output from the encoder
     encoder_out = vqvae.encoder.predict_on_batch(data)
-    vq_out = vqvae.vq_layer(encoder_out)
+    #vq_out = vqvae.vq_layer(encoder_out)
+    #map the output from encoder to its closest latent embedding vector in the latent space
     flatten = tf.reshape(encoder_out, [-1, encoder_out.shape[-1]])
     indices = vqvae.vq_layer.get_code_indices(flatten)
     indices = tf.one_hot(indices, vqvae.vq_layer.num_embeddings)
