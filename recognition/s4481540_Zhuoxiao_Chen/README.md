@@ -28,6 +28,9 @@ As illustrated in the figure above, the latent code is usually inputted at the b
 #### Control the synthesis
 To control image synthesis, the styles from 8-layer MLPs can be modified or selected to change a small proportion of the feature or aspects of the final generated image. Each style at the intermediate layer can only adjust a small part of the feature but not affect the consistently varying and learning feature in later convolutional blacks due to the inserted noise for that intermediate layer only. As a result, each style at one intermediate convolution layer can only adjust and reflect the feature learned at that layer only. Then the features are overridden by the AdaIN followed by that convolution layer.
 
+#### Style mixing
+The mixing regularisation attempts to input two branches: different latent codes from 8-layer network, and these two codes are inserted into the generator network randomly when the GAN is trained. The styles should be independent when inserting into the convolutional layers, which is achieved by the normalisation of AdaIN. As discussed in the paragraph above, the features are only controlled by the style at each convolutional layer but not be affected by previous convolutions. However, the styles are always outputted from the same 8-layer mapping network. Thus, the styles may be correlated. Using two different 8-layer networks randomly can ensure that styles at different convolutional layers are not correlated, which means the styles inserted into even adjacent layers are independent.
+
 
 ## OAI AKOA knee dataset
 Introduce the knee dataset here
