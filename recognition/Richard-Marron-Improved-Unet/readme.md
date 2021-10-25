@@ -10,6 +10,7 @@ This algorithm uses the improved U-Net model as descibed by [this paper](https:/
     * [Down-sampling](#Down-sampling_Stage)
     * [Up-sampling](#Up-sampling_Stage)
     * [Model Parameters](#Model_Parameters) 
+* [Preprocessing](#Preprocessing)
 * [Results](#Results)
 
 # Setup
@@ -50,9 +51,12 @@ There are several parameters used in the model's creation which are vital to hav
 * `leaky` : Default is 1e-2. This controls the `alpha` parameter in the [LeakyReLU](https://keras.io/api/layers/activation_layers/leaky_relu/) layer which acts as the activation in this model.
 * `drop` : Default is 3e-1. This conrols the drop-out percentage in the [Dropout](https://keras.io/api/layers/regularization_layers/dropout/) layers.
 
+# Preprocessing
+The dataset used in this model is the [ISIC 2018 Melanoma Dermoscopy Dataset](https://challenge2018.isic-archive.com/). Some preprocessing had already been done since there were two folders: one containing the medical images in RGB format, and the other containing the "true masks" of each of the medical images. These two folders are the inputs and labels respectively. 
+
+As what is common practice in machine learning, the image-label pairs were split into training, testing and validation sets. This helps us create a model which is more accurate on images which it has not seen before. In the driver file, you will be able to see that the split sizes relative to the whole dataset are, 60%-16%-24% for training, testing and validation respectively. The reason for this split is we want the majority of the data being used for training but still having a good proportion left for validation. Lastly, we have a bit of data left over from which we can test our model on.
+
 # Results
-
-
 After training an instance of the U-Net, we get a plot of the [dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) which shows the similarity score on the training and validation set. This graph can be seen below.
 
 ![Dice Image](./Figures/dice_acc.png)
