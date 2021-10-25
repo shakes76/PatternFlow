@@ -60,7 +60,7 @@ def fit(net, yolo_loss, opt, batch_data, batch_data_test):
             if (iteration + 1) % 125 == 0:
                 print('Epoch{}:[{}/{}({:.0f}%)]'.format(e, trained_samples, all_samples,
                                                         100 * trained_samples / all_samples))
-                print(loss_value)
+                
 
         net.eval()
         for iteration, (images, y) in enumerate(batch_data_test):
@@ -160,5 +160,5 @@ if __name__ == "__main__":
 
         fit(model, yolo_loss, opt, train, test)
 
-    print(test_loss_list)
+
     plot = Plot_loss(loss_list, test_loss_list, avg_test_iou, epochs).plot()
