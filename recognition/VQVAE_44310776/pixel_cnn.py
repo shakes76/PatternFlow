@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.conv import Conv2d
 
 
 def gate(p):
@@ -39,19 +40,22 @@ class GatedMaskedConv2d(nn.Module):
         self.vert_stack.weight.data[:, :, -1].zero_()  # Mask final row
         self.horiz_stack.weight.data[:, :, :, -1].zero_()  # Mask final column
 
-    def forward(self, x_v, x_h):
+    def forward(self, x_v, x_h, condition):
+        if condition is None:
+            condition = 0
+
         if self.mask_type == 'a':
             self.make_causal()
 
         h_vert = self.vert_stack(x_v)
         h_vert = h_vert[:, :, :x_v.size(-1), :] #TODO work out what this is doing...
-        out_v = gate(h_vert)
+        out_v = gate(h_vert + condition)
 
         h_horiz = self.horiz_stack(x_h)
         h_horiz = h_horiz[:, :, :, :x_h.size(-2)]
         v2h = self.vert_to_horiz(h_vert)
 
-        out = gate(v2h + h_horiz)
+        out = gate(v2h + h_horiz + condition)
         if self.residual:
             out_h = self.horiz_resid(out) + x_h
         else:
@@ -61,7 +65,7 @@ class GatedMaskedConv2d(nn.Module):
 
 
 class PixelCNN(nn.Module):
-    def __init__(self, codebook_size, feature_channels, n_layers, n_cond_classes=None):
+    def __init__(self, codebook_size, feature_channels, n_layers):
         super().__init__()
 
         # Create embedding layer to embed input
@@ -81,21 +85,28 @@ class PixelCNN(nn.Module):
             nn.Conv2d(512, codebook_size, 1)
         )
         
-        if n_cond_classes:
-            self.proj_h = nn.Linear(n_cond_classes, 2*feature_channels)
+        self.condition_embedding = nn.Embedding(codebook_size, feature_channels)
+        self.condition_transpose = nn.ConvTranspose2d(feature_channels, feature_channels*2, kernel_size=2, stride=2, padding=0)
 
-    def forward(self, x):
+    def forward(self, x, condition=None):
         shp = x.size() + (-1, )
         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
         x = x.permute(0, 3, 1, 2).contiguous()  # (B, C, W, H)
 
+        if condition is not None:
+            shp = condition.size() + (-1, )
+            condition = self.condition_embedding(condition.view(-1)).view(shp) # (B, H, W, C)
+            condition = condition.permute(0, 3, 1, 2).contiguous() # (B, C, W, H)
+            condition = self.condition_transpose(condition)
+
+
         x_v, x_h = (x, x)
         for _, layer in enumerate(self.layers):
-            x_v, x_h = layer(x_v, x_h)
+            x_v, x_h = layer(x_v, x_h, condition)
 
         return self.output_conv(x_h)
 
-    def generate(self, shape, batch_size):
+    def generate(self, shape, batch_size, condition=None):
         param = next(self.parameters())
         x = torch.zeros(
             (batch_size, *shape),
@@ -104,67 +115,9 @@ class PixelCNN(nn.Module):
 
         for i in range(shape[0]):
             for j in range(shape[1]):
-                logits = self.forward(x)
+                logits = self.forward(x, condition)
                 probs = F.softmax(logits[:, :, i, j], -1)
                 x.data[:, i, j].copy_(
                     probs.multinomial(1).squeeze().data
                 )
         return x
-
-# class ConditionalGatedPixelCNN(nn.Module):
-#     def __init__(self, input_dim=256, dim=64, n_layers=15, n_classes=10):
-#         super().__init__()
-#         self.dim = dim
-
-#         # Create embedding layer to embed input
-#         self.embedding = nn.Embedding(input_dim, dim)
-
-#         # Building the PixelCNN layer by layer
-#         self.layers = nn.ModuleList()
-
-#         # Initial block with Mask-A convolution
-#         # Rest with Mask-B convolutions
-#         for i in range(n_layers):
-#             mask_type = 'A' if i == 0 else 'B'
-#             kernel = 7 if i == 0 else 3
-#             residual = False if i == 0 else True
-
-#             self.layers.append(
-#                 GatedMaskedConv2d(mask_type, dim, kernel, residual, n_classes)
-#             )
-
-#         # Add the output layer
-#         self.output_conv = nn.Sequential(
-#             nn.Conv2d(dim, 512, 1),
-#             nn.ReLU(True),
-#             nn.Conv2d(512, input_dim, 1)
-#         )
-
-#         # self.apply(weights_init)
-
-#     def forward(self, x, label):
-#         shp = x.size() + (-1, )
-#         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
-#         x = x.permute(0, 3, 1, 2).contiguous()  # (B, C, W, H)
-
-#         x_v, x_h = (x, x)
-#         for i, layer in enumerate(self.layers):
-#             x_v, x_h = layer(x_v, x_h, label)
-
-#         return self.output_conv(x_h)
-
-#     def generate(self, label, shape=(8, 8), batch_size=64):
-#         param = next(self.parameters())
-#         x = torch.zeros(
-#             (batch_size, *shape),
-#             dtype=torch.int64, device=param.device
-#         )
-
-#         for i in range(shape[0]):
-#             for j in range(shape[1]):
-#                 logits = self.forward(x, label)
-#                 probs = F.softmax(logits[:, :, i, j], -1)
-#                 x.data[:, i, j].copy_(
-#                     probs.multinomial(1).squeeze().data
-#                 )
-#         return x

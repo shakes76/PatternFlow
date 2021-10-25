@@ -149,7 +149,8 @@ def main(rank: int, epochs: int, vqvae: VQVAE2, model: nn.Module, level: str, tr
             _, _, _, id_2, id_1 = vqvae.encode(data)
 
             x = id_2 if level == 'top' else id_1
-            logits = self._model(x)
+            condition = None if level == 'top' else id_2
+            logits = self._model(x, condition)
 
             logits = logits.permute(0, 2, 3, 1).contiguous()
             loss = {
