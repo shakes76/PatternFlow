@@ -14,14 +14,6 @@ from torchvision import datasets, transforms, utils
 from tqdm import tqdm
 from PIL import Image
 
-def stacking_parameters(net_0, net_1, weight_decay=0.999):
-    """Accumulate the parameters of two models based on the weight decay"""
-    parameter_0, parameter_1 = dict(net_0.named_parameters()),\
-                               dict(net_1.named_parameters())
-
-    for key in parameter_0.keys():
-        parameter_0[key].data.mul_(weight_decay).add_(1 - weight_decay,
-                                                    parameter_1[key].data)
 
 def adjust_lr(optimizer, lr):
     for group in optimizer.param_groups:
