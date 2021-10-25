@@ -1,7 +1,9 @@
 import tensorflow as tf
 
 from tensorflow.keras.layers import Layer
-from tensorflow.keras import activations, initializers, regularizers
+from tensorflow.keras import Model
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.activations import relu, softmax
 
 class GraphConvolutionLayer(Layer):
     def __init__(self, input_dim, output_dim,
