@@ -30,7 +30,24 @@ def adjust_lr(optimizer, lr):
 
 
 
-def train(args, dataset, generator, discriminator):
+def train(args, generator, discriminator):
+    transform = transforms.Compose(
+        [
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+
+    dataset = MultiResolutionDataset(args.path, transform)
+
+    args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
+    args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
+
+    args.gen_sample = {512: (8, 4), 1024: (4, 2)}
+
+    args.batch_default = 32
+
     step = int(math.log2(args.init_size)) - 2
     resolution = 4 * 2 ** step
     loader = sample_data(
@@ -247,10 +264,10 @@ def sample_data(dataset, batch_size, image_size=4):
     return loader
 
 if __name__ == '__main__':
+
+    """ Set up the experimental arguments """
     batch_size, latent_length, n_critic = 16, 512, 1
-
     parser = argparse.ArgumentParser(description='StyleGAN')
-
     parser.add_argument('path', type=str, help='Dataset Path ')
     parser.add_argument('--phase', type=int, default=40_000,
                         help='number of samples for each training phase')
@@ -270,12 +287,15 @@ if __name__ == '__main__':
                          choices=['wgan-gp', 'r1'], help='choose gan loss')
     args = parser.parse_args()
 
+    """ Load the Pytorch networks of both generator and discriminator """
     G_net = nn.DataParallel(Styled_G(latent_length)).cuda()
     D_net = nn.DataParallel(
-        D(from_rgb_activate=not args.no_from_rgb_activate)).cuda()
+        D(from_rgb_activate=not args.no_from_rgb_activate)
+    ).cuda()
     G_processing = Styled_G(latent_length).cuda()
     G_processing.train(False)
 
+    """ Set up optimisor for Pytorch training """
     beta_0 = 0.0
     beta_1 = 0.99
     G_optimiser = optim.Adam(
@@ -291,23 +311,8 @@ if __name__ == '__main__':
     D_optimiser = optim.Adam(D_net.parameters(), lr=args.lr,
                              betas=(beta_0, beta_1))
 
-    norm = 0.5
-    transform = transforms.Compose(
-        [
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((norm, norm, norm), (norm, norm, norm), inplace=True),
-        ]
-    )
+    """ Start Training """
+    train(args, G_net, D_net)
 
-    dataset = MultiResolutionDataset(args.path, transform)
-
-    if args.sched:
-        args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
-        args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
-
-    args.gen_sample = {512: (8, 4), 1024: (4, 2)}
-
-    args.batch_default = 32
-
-    train(args, dataset, G_net, D_net)
+    """ End of training """
+    print("StyleGAN Training Complete")
