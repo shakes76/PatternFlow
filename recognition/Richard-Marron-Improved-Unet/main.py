@@ -96,7 +96,6 @@ def fit_or_load(model, train, valid, path:str, fit:bool=True):
     """
     Choose whether to fit the model or, if the model is already trained,
     load the saved weight
-    
         Params:
             model     : The model we want to fit or load
             train     : The training dataset
@@ -119,7 +118,6 @@ def fit_or_load(model, train, valid, path:str, fit:bool=True):
 def plot_results(model, test, hist=None):
     """
     Plot some of the predicted values from the model
-    
         Params:
             model : The model that is being used to predict
             test  : The test dataset
@@ -160,7 +158,7 @@ def main(debugging=False):
     # Load normalised images
     input_images = normalise_images(load_images(path="./Data/ISIC2018_Task1-2_Training_Input_x2/", 
                                                 ground_truth=False, truncate=debugging), ground_truth=False)
-    # Load ground truth segmentation
+    # Load normalized ground truth segmentation
     gt_images = normalise_images(load_images(path="./Data/ISIC2018_Task1_Training_GroundTruth_x2/",
                                              ground_truth=True, truncate=debugging), ground_truth=True)
         
