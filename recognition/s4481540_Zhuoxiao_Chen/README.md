@@ -1,5 +1,6 @@
 # Image Generation for OAI AKOA knee data using StyleGAN
 Authour: Zhuoxiao Chen
+
 Student ID: 44815404
 
 ## Introduction
