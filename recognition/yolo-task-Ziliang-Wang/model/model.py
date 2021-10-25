@@ -16,17 +16,17 @@ class DarkNet53(nn.Module):
             nn.LeakyReLU(0.1)
         )
 
-        self.fms_layers = [32, 64, 128, 256, 512, 1024]
+        self.feature_maps = [32, 64, 128, 256, 512, 1024]
 
-        self.layer1 = self.make_res_layer([self.fms_layers[0], self.fms_layers[1]], layers[0])
+        self.layer1 = self.make_res_layer([self.feature_maps[0], self.feature_maps[1]], layers[0])
 
-        self.layer2 = self.make_res_layer([self.fms_layers[1], self.fms_layers[2]], layers[1])
+        self.layer2 = self.make_res_layer([self.feature_maps[1], self.feature_maps[2]], layers[1])
 
-        self.layer3 = self.make_res_layer([self.fms_layers[2], self.fms_layers[3]], layers[2])
+        self.layer3 = self.make_res_layer([self.feature_maps[2], self.feature_maps[3]], layers[2])
 
-        self.layer4 = self.make_res_layer([self.fms_layers[3], self.fms_layers[4]], layers[3])
+        self.layer4 = self.make_res_layer([self.feature_maps[3], self.feature_maps[4]], layers[3])
 
-        self.layer5 = self.make_res_layer([self.fms_layers[4], self.fms_layers[5]], layers[4])
+        self.layer5 = self.make_res_layer([self.feature_maps[4], self.feature_maps[5]], layers[4])
 
     def make_res_layer(self, num_feature_maps, blocks):
         layers = []
@@ -87,7 +87,7 @@ class YoloBody(nn.Module):
         # The Residual Block repeat [1, 2, 8, 8, 4] times.
         self.darknet53 = DarkNet53([1, 2, 8, 8, 4])
         # [32, 64, 128, 256, 512, 1024]
-        fms = self.darknet53.fms_layers
+        fms = self.darknet53.feature_maps
         # The total feature maps is 3 *(1(ISIC) +4 + 1)
         self.y3, self.conv_2_l3 = make_last_layers([fms[-2], fms[-1]], fms[-1],
                                                    len(anchors_mask[0]) * (num_classes + 4 + 1))
@@ -158,6 +158,3 @@ def make_last_layers(feature_map, in_channel, out_channel):
     )
 
     return conv_5, conv_2
-
-
-
