@@ -37,4 +37,27 @@ Latent code (Z)         |  Intermediate latent code (W)
 ![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_mean_std.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_mean_std.png)
 
 **We can see for the latent vector without going into the mapping network, it takes up most of the plot. However, for the intermediate latent code coming after the mapping network, it presents a linear format, when the mean higher, the std is ten to go increase too.**
+
 ## Search for connection between different columns
+Another way of analyze the mapping network is to map plots with two different random pick columns from the row space and compared with Z and W. Below, we generated a shape of (4000,512) random code Z and get W by let Z pass through the mapping network. We randomly compared two different column inside Z or W. The code below cler describe what we did.
+
+```python
+z = torch.randn(4000, 512).to(device)
+w = mapNet(z)
+
+a1,a2 = w[:,2],w[:,118]
+
+fig = plt.figure()
+ax = plt.subplot()
+ax.scatter(a1, a2, c='red')
+
+plt.xlabel('column #{2}')
+plt.ylabel('column #{118}')
+plt.show()
+```
+
+Latent code (Z)         |  Intermediate latent code (W)
+:-------------------------:|:-------------------------:
+![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_c_188.c_481.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_c_188.c_481.png)
+
+**We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training**
