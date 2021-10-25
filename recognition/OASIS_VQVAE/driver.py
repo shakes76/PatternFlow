@@ -5,6 +5,25 @@ from vqvae import VQVAE, get_closest_embedding_indices
 import numpy as np
 import matplotlib.pyplot as plt
 
+class SSIMCallback(tf.keras.callbacks.Callback):
+    def __init__(self, validation_data, shift=0.0):
+        super(SSIMCallback, self).__init__()
+        self._val = validation_data
+        self._shift = shift
+
+    def on_epoch_end(self, epoch, logs):
+        total_count = 0.0
+        total_ssim = 0.0
+
+        for batch in self._val:
+            recon = self.model.predict(batch)
+            total_ssim += tf.math.reduce_sum(tf.image.ssim(batch + self._shift, recon + self._shift, max_val=1.0))
+            total_count += batch.shape[0]
+
+        logs['val_avg_ssim'] = (total_ssim/total_count).numpy()
+        print("epoch: {:d} - val_avg_ssim: {:.6f}".format(epoch, logs['val_avg_ssim']))
+
+
 def show_image_and_reconstruction(original, cb, reconstructed):
     plt.subplot(1, 3, 1)
     plt.imshow(original, cmap="gray")
@@ -31,10 +50,20 @@ if __name__ == "__main__":
                                           label_mode=None, 
                                           image_size=(IMG_SIZE, IMG_SIZE),
                                           color_mode="grayscale",
-                                          batch_size=32)
+                                          batch_size=32,
+                                          shuffle=True)
 
-    # normalize pixels between [-0.5, 0.5]
-    dataset = dataset.map(lambda x: (x / 255.0) - 0.5)
+    dataset_validation = image_dataset_from_directory("keras_png_slices_data/keras_png_slices_validate", 
+                                          label_mode=None, 
+                                          image_size=(IMG_SIZE, IMG_SIZE),
+                                          color_mode="grayscale",
+                                          batch_size=32,
+                                          shuffle=True)
+
+    # normalize pixels between [-SHIFT, -SHIFT + 1] (for example: [-0.5, 0.5])
+    shift = 0.5
+    dataset = dataset.map(lambda x: (x / 255.0) - shift)
+    dataset_validation = dataset_validation.map(lambda x: (x / 255.0) - shift)
 
     # calculate variance of training data (at a individual pixel level) to pass into VQVAE
     count = dataset.unbatch().reduce(tf.cast(0, tf.int64), lambda x,_: x + 1 ).numpy()
@@ -56,7 +85,10 @@ if __name__ == "__main__":
     vqvae_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate))
 
     # fit it
-    vqvae_model.fit(dataset, epochs=epochs, batch_size=batch_size)
+    history = vqvae_model.fit(dataset, 
+                              epochs=epochs, 
+                              batch_size=batch_size, 
+                              callbacks=[SSIMCallback(dataset_validation, shift)])
 
     # visualise some reconstructions
 
@@ -74,9 +106,9 @@ if __name__ == "__main__":
         codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
 
         for i in range(num_images_per_batch_to_show):
-            # add 0.5 back to the images to undo the initial scaling (i.e. go from [-0.5, 0.5] to [0,1])
-            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1)) + 0.5
-            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1)) + 0.5
+            # add the shfit back to the images to undo the initial shifting (e.g. go from [-0.5, 0.5] to [0,1])
+            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1)) + shift
+            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1)) + shift
             codebook_image = codebook_indices[i]
 
             show_image_and_reconstruction(tf.squeeze(original_image), codebook_image, tf.squeeze(reconstructed_image))
