@@ -1,6 +1,7 @@
 This is my first style GAN impelementation. Because of short in GPU, the model is intermittently trained on Colab.
 
 # How the mapping network dis-entangle the random tensor?
+## Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
 
 ```python
@@ -26,3 +27,6 @@ w1,w2,w3,w4 = mapNet(z1), mapNet(z2), mapNet(z3), mapNet(z4)
 | z2 | 0.5001404  | 0.28848535  |
 | z3 | 299.55765  | 57.77888   |
 | z4 | 45018.316   | 20201.037  |
+
+**We learned that one of the Mapping Network's function is to transform the random vector to a particular distribution with fixed mean and standard deviation.**
+## Search for connection between different columns
