@@ -15,7 +15,11 @@ This project report includes mainly three sections: code implementation, methodo
 ## Methodology
 
 ### Standard GAN
-Give some introduction to the standard GAN here. 
+The generator's task is to generate 'fake' images that resemble the training images. The discriminator's work is to examine an image and determine whether it is a genuine training image or a generated image. Throughout the training, the generator is continuously attempting to outwit the discriminator by creating increasingly convincing frauds, whereas the discriminator works to improve its characterized mainly and accurately identify real and fake images. The match is balanced whenever the generator generates ideal fakes that appear to come straightforwardly from the training examples, and the discriminator aims to predict with a probability of 50% whether the generator result is real or fake. 
+
+If G is represented is thethe generator and D is the discriminator, the loss function for GAN is: 
+
+<img src="https://user-images.githubusercontent.com/50613939/138630901-2ded07f0-7f62-4ebd-9eb0-8fb5537608f6.png" alt="drawing" width="400"/>
 
 ### StyleGAN
 The motivation of StyleGAN is to find effective methods to control the image synthesis process by inserting latent code into each intermediate convolution later to control the image features at a different size. 
