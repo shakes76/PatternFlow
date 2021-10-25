@@ -1,6 +1,7 @@
 import tensorflow as tf
-from tensorflow.keras import models
-import layers
+from tensorflow.keras import models, layers, initializers
+from layers import CrossAttention, SelfAttention
+from position_encoding import fourier_position_encode
 
 
 class Perceiver(models.Model):
@@ -17,46 +18,61 @@ class Perceiver(models.Model):
         name: str = "perceiver",
     ):
         super().__init__(name=name)
-        self.num_blocks = num_blocks
-
         assert latent_channels % num_cross_heads == 0
         assert latent_channels % num_self_attend_heads == 0
 
-        self.latent = layers.Latent(dim=latent_dim, num_channels=latent_channels)
-        self.fourier_enc = layers.FourierPositionEmbedding(num_bands=num_freq_bands)
+        self.num_blocks = num_blocks
+        self.num_self_attends_per_block = num_self_attends_per_block
+        self.num_cross_heads = num_cross_heads
+        self.num_self_attend_heads = num_self_attend_heads
+        self.latent_dim = latent_dim
+        self.latent_channels = latent_channels
+        self.num_freq_bands = num_freq_bands
+        self.num_classes = num_classes
 
-        cross_attention = lambda: layers.CrossAttention(
-            num_heads=num_cross_heads, key_dim=latent_channels // num_cross_heads
+    def build(self, input_shape: tuple[int, ...]):
+        self.latent_array = self.add_weight(
+            name="latent_array",
+            shape=(self.latent_dim, self.latent_channels),
+            initializer=initializers.TruncatedNormal(stddev=0.02),
+            trainable=True,
         )
-        self_attentions = lambda: [
-            layers.SelfAttention(
-                num_heads=num_self_attend_heads,
-                key_dim=latent_channels // num_self_attend_heads,
+
+        self.cross_attend = CrossAttention(
+            num_heads=self.num_cross_heads, key_dim=self.latent_channels
+        )
+
+        self.self_attends = [
+            SelfAttention(
+                num_heads=self.num_self_attend_heads, key_dim=self.latent_channels
             )
-            for _ in range(num_self_attends_per_block)
+            for _ in range(self.num_self_attends_per_block)
         ]
 
-        # first block doesn't share weights with following blocks
-        self.initial_block = cross_attention(), self_attentions()
-        self.repeat_block = cross_attention(), self_attentions()
-
-        self.logits = layers.ClassificationDecoder(num_classes=num_classes)
+        self.logits = layers.Dense(self.num_classes)
+        super().build(input_shape)
 
     def call(self, inputs: tf.Tensor):
-        latent_array = self.latent(inputs)
-        inputs_enc = self.fourier_enc(inputs)
+        batch_size = tf.shape(inputs)[0]
+        index_shape = inputs.shape[1:-1]
+        channels = inputs.shape[-1]
 
-        # initial block
-        cross_attention, self_attentions = self.initial_block
-        z = cross_attention(latent_array, inputs_enc)
-        for self_attention in self_attentions:
-            z = self_attention(z)
+        # broadcast to batch
+        broadcast = lambda x: tf.broadcast_to(x, [batch_size, *x.shape])
+        latent_array = broadcast(self.latent_array)
+        fourier_pos = broadcast(fourier_position_encode(index_shape, self.num_freq_bands))
 
-        # repeats for 2 -> num_blocks
-        cross_attention, self_attentions = self.repeat_block
-        for _ in range(1, self.num_blocks):
-            z = cross_attention(z, inputs_enc)
-            for self_attention in self_attentions:
-                z = self_attention(z)
+        # flatten index dims, concat with fourier position
+        inputs_vec = tf.reshape(
+            inputs, [batch_size, tf.reduce_prod(index_shape), channels]
+        )
+        data_array = tf.concat([inputs_vec, fourier_pos], axis=-1)
 
-        return self.logits(z)
+        # apply blocks
+        for _ in range(self.num_blocks):
+            latent_array = self.cross_attend(latent_array, data_array)
+            for self_attend in self.self_attends:
+                latent_array = self_attend(latent_array)
+
+        x = tf.reduce_mean(latent_array, axis=-2)
+        return self.logits(x)
