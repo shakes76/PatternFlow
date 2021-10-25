@@ -49,7 +49,12 @@ Some Implementation details here
 
 
 ## Result and Analysis
-Put some results here
+Generated AKOA Images
+
+
+<img src="https://user-images.githubusercontent.com/50613939/138634887-9fb01e51-ca6a-4dd8-aa2f-641a47424ae5.png" alt="drawing" width="800"/>
+<img src="https://user-images.githubusercontent.com/50613939/138634910-76afdf8c-29c4-4799-a860-955871c7454a.png" alt="drawing" width="800"/>
+
 
 ## Conconlution
 Finally...
