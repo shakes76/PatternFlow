@@ -252,6 +252,7 @@ def train(args, generator, discriminator):
         )
 
         pbar.set_description(state_msg)
+        
 
 def change_gradient_status(network, status=True):
     """
