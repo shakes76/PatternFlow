@@ -8,11 +8,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
-import tensorflow_datasets as tfds
-from PIL import Image
-import os
-#import cv2
-from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -26,6 +21,7 @@ imgSize = 228
 IMG_HEIGHT = 260
 IMG_WIDTH = 228
 
+# should get this from directory
 INPUT_DS_SIZE = 18680
 
 # load AKOA dataset from processed datasets directory
@@ -44,69 +40,26 @@ akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DA
 akoa_ds = akoa_ds_tuple[0]
 assert isinstance(akoa_ds, tf.data.Dataset)
 
-#print(akoa_ds["train"])
-#print(list())
-for image_array, label_array in tfds.as_numpy(akoa_ds):
-    x_data = image_array
-    y_data = label_array
+# get data into numpy arrays
+x_data, y_data = next(iter(akoa_ds))
+x_data = np.array(x_data)
+y_data = np.array(y_data)
 
-#np_data = tfds.as_numpy(akoa_ds)
-
-# convert to numpy array
-# x_data = []
-# y_data = []
-# for image, label in akoa_ds:
-#     #print(image.shape, label)
-#     x_data.append(image)
-#     y_data.append(label)
-    #print(type(image), type(label), label)
-
-
-
-# format data into np arrays and remove batch column
 print(x_data.shape)
-# x_data = np.array(x_data)
-# new_x_shape = [x_data.shape[0]] + list(x_data.shape[2:])
-# x_data = x_data.reshape(new_x_shape)
 print(y_data.shape)
-# y_data = y_data
 
 # train test split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
-#print(numpy.array(tfds.as_numpy(akoa_ds)))
-
-# def create_np_dataset_from_directory(img_dir):
-#     img_data_array = []
-#     labels = []
-#     for sub_dir in os.listdir(img_dir):
-#         for file in os.listdir(os.path.join(img_dir, sub_dir)):
-#             image_path = os.path.join(img_dir, sub_dir, file)
-#             image = np.array(Image.open(image_path))
-#             image = np.resize(image, (IMG_HEIGHT, IMG_WIDTH, 1))
-#             image = image.astype('float32')
-#             image /= 255
-#             img_data_array.append(image)
-#             labels.append(sub_dir)
-#     return np.array(img_data_array), np.array(labels)
-
-#print("Converting images to np arrays...")
-#x_train, y_train = create_np_dataset_from_directory(DATASET_FOLDER)
-#print(pil_img_data)
-#print(labels)
-
-# eg_data, = akoa_ds.take(1)
-# image, label = eg_data["image"], eg_data["label"]
+# y_train = y_train.astype('float32').reshape((-1, 1))
+# y_test = y_test.astype('float32').reshape((-1, 1))
+print(y_train.shape)
+print(y_test.shape)
 
 NUM_CLASSES = 2
-#INPUT_SHAPE = (32, 32, 3)
-INPUT_SHAPE = (260, 228, 1)
 NUM_CHANNELS = 1
 
-
-#(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
-
 print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
-#print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
+print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 
 # =============== CONFIGURE HYPERPARAMETERS ===============
 
@@ -121,16 +74,20 @@ num_patches = (image_size // patch_size) ** 2  # Size of the data array.
 latent_dim = 128  # Size of the latent array.
 projection_dim = 128  # Embedding size of each element in the data and latent arrays.
 num_heads = 8  # Number of Transformer heads.
+
+# Size of the Transformer Feedforward network.
 ffn_units = [
     projection_dim,
     projection_dim,
-]  # Size of the Transformer Feedforward network.
+]
 num_transformer_blocks = 4
 num_iterations = 2  # Repetitions of the cross-attention and Transformer modules.
+
+# Size of the Feedforward network of the final classifier.
 classifier_units = [
     projection_dim,
     NUM_CLASSES,
-]  # Size of the Feedforward network of the final classifier.
+]
 
 print(f"Image size: {image_size} X {image_size} = {image_size ** 2}")
 print(f"Patch size: {patch_size} X {patch_size} = {patch_size ** 2} ")
@@ -139,22 +96,16 @@ print(f"Elements per patch (3 channels): {(patch_size ** 2) * NUM_CHANNELS}")
 print(f"Latent array shape: {latent_dim} X {projection_dim}")
 print(f"Data array shape: {num_patches} X {projection_dim}")
 
-
 # =============== AUGMENT DATA ===============
 
 data_augmentation = keras.Sequential(
     [
-        layers.Normalization(),
-        layers.Resizing(image_size, image_size),
-        layers.RandomFlip("horizontal"),
-        layers.RandomZoom(
-            height_factor=0.2, width_factor=0.2
-        ),
+        tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
+        tf.keras.layers.experimental.preprocessing.Resizing(image_size, image_size),
+        tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
     ],
     name="data_augmentation",
 )
-# Compute the mean and the variance of the training data for normalization.
-data_augmentation.layers[0].adapt(x_train)
 
 # =============== DENSE NETWORK ===============
 
@@ -270,6 +221,7 @@ def create_transformer_module(
     # Create multiple layers of the Transformer block.
     for _ in range(num_transformer_blocks):
         # Apply layer normalization 1.
+        x1 = layers.LayerNormalization(epsilon=1e-6)(x0)
         x1 = layers.LayerNormalization(epsilon=1e-6)(x0)
         # Create a multi-head self-attention layer.
         attention_output = layers.MultiHeadAttention(
@@ -392,7 +344,7 @@ class Perceiver(keras.Model):
 
 # =============== COMPILE, TRAIN AND EVALUATE MODEL ===============
 
-def run_experiment(model):
+def train_model(model):
 
     # Create LAMB optimizer with weight decay.
     optimizer = tfa.optimizers.LAMB(
@@ -402,10 +354,9 @@ def run_experiment(model):
     # Compile the model.
     model.compile(
         optimizer=optimizer,
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[
-            keras.metrics.SparseCategoricalAccuracy(name="acc"),
-            keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
+            keras.metrics.BinaryAccuracy(name="accuracy"),
         ],
     )
 
@@ -419,7 +370,7 @@ def run_experiment(model):
         monitor="val_loss", patience=15, restore_best_weights=True
     )
 
-    # Fit the model.
+    # fit model
     history = model.fit(
         x=x_train,#x=x_train,
         y=y_train,
@@ -429,11 +380,12 @@ def run_experiment(model):
         callbacks=[early_stopping, reduce_lr],
     )
 
-    _, accuracy, top_5_accuracy = model.evaluate(akoa_ds)
-    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
+    # visualise shape of model
+    model.summary()
 
-    # Return history to plot learning curves.
+    test_loss, test_accuracy = model.evaluate(x_test, y_test)
+    print(f"Test accuracy: {round(test_accuracy * 100, 2)}%")
+    print(f"Test loss: {round(test_loss * 100, 2)}%")
     return history
 
 perceiver_classifier = Perceiver(
@@ -450,7 +402,7 @@ perceiver_classifier = Perceiver(
 )
 
 
-history = run_experiment(perceiver_classifier)
+history = train_model(perceiver_classifier)
 
 print(history.history.keys())
 # summarize history for accuracy
@@ -461,5 +413,3 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
-
-
