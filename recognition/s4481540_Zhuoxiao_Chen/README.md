@@ -20,6 +20,8 @@ The motivation of StyleGAN is to find effective methods to control the image syn
 
 As illustrated in the Figure above, the latent code is usually inputted at the begining of the generater of the GAN. However, in StyleGAN, the beginning of the input is just a 4 times 4 times 512 constant. But there is a another branch where the input latent code should input. That branch is a  mapping network containiting eight layers of multilayer perceptrons (MLP). Next, at each convolutional block. the, the output code from MLPs are passed into a learned affine transform followed by the adaptive instance normalization (AdaIN), represented by 'A' in the figure. 'B' is used to scale the input noise before inserting the noise to each convlotional layer. In summary, the generater consists of several convolutional bocks to scale up the feature map, where each convolutional bock has two AdaIN component that accept affine transformed output from eight layer MLP and noise code. 
 
+This parapgraphs disscusses some details of components of StyleGAN. The output code from 8-layer MLP brach is tranformed into styles by the affine transformations. Abd the styles are inputted into the AdaIN operation, with the aim to normalise the feature map before scaling the featuremap twice at each conlutional layer. As for the input noise code at each layer before the AdaIN operation, they are designed to generate stochastic features for synthesis process. 
+
 
 ## OAI AKOA knee dataset
 Introduce the knee dataset here
