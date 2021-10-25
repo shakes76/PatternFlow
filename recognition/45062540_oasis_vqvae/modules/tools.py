@@ -180,3 +180,23 @@ def mean_ssim(data_test, vqvae_trainer):
         ssim_coef += ssim(mean_x, mean_pred, std_x, std_pred, covariance)
     #return the mean ssim coefficient
     return ssim_coef/len(data_test)
+
+def get_cnn_shape(encoder, data_test):
+    """
+    Get the output shape of the vqvae encoder 
+    
+    Params:
+        encoder: the vqvae encorder
+        data_test: the test dataset
+    
+    Returns:
+        The output shape of the vqvae encoder
+    """
+    #open the first image in the testing dataset
+    original_img = Image.open(data_test[0])
+    original_img = np.asarray(original_img)
+    img = dataset.preprocess_image(original_img)
+    img = np.expand_dims(img, axis=0) 
+    #predict the image on the encoder
+    encoded_outputs = encoder.predict(img)
+    return encoded_outputs.shape
