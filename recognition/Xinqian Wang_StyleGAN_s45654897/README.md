@@ -29,4 +29,6 @@ w1,w2,w3,w4 = mapNet(z1), mapNet(z2), mapNet(z3), mapNet(z4)
 | z4 | 45018.316   | 20201.037  |
 
 **We learned that one of the Mapping Network's function is to transform the random vector to a particular distribution with fixed mean and standard deviation.**
+We also made two plots
+![alt-text-1](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_mean_std.png) ![alt-text-2](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_mean_std.png)
 ## Search for connection between different columns
