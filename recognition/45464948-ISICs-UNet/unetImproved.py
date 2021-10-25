@@ -2,6 +2,7 @@ from tensorflow.keras.layers import BatchNormalization , ReLU ,Dropout
 from tensorflow.keras.layers import Input , Conv2D, Add
 from tensorflow.keras.layers import UpSampling2D , concatenate, LeakyReLU
 from tensorflow.keras.models import Model
+import tensorflow as tf
 
 def contextModel(input_layer,conv):
     # from easy, each context module is in fact a pre-activation residual block with two
@@ -106,3 +107,11 @@ def unetmodel():
 
     unetmodel = Model(input_layer,output_layer)
     return unetmodel
+
+def fit(model,x,y, epoch_size, batch):
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0002),
+                     loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+                     metrics=['accuracy'])
+
+    model.fit(x, y, epochs=epoch_size, batch_size=batch,
+                    validation_split=0.2)
