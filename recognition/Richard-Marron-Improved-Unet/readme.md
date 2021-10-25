@@ -35,7 +35,7 @@ Inside the `unetModule.py` file, you will see that the Improved U-Net model is d
 # U-Net Structure Details
 The name U-Net comes from the shape because the network appears in the shape of the letter "U" and is comprised of two main sections: the down-sampling stage and the up-sampling stage. Below is the network structure as described on page 4 (Fig. 1). The goal of this particular implementation is to segment skin lesions from medical images provided by the ISIC 2018 challenge dataset.
 
-![Network Image](./Figures/Network.png)
+![Network Image](./Figures/Network.PNG)
 
 ### Down-sampling Stage
 Here, we take the image we want to segment and feed it into the network. It then passes through several two-dimensional convolution layers ([Conv2D](https://keras.io/api/layers/convolution_layers/convolution2d/)) which shrinks the image resolution and increases the number of filters which provides information. Notice in the figure above that there are several connections which jump over the context modules. These help retain some information from before the convolutions and therefore help with performance of the model.
@@ -63,7 +63,7 @@ After training an instance of the U-Net, we get a plot of the [dice coefficient]
 
 The model was also evaluated on the test set and the resulting dice coefficient was above 0.8 which is a great result. 
 
-![Evaluation Image](./Figures/eval.png)
+![Evaluation Image](./Figures/eval.PNG)
 
 Here is a plot of the predicted image segmentation from the model, compared with the true mask and the full RGB image. This is the test set so the model has not seen these images before. 
 
