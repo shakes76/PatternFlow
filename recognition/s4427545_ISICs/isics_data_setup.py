@@ -8,6 +8,7 @@ IMAGE_DIR = 'ISIC2018_Task1-2_Training_Input_x2/photos/'
 MASK_DIR = 'ISIC2018_Task1_Training_GroundTruth_x2/photos/'
 NUM_FILES = 2594
 IMG_SIZE = 640
+AUGMENTATIONS = 2
 
 # TODO: Python doc
 
@@ -58,7 +59,10 @@ def save_img_with_augmentations(image : im.Image, new_image_dir, mask_dir, new_l
         masks['rot270'] = mask_image.rotate(270,expand=True)
         masks['horiz_flip'] = mask_image.transpose(method=im.FLIP_LEFT_RIGHT)
         masks['vertic_flip'] = mask_image.transpose(method=im.FLIP_TOP_BOTTOM)
-        for key in images.keys():
+        keys = list(images.keys())
+        random.shuffle(keys)
+        keys = keys[0:AUGMENTATIONS]
+        for key in keys:
             new_image = images[key]
             new_mask = masks[key]
             image_arr = np.array(new_mask)
@@ -67,7 +71,7 @@ def save_img_with_augmentations(image : im.Image, new_image_dir, mask_dir, new_l
             file = open(new_label_dir + new_name + '.txt', 'w')
             file.write(f'0 {bound_box_info[0]} {bound_box_info[1]} {bound_box_info[2]} {bound_box_info[3]}')
             new_image.save(new_image_dir + new_name + '.jpg')
-    return 12
+    return AUGMENTATIONS * 2
 
 
 def training_validation_test_write(dir, valid_split, test_split):
