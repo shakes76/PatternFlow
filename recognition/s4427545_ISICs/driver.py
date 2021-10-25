@@ -9,15 +9,16 @@ def main(arg):
     data = 'isic.yaml'
     model = 'yolov5n.pt'
     mode = 'training'
-    if len(arg) > 2:
-        print('Using default parameters')
+    if len(arg) > 5:
+        print('Using command-line parameters')
         batch_size = int(arg[1])
         mode = arg[2]
         epochs = int(arg[3])
-        model = arg[4]
+        data = arg[4]
+        model = arg[5]
     if (mode == 'training'):
         print(f'Beginning training with {epochs} epochs and a batch size of {batch_size}')
-        train.run(img=1024,batch=batch_size,epochs=epochs,data=data,weights=model)
+        train.run(img=640,batch=batch_size,epochs=epochs,data=data,weights=model)
     else:
         print(f'Beginning {mode} on a batch size of {batch_size}')
         #yolo.predict()
