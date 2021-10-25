@@ -48,7 +48,7 @@ There are several parameters used in the model's creation which are vital to hav
 * `optimizer` : Default is `Adam` with a learning rate of 1e-3. The [Adam](https://keras.io/api/optimizers/adam/) optimiser is a fairly standard optimiser which worked well in training.
 * `loss` : Default is "binary_crossentropy". This was chosen because we are only classifying pixels as two classes: either "lesion" or "not lesion" for the segmentation. If there were more classes, we would use "categorical_crossentropy".
 * `leaky` : Default is 1e-2. This controls the `alpha` parameter in the [LeakyReLU](https://keras.io/api/layers/activation_layers/leaky_relu/) layer which acts as the activation in this model.
-* `drop` : Default is 3e-1. This conrols the drop-out percentage in the [Dropout](https://keras.io/api/layers/regularization_layers/dropout/) layer.
+* `drop` : Default is 3e-1. This conrols the drop-out percentage in the [Dropout](https://keras.io/api/layers/regularization_layers/dropout/) layers.
 
 # Results
 
