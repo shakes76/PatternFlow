@@ -27,7 +27,11 @@ def learning_rate_decay(optim, learning_rate):
 
 
 def stacking_parameters(net_0, net_1, weight_decay=0.999):
-    """Accumulate the parameters of two models based on the weight decay"""
+    """
+    Accumulate the parameters of two models according to the weight decay.
+    Soecifically, the weight of net_1 is stacked into the net_2, with
+    the stacked weight are multipled with 1-weight_decay
+    """
     parameter_0, parameter_1 = dict(net_0.named_parameters()),\
                                dict(net_1.named_parameters())
 
@@ -35,12 +39,15 @@ def stacking_parameters(net_0, net_1, weight_decay=0.999):
         parameter_0[key].data.mul_(weight_decay).add_(1 - weight_decay,
                                                     parameter_1[key].data)
 
-def train(args, generator, discriminator):
-    transform = transforms.Compose(
+def train_StyleGAN(args, G, D):
+    
+    norm_index = 0.5
+    image_transformation = transforms.Compose(
         [
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            transforms.Normalize((norm_index, norm_index, norm_index), 
+                (norm_index, norm_index, norm_index), inplace=True),
         ]
     )
 
@@ -65,8 +72,8 @@ def train(args, generator, discriminator):
 
     pbar = tqdm(range(60_000))
 
-    requires_grad(generator, False)
-    requires_grad(discriminator, True)
+    requires_grad(G, False)
+    requires_grad(D, True)
 
     disc_loss_val = 0
     gen_loss_val = 0
@@ -79,7 +86,7 @@ def train(args, generator, discriminator):
     final_progress = False
 
     for i in pbar:
-        discriminator.zero_grad()
+        D.zero_grad()
 
         alpha = min(1, 1 / args.phase * (used_sample + 1))
 
@@ -108,8 +115,8 @@ def train(args, generator, discriminator):
 
             torch.save(
                 {
-                    'generator': generator.module.state_dict(),
-                    'discriminator': discriminator.module.state_dict(),
+                    'generator': G.module.state_dict(),
+                    'discriminator': D.module.state_dict(),
                     'g_optimizer': G_optimiser.state_dict(),
                     'd_optimizer': D_optimiser.state_dict(),
                     'g_running': G_processing.state_dict(),
@@ -133,13 +140,13 @@ def train(args, generator, discriminator):
         real_image = real_image.cuda()
 
         if args.loss == 'wgan-gp':
-            real_predict = discriminator(real_image, step=step, alpha=alpha)
+            real_predict = D(real_image, step=step, alpha=alpha)
             real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
             (-real_predict).backward()
 
         elif args.loss == 'r1':
             real_image.requires_grad = True
-            real_scores = discriminator(real_image, step=step, alpha=alpha)
+            real_scores = D(real_image, step=step, alpha=alpha)
             real_predict = F.softplus(-real_scores).mean()
             real_predict.backward(retain_graph=True)
 
@@ -168,8 +175,8 @@ def train(args, generator, discriminator):
             gen_in1 = gen_in1.squeeze(0)
             gen_in2 = gen_in2.squeeze(0)
 
-        fake_image = generator(gen_in1, step=step, alpha=alpha)
-        fake_predict = discriminator(fake_image, step=step, alpha=alpha)
+        fake_image = G(gen_in1, step=step, alpha=alpha)
+        fake_predict = D(fake_image, step=step, alpha=alpha)
 
         if args.loss == 'wgan-gp':
             fake_predict = fake_predict.mean()
@@ -178,7 +185,7 @@ def train(args, generator, discriminator):
             eps = torch.rand(b_size, 1, 1, 1).cuda()
             x_hat = eps * real_image.data + (1 - eps) * fake_image.data
             x_hat.requires_grad = True
-            hat_predict = discriminator(x_hat, step=step, alpha=alpha)
+            hat_predict = D(x_hat, step=step, alpha=alpha)
             grad_x_hat = grad(
                 outputs=hat_predict.sum(), inputs=x_hat, create_graph=True
             )[0]
@@ -200,14 +207,14 @@ def train(args, generator, discriminator):
         D_optimiser.step()
 
         if (i + 1) % n_critic == 0:
-            generator.zero_grad()
+            G.zero_grad()
 
-            requires_grad(generator, True)
-            requires_grad(discriminator, False)
+            requires_grad(G, True)
+            requires_grad(D, False)
 
-            fake_image = generator(gen_in2, step=step, alpha=alpha)
+            fake_image = G(gen_in2, step=step, alpha=alpha)
 
-            predict = discriminator(fake_image, step=step, alpha=alpha)
+            predict = D(fake_image, step=step, alpha=alpha)
 
             if args.loss == 'wgan-gp':
                 loss = -predict.mean()
@@ -220,10 +227,10 @@ def train(args, generator, discriminator):
 
             loss.backward()
             G_optimiser.step()
-            stacking_parameters(G_processing, generator.module)
+            stacking_parameters(G_processing, G.module)
 
-            requires_grad(generator, False)
-            requires_grad(discriminator, True)
+            requires_grad(G, False)
+            requires_grad(D, True)
 
         if (i + 1) % 100 == 0:
             images = []
@@ -329,7 +336,7 @@ if __name__ == '__main__':
                              betas=(beta_0, beta_1))
 
     """ Start Training """
-    train(args, G_net, D_net)
+    train_StyleGAN(args, G_net, D_net)
 
     """ End of training """
     print("StyleGAN Training Complete")
