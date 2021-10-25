@@ -5,6 +5,8 @@ Reference: https://arxiv.org/abs/1802.10508v1
 from tensorflow.keras import layers, models
 import tensorflow_addons as tfa
 
+from train import train_model
+
 
 def encoder_module(input, num_filters, strides=(1, 1)):
     conv = layers.Conv2D(num_filters, (3, 3), strides,
@@ -81,4 +83,11 @@ class AdvUNet:
     def __init__(self, input_shape=(256, 256, 3)):
         self.model = build_model(input_shape)
 
-    
+    def compile(self):
+        pass
+
+    def fit(self):
+        pass
+
+    def predict(self):
+        pass
