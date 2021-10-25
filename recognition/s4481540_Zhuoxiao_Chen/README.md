@@ -12,7 +12,12 @@ This [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=co
 
 This project report includes mainly three sections: code implementation, methodology principles explanation, the experiment. The code is given with fully detailed inline comments in this repository. The methodology will talk about how the algorithm of StyleGAN works and why StyleGAN can achieve state-of-the-art results. In terms of the experiment, the experimental setting and implementation details will be described in detail. Also, the generated images will be presented at the end of this report.
 
-## Methodology StyleGAN
+## Methodology
+
+### Standard GAN
+Give some introduction to the standard GAN here. 
+
+### StyleGAN
 The motivation of StyleGAN is to find effective methods to control the image synthesis process by inserting latent code into each intermediate convolution later to control the image features at a different size. 
 
 <img src="https://user-images.githubusercontent.com/50613939/138625217-6e2b5ce6-8f7e-4089-8e94-60ff601c1358.png" alt="drawing" width="600"/>
