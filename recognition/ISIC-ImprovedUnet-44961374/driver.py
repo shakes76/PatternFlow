@@ -7,10 +7,10 @@ import os # for operating system functionalities
 from sklearn.utils import shuffle, validation # for shuffling data 
 import math # for mathematical operations
 import tensorflow as tf # for DL functionalities 
+from process_data import process_data
 
-
-print(tf. __version__) # check tf version
-print("GPUs in use: ", len(tf.config.list_physical_devices('GPU'))) # check if tf has access to GPU
+# print(tf. __version__) # check tf version
+# print("GPUs in use: ", len(tf.config.list_physical_devices('GPU'))) # check if tf has access to GPU
 
 def main():
     """
@@ -46,6 +46,8 @@ def main():
     test_images = images[2074 + 260:]
     test_masks = masks[2074 + 260:]
     test_data = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
+    test_data = test_data.map(process_data)
+    print(test_data)
 
 # run main function
 if __name__ == "__main__":
