@@ -2,17 +2,11 @@
 REFERENCE FOR PERCEIVER HELP ON CIFAR10
 https://keras.io/examples/vision/perceiver_image_classification/
 """
-import numpy
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
-import tensorflow_datasets as tfds
-from PIL import Image
-import os
-#import cv2
-from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -22,17 +16,17 @@ print("Tensorflow version: ", tf.__version__)
 # =============== PREPARE DATA ===============
 
 DATASET_FOLDER = 'datasets/'
-imgSize = 228
-IMG_HEIGHT = 260
-IMG_WIDTH = 228
 
+# should get this from directory
 INPUT_DS_SIZE = 18680
+# size to resize input images
+IMG_SIZE = 32
 
 # load AKOA dataset from processed datasets directory
 akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_FOLDER,
                                                                 shuffle=True,
                                                                 seed=999,
-                                                                image_size=(imgSize, imgSize),
+                                                                image_size=(IMG_SIZE, IMG_SIZE),
                                                                 batch_size=INPUT_DS_SIZE,
                                                                 labels="inferred",
                                                                 label_mode="categorical",
@@ -44,130 +38,71 @@ akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DA
 akoa_ds = akoa_ds_tuple[0]
 assert isinstance(akoa_ds, tf.data.Dataset)
 
-#print(akoa_ds["train"])
-#print(list())
-for image_array, label_array in tfds.as_numpy(akoa_ds):
-    x_data = image_array
-    y_data = label_array
-
-#np_data = tfds.as_numpy(akoa_ds)
-
-# convert to numpy array
-# x_data = []
-# y_data = []
-# for image, label in akoa_ds:
-#     #print(image.shape, label)
-#     x_data.append(image)
-#     y_data.append(label)
-    #print(type(image), type(label), label)
-
-
-
-# format data into np arrays and remove batch column
-print(x_data.shape)
-# x_data = np.array(x_data)
-# new_x_shape = [x_data.shape[0]] + list(x_data.shape[2:])
-# x_data = x_data.reshape(new_x_shape)
-print(y_data.shape)
-# y_data = y_data
+# get data into numpy arrays
+x_data, y_data = next(iter(akoa_ds))
+x_data = np.array(x_data)
+y_data = np.array(y_data)
 
 # train test split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
-#print(numpy.array(tfds.as_numpy(akoa_ds)))
 
-# def create_np_dataset_from_directory(img_dir):
-#     img_data_array = []
-#     labels = []
-#     for sub_dir in os.listdir(img_dir):
-#         for file in os.listdir(os.path.join(img_dir, sub_dir)):
-#             image_path = os.path.join(img_dir, sub_dir, file)
-#             image = np.array(Image.open(image_path))
-#             image = np.resize(image, (IMG_HEIGHT, IMG_WIDTH, 1))
-#             image = image.astype('float32')
-#             image /= 255
-#             img_data_array.append(image)
-#             labels.append(sub_dir)
-#     return np.array(img_data_array), np.array(labels)
-
-#print("Converting images to np arrays...")
-#x_train, y_train = create_np_dataset_from_directory(DATASET_FOLDER)
-#print(pil_img_data)
-#print(labels)
-
-# eg_data, = akoa_ds.take(1)
-# image, label = eg_data["image"], eg_data["label"]
-
-NUM_CLASSES = 2
-#INPUT_SHAPE = (32, 32, 3)
-INPUT_SHAPE = (260, 228, 1)
-NUM_CHANNELS = 1
-
-
-#(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
-
-print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
-#print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
+print("Input Shapes:")
+print("X train: ", x_train.shape)
+print("Y train: ", y_train.shape)
+print("X test: ", x_test.shape)
+print("Y test: ", y_test.shape)
 
 # =============== CONFIGURE HYPERPARAMETERS ===============
 
-learning_rate = 0.001
-weight_decay = 0.0001
-num_epochs = 3
-batch_size = 32
-dropout_rate = 0.2
-image_size = 32  # We'll resize input images to this size.
-patch_size = 2  # Size of the patches to be extract from the input images.
-num_patches = (image_size // patch_size) ** 2  # Size of the data array.
-latent_dim = 128  # Size of the latent array.
-projection_dim = 128  # Embedding size of each element in the data and latent arrays.
-num_heads = 8  # Number of Transformer heads.
-ffn_units = [
-    projection_dim,
-    projection_dim,
-]  # Size of the Transformer Feedforward network.
+NUM_CLASSES = 2
+NUM_CHANNELS = 1
+LEARN_RATE = 0.001
+WEIGHT_DECAY = 0.0001
+EPOCHS = 10
+BATCH_SIZE = 32
+DROPOUT_RATE = 0.2
+PATCH_SIZE = 2  # Size of patches to be extracted from input images.
+PATCHES = (IMG_SIZE // PATCH_SIZE) ** 2  # Size of the img data array.
+LATENT_ARRAY_SIZE = 128  # Size of the latent array.
+PROJECTION_SIZE = 128  # Embedding size of each element in the data and latent arrays.
+NUM_HEADS = 8  # Number of transformer heads.
+
+# Size of the Transformer Dense network.
+dense_units = [PROJECTION_SIZE, PROJECTION_SIZE]
 num_transformer_blocks = 4
 num_iterations = 2  # Repetitions of the cross-attention and Transformer modules.
-classifier_units = [
-    projection_dim,
-    NUM_CLASSES,
-]  # Size of the Feedforward network of the final classifier.
 
-print(f"Image size: {image_size} X {image_size} = {image_size ** 2}")
-print(f"Patch size: {patch_size} X {patch_size} = {patch_size ** 2} ")
-print(f"Patches per image: {num_patches}")
-print(f"Elements per patch (3 channels): {(patch_size ** 2) * NUM_CHANNELS}")
-print(f"Latent array shape: {latent_dim} X {projection_dim}")
-print(f"Data array shape: {num_patches} X {projection_dim}")
+# Size of the Feedforward network of the final classifier.
+classifier_units = [PROJECTION_SIZE, NUM_CLASSES]
 
+print(f"Image size: {IMG_SIZE} X {IMG_SIZE} = {IMG_SIZE ** 2}")
+print(f"Patch size: {PATCH_SIZE} X {PATCH_SIZE} = {PATCH_SIZE ** 2} ")
+print(f"Patches per image: {PATCHES}")
+print(f"Elements per patch (3 channels): {(PATCH_SIZE ** 2) * NUM_CHANNELS}")
+print(f"Latent array shape: {LATENT_ARRAY_SIZE} X {PROJECTION_SIZE}")
+print(f"Data array shape: {PATCHES} X {PROJECTION_SIZE}")
 
 # =============== AUGMENT DATA ===============
 
 data_augmentation = keras.Sequential(
     [
-        layers.Normalization(),
-        layers.Resizing(image_size, image_size),
-        layers.RandomFlip("horizontal"),
-        layers.RandomZoom(
-            height_factor=0.2, width_factor=0.2
-        ),
-    ],
-    name="data_augmentation",
+        tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
+        tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+    ]
 )
-# Compute the mean and the variance of the training data for normalization.
-data_augmentation.layers[0].adapt(x_train)
 
 # =============== DENSE NETWORK ===============
 
-def create_ffn(hidden_units, dropout_rate):
-    ffn_layers = []
+def create_dense_block(hidden_units, dropout_rate):
+
+    dense_layers = []
     for units in hidden_units[:-1]:
-        ffn_layers.append(layers.Dense(units, activation=tf.nn.gelu))
+        dense_layers.append(layers.Dense(units, activation=tf.nn.gelu))
 
-    ffn_layers.append(layers.Dense(units=hidden_units[-1]))
-    ffn_layers.append(layers.Dropout(dropout_rate))
+    dense_layers.append(layers.Dense(units=hidden_units[-1]))
+    dense_layers.append(layers.Dropout(dropout_rate))
 
-    ffn = keras.Sequential(ffn_layers)
-    return ffn
+    return keras.Sequential(dense_layers)
 
 
 # =============== PATCH CREATION AS LAYER ===============
@@ -211,7 +146,7 @@ class PatchEncoder(layers.Layer):
 # =============== CROSS ATTENTION MODULE ===============
 
 def create_cross_attention_module(
-    latent_dim, data_dim, projection_dim, ffn_units, dropout_rate
+    latent_dim, data_dim, projection_dim, dense_units, dropout_rate
 ):
 
     inputs = {
@@ -227,8 +162,10 @@ def create_cross_attention_module(
 
     # Create query tensor: [1, latent_dim, projection_dim].
     query = layers.Dense(units=projection_dim)(latent_array)
+
     # Create key tensor: [batch_size, data_dim, projection_dim].
     key = layers.Dense(units=projection_dim)(data_array)
+
     # Create value tensor: [batch_size, data_dim, projection_dim].
     value = layers.Dense(units=projection_dim)(data_array)
 
@@ -241,9 +178,11 @@ def create_cross_attention_module(
 
     # Apply layer norm.
     attention_output = layers.LayerNormalization(epsilon=1e-6)(attention_output)
-    # Apply Feedforward network.
-    ffn = create_ffn(hidden_units=ffn_units, dropout_rate=dropout_rate)
-    outputs = ffn(attention_output)
+
+    # Apply dense network.
+    dense = create_dense_block(hidden_units=dense_units, dropout_rate=dropout_rate)
+    outputs = dense(attention_output)
+
     # Skip connection 2.
     outputs = layers.Add()([outputs, attention_output])
 
@@ -269,19 +208,25 @@ def create_transformer_module(
     x0 = inputs
     # Create multiple layers of the Transformer block.
     for _ in range(num_transformer_blocks):
+
         # Apply layer normalization 1.
         x1 = layers.LayerNormalization(epsilon=1e-6)(x0)
+
         # Create a multi-head self-attention layer.
         attention_output = layers.MultiHeadAttention(
             num_heads=num_heads, key_dim=projection_dim, dropout=0.1
         )(x1, x1)
+
         # Skip connection 1.
         x2 = layers.Add()([attention_output, x0])
+
         # Apply layer normalization 2.
         x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
+
         # Apply Feedforward network.
-        ffn = create_ffn(hidden_units=ffn_units, dropout_rate=dropout_rate)
+        ffn = create_dense_block(hidden_units=ffn_units, dropout_rate=dropout_rate)
         x3 = ffn(x3)
+
         # Skip connection 2.
         x0 = layers.Add()([x3, x2])
 
@@ -301,7 +246,7 @@ class Perceiver(keras.Model):
         projection_dim,
         num_heads,
         num_transformer_blocks,
-        ffn_units,
+        dense_units,
         dropout_rate,
         num_iterations,
         classifier_units,
@@ -314,7 +259,7 @@ class Perceiver(keras.Model):
         self.projection_dim = projection_dim
         self.num_heads = num_heads
         self.num_transformer_blocks = num_transformer_blocks
-        self.ffn_units = ffn_units
+        self.dense_units = dense_units
         self.dropout_rate = dropout_rate
         self.num_iterations = num_iterations
         self.classifier_units = classifier_units
@@ -333,12 +278,12 @@ class Perceiver(keras.Model):
         # Create patch encoder.
         self.patch_encoder = PatchEncoder(self.data_dim, self.projection_dim)
 
-        # Create cross-attenion module.
+        # Create cross-attention module.
         self.cross_attention = create_cross_attention_module(
             self.latent_dim,
             self.data_dim,
             self.projection_dim,
-            self.ffn_units,
+            self.dense_units,
             self.dropout_rate,
         )
 
@@ -348,7 +293,7 @@ class Perceiver(keras.Model):
             self.projection_dim,
             self.num_heads,
             self.num_transformer_blocks,
-            self.ffn_units,
+            self.dense_units,
             self.dropout_rate,
         )
 
@@ -356,7 +301,7 @@ class Perceiver(keras.Model):
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # Create a classification head.
-        self.classification_head = create_ffn(
+        self.classification_head = create_dense_block(
             hidden_units=self.classifier_units, dropout_rate=self.dropout_rate
         )
 
@@ -383,7 +328,7 @@ class Perceiver(keras.Model):
             # Set the latent array of the next iteration.
             cross_attention_inputs["latent_array"] = latent_array
 
-        # Apply global average pooling to generate a [batch_size, projection_dim] repesentation tensor.
+        # Apply global average pooling to generate a [batch_size, projection_dim] representation tensor.
         representation = self.global_average_pooling(latent_array)
         # Generate logits.
         logits = self.classification_head(representation)
@@ -392,65 +337,63 @@ class Perceiver(keras.Model):
 
 # =============== COMPILE, TRAIN AND EVALUATE MODEL ===============
 
-def run_experiment(model):
+def train_model(model):
 
     # Create LAMB optimizer with weight decay.
     optimizer = tfa.optimizers.LAMB(
-        learning_rate=learning_rate, weight_decay_rate=weight_decay,
+        learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY,
     )
 
     # Compile the model.
     model.compile(
         optimizer=optimizer,
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=[
-            keras.metrics.SparseCategoricalAccuracy(name="acc"),
-            keras.metrics.SparseTopKCategoricalAccuracy(5, name="top5-acc"),
-        ],
+        loss=keras.losses.BinaryCrossentropy(from_logits=True),
+        metrics=[keras.metrics.BinaryAccuracy(name="accuracy")],
     )
 
     # Create a learning rate scheduler callback.
-    reduce_lr = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_loss", factor=0.2, patience=3
-    )
+    # reduce_lr = keras.callbacks.ReduceLROnPlateau(
+    #     monitor="val_loss", factor=0.2, patience=3
+    # )
+    #
+    # # Create an early stopping callback.
+    # early_stopping = tf.keras.callbacks.EarlyStopping(
+    #     monitor="val_loss", patience=15, restore_best_weights=True
+    # )
 
-    # Create an early stopping callback.
-    early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", patience=15, restore_best_weights=True
-    )
-
-    # Fit the model.
+    # fit model
     history = model.fit(
         x=x_train,#x=x_train,
         y=y_train,
-        batch_size=batch_size,
-        epochs=num_epochs,
+        batch_size=BATCH_SIZE,
+        epochs=EPOCHS,
         validation_split=0.1,
-        callbacks=[early_stopping, reduce_lr],
+        #callbacks=[early_stopping, reduce_lr],
     )
 
-    _, accuracy, top_5_accuracy = model.evaluate(akoa_ds)
-    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
+    # visualise shape of model
+    model.summary()
 
-    # Return history to plot learning curves.
+    test_loss, test_accuracy = model.evaluate(x_test, y_test)
+    print(f"Test accuracy: {test_accuracy * 100:.2f}%")
+    print(f"Test loss: {test_loss * 100:.2f}%")
     return history
 
 perceiver_classifier = Perceiver(
-    patch_size,
-    num_patches,
-    latent_dim,
-    projection_dim,
-    num_heads,
+    PATCH_SIZE,
+    PATCHES,
+    LATENT_ARRAY_SIZE,
+    PROJECTION_SIZE,
+    NUM_HEADS,
     num_transformer_blocks,
-    ffn_units,
-    dropout_rate,
+    dense_units,
+    DROPOUT_RATE,
     num_iterations,
     classifier_units,
 )
 
 
-history = run_experiment(perceiver_classifier)
+history = train_model(perceiver_classifier)
 
 print(history.history.keys())
 # summarize history for accuracy
@@ -459,7 +402,6 @@ plt.plot(history.history['val_accuracy'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
-
-
+plt.legend(['train', 'validation'], loc='upper left')
+#plt.show()
+plt.savefig(f'training_curve_epochs_{EPOCHS}.png')
