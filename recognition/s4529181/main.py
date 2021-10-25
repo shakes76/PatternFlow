@@ -1,10 +1,10 @@
-# author: Yaoyu Liu 
-
 import glob
 import tensorflow as tf
+from dice_coefficiency import *
 from unet import *
-import keras.backend as K
+import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import TensorBoard
 
 # process the images and labels
 def process_images_labels(image, label):
@@ -33,6 +33,12 @@ def display_data(ds, n=1):
             plt.imshow(draws[i], cmap='gray')
             plt.axis('off')
         plt.show()
+
+# learning schedule funcition
+def learning_schedule(initial, decay, steps):
+    def schedule(epoch):
+        return initial * (decay ** np.floor(epoch / steps))
+    return tf.keras.callbacks.LearningRateScheduler(schedule)
 
 # to get data
 images = glob.glob(
@@ -64,9 +70,34 @@ test_ds = test_ds.map(process_images_labels)
 # plot example image
 display_data(train_ds)
 
-# Build model
+# build model
 model = model_unet(16)
 model.summary()
+
+
 model.compile(optimizer='adam',
-              loss='binary_crossentropy', 
-              metrics=['dice']) #or accuracy
+              loss='binary_crossentropy',
+              metrics=['dice'])  # or accuracy
+              
+
+image_callbacks = [learning_schedule(5e-4, 0.6, 2),
+                   TensorBoard(log_dir='./logs', histogram_freq=0,
+                               write_graph=False, write_grads=False),
+                   tf.keras.callbacks.EarlyStopping(monitor='val_dice', patience=5, mode='max', restore_best_weights=True)]
+
+# train model
+history = model.fit(train_ds.batch(32), epochs=30, validation_data=val_ds.batch(32), callbacks=image_callbacks, verbose=1)
+
+# evaluate model
+plt.figure(figsize=(10, 6))
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.title('Model')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+plt.show()
+
+model.evaluate(test_ds.batch(32), verbose=2)
+
+
