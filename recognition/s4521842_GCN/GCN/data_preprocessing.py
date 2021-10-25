@@ -1,3 +1,7 @@
+import tensorflow as tf
+import numpy as np
+import scipy.sparse as sp
+
 class DataPreprocessing():
     def __init__(self, path='dataset/facebook.npz'):
         
@@ -91,3 +95,10 @@ class DataPreprocessing():
         
     def get_data(self):
         return self.dataset
+    
+    def get_test_labels(self):
+        _, _, _, _, _, test_labels = self.data_split(self.n_nodes)
+        
+        return test_labels
+        
+    
