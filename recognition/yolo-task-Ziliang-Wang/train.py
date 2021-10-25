@@ -60,7 +60,7 @@ def fit(net, yolo_loss, opt, batch_data, batch_data_test):
             if (iteration + 1) % 125 == 0:
                 print('Epoch{}:[{}/{}({:.0f}%)]'.format(e, trained_samples, all_samples,
                                                         100 * trained_samples / all_samples))
-                
+
 
         net.eval()
         for iteration, (images, y) in enumerate(batch_data_test):
