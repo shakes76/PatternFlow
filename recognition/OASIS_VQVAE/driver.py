@@ -24,6 +24,32 @@ class SSIMCallback(tf.keras.callbacks.Callback):
         print("epoch: {:d} - val_avg_ssim: {:.6f}".format(epoch, logs['val_avg_ssim']))
 
 
+def plot_history(history):
+    plt.plot(history.history['loss'])
+    plt.title('total training loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.show()
+
+    plt.plot(history.history['reconstruction_loss'])
+    plt.title('training reconstruction loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.show()
+
+    plt.plot(history.history['vq_loss'])
+    plt.title('training quantizer loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.show()
+
+    plt.plot(history.history['val_avg_ssim'])
+    plt.title('validation dataset average SSIM')
+    plt.ylabel('average SSIM')
+    plt.xlabel('epoch')
+    plt.show()
+
+
 def show_image_and_reconstruction(original, cb, reconstructed):
     plt.subplot(1, 3, 1)
     plt.imshow(original, cmap="gray")
@@ -90,8 +116,10 @@ if __name__ == "__main__":
                               batch_size=batch_size, 
                               callbacks=[SSIMCallback(dataset_validation, shift)])
 
-    # visualise some reconstructions
+    # plot history
+    plot_history(history)
 
+    # visualise some reconstructions
     num_batches_to_show = 2
     num_images_per_batch_to_show = 5
 
