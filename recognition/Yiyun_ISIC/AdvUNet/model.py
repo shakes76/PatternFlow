@@ -42,12 +42,12 @@ def decoder_module(input, encode_output, num_filters, localization_module=True):
     return conv2
 
 
-def build_model(input_shape):
+def build_model(input_shape=(256, 256, 3)):
     inputs = layers.Input(input_shape)
 
     # downsampling
     down1 = encoder_module(inputs, 16)
-    down2 = encoder_module(down1, 32, strides=(2, 2))  # todo: strides=2?
+    down2 = encoder_module(down1, 32, strides=(2, 2))
     down3 = encoder_module(down2, 64, strides=(2, 2))
     down4 = encoder_module(down3, 128, strides=(2, 2))
     down5 = encoder_module(down4, 256, strides=(2, 2))
@@ -80,3 +80,5 @@ def build_model(input_shape):
 class AdvUNet:
     def __init__(self, input_shape=(256, 256, 3)):
         self.model = build_model(input_shape)
+
+    
