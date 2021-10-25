@@ -15,6 +15,10 @@ This project report includes mainly three sections: code implementation, methodo
 ## Methodology StyleGAN
 Describe the principles of StyleGAN
 
+![image](https://user-images.githubusercontent.com/50613939/138625217-6e2b5ce6-8f7e-4089-8e94-60ff601c1358.png)
+
+
+
 ## OAI AKOA knee dataset
 Introduce the knee dataset here
 
