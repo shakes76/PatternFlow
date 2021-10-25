@@ -22,3 +22,41 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
                 color_mode="grayscale")))
 print(left)
 print(right)
+
+
+#Cross Attention Layer
+def cross_attention(image_size):
+    
+    # Number of Pixels in the Scaled Image
+    print(image_size)
+    latent_input = layers.Input(shape=(256, 2*(2*6 + 1) + 1))
+    data_array_input = layers.Input(shape=(image_size, 2*(2*6 + 1) + 1))
+
+    latent_array = layers.LayerNormalization(epsilon=1e-6)(latent_input)
+    data_array = layers.LayerNormalization(epsilon=1e-6)(data_array_input)
+
+    query_key_value_vector = []
+    
+
+    query_key_value_vector.append(layers.Dense(units=2*(2*6 + 1) + 1)(latent_array))
+    for _ in range(2):
+        query_key_value_vector.append(layers.Dense(units=2*(2*6 + 1) + 1)(data_array))
+
+    attention = layers.Attention(use_scale=True, dropout=0.1)(
+        query_key_value_vector
+    )
+    attention = layers.Add()([attention, latent_array])
+
+    attention = layers.LayerNormalization(epsilon=1e-6)(attention)
+    
+    # Feedforward network.
+    feedforward_network = [] # May need to add more layers
+    feedforward_network.append(layers.Dense(units=2*(2*6 + 1) + 1))
+    outputs = keras.Sequential(feedforward_network)(attention)
+    
+    outputs = layers.Add()([outputs, attention])
+
+    return keras.Model(inputs=[latent_input,data_array_input], outputs=outputs)
+
+model = create_cross_attention_module(73*64, 2*(2*6 + 1) + 1)
+model.summary()
