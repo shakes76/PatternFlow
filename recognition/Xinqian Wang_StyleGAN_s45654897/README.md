@@ -60,4 +60,4 @@ Latent code (Z)         |  Intermediate latent code (W)
 :-------------------------:|:-------------------------:
 ![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_c_188.c_481.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_c_188.c_481.png)
 
-**We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training**
+**We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training. The future could also made by analyzing the covarience matrix by looking for the relations between different attributes.**
