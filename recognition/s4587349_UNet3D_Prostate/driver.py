@@ -1,13 +1,14 @@
 import os
-import numpy as np
-import nibabel as nib
+# import numpy as np
 import matplotlib.pyplot as plt
+import nibabel as nib
+# import matplotlib.pyplot as plt
 import tensorflow as tf
 # from skimage.io import imread, imshow
 
 
-from tensorflow import keras
-from tensorflow.keras import layers
+# from tensorflow import keras
+# from tensorflow.keras import layers
 
 import unet_model as mdl
 import support_methods as sm
@@ -43,6 +44,7 @@ def main():
     at 158:35:18.
     """
 
+    """ DATA SOURCES"""
     # """ Data Sources Windows D: """
     # Data sources
     X_TRAIN_DIR = 'D:\\prostate\\mr_train'
@@ -53,15 +55,15 @@ def main():
     Y_VALIDATE_DIR = 'D:\\prostate\\label_validate'
     Y_TEST_DIR = 'D:\\prostate\\label_test'
 
-    # """ Data Sources Windows C: """
-    # Data sources
-    X_TRAIN_DIR = 'C:\\prostate\\mr_train'
-    X_VALIDATE_DIR = 'C:\\prostate\\mr_validate'
-    X_TEST_DIR = 'C:\\prostate\\mr_test'
-    # Label sources
-    Y_TRAIN_DIR = 'C:\\prostate\\label_train'
-    Y_VALIDATE_DIR = 'C:\\prostate\\label_validate'
-    Y_TEST_DIR = 'C:\\prostate\\label_test'
+    # # """ Data Sources Windows C: """
+    # # Data sources
+    # X_TRAIN_DIR = 'C:\\prostate\\mr_train'
+    # X_VALIDATE_DIR = 'C:\\prostate\\mr_validate'
+    # X_TEST_DIR = 'C:\\prostate\\mr_test'
+    # # Label sources
+    # Y_TRAIN_DIR = 'C:\\prostate\\label_train'
+    # Y_VALIDATE_DIR = 'C:\\prostate\\label_validate'
+    # Y_TEST_DIR = 'C:\\prostate\\label_test'
 
 
     # """ Data sources Goliath """
@@ -74,20 +76,19 @@ def main():
     # Y_VALIDATE_DIR = '~/prostate/label_validate'
     # Y_TEST_DIR = '~/prostate/label_test'
 
-    # Example data & label
+    """ Example data and label  """
     img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
     img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
 
 
 
+    """ Full data & label addresses in D: """
     image_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
                    for x in os.listdir('D:\\prostate\\mr_train')])
     image_validate = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_validate', x)
                       for x in os.listdir('D:\\prostate\\mr_validate')])
     image_test = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_test', x)
               for x in os.listdir('D:\\prostate\\mr_test')])
-
-
     label_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_train', x)
                    for x in os.listdir('D:\\prostate\\label_train')])
     label_validate = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_validate', x)
@@ -95,6 +96,36 @@ def main():
     label_test = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\label_test', x)
                   for x in os.listdir('D:\\prostate\\label_test')])
 
+
+    # """ Full data & label addresses in C: """
+    # image_train = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\mr_train', x)
+    #                       for x in os.listdir('C:\\prostate\\mr_train')])
+    # image_validate = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\mr_validate', x)
+    #                          for x in os.listdir('C:\\prostate\\mr_validate')])
+    # image_test = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\mr_test', x)
+    #                      for x in os.listdir('C:\\prostate\\mr_test')])
+    #
+    #
+    # label_train = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\label_train', x)
+    #                       for x in os.listdir('C:\\prostate\\label_train')])
+    # label_validate = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\label_validate', x)
+    #                          for x in os.listdir('C:\\prostate\\label_validate')])
+    # label_test = sorted([os.path.join(os.getcwd(), 'C:\\prostate\\label_test', x)
+    #                      for x in os.listdir('C:\\prostate\\label_test')])
+
+    # """ Full data & label addresses in Goliath """
+    # image_train = sorted([os.path.join(os.getcwd(), '~/prostate/mr_train', x)
+    #                       for x in os.listdir('~/prostate/mr_train')])
+    # image_validate = sorted([os.path.join(os.getcwd(), '~/prostate/mr_validate', x)
+    #                          for x in os.listdir('~/prostate/mr_validate')])
+    # image_test = sorted([os.path.join(os.getcwd(), '~/prostate/mr_test', x)
+    #                      for x in os.listdir('~/prostate/mr_test')])
+    # label_train = sorted([os.path.join(os.getcwd(), '~/prostate/label_train', x)
+    #                       for x in os.listdir('~/prostate/label_train')])
+    # label_validate = sorted([os.path.join(os.getcwd(), '~/prostate/label_validate', x)
+    #                          for x in os.listdir('~/prostate/label_validate')])
+    # label_test = sorted([os.path.join(os.getcwd(), '~/prostate/label_test', x)
+    #                      for x in os.listdir('~/prostate/label_test')])
 
 
     """ Small test set D:"""
@@ -111,19 +142,34 @@ def main():
     label_small_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\label_test', x)
                                    for x in os.listdir('D:\\p\\label_test')])
 
-    """ Small test set C:"""
-    data_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\data', x)
-                               for x in os.listdir('C:\\p\\data')])
-    label_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\label', x)
-                                for x in os.listdir('D:\\p\\label')])
-    data_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_validate', x)
-                                  for x in os.listdir('C:\\p\\data_validate')])
-    label_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_validate', x)
-                                   for x in os.listdir('C:\\p\\label_validate')])
-    data_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_test', x)
-                              for x in os.listdir('C:\\p\\data_test')])
-    label_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_test', x)
-                               for x in os.listdir('C:\\p\\label_test')])
+    # """ Small test set C:"""
+    # data_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\data', x)
+    #                            for x in os.listdir('C:\\p\\data')])
+    # label_small_train = sorted([os.path.join(os.getcwd(), 'C:\\p\\label', x)
+    #                             for x in os.listdir('C:\\p\\label')])
+    # data_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_validate', x)
+    #                               for x in os.listdir('C:\\p\\data_validate')])
+    # label_small_validate = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_validate', x)
+    #                                for x in os.listdir('C:\\p\\label_validate')])
+    # data_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\data_test', x)
+    #                           for x in os.listdir('C:\\p\\data_test')])
+    # label_small_test = sorted([os.path.join(os.getcwd(), 'C:\\p\\label_test', x)
+    #                            for x in os.listdir('C:\\p\\label_test')])
+
+
+    # """ Small test set Goliath"""
+    # data_small_train = sorted([os.path.join(os.getcwd(), '~/p/data', x)
+    #                            for x in os.listdir('~/p/data')])
+    # label_small_train = sorted([os.path.join(os.getcwd(), '~/p/label', x)
+    #                             for x in os.listdir('~/p/label')])
+    # data_small_validate = sorted([os.path.join(os.getcwd(), '~/p/data_validate', x)
+    #                               for x in os.listdir('~/p/data_validate')])
+    # label_small_validate = sorted([os.path.join(os.getcwd(), '~/p/label_validate', x)
+    #                                for x in os.listdir('~/p/label_validate')])
+    # data_small_test = sorted([os.path.join(os.getcwd(), '~/p/data_test', x)
+    #                           for x in os.listdir('~/p/data_test')])
+    # label_small_test = sorted([os.path.join(os.getcwd(), '~/p/label_test', x)
+    #                            for x in os.listdir('~/p/label_test')])
 
 
 
@@ -131,16 +177,28 @@ def main():
     training_generator = sm.ProstateSequence(data_small_train, label_train, batch_size=1)
     validation_generator = sm.ProstateSequence(label_small_train, label_train, batch_size=1)
 
-    print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
+    # print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
                                             # need to visualise
 
-    """ Model """
-    """ Attempt to compile model"""    # todo update with BN, Relu
-    model = mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
+
+
+
+
+
+
+
+    # """ Model """
+    # # todo update with BN, Relu
+    # model = mdl.unet3d(inputsize= (256,256,128,1), kernelSize=3)
+    #
+    #
+    # # model = mdl.unet3d_small(inputsize= (256,256,128,1), kernelSize=3)  #attempt to run smaller model
+    #
     # model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'] ) # todo add dsc
-    model.summary()
-    model.fit(training_generator)
+    # model.summary()
+    #
+    # # TODO WORKING HERE
+    # # model.fit(training_generator)
 
 
 
@@ -155,40 +213,22 @@ def main():
     # print(ohe)
     # print(y.shape, ohe.shape)
 
-    # #  check shape for to_categorical for single label
-    # ohe = keras.utils.to_categorical(img_label, num_classes = 6)
-    # print(img_label.shape, ohe.shape)
-    # print(type(img_label), type(img_mr), type(ohe))
 
 
 
-    # """ Checks dimensions of each image and label against expected."""
-    # sm.dim_per_directory()
 
-    # # Display raw data and label info
-    # sm.data_info()
-    #
-    # # display images of data
-    # sm.slices(img_mr)
-    # # display images of labels
-    # sm.slices(img_label)
 
 
 
 
     # todo
-    # upsampling vs conc3DTranspose
-    # check size of each image
-    # find my original work
     # generator / sequence
     # normalise data, - mean / stdev  - tf.keras.utils.normalize(
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/normalize
-    # labels tf.one_hot( )  - tf.keras.utils.to_categorical
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/to_categorical
     # sort / shuffle
     # model 3d
     # dsc
-    # model.compile
     # model_checkpoint
     # model predict
     # model save / recover
@@ -208,6 +248,27 @@ def main():
     # 1. Not printing images in subplots, works in jupyter
     # plot image slices & labels, pre - ensure access (try 3d later)
     # slices(img_mr)
+
+
+    """ Code to investigate data and images """
+
+    # #Checks dimensions of each image and label against expected.
+    # sm.dim_per_directory()
+    #
+    # # Display raw data and label info
+    # sm.data_info()
+    #
+    # # display images of data
+    # sm.slices(img_mr)
+    #
+    # # display images of labels
+    # sm.slices(img_label)
+
+    # #  check shape and print slices for to_categorical for single label (one_hot_encoding)
+    # ohe = tf.keras.utils.to_categorical(img_label, num_classes = 6)
+    # print(img_label.shape, ohe.shape)
+    # print(type(img_label), type(img_mr), type(ohe))
+    # sm.slices_ohe(ohe)
 
 
 if __name__ == '__main__':

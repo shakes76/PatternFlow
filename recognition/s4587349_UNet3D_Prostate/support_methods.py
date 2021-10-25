@@ -1,31 +1,31 @@
 import tensorflow as tf
 # import keras.utils.data_utils
-import tensorflow.keras.utils
+# import tensorflow.keras.utils
 import numpy as np
 from matplotlib import pyplot as plt
-from nibabel.brikhead import filepath
 # from skimage.io import imread
 # from skimage.transform import resize
 import math
 import nibabel as nib
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+# from tensorflow.keras import layers
 # from keras.utils import Sequence
-import tensorflow.keras.utils
-from tensorflow.keras.models import Sequential
-import os
-import sys
+# import tensorflow.keras.utils
+# from tensorflow.keras.models import Sequential
+# import os
+# import sys
 
-import unet_model as mdl
+# import unet_model as mdl
 import driver as drv
-
+print(tf.__version__)
 
 # todo need to input X_set, y_set whish are x_
 class ProstateSequence(keras.utils.Sequence):
     # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
     # https://towardsdatascience.com/keras-data-generators-and-how-to-use-them-b69129ed779c
     """Data generator"""
+
 
     def __init__(self, x_set, y_set, batch_size=1):
         # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
@@ -95,10 +95,10 @@ class ProstateSequence(keras.utils.Sequence):
 
         for i, id in enumerate(list_data_tmp):
             # print("i, id: ", i, id) #
-            k = self.read_nii(id)  #
-            print("L100 kx: ", k.shape)  #
+            # k = self.read_nii(id)  #
+            # print("L100 kx: ", k.shape)  #
             X[i,] = self.read_nii(id)
-            print("L102 X.shape, i: ", X.shape, i)
+            # print("L102 X.shape, i: ", X.shape, i)
         return X
 
     def _generation_y(self, list_label_tmp):
@@ -111,14 +111,14 @@ class ProstateSequence(keras.utils.Sequence):
         y = np.empty((self.batch_size, *self.dim, self.n_classes), dtype=int)
 
         for i, id in enumerate(list_label_tmp):
-            k = self.read_nii(id)  #
-            slices(k)
-            print("L115 ky: ", k.shape)  #
+            # k = self.read_nii(id)  #
+            # slices(k)
+            # print("L115 ky: ", k.shape)  #
             y2 = self.read_nii(id)  # todo investigate
 
             y[i,] = tf.keras.utils.to_categorical(y2, num_classes=self.n_classes,
                                                   dtype='float64')
-            print("L119 y.shape, i : ", y.shape, i)
+            # print("L119 y.shape, i : ", y.shape, i)
         return y
 
     def read_nii(self, file_path):
@@ -178,12 +178,31 @@ def slices(img):
     slice_2 = img[:, :, 63]
     show_slices([slice_0, slice_1, slice_2])
 
+def slices_ohe(img):
+    """ takes slices of input image."""
+    slice_0 = img[128,:,:,0]
+    slice_1 = img[128,:,:,1]
+    slice_2 = img[:,128,:,2]
+    slice_3 = img[:,128,:,3]
+    slice_4 = img[:,:,64,4]
+    slice_5 = img[:,:,64,5]
+
+    show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
+
+
 
 def show_slices(sliced):
     """ Prints slices images to screen."""
     for i in sliced:
         plt.imshow(i.T)
         plt.show()
+
+    # fig, ax = plt.subplots(1, len(sliced))
+    # fig.suptitle("One hot encoded plots")
+    # for j, sliceded in enumerate(sliced):
+    #     ax[j].imshow(sliceded.T)
+        
+
 
     # todo put into subplots (if works in pycharm)
     # fig, axes = plt.subplots(1, len(sliced))
