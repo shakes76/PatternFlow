@@ -12,7 +12,7 @@ def improved_unet(input_size=(256, 256, 3),output_channels=2):
     av1 =LeakyReLU(alpha=0.3)(conv1)
 
     #16 output filters context module
-    context16 = BatchNormalization()(inputs)
+    context16 = BatchNormalization()(av1)
     context16 = LeakyReLU(alpha=0.3)(context16)
     context16 = Conv2D(16, (3, 3), padding="same" )(context16) 
     context16 = Dropout(0.3) (context16)
