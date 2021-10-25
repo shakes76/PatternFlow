@@ -1,18 +1,19 @@
-import argparse
 import random
 import math
-
-from data_loader import MultiResolutionDataset
-from network import Styled_G, D
-
+import argparse
+from tqdm import tqdm
+import numpy as np
+from PIL import Image
 import torch
 from torch import nn, optim
-from torch.nn import functional as F
-from torch.autograd import Variable, grad
-from torch.utils.data import DataLoader
 from torchvision import datasets, transforms, utils
-from tqdm import tqdm
-from PIL import Image
+from torch.utils.data import DataLoader
+from torch.autograd import Variable, grad
+from torch.nn import functional as F
+from data_loader import MultiResolutionDataset
+from network import Styled_G, D
+# import all required libraries.
+
 
 
 def adjust_lr(optimizer, lr):
@@ -20,7 +21,14 @@ def adjust_lr(optimizer, lr):
         mult = group.get('mult', 1)
         group['lr'] = lr * mult
 
+def stacking_parameters(net_0, net_1, weight_decay=0.999):
+    """Accumulate the parameters of two models based on the weight decay"""
+    parameter_0, parameter_1 = dict(net_0.named_parameters()),\
+                               dict(net_1.named_parameters())
 
+    for key in parameter_0.keys():
+        parameter_0[key].data.mul_(weight_decay).add_(1 - weight_decay,
+                                                    parameter_1[key].data)
 
 def train(args, generator, discriminator):
     transform = transforms.Compose(
@@ -245,9 +253,15 @@ def train(args, generator, discriminator):
 
         pbar.set_description(state_msg)
 
-def requires_grad(model, flag=True):
-    for p in model.parameters():
-        p.requires_grad = flag
+def change_gradient_status(network, status=True):
+    """
+    This function is used to change the status of the gradient 
+    for a specific network. It changes the gradient status
+    of all the parameters in a network. If the status is false, then
+    the network is fixed and no gradient is passed backward.
+    """
+    for prameters in network.parameters():
+        prameters.requires_grad = status
 
 def sample_data(dataset, batch_size, image_size=4):
     dataset.resolution = image_size

@@ -1,11 +1,11 @@
 from io import BytesIO
 
-import lmdb
 from PIL import Image
 from torch.utils.data import Dataset
 
 
-class Dataset(Dataset):
+import lmdb
+class MultiResolutionDataset(Dataset):
     def __init__(self, path, transform, resolution=8):
         self.env = lmdb.open(
             path,
