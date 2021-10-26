@@ -1,3 +1,4 @@
+import keras.initializers.initializers_v1
 import numpy as np
 import scipy
 import scipy.sparse as spr
@@ -81,46 +82,20 @@ def test_layer(input_data):
     print(z)
 
 
-class MyLayer(tf.keras.layers.Layer):
-    def __init__(self, units=32, input_dim=32):
-        super(MyLayer, self).__init__()
-        w_init = tf.random_normal_initializer()
-        self.w = tf.Variable(
-            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
-            trainable=True,
-        )
-        b_init = tf.zeros_initializer()
-        self.b = tf.Variable(
-            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
-        )
+class FaceGCNLayer(tf.keras.layers.Layer):
+    def __init__(self, adj_m):
+        super(FaceGCNLayer, self).__init__()
+        self.adj_m = adj_m
 
-        self.kernal = 9
+    def build(self, input_shape):
+        self.weights1 = self.add_weight("weights1",
+                                       shape=input_shape[1:],
+                                       initializer=keras.initializers.initializers_v1.RandomNormal)
 
-    def build(self):
-        self.kernal = 9
+    def call(self, feature_matrix):
+        feature_matrix = tf.squeeze(feature_matrix)
+        ax = tf.sparse.sparse_dense_matmul(tf.cast(self.adj_m, float), feature_matrix)
+        z = ax * self.weights1
 
-    def call(self, inputs):
+        return z
 
-        return tf.matmul(inputs, self.w) + self.b
-
-
-class FacebookGCN(tf.keras.Model):
-    def __init__(self, kernel_size, filters):
-        super(FacebookGCN, self).__init__(name='')
-        filters1, filters2, filters3 = filters
-
-        self.graph_layer = MyLayer()
-        self.softmax = tf.keras.layers.Softmax()
-
-    def call(self, input_tensor, training=False):
-
-        x = MyLayer(input_tensor)
-        x = self.softmax(x)
-
-        x = MyLayer(x)
-        x = self.softmax(x)
-
-        x = lyr.Dense()
-
-        x += input_tensor
-        return tf.nn.relu(x)
