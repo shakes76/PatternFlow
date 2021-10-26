@@ -1,4 +1,4 @@
-# ISIC Data Segmentation Using Improved UNet
+# ISIC Data Segmentation Using Improved UNet Model
 
 <!-- Author Information -->
 ## Author
