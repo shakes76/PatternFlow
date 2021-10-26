@@ -1,5 +1,5 @@
 '''
-    model.py
+    myGraphModel.py
     Author: Jaydon Hansen
     Date created: 26/10/2020
     Date last modified: 7/11/2020

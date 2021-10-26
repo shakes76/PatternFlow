@@ -2,7 +2,7 @@ from typing import Any
 
 import keras.activations
 
-import model
+import myGraphModel
 import tensorflow as tf
 import tensorflow.keras.optimizers as op
 from tensorflow.keras.models import Model, Sequential
@@ -13,6 +13,10 @@ import numpy as np
 
 
 # Constants
+def coo_matrix_to_sparse_tensor(coo):
+    indices = np.mat([coo.row, coo.col]).transpose()
+    return tf.SparseTensor(indices, coo.data, coo.shape)
+
 def summarise_data(data, aspect):
     print(f"===== {aspect} =====")
     aspect_d = data[aspect]
@@ -37,12 +41,9 @@ def main():
 
     # print(data.files)
 
-    features = data['features']
-    edges = data['edges']
-    target = data['target']
-
-    x_train = features
-    y_train = features
+    # features = data['features']
+    # edges = data['edges']
+    # target = data['target']
 
     # summarise_data(data, 'features')
     # summarise_data(data, 'edges')
@@ -82,25 +83,76 @@ def main():
     # Construct Adjacency matrix
     a_bar = spr.coo_matrix((ones, (page_one, page_two)))
     a_bar.setdiag(1)
+    a_bar = coo_matrix_to_sparse_tensor(a_bar)
+
+    # ================== REAL MODEL ========================
+    # Adjacency Matrix
+    page_one = data['edges'][:, 0]
+    page_two = data['edges'][:, 1]
+
+    ones = tf.ones_like(page_one)
+
+    print("A_Bar 1")
+    print(a_bar)
+    print(a_bar.shape)
+    print(type(a_bar))
+    a_bar = spr.coo_matrix((ones, (page_one, page_two)))
+    a_bar.setdiag(1)
+    a_bar = coo_matrix_to_sparse_tensor(a_bar)
+    print("A_Bar 2")
+    print(a_bar)
+    print(a_bar.shape)
+    print(type(a_bar))
+
+    # Features
+    print("Feats 1")
+    print(feats)
+    print(tf.shape(feats))
+    print(type(feats))
+    feats = tf.convert_to_tensor(data['features'])
+    print("Feats 2")
+    print(feats)
+    print(tf.shape(feats))
+    print(type(feats))
+
+    # Labels
+    print("Labels 1")
+    print(labels)
+    print(tf.shape(labels))
+    print(type(labels))
+    labels = tf.convert_to_tensor(data['target'])
+    print("Labels 2")
+    print(labels)
+    print(tf.shape(labels))
+    print(type(labels))
+    # ================== REAL MODEL DONE ===================
 
     # Construct Model
     my_model = Sequential()
     loss_fn = losses.SparseCategoricalCrossentropy(from_logits=False)
     # activation_fn = activations.relu()
-    a_bar = model.coo_matrix_to_sparse_tensor(a_bar)
 
-    my_model.add(Input(shape=tf.shape(feats)))
+    print("Shape 1")
+    print(tf.shape(feats))
+    print("Shape 2")
+    print(tf.Tensor.get_shape(feats))
+    print("Shape 3")
+    print(tf.shape(feats).get_shape())
 
-    my_model.add(model.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(model.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(model.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(Input(shape=tf.Tensor.get_shape(feats)))
+    #my_model.add(Input(batch_shape=tf.shape(feats)))
+
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
 
     my_model.add(Dense(4, activation='softmax'))
 
     my_model.compile(optimizer='adam', loss=loss_fn)
     my_model.fit(feats,
                  labels,
-                 epochs=5)
+                 epochs=1,
+                 )
 
     print(my_model.summary())
 
