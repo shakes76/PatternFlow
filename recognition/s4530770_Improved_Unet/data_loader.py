@@ -12,7 +12,7 @@ class DataLoader:
         self.batch_size = batch_size
         self.image_shape = [384, 512]
 
-        list_ds = tf.data.Dataset.list_files(self.path + "ISIC2018_Task1-2_Training_Input_x2\\*.jpg", shuffle=False)
+        list_ds = tf.data.Dataset.list_files(self.path + "ISIC2018_Task1-2_Training_Input_x2\\*.jpg", shuffle=True)
 
         data_dir = pathlib.Path(self.path)
         image_count = len(list(data_dir.glob('ISIC2018_Task1-2_Training_Input_x2\\*.jpg')))
@@ -36,22 +36,21 @@ class DataLoader:
         def process_path(file_path):
             # Output raw image data from file paths
             img = tf.io.decode_jpeg(tf.io.read_file(file_path), channels=3)
-            mask = tf.io.decode_png(tf.io.read_file(get_mask(file_path)), channels=1)
+            mask = tf.io.decode_png(tf.io.read_file(get_mask(file_path)), channels=3)
             img = tf.image.resize(img, self.image_shape)
             mask = tf.image.resize(mask, self.image_shape)
             img = tf.cast(img, tf.float32) / 255.0
             mask = tf.cast(mask, tf.float32) / 255.0
 
             img = tf.reshape(img, tuple(self.image_shape + [3]))
-            mask = tf.reshape(mask, tuple(self.image_shape + [1]))
+            mask = tf.reshape(mask, tuple(self.image_shape + [3]))
             return img, mask
 
-        @tf.function
         def configure_for_performance(ds):
-            ds = ds.cache()
-            ds = ds.shuffle(buffer_size=200)
-            ds = ds.batch(self.batch_size)
-            ds = ds.prefetch(self.AUTOTUNE)
+            #ds = ds.cache()
+            ds = ds.shuffle(buffer_size=100)
+            ds = ds.batch(self.batch_size, num_parallel_calls=self.AUTOTUNE)
+            #ds = ds.prefetch(self.AUTOTUNE)
 
             return ds
 

@@ -19,7 +19,7 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss="categorical_crossentropy",
               metrics=['accuracy', dice_coef])
 
 
@@ -45,20 +45,23 @@ def display(display_list):
 def show_predictions(dataset, num=1):
     for img, mask in dataset.take(num):
         pred_mask = model.predict(img)
+        print(img[0].shape, mask[0].shape)
         display([img[0], mask[0], create_mask(pred_mask)])
 
 
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        show_predictions(data)
+        show_predictions(data.get_test_set())
         print('\nSample Prediction after epoch {}\n'.format(epoch + 1))
 
-EPOCHS = 5
-data = DataLoader("H:\\COMP3710\\ISIC2018_Task1-2_Training_Data\\", batch_size=16)
-#show_predictions(data.get_training_set())
-history = model.fit(data.get_training_set(),
+EPOCHS = 1
+data = DataLoader("C:\\Users\\s4530770\\Downloads\\ISIC2018_Task1-2_Training_Data\\", batch_size=8)
+show_predictions(data.get_training_set())
+train_ds = data.get_training_set()
+val_ds = data.get_validation_set()
+history = model.fit(train_ds,
                     epochs=EPOCHS,
-                    validation_data=data.get_validation_set(),
+                    validation_data=val_ds,
                     callbacks=[DisplayCallback()])
 
 loss = history.history['loss']
