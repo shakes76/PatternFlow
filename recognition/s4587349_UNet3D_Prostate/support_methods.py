@@ -1,23 +1,11 @@
 import tensorflow as tf
-# import keras.utils.data_utils
-# import tensorflow.keras.utils
 import numpy as np
 from matplotlib import pyplot as plt
-# from skimage.io import imread
-# from skimage.transform import resize
 import math
 import nibabel as nib
-import tensorflow as tf
 from tensorflow import keras
-# from tensorflow.keras import layers
-# from keras.utils import Sequence
-# import tensorflow.keras.utils
-# from tensorflow.keras.models import Sequential
-# import os
-# import sys
-
-# import unet_model as mdl
 import driver as drv
+
 print(tf.__version__)
 
 # todo need to input X_set, y_set whish are x_
@@ -30,6 +18,7 @@ class ProstateSequence(keras.utils.Sequence):
     def __init__(self, x_set, y_set, batch_size=1):
         # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
         #              n_classes=6, shuffle=False):
+        # todo return to this
         """
         :param x_set:
         :param y_set:
@@ -180,15 +169,14 @@ def slices(img):
 
 def slices_ohe(img):
     """ takes slices of input image."""
-    slice_0 = img[128,:,:,0]
-    slice_1 = img[128,:,:,1]
+    slice_0 = img[:,128,:,0]
+    slice_1 = img[:,128,:,1]
     slice_2 = img[:,128,:,2]
     slice_3 = img[:,128,:,3]
-    slice_4 = img[:,:,64,4]
-    slice_5 = img[:,:,64,5]
+    slice_4 = img[:,128,:,4]
+    slice_5 = img[:,128,:,5]
 
     show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
-
 
 
 def show_slices(sliced):
@@ -197,12 +185,10 @@ def show_slices(sliced):
         plt.imshow(i.T)
         plt.show()
 
-    # fig, ax = plt.subplots(1, len(sliced))
+    # fig, ax = plt.subplots(1, len(sliced))  #todo, not working in pycharm
     # fig.suptitle("One hot encoded plots")
     # for j, sliceded in enumerate(sliced):
     #     ax[j].imshow(sliceded.T)
-        
-
 
     # todo put into subplots (if works in pycharm)
     # fig, axes = plt.subplots(1, len(sliced))

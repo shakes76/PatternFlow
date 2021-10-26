@@ -1,13 +1,6 @@
-
-# import keras.layers
-# from keras.layers import *
-# from keras.models import *
-# from keras.optimizers import *
 import tensorflow as tf
-# import tensorflow.keras
-# import support_methods as sm
+
 import driver as drv
-# from support_methods import *
 
 
 def unet3d_small(inputsize= (256,256,128,1), kernelSize=3):
@@ -73,11 +66,11 @@ def unet3d(inputsize= (256,256,128,1), kernelSize=3):
     inputs = tf.keras.layers.Input(inputsize)
 
     # todo dropout d4 = Dropout(0.5)(c4)
-    c1 = tf.keras.layers.Conv3D(32, kernelSize, padding='same', kernel_initializer='he_normal')(inputs)   #with relu removed
-    # c1 = Conv3D(32, kernelSize, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
+    # c1 = tf.keras.layers.Conv3D(32, kernelSize, padding='same', kernel_initializer='he_normal')(inputs)   #with relu removed
+    c1 = tf.keras.layers.Conv3D(32, kernelSize, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
     c1 = tf.keras.layers.BatchNormalization()(c1)
     # c1 = ReLU(c1)
-    # c1 = keras.layers.ReLU(c1)
+    # c1 = tf.keras.layers.ReLU(c1) # throws keras symbolic errors
     c1 = tf.keras.activations.relu(c1)  #todo if this helps. Bo - not clear if BN before Relu helps, or if reverse is better
     c1 = tf.keras.layers.Conv3D(64, kernelSize, activation='relu', padding='same', kernel_initializer='he_normal')(c1)
     c1 = tf.keras.layers.BatchNormalization()(c1)
