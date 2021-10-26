@@ -48,9 +48,10 @@ The output have 2 classes.
 ## File Description
 
 * model.py （U-NET Improved architecture built using TensorFlow Keras Layers）
-* data_cleaning.py (Importing data, creating masks, and partitioning training, validation and testing sets.
+* data_cleaning.py (Importing data, creating masks, and partitioning training, validation and testing sets.)
+* main.py (Training model and save the model)
 * dice_cofficient (Function of dice_coefficient)
-* driver.ipynb
+* driver.ipynb (Used to test whether the module is available）
 
 ## Training Results
 
