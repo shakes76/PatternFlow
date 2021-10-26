@@ -4,6 +4,7 @@ import torch
 from sklearn.preprocessing import LabelBinarizer
 from model import GCN
 import time
+import sys
 
 PATH = "F:\\3710report\\facebook.npz"
 
@@ -129,6 +130,10 @@ class Train:
 
 
 def main():
+    if len(sys.argv) == 1:
+        train = Train()
+    else:
+        train = Train(sys.argv[1])
     train = Train()
     train.train(show_result=True)
 
