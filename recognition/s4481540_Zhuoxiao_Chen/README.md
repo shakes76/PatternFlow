@@ -41,8 +41,11 @@ To control image synthesis, the styles from 8-layer MLPs can be modified or sele
 The mixing regularisation attempts to input two branches: different latent codes from 8-layer network, and these two codes are inserted into the generator network randomly when the GAN is trained. The styles should be independent when inserting into the convolutional layers, which is achieved by the normalisation of AdaIN. As discussed in the paragraph above, the features are only controlled by the style at each convolutional layer but not be affected by previous convolutions. However, the styles are always outputted from the same 8-layer mapping network. Thus, the styles may be correlated. Using two different 8-layer networks randomly can ensure that styles at different convolutional layers are not correlated, which means the styles inserted into even adjacent layers are independent.
 
 
-## OAI AKOA knee dataset
-AKOA indicates accelerated knee osteoarthritis. The dataset has a size of 1.6GB and contains 18k images of AKOA for training the StyleGAN. The images below are randomly collected from AKOA datasets for visualisation. 
+## OAI AKOA Knee Dataset
+
+The dataset has a size of 1.6GB and contains 18k images of AKOA for training the StyleGAN. 
+
+The images below are randomly collected from AKOA datasets for visualisation. 
 
 ![OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT nii gz_32](https://user-images.githubusercontent.com/50613939/138833651-d9537c95-f0f6-4b94-acaf-e52082896cdb.png)
 ![OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT nii gz_31](https://user-images.githubusercontent.com/50613939/138833674-52b366a9-a4b3-49c6-8ea8-85a8b50bb182.png)
@@ -52,7 +55,8 @@ AKOA indicates accelerated knee osteoarthritis. The dataset has a size of 1.6GB 
 ![OAI9958220_BaseLine_4_de3d1_SAG_3D_DESS_WE_LEFT nii gz_16](https://user-images.githubusercontent.com/50613939/138833738-a9ec071b-9d57-4acc-8dc1-f7a41e4ae5e7.png)
 
 ## Implementation Details
-Some Implementation details here
+
+The implementation code should be run at least 40 hours with more than 60k iterations, using two RTX 2080 Ti GPUs, to get the expected performance as displayed in next section. 
 
 ## Result and Analysis
 Generated AKOA Images
