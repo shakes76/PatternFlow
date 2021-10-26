@@ -34,3 +34,22 @@ TensorFlow was used to construct and train the GAN and load the training data.
 Matplotlib was used to visualise the model losses and the generator's images.  
 Tqdm was used to provide visualisation of the training epoch's progress.
 
+## Methodology
+
+### Data loading
+
+The images were loaded using the TensorFlow Keras API, which allowed the images to be directly imported into a TensorFlow dataset in the greyscale format (1 colour channel as opposed to RGB with 3 colour channels). These images are normalised from [0, 255] to [0, 1].
+
+### Training, validation, test split
+
+Although it is typical to separate data into training, validation and test dataset when training neural networks, it does not provide much value when it comes to GANs as a whole. The data split may be useful if the performance of the discriminator is the most important. However, for this task, the images generator by the generator is more important than the capabilities of the discriminator. Thus, it was decided that all the data would be used for training and no splitting would be performed.
+
+### Data augmentation
+
+### Model architecture and construction
+
+### Visualisation
+
+## Usage
+
+## References
