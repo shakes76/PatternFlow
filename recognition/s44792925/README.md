@@ -29,9 +29,11 @@ If you would like to run this on your computer then please do not run the first 
 
 ## Results
 
+This model is able to achieve >0.8 dice similarity on the test dataset in 50 epochs.
+
 ### Loss Function and Accuracy Plot
 
-A Dice Similarity Loss function is used as we are aiming for a Dice similarity of over 0.8. The Dice Coefficient was chosen as the metric to evaluate the model as it is a straightforward mechanism used to evaluate the similarity of two images. A higher value represents higher similarity. 
+A Dice Similarity Loss function is used as we are aiming for a Dice similarity of over 0.8. The Dice Coefficient was chosen as the metric to evaluate the model as it is a straightforward mechanism used to evaluate the similarity of two images. A higher value represents higher similarity. The below image plots the training set results.
 <p align="center"><img src='images/training_info.jpg'></p>
 
 ### Data Visualisation
