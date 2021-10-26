@@ -7,13 +7,13 @@ from torch.utils.data import DataLoader
 from yolo_utiles.dataloader import YoloDataset, yolo_dataset_collate
 from yolo_utiles.early_stop import EarlyStopping
 import os
-from yolo import get_variable
+import driver
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 epochs = 10
 bs = 8
-learning_rate = 0.001
+learning_rate = 0.0005
 num_workers = 2
 
 train_annotation = 'train.txt'
@@ -21,7 +21,7 @@ test_annotation = 'test.txt'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 last_var_loss = [0, ]
 avg_test_iou = []
-weights_path, anchors_mask, input_shape, class_names, num_classes, anchors, num_anchors, confidence, nms_iou, letterbox_image = get_variable()
+weights_path, anchors_mask, input_shape, class_names, num_classes, anchors, num_anchors, confidence, nms_iou, letterbox_image = driver.get_variable()
 
 
 def fit(net, yolo_loss, opt, batch_data, batch_data_test):

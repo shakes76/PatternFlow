@@ -1,8 +1,7 @@
-import torch
 from PIL import Image
 from yolo import *
 
-weights_path = ''
+weights_path = 'results/epoch9, training loss3.97884,test_loss3.41089.pth'
 
 anchors_mask = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
 input_shape = [416, 416]
@@ -34,7 +33,7 @@ def get_variable():
 
 if __name__ == "__main__":
     yolo = YoloDetect()
-    img_root = "img/ISIC_0000013.jpg"
+    img_root = "img/ISIC_0016028.jpg"
 
     image = Image.open(img_root)
 

@@ -1,4 +1,5 @@
 import colorsys
+
 import numpy as np
 import torch
 from PIL import ImageDraw, ImageFont
@@ -6,15 +7,14 @@ from yolo_utiles.utils import (cvtColor, preprocess_input,
                                resize_image)
 from yolo_utiles.utils_bbox import DecodeBox
 from model.model import YoloBody
-from driver import get_variable
+import driver
 
 
-# code is referenced from https://github.com/bubbliiiing/yolo3-pytorch/blob/master/utils/dataloader.py
 class YoloDetect(object):
 
     def __init__(self):
 
-        self.weights_path, self.anchors_mask, self.input_shape, self.class_names, self.num_classes, self.anchors, self.num_anchors, self.confidence, self.nms_iou, self.letterbox_image = get_variable()
+        self.weights_path, self.anchors_mask, self.input_shape, self.class_names, self.num_classes, self.anchors, self.num_anchors, self.confidence, self.nms_iou, self.letterbox_image = driver.get_variable()
 
         self.bbox_util = DecodeBox(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]),
                                    )
