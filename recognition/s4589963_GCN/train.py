@@ -18,6 +18,8 @@ class Train:
     """
 
     def __init__(self, path=PATH):
+        self.val_acc_history = []
+        self.loss_history = []
         adjacency, features, labels = loader.load_data(path)
         # encoded the label to one hot
         one_hot = LabelBinarizer()
@@ -97,8 +99,6 @@ class Train:
     def train(self, show_result=True):
         if show_result:
             print("======================================================================================")
-        loss_history = []
-        val_acc_history = []
         self.model.train()
         train_labels = self.tensor_labels[self.tensor_train_mask]
 
@@ -120,8 +120,8 @@ class Train:
             Record the changes of loss value and accuracy in 
             the training process for visualization.
             """
-            loss_history.append(loss_val.item())
-            val_acc_history.append(val_acc.item())
+            self.loss_history.append(loss_val.item())
+            self.val_acc_history.append(val_acc.item())
             if show_result:
                 # print training result every 10 epochs.
                 print("Epoch %3d/%d: Loss %.4f, Train_accuracy %.4f, Validation_accuracy %.4f, Time %.4f" % (
