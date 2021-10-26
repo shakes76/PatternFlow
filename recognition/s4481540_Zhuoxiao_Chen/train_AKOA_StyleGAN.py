@@ -25,7 +25,6 @@ def learning_rate_decay(optim, learning_rate):
         prameters['lr'] = learning_rate * prameters.get('mult', index)
 
 
-
 def stacking_parameters(net_0, net_1, weight_decay=0.999):
     """
     Accumulate the parameters of two models according to the weight decay.
@@ -59,31 +58,56 @@ def train_StyleGAN(args, G, D):
         ]
     )
 
+    """
+    Set up the dataset
+    """
     dataset = MultiResolutionDataset(args.path, image_transformation)
-
+    # set the batch size and the learning rate manually 
     args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
     args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
     args.gen_sample = {512: (8, 4), 1024: (4, 2)}
     args.batch_default = 32
 
-    step = int(math.log2(args.init_size)) - 2
-    resolution = 4 * 2 ** step
-    loader = shuffle_samples(
+    """
+    progressive increase the dimension size.
+    """
+    progressive_stage = int(math.log2(args.init_size)) - 2
+    resolution = 4 * 2 ** progressive_stage
+
+    """
+    Load data set with different resolution as preprocesssed. 
+    Each resolution contains all the input images at that dimension.  
+    """
+    loaded_dataset = shuffle_samples(
         dataset, args.batch.get(resolution, args.batch_default), resolution
     )
-    data_loader = iter(loader)
+    data_loader = iter(loaded_dataset) # iterate the loaded dataset for further training
 
-    adjust_lr(G_optimiser, args.lr.get(resolution, 0.001))
-    adjust_lr(D_optimiser, args.lr.get(resolution, 0.001))
+    """
+    learning rate decay is used for optimisers of both generator and discriminator.
+    Because the reduced weights during training can make the optimiser converge 
+    more stable near the end of the training. 
+    """
+    learning_rate_decay(G_optimiser, args.lr.get(resolution, 0.001))
+    learning_rate_decay(D_optimiser, args.lr.get(resolution, 0.001))
 
+    # for visulise the training process
     pbar = tqdm(range(60_000))
 
-    requires_grad(G, False)
-    requires_grad(D, True)
+    """
+    At the begining of the training, only the discriminator is trained, 
+    thus, the change_gradient_status() function is called to stop train the
+    generator.
+    """
+    change_gradient_status(G, False)
+    change_gradient_status(D, True)
 
-    disc_loss_val = 0
-    gen_loss_val = 0
-    grad_loss_val = 0
+    """
+    Initialise the error/loss of the discriminator, generator and the gradient.
+    These three varialbles will be used for further calculation and printed 
+    to the terminel. 
+    """
+    D_error, G_error, gradient_error = 0, 0, 0
 
     alpha = 0
     used_sample = 0
@@ -101,23 +125,23 @@ def train_StyleGAN(args, G, D):
 
         if used_sample > args.phase * 2:
             used_sample = 0
-            step += 1
+            progressive_stage += 1
 
-            if step > max_step:
-                step = max_step
+            if progressive_stage > max_step:
+                progressive_stage = max_step
                 final_progress = True
-                ckpt_step = step + 1
+                ckpt_step = progressive_stage + 1
 
             else:
                 alpha = 0
-                ckpt_step = step
+                ckpt_step = progressive_stage
 
-            resolution = 4 * 2 ** step
+            resolution = 4 * 2 ** progressive_stage
 
-            loader = shuffle_samples(
+            loaded_dataset = shuffle_samples(
                 dataset, args.batch.get(resolution, args.batch_default), resolution
             )
-            data_loader = iter(loader)
+            data_loader = iter(loaded_dataset)
 
             torch.save(
                 {
@@ -130,14 +154,14 @@ def train_StyleGAN(args, G, D):
                 f'checkpoint/train_step-{ckpt_step}.model',
             )
 
-            adjust_lr(G_optimiser, args.lr.get(resolution, 0.001))
-            adjust_lr(D_optimiser, args.lr.get(resolution, 0.001))
+            learning_rate_decay(G_optimiser, args.lr.get(resolution, 0.001))
+            learning_rate_decay(D_optimiser, args.lr.get(resolution, 0.001))
 
         try:
             real_image = next(data_loader)
 
         except (OSError, StopIteration):
-            data_loader = iter(loader)
+            data_loader = iter(loaded_dataset)
             real_image = next(data_loader)
 
         used_sample += real_image.shape[0]
@@ -146,13 +170,13 @@ def train_StyleGAN(args, G, D):
         real_image = real_image.cuda()
 
         if args.loss == 'wgan-gp':
-            real_predict = D(real_image, step=step, alpha=alpha)
+            real_predict = D(real_image, step=progressive_stage, alpha=alpha)
             real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
             (-real_predict).backward()
 
         elif args.loss == 'r1':
-            real_image.requires_grad = True
-            real_scores = D(real_image, step=step, alpha=alpha)
+            real_image.change_gradient_status = True
+            real_scores = D(real_image, step=progressive_stage, alpha=alpha)
             real_predict = F.softplus(-real_scores).mean()
             real_predict.backward(retain_graph=True)
 
@@ -165,7 +189,7 @@ def train_StyleGAN(args, G, D):
             grad_penalty = 10 / 2 * grad_penalty
             grad_penalty.backward()
             if i%10 == 0:
-                grad_loss_val = grad_penalty.item()
+                gradient_error = grad_penalty.item()
 
         if args.mixing and random.random() < 0.9:
             gen_in11, gen_in12, gen_in21, gen_in22 = torch.randn(
@@ -181,8 +205,8 @@ def train_StyleGAN(args, G, D):
             gen_in1 = gen_in1.squeeze(0)
             gen_in2 = gen_in2.squeeze(0)
 
-        fake_image = G(gen_in1, step=step, alpha=alpha)
-        fake_predict = D(fake_image, step=step, alpha=alpha)
+        fake_image = G(gen_in1, step=progressive_stage, alpha=alpha)
+        fake_predict = D(fake_image, step=progressive_stage, alpha=alpha)
 
         if args.loss == 'wgan-gp':
             fake_predict = fake_predict.mean()
@@ -190,8 +214,8 @@ def train_StyleGAN(args, G, D):
 
             eps = torch.rand(b_size, 1, 1, 1).cuda()
             x_hat = eps * real_image.data + (1 - eps) * fake_image.data
-            x_hat.requires_grad = True
-            hat_predict = D(x_hat, step=step, alpha=alpha)
+            x_hat.change_gradient_status = True
+            hat_predict = D(x_hat, step=progressive_stage, alpha=alpha)
             grad_x_hat = grad(
                 outputs=hat_predict.sum(), inputs=x_hat, create_graph=True
             )[0]
@@ -201,26 +225,26 @@ def train_StyleGAN(args, G, D):
             grad_penalty = 10 * grad_penalty
             grad_penalty.backward()
             if i%10 == 0:
-                grad_loss_val = grad_penalty.item()
-                disc_loss_val = (-real_predict + fake_predict).item()
+                gradient_error = grad_penalty.item()
+                D_error = (-real_predict + fake_predict).item()
 
         elif args.loss == 'r1':
             fake_predict = F.softplus(fake_predict).mean()
             fake_predict.backward()
             if i%10 == 0:
-                disc_loss_val = (real_predict + fake_predict).item()
+                D_error = (real_predict + fake_predict).item()
 
         D_optimiser.step()
 
         if (i + 1) % n_critic == 0:
             G.zero_grad()
 
-            requires_grad(G, True)
-            requires_grad(D, False)
+            change_gradient_status(G, True)
+            change_gradient_status(D, False)
 
-            fake_image = G(gen_in2, step=step, alpha=alpha)
+            fake_image = G(gen_in2, step=progressive_stage, alpha=alpha)
 
-            predict = D(fake_image, step=step, alpha=alpha)
+            predict = D(fake_image, step=progressive_stage, alpha=alpha)
 
             if args.loss == 'wgan-gp':
                 loss = -predict.mean()
@@ -229,14 +253,14 @@ def train_StyleGAN(args, G, D):
                 loss = F.softplus(-predict).mean()
 
             if i%10 == 0:
-                gen_loss_val = loss.item()
+                G_error = loss.item()
 
             loss.backward()
             G_optimiser.step()
             stacking_parameters(G_processing, G.module)
 
-            requires_grad(G, False)
-            requires_grad(D, True)
+            change_gradient_status(G, False)
+            change_gradient_status(D, True)
 
         if (i + 1) % 100 == 0:
             images = []
@@ -247,7 +271,7 @@ def train_StyleGAN(args, G, D):
                 for _ in range(gen_i):
                     images.append(
                         G_processing(
-                            torch.randn(gen_j, latent_length).cuda(), step=step, alpha=alpha
+                            torch.randn(gen_j, latent_length).cuda(), step=progressive_stage, alpha=alpha
                         ).data.cpu()
                     )
 
@@ -265,11 +289,12 @@ def train_StyleGAN(args, G, D):
             )
 
         state_msg = (
-            f'Size: {4 * 2 ** step}; G: {gen_loss_val:.3f}; D: {disc_loss_val:.3f};'
-            f' Grad: {grad_loss_val:.3f}; Alpha: {alpha:.5f}'
+            f'Size: {4 * 2 ** progressive_stage}; G: {G_error:.3f}; D: {D_error:.3f};'
+            f' Grad: {gradient_error:.3f}; Alpha: {alpha:.5f}'
         )
 
         pbar.set_description(state_msg)
+
 
 
 def change_gradient_status(network, status=True):
@@ -303,8 +328,6 @@ if __name__ == '__main__':
                         help='number of samples for each training phase')
     parser.add_argument('--init_size', default=8, type=int,
                         help='initial size of input images')
-    parser.add_argument('--sched', action='store_true',
-                        help='scheduling for lr')
     parser.add_argument('--max_size', default=512, type=int,
                         help='max size of generated images')
     parser.add_argument('--lr', default=0.001, type=float)
