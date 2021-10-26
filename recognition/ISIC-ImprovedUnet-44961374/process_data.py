@@ -2,12 +2,10 @@
 This script contains various functions required for image data processing for the UNet model. 
 @author: Mujibul Islam Dipto
 """
-import os  
-from sklearn.utils import shuffle, validation  
-import math 
-import tensorflow as tf
-from tensorflow.image import resize, decode_jpeg, decode_png
-from tensorflow.io import read_file
+from sklearn.utils import shuffle, validation   # for shuffling data points
+import tensorflow as tf # # for DL functionalities
+from tensorflow.image import resize, decode_jpeg, decode_png # for handling jpg and png images
+from tensorflow.io import read_file # for reading image files
 
 
 def process_image(image, x, y):
