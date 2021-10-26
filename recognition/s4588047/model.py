@@ -1,6 +1,12 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
+"""
+Reference:
+    https://github.com/deepmind/sonnet/blob/v2/sonnet/src/nets/vqvae.py
+    Tom Hennigan, VectorQuantizer layer 
+
+"""
 
 class VectorQuantizer(layers.Layer):
     def __init__(self, num_embeddings, embedding_dim, beta=0.25, **kwargs):

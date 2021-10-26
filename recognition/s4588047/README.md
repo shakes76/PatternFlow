@@ -10,7 +10,7 @@ _Dataset_ : _OAI AKOA knee data set_
 _Email_ : s4588047@student.uq.edu.au
 
 ##  Description VQ-VAE
-
+Vector Quantized Variational Autoencoder (VQ-VAE) 
 
 ##  Dependencies
 
@@ -21,3 +21,5 @@ _Email_ : s4588047@student.uq.edu.au
 
 
 ##  References
+    https://github.com/deepmind/sonnet/blob/v2/sonnet/src/nets/vqvae.py
+    Tom Hennigan, VectorQuantizer layer 
