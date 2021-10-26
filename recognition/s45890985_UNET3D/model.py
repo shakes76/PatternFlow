@@ -1,10 +1,10 @@
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models, callbacks
+from tensorflow.keras import layers, models
 
 def relu_conv_block(input_layer, conv_depth):
     conv = layers.Conv3D(conv_depth, (3, 3, 3), padding='same', activation ='relu') (input_layer)
     conv = layers.BatchNormalization()(conv)
-    conv = layers.Relu()(conv)
+    conv = layers.ReLU()(conv)
 
     return conv
 
@@ -15,7 +15,7 @@ def encoder_block(input_layer, conv_depth, drop_out=0.2):
     return en
 
 def decoder_block(input_layer, concat_layer, conv_depth, drop_out=0.2):
-    de = layers.Conv3DTranspose(conv_depth, (2, 2), strides=(2, 2, 2), padding='same')(input_layer)
+    de = layers.Conv3DTranspose(conv_depth, (2, 2, 2), strides=(2, 2, 2), padding='same')(input_layer)
     de = layers.concatenate([de, concat_layer])
     de = relu_conv_block(de, conv_depth)
     de = layers.Dropout(drop_out)(de)
@@ -23,7 +23,7 @@ def decoder_block(input_layer, concat_layer, conv_depth, drop_out=0.2):
 
     return de
 
-def unet_model(row, col,height,segments, channel = 3, conv_depth = 32):
+def unet_model(row, col,height,segments = 6, channel = 3, conv_depth = 32):
 
     #input layer
     inputs = layers.Input(shape=(row, col, height, channel))
