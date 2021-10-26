@@ -13,6 +13,15 @@ In this project, I completed the IMPROVED U-NET model and automatically predicte
 
 Compared with u-net, the improved u-net architecture comprises a context module and localisation module, and more details are available in the paper[1].
 
+## Algorithm
+
+#### Some Training Parameters
+
+* The number of filters in fist Conv2D: 16
+* BatchSize: 8
+* Epoch:50
+* LeakyReLU(alpha=0.01)
+
 ## Dependencies
 
 * python3
@@ -48,7 +57,7 @@ The output have 2 classes.
 ![plots](images/loss.png)
 ![plots](images/dice_cofficient.png)
 
-After about 50 epochs, the model tends to converge.
+After about 50 epochs, the model tends to converge. The DSE for training set is 0.958, as for validation set, the DSC is 0.926.
 
 #### Model Training Time
 
@@ -69,6 +78,7 @@ As we can see that the dice coefficient of test set is over 0.9, so the result i
 ## Reference
 
 [1]F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation andRadiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online].Available: https://arxiv.org/abs/1802.10508v1
+
 [2]Dice source function. Available: https://github.com/keras-team/keras/issues/3611
 
 
