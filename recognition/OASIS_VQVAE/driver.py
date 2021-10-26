@@ -5,6 +5,8 @@ from vqvae import VQVAE, get_closest_embedding_indices
 import numpy as np
 import matplotlib.pyplot as plt
 
+import argparse
+
 class SSIMCallback(tf.keras.callbacks.Callback):
     def __init__(self, validation_data, shift=0.0):
         super(SSIMCallback, self).__init__()
@@ -68,53 +70,60 @@ def show_image_and_reconstruction(original, cb, reconstructed):
 
     plt.show()
 
+
+def load_images(location, image_size, batch_size):
+    return image_dataset_from_directory(location, 
+                                        label_mode=None, 
+                                        image_size=image_size,
+                                        color_mode="grayscale",
+                                        batch_size=batch_size,
+                                        shuffle=True)
+
+
 if __name__ == "__main__":
-    IMG_SIZE = 256
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="VQVAE trainer")
+
+    parser.add_argument("--data", required=True, type=str, help="Location of unzipped OASIS dataset. Folder should contain the folders 'keras_png_slices_train' and 'keras_png_slices_validate'.")
+
+    parser.add_argument("--K", "--num-embeddings", type=int, default=512, help="Number of embeddings, described as K in the VQVAE paper (default: 512)")
+    parser.add_argument("--D", "--embedding-dim", type=int, default=2, help="Size of the embedding vectors, described as D in the VQVAE paper (default: 2)")
+    parser.add_argument("--beta", type=float, default=1.5, help="Committment cost, described as beta in VQVAE paper (default: 1.5)")
+
+    parser.add_argument("--epochs", type=int, default=30, help="Number of epochs to train for (default: 30)")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training (default: 32)")
+    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate for ADAM optimiser (default 2e-4)")
+
+    parser.add_argument("--shift", type=float, default=0.5, help="Normalisation shift that will be subtracted from each pixel value prior to training (default: 0.5)")
+
+    args = parser.parse_args()
 
     # load OASIS images from folder
-    dataset = image_dataset_from_directory("keras_png_slices_data/keras_png_slices_train", 
-                                          label_mode=None, 
-                                          image_size=(IMG_SIZE, IMG_SIZE),
-                                          color_mode="grayscale",
-                                          batch_size=32,
-                                          shuffle=True)
+    IMG_SIZE = 256
 
-    dataset_validation = image_dataset_from_directory("keras_png_slices_data/keras_png_slices_validate", 
-                                          label_mode=None, 
-                                          image_size=(IMG_SIZE, IMG_SIZE),
-                                          color_mode="grayscale",
-                                          batch_size=32,
-                                          shuffle=True)
+    dataset             = load_images(args.data + "/keras_png_slices_train", (IMG_SIZE, IMG_SIZE), args.batch_size)
+    dataset_validation  = load_images(args.data + "/keras_png_slices_validate", (IMG_SIZE, IMG_SIZE), args.batch_size)
 
-    # normalize pixels between [-SHIFT, -SHIFT + 1] (for example: [-0.5, 0.5])
-    shift = 0.5
-    dataset = dataset.map(lambda x: (x / 255.0) - shift)
-    dataset_validation = dataset_validation.map(lambda x: (x / 255.0) - shift)
+    # normalize pixels (in [0,255]) between [-SHIFT, -SHIFT + 1] (for example: [-0.5, 0.5])
+    dataset             = dataset.map(lambda x: (x / 255.0) - args.shift)
+    dataset_validation  = dataset_validation.map(lambda x: (x / 255.0) - args.shift)
 
     # calculate variance of training data (at a individual pixel level) to pass into VQVAE
     count = dataset.unbatch().reduce(tf.cast(0, tf.int64), lambda x,_: x + 1 ).numpy()
     mean = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + y ).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE)
     var = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + tf.math.pow(y - mean,2)).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE - 1)
 
-    # hyperparameters which seem to give the best results so far
-    learning_rate = 2e-4
-    beta = 1.5
-    latent_dim = 2
-    num_embeddings = 512
-    epochs = 30
-    batch_size = 32
-
-    input_size = (IMG_SIZE, IMG_SIZE, 1)
-
     # create model
-    vqvae_model = VQVAE(input_size, latent_dim, num_embeddings, beta, var)
-    vqvae_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate))
+    input_size = (IMG_SIZE, IMG_SIZE, 1)
+    vqvae_model = VQVAE(input_size, args.D, args.K, args.beta, var)
+
+    vqvae_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate))
 
     # fit it
     history = vqvae_model.fit(dataset, 
-                              epochs=epochs, 
-                              batch_size=batch_size, 
-                              callbacks=[SSIMCallback(dataset_validation, shift)])
+                              epochs=args.epochs, 
+                              batch_size=args.batch_size, 
+                              callbacks=[SSIMCallback(dataset_validation, args.shift)])
 
     # plot history
     plot_history(history)
@@ -135,8 +144,8 @@ if __name__ == "__main__":
 
         for i in range(num_images_per_batch_to_show):
             # add the shfit back to the images to undo the initial shifting (e.g. go from [-0.5, 0.5] to [0,1])
-            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1)) + shift
-            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1)) + shift
+            original_image = tf.reshape(test_images[i], (1, IMG_SIZE, IMG_SIZE, 1)) + args.shift
+            reconstructed_image = tf.reshape(reconstructions[i], (1, IMG_SIZE, IMG_SIZE, 1)) + args.shift
             codebook_image = codebook_indices[i]
 
             show_image_and_reconstruction(tf.squeeze(original_image), codebook_image, tf.squeeze(reconstructed_image))
