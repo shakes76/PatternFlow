@@ -1,6 +1,7 @@
 from typing import Any
 
 import keras.activations
+import scipy.sparse
 
 import myGraphModel
 import tensorflow as tf
@@ -92,28 +93,35 @@ def main():
 
     ones = tf.ones_like(page_one)
 
+    a_bar = spr.coo_matrix((ones, (page_one, page_two)))
+    a_bar.setdiag(1)
     print("A_Bar 1")
     print(a_bar)
     print(a_bar.shape)
     print(type(a_bar))
-    a_bar = spr.coo_matrix((ones, (page_one, page_two)))
-    a_bar.setdiag(1)
-    a_bar = coo_matrix_to_sparse_tensor(a_bar)
+    # Normalize
+    row_sum = np.array(a_bar.sum(1))
+    d_inv_sqr = np.power(row_sum, -0.5).flatten()
+    d_inv_sqr[np.isinf(d_inv_sqr)] = 0
+    d_mat_inv_sqrt = scipy.sparse.diags(d_inv_sqr)
+    a_bar = a_bar.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
+
     print("A_Bar 2")
     print(a_bar)
     print(a_bar.shape)
     print(type(a_bar))
+    a_bar = coo_matrix_to_sparse_tensor(a_bar)
 
     # Features
-    print("Feats 1")
-    print(feats)
-    print(tf.shape(feats))
-    print(type(feats))
+    # print("Feats 1")
+    # print(feats)
+    # print(tf.shape(feats))
+    # print(type(feats))
     feats = tf.convert_to_tensor(data['features'])
-    print("Feats 2")
-    print(feats)
-    print(tf.shape(feats))
-    print(type(feats))
+    # print("Feats 2")
+    # print(feats)
+    # print(tf.shape(feats))
+    # print(type(feats))
 
     # Labels
     print("Labels 1")
@@ -143,15 +151,16 @@ def main():
     #my_model.add(Input(batch_shape=tf.shape(feats)))
 
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    # my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    # my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
 
     my_model.add(Dense(4, activation='softmax'))
 
-    my_model.compile(optimizer='adam', loss=loss_fn)
+    my_model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
     my_model.fit(feats,
                  labels,
-                 epochs=1,
+                 epochs=1000,
+                 batch_size=22470
                  )
 
     print(my_model.summary())
