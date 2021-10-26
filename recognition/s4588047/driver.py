@@ -139,3 +139,50 @@ vqvae_trainer = VQVAETrainer(encoder, decoder, vq_vae, pre_vq_conv1, data_varian
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam(learning_rate))
 history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size, validation_data=(x_validate,))
 #%%
+
+
+def show_subplot(original, reconstructed, s1=None):
+    plt.subplot(1, 2, 1)
+    plt.imshow(original)
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    
+    plt.imshow(tf.cast(reconstructed * 255.,'uint8'))
+    #plt.imshow(tf.cast(s1 * 255.,'uint8'))
+    plt.title("Reconstructed")
+    plt.axis("off")
+    
+    plt.show()
+    
+    im1 = tf.image.convert_image_dtype(original, tf.float32)
+    im2 = tf.image.convert_image_dtype(tf.cast(reconstructed * 255.,'uint8'), tf.float32)
+    ssim2 = tf.image.ssim(im1, im2, max_val=1.0, filter_size=11,filter_sigma=1.5, k1=0.01, k2=0.03)
+    print(ssim2)
+    
+xtrain = tf.expand_dims(x_validate, axis=1)
+
+print(xtrain[1000].shape)
+recon = vqvae_trainer.predict(xtrain[1000])
+
+print((recon).shape)
+# for test_image in test_images:
+#     show_subplot(test_image)
+
+#show_subplot(x_validate[1000], tf.squeeze(recon))
+show_subplot(x_validate[1000], recon[0])
+#%%
+
+
+# training history
+# Plot training results.
+loss = history.history['loss'] # Training loss.
+num_epochs = range(1, 1 + len(history.history['loss'])) # Number of training epochs.
+
+plt.figure(figsize=(16,9))
+plt.plot(num_epochs, loss, label='Training loss') # Plot training loss.
+
+plt.title('Training loss')
+plt.legend(loc='best')
+plt.show()
