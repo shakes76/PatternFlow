@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import train as tr
 import torch
+import sys
 
 """
 show training effect curve.
@@ -34,7 +35,10 @@ def show_tsne(train):
 
 
 def main():
-    train = tr.Train()
+    if len(sys.argv) == 1:
+        train = tr.Train()
+    else:
+        train = tr.Train(sys.argv[1])
     train.train(show_result=False)
     show_tsne(train)  # show tsne.
     show_acc_and_loss(train) # show accuracy and loss curve.
