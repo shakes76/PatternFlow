@@ -39,8 +39,16 @@ def stacking_parameters(net_0, net_1, weight_decay=0.999):
         parameter_0[key].data.mul_(weight_decay).add_(1 - weight_decay,
                                                     parameter_1[key].data)
 
+
 def train_StyleGAN(args, G, D):
-    
+    """
+    start to train the styleGAN
+    """
+
+    """
+    Image transformation and data augmentation
+    including random flip, and normalisation.
+    """
     norm_index = 0.5
     image_transformation = transforms.Compose(
         [
@@ -51,13 +59,11 @@ def train_StyleGAN(args, G, D):
         ]
     )
 
-    dataset = MultiResolutionDataset(args.path, transform)
+    dataset = MultiResolutionDataset(args.path, image_transformation)
 
     args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
     args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
-
     args.gen_sample = {512: (8, 4), 1024: (4, 2)}
-
     args.batch_default = 32
 
     step = int(math.log2(args.init_size)) - 2
