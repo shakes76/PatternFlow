@@ -324,13 +324,6 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,intellij+all,python,jupyternotebooks,pycharm+all
 
-secrets.py
-depth-catalog.csv
-klines/
-indicators/
-labels/
-wandb/
-*.png
 checkpoints/
-progress_plots/
-old_plots/
+/output/model_checkpoints/
+/output/progress_plots/

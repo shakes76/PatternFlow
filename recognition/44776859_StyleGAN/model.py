@@ -1,10 +1,17 @@
+"""
+StyleGAN implementation.
+
+@author Christopher Atkinson
+@email c.atkinson@uqconnect.edu.au
+"""
+
 import os
 
 # Suppress tensorflow logging:
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
-
+# Set tf memory growth, verify version and cuda/gpu functionality.
 print(f'\nTensorflow version: {tf.__version__}')
 print(f'Tensorflow CUDA {"is" if tf.test.is_built_with_cuda() else "is not"} available.')
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -19,14 +26,12 @@ print(f'Tensorflow {"is" if tf.executing_eagerly() else "is not"} executing eage
 
 import tensorflow_datasets as tfds
 
-from tensorflow.keras import layers
 from tensorflow.keras import Model
-from tensorflow.keras.initializers import RandomNormal
-from tensorflow.keras.layers import Layer, Input, Add, Dense, Flatten, Reshape, LeakyReLU, Conv2D, UpSampling2D
-from tensorflow.keras.layers import Dropout, BatchNormalization, Lambda, AveragePooling2D, Activation
-from tensorflow.keras.layers.experimental.preprocessing import Rescaling, Normalization
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import Adam, RMSprop
+from tensorflow.keras.layers import Input, Add, Dense, Flatten, Reshape, LeakyReLU, ReLU, \
+    Conv2D, AveragePooling2D, UpSampling2D, BatchNormalization, Dropout
+from tensorflow.keras.initializers import GlorotNormal
+from tensorflow.keras.layers.experimental.preprocessing import Rescaling
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras import backend as K
 
@@ -37,7 +42,6 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt, gridspec, colors, cm
 from matplotlib.ticker import FuncFormatter
 from IPython import display
-import imageio
 import time
 
 dark1 = '#191b26'
@@ -86,10 +90,28 @@ class AdaIN(tf.keras.layers.Layer):
 
 
 class StyleGAN:
-    def __init__(self, dataset=None, dataset_path='', target_image_dims=(64, 64), epochs=999, batch_size=32,
-                 z_length=100, save_progress_plots=True, show_progress_plots=True,
+    def __init__(self, dataset=None, dataset_path=None, dataset_name='', target_image_dims=(64, 64),
+                 epochs=999, batch_size=32, z_length=100, save_progress_plots=True, show_progress_plots=True,
                  progress_plot_batch_interval=50, save_model_checkpoints=False, model_checkpoint_interval=15,
                  save_directory='./output', print_model_summaries=True, running_in_notebook=False):
+        """
+
+        :param dataset:
+        :param dataset_path:
+        :param dataset_name:
+        :param target_image_dims:
+        :param epochs:
+        :param batch_size:
+        :param z_length:
+        :param save_progress_plots:
+        :param show_progress_plots:
+        :param progress_plot_batch_interval:
+        :param save_model_checkpoints:
+        :param model_checkpoint_interval:
+        :param save_directory:
+        :param print_model_summaries:
+        :param running_in_notebook:
+        """
         self.dataset = dataset
         self.epochs = epochs
         self.batch_size = batch_size
@@ -108,13 +130,16 @@ class StyleGAN:
         for path in (self.save_directory, self.plot_directory, self.checkpoint_directory):
             if not os.path.exists(path) and os.access(os.path.dirname(path), os.W_OK):
                 os.makedirs(path, exist_ok=True)
+                print(f'Created folder: {path}')
 
         self.max_graphed = 50  # Number of loss values to use in progress plot.
         self.colorbar_norm = mpl.colors.TwoSlopeNorm(vmin=-1.05, vcenter=-0.1, vmax=1.05)
 
         if dataset is None and dataset_path:
             self.dataset = self.get_local_image_dataset(dataset_path, target_image_dims)
-            self.check_dataset()
+        elif any(name in dataset_name for name in ('mnist', 'digit')):
+            self.dataset = self.get_mnist_dataset()
+        self.check_dataset()
 
         # Determine image dimensions
         image = list(self.dataset.take(1).as_numpy_iterator())[0][0]
@@ -123,14 +148,16 @@ class StyleGAN:
 
         self.start_size, self.num_blocks = self._smallest_by_halving()
 
+        self.params = self.get_hyperparameters(dataset_name)
+
         self.generator = self.make_generator()
         self.discriminator = self.make_discriminator()
 
         self.num_gen_weights = int(np.sum([np.prod(v.get_shape()) for v in self.generator.trainable_weights]))
         self.num_disc_weights = int(np.sum([np.prod(v.get_shape()) for v in self.discriminator.trainable_weights]))
 
-        self.gen_optimizer = Adam(learning_rate=0.00005, beta_1=0.5)
-        self.disc_optimizer = Adam(learning_rate=0.00005, beta_1=0.5)
+        self.gen_optimizer = Adam(learning_rate=self.params['learning_rate_gen'], beta_1=self.params['beta_1'])
+        self.disc_optimizer = Adam(learning_rate=self.params['learning_rate_disc'], beta_1=self.params['beta_1'])
 
         self.checkpoint_prefix = os.path.join(self.checkpoint_directory, "ckpt")
         self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.gen_optimizer,
@@ -150,7 +177,7 @@ class StyleGAN:
         self.current_batch = 0
         self.current_epoch = 0
 
-        self.dataset_variance, self.dataset_variance_sum = self.calculate_variance(
+        self.dataset_variance, self.dataset_variance_sum = self._calculate_variance(
             list(self.dataset.take(1).as_numpy_iterator())[0])
 
         if print_model_summaries:
@@ -161,7 +188,62 @@ class StyleGAN:
             print()
         self.output_model_plots()
 
+    def get_hyperparameters(self, dataset_name):
+        dataset_name = dataset_name.lower()
+        print()
+        if any(name in dataset_name for name in ('mnist', 'digits')):
+            print('MNIST Digits hyperparameter presets loaded.')
+            # Tested at (28,28,1)
+            params = {
+                'learning_rate_gen': 0.0002,
+                'learning_rate_disc': 0.0002,
+                'beta_1': 0.5,
+                'gen_filters': 32,
+                'disc_filters': 16,
+            }
+        elif any(name in dataset_name for name in ('celeba', 'faces')):
+            print('CelebA Faces hyperparameter presets loaded.')
+            # Tested at (64,64,1) image size.
+            params = {
+                'learning_rate_gen': 0.00005,
+                'learning_rate_disc': 0.00005,
+                'beta_1': 0.5,
+                'gen_filters': 128,
+                'disc_filters': 64,
+            }
+        elif any(name in dataset_name for name in ('brains', 'oasis')):
+            print('OASIS Brains hyperparameter presets loaded.')
+            # Tested at (64,64,1) image size.
+            params = {
+                'learning_rate_gen': 0.00002,
+                'learning_rate_disc': 0.00001,
+                'beta_1': 0.5,
+                'gen_filters': 256,
+                'disc_filters': 256,
+            }
+        elif any(name in dataset_name for name in ('oai', 'akoa', 'knees')):
+            print('OAI AKOA Knee hyperparameter presets loaded.')
+            # Tested at (64, 64, 1) image size.
+            params = {
+                'learning_rate_gen': 0.00002,
+                'learning_rate_disc': 0.00001,
+                'beta_1': 0.5,
+                'gen_filters': 128,
+                'disc_filters': 64,
+            }
+        else:  # Default
+            print('WARNING: Default hyperparameter presets loaded. These may not work well with your dataset.')
+            params = {
+                'learning_rate_gen': 0.0002,
+                'learning_rate_disc': 0.0002,
+                'beta_1': 0.5,
+                'gen_filters': 64,
+                'disc_filters': 32,
+            }
+        return params
+
     def get_mnist_dataset(self):
+        print('MNIST Digits dataset loaded.')
         dataloader = tfds.load('mnist', as_supervised=True)
         dataset = dataloader['train']
         # Cast [0,255] images to [-1,1].
@@ -170,6 +252,7 @@ class StyleGAN:
         return dataset
 
     def get_local_image_dataset(self, path, image_dims, make_grayscale=True):
+        print(f'Loading dataset from {path} at {image_dims} resolution.')
         dataset = tf.keras.preprocessing.image_dataset_from_directory(path,
                                                                       labels=None,
                                                                       label_mode=None,
@@ -184,6 +267,7 @@ class StyleGAN:
         return dataset
 
     def check_dataset(self):
+        print('Sample from dataset:')
         batch = self.dataset.take(1)
         image = list(batch.as_numpy_iterator())[0][0]
         plt.axis('off')
@@ -191,7 +275,7 @@ class StyleGAN:
         plt.imshow(image, cmap='gray')
         plt.show()
 
-    def calculate_variance(self, images, epsilon=1e-7):
+    def _calculate_variance(self, images, epsilon=1e-7):
         """Calculate pixel-wise variance among all permutations of image pairs."""
         diff, count = np.zeros(shape=images[0].shape), 0
         for x in itertools.combinations(images, 2):
@@ -207,7 +291,7 @@ class StyleGAN:
                                   to_file=self.save_directory + '/generator_plot.png')
         tf.keras.utils.plot_model(self.discriminator, show_shapes=True,
                                   to_file=self.save_directory + '/discriminator_plot.png')
-        print(f'Model plots saved to {self.save_directory}/\n')
+        print(f'Model architecture plots saved to {self.save_directory}/\n')
 
     def _smallest_by_halving(self):
         """
@@ -227,21 +311,26 @@ class StyleGAN:
                              f'which is >= input of {self.image_size}.')
         return int(x), count
 
-    def _disc_block(self, x, size, reduce=True):
+    def _disc_block(self, x, size, i, reduce=True):
         x = Conv2D(filters=size, kernel_size=3, strides=1, padding='same',
-                   kernel_initializer='glorot_uniform', activation=LeakyReLU(0.2))(x)
-        return AveragePooling2D()(x) if reduce else x
-
-    def _gen_block(self, x, w, noise, size):
-        scale = Dense(size)(w)
-        bias = Dense(size)(w)
-        noise = Dense(size)(noise)
-        x = UpSampling2D()(x)
-        x = Conv2D(filters=size, kernel_size=3, strides=1, padding='same',
-                   kernel_initializer='glorot_uniform')(x)
-        x = Add()([x, noise])
-        x = AdaIN()([x, scale, bias])
+                   kernel_initializer=GlorotNormal(), activation=None,
+                   name=f'conv{i}')(x)
+        if reduce:
+            x = AveragePooling2D(name=f'avg_pool{i}')(x)
         return LeakyReLU(0.2)(x)
+
+    def _gen_block(self, x, w, noise, size, i):
+        scale = Dense(size, name=f'scale{i}')(w)
+        bias = Dense(size, name=f'bias{i}')(w)
+        noise = Dense(size, name=f'noise{i}')(noise)
+        x = UpSampling2D(name=f'upscale{i}')(x)
+        x = Conv2D(filters=size, kernel_size=3, strides=1, padding='same',
+                   kernel_initializer=GlorotNormal(), use_bias=False,
+                   activation=None, name=f'conv{i}')(x)
+        x = Add(name=f'add_noise{i}')([x, noise])
+        x = AdaIN(name=f'ada_in{i}')([x, scale, bias])
+        return ReLU(name=f'relu{i}')(x)
+        # return LeakyReLU(0.2, name=f'leaky{i}')(x)
 
     def make_generator(self):
         # Process all inputs - const vector, z vectors and noise matrices.
@@ -249,7 +338,7 @@ class StyleGAN:
         z, noise, size = [], [], self.start_size
         for i in range(self.num_blocks):
             z.append(Input(shape=(self.z_length,), name=f'z{i}'))
-            noise.append(Input(shape=(size * 2, size * 2, self.num_channels)))
+            noise.append(Input(shape=(size * 2, size * 2, self.num_channels), name=f'noise_in{i}'))
             size *= 2
 
         # Mapping network
@@ -257,41 +346,47 @@ class StyleGAN:
         w = Dense(64, activation=LeakyReLU(0.2), name='w0')(latents)
         for i in range(6):
             w = Dense(64, activation=LeakyReLU(0.2), name=f'w{i + 1}')(w)
-        w = Dense(256, activation=LeakyReLU(0.2), name=f'w7')(w)
+        w = Dense(self.params['gen_filters'], activation=LeakyReLU(0.2), name=f'w7')(w)
         map = Model(inputs=latents, outputs=w, name='mapping_network')
 
         # Start block
-        x = Dense(self.start_size * self.start_size * 256, use_bias=True, activation='relu')(const)
-        x = Reshape([self.start_size, self.start_size, 256])(x)
+        x = Dense(self.start_size * self.start_size * self.params['gen_filters'],
+                  use_bias=True, activation='relu', kernel_initializer=GlorotNormal(),
+                  name='const_expander')(const)
+        x = Reshape([self.start_size, self.start_size, self.params['gen_filters']], name='const_reshape')(x)
 
         # Generator blocks
         for i in range(self.num_blocks):
             w = map(z[i])
-            x = self._gen_block(x, w, noise[i], 128)
+            x = self._gen_block(x, w, noise[i], self.params['gen_filters'], i)
 
         # Convert to n-channel image with values bounded by tanh.
         image = Conv2D(filters=1, kernel_size=1, strides=1, padding='same',
-                       kernel_initializer='glorot_uniform', activation='tanh')(x)
+                       kernel_initializer=GlorotNormal(), activation='tanh', name='image_output')(x)
 
-        return Model(inputs=[const] + z + noise, outputs=[image], name='generator')
+        model = Model(inputs=[const] + z + noise, outputs=[image], name='generator')
+        print('Generator model constructed.')
+        return model
 
     def make_discriminator(self):
-        image = Input([self.image_size, self.image_size, self.num_channels])
+        image = Input([self.image_size, self.image_size, self.num_channels], name='image_in')
 
         # Start block
-        x = self._disc_block(image, 128, reduce=False)
+        x = self._disc_block(image, self.params['disc_filters'], 'start', reduce=False)
 
         # Discriminator blocks
         for i in range(self.num_blocks):
-            x = self._disc_block(x, 64)
+            x = self._disc_block(x, self.params['disc_filters'], i, reduce=True)
 
         # Output block - was the image fake or real?
         x = Conv2D(filters=32, kernel_size=3, strides=1, padding='same',
-                   kernel_initializer='glorot_uniform', activation=LeakyReLU(0.2))(x)
-        x = Flatten()(x)
-        classification = Dense(1, activation='sigmoid')(x)
+                   kernel_initializer=GlorotNormal(), activation=LeakyReLU(0.2), name='conv_final')(x)
+        x = Flatten(name='flatten_conv')(x)
+        classification = Dense(1, activation='sigmoid', name='classification_out')(x)
 
-        return Model(inputs=image, outputs=classification, name='discriminator')
+        model = Model(inputs=image, outputs=classification, name='discriminator')
+        print('Discriminator model constructed.')
+        return model
 
     def generate_inputs(self, batch_size):
         const = tf.random.normal(mean=0., stddev=1., shape=(batch_size, self.z_length))
@@ -303,7 +398,7 @@ class StyleGAN:
             size *= 2
         return [const] + z + noise
 
-    def update_avg_losses(self):
+    def _update_avg_losses(self):
         """Compute weighted moving average of loss values, to show adversarial balance in colorbar."""
         if len(self.g_losses) > 10:
             weights = np.arange(1, 11)
@@ -329,12 +424,12 @@ class StyleGAN:
         if not self.jupyter:
             plt.close('all')
 
-        self.update_avg_losses()
+        self._update_avg_losses()
 
         # Generate generator sample images.
         gen_images = self.generator(self.progress_seed, training=False)
         # Calculate pixel-wise variance among generated samples.
-        sample_variance, var_sum = self.calculate_variance(gen_images)
+        sample_variance, var_sum = self._calculate_variance(gen_images)
         var_percent = (var_sum / self.dataset_variance_sum) * 100
 
         fig = plt.figure(constrained_layout=False, figsize=(14.5, 11))
@@ -373,7 +468,7 @@ class StyleGAN:
             ax[i].axes.yaxis.set_visible(False)
 
         # Plot losses of generator and discriminator.
-        ax8.set_title('StyleGAN1 Generator and Discriminator binary cross-entropy losses over time', size=14)
+        ax8.set_title('StyleGAN Generator and Discriminator binary cross-entropy losses over time', size=14)
         ax8.set_xticklabels([])
         # Truncate loss lists to only keep n latest values.
         if len(self.g_losses) >= self.max_graphed:
@@ -434,6 +529,7 @@ class StyleGAN:
         real_loss = BinaryCrossentropy(label_smoothing=0.2)(tf.ones_like(real_output), real_output)
         # Compare predictions on fake images to array of zeroes.
         fake_loss = BinaryCrossentropy(label_smoothing=0.2)(tf.zeros_like(fake_output), fake_output)
+
         return real_loss, fake_loss
 
     def _gen_loss(self, fake_output):
@@ -502,7 +598,7 @@ class StyleGAN:
                     if self.jupyter:
                         display.clear_output(wait=True)
                     self._plot_gan_progress()
-                if not self.jupyter:
+                if not self.jupyter or not self.show_progress_plots:
                     print(
                         f'\rEpoch {epoch:03} / {self.epochs} | batch {i:03} / {self.num_batches} | '
                         f'g_loss: {round(g_loss, 4):.4f} | d_fake_loss: {round(d_fake_loss, 4):.4f} | '
@@ -514,50 +610,32 @@ class StyleGAN:
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
 
 
-# def normalize(array, min, max, type):
-#     """Scale array values to [min, max]"""
-#     array = array.reshape((-1,))
-#     array = np.interp(array, (array.min(), array.max()), (min, max))
-#     image = array.reshape((128, 128, 3))
-#     return image.astype(int) if type is int else image.astype(float)
+if __name__ == '__main__':
+    gan = StyleGAN(dataset=None,
 
+                   # dataset_path=None,
+                   # dataset_name='mnist digits',
 
-# image_dataset = tf.keras.preprocessing.image_dataset_from_directory('C:/OASIS_brains/all',
-# image_dataset = tf.keras.preprocessing.image_dataset_from_directory('C:/img_align_celeba',
-#                                                                     labels=None,
-#                                                                     label_mode=None,
-#                                                                     image_size=(128, 128),
-#                                                                     smart_resize=True,
-#                                                                     shuffle=True,
-#                                                                     batch_size=BATCH_SIZE)
-#
-# # Rescale all [0,255] images to [-1,1], as our generator outputs with tanh.
-# image_dataset = image_dataset.map(lambda x: Rescaling(scale=1. / 127.5, offset=-1)(tf.image.rgb_to_grayscale(x)))
-# image_dataset = image_dataset.shuffle(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
-#
-# img = image_dataset.take(1)
-# img = np.array(list(img.as_numpy_iterator()))[0][0]
-#
-# plt.axis('off')
-# plt.tight_layout()
-# plt.imshow(img, cmap='gray')
-# plt.show()
+                   # dataset_path='C:/img_align_celeba',
+                   # dataset_name='celeb faces',
 
-gan = StyleGAN(dataset=None,
-               # dataset_path='C:/img_align_celeba',
-               # dataset_path='C:/OASIS_brains/keras_png_slices_train',
-               dataset_path='C:/OASIS_brains/all',
-               target_image_dims=(128, 128),
-               epochs=999,
-               batch_size=32,
-               z_length=512,
-               save_progress_plots=True,
-               show_progress_plots=False,
-               progress_plot_batch_interval=10,
-               save_model_checkpoints=False,
-               model_checkpoint_interval=1,
-               save_directory='C:/stylegan_output',
-               print_model_summaries=True,
-               running_in_notebook=False)
+                   dataset_path='C:/AKOA_Analysis',
+                   dataset_name='oai akoa knees',
 
-gan.train()
+                   # dataset_path='C:/OASIS_brains/keras_png_slices_train',
+                   # dataset_name='oasis brains',
+
+                   target_image_dims=(64, 64),
+                   epochs=999,
+                   batch_size=32,
+                   z_length=512,
+                   save_progress_plots=True,
+                   show_progress_plots=False,
+                   progress_plot_batch_interval=10,
+                   save_model_checkpoints=False,
+                   model_checkpoint_interval=20,
+                   save_directory='C:/stylegan_output',
+                   print_model_summaries=True,
+                   running_in_notebook=False)
+
+    gan.train()
