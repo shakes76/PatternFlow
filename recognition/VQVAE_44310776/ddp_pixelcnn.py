@@ -10,7 +10,8 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler, random_split
 from torchvision import transforms, utils as vutils
 from vqvae import ResponsiveVQVAE2 as VQVAE2
-from pixel_cnn import PixelCNN
+# from pixel_cnn import PixelCNN
+from pixel_cnn.prior_models import TopPrior, BottomPrior
 from load_dataset import OASISDataset
 from pytorchtrainer.trainer import Trainer
 from notiontoolkit.tqdm_notion import tqdm_notion
@@ -48,7 +49,7 @@ num_embeddings = 512
 commitment_cost = 0.25
 decay = 0.99
 
-learning_rate = 1e-3
+learning_rate = 1e-4
 ########################
 
 ########################
@@ -75,19 +76,43 @@ def load_vqvae(dataset: str, batch_size: int, filename: str):
     return model
 ########################
 
+########################
+# PixelCNN Definition
+########################
+# def load_top(batch_size: int):
+#     # in_channels = DATASET_DATA[dataset]['channels']
+#     # dimension = DATASET_DATA[dataset]['dimension']
+#     latent_dim = LATENT_DIMENSIONS[1]
+
+#     model = PixelCNN(codebook_size=num_embeddings, feature_channels=256, n_layers=15, conditional=False)
+
+#     # Dummy forward pass to initialise weights before distributing.
+#     model(torch.zeros(batch_size, latent_dim, latent_dim, dtype=int))
+
+#     state_dict = torch.load(os.path.join(RESULTS_DIRECTORY, "generator_top.pth"))
+#     model.load_state_dict(state_dict)
+
+#     # Disable grad for model.
+#     model.eval()
+#     for p in model.parameters():
+#         p.requires_grad = False
+
+#     return model
+########################
+
 
 ########################
 # PixelCNN Definition
 ########################
 def create_model(batch_size: int, level: str):
-    # in_channels = DATASET_DATA[dataset]['channels']
-    # dimension = DATASET_DATA[dataset]['dimension']
-    latent_dim = LATENT_DIMENSIONS[0] if level == 'bottom' else LATENT_DIMENSIONS[1]
-
-    model = PixelCNN(codebook_size=num_embeddings, feature_channels=256, n_layers=15)
-
     # Dummy forward pass to initialise weights before distributing.
-    model(torch.zeros(batch_size, latent_dim, latent_dim, dtype=int))
+    if level == 'top':
+        model = TopPrior()
+        model(torch.zeros(batch_size, LATENT_DIMENSIONS[1], LATENT_DIMENSIONS[1], dtype=int))
+    else:
+        model = BottomPrior()
+        model(torch.zeros(batch_size, LATENT_DIMENSIONS[0], LATENT_DIMENSIONS[0], dtype=int),
+              torch.zeros(batch_size, LATENT_DIMENSIONS[1], LATENT_DIMENSIONS[1], dtype=int))
 
     return model
 ########################
@@ -127,7 +152,7 @@ def main(rank: int, epochs: int, vqvae: VQVAE2, model: nn.Module, level: str, tr
     device = torch.device(f'cuda:{rank}')
     print(f'Rank {rank} using {torch.cuda.get_device_name(device)}.')
     model = model.to(device)
-    model = DistributedDataParallel(model, device_ids=[rank], output_device=rank, find_unused_parameters=True)
+    model = DistributedDataParallel(model, device_ids=[rank], output_device=rank)
     vqvae = vqvae.to(device)
 
 ########################
@@ -148,13 +173,16 @@ def main(rank: int, epochs: int, vqvae: VQVAE2, model: nn.Module, level: str, tr
             data = batch.to(self._device)
             _, _, _, id_2, id_1 = vqvae.encode(data)
 
-            x = id_2 if level == 'top' else id_1
-            condition = None if level == 'top' else id_2
-            logits = self._model(x, condition)
+            logits = None
+            if level == 'top':
+                logits = self._model(id_2)
+            else:
+                logits = self._model(id_1, id_2)
 
             logits = logits.permute(0, 2, 3, 1).contiguous()
+            logits = logits.view(-1, logits.shape[-1])
             loss = {
-                "CE": ce_loss(logits.view(-1, num_embeddings), x.view(-1))
+                "CE": ce_loss(logits, id_2.view(-1) if level == 'top' else id_1.view(-1))
             }
             return loss, 0
 
@@ -173,7 +201,68 @@ def main(rank: int, epochs: int, vqvae: VQVAE2, model: nn.Module, level: str, tr
         trainer.plot_accuracy(save_path=RESULTS_DIRECTORY, quiet=True)
         trainer.save_model(os.path.join(RESULTS_DIRECTORY, SAVE_NAME))
 
+    def view_reconstructions():
+        batch = next(iter(trainer._val_loader))
+        batch = batch[:8] # Just do 8 samples for speed.
+        data = batch.to(device)
+
+        _, _, _, id_2, id_1 = vqvae.encode(data)
+
+        x = id_2 if level == 'top' else id_1
+        condition = None if level == 'top' else id_2
+        logits = trainer._model(x, condition)
+        logits = logits.permute(0, 2, 3, 1).contiguous()
+
+        # Get the most likely index from each pixel prediction.
+        codes = torch.argmax(logits, dim=3, keepdim=False)
+        # print(generated_codes.shape, generated_codes)
+
+        images = vqvae.decode_codebook(codes if level == 'bottom' else id_1,
+                              codes if level == 'top' else id_2)
+
+        # Plot the samples
+        plt.figure(figsize=(30,15))
+        plt.subplot(1,2,1)
+        plt.axis("off")
+        plt.title("Originals")
+        plt.imshow(np.transpose(vutils.make_grid(batch, padding=2, normalize=True).cpu(),(1,2,0)))
+        
+        plt.subplot(1,2,2)
+        plt.axis("off")
+        plt.title("PixelCNN Reconstructions")
+        plt.imshow(np.transpose(vutils.make_grid(images, padding=2, normalize=True).cpu(),(1,2,0)))
+        plt.savefig(os.path.join(RESULTS_DIRECTORY, "prior_reconstructions.png"))
+        plt.close()
+
+    
     trainer.set_callback(plot, np.linspace(1, epochs, epochs//5,  endpoint=False, dtype=int))
+    # trainer.set_callback(view_reconstructions, np.linspace(1, epochs, epochs//5,  endpoint=False, dtype=int))
+
+    if level == 'bottom':
+        # pixelCNN_top = load_top(batch_size=4)
+        # pixelCNN_top.to(device)
+
+        def generate_samples():
+            print("Generating Samples...")
+            batch = next(iter(trainer._val_loader))
+            batch = batch[:4] # Just do 4 samples for speed.
+            data = batch.to(device)
+
+            with torch.no_grad():
+                _, _, _, id_2, _ = vqvae.encode(data)
+                generated_codes = trainer._model.module.generate((32,32), 4, id_2)
+
+            images = vqvae.decode_codebook(generated_codes, id_2)
+
+            # Plot the real images
+            plt.figure(figsize=(10,7))
+            plt.axis("off")
+            plt.title("Generated Images")
+            plt.imshow(np.transpose(vutils.make_grid(images, padding=5, normalize=True).cpu(),(1,2,0)))
+            plt.savefig(os.path.join(RESULTS_DIRECTORY, "prior_samples.png"))
+            plt.close()
+
+        # trainer.set_callback(generate_samples, np.linspace(1, epochs, epochs//5,  endpoint=False, dtype=int))
 
     # Train the model. Catch keyboard interrupts for clean exiting.
     try:

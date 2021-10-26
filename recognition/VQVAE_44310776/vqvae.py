@@ -246,12 +246,7 @@ class ResponsiveVQVAE2(nn.Module):
     def forward(self, x):
         # Encode everything.
         q2, q1, diff, _, _ = self.encode(x)
-
-        # Decode the fully quantized rep
-        q2 = self.upsample_1(q2)
-        q = torch.cat([q1, q2], 1)
-        reconstruction = self.decoder_1(q)
-        
+        reconstruction = self.decode(q1, q2)   
         return reconstruction, diff
 
     def encode(self, x):
@@ -275,5 +270,19 @@ class ResponsiveVQVAE2(nn.Module):
         diff_1 = diff_1.unsqueeze(0)
 
         return q2, q1, diff_2 + diff_1, id_2, id_1
+
+    def decode(self, q1, q2):
+        # Decode the fully quantized rep
+        q2 = self.upsample_1(q2)
+        q = torch.cat([q1, q2], 1)
+        return self.decoder_1(q)
+
+    def decode_codebook(self, id_1, id_2):
+        q2 = self.quantize_2.embed_code(id_2)
+        q2 = q2.permute(0, 3, 1, 2)
+        q1 = self.quantize_1.embed_code(id_1)
+        q1 = q1.permute(0, 3, 1, 2)
+
+        return self.decode(q1, q2)
 
 ####################
