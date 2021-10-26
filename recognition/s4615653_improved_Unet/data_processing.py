@@ -88,6 +88,7 @@ def map_data(train_ds,val_ds,test_ds):
     return train_ds, val_ds, test_ds
 
 def data_processing():
+    # a function will be called in main.py to process data processing.
 
     inputs, truth = load_data()
 
