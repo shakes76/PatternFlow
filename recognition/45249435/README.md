@@ -5,7 +5,7 @@ via an edge. The reason why CNNs would not work in this case is because the grap
 for datasets represented by graphs. In short, GCNs are just CNNs for sets of data represented with a graph. An example of such a dataset (and the dataset I will
 make a GCN on) is the [Facebook Large Page-Page Network dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html). I will classify the nodes of
 this dataset, that means that given the **128 of the features** of each webpage, I will predict whether or not they are part of one of the four classes:__
-*tvshow__
-*government__ 
-*company__ 
-*politician__
+* tvshow__
+* government__ 
+* company__ 
+* politician__
