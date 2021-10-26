@@ -112,6 +112,11 @@ for epoch in range(epochs):
     print("Epoch {:03d}: Loss {:.4f}, TrainAcc {:.4}, ValAcc {:.4f}".format(
         epoch, loss.item(), train_acc.item(), val_acc.item()))
 
+# Test dataset
+test_acc, _, _ = test(test_index)
+print("Test Accuracy: {:.4f}".format(float(test_acc.numpy())))
+
+
 # code for TSNE embeddings plot
 # from sklearn.decomposition import PCA
 # from sklearn.manifold import TSNE
