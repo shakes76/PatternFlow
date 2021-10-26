@@ -15,6 +15,7 @@ from model import *
 # optimizer: https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
 # dice coefficient: https://towardsdatascience.com/metrics-to-evaluate-your-semantic-segmentation-model-6bcb99639aa2
 # input dataset to fit(): https://www.tensorflow.org/guide/data
+# plotting predictions: https://www.tensorflow.org/tutorials/load_data/images
 
 # Data loading variables
 ISIC_DATA = "./ISIC2018_Task1-2_Training_Input_x2/*.jpg" 
@@ -23,7 +24,10 @@ ISIC_MASKS = "./ISIC2018_Task1_Training_GroundTruth_x2/*.png"
 # Data managing variables
 BATCH_SIZE = 32
 DATASET_SIZE = 2594
-EPOCHS = 10
+
+# Network variables
+OPT_LEARNING_RATE = 5e-4
+EPOCHS = 1
 
 
 def preprocessData(filenames):
@@ -60,12 +64,12 @@ def preprocessMasks(filenames):
 def loadData():
     print("Function handling the loading, preprocessing and returning of ready-to-use data.")
     # Get the dataset contents
-    isics_data = tf.data.Dataset.list_files(ISIC_DATA)
+    isics_data = tf.data.Dataset.list_files(ISIC_DATA, shuffle=False)
     processedData = isics_data.map(preprocessData)
     print("Finished processing ISICs data...")
     
     # Get the corresponding segmentation masks
-    masks_data = tf.data.Dataset.list_files(ISIC_MASKS)
+    masks_data = tf.data.Dataset.list_files(ISIC_MASKS, shuffle=False)
     processedMasks = masks_data.map(preprocessMasks)
     print("Finished processing ISICs masks...")
     
@@ -84,8 +88,11 @@ def loadData():
         plt.imshow(elem.numpy())
         plt.show()
     
+
     # Return the newly created dataset
-    return tf.data.Dataset.zip((processedData, processedMasks))
+    newDataSet = tf.data.Dataset.zip((processedData, processedMasks))
+
+    return newDataSet
 
 
 def splitData(dataset):
@@ -105,14 +112,17 @@ def splitData(dataset):
     # Split the rest between the testing and validation
     testing_set = dataset.take(test_size)
     validation_set = dataset.skip(test_size)
-    
-    # Perform batching
-    training_set = training_set.batch(BATCH_SIZE)
-    testing_set = testing_set.batch(BATCH_SIZE)
-    validation_set = validation_set.batch(BATCH_SIZE)
-    
+
     return training_set, testing_set, validation_set
     
+    
+def performBatching(train, test, validation):
+    # Perform batching
+    training_set = train.batch(BATCH_SIZE)
+    testing_set = test.batch(BATCH_SIZE)
+    validation_set = validation.batch(BATCH_SIZE)
+    
+    return training_set, testing_set, validation_set
     
 def diceCoefficient(y_true, y_pred):
     """  
@@ -148,6 +158,12 @@ def diceLoss(y_true, y_pred):
     return 1 - diceCoefficient(y_true, y_pred)
 
 
+def generatePredictions(test_data, model):
+    """
+        Generates and displays predictions of the model from the test set.
+    """  
+    return 1
+
 def main():
     # Dependencies
     print("Tensorflow: " + tf.__version__)
@@ -158,22 +174,32 @@ def main():
     entire_dataset = loadData()
     train_data, test_data, validation_data = splitData(entire_dataset)
     
+    train_data_batched, test_data_batched, validation_data_batched = performBatching(train_data, test_data, validation_data)
+    
     # Create the model
     iunet = IUNET()
     model = iunet.createPipeline()
     
     # Compile the model, model.compile()
     print("Compiling model...")
-    adamOptimizer = tf.keras.optimizers.Adam()
+    adamOptimizer = tf.keras.optimizers.Adam(learning_rate=OPT_LEARNING_RATE)
     model.compile(optimizer=adamOptimizer, loss=diceLoss, metrics=[diceCoefficient, 'accuracy'])
     print("Model compilation complete.")
     
     # Train the model, model.fit()
     print("Training the model...")
-    history = model.fit(train_data, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=validation_data)
+    history = model.fit(train_data_batched, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=validation_data_batched)
     print("Model training complete.")
     
+    # Evaluate performance on test, model.evaluate()
+    print("Evaluating the model on the test set...")
+    model.evaluate(test_data_batched)
+    print("Model evaluation complete.")
+    
     # Perform predictions, model.predict()
+    print("Displaying model predictions...")
+    generatePredictions(test_data, model)
+    print("Model prediction complete.")
     
 
 
