@@ -56,9 +56,9 @@ The images below are randomly collected from AKOA datasets for visualisation.
 ![OAI9708289_BaseLine_4_de3d1_SAG_3D_DESS_WE_LEFT nii gz_38](https://user-images.githubusercontent.com/50613939/138833787-692e857f-e6e2-420d-817e-cea202d49d70.png)
 ![OAI9958220_BaseLine_4_de3d1_SAG_3D_DESS_WE_LEFT nii gz_16](https://user-images.githubusercontent.com/50613939/138833738-a9ec071b-9d57-4acc-8dc1-f7a41e4ae5e7.png)
 
-## Implementation Details
+## Implementation 
 
-The model and network code written in Pytorch follows the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow Code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
+The model and network code written in Pytorch follow the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
 
 #### Hardware
 
