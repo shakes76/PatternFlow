@@ -22,7 +22,7 @@ The architecture used was a two-stage neural network, consisting first of the VQ
 
 A schematic visualizing the architecture of the VQ-VAE is shown in Figure 2.
 
-![](./VQ-VAE-Architecture.png)
+![](./VQ-VAE-Architecture.PNG)
 
 *Figure 2: VQ-VAE Architecture as provided in van den Oord et al. (2018).*
 
@@ -39,7 +39,7 @@ As can be seen, the images produced at the decoder output are reasonably clear, 
 
 While the reconstruction loss (orange curve in Figure 4) consistently decreased throughout training, the committment loss (green curve) first peaked, before gradually improving over the course of the epochs. The total loss was determined by the sum of the committment and reconstruction losses, and is shown in blue in Figure 4. 
 
-![](./Loss_curve.png)
+![](./Loss_curve.PNG)
 
 *Figure 4: Training loss curves - total loss shown in blue, committment loss shown in green and reconstruction loss shown in orange.*
 

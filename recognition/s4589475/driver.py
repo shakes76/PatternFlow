@@ -12,8 +12,8 @@ batch_size = 50
 image_height = 256
 image_width = 256
 channels = 1 # images are in grayscale
-epochs = 10
-latent_dims = 32
+epochs = 30
+latent_dims = 128
 depth = 32
 
 def create_image(data):
