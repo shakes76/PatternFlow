@@ -65,7 +65,7 @@ The implementation code should be run at least 40 hours with more than 60k itera
 #### Software 
 
 
-'''
+```
 _libgcc_mutex=0.1=main
 _openmp_mutex=4.5=1_gnu
 ca-certificates=2021.9.30=h06a4308_1
@@ -100,7 +100,7 @@ tqdm=4.62.3=pypi_0
 wheel=0.37.0=pyhd3eb1b0_1
 xz=5.2.5=h7b6447c_0
 zlib=1.2.11=h7b6447c_3
-'''
+```
 
 ## Result and Analysis
 Generated AKOA Images
