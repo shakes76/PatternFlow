@@ -1,13 +1,13 @@
-import argparse
-from io import BytesIO
-import multiprocessing
-from functools import partial
-
-from PIL import Image
 import lmdb
 from tqdm import tqdm
-from torchvision import datasets
+from PIL import Image
 from torchvision.transforms import functional as trans_fn
+from torchvision import datasets
+from io import BytesIO
+from functools import partial
+import multiprocessing
+import argparse
+# import the required libraries for the data pre-processing.
 
 
 def resize_and_convert(img, size, quality=100):
