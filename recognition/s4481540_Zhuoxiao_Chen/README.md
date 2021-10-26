@@ -58,7 +58,51 @@ The images below are randomly collected from AKOA datasets for visualisation.
 
 ## Implementation Details
 
+#### Hardware
+
 The implementation code should be run at least 40 hours with more than 60k iterations, using two RTX 2080 Ti GPUs, to get the expected performance as displayed in next section. 
+
+#### Software 
+
+'''
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+_libgcc_mutex=0.1=main
+_openmp_mutex=4.5=1_gnu
+ca-certificates=2021.9.30=h06a4308_1
+certifi=2020.12.5=py36h06a4308_0
+cycler=0.10.0=pypi_0
+kiwisolver=1.3.1=pypi_0
+ld_impl_linux-64=2.35.1=h7274673_9
+libffi=3.3=he6710b0_2
+libgcc-ng=9.3.0=h5101ec6_17
+libgomp=9.3.0=h5101ec6_17
+libstdcxx-ng=9.3.0=hd4cf53a_17
+lmdb=1.2.1=pypi_0
+matplotlib=3.3.4=pypi_0
+ncurses=6.2=he6710b0_1
+numpy=1.19.5=pypi_0
+openssl=1.1.1l=h7f8727e_0
+pandas=1.1.5=pypi_0
+pillow=8.4.0=pypi_0
+pip=21.0.1=py36h06a4308_0
+pyparsing=2.4.7=pypi_0
+python=3.6.13=h12debd9_1
+python-dateutil=2.8.2=pypi_0
+pytz=2021.3=pypi_0
+readline=8.1=h27cfd23_0
+setuptools=58.0.4=py36h06a4308_0
+six=1.16.0=pypi_0
+sqlite=3.36.0=hc218d9a_0
+tk=8.6.11=h1ccaba5_0
+torch=1.2.0=pypi_0
+torchvision=0.4.0=pypi_0
+tqdm=4.62.3=pypi_0
+wheel=0.37.0=pyhd3eb1b0_1
+xz=5.2.5=h7b6447c_0
+zlib=1.2.11=h7b6447c_3
+'''
 
 ## Result and Analysis
 Generated AKOA Images
