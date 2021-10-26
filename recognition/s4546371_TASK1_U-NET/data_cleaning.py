@@ -83,7 +83,7 @@ def creat_mask(y):
    
     y_train=[]
     for i in y:
-        i = i /2550.0
+        i = i /255.0
         i = np.where(i < 0.5, 0, i)
         i = np.where(i > 0.5, 1, i)
         label=tf.keras.utils.to_categorical(i, num_classes=2, dtype='float32')
