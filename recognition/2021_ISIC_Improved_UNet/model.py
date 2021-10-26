@@ -18,7 +18,7 @@ class IUNET(tf.keras.Model):
         self.padding = "same"
         self.initial_output = 16
         self.contextDropoutRate = 0.3
-        self.leakyAlpha = -1 * 10**-2
+        self.leakyAlpha = -1e-2
         
     
     def contextModule(self, input, outputFilters):
@@ -26,13 +26,13 @@ class IUNET(tf.keras.Model):
         
         batchOutput = tf.keras.layers.BatchNormalization()(input)
         reluActivation = tf.keras.layers.ReLU()(batchOutput)
-        convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(input)
+        convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(reluActivation)
         
         afterDropout = tf.keras.layers.Dropout(self.contextDropoutRate)(convolutionOutput)
         
         batchOutput = tf.keras.layers.BatchNormalization()(afterDropout)
         reluActivation = tf.keras.layers.ReLU()(batchOutput)
-        convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(input)
+        convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(reluActivation)
         
         return convolutionOutput
         
@@ -84,7 +84,6 @@ class IUNET(tf.keras.Model):
     
     def performSegmentation(self, input, outputFilters):
         print("Defines the segmentation layer")
-        
         # 1x1 Convolution 
         convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(1,1), padding=self.padding)(input)
         
@@ -162,7 +161,7 @@ class IUNET(tf.keras.Model):
         toSegmentMiddle = localisationOutput
         
         # Perform second segmentation
-        middleSegmented = self.performSegmentation(toSegmentMiddle, 1)
+        middleSegmented = self.performSegmentation(toSegmentMiddle, 1) 
         
         # Upsample as usual 
         upSampleOutput = self.performUpSampling(localisationOutput, self.initial_output)
