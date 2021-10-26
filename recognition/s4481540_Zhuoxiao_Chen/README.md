@@ -3,6 +3,8 @@ Authour: [Zhuoxiao Chen](https://zhuoxiao-chen.github.io)
 
 Student ID: 44815404
 
+Email: zhuoxiao \[dot\] chen \[dot\] uq \[dot\] edu \[dot\] au
+
 [School of Information Technology and Electrical Engineering (ITEE)](https://itee.uq.edu.au/)
 
 [The University of Queensland](https://www.uq.edu.au/)
@@ -41,11 +43,78 @@ To control image synthesis, the styles from 8-layer MLPs can be modified or sele
 The mixing regularisation attempts to input two branches: different latent codes from 8-layer network, and these two codes are inserted into the generator network randomly when the GAN is trained. The styles should be independent when inserting into the convolutional layers, which is achieved by the normalisation of AdaIN. As discussed in the paragraph above, the features are only controlled by the style at each convolutional layer but not be affected by previous convolutions. However, the styles are always outputted from the same 8-layer mapping network. Thus, the styles may be correlated. Using two different 8-layer networks randomly can ensure that styles at different convolutional layers are not correlated, which means the styles inserted into even adjacent layers are independent.
 
 
-## OAI AKOA knee dataset
-Introduce the knee dataset here
+## OAI AKOA Knee Dataset
 
-## Implementation Details
-Some Implementation details here
+The dataset has a size of 1.6GB and contains 18k images of AKOA for training the StyleGAN. 
+
+The images below are randomly collected from AKOA datasets for visualisation. 
+
+![OAI9896743_BaseLine_3de3d1_SAG_3D_DESS_WE_RIGHT nii gz_0](https://user-images.githubusercontent.com/50613939/138839249-657e9785-2e88-43f0-a68c-a89246f91903.png)
+![OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT nii gz_31](https://user-images.githubusercontent.com/50613939/138833674-52b366a9-a4b3-49c6-8ea8-85a8b50bb182.png)
+![OAI9961728_BaseLine_101de3d1_SAG_3D_DESS_WE_LEFT nii gz_4](https://user-images.githubusercontent.com/50613939/138833711-904b3b2a-7ef6-45c4-9f4b-141afdb41285.png)
+![OAI9961728_BaseLine_100de3d1_SAG_3D_DESS_WE_LEFT nii gz_8](https://user-images.githubusercontent.com/50613939/138833722-559bcd88-75b2-4c7b-a587-ac8cc6be7738.png)
+![OAI9708289_BaseLine_4_de3d1_SAG_3D_DESS_WE_LEFT nii gz_38](https://user-images.githubusercontent.com/50613939/138833787-692e857f-e6e2-420d-817e-cea202d49d70.png)
+![OAI9958220_BaseLine_4_de3d1_SAG_3D_DESS_WE_LEFT nii gz_16](https://user-images.githubusercontent.com/50613939/138833738-a9ec071b-9d57-4acc-8dc1-f7a41e4ae5e7.png)
+
+## Implementation 
+
+The model and network code written in Pytorch follow the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
+
+#### Hardware
+
+The implementation code should be run at least **40 hours** with more than **60k iterations**, using **two RTX 2080 Ti GPUs**, to get the expected performance as displayed in next section. 
+
+#### Software 
+
+
+```
+'''
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+_libgcc_mutex=0.1=main
+_openmp_mutex=4.5=1_gnu
+ca-certificates=2021.9.30=h06a4308_1
+certifi=2020.12.5=py36h06a4308_0
+cycler=0.10.0=pypi_0
+kiwisolver=1.3.1=pypi_0
+ld_impl_linux-64=2.35.1=h7274673_9
+libffi=3.3=he6710b0_2
+libgcc-ng=9.3.0=h5101ec6_17
+libgomp=9.3.0=h5101ec6_17
+libstdcxx-ng=9.3.0=hd4cf53a_17
+lmdb=1.2.1=pypi_0
+matplotlib=3.3.4=pypi_0
+ncurses=6.2=he6710b0_1
+numpy=1.19.5=pypi_0
+openssl=1.1.1l=h7f8727e_0
+pandas=1.1.5=pypi_0
+pillow=8.4.0=pypi_0
+pip=21.0.1=py36h06a4308_0
+pyparsing=2.4.7=pypi_0
+python=3.6.13=h12debd9_1
+python-dateutil=2.8.2=pypi_0
+pytz=2021.3=pypi_0
+readline=8.1=h27cfd23_0
+setuptools=58.0.4=py36h06a4308_0
+six=1.16.0=pypi_0
+sqlite=3.36.0=hc218d9a_0
+tk=8.6.11=h1ccaba5_0
+torch=1.2.0=pypi_0
+torchvision=0.4.0=pypi_0
+tqdm=4.62.3=pypi_0
+wheel=0.37.0=pyhd3eb1b0_1
+xz=5.2.5=h7b6447c_0
+zlib=1.2.11=h7b6447c_3
+```
+
+#### Parameter Details of Main Function
+
+
+#### Train SyleGAN for AKOA Images
+
+
+#### Generate AKOA Images
 
 
 ## Result and Analysis
