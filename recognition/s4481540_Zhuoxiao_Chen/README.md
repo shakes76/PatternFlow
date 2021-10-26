@@ -64,10 +64,8 @@ The implementation code should be run at least 40 hours with more than 60k itera
 
 #### Software 
 
+
 '''
-# This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
-# platform: linux-64
 _libgcc_mutex=0.1=main
 _openmp_mutex=4.5=1_gnu
 ca-certificates=2021.9.30=h06a4308_1
