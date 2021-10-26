@@ -47,7 +47,7 @@ The dataset has a size of 1.6GB and contains 18k images of AKOA for training the
 
 The images below are randomly collected from AKOA datasets for visualisation. 
 
-![OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT nii gz_32](https://user-images.githubusercontent.com/50613939/138833651-d9537c95-f0f6-4b94-acaf-e52082896cdb.png)
+![OAI9896743_BaseLine_3de3d1_SAG_3D_DESS_WE_RIGHT nii gz_0](https://user-images.githubusercontent.com/50613939/138839249-657e9785-2e88-43f0-a68c-a89246f91903.png)
 ![OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT nii gz_31](https://user-images.githubusercontent.com/50613939/138833674-52b366a9-a4b3-49c6-8ea8-85a8b50bb182.png)
 ![OAI9961728_BaseLine_101de3d1_SAG_3D_DESS_WE_LEFT nii gz_4](https://user-images.githubusercontent.com/50613939/138833711-904b3b2a-7ef6-45c4-9f4b-141afdb41285.png)
 ![OAI9961728_BaseLine_100de3d1_SAG_3D_DESS_WE_LEFT nii gz_8](https://user-images.githubusercontent.com/50613939/138833722-559bcd88-75b2-4c7b-a587-ac8cc6be7738.png)
