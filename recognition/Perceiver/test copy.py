@@ -5,35 +5,11 @@ from tensorflow.keras import layers
 import tensorflow_addons as tfa
 from einops import rearrange, repeat
 import math
-import data as d
 
-num_classes = 2
-input_shape = (260, 228, 3)
+num_classes = 100
+input_shape = (32, 32, 3)
 
-# (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
-training_it = d.training_data_iterator()
-testing_it = d.test_data_iterator()
-
-x_train = []
-x_test = []
-y_train = []
-y_test = []
-for image, label in training_it:
-    print(image, label)
-    x_train.append(image)
-    y_train.append(label)
-
-print('test')
-for image, label in testing_it:
-    print(image,label)
-    x_test.append(image)
-    y_test.append(label.numpy())
-
-x_train = np.array(x_train)
-x_test = np.array(x_test)
-y_train = np.array(y_train)
-y_test = np.array(y_test)
-    
+(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
 print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
 print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
@@ -41,10 +17,10 @@ print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
 learning_rate = 0.001
 weight_decay = 0.0001
 # batch_size = 64
-batch_size = 4
+batch_size = 32
 num_epochs = 50
 dropout_rate = 0.2
-image_size = 32  # We'll resize input images to this size.
+image_size = 64  # We'll resize input images to this size.
 patch_size = 2  # Size of the patches to be extract from the input images.
 num_patches = (image_size // patch_size) ** 2  # Size of the data array.
 latent_dim = 256  # Size of the latent array.
@@ -70,22 +46,17 @@ print(f"Data array shape: {num_patches} X {projection_dim}")
 
 data_augmentation = keras.Sequential(
     [
-        # layers.Normalization(),
-        # layers.R
-        layers.Rescaling(
-            scale=1./127.5, offset=-1
-        ),
-
+        layers.Normalization(),
         layers.Resizing(image_size, image_size),
         layers.RandomFlip("horizontal"),
-        # layers.RandomZoom(
-        #     height_factor=0.2, width_factor=0.2
-        # ),
+        layers.RandomZoom(
+            height_factor=0.2, width_factor=0.2
+        ),
     ],
     name="data_augmentation",
 )
 # Compute the mean and the variance of the training data for normalization.
-# data_augmentation.layers[0].adapt(x_train)
+data_augmentation.layers[0].adapt(x_train)
 
 def create_ffn(hidden_units, dropout_rate):
     ffn_layers = []
@@ -126,10 +97,63 @@ class PatchEncoder(layers.Layer):
         )
 
     def call(self, patches):
+        print("patches = ")
+        print(patches)
         positions = tf.range(start=0, limit=self.num_patches, delta=1)
         encoded = self.projection(patches) + self.position_embedding(positions)
         return encoded
 
+class FourierEncoder(layers.Layer):
+    def __init__(self, max_freq, freq_bands = 4, base = 2):
+        super(FourierEncoder, self).__init__()
+        self.max_freq = max_freq
+        self.base = base
+        self.freq_bands = freq_bands
+
+        self.projection = layers.Dense(units=projection_dim)
+        self.position_embedding = layers.Embedding(
+            input_dim=freq_bands, output_dim=projection_dim
+        )
+
+    def call(self, x):
+        x = tf.expand_dims(x, -1)
+        x = tf.cast(x, dtype=tf.float32)
+        orig_x = x
+        scales = tf.experimental.numpy.logspace(
+            1.0,
+            math.log(self.max_freq / 2) / math.log(self.base),
+            num=self.freq_bands,
+            base=self.base,
+            dtype=tf.float32,
+        )
+        scales = scales[(*((None,) * (len(x.shape) - 1)), Ellipsis)]
+
+        x = x * scales * math.pi
+        x = tf.concat([tf.math.sin(x), tf.math.cos(x)], axis=-1)
+        # x = tf.concat((x, orig_x), axis=-1)
+        # print(tf.concat((x, orig_x), axis=-1))
+        print("x", x)
+        
+        # encoded = self.position_embedding(x)
+        # encoded = self.projection(x)
+        return x
+def fourier_encode(x, max_freq, num_bands=4, base=2):
+    x = tf.expand_dims(x, -1)
+    x = tf.cast(x, dtype=tf.float32)
+    orig_x = x
+    scales = tf.experimental.numpy.logspace(
+        1.0,
+        math.log(max_freq / 2) / math.log(base),
+        num=num_bands,
+        base=base,
+        dtype=tf.float32,
+    )
+    scales = scales[(*((None,) * (len(x.shape) - 1)), Ellipsis)]
+
+    x = x * scales * math.pi
+    x = tf.concat([tf.math.sin(x), tf.math.cos(x)], axis=-1)
+    x = tf.concat((x, orig_x), axis=-1)
+    return x
 
 def create_cross_attention_module(
     latent_dim, data_dim, projection_dim, ffn_units, dropout_rate
@@ -247,6 +271,7 @@ class Perceiver(keras.Model):
 
         # Create patch encoder.
         self.patch_encoder = PatchEncoder(self.data_dim, self.projection_dim)
+        # self.patch_encoder = FourierEncoder(10)
 
         # Create cross-attenion module.
         self.cross_attention = create_cross_attention_module(
@@ -280,10 +305,31 @@ class Perceiver(keras.Model):
     def call(self, inputs):
         # Augment data.
         augmented = data_augmentation(inputs)
+        print("inputs", inputs)
+        print("augmented", augmented)
+
+        b, *axis, _ = inputs.shape
+        print("b", b, "axis", axis)
+
+        axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
+        pos = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)
+
+        enc_pos = fourier_encode(
+            pos, 10, 6, base=2
+        )
+        enc_pos = rearrange(enc_pos, "... n d -> ... (n d)")
+        enc_pos = repeat(enc_pos, "... -> b ...", b=b)
+
+        data = tf.concat((inputs, enc_pos), axis=-1)
+        data = rearrange(data, "b ... d -> b (...) d")
+        encoded_patches = data
+
+#ORIGINAL
         # Create patches.
-        patches = self.patcher(augmented)
+        # patches = self.patcher(augmented)
         # Encode patches.
-        encoded_patches = self.patch_encoder(patches)
+        # encoded_patches = self.patch_encoder(patches)
+        # encoded_patches = self.patch_encoder(augmented)
 
         # Prepare cross-attention inputs.
         cross_attention_inputs = {

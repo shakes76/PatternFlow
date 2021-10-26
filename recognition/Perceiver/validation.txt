@@ -1,0 +1,15 @@
+left/OAI9961728_BaseLine_3de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_38.png 0
+left/OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_39.png 0
+left/OAI9961728_BaseLine_3de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_39.png 0
+left/OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_3.png 0
+left/OAI9961728_BaseLine_3de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_3.png 0
+left/OAI9961728_BaseLine_3_de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_4.png 0
+left/OAI9961728_BaseLine_3de3d1_SAG_3D_DESS_WE_LEFT.nii.gz_4.png 0
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_39.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_3.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_4.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_5.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_6.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_7.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_8.png 1
+right/OAI9928319_BaseLine_5_de3d1_SAG_3D_DESS_WE_RIGHT.nii.gz_9.png 1
