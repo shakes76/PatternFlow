@@ -2,7 +2,6 @@ import os
 import numpy as np
 import nibabel as nib
 import torch
-from torch import Tensor
 from PIL import Image
 import torch.nn.functional as F
 from torch.utils.data import Dataset
@@ -42,24 +41,3 @@ class OASISDataset(Dataset):
             image = self.transform(image)
 
         return image
-
-    # class Resize(object):
-    #     """ Resize the volume to a given size."""
-
-    #     def __init__(self, output_size):
-    #         assert isinstance(output_size, (int))
-    #         self.output_size = output_size
-
-    #     def __call__(self, x: Tensor):
-    #         d = torch.linspace(-1, 1, self.output_size)
-    #         meshx, meshy, meshz = torch.meshgrid((d, d, d), indexing='ij')
-    #         grid = torch.stack((meshx, meshy, meshz), 3)
-    #         grid = grid.unsqueeze(0) # add batch dim
-    #         x = x.unsqueeze(0) # add batch dim
-    #         x = F.grid_sample(x, grid, align_corners=True)
-    #         x = x.squeeze(0)
-    #         return x
-
-    # class ToTensor(object):
-    #     def __call__(self, x):
-    #         return torch.Tensor(x)

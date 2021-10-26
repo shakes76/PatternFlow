@@ -1,3 +1,7 @@
+"""
+Training script for the VQVAE2 model. Supports Distibuted Data Parallel training on multi-GPU.
+"""
+
 import os
 import argparse
 from typing import Tuple
@@ -11,10 +15,8 @@ from torch.utils.data import DataLoader, DistributedSampler, random_split
 from torchvision import transforms, utils as vutils
 from vqvae import ResponsiveVQVAE2 as VQVAE2
 from load_dataset import OASISDataset
-from pytorchtrainer.trainer import Trainer
-from notiontoolkit.tqdm_notion import tqdm_notion
+from trainer import Trainer
 from dotenv import load_dotenv
-from torchinfo import summary
 
 ########################
 # Constants
@@ -26,7 +28,7 @@ LATENT_DIMENSIONS = (32, 16)
 DATASET_DATA = {
     'oasis': {
         'channels': 1,
-        'dimension': 64
+        'dimension': 128 # Target dimension for the images.
     }
 }
 ########################
@@ -35,8 +37,6 @@ DATASET_DATA = {
 ########################
 # Hyperparameters
 ########################
-epochs = 100
-
 num_hiddens = 128
 num_residual_hiddens = 32
 num_residual_layers = 2
@@ -59,7 +59,7 @@ def create_model(dataset, batch_size):
     model = VQVAE2(dimension, LATENT_DIMENSIONS, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens,
                   num_embeddings, embedding_dim, decay)
 
-    # Dummy forward pass to initialise weights before distributing.
+    # Dummy forward pass to initialise weights before distributing. Required for PyTorch DDP.
     model(torch.zeros(batch_size, in_channels, dimension, dimension))
 
     return model
@@ -71,16 +71,20 @@ def create_model(dataset, batch_size):
 def create_data_loaders(rank: int, world_size: int, batch_size: int, dataset: str, test_percentage: int) -> Tuple[DataLoader, DataLoader]:
     data_root = os.getenv("SLICES_PATH")
 
+    # Image transforms.
     transform = transforms.Compose([
             transforms.Resize(DATASET_DATA[dataset]['dimension']),
             transforms.CenterCrop(DATASET_DATA[dataset]['dimension']),
             transforms.ToTensor(),
-            # Don't need to normalize because it is done in __getitem__.
+            # Don't need to normalize because it is done in __getitem__ (see load_dataset.py).
     ])
 
+    # Load dataset and split into training and test sets.
     dataset = OASISDataset(data_root, transform=transform)
     test_size = len(dataset) // test_percentage
     main_data, _ = random_split(dataset, [len(dataset) - test_size, test_size], generator=torch.Generator().manual_seed(42))
+
+    # Split training set into training and validation sets.
     validation_size = len(main_data) // test_percentage
     training_data, validation_data = random_split(main_data, [len(main_data) - validation_size, validation_size], generator=torch.Generator().manual_seed(42))
 
@@ -108,12 +112,7 @@ def main(rank: int, epochs: int, model: nn.Module, train_loader: DataLoader, val
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, amsgrad=False)
     mse_loss = nn.MSELoss()
 
-    # Create loss and prediction functions for the training module.
-    def loss_fn(output, target):
-        pass
-    def pred_fn(output):
-        pass
-
+    # Concrete subclass for Trainer.
     class VQVAE2Trainer(Trainer):
         def step(self, batch):
             data = batch.to(self._device)
@@ -121,19 +120,12 @@ def main(rank: int, epochs: int, model: nn.Module, train_loader: DataLoader, val
             loss = {"MSE": mse_loss(reconstruction, data), "VQ": vq_loss.mean() * commitment_cost}
             return loss, 0
 
-    # Instantiate the trainer.
-    trainer = VQVAE2Trainer(model, train_loader, val_loader, optimizer, loss_fn, pred_fn, device=device, ddp=True, rank=rank)
-    
-    # Enable Notion integration to track training progress.
-    if NOTION_NAME is not None:
-        print("Notion integration enabled.")
-        trainer.tqdm = tqdm_notion
-        trainer.tqdm_kwargs = {"page_title": NOTION_NAME}
+    # Instantiate the Trainer.
+    trainer = VQVAE2Trainer(model, train_loader, val_loader, optimizer, device=device, ddp=True, rank=rank)
 
     # Define a callback to print the loss and accuracy each epoch.
     def plot():
         trainer.plot_loss(save_path=RESULTS_DIRECTORY, quiet=True, yscale='log')
-        trainer.plot_accuracy(save_path=RESULTS_DIRECTORY, quiet=True)
         trainer.save_model(os.path.join(RESULTS_DIRECTORY, SAVE_NAME))
 
     # Define a callback to produce some sample reconstructions each epoch.
@@ -157,16 +149,17 @@ def main(rank: int, epochs: int, model: nn.Module, train_loader: DataLoader, val
         plt.axis("off")
         plt.title("Reconstructed Images")
         plt.imshow(np.transpose(vutils.make_grid(reconstructions, padding=5, normalize=True).cpu(),(1,2,0)))
-        plt.savefig(os.path.join(RESULTS_DIRECTORY, "samples.png"))
+        plt.savefig(os.path.join(RESULTS_DIRECTORY, "reconstructions.png"))
         plt.close()
 
+    # Register callbacks with the Trainer.
     trainer.set_callback(plot, np.linspace(1, epochs, epochs//5,  endpoint=False, dtype=int))
     trainer.set_callback(sample, np.linspace(1, epochs, epochs//5,  endpoint=False, dtype=int))
 
     # Train the model. Catch keyboard interrupts for clean exiting.
     try:
         with torch.autograd.set_detect_anomaly(True):
-            trainer.train(epochs, quiet=args.quiet)
+            trainer.train(epochs, quiet=False)
     except KeyboardInterrupt as e:
         print("User interrupted training, saving current results and terminating.")
         return trainer
@@ -182,16 +175,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch', type=int, default=64, help="Training batch size. Default=64.")
     parser.add_argument('--dataset', type=str, default='oasis', help="Which dataset to use. Default=oasis.")
-    parser.add_argument('--test', type=str, default=20, help="Percentage of dataset to use for testing. Default=20.")
-    parser.add_argument('--quiet', default=False, action="store_true", help="Surpress script output for headless environments. Default=False.")
-    parser.add_argument('--notion', type=str, help='Name for Notion entry. Will not use Notion if not set.')
+    parser.add_argument('--test', type=int, default=20, help="Percentage of dataset to use for testing. Default=20.")
     parser.add_argument('--savename', type=str, default="model.pth", help='Name for saved model file. Default=model.pth.')
+    parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train for. Default=100.')
     args = parser.parse_args()
     load_dotenv()
 ########################
     # Set conditional constants.
     RESULTS_DIRECTORY = os.path.join(RESULTS_DIRECTORY, args.dataset)
-    NOTION_NAME = args.notion
     SAVE_NAME = args.savename
 
     # Setup DDP things.
@@ -210,7 +201,7 @@ if __name__ == '__main__':
                                                    args.test)
 
     trainer = main(rank=rank,
-                 epochs=epochs,
+                 epochs=args.epochs,
                  model=create_model(args.dataset, args.batch),
                  train_loader=train_loader,
                  val_loader=val_loader)
@@ -223,7 +214,6 @@ if __name__ == '__main__':
             os.mkdir(RESULTS_DIRECTORY)
         except FileExistsError as FEE:
             print(f"Directory '{RESULTS_DIRECTORY}' already exists.")
-        trainer.plot_loss(save_path=RESULTS_DIRECTORY, quiet=args.quiet, yscale='log')
-        trainer.plot_accuracy(save_path=RESULTS_DIRECTORY, quiet=args.quiet)
+        trainer.plot_loss(save_path=RESULTS_DIRECTORY, quiet=True, yscale='log')
         trainer.save_model(os.path.join(RESULTS_DIRECTORY, SAVE_NAME))
 ########################

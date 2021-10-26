@@ -1,7 +1,7 @@
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 from torch import distributed
 
 ####################
@@ -148,6 +148,10 @@ class ResponsiveDecoder(nn.Module):
 ####################
 
 class Quantize(nn.Module):
+    """
+    Source: rosinality on GitHub
+    URL: https://github.com/rosinality/vq-vae-2-pytorch/blob/master/vqvae.py
+    """
     def __init__(self, dim, n_embed, decay=0.99, eps=1e-5):
         super().__init__()
 
