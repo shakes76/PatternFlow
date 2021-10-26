@@ -60,12 +60,16 @@ The images below are randomly collected from AKOA datasets for visualisation.
 
 #### Hardware
 
-The implementation code should be run at least 40 hours with more than 60k iterations, using two RTX 2080 Ti GPUs, to get the expected performance as displayed in next section. 
+The implementation code should be run at least **40 hours** with more than **60k iterations**, using **two RTX 2080 Ti GPUs**, to get the expected performance as displayed in next section. 
 
 #### Software 
 
 
 ```
+'''
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
 _libgcc_mutex=0.1=main
 _openmp_mutex=4.5=1_gnu
 ca-certificates=2021.9.30=h06a4308_1
