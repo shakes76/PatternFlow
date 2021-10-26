@@ -36,7 +36,7 @@ fit(unetmodel,x_train,y_train,epoch_size,batch)
 pred = np.round(unetmodel.predict(x_test,batch_size=33))
 
 #the dice coefficient
-dice = diceCoefficient(y_test, pred,smooth=1.)
+dice = diceCoefficient(y_test, pred,1.)
 
 #display the predict result
 for i in range(9):

@@ -56,36 +56,36 @@ def unetmodel():
     #decoder part
     # upsampling module
     up_layer6 = UpSampling2D((2, 2))(ews5)
-    up_layer6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= .02), padding='same')(up_layer6)
+    up_layer6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= 0.01), padding='same')(up_layer6)
     # concatenate
     conc6 = concatenate([ews4, up_layer6])
     # localization module
-    loca6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= .02), padding='same')(conc6)
+    loca6 = Conv2D(128, (3, 3), activation= LeakyReLU(alpha= 0.01), padding='same')(conc6)
     loca6 = BatchNormalization()(loca6)
-    loca6 = Conv2D(128, (1, 1), activation= LeakyReLU(alpha= .02),padding='same')(loca6)
+    loca6 = Conv2D(128, (1, 1), activation= LeakyReLU(alpha= 0.01),padding='same')(loca6)
     loca6 = BatchNormalization()(loca6)
     # upsampling module
     up_layer7 = UpSampling2D((2, 2))(loca6)
-    up_layer7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer7)
+    up_layer7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(up_layer7)
     # concatenate
     conc7 = concatenate([ews3, up_layer7])
     # localization module
-    loca7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(conc7)
+    loca7 = Conv2D(64, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(conc7)
     loca7 = BatchNormalization()(loca7)
-    loca7 = Conv2D(64, (1, 1), activation=LeakyReLU(alpha=.02), padding='same')(loca7)
+    loca7 = Conv2D(64, (1, 1), activation=LeakyReLU(alpha=0.01), padding='same')(loca7)
     loca7 = BatchNormalization()(loca7)
     #segmentation layer
     seg7 = Conv2D(1,(1,1))(loca7)
     seg7 = UpSampling2D((2,2))(seg7)
     # upsampling module
     up_layer8 = UpSampling2D((2, 2))(loca7)
-    up_layer8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer8)
+    up_layer8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(up_layer8)
     # concatenate
     conc8 = concatenate([ews2, up_layer8])
     # localization module
-    loca8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(conc8)
+    loca8 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(conc8)
     loca8 = BatchNormalization()(loca8)
-    loca8 = Conv2D(32, (1, 1), activation=LeakyReLU(alpha=.02), padding='same')(loca8)
+    loca8 = Conv2D(32, (1, 1), activation=LeakyReLU(alpha=0.01), padding='same')(loca8)
     loca8 = BatchNormalization()(loca8)
     # segmentation layer
     seg8 = Conv2D(1, (1, 1))(loca8)
@@ -93,23 +93,23 @@ def unetmodel():
     seg8 = UpSampling2D((2, 2))(seg8)
     # upsampling module
     up_layer9 = UpSampling2D((2, 2))(loca8)
-    up_layer9 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=.02), padding='same')(up_layer9)
+    up_layer9 = Conv2D(32, (3, 3), activation=LeakyReLU(alpha=0.01), padding='same')(up_layer9)
     # concatenate
     conc9 = concatenate([ews1, up_layer9])
     #convolution
-    conv9 = Conv2D(32, (3,3), activation = LeakyReLU(alpha=.02), padding='same')(conc9)
+    conv9 = Conv2D(32, (3,3), activation = LeakyReLU(alpha=0.01), padding='same')(conc9)
     #segmentation layer
     seg9 = Conv2D(1, (1, 1))(conv9)
     seg9 = Add()([seg9, seg8])
 
-    output_layer = Conv2D(1, (1,1),activation='softmax')(seg9)
+    output_layer = Conv2D(1, (1,1),activation='sigmoid')(seg9)
 
 
     unetmodel = Model(input_layer,output_layer)
     return unetmodel
 
 def fit(model,x,y, epoch_size, batch):
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0002),
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
                      loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
                      metrics=['accuracy'])
 
