@@ -180,6 +180,7 @@ def get_generator(
     x = Lambda(lambda x: x * 0 + 1)(input)  # Set the constant value to be 1
     x = Dense(curr_size * curr_size * num_filters)(x)
     x = Reshape([curr_size, curr_size, num_filters])(x)
+    x = LeakyReLU(0.2)(x)
     x = gen_block(
         x, mapping, noise[-1], num_filters, kernel_size, upSample=False
     )
