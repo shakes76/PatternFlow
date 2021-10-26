@@ -1,23 +1,28 @@
 import tensorflow as tf
 
 def convolution(inputs, filters):
+    # function to implement convolution layer
     conv = tf.keras.layers.Conv2D(filters, (3, 3), padding='same', activation='relu')(inputs)
     conv = tf.keras.layers.Conv2D(filters, (3, 3), padding='same', activation='relu')(conv)
     return conv
 
 def pool(conv):
+    # function to implement pool layer.
     pool = tf.keras.layers.MaxPool2D((2, 2))(conv)
     return pool
 
 def upsample(inputs,filter):
+    #  function to implement unsample layer.
     conv = tf.keras.layers.UpSampling2D(size=(2, 2))(inputs)
     conv = tf.keras.layers.Conv2D(filter, (2, 2), padding="same")(conv)
     return conv
 
 def Unet():
+    # build the Unet model.
 
     inputs = tf.keras.layers.Input(shape=(512, 512, 3))
 
+    # downsampling
     conv_1 = convolution(inputs,32)
     pool_1 = pool(conv_1)
 
@@ -32,6 +37,7 @@ def Unet():
 
     conv_5 = convolution(pool_4,512)
 
+    # upsampling
     conv_6 = upsample(conv_5,256)
     conv_6 = tf.keras.layers.concatenate([conv_6, conv_4])
     conv_6 = convolution(conv_6, 256)
