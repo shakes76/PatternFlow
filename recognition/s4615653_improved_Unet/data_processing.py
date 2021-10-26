@@ -87,6 +87,19 @@ def map_data(train_ds,val_ds,test_ds):
 
     return train_ds, val_ds, test_ds
 
+def data_processing():
+
+    inputs, truth = load_data()
+
+    train_inputs, train_truth, val_inputs, val_truth, test_inputs, test_truth = split_data(inputs, truth, 0.7, 0.1, 0.2)
+
+    train_ds, val_ds, test_ds = tensor_data(train_inputs, train_truth, val_inputs, val_truth, test_inputs, test_truth)
+
+    train_ds, val_ds, test_ds = shuffle_data(train_ds, val_ds, test_ds, train_inputs, val_inputs, test_inputs)
+
+    train_ds, val_ds, test_ds = map_data(train_ds,val_ds,test_ds)
+
+
 
 def main():
     # load data and test if data loaded correctly?
