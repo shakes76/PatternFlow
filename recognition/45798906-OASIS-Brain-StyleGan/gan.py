@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 24/10/2021
+    Date last modified: 26/10/2021
     Python version: 3.9.7
 """
 
@@ -19,17 +19,16 @@ import tensorflow as tf
 from tensorflow.keras.layers import (
     Activation,
     add,
-    AveragePooling2D,
     Conv2D,
     Cropping2D,
     Dense,
-    Dropout,
     Flatten,
     Input,
     Lambda,
     Layer,
     LeakyReLU,
     Reshape,
+    Resizing,
     UpSampling2D,
 )
 from tqdm import tqdm
@@ -124,7 +123,7 @@ def disc_block(
     input: tf.Tensor,
     filters: int,
     kernel_size: int,
-    dropout: float,
+    image_size: int,
     downSample: bool = True,
 ) -> tf.Tensor:
     """
@@ -139,14 +138,12 @@ def disc_block(
     # Begin the discriminator block
     out = input
     if downSample:
-        out = AveragePooling2D()(out)
+        out = Resizing(image_size // 2, image_size // 2)(out)
         out = LeakyReLU(0.2)(out)
-        out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
-        out = LeakyReLU(0.2)(out)
-        out = Dropout(dropout)(out)
     out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     out = LeakyReLU(0.2)(out)
-    out = Dropout(dropout)(out)
+    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
+    out = LeakyReLU(0.2)(out)
 
     return out
 
@@ -214,7 +211,6 @@ def get_discriminator(
     image_size: int,
     num_filters: int,
     kernel_size: int,
-    dropout: float,
 ) -> tf.keras.Model:
 
     # Discriminator network
@@ -225,15 +221,16 @@ def get_discriminator(
         x,
         num_filters // (curr_size // 4),
         kernel_size,
-        dropout,
+        image_size=curr_size,
         downSample=False,
     )
     while curr_size > 4:
-        x = disc_block(x, num_filters // (curr_size // 8), kernel_size, dropout)
+        x = disc_block(
+            x, num_filters // (curr_size // 8), kernel_size, curr_size
+        )
         curr_size //= 2
     x = Flatten()(x)
     x = Dense(1)(x)
-    x = Dropout(0.5)(x)
     x = Activation("sigmoid")(x)
 
     discriminator = tf.keras.Model(inputs=[input], outputs=x)

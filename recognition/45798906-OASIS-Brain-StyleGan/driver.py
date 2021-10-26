@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 24/10/2021
+    Date last modified: 26/10/2021
     Python version: 3.9.7
 """
 
@@ -92,15 +92,12 @@ def main():
     NUM_FILTERS: int = 512
     LATENT_DIMENSION: int = 512
     KERNEL_SIZE: int = 3
-    DROPOUT: float = 0.2
 
     # Models
     generator = get_generator(
         LATENT_DIMENSION, IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE
     )
-    discriminator = get_discriminator(
-        IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE, DROPOUT
-    )
+    discriminator = get_discriminator(IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE)
     if LOAD_WEIGHTS:
         generator.load_weights(GENERATOR_WEIGHT_PATH).expect_partial()
         discriminator.load_weights(DISCRIMINATOR_WEIGHT_PATH).expect_partial()
