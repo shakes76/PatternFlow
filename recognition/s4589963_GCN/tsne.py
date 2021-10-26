@@ -41,7 +41,7 @@ def main():
         train = tr.Train(sys.argv[1])
     train.train(show_result=False)
     show_tsne(train)  # show tsne.
-    show_acc_and_loss(train) # show accuracy and loss curve.
+    #show_acc_and_loss(train) # show accuracy and loss curve.
 
 
 if __name__ == '__main__':
