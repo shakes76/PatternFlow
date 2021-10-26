@@ -5,7 +5,7 @@ The generator and discriminator models of the StyleGAN
 
 from math import log2
 import tensorflow as tf
-from tensorflow.keras import initializers, layers, Model, constraints
+from tensorflow.keras import initializers, layers, Model, constraints, optimizers, activations
 
 __author__ = "Zhien Zhang"
 __email__ = "zhien.zhang@uqconnect.edu.au"
@@ -13,6 +13,10 @@ __email__ = "zhien.zhang@uqconnect.edu.au"
 
 def _get_layers(init_resolution, final_resolution):
     return int(abs(log2(init_resolution) - log2(final_resolution)))
+
+
+def wasserstein_loss(y_label, y_pred):
+    return -tf.reduce_mean(y_label * y_pred)
 
 
 class MinibatchStdev(layers.Layer):
@@ -25,28 +29,22 @@ class MinibatchStdev(layers.Layer):
     def call(self, x):
         group_size = tf.minimum(self.group_size,
                                 tf.shape(x)[0])  # Minibatch must be divisible by (or smaller than) group_size.
-        s = x.shape  # [NCHW]  Input shape.
-        y = tf.reshape(x, [group_size, -1, s[1], s[2], s[3]])  # [GMCHW] Split minibatch into M groups of size G.
-        y = tf.cast(y, tf.float32)  # [GMCHW] Cast to FP32.
-        y -= tf.reduce_mean(y, axis=0, keepdims=True)  # [GMCHW] Subtract mean over group.
-        y = tf.reduce_mean(tf.square(y), axis=0)  # [MCHW]  Calc variance over group.
-        y = tf.sqrt(y + 1e-8)  # [MCHW]  Calc stddev over group.
-        y = tf.reduce_mean(y, axis=[1, 2, 3], keepdims=True)  # [M111]  Take average over fmaps and pixels.
-        y = tf.cast(y, x.dtype)  # [M111]  Cast back to original data type.
-        y = tf.tile(y, [group_size, 1, s[2], s[3]])  # [N1HW]  Replicate over group and pixels.
+        s = x.shape  # Input shape.
+        y = tf.reshape(x, [group_size, -1, s[1], s[2], s[3]])  # Split minibatch into M groups of size G.
+        y = tf.cast(y, tf.float32)
+        y -= tf.reduce_mean(y, axis=0, keepdims=True)  # Subtract mean over group.
+        y = tf.reduce_mean(tf.square(y), axis=0)  # Calc variance over group.
+        y = tf.sqrt(y + 1e-8)  # Calc stddev over group.
+        y = tf.reduce_mean(y, axis=[1, 2, 3], keepdims=True)  # Take average over fmaps and pixels.
+        y = tf.cast(y, x.dtype)  # Cast back to original data type.
+        y = tf.tile(y, [group_size, 1, s[2], s[3]])  # Replicate over group and pixels.
         return tf.concat([x, y], axis=1)
-
-    # define the output shape of the layer
-    def compute_output_shape(self, input_shape):
-        # create a copy of the input shape as a list
-        input_shape = list(input_shape)
-        # add one to the channel dimension (assume channels-last)
-        input_shape[-1] += 1
-        # convert list to a tuple
-        return tuple(input_shape)
 
 
 class PixelNorm(layers.Layer):
+    """
+    Pixel normalization layer
+    """
     def __init__(self, **kwargs):
         super(PixelNorm, self).__init__(**kwargs)
 
@@ -174,23 +172,25 @@ class Generator:
         self.model = _Generator(self.latent_dim, self.channels, self.input_res, self.output_res, self.init_filters)
 
     def loss(self, fake_score):
-        return self._cross_entropy(tf.ones_like(fake_score), fake_score)
+        return -tf.reduce_mean(fake_score)
 
 
 class _Discriminator(Model):
     KERNEL = 3
+    DOWN_STRIDE = 2
 
     class ConvLayer(layers.Layer):
-        def __init__(self, filters, stride, input=None, w_init='glorot_uniform', w_const=None):
+        def __init__(self, filters, input=None, w_init='glorot_uniform', w_const=None):
             super(_Discriminator.ConvLayer, self).__init__()
             self.filters = filters
-            self.stride = stride
+
             if input is None:
                 self.conv = layers.Conv2D(filters, (_Discriminator.KERNEL, _Discriminator.KERNEL),
-                                          strides=(stride, stride), padding='same', kernel_initializer=w_init,
+                                          strides=(_Discriminator.DOWN_STRIDE, _Discriminator.DOWN_STRIDE), padding='same', kernel_initializer=w_init,
                                           kernel_constraint=w_const)
             else:
-                self.conv = layers.Conv2D(filters, (_Discriminator.KERNEL, _Discriminator.KERNEL), strides=(2, 2),
+                self.conv = layers.Conv2D(filters, (_Discriminator.KERNEL, _Discriminator.KERNEL),
+                                          strides=(_Discriminator.DOWN_STRIDE, _Discriminator.DOWN_STRIDE),
                                           padding='same', input_shape=input, kernel_initializer=w_init,
                                           kernel_constraint=w_const)
             self.activation = layers.LeakyReLU()
@@ -209,7 +209,7 @@ class _Discriminator(Model):
                                       kernel_constraint=w_const)
             self.activation = layers.LeakyReLU()
 
-        def call(self, X, Y=Y):
+        def call(self, X, Y=None):
             t = self.conv(Y)
             t = self.activation(t)
             return t if X is None else X + t
@@ -241,8 +241,7 @@ class _Discriminator(Model):
 
         # input block
         print(f"Input shape: ({input_resolution}, {input_resolution}, {channels})")
-        self.conv_layers.append(self.ConvLayer(input_filter, 2,
-                                               input=[input_resolution, input_resolution, channels],
+        self.conv_layers.append(self.ConvLayer(input_filter, input=[input_resolution, input_resolution, channels],
                                                w_init=weight_init, w_const=weight_const))
         self.skip_layers.append(layers.Conv2D(input_filter, (1, 1), strides=(2, 2), padding='same',
                                               kernel_initializer=weight_init, kernel_constraint=weight_const))
@@ -251,7 +250,7 @@ class _Discriminator(Model):
         # convolutional layers
         for i in range(self.num_of_conv_layers):
             filters = input_filter * 2**(i + 1)
-            self.conv_layers.append(self.ConvLayer(filters, 2, w_init=weight_init, w_const=weight_const))
+            self.conv_layers.append(self.ConvLayer(filters, w_init=weight_init, w_const=weight_const))
             self.skip_layers.append(layers.Conv2D(filters, (1, 1), strides=(2, 2), padding='same',
                                                   kernel_initializer=weight_init, kernel_constraint=weight_const))
             output_size = input_resolution / 2**(i + 2)
@@ -267,7 +266,7 @@ class _Discriminator(Model):
         self.output_block.append(layers.Dense(1))
         print("Dense output: (1, )")
 
-    def call(self, image_in, fade_in):
+    def call(self, image_in, fade_in=0):
         X = None
         Y = image_in
         # fade in
@@ -311,7 +310,21 @@ class Discriminator:
         self.model = _Discriminator(self.channels, self.input_res, self.final_res, self.input_filter)
 
     def loss(self, real_score, fake_score):
-        real_loss = self._cross_entropy(tf.ones_like(real_score), real_score)
-        fake_loss = self._cross_entropy(tf.zeros_like(fake_score), fake_score)
-        total_loss = real_loss + fake_loss
-        return total_loss
+        return tf.reduce_mean(fake_score) - tf.reduce_mean(real_score)
+
+    def gradient_penalty_loss(self, interpolated, fade_in):
+        """
+        Computes gradient penalty based on prediction and weighted real / fake samples and update the weights of the
+        discriminator
+        """
+        with tf.GradientTape() as gp_tape:
+            gp_tape.watch(interpolated)
+            # Get the discriminator output for this interpolated image.
+            pred = self.model(interpolated, fade_in, training=True)
+
+        # Calculate the gradients w.r.t to this interpolated image.
+        grads = gp_tape.gradient(pred, [interpolated])[0]
+        # Calculate the norm of the gradients.
+        norm = tf.sqrt(tf.reduce_sum(tf.square(grads), axis=[1, 2, 3]))
+        gp = tf.reduce_mean((norm - 1.0) ** 2)
+        return gp

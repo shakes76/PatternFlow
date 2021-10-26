@@ -9,6 +9,7 @@ setup(
         'matplotlib',
         "neptune-client",
         "neptune-tensorflow-keras",
+        "azureml-core"
 
     ]
 )
