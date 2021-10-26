@@ -28,7 +28,7 @@ LATENT_DIMENSIONS = (32, 16)
 DATASET_DATA = {
     'oasis': {
         'channels': 1,
-        'dimension': 128 # Target dimension for the images.
+        'dimension': 64 # Target dimension for the images.
     }
 }
 ########################
