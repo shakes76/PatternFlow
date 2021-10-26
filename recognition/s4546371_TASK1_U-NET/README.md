@@ -41,13 +41,35 @@ The output have 2 classes.
 * model.py （U-NET Improved architecture built using TensorFlow Keras Layers）
 * data_cleaning.py (Importing data, creating masks, and partitioning training, validation and testing sets.
 * dice_cofficient (Function of dice_coefficient)
-* test.ipynb
+* driver.ipynb
+
+## Training Results
+
+![plots](images/loss.png)
+![plots](images/dice_cofficient.png)
+
+After about 50 epochs, the model tends to converge.
+
+#### Model Training Time
+
+2O80GPU consumes 15 minutes for training.
+
+## Model Accuracy
+
+![plots](images/test_cofficient.png)
+
+As we can see that the dice coefficient of test set is over 0.9, so the result is good.
 
 
+## Some Examples(Input Image/Predicted Mask/Ground Truth)
+
+![plots](images/example1.png)
+![plots](images/example2.png)
 
 ## Reference
 
 [1]F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation andRadiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online].Available: https://arxiv.org/abs/1802.10508v1
+[2]Dice source function. Available: https://github.com/keras-team/keras/issues/3611
 
 
 
