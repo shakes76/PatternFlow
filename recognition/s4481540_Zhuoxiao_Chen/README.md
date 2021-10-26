@@ -58,6 +58,8 @@ The images below are randomly collected from AKOA datasets for visualisation.
 
 ## Implementation Details
 
+The model and network code written in Pytorch follows the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow Code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
+
 #### Hardware
 
 The implementation code should be run at least **40 hours** with more than **60k iterations**, using **two RTX 2080 Ti GPUs**, to get the expected performance as displayed in next section. 
@@ -105,6 +107,15 @@ wheel=0.37.0=pyhd3eb1b0_1
 xz=5.2.5=h7b6447c_0
 zlib=1.2.11=h7b6447c_3
 ```
+
+#### Parameter Details of Main Function
+
+
+#### Train SyleGAN for AKOA Images
+
+
+#### Generate AKOA Images
+
 
 ## Result and Analysis
 Generated AKOA Images
