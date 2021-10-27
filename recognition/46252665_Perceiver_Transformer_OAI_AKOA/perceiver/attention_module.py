@@ -55,6 +55,15 @@ class TransformerModule:
         """Attention performed on queries generated from embedding and
         keys, values generated from another embeddings.
 
+        The query vectors, key vectors, and value vectors are the three types of
+        vectors calculated in the transformer architecture. These are determined
+        by multiplying the input with a linear transformation. Each input is the
+        same in self attention, however they can be different in cross
+        attention. The purpose of cross attention is to calculate attention
+        scores utilising data from different sources. For instance, the query
+        vector in the perceiver transformer is calculated from the latent array,
+        while the key and value is generated from the image data.
+
         Input is a dictionary containing keys 'latent_array' and
         'data_array'. latent_array is an input of latent dimension and
         PROJECTION_DIMENSION whereas the data array is of shape patches and
@@ -92,8 +101,13 @@ class TransformerModule:
         value = self.create_dense_layer(data_array)
 
         # cross-attention outputs: (latent_dim, projection_dim)
-        attention_output = self.get_attention(x1=None, query=query, key=key,
-                                              value=value, attention=True)
+        attention_output = self.get_attention(
+            x1=None,
+            query=query,
+            key=key,
+            value=value,
+            attention=True
+        )
 
         # skip connection
         attention_output = self.skip_connection(attention_output, latent_array)
@@ -116,7 +130,17 @@ class TransformerModule:
         )
 
     def create_transformer_module(self):
-        """Applies MultiHeadAttention to the cross attention module to
+        """
+        The transformer block in perceiver uses GPT2 architecture which is based
+        on the decoder of the original transformer. The decoder takes that input
+        representation from the cross attention and, the self-attention layer
+        helps the decoder focus on appropriate places in the input sequence.
+        Self-attention is the result if the query, key, and value are all the
+        same. In each time-step in the query corresponds to a sequence in the
+        key, and the result is a fixed-width vector. The query and key tensors
+        are then scaled and dot-produced.
+
+        Applies MultiHeadAttention to the cross attention module to
         LATENT_DIMENSION. Iterations are applied multiple times as the number of
         TRANSFORMER_BLOCKS for MultiHeadAttention. Followed by the sequential
         neural net for vector of raw predictions, to produce another
@@ -134,8 +158,13 @@ class TransformerModule:
             x1 = self.apply_layer_normalisation(x0)
 
             # multi-head self-attention layer
-            attention_output = self.get_attention(x1=x1, query=None, key=None,
-                                                  value=None, attention=False)
+            attention_output = self.get_attention(
+                x1=x1,
+                query=None,
+                key=None,
+                value=None,
+                attention=False
+            )
 
             # skip connection
             x2 = self.skip_connection(attention_output, x0)

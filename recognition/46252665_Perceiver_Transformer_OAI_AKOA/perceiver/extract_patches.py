@@ -11,7 +11,12 @@ from settings.config import *
 
 
 class Patches(tf.keras.layers.Layer):
-    """Divides an image into patches taking parameters from settings."""
+    """Divides an image into patches taking parameters from settings.
+
+    Patches are created of 40 x 40 with stride length 40. Thus creating
+    IMAGE_SIZE // PATCH_SIZE = 228 // 40 = 5 patches in each stride's and a
+    total of 25 patches across the image.
+    """
     def __init__(self):
         super(Patches, self).__init__()
 

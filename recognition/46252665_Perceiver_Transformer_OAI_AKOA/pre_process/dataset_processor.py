@@ -1,4 +1,12 @@
 """
+
+OAI AKOA Knee MRI Images
+Osteoarthritis Initiative (OAI) Accelerated Osteoarthritis (OA) Knee MRI 2D
+Images (~16K images, 1.7 GB). The caption of the images contained the
+information regarding the left or right knee information. Original resolution
+of the image were 260 x 288.
+
+
 Processes OAI AKOA Dataset:
     * Creates Labels
     * Augments Data (switch-on function call for

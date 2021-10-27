@@ -1,6 +1,31 @@
 """
 Perceiver Transformer Architecture
 
+The perceiver mixes the latent self-attention mechanism with the cross-attention
+mechanism. The input data only enters through the transformer through the
+cross-attention mechanism. This allows the model to be of significant lower
+size than the data array and solves the transformer quadratic compute bottleneck.
+
+The perceiver transformer works for inputs such as images, videos, and
+audio. No prior assumption or changes is required for any input modality,
+for the model to work. Given an image, it will do transformer like attention
+but since images are of large shape it is too much to put it in one transformer.
+Therefore, it sub-divides the image into patches, and for each patch, it makes
+a vector out of it. All the pixels are close together goes into one vector,
+thus treated as a group.
+
+The perceiver's goal is to have a low dimension latent array, N. The top row
+is a regular self-attention transformer as in the original paper with the
+quadratic blowup along with multiple transformer blocks. The image input to the
+Perceiver is a byte array, M i.e. (228x228=51984), which is of higher dimension,
+however the queries calculated are from the latent dimension rather than the
+image itself. Thus resulting in a lower N x M blowup. Data of the image flows
+into the cross-attention, generating a latent state which is transformed further
+by the transformer and queries are generated to do cross-attention again to the
+same image behaving like a recurrent neural network(RNN) with weight sharing
+options. The data that flows through influences the queries and is refined
+multiple times.
+
 https://keras.io/examples/vision/perceiver_image_classification/
 https://github.com/Rishit-dagli/Perceiver
 
