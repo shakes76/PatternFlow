@@ -2,23 +2,23 @@
 This is a python based package that utilizes a custom [YoloV1](https://arxiv.org/abs/1506.02640v5) model to detect skin lesions.
 ## Description
 #### Background 
-Australia has one of the highest rates of deaths by skin cancer in the world[1]. Detecting problematic skin lesions early is one of the best preventative methods for stopping the progression life threating cancer. The most common method in peforming this detecting is seeing a dermatologist[2], unfortunely this depends on the ability of dermatologist and the results can be varied[3]. 
+Australia has one of the highest rates of deaths by skin cancer in the world[1]. Detecting problematic skin lesions early is one of the best preventative methods for stopping the progression of life threating cancer. The most common method for individuals detecting skin lesions is too visit a dermatologist[2]. Unfortunately this depends on the ability of the dermatologist and accuracy can be varied[3]. 
 
 #### Solution
-This module gives a partial solution to this problem. Using the help of Convolutional Neural Networks, this module provides the ability for skin lesions to be detected using image detection, this can aid a dermatologist in their search for cancerous skin lesions. Further work will go into classifying these lesions. 
+This module(in its current form) gives a partial solution to this problem. Using the help of Convolutional Neural Networks, this module provides the ability for skin lesions to be detected using image detection, this can aid a dermatologist in their search for cancerous skin lesions. Further work will go into classifying these lesions in the hope that dermatologists or even individuals can detect cancerous lesions using their phones.  
 
 ### Model Architecture:
 This module utilizes a slight variation on the YoloV1 Architecture. 
 <p align="center"><img src="./images/YOLOV1.png" width="600"></p>
-The change? At each CNN layer, Batch Normalisation has been introduced as a way of speeding up the training process. 
+In contrary to the original architecture, batch normalisation has been introduced as a way of speeding up the training process. 
 
 ### Loss Function:
-As specified in the YoloV1 paper, the yolov1 uses a custom loss function. 
+As specified in the YoloV1 paper, the yolov1 uses a custom loss function: 
 <p align="center"><img src="./images/yoloLoss.png" width="500"></p>
-There is quite a bit to unpack here, so I suggest reading into it  [here](https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088) 
+There is quite a bit to unpack here, so I suggest reading into it [here](https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088) 
 
 ### Metric:
-The yolo paper uses the mean average precision (so called mAP) for its metric. This implementation instead uses the Jaccard Index (as known as 'IoU'). The jaccard index is calcaluted on the highest confidence bounding box. Below is visual representation of this equation:
+The yolo paper uses the mean average precision (so called mAP) for its metric. This implementation instead uses the Jaccard Index (as known as 'IoU'). The jaccard index is calcaluted between the highest confidence predicted bounding box and ground truth. Below is visual representation of the Jaccard Index:
 <p align="center"><img src="./images/iou.PNG" width="400"></p>
 
 ### Dataset:
