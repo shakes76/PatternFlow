@@ -59,39 +59,28 @@ def make_synthesis_network (n_layers, im_size, batch_size, depth):
         input_styles.append(Input(shape=[512]))
 
     input_noise = Input(shape=[im_size, im_size, 1])
-    #x = tf.random.normal([batch_size, 4, 4 , 4*depth])
     outs = []
 
 
-    #x = Lambda(lambda x: x[:, :1]*0 + 1)(input_styles[0])
-    x = tf.ones([batch_size, 1]) #c not reliant on S
+    x = tf.ones([batch_size, 1]) #c
 
     x = Dense(4*4*4*depth, activation='relu', kernel_initializer='random_normal')(x) #learned constant input vector
     x = Reshape([4, 4, 4*depth])(x) #a [4, 4, 4*depth] tensor --> to feed next layer of 4x4
 
     x, r = g_block(x, input_styles[1], input_noise, im_size, 64*depth, upsampling=False)    #4x4
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[2], input_noise, im_size, 32*depth)                      #8x8
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[3], input_noise, im_size, 16*depth)                      #16x16
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[4], input_noise, im_size, 8*depth)                       #32x32
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[5], input_noise, im_size, 4*depth)                       #64x64
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[6], input_noise, im_size, 2*depth)                       #128x128
     outs.append(r)
-    #print(x.shape) #, r.shape)
     x, r = g_block(x, input_styles[7], input_noise, im_size, depth)                         #256x256
     outs.append(r)
-    #print(x.shape) #, r.shape)
-    """ 
-    """
 
     x = Add()(outs)
 
@@ -128,7 +117,7 @@ def d_block(inputs, filters, pooling=True):
     out = Conv2D(filters, (3,3), padding='same')(out)
     out = LeakyReLU(0.2)(out)
     
-    out = Dropout(0.1)(out)
+    out = Dropout(0.1)(out) #dropout helps with mode collapse
 
     out = Add()([residual, out])
 

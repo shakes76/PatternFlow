@@ -26,20 +26,16 @@ def crop_to_fit(x):
 
 def make_output_size(s1, s2):
     ss = int(s2 / s1)
-    #print(ss)
     def upsample_to_size(x, y = ss):
         x = K.resize_images(x, y, y, "channels_last", interpolation='bilinear')
-        #print(x.shape)
         return x
     return upsample_to_size
 
 def to_output(inputs, style, im_size):
-    #want to do a ModConv2D on input with styles like norma;
+    #want to do a ModConv2D on input with styles like normal
     size = inputs.shape[2]
-    #print(inputs.shape, size)
     x = ModConv2D(1, 1, kernel_initializer=VarianceScaling(200/size), demod=False)([inputs, style])
     #upsample image to be (None, im_size, im_size, None)
-    #print(x.shape)
     return Lambda(make_output_size(size, im_size), output_shape=[None, im_size, im_size, None])(x)
 
 #make gif of the generated outputs from each epoch
@@ -71,8 +67,6 @@ def generate_and_save_images(model, epoch, test_input, batch_size, save=True):
     # Notice `training` is set to False.
     # This is so all layers run in inference mode (batchnorm).
     predictions = model(test_input, training=False)
-    #print(predictions)
-    #plt.imshow(predictions[0,:,:,0], cmap='gray')
     fig = plt.figure(figsize=(12, 12))
 
     for i in range(batch_size):
@@ -172,9 +166,4 @@ def train(S, G, D, gen_model, gen_model_optimiser, D_optimiser, batch_size, im_s
         #print info
         print("gen loss:", gen_loss[-1].numpy())
         print("disc loss:", disc_loss[-1].numpy())
-
-    #display.clear_output(wait=True)
-    print("gen loss:", gen_loss[-1].numpy())
-    print("disc loss:", disc_loss[-1].numpy())
-    generate_and_save_images(gen_model, epochs, seed, batch_size, save=False)
     return disc_loss, gen_loss

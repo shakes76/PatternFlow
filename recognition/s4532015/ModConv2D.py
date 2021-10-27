@@ -28,7 +28,7 @@ class ModConv2D (keras.layers.Layer):
         #?
         self.demod = demod
 
-        #input with ndim=4 is previous convolution layer
+        #input with ndim=4 is previous layer
         #input with ndim=2 is the input style for this layer (output from style generator)
         self.Input_spec = [InputSpec(ndim=4), InputSpec(ndim=2)]
 
@@ -54,20 +54,13 @@ class ModConv2D (keras.layers.Layer):
         #execute the code when the layer is used
             #modulation stuff
         style = inputs[1]
-        #print("style shape:", style.shape)
-        #print("kernel shape:", self.kernel.shape)
 
         #make the input style W shape compatible with kernel
         inp_mods = K.expand_dims(K.expand_dims(K.expand_dims(style, axis = 1), axis = 1), axis = -1)
         my_kernel = K.expand_dims(self.kernel, axis=0)
 
         #modulate
-        #print("kernel", (int)(tf.rank(my_kernel)), my_kernel.shape)
-        #print("kernel shape:", my_kernel.shape)
-        #print("input style", (int)(tf.rank(inp_mods)), inp_mods.shape)
-        #print("input style shape:", inp_mods.shape)
         weights = my_kernel * (inp_mods + 1)
-        #weights = 0
 
         #demodulate
         if self.demod:
@@ -82,8 +75,6 @@ class ModConv2D (keras.layers.Layer):
         #normal convolution 2d
         #data is stored in [batch_size, channels, height, width]
         x = tf.nn.conv2d(x, w, strides=self.strides, padding='SAME', data_format='NCHW')
-
-        #print(x.shape)
 
         x = tf.reshape(x, [-1, self.filters, tf.shape(x)[2], tf.shape(x)[3]]) # Fused => reshape convolution groups back to minibatch.
         x = tf.transpose(x, [0, 2, 3, 1])
