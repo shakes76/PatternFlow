@@ -1,3 +1,17 @@
+"""Perceiver classification experiment on AOI AKOA knee MRI slices.
+
+This script is intended to be run from command line and accepts parameters for
+configuring the the perceiver model configuration, dataset location,
+*some* pre-processing options and training options are also available.
+
+Run `python experiment.py --help` for more information.
+
+The pre-defined defaults are *mostly* consistent with the configuration for
+imagenet classifier described in the Perceiver paper https://arxiv.org/abs/2103.03206
+
+@author Anthony North
+"""
+
 import argparse
 import os
 import tensorflow as tf
@@ -53,6 +67,7 @@ def run_experiment(opts):
         ),
         metrics=[
             metrics.CategoricalAccuracy(name="accuracy"),
+            # paper uses this metric, redundant for 2-class however
             metrics.TopKCategoricalAccuracy(1, name="top1_accuracy"),
         ],
     )
@@ -84,7 +99,7 @@ def get_opts():
     """Parses command line options."""
 
     parser = argparse.ArgumentParser(
-        description="Perceiver classification experiement for AOI AKOA knee laterality.",
+        description="Perceiver classification experiment for AOI AKOA knee laterality.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -100,7 +115,7 @@ def get_opts():
         "--show-config",
         action="store_true",
         default=True,
-        help="show experiement config",
+        help="show experiment config",
     )
 
     # training options

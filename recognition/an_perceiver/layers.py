@@ -1,3 +1,8 @@
+"""Perceiver layers.
+
+@author Anthony North
+"""
+
 import tensorflow as tf
 from tensorflow.keras import layers
 
@@ -21,6 +26,7 @@ class FeedForwardNetwork(layers.Layer):
 
 
 def layer_norm(epsilon=1e-5, **kwargs):
+    """LayerNormalization layer with epsilon 1e-5."""
     return layers.LayerNormalization(epsilon=epsilon, **kwargs)
 
 
@@ -28,6 +34,12 @@ class CrossAttention(layers.Layer):
     """Cross-Attention followed by feed-forward network."""
 
     def __init__(self, num_heads: int = 1, key_dim: int = 1024, name=None):
+        """
+        Args:
+            num_heads: Number of heads for the MultiHeadAttention layer.
+            key_dim: Dimension of query and key attention heads.
+            name: Layer name.
+        """
         super().__init__(name=name)
         self.q_norm = layer_norm()
         self.kv_norm = layer_norm()
@@ -49,6 +61,12 @@ class SelfAttention(layers.Layer):
     """Self-Attention followed by feed-forward network."""
 
     def __init__(self, num_heads: int = 8, key_dim: int = 1024, name=None):
+        """
+        Args:
+            num_heads: Number of heads for the MultiHeadAttention layer.
+            key_dim: Dimension of query and key attention heads.
+            name: Layer name.
+        """
         super().__init__(name=name)
         self.qkv_norm = layer_norm()
         self.attend = layers.MultiHeadAttention(num_heads=num_heads, key_dim=key_dim)

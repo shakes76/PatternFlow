@@ -1,3 +1,8 @@
+"""Perceiver classifier model.
+
+@author Anthony North
+"""
+
 import tensorflow as tf
 from tensorflow.keras import models, layers, initializers
 from layers import CrossAttention, SelfAttention
@@ -5,6 +10,8 @@ from position_encoding import fourier_position_encode
 
 
 class Perceiver(models.Model):
+    """Perceiver: General Perception with Iterative Attention."""
+
     def __init__(
         self,
         num_blocks: int = 8,
@@ -17,6 +24,27 @@ class Perceiver(models.Model):
         num_classes: int = 2,
         name: str = "perceiver",
     ):
+        """Initialises a Perceiver model.
+
+        All parameters have defaults that are consistent with the configuration
+        described in the Perceiver paper https://arxiv.org/abs/2103.03206 for
+        imagenet classification.
+
+        Args:
+            num_blocks: Number of cross attention and self attention blocks.
+                Each block consists of a cross attention layer and
+                `num_self_attends_per_block` self attention layers.
+            num_self_attends_per_block: Number of self attention layers per block.
+            num_cross_heads: Number of heads for the cross attention layers.
+            num_self_attend_heads: Number of heads for the self attention layers.
+            latent_dim: Dimension (axis 0) of the latent array.
+            latent_channels: Channels (axis 1) of the latent array.
+            num_freq_bands: Number of fourier frequency bands.
+                Fourier position encodings are concatenated with the input data.
+            num_classes: Number of classes for the classifier.
+                This determines the output shape (batch_size, num_classes)
+            name: Name of the model.
+        """
         super().__init__(name=name)
         assert latent_channels % num_cross_heads == 0
         assert latent_channels % num_self_attend_heads == 0
@@ -60,7 +88,9 @@ class Perceiver(models.Model):
         # broadcast to batch
         broadcast = lambda x: tf.broadcast_to(x, [batch_size, *x.shape])
         latent_array = broadcast(self.latent_array)
-        fourier_pos = broadcast(fourier_position_encode(index_shape, self.num_freq_bands))
+        fourier_pos = broadcast(
+            fourier_position_encode(index_shape, self.num_freq_bands)
+        )
 
         # flatten index dims, concat with fourier position
         inputs_vec = tf.reshape(

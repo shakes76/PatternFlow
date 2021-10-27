@@ -43,7 +43,7 @@ def preprocess(
     train_batch_size: int = 64,
     eval_batch_size: int = 16,
 ):
-    """Preprocess images for each split.
+    """Pre-process images for each split.
 
     Applied to all splits:
     - image normalisation
@@ -56,6 +56,20 @@ def preprocess(
     - horizontally flipping images
     - flipping the label
     - concatenating with original splits
+
+    Args:
+        train: Training split.
+        validation: Validation split.
+        test: Testing / evaluation split.
+        num_classes: Number of classes / labels.
+        image_dims: Image resize dimensions. If none, images are not resized.
+        hflip_concat: If true, for *train* and *validation* examples, horizontally
+            flip images and labels and concatenate input. This ensures the
+            *train* and *validation* sets have balanced classes and doubles the
+            number of examples in these splits.
+        train_batch_size: Size of training and validation batches.
+        eval_batch_size: Size of test / evaluation batches.
+
     """
 
     _one_hot = partial(one_hot, num_classes=num_classes)
