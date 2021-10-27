@@ -214,15 +214,21 @@ def train_StyleGAN(args, G, D):
             )
             w_0, w_1 = w_0.squeeze(0), w_1.squeeze(0)
 
-        fake_image = G(w_0, step=progressive_stage, alpha=alpha)
-        fake_predict = D(fake_image, step=progressive_stage, alpha=alpha)
+        """
+        Generate fake images using the generator
+        and the generated images are fed into the discriminator
+        """
+        data_fake = G(w_0, step=progressive_stage, alpha=alpha)
+        output_fake = D(data_fake, step=progressive_stage, alpha=alpha)
 
+        """
+        Apply the loss function for the gradient backward using the wgan-gp
+        """
         if args.loss == 'wgan-gp':
-            fake_predict = fake_predict.mean()
-            fake_predict.backward()
-
+            output_fake = output_fake.mean()
+            output_fake.backward()
             eps = torch.rand(batch_size, 1, 1, 1).cuda()
-            x_hat = eps * real_AKOA_data.data + (1 - eps) * fake_image.data
+            x_hat = eps * real_AKOA_data.data + (1 - eps) * data_fake.data
             x_hat.change_gradient_status = True
             hat_predict = D(x_hat, step=progressive_stage, alpha=alpha)
             grad_x_hat = grad(
@@ -235,73 +241,84 @@ def train_StyleGAN(args, G, D):
             grad_penalty.backward()
             if index%10 == 0:
                 gradient_error = grad_penalty.item()
-                D_error = (-output_real + fake_predict).item()
+                D_error = (-output_real + output_fake).item()
 
-        elif args.loss == 'r1':
-            fake_predict = F.softplus(fake_predict).mean()
-            fake_predict.backward()
-            if index%10 == 0:
-                D_error = (output_real + fake_predict).item()
+        else:
+            print('r1 is not supported in this code')
 
-        D_optimiser.step()
+        D_optimiser.step() # pass the gradient
 
+
+        """
+        Now, start to train the generator.
+        The process below os similar to above, except the
+        gradient of the generator is not fixed,
+        but the discriminator is fixed.
+        """
         if (index + 1) % n_critic == 0:
             G.zero_grad()
-
             change_gradient_status(G, True)
             change_gradient_status(D, False)
 
-            fake_image = G(w_1, step=progressive_stage, alpha=alpha)
-
-            predict = D(fake_image, step=progressive_stage, alpha=alpha)
+            data_fake = G(w_1, step=progressive_stage, alpha=alpha)
+            output = D(data_fake, step=progressive_stage, alpha=alpha)
 
             if args.loss == 'wgan-gp':
-                loss = -predict.mean()
-
+                loss = -output.mean()
             elif args.loss == 'r1':
-                loss = F.softplus(-predict).mean()
-
+                loss = F.softplus(-output).mean()
             if index%10 == 0:
                 G_error = loss.item()
-
             loss.backward()
             G_optimiser.step()
-            stacking_parameters(G_processing, G.module)
 
+            """
+            using the parameters not only in this iteration,
+            but also the historical parameters.
+            """
+            stacking_parameters(G_processing, G.module)
             change_gradient_status(G, False)
             change_gradient_status(D, True)
-
+            """
+            Complete the training for 1 iteration.
+            """
+        
+        """
+        Save images every 100 iterations. 
+        """
         if (index + 1) % 100 == 0:
-            images = []
-
+            generated_AKOA_images = []
             gen_i, gen_j = args.gen_sample.get(resolution, (10, 5))
-
             with torch.no_grad():
                 for _ in range(gen_i):
-                    images.append(
+                    generated_AKOA_images.append(
                         G_processing(
                             torch.randn(gen_j, latent_length).cuda(), step=progressive_stage, alpha=alpha
                         ).data.cpu()
                     )
-
             utils.save_image(
-                torch.cat(images, 0),
+                torch.cat(generated_AKOA_images, 0),
                 f'sample/{str(index + 1).zfill(6)}.png',
                 nrow=gen_i,
                 normalize=True,
                 range=(-1, 1),
             )
 
+        """
+        save the checkpoint every 10000 iterations. 
+        """
         if (index + 1) % 10000 == 0:
             torch.save(
                 G_processing.state_dict(), f'checkpoint/{str(index + 1).zfill(6)}.model'
             )
-
+            
+        """
+        print some messages when training the network to inform.
+        """
         state_msg = (
             f'Size: {4 * 2 ** progressive_stage}; G: {G_error:.3f}; D: {D_error:.3f};'
             f' Grad: {gradient_error:.3f}; Alpha: {alpha:.5f}'
         )
-
         pbar.set_description(state_msg)
 
 
