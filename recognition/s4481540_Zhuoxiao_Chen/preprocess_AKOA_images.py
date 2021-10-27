@@ -38,34 +38,35 @@ def resize_worker(img_file, sizes):
     return i, out
 
 
-def prepare(transaction, dataset, n_worker, sizes=(8, 16, 32, 64, 128, 256, 512, 1024)):
-    resize_fn = partial(resize_worker, sizes=sizes)
+def pre_process_AKOA_images(AKOA_image, raw_set, number_cpus, dimensions=(8, 16, 32, 64, 128, 256, 512, 1024)):
+    """
+    This function is used to simply resize the images into multiple dimensions,
+    and store the resized images into a dict structure, 
+    whethe dimension is the key, image is the value to be easily called and obtained. 
+    """
+    method = partial(resize_worker, sizes=dimensions)
 
-    files = sorted(dataset.imgs, key=lambda x: x[0])
-    files = [(i, file) for i, (file, label) in enumerate(files)]
-    total = 0
+    AKOA_images = sorted(raw_set.imgs, key=lambda x: x[0])
+    AKOA_images = [(index, image) for index, (image, label) in enumerate(AKOA_images)]
+    count = 0
 
-    with multiprocessing.Pool(n_worker) as pool:
-        for i, imgs in tqdm(pool.imap_unordered(resize_fn, files)):
-            for size, img in zip(sizes, imgs):
-                key = f'{size}-{str(i).zfill(5)}'.encode('utf-8')
-                transaction.put(key, img)
-
-            total += 1
-
-        transaction.put('length'.encode('utf-8'), str(total).encode('utf-8'))
-
+    with multiprocessing.Pool(number_cpus) as pool:
+        for index, AKOA_images in tqdm(pool.imap_unordered(method, AKOA_images)):
+            for dim, AKOA_image in zip(dimensions, AKOA_images):
+                key = f'{dim}-{str(index).zfill(5)}'.encode('utf-8')
+                AKOA_image.put(key, AKOA_image)
+            count += 1
+        AKOA_image.put('length'.encode('utf-8'), str(count).encode('utf-8'))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--out', type=str)
-    parser.add_argument('--n_worker', type=int, default=8)
-    parser.add_argument('path', type=str)
-
+    parser = argparse.ArgumentParser(
+        description='Pre-process the AKOA dataset for further training the Progressive StyleGAN.')
+    parser.add_argument('AKOA_raw_images_path', type=str)
+    parser.add_argument('--number_worker', type=int, default=8)
+    parser.add_argument('--output_directory', type=str)
     args = parser.parse_args()
 
-    imgset = datasets.ImageFolder(args.path)
-
-    with lmdb.open(args.out, map_size=1024 ** 4, readahead=False) as env:
-        with env.begin(write=True) as txn:
-            prepare(txn, imgset, args.n_worker)
+    raw_AKOA_images = datasets.ImageFolder(args.AKOA_raw_images_path)
+    with lmdb.open(args.output_directory, map_size=1024 ** 4, readahead=False) as environment:
+        with environment.begin(write=True) as data:
+            pre_process_AKOA_images(data, raw_AKOA_images, args.number_worker)
