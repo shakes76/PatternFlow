@@ -1,11 +1,7 @@
 import glob
 import os
-import pathlib
-import PIL.Image
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.callbacks import EarlyStopping
-import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from sklearn.metrics import classification_report
@@ -16,7 +12,11 @@ from model import improved_unet
 ISIC2018_data_link = "https://cloudstor.aarnet.edu.au/sender/download.php?token=b66a9288-2f00-4330-82ea-9b8711d27643&files_ids=14200406"
 download_directory = os.getcwd() + '\ISIC2018_Task1-2_Training_Data.zip'
 num_display_examples = 3
-train_validate_split = 0.8
+training_split = 0.8
+validation_split = 0.1
+shuffle = False
+shuffle_size = 50
+
 img_height = img_width = 180
 batch_size = 32
 n_channels = 3
@@ -102,10 +102,36 @@ print("Size of Training Pictures: %d\nSize of Segmented Pictures: %d\n"
       % (len(list(image_file_list)), len(list(mask_file_list))))
 # Prints the original photos
 show_original_images(num_display_examples)
-# Creating datasets and splitting into testing and validations subsets
+# Creates a dataset that contains all the files
 data_dir = os.getcwd() + '/datasets'
 files_ds = tf.data.Dataset.from_tensor_slices((image_file_list, mask_file_list))
 files_ds = files_ds.map(lambda x, y: (process_images(x, False), process_images(y, True))).batch(1)
 
 # Prints the normalised images and masks
 display(num_display_examples, files_ds)
+
+# Shuffles the dataset if specified
+if shuffle:
+    files_ds = files_ds.shuffle(shuffle_size)
+
+# Calculates the size of each test, train, and validation subset
+files_ds_size = len(list(files_ds))
+train_ds_size = int(training_split * files_ds_size)
+val_ds_size = int(validation_split * files_ds_size)
+test_ds_size = files_ds_size - train_ds_size - val_ds_size
+# Prints the size of all the subsets
+print("Training size: %d" % train_ds_size)
+print("Validation size: %d" % val_ds_size)
+print("Testing size: %d" % test_ds_size)
+# Splits the dataset into test, validate, and train subsets
+train_ds = files_ds.take(train_ds_size)
+val_ds = files_ds.skip(train_ds_size).take(val_ds_size)
+test_ds = files_ds.skip(train_ds_size).skip(val_ds_size)
+
+# Creates the improved UNet model
+inputs, outputs = improved_unet(img_height, img_width, n_channels)
+model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
+# Sets the training parameters for the model
+model.compile(optimizer="adam", loss=soft_dice_loss, metrics=["accuracy"])
+# Prints a summary of the model compiled
+model.summary()
