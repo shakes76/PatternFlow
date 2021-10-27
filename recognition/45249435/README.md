@@ -27,3 +27,4 @@ significantly smaller than the testing set.
 
 ## Train and validation graphs
 ![train and validation accuracy](train_val accuracy.png)
+
