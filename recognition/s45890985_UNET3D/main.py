@@ -46,7 +46,7 @@ class NiftiDataGenerator(Sequence):
         aug.add_augmentation(Flip(1))
         aug_img, aug_seg = aug([img, seg])
         return aug_img, aug_seg
-    
+
     def load_nifti_files(self, path):
         # find corresponding mask path
         mask_path = path.replace('MRs', 'labels')
@@ -71,6 +71,11 @@ class NiftiDataGenerator(Sequence):
             imgs[i,], masks[i,] = self.load_nifti_files(os.path.join(self.image_path, name))
 
         return imgs, masks
+    
+def sdc(y_true, y_pred, smooth=1):
+    intersection = K.sum(y_true * y_pred, axis=[1,2,3])
+    union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
+    return K.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
 
 def main():
     data_dir = "D:/UQ/2021 Sem 2/COMP3710/Report/HipMRI_study_complete_release_v1/semantic_MRs_anon"
