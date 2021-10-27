@@ -20,22 +20,27 @@ def resize_and_convert(img, size, quality=100):
     return val
 
 
-def resize_multiple(img, sizes=(8, 16, 32, 64, 128, 256, 512, 1024), quality=100):
-    imgs = []
+def image_resize_multiple(AKOA_image, dimensions=(8, 16, 32, 64, 128, 256, 512, 1024), image_quality=100):
+    """
+    This function is used to resize a image to all the 
+    dimensions and returned all dimensional versions.
+    """
+    AKOA_images = []
+    for dimension in dimensions:
+        AKOA_images.append(resize_and_convert(AKOA_image, dimension, image_quality))
+    return AKOA_images
 
-    for size in sizes:
-        imgs.append(resize_and_convert(img, size, quality))
 
-    return imgs
-
-
-def resize_worker(img_file, sizes):
-    i, file = img_file
-    img = Image.open(file)
-    img = img.convert('RGB')
-    out = resize_multiple(img, sizes=sizes)
-
-    return i, out
+def image_resize(AKOA_image, dimensions):
+    """
+    This function is used to resize a image 
+    and return its index and all dimensional versions.
+    """
+    index, image_file = AKOA_image
+    opened_image = Image.open(image_file)
+    opened_image = opened_image.convert('RGB')
+    ouput_image = image_resize_multiple(opened_image, dimensions=dimensions)
+    return index, ouput_image
 
 
 def pre_process_AKOA_images(AKOA_image, raw_set, number_cpus, dimensions=(8, 16, 32, 64, 128, 256, 512, 1024)):
@@ -44,7 +49,7 @@ def pre_process_AKOA_images(AKOA_image, raw_set, number_cpus, dimensions=(8, 16,
     and store the resized images into a dict structure, 
     whethe dimension is the key, image is the value to be easily called and obtained. 
     """
-    method = partial(resize_worker, sizes=dimensions)
+    method = partial(image_resize, sizes=dimensions)
 
     AKOA_images = sorted(raw_set.imgs, key=lambda x: x[0])
     AKOA_images = [(index, image) for index, (image, label) in enumerate(AKOA_images)]
