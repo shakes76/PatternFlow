@@ -77,20 +77,6 @@ def gen_block(
     kernel_size: int,
     upSample: bool = True,
 ) -> tf.Tensor:
-    """
-    If we are upscaling, start with the following layers:
-        - Upscale
-        - Conv 4x4
-    For every block, we want to: (In order)
-        - Add noise
-        - AdaIN
-        - LeakyReLU
-        - Conv 4x4
-        - Add noise
-        - AdaIN
-        - LeakyReLU
-    """
-
     def compute_random_input() -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
         beta = Dense(filters)(style)
@@ -126,14 +112,6 @@ def disc_block(
     image_size: int,
     downSample: bool = True,
 ) -> tf.Tensor:
-    """
-    If we are down sampling, start with the following layer:
-        - AveragePool2D
-    For each block, we want to: (In order)
-        - Conv2D
-        - Conv2D
-        - Dropout
-    """
 
     # Begin the discriminator block
     out = input
