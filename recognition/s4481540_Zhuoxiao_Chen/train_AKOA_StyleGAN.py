@@ -123,26 +123,35 @@ def train_StyleGAN(args, G, D):
     start to train the styleGAN
     """
     for index in pbar:
-        D.zero_grad()
 
+        D.zero_grad() # clear the gradient from last iteration
+
+        # compute alpha to control model learning
         alpha = min(1, 1 / args.phase * (processed_data + 1))
 
         if (resolution == args.init_size and args.ckpt is None) or last_progressive_stage:
             alpha = 1
 
+        """
+        if the processed data is larger than 2 times of phase number,
+        then the progressive_stage is increased, which means the resolution 
+        of the feature map increase.
+        """
         if processed_data > args.phase * 2:
             processed_data = 0
             progressive_stage += 1
 
+            # limit the progressive stage to be larger than
+            # the max stage
             if progressive_stage > most_progressive_stage:
                 progressive_stage = most_progressive_stage
                 last_progressive_stage = True
                 ckpt_step = progressive_stage + 1
-
             else:
                 alpha = 0
                 ckpt_step = progressive_stage
 
+            # determin the resolution at current stage
             resolution = 4 * 2 ** progressive_stage
 
             loaded_dataset = shuffle_samples(
@@ -150,6 +159,8 @@ def train_StyleGAN(args, G, D):
             )
             data_loader = iter(loaded_dataset)
 
+            # for each progressive stage, the checkpoint is saved,
+            # for further generating images.
             torch.save(
                 {
                     'generator': G.module.state_dict(),
@@ -161,34 +172,34 @@ def train_StyleGAN(args, G, D):
                 f'checkpoint/train_step-{ckpt_step}.model',
             )
 
+            # Each iteration, the learning rate is reduced.
             learning_rate_decay(G_optimiser, args.lr.get(resolution, 0.001))
             learning_rate_decay(D_optimiser, args.lr.get(resolution, 0.001))
 
         try:
-            real_image = next(data_loader)
-
-        except (OSError, StopIteration):
+            real_AKOA_data = next(data_loader) # load real images
+        except (OSError, StopIteration): # prevent system error
             data_loader = iter(loaded_dataset)
-            real_image = next(data_loader)
+            real_AKOA_data = next(data_loader)
 
-        processed_data += real_image.shape[0]
+        processed_data += real_AKOA_data.shape[0] # count the processed data
 
-        b_size = real_image.size(0)
-        real_image = real_image.cuda()
+        batch_size = real_AKOA_data.size(0)
+        real_AKOA_data = real_AKOA_data.cuda()
 
         if args.loss == 'wgan-gp':
-            real_predict = D(real_image, step=progressive_stage, alpha=alpha)
+            real_predict = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
             real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
             (-real_predict).backward()
 
         elif args.loss == 'r1':
-            real_image.change_gradient_status = True
-            real_scores = D(real_image, step=progressive_stage, alpha=alpha)
+            real_AKOA_data.change_gradient_status = True
+            real_scores = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
             real_predict = F.softplus(-real_scores).mean()
             real_predict.backward(retain_graph=True)
 
             grad_real = grad(
-                outputs=real_scores.sum(), inputs=real_image, create_graph=True
+                outputs=real_scores.sum(), inputs=real_AKOA_data, create_graph=True
             )[0]
             grad_penalty = (
                 grad_real.view(grad_real.size(0), -1).norm(2, dim=1) ** 2
@@ -200,13 +211,13 @@ def train_StyleGAN(args, G, D):
 
         if args.mixing and random.random() < 0.9:
             gen_in11, gen_in12, gen_in21, gen_in22 = torch.randn(
-                4, b_size, latent_length, device='cuda'
+                4, batch_size, latent_length, device='cuda'
             ).chunk(4, 0)
             gen_in1 = [gen_in11.squeeze(0), gen_in12.squeeze(0)]
             gen_in2 = [gen_in21.squeeze(0), gen_in22.squeeze(0)]
 
         else:
-            gen_in1, gen_in2 = torch.randn(2, b_size, latent_length, device='cuda').chunk(
+            gen_in1, gen_in2 = torch.randn(2, batch_size, latent_length, device='cuda').chunk(
                 2, 0
             )
             gen_in1 = gen_in1.squeeze(0)
@@ -219,8 +230,8 @@ def train_StyleGAN(args, G, D):
             fake_predict = fake_predict.mean()
             fake_predict.backward()
 
-            eps = torch.rand(b_size, 1, 1, 1).cuda()
-            x_hat = eps * real_image.data + (1 - eps) * fake_image.data
+            eps = torch.rand(batch_size, 1, 1, 1).cuda()
+            x_hat = eps * real_AKOA_data.data + (1 - eps) * fake_image.data
             x_hat.change_gradient_status = True
             hat_predict = D(x_hat, step=progressive_stage, alpha=alpha)
             grad_x_hat = grad(
