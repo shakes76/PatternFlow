@@ -108,8 +108,52 @@ xz=5.2.5=h7b6447c_0
 zlib=1.2.11=h7b6447c_3
 ```
 
+#### Pre-process the AKOA dataset
+
 #### Parameter Details of Main Function
 
+To train the StyleGAN using AKOA dataset, some of parameters should be specified. To check the parameter information and its usage, users can simply input the code below: 
+
+```
+python train_AKOA_StyleGAN.py --help
+```
+
+And the output should print very detailed information for each parameter:
+
+```
+usage: train_AKOA_StyleGAN.py [-h] [--start_dimension START_DIMENSION]
+                              [--final_dimension FINAL_DIMENSION]
+                              [--progressive_stage PROGRESSIVE_STAGE]
+                              [--loss_method {WGAN}] [--mixing] [--ckpt CKPT]
+                              [--lr LR]
+                              AKOA_directory
+
+Training StyleGAN for generating StyleGAN
+
+positional arguments:
+  AKOA_directory        The directory of AKOA dataset must be specified for
+                        training the StyleGAN.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start_dimension START_DIMENSION
+                        specify the start dimenstion of image for progressive
+                        GAN training.
+  --final_dimension FINAL_DIMENSION
+                        specify the final(max) dimenstion of image for
+                        progressive GAN training. The final_dimension defines
+                        the max dimenstion of the image that can be generated
+                        by the generator.
+  --progressive_stage PROGRESSIVE_STAGE
+                        images to be trained for each progressive_stage, for
+                        example, 1 state could be training for 16*16
+                        resolution feature map.
+  --loss_method {WGAN}  Define the loss function. In AKOA datasets, WGAN loss
+                        is sufficient.
+  --mixing              apply the mixing module as proposed in the paper
+  --ckpt CKPT           specify the checkpoints to resume the model training.
+  --lr LR               specify the learning rate used for StyleGAN training.
+```
 
 #### Train SyleGAN for AKOA Images
 
