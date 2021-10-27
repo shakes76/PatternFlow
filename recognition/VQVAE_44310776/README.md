@@ -1,13 +1,13 @@
 # VQVAE2 and PixelCNN
-[VQVAE2](https://arxiv.org/abs/1906.00446) is an autoencoder network which can be used for compression and denoising of images. It can also be used as a generative model when paired with an autoregressive network such as PixelCNN. The model introduces a hierarchical architecture (Figure 2) to the original (Figure 1) [VQVAE](https://arxiv.org/abs/1711.00937) which significantly improves both reconstruction and sampling performance. The discrete latent spaces learned by the network can generate high-quality images with more diversity than most GANs.
+[VQVAE2 [1]](https://arxiv.org/abs/1906.00446) is an autoencoder network which can be used for compression and denoising of images. It can also be used as a generative model when paired with an autoregressive network such as PixelCNN. The model introduces a hierarchical architecture (Figure 2) to the original (Figure 1) [VQVAE [2]](https://arxiv.org/abs/1711.00937) which significantly improves both reconstruction and sampling performance. The discrete latent spaces learned by the network can generate high-quality images with more diversity than most GANs.
 
 | ![vqvae.png](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/0f22d1a8-a53a-415e-91da-dba0ddc2544c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211027%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211027T003051Z&X-Amz-Expires=86400&X-Amz-Signature=6dbe9a641b13480ec0270a10d4fb004a9aea15f1e56ba8f713f932ae8ae4f060&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22) | 
 |:--:| 
-| Figure 1. Original VQVAE architecture (left) and codebook learning mechanism (right). |
+| Figure 1. Original VQVAE architecture (left) and codebook learning mechanism (right) [2]. |
 
 | ![vqvae2.png](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/5840479c-2447-462b-98bc-f2278577d018/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211027%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211027T011131Z&X-Amz-Expires=86400&X-Amz-Signature=a15281e589f0d699f4b93c53733472daceb32248abaa90ec59e5849854569b3d&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22) | 
 |:--:| 
-| Figure 2. VQVAE2 architecture. |
+| Figure 2. VQVAE2 architecture [1]. |
 
 Like VQVAE, VQVAE2 uses residual convolutional encoder and decoder networks to compress images. The latent space in these models is discrete, unlike traditional VAEs, and is constructed through quantization of the encoder output; the vectors are "snapped" to the closest vector in the embedding space (codebook). The vectors in the codebook are learned through the training process as illustrated in Figure 1 (right). This implementation uses Exponential Moving Averages for the learning process. Some sample reconstructions from this implementation trained on the OASIS Brain MRI dataset are shown in Figure 3.
 
@@ -15,7 +15,7 @@ Like VQVAE, VQVAE2 uses residual convolutional encoder and decoder networks to c
 |:--:| 
 | Figure 3. Reconstruction samples from the OASIS Brain MRI dataset. |
 
-Once the model is trained, the discrete latent space can be sampled from to generate new images as illustrated in Figure 4. This is done using an autoregressive model. This implementation uses the same network as the authors - [PixelCNN](https://arxiv.org/abs/1606.05328) - but using an RNN or a Transformer is possible too. This model is used to generate latent representations, rather than images themselves, which are decoded to produce an image. This approach is much faster than gererating images pixel-by-pixel.
+Once the model is trained, the discrete latent space can be sampled from to generate new images as illustrated in Figure 4. This is done using an autoregressive model. This implementation uses the same network as the authors - [PixelCNN [3]](https://arxiv.org/abs/1606.05328) - but using an RNN or a Transformer is possible too. This model is used to generate latent representations, rather than images themselves, which are decoded to produce an image. This approach is much faster than gererating images pixel-by-pixel.
 
 | ![generation.png](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/0f22d1a8-a53a-415e-91da-dba0ddc2544c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211027%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211027T003051Z&X-Amz-Expires=86400&X-Amz-Signature=6dbe9a641b13480ec0270a10d4fb004a9aea15f1e56ba8f713f932ae8ae4f060&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22) | 
 |:--:| 
@@ -89,3 +89,8 @@ python -m torch.distributed.run --standalone --nnodes=1 --nproc_per_node=<num_gp
 
 #### A Note on `trainer.py`
 This file implements a generic PyTorch model trainer and is subclassed for use in the training scripts to train the individual models used here.
+
+## References
+> [1] A. Razavi, A. van den Oord, O. Vinyals, “Generating Diverse High-Fidelity Images with VQ-VAE-2,” in NIPS, Vancouver, Canada, 2019.
+> [2] A. van den Oord, O. Vinyals, K. Kavukcuglu, “Neural Discrete Representation Learning,” in NIPS, Long Beach, CA, USA, 2017.
+> [3] A. van den Oord, N. Kalchbrenner, O. Vinyals, L. Espeholt, A. Graves, K. Kavukcuoglu, “Conditional Image Generation with PixelCNN Decoders,” in NIPS, Barcelona, Spain, 2016.
