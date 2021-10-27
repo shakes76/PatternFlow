@@ -6,11 +6,17 @@ validation. Then create and return generators for those
 
 import sys
 import os
+import shutil
 from tensorflow import keras as kr
 from tensorflow.keras import preprocessing as krp
 
 def create_generators(train, val, test, path_to_data, path_to_groundtruth):
+    # Creating Train generators
     pass
+
+def move_files(files, from_dest, destination):
+    for file in files:
+        shutil.copy(os.path.join(from_dest, file), destination)
 
 def process_data_folders(path_to_data):
     data_files = [f for f in os.listdir(path_to_data) if f.endswith(".jpg")]
@@ -37,4 +43,14 @@ def process_data_folders(path_to_data):
 
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/
+home = "/home/tannishpage/Documents/COMP3710_DATA"
 train, val, test = process_data_folders("/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/")
+
+move_files(train[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "train/data/images"))
+move_files(train[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "train/groundtruth/images"))
+
+move_files(val[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "val/data/images"))
+move_files(val[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "val/groundtruth/images"))
+
+move_files(test[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "test/data/images"))
+move_files(test[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "test/groundtruth/images"))
