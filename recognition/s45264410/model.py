@@ -1,6 +1,7 @@
 import tensorflow as tf
 from functools import partial
 
+
 IMAGE_WIDTH = 128
 IMAGE_HEIGHT = 96
 IMAGE_CHANNELS = 3
@@ -14,57 +15,57 @@ class Isic_Unet:
         # encoder/downsampling
         input_size = (IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS)
         inputs = tf.keras.Input(input_size)
-        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(inputs)
-        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv1)
+        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(inputs)
+        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(conv1)
         pool1 = tf.keras.layers.MaxPool2D((2, 2))(conv1)
         pool1 = tf.keras.layers.Dropout(dropout)(pool1)
 
-        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool1)
-        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv2)
+        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation='relu')(pool1)
+        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation='relu')(conv2)
         pool2 = tf.keras.layers.MaxPool2D((2, 2))(conv2)
         pool2 = tf.keras.layers.Dropout(dropout)(pool2)
         
-        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool2)
-        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv3)
+        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation='relu')(pool2)
+        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation='relu')(conv3)
         pool3 = tf.keras.layers.MaxPool2D((2, 2))(conv3)
         pool3 = tf.keras.layers.Dropout(dropout)(pool3)
         
-        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool3)
-        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv4)
+        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation='relu')(pool3)
+        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation='relu')(conv4)
         pool4 = tf.keras.layers.MaxPool2D((2, 2))(conv4)
         pool4 = tf.keras.layers.Dropout(dropout)(pool4)
         
         # bridge/bottleneck/shared layer
-        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool4)
-        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv5)
+        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation='relu')(pool4)
+        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation='relu')(conv5)
 
         # decoder/upsampling
         up6 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv5)
         up6 = tf.keras.layers.Conv2D(512, (2, 2), padding="same")(up6)
         up6 = tf.keras.layers.concatenate([conv4, up6])
-        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up6)
-        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv6)
+        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation='relu')(up6)
+        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation='relu')(conv6)
         conv6 = tf.keras.layers.Dropout(dropout)(conv6)
 
         up7 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv6)
         up7 = tf.keras.layers.Conv2D(256, (2, 2),  padding="same")(up7)
         up7 = tf.keras.layers.concatenate([conv3, up7])
-        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up7)
-        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv7)
+        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation='relu')(up7)
+        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation='relu'))(conv7)
         conv7 = tf.keras.layers.Dropout(dropout)(conv7)
 
         up8 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv7)
         up8 = tf.keras.layers.Conv2D(128, (2, 2), padding="same")(up8)
         up8 = tf.keras.layers.concatenate([conv2, up8])
-        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up8)
-        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv8)
+        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation='relu')(up8)
+        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation='relu')(conv8)
         conv8 = tf.keras.layers.Dropout(dropout)(conv8)
 
         up9 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv8)
         up9 = tf.keras.layers.Conv2D(64, (2, 2), padding="same")(up9)
         up9 = tf.keras.layers.concatenate([conv1, up9])
-        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up9)
-        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv9)
+        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(up9)
+        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation='relu')(conv9)
         conv9 = tf.keras.layers.Dropout(dropout)(conv9)
 
         # segmentation (output) layer

@@ -6,16 +6,20 @@ import cv2
 import glob
 import matplotlib.pyplot as plt
 from functools import partial
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, LeakyReLU
+from keras.layers import Input, merge, UpSampling2D,BatchNormalization
+from keras.models import Model
 
 image_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2'
 mask_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2'
 
-IMG_WIDTH = 128
-IMG_HEIGHT = 96
+IMG_WIDTH = 256
+IMG_HEIGHT = 192
 IMG_CHANNELS = 3
 
-MASK_WIDTH = 128
-MASK_HEIGHT = 96
+MASK_WIDTH = 256
+MASK_HEIGHT = 192
 MASK_CHANNELS = 1
 
 class pre_process:
@@ -171,9 +175,11 @@ class pre_process:
         dropout = 0.1
         # encoder/downsampling
         input_size = (IMG_WIDTH, IMG_HEIGHT, IMG_CHANNELS)
+        inputs = Input(input_size)
         inputs = tf.keras.Input(input_size)
         conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(inputs)
         conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv1)
+        conv1 = BatchNormalization()(conv1)
         pool1 = tf.keras.layers.MaxPool2D((2, 2))(conv1)
         pool1 = tf.keras.layers.Dropout(dropout)(pool1)
 
@@ -184,6 +190,7 @@ class pre_process:
         
         conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool2)
         conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv3)
+        conv3 = BatchNormalization()(conv3)
         pool3 = tf.keras.layers.MaxPool2D((2, 2))(conv3)
         pool3 = tf.keras.layers.Dropout(dropout)(pool3)
         
@@ -226,10 +233,67 @@ class pre_process:
         conv9 = tf.keras.layers.Dropout(dropout)(conv9)
 
         # segmentation (output) layer
-        outputs = tf.keras.layers.Conv2D(1, (1, 1), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv9)
+        outputs = tf.keras.layers.Conv2D(1, (1, 1), padding="same", activation='softmax')(conv9)
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
+  def conv_block(self,input_mat,num_filters,kernel_size,batch_norm):
+        X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(input_mat)
+        if batch_norm:
+            X = BatchNormalization()(X)
+        
+        X = Activation(partial(tf.nn.leaky_relu, alpha=0.01))(X)
+
+        X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(X)
+        if batch_norm:
+            X = BatchNormalization()(X)
+        
+        X = Activation(partial(tf.nn.leaky_relu, alpha=0.01))(X)
+        
+        return X
+    
+  def Unet(self, input_img, n_filters = 16, dropout = 0.2, batch_norm = True):
+
+    c1 = self.conv_block(input_img,n_filters,3,batch_norm)
+    p1 = MaxPooling2D(pool_size=(2, 2), strides=2)(c1)
+    p1 = Dropout(dropout)(p1)
+    
+    c2 = self.conv_block(p1,n_filters*2,3,batch_norm);
+    p2 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c2)
+    p2 = Dropout(dropout)(p2)
+
+    c3 = self.conv_block(p2,n_filters*4,3,batch_norm);
+    p3 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c3)
+    p3 = Dropout(dropout)(p3)
+    
+    c4 = self.conv_block(p3,n_filters*8,3,batch_norm);
+    p4 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c4)
+    p4 = Dropout(dropout)(p4)
+    
+    c5 = self.conv_block(p4,n_filters*16,3,batch_norm);
+
+    u6 = Conv2DTranspose(n_filters*8, (3,3), strides=(2, 2), padding='same')(c5);
+    u6 = concatenate([u6,c4]);
+    c6 = self.conv_block(u6,n_filters*8,3,batch_norm)
+    c6 = Dropout(dropout)(c6)
+    u7 = Conv2DTranspose(n_filters*4,(3,3),strides = (2,2) , padding= 'same')(c6);
+
+    u7 = concatenate([u7,c3]);
+    c7 = self.conv_block(u7,n_filters*4,3,batch_norm)
+    c7 = Dropout(dropout)(c7)
+    u8 = Conv2DTranspose(n_filters*2,(3,3),strides = (2,2) , padding='same')(c7);
+    u8 = concatenate([u8,c2]);
+
+    c8 = self.conv_block(u8,n_filters*2,3,batch_norm)
+    c8 = Dropout(dropout)(c8)
+    u9 = Conv2DTranspose(n_filters,(3,3),strides = (2,2) , padding='same')(c8);
+
+    u9 = concatenate([u9,c1]);
+
+    c9 = self.conv_block(u9,n_filters,3,batch_norm)
+    outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
+
+    self.model = tf.keras.Model(inputs=input_img, outputs=outputs)
 
   def show_predictions(self):
       """

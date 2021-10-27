@@ -1,11 +1,15 @@
 import tensorflow as tf
 from driver import pre_process
-
+from keras.layers import Input
+from tensorflow.keras.optimizers import Adam
+IMG_WIDTH = 256
+IMG_HEIGHT = 192
+IMG_CHANNELS = 3
 
 def main():
     print(tf.__version__)
     # use batch size of 1 to save VRAM
-    BATCH_SIZE = 1
+    BATCH_SIZE = 2
 
     # TensorFlow provided code to limit GPU memory growth
     # Retrieved from:
@@ -24,8 +28,12 @@ def main():
     model = pre_process()
     model.load_data()
     # model.visualise_loaded_data()
-    model.Improved_unet()
+    input = Input((IMG_WIDTH, IMG_HEIGHT, IMG_CHANNELS))
+    model.Unet(input_img=input)
     model.model.summary()
+    learning_rate = 0.001
+    epochs = 5000
+    decay_rate = learning_rate / epochs
     model.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
                         loss=pre_process.dice_loss,
                         metrics=pre_process.dice_coefficient)
@@ -33,7 +41,7 @@ def main():
 
     history = model.model.fit(x=model.train_ds.batch(BATCH_SIZE),
                               validation_data=model.val_ds.batch(BATCH_SIZE),
-                              epochs=3)
+                              epochs=10)
     model.show_predictions()
 
     # Get dice similarity for test set and show result
