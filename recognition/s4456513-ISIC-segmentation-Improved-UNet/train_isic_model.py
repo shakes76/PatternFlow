@@ -160,6 +160,6 @@ test = data.test_dataset
 
 model = Improved_UNet((data.height, data.width, 1))
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
-history = model.fit(train.batch(8), epochs = 40, validation_data = validate.batch(8), callbacks = [DisplayCallback()])
+history = model.fit(train.batch(12), epochs = 200, validation_data = validate.batch(12), callbacks = [DisplayCallback()])
 
     
