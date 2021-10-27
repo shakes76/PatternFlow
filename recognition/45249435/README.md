@@ -24,3 +24,6 @@ significantly smaller than the testing set.
 7. The evaluation consists of a graph showing the validation and training accuracy and loss for each epoch.
 8. Using the training data the model tries to predict the page outcome. 
 9. The model is then shrunk down to 2 dimensions and plotted using tsne
+
+## Train and validation graphs
+![train and validation accuracy](train_val accuracy.png)
