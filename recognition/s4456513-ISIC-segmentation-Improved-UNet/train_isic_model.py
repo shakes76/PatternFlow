@@ -9,6 +9,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import glob as gb
 from sklearn.model_selection import train_test_split
+from unet_model import *
+import tensorflow.keras.backend as backend
 
 print('TensorFlow version:', tf.__version__)
 
@@ -88,7 +90,7 @@ class DATA_PREPROCESS:
         self.validate_dataset = self.validate_dataset.map(self.rescale_image)
         self.test_dataset = self.test_dataset.map(self.rescale_image)
     
-    
+
     '''
         display the result of rescaled image
     '''
@@ -100,15 +102,64 @@ class DATA_PREPROCESS:
             plt.subplot(1,2,2)
             plt.imshow(tf.squeeze(mask), cmap='gray')
         plt.show()
-            
-        
+
+#######################################################################################
+#                             SUPPORT FUNCTIONS OR CLASSES                            #
+#######################################################################################
+
+'''
+    calcualte dice similarity coefficient
+'''
+def dice_coef(y_true, y_pred, smooth=0.00001):
+    """
+    Calculates the Dice coefficient of two provided
+    tensors.
+
+    Author: Hadrien Mary
+    Retrieved from: https://github.com/keras-team/keras/issues/3611
+    """
+    y_true_f = backend.flatten(y_true)
+    y_pred_f = backend.flatten(y_pred)
+    intersection = backend.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (backend.sum(y_true_f) + backend.sum(y_pred_f) + smooth)
 
 
-def main():
-    preprocessd_data = DATA_PREPROCESS()
-    preprocessd_data.load_data()
-    preprocessd_data.preprocess()
-    preprocessd_data.display_preprocessed_image(1)
+'''
+    show predictions of the model
+'''
+def show_predictions(ds, num = 1):
+    """
+    Predicts a mask based on image provided, and displays
+    the predicted mask alongside the actual segmentation
+    mask and original image.
+    """
+    for image, mask in ds.take(num):
+        pred_mask = model.predict(image[tf.newaxis, ...])[0]
+        display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+
+'''
+    display predictions
+'''
+class DisplayCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs = None):
+        clear_output(wait=True)
+        show_predictions(val_ds)
+
+
+###########################################################################################
+#                                   MODEL DRIVER                                          #
+###########################################################################################
+
+data = DATA_PREPROCESS()
+data.load_data()
+data.preprocess()
+data.display_preprocessed_image(1)
+train = data.train_dataset
+validate = data.validate_dataset 
+test = data.test_dataset 
+
+model = Improved_UNet((data.height, data.width, 1))
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
+history = model.fit(train.batch(6), epochs = 30, validation_data = val.batch(6), callbacks = [DisplayCallback()])
+
     
-if __name__ == '__main__':
-    main()
