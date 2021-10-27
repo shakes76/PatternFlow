@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from model import *
 from tensorflow.keras import datasets, layers, models, callbacks
 from tensorflow.keras.utils import Sequence
 from pyimgaug3d.augmenters import ImageSegmentationAugmenter
@@ -40,6 +41,12 @@ class NiftiDataGenerator(Sequence):
     def on_epoch_end(self):
         self.indexes = np.aramge(len(self.file_names))
 
+    def aug_3d_data(img, seg):
+        aug = ImageSegmentationAugmenter()
+        aug.add_augmentation(Flip(1))
+        aug_img, aug_seg = aug([img, seg])
+        return aug_img, aug_seg
+    
     def load_nifti_files(self, path):
         # find corresponding mask path
         mask_path = path.replace('MRs', 'labels')
@@ -64,3 +71,24 @@ class NiftiDataGenerator(Sequence):
             imgs[i,], masks[i,] = self.load_nifti_files(os.path.join(self.image_path, name))
 
         return imgs, masks
+
+def main():
+    data_dir = "D:/UQ/2021 Sem 2/COMP3710/Report/HipMRI_study_complete_release_v1/semantic_MRs_anon"
+    mri_paths = os.listdir(data_dir)
+    split = int(np.ceil(len(mri_paths) * 0.8))
+    train_files = mri_paths[:split]
+    val_files = mri_paths[split:]
+
+    training_generator = NiftiDataGenerator(train_files, data_dir)
+    validation_generator = NiftiDataGenerator(val_files, data_dir)
+
+    model = unet_model()
+    epoch_steps = len(train_files)
+    epochs = 2
+    validation_steps = len(val_files)
+    model.fit(training_generator, epochs=epochs, steps_per_epoch=epoch_steps,
+              validation_steps=validation_steps, validation_data=validation_generator)
+    model.save(os.getcwd())
+
+if __name__ == "__main__":
+    main()

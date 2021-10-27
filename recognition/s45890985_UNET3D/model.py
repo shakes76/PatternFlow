@@ -23,7 +23,7 @@ def decoder_block(input_layer, concat_layer, conv_depth, drop_out=0.2):
 
     return de
 
-def unet_model(row, col,height,segments = 6, channel = 3, conv_depth = 32):
+def unet_model(row=256, col=256,height=128,segments = 6, channel = 3, conv_depth = 32):
 
     #input layer
     inputs = layers.Input(shape=(row, col, height, channel))
