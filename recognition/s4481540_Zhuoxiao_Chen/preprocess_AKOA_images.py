@@ -68,9 +68,9 @@ def pre_process_AKOA_images(AKOA_image, raw_set, number_cpus, dimensions=(8, 16,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Pre-process the AKOA dataset for further training the Progressive StyleGAN.')
-    parser.add_argument('AKOA_raw_images_path', type=str)
-    parser.add_argument('--number_worker', type=int, default=8)
-    parser.add_argument('--output_directory', type=str)
+    parser.add_argument('AKOA_raw_images_path', type=str, help='specify the path of the AKOA raw images')
+    parser.add_argument('--number_worker', type=int, default=8, help='specify number of cpus to be used for pre-process the AKOA datasets')
+    parser.add_argument('--output_directory', type=str, help='specify the output directory to store the pre-processed .mbd files for later training')
     args = parser.parse_args()
 
     raw_AKOA_images = datasets.ImageFolder(args.AKOA_raw_images_path)
