@@ -242,7 +242,6 @@ def train_StyleGAN(args, G, D):
             if index%10 == 0:
                 gradient_error = grad_penalty.item()
                 D_error = (-output_real + output_fake).item()
-
         else:
             print('r1 is not supported in this code')
 
@@ -288,38 +287,40 @@ def train_StyleGAN(args, G, D):
         """
         if (index + 1) % 100 == 0:
             generated_AKOA_images = []
-            gen_i, gen_j = args.gen_sample.get(resolution, (10, 5))
+            produced_0, produced_1 = args.gen_sample.get(resolution, (10, 5))
             with torch.no_grad():
-                for _ in range(gen_i):
+                for _ in range(produced_0):
                     generated_AKOA_images.append(
                         G_processing(
-                            torch.randn(gen_j, latent_length).cuda(), step=progressive_stage, alpha=alpha
+                            torch.randn(produced_1, latent_length).cuda(), step=progressive_stage, alpha=alpha
                         ).data.cpu()
                     )
             utils.save_image(
                 torch.cat(generated_AKOA_images, 0),
                 f'sample/{str(index + 1).zfill(6)}.png',
-                nrow=gen_i,
+                nrow=produced_0,
                 normalize=True,
                 range=(-1, 1),
             )
 
         """
-        save the checkpoint every 10000 iterations. 
+        save the checkpoint of the generator every 10000 iterations. 
+        the saved generator can be used to produce the AKOA images,
+        via generate_AKOA.py file.
         """
         if (index + 1) % 10000 == 0:
             torch.save(
                 G_processing.state_dict(), f'checkpoint/{str(index + 1).zfill(6)}.model'
             )
-            
+
         """
         print some messages when training the network to inform.
         """
-        state_msg = (
+        print_training_info = (
             f'Size: {4 * 2 ** progressive_stage}; G: {G_error:.3f}; D: {D_error:.3f};'
             f' Grad: {gradient_error:.3f}; Alpha: {alpha:.5f}'
         )
-        pbar.set_description(state_msg)
+        pbar.set_description(print_training_info)
 
 
 
