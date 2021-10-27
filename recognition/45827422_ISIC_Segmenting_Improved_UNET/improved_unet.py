@@ -137,7 +137,3 @@ def create_model(img_size):
                     metrics=[dice_similarity])
 
     return model
-
-model = create_model((128, 128, 1))
-
-model.summary()

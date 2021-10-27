@@ -7,28 +7,31 @@ validation. Then create and return generators for those
 import sys
 import os
 import shutil
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import tensorflow as tf
+import numpy as np
 
-def create_generator(path_to_data, path_to_gt, img_size):
+def create_generator(path_to_data, path_to_gt, img_size, nums):
     # Creating Train generators
-    datagen = ImageDataGenerator(rescale=1/225) # We are normalizing images
-    generator_data = datagen.flow_from_directory(path_to_data,
-                                                target_size=img_size,
-                                                color_mode='grayscale',
-                                                class_mode=None,
-                                                batch_size=64,
-                                                shuffle=True,
-                                                seed=225)
+    X_train = []
+    Y_train = []
+    for i, file in enumerate(os.listdir(path_to_data)):
+        if i >= nums:
+            break
+        ximg = load_img(os.path.join(path_to_data, file), target_size=(128, 128), color_mode="grayscale")
+        ximg = img_to_array(ximg)/255.0
+        X_train.append(ximg)
 
-    generator_gt = datagen.flow_from_directory(path_to_gt,
-                                                target_size=img_size,
-                                                color_mode='grayscale',
-                                                class_mode=None,
-                                                batch_size=64,
-                                                shuffle=True,
-                                                seed=225)
+    for i, file in enumerate(os.listdir(path_to_gt)):
+        if i >= nums:
+            break
+        yimg = load_img(os.path.join(path_to_gt, file), target_size=(128, 128), color_mode="grayscale")
+        yimg = img_to_array(yimg)/255.0
+        Y_train.append(yimg)
+    Y_train = np.array(Y_train)
+    Y_train = tf.keras.utils.to_categorical(Y_train, num_classes=2)
 
-    return zip(generator_data, generator_gt)
+    return np.array(X_train), Y_train
 
 
 def move_files(files, from_dest, destination):
@@ -59,27 +62,3 @@ def process_data_folders(path_to_data):
 
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/
-home = "/home/tannishpage/Documents/COMP3710_DATA"
-
-train, val, test = process_data_folders("/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/")
-
-move_files(train[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "train/data/images"))
-move_files(train[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "train/groundtruth/images"))
-
-move_files(val[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "val/data/images"))
-move_files(val[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "val/groundtruth/images"))
-
-move_files(test[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "test/data/images"))
-move_files(test[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "test/groundtruth/images"))
-
-train = create_generator(os.path.join(home, "train/data/"),
-                        os.path.join(home, "train/groundtruth/"),
-                        (128, 128))
-
-val = create_generator(os.path.join(home, "val/data/images"),
-                        os.path.join(home, "val/groundtruth/images"),
-                        (128, 128))
-
-test = create_generator(os.path.join(home, "test/data/images"),
-                        os.path.join(home, "test/groundtruth/images"),
-                        (128, 128))
