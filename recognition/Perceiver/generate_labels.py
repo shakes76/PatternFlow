@@ -6,6 +6,8 @@ import json
 
 
 START_DIR = "data/AKOA_Analysis/"
+START_DIR = "data/resize/"
+
 
 VALIDATION_SPLIT = 0.3
 

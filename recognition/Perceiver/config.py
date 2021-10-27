@@ -4,12 +4,12 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 num_classes = 100
-input_shape = (32, 32, 3)
+input_shape = (64, 64, 3)
 
 learning_rate = 0.001
 weight_decay = 0.0001
 # batch_size = 64
-batch_size = 32
+batch_size = 16
 num_epochs = 50
 dropout_rate = 0.2
 image_size = 64  # We'll resize input images to this size.
@@ -36,20 +36,11 @@ train_file_path = 'train.txt'
 test_file_path = 'validation.txt'
 
 #paths where class folders are
-train_data_path = 'data/AKOA_Analysis/'
+train_data_path = 'data/resize/'
 test_data_path = train_data_path
 
-data_augmentation = keras.Sequential(
-    [
-        layers.Rescaling(
-            scale=1./127.5, offset=-1
-        ),
-
-        layers.Resizing(image_size, image_size),
-        layers.RandomFlip("horizontal"),
-        # layers.RandomZoom(
-        #     height_factor=0.2, width_factor=0.2
-        # ),
-    ],
-    name="data_augmentation",
-)
+train_num = 11352
+test_num = 4768
+iterations_per_epoch = int(train_num / batch_size)
+test_iterations = int(test_num / batch_size) + 1
+warm_iterations = iterations_per_epoch
