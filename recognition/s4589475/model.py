@@ -54,36 +54,40 @@ def encoder_network():
     inputs = tf.keras.layers.Input(shape=(image_height, image_width, channels))
     
     # First downsample by half
-    conv = tf.keras.layers.Conv2D(32, kernel_size=3, strides=2, activation='relu', padding = "same")(inputs)
+    conv = tf.keras.layers.Conv2D(16, kernel_size=3, strides=2, activation='relu', padding = "same")(inputs)
     #Second downsample by half
-    conv = tf.keras.layers.Conv2D(64, kernel_size=3, strides=2, activation='relu', padding = "same")(conv)
+    conv = tf.keras.layers.Conv2D(32, kernel_size=3, strides=2, activation='relu', padding = "same")(conv)
     #Third downsample by half
-    #conv = tf.keras.layers.Conv2D(128, kernel_size=3, strides=2, activation='relu', padding = "same")(conv)
+    conv = tf.keras.layers.Conv2D(64, kernel_size=3, strides=2, activation='relu', padding = "same")(conv)
     
     #Final conv layer - image is now encoded into size of latent space
     output = tf.keras.layers.Conv2D(latent_dims, kernel_size = 1, padding = "same")(conv) #******************
 
     # Build the encoder
     final_network = tf.keras.Model(inputs, output, name="Encoder")
-
+    
+    print(final_network.summary())
     return final_network
 
 def decoder_network():
     # Takes the latent space and upsamples until original size is reached
-    #256 -> downsampled twice = 256/4 = 64
-    inputs = tf.keras.layers.Input(shape=(64,64,latent_dims))
+    #256 -> downsampled thrice = 256/8 = 32
+    inputs = tf.keras.layers.Input(shape=(32,32,latent_dims))
     #input_shape = encoder().output.shape[1:]
     #inputs = tf.keras.layers.Input(shape=input_shape)
     
     # Now can upsample twice
-    conv = tf.keras.layers.Conv2DTranspose(32, kernel_size=3, strides=2, padding='same', activation='relu')(inputs)
+    conv = tf.keras.layers.Conv2DTranspose(64, kernel_size=3, strides=2, padding='same', activation='relu')(inputs)
+    conv = tf.keras.layers.Conv2DTranspose(32, kernel_size=3, strides=2, padding='same', activation='relu')(conv)
     conv = tf.keras.layers.Conv2DTranspose(16, kernel_size=3, strides=2, padding='same', activation='relu')(conv)
-    
+
     #Output layer
     output = tf.keras.layers.Conv2D(1,kernel_size=[1,1], strides=1, activation='relu', padding = "same")(conv)
     
     #build the decoder
     final_network = tf.keras.Model(inputs, output, name="Decoder")
+    print(final_network.summary())
+
     return final_network
 
 def reconstruction_loss(inputs, outputs):  
@@ -233,15 +237,33 @@ ssim_score = calculate_ssims(vq_vae_overall)
 #Display the mean ssim
 print("Average SSIM on the test dataset:"+ (tf.reduce_mean(ssim_scores_testing)).numpy())
 
+# Show 10 example latent code images
+encoded_outputs = encoder.predict(testing_ds_unbatched)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+codebook_indices, vectors = quantizer_layer.quantize_vectors(flat_enc_outputs)
+codebook_indices2 = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
+for i, image in enumerate(testing_ds_unbatched):
+    plt.subplot(1, 2, 1)
+    plt.imshow(image[0, :, :, 0], cmap='gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(codebook_indices2[i])
+    plt.title("Code")
+    plt.axis("off")
+    plt.show()
+    
+    if i > 10:
+        break
 
 ### GENERATING NOVEL IMAGES USING OFF-THE-SHELF PIXEL CNN
-
 # PixelCNN
 num_residual_blocks = 2
 num_pixelcnn_layers = 2
 
-pixelcnn_input_shape = (64,64)
+pixelcnn_input_shape = (32,32)
 
 
 # The first layer is the PixelCNN layer. This layer simply
@@ -298,7 +320,7 @@ def create_pixelCNN():
     pixelcnn_inputs = tf.keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
     one_hot_encoding = tf.one_hot(pixelcnn_inputs, K)
     x = PixelConvLayer(
-        mask_type="A", filters=128, kernel_size=32, activation="relu", padding="same" #kernel_size = 7!
+        mask_type="A", filters=128, kernel_size=5, activation="relu", padding="same" #kernel_size = 7!
     )(one_hot_encoding)
 
     for _ in range(num_residual_blocks):
@@ -325,6 +347,53 @@ pixel_cnn = create_pixelCNN()
 pixel_cnn.summary()
 
 #PixelCNN Training
+
+# Create custom callback to display generated images from the pixelCNN after each training epoch
+class CustomCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        
+        batch = 1
+        priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+        batch, rows, cols = priors.shape
+
+        # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+        for row in range(rows):
+            for col in range(cols):
+                # Feed the whole array and retrieving the pixel value probabilities for the next
+                # pixel.        
+                x = pixel_cnn(priors, training=False)
+                dist = tfp.distributions.Categorical(logits=x)
+                sampled = dist.sample()
+
+                # Use the probabilities to pick pixel values and append the values to the priors.
+                priors[:, row, col] = sampled[:, row, col]
+        
+        #Perform an embedding lookup.
+        pretrained_embeddings = quantizer_layer._embeddings
+        priors_ohe = tf.one_hot(priors.astype("int32"), K).numpy()
+        quantized = tf.matmul(
+            priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+        )
+        quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
+        # Generate novel images.
+        generated_samples = decoder.predict(quantized)
+
+        for i in range(batch):
+            plt.subplot(1, 2, 1)
+            plt.imshow(priors[i])
+            # save a image using extension
+            plt.imsave('prior_epoch{}.png'.format(epoch), priors[i])
+            plt.title("Code")
+            plt.axis("off")
+
+            plt.subplot(1, 2, 2)
+            plt.imshow(generated_samples[i])
+            plt.imsave('generated_epoch{}.png'.format(epoch), priors[i])
+            plt.title("Generated Sample")
+            plt.axis("off")
+            plt.show()
+
 
 codebook_indices_vector = []
 
@@ -357,37 +426,30 @@ pixel_cnn.fit(
     x=codebook_indices_vector,
     y=codebook_indices_vector,
     batch_size=128,
-    epochs=30,
+    epochs=500,
     validation_split=0.1,
+    callbacks=[CustomCallback()]
 )
 
-#sample distinct codes from the pixelcnn output and pass them to the vqvae decoder to generate novel images
-# Create a mini sampler model.
-inputs = tf.keras.layers.Input(shape=pixel_cnn.input_shape[1:])
-x = pixel_cnn(inputs, training=False)
-dist = tfp.distributions.Categorical(logits=x)
-sampled = dist.sample()
-sampler = tf.keras.Model(inputs, sampled)
-
-
-# Create an empty array of priors.
+#Final display of 10 generated images
 batch = 10
-priors = tf.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
 batch, rows, cols = priors.shape
 
 # Iterate over the priors because generation has to be done sequentially pixel by pixel.
 for row in range(rows):
     for col in range(cols):
         # Feed the whole array and retrieving the pixel value probabilities for the next
-        # pixel.
-        probs = sampler.predict(priors)
+        # pixel.        
+        x = pixel_cnn(priors, training=False)
+        dist = tfp.distributions.Categorical(logits=x)
+        sampled = dist.sample()
+        
         # Use the probabilities to pick pixel values and append the values to the priors.
-        priors[:, row, col] = probs[:, row, col]
+        priors[:, row, col] = sampled[:, row, col]
 
-print(f"Prior shape: {priors.shape}")
-
-# Perform an embedding lookup.
-pretrained_embeddings = quantizer._embeddings
+#Perform an embedding lookup.
+pretrained_embeddings = quantizer_layer._embeddings
 priors_ohe = tf.one_hot(priors.astype("int32"), K).numpy()
 quantized = tf.matmul(
     priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
