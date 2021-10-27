@@ -10,14 +10,16 @@ import argparse
 # import the required libraries for the data pre-processing.
 
 
-def resize_and_convert(img, size, quality=100):
-    img = trans_fn.resize(img, size, Image.LANCZOS)
-    img = trans_fn.center_crop(img, size)
+def image_resize_type_change(AKOA_image, dimension, image_quality=100):
+    """
+    This function is simply resize a AKOA image to a specified dimension,
+    then convert it to jpeg file and return it. 
+    """
+    AKOA_image = trans_fn.resize(AKOA_image, dimension, Image.LANCZOS)
+    AKOA_image = trans_fn.center_crop(AKOA_image, dimension)
     buffer = BytesIO()
-    img.save(buffer, format='jpeg', quality=quality)
-    val = buffer.getvalue()
-
-    return val
+    AKOA_image.save(buffer, format='jpeg', quality=image_quality)
+    return buffer.getvalue()
 
 
 def image_resize_multiple(AKOA_image, dimensions=(8, 16, 32, 64, 128, 256, 512, 1024), image_quality=100):
@@ -27,7 +29,7 @@ def image_resize_multiple(AKOA_image, dimensions=(8, 16, 32, 64, 128, 256, 512, 
     """
     AKOA_images = []
     for dimension in dimensions:
-        AKOA_images.append(resize_and_convert(AKOA_image, dimension, image_quality))
+        AKOA_images.append(image_resize_type_change(AKOA_image, dimension, image_quality))
     return AKOA_images
 
 
