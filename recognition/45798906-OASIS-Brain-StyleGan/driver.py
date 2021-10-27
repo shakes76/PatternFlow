@@ -158,7 +158,7 @@ def main():
 
         if SAVE_LOSS:
             figure = generate_loss_history(history, TOTAL_PREVIOUS_EPOCHS)
-            loss_save_path = f"{LOSS_PATH}Loss_{'_'.join([s.lower() for s in MODEL_NAME.split()])}.png"
+            loss_save_path = f"{LOSS_PATH}Loss_{'_'.join([s.lower() for s in MODEL_NAME.split()])}_{(TOTAL_PREVIOUS_EPOCHS // EPOCHS) + 1}.png"
             save_figure(figure, loss_save_path)
             print(f"Saved loss history to {loss_save_path}.")
 
