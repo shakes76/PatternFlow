@@ -19,30 +19,26 @@ OUTPUT_DIR = "/home/azureuser/cloudfiles/code/Users/zhien.zhang/Output"
 
 # 128
 RESOLUTION = 128
-G_INPUT_RES = 4
-G_INIT_FILTERS = 1024
-D_FINAL_RES = 4
+G_INPUT_RES = 8
+G_INIT_FILTERS = 512
+D_FINAL_RES = 8
 D_INPUT_FILTERS = 32
-EPOCHS = 10
+EPOCHS = 30
 NEPTUNE = True
 batch = 64
 LATENT = 100
-CRITICS = 5
 
 # 64
 # RESOLUTION = 64
 # G_INPUT_RES = 4
 # G_INIT_FILTERS = 512
 # D_FINAL_RES = 4
-# D_INPUT_FILTERS = 128
+# D_INPUT_FILTERS = 64
 # EPOCHS = 30
 # NEPTUNE = True
 # batch = 64
-# LATENT = 100    # tuned
-
 
 trainer = Trainer(DATA, OUTPUT_DIR, G_INPUT_RES, G_INIT_FILTERS, D_FINAL_RES, D_INPUT_FILTERS, batch=batch,
-                  image_res=RESOLUTION, epochs=EPOCHS, use_neptune=NEPTUNE, latent_dim=LATENT,
-                  n_critics=CRITICS)
+                  width=RESOLUTION, height=RESOLUTION, epochs=EPOCHS, use_neptune=NEPTUNE)
 
 trainer.train()
