@@ -29,6 +29,9 @@ class DATA_PREPROCESS:
         self.image_path =  "ISIC/ISIC2018_Task1-2_Training_Input_x2/*.jpg"
         self.mask_path = "ISIC/ISIC2018_Task1_Training_GroundTruth_x2/*.png"
         
+    '''
+        load images and split raw data into training set, validating set and test set 
+    '''
     def load_data(self):
         # load images
         images = sorted(gb.glob(self.image_path))
@@ -84,6 +87,7 @@ class DATA_PREPROCESS:
         self.train_dataset = self.train_dataset.map(self.rescale_image)
         self.validate_dataset = self.validate_dataset.map(self.rescale_image)
         self.test_dataset = self.test_dataset.map(self.rescale_image)
+    
     
     '''
         display the result of rescaled image
