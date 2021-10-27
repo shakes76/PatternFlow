@@ -39,7 +39,7 @@ def split_data(features, labels, validation_split=0.2, test_split=0.2):
     return train_features, train_labels, val_features, val_labels, test_features, test_labels
 
 
-def load_features(image_file, image_size):
+def __load_features(image_file, image_size):
     image = tf.io.read_file(image_file)
     image = tf.image.decode_jpeg(image, channels=3)
     image = tf.image.resize(image, image_size)
@@ -49,7 +49,7 @@ def load_features(image_file, image_size):
     return image
 
 
-def load_labels(label_file, image_size, num_classes):
+def __load_labels(label_file, image_size, num_classes):
     label = tf.io.read_file(label_file)
     label = tf.image.decode_png(label, channels=1)
     label = tf.image.resize(label, image_size)
@@ -62,14 +62,14 @@ def load_labels(label_file, image_size, num_classes):
     return label
 
 
-def create_dataset(features, labels, image_size, num_classes):
+def __create_dataset(features, labels, image_size, num_classes):
     # create and shuffle dataset
     dataset = tf.data.Dataset.from_tensor_slices((features, labels))
     dataset = dataset.shuffle(len(features))
 
     # load features and labels
     dataset = dataset.map(
-        lambda feature, label: (load_features(feature, image_size),
-                                load_labels(label, image_size, num_classes)))
+        lambda feature, label: (__load_features(feature, image_size),
+                                __load_labels(label, image_size, num_classes)))
 
     return dataset
