@@ -54,13 +54,14 @@ To increase the range of possible MRI brains generated, the training data is ran
 
 ## Experiments
 
-### Training Environment
-
 ### Recommended Environment
 
-16GB RAM, 8GB VRAM
+| Training environment | Recommendations              | Reasoning                                                                                                                                                                                                                                                                      |
+| -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 32GB of RAM          | Minimum 16GB of RAM          | Training uses 10GB+ of RAM                                                                                                                                                                                                                                                     |
+| Nvdia RTX2070 8GB    | Nvidia GPU with 8GB+ of VRAM | Training uses 7GB+ of VRAM. More VRAM would also allow for higher resolution images and batch sizes. A GPU is MANDATORY to be able to train in a timely manner. Although an AMD GPU can be used, additional libraries need to be instead and has not been tested to be stable. |
 
-### Training Parameters (Trial 32)
+### Training Parameters
 
 <style>
     th, td {
