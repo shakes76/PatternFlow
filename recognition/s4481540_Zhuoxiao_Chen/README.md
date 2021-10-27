@@ -143,7 +143,7 @@ optional arguments:
                         processed .mbd files for later training
 ```
 
-#### Parameter Details of train_AKOA_StyleGAN.py for Training
+#### Train StyleGAN using train_AKOA_StyleGAN.py
 
 To train the StyleGAN using AKOA dataset, some of parameters of train_AKOA_StyleGAN.py should be specified. To check the parameter information and its usage, users can simply input the code below: 
 
@@ -188,10 +188,8 @@ optional arguments:
   --lr LR               specify the learning rate used for StyleGAN training.
 ```
 
-#### Train SyleGAN for AKOA Images
 
-
-#### Generate AKOA Images
+#### Generate Fake AKOA Images using generate_AKOA.py
 
 
 ## Result and Analysis
