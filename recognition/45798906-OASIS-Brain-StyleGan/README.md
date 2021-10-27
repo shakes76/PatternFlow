@@ -16,7 +16,22 @@ Some well-known GANs are DCGGAN, ProGAN and StyleGAN. DCGAN (Deep Convolutional 
 
 ### How is StyleGAN different?
 
-StyleGAN builds upon ProGAN by introducing a mapping network for the latent code, which feeds into the Adaptive Instance Normalisation layers throughout the generator, and the addition of noise throughout the generator. The introduction of a mapping network removes the need to directly feed the latent code to the generator, rather a constant value is used instead as the input of the generator.
+StyleGAN builds upon ProGAN by introducing a mapping network for the latent vector, which feeds into the Adaptive Instance Normalisation layers throughout the generator, and the addition of noise throughout the generator. The introduction of a mapping network removes the need to directly feed the latent code to the generator, rather a constant value is used instead as the input of the generator.
+
+<center>
+    <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
+</center>
+
+The figure above shows the general architecture of DCGAN and StyleGAN on the left and right respectively.  
+As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, $\gamma$ abd $\beta$ respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
+
+$$
+\text{AdaIN}(x_i, \gamma, \beta) = \gamma \frac{x_i-\mu(x_i)}{\sigma(x_i)} + \beta
+$$
+
+The use of AdaIN replaces the need for any other normalisation layers as it provides control over the style.
+
+The other input receives single-channel images of uncorrelated Gaussian noise with the same resolution as the convolution results it is being added to. But before the noise is added to the convolution result, the noise weighted via learned per-feature scaling factors. This allows slight variations in the noise image to adjust minor details of the image without changing the overall appearance of the image.
 
 ## Dependencies
 
@@ -26,7 +41,7 @@ Python version: 3.9.7
 | ---------- | ------- |
 | TensorFlow | 2.6.0   |
 | Matplotlib | 3.4.2   |
-| tqdm       | 4.62.2  |
+| Tqdm       | 4.62.2  |
 
 The versions listed above are the versions used to test/run the scripts would be the most stable.
 
