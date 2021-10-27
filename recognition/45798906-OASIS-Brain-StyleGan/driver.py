@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 26/10/2021
+    Date last modified: 27/10/2021
     Python version: 3.9.7
 """
 
@@ -68,8 +68,8 @@ WEIGHT_SAVING_INTERVAL: int = 5
 WEIGHT_PATH: str = "./weights/"
 
 # Sample images
-SAVE_SAMPLE_IMAGES: bool = True
 SHOW_FINAL_SAMPLE_IMAGES: bool = False
+SAVE_SAMPLE_IMAGES: bool = True
 IMAGE_SAVING_INTERVAL: int = 1
 SAMPLE_IMAGES_PATH: str = "./training/"
 
@@ -82,8 +82,15 @@ LOSS_PATH: str = "./resources/"
 def main():
 
     # Optimizers
-    gen_optimizer = get_optimizer(learning_rate=1e-7)
-    disc_optimizer = get_optimizer(learning_rate=1e-7)
+    gen_optimizer = disc_optimizer = None
+    if TRAIN:
+        gen_optimizer = get_optimizer(
+            learning_rate=8e-7, beta_1=0.5, beta_2=0.999
+        )
+        disc_optimizer = get_optimizer(
+            learning_rate=1e-7, beta_1=0.5, beta_2=0.999
+        )
+        print("Loaded optimizers.")
 
     # Model hyperparameters
     IMAGE_SIZE: int = 256
@@ -97,20 +104,28 @@ def main():
     generator = get_generator(
         LATENT_DIMENSION, IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE
     )
-    discriminator = get_discriminator(IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE)
+    print("Loaded generator model.")
     if LOAD_WEIGHTS:
         generator.load_weights(GENERATOR_WEIGHT_PATH).expect_partial()
-        discriminator.load_weights(DISCRIMINATOR_WEIGHT_PATH).expect_partial()
+        print("Loaded generator weights.")
+
+    discriminator = None
+    if TRAIN:
+        discriminator = get_discriminator(IMAGE_SIZE, NUM_FILTERS, KERNEL_SIZE)
+        print("Loaded discriminator model.")
+        if LOAD_WEIGHTS:
+            discriminator.load_weights(
+                DISCRIMINATOR_WEIGHT_PATH
+            ).expect_partial()
+            print("Loaded discriminator weights.")
 
     # Train
     if TRAIN:
-        print("Loading images.")
         images = load_images(IMAGE_PATHS, BATCH_SIZE, IMAGE_SIZE)
-        print("Done loading images.")
+        print("Loaded training images.")
 
-        print("Augmenting images.")
         batches, images = augment_images(images)
-        print("Done augmenting images.")
+        print("Augmented images.")
 
         print("Starting GAN training.")
         history = train(
@@ -136,21 +151,26 @@ def main():
         print("Done training.")
 
         if VISUALISE_LOSS:
+            print("Preparing loss history visualisation.")
+            print("Opening visualisation window.")
             visualise_loss(history, TOTAL_PREVIOUS_EPOCHS)
+            print("Loss history visualisation closed.")
 
         if SAVE_LOSS:
             figure = generate_loss_history(history, TOTAL_PREVIOUS_EPOCHS)
-            save_figure(
-                figure,
-                f"{LOSS_PATH}Loss_{'_'.join([s.lower() for s in MODEL_NAME.split()])}.png",
-            )
+            loss_save_path = f"{LOSS_PATH}Loss_{'_'.join([s.lower() for s in MODEL_NAME.split()])}.png"
+            save_figure(figure, loss_save_path)
+            print(f"Saved loss history to {loss_save_path}.")
 
     if SHOW_FINAL_SAMPLE_IMAGES:
-        # Show sample images
+        print("Perparing samples of the model.")
         samples = generate_samples(
             generator, LATENT_DIMENSION, SAMPLE_SIZE, IMAGE_SIZE
         )
+        print("Opening visualisation window.")
         visualise_images(samples)
+        print("Sample visualisation closed.")
+    print("Script ending.")
 
 
 if __name__ == "__main__":
