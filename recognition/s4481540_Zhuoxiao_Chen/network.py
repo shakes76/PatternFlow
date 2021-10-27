@@ -60,13 +60,13 @@ class UpsamplingLayperByFusing(nn.Module):
         fan_in = input_c * filter_dimension * filter_dimension
 
         self.bias = nn.Parameter(bias)
-        self.weights = nn.Parameter(weight)
+        self.weight = nn.Parameter(weight)
         self.pad = padding
         self.multi = sqrt(2 / fan_in)
 
     def forward(self, data):
         pad_array = [1, 1, 1, 1]
-        weights = F.pad(self.weights * self.multi, pad_array)
+        weights = F.pad(self.weight * self.multi, pad_array)
         weights = (
                           weights[:, :, 1:, 1:]
                           + weights[:, :, :-1, 1:]

@@ -4,7 +4,7 @@ import math
 import torch
 from torchvision import utils
 
-from model import StyledGenerator
+from network import Styled_G
 
 
 @torch.no_grad()
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     
     device = 'cuda'
 
-    generator = StyledGenerator(512).to(device)
+    generator = Styled_G(512).to(device)
     generator.load_state_dict(torch.load(args.path)['g_running'])
     generator.eval()
 
