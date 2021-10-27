@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-class YOLOV1():
+class YoloV1():
 
     def __init__(self, imageWidth=488, imageHeight=488, S=7, B=2, C=1, lambdaCoord=5, lambdaNoObj=0.5):
         """Create a new YOLOV1 instance.
@@ -244,11 +244,28 @@ class YOLOV1():
             run_eagerly (boolean): Whether or not the model should be run eagerly, useful for debugging. 
             **kwargs (dict): Any additional parameters to be passed to the model. 
         """
-        self.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate, clipnorm=clipnorm, **kwargs),
-              loss=self.yoloLoss,
-              metrics=[self.jaccardIndex], run_eagerly=run_eagerly)
+        self.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate, clipnorm=clipnorm),
+              loss=self.yoloLoss, metrics=[self.jaccardIndex], run_eagerly=run_eagerly, **kwargs)
 
-    def runModel(self, train_batches, validation_batches, epochs=200):
+    def loadWeights(self, checkpoint):
+        """Loads existing weights into the model. 
+        Useful for predicting new images, or training with additional data.
+
+        Args:
+            checkPoint (str): The path to the checkpoint file. 
+        """
+        self.model.load_weights(checkpoint)
+
+    def predictData(self, testData):
+        """Predicts a bounding box for an image. 
+        Args: 
+            testData (tensorflow.Dataset): The data on which the bounding boxes are too be predicted.
+        Returns:
+            tensorflow.Tensor: A tensor containing the predicted bounding boxes. 
+        """
+        return self.model.predict(testData)
+
+    def runModel(self, train_batches, validation_batches, epochs=80):
         """Using model.fit, runs yolov1 model on the provided data.
 
         Args:
