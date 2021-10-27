@@ -3,6 +3,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import keras.backend as K
 
 from model import *
 from tensorflow.keras import datasets, layers, models, callbacks
@@ -71,7 +72,7 @@ class NiftiDataGenerator(Sequence):
             imgs[i,], masks[i,] = self.load_nifti_files(os.path.join(self.image_path, name))
 
         return imgs, masks
-    
+
 def sdc(y_true, y_pred, smooth=1):
     intersection = K.sum(y_true * y_pred, axis=[1,2,3])
     union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
