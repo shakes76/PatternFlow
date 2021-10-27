@@ -25,7 +25,7 @@ significantly smaller than the testing set.
 8. Using the training data the model tries to predict the page outcome. 
 9. The model is then shrunk down to 2 dimensions and plotted using tsne
 
-## High level explination of the algortihm
+## High level explanation of the algortihm
 Each node has a lot of features describing it and neighbouring nodes. Each node sends a message to each one of its neighbours with all the features it has. These 
 features from each neighbour are transformed using a linear operation (ie average). This is then put through a standard neural network layer and the ouput is then
 the new state of the node. This is done for every node in the graph. 
