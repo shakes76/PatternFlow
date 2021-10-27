@@ -8,9 +8,32 @@ Student Number: 44961374
 
 Email: mujibulislamdipto@gmail.com
 
+<!-- TABLE OF CONTENTS -->
+<details open="open">
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#goal"> Project Goal </a>
+    </li>
+    <li>
+      <a href="#the-data---isic-2018-challenge-data-for-skin-cancer"> Dataset Information </a>
+      <ul>
+          <li><a href="#overview"> Overview </a></li>
+          <li><a href="#contents"> Contents </a></li>
+          <li><a href="#processing"> Processing </a></li>
+      </ul>
+    </li>
+    <li><a href="#the-improved-unet-model"> About the Model </a></li>
+    <li><a href="#quick-links"> Quick Links </a></li>
+    <li><a href="#references"> References </a></li>
+  </ol>
+</details>
+<hr>
+
 <!-- Goal the project -->
 ## Goal
 The goal of this project is to utilize the Improved UNet Model to segment skin lesions in the ISIC dataset. 
+
 
 <!-- About the dataset -->
 ## The Data - ISIC 2018 Challenge Data For Skin Cancer
@@ -23,12 +46,14 @@ The ISIC 2018 challenge had three main goals:
 
 As mentioned before, this project aims to solve the first problem.
 
-### Dataset contents
+### Contents
 
 ### Processing
 
+
 <!-- About the Model -->
-## The Improved Unet 
+## The Improved Unet Model
+
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
