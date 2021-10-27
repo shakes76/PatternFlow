@@ -71,7 +71,7 @@ def train_StyleGAN(args, G, D):
     """
     Set up the dataset
     """
-    dataset = MultiResolutionDataset(args.path, image_transformation)
+    dataset = MultiResolutionDataset(args.AKOA_directory, image_transformation)
 
     # set the batch size and the learning rate manually 
     args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
@@ -82,7 +82,7 @@ def train_StyleGAN(args, G, D):
     """
     progressive increase the dimension size.
     """
-    progressive_stage = int(math.log2(args.init_size)) - 2
+    progressive_stage = int(math.log2(args.start_dimension)) - 2
     resolution = 4 * 2 ** progressive_stage
 
     """
@@ -129,7 +129,7 @@ def train_StyleGAN(args, G, D):
     """
     compute the max stage number according to the max size
     """
-    most_progressive_stage = int(math.log2(args.max_size)) - 2
+    most_progressive_stage = int(math.log2(args.final_dimension)) - 2
 
     """
     at the begining and mid stage, the last_progressive_stage should be false
@@ -144,7 +144,7 @@ def train_StyleGAN(args, G, D):
         # compute alpha to control model learning
         alpha = min(1, 1 / args.progressive_stage * (processed_data + 1))
 
-        if (resolution == args.init_size and args.ckpt is None) or last_progressive_stage:
+        if (resolution == args.start_dimension and args.ckpt is None) or last_progressive_stage:
             alpha = 1
 
         if processed_data > args.progressive_stage * 2:
@@ -199,14 +199,14 @@ def train_StyleGAN(args, G, D):
         """
         Two different losses are provided here for different datasets,
         based on the original implementation.
-        But for AKOA, we only tried wgan-gp as the time is not enough.
+        But for AKOA, we only tried WGAN as the time is not enough.
         """
-        if args.loss == 'wgan-gp':
+        if args.loss_method == 'WGAN':
             real_predict = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
             real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
             (-real_predict).backward()
 
-        elif args.loss == 'r1':
+        elif args.loss_method == 'r1':
             print('r1 loss is not implemented')
             exit()
 
@@ -236,9 +236,9 @@ def train_StyleGAN(args, G, D):
         output_fake = D(data_fake, step=progressive_stage, alpha=alpha)
 
         """
-        Apply the loss function for the gradient backward using the wgan-gp
+        Apply the loss function for the gradient backward using the WGAN
         """
-        if args.loss == 'wgan-gp':
+        if args.loss_method == 'WGAN':
             output_fake = output_fake.mean()
             output_fake.backward()
             eps = torch.rand(b_size, 1, 1, 1).cuda()
@@ -256,7 +256,7 @@ def train_StyleGAN(args, G, D):
             if index%10 == 0:
                 gradient_error = grad_penalty.item()
                 D_error = (-real_predict + output_fake).item()
-        elif args.loss == 'r1':
+        elif args.loss_method == 'r1':
             print('r1 is not supported in this code')
 
         D_optimiser.step() # pass the gradient
@@ -273,9 +273,9 @@ def train_StyleGAN(args, G, D):
             change_gradient_status(D, False)
             data_fake = G(w_1, step=progressive_stage, alpha=alpha)
             output_of_D = D(data_fake, step=progressive_stage, alpha=alpha)
-            if args.loss == 'wgan-gp':
+            if args.loss_method == 'WGAN':
                 loss = -output_of_D.mean()
-            elif args.loss == 'r1':
+            elif args.loss_method == 'r1':
                 pass
             if index%10 == 0:
                 G_error = loss.item()
@@ -357,30 +357,28 @@ if __name__ == '__main__':
 
     """ Set up the experimental arguments """
     batch_size, latent_length, n_critic = 16, 512, 1
-    parser = argparse.ArgumentParser(description='StyleGAN')
-    parser.add_argument('path', type=str, help='Dataset Path ')
+    parser = argparse.ArgumentParser(description='Training StyleGAN for generating StyleGAN')
+    parser.add_argument('AKOA_directory', type=str, help='The directory of AKOA dataset must be specified for training the StyleGAN.')
     parser.add_argument('--progressive_stage', type=int, default=40_000,
                         help='images to be trained for each progressive_stage')
-    parser.add_argument('--init_size', default=8, type=int,
-                        help='initial size of input images')
+    parser.add_argument('--start_dimension', default=8, type=int,
+                        help='specify the start dimenstion of image for progressive GAN training.')
     parser.add_argument('--sched', action='store_true',
                         help='scheduling for lr')
-    parser.add_argument('--max_size', default=512, type=int,
-                        help='max size of generated images')
-    parser.add_argument('--lr', default=0.001, type=float)
-    parser.add_argument('--ckpt', default=None, type=str, help='checkpoints')
-    parser.add_argument( '--no_from_rgb_activate', action='store_true',
-                         help='activate in from_rgb')
+    parser.add_argument('--final_dimension', default=512, type=int,
+                        help='specify the final(max) dimenstion of image for progressive GAN training. The final_dimension defines the max dimenstion of the image that can be generated by the generator.')
+    parser.add_argument('--lr', default=0.001, type=float, help='specify the learning rate used for StyleGAN training.')
+    parser.add_argument('--ckpt', default=None, type=str, help='specify the checkpoints to resume the model training.')
     parser.add_argument( '--mixing', action='store_true',
-                         help='mixing regularization')
-    parser.add_argument( '--loss', type=str, default='wgan-gp',
-                         choices=['wgan-gp', 'r1'], help='choose gan loss')
+                         help='apply the mixing module as proposed in the paper')
+    parser.add_argument( '--loss_method', type=str, default='WGAN',
+                         choices=['WGAN'], help='Define the loss function. In AKOA datasets, WGAN loss is sufficient.')
     args = parser.parse_args()
 
     """ Load the Pytorch networks of both generator and discriminator """
     G_net = nn.DataParallel(Styled_G(latent_length)).cuda()
     D_net = nn.DataParallel(
-        D(from_rgb_activate=not args.no_from_rgb_activate)
+        D(from_rgb_activate=True)
     ).cuda()
     G_processing = Styled_G(latent_length).cuda()
     G_processing.train(False)
