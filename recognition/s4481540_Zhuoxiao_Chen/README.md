@@ -108,17 +108,50 @@ xz=5.2.5=h7b6447c_0
 zlib=1.2.11=h7b6447c_3
 ```
 
-#### Pre-process the AKOA dataset
+#### Pre-process the AKOA Dataset Using preprocess_AKOA_images.py
 
-#### Parameter Details of Main Function
+Since the progressive StyleGAN is built in this project. All AKOA images should be trained progressively. For example, all images are trained at dimension 8 times 8 for one phase and 16 times 16 for another phase. Finally, the expected dimension 258 times 258 is trained as the final phase. 
 
-To train the StyleGAN using AKOA dataset, some of parameters should be specified. To check the parameter information and its usage, users can simply input the code below: 
+Therefore, the pre-processing is simply converted all the AKOA images into different dimensions with key and value pairs. The output file should be stored in a directory containing processed .mdb files. This directory is later used for the training path.
+
+To get started with the preprocess_AKOA_images.py, user can read the parameter information by:
+
+```
+python preprocess_AKOA_images.py --help
+
+```
+
+And the command line above should print very detailed information for each parameter:
+
+```
+usage: preprocess_AKOA_images.py [-h] [--number_worker NUMBER_WORKER]
+                                 [--output_directory OUTPUT_DIRECTORY]
+                                 AKOA_raw_images_path
+
+Pre-process the AKOA dataset for further training the Progressive StyleGAN.
+
+positional arguments:
+  AKOA_raw_images_path  specify the path of the AKOA raw images
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --number_worker NUMBER_WORKER
+                        specify number of cpus to be used for pre-process the
+                        AKOA datasets
+  --output_directory OUTPUT_DIRECTORY
+                        specify the output directory to store the pre-
+                        processed .mbd files for later training
+```
+
+#### Parameter Details of train_AKOA_StyleGAN.py for Training
+
+To train the StyleGAN using AKOA dataset, some of parameters of train_AKOA_StyleGAN.py should be specified. To check the parameter information and its usage, users can simply input the code below: 
 
 ```
 python train_AKOA_StyleGAN.py --help
 ```
 
-And the output should print very detailed information for each parameter:
+And the command line above should print very detailed information for each parameter:
 
 ```
 usage: train_AKOA_StyleGAN.py [-h] [--start_dimension START_DIMENSION]
