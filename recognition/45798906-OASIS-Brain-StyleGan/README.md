@@ -90,7 +90,7 @@ To increase the range of possible MRI brains generated, the training data is ran
             <table>
                 <thead>
                     <tr>
-                        <th>Parameter</th>
+                        <th>Hyperparameter</th>
                         <th>Generator</th>
                         <th>Discriminator</th>
                     </tr>
@@ -154,6 +154,8 @@ To increase the range of possible MRI brains generated, the training data is ran
         </td>
     </tr>
 </table>
+
+After many trials, the hyperparameters above would be able to produce the results below. Increasing the learning rate to around 1e-5 would most likely cause the generator to suffer from mode collapse after 50 epochs. A learning rate ratio of 8:1 (generator : discriminator) seemed to provide enough detail, lowering this ratio appeared to cause finer details to be smeared.
 
 ### Training Results
 
