@@ -57,7 +57,7 @@ def train_StyleGAN(args, G, D):
     """
     Set up the dataset
     """
-    dataset = MultiResolutionDataset(args.path, image_transformation)
+    dataset = MultiResolutionDataset(args.AKOA_directory, image_transformation)
     # set the batch size and the learning rate manually 
     args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
     args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
@@ -67,7 +67,7 @@ def train_StyleGAN(args, G, D):
     """
     progressive increase the dimension size.
     """
-    progressive_stage = int(math.log2(args.init_size)) - 2
+    progressive_stage = int(math.log2(args.start_dimension)) - 2
     resolution = 4 * 2 ** progressive_stage
 
     """
@@ -113,7 +113,7 @@ def train_StyleGAN(args, G, D):
     """
     compute the max stage number according to the max size
     """
-    most_progressive_stage = int(math.log2(args.max_size)) - 2
+    most_progressive_stage = int(math.log2(args.final_dimension)) - 2
     """
     at the begining and mid stage, the last_progressive_stage should be false
     """
@@ -127,9 +127,9 @@ def train_StyleGAN(args, G, D):
         D.zero_grad() # clear the gradient from last iteration
 
         # compute alpha to control model learning
-        alpha = min(1, 1 / args.phase * (processed_data + 1))
+        alpha = min(1, 1 / args.progressive_stage * (processed_data + 1))
 
-        if (resolution == args.init_size and args.ckpt is None) or last_progressive_stage:
+        if (resolution == args.start_dimension and args.ckpt is None) or last_progressive_stage:
             alpha = 1
 
         """
@@ -137,7 +137,7 @@ def train_StyleGAN(args, G, D):
         then the progressive_stage is increased, which means the resolution 
         of the feature map increase.
         """
-        if processed_data > args.phase * 2:
+        if processed_data > args.progressive_stage * 2:
             processed_data = 0
             progressive_stage += 1
 
@@ -350,27 +350,26 @@ if __name__ == '__main__':
     """ Set up the experimental arguments """
     batch_size, latent_length, n_critic = 16, 512, 1
     parser = argparse.ArgumentParser(description='StyleGAN')
-    parser.add_argument('path', type=str, help='Dataset Path ')
-    parser.add_argument('--phase', type=int, default=40_000,
-                        help='number of samples for each training phase')
-    parser.add_argument('--init_size', default=8, type=int,
-                        help='initial size of input images')
-    parser.add_argument('--max_size', default=512, type=int,
-                        help='max size of generated images')
-    parser.add_argument('--lr', default=0.001, type=float)
+    parser.add_argument('AKOA_directory', type=str, help='AKOA dataset directory')
+    parser.add_argument('--progressive_stage', type=int, default=40_000,
+                        help='images to be trained for each progressive_stage')
+    parser.add_argument('--start_dimension', default=8, type=int,
+                        help='start dimension of input AKOA images')
+    parser.add_argument('--final_dimension', default=512, type=int,
+                        help='max and final dimension of generated AKOA images')
+    parser.add_argument('--lr', default=0.001, type=float, help='specify the learning rate here')
     parser.add_argument('--ckpt', default=None, type=str, help='checkpoints')
-    parser.add_argument( '--no_from_rgb_activate', action='store_true',
-                         help='activate in from_rgb')
     parser.add_argument( '--mixing', action='store_true',
-                         help='mixing regularization')
+                         help='mixing module used as in paper')
     parser.add_argument( '--loss', type=str, default='wgan-gp',
-                         choices=['wgan-gp', 'r1'], help='choose gan loss')
+                         choices=['wgan-gp'], 
+                         help='selec the gan loss, for AKOA, only wgan-gp is supported')
     args = parser.parse_args()
 
     """ Load the Pytorch networks of both generator and discriminator """
     G_net = nn.DataParallel(Styled_G(latent_length)).cuda()
     D_net = nn.DataParallel(
-        D(from_rgb_activate=not args.no_from_rgb_activate)
+        D(from_rgb_activate=True)
     ).cuda()
     G_processing = Styled_G(latent_length).cuda()
     G_processing.train(False)
@@ -390,7 +389,7 @@ if __name__ == '__main__':
     )
     D_optimiser = optim.Adam(D_net.parameters(), lr=args.lr,
                              betas=(beta_0, beta_1))
-
+    stacking_parameters(G_processing, G_net.module, 0)
     """ Start Training """
     train_StyleGAN(args, G_net, D_net)
 
