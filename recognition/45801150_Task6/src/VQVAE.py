@@ -24,7 +24,7 @@ def create_decoder(encoder: Sequential, latent_dimensions):
     decoder.add(Conv2DTranspose(1, 3, padding="same"))
     return decoder
 
-class VectorQuantiser(keras.layers.layer):
+class VectorQuantiser(keras.layers.Layer):
     def __init__(self, num_embeddings, embedding_dimensions, **kwargs):
         super().__init__(**kwargs)
         self.embedding_dimensions = embedding_dimensions
@@ -117,4 +117,14 @@ class VQVae(keras.models.Sequential):
 
         return losses
 
+def train_vqvae(vqvae: VQVae):
+    x_train, x_test = load_oasis_data.get_data()
+
+    x_train = np.expand_dims(x_train, -1)
+    x_train_scaled = (x_train / 255.0) - 0.5
+
+    data_variance = np.var(x_train / 255.0)
+    vqvae = VQVae(data_variance, latent_dimensions=32, num_embeddings=64)
+    vqvae.compile(optimizer=keras.optimizers.Adam())
+    vqvae.fit(x_train_scaled, epochs=2, batch_size=128)
 
