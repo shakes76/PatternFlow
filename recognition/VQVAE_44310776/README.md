@@ -36,7 +36,7 @@ These slices were split 80/20 into main/test sets, and the main set was further 
 ### Dependencies
 To use the models the following dependencies are required:
 ```
-pytorch >= 1.9
+pytorch >= 1.10
 ```
 
 To run the evaluation notebook the following additional dependencies are required:
