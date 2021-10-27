@@ -2,6 +2,8 @@
 REFERENCE FOR PERCEIVER HELP ON CIFAR10
 https://keras.io/examples/vision/perceiver_image_classification/
 """
+import datetime
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -15,33 +17,47 @@ print("Tensorflow version: ", tf.__version__)
 
 # =============== PREPARE DATA ===============
 
-DATASET_FOLDER = 'datasets/'
+DATASET_DIR = 'datasets/'
+OUTPUT_DIR = 'output/'
 
 # should get this from directory
 INPUT_DS_SIZE = 18680
 # size to resize input images
-IMG_SIZE = 32
+IMG_SIZE = 8
 
 # load AKOA dataset from processed datasets directory
-akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_FOLDER,
-                                                                shuffle=True,
-                                                                seed=999,
-                                                                image_size=(IMG_SIZE, IMG_SIZE),
-                                                                batch_size=INPUT_DS_SIZE,
-                                                                labels="inferred",
-                                                                label_mode="categorical",
-                                                                color_mode="grayscale",
-                                                                ),
+akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_DIR,
+                                                                    shuffle=True,
+                                                                    seed=999,
+                                                                    image_size=(IMG_SIZE, IMG_SIZE),
+                                                                    batch_size=INPUT_DS_SIZE,
+                                                                    labels="inferred",
+                                                                    label_mode="categorical",
+                                                                    color_mode="grayscale",
+                                                                    ),
 
 
 # extract dataset from tuple
 akoa_ds = akoa_ds_tuple[0]
 assert isinstance(akoa_ds, tf.data.Dataset)
 
+# normalise dataset
+data_augmenter = tf.keras.Sequential([
+    #tf.keras.layers.experimental.preprocessing.Normalization(),
+    tf.keras.layers.experimental.preprocessing.Rescaling(1./127.5),
+    tf.keras.layers.experimental.preprocessing.RandomContrast(1),
+])
+akoa_ds = akoa_ds.map(lambda x, y: (data_augmenter(x), y))
+
 # get data into numpy arrays
 x_data, y_data = next(iter(akoa_ds))
 x_data = np.array(x_data)
 y_data = np.array(y_data)
+
+# display e.g. image from ds
+first_image = x_data[0, :, :, 0]
+print(first_image.shape)
+plt.imsave(OUTPUT_DIR + "eg_img.png", first_image, format="png", cmap=plt.cm.gray)
 
 # train test split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
@@ -58,7 +74,7 @@ NUM_CLASSES = 2
 NUM_CHANNELS = 1
 LEARN_RATE = 0.001
 WEIGHT_DECAY = 0.0001
-EPOCHS = 10
+EPOCHS = 1
 BATCH_SIZE = 32
 DROPOUT_RATE = 0.2
 PATCH_SIZE = 2  # Size of patches to be extracted from input images.
@@ -78,18 +94,9 @@ classifier_units = [PROJECTION_SIZE, NUM_CLASSES]
 print(f"Image size: {IMG_SIZE} X {IMG_SIZE} = {IMG_SIZE ** 2}")
 print(f"Patch size: {PATCH_SIZE} X {PATCH_SIZE} = {PATCH_SIZE ** 2} ")
 print(f"Patches per image: {PATCHES}")
-print(f"Elements per patch (3 channels): {(PATCH_SIZE ** 2) * NUM_CHANNELS}")
+print(f"Elements per patch: {(PATCH_SIZE ** 2) * NUM_CHANNELS}")
 print(f"Latent array shape: {LATENT_ARRAY_SIZE} X {PROJECTION_SIZE}")
 print(f"Data array shape: {PATCHES} X {PROJECTION_SIZE}")
-
-# =============== AUGMENT DATA ===============
-
-data_augmentation = keras.Sequential(
-    [
-        tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
-        tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
-    ]
-)
 
 # =============== DENSE NETWORK ===============
 
@@ -309,9 +316,9 @@ class Perceiver(keras.Model):
 
     def call(self, inputs):
         # Augment data.
-        augmented = data_augmentation(inputs)
+        #augmented = data_augmentation(inputs)
         # Create patches.
-        patches = self.patcher(augmented)
+        patches = self.patcher(inputs)
         # Encode patches.
         encoded_patches = self.patch_encoder(patches)
         # Prepare cross-attention inputs.
@@ -351,23 +358,13 @@ def train_model(model):
         metrics=[keras.metrics.BinaryAccuracy(name="accuracy")],
     )
 
-    # Create a learning rate scheduler callback.
-    # reduce_lr = keras.callbacks.ReduceLROnPlateau(
-    #     monitor="val_loss", factor=0.2, patience=3
-    # )
-    #
-    # # Create an early stopping callback.
-    # early_stopping = tf.keras.callbacks.EarlyStopping(
-    #     monitor="val_loss", patience=15, restore_best_weights=True
-    # )
-
     # fit model
     history = model.fit(
         x=x_train,#x=x_train,
         y=y_train,
         batch_size=BATCH_SIZE,
         epochs=EPOCHS,
-        validation_split=0.1,
+        validation_split=0.2,
         #callbacks=[early_stopping, reduce_lr],
     )
 
@@ -403,5 +400,4 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
-#plt.show()
-plt.savefig(f'training_curve_epochs_{EPOCHS}.png')
+plt.savefig(f'{OUTPUT_DIR}training_curve_epochs_{EPOCHS}.png')
