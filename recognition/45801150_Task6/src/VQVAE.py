@@ -66,14 +66,55 @@ class VectorQuantiser(keras.layers.layer):
 
 
 
-def create_vqvae(latent_dim=16, num_embeddings=64):
-        vq_vae = Sequential(name="VQVAE")
-        vq_layer = VectorQuantiser(num_embeddings, latent_dim, name="vector_quantiser")
-        encoder = create_encoder(latent_dim)
+class VQVae(keras.models.Sequential):
+    def __init__(self, variance, latent_dimensions, num_embeddings, **kwargs):
+
+        super(VQVae, self).__init__(**kwargs)
+        self.variance = variance
+        self.latent_dimensions = latent_dimensions
+        self.num_embeddings = num_embeddings
+
+        # Create the Sequential model
+        vector_quantiser = VectorQuantiser(num_embeddings, latent_dimensions, name="vector_quantiser")
+        encoder = create_encoder(latent_dimensions)
         decoder = create_decoder()
 
-        vq_vae.add(encoder)
-        vq_vae.add(vq_layer)
-        vq_vae.add(decoder)
-        return vq_vae
+        # Add the components of the model
+        self.add(encoder)
+        self.add(vector_quantiser)
+        self.add(decoder)
+
+        # Initialise the loss metrics
+        self.loss_total = keras.metrics.Mean()
+        self.loss_reconstruction = keras.metrics.Mean()
+        self.loss_vq = keras.metrics.Mean()
+
+
+    @property
+    def metrics(self):
+        return [self.loss_total, self.loss_reconstruction, self.loss_vq]
+
+    def train_step(self, data):
+        with tf.GradientTape() as tape:
+            reconstructions = self.call(data)
+            reconstruction_loss = (
+                    tf.reduce_mean((data - reconstructions) ** 2) / self.variance
+            )
+            total_loss = reconstruction_loss + sum(self.losses)
+
+        gradients = tape.gradient(total_loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        self.loss_total.update_state(total_loss)
+        self.loss_reconstruction.update_state(reconstruction_loss)
+        self.loss_vq.update_state(sum(self.losses))
+
+        losses = {
+            "loss": self.loss_total.result(),
+            "reconstruction_loss": self.loss_reconstruction.result(),
+            "vqvae_loss": self.loss_vq.result(),
+        }
+
+        return losses
+
 
