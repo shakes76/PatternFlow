@@ -30,3 +30,17 @@ significantly smaller than the testing set.
 
 ## TSNE embedded graph
 ![TSNE](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/tsne.png)
+
+## Training the model
+![training of the model](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/Training_stage.png)
+
+## Testing the model
+![testing the model](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/testing%20model.png)
+
+## Other outputs
+Other outputs like shape of data and how I progressed in solving the problem is given in the notebook. Model.py is a refined version of the notebook wrapped in a
+function. The driver.py file runs the model.py file and gives the outputs given above (i.e it does not show any less important outputs like shapes of data). 
+
+## Usage
+Run the driver.py file to get all the main outputs given above. The driver.py file does not require any arguments. The driver file has a main function so it will
+run as soon driver.py is run. 
