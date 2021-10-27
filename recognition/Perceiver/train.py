@@ -362,22 +362,23 @@ def run_experiment(model):
             try:
                 images, labels = testing_it.next()
                 loss, prediction = test_step(model, images, labels, loss_f)
-                print("labels, pred", labels, prediction)
+                # print("labels, pred", labels, prediction)
                 correct_num = correct_num_batch(labels, prediction)
                 print(f"correct num:{correct_num}")
                 sum_correct_num += correct_num 
-                sum_loss = loss * c.batch_size
+                sum_loss += loss
                 print('loss: {:.4f}, accuracy: {:.4f}'.format(loss, correct_num / c.batch_size))
             except Exception as e:
                 print(e)
                 print("probs ran out, continuing")
+                
+            print(f"TEST {sum_correct_num / c.test_num}, {sum_loss / c.test_num}\n")
 
-            print('TEST - loss: {:.4f}, accuracy: {:.4f}'.format(sum_loss / c.test_num, sum_correct_num / c.test_num)) 
 
     
 
         with open("test_history.csv", 'a') as f:
-            f.write(f"{epoch_num}, {sum_correct_num / c.train_num}, {sum_loss / c.train_num}\n")  
+            f.write(f"{epoch_num}, {sum_correct_num / c.test_num}, {sum_loss / c.test_num}\n")  
 
     # x_train, y_train = training_it.next()
     # x_test, y_test = testing_it.next()
