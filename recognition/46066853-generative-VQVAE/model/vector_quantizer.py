@@ -32,23 +32,26 @@ class VectorQuantizer(nn.Module):
         # convert inputs from BCHW to BHWC
         x = x.permute(0,2,3,1).contiguous() # keep memory contiguous
         x_shape = x.shape
-
         # Flatten
         # Each flattened layer is individually quantized
         flat_x = x.view(-1, self.embedding_dim)
-
         # Calculate distances
         # Find closest codebook vectors
         # find distance of encoded vector to all coded vectors
+        # shape (#,num encodings)
         distances = (torch.sum(flat_x**2, dim=1, keepdim=True) 
                     + torch.sum(self.embedding.weight**2, dim=1)
                     - 2 * torch.matmul(flat_x, self.embedding.weight.t()))
-
+        
         # Encoding
-        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1) # min d
-        encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=x.device)
-        encodings.scatter_(1, encoding_indices, 1)
 
+        #return val for training 
+        train_indices_return = torch.argmin(distances, dim=1)
+        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1) # min d
+
+        encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=x.device)
+        encodings.scatter_(1, encoding_indices, 1) # place in encodings (eq to keras one-hot)
+ 
         # Quantize and unflatten
         # Multiply encodings table with embeddings
         quantized = torch.matmul(encodings, self.embedding.weight).view(x_shape)
@@ -63,4 +66,15 @@ class VectorQuantizer(nn.Module):
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
         
         # convert quantized from BHWC -> BCHW
-        return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings
+        return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings, train_indices_return
+
+    """
+    Returns embedding corresponding to encoding index
+    For one index
+    """
+    def get_quantized(self, x):
+        encoding_indices = x.unsqueeze(1)
+        encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=x.device)
+        encodings.scatter_(1, encoding_indices, 1)
+        quantized = torch.matmul(encodings, self.embedding.weight).view(1,64,64,64)
+        return quantized.permute(0,3,1,2).contiguous()
