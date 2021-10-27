@@ -9,7 +9,7 @@ Student Number: 44961374
 Email: mujibulislamdipto@gmail.com
 
 <!-- TABLE OF CONTENTS -->
-<details open="open">
+<details>
   <summary>Table of Contents</summary>
   <ol>
     <li>
