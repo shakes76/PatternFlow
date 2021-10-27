@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
-from model import unet 
+from model import *
 
 #Defining dimensions for cnn input and resizing
 width = 256 
-height = 192
+height = 256
 resize_dim = (height, width) 
 
 #List to store the input images for cnn
@@ -66,11 +66,11 @@ X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-model = unet(height,width,2)
+model = unet_improved(height,width,2)
 
 model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
+unet_trained = model.fit(X_train, Y_train, epochs=1, batch_size=26, shuffle=True, validation_split=0.1)
 
 predictions = model.predict(X_test)
 

@@ -67,21 +67,24 @@ def unet(img_height,img_width,num_channels):
 
 def context_module(input_layer,filters):
     
-    layer = Conv2D(filters, (3,3))(input_layer)
-    layer = Dropout(0.3)(layer)
-    layer = Conv2D(filters, (3,3))(layer)
+    layer = Conv2D(filters, (3,3), padding="same")(input_layer)
+    layer = Dropout(0.2)(layer)
+    layer = Conv2D(filters, (3,3), padding="same")(layer)
 
     return layer
 
 def upsampling_module(input_layer,filters):
-    pass
+    
+    layer = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(input_layer)
+    layer = Conv2D(filters, (3,3), padding="same")(layer)
 
+    return layer
 
 
 def localization_module(input_layer,filters):
 
-    layer = Conv2D(filters, (3,3))(input_layer)
-    layer = Conv2D(filters, (1,1))(layer)
+    layer = Conv2D(filters, (3,3), padding="same")(input_layer)
+    layer = Conv2D(filters, (1,1), padding="same")(layer)
 
     return layer
 
@@ -91,25 +94,25 @@ def unet_improved(img_height,img_width,num_channels):
 
     inputs = Input((img_height,img_width,1))
 
-    term_1a = Conv2D(16, (3,3))(inputs)
+    term_1a = Conv2D(16, (3,3), padding="same")(inputs)
     term_1b = context_module(term_1a, 16)
     concat_1a = Add()([term_1a,term_1b])
 
-    term_2a = Conv2D(32, (3,3), strides=2)(concat_1a)
+    term_2a = Conv2D(32, (3,3), strides=2, padding="same")(concat_1a)
     term_2b = context_module(term_2a, 32)
     concat_2a = Add()([term_2a,term_2b])
 
-    term_3a = Conv2D(64, (3,3), strides=2)(concat_2a)
+    term_3a = Conv2D(64, (3,3), strides=2, padding="same")(concat_2a)
     term_3b = context_module(term_3a, 64)
     concat_3a = Add()([term_2a,term_2b])
 
-    term_4a = Conv2D(128, (3,3), strides=2)(concat_3a)
+    term_4a = Conv2D(128, (3,3), strides=2, padding="same")(concat_3a)
     term_4b = context_module(term_4a, 128)
     concat_4a = Add()([term_2a,term_2b])
 
     #Bottle Neck
 
-    term_5a = Conv2D(256, (3,3))(concat_4a)
+    term_5a = Conv2D(256, (3,3), strides=2, padding="same")(concat_4a)
     term_5b = context_module(term_5a, 256)
     bottleneck_sum = Add()([term_5a,term_5b])
     concat_4b = upsampling_module(bottleneck_sum, 128)
@@ -118,7 +121,7 @@ def unet_improved(img_height,img_width,num_channels):
 
     concat_4c = Concatenate()([concat_4a,concat_4b])
     local_out_4 = localization_module(concat_4c, 128)
-    concat_3b = upsampling_module(local_out, 64)
+    concat_3b = upsampling_module(local_out_4, 64)
     
 
     concat_3c = Concatenate()([concat_3a,concat_3b])
@@ -130,9 +133,17 @@ def unet_improved(img_height,img_width,num_channels):
     concat_1b = upsampling_module(local_out_2, 16)
 
     concat_1c = Concatenate()([concat_1a,concat_1b])
-    conv_output = Conv2D(32, (3,3))(concat_1c)
+    conv_output = Conv2D(32, (3,3), padding="same")(concat_1c)
 
+    output_1 = Conv2D(num_channels, (1,1), padding="same")(conv_output)
+    output_2 = Conv2D(num_channels, (1,1), padding="same")(local_out_2)
+    output_3 = Conv2D(num_channels, (1,1), padding="same")(local_out_3)
 
-    #To do 
-    #-segmentation and element wise sum layers seenn the right side of the imp unet
-    #-figure out upsampling module as it doesnt use Conv2DTranspose. 
+    final_term_3 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(output_3)
+    final_term_2 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(output_2)
+
+    final_term_1 = Add()([final_term_3,final_term_2])
+    final_term = Add()([final_term_1,output_1])
+
+    output = Activation("softmax")(final_term)
+   
