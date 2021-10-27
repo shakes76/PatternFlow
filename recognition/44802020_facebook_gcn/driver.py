@@ -148,22 +148,30 @@ def main():
     print(tf.shape(feats).get_shape())
 
     my_model.add(Input(shape=tf.Tensor.get_shape(feats)))
-    #my_model.add(Input(batch_shape=tf.shape(feats)))
 
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    # my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    # my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(Dense(64))
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(Dense(32))
+    my_model.add(layers.Dropout(0.5))
 
-    my_model.add(Dense(4, activation='softmax'))
 
-    my_model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
+    my_model.add(Dense(4, activation='softmax', activity_regularizer='l1'))
+
+    opt = op.Adam(learning_rate=0.05)
+
+    my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
     my_model.fit(feats,
                  labels,
-                 epochs=1000,
+                 epochs=1500,
                  batch_size=22470
                  )
-
     print(my_model.summary())
+
+    # Evaluate
+
+    # Predict
+
 
 
 if __name__ == '__main__':
