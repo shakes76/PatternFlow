@@ -1,12 +1,12 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Concatenate,\
-    Dropout, Add, Softmax, UpSampling2D
+    Dropout, Add, UpSampling2D, Activation
 from tensorflow.keras.models import Model
 from tensorflow.keras import Input
 
-IMG_HEIGHT = 384
-IMG_WIDTH = 512
-IMG_CHANNELS = 1
+IMG_HEIGHT = 96
+IMG_WIDTH = 128
+IMG_CHANNELS = 3
 
 
 def iunet_conv2d(filters: int, name: str) -> Conv2D:
@@ -35,9 +35,9 @@ def iunet_upsample(filters: int, name: str) -> Conv2DTranspose:
 
 
 def iunet_segment(name):
-    return Conv2D(filters=2, kernel_size=(1, 1),
+    return Conv2D(filters=1, kernel_size=(1, 1),
                   padding="same",
-                  activation=tf.keras.activations.relu,
+                  activation=None,
                   name=name)
 
 
@@ -98,9 +98,9 @@ def build_iunet():
 
     upscale_1 = UpSampling2D(size=(2, 2), name="upscale_1")(add_2b)
     add_1b = Add(name="add_1b")([segment_1, upscale_1])
-    softmax_1 = Softmax()(add_1b)
+    sigmoid_1 = Activation("sigmoid")(add_1b)
 
-    model = Model(inputs=inputs, outputs=softmax_1)
+    model = Model(inputs=inputs, outputs=sigmoid_1)
 
     return model
 
