@@ -8,11 +8,31 @@ import sys
 import os
 import shutil
 from tensorflow import keras as kr
-from tensorflow.keras import preprocessing as krp
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-def create_generators(train, val, test, path_to_data, path_to_groundtruth):
+import matplotlib.pyplot as plt
+
+def create_generator(path_to_data, path_to_gt, img_size):
     # Creating Train generators
-    pass
+    datagen = ImageDataGenerator(rescale=1/225) # We are normalizing images
+    generator_data = datagen.flow_from_directory(path_to_data,
+                                                target_size=img_size,
+                                                color_mode='grayscale',
+                                                class_mode=None,
+                                                batch_size=64,
+                                                shuffle=True,
+                                                seed=225)
+
+    generator_gt = datagen.flow_from_directory(path_to_gt,
+                                                target_size=img_size,
+                                                color_mode='grayscale',
+                                                class_mode=None,
+                                                batch_size=64,
+                                                shuffle=True,
+                                                seed=225)
+
+    return zip(generator_data, generator_gt)
+
 
 def move_files(files, from_dest, destination):
     for file in files:
@@ -20,7 +40,6 @@ def move_files(files, from_dest, destination):
 
 def process_data_folders(path_to_data):
     data_files = [f for f in os.listdir(path_to_data) if f.endswith(".jpg")]
-    print(data_files)
     num_files = len(data_files)
 
     # The groundtruth files are named similarly to the data_files.
@@ -44,6 +63,7 @@ def process_data_folders(path_to_data):
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/
 #/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/
 home = "/home/tannishpage/Documents/COMP3710_DATA"
+
 train, val, test = process_data_folders("/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/")
 
 move_files(train[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "train/data/images"))
@@ -54,3 +74,15 @@ move_files(val[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Tra
 
 move_files(test[0], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1-2_Training_Input_x2/", os.path.join(home, "test/data/images"))
 move_files(test[1], "/home/tannishpage/Documents/COMP3710_DATA/ISIC2018_Task1_Training_GroundTruth_x2/", os.path.join(home, "test/groundtruth/images"))
+
+train = create_generator(os.path.join(home, "train/data/"),
+                        os.path.join(home, "train/groundtruth/"),
+                        (128, 128))
+
+val = create_generator(os.path.join(home, "val/data/images"),
+                        os.path.join(home, "val/groundtruth/images"),
+                        (128, 128))
+
+test = create_generator(os.path.join(home, "test/data/images"),
+                        os.path.join(home, "test/groundtruth/images"),
+                        (128, 128))
