@@ -653,7 +653,7 @@ The following are some samples of the results achieved when training the model o
             <img src="resources/final_loss.png" alt="GAN loss graph" />
         </td>
         <td>
-            <img src="resources/animated.gif" alt="Training sample evolution" />
+            <img src="https://media.giphy.com/media/8IJHKVouQJ3BZOJ8Vt/giphy-downsized-large.gif" alt="Training sample evolution" />
         </td>
     </tr>
 </table>
