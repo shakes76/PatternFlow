@@ -60,444 +60,26 @@ To increase the range of possible MRI brains generated, the training data is ran
 
 16GB RAM, 8GB VRAM
 
-### Trial 1
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-6  |
-| Discriminator Learning Rate | 4e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 4     |
-| Total Epochs                | 100   |
-
-Using the old data augmentation method.
-
-### Trial 2
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-6  |
-| Discriminator Learning Rate | 4e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 4     |
-| Total Epochs                | 100   |
-
-### Trial 3
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-6  |
-| Discriminator Learning Rate | 4e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 4
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 2e-6  |
-| Discriminator Learning Rate | 4e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 5
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 2e-6  |
-| Discriminator Learning Rate | 3e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 6
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 2e-6  |
-| Discriminator Learning Rate | 2e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 7
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-6  |
-| Discriminator Learning Rate | 1e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 8
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-6  |
-| Discriminator Learning Rate | 5e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 100   |
-
-### Trial 9
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 2e-6  |
-| Discriminator Learning Rate | 1e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 10
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 4e-6  |
-| Discriminator Learning Rate | 1e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 11
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 8e-6  |
-| Discriminator Learning Rate | 2e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 12
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 8e-6  |
-| Discriminator Learning Rate | 1e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 13
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 8e-6  |
-| Discriminator Learning Rate | 1e-6  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-Using uniform distribution to generate noisy image.
-
-### Trial 14
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 8e-5  |
-| Discriminator Learning Rate | 1e-5  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 15
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 8e-7  |
-| Discriminator Learning Rate | 1e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-Loss history was lost.
-
-### Trial 16
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 4e-7  |
-| Discriminator Learning Rate | 1e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 17
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 1e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 18
-
-| Parameter                   | Value  |
-| --------------------------- | ------ |
-| Generator Learning Rate     | 1.5e-7 |
-| Discriminator Learning Rate | 1e-7   |
-| Image Size                  | 256    |
-| Batch Size                  | 32     |
-| Number of Filters           | 512    |
-| Latent dimension            | 512    |
-| Kernel Size                 | 3      |
-| Total Epochs                | 50     |
-
-### Trial 19
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 4e-7  |
-| Discriminator Learning Rate | 5e-8  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 20
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 4e-7  |
-| Discriminator Learning Rate | 5e-8  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-Increase the dropout rate from 0.2 to 0.5.
-
-### Trial 21
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 4e-7  |
-| Discriminator Learning Rate | 5e-8  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 5     |
-| Total Epochs                | 50    |
-
-Epoch 35 is ok
-
-### Trial 22
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 4e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 23
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 2e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 24
-
-| Parameter                   | Value      |
-| --------------------------- | ---------- |
-| Generator Learning Rate     | 1e-7       |
-| Discriminator Learning Rate | 1e-8       |
-| Image Size                  | 256        |
-| Batch Size                  | 32         |
-| Number of Filters           | 512        |
-| Latent dimension            | 512        |
-| Kernel Size                 | 3          |
-| Total Epochs                | 50x2 = 100 |
-
-### Trial 25
-
-| Parameter                   | Value  |
-| --------------------------- | ------ |
-| Generator Learning Rate     | 2e-7   |
-| Discriminator Learning Rate | 2.5e-8 |
-| Image Size                  | 256    |
-| Batch Size                  | 32     |
-| Number of Filters           | 512    |
-| Latent dimension            | 512    |
-| Kernel Size                 | 3      |
-| Total Epochs                | 50     |
-
-### Trial 26
-
-| Parameter                   | Value  |
-| --------------------------- | ------ |
-| Generator Learning Rate     | 1.5e-7 |
-| Discriminator Learning Rate | 1e-8   |
-| Image Size                  | 256    |
-| Batch Size                  | 32     |
-| Number of Filters           | 512    |
-| Latent dimension            | 512    |
-| Kernel Size                 | 3      |
-| Total Epochs                | 50     |
-
-### Trial 27
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 4e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-Increased LeakyReLU alpha to 0.2
-
-### Trial 28
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 2e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-Increased LeakyReLU alpha to 0.2
-
-### Trial 29
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 1e-7  |
-| Discriminator Learning Rate | 1e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
-### Trial 30
-
-| Parameter                   | Value  |
-| --------------------------- | ------ |
-| Generator Learning Rate     | 2e-7   |
-| Discriminator Learning Rate | 2.5e-8 |
-| Image Size                  | 256    |
-| Batch Size                  | 32     |
-| Number of Filters           | 512    |
-| Latent dimension            | 512    |
-| Kernel Size                 | 3      |
-| Total Epochs                | 50     |
-
-Removed Dropout and Average pooling from the discriminator.
-Added Resizing to downsample using bilinear interpolation.
-Added some more LeakyReLUs to the generator.
-
-### Trial 31
-
-| Parameter                   | Value |
-| --------------------------- | ----- |
-| Generator Learning Rate     | 2e-7  |
-| Discriminator Learning Rate | 1e-7  |
-| Image Size                  | 256   |
-| Batch Size                  | 32    |
-| Number of Filters           | 512   |
-| Latent dimension            | 512   |
-| Kernel Size                 | 3     |
-| Total Epochs                | 50    |
-
 ### Training Parameters (Trial 32)
 
 <style>
     th, td {
-        text-align: center
+        text-align: center;
     }
     th:first-child, td:first-child {
-        text-align: left
+        text-align: left;
     }
     /* .side-by-side th, .side-by-side tr {
         text-align: left
     }  */
     .image-grid tr td {
-        text-align: center
+        text-align: center;
     }
     .image-grid img {
-        width: 500px
+        width: 500px;
+    }
+    .image-grid, .side-by-side{
+        margin: 0 auto;
     }
 </style>
 
@@ -645,15 +227,24 @@ The following are some samples of the results achieved when training the model o
 
 <table class="image-grid">
     <tr>
-        <td>Loss</td>
         <td>Training Samples</td>
     </tr>
     <tr>
         <td>
-            <img src="resources/final_loss.png" alt="GAN loss graph" />
-        </td>
-        <td>
             <img src="https://media.giphy.com/media/8IJHKVouQJ3BZOJ8Vt/giphy-downsized-large.gif" alt="Training sample evolution" />
+        </td>
+    </tr>
+</table>
+
+Although samples are not perfect, the shape and some details of the brain MRIs can be seen. Some higher quality images could possibly be generated by further training and more training data.
+
+<table class="image-grid">
+    <tr>
+        <td>GAN Loss</td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/final_loss.png" alt="GAN loss graph" />
         </td>
     </tr>
 </table>
