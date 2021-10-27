@@ -36,9 +36,14 @@ class ProstateSequence(keras.utils.Sequence):
         self.shuffle = False
         self.on_epoch_end()
 
+        print("39 self.x", self.x)
+        print("40 self.y", self.y)
+
     def __len__(self):
         """Number of batches per epoch"""
-        return math.ceil(len(self.x) / self.batch_size)
+        # return math.ceil(len(self.x) / self.batch_size)
+        print("self.x / self.batchsize) ", len(self.x) // self.batch_size)
+        return len(self.x) // self.batch_size
 
     def __getitem__(self, idx):  # todo setup for shuffle
         # https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
@@ -61,6 +66,14 @@ class ProstateSequence(keras.utils.Sequence):
         # generate data
         X = self._generation_x(list_data_tmp)
         y = self._generation_y(list_label_tmp)
+        # print("X.shape l64 ", X.shape)
+        # print("y.shape l65 ", y.shape)
+        # X = np.transpose(X, axes=[1, 2, 3, 0])
+        # print("X.shape l64 ", X.shape)
+        # y = np.transpose(y, axes=[1, 2, 3, 0, 4])
+        # print("X.shape l64 ", y.shape)
+        X = X[:, :, :, :, np.newaxis]
+        print("X.shape l64 ", X.shape)
 
         return X, y
 
