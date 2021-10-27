@@ -46,6 +46,8 @@ Although it is typical to separate data into training, validation and test datas
 
 ### Data augmentation
 
+To increase the range of possible MRI brains generated, the training data is randomly flipped across the horizontal axes. This retains the position of where the front and back of the path are, while flipping the left and right hemispheres of the brain. This essentially doubles the training domain, as it is unlikely a perfectly matching brain is part of the dataset. This random flipping is performed after the dataset has been exhausted, which can aid in preventing the discriminator from overfitting and reduce the training time of each epoch.
+
 ### Model architecture and construction
 
 ### Visualisation
@@ -53,6 +55,10 @@ Although it is typical to separate data into training, validation and test datas
 ## Experiments
 
 ### Training Environment
+
+### Recommended Environment
+
+16GB RAM, 8GB VRAM
 
 ### Trial 1
 
@@ -444,6 +450,213 @@ Increased LeakyReLU alpha to 0.2
 | Latent dimension            | 512   |
 | Kernel Size                 | 3     |
 | Total Epochs                | 50    |
+
+### Trial 30
+
+| Parameter                   | Value  |
+| --------------------------- | ------ |
+| Generator Learning Rate     | 2e-7   |
+| Discriminator Learning Rate | 2.5e-8 |
+| Image Size                  | 256    |
+| Batch Size                  | 32     |
+| Number of Filters           | 512    |
+| Latent dimension            | 512    |
+| Kernel Size                 | 3      |
+| Total Epochs                | 50     |
+
+Removed Dropout and Average pooling from the discriminator.
+Added Resizing to downsample using bilinear interpolation.
+Added some more LeakyReLUs to the generator.
+
+### Trial 31
+
+| Parameter                   | Value |
+| --------------------------- | ----- |
+| Generator Learning Rate     | 2e-7  |
+| Discriminator Learning Rate | 1e-7  |
+| Image Size                  | 256   |
+| Batch Size                  | 32    |
+| Number of Filters           | 512   |
+| Latent dimension            | 512   |
+| Kernel Size                 | 3     |
+| Total Epochs                | 50    |
+
+### Training Parameters (Trial 32)
+
+<style>
+    th, td {
+        text-align: center
+    }
+    th:first-child, td:first-child {
+        text-align: left
+    }
+    /* .side-by-side th, .side-by-side tr {
+        text-align: left
+    }  */
+    .image-grid tr td {
+        text-align: center
+    }
+    .image-grid img {
+        width: 500px
+    }
+</style>
+
+<table class="side-by-side">
+    <tr> 
+        <td>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Generator</th>
+                        <th>Discriminator</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Optimizer</td>
+                        <td colspan=2>Adam</td>
+                    </tr>
+                    <tr>
+                        <td>Learning Rate</td>
+                        <td>8e-7</td>
+                        <td>1e-7</td>
+                    </tr>
+                    <tr>
+                        <td>Beta 1</td>
+                        <td colspan=2>0.5</td>
+                    </tr>
+                    <tr>
+                        <td>Beta 2</td>
+                        <td colspan=2>0.999</td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Image Size</td>
+                        <td>256</td>
+                    </tr>
+                    <tr>
+                        <td>Batch Size</td>
+                        <td>32</td>
+                    </tr>
+                    <tr>
+                        <td>Number of filters</td>
+                        <td> 512</td>
+                    </tr>
+                    <tr>
+                        <td>Latent dimension</td>
+                        <td>512</td>
+                    </tr>
+                    <tr>
+                        <td>Kernel size</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>Total Epochs</td>
+                        <td>200</td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+
+### Training Results
+
+The following are some samples of the results achieved when training the model on the parameters listed above.
+
+<table class="image-grid">
+    <tr>
+        <td>
+            Epoch 154
+        </td>
+        <td>
+            Epoch 158
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/epoch_154.png" alt="Epoch 154"/>
+        </td>
+        <td>
+            <img src="resources/epoch_158.png" alt="Epoch 158"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Epoch 159
+        </td>
+        <td>
+            Epoch 161
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/epoch_159.png" alt="Epoch 159"/>
+        </td>
+        <td>
+            <img src="resources/epoch_161.png" alt="Epoch 161"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Epoch 162
+        </td>
+        <td>
+            Epoch 167
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/epoch_162.png" alt="Epoch 162"/>
+        </td>
+        <td>
+            <img src="resources/epoch_167.png" alt="Epoch 167"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Epoch 195
+        </td>
+        <td>
+            Epoch 200
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/epoch_195.png" alt="Epoch 195"/>
+        </td>
+        <td>
+            <img src="resources/epoch_200.png" alt="Epoch 200"/>
+        </td>
+    </tr>
+</table>
+
+<table class="image-grid">
+    <tr>
+        <td>Loss</td>
+        <td>Training Samples</td>
+    </tr>
+    <tr>
+        <td>
+            <img src="resources/final_loss.png" alt="GAN loss graph" />
+        </td>
+        <td>
+            <img src="resources/animated.gif" alt="Training sample evolution" />
+        </td>
+    </tr>
+</table>
 
 ## Usage
 
