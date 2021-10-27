@@ -61,6 +61,10 @@ the inudustry standard was to perform a sliding window computation on a patch ar
 The original UNet model is a convolutional network that was designed to provide more accurate segmentations with fewer training data. The architecture follows a "U" shaped structure (hence the name), where the contracting path leads to an expansive path. The image below shows the original UNet architecture.
 
 
+<p align="center">
+  <img src="images/unet.png" height="450px"/>
+</p>
+
 ### The Improved UNet Model
 
 
