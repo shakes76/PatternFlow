@@ -44,10 +44,11 @@ class DataPreprocessing():
         return d_hat.dot(adjacency).dot(d_hat).tocsr().todense()
     
     def data_split(self, n_nodes):
+        # split the dataset into train, validation and test set
         train_idx = range(int((n_nodes)*0.5))
         val_idx = range(int((n_nodes)*0.5), int((n_nodes)*0.75))
         test_idx = range(int((n_nodes)*0.75), n_nodes)
-
+        
         train_mask = np.zeros(n_nodes, dtype=np.bool)
         val_mask = np.zeros(n_nodes, dtype=np.bool)
         test_mask = np.zeros(n_nodes, dtype=np.bool)
