@@ -8,7 +8,8 @@ this dataset, that means that given the **128 of the features** of each webpage,
 * tvshow
 * government 
 * company 
-* politician
+* politician_
+
 Given that this problem is supposed to be semi supervised, the dataset needs to be split accordingly. This means that the training and validation sets need to be
 significantly smaller than the testing set.
 
