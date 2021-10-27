@@ -41,10 +41,6 @@ def stacking_parameters(net_0, net_1, weight_decay=0.999):
 
 def train_StyleGAN(args, G, D):
     """
-    start to train the styleGAN
-    """
-
-    """
     Image transformation and data augmentation
     including random flip, and normalisation.
     """
@@ -109,27 +105,38 @@ def train_StyleGAN(args, G, D):
     """
     D_error, G_error, gradient_error = 0, 0, 0
 
-    alpha = 0
-    used_sample = 0
+    """
+    rocessed data is used to record the data that has been used to train the model
+    """
+    processed_data, alpha = 0, 0
 
-    max_step = int(math.log2(args.max_size)) - 2
-    final_progress = False
+    """
+    compute the max stage number according to the max size
+    """
+    most_progressive_stage = int(math.log2(args.max_size)) - 2
+    """
+    at the begining and mid stage, the last_progressive_stage should be false
+    """
+    last_progressive_stage = False
 
-    for i in pbar:
+    """
+    start to train the styleGAN
+    """
+    for index in pbar:
         D.zero_grad()
 
-        alpha = min(1, 1 / args.phase * (used_sample + 1))
+        alpha = min(1, 1 / args.phase * (processed_data + 1))
 
-        if (resolution == args.init_size and args.ckpt is None) or final_progress:
+        if (resolution == args.init_size and args.ckpt is None) or last_progressive_stage:
             alpha = 1
 
-        if used_sample > args.phase * 2:
-            used_sample = 0
+        if processed_data > args.phase * 2:
+            processed_data = 0
             progressive_stage += 1
 
-            if progressive_stage > max_step:
-                progressive_stage = max_step
-                final_progress = True
+            if progressive_stage > most_progressive_stage:
+                progressive_stage = most_progressive_stage
+                last_progressive_stage = True
                 ckpt_step = progressive_stage + 1
 
             else:
@@ -164,7 +171,7 @@ def train_StyleGAN(args, G, D):
             data_loader = iter(loaded_dataset)
             real_image = next(data_loader)
 
-        used_sample += real_image.shape[0]
+        processed_data += real_image.shape[0]
 
         b_size = real_image.size(0)
         real_image = real_image.cuda()
@@ -188,7 +195,7 @@ def train_StyleGAN(args, G, D):
             ).mean()
             grad_penalty = 10 / 2 * grad_penalty
             grad_penalty.backward()
-            if i%10 == 0:
+            if index%10 == 0:
                 gradient_error = grad_penalty.item()
 
         if args.mixing and random.random() < 0.9:
@@ -224,19 +231,19 @@ def train_StyleGAN(args, G, D):
             ).mean()
             grad_penalty = 10 * grad_penalty
             grad_penalty.backward()
-            if i%10 == 0:
+            if index%10 == 0:
                 gradient_error = grad_penalty.item()
                 D_error = (-real_predict + fake_predict).item()
 
         elif args.loss == 'r1':
             fake_predict = F.softplus(fake_predict).mean()
             fake_predict.backward()
-            if i%10 == 0:
+            if index%10 == 0:
                 D_error = (real_predict + fake_predict).item()
 
         D_optimiser.step()
 
-        if (i + 1) % n_critic == 0:
+        if (index + 1) % n_critic == 0:
             G.zero_grad()
 
             change_gradient_status(G, True)
@@ -252,7 +259,7 @@ def train_StyleGAN(args, G, D):
             elif args.loss == 'r1':
                 loss = F.softplus(-predict).mean()
 
-            if i%10 == 0:
+            if index%10 == 0:
                 G_error = loss.item()
 
             loss.backward()
@@ -262,7 +269,7 @@ def train_StyleGAN(args, G, D):
             change_gradient_status(G, False)
             change_gradient_status(D, True)
 
-        if (i + 1) % 100 == 0:
+        if (index + 1) % 100 == 0:
             images = []
 
             gen_i, gen_j = args.gen_sample.get(resolution, (10, 5))
@@ -277,15 +284,15 @@ def train_StyleGAN(args, G, D):
 
             utils.save_image(
                 torch.cat(images, 0),
-                f'sample/{str(i + 1).zfill(6)}.png',
+                f'sample/{str(index + 1).zfill(6)}.png',
                 nrow=gen_i,
                 normalize=True,
                 range=(-1, 1),
             )
 
-        if (i + 1) % 10000 == 0:
+        if (index + 1) % 10000 == 0:
             torch.save(
-                G_processing.state_dict(), f'checkpoint/{str(i + 1).zfill(6)}.model'
+                G_processing.state_dict(), f'checkpoint/{str(index + 1).zfill(6)}.model'
             )
 
         state_msg = (
