@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras.layers import concatenate, Conv2D, Dropout, Input, UpSampling2D
 
 
@@ -113,4 +114,4 @@ def improved_unet(height, width, channels):
 
     # Softmax
     outputs = Conv2D(1, (1, 1), activation='softmax')(segment9)
-    return inputs, outputs
+    return tf.keras.Model(inputs=[inputs], outputs=[outputs])

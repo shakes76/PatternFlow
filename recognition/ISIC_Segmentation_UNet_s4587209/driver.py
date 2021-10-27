@@ -20,6 +20,7 @@ shuffle_size = 50
 img_height = img_width = 180
 batch_size = 32
 n_channels = 3
+epochs = 10
 
 
 def process_images(file_path, is_mask):
@@ -129,9 +130,15 @@ val_ds = files_ds.skip(train_ds_size).take(val_ds_size)
 test_ds = files_ds.skip(train_ds_size).skip(val_ds_size)
 
 # Creates the improved UNet model
-inputs, outputs = improved_unet(img_height, img_width, n_channels)
-model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
+model = improved_unet(img_height, img_width, n_channels)
 # Sets the training parameters for the model
 model.compile(optimizer="adam", loss=soft_dice_loss, metrics=["accuracy"])
 # Prints a summary of the model compiled
 model.summary()
+# Plots a summary of the model's architecture
+tf.keras.utils.plot_model(model, show_shapes=True)
+
+# Creates a condition where training will stop when there is no progress on val_loss in 3 epochs
+callback = EarlyStopping(monitor='val_loss', patience=3)
+# Trains the model
+history = model.fit(train_ds, batch_size=batch_size, epochs=epochs, validation_data=val_ds, callbacks=callback)
