@@ -97,7 +97,7 @@ def gen_block(
         beta = Reshape([1, 1, filters])(beta)
         gamma = Dense(filters)(style)
         gamma = Reshape([1, 1, filters])(gamma)
-        n = Conv2D(filters, kernel_size=1, padding="same")(noise)
+        n = Dense(filters)(noise)
         return beta, gamma, n
 
     # Begin the generator block
@@ -155,6 +155,16 @@ def get_generator(
     kernel_size: int,
 ) -> tf.keras.Model:
 
+    STARTING_SIZE = 4
+
+    # Inputs for each block
+    mapping_inputs, noise_inputs = [], []
+    curr_size = STARTING_SIZE
+    while curr_size <= output_size:
+        mapping_inputs.append(Input(shape=[latent_dim]))
+        noise_inputs.append(Input(shape=[curr_size, curr_size, 1]))
+        curr_size *= 2
+
     # Mapping network
     input_mapping = Input(shape=[latent_dim])
     mapping = input_mapping
@@ -162,36 +172,37 @@ def get_generator(
     for _ in range(mapping_layers):
         mapping = Dense(num_filters)(mapping)
         mapping = LeakyReLU(0.2)(mapping)
-
-    # Crop the noise image for each resolution
-    input_noise = Input(shape=[output_size, output_size, 1])
-    noise = [Activation("linear")(input_noise)]
-    curr_size = output_size
-    while curr_size > 4:
-        curr_size //= 2
-        noise.append(Cropping2D(curr_size // 2)(noise[-1]))
+    mapping_network = tf.keras.Model(inputs=[input_mapping], outputs=mapping)
 
     # Generator network
     # Starting block
-    curr_size = 4
+    curr_size = STARTING_SIZE
     input = Input(shape=[1])
     x = Lambda(lambda x: x * 0 + 1)(input)  # Set the constant value to be 1
     x = Dense(curr_size * curr_size * num_filters)(x)
     x = Reshape([curr_size, curr_size, num_filters])(x)
-    x = LeakyReLU(0.2)(x)
     x = gen_block(
-        x, mapping, noise[-1], num_filters, kernel_size, upSample=False
+        x,
+        mapping_network(mapping_inputs[0]),
+        noise_inputs[0],
+        num_filters,
+        kernel_size,
+        upSample=False,
     )
 
     # Add upsampling blocks till the output size is reached
-    block = 1
+    block_num = 1
     curr_filters = num_filters
     while curr_size < output_size:
         curr_filters //= 2
         x = gen_block(
-            x, mapping, noise[-(1 + block)], curr_filters, kernel_size
+            x,
+            mapping_network(mapping_inputs[block_num]),
+            noise_inputs[block_num],
+            curr_filters,
+            kernel_size,
         )
-        block += 1
+        block_num += 1
         curr_size *= 2
 
     # To greyscale
@@ -200,7 +211,7 @@ def get_generator(
     )(x)
 
     generator = tf.keras.Model(
-        inputs=[input_mapping, input_noise, input], outputs=x
+        inputs=[mapping_inputs, noise_inputs, input], outputs=x
     )
 
     return generator
@@ -235,6 +246,26 @@ def get_discriminator(
     discriminator = tf.keras.Model(inputs=[input], outputs=x)
 
     return discriminator
+
+
+# ==========================================================
+# Inputs
+def generate_generator_inputs(
+    latent_dimension: int,
+    batch_size: int,
+    img_size: int,
+) -> list[tf.Tensor]:
+
+    curr_size = 4
+    mapping_inputs, noise_inputs = [], []
+    while curr_size <= img_size:
+        mapping_inputs.append(tf.random.normal([batch_size, latent_dimension]))
+        noise_inputs.append(
+            tf.random.uniform([batch_size, curr_size, curr_size, 1])
+        )
+        curr_size *= 2
+
+    return [mapping_inputs, noise_inputs, tf.ones([batch_size, 1])]
 
 
 # ==========================================================
@@ -274,16 +305,14 @@ def train_step(
     img_size: int,
 ) -> tuple[float, float]:
 
-    # Generate noise for the generator
-    latent_noise = tf.random.normal([batch_size, latent_dimension])
-    noise_images = tf.random.uniform([batch_size, img_size, img_size, 1])
+    generator_inputs = generate_generator_inputs(
+        latent_dimension, batch_size, img_size
+    )
 
     # Train the models
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         # Generate some fake images
-        fake_images = generator(
-            [latent_noise, noise_images, tf.ones([batch_size, 1])]
-        )
+        fake_images = generator(generator_inputs)
 
         # Use the discriminator to guess whether the images are real or fake
         real_guesses = discriminator(real_images)
@@ -402,9 +431,6 @@ def generate_samples(
     img_size: int,
 ) -> tf.Tensor:
 
-    # Generate noise for the generator
-    latent_noise = tf.random.normal([sample_size, latent_dimension])
-    noise_images = tf.random.uniform([sample_size, img_size, img_size, 1])
-
-    samples = generator([latent_noise, noise_images, tf.ones([sample_size, 1])])
-    return samples
+    return generator(
+        generate_generator_inputs(latent_dimension, sample_size, img_size)
+    )
