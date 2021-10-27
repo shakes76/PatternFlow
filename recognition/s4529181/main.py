@@ -2,6 +2,7 @@ import glob
 import tensorflow as tf
 from dice_coefficiency import *
 from unet import *
+import keras.backend as K
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import TensorBoard
@@ -100,4 +101,29 @@ plt.show()
 
 model.evaluate(test_ds.batch(32), verbose=2)
 
+# plot some predictions
+image_batch, label_batch = next(iter(test_ds.batch(3)))
+pred = model.predict(image_batch)
+plt.figure(figsize=(10, 6))
 
+for i in range(3):
+    pred_image = tf.cast(image_batch[i], tf.float32) + \
+        tf.image.grayscale_to_rgb(tf.cast(pred[i], tf.float32))
+    g_image = tf.cast(image_batch[i], tf.float32) + \
+        tf.image.grayscale_to_rgb(tf.cast(label_batch[i], tf.float32))
+    plt.subplot(1, 2, i+1)
+    plt.imshow(g_image)
+    plt.axis('off')
+    plt.subplot(1, 2, i+2)
+    plt.imshow(pred_image)
+    plt.title('Prediction')
+    plt.axis('off')
+plt.show()
+
+# calculate DCE
+DCE = []
+for i in range(len(images)-train_end):
+    image, label = next(iter(test_ds.batch(1)))
+    pred = model.predict(image)
+    DCE.append(dice_np(label.numpy(), pred[0]))
+print("Dice Coefficient = ", sum(DCE) / len(DCE))
