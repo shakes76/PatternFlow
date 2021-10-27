@@ -19,10 +19,12 @@ Some well-known GANs are DCGGAN, ProGAN and StyleGAN. DCGAN (Deep Convolutional 
 StyleGAN builds upon ProGAN by introducing a mapping network for the latent vector, which feeds into the Adaptive Instance Normalisation layers throughout the generator, and the addition of noise throughout the generator. The introduction of a mapping network removes the need to directly feed the latent code to the generator, rather a constant value is used instead as the input of the generator.
 
 <center>
-    <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
+    <a href="#1">
+        <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
+    </a>
+    <p> General architecture of GAN (left) and StyleGAN (right). [<a href="#1">1</a>]  </p>
 </center>
 
-The figure above shows the general architecture of DCGAN and StyleGAN on the left and right respectively.  
 As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, $\gamma$ abd $\beta$ respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
 
 $$
@@ -270,3 +272,27 @@ Although samples are not perfect, the shape and some details of the brain MRIs c
 ## Usage
 
 ## References
+
+<style>
+    ol{
+        margin:0; 
+        padding:0; 
+        text-decoration:none;
+        list-style-type: none;
+    }
+    li::before {
+        content: "[" counter(section, decimal) "] ";
+        position: absolute;
+        left: 7px;
+
+    }
+    li {
+        counter-increment: section;
+        position: relative;
+        padding-left: 30px;
+    }
+</style>
+
+<ol>
+    <li id="1">T. Karras, S. Laine, and T. Aila, “A Style-Based Generator Architecture for Generative Adversarial Networks,” arXiv:1812.04948 [cs, stat], Mar. 2019, arXiv: 1812.04948. [Online]. Available: <a href="https://arxiv.org/abs/1812.04948">https://arxiv.org/abs/1812.04948</a></li>
+</ol>
