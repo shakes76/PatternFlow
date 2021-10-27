@@ -15,6 +15,16 @@ from network import Styled_G, D
 # import all required libraries.
 
 
+def change_gradient_status(network, status=True):
+    """
+    This function is used to change the status of the gradient 
+    for a specific network. It changes the gradient status
+    of all the parameters in a network. If the status is false, then
+    the network is fixed and no gradient is passed backward.
+    """
+    for prameters in network.parameters():
+        prameters.requires_grad = status
+
 def learning_rate_decay(optim, learning_rate):
     """
     The learning rate decay is used to multiplicate the learning rate with a 
@@ -41,6 +51,10 @@ def stacking_parameters(net_0, net_1, weight_decay=0.999):
 
 def train_StyleGAN(args, G, D):
     """
+    start to train the styleGAN
+    """
+
+    """
     Image transformation and data augmentation
     including random flip, and normalisation.
     """
@@ -57,7 +71,8 @@ def train_StyleGAN(args, G, D):
     """
     Set up the dataset
     """
-    dataset = MultiResolutionDataset(args.AKOA_directory, image_transformation)
+    dataset = MultiResolutionDataset(args.path, image_transformation)
+
     # set the batch size and the learning rate manually 
     args.lr = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
     args.batch = {4: 512, 8: 256, 16: 128, 32: 64, 64: 32, 128: 32, 256: 32}
@@ -67,7 +82,7 @@ def train_StyleGAN(args, G, D):
     """
     progressive increase the dimension size.
     """
-    progressive_stage = int(math.log2(args.start_dimension)) - 2
+    progressive_stage = int(math.log2(args.init_size)) - 2
     resolution = 4 * 2 ** progressive_stage
 
     """
@@ -77,7 +92,8 @@ def train_StyleGAN(args, G, D):
     loaded_dataset = shuffle_samples(
         dataset, args.batch.get(resolution, args.batch_default), resolution
     )
-    data_loader = iter(loaded_dataset) # iterate the loaded dataset for further training
+    # iterate the loaded dataset for further training
+    data_loader = iter(loaded_dataset)
 
     """
     learning rate decay is used for optimisers of both generator and discriminator.
@@ -109,11 +125,12 @@ def train_StyleGAN(args, G, D):
     rocessed data is used to record the data that has been used to train the model
     """
     processed_data, alpha = 0, 0
-
+    
     """
     compute the max stage number according to the max size
     """
-    most_progressive_stage = int(math.log2(args.final_dimension)) - 2
+    most_progressive_stage = int(math.log2(args.max_size)) - 2
+
     """
     at the begining and mid stage, the last_progressive_stage should be false
     """
@@ -123,20 +140,13 @@ def train_StyleGAN(args, G, D):
     start to train the styleGAN
     """
     for index in pbar:
-
         D.zero_grad() # clear the gradient from last iteration
-
         # compute alpha to control model learning
         alpha = min(1, 1 / args.progressive_stage * (processed_data + 1))
 
-        if (resolution == args.start_dimension and args.ckpt is None) or last_progressive_stage:
+        if (resolution == args.init_size and args.ckpt is None) or last_progressive_stage:
             alpha = 1
 
-        """
-        if the processed data is larger than 2 times of phase number,
-        then the progressive_stage is increased, which means the resolution 
-        of the feature map increase.
-        """
         if processed_data > args.progressive_stage * 2:
             processed_data = 0
             progressive_stage += 1
@@ -177,13 +187,13 @@ def train_StyleGAN(args, G, D):
             learning_rate_decay(D_optimiser, args.lr.get(resolution, 0.001))
 
         try:
-            real_AKOA_data = next(data_loader) # load real images
-        except (OSError, StopIteration): # prevent system error
+            real_AKOA_data = next(data_loader)# load real images
+        except (OSError, StopIteration):# prevent system error
             data_loader = iter(loaded_dataset)
             real_AKOA_data = next(data_loader)
 
-        processed_data += real_AKOA_data.shape[0] # count the processed data
-        batch_size = real_AKOA_data.size(0) # obtain the batch size
+        processed_data += real_AKOA_data.shape[0]  # count the processed data
+        b_size = real_AKOA_data.size(0) # obtain the batch size
         real_AKOA_data = real_AKOA_data.cuda() # load the data to cuda
 
         """
@@ -192,27 +202,31 @@ def train_StyleGAN(args, G, D):
         But for AKOA, we only tried wgan-gp as the time is not enough.
         """
         if args.loss == 'wgan-gp':
-            output_real = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
-            output_real = output_real.mean() - 0.001 * (output_real ** 2).mean()
-            (-output_real).backward()
-        else:
+            real_predict = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
+            real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
+            (-real_predict).backward()
+
+        elif args.loss == 'r1':
             print('r1 loss is not implemented')
             exit()
 
         """
         Implementation of the style mixing module here.
+        w here indicates the output vector of 8-layer 
+        MLP before the affine transformation.
         """
         if args.mixing and random.random() < 0.9:
             w_11, w_12, w_21, w_22 = torch.randn(
-                4, batch_size, latent_length, device='cuda'
+                4, b_size, latent_length, device='cuda'
             ).chunk(4, 0)
             w_0 = [w_11.squeeze(0), w_12.squeeze(0)]
             w_1 = [w_21.squeeze(0), w_22.squeeze(0)]
         else: # no mixing is requied, always this branch
-            w_0, w_1 = torch.randn(2, batch_size, latent_length, device='cuda').chunk(
+            w_0, w_1 = torch.randn(2, b_size, latent_length, device='cuda').chunk(
                 2, 0
             )
-            w_0, w_1 = w_0.squeeze(0), w_1.squeeze(0)
+            w_0 = w_0.squeeze(0)
+            w_1 = w_1.squeeze(0)
 
         """
         Generate fake images using the generator
@@ -227,9 +241,9 @@ def train_StyleGAN(args, G, D):
         if args.loss == 'wgan-gp':
             output_fake = output_fake.mean()
             output_fake.backward()
-            eps = torch.rand(batch_size, 1, 1, 1).cuda()
+            eps = torch.rand(b_size, 1, 1, 1).cuda()
             x_hat = eps * real_AKOA_data.data + (1 - eps) * data_fake.data
-            x_hat.change_gradient_status = True
+            x_hat.requires_grad = True
             hat_predict = D(x_hat, step=progressive_stage, alpha=alpha)
             grad_x_hat = grad(
                 outputs=hat_predict.sum(), inputs=x_hat, create_graph=True
@@ -241,12 +255,11 @@ def train_StyleGAN(args, G, D):
             grad_penalty.backward()
             if index%10 == 0:
                 gradient_error = grad_penalty.item()
-                D_error = (-output_real + output_fake).item()
-        else:
+                D_error = (-real_predict + output_fake).item()
+        elif args.loss == 'r1':
             print('r1 is not supported in this code')
 
         D_optimiser.step() # pass the gradient
-
 
         """
         Now, start to train the generator.
@@ -258,51 +271,49 @@ def train_StyleGAN(args, G, D):
             G.zero_grad()
             change_gradient_status(G, True)
             change_gradient_status(D, False)
-
             data_fake = G(w_1, step=progressive_stage, alpha=alpha)
-            output = D(data_fake, step=progressive_stage, alpha=alpha)
-
+            output_of_D = D(data_fake, step=progressive_stage, alpha=alpha)
             if args.loss == 'wgan-gp':
-                loss = -output.mean()
+                loss = -output_of_D.mean()
             elif args.loss == 'r1':
-                loss = F.softplus(-output).mean()
+                pass
             if index%10 == 0:
                 G_error = loss.item()
+
             loss.backward()
             G_optimiser.step()
-
             """
             using the parameters not only in this iteration,
             but also the historical parameters.
-            """
+            """           
             stacking_parameters(G_processing, G.module)
             change_gradient_status(G, False)
             change_gradient_status(D, True)
             """
             Complete the training for 1 iteration.
             """
-        
+
         """
         Save images every 100 iterations. 
         """
         if (index + 1) % 100 == 0:
-            generated_AKOA_images = []
+            images = []
             produced_0, produced_1 = args.gen_sample.get(resolution, (10, 5))
             with torch.no_grad():
                 for _ in range(produced_0):
-                    generated_AKOA_images.append(
+                    images.append(
                         G_processing(
                             torch.randn(produced_1, latent_length).cuda(), step=progressive_stage, alpha=alpha
                         ).data.cpu()
                     )
             utils.save_image(
-                torch.cat(generated_AKOA_images, 0),
-                f'sample/{str(index + 1).zfill(6)}.png',
+                torch.cat(images, 0),
+                f'AKOA_generated_training/{str(index + 1).zfill(6)}.png',
                 nrow=produced_0,
                 normalize=True,
                 range=(-1, 1),
             )
-
+            
         """
         save the checkpoint of the generator every 10000 iterations. 
         the saved generator can be used to produce the AKOA images,
@@ -313,15 +324,12 @@ def train_StyleGAN(args, G, D):
                 G_processing.state_dict(), f'checkpoint/{str(index + 1).zfill(6)}.model'
             )
 
-        """
-        print some messages when training the network to inform.
-        """
-        print_training_info = (
+        state_msg = (
             f'Size: {4 * 2 ** progressive_stage}; G: {G_error:.3f}; D: {D_error:.3f};'
             f' Grad: {gradient_error:.3f}; Alpha: {alpha:.5f}'
         )
-        pbar.set_description(print_training_info)
 
+        pbar.set_description(state_msg)
 
 
 def change_gradient_status(network, status=True):
@@ -350,26 +358,29 @@ if __name__ == '__main__':
     """ Set up the experimental arguments """
     batch_size, latent_length, n_critic = 16, 512, 1
     parser = argparse.ArgumentParser(description='StyleGAN')
-    parser.add_argument('AKOA_directory', type=str, help='AKOA dataset directory')
+    parser.add_argument('path', type=str, help='Dataset Path ')
     parser.add_argument('--progressive_stage', type=int, default=40_000,
                         help='images to be trained for each progressive_stage')
-    parser.add_argument('--start_dimension', default=8, type=int,
-                        help='start dimension of input AKOA images')
-    parser.add_argument('--final_dimension', default=512, type=int,
-                        help='max and final dimension of generated AKOA images')
-    parser.add_argument('--lr', default=0.001, type=float, help='specify the learning rate here')
+    parser.add_argument('--init_size', default=8, type=int,
+                        help='initial size of input images')
+    parser.add_argument('--sched', action='store_true',
+                        help='scheduling for lr')
+    parser.add_argument('--max_size', default=512, type=int,
+                        help='max size of generated images')
+    parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--ckpt', default=None, type=str, help='checkpoints')
+    parser.add_argument( '--no_from_rgb_activate', action='store_true',
+                         help='activate in from_rgb')
     parser.add_argument( '--mixing', action='store_true',
-                         help='mixing module used as in paper')
+                         help='mixing regularization')
     parser.add_argument( '--loss', type=str, default='wgan-gp',
-                         choices=['wgan-gp'], 
-                         help='selec the gan loss, for AKOA, only wgan-gp is supported')
+                         choices=['wgan-gp', 'r1'], help='choose gan loss')
     args = parser.parse_args()
 
     """ Load the Pytorch networks of both generator and discriminator """
     G_net = nn.DataParallel(Styled_G(latent_length)).cuda()
     D_net = nn.DataParallel(
-        D(from_rgb_activate=True)
+        D(from_rgb_activate=not args.no_from_rgb_activate)
     ).cuda()
     G_processing = Styled_G(latent_length).cuda()
     G_processing.train(False)
@@ -389,7 +400,7 @@ if __name__ == '__main__':
     )
     D_optimiser = optim.Adam(D_net.parameters(), lr=args.lr,
                              betas=(beta_0, beta_1))
-    stacking_parameters(G_processing, G_net.module, 0)
+
     """ Start Training """
     train_StyleGAN(args, G_net, D_net)
 
