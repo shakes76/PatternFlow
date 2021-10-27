@@ -17,7 +17,7 @@ def Improved_UNet(input_size):
     conv3 = Conv2D(128, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
     conv4 = Conv2D(128, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
     pool2 = MaxPooling2D((2,2))(conv4)
-    drop1 = Dropout(0.4)(pool2)
+    drop1 = Dropout(0.5)(pool2)
 
     # third VGG
     conv5 = Conv2D(256, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(drop1)
@@ -27,7 +27,7 @@ def Improved_UNet(input_size):
     # forth VGG
     conv7 = Conv2D(512, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
     conv8 = Conv2D(512, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
-    drop2 = Dropout(0.4)(conv8)
+    drop2 = Dropout(0.5)(conv8)
     pool4 = MaxPooling2D((2,2))(drop2)
 
     # bottom 
