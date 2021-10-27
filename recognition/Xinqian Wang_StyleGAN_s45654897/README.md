@@ -28,7 +28,7 @@ w1,w2,w3,w4 = mapNet(z1), mapNet(z2), mapNet(z3), mapNet(z4)
 | z3 | 299.55765  | 57.77888   |
 | z4 | 45018.316   | 20201.037  |
 
-**Inference**We learned that one of the Mapping Network's function is to transform the random vector to a particular distribution with fixed mean and standard deviation.
+**Inference:**  We learned that one of the Mapping Network's function is to transform the random vector to a particular distribution with fixed mean and standard deviation.
 
 We also made two plots, with the number of 500 x,y sets which represents mean,std. For each set, these mean and std are calculated from a number of 2000 vectors we made. The plot on the left is for the latent code z and right is for the intermediate latent code w.
 
@@ -36,7 +36,7 @@ Latent code (Z)         |  Intermediate latent code (W)
 :-------------------------:|:-------------------------:
 ![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_mean_std.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/413216e5e6a31c9ebf87b7cc1f87f8f0fe0860b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_mean_std.png)
 
-**Inference**We can see for the latent vector without going into the mapping network, it takes up most of the plot. However, for the intermediate latent code coming after the mapping network, it presents a linear format, when the mean higher, the std is ten to go increase too.
+**Inference:**  We can see for the latent vector without going into the mapping network, it takes up most of the plot. However, for the intermediate latent code coming after the mapping network, it presents a linear format, when the mean higher, the std is ten to go increase too.
 
 ## Search for connection between different columns
 Another way of analyze the mapping network is to map plots with two different random pick columns from the row space and compared with Z and W. Below, we generated a shape of (4000,512) random code Z and get W by let Z pass through the mapping network. We randomly compared two different column inside Z or W. The code below cler describe what we did.
@@ -60,7 +60,7 @@ Latent code (Z)         |  Intermediate latent code (W)
 :-------------------------:|:-------------------------:
 ![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/z_c_188.c_481.png)  |  ![](https://github.com/Wangxinqian/PatternFlow/blob/bf454b40502fc6a32cd3923525341d15f440927c/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/w_c_188.c_481.png)
 
-**Inference**We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training. The future could also made by analyzing the covarience matrix by looking for the relations between different attributes.
+**Inference:**  We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training. The future could also made by analyzing the covarience matrix by looking for the relations between different attributes.
 
 # How is the style mixing (Section 3.1) performance?
 ## Two sets of images were generated from their respective latent codes (Source A and B)
@@ -68,4 +68,4 @@ Source A, is on the **Up** side. Source B, is on the **left** side.
 We set the Source A as the input style for the first two different resolutions, 8×8 and 16×16, and the rest resolutions are all inputed by Source B.
 The outcome is provided as a form of image, you can see below, we also printed it's mean and standard deviation in different colors for each image.
 ![image](https://github.com/Wangxinqian/PatternFlow/blob/06a2beec098afadef6b3466f55d5353acdc2c2fa/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/mix_SourceA_SourceB.png)
-**Inference**The small resolution determines how the image looks like. Whereas, the higher resolution may deside some tiny thing. It may not be so obvious in the image we provide, but we also observe the consistency of the brightness is decided by higher resolution latent code (Source B).
+**Inference:**  The small resolution determines how the image looks like. Whereas, the higher resolution may deside some tiny thing. It may not be so obvious in the image we provide, but we also observe the consistency of the brightness is decided by higher resolution latent code (Source B).
