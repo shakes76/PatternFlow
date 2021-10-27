@@ -1,7 +1,4 @@
-from typing import Any
-
-import keras.activations
-import scipy.sparse
+import keras.layers
 
 import myGraphModel
 import tensorflow as tf
@@ -103,7 +100,7 @@ def main():
     row_sum = np.array(a_bar.sum(1))
     d_inv_sqr = np.power(row_sum, -0.5).flatten()
     d_inv_sqr[np.isinf(d_inv_sqr)] = 0
-    d_mat_inv_sqrt = scipy.sparse.diags(d_inv_sqr)
+    d_mat_inv_sqrt = spr.diags(d_inv_sqr)
     a_bar = a_bar.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
 
     print("A_Bar 2")
@@ -138,7 +135,6 @@ def main():
     # Construct Model
     my_model = Sequential()
     loss_fn = losses.SparseCategoricalCrossentropy(from_logits=False)
-    # activation_fn = activations.relu()
 
     print("Shape 1")
     print(tf.shape(feats))
@@ -151,14 +147,13 @@ def main():
 
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
     my_model.add(Dense(64))
+    my_model.add(keras.layers.Normalization())
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(Dense(32))
-    my_model.add(layers.Dropout(0.5))
+    my_model.add(layers.Dropout(0.4))
 
+    my_model.add(Dense(4, activation='softmax'))
 
-    my_model.add(Dense(4, activation='softmax', activity_regularizer='l1'))
-
-    opt = op.Adam(learning_rate=0.05)
+    opt = op.Nadam(learning_rate=0.05)
 
     my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
     my_model.fit(feats,
@@ -171,7 +166,6 @@ def main():
     # Evaluate
 
     # Predict
-
 
 
 if __name__ == '__main__':
