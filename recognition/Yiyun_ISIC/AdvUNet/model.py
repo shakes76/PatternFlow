@@ -2,13 +2,11 @@
 
 Reference: https://arxiv.org/abs/1802.10508v1
 """
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers, models, optimizers
 import tensorflow_addons as tfa
 
-from train import train_model
 
-
-def encoder_module(input, num_filters, strides=(1, 1)):
+def __encoder_module(input, num_filters, strides=(1, 1)):
     conv = layers.Conv2D(num_filters, (3, 3), strides,
                          padding="same", activation=layers.LeakyReLU(0.01))(input)
 
@@ -26,7 +24,7 @@ def encoder_module(input, num_filters, strides=(1, 1)):
     return sum
 
 
-def decoder_module(input, encode_output, num_filters, localization_module=True):
+def __decoder_module(input, encode_output, num_filters, localization_module=True):
     # upsampling module
     up = layers.UpSampling2D((2, 2))(input)
     conv1 = layers.Conv2D(num_filters, (3, 3), padding="same",
@@ -44,21 +42,21 @@ def decoder_module(input, encode_output, num_filters, localization_module=True):
     return conv2
 
 
-def build_model(input_shape=(256, 256, 3)):
+def build_model(input_shape):
     inputs = layers.Input(input_shape)
 
     # downsampling
-    down1 = encoder_module(inputs, 16)
-    down2 = encoder_module(down1, 32, strides=(2, 2))
-    down3 = encoder_module(down2, 64, strides=(2, 2))
-    down4 = encoder_module(down3, 128, strides=(2, 2))
-    down5 = encoder_module(down4, 256, strides=(2, 2))
+    down1 = __encoder_module(inputs, 16)
+    down2 = __encoder_module(down1, 32, strides=(2, 2))
+    down3 = __encoder_module(down2, 64, strides=(2, 2))
+    down4 = __encoder_module(down3, 128, strides=(2, 2))
+    down5 = __encoder_module(down4, 256, strides=(2, 2))
 
     # upsampling
-    up1 = decoder_module(down5, down4, 128)
-    up2 = decoder_module(up1, down3, 64)
-    up3 = decoder_module(up2, down2, 32)
-    up4 = decoder_module(up3, down1, 16, localization_module=False)
+    up1 = __decoder_module(down5, down4, 128)
+    up2 = __decoder_module(up1, down3, 64)
+    up3 = __decoder_module(up2, down2, 32)
+    up4 = __decoder_module(up3, down1, 16, localization_module=False)
     conv = layers.Conv2D(32, (3, 3), padding="same",
                          activation=layers.LeakyReLU(0.01))(up4)
 
@@ -71,23 +69,20 @@ def build_model(input_shape=(256, 256, 3)):
     seg2 = layers.Add()([seg2, seg1])
     seg2 = layers.UpSampling2D((2, 2), interpolation="bilinear")(seg2)
     seg3 = layers.Conv2D(1, (1, 1), padding="same",
-                         activation=layers.LeakyReLU(0.01))(conv)  # todo: how many classes?
+                         activation=layers.LeakyReLU(0.01))(conv)
     seg3 = layers.Add()([seg3, seg2])
 
-    outputs = layers.Activation("sigmoid")(seg3)  # todo: softmax?
+    outputs = layers.Activation("sigmoid")(seg3)
     model = models.Model(inputs, outputs, name="AdvUNet")
     return model
 
 
 class AdvUNet:
-    def __init__(self, input_shape=(256, 256, 3)):
+    def __init__(self, input_shape):
         self.model = build_model(input_shape)
 
     def compile(self):
         pass
 
     def fit(self):
-        pass
-
-    def predict(self):
         pass
