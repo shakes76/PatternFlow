@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .decoder import Decoder
 from .encoder import Encoder
-from .VectorQuantizer import VectorQuantizer
+from .vector_quantizer import VectorQuantizer
 from .residualBlock import Residual_block
 
 class VQVAE(nn.Module):
@@ -23,7 +23,7 @@ class VQVAE(nn.Module):
     """
     def __init__(self, num_hiddens, residual_inter, 
                  num_embeddings, embedding_dim, commitment_cost):
-        super(Model, self).__init__()
+        super(VQVAE, self).__init__()
         
         # Create the encoder
         self.encoder = Encoder(
@@ -58,8 +58,8 @@ class VQVAE(nn.Module):
         z = self.encoder(x)
         # change channel dim
         z = self.conv1(z)
-        loss, quantized, perplexity, _, _ = self.vq(z)
+        loss, quantized, _, _ = self.vq(z)
         # decode
         x_recon = self.decoder(quantized) # reconstructed
 
-        return loss, x_recon, perplexity
+        return loss, x_recon

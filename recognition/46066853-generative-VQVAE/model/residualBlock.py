@@ -4,6 +4,9 @@ Residual block
 
 __author__ = "Aryaman Sharma"
 
+import torch
+import torch.nn as nn
+
 class Residual_block(nn.Module):
     '''
     Create new Residual block

@@ -62,11 +62,9 @@ class VectorQuantizer(nn.Module):
         loss = q_latent_loss + self.commitment_cost * e_latent_loss # loss fn (paper)
         
         quantized = x + (quantized - x).detach() # when backprop end up with x (no gradient flow for other term) 
-        avg_probs = torch.mean(encodings, dim=0)
-        perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
         
         # convert quantized from BHWC -> BCHW
-        return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings, train_indices_return
+        return loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, train_indices_return
 
     """
     Returns embedding corresponding to encoding index
