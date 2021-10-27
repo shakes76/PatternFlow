@@ -8,7 +8,7 @@ class MaskedConvLayer(layers.Layer):
     """
     def __init__(self, mask_type, **kwargs):
         """
-        Create a PixelCNN layer.
+        Create a PixelCNN layer with masks.
         
         Params:
             mask_type: an alphabet character indicating the mask type, value = 'A' or 'B'
@@ -126,7 +126,7 @@ class PixelCNN(tf.keras.Model):
         super().__init__(**kwargs)
         self.num_residual_blocks = num_residual_blocks
         self.num_pixelcnn_layers = num_pixelcnn_layers 
-        self.layer1 = MaskedConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", 
+        self.layer1 = MaskedConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", strides = 1,
                        padding="same")
         self.norm1 = keras.layers.BatchNormalization()
 
