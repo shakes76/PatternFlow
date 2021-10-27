@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 26/10/2021
+    Date last modified: 27/10/2021
     Python version: 3.9.7
 """
 
@@ -137,12 +137,10 @@ def disc_block(
 
     # Begin the discriminator block
     out = input
+    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
+    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     if downSample:
         out = Resizing(image_size // 2, image_size // 2)(out)
-        out = LeakyReLU(0.2)(out)
-    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
-    out = LeakyReLU(0.2)(out)
-    out = Conv2D(filters, kernel_size=kernel_size, padding="same")(out)
     out = LeakyReLU(0.2)(out)
 
     return out
@@ -218,18 +216,18 @@ def get_discriminator(
     input = Input(shape=[image_size, image_size, 1])
     x = input
     curr_size = image_size
+    while curr_size > 4:
+        x = disc_block(
+            x, num_filters // (curr_size // 4), kernel_size, curr_size
+        )
+        curr_size //= 2
     x = disc_block(
         x,
         num_filters // (curr_size // 4),
         kernel_size,
-        image_size=curr_size,
+        curr_size,
         downSample=False,
     )
-    while curr_size > 4:
-        x = disc_block(
-            x, num_filters // (curr_size // 8), kernel_size, curr_size
-        )
-        curr_size //= 2
     x = Flatten()(x)
     x = Dense(1)(x)
     x = Activation("sigmoid")(x)
