@@ -24,6 +24,7 @@ def create_decoder():
     decoder.add(Conv2DTranspose(1, 3, padding="same"))
     return decoder
 
+
 class VectorQuantiser(keras.layers.Layer):
     def __init__(self, num_embeddings, embedding_dimensions, **kwargs):
         super().__init__(**kwargs)
@@ -120,7 +121,7 @@ class VQVae(keras.models.Sequential):
 def train_vqvae(x_train_normalised, variance):
     vqvae = VQVae(variance, latent_dimensions=32, num_embeddings=64)
     vqvae.compile(optimizer=keras.optimizers.Adam())
-    vqvae.fit(x_train_normalised, epochs=30, batch_size=128)
+    vqvae.fit(x_train_normalised, epochs=60, batch_size=128)
     return vqvae
 
 
@@ -129,7 +130,8 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
     test_samples = x_test_normalised[indices]
 
     reconstructed = vqvae.predict(test_samples)
-
+    test_samples = normalise_255(test_samples)
+    reconstructed = normalise_255(reconstructed)
     calculate_ssim(test_samples, reconstructed)
     # Output image comparisons
     for i in range(n_images):
@@ -137,7 +139,7 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
         reconstructed_image = reconstructed[i].squeeze()
 
         plt.subplot(1, 2, 1)
-        plt.imshow(original_image + 0.5)
+        plt.imshow(original_image + 0.5, vmin=0, vmax=255)
         plt.title("Original")
         plt.axis("off")
 
@@ -154,7 +156,7 @@ def normalise_255(samples):
     return 255 * (samples - np.min(samples)) / np.ptp(samples)
 
 def calculate_ssim(original_images, reconstructed_images):
-    similarity = tf.image.ssim(normalise_255(original_images), normalise_255(reconstructed_images), max_val=255)
+    similarity = tf.image.ssim(original_images, reconstructed_images, max_val=255)
     print("Structured similarity is:", similarity)
 
 x_train, x_test = load_oasis_data.get_data()
