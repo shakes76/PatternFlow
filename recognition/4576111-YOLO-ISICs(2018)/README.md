@@ -14,16 +14,16 @@ The change? At each CNN layer, Batch Normalisation has been introduced as a way 
 
 ### Loss Function:
 As specified in the YoloV1 paper, the yolov1 uses a custom loss function. 
-<img src="./images/yololoss.png" width="48">
+<img src="./images/yololoss.png" width="300">
 There is quite a bit to unpack here, so I suggest reading into it  [here](https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088) 
 
 ### Metric:
 The yolo paper uses the mean average precision (so called mAP) for its metric. This implementation instead uses the Jaccard Index (as known as 'IoU'). The jaccard index is calcaluted on the highest confidence bounding box. Below is visual representation of this equation:
-<img src="./images/iou.PNG" width="48">
+<img src="./images/iou.PNG" width="300">
 
 ### Dataset:
 This model is trained on the [ISIC 2018](https://challenge2018.isic-archive.com/) Dataset. This dataset includes skin lesions and their respective ground truth segmentations. 
-<img src="./images/ISIC.PNG" width="48">
+<img src="./images/ISIC.PNG" width="300">
 
 ## Results:
 This section is empty because no results were achieved :) 
