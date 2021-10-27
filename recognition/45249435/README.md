@@ -26,5 +26,5 @@ significantly smaller than the testing set.
 9. The model is then shrunk down to 2 dimensions and plotted using tsne
 
 ## Train and validation graphs
-![train and validation accuracy](train_val accuracy.png)
+![train and validation accuracy](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/train_val%20accuracy.png)
 
