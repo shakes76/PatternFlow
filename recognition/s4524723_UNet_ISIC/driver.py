@@ -11,6 +11,9 @@ from tensorflow.keras.preprocessing.image import load_img
 import PIL.Image
 import glob
 
+# Import the model.
+from comp3702_unet_isic import get_UNET_model
+
 AUTOTUNE = tf.data.AUTOTUNE
 
 print(tf.__version__)
@@ -38,6 +41,7 @@ image_files = sorted(glob.glob(image_dir + '*.jpg'))
 mask_files = sorted(glob.glob(mask_dir + '*.png'))
 image_count = len(image_files)
 mask_count = len(mask_files)
+DATASET_SIZE = image_count
 print('Number of images: ', image_count)
 print('Number of masks: ', mask_count)
 img_height, img_width = 128, 128
@@ -84,3 +88,45 @@ for element in normalized_ds.take(1):
   print("Max pixel value in mask: ", np.max(element[1].numpy()))
 
 
+# Batch the dataset
+
+BATCH_SIZE = 64
+BUFFER_SIZE = 1000
+
+TRAIN_DATASET_SIZE = int(DATASET_SIZE * 0.6)
+VALIDATION_DATASET_SIZE = int(DATASET_SIZE * 0.2)
+TEST_DATASET_SIZE = int(DATASET_SIZE * 0.2)
+
+normalized_ds = (
+    normalized_ds
+    .cache()
+    .shuffle(BUFFER_SIZE)
+    )
+
+train_batches = (
+    normalized_ds
+    .take(TRAIN_DATASET_SIZE)
+    .batch(BATCH_SIZE)
+    .prefetch(buffer_size=tf.data.AUTOTUNE)
+)
+
+validation_batches = (
+     normalized_ds
+    .skip(TRAIN_DATASET_SIZE)
+    .take(VALIDATION_DATASET_SIZE)
+    .batch(BATCH_SIZE)
+    .prefetch(buffer_size=tf.data.AUTOTUNE)
+)
+
+test_batches = (
+     normalized_ds
+    .skip(TRAIN_DATASET_SIZE + VALIDATION_DATASET_SIZE)
+    .take(TEST_DATASET_SIZE)
+    .batch(BATCH_SIZE)
+    .prefetch(buffer_size=tf.data.AUTOTUNE)
+)
+
+
+model = get_UNET_model()
+
+print(model.summary())
