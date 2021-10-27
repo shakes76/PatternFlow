@@ -44,3 +44,14 @@ function. The driver.py file runs the model.py file and gives the outputs given 
 ## Usage
 Run the driver.py file to get all the main outputs given above. The driver.py file does not require any arguments. The driver file has a main function so it will
 run as soon driver.py is run. 
+
+## Driver Dependencies
+* Tensorflow
+* Sklearn
+* Keras
+* Pandas
+* Matplotlib
+* Stellargraph
+
+## Extra Notebook dependencies
+* Scipy
