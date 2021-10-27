@@ -50,6 +50,8 @@ def preprocess(
     - one-hot label encoding
     - crop and resize (without distortion)
 
+    Train & validation:
+
     If `hflip_concat`, training and validation is duplicated by:
     - horizontally flipping images
     - flipping the label
@@ -63,14 +65,6 @@ def preprocess(
         else lambda image, label: (image, label)
     )
 
-    # common preprocessing
-    train, validation, test = [
-        split.map(image_norm, AUTOTUNE)
-        .map(_smart_resize, AUTOTUNE)
-        .map(_one_hot, AUTOTUNE)
-        for split in [train, validation, test]
-    ]
-
     # TRAIN & VALIDATION: flip images and labels, concat with originals
     if hflip_concat:
         train, validation = [
@@ -78,11 +72,13 @@ def preprocess(
             for split in [train, validation]
         ]
 
-    # cache, shuffle, batch, prefetch
     return [
-        split.cache()
+        split.map(image_norm, AUTOTUNE)
+        .map(_smart_resize, AUTOTUNE)
+        .map(_one_hot, AUTOTUNE)
+        .cache()
         # arbitrary max buffer size
-        .shuffle(max(split.cardinality() // 4, 5120))
+        .shuffle(min(split.cardinality() // 4, 5120))
         .batch(batch_size)
         .prefetch(AUTOTUNE)
         for split, batch_size in [
