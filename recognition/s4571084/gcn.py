@@ -11,7 +11,9 @@ import scipy.sparse as sp
 import torch
 from sklearn.preprocessing import LabelBinarizer
 
-
+"""
+normalize the data to 1.
+"""
 def normalize_adj(adjacency):
     adjacency += sp.eye(adjacency.shape[0])
     degree = np.array(adjacency.sum(1))
@@ -22,7 +24,9 @@ def normalize_adj(adjacency):
 def normalize_features(features):
     return features / features.sum(1)
 
-
+"""
+load data from facebook.npz and set adjacency/features/labels
+"""
 def load_data():
     dataset = np.load('/content/drive/My Drive/Dataset/facebook.npz')
     edges = dataset['edges']
