@@ -108,7 +108,7 @@ class VQVAETrainer(keras.models.Model):
             print("vq_output", vq_output.shape)
             x_recon = self._decoder(vq_output)
             print("_decoder", x_recon.shape)
-            recon_error = tf.reduce_mean((x_recon - x) ** 2) / self._data_variance
+            recon_error = tf.reduce_mean((x_recon - x) ** 2) #/ self._data_variance
             loss = recon_error + sum(self._vqvae.losses)
 
 
@@ -137,11 +137,11 @@ class VQVAETrainer(keras.models.Model):
 vqvae_trainer = VQVAETrainer(encoder, decoder, vq_vae, pre_vq_conv1, data_variance)
 # using adam optimizer for the gradient training
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam(learning_rate))
-history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size, validation_data=(x_validate,))
+history = vqvae_trainer.fit(x_train, epochs=20, batch_size=batch_size, validation_data=(x_validate,))
 #%%
 
 
-def show_subplot(original, reconstructed, s1=None):
+def show_subplot(original, reconstructed, i):
     plt.subplot(1, 2, 1)
     plt.imshow(original)
     plt.title("Original")
@@ -155,6 +155,7 @@ def show_subplot(original, reconstructed, s1=None):
     plt.axis("off")
     
     plt.show()
+    #plt.savefig('outputs/sample' + str(i) + '.png')
     
     im1 = tf.image.convert_image_dtype(original, tf.float32)
     im2 = tf.image.convert_image_dtype(tf.cast(reconstructed * 255.,'uint8'), tf.float32)
@@ -164,14 +165,19 @@ def show_subplot(original, reconstructed, s1=None):
 xtrain = tf.expand_dims(x_validate, axis=1)
 
 print(xtrain[1000].shape)
-recon = vqvae_trainer.predict(xtrain[1000])
+
+images = []
+for i in range(10):
+    recon = vqvae_trainer.predict(xtrain[i])
+    images.append(recon)
 
 print((recon).shape)
 # for test_image in test_images:
 #     show_subplot(test_image)
 
 #show_subplot(x_validate[1000], tf.squeeze(recon))
-show_subplot(x_validate[1000], recon[0])
+for i in range(10):
+    show_subplot(x_validate[i], images[i][0], i)
 #%%
 
 
