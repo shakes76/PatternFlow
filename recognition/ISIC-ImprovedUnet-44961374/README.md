@@ -52,7 +52,16 @@ As mentioned before, this project aims to solve the first problem.
 
 
 <!-- About the Model -->
-## The Improved Unet Model
+## About The Model
+
+### Background
+Contrary to image classification, image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original Unet model,
+the inudustry standard was to perform a sliding window computation on a patch around each pixels. However, as expected this method was computationally expensive.
+
+The original UNet model is a convolutional network that was designed to provide more accurate segmentations with fewer training data. The architecture follows a "U" shaped structure (hence the name), where the contracting path leads to an expansive path. The image below shows the original UNet architecture.
+
+
+### The Improved UNet Model
 
 
 <!-- Links to the data set and model paper -->
@@ -66,3 +75,7 @@ As mentioned before, this project aims to solve the first problem.
 [1] Noel Codella, Veronica Rotemberg, Philipp Tschandl, M. Emre Celebi, Stephen Dusza, David Gutman, Brian Helba, Aadi Kalloo, Konstantinos Liopyris, Michael Marchetti, Harald Kittler, Allan Halpern: “Skin Lesion Analysis Toward Melanoma Detection 2018: A Challenge Hosted by the International Skin Imaging Collaboration (ISIC)”, 2018; https://arxiv.org/abs/1902.03368
 
 [2] Tschandl, P., Rosendahl, C. & Kittler, H. The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions. Sci. Data 5, 180161 doi:10.1038/sdata.2018.161 (2018).
+
+[3] https://www.tensorflow.org/tutorials/images/segmentation 
+
+[4] https://arxiv.org/abs/1505.04597
