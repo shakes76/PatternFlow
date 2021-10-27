@@ -3,7 +3,6 @@ import numpy as np
 import nibabel as nib
 import torch
 from PIL import Image
-import torch.nn.functional as F
 from torch.utils.data import Dataset
 
 def normalize(a):
@@ -21,6 +20,7 @@ class OASISDataset(Dataset):
         """
         self.root_dir = root_dir
         self.transform = transform
+        # Find all files.
         self.files = [f for f in os.listdir(root_dir) if f.endswith(".nii.gz")]
 
     def __len__(self):
@@ -32,9 +32,12 @@ class OASISDataset(Dataset):
 
         img_name = os.path.join(self.root_dir,
                                 self.files[idx])
+        # Load NIFTI image using NiBabel
         nifti_image = nib.load(img_name)
         nii_data = nifti_image.get_fdata()
+        # Normalize 0 mean unit variance.
         nii_data = normalize(nii_data)
+        # Convert to PIL so can use torchvision transforms.
         image = Image.fromarray(nii_data)
 
         if self.transform:
