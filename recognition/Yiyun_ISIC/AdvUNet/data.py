@@ -73,3 +73,14 @@ def __create_dataset(features, labels, image_size, num_classes):
                                 __load_labels(label, image_size, num_classes)))
 
     return dataset
+
+
+def create_datasets(train_featrues, train_labels, val_features, val_labels,
+                    test_features, test_labels, image_size, num_classes):
+    train_set = __create_dataset(train_featrues, train_labels,
+                                 image_size, num_classes)
+    val_set = __create_dataset(val_features, val_labels,
+                               image_size, num_classes)
+    test_set = __create_dataset(test_features, test_labels,
+                                image_size, num_classes)
+    return train_set, val_set, test_set
