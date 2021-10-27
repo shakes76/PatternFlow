@@ -9,9 +9,14 @@ This module gives a partial solution to this problem. Using the help of Convolut
 
 ### Model Architecture:
 This module utilizes a slight variation on the YoloV1 Architecture. 
-![test](https://imgur.com/39WImDQ)
+![yolov1](./images/YOLOV1.png)
 At each CNN layer, Batch Normalisation has been introduced as a way of speeding up the training process. 
 ### Dataset:
+The model is trained on the [ISIC 2018](https://challenge2018.isic-archive.com/) Dataset. This dataset includes skin lesions and their respective ground truth segmentations. 
+![dataset](./images/ISIC.png)
+
+### Usage
+
 
 ## References:
 1. Sinclair, C. and Foley, P. (2009). Skin cancer prevention in Australia. British Journal of Dermatology, 161, pp.116–123.
