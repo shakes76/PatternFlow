@@ -28,3 +28,5 @@ significantly smaller than the testing set.
 ## Train and validation graphs
 ![train and validation accuracy](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/train_val%20accuracy.png)
 
+## TSNE embedded graph
+![TSNE](https://raw.githubusercontent.com/Pentaflouride/PatternFlow/topic-recognition/recognition/45249435/tsne.png)
