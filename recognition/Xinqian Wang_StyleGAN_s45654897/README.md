@@ -70,4 +70,5 @@ The outcome is provided as a form of image, you can see below, we also printed i
 <p align="center">
   <img src="https://github.com/Wangxinqian/PatternFlow/blob/06a2beec098afadef6b3466f55d5353acdc2c2fa/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/mix_SourceA_SourceB.png" alt="" width='70%' height='70%'/>
 </p>
+
 **Inference:**  The small resolution determines how the image looks like. Whereas, the higher resolution may deside some tiny thing. It may not be so obvious in the image we provide, but we also observe the consistency of the brightness is decided by higher resolution latent code (Source B).
