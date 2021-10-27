@@ -7,10 +7,7 @@ validation. Then create and return generators for those
 import sys
 import os
 import shutil
-from tensorflow import keras as kr
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-import matplotlib.pyplot as plt
 
 def create_generator(path_to_data, path_to_gt, img_size):
     # Creating Train generators
