@@ -14,6 +14,8 @@ The goal of this project is to utilize the Improved UNet Model to segment skin l
 
 <!-- About the dataset -->
 ## The Data - ISIC 2018 Challenge Data For Skin Cancer
+
+### Overview
 The ISIC 2018 challenge had three main goals:
 1. Lesion Segmentation
 2. Lesion Attribute Detection
@@ -21,9 +23,18 @@ The ISIC 2018 challenge had three main goals:
 
 As mentioned before, this project aims to solve the first problem.
 
+### Dataset contents
+
+### Processing
 
 <!-- About the Model -->
 ## The Improved Unet 
+
+<!-- Links to the data set and model paper -->
+## Quick Links
+[The ISIC 2018 Challenge Data](https://challenge2018.isic-archive.com/)
+
+[The Improved UNet Model](https://arxiv.org/abs/1802.10508v1)
 
 
 ## References
