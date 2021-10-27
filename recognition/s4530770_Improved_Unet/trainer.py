@@ -4,11 +4,10 @@ import keras
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from data_loader import DataLoader
-print(keras.__version__)
 
 # https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
 
-model = build_model((384, 512, 3))
+model = build_model((384, 512, 3), 64)
 
 
 def dice_coef(y_true, y_pred, smooth=1):
@@ -17,9 +16,12 @@ def dice_coef(y_true, y_pred, smooth=1):
     intersection = K.sum(y_true_f * y_pred_f)
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
+def dice_coef_loss(y_true, y_pred):
+    return 1-dice_coef(y_true, y_pred)
 
-model.compile(optimizer='adam',
-              loss="categorical_crossentropy",
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+model.compile(optimizer=optimizer,
+              loss=dice_coef_loss,
               metrics=['accuracy', dice_coef])
 
 
@@ -51,12 +53,12 @@ def show_predictions(dataset, num=1):
 
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        show_predictions(data.get_test_set())
+        #show_predictions(data.get_test_set())
         print('\nSample Prediction after epoch {}\n'.format(epoch + 1))
 
-EPOCHS = 1
-data = DataLoader("C:\\Users\\s4530770\\Downloads\\ISIC2018_Task1-2_Training_Data\\", batch_size=8)
-show_predictions(data.get_training_set())
+EPOCHS = 30
+data = DataLoader("C:\\Users\\s4530770\\Downloads\\ISIC2018_Task1-2_Training_Data\\", batch_size=1)
+#show_predictions(data.get_training_set())
 train_ds = data.get_training_set()
 val_ds = data.get_validation_set()
 history = model.fit(train_ds,
@@ -64,6 +66,9 @@ history = model.fit(train_ds,
                     validation_data=val_ds,
                     callbacks=[DisplayCallback()])
 
+show_predictions(data.get_test_set())
+test_loss, test_acc = model.evaluate(data.get_test_set(), verbose=1)
+print(test_acc, test_loss)
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 dice_coef = history.history['dice_coef']

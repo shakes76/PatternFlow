@@ -48,10 +48,9 @@ class DataLoader:
 
         def configure_for_performance(ds):
             #ds = ds.cache()
-            ds = ds.shuffle(buffer_size=100)
+            ds = ds.shuffle(buffer_size=300, reshuffle_each_iteration=True)
             ds = ds.batch(self.batch_size, num_parallel_calls=self.AUTOTUNE)
             #ds = ds.prefetch(self.AUTOTUNE)
-
             return ds
 
         # Process Dataset
@@ -65,18 +64,6 @@ class DataLoader:
         self.val_ds = configure_for_performance(val_ds)
         self.test_ds = configure_for_performance(test_ds)
 
-    def show_images(self):
-        image_batch, label_batch = next(iter(self.train_ds))
-
-        plt.figure(figsize=(10, 10))
-        for i in [1,3,5]:
-            ax = plt.subplot(3, 2, i)
-            plt.imshow(tf.squeeze(image_batch[i]))
-            plt.axis("off")
-            ax = plt.subplot(3, 2, i + 1)
-            plt.imshow(label_batch[i].numpy().astype("uint8"))
-            plt.axis("off")
-        plt.savefig('test_data.png')
 
     def get_training_set(self):
         return self.train_ds
