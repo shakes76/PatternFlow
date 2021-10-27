@@ -183,47 +183,38 @@ def train_StyleGAN(args, G, D):
             real_AKOA_data = next(data_loader)
 
         processed_data += real_AKOA_data.shape[0] # count the processed data
+        batch_size = real_AKOA_data.size(0) # obtain the batch size
+        real_AKOA_data = real_AKOA_data.cuda() # load the data to cuda
 
-        batch_size = real_AKOA_data.size(0)
-        real_AKOA_data = real_AKOA_data.cuda()
-
+        """
+        Two different losses are provided here for different datasets,
+        based on the original implementation.
+        But for AKOA, we only tried wgan-gp as the time is not enough.
+        """
         if args.loss == 'wgan-gp':
-            real_predict = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
-            real_predict = real_predict.mean() - 0.001 * (real_predict ** 2).mean()
-            (-real_predict).backward()
+            output_real = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
+            output_real = output_real.mean() - 0.001 * (output_real ** 2).mean()
+            (-output_real).backward()
+        else:
+            print('r1 loss is not implemented')
+            exit()
 
-        elif args.loss == 'r1':
-            real_AKOA_data.change_gradient_status = True
-            real_scores = D(real_AKOA_data, step=progressive_stage, alpha=alpha)
-            real_predict = F.softplus(-real_scores).mean()
-            real_predict.backward(retain_graph=True)
-
-            grad_real = grad(
-                outputs=real_scores.sum(), inputs=real_AKOA_data, create_graph=True
-            )[0]
-            grad_penalty = (
-                grad_real.view(grad_real.size(0), -1).norm(2, dim=1) ** 2
-            ).mean()
-            grad_penalty = 10 / 2 * grad_penalty
-            grad_penalty.backward()
-            if index%10 == 0:
-                gradient_error = grad_penalty.item()
-
+        """
+        Implementation of the style mixing module here.
+        """
         if args.mixing and random.random() < 0.9:
-            gen_in11, gen_in12, gen_in21, gen_in22 = torch.randn(
+            w_11, w_12, w_21, w_22 = torch.randn(
                 4, batch_size, latent_length, device='cuda'
             ).chunk(4, 0)
-            gen_in1 = [gen_in11.squeeze(0), gen_in12.squeeze(0)]
-            gen_in2 = [gen_in21.squeeze(0), gen_in22.squeeze(0)]
-
-        else:
-            gen_in1, gen_in2 = torch.randn(2, batch_size, latent_length, device='cuda').chunk(
+            w_0 = [w_11.squeeze(0), w_12.squeeze(0)]
+            w_1 = [w_21.squeeze(0), w_22.squeeze(0)]
+        else: # no mixing is requied, always this branch
+            w_0, w_1 = torch.randn(2, batch_size, latent_length, device='cuda').chunk(
                 2, 0
             )
-            gen_in1 = gen_in1.squeeze(0)
-            gen_in2 = gen_in2.squeeze(0)
+            w_0, w_1 = w_0.squeeze(0), w_1.squeeze(0)
 
-        fake_image = G(gen_in1, step=progressive_stage, alpha=alpha)
+        fake_image = G(w_0, step=progressive_stage, alpha=alpha)
         fake_predict = D(fake_image, step=progressive_stage, alpha=alpha)
 
         if args.loss == 'wgan-gp':
@@ -244,13 +235,13 @@ def train_StyleGAN(args, G, D):
             grad_penalty.backward()
             if index%10 == 0:
                 gradient_error = grad_penalty.item()
-                D_error = (-real_predict + fake_predict).item()
+                D_error = (-output_real + fake_predict).item()
 
         elif args.loss == 'r1':
             fake_predict = F.softplus(fake_predict).mean()
             fake_predict.backward()
             if index%10 == 0:
-                D_error = (real_predict + fake_predict).item()
+                D_error = (output_real + fake_predict).item()
 
         D_optimiser.step()
 
@@ -260,7 +251,7 @@ def train_StyleGAN(args, G, D):
             change_gradient_status(G, True)
             change_gradient_status(D, False)
 
-            fake_image = G(gen_in2, step=progressive_stage, alpha=alpha)
+            fake_image = G(w_1, step=progressive_stage, alpha=alpha)
 
             predict = D(fake_image, step=progressive_stage, alpha=alpha)
 
