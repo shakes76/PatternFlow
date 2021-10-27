@@ -156,7 +156,7 @@ Batch size: 32
 
 ### Without Augmentation
 
-####Test accuracy: 98.77%
+#### Test accuracy: 98.77%
 
 ![loss](display/figures/loss.png)
 ![accuracy](display/figures/accuracy.png)
@@ -164,7 +164,7 @@ Batch size: 32
 
 ### With Augmentation
 
-####Test Accuracy: 83.06%
+#### Test Accuracy: 83.06%
 
 ![loss_aug](display/figures/loss_aug.png)
 ![accuracy_aug](display/figures/accuracy_aug.png)
