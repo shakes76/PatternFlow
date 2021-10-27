@@ -117,17 +117,16 @@ class VQVae(keras.models.Sequential):
 
         return losses
 
-def train_vqvae(x_train, variance):
+def train_vqvae(x_train_normalised, variance):
     vqvae = VQVae(variance, latent_dimensions=32, num_embeddings=64)
     vqvae.compile(optimizer=keras.optimizers.Adam())
-    vqvae.fit(x_train, epochs=2, batch_size=128)
+    vqvae.fit(x_train_normalised, epochs=30, batch_size=128)
     return vqvae
 
 
-
-def compare_reconstructions(vqvae: VQVae, test_images, n_images):
-    indices = np.random.choice(len(test_images), n_images)
-    test_samples = test_images[indices]
+def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
+    indices = np.random.choice(len(x_test_normalised), n_images)
+    test_samples = x_test_normalised[indices]
 
     reconstructed = vqvae.predict(test_samples)
 
@@ -163,13 +162,13 @@ x_train, x_test = load_oasis_data.get_data()
 x_train = np.expand_dims(x_train, -1)
 x_test = np.expand_dims(x_test, -1)
 
-x_train_scaled = (x_train / 255.0) - 0.5
-x_test_scaled = (x_test / 255.0) - 0.5
+x_train_normalised = (x_train / 255.0) - 0.5
+x_test_normalised = (x_test / 255.0) - 0.5
 
 variance = np.var(x_train / 255.0)
 
-vqvae = train_vqvae(x_train_scaled, variance)
-compare_reconstructions(vqvae, x_test, 10)
+vqvae = train_vqvae(x_train_normalised, variance)
+compare_reconstructions(vqvae, x_test_normalised, 10)
 
 
 
