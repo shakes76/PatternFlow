@@ -57,18 +57,17 @@ An example of training on the ISIC dataset is in the driver.py file, this covers
     - S: The number of cells to divide your image into. Divides your image into a S*S cell.
     - B: The number of bounding boxes to be predicted per cell. 
     - C: The number of classes that are contained in your dataset. This should match the number of classes in your bounding boxes. 
-2) Compile your model, tuning any optional paramters. 
+2) Compile your model, tuning any optional paramters. By default clipnorm is introduced at -1,1 too keep the network stable.
 ```
 yolo.compile()
 ```
-By default clipnorm is introduced at -1,1 too keep the network stable
-3) Run your model and supply your data in the correct format:
+3) Run the model and supply your data in the correct format:
 ```
 yolo.runModel(training_data, validation_data, epochs=200)
 ```
 The model accepts training and validation data in the form (image, groundTruth). Where:
 - image is: (imageWidth, imageHeight, channels)
-- groundTruth is: (S, S, 1, 5+num classes). Noting... that the groundTruth can only contain one true bounding box inserted at the correct S,S position. Every where else can be all zeros. 
+- groundTruth is: (S, S, 1, 5+num_classes). Noting... that the groundTruth can only contain one true bounding box inserted at the correct S,S position. Every where else can be all zeros. 
 
 4) Make a prediction:
 ```
