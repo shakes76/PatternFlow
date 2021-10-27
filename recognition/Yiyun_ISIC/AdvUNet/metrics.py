@@ -1,7 +1,8 @@
-"""Training the UNet model
+"""Metrics for training the UNet model
 """
 import tensorflow.keras.backend as K
 from tensorflow.keras import models, optimizers
+
 
 def dice_coef(y_true, y_pred) -> float:
     # flatten array for faster computation
@@ -16,12 +17,6 @@ def dice_coef(y_true, y_pred) -> float:
 def dice_loss(y_true, y_pred) -> float:
     return 1 - dice_coef(y_true, y_pred)
 
+
 def scheduler(epoch, lr):
     pass
-
-def compile_model(model: models.Model):
-    model.compile(optimizer=optimizers.Adam(learning_rate=5e-4, ),
-                  loss=dice_loss, metrics=["accuracy", dice_coef])
-
-def fit_model(model: models.Model, x, y, batch_size, epochs):
-    model.fit(x, y, batch_size, epochs, callbacks=[])

@@ -5,6 +5,8 @@ Reference: https://arxiv.org/abs/1802.10508v1
 from tensorflow.keras import layers, models, optimizers
 import tensorflow_addons as tfa
 
+from metrics import dice_coef, dice_loss
+
 
 def __encoder_module(input, num_filters, strides=(1, 1)):
     conv = layers.Conv2D(num_filters, (3, 3), strides,
@@ -82,7 +84,9 @@ class AdvUNet:
         self.model = build_model(input_shape)
 
     def compile(self):
-        pass
+        self.model.compile(optimizer=optimizers.Adam(learning_rate=5e-4),
+                           loss=dice_loss, metrics=["accuracy", dice_coef])
 
-    def fit(self):
-        pass
+    def fit(self, train_dataset, val_dataset, batch_size, epochs):
+        self.model.fit(train_dataset.batch(batch_size), validation_data=val_dataset.batch(batch_size),
+                       epochs=epochs, verbose=1)
