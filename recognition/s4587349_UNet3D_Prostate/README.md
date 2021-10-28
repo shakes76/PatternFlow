@@ -73,5 +73,6 @@ The data was provided in NIfTI format (nii.gz).
 
 ![](unet3d.png)
 
+![](slice.png)
 ##  
 #### and again

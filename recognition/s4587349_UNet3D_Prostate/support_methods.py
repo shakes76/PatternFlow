@@ -6,7 +6,7 @@ import nibabel as nib
 from tensorflow import keras
 import driver as drv
 
-print(tf.__version__)
+# print(tf.__version__)
 
 # todo need to input X_set, y_set whish are x_
 class ProstateSequence(keras.utils.Sequence):
@@ -15,7 +15,7 @@ class ProstateSequence(keras.utils.Sequence):
     """Data generator"""
 
 
-    def __init__(self, x_set, y_set, batch_size=1):
+    def __init__(self, x_set, y_set, batch_size=1, training = True):
         # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
         #              n_classes=6, shuffle=False):
         # todo return to this
@@ -35,9 +35,10 @@ class ProstateSequence(keras.utils.Sequence):
         self.n_classes = 6
         self.shuffle = False
         self.on_epoch_end()
+        self.training = training
 
-        print("39 self.x", self.x)
-        print("40 self.y", self.y)
+        # print("39 self.x", self.x)
+        # print("40 self.y", self.y)
 
     def __len__(self):
         """Number of batches per epoch"""
@@ -52,13 +53,6 @@ class ProstateSequence(keras.utils.Sequence):
         :param idx:
         :return: 1 batch of data and a matching batch of labels
         """
-        # # indexes are matched so don't  need this section
-        # batch_x = self.x[idx * self.batch_size:(idx + 1) *
-        #                                        self.batch_size]
-        # batch_y = self.y[idx * self.batch_size:(idx + 1) *
-        #                                        self.batch_size]
-
-        # Instead indexes same for train & label, or validate & label, or test & label
         # create tmp list of image/label names for batch
         indexes = self.indexes[idx * self.batch_size:(idx + 1) * self.batch_size]
         list_data_tmp = [self.x[k] for k in indexes]
@@ -66,20 +60,17 @@ class ProstateSequence(keras.utils.Sequence):
         # generate data
         X = self._generation_x(list_data_tmp)
         y = self._generation_y(list_label_tmp)
-        # print("X.shape l64 ", X.shape)
-        # print("y.shape l65 ", y.shape)
-        # X = np.transpose(X, axes=[1, 2, 3, 0])
-        # print("X.shape l64 ", X.shape)
-        # y = np.transpose(y, axes=[1, 2, 3, 0, 4])
-        # print("X.shape l64 ", y.shape)
         X = X[:, :, :, :, np.newaxis]
-        print("X.shape l64 ", X.shape)
+        max = np.amax(X)  #todo , do a better norm
+        # adjust type. Lessen overhead
+        X = X.astype("float32") / max   # num 0-1300+ -> 0-1
+        y = y.astype("uint8")           # num 0-5
 
-        return X, y
+        if self.training:
+            return X, y
+        else:
+            return X
 
-        # return np.array([                           #todo setup for nii
-        #     resize(imread(file_name), (200, 200))
-        #     for file_name in batch_x]), np.array(batch_y)
 
     def _generation_x(self, list_data_tmp):
         """
@@ -119,7 +110,7 @@ class ProstateSequence(keras.utils.Sequence):
             y2 = self.read_nii(id)  # todo investigate
 
             y[i,] = tf.keras.utils.to_categorical(y2, num_classes=self.n_classes,
-                                                  dtype='float64')
+                                                  dtype='uint8')
             # print("L119 y.shape, i : ", y.shape, i)
         return y
 
@@ -135,7 +126,7 @@ class ProstateSequence(keras.utils.Sequence):
         if self.shuffle:
             np.random.shuffle(self.indexes)
 
-    # todo join _dg_x & _dg_y
+    # todo join _dg_x & _dg_y, not called
     def _data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
         # Initialization
@@ -151,6 +142,37 @@ class ProstateSequence(keras.utils.Sequence):
             y[i] = self.labels[ID]
             # label shape (256,256,128) -> (256,256,128,6) <class 'numpy.ndarray'>
         return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
+
+
+def plot_loss(history):
+    # Plot training & val accuracy and loss at each epoch
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(1, len(loss)+1)
+    plt.plot(epochs, loss, 'y', label='Training loss')
+    plt.plot(epochs, val_loss, 'r', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig('loss.png')
+    # plt.show()
+    plt.close()
+
+
+def plot_accuracy(history):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    epochs = range(1, len(acc)+1)
+    plt.plot(epochs, acc, 'y', label='Training accuracy')
+    plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig('accuracy.png')
+    # plt.show()
+    plt.close()
 
 
 def data_info():

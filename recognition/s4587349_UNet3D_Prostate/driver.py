@@ -23,7 +23,7 @@ CLASSES = 6
 def main():
     """ """
     """ Show reachable GPUs"""
-    print(tf.config.list_physical_devices(device_type='GPU'))
+    print(tf.config.list_physical_devices(device_type='GPU'))    #todo remove
 
     """ 
     Patients had from 1 to 8 MRI scans, a week apart. As scans for a given
@@ -76,7 +76,7 @@ def main():
     label_small_test = sorted([os.path.join(os.getcwd(), 'D:\\p\\label_test', x)
                                for x in os.listdir('D:\\p\\label_test')])
 
-    # # """ Data Sources Windows C: """
+    """ Data Sources Windows C: """
     # # Data sources
     # X_TRAIN_DIR = 'C:\\prostate\\mr_train'
     # X_VALIDATE_DIR = 'C:\\prostate\\mr_validate'
@@ -154,29 +154,55 @@ def main():
     # label_small_test = sorted([os.path.join(os.getcwd(), 'p/label_test', x)
     #                            for x in os.listdir('p/label_test')])
 
-    """ Test generator, try to visualise"""
-    training_generator = sm.ProstateSequence(data_small_train,
-                                             label_small_train, batch_size=1)
-    validation_generator = sm.ProstateSequence(data_small_validate,
-                                            label_small_validate, batch_size=1)
+    # """ Test generator, try to visualise - small"""
+    # training_generator = sm.ProstateSequence(data_small_train,
+    #                                          label_small_train, batch_size=1)
+    # validation_generator = sm.ProstateSequence(data_small_validate,
+    #                                         label_small_validate, batch_size=1)
+
+
+    """ Test generator, try to visualise - full"""
+    training_generator = sm.ProstateSequence(image_train,
+                                             label_train, batch_size=1)
+    validation_generator = sm.ProstateSequence(image_validate,
+                                               label_validate, batch_size=1)
+    pred_generator = sm.ProstateSequence(image_test, label_test, batch_size=1, training=False)
 
     # print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
     # need to visualise
 
+    # """ TESTING SPEED OF TRAINING GENERATOR, ABOUT 1 BATCH/SEC ON THIS SYSTEM
+    # 157 SAMPLES TAKES ABOUT 2.5 MIN FOR 1 EPOCH TO PASS SAMPLES TO MODEL ... ON THIS SYSTEM"""
+    # xtg = training_generator
+    # print(type(xtg))
+    # print("xtg ", xtg)
+    # print(*(n for n in xtg))
+
     # """ MODEL """
     # # todo update with BN, Relu
     model = mdl.unet3d(inputsize=(256, 256, 128, 1), kernelSize=3)
-    #
-    #
-    # # model = mdl.unet3d_small(inputsize= (256,256,128,1), kernelSize=3)  #attempt to run smaller model
-    #
+
+    # SMALL 3 SAMPLE MODEL
+    # model = mdl.unet3d_small(inputsize= (256,256,128,1), kernelSize=3)  #attempt to run smaller model
+
     model.compile(optimizer='adam', loss='categorical_crossentropy',
-                  metrics=['accuracy'])  # todo add dsc
+                  metrics=['accuracy'])
     model.summary()
     keras.utils.plot_model(model, "unet3d.png", show_shapes=True)
+
+    history = model.fit(training_generator, validation_data=validation_generator, batch_size=1, epochs=3)
+    sm.plot_loss(history)
+    sm.plot_accuracy(history)
+    pred = model.predict_generator(pred_generator)
+    print("prep ", pred.shape)
+    print(pred)
+    print(type(pred))
+    # # TODO WORKING HERE - predictions
+
+    
+
+
     #
-    # # TODO WORKING HERE
-    history = model.fit(training_generator)
 
     # # test print of list of label names which include path
     # print(label_test)
