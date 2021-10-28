@@ -76,7 +76,3 @@ def test_fourier_pos():
 
     assert tf.reduce_all(sin_enc == expected_sin_enc)
     assert tf.reduce_all(cos_enc == expected_cos_enc)
-
-
-test_spatial_pos()
-test_fourier_pos()
