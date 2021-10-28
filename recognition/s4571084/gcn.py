@@ -69,8 +69,16 @@ def load_data():
 
     return adjacency, features, labels, train_mask, val_mask, test_mask
 
+"""
+Graph Convalution
+"""
 class GraphConvolution(nn.Module):
     def __init__(self, input_dim, output_dim, use_bias=True):
+		"""
+		input_dim: int. Dimension of input nodes
+		output_dim: int. Dimension of output nodes
+		use_bias : bool, optional.
+		"""
         super(GraphConvolution, self).__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -88,6 +96,12 @@ class GraphConvolution(nn.Module):
             init.zeros_(self.bias)
 
     def forward(self, adjacency, input_feature):
+		"""
+		adjacency matrix is sparse matrix, thus this will use sparse when
+		calculate.
+		adjacency: torch.sparse.FloatTensor
+		input_feature: torch.Tensor
+		"""
         device = "cuda" if torch.cuda.is_available() else "cpu"
         support = torch.mm(input_feature, self.weight.to(device))
         output = torch.sparse.mm(adjacency, support)
