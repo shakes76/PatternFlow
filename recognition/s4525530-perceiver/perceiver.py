@@ -1,6 +1,23 @@
 import torch
+import numpy as np
 from torch import nn, einsum
-from einops import rearrange, repeat
+from einops import rearrange
+from math import pi
+
+"""
+Positional Encoding Method for data encoding
+"""
+def fourier_encode(x, max_freq, num_bands=4):
+    x = x.unsqueeze(-1)
+    device, dtype, orig_x = x.device, x.dtype, x
+
+    scales = torch.linspace(1., max_freq/2, num_bands, device=device, dtype=dtype)
+    scales = torch.reshape(scales, (1, ) * (len(x.shape) - 1) + (len(scales), ))
+
+    x = x * scales * pi
+    x = torch.cat([x.sin(), x.cos()], dim = -1)
+    x = torch.cat((x, orig_x), dim=-1)
+    return x
 
 class Attention(nn.Module):
 
