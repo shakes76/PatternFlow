@@ -39,9 +39,23 @@ The Dice Similarity Coefficient is a common metric used in segmentation problems
 
 ## Results
 
-### Model Output
+### Accuracy & Loss Plots
 
-### Accuracy & Loss
+### Performance on the Test Set
+#### Dice Similarity Coefficient
+
+#### DSC Distribution
+
+### Output generated
+Masks output by the model were thresholded such that pixels which were > 0.5 were set to 1, else they were set to 0. Below are some output examples from the trained model, on the test set.
+
+_Image of input / ground truth / result masks_
+
+## Additions and Changes
+The architecture described above gives an overview of the design of the model.
+During development, it was found that making slight tweaks to the architecture resulted in better performance. These changes were:
+- `InstanceNormalisation` layers were added to all convolutions in the encoder pathway.
+- `UpSampling2D` layers used the `interpolation='bilinear'` parameter as opposed to the default `interpolation='nearest'`
 
 ## Usage
 To run this network, ensure you have the appropriate Dependencies installed. 
