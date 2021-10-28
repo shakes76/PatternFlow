@@ -9,11 +9,11 @@ from functions import train, make_gif
 
 #parameters
 batch_size = 8
-depth = 8          #filters
-latent_size = 64   #size of input vector z
+depth = 16          #filters
+latent_size = 256   #size of input vector z
 im_size = 256       #final image size
 n_layers = 8        #no. layers in the synthesis network
-epochs = 5         #no. of epochs to run the training for
+epochs = 30         #no. of epochs to run the training for
 
 
 #load data here
@@ -46,7 +46,8 @@ disc_loss, gen_loss = train(S, G, D, gen_model, gen_model_optimiser, D_optimiser
 x = np.arange(0, epochs)
 plt.plot(x, disc_loss) #blue    >discriminator loss
 plt.plot(x, gen_loss) #orange   >generator loss
-plt.show()
+plt.savefig('Losses_graph.png') #save 
+#plt.show()
 
 #make a gif of the training
 make_gif()
