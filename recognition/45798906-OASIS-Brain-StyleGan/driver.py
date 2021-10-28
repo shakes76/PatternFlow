@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 27/10/2021
+    Date last modified: 28/10/2021
     Python version: 3.9.7
 """
 
@@ -36,7 +36,7 @@ from util import (
     visualise_loss,
     generate_loss_history,
 )
-from gan import (
+from model import (
     get_generator,
     get_discriminator,
     get_optimizer,
