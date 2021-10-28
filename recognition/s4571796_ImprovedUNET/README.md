@@ -26,6 +26,33 @@ The masks go through another step to convert all values for each pixel into eith
 
 ## Improved UNET Architecture
 ***
+The Improved UNET Architecture used for this project is strongly based off the original UNET, with an additional segmentation layer and element wise sums performed after each contect module. The structure obtained from the paper [1] can be seen below.
+
+![Example_Mask](./Resources/ImprovedUNET.png)
+
+*Figure 3: Improved UNET Architecture*
+
+The entire Architecture is a connected series of convolution operations, concatentations and upscaling. Methods used to reduce overfitting have also been added to the model's implementations such as Batch Normalization and Dropout. 
+
+A detailed explanation about the how the undefined modules have been implemented are included below. By default, all convolutional layers have identical padding to allow for the element wise sum and concatenation operations and use the same LeakyReLU Activation Function throughout. The number of output filters at for any module is shown in the image above contained within the green box.
+
+- Context Module:
+    > 1. Convolutional Layer with kernel size of 3
+    > 2. Batch Normalization
+    > 3. Dropout with value of 0.1
+    > 4. Convolutional Layer with kernel size of 3
+    > 5. Element-wise Sum with initial input and calculated output
+
+- Upsampling Module:
+    > 1. Convolutional Transpose Layer with kernel size of 3, stride of 2
+
+- Localization Module:
+    > 1. Convolutional Layer with kernel size of 3
+    > 2. Convolutional Layer with kernel size of 1
+
+- Segmentation Layer:
+    > 1. Convolutional Layer with kernel size of 1
+    > 2. Upsampling with factor of 2 except for final layer
 
 ## Results and Discussion
 ***
