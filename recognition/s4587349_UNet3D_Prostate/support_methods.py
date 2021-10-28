@@ -204,12 +204,12 @@ def slices(img):
 
 def slices_ohe(img):
     """ takes slices of input image."""
-    slice_0 = img[:,128,:,0]
-    slice_1 = img[:,128,:,1]
-    slice_2 = img[:,128,:,2]
-    slice_3 = img[:,128,:,3]
-    slice_4 = img[:,128,:,4]
-    slice_5 = img[:,128,:,5]
+    slice_0 = img[:,128,:,0]  # Background
+    slice_1 = img[:,128,:,1]  # Body
+    slice_2 = img[:,128,:,2]  # Bones
+    slice_3 = img[:,128,:,3]  # Bladder
+    slice_4 = img[:,150,:,4]  # Rectum
+    slice_5 = img[:,128,:,5]  # Prostate
 
     show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
 
@@ -229,6 +229,41 @@ def show_slices(sliced):
     # fig, axes = plt.subplots(1, len(sliced))
     # for i, slice in enumerate(sliced):
     #     axes[i].imshow(slice.T, cmap="gray", origin="lower")
+
+
+def label_array(label_test):
+    pred_true = np.array()
+
+
+def dice_coef(y_true, y_pred):
+    smooth = 0.000001
+    y_true_f = y_true.flatten()
+    y_pred_f = y_pred.flatten()
+    intersection = np.sum(y_true_f * y_pred_f)
+    print("dice is ", (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth))
+    return (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+
+
+def dice_coef_multiclass(y_true, y_pred, classes):
+    dice = []
+    for index in range(classes):
+        x = dice_coef(y_true[:,:,:,:,index], y_pred[:,:,:,:,index])
+        dice = dice + [x]
+    print_dice(dice)
+    return dice  # taking average
+    # dice=0
+    # for index in range(classes):
+    #     dice += dice_coef(y_true[:,:,:,index], y_pred[:,:,:,index])
+    # return dice/classes  # taking average
+
+
+def print_dice(dice):
+    print("Dice Coef Background: ", dice[0])
+    print("Dice Coef Body: ", dice[1])
+    print("Dice Coef Bones: ", dice[2])
+    print("Dice Coef Bladder: ", dice[3])
+    print("Dice Coef Rectum: ", dice[4])
+    print("Dice Coef Prostate: ", dice[5])
 
 
 def dim_per_directory():

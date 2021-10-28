@@ -2,6 +2,7 @@ import os
 import nibabel as nib
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 
 import unet_model as mdl
 import support_methods as sm
@@ -47,6 +48,7 @@ def main():
     """ Example data and label  """
     img_mr = (nib.load(X_TRAIN_DIR + '\\Case_004_Week0_LFOV.nii.gz')).get_fdata()
     img_label = (nib.load(Y_TRAIN_DIR + '\\Case_004_Week0_SEMANTIC_LFOV.nii.gz')).get_fdata()
+    img_label2 = (nib.load(Y_TRAIN_DIR + '\\Case_011_Week7_SEMANTIC_LFOV.nii.gz')).get_fdata()
 
     """ Full data & label addresses in D: """
     image_train = sorted([os.path.join(os.getcwd(), 'D:\\prostate\\mr_train', x)
@@ -168,6 +170,9 @@ def main():
                                                label_validate, batch_size=1)
     pred_generator = sm.ProstateSequence(image_test, label_test, batch_size=1, training=False)
 
+
+
+
     # print(*(n for n in training_generator))  # prints but seems to print series of np.zeros
     # need to visualise
 
@@ -177,6 +182,15 @@ def main():
     # print(type(xtg))
     # print("xtg ", xtg)
     # print(*(n for n in xtg))
+
+
+
+
+
+
+
+
+
 
     # """ MODEL """
     # # todo update with BN, Relu
@@ -193,13 +207,33 @@ def main():
     history = model.fit(training_generator, validation_data=validation_generator, batch_size=1, epochs=3)
     sm.plot_loss(history)
     sm.plot_accuracy(history)
-    pred = model.predict_generator(pred_generator)
-    print("prep ", pred.shape)
-    print(pred)
-    print(type(pred))
-    # # TODO WORKING HERE - predictions
+    pred = model.predict(pred_generator)  #todo was model_predict(...)
 
-    
+    pred_argmax = np.argmax(pred, axis=4)
+
+    # Get an array of test labels -> (18, 256, 256, 128)
+    ys = np.empty((len(label_test), 256, 256, 128, 6))
+    for i, id in enumerate(label_test):
+        y2 = sm.read_nii(id)
+        thiss = tf.keras.utils.to_categorical(y2, num_classes=6)
+        ys[i,] = thiss
+
+    # print("ys shape ", ys.shape)
+    dice = sm.dice_coef_multiclass(ys, pred_argmax, 6)
+    print(dice)
+    print("Average DSC: ", sum(dice) / len(dice))
+
+
+
+
+    # # check prep is working
+    # print("prep ", pred.shape) #(18, 256, 256, 128, 6)
+    # print(pred)    #  1.01947702e-01 1.02931291e-01]]]]]
+    # print(type(pred))  #<class 'numpy.ndarray'>
+    # # # TODO WORKING HERE - predictions
+    # HAVE DICE CALCS - NOW DO SOMETHING WITH THEM
+    # HAVE PRED_Y AS OHE FROM MODEL.PREDICT
+    # NEED TO GET LABELS (ALL 18), ohe AND THEN FEED BOTH INTO DICE_COEF_MULTICALSS
 
 
     #
@@ -237,25 +271,30 @@ def main():
     # plot image slices & labels, pre - ensure access (try 3d later)
     # slices(img_mr)
 
+
+
+
+
     """ Code to investigate data and images """
+
+
+    # """ PRINT SLICES OF ONE HOT ENCODED LABEL"""
+    # ohe = tf.keras.utils.to_categorical(img_label, num_classes = 6)
+    # print(img_label.shape, ohe.shape)
+    # print(type(img_label), type(img_mr), type(ohe))
+    # sm.slices_ohe(ohe)
+
+    # """ PRINT SLICES OF LABEL"""
+    # sm.slices(img_label)
+
+    # """ PRINT SLICES OF DATA """
+    # sm.slices(img_mr)
 
     # #Checks dimensions of each image and label against expected.
     # sm.dim_per_directory()
 
     # # Display raw data and label info
     # sm.data_info()
-
-    # # display images of data
-    # sm.slices(img_mr)
-
-    # # display images of labels
-    # sm.slices(img_label)
-
-    # #  check shape and print slices for to_categorical for single label (one_hot_encoding)
-    # ohe = tf.keras.utils.to_categorical(img_label, num_classes = 6)
-    # print(img_label.shape, ohe.shape)
-    # print(type(img_label), type(img_mr), type(ohe))
-    # sm.slices_ohe(ohe)
 
 
 if __name__ == '__main__':
