@@ -1,4 +1,5 @@
 This is my first style GAN impelementation. Because of short in GPU, the model is intermittently trained on Colab.
+The configuration of the model and the brief introduction can fing in the end.
 
 # How the mapping network dis-entangle the random tensor?
 ## Search for distribution
