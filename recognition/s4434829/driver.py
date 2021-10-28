@@ -10,6 +10,11 @@ From ed: yeah training can be in here thats ok
 
 TODO:
 they reccomend starting with minst
+- add rest of vq
+- train with minst to see how good reconstructions are and make sure works
+- then either train on data, later add prior for generation
+    or add prior and test with misnt then train with data
+    not sure if can use same trained after ahve prior
 """
 
 import numpy as np
@@ -20,6 +25,7 @@ import matplotlib.image as mpimg
 
 import pathlib
 import math
+import time
 
 from model import VQVAE
 
@@ -116,11 +122,34 @@ def main():
     ### make optimiser and loss
     lr = 2*10**(-4)
     batch_size = 128
-    # optimiser = 
-    # loss = 
-
+    optimiser = tf.keras.optimizers.Adam(learning_rate=lr)
 
     ### train model
+    # Some of this I reuse from my demo code but i think that's ok it wouldnt 
+    # change much anyway. It does use the loss returned instead of recalcualting loss
+    # TODO move
+    loss_hist = [] # for plotting
+    EPOCHS = 1
+    idx = 0
+    for epoch in range(EPOCHS):
+        start = time.time()
+        for sample, target in train_seq:
+            idx+=1
+            with tf.GradientTape() as tape:
+                loss, out = model(sample, training=True) 
+
+            # step of optamisiser
+            grads = tape.gradient(loss, model.trainable_weights)
+            optimiser.apply_gradients((zip(grads, model.trainable_weights)))
+            
+            loss_hist += [loss]
+            break
+
+        # TODO save 
+        print("time for one epoch: ",time.time()-start)
+
+        if(epoch % 1 == 0):
+            print('Epoch {}: \n\ttrain loss: {}'.format(epoch, np.mean(loss)))
 
     ### plot results
 

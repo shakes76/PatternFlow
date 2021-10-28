@@ -46,7 +46,8 @@ The model seems to be a bit different, it has more than 2 conv layers ect.
 Also it has implemented it by using classes and build and then a functional way,
 which i didn't do.
 
-Video explaining the paper on VQVAE:
+Video explaining the paper on VQVAE: (this really helped me undesrtand what
+ahppened between encoder and decoder)
 https://www.youtube.com/watch?v=VZFVUrYcig0
 
 
@@ -60,6 +61,8 @@ TODO:
 make parameters pass-in-able
 
 maybe need to one hot encode so have 4 channels?
+
+clean up comments, maybe over explaining
 """
 
 import tensorflow as tf
@@ -176,25 +179,106 @@ class VQ(tf.keras.Model):
     Shapes:
         ---Shape of data as it comes into VQ: (10, 62, 62, 256)
         ---Shape of data after reshape: (38440, 256)
+        Shape of weights (256, 512)
+        Shape of distances (38440, 512)
+        Shape of distance encodings (38440, 256)
+        Shape after quantisisation (10, 62, 62, 256) # yay!!
 
     source: https://github.com/deepmind/sonnet/blob/v1/sonnet/python/modules/nets/vqvae.py
     TODO: write what you got from here/how used it
     """
     def __init__(self, indim, outdim, inputs=None):
         super(VQ, self).__init__(inputs)
-        # instead of getting as a varaible
-        self.emb = tf.keras.layers.Embedding(indim, outdim)
+        # we need the set of weights we can train as the embedding with 
+        # uniform initilisation
+        # intiially i tried to fidn a layer to hold these, but i couldn't make it
+        # work with the Embedding layer. So instead just creating a variable
+        # and initialising by hand, making sure its trainble
+        # this might not be correctly scoped, might need a build instead
+        # should be ok to do here since know the shapes, but really i should do in a build
+        # once the input has come in
+        # https://www.tensorflow.org/guide/keras/custom_layers_and_models
+        # add weight, or just make a variable? 
+        self.emb = tf.Variable(initial_value=tf.random_uniform_initializer()(shape=(indim, outdim)), 
+                        trainable=True, name="emb")
+
+        # self.emb =  add_weight(name="emb", shape=[indim, outdim],  
+        #         initializer=tf.random_uniform_initializer(),  trainable=True)
+
+        # self.emb = tf.keras.layers.Embedding(indim, outdim)
 
         # from paper, need to make sure encoder commits to an embedding so output
         # does not grow. 
         self.commitment_loss = 0.1 # TODO: i picked this randomly
+        self.input_dims = indim
 
     def call(self, X):
-        print("---Shape of data as it comes into VQ: {}".format(X.shape))
+        # print("---Shape of data as it comes into VQ: {}".format(X.shape))
         X_shape = X.shape
         # Change shape to batch*height*width, channels
         X_reshaped = tf.reshape(X, (X_shape[0]*X_shape[1]*X_shape[2], X_shape[3]))
-        print("---Shape of data after reshape: {}".format(X_reshaped.shape))
+        # print("---Shape of data after reshape: {}".format(X_reshaped.shape))
+
+        # calualte distances
+        # this is the distance between one row of the encoded output to whats
+        # in the embedded space. We need to multiply by the closest in 
+        # embedded space, for first we need to calculate what the distance
+        # to each of of the e_i in embedded space is. The measure of distance
+        # is normal euclidiean distance (L2 norm (normal sum of squares in 2d))
+        # Except don't need to take sqrt since square minimises anyway so
+        # we just do (a-b)^2 and leave that. Alsow we want to avoid doing the 
+        # sum as a for loop so we expand it into a^2+b^2-2ab and do this along
+        # one dimention (ab=ba?)
+        # This is the same as the math from the source listed in the doc for
+        # this class. 
+        # TODO: surely there's a funciton for this in tf? also clean this comment
+        # so in the end we have sum of squares across rows of X + sum
+        # of squares accross columns of weights - 2*rows X * columns weights
+        # keepdims=True means we keep these sums in a spare dimention
+        distances = tf.math.reduce_sum(X_reshaped**2, axis=1, keepdims=True) +\
+                    tf.math.reduce_sum(self.emb**2, axis=0, keepdims=True) -\
+                    2*tf.linalg.matmul(X_reshaped, self.emb)
+        # print("Shape of distances {}".format(distances.shape))
+
+        # Now we need to pick the e_i with the closest distance for each 
+        # line in X, look it up in the table and apply it
+        # For some reasons ource does argmin -dis, but its the same?
+        indeces = tf.argmin(distances,axis=1)
+        #expand to one hot encoding
+        encoded = tf.one_hot(indeces, self.input_dims)
+        # print("Shape of distance encodings {}".format(encoded.shape))
+        indeces = tf.reshape(indeces, X.shape[:-1])
+        # look up the indces in the embeddings
+        quantised = tf.nn.embedding_lookup(tf.transpose(self.emb, [1, 0]), indeces)
+        # I should be able to multiply instead right? Idk why it does the embedding
+        # look up its the same thing
+        # quantised = tf.linalg.matmul(encoded, self.emb)
+        # print("Shape after quantisisation {}".format(quantised.shape))
+
+        # so this has three loss compoenets which are all added to give L (3)
+        # the loss for the enc/decoder loss, the loss for the embedding weights
+        # and the commitment loss so the output doenst get out of hadn
+        # so we need to do our own special sum loss function
+        #
+        # keep embed loss constant, only learn enc/dec loss 
+        # thes ource does this differntly but as far as i can tele its just mse error
+        # so why not?
+        enc_dec_loss = tf.keras.metrics.mean_squared_error(tf.stop_gradient(quantised), X)
+        # keep enc/dec loss constnat only learn embed loss
+        embed_loss = tf.keras.metrics.mean_squared_error(quantised, tf.stop_gradient(X))
+        total_loss = self.commitment_loss * embed_loss +enc_dec_loss
+
+        # now we need to feed the weights straight through without this operation
+        # being optimised for (so no grad during this)
+        q = X + tf.stop_gradient(quantised-X)
+
+        #TODO some sources also have prepelxity which seems to be a measure but
+        #idk what its for so leave out for now
+
+        # converst shapes back
+        return total_loss, q, encoded, indeces
+
+
 
 class VQVAE(tf.keras.Model):
     """
@@ -207,14 +291,17 @@ class VQVAE(tf.keras.Model):
         # encoder compoentnts
         # do i need to expose this so i can get the latent space?
         self.encoder = Encoder()
+        # they all have a cnn here but its not mentioned in the paper
 
         # decoder components
         self.decoder = Decoder()
 
         # VQ
-        self.vq = VQ(64, 512)
+        self.vq = VQ(256, 512)
 
     def call(self, X):
-        X = self.encoder(X)
-        self.vq(X) # not correct but just to test
-        X = self.decoder(X)
+        latent = self.encoder(X)
+        loss, q, encoded, indeces = self.vq(latent) # not correct but just to test
+        recon = self.decoder(q)
+
+        return loss, recon
