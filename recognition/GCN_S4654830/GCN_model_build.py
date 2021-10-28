@@ -12,7 +12,12 @@ class GCN(nn.Module):
         self.gcn2 = GCN_Layer(16, 4)
 
     def forward(self, adjacency, feature):
+        """
+        this function can use the adjacency metrix and feature metrix as the argument
+        to build the GCN model, which consisted by two layers
+        """
         # transfor the layer 1 and layer 2 into gcn model
+        # Add features as variables
         h = fun.relu(self.gcn1(adjacency, feature))
         logits = self.gcn2(adjacency, h)
         return logits
