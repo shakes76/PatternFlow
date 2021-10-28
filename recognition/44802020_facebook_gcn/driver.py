@@ -52,6 +52,9 @@ def main():
     # Each falls into 1 of 4 categories
     # There are 342 004 Edges between the pages
 
+    # Split Data
+
+
     # ================== TEST MODEL ========================
     # This is the model
     page_one = [0, 0, 1, 2, 0, 4, 2, 3, 3, 1]
@@ -88,14 +91,24 @@ def main():
     page_one = data['edges'][:, 0]
     page_two = data['edges'][:, 1]
 
+    # Features
+    feats = tf.convert_to_tensor(data['features'])
+
+    # Labels
+    labels = tf.convert_to_tensor(data['target'])
+
+    # Split Data
+    train_adj_p1, test_adj_p1 = page_one[:18000], page_one[18000:]
+    train_adj_p2, test_adj_p2 = page_two[:18000], page_two[18000:]
+
+    train_labels, test_labels = labels[:18000], labels[18000:]
+    train_feats, test_feats = feats[:18000], feats[18000:]
+
     ones = tf.ones_like(page_one)
 
     a_bar = spr.coo_matrix((ones, (page_one, page_two)))
     a_bar.setdiag(1)
-    print("A_Bar 1")
-    print(a_bar)
-    print(a_bar.shape)
-    print(type(a_bar))
+
     # Normalize
     row_sum = np.array(a_bar.sum(1))
     d_inv_sqr = np.power(row_sum, -0.5).flatten()
@@ -103,38 +116,14 @@ def main():
     d_mat_inv_sqrt = spr.diags(d_inv_sqr)
     a_bar = a_bar.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
 
-    print("A_Bar 2")
-    print(a_bar)
-    print(a_bar.shape)
-    print(type(a_bar))
+    # Convert to Sparse Tensor
     a_bar = coo_matrix_to_sparse_tensor(a_bar)
 
-    # Features
-    # print("Feats 1")
-    # print(feats)
-    # print(tf.shape(feats))
-    # print(type(feats))
-    feats = tf.convert_to_tensor(data['features'])
-    # print("Feats 2")
-    # print(feats)
-    # print(tf.shape(feats))
-    # print(type(feats))
-
-    # Labels
-    print("Labels 1")
-    print(labels)
-    print(tf.shape(labels))
-    print(type(labels))
-    labels = tf.convert_to_tensor(data['target'])
-    print("Labels 2")
-    print(labels)
-    print(tf.shape(labels))
-    print(type(labels))
     # ================== REAL MODEL DONE ===================
 
     # Construct Model
     my_model = Sequential()
-    loss_fn = losses.SparseCategoricalCrossentropy(from_logits=False)
+    loss_fn = losses.SparseCategoricalCrossentropy(from_logits=True)
 
     print("Shape 1")
     print(tf.shape(feats))
@@ -145,27 +134,33 @@ def main():
 
     my_model.add(Input(shape=tf.Tensor.get_shape(feats)))
 
+    my_model.add(Dense(96))
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(Dense(64))
-    my_model.add(keras.layers.Normalization())
+    my_model.add((Dense(64)))
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(layers.Dropout(0.4))
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
+    my_model.add(layers.Dropout(0.8))
 
-    my_model.add(Dense(4, activation='softmax'))
+    my_model.add(Dense(4))
 
-    opt = op.Nadam(learning_rate=0.05)
+    opt = op.Adam(learning_rate=0.05)
 
     my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
     my_model.fit(feats,
                  labels,
                  epochs=1500,
-                 batch_size=22470
+                 batch_size=22470, shuffle=False
                  )
+
+
     print(my_model.summary())
 
     # Evaluate
 
     # Predict
+
+    # TSNE
 
 
 if __name__ == '__main__':

@@ -26,7 +26,6 @@ class FaceGCNLayer(tf.keras.layers.Layer):
     def call(self, feature_matrix):
         feature_matrix = tf.squeeze(feature_matrix)
         ax = tf.sparse.sparse_dense_matmul(tf.cast(self.adj_m, float), feature_matrix)
-        # ax = tf.matmul(tf.sparse.to_dense(tf.cast(self.adj_m, float)), feature_matrix)
         z = ax * self.weights1
 
         return z
