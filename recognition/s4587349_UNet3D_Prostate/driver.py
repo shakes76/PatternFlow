@@ -201,39 +201,41 @@ def main():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy',
                   metrics=['accuracy'])
+    model.summary(print_fn=sm.model_summary_print)  #todo correct
     model.summary()
+
+    with open('model_sum2.txt', 'w') as ff:
+        model.summary(print_fn=lambda x: ff.write(x + '\n'))
+        # https://newbedev.com/how-to-save-model-summary-to-file-in-keras
+
     keras.utils.plot_model(model, "unet3d.png", show_shapes=True)
 
-    history = model.fit(training_generator, validation_data=validation_generator, batch_size=1, epochs=3)
+    # WORKING HERE TESTING SUMMARY PLOT
+    history = model.fit(training_generator, validation_data=validation_generator, batch_size=1, verbose=2, epochs=3)
     sm.plot_loss(history)
     sm.plot_accuracy(history)
     pred = model.predict(pred_generator)  #todo was model_predict(...)
 
+    # CALCULATE AND PRINT DSC COEF FOR EACH CLASS, AND FOR AVERAGE
     pred_argmax = np.argmax(pred, axis=4)
 
     # Get an array of test labels -> (18, 256, 256, 128)
-    ys = np.empty((len(label_test), 256, 256, 128, 6))
+    y_true = np.empty((len(label_test), 256, 256, 128))
     for i, id in enumerate(label_test):
         y2 = sm.read_nii(id)
-        thiss = tf.keras.utils.to_categorical(y2, num_classes=6)
-        ys[i,] = thiss
+        y_true[i,] = y2
+    # calculate & print dsc
+    dice = sm.dice_coef_multiclass(y_true, pred_argmax, 6)
 
-    # print("ys shape ", ys.shape)
-    dice = sm.dice_coef_multiclass(ys, pred_argmax, 6)
-    print(dice)
-    print("Average DSC: ", sum(dice) / len(dice))
-
-
+    # WORKING HERE 557
+    # PRINT SLICES OF y_true and  y_pred
+    sm.slices_pred(y_true, "y_true.png")
 
 
     # # check prep is working
     # print("prep ", pred.shape) #(18, 256, 256, 128, 6)
     # print(pred)    #  1.01947702e-01 1.02931291e-01]]]]]
     # print(type(pred))  #<class 'numpy.ndarray'>
-    # # # TODO WORKING HERE - predictions
-    # HAVE DICE CALCS - NOW DO SOMETHING WITH THEM
-    # HAVE PRED_Y AS OHE FROM MODEL.PREDICT
-    # NEED TO GET LABELS (ALL 18), ohe AND THEN FEED BOTH INTO DICE_COEF_MULTICALSS
 
 
     #

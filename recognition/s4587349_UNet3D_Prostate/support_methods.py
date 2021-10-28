@@ -20,13 +20,13 @@ class ProstateSequence(keras.utils.Sequence):
         #              n_classes=6, shuffle=False):
         # todo return to this
         """
-        :param x_set:
-        :param y_set:
-        :param batch_size:
-        :param dim:
-        :param n_channels:
-        :param n_classes:
-        :param shuffle:
+        :param x_set: list of images
+        :param y_set: list of labels
+        :param batch_size: images per batch, default set to 1
+        :param dim: dimensions of image
+        :param n_channels: number of channels
+        :param n_classes: number of classes, 6 for this data set
+        :param shuffle: Whether to shuffle the data to limit learning of order
         """
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
@@ -37,13 +37,9 @@ class ProstateSequence(keras.utils.Sequence):
         self.on_epoch_end()
         self.training = training
 
-        # print("39 self.x", self.x)
-        # print("40 self.y", self.y)
 
     def __len__(self):
         """Number of batches per epoch"""
-        # return math.ceil(len(self.x) / self.batch_size)
-        print("self.x / self.batchsize) ", len(self.x) // self.batch_size)
         return len(self.x) // self.batch_size
 
     def __getitem__(self, idx):  # todo setup for shuffle
@@ -67,9 +63,9 @@ class ProstateSequence(keras.utils.Sequence):
         y = y.astype("uint8")           # num 0-5
 
         if self.training:
-            return X, y
+            return X, y     # for training and validation generation
         else:
-            return X
+            return X        # If running test gen, then only need X
 
 
     def _generation_x(self, list_data_tmp):
@@ -78,13 +74,7 @@ class ProstateSequence(keras.utils.Sequence):
         :param list_data_tmp:
         :return: One batch of nparray of data.
         """
-        # print("hi L88: ", self.dim) #
         X = np.empty((self.batch_size, *self.dim))
-        # X = np.empty((self.batch_size, *self.dim, self.n_channels))  # not working
-        # print("L92: ", X.dtype)
-        # print("X.shape: ", X.shape)
-        # k = self.read_nii(list_data_tmp)
-        # print("k: ", k.shape)
 
         for i, id in enumerate(list_data_tmp):
             # print("i, id: ", i, id) #
@@ -214,8 +204,27 @@ def slices_ohe(img):
     show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
 
 
+def slices_pred(img, filename):
+    """
+    Save (and display) a slice of either y_predict or y_true.
+    :param img: Image to print
+    :param filename: Name to save file
+    :return: Nothing
+    """
+    slice_0 = img[0:,:,]
+    plt.imshow(slice_0.T)
+    show_slices([slice_0])
+    plt.savefig(filename)
+
+    show_slices([slice_0])
+
 def show_slices(sliced):
-    """ Prints slices images to screen."""
+    """
+    Print to screen from a given list of slices.
+
+    :param sliced: a list of slices of image
+    :return: Nothing
+    """
     for i in sliced:
         plt.imshow(i.T)
         plt.show()
@@ -236,7 +245,15 @@ def label_array(label_test):
 
 
 def dice_coef(y_true, y_pred):
+    """
+
+    :param y_true: array of all images in label_test
+    :param y_pred: Array output from pred_argmax
+    :return: return
+    """
     smooth = 0.000001
+    # print("240 y true: ", y_true.shape)
+    # print(" y pred: ", y_pred.shape)
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
@@ -247,7 +264,7 @@ def dice_coef(y_true, y_pred):
 def dice_coef_multiclass(y_true, y_pred, classes):
     dice = []
     for index in range(classes):
-        x = dice_coef(y_true[:,:,:,:,index], y_pred[:,:,:,:,index])
+        x = dice_coef(y_true[:,:,:,index], y_pred[:,:,:,index]) # 535 5 dim but only 4 provided
         dice = dice + [x]
     print_dice(dice)
     return dice  # taking average
@@ -258,16 +275,31 @@ def dice_coef_multiclass(y_true, y_pred, classes):
 
 
 def print_dice(dice):
+    """
+    Prints the dice coefficient for each of the 6 classes.
+
+    :param dice:
+    :return:
+    """
     print("Dice Coef Background: ", dice[0])
     print("Dice Coef Body: ", dice[1])
     print("Dice Coef Bones: ", dice[2])
     print("Dice Coef Bladder: ", dice[3])
     print("Dice Coef Rectum: ", dice[4])
     print("Dice Coef Prostate: ", dice[5])
+    print("DSC list: ", dice)
+    print("Average DSC: ", sum(dice) / len(dice))
 
+def model_summary_print(summ):
+    """ Prints model.summary()  to file.
+    :param: print_fn call
+    """
+    with open('model_summary.txt', 'w+') as f:
+        print(summ, file=f)
 
 def dim_per_directory():
-    """ iterates through data and label directories, checking that dimensions are as expected."""
+    """ iterates through data and label directories, checking that dimensions
+    are as expected."""
     print("image_train")
     dim_check(drv.image_train)
     print("image_validate")
@@ -351,3 +383,5 @@ def z_norm(image):  # todo test
     :return: z normalised image
     """
     return (image - np.mean(image)) / np.std(image)
+
+
