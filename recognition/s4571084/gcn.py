@@ -175,3 +175,10 @@ def test(mask):
 
 train()
 
+from sklearn.manifold import TSNE
+test_accuracy, test_data, test_labels = test(tensor_test_mask)
+tsne = TSNE(perplexity=50, n_components=2, init='pca', n_iter=5000)
+low_dim_embs = tsne.fit_transform(test_data)
+plt.title('tsne result')
+plt.scatter(low_dim_embs[:,0], low_dim_embs[:,1], marker='o', c=test_labels)
+plt.savefig("tsne.png")
