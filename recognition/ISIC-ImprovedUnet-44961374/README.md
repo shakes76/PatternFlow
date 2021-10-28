@@ -70,6 +70,8 @@ The contracting path starts with two 3x3 valid Convolutions, followed by downsam
 
 The expansive path utilizes Transpose Convolutions to upsample the image. Similar to the previous path, it performs four 3x3 valid Convolutions with corresponding 2x2 upsampling operations. This upsampling now halves the number of feature channels. 
 
+The grey arrows as referred to as "skip connections", are concatenation layers that actually gives this U shape through the connections.
+
 Lastly, a 1x1 Convolution is performed that does not change the input size, rather changes the number of channels to the number of classes, which in this case is two.
 
 ### The Improved UNet Model
