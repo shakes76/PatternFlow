@@ -6,8 +6,8 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # Define directory
-train_img_folder = 'D:/UQ\Fourth Sem/Pattern-Analysis/Prac2/keras_png_slices_data/keras_png_slices_train'
-val_img_folder = 'D:/UQ/Fourth Sem/Pattern-Analysis/Prac2/keras_png_slices_data/keras_png_slices_validate'
+train_img_folder = 'D:/keras_png_slices_data_/keras_png_slices_train'
+val_img_folder = 'D:/keras_png_slices_data_/keras_png_slices_validate'
 
 # Define parameters for the data loader
 batch_size = 64
@@ -41,7 +41,7 @@ for batch in normalized_train_loader:
 train_variance /= (n_training_samples * h * w) - 1
 print('Train variance {}'.format(train_variance))
 
-vq_vae_trainer = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=train_variance, embedding_dim=16, n_embeddings=512, recon_loss_type='MSE', commitment_factor=0.25)
+vq_vae_trainer = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=train_variance, embedding_dim=24, n_embeddings=1024, recon_loss_type='MSE', commitment_factor=3)
 # Print out the architecture of the VQ VAE
 vq_vae_trainer.vq_vae.summary()
 
@@ -56,9 +56,10 @@ normalized_val_loader = val_loader.map(lambda x: normalization_layer(x))
 
 # Adjust learning rate using Exponential Decay method
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate=8e-4,
+    initial_learning_rate=3e-4,
     decay_steps=5000,
-    decay_rate=0.96
+    decay_rate=0.96,
+    staircase=False
 )
 
 # Define method to save model checkpoints
@@ -71,7 +72,7 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 #optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
-optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
+optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
 vq_vae_trainer.compile(optimizer=optimizer)
-vq_vae_trainer.fit(normalized_train_loader, epochs=70, validation_data=normalized_val_loader, callbacks=[checkpoint_callback])
+vq_vae_trainer.fit(normalized_train_loader, epochs=100, validation_data=normalized_val_loader, callbacks=[checkpoint_callback])
 # vq_vae_trainer.vq_vae.save('vq_vae')
