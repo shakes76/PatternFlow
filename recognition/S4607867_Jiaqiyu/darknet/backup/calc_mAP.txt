@@ -1,0 +1,11 @@
+rem # How to calculate mAP (mean average precision)
+
+
+rem darknet.exe detector map cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weight -points 11
+
+
+darknet.exe detector map cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weights -points 11
+
+
+
+pause
