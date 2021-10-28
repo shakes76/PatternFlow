@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Input, Conv3D, Conv3DTranspose, concatenate,
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from scipy import ndimage
+import matplotlib.pyplot as plt
 
 # Labels:
 # Background = 0
@@ -14,9 +15,9 @@ from scipy import ndimage
 # Rectum = 4
 # Prostate = 5
 
-IMG_WIDTH = 128
 IMG_HEIGHT = 256
 IMG_DEPTH = 256
+IMG_WIDTH = 128
 IMG_CHANNELS = 1
 
 
@@ -237,3 +238,20 @@ def dice_loss(smooth):
     def dice_keras(y_true, y_pred):
         return 1 - dice(y_true, y_pred, smooth)
     return dice_keras
+
+
+def plt_compare(img, test_mask, pred, num):
+    # reshape
+    img = np.reshape(img, (IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH))
+    test_mask = np.argmax(test_mask, axis=-1)
+    pred = np.argmax(pred, axis=-1)
+
+    # plot
+    fig1, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    ax1.imshow(img[img.shape[0] // 2], cmap='gray')
+    ax1.title.set_text("Image Slice")
+    ax2.imshow(test_mask[test_mask.shape[0] // 2], cmap='gray')
+    ax2.title.set_text("Test Mask")
+    ax3.imshow(pred[pred.shape[0] // 2], cmap='gray')
+    ax3.title.set_text("Prediction")
+    fig1.savefig("pred_{}.png".format(num))

@@ -6,19 +6,15 @@ Date: 05/10/2021
 Driver for the UNet3d model for the classification of the Prostate 3D data set
 """
 
-from unet import get_nifti_data, one_hot, normalise, unet, reshape, rotate, scheduler, dice, dice_loss
+from unet import get_nifti_data, one_hot, normalise, unet, reshape, rotate, scheduler, dice, dice_loss, plt_compare
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
 from sklearn.model_selection import train_test_split
-import nibabel
-# from skimage.transform import rotate
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.optimizers import Adam
 import math
-import random
-
 
 IMG_WIDTH = 128
 IMG_HEIGHT = 256
@@ -29,29 +25,6 @@ FILTERS = 4
 EPOCHS = 50
 
 current_epoch = 0
-
-
-# class MRISequence(Sequence):
-#     def __init__(self, x_set, y_set, batch_size):
-#         self.x, self.y = x_set, y_set
-#         self.batch_size = batch_size
-#         self.indices = list(range(len(self.x)))
-#
-#     def __len__(self):
-#         return math.ceil(len(self.x) / self.batch_size)
-#
-#     def __getitem__(self, idx):
-#         batch_x = self.x[idx * self.batch_size:(idx + 1) *
-#                                                self.batch_size]
-#         batch_y = self.y[idx * self.batch_size:(idx + 1) *
-#                                                self.batch_size]
-#
-#         return np.array([reshape(1, 1, normalise(get_nifti_data(file_name))) for file_name in
-#                          batch_x]), \
-#                np.array([reshape(1, 6, one_hot(file_name)) for file_name in batch_y])
-#
-#     def on_epoch_end(self):
-#         np.random.shuffle(self.indices)
 
 
 class MRISequence(Sequence):
@@ -164,16 +137,13 @@ fig2, (gax1, gax2) = plt.subplots(1, 2)
 gax1.plot(curves.history['accuracy'])
 gax1.plot(curves.history['val_accuracy'])
 gax1.legend(['train', 'test'], loc='upper left')
+gax1.title.set_text("Accuracy")
 # plot loss
 gax2.plot(curves.history['loss'])
 gax2.plot(curves.history['val_loss'])
 gax2.legend(['train', 'test'], loc='upper left')
+gax2.title.set_text("Loss")
 fig2.savefig('acc_loss.png')
 
-"""
-LearningRateScheduler
-automatically changes learning rate
-
-custom callback function:
-can do model.predict between epochs
-"""
+for i in range(len(test)):
+    plt_compare(test[i][0][0], test_labels[i][0], classifications[i][0], i)
