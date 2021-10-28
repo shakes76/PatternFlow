@@ -163,7 +163,7 @@ def unet_improved(img_height,img_width,num_channels):
 
     last_sum = Add()([final_term_2,level_1])
 
-    outputs = Activation("softmax")(last_sum)
+    outputs = Activation("sigmoid")(last_sum)
 
     unet = Model(inputs, outputs, name="UNet")
 

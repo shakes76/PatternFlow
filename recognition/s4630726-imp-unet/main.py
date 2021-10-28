@@ -7,6 +7,11 @@ from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from model import *
 
+def loss_fn(y_true, y_pred):
+
+    return 1-(tf.reduce_sum(y_true*y_pred)*2/(tf.reduce_sum(y_true) + tf.reduce_sum(y_pred)))
+
+
 #Defining dimensions for cnn input and resizing
 width = 256 
 height = 192
@@ -57,8 +62,8 @@ print("Converting arrays to tensors...")
 #Convert arrays to tensors
 X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)
 X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)
-Y_train = tf.convert_to_tensor(Y_train, dtype=tf.int16)
-Y_test = tf.convert_to_tensor(Y_test, dtype=tf.int16)
+Y_train = tf.convert_to_tensor(Y_train, dtype=tf.float32)
+Y_test = tf.convert_to_tensor(Y_test, dtype=tf.float32)
 
 #Add extra dimension needed for cnn input
 X_train = tf.expand_dims(X_train,-1)
@@ -66,9 +71,9 @@ X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-model = unet_improved(height,width,2)
+model = unet_improved(height,width,1)
 
-model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer="Adam", loss="binary_crossentropy", metrics=['accuracy'])
 
 unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
 
@@ -78,8 +83,11 @@ predictions = model.predict(X_test)
 #VISUALISATION OF RESULTS
 
 #tf.print(predictions)
+match = tf.greater(predictions, 0.6)
+print(tf.print(match))
+match = tf.cast(match, dtype=tf.float32)
 
-match = tf.math.argmax(predictions,axis=3)
+#match = tf.math.argmax(predictions,axis=3)
 
 #tf.print(match)
 
@@ -87,6 +95,6 @@ plt.imshow(X_test[0,:,:,0],cmap="gray")
 plt.show()
 plt.imshow(Y_test[0,:,:,0],cmap="gray")
 plt.show()
-plt.imshow(match[0,:,:],cmap="gray")
+plt.imshow(match[0,:,:,0],cmap="gray")
 plt.show()
 
