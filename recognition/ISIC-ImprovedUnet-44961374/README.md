@@ -55,15 +55,17 @@ As mentioned before, this project aims to solve the first problem.
 ## About The Model
 
 ### Background
-Contrary to image classification, image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original Unet model,
+Contrary to image classification, semantic image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original Unet model,
 the inudustry standard was to perform a sliding window computation on a patch around each pixels. However, as expected this method was computationally expensive.
 
-The original UNet model is a convolutional network that was designed to provide more accurate segmentations with fewer training data. The architecture follows a "U" shaped structure (hence the name), where the contracting path leads to an expansive path. The image below shows the original UNet architecture.
+The original UNet model is a convolutional network that was designed to provide more accurate segmentations with fewer training data and at a much quicker time. The architecture follows a "U" shaped structure (hence the name), where the contracting path that downsamples the image leads to an expansive path that later on upsamples it. The image below shows the original UNet architecture.
 
 
 <p align="center">
   <img src="images/unet.png" height="450px"/>
 </p>
+
+UNet performs a _semantic segmentation_, where each pixel of the image is mapped to a class label. Here, the input image has one channel (because it is greyscaled), and the output image has two channels representing two classes.
 
 ### The Improved UNet Model
 
