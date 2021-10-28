@@ -129,12 +129,12 @@ def train_model(training_setup, config):
         print(f"[VAL] EPOCH {epoch + 1} - LOSS: {total_val_loss/len(validation_loader)} ACC: {total_val_correct/len(validation_loader.dataset)}", flush=True)
 
         # tensorboard logging
-        writer.add_scalar('Loss vs Epoch', { 
+        writer.add_scalars('Loss vs Epoch', { 
             "Training Loss": total_train_loss/len(train_loader),
             "Validation Loss": total_val_loss/len(validation_loader)
         }, epoch)
 
-        writer.add_scalar('Accuracy vs Epoch', { 
+        writer.add_scalars('Accuracy vs Epoch', { 
             "Training Accuracy": total_train_correct/len(train_loader.dataset),
             "Validation Accuracy": total_val_correct/len(validation_loader.dataset)
         }, epoch)
@@ -142,6 +142,7 @@ def train_model(training_setup, config):
         best_valid_loss = save_best_model(best_valid_loss, model, 
                                           f"perceiver_best_model", epoch + 1, 
                                           total_val_loss/len(validation_loader))
+    writer.close()
 
 
 def model_pipeline(config, train_transform, test_transform, data_paths):
