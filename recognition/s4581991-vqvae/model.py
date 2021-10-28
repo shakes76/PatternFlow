@@ -29,12 +29,19 @@ def create_decoder_model(input_shape: Tuple(int, int, int)) \
                 1, 3, padding="same")
     ])
 
-def create_vqvae_model() -> keras.models.Sequential:
+def create_vqvae_model(latent_dimensions: int, number_of_embeddings: int,
+        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
     '''
     Combines an Encoder and Decoder with a VectorQuantizer layer to make a
     VQ VAE.
     '''
-    return keras.models.Sequential()
+    encoder = create_encoder_model(latent_dimensions, input_shape)
+    decoder = create_decoder_model(encoder.output_shape)
+    return keras.models.Sequential([
+        encoder,
+        VectorQuantizer(number_of_embeddings, latent_dimensions),
+        decoder
+    ])
 
 class VectorQuantizer(keras.layers.Layer):
     '''
