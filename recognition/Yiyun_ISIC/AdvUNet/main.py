@@ -14,6 +14,7 @@ ISIC_DIR = "./datasets/ISIC2018"
 IMAGE_HEIGHT = 192
 IMAGE_WIDTH = 256
 NUM_CLASSES = 1
+BATCH_SIZE = 32
 
 
 def main():
@@ -31,7 +32,14 @@ def main():
         print("Dataset shapes:", image.shape, label.shape)
         break
 
-    # model = AdvUNet()
+    # create model
+    model = AdvUNet(input_shape=(IMAGE_HEIGHT, IMAGE_WIDTH, 3))
+    print(model.model.summary())
+
+    # compile and train the model
+    model.compile()
+    history = model.fit(train_dataset, val_dataset,
+                        batch_size=BATCH_SIZE, epochs=10)
 
 
 if __name__ == "__main__":
