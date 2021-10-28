@@ -22,5 +22,15 @@ model = GCN().to(device)
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
+# use torch method set mask train, mask test, mask validation, and adjacency matrix
+tensor_x = features.to(device)
+tensor_y = labels.to(device)
+tensor_train_mask = torch.from_numpy(train_mask).to(device)
+tensor_val_mask = torch.from_numpy(val_mask).to(device)
+tensor_test_mask = torch.from_numpy(test_mask).to(device)
+indices = torch.from_numpy(np.asarray([adjacency.row, adjacency.col]).astype('int64')).long()
+values = torch.from_numpy(adjacency.data.astype(np.float32))
+tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
+
 
 
