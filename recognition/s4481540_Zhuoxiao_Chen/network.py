@@ -1,17 +1,17 @@
 import torch
-
 from torch import nn
 from torch.nn import functional as F
 from torch.autograd import Function
-
-from math import sqrt
 import random
+from math import sqrt
+# import all the required libraries to build the network.
 
 
 class EqualLearningRate:
     """
+    Get weight tensor for a convolutional or fully-connected layer.
     This class is used for equal_learning_rate(), which ams to make a weight
-    of a module, such  as linear or conv, to be the same as another.
+    of a module, such as linear or conv, to be the same as another.
     """
 
     def __init__(self, module_name):
@@ -38,6 +38,7 @@ class EqualLearningRate:
 
 def equal_learning_rate(component, component_name='weight'):
     """
+    Create weight tensor for a convolutional or fully-connected layer.
     To make a weight of a module, such  as linear or conv, to be the same as
     another.
     """
@@ -47,10 +48,11 @@ def equal_learning_rate(component, component_name='weight'):
 
 
 class UpsamplingLayperByFusing(nn.Module):
+    """
+    A fused up-sampling module that used in network.
+    """
     def __init__(self, input_c, output_c, filter_dimension, padding=0):
-        """
-        A fused up-sampling module that used in network.
-        """
+
         super().__init__()
 
         weight = torch.randn(input_c, output_c,
@@ -116,6 +118,9 @@ class DownsamplingLayperByFusing(nn.Module):
 
 
 class PixelWiseNormalisation(nn.Module):
+    """
+    Pixelwise feature vector normalization.
+    """
     def __init__(self):
         """
         Normalisation process for the input data.
@@ -129,7 +134,8 @@ class PixelWiseNormalisation(nn.Module):
 
 class BlurFunctionBackward(Function):
     """
-    This class is used to return the gradient of the data.
+    This class is used to return the gradient of the backward data 
+    when doing the bluring function as defined later. 
     """
     @staticmethod
     def forward(ctx, gradient_output, filter, flipping_kernel):
@@ -148,6 +154,11 @@ class BlurFunctionBackward(Function):
 
 
 class BlurFunction(Function):
+    """
+    A blurring function that produced the output feature map that is blurred.
+    This function will be utilised in the Blur class, the torch module to be 
+    equipped in the generator network.
+    """
     @staticmethod
     def forward(ctx, input, kernel, kernel_flip):
         ctx.save_for_backward(kernel, kernel_flip)
@@ -166,10 +177,13 @@ class BlurFunction(Function):
         return grad_input, None, None
 
 
-blur = BlurFunction.apply
+blur = BlurFunction.apply # defined the blur function here.
 
 
 class Blur(nn.Module):
+    """
+    A blurring layer that produced the output feature map that is blurred.
+    """
     def __init__(self, channel):
         super().__init__()
 
@@ -189,6 +203,10 @@ class Blur(nn.Module):
 
 
 class ConvLayerEqual(nn.Module):
+    """
+    A convolutional layer that produced the output feature map that has the same
+    size as the input. 
+    """
     def __init__(self, *args, **kwargs):
         """ A basic 2D Convolution Layer"""
         super().__init__()
@@ -203,6 +221,10 @@ class ConvLayerEqual(nn.Module):
 
 
 class EqualLinear(nn.Module):
+    """
+    A Fully-connected layer that produced the output that has the same
+    size as the input. 
+    """
     def __init__(self, in_dim, out_dim):
         super().__init__()
 
@@ -217,6 +239,11 @@ class EqualLinear(nn.Module):
 
 
 class ConvBlock(nn.Module):
+    """
+    This class is to implement a single convolutional block used in Style GAN.
+    This block contains blur layer and followed by down-sampleing or just
+    equal size of output. 
+    """
     def __init__(
             self,
             in_channel,
@@ -277,7 +304,14 @@ class ConvBlock(nn.Module):
 
 
 class AdaptiveInstanceNorm(nn.Module):
+    """
+    This class is to apply the Adaptive Instance Normalisation module
+    in each layer of Style Generator as described in the paper.
+    """
+
+
     def __init__(self, in_channel, style_dim):
+
         super().__init__()
 
         self.norm = nn.InstanceNorm2d(in_channel)
@@ -298,6 +332,10 @@ class AdaptiveInstanceNorm(nn.Module):
 
 class NoiseInjection(nn.Module):
     def __init__(self, channel):
+        """
+        This class is to inject noises into each layer of Style Generator,
+        as described in paper.
+        """
         super().__init__()
 
         self.weight = nn.Parameter(torch.zeros(1, channel, 1, 1))
@@ -308,6 +346,9 @@ class NoiseInjection(nn.Module):
 
 class ConstantInput(nn.Module):
     def __init__(self, channel, size=4):
+        """
+        The initial input to the generator network as the same in paper. 
+        """
         super().__init__()
 
         self.input = nn.Parameter(torch.randn(1, channel, size, size))
@@ -331,6 +372,11 @@ class StyledConvBlock(nn.Module):
             upsample=False,
             fused=False,
     ):
+        """
+        A single block of style-based convolutional layer used in 
+        the StyleGAN generator. This single block follow the model Figure
+        in the paper carefully. 
+        """
         super().__init__()
 
         if initial:
@@ -361,13 +407,14 @@ class StyledConvBlock(nn.Module):
                 self.conv1 = ConvLayerEqual(
                     in_channel, out_channel, kernel_size, padding=padding
                 )
-
+        # noise -> adain -> relu
         self.noise1 = equal_learning_rate(NoiseInjection(out_channel))
         self.adain1 = AdaptiveInstanceNorm(out_channel, style_dim)
         self.lrelu1 = nn.LeakyReLU(0.2)
 
         self.conv2 = ConvLayerEqual(out_channel, out_channel, kernel_size,
                                  padding=padding)
+        # noise -> adain -> relu
         self.noise2 = equal_learning_rate(NoiseInjection(out_channel))
         self.adain2 = AdaptiveInstanceNorm(out_channel, style_dim)
         self.lrelu2 = nn.LeakyReLU(0.2)
@@ -388,6 +435,11 @@ class StyledConvBlock(nn.Module):
 
 class G(nn.Module):
     def __init__(self, code_dim, fused=True):
+        """
+        Style-based generator used in the StyleGAN paper.
+        The stucture of this network is similar to the version of
+        official tensorflow code. 
+        """
         super().__init__()
 
         self.progression = nn.ModuleList(
@@ -472,6 +524,10 @@ class G(nn.Module):
 
 class Styled_G(nn.Module):
     def __init__(self, code_dim=512, n_mlp=8):
+        """
+        A final processed version synthesis network used in the StyleGAN paper.
+        This one should be called to create a Style Generator for training.
+        """
         super().__init__()
 
         self.generator = G(code_dim)
@@ -524,7 +580,6 @@ class Styled_G(nn.Module):
 
     def mean_style(self, input):
         style = self.style(input).mean(0, keepdim=True)
-
         return style
 
 
