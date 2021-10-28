@@ -16,7 +16,7 @@ IMAGE_WIDTH = 256
 # hyperparameters
 NUM_CLASSES = 1
 BATCH_SIZE = 32
-EPOCHS = 20
+EPOCHS = 10
 
 
 def main():

@@ -8,6 +8,7 @@ Improved UNet Network Architecture:
 ![Improved UNet Architecture](./images/Improved_UNet.png)
 
 ## Instructions
+Download dataset at: https://challenge.isic-archive.com/data/#2018
 Open the terminal and cd to the same root as main.py
 
 ## References
