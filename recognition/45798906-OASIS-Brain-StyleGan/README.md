@@ -274,3 +274,5 @@ Although samples are not perfect, the shape and some details of the brain MRIs c
 ## References
 
 - StyleGAN paper, Available at: https://arxiv.org/abs/1812.04948
+- GAN Training, Available at: https://towardsdatascience.com/10-lessons-i-learned-training-generative-adversarial-networks-gans-for-a-year-c9071159628
+- StyleGAN Keras implementation, Available at: https://github.com/manicman1999/StyleGAN-Keras
