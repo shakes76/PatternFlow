@@ -9,7 +9,7 @@ from model import *
 
 #Defining dimensions for cnn input and resizing
 width = 256 
-height = 256
+height = 192
 resize_dim = (height, width) 
 
 #List to store the input images for cnn
@@ -55,8 +55,8 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 
 print("Converting arrays to tensors...")
 #Convert arrays to tensors
-X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)/255 
-X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)/255
+X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)
+X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)
 Y_train = tf.convert_to_tensor(Y_train, dtype=tf.int16)
 Y_test = tf.convert_to_tensor(Y_test, dtype=tf.int16)
 
@@ -66,11 +66,11 @@ X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-model = unet_improved(height,width,1)
+model = unet_improved(height,width,2)
 
-model.compile(optimizer="Adam", loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-unet_trained = model.fit(X_train, Y_train, epochs=1, batch_size=26, shuffle=True, validation_split=0.1)
+unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
 
 predictions = model.predict(X_test)
 

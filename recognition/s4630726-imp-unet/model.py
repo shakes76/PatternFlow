@@ -120,11 +120,11 @@ def unet_improved(img_height,img_width,num_channels):
 
     term_3a = Conv2D(64, (3,3), strides=2, padding="same")(concat_2a)
     term_3b = context_module(term_3a, 64)
-    concat_3a = Add()([term_2a,term_2b])
+    concat_3a = Add()([term_3a,term_3b])
 
     term_4a = Conv2D(128, (3,3), strides=2, padding="same")(concat_3a)
     term_4b = context_module(term_4a, 128)
-    concat_4a = Add()([term_2a,term_2b])
+    concat_4a = Add()([term_4a,term_4b])
 
     #Bottle Neck
 
@@ -154,12 +154,18 @@ def unet_improved(img_height,img_width,num_channels):
     level_1 = Conv2D(num_channels, (1,1), padding="same")(conv_output)
     level_2 = Conv2D(num_channels, (1,1), padding="same")(local_out_2)
     level_3 = Conv2D(num_channels, (1,1), padding="same")(local_out_3)
+    
+    final_term_3 = Conv2DTranspose(num_channels, (2, 2), strides=2, padding="same")(level_3)
 
-    final_term_3 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(level_3)
-    final_term_2 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(level_2)
+    second_last_sum = Add()([final_term_3,level_2])
 
-    second_last_sum = Add()([final_term_3,final_term_2])
-    last_sum = Add()([second_last_sum,level_1])
+    final_term_2 = Conv2DTranspose(num_channels, (2, 2), strides=2, padding="same")(second_last_sum)
 
-    output = Activation("sigmoid")(final_term)
+    last_sum = Add()([final_term_2,level_1])
+
+    outputs = Activation("softmax")(last_sum)
+
+    unet = Model(inputs, outputs, name="UNet")
+
+    return unet
    
