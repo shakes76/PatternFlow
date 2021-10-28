@@ -16,7 +16,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 epochs = 10
 bs = 8
-learning_rate = 0.0003
+learning_rate = 0.0001
 num_workers = 2
 
 
@@ -106,12 +106,12 @@ def fit(net, yolo_loss, opt, batch_data, batch_data_test):
             if e<10:
                 torch.save(model.state_dict(),
                            'F:/3710/0{}epoch, training loss{},test_loss{}.pth'.format(
-                               e + 1, epoch_train_loss, epoch_test_loss))
+                               e, epoch_train_loss, epoch_test_loss))
                 print("Weights Saved")
             else:
                 torch.save(model.state_dict(),
                            'F:/3710/{}epoch, training loss{},test_loss{}.pth'.format(
-                               e + 1, epoch_train_loss, epoch_test_loss))
+                               e, epoch_train_loss, epoch_test_loss))
                 print("Weights Saved")
         last_var_loss[0] = test_loss
         print()
@@ -125,7 +125,7 @@ def fit(net, yolo_loss, opt, batch_data, batch_data_test):
 
 def init_train(net, bs, lr, input_shape, train_lines, num_classes, val_lines, num_workers):
     torch.manual_seed(1)
-    opt = optim.Adam(net.parameters(), lr)
+    opt = optim.Adam(net.parameters(), lr,weight_decay=1e-6)
     lr_scheduler = optim.lr_scheduler.ExponentialLR(opt, gamma=0.94)
     train_dataset = YoloDataset(train_lines, input_shape, num_classes, train=True)
     test_dataset = YoloDataset(val_lines, input_shape, num_classes, train=False)
