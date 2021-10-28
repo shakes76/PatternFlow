@@ -139,7 +139,7 @@ if __name__ == "__main__":
     vqvae_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate))
 
     # fit it
-    history = vqvae_model.fit(dataset_validation, #dataset, 
+    history = vqvae_model.fit(dataset,
                               epochs=args.epochs, 
                               batch_size=args.batch_size, 
                               callbacks=[SSIMCallback(dataset_validation, args.shift)])
