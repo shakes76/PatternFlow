@@ -1,11 +1,15 @@
 from io import BytesIO
-
 from PIL import Image
 from torch.utils.data import Dataset
-
-
 import lmdb
+
+
 class MultiResolutionDataset(Dataset):
+    """
+    This data loader support all kinds of dimensions as processed with 
+    pre-process_AKOA_images.py. The resolution defined in parameter is used
+    to retreive the image with that resolution. 
+    """
     def __init__(self, path, transform, resolution=8):
         self.env = lmdb.open(
             path,
