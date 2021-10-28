@@ -8,7 +8,7 @@ This project deals with the detection of skin lesions within the ISICs dataset u
 
 ## YOLOv3
 
-**YOLO** stands for "You Only Look Once" which uses Convolutional Neural Networks for Object Detection. YOLO can detect multiple objects on a single image. It means that apart from predicting classes of the objects, YOLO also detects the locations of these objects on the image. YOLO applies a single Neural Network to the whole image. This Neural Network divides the image into regions and produces probabilities for every region. After that, YOLO predicts several Bounding Boxes that cover some regions on the image and chooses the best ones according to the probabilities.
+**YOLO** stands for "You Only Look Once" which uses Convolutional Neural Networks for Object Detection. On a single image, YOLO may detect multiple objects. It implies that, in addition to predicting object classes, YOLO also recognises its positions in the image. The entire image is processed by a single Neural Network in YOLO. The picture is divided into regions using this Neural Network, which generates probabilities for each region. YOLO predicts multiple bounding boxes that cover some regions of the image and then based on the probabilities, picks the best one.
 
 ### Architecture of YOLOv3:
 
@@ -163,6 +163,10 @@ The user is assumed to have access to the ISICs dataset with colored images requ
 - Python 3.7 on local machine
 - Python libraries: matplotlib, OpenCV2, glob
 - Darknet which is an open source neural network framework written in C and CUDA
+
+## References
+
+Redmon, J., & Farhadi, A. (2018). YOLO: Real-Time Object Detection. Retrieved October 28, 2021, from https://pjreddie.com/darknet/yolo/
 
 ## About the Author
 
