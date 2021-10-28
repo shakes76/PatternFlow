@@ -91,23 +91,36 @@ def main():
     page_one = data['edges'][:, 0]
     page_two = data['edges'][:, 1]
 
-    # Features
+    # # Features
     feats = tf.convert_to_tensor(data['features'])
 
     # Labels
     labels = tf.convert_to_tensor(data['target'])
 
-    # Split Data
-    train_adj_p1, test_adj_p1 = page_one[:18000], page_one[18000:]
-    train_adj_p2, test_adj_p2 = page_two[:18000], page_two[18000:]
+    dataset = tf.data.Dataset.from_tensor_slices((feats, labels))
+    print(dataset)
 
-    train_labels, test_labels = labels[:18000], labels[18000:]
-    train_feats, test_feats = feats[:18000], feats[18000:]
+    # Split Data
+    split = 18000
+    # train_adj_p1, test_adj_p1 = page_one[:split], page_one[split:]
+    # train_adj_p2, test_adj_p2 = page_two[:split], page_two[split:]
+
+    train_labels, test_labels = labels[:split], labels[split:]
+    train_feats, test_feats = feats[:split], feats[split:]
 
     ones = tf.ones_like(page_one)
 
     a_bar = spr.coo_matrix((ones, (page_one, page_two)))
     a_bar.setdiag(1)
+
+    a_dense = a_bar.todense()
+
+    print(a_dense)
+    print(a_dense.shape)
+
+    a_bar = a_dense[:18000, :18000]
+
+    a_bar = spr.coo_matrix(a_bar)
 
     # Normalize
     row_sum = np.array(a_bar.sum(1))
@@ -121,18 +134,12 @@ def main():
 
     # ================== REAL MODEL DONE ===================
 
+    print("===== Running Model =====")
     # Construct Model
     my_model = Sequential()
     loss_fn = losses.SparseCategoricalCrossentropy(from_logits=True)
 
-    print("Shape 1")
-    print(tf.shape(feats))
-    print("Shape 2")
-    print(tf.Tensor.get_shape(feats))
-    print("Shape 3")
-    print(tf.shape(feats).get_shape())
-
-    my_model.add(Input(shape=tf.Tensor.get_shape(feats)))
+    my_model.add(Input(shape=tf.Tensor.get_shape(train_feats)))
 
     my_model.add(Dense(96))
     my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
@@ -147,10 +154,10 @@ def main():
     opt = op.Adam(learning_rate=0.05)
 
     my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
-    my_model.fit(feats,
-                 labels,
+    my_model.fit(train_feats,
+                 train_labels,
                  epochs=1500,
-                 batch_size=22470, shuffle=False
+                 batch_size=22470, shuffle=True
                  )
 
 
