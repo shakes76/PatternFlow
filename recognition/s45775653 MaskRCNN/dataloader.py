@@ -18,6 +18,8 @@ import sys
 import time
 from PIL import Image, ImageDraw
 import gc
+import imgaug.augmenters as iaa
+import imgaug.parameters as iap
 #%%
 
 # Load Mask RCNN Library
@@ -50,33 +52,32 @@ class ISICConfig(Config):
     to the cigarette butts dataset.
     """
     # Give the configuration a recognizable name
-    NAME = 'isic_orig'
+    NAME = 'isic_train'
 
     # Train on 1 GPU and 1 image per GPU. Batch size is 1 (GPUs * images/GPU).
     GPU_COUNT = 1
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
-    NUM_CLASSES = 1 + 1 # background + 5 (net-pot, true-leaf, small-leaf, young-leaf, plant)
+    NUM_CLASSES = 1 + 1 # background + 1 (leison mask)
 
     # All of our training images are resized to 512x512
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
 
     # You can experiment with this number to see if it improves training
-    STEPS_PER_EPOCH = 100 #500
+    STEPS_PER_EPOCH = 1500
 
     # This is how often validation is run. If you are using too much hard drive space
     # on saved models (in the MODEL_DIR), try making this value larger.
-    VALIDATION_STEPS = 10
+    VALIDATION_STEPS = 50
     
     # Matterport originally used resnet101, but I downsized to fit it on my graphics card
-    BACKBONE = 'resnet50' #'resnet50'
+    BACKBONE = 'resnet50' #'resnet101'
     
     
     IMAGE_RESIZE_MODE = "square"
 
-    # To be honest, I haven't taken the time to figure out what these do
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)
     TRAIN_ROIS_PER_IMAGE = 32
     MAX_GT_INSTANCES = 50 
@@ -84,26 +85,13 @@ class ISICConfig(Config):
     POST_NMS_ROIS_TRAINING = 1000
     # USE_MINI_MASK = False
     USE_MINI_MASK = True
-    MINI_MASK_SHAPE = (128,128)    
+    MINI_MASK_SHAPE = (56,56)
+    # MINI_MASK_SHAPE = (128,128)    
     # LEARNING_MOMENTUM = 0.9
     # LEARNING_RATE = 0.0008
     
 config = ISICConfig()
 config.display()
-
-
-#%%
-train_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2'
-seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2'
-#%%
-
-# Read Data
-img_spec = '*.jpg'
-seg_spec = '*.png'
-train_img = skio.imread_collection(os.path.join(train_path,img_spec),conserve_memory=True)
-seg_img = skio.imread_collection(os.path.join(seg_path,seg_spec),conserve_memory=True)
-
-check_seg = seg_img[0]
 
 
 #%%
@@ -176,18 +164,30 @@ samp_train_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern
 samp_val_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_val_img'
 samp_val_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_val_seg'
 
+train_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/train_img'
+train_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/train_seg'
+val_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/val_img'
+val_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/val_seg'
+test_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/test_img_full'
+test_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/test_seg_full'
+
+
 dataset_train = ISICDataset()
-dataset_train.load_data(samp_train_seg_path,samp_train_img_path)
+dataset_train.load_data(train_seg_path,train_img_path)
 dataset_train.prepare()
 
 dataset_val = ISICDataset()
-dataset_val.load_data(samp_val_seg_path,samp_val_img_path)
+dataset_val.load_data(val_seg_path,val_img_path)
 dataset_val.prepare()
+
+dataset_test = ISICDataset()
+dataset_test.load_data(test_seg_path,test_img_path)
+dataset_test.prepare()
 #%%
 
-dataset = dataset_val
-image_ids = [0,1,2,3]
-# image_ids = dataset.image_ids
+dataset = dataset_test
+# image_ids = [0,1,2,3]
+image_ids = np.random.choice(dataset.image_ids,4)
 for image_id in image_ids:
     image = dataset.load_image(image_id)
     mask, class_ids = dataset.load_mask(image_id)
@@ -207,7 +207,7 @@ print('model generated')
 # Load Pre-trained weights
 
 # Which weights to start with?
-init_with = "coco"  # coco, or last
+init_with = "specific"  # coco, or last
 
 if init_with == "coco":
     # Load weights trained on MS COCO, but skip layers that
@@ -223,7 +223,7 @@ elif init_with == "last":
     model.load_weights(model.find_last(), by_name=True)
 
 elif init_with == "specific":
-    modelh5_path = 'ready_not_ready_using_plant_wt_aug_color20211007T0249/mask_rcnn_ready_not_ready_using_plant_wt_aug_color_0040.h5'
+    modelh5_path = 'isic_train20211027T1900/mask_rcnn_isic_train_0010.h5'
     model.load_weights(os.path.join(MODEL_DIR,modelh5_path)
                         # ,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
                         #           "mrcnn_bbox", "mrcnn_mask"]
@@ -235,18 +235,25 @@ elif init_with == "specific":
     print('model loaded from',modelh5_path)
 #%%
 
-# Training
+# Create Augmentation Strategy - Use only non-geometric
+augment_strat = iaa.SomeOf((0,None),[
+    iaa.GaussianBlur(sigma=(0.0, 3.0)),
+    iaa.CoarseDropout((0.0, 0.05), size_percent=(0.02, 0.25)),
+    iaa.WithBrightnessChannels(iaa.Add((-50, 50))),
+    iaa.Sharpen(alpha=0.5)
+    ])
 
-import winsound                                                        
+print('Augmentations Loaded')
+
+gc.collect()
+#%%
+
+# Training                        
 # Train the head branches
 # Passing layers="heads" freezes all layers except the head
 # layers. You can also pass a regular expression to select
 # which layers to train by name pattern.
 start_train = time.time()
-# model.train(dataset_train, dataset_val, 
-#             learning_rate=config.LEARNING_RATE, 
-#             epochs=20, 
-#             layers='heads')
 
 #LAYERS
               # heads: The RPN, classifier and mask heads of the network
@@ -258,17 +265,14 @@ start_train = time.time()
 model.train(dataset_train,
             dataset_val, 
             learning_rate=config.LEARNING_RATE, 
-            epochs=5, 
-            layers='all'
-            # ,augmentation = augment_strat
+            epochs=20, 
+            layers='3+'
+            ,augmentation = augment_strat
             )
 
 end_train = time.time()
 minutes = round((end_train - start_train) / 60, 2)
 print(f'Training took {minutes} minutes')
-
-
-winsound.Beep(450,400)
 
 #%%
 
@@ -310,13 +314,15 @@ model.load_weights(model_path, by_name=True
 #%%
 import skimage
 
-real_test_dir = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/samp_test_img'
+real_test_dir = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/test_img_full'
 image_paths = []
 for filename in os.listdir(real_test_dir):
     if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
         image_paths.append(os.path.join(real_test_dir, filename))
 
-for image_path in image_paths:
+images = np.random.choice(image_paths,20,replace=False)
+
+for image_path in images:
     img = skimage.io.imread(image_path)
     img_arr = np.array(img)
     results = model.detect([img_arr], verbose=1)
@@ -324,3 +330,48 @@ for image_path in image_paths:
     visualize.display_instances(img, r['rois'], r['masks'], r['class_ids'], 
                                 dataset_train.class_names, r['scores'], figsize=(10,15))
     
+#%%
+
+# mean AP
+dataset = dataset_test
+iou_threshold=0.80
+# Compute VOC-style Average Precision
+def compute_batch_ap(image_ids):
+    APs = []
+    precisions_all = []
+    recall_all = []
+    iou_all = []
+
+    for image_id in image_ids:
+
+        print(image_id)
+        # Load image
+        image, image_meta, gt_class_id, gt_bbox, gt_mask = modellib.load_image_gt(dataset, inference_config, image_id)
+        # Run object detection
+        results = model.detect([image], verbose=0)
+        # Compute AP
+        r = results[0]
+        res_mask = utils.minimize_mask(r['rois'],r['masks'],config.MINI_MASK_SHAPE)
+        AP, precisions, recalls, overlaps = utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
+                              r['rois'], r['class_ids'], r['scores'], res_mask,iou_threshold=iou_threshold)
+        # visualize.plot_precision_recall(AP, precisions, recalls)
+        APs.append(AP)
+        precisions_all.append(np.mean(precisions))
+        recall_all.append(np.mean(recalls))
+        if np.size(overlaps) == 0:
+            iou_all.append(0)
+        else:
+            iou_all.append(np.max(overlaps))
+        
+        
+    return APs, precisions_all, recall_all, iou_all
+
+# Pick a set of random imagesgt_bbo
+# image_ids = np.random.choice(dataset.image_ids, 10)
+image_ids = dataset.image_ids
+# image_ids = [2]
+APs, precisions, recalls, ious = compute_batch_ap(image_ids)
+print("mAP @IoU="+str(iou_threshold)+": ", np.round(np.mean(APs),4))
+print("mean Precisions @IoU="+str(iou_threshold)+": ", np.round(np.mean(precisions),4))
+print("mean Recalls @IoU="+str(iou_threshold)+": ", np.round(np.mean(recalls),4))
+print("model IoU:", np.round(np.mean(ious),4))
