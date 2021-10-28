@@ -222,8 +222,20 @@ optional arguments:
 ```
 
 ## Result and Analysis
-Generated AKOA Images
 
+The visualisation of the generated AKOA images (258 times 258 each).
+
+It is evident that the StyleGAN trained with only 20k iterations cannot produce high-quality images. The images produced have strange areas. 
+
+However, when the StyleGAN is trained with 60k iterations, the produced fake AKOA images have realtively high-quality. 
+
+#### Train 20k iterations
+<img width="800" alt="Screen Shot 2021-10-28 at 11 20 45 am" src="https://user-images.githubusercontent.com/50613939/139169942-139aaaac-9a90-451d-b12d-f91d4ded2f61.png">
+
+<img width="800" alt="Screen Shot 2021-10-28 at 11 21 31 am" src="https://user-images.githubusercontent.com/50613939/139169977-c0c08339-1018-41b2-bde2-1c39c7c1c83c.png">
+
+
+#### Train 60k iterations
 
 <img src="https://user-images.githubusercontent.com/50613939/138634887-9fb01e51-ca6a-4dd8-aa2f-641a47424ae5.png" alt="drawing" width="800"/>
 <img src="https://user-images.githubusercontent.com/50613939/138634910-76afdf8c-29c4-4799-a860-955871c7454a.png" alt="drawing" width="800"/>
