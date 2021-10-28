@@ -60,6 +60,8 @@ The images below are randomly collected from AKOA datasets for visualisation.
 
 The model and network code written in Pytorch follow the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
 
+The implementation can be roughly divided into three steps. The first step (preprocess_AKOA_images.py) is the AKOA pre-processing to convert each AKOA image to all the different dimensions (8,16,32). The second step (train_AKOA_StyleGAN.py) is the training process, which accepts pre-processed AKOA images to train the StyleGAN. The last step (generate_AKOA.py) is to produce fake images using trained StyleGAN. 
+
 #### Hardware
 
 The implementation code should be run at least **40 hours** with more than **60k iterations**, using **two RTX 2080 Ti GPUs**, to get the expected performance as displayed in next section. 
@@ -112,7 +114,7 @@ zlib=1.2.11=h7b6447c_3
 
 Since the progressive StyleGAN is built in this project. All AKOA images should be trained progressively. For example, all images are trained at dimension 8 times 8 for one phase and 16 times 16 for another phase. Finally, the expected dimension 258 times 258 is trained as the final phase. 
 
-Therefore, the pre-processing is simply converted all the AKOA images into different dimensions with key and value pairs. The output file should be stored in a directory containing processed .mdb files. This directory is later used for the training path.
+Therefore, the pre-processing is simply converted all the AKOA images into all the different dimensions with key and value pairs. The output file should be stored in a directory containing processed .mdb files. This directory is later used for the training path.
 
 To get started with the preprocess_AKOA_images.py, user can read the parameter information by:
 
