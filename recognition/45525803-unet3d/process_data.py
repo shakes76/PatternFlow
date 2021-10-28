@@ -1,7 +1,6 @@
 import numpy as np
 import nibabel as nib
 import glob
-import matplotlib.pyplot as plt
 import os
 
 from pyimgaug3d.augmentation import GridWarp, Flip, Identity
@@ -11,15 +10,12 @@ from pyimgaug3d.utils import to_channels
 MRI_PATH = '/home/Student/s4552580/mri_data/semantic_MRs_anon/'
 LABEL_PATH = '/home/Student/s4552580/mri_data/semantic_labels_anon/'
 
-PROCESSED_MRI_PATH = '/home/Student/s4552580/mri_data/processed_mri'
-PROCESSED_LABEL_PATH = '/home/Student/s4552580/mri_data/processed_label'
-
 N_CLASSES = 6
 
  # This case and week has dims that do not match the rest of the dataset
 MISMATCHED_SHAPE_NAME = 'Case_019_Week1'
 
-def get_case_weeks(mri_path, case_numbers):
+def get_case_weeks(case_numbers):
     """
     Gets a list of case_week strings (in the format "Case_XXX_WeekY") from the 
     original MRI directory, given a list of case numbers.
@@ -29,7 +25,7 @@ def get_case_weeks(mri_path, case_numbers):
     
     for case_number in case_numbers:
         
-        full_filenames = glob.glob(f'{mri_path}{os.sep}Case_{case_number:03}*')
+        full_filenames = glob.glob(f'{MRI_PATH}{os.sep}Case_{case_number:03}*')
         for full_filename in full_filenames:
             
             filename = full_filename.split(f'{os.sep}')[-1]
@@ -63,7 +59,7 @@ def save_nifti(data, folder, filename, affine=np.eye(4)):
         os.mkdir(folder)
     nib.save(img, os.path.join(folder, filename))
 
-def write_original_and_augmented(case_weeks, num_augs=3):
+def write_original_and_augmented(case_weeks, processed_mri_math, processed_label_path, num_augs=3):
     """
     Given a list of case_week strings, takes the original MRI and label files
     and applies three different GridWarp augmentations. The original files along
@@ -77,6 +73,7 @@ def write_original_and_augmented(case_weeks, num_augs=3):
     
         # First load the original MRI and label files and resave to the new directory
         mri, label = load_mri_label(case_week)
+
         mri_extra_dim = mri[..., None]
         seg = to_channels(label)
 
@@ -86,8 +83,8 @@ def write_original_and_augmented(case_weeks, num_augs=3):
         mri_filenames.append(mri_filename)
         label_filenames.append(label_filename)
 
-        save_nifti(mri, PROCESSED_MRI_PATH, mri_filename)
-        save_nifti(label, PROCESSED_LABEL_PATH, label_filename)
+        save_nifti(mri, processed_mri_math, mri_filename)
+        save_nifti(label, processed_label_path, label_filename)
 
         # Now apply three GridWarp augmentations and save to the new directory
         for i in range(num_augs):
@@ -106,8 +103,8 @@ def write_original_and_augmented(case_weeks, num_augs=3):
             mri_filenames.append(mri_filename)
             label_filenames.append(label_filename)
 
-            save_nifti(aug_mri.numpy().astype('float64'), PROCESSED_MRI_PATH, mri_filename)
-            save_nifti(aug_label, PROCESSED_LABEL_PATH, label_filename)
+            save_nifti(aug_mri.numpy().astype('float64'), processed_mri_math, mri_filename)
+            save_nifti(aug_label, processed_label_path, label_filename)
 
         print(f'{case_week} written')
 

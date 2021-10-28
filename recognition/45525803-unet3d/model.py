@@ -13,51 +13,51 @@ def unet3d_model(input_size=(256,256,128,1), n_classes=6):
 
     inputs = Input(input_size)
     
-    conv1 = Conv3D(32, (3,3,3), activation='relu', padding='same')(inputs)
-    conv1 = Conv3D(64, (3,3,3), activation='relu', padding='same')(conv1)
+    conv1 = Conv3D(8, (3,3,3), activation='relu', padding='same')(inputs)
+    conv1 = Conv3D(16, (3,3,3), activation='relu', padding='same')(conv1)
     
     pool1 = MaxPool3D((2,2,2))(conv1)
     
-    conv2 = Conv3D(64, (3,3,3), activation='relu', padding='same')(pool1)
-    conv2 = Conv3D(128, (3,3,3), activation='relu', padding='same')(conv2)
+    conv2 = Conv3D(16, (3,3,3), activation='relu', padding='same')(pool1)
+    conv2 = Conv3D(32, (3,3,3), activation='relu', padding='same')(conv2)
     
     pool2 = MaxPool3D((2,2,2))(conv2)
     
-    conv3 = Conv3D(128, (3,3,3), activation='relu', padding='same')(pool2)
-    conv3 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv3)
+    conv3 = Conv3D(32, (3,3,3), activation='relu', padding='same')(pool2)
+    conv3 = Conv3D(32, (3,3,3), activation='relu', padding='same')(conv3)
     
     pool3 = MaxPool3D((2,2,2))(conv3)
     
-    conv4 = Conv3D(256, (3,3,3), activation='relu', padding='same')(pool3)
-    conv4 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv4)
+    conv4 = Conv3D(64, (3,3,3), activation='relu', padding='same')(pool3)
+    conv4 = Conv3D(64, (3,3,3), activation='relu', padding='same')(conv4)
     
-    upconv4 = UpSampling3D((2,2,2))(conv4)
-    upconv4 = Conv3D(256, (2,2,2), activation='relu', padding='same')(upconv4)
+    upconv4 = UpSampling3D(size=2)(conv4)
+    upconv4 = Conv3D(64, (2,2,2), activation='relu', padding='same')(upconv4)
     
     concat_3_5 = concatenate([conv3, upconv4], axis=4)
-    conv5 = Conv3D(256, (3,3,3), activation='relu', padding='same')(concat_3_5)
-    conv5 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv5)
+    conv5 = Conv3D(64, (3,3,3), activation='relu', padding='same')(concat_3_5)
+    conv5 = Conv3D(64, (3,3,3), activation='relu', padding='same')(conv5)
     
-    upconv5 = UpSampling3D((2,2,2))(conv5)
-    upconv5 = Conv3D(128, (2,2,2), activation='relu', padding='same')(upconv5)
+    upconv5 = UpSampling3D(size=2)(conv5)
+    upconv5 = Conv3D(32, (2,2,2), activation='relu', padding='same')(upconv5)
     
     concat_2_6 = concatenate([conv2, upconv5], axis=4)
-    conv6 = Conv3D(128, (3,3,3), activation='relu', padding='same')(concat_2_6)
-    conv6 = Conv3D(128, (3,3,3), activation='relu', padding='same')(conv6)
+    conv6 = Conv3D(32, (3,3,3), activation='relu', padding='same')(concat_2_6)
+    conv6 = Conv3D(32, (3,3,3), activation='relu', padding='same')(conv6)
     
-    upconv6 = UpSampling3D((2,2,2))(conv6)
-    upconv6 = Conv3D(64, (2,2,2), activation='relu', padding='same')(upconv6)
+    upconv6 = UpSampling3D(size=2)(conv6)
+    upconv6 = Conv3D(16, (2,2,2), activation='relu', padding='same')(upconv6)
     
     concat_1_7 = concatenate([conv1, upconv6], axis=4)
-    conv7 = Conv3D(64, (3,3,3), activation='relu', padding='same')(concat_1_7)
-    conv7 = Conv3D(64, (3,3,3), activation='relu', padding='same')(conv7)
+    conv7 = Conv3D(16, (3,3,3), activation='relu', padding='same')(concat_1_7)
+    conv7 = Conv3D(16, (3,3,3), activation='relu', padding='same')(conv7)
     
     output_seg = Conv3D(n_classes, (1,1,1), activation='softmax')(conv7)
     
     unet3d = tf.keras.Model(inputs=inputs, outputs=output_seg)
     
     opt = tf.keras.optimizers.Adam(learning_rate=0.0005)
-    unet3d.compile (optimizer=opt, loss='CategoricalCrossentropy' , metrics=[dice_coefficient])
+    unet3d.compile (optimizer=opt, loss='CategoricalCrossentropy', metrics=[dice_coefficient])
     
     return unet3d
 
@@ -87,11 +87,12 @@ class MRISequence(tf.keras.utils.Sequence):
     def __len__(self):
         return len(self.x)
 
-    def __getitem__(self, idx):        
+    def __getitem__(self, idx):    
+
         mri_filename = self.x[idx]
         label_filename = self.y[idx]
         
-        mri = nib.load(mri_filename).get_fdata()
-        label = to_channels(nib.load(label_filename).get_fdata())
+        mri = nib.load(mri_filename).get_fdata()[None, ..., None]
+        label = to_channels(nib.load(label_filename).get_fdata())[None,...]
         
-        return mri[..., None], label[..., None]
+        return mri, label
