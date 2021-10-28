@@ -1,14 +1,33 @@
+from typing import Tuple
+
 import keras.layers
 import keras.models
 import tensorflow as tf
 
-def create_encoder_model() -> keras.models.Sequential:
+def create_encoder_model(latent_dimensions: int,
+        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
     '''Returns the Encoder model used for the VQ VAE.'''
-    return keras.models.Sequential()
+    return keras.models.Sequential([
+        keras.layers.Input(shape=input_shape),
+        keras.layers.Conv2D(
+                32, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2D(
+                64, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2D(latent_dimensions, 1, padding="same")
+    ])
 
-def create_decoder_model() -> keras.models.Sequential:
+def create_decoder_model(latent_dimensions: int,
+        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
     '''Returns the Decoder model used for the VQ VAE.'''
-    return keras.models.Sequential()
+    return keras.models.Sequential([
+        keras.layers.Input(shape=input_shape),
+        keras.layers.Conv2DTranspose(
+                64, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2DTranspose(
+                32, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2DTranspose(
+                1, 3, padding="same")
+    ])
 
 def create_vqvae_model() -> keras.models.Sequential:
     '''
