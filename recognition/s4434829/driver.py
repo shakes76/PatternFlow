@@ -4,7 +4,14 @@ Driver script to show an example usage of the model
 TODO: unsure if training can be here or needs to be separate
 or maybe training needs to be in the class?
 can I have other files?
+From ed: yeah training can be in here thats ok
+        maybe ake it a funciton at least
+        also probabyl move dataloader, especially if will have more than one
+
+TODO:
+they reccomend starting with minst
 """
+
 import numpy as np
 import tensorflow as tf
 
