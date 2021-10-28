@@ -123,3 +123,22 @@ class GcnNet(nn.Module):
         h = F.relu(self.gcn1(adjacency, feature))
         logits = self.gcn2(adjacency, h)
         return logits
+
+learning_rate = 0.01
+weight_decay = 5e-4
+epochs = 500
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = GcnNet().to(device)
+criterion = nn.CrossEntropyLoss().to(device)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+adjacency, features, labels, train_mask, val_mask, test_mask= load_data()
+tensor_x = features.to(device)
+tensor_y = labels.to(device)
+tensor_train_mask = torch.from_numpy(train_mask).to(device)
+tensor_val_mask = torch.from_numpy(val_mask).to(device)
+tensor_test_mask = torch.from_numpy(test_mask).to(device)
+indices = torch.from_numpy(np.asarray([adjacency.row, adjacency.col]).astype('int64')).long()
+values = torch.from_numpy(adjacency.data.astype(np.float32))
+tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
