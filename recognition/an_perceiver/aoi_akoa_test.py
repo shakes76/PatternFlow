@@ -10,14 +10,9 @@ def test_no_shared_patients():
         for key, split in dataset.items()
     }
 
-    assert splits["train"] not in splits["validation"]
-    assert splits["train"] not in splits["test"]
-
-    assert splits["validation"] not in splits["train"]
-    assert splits["validation"] not in splits["test"]
-
-    assert splits["test"] not in splits["train"]
-    assert splits["test"] not in splits["validation"]
+    assert splits["train"].isdisjoint(splits["validation"])
+    assert splits["train"].isdisjoint(splits["test"])
+    assert splits["validation"].isdisjoint(splits["test"])
 
 
 def test_labels_are_balanced():
@@ -43,10 +38,7 @@ def test_labels_are_balanced():
 def test_ratios():
     dataset = tfds.load("aoi_akoa")
 
-    splits = {
-        key: int(split.cardinality())
-        for key, split in dataset.items()
-    }
+    splits = {key: int(split.cardinality()) for key, split in dataset.items()}
 
     total = sum(splits.values())
 
