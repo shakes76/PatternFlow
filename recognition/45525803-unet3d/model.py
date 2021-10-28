@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv3D, MaxPool3D, UpSampling3D, concatenate
 from tensorflow.keras import backend as K
 
@@ -60,7 +61,7 @@ def dice_coefficient(y_true, y_pred):
     """
     Implementation of the Sørensen–Dice coefficient.
     """
-    
+
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     
@@ -68,3 +69,25 @@ def dice_coefficient(y_true, y_pred):
     total_area = K.sum(y_true_f) + K.sum(y_pred_f)
     
     return 2 * intersection / total_area
+
+class MRISequence(tf.keras.utils.Sequence):
+    """
+    Overriden Tensorflow Sequence to lazy load the processed MRI and label files.
+    Uses a batch size of 1 due to high memory usage.
+    """
+
+    def __init__(self, x_set, y_set, batch_size=1):
+        self.x, self.y = x_set, y_set
+        self.batch_size = batch_size
+
+    def __len__(self):
+        return len(self.x)
+
+    def __getitem__(self, idx):        
+        mri_filename = self.x[idx]
+        label_filename = self.y[idx]
+        
+        mri = nib.load(mri_filename).get_fdata()
+        label = to_channels(nib.load(label_filename).get_fdata())
+        
+        return mri[..., None], label[..., None]
