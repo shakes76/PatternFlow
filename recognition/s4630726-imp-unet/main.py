@@ -66,14 +66,16 @@ X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-model = unet_improved(height,width,2)
+model = unet_improved(height,width,1)
 
-model.compile(optimizer="Adam", loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer="Adam", loss='binary_crossentropy', metrics=['accuracy'])
 
 unet_trained = model.fit(X_train, Y_train, epochs=1, batch_size=26, shuffle=True, validation_split=0.1)
 
 predictions = model.predict(X_test)
 
+
+#VISUALISATION OF RESULTS
 
 #tf.print(predictions)
 

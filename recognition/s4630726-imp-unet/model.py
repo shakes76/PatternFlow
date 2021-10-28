@@ -1,6 +1,10 @@
 from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D, Concatenate, Conv2DTranspose, Reshape, Permute, Activation, Dropout, Add
 from tensorflow.keras.models import Model
 
+
+
+
+#reference unet form demo 2 (scroll down for improved unet code)
 def unet(img_height,img_width,num_channels):
 
 
@@ -65,6 +69,16 @@ def unet(img_height,img_width,num_channels):
     return unet
 
 
+
+#end reference unet form demo 2
+
+
+
+
+#IMPROVED UNET
+
+#individual modules
+
 def context_module(input_layer,filters):
     
     layer = Conv2D(filters, (3,3), padding="same")(input_layer)
@@ -75,7 +89,7 @@ def context_module(input_layer,filters):
 
 def upsampling_module(input_layer,filters):
     
-    layer = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(input_layer)
+    layer = Conv2DTranspose(filters, (2,2), strides=2, padding="same")(input_layer)
     layer = Conv2D(filters, (3,3), padding="same")(layer)
 
     return layer
@@ -91,6 +105,8 @@ def localization_module(input_layer,filters):
 
 
 def unet_improved(img_height,img_width,num_channels):
+
+    #down sample
 
     inputs = Input((img_height,img_width,1))
 
@@ -135,15 +151,15 @@ def unet_improved(img_height,img_width,num_channels):
     concat_1c = Concatenate()([concat_1a,concat_1b])
     conv_output = Conv2D(32, (3,3), padding="same")(concat_1c)
 
-    output_1 = Conv2D(num_channels, (1,1), padding="same")(conv_output)
-    output_2 = Conv2D(num_channels, (1,1), padding="same")(local_out_2)
-    output_3 = Conv2D(num_channels, (1,1), padding="same")(local_out_3)
+    level_1 = Conv2D(num_channels, (1,1), padding="same")(conv_output)
+    level_2 = Conv2D(num_channels, (1,1), padding="same")(local_out_2)
+    level_3 = Conv2D(num_channels, (1,1), padding="same")(local_out_3)
 
-    final_term_3 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(output_3)
-    final_term_2 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(output_2)
+    final_term_3 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(level_3)
+    final_term_2 = Conv2DTranspose(filters, (2, 2), strides=2, padding="same")(level_2)
 
-    final_term_1 = Add()([final_term_3,final_term_2])
-    final_term = Add()([final_term_1,output_1])
+    second_last_sum = Add()([final_term_3,final_term_2])
+    last_sum = Add()([second_last_sum,level_1])
 
-    output = Activation("softmax")(final_term)
+    output = Activation("sigmoid")(final_term)
    
