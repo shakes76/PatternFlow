@@ -26,7 +26,7 @@ IMG_DEPTH = 256
 IMG_CHANNELS = 1
 BATCH_SIZE = 1
 FILTERS = 4
-EPOCHS = 70
+EPOCHS = 50
 
 current_epoch = 0
 
@@ -56,7 +56,7 @@ current_epoch = 0
 
 class MRISequence(Sequence):
     def __init__(self, x_set, y_set, batch_size):
-        self.rotations = [-15, 5, 0, 5, 15]
+        self.rotations = [0, 5, 15]
         self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
         self.batch_size = batch_size
         self.num_imgs = len(x_set)
@@ -136,8 +136,7 @@ model.summary(line_length=120)
 sched = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
 # Fit the training data and store for the plot
-curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[
-    CustomCallback()])
+curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[sched])
 # Evaluate the model with the test data
 print()
 print("Evaluation:")
