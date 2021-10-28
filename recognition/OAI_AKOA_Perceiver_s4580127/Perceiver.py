@@ -3,7 +3,61 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 
+""" 
+Image Patch extractor to extract a tensor of patches from each image. Taken from keras tutorial.
+"""
+class Patches(layers.Layer):
+    def __init__(self, patch_size):
+        super(Patches, self).__init__()
+        self.patch_size = patch_size
+
+    # Returns a tensor of patches from the image
+    def call(self, images, *args, **kwargs):
+        batch_size = tf.shape(images)[0]
+        size = [1, self.patch_size, self.patch_size, 1]
+        patches = tf.image.extract_patches(images=images, sizes=size, strides=size, rates=[1, 1, 1, 1], padding="VALID")
+        patch_dims = patches.shape[-1]
+        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+        return patches
+
+
+""" 
+Image patch encoder class from keras tutorial. This is used instead of the fourier embedding from the original paper
+as it still maintains information about the positional encoding of pixels but is easier to implement.
+"""
+class PatchEncoder(layers.Layer):
+    def __init__(self, num_patches, projection_size):
+        super(PatchEncoder, self).__init__()
+        self.num_patches = num_patches
+        self.projection = layers.Dense(units=projection_size)
+        self.position_embedding = layers.Embedding(input_dim=num_patches, output_dim=projection_size)
+
+    def call(self, patches, *args, **kwargs):
+        positions = tf.range(start=0, limit=self.num_patches, delta=1)
+        encoded = self.projection(patches) + self.position_embedding(positions)
+        return encoded
+
+
 class Perceiver:
+    def __init__(self, patch_size, data_dim, latent_size, projection_size, num_heads, transformer_layers, dense_units, dropout_rate, depth, classifier_units):
+        super(Perceiver, self).__init__()
+        self.latent_size = latent_size
+        self.data_dim = data_dim
+        self.patch_size = patch_size
+        self.projection_size = projection_size
+        self.num_heads = num_heads
+        self.transformer_layers = transformer_layers
+        self.dense_units = dense_units
+        self.dropout_rate = dropout_rate
+        self.depth = depth
+        self.classifier_units = classifier_units
+
+    def build(self, input_shape):
+        return
+
+    def call(self, inputs):
+        return
+
     """
     Creates and returns several dense layers followed by a dropout layer
     The number of neurons within each dense layer is specified in an array of integers
