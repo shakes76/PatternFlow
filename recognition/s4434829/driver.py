@@ -73,7 +73,13 @@ def main():
         for sample, target in train_seq:
             idx+=1
             with tf.GradientTape() as tape:
-                loss, out = model(sample, training=True) 
+                internal_loss, out = model(sample, training=True) 
+    #             print(sample.shape, out.shape, internal_loss.shape)
+                # need to take some measure of closeness of image into accoutn
+                # TODO: try another loss
+                image_dif = 1- tf.image.ssim(sample, out, 3)
+                loss = internal_loss + image_dif 
+    #             loss, out = model(sample, training=True) 
                 
     #             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(target,out)
 
@@ -82,11 +88,11 @@ def main():
             optimiser.apply_gradients((zip(grads, model.trainable_weights)))
             
             loss_hist += [np.mean(loss)]
-                
-            print('Run {}: \n\ttrain loss: {}'.format(idx, np.mean(loss)))
+            if (idx%100 == 0):    
+                print('Run {}: \n\ttrain loss: {}'.format(idx, np.mean(loss)))
 
-            if (idx%100 == 0):
-                folder = "./saves/_/"
+            if (idx%300 == 0):
+                folder = "./saves/initial/"
                 time_now = time.time()
                 model_name = "model_1_{}".format(time_now)
                 model.save_weights(folder+model_name+"model_weights")
@@ -96,6 +102,7 @@ def main():
 
         if(epoch % 1 == 0):
             print('Epoch {}: \n\ttrain loss: {}'.format(epoch, np.mean(loss)))
+
 
     ### plot results
 

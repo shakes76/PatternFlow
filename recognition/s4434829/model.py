@@ -130,10 +130,10 @@ class Encoder(tf.keras.Model):
     def __init__(self, inputs=None):
         super(Encoder, self).__init__(inputs)
         # Q: no activation? probably yes but not explicitly mentioned in paper
-        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), 
+        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), padding='same',
                             activation='relu', kernel_initializer='he_uniform')
         # activation in resdiaul?
-        self.conv2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), 
+        self.conv2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), padding='same',
                             activation=None, kernel_initializer='he_uniform')
 
         self.resid1 = ResidualBlock()
@@ -148,16 +148,29 @@ class Encoder(tf.keras.Model):
         return X
 
 class Decoder(tf.keras.Model):
+    """
+    Decoder consists of:
+        2x residual layers
+        2x conv transform layers
+
+    Shapes:
+    Dec: shape pre running (10, 62, 62, 256)
+    Dec: shape post resid 1 (10, 62, 62, 256)
+    Dec: shape post resid 2 (10, 62, 62, 256)
+    Dec: shape post conv 1 (10, 126, 126, 256)
+    Dec: shape post conv 2 (10, 254, 254, 256)  one missing
+    fixed
+    """
     def __init__(self, inputs=None):
         super(Decoder, self).__init__(inputs)
 
         self.resid1 = ResidualBlock()
         self.resid2 = ResidualBlock()
 
-        self.conv_t_1 = tf.keras.layers.Conv2DTranspose(filters=256, 
+        self.conv_t_1 = tf.keras.layers.Conv2DTranspose(filters=256, padding='same',
                             kernel_size=(4,4), strides=(2,2), activation='relu')
 
-        self.conv_t_2 = tf.keras.layers.Conv2DTranspose(filters=256, 
+        self.conv_t_2 = tf.keras.layers.Conv2DTranspose(filters=1, padding='same',
                             kernel_size=(4,4), strides=(2,2), activation=None)
 
     def call(self, X):
@@ -263,9 +276,12 @@ class VQ(tf.keras.Model):
         # keep embed loss constant, only learn enc/dec loss 
         # thes ource does this differntly but as far as i can tele its just mse error
         # so why not?
-        enc_dec_loss = tf.keras.metrics.mean_squared_error(tf.stop_gradient(quantised), X)
-        # keep enc/dec loss constnat only learn embed loss
-        embed_loss = tf.keras.metrics.mean_squared_error(quantised, tf.stop_gradient(X))
+        # enc_dec_loss = tf.keras.metrics.mean_squared_error(tf.stop_gradient(quantised), X)
+        # # keep enc/dec loss constnat only learn embed loss
+        # embed_loss = tf.keras.metrics.mean_squared_error(quantised, tf.stop_gradient(X))
+        # I had these the wrong way around and also mse loss wasn't reducing
+        embed_loss = tf.reduce_mean((tf.stop_gradient(quantised) - X) ** 2)
+        enc_dec_loss = tf.reduce_mean((quantised - tf.stop_gradient(X)) ** 2)
         total_loss = self.commitment_loss * embed_loss +enc_dec_loss
 
         # now we need to feed the weights straight through without this operation
@@ -274,6 +290,8 @@ class VQ(tf.keras.Model):
 
         #TODO some sources also have prepelxity which seems to be a measure but
         #idk what its for so leave out for now
+        # worked out what perplexity is, it checs how many of the e_i are active. 
+        # just a metric
 
         # converst shapes back
         return total_loss, q, encoded, indeces
