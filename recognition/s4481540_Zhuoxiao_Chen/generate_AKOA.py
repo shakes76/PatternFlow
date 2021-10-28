@@ -8,11 +8,15 @@ from network import Styled_G
 
 
 @torch.no_grad()
-def get_mean_style(generator, device):
+def average_styles(G, gpu):
+    """
+    Average all the styles that produced by the generator,
+    and return the averaged result. 
+    """
     mean_style = None
 
     for i in range(10):
-        style = generator.mean_style(torch.randn(1024, 512).to(device))
+        style = G.mean_style(torch.randn(1024, 512).to(gpu))
 
         if mean_style is None:
             mean_style = style
@@ -24,77 +28,87 @@ def get_mean_style(generator, device):
     return mean_style
 
 @torch.no_grad()
-def sample(generator, step, mean_style, n_sample, device):
-    image = generator(
-        torch.randn(n_sample, 512).to(device),
+def produce_single_AKOA_image(G, step, style_averaged, number_data, gpu):
+    """
+    This is method is simply used to call the generator to generate 
+    fake AKOA image. 
+    """
+    return G(
+        torch.randn(number_data, 512).to(gpu),
         step=step,
         alpha=1,
-        mean_style=mean_style,
+        mean_style=style_averaged,
         style_weight=0.7,
     )
-    
-    return image
 
 @torch.no_grad()
-def style_mixing(generator, step, mean_style, n_source, n_target, device):
-    source_code = torch.randn(n_source, 512).to(device)
-    target_code = torch.randn(n_target, 512).to(device)
+def mixing_regularisation(G, step, style_averaged, s_numers, 
+                        num_T, gpu):
+    """
+    Apply the mixing regularisation as proposed in paper,
+    which is to create teo different latent code w_0 and w_1 and 
+    input them to the generator seperatly. 
+    """
+    latent_0 = torch.randn(s_numers, 512).to('cuda')
+    latent_1 = torch.randn(num_T, 512).to('cuda')
     
-    shape = 4 * 2 ** step
-    alpha = 1
+    resolution = 4 * 2 ** step
+    a = 1
 
-    images = [torch.ones(1, 3, shape, shape).to(device) * -1]
+    AKOA_img = [torch.ones(1, 3, resolution, resolution).to('cuda') * -1]
 
-    source_image = generator(
-        source_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
+    fake_0 = G(
+        latent_0, step=step, alpha=a, mean_style=style_averaged, style_weight=0.7
     )
-    target_image = generator(
-        target_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
+    fake_1 = G(
+        latent_1, step=step, alpha=a, mean_style=style_averaged, style_weight=0.7
     )
 
-    images.append(source_image)
+    AKOA_img.append(fake_0)
 
-    for i in range(n_target):
-        image = generator(
-            [target_code[i].unsqueeze(0).repeat(n_source, 1), source_code],
+    for index in range(num_T):
+        AKOA_fake_img = G(
+            [latent_1[index].unsqueeze(0).repeat(s_numers, 1), latent_0],
             step=step,
-            alpha=alpha,
-            mean_style=mean_style,
+            alpha=a,
+            mean_style=style_averaged,
             style_weight=0.7,
             mixing_range=(0, 1),
         )
-        images.append(target_image[i].unsqueeze(0))
-        images.append(image)
+        AKOA_img.append(fake_1[index].unsqueeze(0))
+        AKOA_img.append(AKOA_fake_img)
 
-    images = torch.cat(images, 0)
+    AKOA_img = torch.cat(AKOA_img, 0)
     
-    return images
+    return AKOA_img
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--size', type=int, default=1024, help='size of the image')
-    parser.add_argument('--n_row', type=int, default=3, help='number of rows of sample matrix')
-    parser.add_argument('--n_col', type=int, default=5, help='number of columns of sample matrix')
-    parser.add_argument('path', type=str, help='path to checkpoint file')
+    parser = argparse.ArgumentParser(description='Generate fake AKOA images using trained generator.')
+    parser.add_argument('checkpoint', type=str, help='checkpoint to checkpoint file')
+    parser.add_argument('--column_size', type=int, default=5, help='number of columns of sample matrix')
+    parser.add_argument('--row_size', type=int, default=3, help='number of rows of sample matrix')
+    parser.add_argument('--dimension', type=int, default=1024, help='the dimension of the generated AKOA image')
     
     args = parser.parse_args()
+
+    """
+    Set up the generator, and load the trained weights to it,
+    change the status to the evalutation. 
+    """
+    G = Styled_G(512).to('cuda')
+    G.load_state_dict(torch.load(args.checkpoint)['g_running'])
+    G.eval()
+
+    mean_style = average_styles(G, 'cuda')
+
+    step = int(math.log(args.dimension, 2)) - 2
     
-    device = 'cuda'
-
-    generator = Styled_G(512).to(device)
-    generator.load_state_dict(torch.load(args.path)['g_running'])
-    generator.eval()
-
-    mean_style = get_mean_style(generator, device)
-
-    step = int(math.log(args.size, 2)) - 2
-    
-    img = sample(generator, step, mean_style, args.n_row * args.n_col, device)
-    utils.save_image(img, 'sample.png', nrow=args.n_col, normalize=True, range=(-1, 1))
+    img = produce_single_AKOA_image(G, step, mean_style, args.row_size * args.column_size, 'cuda')
+    utils.save_image(img, 'sample.png', nrow=args.column_size, normalize=True, range=(-1, 1))
     
     for j in range(20):
-        img = style_mixing(generator, step, mean_style, args.n_col, args.n_row, device)
+        img = mixing_regularisation(G, step, mean_style, args.column_size, args.row_size, 'cuda')
         utils.save_image(
-            img, f'sample_mixing_{j}.png', nrow=args.n_col + 1, normalize=True, range=(-1, 1)
+            img, f'sample_mixing_{j}.png', nrow=args.column_size + 1, normalize=True, range=(-1, 1)
         )
