@@ -55,7 +55,7 @@ Tqdm was used to provide visualisation of the training epoch's progress.
 
 ### Data loading
 
-The images were loaded using the TensorFlow Keras API, which allowed the images to be directly imported into a TensorFlow dataset in the greyscale format (1 colour channel as opposed to RGB with 3 colour channels). These images are normalised from [0, 255] to [0, 1].
+The images were loaded using the TensorFlow Keras API, which allowed the images to be directly imported into a TensorFlow dataset in the greyscale format (1 colour channel as opposed to RGB with 3 colour channels) via the `tf.keras.preprocessing.image_dataset_from_directory` method. These images are then normalised from [0, 255] to [0, 1].
 
 ### Training, validation, test split
 
