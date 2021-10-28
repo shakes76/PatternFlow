@@ -49,7 +49,7 @@ class VectorQuantizer(tfk.layers.Layer):
         square_pixel_vector_lens = tf.reduce_sum(pixel_vectors ** 2, axis=1, keepdims=True) # (H*W, 1)
         square_embedding_lens = tf.transpose(tf.reduce_sum(self.embeddings ** 2, axis=1, keepdims=True)) # (1, n_embeddings)
         pixel_vec_dot_embedding = tf.matmul(pixel_vectors, self.embeddings, transpose_b=True) # (H*W, C) x (C, n_embeddings) -> (H*W, n_embeddings)
-        distances = square_pixel_vector_lens + square_embedding_lens + (2*pixel_vec_dot_embedding) # (H*W, n_embeddings)
+        distances = square_pixel_vector_lens + square_embedding_lens - (2*pixel_vec_dot_embedding) # (H*W, n_embeddings)
         # Get the index of the closest embedding relative to the pixel vector
         quantized_codes = tf.argmin(distances, axis=1) # (H*W, 1)
         return quantized_codes
@@ -104,34 +104,26 @@ class VQ_VAE(tfk.Model):
         '''
         inputs = tfk.Input(shape=(self.img_h, self.img_w, self.img_c), name='encoder_input')
         ## First CNN block
-        x = tfk.layers.Conv2D(filters=4, kernel_size=3, strides=1, padding='same')(inputs) # 176x176
+        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same')(inputs) # 88x88
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Second CNN block
-        x = tfk.layers.Conv2D(filters=16, kernel_size=3, strides=2, padding='same')(x) # 88x88
+        x = tfk.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding='same')(x) # 44x44
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Third CNN block
-        x = tfk.layers.Conv2D(filters=32, kernel_size=3, strides=2, padding='same')(x) # 44x44
+        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding='same')(x) # 22x22
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
-        ## Fourth CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same')(x) # 22x22
+        ## Residual blocks
+        x = createResidualBlock(x, 64, 3, 1, True) # 22x22
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        # Pre-quantized layer
+        x = tfk.layers.Conv2D(filters=self.embedding_dim, kernel_size=1, strides=1)(x)
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.relu(x)
-        ## Fifth CNN block
-        # x = tfk.layers.Conv2D(filters=96, kernel_size=3, strides=2, padding='same')(x) # 11x11
-        # x = tfk.layers.BatchNormalization()(x)
-        # x = tf.nn.relu(x)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, True)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
         # Extract the height and the width of an encoded image
         encoder_shape = tfk.backend.int_shape(x)
         encoder_h, encoder_w = encoder_shape[1], encoder_shape[2]
@@ -145,38 +137,27 @@ class VQ_VAE(tfk.Model):
             corresponds to the height, the width, and the number of channels == embedding size of an encoded image
         '''
         inputs = tfk.Input(shape=(encoder_h, encoder_w, self.embedding_dim))
-        x = createResidualBlock(inputs, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
-        x = createResidualBlock(x, self.embedding_dim, 3, 1, False)
+        # Post-quantized layer
+        x = tfk.layers.BatchNormalization()(inputs)
+        x = tfk.layers.Conv2D(filters=64, kernel_size=1, strides=1)(x)
+        # Residual blocks
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 64, 3, 1, False)
+        x = createResidualBlock(x, 256, 3, 1, True)
         ## First CNN block
-        x = createResidualBlock(x, 64, 3, 1, True)
-        # x = tfk.layers.Conv2D(filters=96, kernel_size=3, strides=1, padding='same')(x) # 11x11
-        # x = tfk.layers.BatchNormalization()(x)
-        # x = tf.nn.relu(x)
+        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding='same')(x) # 22x22
+        x = tfk.layers.BatchNormalization()(x)
+        x = tf.nn.relu(x)
         ## Second Transposed CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same')(x) # 22x22
+        x = tfk.layers.Conv2DTranspose(filters=128, kernel_size=3, strides=2, padding='same')(x) # 44x44
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Third Transposed CNN block
-        x = tfk.layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same')(x) # 44x44
+        x = tfk.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same')(x) # 88x88
         x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.relu(x)
-        ## Fourth Transposed CNN block
-        x = tfk.layers.Conv2DTranspose(filters=16, kernel_size=3, strides=2, padding='same')(x) # 88x88
-        x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.relu(x)
-        ## Fifth Transposed CNN block
-        x = tfk.layers.Conv2DTranspose(filters=4, kernel_size=3, strides=2, padding='same')(x) # 176x176
-        x = tfk.layers.BatchNormalization()(x)
-        x = tf.nn.relu(x)
-        ## Output layer
-        outputs = tfk.layers.Conv2D(filters=self.img_c, kernel_size=2, strides=1, padding='same', name='output_decoder')(x)
+        outputs = tfk.layers.Conv2DTranspose(filters=self.img_c, kernel_size=3, strides=2, padding='same')(x)
         decoder = tfk.Model(inputs, outputs, name='decoder')
         return decoder
     
