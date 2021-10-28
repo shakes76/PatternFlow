@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 27/10/2021
+    Date last modified: 28/10/2021
     Python version: 3.9.7
 """
 
@@ -20,7 +20,6 @@ from tensorflow.keras.layers import (
     Activation,
     add,
     Conv2D,
-    Cropping2D,
     Dense,
     Flatten,
     Input,
