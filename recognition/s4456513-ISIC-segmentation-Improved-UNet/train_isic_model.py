@@ -104,20 +104,17 @@ class DATA_PREPROCESS:
         plt.show()
 
 #######################################################################################
-#                             SUPPORT FUNCTIONS OR CLASSES                            #
+#                      SUPPORT FUNCTIONS OR CLASSES IN TRAINING                       #
 #######################################################################################
 
 '''
-    calcualte dice similarity coefficient
-'''
-def dice_coef(y_true, y_pred, smooth=0.00001):
-    """
     Calculates the Dice coefficient of two provided
     tensors.
 
     Author: Hadrien Mary
     Retrieved from: https://github.com/keras-team/keras/issues/3611
-    """
+'''
+def dice_coef(y_true, y_pred, smooth=0.00001):
     y_true_f = backend.flatten(y_true)
     y_pred_f = backend.flatten(y_pred)
     intersection = backend.sum(y_true_f * y_pred_f)
@@ -125,25 +122,56 @@ def dice_coef(y_true, y_pred, smooth=0.00001):
 
 
 '''
-    show predictions of the model
+    display the images of raw image, raw mask and predicted image
 '''
-def show_predictions(ds, num = 1):
-    """
-    Predicts a mask based on image provided, and displays
-    the predicted mask alongside the actual segmentation
-    mask and original image.
-    """
-    for image, mask in ds.take(num):
+def show_predictions(dataset, num = 1):
+    for image, mask in dataset.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])[0]
-        display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+        plt.figure(figsize=(12,12))
+        plt.subplot(1,3,1)
+        plt.imshow(tf.squeeze(image), cmap='gray')
+        plt.subplot(1,3,2)
+        plt.imshow(tf.squeeze(mask), cmap='gray')
+        plt.subplot(1,3,3)
+        plt.imshow(tf.squeeze(pred_mask), cmap='gray')
+    plt.show()
 
 '''
     display predictions
 '''
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = None):
-        clear_output(wait=True)
-        show_predictions(val_ds)
+        show_predictions(validate)
+
+def show_train_history():
+    plt.figure(18,12)
+    plt.subplot(1,3,1)
+    plt.plot(history.history['accuracy'], 'seagreen', label='train')
+    plt.plot(history.history['val_accuracy'], label = 'validation')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    plt.title("Training Accuracy vs Validation Accuracy")
+    plt.subplot(1,3,2)
+    plt.figure(1)
+    plt.plot(history.history['dice_coef'],'gold', label='train')
+    plt.plot(history.history['val_dice_coef'],'yellowgreen', label='validation')
+    plt.xlabel("Epoch")
+    plt.ylabel("Dice Coefficient")
+    plt.legend(loc='lower right')
+    plt.title("Training Dice Coefficient vs Validation Dice Coefficient")
+    plt.subplot(1,3,3)
+    plt.figure(2)
+    plt.plot(history.history['loss'],'orange', label='train')
+    plt.plot(history.history['val_loss'],'salmon', label='validation')
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend(loc='lower right')
+    plt.title("Training Loss vs Validation Loss")
+    plt.show()
+
+
+
 
 
 ###########################################################################################

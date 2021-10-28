@@ -135,7 +135,7 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         show_predictions(val_ds)
 
 # Train the compiled UNet with a batch size of 8.
-history = model.fit(train_ds.batch(8), epochs = 30, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
+history = model.fit(train_ds.batch(8), epochs = 40, validation_data = val_ds.batch(8), callbacks = [DisplayCallback()])
 
 def plot_accuracy():
     """

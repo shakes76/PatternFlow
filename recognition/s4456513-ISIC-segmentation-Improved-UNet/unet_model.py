@@ -7,6 +7,7 @@ def Improved_UNet(input_size):
     # input layer
     inputs = Input(input_size)
     filter_base = 16
+    drop_rate = 0.2
 
     # four VGG structures
     # first VGG
@@ -18,7 +19,7 @@ def Improved_UNet(input_size):
     conv3 = Conv2D(filter_base * 2, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
     conv4 = Conv2D(filter_base * 2, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
     pool2 = MaxPooling2D((2,2))(conv4)
-    drop1 = Dropout(0.2)(pool2)
+    drop1 = Dropout(drop_rate)(pool2)
 
     # third VGG
     conv5 = Conv2D(filter_base * 4, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(drop1)
@@ -28,7 +29,7 @@ def Improved_UNet(input_size):
     # forth VGG
     conv7 = Conv2D(filter_base * 8, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
     conv8 = Conv2D(filter_base * 8, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
-    drop2 = Dropout(0.2)(conv8)
+    drop2 = Dropout(drop_rate)(conv8)
     pool4 = MaxPooling2D((2,2))(drop2)
 
     # bottom 
@@ -51,21 +52,21 @@ def Improved_UNet(input_size):
     conv16 = Conv2D(filter_base * 4, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv15)
 
     # third CONCAT
-    up2 = UpSampling2D((2,2), iterpolation='nearest')(conv16)
+    up2 = UpSampling2D((2,2), interpolation='nearest')(conv16)
     conv17 = Conv2D(filter_base * 2, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(up2)
     merge2 = Concatenate(axis=3)([conv4, conv17])
     conv18 = Conv2D(filter_base * 2, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(merge2)
     conv19 = Conv2D(filter_base * 2, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv18)
 
     # forth CONCAT
-    up1 = UpSampling2D((2,2), iterpolation='nearest')(conv19)
+    up1 = UpSampling2D((2,2), interpolation='nearest')(conv19)
     conv20 = Conv2D(filter_base, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(up1)
     merge1 = Concatenate(axis=3)([conv2, conv20])
     conv21 = Conv2D(filter_base, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(merge1)
     conv22 = Conv2D(filter_base, 3, activation='relu', padding = 'same', kernel_initializer = 'he_normal')(conv21)
 
     # output 
-    outputs = Conv2D(1,(1,1), activation='sigmod')(conv22)
+    outputs = Conv2D(1,(1,1), activation='sigmoid')(conv22)
 
     model = Model(inputs=inputs, outputs=outputs)
 
