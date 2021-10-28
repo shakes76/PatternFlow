@@ -18,7 +18,7 @@ describes the model being constructed in `improved_unet.py`.
 <center>
 <img src="./figures/Model.png">
 
-Figure 1: Visualization of the model being used
+Figure 1: Visualization of the model being used [2]
 </center>
 </p>
 
