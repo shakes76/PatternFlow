@@ -20,9 +20,14 @@ TRAIN_CASE_NUMBERS = range(4,30)
 TEST_CASE_NUMBERS = range(30,43)
 N_CLASSES = 6
 
+ # This case and week has dims that do not match the rest of the dataset
 MISMATCHED_SHAPE_NAME = 'Case_019_Week1'
 
 def get_case_weeks(mri_path, case_numbers):
+    """
+    Gets a list of case_week strings (in the format "Case_XXX_WeekY") from the 
+    original MRI directory, given a list of case numbers.
+    """
     
     case_weeks = []
     
@@ -39,6 +44,10 @@ def get_case_weeks(mri_path, case_numbers):
     return case_weeks
 
 def load_mri_label(case_week):
+    """
+    Loads the MRI and label .nii files from the original data directories for a
+    given case_week string.
+    """
     
     mri_filename = f'{MRI_PATH}{os.sep}{case_week}_LFOV.nii.gz'
     label_filename = f'{LABEL_PATH}{os.sep}{case_week}_SEMANTIC_LFOV.nii.gz'
@@ -49,6 +58,9 @@ def load_mri_label(case_week):
     return mri, label
 
 def save_nifti(data, folder, filename, affine=np.eye(4)):
+    """
+    Saves a .nii.gz file to a given directory.
+    """
     
     img = nib.Nifti1Image(data, affine)
     if not os.path.exists(folder):
@@ -56,12 +68,18 @@ def save_nifti(data, folder, filename, affine=np.eye(4)):
     nib.save(img, os.path.join(folder, filename))
 
 def write_original_and_augmented(case_weeks, num_augs=3):
+    """
+    Given a list of case_week strings, takes the original MRI and label files
+    and applies three different GridWarp augmentations. The original files along
+    with the three augmented files are saved to a seperate directory.
+    """
     
     mri_filenames = []
     label_filenames = []
     
     for case_week in case_weeks:
     
+        # First load the original MRI and label files and resave to the new directory
         mri, label = load_mri_label(case_week)
         mri_extra_dim = mri[..., None]
         seg = to_channels(label)
@@ -75,6 +93,7 @@ def write_original_and_augmented(case_weeks, num_augs=3):
         save_nifti(mri, PROCESSED_MRI_PATH, mri_filename)
         save_nifti(label, PROCESSED_LABEL_PATH, label_filename)
 
+        # Now apply three GridWarp augmentations and save to the new directory
         for i in range(num_augs):
 
             aug = ImageSegmentationAugmenter()
