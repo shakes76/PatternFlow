@@ -23,7 +23,11 @@ Email: mujibulislamdipto@gmail.com
           <li><a href="#processing"> Processing </a></li>
       </ul>
     </li>
-    <li><a href="#the-improved-unet-model"> About the Model </a></li>
+    <li><a href="#about-the-model"> About the Model </a></li>
+          <ul>
+          <li><a href="#background"> Background </a></li>
+          <li><a href="#the-improved-unet-model"> The Improved UNet Model </a></li>
+      </ul>
     <li><a href="#quick-links"> Quick Links </a></li>
     <li><a href="#references"> References </a></li>
   </ol>
