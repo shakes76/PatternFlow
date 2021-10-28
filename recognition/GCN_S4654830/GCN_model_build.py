@@ -11,3 +11,8 @@ class GCN(nn.Module):
         # set second gcn layer for gcn model
         self.gcn2 = GCN_Layer(16, 4)
 
+    def forward(self, adjacency, feature):
+        # transfor the layer 1 and layer 2 into gcn model
+        h = fun.relu(self.gcn1(adjacency, feature))
+        logits = self.gcn2(adjacency, h)
+        return logits
