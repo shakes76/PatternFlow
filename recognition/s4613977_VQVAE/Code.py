@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 # In[1]:
 
 
@@ -47,7 +50,7 @@ print("X_train shape:",X_train.shape)
 print("X_test shape:",X_test.shape)
 
 
-# In[4]:
+# In[3]:
 
 
 class VQ(layers.Layer):
@@ -142,7 +145,7 @@ def vqvae(dim=128,N=512):
 vqvae().summary()
 
 
-# In[5]:
+# In[4]:
 
 
 #On to the training module
@@ -184,7 +187,7 @@ class vqvae_trainer(keras.models.Model):
               "VQVAE loss": self.vq_loss_tracker.result(),}
 
 
-# In[6]:
+# In[5]:
 
 
 train_var = np.var(X_train)
@@ -192,19 +195,162 @@ VQVAE_trainer = vqvae_trainer(train_var,dim=128,N=512)
 VQVAE_trainer.compile(optimizer=keras.optimizers.Adam())
 
 
+# In[6]:
+
+
+#VQVAE_trainer.fit(X_train,epochs=20,batch_size=32)
+VQVAE_trainer.load_weights('VQVAE')
+
+
+# In[7]:
+
+
+#Taking a look at reconstruction results
+def show_subplot(original, reconstructed):
+    plt.subplot(1, 2, 1)
+    plt.imshow(original.squeeze(),cmap='gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(reconstructed.squeeze(),cmap='gray')
+    plt.title("Reconstructed")
+    plt.axis("off")
+
+    plt.show()
+
+trained_vqvae = VQVAE_trainer.vq_vae
+idx = np.random.choice(len(X_test), 10)
+test_images = X_test[idx]
+reconstructions_test = trained_vqvae.predict(test_images)
+
+for test_image, reconstructed_image in zip(test_images, reconstructions_test):
+    show_subplot(test_image, reconstructed_image)
+
+
+# In[8]:
+
+
+#Let us now have a look at the codes
+
+my_encoder = VQVAE_trainer.vq_vae.get_layer("encoder")
+my_quantiser = VQVAE_trainer.vq_vae.get_layer("Quantiser")
+
+encoded_outputs = my_encoder.predict(test_images)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+for i in range(len(test_images)):
+    plt.subplot(1, 2, 1)
+    plt.imshow(test_images[i].squeeze(),cmap='gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(codebook_indices[i],cmap='gray')
+    plt.title("Code")
+    plt.axis("off")
+    plt.show()
+
+
+# In[9]:
+
+
+#Let's try to generate images with the codes using a PixelCNN
+
+#Defining the hyperparameters first
+n_residual_blocks = 2
+n_pixelcnn_layers = 2
+pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+
+
+# In[10]:
+
+
+class PixelCNNLayer(layers.Layer):
+    
+    def __init__(self,mask_type,**kwargs):
+        super(PixelCNNLayer,self).__init__()
+        self.mask_type = mask_type
+        self.conv_layer = layers.Conv2D(**kwargs)
+        
+    def build(self,input_shape):
+        self.conv_layer.build(input_shape)
+        kernel_shape = self.conv_layer.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[:kernel_shape[0]//2,...] = 1.0
+        self.mask[kernel_shape[0]//2,:kernel_shape[1]//2,...] = 1.0
+        if self.mask_type == 'B':
+            self.mask[kernel_shape[0]//2,kernel_shape[1]//2,...] = 1.0
+        
+    def call(self,inputs):
+        self.conv_layer.kernel.assign(self.conv_layer.kernel*self.mask)
+        return self.conv_layer(inputs)
+    
+class ResidualBlock(layers.Layer):
+    
+    def __init__(self,filters,**kwargs):
+        super(ResidualBlock,self).__init__(**kwargs)
+        self.conv_layer_1 = layers.Conv2D(filters=filters,kernel_size=1,activation='relu')
+        self.pixel_conv_layer = PixelCNNLayer(mask_type='B',
+                                             filters=filters//2,
+                                             kernel_size=3,
+                                             activation='relu',
+                                             padding='same')
+        self.conv_layer_2 = layers.Conv2D(filters=filters,kernel_size=1,activation='relu')
+        
+    def call(self,inputs):
+        x=self.conv_layer_1(inputs)
+        x=self.pixel_conv_layer(x)
+        x=self.conv_layer_2(x)
+        return layers.add([inputs,x])
+    
+PixelCNN_inputs = keras.Input(pixelcnn_input_shape,dtype=tf.int32)
+
+one_hot = tf.one_hot(PixelCNN_inputs,VQVAE_trainer.N)
+
+x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(one_hot)
+x = PixelCNNLayer(mask_type='A',filters=512,kernel_size=32,activation='relu',padding='same')(x)
+x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
+for elt in range(n_residual_blocks):
+    x = ResidualBlock(filters=512)(x)
+    x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
+for elt in range(n_pixelcnn_layers):
+    x = PixelCNNLayer(mask_type='B',filters=512,kernel_size=1,strides=1,
+                     activation='relu',padding='valid')(x)
+    x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
+
+output_layer = layers.Conv2D(filters=VQVAE_trainer.N,kernel_size=1,strides=1,padding='same')(x)
+
+PixelCNN = keras.Model(PixelCNN_inputs,output_layer,name='PixelCNN')
+PixelCNN.summary()
+
+
+# In[19]:
+
+
+#Generating the codebook indices.
+#print(encoded_outputs.shape)
+#print(encoded_outputs.reshape(-1, encoded_outputs.shape[-1]).shape)
+#print(X_train.shape)
+for i in range(X_train.shape[0]):
+    encoded_outputs = my_encoder.predict(X_train[i])
+    print(encoded_outputs.reshape(-1, encoded_outputs.shape[-1]).shape)
+    flat_enc_outputs = encoded_outputs.reshape(-1,encoded_outputs.shape[-1])
+    codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
+    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+#encoded_outputs = my_encoder.predict(X_train)
+#flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+#codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
+
+#codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+#print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
+
+
 # In[ ]:
 
 
-VQVAE_trainer.fit(X_train,epochs=30,batch_size=32)
 
 
-# In[ ]:
-
-
-
-
-
-
-
-      
-      
