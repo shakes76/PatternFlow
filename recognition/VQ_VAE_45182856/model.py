@@ -1,6 +1,6 @@
-from matplotlib.pyplot import xcorr
 import tensorflow as tf
 import tensorflow.keras as tfk
+import tensorflow_probability as tfp
 
 class VectorQuantizer(tfk.layers.Layer):
     def __init__(self, n_embeddings, embedding_dim, beta, **kwargs):
@@ -221,4 +221,95 @@ class VQ_VAE(tfk.Model):
         return {
             'SSIM': self.val_ssim_tracker.result(),
             'MSE': self.val_mse_tracker.result()
+        }
+
+class PixelCNN(tfk.Model):
+    '''
+        This class uses PixelCNN model, which is defined by https://www.tensorflow.org/probability/api_docs/python/tfp/distributions/PixelCNN, to train the prior of a VQ-VAE
+    '''
+    def __init__(self, h, w, embedding_dim, encoder, quantizer, min_val, max_val, num_resnet, num_hierarchies, num_filters, num_logistic_mix, kernel_size, dropout_p, **kwargs):
+        '''
+            This constructor will initialize the architecture of PixelCNN model according to the given parameters
+            
+            Parameters
+            ----------
+            h, w: Height, width of an encoded image
+            embedding_dim: Size of embedding 
+            encoder: Encoder part of VQ-VAE
+            quantizer: Quantizer part of VQ-VAE
+            min_val: Minimum value of the discrete code
+            max_val: Maximum value of the discrete code
+            num_resnet: Number of gated residual blocks, where the architecture of a block is depicted by Figure 3 in README
+            num_hierarchies: Number of highest-level block in PixelCNN++ model (https://www.semanticscholar.org/paper/OTHER-MODIFICATIONS-Karpathy/2e77b99e8bd10b9e4551a780c0bde9dd10fdbe9b/figure/2)
+            num_filters: Number of filters for each conv layer
+            num_logistic_mix: Number of components for the Logistic Mixture model
+            kernel_size: Size of a receptive field
+            dropout_p: Dropout probability
+        '''
+        super(PixelCNN, self).__init__(**kwargs)
+        self.h = h
+        self.w = w
+        self.embedding_dim = embedding_dim
+        self.encoder = encoder
+        self.quantizer = quantizer
+        self.dist = tfp.distributions.PixelCNN(
+            image_shape=(h, w, 1),
+            conditional_shape=None,
+            num_resnet = num_resnet,
+            num_hierarchies = num_hierarchies,
+            num_filters = num_filters,
+            num_logistic_mix = num_logistic_mix,
+            receptive_field_dims = (kernel_size, kernel_size),
+            dropout_p = dropout_p,
+            high=max_val,
+            low=min_val
+        )
+        self.pixel_cnn = self.build_model()
+        self.entropy_loss_tracker = tfk.metrics.Mean(name='entropy_loss')
+        self.val_entropy_loss_tracker = tfk.metrics.Mean(name='entropy_loss')
+
+
+    def build_model(self):
+        '''
+            This function integrates the distribution defined in the constructor into a unified Pixel CNN model
+        '''
+        inputs = tfk.Input(shape=(self.h, self.w, 1))
+        log_probs = self.dist.log_prob(inputs)
+        model = tfk.Model(inputs=inputs, outputs=log_probs)
+        return model
+
+    def convert_raw_images_to_quantized_images(self, imgs):
+        '''
+            This function encodes the raw images via the encoder and then quantize the encoded images by using the quantizer
+        '''
+        # Encode images
+        encoded_imgs = self.encoder(imgs, training=False) # (N, h, w, embedding_dim)
+        flatten_encoded_imgs = tf.reshape(encoded_imgs, [-1, self.embedding_dim]) # (Nxhxw, embedding_dim)
+        # Get the discrete codes for the encoded images then reshape them
+        quantized_imgs = tf.reshape(self.quantizer.get_closest_codes(flatten_encoded_imgs), [-1, self.h, self.w, 1])
+        return quantized_imgs
+
+    def train_step(self, imgs):
+        # Get the discrete codes for the given images
+        quantized_imgs = self.convert_raw_images_to_quantized_images(imgs)
+        with tf.GradientTape() as tape:
+            log_probs = self.pixel_cnn(quantized_imgs)
+            loss = -tf.reduce_mean(log_probs) # The loss is essentially entropy loss
+        # Backpropagation
+        grads = tape.gradient(loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        # Trak the new loss values
+        self.entropy_loss_tracker.update_state(loss)
+        return {
+            'entropy loss': self.entropy_loss_tracker.result()
+        }
+    
+    def test_step(self, imgs):
+        # Get the discrete codes for the given images
+        quantized_imgs = self.convert_raw_images_to_quantized_images(imgs)
+        log_probs = self.pixel_cnn(quantized_imgs, training=False)
+        val_loss = -tf.reduce_mean(log_probs)
+        self.val_entropy_loss_tracker.update_state(val_loss)
+        return {
+            'entropy_loss': self.val_entropy_loss_tracker.result()
         }
