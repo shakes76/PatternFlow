@@ -78,7 +78,13 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
   <img src="images/improved-unet.png" height="450px"/>
 </p>
 
-The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. The authors have stated that compared to the original UNet model, this model consists of twice as many filters. Furthermore, changes have been made on the context module, normalization (expansive) module, nonlinearity and strucutre of upsampling pathway. Notably, this model performs downsampling using Convolutions with 2 strides, segmentation layers have been integrated at different levels of the network, and ReLU has been replaced with Leaky ReLU.
+The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. The authors have stated that compared to the original UNet model, several changes have been made.
+Notably:
+* Number of filters doubled
+* context module, normalization module, nonlinearity and strucutre of upsampling pathway changed
+* segmentation layers have been integrated at different levels of the network
+* ReLU has been replaced with Leaky ReLU
+* Traditional batch has been replaced with instance normalization 
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
