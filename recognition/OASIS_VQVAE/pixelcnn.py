@@ -118,7 +118,7 @@ class PixelCNN(tf.keras.Model):
                 padding="valid",
             ))
 
-        layers.append(keras.layers.Conv2D(filters=num_embeddings, kernel_size=1, strides=1, padding="valid"))
+        layers.append(tf.keras.layers.Conv2D(filters=num_embeddings, kernel_size=1, strides=1, padding="valid"))
 
         # pipe the layers together
         self._pixel_network = tf.keras.Sequential(layers, name="pixelcnn_net")
@@ -126,7 +126,7 @@ class PixelCNN(tf.keras.Model):
         self._total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
 
     def call(self, x):
-        return self.pixel_network(x)
+        return self._pixel_network(x)
 
     def train_step(self, x):
         with tf.GradientTape() as tape:
