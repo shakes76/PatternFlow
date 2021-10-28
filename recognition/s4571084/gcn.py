@@ -98,3 +98,14 @@ class GraphConvolution(nn.Module):
     def __repr__(self):
         return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
 
+class GcnNet(nn.Module):
+    
+    def __init__(self, input_dim=128):
+        super(GcnNet, self).__init__()
+        self.gcn1 = GraphConvolution(input_dim, 16)
+        self.gcn2 = GraphConvolution(16, 4)
+    
+    def forward(self, adjacency, feature):
+        h = F.relu(self.gcn1(adjacency, feature))
+        logits = self.gcn2(adjacency, h)
+        return logits
