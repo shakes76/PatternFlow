@@ -2,6 +2,7 @@
 """
 from model import AdvUNet
 from data import get_filenames, split_data, create_datasets
+from plots import plot_predictions
 
 # The root path of the datasets.
 # Please put the following two folders:
@@ -9,12 +10,13 @@ from data import get_filenames, split_data, create_datasets
 # -  ISIC2018_Task1-2_Training_Input
 # under this root path:
 ISIC_DIR = "./datasets/ISIC2018"
-
-# height, width
 IMAGE_HEIGHT = 192
 IMAGE_WIDTH = 256
+
+# hyperparameters
 NUM_CLASSES = 1
 BATCH_SIZE = 32
+EPOCHS = 20
 
 
 def main():
@@ -39,7 +41,10 @@ def main():
     # compile and train the model
     model.compile()
     history = model.fit(train_dataset, val_dataset,
-                        batch_size=BATCH_SIZE, epochs=10)
+                        batch_size=BATCH_SIZE, epochs=EPOCHS)
+
+    # generate prediction plots
+    plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5)
 
 
 if __name__ == "__main__":

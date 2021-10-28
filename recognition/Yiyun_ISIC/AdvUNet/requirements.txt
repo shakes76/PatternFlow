@@ -3,3 +3,4 @@
 
 tensorflow>=2.6.0
 tensorflow_addons>=0.14.0
+matplotlib>=3.4.3
