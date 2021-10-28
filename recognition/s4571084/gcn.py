@@ -142,3 +142,24 @@ tensor_test_mask = torch.from_numpy(test_mask).to(device)
 indices = torch.from_numpy(np.asarray([adjacency.row, adjacency.col]).astype('int64')).long()
 values = torch.from_numpy(adjacency.data.astype(np.float32))
 tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
+
+def train():
+    loss_history = []
+    val_acc_history = []
+    model.train()
+    train_y = tensor_y[tensor_train_mask]
+    for epoch in range(epochs):
+        logits = model(tensor_adjacency, tensor_x)
+        train_mask_logits = logits[tensor_train_mask]
+        loss = criterion(train_mask_logits, train_y) 
+        optimizer.zero_grad()
+        loss.backward()    
+        optimizer.step() 
+        train_acc, _, _ = test(tensor_train_mask)
+        val_acc, _, _ = test(tensor_val_mask)
+        loss_history.append(loss.item())
+        val_acc_history.append(val_acc.item())
+        print("Epoch {:03d}: Loss {:.4f}, Acc {:.4}, ValAcc {:.4f}".format(
+            epoch, loss.item(), train_acc.item(), val_acc.item()))
+    
+    return loss_history, val_acc_history
