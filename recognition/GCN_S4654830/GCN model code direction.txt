@@ -1,0 +1,5 @@
+In this project, the test script file is named as "GCN-test-script.py"
+need to use terminal runing with commend: "python GCN-test-script.py"
+
+The Accuracy-shot.png  can be support the final result , which means the Val-accuracy
+can be get nearly 0.77, and the loss is 0.07.
