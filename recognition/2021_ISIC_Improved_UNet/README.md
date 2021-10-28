@@ -12,7 +12,7 @@ _Image of Training data / Image of associated mask_
 _Figure 1: Sample image and associated mask from the ISICs 2018 dataset_
 
 ### Data preprocessing
-As part of the pre-processing phase, all of the images (training images and masks) were normalised. In order to be run through the network, all of the images had to be the same size. The size chosen was (256, 256). The training images kept 3 colour channels: [256, 256, 3]. On the other hand, the segmentation masks were reduced to a single colour channel: [256, 256, 1]. 
+As part of the pre-processing phase, all of the images (training images and masks) were normalised. In order to be run through the network, all of the images had to be the same size. The size chosen was (192, 256). The training images kept 3 colour channels: [192, 256, 3]. On the other hand, the segmentation masks were reduced to a single colour channel: [192, 256, 1]. The segmentation masks were also thresholded: pixels with a value > 0.5 after normalisation were set to 1, and the rest were set to 0. 
 
 #### Training, Test & Validation Split.
 The Training, Testing and Validation data split that was chosen was 70 / 15 / 15. Some research was conducted on the optimal split for medical data. In general, it was found that there is no single correct split, however this percentage seemed to be the most widely used. For a dataset of this size, that means there was around 1800 training samples, and 390 training & validation samples.  
@@ -32,8 +32,10 @@ The Improved UNet is composed of two main sections, the encoding path and the de
 ### Skip Connections
 
 ## Optimizer & Loss
+The optimizer used in this implementation was the Adam optimizer with a learning rate of 5e-4.
 
 ### Dice Similarity Coefficient
+The Dice Similarity Coefficient is a common metric used in segmentation problems.
 
 ## Results
 
@@ -52,7 +54,7 @@ Open up a commandline and navigate to the directory where `driver.py` is saved, 
 
 `python driver.py`
 
-To ensure the data was loaded correctly, an image from the Training Dataset should appear on-screen, followed by an image from the Segmentation Dataset. Note that these images are not necessarily corresponding (ie, the mask does not necessary belong to the training image shown), so don't worry if they look different. 
+To ensure the data was loaded correctly, an image from the Training Input should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
 
 ## Dependencies
 - Python _
