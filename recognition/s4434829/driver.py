@@ -92,6 +92,7 @@ def main():
     print("hello")
     ### load data
     data_dir = pathlib.Path("./keras_png_slices_data/keras_png_slices_data")
+    # actually realised don't need y. remove those
     X_train_files = list(data_dir.glob('./keras_png_slices_train/*'))
     y_train_files = list(data_dir.glob('./keras_png_slices_seg_train/*'))
 
@@ -129,7 +130,7 @@ def main():
     # change much anyway. It does use the loss returned instead of recalcualting loss
     # TODO move
     loss_hist = [] # for plotting
-    EPOCHS = 1
+    EPOCHS = 5
     idx = 0
     for epoch in range(EPOCHS):
         start = time.time()
@@ -137,16 +138,25 @@ def main():
             idx+=1
             with tf.GradientTape() as tape:
                 loss, out = model(sample, training=True) 
+                
+    #             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(target,out)
 
             # step of optamisiser
             grads = tape.gradient(loss, model.trainable_weights)
             optimiser.apply_gradients((zip(grads, model.trainable_weights)))
             
-            loss_hist += [loss]
-            break
+            loss_hist += [np.mean(loss)]
+                
+            print('Run {}: \n\ttrain loss: {}'.format(idx, np.mean(loss)))
 
-        # TODO save 
-        print("time for one epoch: ",time.time()-start)
+            if (idx%100 == 0):
+                folder = "./saves/initial/"
+                time_now = time.time()
+                model_name = "model_1_{}".format(time_now)
+                model.save_weights(folder+model_name+"model_weights")
+                np.save("./saves/initial/losses/loss_{}".format(time_now), loss_hist, allow_pickle=True) 
+            
+        print("time for one epoch: ",time.time()-start) 
 
         if(epoch % 1 == 0):
             print('Epoch {}: \n\ttrain loss: {}'.format(epoch, np.mean(loss)))
