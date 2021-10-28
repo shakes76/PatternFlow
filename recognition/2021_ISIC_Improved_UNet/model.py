@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 # Initial model file
 
@@ -18,20 +19,20 @@ class IUNET(tf.keras.Model):
         self.padding = "same"
         self.initial_output = 16
         self.contextDropoutRate = 0.3
-        self.leakyAlpha = -1e-2
+        self.leakyAlpha = 1e-2
         
     
     def contextModule(self, input, outputFilters):
         print("Defines the architecture of a Context Module")
         
-        batchOutput = tf.keras.layers.BatchNormalization()(input)
-        reluActivation = tf.keras.layers.ReLU()(batchOutput)
+        batchOutput = tfa.layers.InstanceNormalization()(input)
+        reluActivation = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(batchOutput)
         convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(reluActivation)
         
         afterDropout = tf.keras.layers.Dropout(self.contextDropoutRate)(convolutionOutput)
         
-        batchOutput = tf.keras.layers.BatchNormalization()(afterDropout)
-        reluActivation = tf.keras.layers.ReLU()(batchOutput)
+        batchOutput = tfa.layers.InstanceNormalization()(afterDropout)
+        reluActivation = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(batchOutput)
         convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(reluActivation)
         
         return convolutionOutput
@@ -47,13 +48,17 @@ class IUNET(tf.keras.Model):
         print("Defines the behaviour of the Up Sampling module")
         
         # Upscale, repeating the feature voxels twice in each dimension
-        upSample = tf.keras.layers.UpSampling2D(size=(2,2))(input)
+        upSample = tf.keras.layers.UpSampling2D(size=(2,2), interpolation='bilinear')(input)
         
         # 3x3 Convolution 
         convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(3,3), padding=self.padding)(upSample)
         
         # Leaky ReLU activation 
         reluActivation = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        
+        # Perform normalisation 
+        reluActivation = tfa.layers.InstanceNormalization()(reluActivation)
+        
         return reluActivation
         
     
@@ -73,11 +78,17 @@ class IUNET(tf.keras.Model):
         # Leaky ReLU activation 
         reluActivation = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
         
+        # Perform normalisation 
+        reluActivation = tfa.layers.InstanceNormalization()(reluActivation)
+        
         # 1x1 Convolution
         convolutionOutput = tf.keras.layers.Conv2D(outputFilters, kernel_size=(1,1), padding=self.padding)(reluActivation)
         
         # Leaky ReLU activation 
         reluActivation = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        
+        # Perform normalisation 
+        reluActivation = tfa.layers.InstanceNormalization()(reluActivation)
         
         return reluActivation
     
@@ -95,12 +106,14 @@ class IUNET(tf.keras.Model):
     def createPipeline(self):
         print("Creates the model architecture")
         
-        input = tf.keras.layers.Input(shape=(256, 256, 3))
+        input = tf.keras.layers.Input(shape=(192, 256, 3))
         
         ## Encoder 
         # Encoder, level one.
         convolutionOutput = tf.keras.layers.Conv2D(self.initial_output, kernel_size=(3,3), padding=self.padding)(input)
         convolutionOutput = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        convolutionOutput = tfa.layers.InstanceNormalization()(convolutionOutput)
+        #convolutionOutput = tf.keras.layers.Dropout(0.1)(convolutionOutput)
         contextOutput = self.contextModule(convolutionOutput, self.initial_output)
         sumOfOutputs = self.summation(convolutionOutput, contextOutput)
         firstSkip = sumOfOutputs
@@ -108,6 +121,8 @@ class IUNET(tf.keras.Model):
         # Encoder, level two.
         convolutionOutput = tf.keras.layers.Conv2D(self.initial_output * 2, kernel_size=(3,3), padding=self.padding, strides=(2,2))(sumOfOutputs)
         convolutionOutput = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        convolutionOutput = tfa.layers.InstanceNormalization()(convolutionOutput)
+        #convolutionOutput = tf.keras.layers.Dropout(0.1)(convolutionOutput)
         contextOutput = self.contextModule(convolutionOutput, self.initial_output * 2)
         sumOfOutputs = self.summation(convolutionOutput, contextOutput)
         secondSkip = sumOfOutputs
@@ -115,6 +130,8 @@ class IUNET(tf.keras.Model):
         # Encoder, level three.
         convolutionOutput = tf.keras.layers.Conv2D(self.initial_output * 4, kernel_size=(3,3), padding=self.padding, strides=(2,2))(sumOfOutputs)
         convolutionOutput = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        convolutionOutput = tfa.layers.InstanceNormalization()(convolutionOutput)
+        #convolutionOutput = tf.keras.layers.Dropout(0.1)(convolutionOutput)
         contextOutput = self.contextModule(convolutionOutput, self.initial_output * 4)
         sumOfOutputs = self.summation(convolutionOutput, contextOutput)
         thirdSkip = sumOfOutputs
@@ -122,6 +139,8 @@ class IUNET(tf.keras.Model):
         # Encoder, level four.
         convolutionOutput = tf.keras.layers.Conv2D(self.initial_output * 8, kernel_size=(3,3), padding=self.padding, strides=(2,2))(sumOfOutputs)
         convolutionOutput = tf.keras.layers.LeakyReLU(alpha=self.leakyAlpha)(convolutionOutput)
+        convolutionOutput = tfa.layers.InstanceNormalization()(convolutionOutput)
+        #convolutionOutput = tf.keras.layers.Dropout(0.1)(convolutionOutput)
         contextOutput = self.contextModule(convolutionOutput, self.initial_output * 8)
         sumOfOutputs = self.summation(convolutionOutput, contextOutput)
         fourthSkip = sumOfOutputs
@@ -169,7 +188,7 @@ class IUNET(tf.keras.Model):
         ## First Skip-Add 
         # Add together the middleSegmented and lowerSegmented
         # lowerSegmented must be up-scaled first.
-        upScaledLowerSegment = tf.keras.layers.UpSampling2D(size=(2,2))(lowerSegmented)
+        upScaledLowerSegment = tf.keras.layers.UpSampling2D(size=(2,2), interpolation='bilinear')(lowerSegmented)
         
         # Element-wise sum
         firstSkipSum = self.summation(upScaledLowerSegment, middleSegmented)
@@ -186,11 +205,12 @@ class IUNET(tf.keras.Model):
         ## Second Skip-Add
         # Add together the middleSegmented and upperSegmented 
         # middleSegmented must be up-scaled first
-        upScaledMiddleSegment = tf.keras.layers.UpSampling2D(size=(2,2))(firstSkipSum)
+        upScaledMiddleSegment = tf.keras.layers.UpSampling2D(size=(2,2), interpolation='bilinear')(firstSkipSum)
         finalNode = self.summation(upScaledMiddleSegment, upperSegmented)
         
         # Final network activation 
-        networkActivation = tf.keras.activations.sigmoid(finalNode)
+        #networkActivation = tf.keras.activations.sigmoid(finalNode)
+        networkActivation = tf.keras.layers.Activation('sigmoid')(finalNode)
         
         model = tf.keras.Model(inputs=input, outputs=networkActivation)
         #model.summary()
