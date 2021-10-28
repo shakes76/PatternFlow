@@ -1,7 +1,17 @@
+"""
+     Author : Aravind Punugu
+ Student ID : 45827422
+       Date : 28 October 2021
+GitHub Name : Tannishpage
+"""
+
 import tensorflow as tf
 from tensorflow.keras import layers as l
 
 def dice_similarity(real, pred):
+    """
+    Straightforward implementation of the DSC formula from wikipedia
+    """
     real_flattened = tf.keras.backend.flatten(real)
     pred_flattened = tf.keras.backend.flatten(pred)
     numerator = 2 * (tf.keras.backend.sum(real_flattened*pred_flattened))
