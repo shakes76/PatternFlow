@@ -17,6 +17,12 @@ The images containing the skin lesions are RGB Images, and the respective masks 
 
 ## Data Preprocessing
 ***
+For data preprocessing, the directories containing the images and the masks are converted into a 4D numpy array. The arrays will have 4 dimensions, with each dimension corresponding to \[Number of Images, Width, Height, Number of Channels]
+The images have a shape of \[2594, 128, 96, 3] and the masks have a shape of \[2594, 128, 96, 1].
+
+Each of these arrays are divided using train_test_split to create a training set of size 0.7, validation set of 0.15, and test set of 0.15.
+
+The masks go through another step to convert all values for each pixel into either one of 2 values; 0 (Black) or 255 (White). The values are then encoded using a LabelEncoder to 0 or 1. Finally, the function to_categorical is used to change the number of channels of the masks from 1 to 2.
 
 ## Improved UNET Architecture
 ***
