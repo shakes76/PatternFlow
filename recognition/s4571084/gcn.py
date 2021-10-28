@@ -10,6 +10,12 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 from sklearn.preprocessing import LabelBinarizer
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.nn.init as init
+import torch.optim as optim
+import matplotlib.pyplot as plt
 
 """
 normalize the data to 1.
@@ -62,3 +68,33 @@ def load_data():
     test_mask[500:1500] = True
 
     return adjacency, features, labels, train_mask, val_mask, test_mask
+
+class GraphConvolution(nn.Module):
+    def __init__(self, input_dim, output_dim, use_bias=True):
+        super(GraphConvolution, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.use_bias = use_bias
+        self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
+        if self.use_bias:
+            self.bias = nn.Parameter(torch.Tensor(output_dim))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        init.kaiming_uniform_(self.weight)
+        if self.use_bias:
+            init.zeros_(self.bias)
+
+    def forward(self, adjacency, input_feature):
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        support = torch.mm(input_feature, self.weight.to(device))
+        output = torch.sparse.mm(adjacency, support)
+        if self.use_bias:
+            output += self.bias.to(device)
+        return output
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
+
