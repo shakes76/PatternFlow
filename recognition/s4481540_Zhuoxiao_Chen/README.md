@@ -210,7 +210,7 @@ usage: generate_AKOA.py [-h] [--column_size COLUMN_SIZE] [--row_size ROW_SIZE]
 Generate fake AKOA images using trained generator.
 
 positional arguments:
-  checkpoint            checkpoint to checkpoint file
+  checkpoint            checkpoint for loading the generator
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -242,4 +242,4 @@ However, when the StyleGAN is trained with 60k iterations, the produced fake AKO
 
 
 ## Conconlution
-Finally...
+In this project, the AKOA Knee images are used as datasets to train the StyleGAN. After 40 hours of training using two top graphical cards, the result is perfect, and there is nearly no difference between fake generated AKOA images and authentic AKOA images. This report, written with markdown, discusses the methodology of basic GAN, progressive GAN up to StyleGAN and how it can be used to produce fake AKOA images. Also, this report gives a very detailed implementation for users to re-run the code without any difficulty. Because of the deadline limitation of the COMP3710 assignment, a higher resolution such as 512 and 1024 is not attempted. Training the StyleGAN to produce AKOA images of 2014 resolution may take several weeks. Thus, in future work after the deadline, this work can be extended to produce much better AKOA images with 1024 resolutions. Also, [StyleGAN3](https://github.com/NVlabs/stylegan3) is recently published. In the future, this work can be further extended using the state-of-the-art StyleGAN3 model to produce better results. 
