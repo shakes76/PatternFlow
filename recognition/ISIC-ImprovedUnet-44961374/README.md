@@ -67,6 +67,12 @@ The original UNet model is a convolutional network that was designed to provide 
 
 UNet performs a _semantic segmentation_, where each pixel of the image is mapped to a class label. Here, the input image has one channel (because it is greyscaled), and the output image has two channels representing two classes.
 
+The contracting path starts with two 3x3 valid Convolutions, followed by downsampling using MaxPooling. This doubles the number of feature channels. This pattern repeats for a total of four 3x3 valid Convolutions with their corresponding max pooling layers.
+
+The expansive path utilizes Transpose Convolutions to upsample the image. Similar to the previous path, it performs four 3x3 valid Convolutions with corresponding 2x2 upsampling operations. This upsampling now halves the number of feature channels. 
+
+Lastly, a 1x1 Convolution is performed that does not change the input size, rather changes the number of channels to the number of classes, which in this case is two.
+
 ### The Improved UNet Model
 
 
