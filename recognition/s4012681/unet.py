@@ -4,7 +4,7 @@ import nibabel
 from tensorflow.keras.layers import Input, Conv3D, Conv3DTranspose, concatenate, Dropout, MaxPooling3D, BatchNormalization
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
-from scipy.ndimage import rotate
+from scipy import ndimage
 
 # Labels:
 # Background = 0
@@ -58,18 +58,18 @@ def one_hot(file_name):
 
 def normalise(image):
     # subtract mean
-    mean = np.average(image)
-    image = image - mean
+    # mean = np.average(image)
+    # image = image - mean
 
     # divide by sd
-    sd = np.std(image)
-    image = image / sd
+    # sd = np.std(image)
+    # image = image / sd
     # image = rotate(image, rotation)
 
     # unity-based normalisation
-    # max_val = np.amax(image)
-    # min_val = np.amin(image)
-    # image = (image - min_val) / (max_val - min_val)
+    max_val = np.amax(image)
+    min_val = np.amin(image)
+    image = (image - min_val) / (max_val - min_val)
     return image
 
 
@@ -96,6 +96,16 @@ def reshape(batch_size, dimension, image):
     return np.reshape(image, (IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, dimension))
 
 
+def rotate(img, deg, is_mask):
+    order = 3  # bspline interp
+    if is_mask:
+        order = 0  # NN interp
+
+    img = ndimage.rotate(
+        img, deg[0], reshape=False, prefilter=True, order=order)
+
+    return img
+
 
 # def reshape_mask(batch_size, dimension, image):
 #     return np.reshape(image, (batch_size, IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
@@ -108,7 +118,7 @@ def reshape(batch_size, dimension, image):
 
 
 def scheduler(epoch, lr):
-    if epoch < 3:
+    if epoch < 10:
         return lr
     else:
         return lr * tf.math.exp(-0.1)
@@ -194,23 +204,36 @@ def unet(filters):
     c9 = BatchNormalization()(c9)
     c9 = Dropout(0.1)(c9)
     c9 = Conv3D(filters * 2, (3, 3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c9)
-    c9 = BatchNormalization()(c9)
+    # c9 = BatchNormalization()(c9)
 
     outputs = Conv3D(6, (1, 1, 1), activation='softmax')(c9)
 
     return Model(inputs=[inputs], outputs=[outputs])
 
 
-def dice(y_test, y_predict, smooth=1):
+# def dice(y_test, y_predict, smooth=1):
+#     y_test_f = K.flatten(y_test)
+#     y_test_f = y_test_f.numpy()
+#     y_predict_f = K.flatten(y_predict)
+#     y_predict_f = y_predict_f.numpy()
+#     intersect = K.sum(y_test_f * y_predict_f)
+#     a = 2 * intersect + smooth
+#     a = a.numpy()
+#     b = K.sum(y_test_f)
+#     c = K.sum(y_predict_f)
+#     d = b.numpy() + c.numpy() + smooth
+#     e = a / d
+#     return e
+
+def dice(y_test, y_pred, smooth):
     y_test_f = K.flatten(y_test)
-    y_test_f = y_test_f.numpy()
-    y_predict_f = K.flatten(y_predict)
-    y_predict_f = y_predict_f.numpy()
-    intersect = K.sum(y_test_f * y_predict_f)
-    a = 2 * intersect + smooth
-    a = a.numpy()
-    b = K.sum(y_test_f)
-    c = K.sum(y_predict_f)
-    d = b.numpy() + c.numpy() + smooth
-    e = a / d
-    return e
+    y_pred_f = K.flatten(y_pred)
+    intersect = K.sum(y_test_f * y_pred_f)
+    d = (2. * intersect + smooth) / (K.sum(y_test_f) + K.sum(y_pred_f) + smooth)
+    return d
+
+
+def dice_loss(smooth):
+    def dice_keras(y_true, y_pred):
+        return 1 - dice(y_true, y_pred, smooth)
+    return dice_keras

@@ -6,19 +6,18 @@ Date: 05/10/2021
 Driver for the UNet3d model for the classification of the Prostate 3D data set
 """
 
-from unet import get_nifti_data, one_hot, normalise, unet, reshape, scheduler, dice
+from unet import get_nifti_data, one_hot, normalise, unet, reshape, rotate, scheduler, dice, dice_loss
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
 from sklearn.model_selection import train_test_split
 import nibabel
-import skimage
+# from skimage.transform import rotate
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.optimizers import Adam
 import math
 import random
-from scipy.ndimage import rotate
 
 
 IMG_WIDTH = 128
@@ -26,29 +25,67 @@ IMG_HEIGHT = 256
 IMG_DEPTH = 256
 IMG_CHANNELS = 1
 BATCH_SIZE = 1
-FILTERS = 6
+FILTERS = 4
 EPOCHS = 70
 
 current_epoch = 0
 
 
+# class MRISequence(Sequence):
+#     def __init__(self, x_set, y_set, batch_size):
+#         self.x, self.y = x_set, y_set
+#         self.batch_size = batch_size
+#         self.indices = list(range(len(self.x)))
+#
+#     def __len__(self):
+#         return math.ceil(len(self.x) / self.batch_size)
+#
+#     def __getitem__(self, idx):
+#         batch_x = self.x[idx * self.batch_size:(idx + 1) *
+#                                                self.batch_size]
+#         batch_y = self.y[idx * self.batch_size:(idx + 1) *
+#                                                self.batch_size]
+#
+#         return np.array([reshape(1, 1, normalise(get_nifti_data(file_name))) for file_name in
+#                          batch_x]), \
+#                np.array([reshape(1, 6, one_hot(file_name)) for file_name in batch_y])
+#
+#     def on_epoch_end(self):
+#         np.random.shuffle(self.indices)
+
+
 class MRISequence(Sequence):
     def __init__(self, x_set, y_set, batch_size):
-        self.x, self.y = x_set, y_set
+        self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
         self.batch_size = batch_size
+        self.num_imgs = len(x_set)
         self.indices = list(range(len(self.x)))
+        self.rotations = [-15, 5, 0, 5, 15]
 
     def __len__(self):
         return math.ceil(len(self.x) / self.batch_size)
 
     def __getitem__(self, idx):
+        rotation = idx // self.num_imgs
         batch_x = self.x[idx * self.batch_size:(idx + 1) *
                                                self.batch_size]
         batch_y = self.y[idx * self.batch_size:(idx + 1) *
                                                self.batch_size]
 
-        return np.array([reshape(1, 1, normalise(get_nifti_data(file_name))) for file_name in batch_x]), \
-               np.array([reshape(1, 6, one_hot(file_name)) for file_name in batch_y])
+        return np.array([reshape(1, 1, rotate(normalise(get_nifti_data(file_name)), [self.rotations[rotation]], False))
+                         for file_name in batch_x]), \
+               np.array([reshape(1, 6, rotate(one_hot(file_name), [self.rotations[rotation]], True))
+                         for file_name in batch_y])
+
+        # # USING np.rot90
+        # if idx < self.num_imgs:
+        #     return np.array([reshape(1, 1, np.rot90(normalise(get_nifti_data(file_name)))) for file_name in
+        #                      batch_x]), \
+        #            np.array([reshape(1, 6, np.rot90(one_hot(file_name))) for file_name in batch_y])
+        #
+        # return np.array([reshape(1, 1, (normalise(get_nifti_data(file_name)))) for file_name in
+        #                  batch_x]), \
+        #        np.array([reshape(1, 6, (one_hot(file_name))) for file_name in batch_y])
 
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
@@ -88,70 +125,23 @@ train = MRISequence(x_train, y_train, BATCH_SIZE)
 test = MRISequence(x_test, y_test, BATCH_SIZE)
 val = MRISequence(x_val, y_val, BATCH_SIZE)
 
-# print(train.__getitem__(0)[0].shape)
-# print(train.__getitem__(0))
-# print(type(train[0]))
-# print("")
-
-# img = train[0][0][0]
-# mask = train[0][1][0]
-#
-# print(type(img))
-# print(type(mask))
-#
-# print(img.shape)
-# print(mask.shape)
-#
-# fig1, (ax1, ax2) = plt.subplots(1, 2)
-# ax1.imshow(img[img.shape[0] // 2], cmap='gray')
-# ax2.imshow(mask[mask.shape[0] // 2], cmap='gray')
-# fig1.show()
-#
-# # visualise all slices
-# fig2, ax1 = plt.subplots(1, 1, figsize=(13, 20))
-# ax1.imshow(skimage.util.montage(img))
-# ax1.set_title('image')
-# fig2.show()
-#
-# fig3, ax1 = plt.subplots(1, 1, figsize=(20, 20))
-# ax1.imshow(skimage.util.montage(mask))
-# ax1.set_title('mask')
-# fig3.show()
-
 model = unet(FILTERS)
+model_dice = dice_loss(smooth=1)
 
-# model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-04), loss='categorical_crossentropy', metrics=['accuracy'])
 model.compile(optimizer=Adam(lr=1e-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.000000199),
-              loss='binary_crossentropy', metrics=['accuracy'])
+              loss=model_dice, metrics=['accuracy'])
 model.summary(line_length=120)
+
 
 sched = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
 # Fit the training data and store for the plot
 curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[
-    CustomCallback(), sched])
+    CustomCallback()])
 # Evaluate the model with the test data
 print()
 print("Evaluation:")
 model.evaluate(test)
-
-# Plot
-# plot accuracy
-fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(curves.history['accuracy'])
-ax1.plot(curves.history['val_accuracy'])
-ax1.title('Accuracy History')
-ax1.ylabel('Accuracy')
-ax1.xlabel('Epoch')
-ax1.legend(['train', 'test'], loc='upper left')
-# plot loss
-ax2.plot(curves.history['loss'])
-ax2.plot(curves.history['val_loss'])
-ax2.title('Loss History')
-ax2.ylabel('Loss')
-ax2.xlabel('Epoch')
-ax2.legend(['train', 'test'], loc='upper left')
-fig.savefig('acc_loss.png')
 
 # Get the predictions generated by the model
 classifications = model.predict(test)
@@ -168,6 +158,18 @@ print("Bladder: ", dice(test_labels[..., 3], classifications[..., 3]))
 print("Rectum: ", dice(test_labels[..., 4], classifications[..., 4]))
 print("Prostate: ", dice(test_labels[..., 5], classifications[..., 5]))
 print("Overall (including background): ", dice(test_labels, classifications))
+
+# Plot
+# plot accuracy
+fig2, (gax1, gax2) = plt.subplots(1, 2)
+gax1.plot(curves.history['accuracy'])
+gax1.plot(curves.history['val_accuracy'])
+gax1.legend(['train', 'test'], loc='upper left')
+# plot loss
+gax2.plot(curves.history['loss'])
+gax2.plot(curves.history['val_loss'])
+gax2.legend(['train', 'test'], loc='upper left')
+fig2.savefig('acc_loss.png')
 
 """
 LearningRateScheduler
