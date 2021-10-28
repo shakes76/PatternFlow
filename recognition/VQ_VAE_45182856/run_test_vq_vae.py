@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-test_img_folder = 'D:/UQ/Fourth Sem/Pattern-Analysis/Prac2/keras_png_slices_data/keras_png_slices_test'
-model_path = 'vq_vae/cp-0070.ckpt'
+test_img_folder = 'D:/keras_png_slices_data_/keras_png_slices_test'
+model_path = 'vq_vae/cp-0100.ckpt'
 
 # Define parameters for the data loader
 h = 176
@@ -27,7 +27,7 @@ normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(scale
 normalized_test_loader = test_loader.map(lambda x: normalization_layer(x))
 
 # Load the model
-vq_vae_wrapper = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=0.0347, embedding_dim=16, n_embeddings=512, recon_loss_type='MSE', commitment_factor=0.25)
+vq_vae_wrapper = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=0.0347, embedding_dim=24, n_embeddings=1024, recon_loss_type='MSE', commitment_factor=2)
 vq_vae_wrapper.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-3))
 #vq_vae_wrapper.vq_vae = tf.keras.models.load_model('vq_vae')
 vq_vae_wrapper.load_weights(model_path)
