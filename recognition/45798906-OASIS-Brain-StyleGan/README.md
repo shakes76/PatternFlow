@@ -47,15 +47,15 @@ Python version: 3.9.7
 
 The versions listed above are the versions used to test/run the scripts would be the most stable.
 
-TensorFlow was used to construct and train the GAN and load the training data.  
-Matplotlib was used to visualise the model losses and the generator's images.  
-Tqdm was used to provide visualisation of the training epoch's progress.
+`TensorFlow` was used to construct and train the GAN and load the training data.  
+`Matplotlib` was used to visualise the model losses and the generator's images.  
+`Tqdm` was used to provide visualisation of the training epoch's progress.
 
 ## Methodology
 
 ### Data loading
 
-The images were loaded using the TensorFlow Keras API, which allowed the images to be directly imported into a TensorFlow dataset in the greyscale format (1 colour channel as opposed to RGB with 3 colour channels) via the `tf.keras.preprocessing.image_dataset_from_directory` method. These images are then normalised from [0, 255] to [0, 1].
+The images were loaded using the `TensorFlow Keras` API, which allowed the images to be directly imported into a TensorFlow dataset in the greyscale format (1 colour channel as opposed to RGB with 3 colour channels) via the `tf.keras.preprocessing.image_dataset_from_directory` method. These images are then normalised from [0, 255] to [0, 1].
 
 ### Training, validation, test split
 
@@ -67,9 +67,17 @@ To increase the range of possible MRI brains generated, the training data is ran
 
 ### Model construction
 
-The general architecture was discussed in [How is StyleGAN different?](#how-is-stylegan-different). Keras had a majority of the layers to implement the model with the exception of AdaIN. The AdaIN layer was created as a subclass of `tf.keras.layers.Layer` and required `build` and `call` to be implemented to work as the paper intended. The remaining layers were imported from `tf.keras.layers`. The network was built as a [functional model](https://keras.io/guides/functional_api/), which allows for greater control over the inputs of a layer when compared to the sequential model. In order to reduce the amount of repeated layers, the methods `gen_block` and `disc_block` were created to create generator and discriminator blocks respectively at various resolutions. With these blocks and several other layers, the generator and discriminator are built in the `get_generator` and `get_discriminator` functions respectively in [model.py](model.py).
+The general architecture was discussed in [How is StyleGAN different?](#how-is-stylegan-different). `Keras` had a majority of the layers to implement the model with the exception of AdaIN. The AdaIN layer was created as a subclass of `tf.keras.layers.Layer` and required `build` and `call` to be implemented to work as the paper intended. The remaining layers were imported from `tf.keras.layers`. The network was built as a [functional model](https://keras.io/guides/functional_api/), which allows for greater control over the inputs of a layer when compared to the sequential model. In order to reduce the amount of repeated layers, the methods `gen_block` and `disc_block` were created to create generator and discriminator blocks respectively at various resolutions. With these blocks and several other layers, the generator and discriminator are built in the `get_generator` and `get_discriminator` functions respectively in [model.py](model.py).
 
 ### Visualisation
+
+#### Training
+
+The progress bar displayed during training is achieved via the use of `tqdm`.
+
+### Graphs and Images
+
+The graphs and images are display using `matplotlib.pyplot`. The graphs are achieved via `plt.plot` while the images are displayed using `plt.subplot` to create a grid and `plt.imshow` to convert the tenors into an image and be displayed in a subplot of the whole figure.
 
 ## Results
 
