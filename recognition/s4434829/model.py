@@ -323,3 +323,37 @@ class VQVAE(tf.keras.Model):
         recon = self.decoder(q)
 
         return loss, recon
+
+
+### Model for generation
+"""
+from paper:
+After training vqvae fit autorefresive distrivution
+PixelCNN for images
+not training vqvae and prior together so good, can use the same model trained 
+already
+
+their latent space is 32x32x1 ( mine is 62x62x1 )
+https://arxiv.org/pdf/1606.05328.pdf
+pixels depend on nearby pixels (above and to the let)
+conditional distrbutions moedelled by CNN -> masked filters
+we can ignore oclors
+
+Sources:
+also read some of this expalantion: https://bjlkeng.github.io/posts/pixelcnn/
+convolutional layer and a mask, guess it can be a normal mask
+"""
+
+
+class PixelCNN(tf.keras.Model):
+    """
+    
+    """
+    def __init__(self, inputs=None):
+        super(PixelCNN, self).__init__(inputs)
+        pass
+        
+        
+
+    def call(self, X):
+        pass
