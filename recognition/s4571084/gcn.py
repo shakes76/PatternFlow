@@ -163,3 +163,15 @@ def train():
             epoch, loss.item(), train_acc.item(), val_acc.item()))
     
     return loss_history, val_acc_history
+
+def test(mask):
+    model.eval()
+    with torch.no_grad():
+        logits = model(tensor_adjacency, tensor_x)
+        test_mask_logits = logits[mask]
+        predict_y = test_mask_logits.max(1)[1]
+        accuarcy = torch.eq(predict_y, tensor_y[mask]).float().mean()
+    return accuarcy, test_mask_logits.cpu().numpy(), tensor_y[mask].cpu().numpy()
+
+train()
+
