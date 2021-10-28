@@ -9,6 +9,7 @@ Created on Mon Oct 18 10:45:43 2021
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras as keras
 import pandas as pd
 import os
 import glob
@@ -207,7 +208,7 @@ print('model generated')
 # Load Pre-trained weights
 
 # Which weights to start with?
-init_with = "specific"  # coco, or last
+init_with = "last"  # coco, or last
 
 if init_with == "coco":
     # Load weights trained on MS COCO, but skip layers that
@@ -247,7 +248,14 @@ print('Augmentations Loaded')
 
 gc.collect()
 #%%
-
+# Custom Callback
+def scheduler_(epoch, lr = config.LEARNING_RATE):
+    if epoch < 20:
+        return lr
+    else:
+        return lr * tf.math.exp(-0.1)
+custom_callback = keras.callbacks.LearningRateScheduler(scheduler_)  
+#%%
 # Training                        
 # Train the head branches
 # Passing layers="heads" freezes all layers except the head
@@ -262,11 +270,12 @@ start_train = time.time()
               # 4+: Train Resnet stage 4 and up
               # 5+: Train Resnet stage 5 and up
 
-model.train(dataset_train,
-            dataset_val, 
-            learning_rate=config.LEARNING_RATE, 
-            epochs=20, 
-            layers='3+'
+model.train(dataset_train
+            ,dataset_val
+            ,learning_rate=config.LEARNING_RATE
+            ,epochs=21
+            ,layers='3+'
+            ,custom_callbacks = [custom_callback]
             ,augmentation = augment_strat
             )
 
