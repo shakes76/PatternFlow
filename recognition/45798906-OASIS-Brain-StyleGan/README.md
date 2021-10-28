@@ -22,7 +22,7 @@ StyleGAN builds upon ProGAN by introducing a mapping network for the latent vect
     <a href="#1">
         <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
     </a>
-    <p> General architecture of GAN (left) and StyleGAN (right). [<a href="#1">1</a>]  </p>
+    <p> General architecture of GAN (left) and StyleGAN (right). Obtained from https://arxiv.org/abs/1812.04948  </p>
 </center>
 
 As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, $\gamma$ abd $\beta$ respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
@@ -273,26 +273,4 @@ Although samples are not perfect, the shape and some details of the brain MRIs c
 
 ## References
 
-<style>
-    ol{
-        margin:0; 
-        padding:0; 
-        text-decoration:none;
-        list-style-type: none;
-    }
-    li::before {
-        content: "[" counter(section, decimal) "] ";
-        position: absolute;
-        left: 7px;
-
-    }
-    li {
-        counter-increment: section;
-        position: relative;
-        padding-left: 30px;
-    }
-</style>
-
-<ol>
-    <li id="1">T. Karras, S. Laine, and T. Aila, “A Style-Based Generator Architecture for Generative Adversarial Networks,” arXiv:1812.04948 [cs, stat], Mar. 2019, arXiv: 1812.04948. [Online]. Available: <a href="https://arxiv.org/abs/1812.04948">https://arxiv.org/abs/1812.04948</a></li>
-</ol>
+- StyleGAN paper, Available at: https://arxiv.org/abs/1812.04948
