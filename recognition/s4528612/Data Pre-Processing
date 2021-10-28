@@ -60,5 +60,15 @@ def cross_attention(image_size):
 
     return keras.Model(inputs=[latent_input,data_array_input], outputs=outputs)
 
-model = create_cross_attention_module(73*64, 2*(2*6 + 1) + 1)
+model = cross_attention(73*64, 2*(2*6 + 1) + 1)
 model.summary()
+
+#Reshape The Fourier Encoder to The array shape then performe calculation
+def fourier_encode(array):
+    encode = tf.reshape(tf.experimental.numpy.logspace(
+            start=0.0,
+            stop=math.log(10 / 2) / math.log(10),
+            num=10,
+            dtype=tf.float32,
+        ),((len(array.shape) - 1), 4))
+    return 3.14 * array * encode
