@@ -26,7 +26,7 @@ A schematic visualizing the architecture of the VQ-VAE is shown in Figure 2. It 
 
 *Figure 2: VQ-VAE Architecture as provided in van den Oord et al. (2018).*
 
-Once the model was fully trained, the encoder and decoder were frozen and an off-the-shelf pixelCNN (proposed by van den Oord et al., 2016) was used to do autoregressive modelling to train the prior - code retrieved from this [link] (https://keras.io/examples/generative/pixelcnn/). The pixelCNN is a sequentially-dependent model which learns to predict which codebook index comes next, based only on all the previous indices. It does this by performing masked convolutions, which ensures the joint image distribution is broken down into a product of conditionals (visualized in Figure 3). As such, once trained, the pixelCNN can be prompted  with an empty array, into which it will pixel-by-pixel generate a latent space representation, which can then be fed through the frozen VQ-VAE decoder to produce an entirely novel brain image.
+Once the model was fully trained, the encoder and decoder were frozen and an off-the-shelf pixelCNN (proposed by van den Oord et al., 2016) was used to do autoregressive modelling to train the prior - code retrieved from this [link](https://keras.io/examples/generative/pixelcnn/). The pixelCNN is a sequentially-dependent model which learns to predict which codebook index comes next, based only on all the previous indices. It does this by performing masked convolutions, which ensures the joint image distribution is broken down into a product of conditionals (visualized in Figure 3). As such, once trained, the pixelCNN can be prompted  with an empty array, into which it will pixel-by-pixel generate a latent space representation, which can then be fed through the frozen VQ-VAE decoder to produce an entirely novel brain image.
 
 ![](./resources/pixel_cnn.png)
 
@@ -69,7 +69,6 @@ The latent codes produced by the VQ-VAE were also visualized (Figure 7), and use
 
 ![](./resources/example_latent_code_1.png)
 ![](./resources/example_latent_code_2.png)
-![](./resources/example_latent_code_3.png)
 
 *Figure 7: VQ-VAE latent code representations of the original images.*
 
