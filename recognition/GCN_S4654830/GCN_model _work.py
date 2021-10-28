@@ -32,5 +32,16 @@ indices = torch.from_numpy(np.asarray([adjacency.row, adjacency.col]).astype('in
 values = torch.from_numpy(adjacency.data.astype(np.float32))
 tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
 
+# set test logic fuction use the capsys as the argument which can calculate the accuracy and predict result.
+def test(capsys):
+    model.eval()
+    with torch.no_grad():
+        logits = model(tensor_adjacency, tensor_x)
+        test_mask_logits = logits[capsys]
+
+
+        predict_y = test_mask_logits.max(1)[1]
+        accuarcy = torch.eq(predict_y, tensor_y[capsys]).float().mean()
+    return accuarcy, test_mask_logits.cpu().numpy(), tensor_y[capsys].cpu().numpy()
 
 
