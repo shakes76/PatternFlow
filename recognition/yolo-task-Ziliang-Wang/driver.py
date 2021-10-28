@@ -1,42 +1,98 @@
 from PIL import Image
-from yolo import *
+import torch
+import yolo
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+from yolo_utiles.plot import Plot_loss
 
-weights_path = 'results/epoch9, training loss3.97884,test_loss3.41089.pth'
 
-anchors_mask = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
+
+img_name = "ISIC_0012510.jpg"
+
+img_root = "dataset/JPEGImages/" + img_name
+
+weights_path = "F:/3710/16epoch, training loss3.6342,test_loss3.07069.pth"
+xml_root = 'dataset/Annotations/'
+JPEG_root = 'dataset/JPEGImages/'
+weight_folder_path = "F:/3710"
+
+num_anchors = 9
+confidence = 0.5
+nms_iou = 0.1
+letterbox_image = False
+
+anchors_mask = [[6, 7, 8]
+	, [3, 4, 5],
+				[0, 1, 2]]
+
 input_shape = [416, 416]
 
 class_names = ['Lesion']
 num_classes = 1
 
 anchors = torch.Tensor([[10., 13.],
-           [16., 30.],
-           [33., 23.],
-           [30., 61.],
-           [62., 45.],
-           [59., 119.],
-           [116., 90.],
-           [156., 198.],
-           [373., 326.]])
-num_anchors = 9
-confidence = 0.5
-nms_iou = 0.1
-letterbox_image = False
+						[16., 30.],
+						[33., 23.],
+						[30., 61.],
+						[62., 45.],
+						[59., 119.],
+						[116., 90.],
+						[156., 198.],
+						[373., 326.]])
+
+train_annotation = 'train.txt'
+test_annotation = 'test.txt'
+test_img_name = 'test_image_name.txt'
+
+with open(train_annotation, encoding="utf-8") as f:
+	train_lines = f.readlines()
+with open(test_annotation, encoding="utf-8") as f:
+	test_lines = f.readlines()
+with open(test_img_name, encoding="utf-8") as f:
+	test_img_name_lines = f.readlines()
 
 
 def get_variable():
-    """
-    return variable from the driver.py
-    """
-    return weights_path, anchors_mask, input_shape, class_names, num_classes, anchors, num_anchors, confidence, nms_iou, letterbox_image
+	"""
+	return variable from driver.py
+	"""
+	return weights_path, anchors_mask, input_shape, class_names, num_classes, anchors, num_anchors, confidence, nms_iou, letterbox_image
+
+
+
+def get_test_iou(weight_folder_path,yolo):
+	weights_iou = []
+
+	weights = os.listdir(weight_folder_path)
+	sorted(weights,key = lambda i:i[:2])
+	print(weights)
+	for weight in weights:
+		global weights_path
+		epoch_avg_iou = []
+		#weights_path= os.path.dirname(os.path.abspath(__file__))+"results/weights/"+weight
+		weights_path =   "F:/3710/" + weight
+		yolov3 = yolo.YoloDetect(weights_path)
+
+		for i, line in enumerate(test_img_name_lines):
+			image = Image.open(JPEG_root + line[:-1])
+			img_name = test_img_name_lines[i]
+			iou = yolov3.detect_image(image, line, img_name,detect_image=False)
+			epoch_avg_iou.append(iou)
+		print(torch.mean(
+		torch.tensor(epoch_avg_iou, dtype=torch.float,
+					 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))))
+		print(epoch_avg_iou)
+		weights_iou.append(torch.mean(
+		torch.tensor(epoch_avg_iou, dtype=torch.float,
+					 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))).detach().cpu())
+		Plot_loss(0,0,weights_iou,epoch=len(weights)).plot_iou()
 
 
 if __name__ == "__main__":
-    yolo = YoloDetect()
-    img_root = "img/ISIC_0016028.jpg"
+	# yolo = yolo.YoloDetect()
 
-    image = Image.open(img_root)
 
-    image = yolo.detect_image(image)
+	print(get_test_iou(weight_folder_path,yolo))
 
-    image.show()
+	# image = Image.open(img_root)
+	# print(yolo.detect_image(image,img_root,img_name))
