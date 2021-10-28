@@ -60,7 +60,7 @@ The images below are randomly collected from AKOA datasets for visualisation.
 
 The model and network code written in Pytorch follow the [official Tenforflow implementation](https://github.com/NVlabs/stylegan/blob/master/training/networks_stylegan.py) very carefully. Zhuoxiao rewrote and reproduced the code using PyTorch according to the official Tensorflow code. Thus, the code right should belong to Copyright (c) 2019, [NVIDIA CORPORATION](https://www.nvidia.com/en-us/).
 
-The implementation can be roughly divided into three steps. The first step (preprocess_AKOA_images.py) is the AKOA pre-processing to convert each AKOA image to all the different dimensions (8,16,32). The second step (train_AKOA_StyleGAN.py) is the training process, which accepts pre-processed AKOA images to train the StyleGAN. The last step (generate_AKOA.py) is to produce fake images using trained StyleGAN. 
+The implementation can be roughly divided into three steps. The first step (**preprocess_AKOA_images.py**) is the AKOA pre-processing to convert each AKOA image to all the different dimensions (8,16,32). The second step (**train_AKOA_StyleGAN.py**) is the training process, which accepts pre-processed AKOA images to train the StyleGAN. The last step (**generate_AKOA.py**) is to produce fake images using trained StyleGAN. The usage of each python script for each step is clearly described in both code comments and the subsequent section. 
 
 #### Hardware
 
