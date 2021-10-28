@@ -14,6 +14,8 @@ import matplotlib.image as mpimg
 import pathlib
 import math
 
+from model import VQVAE
+
 class OASISSeq(tf.keras.utils.Sequence):
     """
     Sequence to load OASIS dataset
@@ -72,9 +74,9 @@ class OASISSeq(tf.keras.utils.Sequence):
         # should i return tensors or numpy arrays
         return tf.constant(X_train), tf.constant(y_train)
 
+
 def main():
     print("hello")
-
     ### load data
     data_dir = pathlib.Path("./keras_png_slices_data/keras_png_slices_data")
     X_train_files = list(data_dir.glob('./keras_png_slices_train/*'))
@@ -91,14 +93,25 @@ def main():
     test_seq = OASISSeq(sorted(X_test_files),sorted( y_test_files), 5)
     X_train, y_train = train_seq.__getitem__(1)
     # print(X_train.__len__())
+    print(tf.image.ssim(X_train[0], X_train[0], 3))
+    print(tf.image.ssim(X_train[0], X_train[1], 3))
 
-    plt.imshow(X_train[0], cmap='gray')
-    plt.figure()
-    plt.imshow(y_train[0], cmap='gray')
-    plt.show()
+    # plt.imshow(X_train[0], cmap='gray')
+    # plt.figure()
+    # plt.imshow(y_train[0], cmap='gray')
+    # plt.show()
 
     ### initilise model
+    model = VQVAE()
+    model.build( input_shape=[10, 256, 256, 1])
+    print(model.summary())
+
     ### make optimiser and loss
+    lr = 2*10**(-4)
+    batch_size = 128
+    # optimiser = 
+    # loss = 
+
 
     ### train model
 
