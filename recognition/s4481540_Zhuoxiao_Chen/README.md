@@ -112,7 +112,7 @@ zlib=1.2.11=h7b6447c_3
 
 #### Pre-process the AKOA Dataset Using preprocess_AKOA_images.py
 
-Since the progressive StyleGAN is built in this project. All AKOA images should be trained progressively. For example, all images are trained at dimension 8 times 8 for one phase and 16 times 16 for another phase. Finally, the expected dimension 258 times 258 is trained as the final phase. 
+Since the progressive StyleGAN is built in this project. All AKOA images should be trained progressively. For example, all images are trained at dimension 8 times 8 for one phase and 16 times 16 for another phase. Finally, the expected dimension 256 times 256 is trained as the final phase. 
 
 Therefore, the pre-processing is simply converted all the AKOA images into all the different dimensions with key and value pairs. The output file should be stored in a directory containing processed .mdb files. This directory is later used for the training path.
 
@@ -223,7 +223,7 @@ optional arguments:
 
 ## Result and Analysis
 
-The visualisation of the generated AKOA images (258 times 258 each).
+The visualisation of the generated AKOA images (256 times 256 resolution each).
 
 It is evident that the StyleGAN trained with only 20k iterations cannot produce high-quality images. The images produced have strange areas. 
 
