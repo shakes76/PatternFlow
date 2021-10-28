@@ -9,7 +9,20 @@ import argparse
 
 IMG_SIZE = 256
 
+def calculate_training_variance(dataset):
+    """
+    Calculates the pixel level variance over the dataset
+    """
+    count = dataset.unbatch().reduce(tf.cast(0, tf.int64), lambda x,_: x + 1 ).numpy()
+    mean = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + y ).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE)
+    var = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + tf.math.pow(y - mean,2)).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE - 1)
+    return var
+
+
 class SSIMCallback(tf.keras.callbacks.Callback):
+    """
+    Custom metric callback for calculating SSIMs
+    """
     def __init__(self, validation_data, shift=0.0):
         super(SSIMCallback, self).__init__()
         self._val = validation_data
@@ -29,6 +42,9 @@ class SSIMCallback(tf.keras.callbacks.Callback):
 
 
 def plot_history(history):
+    """
+    Plots the loss histories
+    """
     plt.plot(history.history['loss'])
     plt.title('total training loss')
     plt.ylabel('loss')
@@ -55,6 +71,9 @@ def plot_history(history):
 
 
 def show_reconstruction_examples(model, images, shift):
+    """
+    Shows (original_image, codebook, reconstruction) for the list of images
+    """
     reconstructions = model.predict(images)
 
     encoder_outputs = model.encoder().predict(images)
@@ -90,6 +109,9 @@ def show_reconstruction_examples(model, images, shift):
 
 
 def load_images(location, image_size, batch_size):
+    """
+    Create dataset from OASIS images in given location
+    """
     return image_dataset_from_directory(location, 
                                         label_mode=None, 
                                         image_size=image_size,
@@ -128,13 +150,11 @@ if __name__ == "__main__":
     dataset_validation  = dataset_validation.map(lambda x: (x / 255.0) - args.shift)
 
     # calculate variance of training data (at a individual pixel level) to pass into VQVAE
-    count = dataset.unbatch().reduce(tf.cast(0, tf.int64), lambda x,_: x + 1 ).numpy()
-    mean = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + y ).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE)
-    var = dataset.unbatch().reduce(tf.cast(0, tf.float32), lambda x,y: x + tf.math.pow(y - mean,2)).numpy().flatten().sum() / (count * IMG_SIZE * IMG_SIZE - 1)
+    training_variance = calculate_training_variance(dataset)
 
     # create model
     input_size = (IMG_SIZE, IMG_SIZE, 1)
-    vqvae_model = VQVAE(input_size, args.D, args.K, args.beta, var)
+    vqvae_model = VQVAE(input_size, args.D, args.K, args.beta, training_variance)
 
     vqvae_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate))
 
