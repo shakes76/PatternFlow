@@ -61,6 +61,9 @@ Best Model Selection: Save the best model which has the largest accuracy for val
 * sklearn
 * seaborn
 
+#### Usage
+python facebook_GCN.py
+
 ### Outputs
 Accuracy about node classification which is the prediction of Facebook sites <br>
 
