@@ -65,7 +65,9 @@ Although it is typical to separate data into training, validation and test datas
 
 To increase the range of possible MRI brains generated, the training data is randomly flipped across the horizontal axes. This retains the position of where the front and back of the path are, while flipping the left and right hemispheres of the brain. This essentially doubles the training domain, as it is unlikely a perfectly matching brain is part of the dataset. This random flipping is performed after the dataset has been exhausted, which can aid in preventing the discriminator from overfitting and reduce the training time of each epoch.
 
-### Model architecture and construction
+### Model construction
+
+The general architecture was discussed in [How is StyleGAN different?](#how-is-stylegan-different). Keras had a majority of the layers to implement the model with the exception of AdaIN. The AdaIN layer was created as a subclass of `tf.keras.layers.Layer` and required `build` and `call` to be implemented to work as the paper intended. The remaining layers were imported from `tf.keras.layers`. The network was built as a [functional model](https://keras.io/guides/functional_api/), which allows for greater control over the inputs of a layer when compared to the sequential model. In order to reduce the amount of repeated layers, the methods `gen_block` and `disc_block` were created to create generator and discriminator blocks respectively at various resolutions. With these blocks and several other layers, the generator and discriminator are built in the `get_generator` and `get_discriminator` functions respectively in [model.py](model.py).
 
 ### Visualisation
 
