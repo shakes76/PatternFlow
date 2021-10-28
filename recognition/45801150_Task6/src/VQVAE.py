@@ -11,16 +11,16 @@ import load_oasis_data
 img_length = 256
 
 def create_encoder(latent_dimensions):
-    encoder = Sequential(name="Encoder")
-    encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(img_length, img_length, 1)))
-    encoder.add(Conv2D(64, 3, activation="relu", strides=2, padding="same"))
+    encoder = Sequential(name="encoder")
+    encoder.add(Conv2D(16, 3, activation="relu", strides=2, padding="same", input_shape=(img_length, img_length, 1)))
+    encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same"))
     encoder.add(Conv2D(latent_dimensions, 1, padding="same"))
     return encoder
 
 def create_decoder():
-    decoder = Sequential(name="Decoder")
-    decoder.add(Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
+    decoder = Sequential(name="decoder")
     decoder.add(Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
+    decoder.add(Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(1, 3, padding="same"))
     return decoder
 
@@ -119,8 +119,13 @@ class VQVae(keras.models.Sequential):
         return losses
 
 def train_vqvae(x_train_normalised, variance):
-    vqvae = VQVae(variance, latent_dimensions=32, num_embeddings=64)
+    latent_dimensions = 64
+    num_embeddings = 256
+    vqvae = VQVae(variance, latent_dimensions=latent_dimensions, num_embeddings=num_embeddings)
     vqvae.compile(optimizer=keras.optimizers.Adam())
+    print(f"latent_dimensions: {latent_dimensions}, num_embeddings={num_embeddings}")
+    vqvae.get_layer("encoder").summary()
+    vqvae.get_layer("decoder").summary()
     vqvae.fit(x_train_normalised, epochs=60, batch_size=128)
     return vqvae
 
