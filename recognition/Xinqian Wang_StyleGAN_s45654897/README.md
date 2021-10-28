@@ -72,3 +72,25 @@ The outcome is provided as a form of image, you can see below, we also printed i
 </p>
 
 **Inference:**  The small resolution determines how the image looks like. Whereas, the higher resolution may deside some tiny thing. It may not be so obvious in the image we provide, but we also observe the consistency of the brightness is decided by higher resolution latent code (Source B).
+
+# Stochastic variation (Section 3.2), diving into how the input noise affect the generated image
+## Stochastic variation example-1
+We generate three images with different noise set. We plot the image below. And we can see a very tiny slightly change when comparing the images with each other. They all got same shape and you can hardly find out differences between them.
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/6f06e7be4c74bf5b51bfe6ca577849c7a0a72739/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/noise_variation.png" alt="" width='70%' height='70%'/>
+</p>
+
+## Stochastic variation example-2
+We also generated 2 pairs of images. The first one is the comparation between zero noise and noise normally injected into all layers.
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/6f06e7be4c74bf5b51bfe6ca577849c7a0a72739/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/noise%20and%20zero%20noise.png" alt="" width='60%' height='60%'/>
+</p>
+
+Next, we divided our model into two parts as with coarse layers and fine layers correspont to different resolution. Considering our model's highest resolution is onl 256. We define the coarse layers is refered to the layers which gets the resolution of 8 and 16. The rest all is defined as fine layers.
+Below is the comparation between noise only injected into coarse layers and noise only injected into fine layers
+
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/b0ec278a16f0f16aaad55368bcb7fae39eefdd26/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/noise%20coarse%20and%20fine_2.0.png" alt="" width='60%' height='60%'/>
+</p>
+
+**Inference:**  The conclusion is same as the paper mentioned. The noise tends to control the texture of the image. If noise the more likely to turn the image into a paint-like style. Additionaly, the noise is used by the generator to do some decorations for changing the images' details so that the generator can make different which has different variation. Or, we can deduce, the main shape of the image is not sensitive to the noise whereas the details of image are very sensitive to the noise.
