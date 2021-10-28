@@ -16,8 +16,8 @@ def create_encoder_model(latent_dimensions: int,
         keras.layers.Conv2D(latent_dimensions, 1, padding="same")
     ])
 
-def create_decoder_model(latent_dimensions: int,
-        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
+def create_decoder_model(input_shape: Tuple(int, int, int)) \
+        -> keras.models.Sequential:
     '''Returns the Decoder model used for the VQ VAE.'''
     return keras.models.Sequential([
         keras.layers.Input(shape=input_shape),
