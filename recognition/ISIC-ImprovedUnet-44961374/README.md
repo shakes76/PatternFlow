@@ -58,8 +58,7 @@ As mentioned before, this project aims to solve the first problem.
 Contrary to image classification, semantic image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original Unet model,
 the inudustry standard was to perform a sliding window computation on a patch around each pixels. However, as expected this method was computationally expensive.
 
-The original UNet model is a convolutional network that was designed to provide more accurate segmentations with fewer training data and at a much quicker time. The architecture follows a "U" shaped structure (hence the name), where the contracting path that downsamples the image leads to an expansive path that later on upsamples it. The image below shows the original UNet architecture.
-
+The original UNet model [4] is a convolutional network that was designed to provide more accurate segmentations with fewer training data and at a much quicker time. The architecture follows a "U" shaped structure (hence the name), where the contracting path that downsamples the image leads to an expansive path that later on upsamples it. The image below shows the original UNet architecture.
 
 <p align="center">
   <img src="images/unet.png" height="450px"/>
@@ -75,6 +74,11 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
 
 ### The Improved UNet Model
 
+<p align="center">
+  <img src="images/improved-unet.png" height="450px"/>
+</p>
+
+The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. The authors have stated that compared to the original UNet model, this model consists of twice as many filters. Furthermore, changes have been made on the context module, normalization (expansive) module, nonlinearity and strucutre of upsampling pathway. Notably, this model performs downsampling using Convolutions with 2 strides, segmentation layers have been integrated at different levels of the network, and ReLU has been replaced with Leaky ReLU.
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
@@ -93,4 +97,6 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
 
 [3] https://www.tensorflow.org/tutorials/images/segmentation 
 
-[4] https://arxiv.org/abs/1505.04597
+[4] O. Ronneberger, P. Fischer, en T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation”, arXiv [cs.CV]. 2015.
+
+[5] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, en K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge”, arXiv [cs.CV]. 2018.
