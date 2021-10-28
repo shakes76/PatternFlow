@@ -2,6 +2,10 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv3D, MaxPool3D, UpSampling3D, concatenate
 from tensorflow.keras import backend as K
 
+import nibabel as nib
+
+from pyimgaug3d.utils import to_channels
+
 def unet3d_model(input_size=(256,256,128,1), n_classes=6):
     """
     3D U-Net model, implemented exactly as described in https://arxiv.org/abs/1606.06650
@@ -35,18 +39,18 @@ def unet3d_model(input_size=(256,256,128,1), n_classes=6):
     conv5 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv5)
     
     upconv5 = UpSampling3D((2,2,2))(conv5)
-    upconv5 = Conv3D(256, (2,2,2), activation='relu', padding='same')(upconv5)
+    upconv5 = Conv3D(128, (2,2,2), activation='relu', padding='same')(upconv5)
     
     concat_2_6 = concatenate([conv2, upconv5], axis=4)
-    conv6 = Conv3D(256, (3,3,3), activation='relu', padding='same')(concat_2_6)
-    conv6 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv6)
+    conv6 = Conv3D(128, (3,3,3), activation='relu', padding='same')(concat_2_6)
+    conv6 = Conv3D(128, (3,3,3), activation='relu', padding='same')(conv6)
     
     upconv6 = UpSampling3D((2,2,2))(conv6)
-    upconv6 = Conv3D(256, (2,2,2), activation='relu', padding='same')(upconv6)
+    upconv6 = Conv3D(64, (2,2,2), activation='relu', padding='same')(upconv6)
     
     concat_1_7 = concatenate([conv1, upconv6], axis=4)
-    conv7 = Conv3D(256, (3,3,3), activation='relu', padding='same')(concat_1_7)
-    conv7 = Conv3D(256, (3,3,3), activation='relu', padding='same')(conv7)
+    conv7 = Conv3D(64, (3,3,3), activation='relu', padding='same')(concat_1_7)
+    conv7 = Conv3D(64, (3,3,3), activation='relu', padding='same')(conv7)
     
     output_seg = Conv3D(n_classes, (1,1,1), activation='softmax')(conv7)
     
