@@ -44,4 +44,28 @@ def test(capsys):
         accuarcy = torch.eq(predict_y, tensor_y[capsys]).float().mean()
     return accuarcy, test_mask_logits.cpu().numpy(), tensor_y[capsys].cpu().numpy()
 
+# set the training method logic fuction to calculate the loss history list and validation accuracy history
+def train():
+    # set list to storage the calculate accuracy,the calculate method will use the for loop
+    loss_history = []
+    val_acc_history = []
+    model.train()
+    train_y = tensor_y[tensor_train_mask]
+    # epoch value already set as 200
+    for epoch in range(epochs):
+        logits = model(tensor_adjacency, tensor_x)
+        train_mask_logits = logits[tensor_train_mask]
+        # loss calculate method
+        loss = criterion(train_mask_logits, train_y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        train_acc, _, _ = test(tensor_train_mask)
+        val_acc, _, _ = test(tensor_val_mask)
+        loss_history.append(loss.item())
+        val_acc_history.append(val_acc.item())
+        # out put the accuracy in loss and train and validation data
+        print("Epoch {:03d}: Loss {:.4f}, TrainAcc {:.4}, ValAcc {:.4f}".format(
+            epoch, loss.item(), train_acc.item(), val_acc.item()))
 
+    return loss_history, val_acc_history
