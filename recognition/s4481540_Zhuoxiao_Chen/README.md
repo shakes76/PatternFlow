@@ -118,7 +118,6 @@ To get started with the preprocess_AKOA_images.py, user can read the parameter i
 
 ```
 python preprocess_AKOA_images.py --help
-
 ```
 
 And the command line above should print very detailed information for each parameter:
@@ -191,6 +190,34 @@ optional arguments:
 
 #### Generate Fake AKOA Images using generate_AKOA.py
 
+Once the StyleGAN is fully trained, the checkpoint containing all the parameters needed for generating fake AKOA images should be saved.
+
+Then, the generate_AKOA.py script can be called to generate fake AKOA images. To know how to utilise the generate_AKOA.py images, please read the parameter description carefully by inputting:
+
+```
+python generate_AKOA.py --help
+```
+
+And the command line above should print very detailed information for each parameter:
+
+```
+usage: generate_AKOA.py [-h] [--column_size COLUMN_SIZE] [--row_size ROW_SIZE]
+                        [--dimension DIMENSION]
+                        checkpoint
+
+Generate fake AKOA images using trained generator.
+
+positional arguments:
+  checkpoint            checkpoint to checkpoint file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --column_size COLUMN_SIZE
+                        number of columns of sample matrix
+  --row_size ROW_SIZE   number of rows of sample matrix
+  --dimension DIMENSION
+                        the dimension of the generated AKOA image
+```
 
 ## Result and Analysis
 Generated AKOA Images
