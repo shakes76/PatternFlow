@@ -56,11 +56,11 @@ current_epoch = 0
 
 class MRISequence(Sequence):
     def __init__(self, x_set, y_set, batch_size):
+        self.rotations = [-15, 5, 0, 5, 15]
         self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
         self.batch_size = batch_size
         self.num_imgs = len(x_set)
         self.indices = list(range(len(self.x)))
-        self.rotations = [-15, 5, 0, 5, 15]
 
     def __len__(self):
         return math.ceil(len(self.x) / self.batch_size)
