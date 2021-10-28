@@ -78,11 +78,11 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
-[The ISIC 2018 Challenge Data](https://challenge2018.isic-archive.com/)
+[ISIC 2018 Challenge Data](https://challenge2018.isic-archive.com/)
 
-[The UNet Model](https://arxiv.org/abs/1505.04597)
+[UNet Model](https://arxiv.org/abs/1505.04597)
 
-[The Improved UNet Model](https://arxiv.org/abs/1802.10508v1)
+[Improved UNet Model](https://arxiv.org/abs/1802.10508v1)
 
 
 
