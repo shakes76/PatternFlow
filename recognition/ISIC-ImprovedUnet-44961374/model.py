@@ -36,6 +36,19 @@ def create_conv2d(input_layer, filters):
 
 
 def context_module(input_layer, filters):
+    """Creates a context module based on the Improved UNet architecture. Contains a pre-activation residual block with 
+    two 3x3 conv layers and a dropout layer with probability = 0.3
+    These modules are connected by 3x3 convs with input stride 2 to reduce the resolution of the feature maps.
+    This allows for more features while descending down the aggregation pathway.
+    Source: https://arxiv.org/pdf/1802.10508v1.pdf
+
+    Args:
+        input_layer (keras.layer): input layer to this module
+        filters (int): number of filters
+
+    Returns:
+        [keras.layer]: final layer of this module
+    """
     instance_norm_layer1 = InstanceNormalization()(input_layer)
     conv_layer1 = create_conv2d(instance_norm_layer1, filters)
     dropout = Dropout(P_DROP)(conv_layer1)
