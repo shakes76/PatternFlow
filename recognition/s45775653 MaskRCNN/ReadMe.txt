@@ -1,2 +1,0 @@
-This project will work on Detect lesions within the ISICs data set with the Mask RCNN with all detections having a minimum Intersection Over Union of 0.8 on the test set and a
-suitable accuracy for classification
