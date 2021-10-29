@@ -39,6 +39,14 @@ The results in the current version are optimal, achieving ~80% accuracy on the t
 <p align="center"><img src="./images/results.PNG" width="500"></p>
 <p align="center"><img src="./images/lies.PNG" width="500"></p>  
 
+## Installation:
+Clone repo taking note of requirements:
+- tensorflow=2.60
+- python=3.8.12
+- matplotlib=3.4.3
+- glob (comes with python)
+- math (comes with python)
+
 ## Usage:  
 The model.py contains the class YOLOV1 which contains all the neccessary information to train a new model or load existing weights. 
 
@@ -80,7 +88,10 @@ yolo.runModel(training_data, validation_data, epochs=200)
 The model accepts training and validation data in the form (image, groundTruth). Where:
 - image is: (imageWidth, imageHeight, channels)
 - groundTruth is: (S, S, 1, 5+num_classes). Noting... that the groundTruth can only contain one true bounding box inserted at the correct S,S position. Every where else can be all zeros. 
-
+3) Evaluate dataset
+```
+data = yolo.evaluateData(test_batches)
+```
 4) Make a prediction:
 ```
 result = yolo.predictData(testSet)
