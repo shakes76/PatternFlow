@@ -1,8 +1,12 @@
 This is my first style GAN impelementation. Because of short in GPU, the model is intermittently trained on Colab.
-The configuration of the model and the brief introduction can fing in the end.
+The README file is consisted of two parts, firstly general introduce the Style model and the rest part is some tests I did.
 
-# How the mapping network dis-entangle the random tensor?
-## Search for distribution
+# MRI Image Gereration By Implementing StyleGan
+> **A Style-Based Generator Architecture for Generative Adversarial Networks**<br>
+> > Tero Karras (NVIDIA), Samuli Laine (NVIDIA), Timo Aila (NVIDIA)<br>
+> https://arxiv.org/abs/1812.04948
+## How the mapping network dis-entangle the random tensor?
+### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
 
 ```python
@@ -39,7 +43,7 @@ Latent code (Z)         |  Intermediate latent code (W)
 
 **Inference:**  We can see for the latent vector without going into the mapping network, it takes up most of the plot. However, for the intermediate latent code coming after the mapping network, it presents a linear format, when the mean higher, the std is ten to go increase too.
 
-## Search for connection between different columns
+### Search for connection between different columns
 Another way of analyze the mapping network is to map plots with two different random pick columns from the row space and compared with Z and W. Below, we generated a shape of (4000,512) random code Z and get W by let Z pass through the mapping network. We randomly compared two different column inside Z or W. The code below cler describe what we did.
 
 ```python
@@ -63,8 +67,8 @@ Latent code (Z)         |  Intermediate latent code (W)
 
 **Inference:**  We can see for the plot on the right, you barely can see any patterns inside the plot. However, the plot on the left you can observe some rules. This sidely proves how the mapping network's operating during the training. The future could also made by analyzing the covarience matrix by looking for the relations between different attributes.
 
-# How is the style mixing (Section 3.1) performance?
-## Two sets of images were generated from their respective latent codes (Source A and B)
+## How is the style mixing (Section 3.1) performance?
+### Two sets of images were generated from their respective latent codes (Source A and B)
 Source A, is on the **Up** side. Source B, is on the **left** side.
 We set the Source A as the input style for the first two different resolutions, 8×8 and 16×16, and the rest resolutions are all inputed by Source B.
 The outcome is provided as a form of image, you can see below, we also printed it's mean and standard deviation in different colors for each image.
@@ -74,14 +78,14 @@ The outcome is provided as a form of image, you can see below, we also printed i
 
 **Inference:**  The small resolution determines how the image looks like. Whereas, the higher resolution may deside some tiny thing. It may not be so obvious in the image we provide, but we also observe the consistency of the brightness is decided by higher resolution latent code (Source B).
 
-# Stochastic variation (Section 3.2), diving into how the input noise affect the generated image
-## Stochastic variation example-1
+## Stochastic variation (Section 3.2), diving into how the input noise affect the generated image
+### Stochastic variation example-1
 We generate three images with different noise set. We plot the image below. And we can see a very tiny slightly change when comparing the images with each other. They all got same shape and you can hardly find out differences between them.
 <p align="center">
   <img src="https://github.com/Wangxinqian/PatternFlow/blob/6f06e7be4c74bf5b51bfe6ca577849c7a0a72739/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/noise_variation.png" alt="" width='70%' height='70%'/>
 </p>
 
-## Stochastic variation example-2
+### Stochastic variation example-2
 We also generated 2 pairs of images. The first one is the comparation between zero noise and noise normally injected into all layers.
 <p align="center">
   <img src="https://github.com/Wangxinqian/PatternFlow/blob/6f06e7be4c74bf5b51bfe6ca577849c7a0a72739/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/noise%20and%20zero%20noise.png" alt="" width='60%' height='60%'/>
@@ -99,8 +103,8 @@ Below is the comparation between noise only injected into coarse layers and nois
 > The previous sections as well as the accompanying video demonstrate that while changes to the style have global effects (changing pose, identity, etc.), the noise affects only inconsequential stochastic variation (differently combed hair, beard, etc.).
 
 
-# The difference of Gram matrix and Channel-wise Mean in the style-mixing
-## What's Gram Matrix
+## The difference of Gram matrix and Channel-wise Mean in the style-mixing
+### What's Gram Matrix
 Gram Matrix is formed by the inner product of two matrixes. Intuitively, if the inner product is greater than 0, then these two matrixes are basically having same direction in the vetor space. If their inner product equals to 0, they are orthogonal. Otherwise, their direction is not homogeneous.
 
 For the image case, imaging there are two images, A and B, and they have the same structure in a shape of [C,H,W]. Then, change A and B's shape into [C, H*W]. Finally, we got A's Gram Matrix by doing inner product [C, H*M] * [H*W, C]. The difference between their style is just calculate the MSE loss.
