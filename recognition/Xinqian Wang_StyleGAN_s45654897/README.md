@@ -97,3 +97,11 @@ Below is the comparation between noise only injected into coarse layers and nois
 **Inference:**  The conclusion is same as the paper mentioned. The noise tends to control the texture of the image. If noise the more likely to turn the image into a paint-like style. Additionaly, the noise is used by the generator to do some decorations for changing the images' details so that the generator can make different which has different variation. Or, we can deduce, the main shape of the image is not sensitive to the noise whereas the details of image are very sensitive to the noise.
 
 > The previous sections as well as the accompanying video demonstrate that while changes to the style have global effects (changing pose, identity, etc.), the noise affects only inconsequential stochastic variation (differently combed hair, beard, etc.).
+
+
+# The difference of Gram matrix and Channel-wise Mean in the style-mixing
+## What's Gram Matrix
+Gram Matrix is formed by the inner product of two matrixes. Intuitively, if the inner product is greater than 0, then these two matrixes are basically having same direction in the vetor space. If their inner product equals to 0, they are orthogonal. Otherwise, their direction is not homogeneous.
+
+For the image case, imaging there are two images, A and B, and they have the same structure in a shape of [C,H,W]. Then, change A and B's shape into [C, H*W]. Finally, we got A's Gram Matrix by doing inner product [C, H*M] * [H*W, C]. The difference between their style is just calculate the MSE loss.
+
