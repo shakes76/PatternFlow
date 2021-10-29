@@ -4,8 +4,8 @@ Specifications of the model can be found at: https://arxiv.org/abs/1802.10508v1
 @author: Mujibul Islam Dipto
 """
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, Activation, BatchNormalization, \
-    Dropout, Input, concatenate, Add, UpSampling2D, Conv2DTranspose, LeakyReLU
+from tensorflow.keras.layers import Conv2D, Dropout, Input, concatenate, Add, UpSampling2D, LeakyReLU
+from tensorflow.keras import Model
 from tensorflow.python.eager.context import context
 from tensorflow_addons.layers import InstanceNormalization
 from tensorflow.keras.layers import  Conv2D
@@ -134,7 +134,9 @@ def create_model(output_channels):
     # base
     conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
     context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16) # context module
+    
     add_layer_5 = Add()([conv_layer_5, context_5]) # element-wise sum
+    print("XXXXXXXXXXXXXXXXXXXXXX", add_layer_5 )
     ########## EXPANSIVE PATH ##########
     # base
     upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8) # upsampling module
@@ -146,8 +148,28 @@ def create_model(output_channels):
     concat_2 = concatenate([up_sample_2, add_layer_3]) # concatenation
     localization_2 = localization_module(concat_2, INIT_NO_FILTERS * 4) # localization module
     up_sample_3 = upsampling_module(localization_2, INIT_NO_FILTERS * 2) # upsampling module
+    # level 2
+    concat_3 = concatenate([up_sample_3, add_layer_2])
+    localization_3 = localization_module(concat_3, INIT_NO_FILTERS * 2)
+    up_sample_4 = upsampling_module(localization_3, INIT_NO_FILTERS)
+    # level 1
+    concat_4 = concatenate([up_sample_4, add_layer_1])
+    conv_layer_6 = create_conv2d(concat_4, INIT_NO_FILTERS * 2, KERNEL_SIZE, INIT_STRIDES)
+    # handle segmentation layers
+    segmentation_1 = segmentation_layer(localization_2, output_channels)
+    segmentation_1_up = UpSampling2D()(segmentation_1)
+    segmentation_2 = segmentation_layer(localization_3, output_channels)
+    add_layer_6 = Add()([segmentation_1_up, segmentation_2])
+    add_layer_6_up = UpSampling2D()(add_layer_6)
+    segmentation_3 = segmentation_layer(conv_layer_6, output_channels)
+    add_layer_7 = Add()([add_layer_6_up, segmentation_3])
 
+    output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax")(add_layer_7)
+    model = Model(input=input_layer, outputs=output)
     print("Working so far")
+    return model
 
-create_model()
+
+
+create_model(16)
 
