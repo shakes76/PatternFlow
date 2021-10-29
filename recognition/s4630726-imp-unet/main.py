@@ -3,6 +3,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
+from tensorflow.keras import optimizers
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from model import *
@@ -74,7 +75,7 @@ Y_test = tf.expand_dims(Y_test,-1)
 
 model = unet_improved(height,width,1)
 
-model.compile(optimizer="Adam", loss=loss_fn, metrics=['accuracy'])
+model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss=loss_fn, metrics=['accuracy'])
 
 unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
 
