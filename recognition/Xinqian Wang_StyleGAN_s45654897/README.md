@@ -10,6 +10,30 @@ The code I used is basicly from Kim Seonghyeon's Github.
 And thanks for his kindly reply to me for helping me better to understand the model.
 - Address: https://github.com/rosinality/style-based-gan-pytorch/issues/34
 
+Usage:
+```
+dataset folder  
+│
+└───class1 folder
+│   │   image01.jpg
+│   │   image02.jpg
+│   │   image03.jpg
+│   │   ...
+│   
+└───class2 folder
+│   │   image01.jpg
+│   │   image01.jpg
+│   │   ...
+│
+... ...
+```
+1. Prepare the lmdb dataset, the input image dataset location should have the structure as above
+> to be continue
+2. train the model
+> to be continue
+3. prepare the lmdb dataset
+> to be continue
+
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
