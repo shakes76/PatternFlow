@@ -19,6 +19,10 @@ def main():
 
     plots.plots(test_ds, model, num=5)
 
+    test_size = len(test_ds)
+
+    dice.average_dice(test_ds, model, test_size)
+
 
 if __name__ == "__main__":
     main()
