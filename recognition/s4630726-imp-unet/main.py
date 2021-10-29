@@ -74,7 +74,7 @@ Y_test = tf.expand_dims(Y_test,-1)
 
 model = unet_improved(height,width,1)
 
-model.compile(optimizer="Adam", loss="binary_crossentropy", metrics=['accuracy'])
+model.compile(optimizer="Adam", loss=loss_fn, metrics=['accuracy'])
 
 unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
 
