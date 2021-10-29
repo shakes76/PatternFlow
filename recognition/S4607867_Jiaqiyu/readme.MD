@@ -71,8 +71,20 @@ The trained weights is stored in [ url  ]
 
 # Step4 validation on test set:
 
-darknet has a build-in validation command, which can returns the average IOU ratio and other evaluation metrics.
+Darknet has a build-in validation command, which can returns the average IOU ratio and other evaluation metrics.
+By editting the map_calc.cmd file in the darknet root folder: 
 
+```
+rem # How to calculate mAP (mean average precision)
+rem darknet.exe detector map cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weight -iou_thresh 0.8
+darknet.exe detector map cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weights -iou_thresh 0.8
+pause
+```
+A mAP result on the test set can be calculated.
+
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/87d7c88fc9b019cf00e1db6313465c398bd28092/recognition/S4607867_Jiaqiyu/pics/my_map_calc.png" width=100% height=100%>
+</p>
 
 # Conclusion
 
@@ -88,31 +100,4 @@ darknet has a build-in validation command, which can returns the average IOU rat
 
 
 
-
-
-
-
-
-# PatternFlow
-Pattern recognition and image processing library for Tensorflow (TF)
-
-This library is created and maintained by The University of Queensland [COMP3710](https://my.uq.edu.au/programs-courses/course.html?course_code=comp3710) students.
-
-The library includes the following implemented in Tensorflow:
-* fractals 
-* algorithms
-* recognition problems
-
-In the algorithms, you will find many image processing algorithms ported to TF
-* denoise algorithms 
-* image processing algorithms 
-* transform algorithms 
-* metrics
-* histograms
-etc.
-
-In the recognition folder, you will find many recognition problems solved including:
-* OASIS brain segmentation
-* Classification
-etc.
 
