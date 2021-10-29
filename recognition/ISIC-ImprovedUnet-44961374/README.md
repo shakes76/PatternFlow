@@ -68,9 +68,7 @@ The original UNet model [4] is a convolutional network that was designed to prov
   <img src="images/unet.png" height="450px"/>
 </p>
 
-UNet performs a _semantic segmentation_, where each pixel of the image is mapped to a class label. Here, the input image has one channel (because it is greyscaled), and the output image has two channels representing two classes.
-
-The contracting path starts with two 3x3 valid Convolutions, followed by downsampling using MaxPooling. This doubles the number of feature channels. This pattern repeats for a total of four 3x3 valid Convolutions with their corresponding max pooling layers.
+UNet performs a _semantic segmentation_, where each pixel of the image is mapped to a class label. The contracting path starts with two 3x3 valid Convolutions, followed by downsampling using MaxPooling. This doubles the number of feature channels. This pattern repeats for a total of four 3x3 valid Convolutions with their corresponding max pooling layers.
 
 The expansive path utilizes Transpose Convolutions to upsample the image. Similar to the previous path, it performs four 3x3 valid Convolutions with corresponding 2x2 upsampling operations. This upsampling now halves the number of feature channels. 
 
@@ -84,13 +82,14 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
   <img src="images/improved-unet.png" height="450px"/>
 </p>
 
-The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. The authors have stated that compared to the original UNet model, several changes have been made.
-Notably:
-* Number of filters doubled
-* context module, normalization module, nonlinearity and strucutre of upsampling pathway changed
-* segmentation layers have been integrated at different levels of the network
-* ReLU has been replaced with Leaky ReLU
-* Traditional batch has been replaced with instance normalization 
+The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. Some key specifications of this model are:
+* Usage of LeakyReLU with an alpha of 0.01 instead of ReLU
+* Replacement of traditional batch with instance normalization
+* Integration of segmentation layers at different levels
+* Use of Dropout with probability 0.3
+* Use of context modules which are pre-activation residual blocks with two 3x3x3 convolutional layers and a dropout layer in between [5]
+* Use of localization modules to recombine features 
+
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
