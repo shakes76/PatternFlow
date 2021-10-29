@@ -43,6 +43,8 @@ def load_images(
 
     if images == None:
         raise IOError("No directories were provided.")
+    if images.cardinality() == 0:
+        raise IOError("Provided directories did not contain any images.")
 
     # Normalise the images
     images = images.map(
