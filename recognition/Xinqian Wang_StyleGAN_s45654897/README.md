@@ -106,5 +106,5 @@ Gram Matrix is formed by the inner product of two matrixes. Intuitively, if the 
 For the image case, imaging there are two images, A and B, and they have the same structure in a shape of [C,H,W]. Then, change A and B's shape into [C, H*W]. Finally, we got A's Gram Matrix by doing inner product [C, H*M] * [H*W, C]. The difference between their style is just calculate the MSE loss.
 
 <p align="center">
-  <img src="https://github.com/Wangxinqian/PatternFlow/blob/3541b867cfacb313e9e96baa8f509230416e0568/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Gram%20Matrix%20plot_New.png" alt="" width='60%' height='60%'/>
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/3541b867cfacb313e9e96baa8f509230416e0568/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Gram%20Matrix%20plot_New.png" alt="" width='40%' height='40%'/>
 </p>
