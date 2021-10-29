@@ -51,7 +51,7 @@ def iunet_localize(inputs, filters, name):
 
 def build_iunet():
     inputs = Input(
-        shape=(IMG_WIDTH, IMG_HEIGHT, IMG_CHANNELS),
+        shape=(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS),
         name="input")
 
     conv_1 = iunet_conv2d(16, "conv_1")(inputs)
