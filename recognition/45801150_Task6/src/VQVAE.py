@@ -30,36 +30,29 @@ class VectorQuantiser(keras.layers.Layer):
         super().__init__(**kwargs)
         self.embedding_dimensions = embedding_dimensions
         self.num_embeddings = num_embeddings
-        self.beta = 0.25
+        self.commitment_cost = 0.25
 
         random_uniform_initialiser = tf.random_uniform_initializer()
         self.embeddings = tf.Variable(
-            initial_value= random_uniform_initialiser(shape=(embedding_dimensions, num_embeddings), dtype="float32"),
+            initial_value = random_uniform_initialiser(shape=(embedding_dimensions, num_embeddings), dtype="float32"),
             trainable=True,
             name="embeddings_vqvae",
         )
 
-    def get_code_indices(self, inputs):
-        similarity = tf.matmul(inputs, self.embeddings)
-        distances = (
-            tf.reduce_sum(inputs ** 2, axis=1, keepdims=True)
-            + tf.reduce_sum(self.embeddings ** 2, axis=0)
-            - 2 * similarity
-        )
-        return tf.argmin(distances, axis=1)
-
     def call(self, x):
         input_shape = tf.shape(x)
-        flattened = tf.reshape(x, [-1, self.embedding_dimensions])
 
-        encoding_indices = self.get_code_indices(flattened)
+        flattened = tf.reshape(x, [-1, self.embedding_dimensions])
+        distances = tf.reduce_sum(flattened ** 2, axis=1, keepdims=True) \
+            + tf.reduce_sum(self.embeddings ** 2, axis=0) \
+            - 2 * tf.matmul(flattened, self.embeddings)
+
+        encoding_indices = tf.argmin(distances, axis=1)
         encodings = tf.one_hot(encoding_indices, self.num_embeddings)
         quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
         unflattened = tf.reshape(quantized, input_shape)
 
-        commitment_loss = self.beta * tf.reduce_mean(
-            (tf.stop_gradient(unflattened) - x) ** 2
-        )
+        commitment_loss = self.commitment_cost * tf.reduce_mean((tf.stop_gradient(unflattened) - x) ** 2)
         codebook_loss = tf.reduce_mean((unflattened - tf.stop_gradient(x)) ** 2)
         self.add_loss(commitment_loss + codebook_loss)
 
@@ -98,9 +91,7 @@ class VQVae(keras.models.Sequential):
     def train_step(self, data):
         with tf.GradientTape() as tape:
             reconstructions = self.call(data)
-            reconstruction_loss = (
-                    tf.reduce_mean((data - reconstructions) ** 2) / self.variance
-            )
+            reconstruction_loss = tf.reduce_mean((data - reconstructions) ** 2) / self.variance
             total_loss = reconstruction_loss + sum(self.losses)
 
         gradients = tape.gradient(total_loss, self.trainable_variables)
@@ -118,7 +109,7 @@ class VQVae(keras.models.Sequential):
 
         return losses
 
-def train_vqvae(x_train_normalised, variance):
+def train_vqvae(x_train_normalised, variance, x_val_normalised):
     latent_dimensions = 64
     num_embeddings = 256
     vqvae = VQVae(variance, latent_dimensions=latent_dimensions, num_embeddings=num_embeddings)
@@ -126,7 +117,7 @@ def train_vqvae(x_train_normalised, variance):
     print(f"latent_dimensions: {latent_dimensions}, num_embeddings={num_embeddings}")
     vqvae.get_layer("encoder").summary()
     vqvae.get_layer("decoder").summary()
-    vqvae.fit(x_train_normalised, epochs=60, batch_size=128)
+    vqvae.fit(x_train_normalised, validation_data=x_val_normalised, epochs=60, batch_size=128)
     return vqvae
 
 
@@ -164,17 +155,19 @@ def calculate_ssim(original_images, reconstructed_images):
     similarity = tf.image.ssim(original_images, reconstructed_images, max_val=255)
     print("Structured similarity is:", similarity)
 
-x_train, x_test = load_oasis_data.get_data()
+x_train, x_test, x_val = load_oasis_data.get_data()
 
 x_train = np.expand_dims(x_train, -1)
 x_test = np.expand_dims(x_test, -1)
+x_val = np.expand_dims(x_val, -1)
 
 x_train_normalised = (x_train / 255.0) - 0.5
 x_test_normalised = (x_test / 255.0) - 0.5
+x_val_normalised = (x_val / 255.0) - 0.5
 
 variance = np.var(x_train / 255.0)
 
-vqvae = train_vqvae(x_train_normalised, variance)
+vqvae = train_vqvae(x_train_normalised, variance, x_val_normalised)
 compare_reconstructions(vqvae, x_test_normalised, 10)
 
 
