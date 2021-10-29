@@ -57,15 +57,20 @@ class ProstateSequence(keras.utils.Sequence):
         X = self._generation_x(list_data_tmp)
         y = self._generation_y(list_label_tmp)
         X = X[:, :, :, :, np.newaxis]
-        max = np.amax(X)  #todo , do a better norm
+
+        # WORKING HERE 2, CHANGE NORM TO -MEAN/STD -> MEAN = 0, STD = 1 FOR EACH IMAGE
+        #2 max = np.amax(X)  #todo , do a better norm
         # adjust type. Lessen overhead
-        X = X.astype("float32") / max   # num 0-1300+ -> 0-1
+        X = X.astype("float32")         # 0 upwards, max for all images ~1300
         y = y.astype("uint8")           # num 0-5
 
+        # Normalise X: (X-mean)/stdev
+        X_norm = z_norm(X)  #2
+
         if self.training:
-            return X, y     # for training and validation generation
+            return X_norm, y     # for training and validation generation
         else:
-            return X        # If running test gen, then only need X
+            return X_norm        # If running test gen, then only need X
 
 
     def _generation_x(self, list_data_tmp):
@@ -215,7 +220,7 @@ def slices_pred(img, filename):
     :param filename: Name to save file
     :return: Nothing
     """
-    slice_0 = img[0:,:,]
+    slice_0 = img[0:,:,:64:1]
     plt.imshow(slice_0)
     show_slices([slice_0])
     plt.savefig(filename)
@@ -383,7 +388,7 @@ def normalise2(path):  # todo test, not complete, needs to iterate thru path
     return img_norm
 
 
-def z_norm(image):  # todo test
+def z_norm(image):
     """ Returns z normalised image. This will involve negative values. May require adjusted
     colour palette to avoid all neg values being coloured black.
     :param image:

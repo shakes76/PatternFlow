@@ -241,6 +241,7 @@ def main():
     # WORKING HERE 560
     # PRINT SLICES OF y_true and  y_pred
     sm.slices_pred(y_true, "y_true.png")
+    sm.slices_pred(y_pred_ohe, "y_pred_ohe.png")
 
 
     # # check prep is working
