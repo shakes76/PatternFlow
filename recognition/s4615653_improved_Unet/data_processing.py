@@ -50,14 +50,14 @@ def split_data(inputs,truth,ratio_train,ratio_validation,ratio_test):
     # array of inputs for validation images
     val_inputs = inputs[train_size:train_size + val_size]
     # array of inputs for test images
-    test_inputs = inputs[test_size:]
+    test_inputs = inputs[-test_size:]
 
     # array of truth for the training images
     train_truth = truth[:train_size]
     # array of truth for validation images
     val_truth = truth[train_size:train_size + val_size]
     # array of truth for test images
-    test_truth = truth[test_size:]
+    test_truth = truth[-test_size:]
 
     return train_inputs, train_truth, val_inputs, val_truth, test_inputs, test_truth
 
