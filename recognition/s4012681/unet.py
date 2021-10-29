@@ -7,13 +7,16 @@ from tensorflow.keras import backend as K
 from scipy import ndimage
 import matplotlib.pyplot as plt
 
-# Labels:
-# Background = 0
-# Body = 1
-# Bones = 2
-# Bladder = 3
-# Rectum = 4
-# Prostate = 5
+"""
+Labels:
+Background = 0
+Body = 1
+Bones = 2
+Bladder = 3
+Rectum = 4
+Prostate = 5
+"""
+
 
 IMG_HEIGHT = 256
 IMG_DEPTH = 256
@@ -22,31 +25,8 @@ IMG_CHANNELS = 1
 
 
 def get_nifti_data(file_name):
-    # tf.string(file_name)
-    # bits = tf.io.read_file(file_name)
-    # print()
-    # print(file_name)
     img = nibabel.load(file_name).get_fdata()
     return img
-
-
-# def one_hot2(file_name):
-#     mask = get_nifti_data(file_name)
-#     bg = mask == 0
-#     # bg = tf.logical_or(mask < 1, mask > 5)
-#     bg = tf.where(bg == True, 1, 0)
-#     body = mask == 1
-#     body = tf.where(body == True, 1, 0)
-#     bones = mask == 2
-#     bones = tf.where(bones == True, 1, 0)
-#     bladder = mask == 3
-#     bladder = tf.where(bladder == True, 1, 0)
-#     rectum = mask == 4
-#     rectum = tf.where(rectum == True, 1, 0)
-#     prostate = mask == 5
-#     prostate = tf.where(prostate == True, 1, 0)
-#
-#     return tf.concat((bg, body, bones, bladder, rectum, prostate), axis=-1)
 
 
 def one_hot(file_name):
@@ -59,18 +39,17 @@ def one_hot(file_name):
 
 def normalise(image):
     # subtract mean
-    # mean = np.average(image)
-    # image = image - mean
+    mean = np.average(image)
+    image = image - mean
 
     # divide by sd
-    # sd = np.std(image)
-    # image = image / sd
-    # image = rotate(image, rotation)
+    sd = np.std(image)
+    image = image / sd
 
     # unity-based normalisation
-    max_val = np.amax(image)
-    min_val = np.amin(image)
-    image = (image - min_val) / (max_val - min_val)
+    # max_val = np.amax(image)
+    # min_val = np.amin(image)
+    # image = (image - min_val) / (max_val - min_val)
     return image
 
 
@@ -84,16 +63,7 @@ def trim(image, diff, axis):
     return image
 
 
-def reshape(batch_size, dimension, image):
-    # h, d, w = image.shape
-    # print("whd", w, h, d)
-    # if w_diff := w - IMG_WIDTH > 0:
-    #     image = trim(image, w_diff, 0)
-    # if h_diff := h - IMG_HEIGHT > 0:
-    #     image = trim(image, h_diff, 1)
-    # if d_diff := d - IMG_DEPTH > 0:
-    #     image = trim(image, d_diff, 2)
-    #
+def reshape(dimension, image):
     return np.reshape(image, (IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, dimension))
 
 
@@ -102,20 +72,8 @@ def rotate(img, deg, is_mask):
     if is_mask:
         order = 0  # NN interp
 
-    img = ndimage.rotate(
-        img, deg[0], reshape=False, prefilter=True, order=order)
-
+    img = ndimage.rotate(img, deg[0], reshape=False, prefilter=True, order=order)
     return img
-
-
-# def reshape_mask(batch_size, dimension, image):
-#     return np.reshape(image, (batch_size, IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
-
-
-# def map_fn(image, mask):
-#     image = get_nifti_data(image)
-#     mask = one_hot(mask)
-#     return image, mask
 
 
 def scheduler(epoch, lr):
@@ -212,21 +170,7 @@ def unet(filters):
     return Model(inputs=[inputs], outputs=[outputs])
 
 
-# def dice(y_test, y_predict, smooth=1):
-#     y_test_f = K.flatten(y_test)
-#     y_test_f = y_test_f.numpy()
-#     y_predict_f = K.flatten(y_predict)
-#     y_predict_f = y_predict_f.numpy()
-#     intersect = K.sum(y_test_f * y_predict_f)
-#     a = 2 * intersect + smooth
-#     a = a.numpy()
-#     b = K.sum(y_test_f)
-#     c = K.sum(y_predict_f)
-#     d = b.numpy() + c.numpy() + smooth
-#     e = a / d
-#     return e
-
-def dice(y_test, y_pred, smooth):
+def dice(y_test, y_pred, smooth=1):
     y_test_f = K.flatten(y_test)
     y_pred_f = K.flatten(y_pred)
     intersect = K.sum(y_test_f * y_pred_f)
@@ -234,7 +178,7 @@ def dice(y_test, y_pred, smooth):
     return d
 
 
-def dice_loss(smooth):
+def dice_loss(smooth=1):
     def dice_keras(y_true, y_pred):
         return 1 - dice(y_true, y_pred, smooth)
     return dice_keras

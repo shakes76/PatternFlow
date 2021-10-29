@@ -24,12 +24,10 @@ BATCH_SIZE = 1
 FILTERS = 4
 EPOCHS = 50
 
-current_epoch = 0
-
 
 class MRISequence(Sequence):
     def __init__(self, x_set, y_set, batch_size):
-        self.rotations = [0, 5, 15]
+        self.rotations = [0, 15]
         self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
         self.batch_size = batch_size
         self.num_imgs = len(x_set)
@@ -40,25 +38,13 @@ class MRISequence(Sequence):
 
     def __getitem__(self, idx):
         rotation = idx // self.num_imgs
-        batch_x = self.x[idx * self.batch_size:(idx + 1) *
-                                               self.batch_size]
-        batch_y = self.y[idx * self.batch_size:(idx + 1) *
-                                               self.batch_size]
+        batch_x = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        return np.array([reshape(1, 1, rotate(normalise(get_nifti_data(file_name)), [self.rotations[rotation]], False))
+        return np.array([reshape(1, rotate(normalise(get_nifti_data(file_name)), [self.rotations[rotation]], False))
                          for file_name in batch_x]), \
-               np.array([reshape(1, 6, rotate(one_hot(file_name), [self.rotations[rotation]], True))
+               np.array([reshape(6, rotate(one_hot(file_name), [self.rotations[rotation]], True))
                          for file_name in batch_y])
-
-        # # USING np.rot90
-        # if idx < self.num_imgs:
-        #     return np.array([reshape(1, 1, np.rot90(normalise(get_nifti_data(file_name)))) for file_name in
-        #                      batch_x]), \
-        #            np.array([reshape(1, 6, np.rot90(one_hot(file_name))) for file_name in batch_y])
-        #
-        # return np.array([reshape(1, 1, (normalise(get_nifti_data(file_name)))) for file_name in
-        #                  batch_x]), \
-        #        np.array([reshape(1, 6, (one_hot(file_name))) for file_name in batch_y])
 
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
@@ -66,10 +52,7 @@ class MRISequence(Sequence):
 
 class CustomCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        # keys = list(logs.keys())
-        # print("End epoch {} of training; got log keys: {}".format(epoch, keys))
         pred = model.predict(test)
-        # print(pred[0].shape)
         mask = pred[0]
         mask = np.argmax(mask, axis=-1)
         fig, ax1 = plt.subplots(1, 1)
@@ -79,9 +62,6 @@ class CustomCallback(tf.keras.callbacks.Callback):
 
 mri_location = "/home/Student/s4012681/semantic_MRs_anon/*.nii.gz"
 label_location = "/home/Student/s4012681/semantic_labels_anon/*nii.gz"
-
-# n_mri = len(glob.glob(mri_location))
-# n_labels = len(glob.glob(label_location))
 
 mri_names = sorted(glob.glob(mri_location))
 labels_names = sorted(glob.glob(label_location))
@@ -102,7 +82,7 @@ model = unet(FILTERS)
 model_dice = dice_loss(smooth=1)
 
 model.compile(optimizer=Adam(lr=1e-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.000000199),
-              loss=model_dice, metrics=['accuracy'])
+              loss='binary_crossentropy', metrics=['accuracy'])
 model.summary(line_length=120)
 
 
