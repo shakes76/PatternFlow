@@ -12,7 +12,7 @@ And thanks for his kindly reply to me for helping me better to understand the mo
 
 Usage:
 ```
-dataset folder  
+Image Dataset (type: folder)
 │
 └───class1 folder
 │   │   image01.jpg
@@ -22,12 +22,12 @@ dataset folder
 │   
 └───class2 folder
 │   │   image01.jpg
-│   │   image01.jpg
+│   │   image02.jpg
 │   │   ...
 │
 ... ...
 ```
-1. Prepare the lmdb dataset, the input image dataset location should have the structure as above
+1. Prepare the lmdb dataset, the input Image Dataset should have the structure as above
 > to be continue
 2. train the model
 > to be continue
