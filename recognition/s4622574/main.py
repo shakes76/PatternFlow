@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
-from model import train, Perceiver
+from perceiver import train, Perceiver
 
 IMAGE_DIR = 'D:/AKOA_Analysis'
 BATCH_SIZE = 32
