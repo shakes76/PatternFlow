@@ -128,7 +128,7 @@ class GcnNet(nn.Module):
         return logits
 
 #train the model
-learning_rate = 0.01
+learning_rate = 0.1
 weight_decay = 5e-4
 epochs = 500
 
@@ -187,7 +187,7 @@ TSNE part for embeddings plot.
 """
 from sklearn.manifold import TSNE
 test_accuracy, test_data, test_labels = test(tensor_test_mask)
-tsne = TSNE(perplexity=50, n_components=2, init='pca', n_iter=5000)
+tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)
 low_dim_embs = tsne.fit_transform(test_data)
 plt.title('tsne result')
 plt.scatter(low_dim_embs[:,0], low_dim_embs[:,1], marker='o', c=test_labels)
