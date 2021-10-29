@@ -2,7 +2,7 @@
 """
 from model import AdvUNet
 from data import get_filenames, split_data, create_datasets
-from plots import plot_predictions
+from plots import plot_metrics, plot_predictions
 
 # The root path of the datasets.
 # Please put the following two folders:
@@ -16,7 +16,7 @@ IMAGE_WIDTH = 256
 # hyperparameters
 NUM_CLASSES = 1
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 20
 
 
 def main():
@@ -43,8 +43,15 @@ def main():
     history = model.fit(train_dataset, val_dataset,
                         batch_size=BATCH_SIZE, epochs=EPOCHS)
 
-    # generate prediction plots
+    # evaluate on the test set
+    results = model.evaluate(test_dataset, batch_size=BATCH_SIZE)
+    print("Test loss:", results[0])
+    print("Test accuracy:", results[1])
+    print("Test dice coefficient:", results[2])
+
+    # generate plots for predictions and metrics
     plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5)
+    plot_metrics(history)
 
 
 if __name__ == "__main__":
