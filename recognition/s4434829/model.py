@@ -373,12 +373,15 @@ def maskA(shape):
     So this should make all connections up  and left
 
     """
-    mask = tf.zeros(shape)
+    # does this count as using numpy? i havent importe it
+    # its just that assignment to tf tensors is unneccesarily complicated
+    # TODO change
+    mask = tf.zeros(shape).numpy()
     half_way = shape[0]//2
-    mask[:half_way] = 1.0
+    mask[:half_way, :,:,:] = 1.0
     # on middle line, make those to the left 1
     # kenrle is square so same halfway, up to halfway = 1
-    mask[half_way, :half_way] = 1.0
+    mask[half_way, :half_way,:,:] = 1.0
     return mask
 
 def maskB(shape):
@@ -387,14 +390,12 @@ def maskB(shape):
     up and left allowed
     
     """
-    mask = tf.zeros(shape)
+    mask = tf.zeros(shape).numpy()
     half_way = shape[0]//2
-    mask[:half_way+1] = 1.0
+    mask[:half_way,:,:,:] = 1.0
     # cnter also 1
-    mask[half_way, :half_way+1] = 1.0
+    mask[half_way, :half_way+1,:,:] = 1.0
     return mask
-    
-    
 
 class PixelCNNResidual(tf.keras.Model):
     """
@@ -408,19 +409,19 @@ class PixelCNNResidual(tf.keras.Model):
         self.relu = tf.keras.layers.ReLU()
 
         # TODO normal conv or masked?
-        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1,1), 
+        self.conv1 = tf.keras.layers.Conv2D(filters=128, kernel_size=(1,1), 
                             strides=(1,1), padding='same',
                             activation='relu', kernel_initializer='he_uniform')
 
         # the diagram is a bit ambigious but i think the 3x3 mask b is inside the residual block
         # so its this
-        self.conv2 = MaskedConv2D((3,3),"B")#tf.keras.layers.Conv2D(filters=256, kernel_size=(3,3), 
+        self.conv2 = MaskedConv2D((3,3),"B", filters=128//2)#tf.keras.layers.Conv2D(filters=256, kernel_size=(3,3), 
                             # strides=(1,1), padding='same',
                             # activation='relu', kernel_initializer='he_uniform')
 
-        self.conv3 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1,1), 
+        self.conv3 = tf.keras.layers.Conv2D(filters=128, kernel_size=(1,1), 
                             strides=(1,1), padding='same',
-                            activation=None, kernel_initializer='he_uniform')
+                            activation='relu', kernel_initializer='he_uniform')
 
     def call(self, X):
         new_x = self.relu(X)
@@ -436,7 +437,7 @@ class MaskedConv2D(tf.keras.Model):
     A conv2D layer which applied a mask of type a or b to itself
     first layer has kernel size 7x7 others have 3x3 or 1x1
     """
-    def __init__(self, kernel_size, mask_type, inputs=None):
+    def __init__(self, kernel_size, mask_type, filters=128, inputs=None):
         super(MaskedConv2D, self).__init__(inputs)
         # if first_layer == True:
         #     self.mask_type = "A"
@@ -444,7 +445,7 @@ class MaskedConv2D(tf.keras.Model):
         #     self.mask_type = "B"
         self.mask_type  = mask_type #"A" or "B"
         # I assume relu actovatopm nit ot dpesmt sau
-        self.conv = tf.keras.layers.Conv2D(filters=256, kernel_size=kernel_size, 
+        self.conv = tf.keras.layers.Conv2D(filters=128, kernel_size=kernel_size, 
                             strides=(1,1), padding='same',
                             activation='relu', kernel_initializer='he_uniform')
 
@@ -468,7 +469,8 @@ class MaskedConv2D(tf.keras.Model):
             self.mask = maskB(self.kernel_shape)
     
     def call(self, X):
-
+#         print("Kernel {}".format(self.conv.kernel.shape))
+        
         # set the kernel to be the kernle && the mask
         self.conv.kernel.assign(self.conv.kernel * self.mask)
         X = self.conv(X)
@@ -504,6 +506,8 @@ class PixelCNN(tf.keras.Model):
                             activation='sigmoid', kernel_initializer='he_uniform')
 
     def call(self, X):
+#         print("Pre anything {}".format(X.shape))
+
         X = self.masked_conv_1(X)
         for layer in self.list_resid_layers:
             X = layer(X)
