@@ -3,10 +3,8 @@ Driver script which prepares the OASIS MRI Brain Dataset for use in the VQ-VAE a
 The dataset is first loaded, then pre-processed, and finally set up inside a tensorflow Dataset object.
 A training Dataset (batched), and both a batched and unbatched test Dataset are returned.
 """
-
 import tensorflow as tf
 import numpy as np
-import tensorflow_probability as tfp
 import matplotlib.pyplot as plt
 
 # OASIS Dataset constants

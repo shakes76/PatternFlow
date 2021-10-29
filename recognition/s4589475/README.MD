@@ -85,9 +85,9 @@ Examples of the pixelCNN generated latent codes and brain images can be seen for
 - OASIS Brain Dataset (available for download from the following [link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download)).
 - Python 3.7
 - TensorFlow 2.6.0
+- matplotlib 3.4.2
+- Numpy 1.19.5
 - TensorFlow Probability
-- matplotlib
-- Numpy
 
 ## References
 

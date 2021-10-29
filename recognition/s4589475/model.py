@@ -2,10 +2,10 @@
 Model script containing all VQ-VAE model and pixelCNN model related functions.
 This includes the functions for building the model, training the model, and displaying the models' results.
 """
-
-import tensorflow as tf
 import tensorflow_probability as tfp
+import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 # OASIS Dataset constants
 IMAGE_HEIGHT = 256
@@ -25,6 +25,8 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         super().__init__()
         #define the size of our embeddings - has same length as latent space vectors, and width as defined by K (hyperparameter)
         codebook_shape = (latent_dims, K)
+        self._latent_dims = latent_dims
+        self._K = K
         #create the embedding object - initialise uniformly
         initializer = tf.keras.initializers.RandomUniform(minval=0., maxval=1.)
         #Declare our embeddings as a tensorflow variable that will be learnt
@@ -43,7 +45,7 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         indices = tf.argmin(distances, 1)
         
         #Do one-hot encoding so that only the closest codebook vector is mapped to a 1, all others to a 0
-        one_hot_indices = tf.one_hot(indices, K)
+        one_hot_indices = tf.one_hot(indices, self._K)
         
         # Apply indices to the embeddings - now have quantized the vectors
         quantized_vectors = tf.matmul(one_hot_indices, self._embeddings, transpose_b=True)
@@ -58,7 +60,7 @@ class Vector_Quantizer(tf.keras.layers.Layer):
 
         #Flatten all dimensions of the encoded vectors except the channels
         #Encoded vectors = (B,H,W,C) -> (B*H*W, C) i.e. flattened, each of which will be quantized independently
-        encoded_vectors = tf.reshape(encoder_outputs, [-1, latent_dims])
+        encoded_vectors = tf.reshape(encoder_outputs, [-1, self._latent_dims])
 
         #Now can quantize each
         indices, quantized_vectors = self.quantize_vectors(encoded_vectors)
@@ -193,7 +195,7 @@ def training_step(images, optimizer, encoder, quantizer_layer, decoder, vq_vae_m
     return recon_loss, latent_loss1, total_loss
 
 
-def train(encoder_net, decoder_net, quantizer_net, opt, vq_model, beta, epoch):
+def train(encoder_net, decoder_net, quantizer_net, opt, vq_model, beta, epochs, training_ds):
     """
     Trains the VQ-VAE model for the given number of epochs.
     Plots the training loss curves upon completion.
@@ -248,12 +250,6 @@ def calculate_ssims(vq_vae_model_overall, testing_ds_batched):
 
             result = vq_vae_model_overall(test_image, training=False)
 
-            #z = encoder(test_image, training=False)
-            #Get the quantized latent space
-            #z_quantized, z1 = quantizer_layer(z, training=False)
-            #Get the reconstructions
-            #result = decoder(z_quantized, training=False)
-
             ssim = tf.image.ssim(test_image, result, max_val = 1)
             ssim_scores_testing.append(ssim)
 
@@ -269,7 +265,7 @@ def calculate_ssims(vq_vae_model_overall, testing_ds_batched):
                 print(ssim.numpy())
 
     #Display the mean ssim
-    ssim_score = (tf.reduce_mean(ssim_scores_testing)).numpy()
+    ssim_score = str((tf.reduce_mean(ssim_scores_testing)).numpy())
     return ssim_score
 
 
@@ -324,8 +320,7 @@ class ResidualBlock(tf.keras.layers.Layer):
         x = self.conv2(x)
         return tf.keras.layers.add([inputs, x])
 
-
-def create_pixelCNN(num_residual_blocks, num_pixelcnn_layers):
+def create_pixelCNN(num_residual_blocks, num_pixelcnn_layers, K):
     """
     Creates and returns a pixelCNN model object
     """
@@ -376,7 +371,7 @@ def get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantize
     
     return codebook_indices_vector
 
- def train_pixel_cnn(pixel_cnn, epochs, training_ds, encoder, quantizer_layer):
+def train_pixel_cnn(pixel_cnn, epochs, training_ds, encoder, quantizer_layer):
     """
     Completes training of the pixelCNN to learn the prior, for the given number of epochs.
     """
@@ -400,7 +395,7 @@ def get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantize
         validation_split = 0.1,
     )
 
-def display_generated_images(num_images, pixel_cnn, quantizer_layer, decoder):
+def display_generated_images(num_images, pixel_cnn, quantizer_layer, encoder, decoder, K, training_ds):
     """
     Produces a final display of the pixelCNN training results.
     Displays 10 generated images in addition to their corresponding latent codes as created by the model.
@@ -421,6 +416,9 @@ def display_generated_images(num_images, pixel_cnn, quantizer_layer, decoder):
             # Use the probabilities to pick pixel values and append the values to the priors.
             priors[:, row, col] = sampled[:, row, col]
 
+    batch_ex = training_ds.take(1)
+    encoded_outputs = encoder.predict(batch_ex)
+    
     # Perform an embedding lookup.
     pretrained_embeddings = quantizer_layer._embeddings
     priors_ohe = tf.one_hot(priors.astype("int32"), K).numpy()

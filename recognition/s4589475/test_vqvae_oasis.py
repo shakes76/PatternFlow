@@ -3,11 +3,12 @@ Test script which calls and runs the algorithm to show example usage of the modu
 The VQ-VAE model is built and trained on the OASIS MRI Brain Dataset.
 Novel images are subsequently generated using a pixelCNN autoregressive prior.
 """
-
+import tensorflow_probability as tfp
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
-from model.py import *
-from driver.py import *
+from model import *
+from driver import *
 
 if __name__ == '__main__':
     #Load the OASIS Dataset
@@ -29,14 +30,14 @@ if __name__ == '__main__':
     vq_vae_overall = create_overall_vqvae(encoder, quantizer_layer, decoder)
 
     # Train the model
-    epochs = 30
-    train(encoder, decoder, quantizer_layer, optimizer, vq_vae_overall, beta, epochs)
+    epochs = 50
+    train(encoder, decoder, quantizer_layer, optimizer, vq_vae_overall, beta, epochs, training_ds)
 
     #Display the mean ssim
     ssim_score = calculate_ssims(vq_vae_overall, testing_ds_batched)
-    print("Average SSIM on the test dataset:"+ ssim_score)
+    print("Average SSIM on the test dataset: "+ ssim_score)
 
-    # Show 10 example latent code images
+    # Show 5 example latent code images
     encoded_outputs = encoder.predict(testing_ds_unbatched)
     flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
     codebook_indices, vectors = quantizer_layer.quantize_vectors(flat_enc_outputs)
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         plt.title("Latent Code")
         plt.show()
         
-        if i > 10:
+        if i > 5:
             break
 
     # Generate novel images using pixel CNN - based largely on the tutorial from https://keras.io/examples/generative/pixelcnn/
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     num_pixelcnn_layers = 2
 
     # Create the pixel CNN model
-    pixel_cnn = create_pixelCNN(num_residual_blocks, num_pixelcnn_layers)
+    pixel_cnn = create_pixelCNN(num_residual_blocks, num_pixelcnn_layers, K)
 
     # Print a summary of the model architecture
     pixel_cnn.summary()
@@ -70,4 +71,4 @@ if __name__ == '__main__':
     train_pixel_cnn(pixel_cnn, 500, training_ds, encoder, quantizer_layer)
 
     # Display 5 generated latent codes and corresponding image from the pixelCNN
-    display_generated_images(5, pixel_cnn, quantizer_layer, decoder)
+    display_generated_images(5, pixel_cnn, quantizer_layer, encoder, decoder, K, training_ds)
