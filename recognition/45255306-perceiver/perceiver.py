@@ -3,6 +3,7 @@ import numpy as np
 from torch import nn, einsum
 from einops import rearrange, repeat
 from math import pi
+import torch.nn.functional as F
 
 """
 Positional Encoding Method for data encoding
@@ -22,14 +23,17 @@ def fourier_encode(x, max_freq, num_bands=4):
 """
 Feed forward network after the attention layer
 """
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim = -1)
+        return x * F.gelu(gates)
+
 class FeedForward(nn.Module):
-    def __init__(self, dim, mult=4):
+    def __init__(self, dim, mult = 4):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(dim, dim * mult),
-            nn.GELU(),
-            # optional, but it is shown to degrade performance in the paper
-            # nn.Dropout(dropout),
+            nn.Linear(dim, dim * mult * 2),
+            GEGLU(),
             nn.Linear(dim * mult, dim)
         )
 
