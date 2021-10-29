@@ -29,23 +29,68 @@ class YoloV1():
             y_true (tensorflow.DataSet): A tensor containing the true bounding boxes. Shape (batchSize, S, S, B*5+C). 
             y_pred (tensorflow.DataSet): A tensor containing the predicted bounding boxes. Shape (batchSize, S, S, 5+C)
         Returns:
-            tensorflow.DataSet: A tensor containing the jaccardIndex for best box.
+            tensorflow.Constant: A tensor containing the jaccardIndex between the best box and true box.
         """
         y_true = tf.reshape(y_true[...,:5], [-1,self.S*self.S,1,5])
         y_pred = tf.reshape(y_pred[...,:self.B*5], [-1,self.S*self.S,self.B,5])
         
         # Get the true bounding box. 
-        y_true_box = tf.gather_nd(y_true, (tf.where(tf.equal(y_true[...,0], tf.math.reduce_max(y_true[...,0]))))[0])
-        # Get the bounding box that has the highest confidence for each batch. 
-        y_pred_box = tf.gather_nd(y_pred, (tf.where(tf.equal(y_pred[...,0], tf.math.reduce_max(y_pred[...,0]))))[0])
+        y_true_loc = tf.where(tf.equal(y_true[...,0], tf.math.reduce_max(y_true[...,0])))[0]
+        y_true_box = tf.gather_nd(y_true, y_true_loc)
+        # Get the bounding box that has the highest confidence
+        y_pred_loc = (tf.where(tf.equal(y_pred[...,0], tf.math.reduce_max(y_pred[...,0]))))[0]
+        y_pred_box = tf.gather_nd(y_pred, y_pred_loc)
 
-        # Calculate the area that overlaps between the two bounding boxes
-        numerator = (tf.math.reduce_sum(tf.math.multiply(y_true_box[...,1:5], y_pred_box[...,1:5])))
-        # Calculate the area of both - area that overlaps
-        denom = tf.math.reduce_sum(y_true_box[...,1:5]) + tf.math.reduce_sum(y_pred_box[...,1:5]) - numerator
-        iou = numerator/denom
+        # Convert the boxes to a standard box format
+        yMinT, xMinT, yMaxT, xMaxT = self.convertYoloBoxToStandard(y_true_box, y_true_loc) 
+        yMinP, xMinP, yMaxP, xMaxP = self.convertYoloBoxToStandard(y_pred_box, y_pred_loc)
+
+        # Determine the coordinates of the intersection area
+        maxValue = lambda x,y: x if tf.math.greater(x,y) else y
+        xMin = maxValue(xMinT, xMinP)
+        yMin = maxValue(yMinT, yMinP)
+        xMax = maxValue(xMaxT, xMaxP)
+        yMax = maxValue(yMaxT, yMaxP)
+        # Caculate the area of the intersection
+        interArea = (xMax - xMin) * (yMax - yMin)
+        if interArea < 0.0:
+            interArea = tf.zeros_like(interArea)
+        # Compute area of both boxes
+        trueArea = (xMaxT-xMinT) * (yMaxT-yMinT)
+        predArea = (xMaxP-xMinP) * (yMaxP-yMinP)
+        denom = (trueArea + predArea - interArea)
+        if tf.equals(denom, 0.0):
+            return tf.zeros_like(denom)
+        # Calculate IOU
+        iou = interArea / (trueArea + predArea - interArea)
         
         return iou
+
+    def convertYoloBoxToStandard(self, box, boxGridLocation):
+        """Convert a box of the format (centerX, centerY, boxWidth, boxHeight) -> true pixel coords (xMin, yMin, xMax, yMax)
+        Where centerX, centerY are relative to cell size, and boxWidth, boxHeight are relative too image size.
+
+        Args: 
+            box (tensorflow.Tensor): A single bounding box, shape (5,)
+            boxGridLocation: The location of box in the grid,  shape (4,)
+        Returns:
+            xMin (tensorflow.Constant): The minimum true pixel x coord of the bounding box
+            yMin (tensorflow.Constant): The minimum true pixel y coord of the bounding box
+            xMax (tensorflow.Constant): The maximum true pixel x coord of the bounding box
+            yMax (tensorflow.Constant): The maximum true pixel y coord of the bounding box
+        """
+        boxWidth = tf.cast(box[3], tf.float32) * tf.cast(self.imageWidth/2, tf.float32)
+        boxHeight = tf.cast(box[4], tf.float32) * tf.cast(self.imageHeight/2, tf.float32)
+        boxCenterX = tf.cast(box[1], tf.float32) * tf.cast(self.imageWidth/self.S, tf.float32) + tf.cast(boxGridLocation[1], tf.float32)*tf.cast(self.imageWidth/self.S, tf.float32)
+        boxCenterY = tf.cast(box[2], tf.float32) * tf.cast(self.imageHeight/self.S, tf.float32) + tf.cast(boxGridLocation[2], tf.float32) *tf.cast(self.imageHeight/self.S, tf.float32)
+        nonZero = lambda x: x if x > 0.0 else tf.zeros_like(x) 
+        noOverFlow = lambda x: x if x < tf.cast(self.imageWidth, tf.float32) else tf.cast(self.imageWidth, tf.float32)
+        xMin = nonZero(boxCenterX - boxWidth)
+        xMax = noOverFlow(boxCenterX + boxWidth)
+        yMin = nonZero(boxCenterY - boxHeight)
+        yMax = noOverFlow(boxCenterY + boxHeight)
+
+        return tf.math.round(yMin), tf.math.round(xMin), tf.math.round(yMax), tf.math.round(xMax)
 
     def yoloLoss(self, y_true, y_pred):
         """A custom loss function as specificied by the yolov1 paper. 
@@ -118,6 +163,7 @@ class YoloV1():
         Some additions have been made to the original architecture. They are follows: 
             1) Batch Normalization has been introduced to make the network more stable and increase peformance.
             2) A sigmoid activation function has been introduced to speed up training time (over linear activation). 
+                -- Removed due to network instability
 
         Returns:
             tensorflow.keras.Sequential: A Convolutional Neural Network defined by the YoloV1 architecture.  
@@ -229,7 +275,7 @@ class YoloV1():
             # Final Output Layer
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(4096),
-            tf.keras.layers.Dense(self.S * self.S * (self.B*5+self.C), input_shape=(4096,), activation="sigmoid"),
+            tf.keras.layers.Dense(self.S * self.S * (self.B*5+self.C), input_shape=(4096,)),
             tf.keras.layers.Reshape(target_shape = (self.S, self.S, (self.B*5+self.C)))
         ])
 
