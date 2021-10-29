@@ -27,7 +27,7 @@ Image Dataset (type: Folder)
 │
 ... ...
 ```
-1. Prepare the lmdb dataset, the input Image Dataset should have the structure as above
+1. Prepare the lmdb dataset, the input **Image Dataset** should have the structure as above
 > to be continue
 2. train the model
 > to be continue
