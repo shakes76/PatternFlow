@@ -31,8 +31,8 @@ class YoloV1():
         Returns:
             tensorflow.Constant: A tensor containing the jaccardIndex between the best box and true box.
         """
-        y_true = tf.reshape(y_true[...,:5], [-1,self.S*self.S,1,5])
-        y_pred = tf.reshape(y_pred[...,:self.B*5], [-1,self.S*self.S,self.B,5])
+        y_true = tf.reshape(y_true[...,:5], [-1,self.S,self.S,1,5])
+        y_pred = tf.reshape(y_pred[...,:self.B*5], [-1,self.S,self.S,self.B,5])
         
         # Get the true bounding box. 
         y_true_loc = tf.where(tf.equal(y_true[...,0], tf.math.reduce_max(y_true[...,0])))[0]
@@ -59,10 +59,15 @@ class YoloV1():
         trueArea = (xMaxT-xMinT) * (yMaxT-yMinT)
         predArea = (xMaxP-xMinP) * (yMaxP-yMinP)
         denom = (trueArea + predArea - interArea)
-        if tf.equals(denom, 0.0):
+        if tf.equal(denom, 0.0):
             return tf.zeros_like(denom)
         # Calculate IOU
         iou = interArea / (trueArea + predArea - interArea)
+        
+        if iou > 1.0:
+            iou = tf.ones_like(iou)
+        elif iou < 0.0:
+            iou = tf.zeros_like(iou)
         
         return iou
 
@@ -85,10 +90,10 @@ class YoloV1():
         boxCenterY = tf.cast(box[2], tf.float32) * tf.cast(self.imageHeight/self.S, tf.float32) + tf.cast(boxGridLocation[2], tf.float32) *tf.cast(self.imageHeight/self.S, tf.float32)
         nonZero = lambda x: x if x > 0.0 else tf.zeros_like(x) 
         noOverFlow = lambda x: x if x < tf.cast(self.imageWidth, tf.float32) else tf.cast(self.imageWidth, tf.float32)
-        xMin = nonZero(boxCenterX - boxWidth)
-        xMax = noOverFlow(boxCenterX + boxWidth)
-        yMin = nonZero(boxCenterY - boxHeight)
-        yMax = noOverFlow(boxCenterY + boxHeight)
+        xMin = nonZero(noOverFlow(boxCenterX - boxWidth))
+        xMax = nonZero(noOverFlow(boxCenterX + boxWidth))
+        yMin = nonZero(noOverFlow(boxCenterY - boxHeight))
+        yMax = nonZero(noOverFlow(boxCenterY + boxHeight))
 
         return tf.math.round(yMin), tf.math.round(xMin), tf.math.round(yMax), tf.math.round(xMax)
 
@@ -101,8 +106,10 @@ class YoloV1():
         Returns:
             tensorflow.Dataset: A tensor containing the loss for each cell. Will be of shape (batchsize, S*S).
         """
-        true_boxes = tf.reshape(y_true[...,:5], [-1,self.S,self.S,1,5])
-        pred_boxes = tf.reshape(y_pred[...,:self.B*5], (-1,self.S,self.S,self.B,5))
+        y_pred = tf.math.abs(y_pred)
+        
+        true_boxes = tf.reshape(y_true[...,:5], [-1,self.S*self.S,1,5])
+        pred_boxes = tf.reshape(y_pred[...,:self.B*5], (-1,self.S*self.S,self.B,5))
         # Reshape the 3: too S*S, B, 5 i.e. 49, 2, 5. 
         # Each cell has two bounding boxes, with each bounding box, having 5 elements. 
         
