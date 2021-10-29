@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 
 class DataLoader:
 
-    def __init__(self, path, batch_size=32, validation_size=0.2, test_size=0.1):
+    def __init__(self, path, batch_size=32, validation_size=0.2, test_size=0.1, seed=142):
         # ISIC2018_Task1-2_Training_Data\\
 
         self.path = path
         self.batch_size = batch_size
         self.image_shape = [384, 512]
+        self.seed = seed
 
         list_ds = tf.data.Dataset.list_files(self.path + "ISIC2018_Task1-2_Training_Input_x2\\*.jpg", shuffle=True)
 
@@ -24,6 +25,23 @@ class DataLoader:
         val_ds = list_ds.take(val_size)
         test_ds = train_ds.take(test_size)
         train_ds = train_ds.skip(test_size)
+        #train_ds = list_ds.skip(image_count - 1)
+
+
+        rng = tf.random.Generator.from_seed(self.seed, alg='philox')
+
+
+        @tf.function
+        def augment(file_path):
+            img, mask = process_path(file_path)
+            new_seed = rng.make_seeds(2)[0]
+            im_seed = tf.random.experimental.stateless_split(new_seed, num=1)[0, :]
+            img = tf.image.stateless_random_flip_left_right(img, seed=im_seed)
+            mask = tf.image.stateless_random_flip_left_right(mask, seed=im_seed)
+            img = tf.image.stateless_random_flip_up_down(img, seed=im_seed)
+            mask = tf.image.stateless_random_flip_up_down(mask, seed=im_seed)
+            img = tf.image.stateless_random_saturation(img, 1, 3, seed=im_seed)
+            return img, mask
 
         @tf.function
         def get_mask(file_path):
@@ -36,14 +54,14 @@ class DataLoader:
         def process_path(file_path):
             # Output raw image data from file paths
             img = tf.io.decode_jpeg(tf.io.read_file(file_path), channels=3)
-            mask = tf.io.decode_png(tf.io.read_file(get_mask(file_path)), channels=3)
+            mask = tf.io.decode_png(tf.io.read_file(get_mask(file_path)), channels=1)
             img = tf.image.resize(img, self.image_shape)
             mask = tf.image.resize(mask, self.image_shape)
             img = tf.cast(img, tf.float32) / 255.0
             mask = tf.cast(mask, tf.float32) / 255.0
 
             img = tf.reshape(img, tuple(self.image_shape + [3]))
-            mask = tf.reshape(mask, tuple(self.image_shape + [3]))
+            mask = tf.reshape(mask, tuple(self.image_shape + [1]))
             return img, mask
 
         def configure_for_performance(ds):
@@ -56,7 +74,7 @@ class DataLoader:
         # Process Dataset
         self.AUTOTUNE = tf.data.AUTOTUNE
 
-        train_ds = train_ds.map(process_path, num_parallel_calls=self.AUTOTUNE)
+        train_ds = train_ds.map(augment, num_parallel_calls=self.AUTOTUNE)
         val_ds = val_ds.map(process_path, num_parallel_calls=self.AUTOTUNE)
         test_ds = test_ds.map(process_path, num_parallel_calls=self.AUTOTUNE)
 
