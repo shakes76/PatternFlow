@@ -28,8 +28,8 @@ This model is trained on the [ISIC 2018](https://challenge2018.isic-archive.com/
 ## Results:
 The results in the current version are optimal, achieving ~80% accuracy on the test set. This will be improved upon further. An example:
 <p align="center"><img src="./images/comparison.PNG" width="800"></p>
-Below will discuss a few notable points of interest the results from the current version.  
-  1) The model converges around the 60 epoch mark. Tested until 200 epochs but no improvement in loss.
+Below will discuss a few notable points of interest the results from the current version.<br/>
+1) The model converges around the 60 epoch mark. Tested until 200 epochs but no improvement in loss.
 <p align="center"><img src="./images/epochs.PNG" width="700"></p>
 2) There is a sudden drop off in loss from 1-10 epochs, as the model quickly optimises the bounding boxes (the result of no sigmoid activation function in the dense layer).
 <p align="center"><img src="./images/modelLoss.PNG" width="500"></p>
@@ -38,6 +38,7 @@ Below will discuss a few notable points of interest the results from the current
 4) Model.evaluate shows a mere 2% score for the test set, this is infact a lie, the model achieves an average jaccard Index of 79.39% on the test set. The jaccard Index as noted above isn't currently working with batches. 
 <p align="center"><img src="./images/results.PNG" width="500"></p>
 <p align="center"><img src="./images/lies.PNG" width="500"></p>  
+
 ## Usage:  
 The model.py contains the class YOLOV1 which contains all the neccessary information to train a new model or load existing weights. 
 
