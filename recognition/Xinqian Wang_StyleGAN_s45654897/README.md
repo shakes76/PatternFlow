@@ -3,7 +3,7 @@ The README file is consisted of two parts, firstly general introduce the Style m
 
 # MRI Image Gereration By Implementing StyleGan
 > **A Style-Based Generator Architecture for Generative Adversarial Networks**<br>
-> > Tero Karras (NVIDIA), Samuli Laine (NVIDIA), Timo Aila (NVIDIA)<br>
+> Tero Karras (NVIDIA), Samuli Laine (NVIDIA), Timo Aila (NVIDIA)<br>
 > https://arxiv.org/abs/1812.04948
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
