@@ -15,9 +15,11 @@ from tensorflow.keras import backend as K
 ############LOAD CELEB-A####################
 dir = "C:/ISIC2018_Task1-2_Training_Input_x2"
 mask_dir = "C:/ISIC2018_Task1_Training_GroundTruth_x2"
+#dir = "C:/ISIC_IMAGE_TEST"
+#mask_dir = "C:/ISIC_MASK_TEST"
 batchs = 16
-img_height = 128
-img_width = 128
+img_height = 256
+img_width = 256
 
 y_train = tf.keras.utils.image_dataset_from_directory(mask_dir, validation_split=0.2,
   subset="training",
@@ -59,12 +61,60 @@ X_val = X_val.unbatch()
 y_train = y_train.unbatch()
 y_val = y_val.unbatch()
 
-test_size = int(0.2 * 2076)
+#2076
+test_size = int(0.2 * 84)
 X_test = X_train.take(test_size)
 X_train = X_train.skip(test_size)
 y_test = y_train.take(test_size)
 y_train = y_train.skip(test_size)
 
+
+plt.figure(figsize=(10, 10))
+i = 0
+for images in X_train:
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(images.numpy().astype("uint8"), cmap='gray')
+  plt.axis("off")
+  i += 1
+  if i == 9:
+    break
+plt.show()
+#plt.savefig("/PatternFlow/recognition/45830048_recognition/train_example.png")
+
+
+plt.figure(figsize=(10, 10))
+i = 0
+for images in y_train:
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(images.numpy().astype("uint8"), cmap='gray')
+  plt.axis("off")
+  i += 1
+  if i == 9:
+    break
+plt.show()
+#plt.savefig("/PatternFlow/recognition/45830048_recognition/train_example.png")
+
+
+#plt.figure(figsize=(10, 10))
+#for i in range(9):
+#  ax = plt.subplot(3, 3, i + 1)
+#  plt.imshow(y_train.take(1)[i].numpy().astype("uint8"), cmap='gray')
+#  plt.axis("off")
+##plt.show()
+#plt.savefig("ground_truth_example")
+#
+#
+#
+#
+#plt.figure(figsize=(10, 10))
+#for i in range(9):
+#  ax = plt.subplot(3, 3, i + 1)
+#  plt.imshow(X_train.numpy()[i].astype("uint8"), cmap='gray')
+#  plt.axis("off")
+##plt.show()
+#plt.savefig("train_example")
+
+print("normalising")
 a = tf.zeros([0, img_height, img_width, 1])
 for image in X_train:
   image /= 255.0
@@ -101,7 +151,7 @@ for image in y_test:
   a = tf.concat([a, [image]], axis = 0)
 y_test = a
 
-print(y_train)
+print("normalising complete")
 
 #plt.figure(figsize=(10, 10))
 #for i in range(9):
@@ -133,7 +183,58 @@ def dice_coef_loss(y_true, y_pred):
 
 model = improved_unet(img_height, img_width)
 model.compile(optimizer = 'adam', loss = dice_coef_loss, metrics = ['accuracy', dice_coef])
-model.fit(X_train, y_train, validation_data =(X_val, y_val), epochs = 30, batch_size = 32)
+history = model.fit(X_train, y_train, validation_data =(X_val, y_val), epochs = 30, batch_size = 16)
+
+evaluation = model.evaluate(X_test, y_test)
+
+print(evaluation)
+
+predictions = model.predict(X_test)
+
+print("done")
+fig, axs = plt.subplots(3, 3)
+for i in range(3):
+  #print(i)
+  #x = tf.gather(X_test, i + 2)
+  #y = tf.gather(y_test, i + 2)
+  #print(x)
+  #print(y)
+  #prediction = model.predict(x)
+  #predictions.numpy()[i] *= 255
+  #ax = plt.subplot(3, 3, 1)
+  temp = X_test.numpy()[i] * 255
+  axs[i, 0].imshow(temp.astype("uint8"), cmap='gray')
+  axs[i, 0].axis("off")
+  #ax = plt.subplot(3, 3, 2)
+  axs[i, 1].imshow(y_test.numpy()[i].astype("uint8"), cmap='gray')
+  axs[i, 1].axis("off")
+  #ax = plt.subplot(3, 3, 3)
+  axs[i, 2].imshow(predictions[i], cmap='gray')
+  axs[i, 2].axis("off")
+
+
+axs[0, 0].set_title("Testing Image")
+axs[0, 1].set_title("Testing Ground Truth")
+axs[0, 2].set_title("Generated Segment")
+plt.show()
+
+plt.title("Accuracy each Epoch")
+plt.ylabel("Accuracy")
+plt.xlabel("Epoch")
+plt.plot(history.history['accuracy'], label="train accuracy")
+plt.plot(history.history['val_accuracy'], label="val accuracy")
+plt.legend()
+plt.show()
+plt.title("Dice Coeffecient each Epoch")
+plt.ylabel("Dice Coeffecient")
+plt.xlabel("Epoch")
+plt.plot(history.history['dice_coef'], label="train dice coeffecient")
+plt.plot(history.history['val_dice_coef'], label="val dice coeffecient")
+plt.legend()
+plt.show()
+
+
+#plt.savefig("result_example")
 
 #no_train = 15
 #no_test         = 5
