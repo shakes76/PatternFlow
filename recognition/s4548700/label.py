@@ -49,8 +49,7 @@ for img in array_of_img:
         output+=str(w_normalized)+" "
         output+=str(h_normalized)        
         cv2.rectangle(img, (x,y), (x+w, y+h), (255, 255, 0), 2)
-        break
-
+        
     cv2.drawContours(img, contours, -1, (255, 0, 0), 1)
     
     """show image"""
