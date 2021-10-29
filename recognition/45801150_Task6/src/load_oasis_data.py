@@ -13,12 +13,11 @@ batch_size = 64
 img_height = 256
 img_width = 256
 
-def get_data():
+def get_data(max_load=1000000000):
 
     train = []
     test = []
     val = []
-    max_load = 100
     i = 0
     for root_name, dir_names, file_names in os.walk(dataset_prefix + train_suffix):
         file_names.sort()
