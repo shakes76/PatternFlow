@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D, Concatenate, Conv2DTranspose, Reshape, Permute, Activation, Dropout, Add
 from tensorflow.keras.models import Model
 
@@ -64,7 +65,8 @@ def unet(img_height,img_width,num_channels):
 
     outputs = Conv2D(num_channels, (1,1), padding="same", activation="softmax")(layer)
 
-    unet = Model(inputs, outputs, name="UNet")
+
+    unet = Model(inputs, match, name="UNet")
 
     return unet
 

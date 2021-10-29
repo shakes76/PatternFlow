@@ -60,10 +60,11 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 
 print("Converting arrays to tensors...")
 #Convert arrays to tensors
-X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)
-X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)
+X_train = tf.convert_to_tensor(X_train, dtype=tf.float32)/255
+X_test = tf.convert_to_tensor(X_test, dtype=tf.float32)/255
 Y_train = tf.convert_to_tensor(Y_train, dtype=tf.float32)
 Y_test = tf.convert_to_tensor(Y_test, dtype=tf.float32)
+
 
 #Add extra dimension needed for cnn input
 X_train = tf.expand_dims(X_train,-1)
@@ -83,8 +84,7 @@ predictions = model.predict(X_test)
 #VISUALISATION OF RESULTS
 
 #tf.print(predictions)
-match = tf.greater(predictions, 0.6)
-print(tf.print(match))
+match = tf.greater(predictions, 0.9)
 match = tf.cast(match, dtype=tf.float32)
 
 #match = tf.math.argmax(predictions,axis=3)
