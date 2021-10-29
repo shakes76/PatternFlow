@@ -7,7 +7,7 @@ def dice_coefficient(truth, pred, smooth=1):
     truth = tf.keras.backend.flatten(truth)
     pred = tf.keras.backend.flatten(pred)
     intersection = tf.keras.backend.sum(truth * pred)
-    dice_coef = (2. * intersection + smooth) / (tf.keras.backend.sum(truth)
+    dice_coef = (2 * intersection + smooth) / (tf.keras.backend.sum(truth)
                                            + tf.keras.backend.sum(pred)
                                            + smooth)
     return dice_coef

@@ -15,7 +15,7 @@ def main():
 
     #plots.plots(val_ds,model,num=3)
 
-    history = model.fit(train_ds.batch(32), epochs=15, validation_data=val_ds.batch(32))
+    history = model.fit(train_ds.batch(32), epochs=30, validation_data=val_ds.batch(32))
 
     plots.plots(test_ds, model, num=5)
 
