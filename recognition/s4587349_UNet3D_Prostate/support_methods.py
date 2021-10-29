@@ -220,7 +220,7 @@ def slices_pred(img, filename):
     :param filename: Name to save file
     :return: Nothing
     """
-    slice_0 = img[0:,:,:64:1]
+    slice_0 = img[0,:,127,:,2] # img[0,:,:,0,1] try [0,:,127,:,2]
     plt.imshow(slice_0)
     show_slices([slice_0])
     plt.savefig(filename)
@@ -257,7 +257,7 @@ def dice_coef(y_true, y_pred):
     :return: return
     """
     smooth = 0.1
-    print("255 y_true", y_true.shape) #todo
+    # print("255 y_true", y_true.shape) #todo (18, 256, 256, 128)
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)

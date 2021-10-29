@@ -60,7 +60,7 @@ A review of the data structure of all images found one scan that had a different
 dimension to all others. That client had seven other scans that were expected to
 be similar. This file was removed. 
 
-The data was provided in NIfTI format (nii.gz).
+The data was provided in NIfTI format (nii.gz) with orientation:('L', 'P', 'S').
 
 ### Data preparation:
 As per ref[2], the data was normalised (mean = 0, stdev=1). Also intensity 

@@ -229,10 +229,12 @@ def main():
         y2 = sm.read_nii(id)
         ohe = tf.keras.utils.to_categorical(y2, num_classes = 6)
         y_true[i,] = ohe
-    print (y_true.shape)
+    # print (y_true.shape) # (18,256, 256, 128, 6)
 
     y_pred_ohe = tf.keras.utils.to_categorical(pred_argmax, num_classes = 6)
 
+    # np.save("y_true", y_true, allow_pickle=True )
+    # np.save("y_pred_one", y_pred_ohe, allow_pickle=True )
 
 
     # calculate & print dsc
