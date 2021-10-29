@@ -15,6 +15,10 @@ def main():
 
     plots.plots(val_ds,model)
 
+    history = model.fit(train_ds.batch(32), epochs=15, validation_data=val_ds.batch(32))
+
+    plots.plots(test_ds, model, num=5)
+
 
 if __name__ == "__main__":
     main()
