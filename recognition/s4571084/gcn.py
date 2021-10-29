@@ -166,10 +166,8 @@ def train():
         val_acc, _, _ = test(tensor_val_mask)
         loss_history.append(loss.item())
         val_acc_history.append(val_acc.item())
-        print("Epoch {:03d}: Loss {:.4f}, Acc {:.4}, ValAcc {:.4f}".format(
+        print("Epoch {:03d}: Loss {:.4f}, TestAcc {:.4}, TrainAcc {:.4f}".format(
             epoch, loss.item(), train_acc.item(), val_acc.item()))
-    
-    return loss_history, val_acc_history
 
 def test(mask):
     model.eval()
