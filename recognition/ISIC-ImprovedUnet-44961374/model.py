@@ -107,7 +107,20 @@ def create_model():
     conv_layer_3 = create_conv2d(add_layer_2, INIT_NO_FILTERS * 4, KERNEL_SIZE, (2, 2))
     context_3 = context_module(conv_layer_3, INIT_NO_FILTERS * 4)
     add_layer_3 = Add()([conv_layer_3, context_3])
-    print("Working so far") 
+    # level 4
+    conv_layer_4 = create_conv2d(add_layer_3, INIT_NO_FILTERS * 8, KERNEL_SIZE, (2, 2))
+    context_4 = context_module(conv_layer_4, INIT_NO_FILTERS * 8)
+    add_layer_4 = Add()([conv_layer_4, context_4])
+    # base
+    conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))
+    context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16)
+    add_layer_5 = Add()([conv_layer_5, context_5])
+    ########## EXPANSIVE PATH ##########
+    # base
+    upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8)
+    # leve 4 
+
+    print("Working so far")
 
 create_model()
 
