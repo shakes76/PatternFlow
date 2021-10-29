@@ -1,6 +1,7 @@
 import os
 import nibabel as nib
 import tensorflow as tf
+from matplotlib import pyplot as plt
 from tensorflow import keras
 import numpy as np
 
@@ -236,11 +237,11 @@ def main():
     # np.save("y_true", y_true, allow_pickle=True )
     # np.save("y_pred_one", y_pred_ohe, allow_pickle=True )
 
-
     # calculate & print dsc
     dice = sm.dice_coef_multiclass(y_true, y_pred_ohe, 6)
 
-    # WORKING HERE 560
+
+    # WORKING HERE 600 + 50 EPOCHS
     # PRINT SLICES OF y_true and  y_pred
     sm.slices_pred(y_true, "y_true.png")
     sm.slices_pred(y_pred_ohe, "y_pred_ohe.png")
@@ -250,6 +251,38 @@ def main():
     # print("prep ", pred.shape) #(18, 256, 256, 128, 6)
     # print(pred)    #  1.01947702e-01 1.02931291e-01]]]]]
     # print(type(pred))  #<class 'numpy.ndarray'>
+
+    # WORKING HERE: PRINT OTHER SLICES
+    plt.imshow(pred[0,127,127,:,:])
+    plt.title('Prediction')
+    plt.savefig('pred.png')
+    plt.close()
+
+    plt.imshow(pred_argmax[0,127,127,:,:])
+    plt.title('Prediction argmax')
+    plt.savefig('pred_argmax.png')
+    plt.close()
+
+    plt.imshow(y_true[0,127,127,:,:])
+    plt.title('y_true (to_categorical)')
+    plt.savefig('y_true_to_categorical.png')
+    plt.close()
+
+    plt.imshow(y_true[0,127,127,:,:])
+    plt.title('y_true (to_categorical)')
+    plt.savefig('y_true_to_categorical.png')
+    plt.close()
+
+    # Get an array of test labels -> (18, 256, 256, 128)
+    y_true_asis = np.empty((len(label_test), 256, 256, 128, 6))
+    for i, id in enumerate(label_test):
+        y3 = sm.read_nii(id)
+        # ohe = tf.keras.utils.to_categorical(y2, num_classes = 6)
+        y_true_asis[i,] = y3
+    plt.imshow(y_true_asis[0,:,127,:])
+    plt.title('y_true')
+    plt.savefig('y_true.png')
+    plt.close()
 
 
     #
@@ -263,14 +296,13 @@ def main():
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/normalize
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/to_categorical
     # sort / shuffle
-    # model 3d
-    # dsc
+    # add N4ITK
+    # augmentation
+    # model save & load weights
     # driver import model and show example
     # model_checkpoint
-    # model predict
     # model save / recover
     # plot predicted labels post
-    # save wts, load?
     # how to stop trainiang when reach dsc target? callbackz
     # readme
     # augmentation (distortion, slight rotations, horizontal flip
