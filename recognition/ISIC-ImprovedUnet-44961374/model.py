@@ -57,6 +57,16 @@ def context_module(input_layer, filters):
     return conv_layer2
 
 def upsampling_module(input_layer, filters):
+    """Creates an upsampling module based on the Improved Unet architecture.
+    Performs 2d upsampling, followed by 3x3 convolution.
+
+    Args:
+        input_layer (keras.layer): input layer to this module
+        filters (int): number of filters
+
+    Returns:
+        keras.layer: final layer of this module
+    """
     upsampling_layer = UpSampling2D(KERNEL_SIZE)(input_layer)
     conv2d = create_conv2d(upsampling_layer, filters)
     return conv2d
