@@ -104,7 +104,6 @@ def main():
         curr_y = nib.load(sample.y_filepath.item()).get_fdata()
         # Standardize
         curr_x = standardize(curr_x)
-        #curr_y = standardize(curr_y)
 
 
         #print("unique vals in y:", np.unique(curr_y))
@@ -128,7 +127,20 @@ def main():
 
         result = None
 
+        class_weights_dict = {}
+        class_weights_dict[0] = 0
+        class_weights_dict[1] = 1
+        class_weights_dict[2] = 1.5
+        class_weights_dict[3] = 2
+        class_weights_dict[4] = 2.5
+        class_weights_dict[5] = 3
+
         result = the_model.mdl.train_on_batch(x=curr_x, y=curr_y, reset_metrics=False, return_dict=True)
+
+        #result = the_model.mdl.fit(x=curr_x, y=curr_y, batch_size=1, epochs=1, verbose='auto',
+        #                           callbacks=None, validation_data=None, shuffle=False
+        #                           ,class_weight=class_weights_dict)
+
         the_model.train_batch_count += 1
         print("Finish Training at {}".format(datetime.datetime.now()))
         print('result of training:')

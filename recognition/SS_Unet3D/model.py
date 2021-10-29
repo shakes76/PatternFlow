@@ -2,20 +2,32 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv3D, Conv3DTranspose
 from tensorflow.keras.layers import Input, MaxPooling3D, BatchNormalization, ReLU, concatenate, Softmax
 from tensorflow import keras
+from tensorflow.keras.utils import to_categorical
 
 
-# TODO: F1 Score (Dice Similarity) TF FUNCTION DECORATOR causes errors so disabled
-# @tf.function
+# TODO: F1 Score (Dice Similarity)
+# Expects Probabilities, not logits
 def f1_score(y_true, y_pred):
-    # This line does not work with floating point tensors!
-    # numerator = 2 * tf.size(tf.sets.intersection(y_pred, y_actual)).numpy()
-    print(y_pred)
-    print(y_true)
-    numerator = tf.reduce_sum(tf.cast(y_pred == y_true, tf.int32))
-    print("Numerator: {}".format(numerator))
-    denominator = tf.size(y_pred) + tf.size(y_true)
-    print("Denominator: {}".format(denominator))
-    return tf.constant(numerator / denominator, dtype=tf.float64)
+    # print("Dice score begin")
+    # print('y_pred.shape =', y_pred.shape)
+    # print('y_true.shape =', y_true.shape)
+    y_pred_argmax = tf.math.argmax(y_pred, axis=4)
+    y_pred_onehot = to_categorical(y_pred_argmax, num_classes=6)
+    dices = []
+    for i in range(6):
+        tmp_y_pred = y_pred_onehot[..., i]
+        tmp_y_true = y_true[..., i]
+        # print('y slice shape:', tmp_y_true.shape)
+        # Dice!
+        numerator = 2 * tf.reduce_sum(tf.multiply(tmp_y_pred, tmp_y_true)).numpy()
+        # print('num:', numerator)
+        denominator = tf.reduce_sum(tmp_y_pred).numpy() + tf.reduce_sum(tmp_y_true).numpy()
+        # print('denom:', denominator)
+        dice = numerator / denominator
+        #print("dice: {}".format(dice))
+        dices.append(dice)
+    print('dices:', dices)
+    return tf.constant(dices)
 
 
 # TODO: Weighted loss so background voxels do not over-influence learning
@@ -83,7 +95,7 @@ class UNetCSIROMalePelvic:
         def _analysis_block_trailer(mdl_nodes, layer_num):
             stage = stages[0]
             new_node_name = "L{}_{}_MaxPool".format(layer_num, stage)
-            new_node = MaxPooling3D(name=new_node_name, pool_size=2, strides=2,padding='same')(mdl_nodes.last())
+            new_node = MaxPooling3D(name=new_node_name, pool_size=2, strides=2, padding='same')(mdl_nodes.last())
             mdl_nodes.add(name=new_node_name, node=new_node)
             pass
 
@@ -139,8 +151,7 @@ class UNetCSIROMalePelvic:
         mdl_nodes.add(name=new_node_name, node=new_node)
         # Instantiate & compile model object
         self.mdl = tf.keras.Model(inputs=mdl_input, outputs=mdl_nodes.last())
-        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[None],
-                         run_eagerly=True)
+        self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[f1_score], run_eagerly=True)
         # , tfa.metrics.F1Score(num_classes=2, threshold=0.5)],
         pass
 

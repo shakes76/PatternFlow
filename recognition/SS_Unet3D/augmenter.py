@@ -21,8 +21,7 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
 # Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
 # alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
-                            ds_factor=1, verbose=False):
-    aug_count = 0
+                            ds_factor=1, aug_count=0, verbose=False):
     expected_img_size = (256, 256, 128)
     # Set up paths
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
@@ -115,7 +114,7 @@ def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data
             # Pick the augmentation type(s) randomly via a coin toss
             if aug_type_int in (0, 2):
                 # Apply a flip
-                aug.add_augmentation(Flip(aug_num + 1))
+                aug.add_augmentation(Flip(1))
                 aug_type_str = aug_type_str + 'FLIP'
             if aug_type_int in (1, 2):
                 # Apply a warp
@@ -149,7 +148,7 @@ def main():
     y_subdir = '/semantic_labels_anon'
     output_dir = orig_data_dir + '/processed_downsampled'
     # Augment!
-    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, ds_factor=2, verbose=True)
+    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, ds_factor=2, aug_count=0, verbose=True)
     pass
 
 
