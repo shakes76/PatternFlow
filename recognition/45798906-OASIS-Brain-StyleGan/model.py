@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 28/10/2021
+    Date last modified: 29/10/2021
     Python version: 3.9.7
 """
 
@@ -40,7 +40,7 @@ class AdaIN(Layer):
     def __init__(self, epsilon: float = 1e-3):
 
         super(AdaIN, self).__init__()
-        self.epsilon = epsilon
+        self.epsilon = epsilon  # Prevent division by zero
 
     def build(self, input_shape: list[tf.TensorShape]) -> None:
 
@@ -53,7 +53,7 @@ class AdaIN(Layer):
         super(AdaIN, self).build(input_shape)
 
     def call(self, inputs: tuple[tf.Tensor, tf.Tensor, tf.Tensor]) -> tf.Tensor:
-        """Apply the normalisation formula: gamma * (x - mean) / stddev + beta."""
+        """Apply the normalisation formula: gamma * ((x - mean) / stddev) + beta."""
 
         x, beta, gamma = inputs
 
@@ -76,8 +76,10 @@ def gen_block(
     kernel_size: int,
     upSample: bool = True,
 ) -> tf.Tensor:
-    def compute_random_input() -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    """Generic repeated generator block."""
 
+    def compute_random_input() -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        """Helper function to generate beta and gamma for AdaIN and noise inputs."""
         beta = Dense(filters)(style)
         beta = Reshape([1, 1, filters])(beta)
         gamma = Dense(filters)(style)
@@ -111,6 +113,7 @@ def disc_block(
     image_size: int,
     downSample: bool = True,
 ) -> tf.Tensor:
+    """Generic repeated discriminator block."""
 
     # Begin the discriminator block
     out = input
@@ -131,6 +134,7 @@ def get_generator(
     num_filters: int,
     kernel_size: int,
 ) -> tf.keras.Model:
+    """Construct the generator model."""
 
     STARTING_SIZE = 4
 
@@ -199,16 +203,20 @@ def get_discriminator(
     num_filters: int,
     kernel_size: int,
 ) -> tf.keras.Model:
+    """Construct the discriminator model."""
 
-    # Discriminator network
     input = Input(shape=[image_size, image_size, 1])
     x = input
+
+    # Repeat the down sampling discriminator block till the resolution is 4x4
     curr_size = image_size
     while curr_size > 4:
         x = disc_block(
             x, num_filters // (curr_size // 4), kernel_size, curr_size
         )
         curr_size //= 2
+
+    # 4x4 block
     x = disc_block(
         x,
         num_filters // (curr_size // 4),
@@ -226,14 +234,18 @@ def get_discriminator(
 
 
 # ==========================================================
-# Inputs
+# Inputs generator
 def generate_generator_inputs(
     latent_dimension: int,
     batch_size: int,
     img_size: int,
 ) -> list[tf.Tensor]:
+    """Randomly generate a desired number of inputs for the generator."""
 
-    curr_size = 4
+    STARTING_SIZE = 4
+    curr_size = STARTING_SIZE
+
+    # Get the input for all resolutions from 4x4 to the desired image resolution
     mapping_inputs, noise_inputs = [], []
     while curr_size <= img_size:
         mapping_inputs.append(tf.random.normal([batch_size, latent_dimension]))
@@ -248,6 +260,7 @@ def generate_generator_inputs(
 # ==========================================================
 # Optimisers
 def get_optimizer(**hyperparameters) -> tf.keras.optimizers.Optimizer:
+    """Generate an Adam optimizer."""
 
     return tf.keras.optimizers.Adam(**hyperparameters)
 
@@ -255,11 +268,13 @@ def get_optimizer(**hyperparameters) -> tf.keras.optimizers.Optimizer:
 # ==========================================================
 # Loss functions
 def generator_loss(fakes: tf.Tensor) -> float:
+    """Calculate the loss for the generator using modified minimax loss."""
 
     return tf.keras.losses.BinaryCrossentropy()(tf.ones_like(fakes), fakes)
 
 
 def discriminator_loss(reals: tf.Tensor, fakes: tf.Tensor) -> float:
+    """Calculate the loss for the discriminator using modified minimax loss."""
 
     cross_entropy = tf.keras.losses.BinaryCrossentropy()
     return (
@@ -281,6 +296,7 @@ def train_step(
     batch_size: int,
     img_size: int,
 ) -> tuple[float, float]:
+    """One step of training."""
 
     generator_inputs = generate_generator_inputs(
         latent_dimension, batch_size, img_size
@@ -337,6 +353,7 @@ def train(
     image_save_path: str = None,
     image_save_interval: int = 1,
 ) -> tuple[list[float], list[float]]:
+    """Train the generator and discriminator for the desired amount of epochs."""
 
     if save_images:
         tf.io.gfile.makedirs(f"{image_save_path}{model_name}/")
@@ -407,6 +424,7 @@ def generate_samples(
     sample_size: int,
     img_size: int,
 ) -> tf.Tensor:
+    """Generate sample outputs of the generator."""
 
     return generator(
         generate_generator_inputs(latent_dimension, sample_size, img_size)

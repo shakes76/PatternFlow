@@ -25,6 +25,7 @@ def load_images(
     batch_size: int,
     image_size: int,
 ) -> tf.data.Dataset:
+    """Load the images in the given directories to a Tensorflow dataset."""
 
     # Gather all the images and place into a dataset
     images = None
@@ -41,12 +42,13 @@ def load_images(
             img_dataset if images == None else images.concatenate(img_dataset)
         )
 
+    # Dataset validation
     if images == None:
         raise IOError("No directories were provided.")
     if images.cardinality() == 0:
         raise IOError("Provided directories did not contain any images.")
 
-    # Normalise the images
+    # Normalise the images from [0, 255] to [0, 1]
     images = images.map(
         lambda x: x / 255.0, num_parallel_calls=tf.data.AUTOTUNE
     )
@@ -55,9 +57,12 @@ def load_images(
 
 
 def augment_images(images: tf.data.Dataset) -> tuple[int, tf.data.Dataset]:
+    """Add augmentation to the images in the dataset."""
 
     return (
+        # Number of batches
         images.cardinality().numpy(),
+        # Training images
         images.cache()
         .map(
             lambda image: tf.image.random_flip_up_down(image),
@@ -69,10 +74,11 @@ def augment_images(images: tf.data.Dataset) -> tuple[int, tf.data.Dataset]:
 
 
 # ==========================================================
-# Generation
+# Visualisation generation
 def generate_image_grid(
     images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
 ) -> plt.Figure:
+    """Create a grid of given images in a matplotlib figure."""
 
     batch_size = images.shape[0]
     figure = plt.figure(figsize=fig_size)
@@ -86,6 +92,7 @@ def generate_image_grid(
 def generate_loss_history(
     losses: tuple[list[float], list[float]], starting_epoch: int = 0
 ) -> plt.Figure:
+    """Plot the loss history."""
 
     figure = plt.figure()
 
@@ -123,6 +130,7 @@ def generate_loss_history(
 def visualise_images(
     images: tf.Tensor, fig_size: tuple[int, int] = (16, 10)
 ) -> None:
+    """Generate and show the images in a grid"""
 
     figure = generate_image_grid(images, fig_size)
     plt.show()
@@ -131,6 +139,7 @@ def visualise_images(
 def visualise_loss(
     losses: tuple[list[float], list[float]], starting_epoch: int = 0
 ) -> None:
+    """Generate and show the loss history."""
 
     figure = generate_loss_history(losses, starting_epoch)
     plt.show()
@@ -139,6 +148,7 @@ def visualise_loss(
 # ==========================================================
 # Saving
 def save_figure(figure: plt.Figure, file_path: str) -> None:
+    """Save the given figure to the file path."""
 
     figure.savefig(file_path, bbox_inches="tight")
     plt.close(figure)
