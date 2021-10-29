@@ -1,5 +1,11 @@
+"""
+Model script containing all VQ-VAE model and pixelCNN model related functions.
+This includes the functions for building the model, training the model, and displaying the models' results.
+"""
+
 import tensorflow as tf
 import tensorflow_probability as tfp
+import numpy as np
 
 # OASIS Dataset constants
 IMAGE_HEIGHT = 256
@@ -9,10 +15,13 @@ CHANNELS = 1 # images are in grayscale
 # Pixel CNN Constants
 PIXELCNN_INPUT_SHAPE = (32,32)
 
-# Vector Quantizer Layer
+# Vector Quantizer Layer for the VQVAE
 class Vector_Quantizer(tf.keras.layers.Layer):
     
     def __init__(self, latent_dims, K):
+        """
+        Initializes a new Vector Quantization layer with uniformly distributed codebook.
+        """
         super().__init__()
         #define the size of our embeddings - has same length as latent space vectors, and width as defined by K (hyperparameter)
         codebook_shape = (latent_dims, K)
@@ -22,6 +31,10 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         self._embeddings = tf.Variable(initializer(shape=codebook_shape, dtype='float32'), trainable = True)
 
     def quantize_vectors(self, vectors):
+        """
+        Takes the VQ-VAE encoder outputs (continuous vectors) and quantizes them by "snapping" them to the nearest codebook vector.
+        Returns the quantized vector and its corresponding index.
+        """
         #First need to calculate the distance between our input vectors and every vector in the codebook
         # Paper uses L2 norm: sqrt((x2-x1)^2 + (y2-y1)^2 +...)
         distances = tf.reduce_sum(vectors**2, axis=1, keepdims=True) - 2*tf.matmul(vectors, self._embeddings) + tf.reduce_sum(self._embeddings**2, axis=0, keepdims=True) 
@@ -38,6 +51,11 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         return indices, quantized_vectors
 
     def call(self, encoder_outputs):
+        """
+        Quantizes the given VQ-VAE encoders' output vectors using the codebook.
+        Returns the quantized vectors with and without straight-through estimation applied.
+        """
+
         #Flatten all dimensions of the encoded vectors except the channels
         #Encoded vectors = (B,H,W,C) -> (B*H*W, C) i.e. flattened, each of which will be quantized independently
         encoded_vectors = tf.reshape(encoder_outputs, [-1, latent_dims])
@@ -54,10 +72,11 @@ class Vector_Quantizer(tf.keras.layers.Layer):
         output = encoder_outputs + tf.stop_gradient(reshaped_quantized_vectors - encoder_outputs)
         return output, reshaped_quantized_vectors
 
-# Define the encoder and decoder networks
 def encoder_network(latent_dims):
-
-    # Encoder network - takes input images and encodes them into z
+    """
+    Creates and returns an encoder neural network model.
+    Compresses the input image via strided convolutional layers into a latent space representation (z).
+    """
     inputs = tf.keras.layers.Input(shape=(IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS))
     
     # First downsample by half
@@ -77,11 +96,12 @@ def encoder_network(latent_dims):
     return final_network
 
 def decoder_network(latent_dims):
-    # Takes the latent space and upsamples until original size is reached
+    """
+    Creates and returns a decoder neural network model. 
+    Takes a quantized latent space as input and upsamples until a reconstructed image of original size is achieved.
+    """
     #256 -> downsampled thrice = 256/8 = 32
     inputs = tf.keras.layers.Input(shape=(32,32,latent_dims))
-    #input_shape = encoder().output.shape[1:]
-    #inputs = tf.keras.layers.Input(shape=input_shape)
     
     # Now can upsample twice
     conv = tf.keras.layers.Conv2DTranspose(64, kernel_size=3, strides=2, padding='same', activation='relu')(inputs)
@@ -97,7 +117,10 @@ def decoder_network(latent_dims):
 
     return final_network
 
-def reconstruction_loss(inputs, outputs):  
+def reconstruction_loss(inputs, outputs): 
+    """
+    Returns the sum of the Mean Squared Error, as well as Structural Similarity Loss, between the input image and the output reconstruction
+    """ 
     #Calculate mse loss
     mse = tf.keras.losses.MeanSquaredError()
     recon_loss = mse(inputs, outputs)
@@ -107,8 +130,11 @@ def reconstruction_loss(inputs, outputs):
     
     return recon_loss + ssim_loss
 
-#Replace kl-divergence in traditional VAE with two terms as kl-divergence can't be minimized (is a constant)
 def latent_loss(encoder_output, quantized_vectors, beta):
+    """
+    Returns the latent loss - replaces kl-divergence in traditional VAE with two terms (as kl-divergence can't be minimized (is a constant))
+    Latent loss is the sum of the codebook and committment losses, both of which are Mean Squared Errors.
+    """
     # latent commitment loss
     # beta*||z_e(x)-sg[e]|| i.e. freeze the codebook vectors/embeddings and push the encoded vectors towards codebook vectors
     mse1 = tf.keras.losses.MeanSquaredError()
@@ -121,20 +147,29 @@ def latent_loss(encoder_output, quantized_vectors, beta):
     
     return q_loss + e_loss
 
-#Create overall vqvae model
 def create_overall_vqvae(encoder_net, quantizer, decoder_net):
+    """
+    Creates the overall vq-vae neural network model.
+    Builds together an encoder network followed by Vector Quantizer layer, then the decoder network.
+    """
     inputs = tf.keras.Input(shape=(IMAGE_HEIGHT, IMAGE_WIDTH, CHANNELS))
     encoder_outputs = encoder_net(inputs)
     quantized_latents, z1 = quantizer(encoder_outputs)
     reconstructions = decoder_net(quantized_latents)
+    # Build the overall model and return it
     vq_vae_model_overall = tf.keras.Model(inputs, reconstructions, name="overall model")
     
     return vq_vae_model_overall
 
 
-# create a training step
 @tf.function
 def training_step(images, optimizer, encoder, quantizer_layer, decoder, vq_vae_model_overall, beta):
+    """
+    A custom training step for the VQ-VAE.
+    Uses a gradient tape to store the gradients, which are applied to the optimizer to improve the model.
+    Returns the overall loss, as well the constituent reconstruction and latent losses.
+    """
+
     with tf.GradientTape(persistent=True) as vae_tape:
         #Get the latent space
         z = encoder(images, training=True)
@@ -158,8 +193,12 @@ def training_step(images, optimizer, encoder, quantizer_layer, decoder, vq_vae_m
     return recon_loss, latent_loss1, total_loss
 
 
-# Training
 def train(encoder_net, decoder_net, quantizer_net, opt, vq_model, beta, epoch):
+    """
+    Trains the VQ-VAE model for the given number of epochs.
+    Plots the training loss curves upon completion.
+    """
+
     recon_loss_list = []
     latent_loss_list = []
 
@@ -196,8 +235,11 @@ def train(encoder_net, decoder_net, quantizer_net, opt, vq_model, beta, epoch):
 
     plt.show()
 
-# Calculate SSIM for the entire testing dataset
-def calculate_ssims(vq_vae_model_overall):
+def calculate_ssims(vq_vae_model_overall, testing_ds_batched):
+    """
+    Calculates the average Structural Similarity Score across the entire testing dataset.
+    Also displays a comparison of the original and reconstructed images with associated SSIM for every 100th image.
+    """
     ssim_scores_testing = []
 
     for batch in testing_ds_batched:
@@ -235,8 +277,6 @@ def calculate_ssims(vq_vae_model_overall):
 # The subsequent code is from https://keras.io/examples/generative/pixelcnn/ with minor modifications
 # A custom callback in the pixelCNN training was added to generate an example novel image with each epoch end
 
-# The first layer is the PixelCNN layer. This layer simply
-# builds on the 2D convolutional layer, but includes masking.
 class PixelConvLayer(tf.keras.layers.Layer):
     def __init__(self, mask_type, **kwargs):
         super(PixelConvLayer, self).__init__()
@@ -285,12 +325,13 @@ class ResidualBlock(tf.keras.layers.Layer):
         return tf.keras.layers.add([inputs, x])
 
 
-def create_pixelCNN():
+def create_pixelCNN(num_residual_blocks, num_pixelcnn_layers):
+    """
+    Creates and returns a pixelCNN model object
+    """
     pixelcnn_inputs = tf.keras.Input(shape=PIXELCNN_INPUT_SHAPE, dtype=tf.int32)
     one_hot_encoding = tf.one_hot(pixelcnn_inputs, K)
-    x = PixelConvLayer(
-        mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
-    )(one_hot_encoding)
+    x = PixelConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same")(one_hot_encoding)
 
     for _ in range(num_residual_blocks):
         x = ResidualBlock(filters=128)(x)
@@ -312,62 +353,21 @@ def create_pixelCNN():
 
 #PixelCNN Training
 
-# Create custom callback to display generated images from the pixelCNN after each training epoch
-class CustomCallback(tf.keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        
-        batch = 1
-        priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
-        batch, rows, cols = priors.shape
-
-        # Iterate over the priors because generation has to be done sequentially pixel by pixel.
-        for row in range(rows):
-            for col in range(cols):
-                # Feed the whole array and retrieving the pixel value probabilities for the next
-                # pixel.        
-                x = pixel_cnn(priors, training=False)
-                dist = tfp.distributions.Categorical(logits=x)
-                sampled = dist.sample()
-
-                # Use the probabilities to pick pixel values and append the values to the priors.
-                priors[:, row, col] = sampled[:, row, col]
-        
-        #Perform an embedding lookup.
-        pretrained_embeddings = quantizer_layer._embeddings
-        priors_ohe = tf.one_hot(priors.astype("int32"), K).numpy()
-        quantized = tf.matmul(
-            priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
-        )
-        quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
-
-        # Generate novel images.
-        generated_samples = decoder.predict(quantized)
-
-        for i in range(batch):
-            plt.subplot(1, 2, 1)
-            plt.imshow(priors[i])
-            # save a image using extension
-            plt.imsave('prior_epoch{}.png'.format(epoch), priors[i])
-            plt.title("Code")
-            plt.axis("off")
-
-            plt.subplot(1, 2, 2)
-            plt.imshow(generated_samples[i])
-            plt.imsave('generated_epoch{}.png'.format(epoch), priors[i])
-            plt.title("Generated Sample")
-            plt.axis("off")
-            plt.show()
-
-
 def get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantizer_layer):
+    """ 
+    For the given training dataset, retrieves and returns all the codebook indices.
+    Calculates the codebook indices in each batch, by passing through the encoder and quantizer layer.
+    Subsequently concatenates each onto a single vector that is returned.
+    """
     for n,batch in enumerate(training_ds):
         # Generate the codebook indices.
         encoded_outputs = encoder.predict(batch)
         flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+        # Quantize the encoded vector outputs
         codebook_indices, vectors = quantizer_layer.quantize_vectors(flat_enc_outputs)
-
         codebook_indices2 = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-
+        
+        # Append the condebook indices onto the given overall codebook_indices_vector
         if n == 0:
             codebook_indices_vector = codebook_indices2
         else:
@@ -377,7 +377,9 @@ def get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantize
     return codebook_indices_vector
 
  def train_pixel_cnn(pixel_cnn, epochs, training_ds, encoder, quantizer_layer):
-
+    """
+    Completes training of the pixelCNN to learn the prior, for the given number of epochs.
+    """
     # Create an empty array in which to store all our codebook indices
     codebook_indices_vector = []
     codebook_indices_vector = get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantizer_layer)
@@ -396,20 +398,22 @@ def get_codebook_indices(codebook_indices_vector, training_ds, encoder, quantize
         batch_size = 128,
         epochs = epochs,
         validation_split = 0.1,
-        callbacks = [CustomCallback()]
     )
 
 def display_generated_images(num_images, pixel_cnn, quantizer_layer, decoder):
-    #Final display of 10 generated images
+    """
+    Produces a final display of the pixelCNN training results.
+    Displays 10 generated images in addition to their corresponding latent codes as created by the model.
+    """
     batch = num_images
+    # Create a blank array with which to feed into the pixelCNN and start the autoregressive prediction.
     priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
     batch, rows, cols = priors.shape
 
     # Iterate over the priors because generation has to be done sequentially pixel by pixel.
     for row in range(rows):
         for col in range(cols):
-            # Feed the whole array and retrieving the pixel value probabilities for the next
-            # pixel.        
+            # Feed the whole array and retrieving the pixel value probabilities for the next pixel.        
             x = pixel_cnn(priors, training=False)
             dist = tfp.distributions.Categorical(logits=x)
             sampled = dist.sample()
@@ -417,15 +421,13 @@ def display_generated_images(num_images, pixel_cnn, quantizer_layer, decoder):
             # Use the probabilities to pick pixel values and append the values to the priors.
             priors[:, row, col] = sampled[:, row, col]
 
-    #Perform an embedding lookup.
+    # Perform an embedding lookup.
     pretrained_embeddings = quantizer_layer._embeddings
     priors_ohe = tf.one_hot(priors.astype("int32"), K).numpy()
-    quantized = tf.matmul(
-        priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
-    )
+    quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
     quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
 
-    # Generate novel images.
+    # Generate the novel images.
     generated_samples = decoder.predict(quantized)
 
     for i in range(batch):

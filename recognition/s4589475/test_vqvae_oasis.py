@@ -1,9 +1,13 @@
-import tensorflow as tf
+"""
+Test script which calls and runs the algorithm to show example usage of the module.
+The VQ-VAE model is built and trained on the OASIS MRI Brain Dataset.
+Novel images are subsequently generated using a pixelCNN autoregressive prior.
+"""
 
+import tensorflow as tf
 
 from model.py import *
 from driver.py import *
-
 
 if __name__ == '__main__':
     #Load the OASIS Dataset
@@ -29,7 +33,7 @@ if __name__ == '__main__':
     train(encoder, decoder, quantizer_layer, optimizer, vq_vae_overall, beta, epochs)
 
     #Display the mean ssim
-    ssim_score = calculate_ssims(vq_vae_overall)
+    ssim_score = calculate_ssims(vq_vae_overall, testing_ds_batched)
     print("Average SSIM on the test dataset:"+ ssim_score)
 
     # Show 10 example latent code images
@@ -42,12 +46,10 @@ if __name__ == '__main__':
         plt.subplot(1, 2, 1)
         plt.imshow(image[0, :, :, 0], cmap='gray')
         plt.title("Original")
-        plt.axis("off")
 
         plt.subplot(1, 2, 2)
         plt.imshow(codebook_indices2[i])
-        plt.title("Code")
-        plt.axis("off")
+        plt.title("Latent Code")
         plt.show()
         
         if i > 10:
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     num_pixelcnn_layers = 2
 
     # Create the pixel CNN model
-    pixel_cnn = create_pixelCNN()
+    pixel_cnn = create_pixelCNN(num_residual_blocks, num_pixelcnn_layers)
 
     # Print a summary of the model architecture
     pixel_cnn.summary()
