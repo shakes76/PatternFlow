@@ -27,6 +27,7 @@ def create_conv2d(input_layer, filters, kernel_size):
     Args:
         input_layer (keras.layer): input layer to this conv2d layer
         filters (int): number of filters
+        kernel_size (tuple): size of the kernel
 
     Returns:
         keras.layer.Conv2D: the conv2d layer that has been created
@@ -71,8 +72,10 @@ def upsampling_module(input_layer, filters):
     conv2d = create_conv2d(upsampling_layer, filters, KERNEL_SIZE)
     return conv2d
 
-def localization_module():
-    pass
+def localization_module(input_layer, filters):
+    conv_layer1 = create_conv2d(input_layer, filters, KERNEL_SIZE)
+    conv_layer2 = create_conv2d(conv_layer1, filters, (1,1))
+    return conv_layer2
 
 def create_model():
     pass
