@@ -122,8 +122,14 @@ def create_model():
     ########## EXPANSIVE PATH ##########
     # base
     upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8) # upsampling module
-    # level 4 
-
+    # level 4
+    concat_1 = concatenate([upsample_1, add_layer_4]) # concatenation
+    localization_1 = localization_module(concat_1, INIT_NO_FILTERS * 8) # localization module
+    up_sample_2 = upsampling_module(localization_1, INIT_NO_FILTERS * 4) # upsampling module
+    # level 3
+    concat_2 = concatenate([up_sample_2, add_layer_5]) # concatenation
+    localization_2 = localization_module(concat_2, INIT_NO_FILTERS * 4) # localization module
+    up_sample_3 = upsampling_module(localization_2, INIT_NO_FILTERS * 2) # upsampling module
     print("Working so far")
 
 create_model()
