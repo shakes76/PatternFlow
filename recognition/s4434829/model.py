@@ -324,6 +324,16 @@ class VQVAE(tf.keras.Model):
 
         return loss, recon
 
+    def get_encoder(self):
+        return self.encoder
+    
+    def get_decoder(self):
+        return self.decoder
+
+    
+    def get_vq(self):
+        return self.vq
+
 
 ### Model for generation
 """
@@ -342,18 +352,162 @@ we can ignore oclors
 Sources:
 also read some of this expalantion: https://bjlkeng.github.io/posts/pixelcnn/
 convolutional layer and a mask, guess it can be a normal mask
+
+https://arxiv.org/pdf/1601.06759.pdf
+this is really helful in describing the architechture
+
+referenced this, doe it a bit different 
+https://github.com/bjlkeng/sandbox/tree/0b82937888f99d825e5e2f5a2d69132ad7d3d53b/notebooks/pixel_cnn
+
+
 """
+def maskA(shape):
+    """
+    Applied only to first convolution later to restrict only to those already seen
+    
+    The masks can be eas-ily implemented by zeroing out the corresponding weights
+    in the input-to-state convolutions after each update.
+
+    shpould take a shape (shape of the kernel) and return a type a mask
+
+    So this should make all connections up  and left
+
+    """
+    mask = tf.zeros(shape)
+    half_way = shape[0]//2
+    mask[:half_way] = 1.0
+    # on middle line, make those to the left 1
+    # kenrle is square so same halfway, up to halfway = 1
+    mask[half_way, :half_way] = 1.0
+    return mask
+
+def maskB(shape):
+    """
+    Applied to alyers except irst, allows autoconnections
+    up and left allowed
+    
+    """
+    mask = tf.zeros(shape)
+    half_way = shape[0]//2
+    mask[:half_way+1] = 1.0
+    # cnter also 1
+    mask[half_way, :half_way+1] = 1.0
+    return mask
+    
+    
+
+class PixelCNNResidual(tf.keras.Model):
+    """
+        One residual bloc consisting of a relu, a 1x1 conviultion,
+        another relu, a 3x3 convolutio, another relu, a 1x1 convoltuion
+        
+        as descrived in thsi paper:https://arxiv.org/pdf/1601.06759.pdf
+    """
+    def __init__(self, inputs=None):
+        super(PixelCNNResidual, self).__init__(inputs)
+        self.relu = tf.keras.layers.ReLU()
+
+        # TODO normal conv or masked?
+        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1,1), 
+                            strides=(1,1), padding='same',
+                            activation='relu', kernel_initializer='he_uniform')
+
+        # the diagram is a bit ambigious but i think the 3x3 mask b is inside the residual block
+        # so its this
+        self.conv2 = MaskedConv2D((3,3),"B")#tf.keras.layers.Conv2D(filters=256, kernel_size=(3,3), 
+                            # strides=(1,1), padding='same',
+                            # activation='relu', kernel_initializer='he_uniform')
+
+        self.conv3 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1,1), 
+                            strides=(1,1), padding='same',
+                            activation=None, kernel_initializer='he_uniform')
+
+    def call(self, X):
+        new_x = self.relu(X)
+        new_x = self.conv1(new_x)
+        new_x = self.conv2(new_x)
+        new_x = self.conv3(new_x)
+        new_x += X
+        return new_x
 
 
+class MaskedConv2D(tf.keras.Model):
+    """
+    A conv2D layer which applied a mask of type a or b to itself
+    first layer has kernel size 7x7 others have 3x3 or 1x1
+    """
+    def __init__(self, kernel_size, mask_type, inputs=None):
+        super(MaskedConv2D, self).__init__(inputs)
+        # if first_layer == True:
+        #     self.mask_type = "A"
+        # else:
+        #     self.mask_type = "B"
+        self.mask_type  = mask_type #"A" or "B"
+        # I assume relu actovatopm nit ot dpesmt sau
+        self.conv = tf.keras.layers.Conv2D(filters=256, kernel_size=kernel_size, 
+                            strides=(1,1), padding='same',
+                            activation='relu', kernel_initializer='he_uniform')
+
+    def build(self, inputs):
+        """
+        kernel won't exist until we build the layer so to be able to get the kernel
+        get its shape and make the mask and then set the kernel to be used
+        we need this build funciton
+
+        https://stackoverflow.com/questions/57993201/how-to-assign-a-result-of-an-operation-to-layer-kernel
+        
+        """
+        self.conv.build(inputs) # amkes the kernel
+        self.kernel_shape = self.conv.kernel.shape
+
+        # make the mask
+        # TODO: should this be in build will this create it everyt ime
+        if self.mask_type == "A":
+            self.mask = maskA(self.kernel_shape)
+        else:
+            self.mask = maskB(self.kernel_shape)
+    
+    def call(self, X):
+
+        # set the kernel to be the kernle && the mask
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        X = self.conv(X)
+        return X
+
+
+    
 class PixelCNN(tf.keras.Model):
     """
-    
+    7x7 conv
+    mask A
+    residuals (doesnt say how many)
+        conv 3x3 mask B
+        resul
+    2x conv 1x1 mask B
+    output layer, sigmoid for minst
     """
     def __init__(self, inputs=None):
         super(PixelCNN, self).__init__(inputs)
-        pass
-        
-        
+        self.masked_conv_1 = MaskedConv2D((7,7),"A")
+
+        #TODO is there a better way?
+        self.list_resid_layers = []
+        for i in range(5):
+            self.list_resid_layers += [PixelCNNResidual()]
+
+        self.masked_conv_2 = MaskedConv2D((1,1),"B")
+        self.masked_conv_3 = MaskedConv2D((1,1),"B")
+
+        # output layer
+        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=(1,1), 
+                            strides=(1,1), padding='same',
+                            activation='sigmoid', kernel_initializer='he_uniform')
 
     def call(self, X):
-        pass
+        X = self.masked_conv_1(X)
+        for layer in self.list_resid_layers:
+            X = layer(X)
+        X = self.masked_conv_2(X)
+        X = self.masked_conv_3(X)
+        X = self.conv(X)
+        return X
