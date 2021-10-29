@@ -112,6 +112,9 @@ class GraphConvolution(nn.Module):
     def __repr__(self):
         return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
 
+"""
+define model
+"""
 class GcnNet(nn.Module):
     
     def __init__(self, input_dim=128):
@@ -124,10 +127,12 @@ class GcnNet(nn.Module):
         logits = self.gcn2(adjacency, h)
         return logits
 
+#train the model
 learning_rate = 0.01
 weight_decay = 5e-4
 epochs = 500
 
+#define some arguments
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = GcnNet().to(device)
 criterion = nn.CrossEntropyLoss().to(device)
@@ -143,6 +148,7 @@ indices = torch.from_numpy(np.asarray([adjacency.row, adjacency.col]).astype('in
 values = torch.from_numpy(adjacency.data.astype(np.float32))
 tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
 
+#train function
 def train():
     loss_history = []
     val_acc_history = []
@@ -150,6 +156,7 @@ def train():
     train_y = tensor_y[tensor_train_mask]
     for epoch in range(epochs):
         logits = model(tensor_adjacency, tensor_x)
+		#only choose node to train
         train_mask_logits = logits[tensor_train_mask]
         loss = criterion(train_mask_logits, train_y) 
         optimizer.zero_grad()
@@ -175,6 +182,9 @@ def test(mask):
 
 train()
 
+"""
+TSNE part for embeddings plot.
+"""
 from sklearn.manifold import TSNE
 test_accuracy, test_data, test_labels = test(tensor_test_mask)
 tsne = TSNE(perplexity=50, n_components=2, init='pca', n_iter=5000)
