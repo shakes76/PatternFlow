@@ -41,3 +41,39 @@ def plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5):
 
     figure.savefig("./images/plot.png")
     figure.show()
+
+
+def plot_metrics(history):
+    figure = plt.figure(constrained_layout=True, figsize=(14, 3))
+    figure.set_facecolor('white')
+    spec = gridspec.GridSpec(ncols=3, nrows=1, figure=figure, wspace=0.1)
+
+    # summarise history for accuracy
+    ax1 = figure.add_subplot(spec[0, 0])
+    ax1.plot(history.history['accuracy'])
+    ax1.plot(history.history['val_accuracy'])
+    ax1.set_title('Model Accuracy')
+    ax1.set_ylabel('Accuracy')
+    ax1.set_xlabel('Epoch')
+    ax1.legend(['training set', 'validation set'], loc='lower right')
+
+    # summarise history for dice coefficient
+    ax2 = figure.add_subplot(spec[0, 1])
+    ax2.plot(history.history['dice_coef'])
+    ax2.plot(history.history['val_dice_coef'])
+    ax2.set_title('Model Dice Coefficient')
+    ax2.set_ylabel('Dice Coefficient')
+    ax2.set_xlabel('Epoch')
+    ax2.legend(['training set', 'validation set'], loc='lower right')
+
+    # summarise history for loss
+    ax3 = figure.add_subplot(spec[0, 2])
+    ax3.plot(history.history['loss'])
+    ax3.plot(history.history['val_loss'])
+    ax3.set_title('Model Loss')
+    ax3.set_ylabel('Loss')
+    ax3.set_xlabel('Epoch')
+    ax3.legend(['training set', 'validation set'], loc='upper right')
+
+    figure.savefig("./images/plot_metrics.png")
+    figure.show()
