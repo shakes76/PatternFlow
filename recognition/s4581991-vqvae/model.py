@@ -5,10 +5,10 @@ import keras.models
 import tensorflow as tf
 
 def create_encoder_model(latent_dimensions: int,
-        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
+        input_shape: Tuple[int, int, int]) -> keras.models.Sequential:
     '''Returns the Encoder model used for the VQ VAE.'''
     return keras.models.Sequential([
-        keras.layers.Input(shape=input_shape),
+        keras.layers.Input(shape=(28, 28, 1)),
         keras.layers.Conv2D(
                 32, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2D(
@@ -16,7 +16,7 @@ def create_encoder_model(latent_dimensions: int,
         keras.layers.Conv2D(latent_dimensions, 1, padding="same")
     ])
 
-def create_decoder_model(input_shape: Tuple(int, int, int)) \
+def create_decoder_model(input_shape: Tuple[int, int, int]) \
         -> keras.models.Sequential:
     '''Returns the Decoder model used for the VQ VAE.'''
     return keras.models.Sequential([
@@ -30,17 +30,19 @@ def create_decoder_model(input_shape: Tuple(int, int, int)) \
     ])
 
 def create_vqvae_model(latent_dimensions: int, number_of_embeddings: int,
-        input_shape: Tuple(int, int, int)) -> keras.models.Sequential:
+        input_shape: Tuple[int, int, int]) -> keras.models.Sequential:
     '''
     Combines an Encoder and Decoder with a VectorQuantizer layer to make a
     VQ VAE.
     '''
     encoder = create_encoder_model(latent_dimensions, input_shape)
-    decoder = create_decoder_model(encoder.output_shape)
+    decoder = create_decoder_model(encoder.output_shape[1:])
     return keras.models.Sequential([
+        keras.layers.Input(shape=(28, 28, 1)),
         encoder,
-        VectorQuantizer(number_of_embeddings, latent_dimensions),
-        decoder
+        VectorQuantizer(number_of_embeddings, latent_dimensions,
+                name="vector_quantizer"),
+        decoder,
     ])
 
 class VectorQuantizer(keras.layers.Layer):
@@ -49,8 +51,8 @@ class VectorQuantizer(keras.layers.Layer):
     this.
     '''
     def __init__(self, number_of_embeddings: int, embedding_dimensions,
-            beta: int = 0.25):
-        self.super.__init__()
+            beta: int = 0.25, **kwargs):
+        super().__init__(**kwargs)
         self._number_of_embeddings = number_of_embeddings
         self._embedding_dimensions = embedding_dimensions
         self._beta = beta
@@ -86,9 +88,10 @@ class VectorQuantizer(keras.layers.Layer):
         # "commitment loss" used to stop the embeddings from growing given.
         # Both of these losses are given in the original VQ VAE paper
         # <add reference>.
-        loss = tf.reduce_mean((tf.stop_gradient(x) - self._embeddings) ** 2) \
+        loss = tf.reduce_mean(
+                (tf.stop_gradient(x) - quantized_original_dims) ** 2) \
                 + self._beta * tf.reduce_mean((x - tf.stop_gradient(
-                self._embeddings)) ** 2)
+                quantized_original_dims)) ** 2)
         self.add_loss(loss)
 
         quantized_original_dims = x + tf.stop_gradient(
