@@ -88,5 +88,8 @@ class AdvUNet:
                            loss=dice_loss, metrics=["accuracy", dice_coef])
 
     def fit(self, train_dataset, val_dataset, batch_size, epochs):
-        self.model.fit(train_dataset.batch(batch_size), validation_data=val_dataset.batch(batch_size),
-                       epochs=epochs, verbose=1)
+        return self.model.fit(train_dataset.batch(batch_size), validation_data=val_dataset.batch(batch_size),
+                              epochs=epochs, verbose=1)
+
+    def evaluate(self, dataset, batch_size):
+        return self.model.evaluate(dataset.batch(batch_size), verbose=1)
