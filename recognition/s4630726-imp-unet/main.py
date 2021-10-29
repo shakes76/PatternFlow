@@ -77,7 +77,7 @@ model = unet_improved(height,width,1)
 
 model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss=loss_fn, metrics=['accuracy'])
 
-unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=26, shuffle=True, validation_split=0.1)
+unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=63, shuffle=True, validation_split=0.1)
 
 predictions = model.predict(X_test)
 
@@ -85,17 +85,29 @@ predictions = model.predict(X_test)
 #VISUALISATION OF RESULTS
 
 #tf.print(predictions)
-match = tf.greater(predictions, 0.9)
+match = tf.greater(predictions, 0.91)
 match = tf.cast(match, dtype=tf.float32)
+
+total_dice = 0
+
+for i in range(match.shape[0]):
+    dice = 1-loss_fn(Y_test[i],match[i])
+    print(dice)
+    total_dice += dice
+#numerator_mole = pass
+average_dice = total_dice/match.shape[0]
+print(average_dice, "Average")
 
 #match = tf.math.argmax(predictions,axis=3)
 
 #tf.print(match)
 
-plt.imshow(X_test[0,:,:,0],cmap="gray")
+index = 4
+
+plt.imshow(X_test[index,:,:,0],cmap="gray")
 plt.show()
-plt.imshow(Y_test[0,:,:,0],cmap="gray")
+plt.imshow(Y_test[index,:,:,0],cmap="gray")
 plt.show()
-plt.imshow(match[0,:,:,0],cmap="gray")
+plt.imshow(match[index,:,:,0],cmap="gray")
 plt.show()
 
