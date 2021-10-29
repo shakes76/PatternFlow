@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 28/10/2021
+    Date last modified: 29/10/2021
     Python version: 3.9.7
 """
 
@@ -44,36 +44,34 @@ from model import (
     train,
 )
 
-# Training image paths
-IMAGE_PATHS: list[str] = [
-    # List of all image directories
-    # NOTE: All paths must end with a file seperator
-    "./keras_png_slices_data/unsegmented/"
-]
-
 # Training variables
 TRAIN: bool = True
-EPOCHS: int = 200
+IMAGE_PATHS: list[str] = [
+    # List of all image directories
+    # NOTE: All paths must end with a file separator
+    "./keras_png_slices_data/unsegmented/"
+]
+EPOCHS: int = 300
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-MODEL_NAME: str = "Trial 12"
+MODEL_NAME: str = "Final"
 
+# Model weight variables
 # Model weight loading
 LOAD_WEIGHTS: bool = False
 GENERATOR_WEIGHT_PATH: str = ""
 DISCRIMINATOR_WEIGHT_PATH: str = ""
-
 # Model weight saving
 SAVE_WEIGHTS: bool = True
-WEIGHT_SAVING_INTERVAL: int = 5
+WEIGHT_SAVING_INTERVAL: int = EPOCHS
 WEIGHT_PATH: str = "./weights/"
 
-# Sample images
+# Image sampling variables
 SHOW_FINAL_SAMPLE_IMAGES: bool = False
 SAVE_SAMPLE_IMAGES: bool = True
 IMAGE_SAVING_INTERVAL: int = 1
 SAMPLE_IMAGES_PATH: str = "./training/"
 
-# Model losses
+# Model loss visualisation variables
 VISUALISE_LOSS: bool = False
 SAVE_LOSS: bool = True
 LOSS_PATH: str = "./resources/"
