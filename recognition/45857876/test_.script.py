@@ -116,3 +116,23 @@ def train(self, dataset, num_workers, epochs, batch_sizes, fade_in_percentage, l
                     logger.info("Saving the model to: %s\n" % gen_shadow_save_file)
 
     logger.info('Training completed.\n')
+
+def create_grid(samples, scale_factor, img_file):
+    """
+    utility function to create a grid of GAN samples
+
+    :param samples: generated samples for storing
+    :param scale_factor: factor for upscaling the image
+    :param img_file: name of file to write
+    :return: None (saves a file)
+    """
+    from torchvision.utils import save_image
+    from torch.nn.functional import interpolate
+
+    # upsample the image
+    if scale_factor > 1:
+        samples = interpolate(samples, scale_factor=scale_factor)
+
+    # save the images:
+    save_image(samples, img_file, nrow=int(np.sqrt(len(samples))),
+               normalize=True, scale_each=True, pad_value=128, padding=1)
