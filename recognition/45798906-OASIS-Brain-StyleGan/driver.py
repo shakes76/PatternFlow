@@ -83,10 +83,10 @@ def main():
     gen_optimizer = disc_optimizer = None
     if TRAIN:
         gen_optimizer = get_optimizer(
-            learning_rate=8e-7, beta_1=0.5, beta_2=0.999
+            learning_rate=1e-7, beta_1=0.5, beta_2=0.999
         )
         disc_optimizer = get_optimizer(
-            learning_rate=1e-7, beta_1=0.5, beta_2=0.999
+            learning_rate=2.5e-8, beta_1=0.5, beta_2=0.999
         )
         print("Loaded optimizers.")
 
