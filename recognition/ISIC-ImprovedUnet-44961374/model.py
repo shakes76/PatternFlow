@@ -106,7 +106,7 @@ def segmentation_layer(input_layer, filters):
     return conv2d
 
 
-def create_model():
+def create_model(output_channels):
     """Creates an Improved UNet model based on the paper's specifications.
     The inline comments refer directly to the annotated image of the model which
     can be found in the README.md
@@ -143,9 +143,10 @@ def create_model():
     localization_1 = localization_module(concat_1, INIT_NO_FILTERS * 8) # localization module
     up_sample_2 = upsampling_module(localization_1, INIT_NO_FILTERS * 4) # upsampling module
     # level 3
-    concat_2 = concatenate([up_sample_2, add_layer_5]) # concatenation
+    concat_2 = concatenate([up_sample_2, add_layer_3]) # concatenation
     localization_2 = localization_module(concat_2, INIT_NO_FILTERS * 4) # localization module
     up_sample_3 = upsampling_module(localization_2, INIT_NO_FILTERS * 2) # upsampling module
+
     print("Working so far")
 
 create_model()
