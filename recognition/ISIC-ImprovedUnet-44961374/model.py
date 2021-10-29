@@ -56,8 +56,10 @@ def context_module(input_layer, filters):
     conv_layer2 = create_conv2d(instance_norm_layer2, filters)
     return conv_layer2
 
-def upsampling_module():
-    pass
+def upsampling_module(input_layer, filters):
+    upsampling_layer = UpSampling2D(KERNEL_SIZE)(input_layer)
+    conv2d = create_conv2d(upsampling_layer, filters)
+    return conv2d
 
 def localization_module():
     pass
