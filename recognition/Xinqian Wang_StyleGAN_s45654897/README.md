@@ -95,3 +95,5 @@ Below is the comparation between noise only injected into coarse layers and nois
 </p>
 
 **Inference:**  The conclusion is same as the paper mentioned. The noise tends to control the texture of the image. If noise the more likely to turn the image into a paint-like style. Additionaly, the noise is used by the generator to do some decorations for changing the images' details so that the generator can make different which has different variation. Or, we can deduce, the main shape of the image is not sensitive to the noise whereas the details of image are very sensitive to the noise.
+
+> The previous sections as well as the accompanying video demonstrate that while changes to the style have global effects (changing pose, identity, etc.), the noise affects only inconsequential stochastic variation (differently combed hair, beard, etc.).
