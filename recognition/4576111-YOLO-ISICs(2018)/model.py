@@ -100,8 +100,8 @@ class YoloV1():
         Returns:
             tensorflow.Dataset: A tensor containing the loss for each cell. Will be of shape (batchsize, S*S).
         """
-        true_boxes = tf.reshape(y_true[...,:5], [-1,self.S*self.S,1,5])
-        pred_boxes = tf.reshape(y_pred[...,:self.B*5], (-1,self.S*self.S,self.B,5))
+        true_boxes = tf.reshape(y_true[...,:5], [-1,self.S,self.S,1,5])
+        pred_boxes = tf.reshape(y_pred[...,:self.B*5], (-1,self.S,self.S,self.B,5))
         # Reshape the 3: too S*S, B, 5 i.e. 49, 2, 5. 
         # Each cell has two bounding boxes, with each bounding box, having 5 elements. 
         
@@ -303,13 +303,22 @@ class YoloV1():
         self.model.load_weights(checkpoint)
 
     def predictData(self, testData):
-        """Predicts a bounding box for an image. 
+        """Predicts a bounding box for an image/s. 
         Args: 
-            testData (tensorflow.Dataset): The data on which the bounding boxes are too be predicted.
+            testData (tensorflow.Dataset): The image/s on which the bounding boxes are too be predicted.
         Returns:
             tensorflow.Tensor: A tensor containing the predicted bounding boxes. 
         """
         return self.model.predict(testData)
+    
+    def evaluateData(self, testData):
+        """Evaulates a bounding box for an image/s. 
+        Args: 
+            testData (tensorflow.Dataset): The data on which the model should be evaulated.
+        Returns:
+            tensorflow.Tensor: Scalar test loss (if the model has a single output and no metrics) or list of scalars (if the model has multiple outputs and/or metrics).  
+        """
+        return self.model.evaluate(testData)
 
     def runModel(self, train_batches, validation_batches, epochs=80):
         """Using model.fit, runs yolov1 model on the provided data.
