@@ -46,17 +46,45 @@ class Perceiver:
         self.patch_size = patch_size
         self.projection_size = projection_size
         self.num_heads = num_heads
-        self.transformer_layers = transformer_layers
+        self.transformer_module_layers = transformer_layers
         self.dense_units = dense_units
         self.dropout_rate = dropout_rate
         self.depth = depth
         self.classifier_units = classifier_units
 
+    # Override the keras build method to initialise the required layers in the model
     def build(self, input_shape):
-        return
+        self.latent_data = self.add_weight(shape=(self.latent_size, self.projection_size), initializer="random_normal", trainable=True)
+        self.patch_extractor = Patches(self.patch_size)
+        self.patch_encoder = PatchEncoder(self.data_dim, self.projection_size)
+        self.cross_attention_module = create_cross_attention_module(self.latent_size, self.data_dim, self.projection_size, self.dense_units, self.dropout_rate)
+        self.transformer_module = create_transformer_module(self.latent_size, self.projection_size, self.num_heads, self.transformer_module_layers, self.dense_units, self.dropout_rate)
+        self.global_average_pooling = layers.GlobalAveragePooling1D()
+        self.dense_classification = create_dense_layers(output_units=self.classifier_units, dropout_rate=self.dropout_rate)
 
+        super(Perceiver, self).build(input_shape)
+
+    # Specifies the flow of data in the network when classifying images
     def call(self, inputs):
-        return
+        # Extract and encode patches
+        patches = self.patch_extractor(inputs)
+        encoded_patches = self.patch_encoder(patches)
+        cross_attention_inputs = {
+            "latent_data": tf.expand_dims(self.latent_data, 0),
+            "data_array": encoded_patches,
+        }
+
+        # Send our latent data through the cross attention and transformer modules iteratively
+        for unused in range(self.depth):
+            latent_data = self.cross_attention_module(cross_attention_inputs)
+            latent_data = self.transformer_module(latent_data)
+            # Set the latent data of the next iteration.
+            cross_attention_inputs["latent_data"] = latent_data
+
+        # Final classification through dense layers
+        output = self.global_average_pooling(latent_data)
+        classification_logits = self.dense_classification(output)
+        return classification_logits
 
     """
     Creates and returns several dense layers followed by a dropout layer
@@ -82,23 +110,23 @@ class Perceiver:
     @staticmethod
     def create_cross_attention_module(latent_size, data_dim, projection_size, dense_units, dropout_rate):
         inputs = {
-            "latent_array": layers.Input(shape=(latent_size, projection_size)),
+            "latent_data": layers.Input(shape=(latent_size, projection_size)),
             "data_array": layers.Input(shape=(data_dim, projection_size)),
         }
 
         # Normalise the latent and data inputs independently
-        latent_array = layers.LayerNormalization()(inputs["latent_array"])
+        latent_data = layers.LayerNormalization()(inputs["latent_data"])
         data_array = layers.LayerNormalization()(inputs["data_array"])
 
         # Create query, key and value vectors through dense layers
-        query = layers.Dense(units=projection_size)(latent_array)
+        query = layers.Dense(units=projection_size)(latent_data)
         key = layers.Dense(units=projection_size)(data_array)
         value = layers.Dense(units=projection_size)(data_array)
 
         # Generate cross-attention outputs.
         attention_output = layers.Attention(use_scale=True, dropout=0.1)([query, key, value], return_attention_scores=False)
         # Sum the Latent array obtained through a skip connection to the attention output
-        attention_output = layers.Add()([attention_output, latent_array])
+        attention_output = layers.Add()([attention_output, latent_data])
         # Apply layer norm.
         attention_output = layers.LayerNormalization()(attention_output)
 
@@ -115,7 +143,7 @@ class Perceiver:
     """
     Creates and returns a transformer model which forms a core module of the perceiver.
     Several transformer blocks are constructed, each containing normalization, self attention and a dense component with
-    skip connections connecting to the next block
+    skip connections connecting to the next block. This was modified from the keras transformer tutorial.
     """
     @staticmethod
     def create_transformer_module(latent_size, projection_size, num_heads, transformer_layers, dense_units, dropout_rate):
