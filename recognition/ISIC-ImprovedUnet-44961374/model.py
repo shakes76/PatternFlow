@@ -73,6 +73,16 @@ def upsampling_module(input_layer, filters):
     return conv2d
 
 def localization_module(input_layer, filters):
+    """Creates a localization module based on the Improved UNet architecture.
+    Contains two conv2d layers with a LeakyReLU activation function and slope = 0.01
+
+    Args:
+        input_layer (keras.layer): input layer to this module
+        filters (int): number of filters
+
+    Returns:
+        keras.layer: final layer of this module
+    """
     conv_layer1 = create_conv2d(input_layer, filters, KERNEL_SIZE)
     conv_layer2 = create_conv2d(conv_layer1, filters, (1,1))
     return conv_layer2
