@@ -9,7 +9,7 @@ from plots import plot_metrics, plot_predictions
 # -  ISIC2018_Task1_Training_GroundTruth and
 # -  ISIC2018_Task1-2_Training_Input
 # under this root path:
-ISIC_DIR = "./datasets/ISIC2018"
+ISIC_DIR = "./datasets"
 IMAGE_HEIGHT = 192
 IMAGE_WIDTH = 256
 
