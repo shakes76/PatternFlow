@@ -1,10 +1,14 @@
 import numpy as np
+from keras.models import Model
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Layer
+from VQVAE import VQVae, VectorQuantiser
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 class PixelConvLayer(keras.layers.Layer):
-    def __init__(self, mask_type, **kwargs):
+    def __init__(self, mask_type=None, **kwargs):
         super(PixelConvLayer, self).__init__()
         self.mask_type = mask_type
         self.conv = Conv2D(**kwargs)
@@ -47,4 +51,69 @@ class ResidualBlock(keras.layers.Layer):
         return keras.layers.add([inputs, x])
 
 pixel_layer = PixelConvLayer(filters=128, kernel_size=1, strides=1, mask_type='A')
+
+## params
+n_residual_blocks = 2
+n_pixel_cnn_layers = 2
+
+x = keras.Input(shape=10, dtype=tf.int32)
+def create_pixel_cnn(input_shape, n_embeddings):
+    model = Model()
+
+    input_tensor = keras.Input(shape=input_shape, dtype=tf.int32)
+    one_hot = tf.one_hot(input_tensor, n_embeddings)
+
+    model.add(
+        PixelConvLayer(
+            filters=128,
+            kernel_size=1,
+            strides=1,
+            activation="relu",
+            padding="valid",
+        )(one_hot)
+    )
+    for i in range(n_residual_blocks):
+        model.add(ResidualBlock(filters=128))
+
+    for i in range(n_pixel_cnn_layers):
+        model.add(
+            PixelConvLayer(
+                mask_type="B",
+                filters=128,
+                kernel_size=1,
+                strides=1,
+                activation="relu",
+                padding="valid",
+            )
+        )
+    model.add(Conv2D(filters=n_embeddings, kernel_size=1, strides=1, padding="valid"))
+    return model
+
+def train_pixel_cnn(pixel_cnn, vqvae: VQVae, x_train_normalised):
+    encoder = vqvae.get_layer("encoder")
+    quantiser: VectorQuantiser = vqvae.get_layer("quantiser")
+
+    outputs = encoder.predict(x_train_normalised)
+    flattened = outputs.reshape(-1, outputs.shape[-1])
+
+    code_indices = quantiser.get_code_indices(flattened)
+
+    code_indices = tf.reshape(code_indices, outputs.shape[:-1])
+
+
+    pixel_cnn.compile(
+        optimizer=Adam(learning_rate=(0.0003)),
+        loss=SparseCategoricalCrossentropy(from_logits=True),
+        metrics=["accuracy"],
+    )
+    pixel_cnn.fit(x=code_indices, y=code_indices, batch_size=128, epochs=30, validation_split=0.1)
+
+
+
+
+
+
+
+
+
 

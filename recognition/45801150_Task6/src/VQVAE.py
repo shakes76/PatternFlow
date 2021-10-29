@@ -39,15 +39,18 @@ class VectorQuantiser(keras.layers.Layer):
             name="embeddings_vqvae",
         )
 
+    def get_code_indices(self, flattened):
+        distances = tf.reduce_sum(flattened ** 2, axis=1, keepdims=True) \
+                    + tf.reduce_sum(self.embeddings ** 2, axis=0) \
+                    - 2 * tf.matmul(flattened, self.embeddings)
+        return tf.argmin(distances, axis=1)
+
     def call(self, x):
         input_shape = tf.shape(x)
 
         flattened = tf.reshape(x, [-1, self.embedding_dimensions])
-        distances = tf.reduce_sum(flattened ** 2, axis=1, keepdims=True) \
-            + tf.reduce_sum(self.embeddings ** 2, axis=0) \
-            - 2 * tf.matmul(flattened, self.embeddings)
 
-        encoding_indices = tf.argmin(distances, axis=1)
+        encoding_indices = self.get_code_indices(flattened)
         encodings = tf.one_hot(encoding_indices, self.num_embeddings)
         quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
         unflattened = tf.reshape(quantized, input_shape)
