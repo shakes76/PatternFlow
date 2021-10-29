@@ -83,6 +83,8 @@ class DataPreprocessing:
         self.load_data()
         # one hot encoding
         one_hot_labels = one_hot_encoding(self.data_target)
+        # normalize feature
+        self.data_features = normalize(self.data_features)
 
         # build graph
         # construct sparse matrix in COOrdinate format.
