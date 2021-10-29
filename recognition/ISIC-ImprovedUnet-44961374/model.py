@@ -18,7 +18,7 @@ IMAGE_ROWS = 256 # image x dimension
 IMAGE_COLS = 256 # image y dimension
 IMAGE_CHANNELS = 1 # greyscale
 KERNEL_SIZE = (3,3) # size of kernel
-
+INIT_NO_FILTERS = 16
 
 def create_conv2d(input_layer, filters, kernel_size):
     """Creates a Conv2D layer based on the Improved UNet architecture. 
@@ -92,8 +92,8 @@ def create_model():
     input_layer = Input(shape=(IMAGE_ROWS, IMAGE_COLS, IMAGE_CHANNELS))
 
     ########## CONTRACTING PATH ##########
-    conv_layer1 = create_conv2d(input_layer, 16, KERNEL_SIZE)
-    context1 = context_module(conv_layer1, 16)
+    conv_layer1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE)
+    context1 = context_module(conv_layer1, INIT_NO_FILTERS)
 
 create_model()
 
