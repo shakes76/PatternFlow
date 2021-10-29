@@ -100,9 +100,14 @@ def create_model():
     context_1 = context_module(conv_layer_1, INIT_NO_FILTERS)
     add_layer_1= Add()([conv_layer_1, context_1])
     # level 2
-    conv_layer_2 = create_conv2d(add_layer_1, INIT_NO_FILTERS * 2, KERNEL_SIZE, (2,2))
+    conv_layer_2 = create_conv2d(add_layer_1, INIT_NO_FILTERS * 2, KERNEL_SIZE, (2, 2))
     context_2 = context_module(conv_layer_2, INIT_NO_FILTERS * 2)
-    add_layer_2 = Add()([conv_layer_2, context_2]) 
+    add_layer_2 = Add()([conv_layer_2, context_2])
+    # level 3
+    conv_layer_3 = create_conv2d(add_layer_2, INIT_NO_FILTERS * 4, KERNEL_SIZE, (2, 2))
+    context_3 = context_module(conv_layer_3, INIT_NO_FILTERS * 4)
+    add_layer_3 = Add()([conv_layer_3, context_3])
+    print("Working so far") 
 
 create_model()
 
