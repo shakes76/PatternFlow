@@ -12,15 +12,15 @@ And thanks for his kindly reply to me for helping me better to understand the mo
 
 Usage:
 ```
-Image Dataset (type: folder)
+Image Dataset (type: Folder)
 │
-└───class1 folder
+└───class1 folder (type: Folder)
 │   │   image01.jpg
 │   │   image02.jpg
 │   │   image03.jpg
 │   │   ...
 │   
-└───class2 folder
+└───class2 folder (type: Folder)
 │   │   image01.jpg
 │   │   image02.jpg
 │   │   ...
