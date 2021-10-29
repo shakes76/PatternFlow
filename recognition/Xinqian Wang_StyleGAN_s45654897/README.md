@@ -5,9 +5,11 @@ The README file is consisted of two parts, firstly general introduce the Style m
 > **A Style-Based Generator Architecture for Generative Adversarial Networks**<br>
 > Tero Karras (NVIDIA), Samuli Laine (NVIDIA), Timo Aila (NVIDIA)<br>
 > https://arxiv.org/abs/1812.04948
+
 The code I used is basicly from Kim Seonghyeon's Github.
 And thanks for his kindly reply to me for helping me better to understand the model.
 - Address: https://github.com/rosinality/style-based-gan-pytorch/issues/34
+
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
