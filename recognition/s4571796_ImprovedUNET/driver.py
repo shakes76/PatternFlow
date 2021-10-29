@@ -168,6 +168,46 @@ def map_images(masks):
 
     return masks
 
+def dice_coef(y_true, y_pred):
+    """ Returns the Dice Score for binary image segmentation
+
+    Arguments:
+    y_true: The true array
+    y_pred: The predicted array
+
+    Returns:
+    score: The dice score according to the dice formula
+    """
+    y_true_f = y_true.flatten()
+    y_pred_f = y_pred.flatten()
+    intersection = np.sum(y_true_f * y_pred_f)
+    smooth = 0.0001
+    score = (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+    return score
+
+
+def dice_coef_multilabel(y_true, y_pred, labels):
+    """ Returns the Dice Score for multiclass image segmentation
+
+    Arguments:
+    y_true: The true array
+    y_pred: The predicted array
+    labels: The number of classes for the output
+
+    Returns:
+    score: The total Dice Score divided by the number of classes
+    """
+    # Initialize Dice Score as 0
+    dice = 0
+    # Iterate through all classes
+    for index in range(labels):
+        coeff = dice_coef(y_true[:,:,:,index], y_pred[:,:,:,index])
+        dice += coeff
+        print("The dice score for class " + str(index) + " is " + str(coeff))
+    # Return the Dice Score
+    score = dice/labels
+    return score
+
 def main():
     # Loading the Directories containing the Images
     images = format_images_jpg("ISIC_Images")
