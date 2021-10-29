@@ -15,7 +15,8 @@ In contrary to the original architecture, batch normalisation has been introduce
 ### Loss Function:
 As specified in the YoloV1 paper, the yolov1 uses a custom loss function: 
 <p align="center"><img src="./images/yoloLoss.png" width="500"></p>
-There is quite a bit to unpack here, so I suggest reading into it [here](https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088) 
+
+The loss function is simpler than the equations make it look, it will not be broken down here, but a recommended resource is [here](https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088) for learning more. 
 
 ### Metric:
 The yolo paper uses the mean average precision (so called mAP) for its metric. This implementation instead uses the Jaccard Index (as known as 'IoU'). The jaccard index is calcaluted between the highest confidence predicted bounding box and ground truth. Below is visual representation of the Jaccard Index:
@@ -27,13 +28,13 @@ This model is trained on the [ISIC 2018](https://challenge2018.isic-archive.com/
 
 ## Results:
 <p align="center"><img src="./images/comparison.PNG" width="800"></p>
-The results in the current version are optimal, achieving ~80% accuracy on the test set. This will be improved upon further. Below will discuss a few notable points of interest the results from the current version.<br/>
+The results in the current version are optimal, achieving ~80% accuracy on the test set. This will be improved upon further. Below will discuss a few notable points of interest on the results from the current version.<br/>
 1) The model converges around the 60 epoch mark. Tested until 200 epochs but no improvement in loss.
 <p align="center"><img src="./images/epochs.PNG" width="700"></p>
 2) There is a sudden drop off in loss from 1-10 epochs, as the model quickly optimises the bounding boxes (the result of no sigmoid activation function in the dense layer).
 <p align="center"><img src="./images/modelLoss.PNG" width="700"></p>
 3) Accuracy seemed to bounce around significantly, this is namely due to the jaccard Index not being optimised to work correctly with batches.
-<p align="center"><img src="./images/modelAccuracry.PNG" width="300"></p>
+<p align="center"><img src="./images/modelAccuracry.PNG" width="350"></p>
 4) Model.evaluate shows a mere 2% score for the test set, this is infact a lie, the model achieves an average jaccard Index of 79.39% on the test set. The jaccard Index as noted above isn't currently working with batches. 
 <p align="center"><img src="./images/results.PNG" width="500"></p>
 <p align="center"><img src="./images/lies.PNG" width="500"></p>  

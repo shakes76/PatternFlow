@@ -94,6 +94,7 @@ class YoloV1():
 
     def yoloLoss(self, y_true, y_pred):
         """A custom loss function as specificied by the yolov1 paper. 
+        Credit too Emmanuel Caradec for providing the basis for this implementation. 
         Args:
             y_true (tensorflow.DataSet): A tensor containing the true bounding boxes. Shape (batchSize, S, S, B*5+C). 
             y_pred (tensorflow.DataSet): A tensor containing the predicted bounding boxes. Shape (batchSize, S, S, 5+C)
