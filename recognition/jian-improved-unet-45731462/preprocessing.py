@@ -1,3 +1,11 @@
+"""
+Model Architecture of the Improved Unet
+
+@author Jian Yang Lee
+@email jianyang.lee@uqconnect.edu.au
+"""
+
+
 import numpy as np
 import cv2
 import os
@@ -27,6 +35,10 @@ def preprocess_data(train_ratio=0.7, valid_ratio=0.15, test_ratio=0.15):
 
     x_train, x_test, y_train, y_test = train_test_split(inputs, labels, test_size=1-train_ratio)
     x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=test_ratio/(test_ratio + valid_ratio))
+
+
+    # maintain aspect ratio of image when .shape
+
 
     # print(x_train.shape)
     # print(x_val.shape)
