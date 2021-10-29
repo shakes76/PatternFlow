@@ -88,5 +88,12 @@ def localization_module(input_layer, filters):
     return conv_layer2
 
 def create_model():
-    pass
+    ########## INPUT ##########
+    input_layer = Input(shape=(IMAGE_ROWS, IMAGE_COLS, IMAGE_CHANNELS))
+
+    ########## CONTRACTING PATH ##########
+    conv_layer1 = create_conv2d(input_layer, 16, KERNEL_SIZE)
+    context1 = context_module(conv_layer1, 16)
+
+create_model()
 
