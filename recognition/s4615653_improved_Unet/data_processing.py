@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 def load_data():
     # Getting the file paths of data and sort paths
-    inputs = sorted(glob.glob("/Users/zengyushan/Documents/comp3710/improved——unet/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg"))
-    truth = sorted(glob.glob("/Users/zengyushan/Documents/comp3710/improved——unet/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png"))
+    inputs = sorted(glob.glob("D:/comp3710/s4615653_improved_Unet/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1-2_Training_Input_x2/*.jpg"))
+    truth = sorted(glob.glob("D:/comp3710/s4615653_improved_Unet/ISIC2018_Task1-2_Training_Data/ISIC2018_Task1_Training_GroundTruth_x2/*.png"))
 
     return inputs, truth
 
@@ -99,6 +99,8 @@ def data_processing():
     train_ds, val_ds, test_ds = shuffle_data(train_ds, val_ds, test_ds, train_inputs, val_inputs, test_inputs)
 
     train_ds, val_ds, test_ds = map_data(train_ds,val_ds,test_ds)
+
+    return train_ds, val_ds, test_ds
 
 
 

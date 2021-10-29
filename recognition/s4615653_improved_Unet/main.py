@@ -13,7 +13,7 @@ def main():
 
     # model.summary()
 
-    plots.plots(val_ds,model)
+    #plots.plots(val_ds,model,num=3)
 
     history = model.fit(train_ds.batch(32), epochs=15, validation_data=val_ds.batch(32))
 

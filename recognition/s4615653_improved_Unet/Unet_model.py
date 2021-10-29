@@ -40,19 +40,19 @@ def Unet():
 
     # upsampling
 
-    conv_6 = unsample(conv_5, 32)
+    conv_6 = upsample(conv_5, 32)
     conv_6 = tf.keras.layers.concatenate([conv_6, conv_4])
     conv_6 = convolution(conv_6, 32)
 
-    conv_7 = unsample(conv_6, 16)
+    conv_7 = upsample(conv_6, 16)
     conv_7 = tf.keras.layers.concatenate([conv_7, conv_3])
     conv_7 = convolution(conv_7, 16)
 
-    conv_8 = unsample(conv_7, 8)
+    conv_8 = upsample(conv_7, 8)
     conv_8 = tf.keras.layers.concatenate([conv_8, conv_2])
     conv_8 = convolution(conv_8, 8)
 
-    conv_9 = unsample(conv_8, 4)
+    conv_9 = upsample(conv_8, 4)
     conv_9 = tf.keras.layers.concatenate([conv_9, conv_1])
     conv_9 = convolution(conv_9, 4)
 
