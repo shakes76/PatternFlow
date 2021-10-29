@@ -465,7 +465,7 @@ class GeneratorNetwork(nn.Module):
       # output new feature map and rgb
       x, rgb = self.blocks[i - 1](x, w[i], rgb)
 
-      return rgb
+    return rgb
 
 class Generator(nn.Module):
   """
@@ -501,4 +501,160 @@ class Generator(nn.Module):
 
     return img
 
+class DiscriminatorBlock(nn.Module):
+  """
+  Consist of two 3*3 conv layers followed by a downsample layer.
+  Using residual connection combine downsampled input followed by a 1*1 conv layer.
+  Double the number of feature channel, Maximum feature channel is 512.
+  """
+  def __init__(self, 
+               in_dim,          # the number of input channel
+               out_dim          # the number of output channel
+               ):
 
+    super().__init__()
+
+    # two conv layers with 3*3 kernel size and 1 padding, double feature channel in the second layer  
+    self.layers = nn.Sequential(
+        EqualizedConv2d(in_dim=in_dim, out_dim=in_dim, kernel_size=3, padding=1),
+        nn.LeakyReLU(0.2, True),
+        EqualizedConv2d(in_dim=in_dim, out_dim=out_dim, kernel_size=3, padding=1),
+        nn.LeakyReLU(0.2, True),
+        nn.Dropout2d(0.2),
+        DownsampleLayer()
+    )
+    # residual connection with a downsample layer and 1*1 conv layer #######(disable bias)
+    self.residual = nn.Sequential(
+        DownsampleLayer(),
+        EqualizedConv2d(in_dim=in_dim, out_dim=out_dim, kernel_size=1, bias=False)
+    )
+
+    # two path of residual connection multiplied by 1 / np.sqrt(0.5)
+    self.mul = np.sqrt(0.5)
+
+  def forward(self, x):
+    # calculate residual
+    res = self.residual(x)
+
+    # the other path of res connection
+    x = self.layers(x)
+    x = (x + res) * self.mul
+
+    return x
+
+class MinibatchStd(nn.Module):
+  """
+  Minibatch std can increase variation of subset of training data.
+  It compute feature statistics not only from individual images but also across the minibatch.
+  Encourage the minibatches of generated img and input img to show similar statistics.
+  Solution:
+  -- Compute the std for each feature in each spatial location over minibatch;
+  -- Average them over all features and spatial locations;
+  -- Replicate the value and concatenate it to all spatial location and over the minibatch.
+  ref: https://github.com/NVlabs/stylegan2-ada-pytorch/blob/main/training/networks.py
+  """
+  def __init__(self, 
+               group_size = 4        # the number of samples needed to be calculated std
+               ):
+
+    super().__init__()
+    self.group_size = group_size
+
+  def forward(self, x):
+    """
+    x: input feature size
+    """
+    # get group size: min of batch and 4, if b % 4 !=0, group size is batch size
+    b, c, h, w = x.shape
+    groupsize = min(b, self.group_size)
+    if b % groupsize != 0:
+      groupsize = b
+
+    # split batch into groups
+    y = x.reshape(groupsize, -1, c, h, w)
+    # calculate variance of each group
+    y = torch.var(y, 0)
+    # calculate stdev of each group
+    y = torch.sqrt(y + 1e-8)
+    # take average over features and spatial locations
+    y = y.mean(dim=[1, 2, 3])
+    # add one dimension
+    y = y.reshape(-1, 1, 1, 1)
+    # replicate it to all pixel over group, one additional feature map
+    y = y.repeat(groupsize, 1, h, w)
+    # cat it to input, out_dim = in_dim + 1 
+    x = torch.cat([x, y], dim=1) 
+
+    return x
+
+class Discriminator(nn.Module):
+  """
+  The first layer of Discriminator is fromRGB layer.
+  Consist of Discriminator Block with res connection.
+  The last layer go through minibatch standard deviation layer.
+  """
+  def __init__(self, 
+               img_resolution,            # the resolution of output image
+               dim_max = 512              # maximum number of channel in layers
+               ):
+
+    super().__init__()
+    self.img_resolution = img_resolution
+
+    # calculate the log2 of image resolution, 8
+    img_res_log2 = int(np.log2(img_resolution))
+
+    # calculate the resolution of each block: [4, ... , 256]
+    block_res = [2 ** i for i in range(2, img_res_log2 + 1)]  
+    print(block_res)  
+        
+    # calculate the number of channel for each block, max channle is 512, min channel is 32
+    # channels = [32, 64, 128, 256, 512, 512, 512]
+    channels = [min(dim_max, res * 8) for res in block_res]
+    print(channels)
+
+    self.num_blocks = len(block_res) - 1  # 6 for 256
+    print(self.num_blocks)
+
+    # from RGB layer
+    self.fromRGB = nn.Sequential(
+        EqualizedConv2d(in_dim=1, out_dim=channels[0], kernel_size=1),
+        nn.LeakyReLU(0.2, True))
+    
+    # Discrinimator blocks with resolution from 256*256 to 4*4
+    blocks = []
+    for i in range(self.num_blocks):
+      block = DiscriminatorBlock(in_dim=channels[i], out_dim=channels[i + 1])
+      blocks.append(block)
+    self.blocks = nn.Sequential(*blocks)
+
+    # Minibatch std layer
+    self.minibatchStd = MinibatchStd()
+
+    # the last layers
+    self.last_conv = nn.Sequential(
+        EqualizedConv2d(in_dim=channels[-1] + 1, out_dim=channels[-1], kernel_size=3, padding=1),
+        nn.LeakyReLU(0.2, True))
+    self.fc = nn.Sequential(
+        EqualizedLinear(in_dim=channels[-1] * 4 * 4, out_dim=channels[-1]),
+        nn.LeakyReLU(0.2, True))
+    self.output =EqualizedLinear(in_dim=channels[-1], out_dim=1) 
+
+  def forward(self, x):
+    """
+    x: input img with shape [batch_size, 3, resolution, resolution]
+    """
+    # from RGB layer
+    x = self.fromRGB(x)
+    # Discriminator blocks
+    x = self.blocks(x)
+    # Minibatch std layer
+    x = self.minibatchStd(x)
+    # last conv layer
+    x = self.last_conv(x)
+    # flatten and fc layer
+    x = self.fc(x.flatten(1))
+    # output
+    x = self.output(x)
+
+    return x
