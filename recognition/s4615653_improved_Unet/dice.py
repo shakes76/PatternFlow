@@ -11,3 +11,12 @@ def dice_coefficient(truth, pred, smooth=1):
                                            + tf.keras.backend.sum(pred)
                                            + smooth)
     return dice_coef
+
+def average_dice(data, model,test_size):
+    #compute average dice
+    input_batch, truth_batch = next(iter(data.batch(test_size)))
+    predict = model.predict(input_batch)
+    sum_DSC = 0
+    for i in range(test_size):
+        sum_DSC = sum_DSC + dice_coefficient(tf.argmax(truth_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy()
+    print(sum_DSC/test_size)
