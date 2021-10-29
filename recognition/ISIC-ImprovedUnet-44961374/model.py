@@ -91,34 +91,38 @@ def localization_module(input_layer, filters):
     return conv_layer_2
 
 def create_model():
+    """Creates an Improved UNet model based on the paper's specifications.
+    The inline comments refer directly to the annotated image of the model which
+    can be found in the README.md
+    """
     ########## INPUT ##########
     input_layer = Input(shape=(IMAGE_ROWS, IMAGE_COLS, IMAGE_CHANNELS))
 
     ########## CONTRACTING PATH ##########
     # level 1
-    conv_layer_1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE, INIT_STRIDES)
-    context_1 = context_module(conv_layer_1, INIT_NO_FILTERS)
-    add_layer_1= Add()([conv_layer_1, context_1])
+    conv_layer_1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
+    context_1 = context_module(conv_layer_1, INIT_NO_FILTERS) # context module
+    add_layer_1= Add()([conv_layer_1, context_1]) # element-wise sum
     # level 2
-    conv_layer_2 = create_conv2d(add_layer_1, INIT_NO_FILTERS * 2, KERNEL_SIZE, (2, 2))
-    context_2 = context_module(conv_layer_2, INIT_NO_FILTERS * 2)
-    add_layer_2 = Add()([conv_layer_2, context_2])
+    conv_layer_2 = create_conv2d(add_layer_1, INIT_NO_FILTERS * 2, KERNEL_SIZE, (2, 2)) # 3x3 stride 2 conv
+    context_2 = context_module(conv_layer_2, INIT_NO_FILTERS * 2) # context module
+    add_layer_2 = Add()([conv_layer_2, context_2]) # element-wise sum
     # level 3
-    conv_layer_3 = create_conv2d(add_layer_2, INIT_NO_FILTERS * 4, KERNEL_SIZE, (2, 2))
-    context_3 = context_module(conv_layer_3, INIT_NO_FILTERS * 4)
-    add_layer_3 = Add()([conv_layer_3, context_3])
+    conv_layer_3 = create_conv2d(add_layer_2, INIT_NO_FILTERS * 4, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
+    context_3 = context_module(conv_layer_3, INIT_NO_FILTERS * 4) # context module
+    add_layer_3 = Add()([conv_layer_3, context_3]) # element-wise sum
     # level 4
-    conv_layer_4 = create_conv2d(add_layer_3, INIT_NO_FILTERS * 8, KERNEL_SIZE, (2, 2))
-    context_4 = context_module(conv_layer_4, INIT_NO_FILTERS * 8)
-    add_layer_4 = Add()([conv_layer_4, context_4])
+    conv_layer_4 = create_conv2d(add_layer_3, INIT_NO_FILTERS * 8, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
+    context_4 = context_module(conv_layer_4, INIT_NO_FILTERS * 8) # context module
+    add_layer_4 = Add()([conv_layer_4, context_4]) # element-wise sum
     # base
-    conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))
-    context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16)
-    add_layer_5 = Add()([conv_layer_5, context_5])
+    conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
+    context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16) # context module
+    add_layer_5 = Add()([conv_layer_5, context_5]) # element-wise sum
     ########## EXPANSIVE PATH ##########
     # base
-    upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8)
-    # leve 4 
+    upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8) # upsampling module
+    # level 4 
 
     print("Working so far")
 
