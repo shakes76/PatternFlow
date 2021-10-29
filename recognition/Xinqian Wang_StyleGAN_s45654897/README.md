@@ -105,6 +105,19 @@ Gram Matrix is formed by the inner product of two matrixes. Intuitively, if the 
 
 For the image case, imaging there are two images, A and B, and they have the same structure in a shape of [C,H,W]. Then, change A and B's shape into [C, H*W]. Finally, we got A's Gram Matrix by doing inner product [C, H*M] * [H*W, C]. The difference between their style is just calculate the MSE loss.
 
+We compute the MSE loss between different Gram Matrixes. The image below is the style mixing picture which is similar as Source A(Up) and Source B(Left) talked about befroe. And we indexed these pictures for better describing the picture. For example (1,1) refers to the grey picture on the up-left.
+
 <p align="center">
-  <img src="https://github.com/Wangxinqian/PatternFlow/blob/3541b867cfacb313e9e96baa8f509230416e0568/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Gram%20Matrix%20plot_New.png" alt="" width='40%' height='40%'/>
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/3541b867cfacb313e9e96baa8f509230416e0568/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Gram%20Matrix%20plot_New.png" alt="" width='30%' height='30%'/>
 </p>
+
+The image on the position (2,2) are images generated from Source A inputed from the resolution of 8×8 and 16×16 and Source B inputed from the rest resolution layers. Then we start computing the MSE Distance between two images' Gram Matrixes. In the case [image (2,1)] is generated from Source A-> [image (1,2)] and Source B-> [image (2,1)].
+
+The MSE between between [image (1,2)]'s Gram Marix and [image (2,1)]'s Gram Marix is 0.0003.
+The MSE between between [image (1,2)]'s Gram Marix and [image (2,2)]'s Gram Marix is 0.0002.
+The MSE between between [image (2,1)]'s Gram Marix and [image (2,2)]'s Gram Marix is 1.1183e-05.
+
+We done its trial for a hundred times, the case where the MSE loss between [image (1,2)] and [image (2,2)] is greater than the MSE loss between [image (2,1)] and [image (2,2)] happends with a probability of 87.6%.
+
+
+**Inference:**  In conlusion, we deduce a image in the generation process would tend to be similar in shape with the style from coarse spatial resolutions. However, in terms of mean and MSE distence between Gram Matrix, it tends to be closed to the style inputed from higher resolutions.
