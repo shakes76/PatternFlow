@@ -29,4 +29,3 @@ def cross_attention_layer(latent_size, data_size, proj_size):
     outputs = layers.Add()([outputs, attention])
 
     return tf.keras.Model(inputs=[input_latent, input_data], outputs=outputs)
-
