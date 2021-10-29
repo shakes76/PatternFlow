@@ -2,7 +2,7 @@ import os
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from iunet import build_iunet
 from tensorflow.keras.optimizers import Adam
-from dice import Dice
+from dice import Dice, sorensen_dice
 import matplotlib.pyplot as plt
 from itertools import islice
 
@@ -73,8 +73,13 @@ figure, cells = plt.subplots(TESTS, 3)
 for i in range(TESTS):
     inputt, truth = next(islice(test_gen, i, None))
     prediction = model.predict(inputt)
+    dsc = sorensen_dice(truth, prediction)
+    cells[i, 0].title.set_text('Input {0}'.format(i))
     cells[i, 0].imshow(inputt[0])
+    cells[i, 1].title.set_text('Ground Truth {0}'.format(i))
     cells[i, 1].imshow(truth[0], cmap='gray')
+    cells[i, 2].title.set_text('Prediction {0} (dsc={1})'.format(i, "%.4f" % dsc))
     cells[i, 2].imshow(prediction[0], cmap='gray')
+figure.tight_layout()
 plt.axis('off')
 plt.show()
