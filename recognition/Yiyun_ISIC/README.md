@@ -2,14 +2,27 @@
 
 Yiyun Zhang 45133507
 
+## Description
+
 This is the implementation of ISIC data segmentation using an improved U-Net.
 
 Improved UNet Network Architecture:
 ![Improved UNet Architecture](./images/Improved_UNet.png)
 
 ## Instructions
-Download dataset at: https://challenge.isic-archive.com/data/#2018
-Open the terminal and cd to the same root as main.py
+1. Download the ISIC2018 datasets at: https://challenge.isic-archive.com/data/#2018, specifically these two folders:
+    - ISIC2018_Task1-2_Training_Input
+    - ISIC2018_Task1_Training_GroundTruth
+2. Put these two folders under ./datasets
+3. Open the terminal and `cd` to the project directory
+4. Install the Python libraries listed in ./requirements.txt
+5. Run the driver script `python3 ./main.py`
+
+## Results
+
+![Predictions Plot](./images/plot_sample.png)
+
+![Metrics Plot](./images/plot_metrics_sample.png)
 
 ## References
 \[1\] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation
