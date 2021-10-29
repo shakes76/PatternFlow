@@ -20,7 +20,7 @@ IMAGE_CHANNELS = 1 # greyscale
 KERNEL_SIZE = (3,3) # size of kernel
 
 
-def create_conv2d(input_layer, filters):
+def create_conv2d(input_layer, filters, kernel_size):
     """Creates a Conv2D layer based on the Improved UNet architecture. 
     Please look at the README.md for more details.
 
@@ -31,7 +31,7 @@ def create_conv2d(input_layer, filters):
     Returns:
         keras.layer.Conv2D: the conv2d layer that has been created
     """
-    conv2d_layer = Conv2D(filters=filters, kernel_size=KERNEL_SIZE, padding='same', activation=LeakyReLU(alpha=LEAKY_RELU_ALPHA))(input_layer)
+    conv2d_layer = Conv2D(filters=filters, kernel_size=kernel_size, padding='same', activation=LeakyReLU(alpha=LEAKY_RELU_ALPHA))(input_layer)
     return conv2d_layer
 
 
@@ -50,10 +50,10 @@ def context_module(input_layer, filters):
         [keras.layer]: final layer of this module
     """
     instance_norm_layer1 = InstanceNormalization()(input_layer)
-    conv_layer1 = create_conv2d(instance_norm_layer1, filters)
+    conv_layer1 = create_conv2d(instance_norm_layer1, filters, KERNEL_SIZE)
     dropout = Dropout(P_DROP)(conv_layer1)
     instance_norm_layer2 = InstanceNormalization()(dropout)
-    conv_layer2 = create_conv2d(instance_norm_layer2, filters)
+    conv_layer2 = create_conv2d(instance_norm_layer2, filters, KERNEL_SIZE)
     return conv_layer2
 
 def upsampling_module(input_layer, filters):
@@ -68,7 +68,7 @@ def upsampling_module(input_layer, filters):
         keras.layer: final layer of this module
     """
     upsampling_layer = UpSampling2D(KERNEL_SIZE)(input_layer)
-    conv2d = create_conv2d(upsampling_layer, filters)
+    conv2d = create_conv2d(upsampling_layer, filters, KERNEL_SIZE)
     return conv2d
 
 def localization_module():
