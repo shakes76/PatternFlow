@@ -16,7 +16,3 @@ def dice_coef(y_true, y_pred) -> float:
 
 def dice_loss(y_true, y_pred) -> float:
     return 1 - dice_coef(y_true, y_pred)
-
-
-def scheduler(epoch, lr):
-    pass
