@@ -90,6 +90,22 @@ def localization_module(input_layer, filters):
     conv_layer_2 = create_conv2d(conv_layer_1, filters, (1,1))
     return conv_layer_2
 
+
+def segmentation_layer(input_layer, filters):
+    """Creates a segmentation layer based on the Improved UNet architecture.
+    Contains a Conv2D layer with the default parameters of this model
+
+    Args:
+        input_layer (keras.layer): input layer to this layer
+        filters (int): number of filters
+
+    Returns:
+        keras.layer: output conv2d layer
+    """
+    conv2d = create_conv2d(input_layer, filters, KERNEL_SIZE, INIT_STRIDES)
+    return conv2d
+
+
 def create_model():
     """Creates an Improved UNet model based on the paper's specifications.
     The inline comments refer directly to the annotated image of the model which
