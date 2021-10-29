@@ -84,12 +84,9 @@ class ISICConfig(Config):
     MAX_GT_INSTANCES = 50 
     POST_NMS_ROIS_INFERENCE = 500
     POST_NMS_ROIS_TRAINING = 1000
-    # USE_MINI_MASK = False
     USE_MINI_MASK = True
     MINI_MASK_SHAPE = (56,56)
-    # MINI_MASK_SHAPE = (128,128)    
-    # LEARNING_MOMENTUM = 0.9
-    # LEARNING_RATE = 0.0008
+
     
 config = ISICConfig()
 config.display()
@@ -135,12 +132,11 @@ class ISICDataset(utils.Dataset):
         class_ids = []
         
         image_info = self.image_info[image_id]
-        # print(image_info)
+
         filename = glob.glob(os.path.join(self.masks_dir,image_info['id']+"*"))
-        # print(filename[0])
+
         mask_seg = cv2.imread(filename[0],0)
-        # plt.imshow(mask_seg)
-        # mask_seg = np.where(mask_seg>0,255,mask_seg)
+
         bool_mask = mask_seg>0
         instance_masks.append(bool_mask)
         class_ids.append(1)
@@ -187,7 +183,6 @@ dataset_test.prepare()
 #%%
 
 dataset = dataset_test
-# image_ids = [0,1,2,3]
 image_ids = np.random.choice(dataset.image_ids,4)
 for image_id in image_ids:
     image = dataset.load_image(image_id)
@@ -208,7 +203,7 @@ print('model generated')
 # Load Pre-trained weights
 
 # Which weights to start with?
-init_with = "last"  # coco, or last
+init_with = "coco"  # coco, or last
 
 if init_with == "coco":
     # Load weights trained on MS COCO, but skip layers that
@@ -273,8 +268,8 @@ start_train = time.time()
 model.train(dataset_train
             ,dataset_val
             ,learning_rate=config.LEARNING_RATE
-            ,epochs=21
-            ,layers='3+'
+            ,epochs=5
+            ,layers='heads'
             ,custom_callbacks = [custom_callback]
             ,augmentation = augment_strat
             )
@@ -307,7 +302,6 @@ inference_config = InferenceConfig()
 model = modellib.MaskRCNN(mode="inference", 
                           config=inference_config,
                           model_dir=MODEL_DIR)
-
 print('Inference Mode')
 #%%
 
@@ -317,8 +311,8 @@ model_path = model.find_last()
 assert model_path != "", "Provide path to trained weights"
 print("Loading weights from ", model_path)
 model.load_weights(model_path, by_name=True
-                   # ,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
-                   # "mrcnn_bbox", "mrcnn_mask"]
+                    # ,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                    # "mrcnn_bbox", "mrcnn_mask"]
                    )
 #%%
 import skimage
@@ -329,7 +323,7 @@ for filename in os.listdir(real_test_dir):
     if os.path.splitext(filename)[1].lower() in ['.png', '.jpg', '.jpeg']:
         image_paths.append(os.path.join(real_test_dir, filename))
 
-images = np.random.choice(image_paths,20,replace=False)
+images = np.random.choice(image_paths,5,replace=False)
 
 for image_path in images:
     img = skimage.io.imread(image_path)
