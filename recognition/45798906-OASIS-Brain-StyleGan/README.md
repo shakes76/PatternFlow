@@ -129,8 +129,8 @@ The graphs and images are display using `matplotlib.pyplot`. The graphs are achi
                     </tr>
                     <tr>
                         <td>Learning Rate</td>
-                        <td>8e-7</td>
-                        <td>1e-7</td>
+                        <td>2e-7</td>
+                        <td>2.5e-8</td>
                     </tr>
                     <tr>
                         <td>Beta 1</td>
