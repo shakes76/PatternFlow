@@ -8,11 +8,11 @@
 import numpy as np
 import cv2
 import os
-import numpy as np
 from sklearn.model_selection import train_test_split
 from improved_model import model
 import tensorflow as tf
 from tensorflow.python.keras.utils.np_utils import to_categorical
+from matplotlib import pyplot as plt
 
 
 def to_numpy(path, image_type):
@@ -53,9 +53,53 @@ def encode_bw(input):
 
     return input.reshape(dim, height, width)
 
+def dice(predict, test, smooth=1):
+    """[summary]
+
+    Args:
+        predict ([type]): [description]
+        test ([type]): [description]
+        smooth (int, optional): [description]. Defaults to 1.
+
+    Returns:
+        [type]: [description]
+    """
+    intersection = np.sum(predict.flatten() * test.flatten())
+    return (2. * intersection + smooth) / (np.sum(predict) + np.sum(test) + smooth)
+
+def loss_graph(results, epoch_num):
+    """[summary]
+
+    Args:
+        results ([type]): [description]
+        epoch_num ([type]): [description]
+    """
+
+    loss = results.history["loss"]
+    val_loss = results.history["val_loss"]
+    plt.plot(range(1, epoch_num+1), loss, 'k', label='Training')
+    plt.plot(range(1, epoch_num+1), val_loss, 'r', label='Validation')
+    plt.title('Loss Graph')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+
+def accuracy_graph(results, epoch_num):
+    """[summary]
+
+    Args:
+        results ([type]): [description]
+        epoch_num ([type]): [description]
+    """
+    loss = results.history["accuraccy"]
+    val_loss = results.history["accuracy_loss"]
+    plt.plot(range(1, epoch_num+1), loss, 'k', label='Training')
+    plt.plot(range(1, epoch_num+1), val_loss, 'r', label='Validation')
+    plt.title('Accuracy Graph')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
 
 def main():
-
+    
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
     # read images from file directory, and ensure variables with 4 dimensions
@@ -67,14 +111,10 @@ def main():
     labels = np.expand_dims(labels, axis=3)
     labels = to_categorical(labels, num_classes=2)
 
-    # print(inputs.shape)
-    # print(labels.shape)
-
     # train test split
     train = 0.7
     valid= 0.15
     test = 0.15
-
     x_train, x_test, y_train, y_test = train_test_split(inputs, labels, test_size=1-train)
     x_valid, x_test, y_valid, y_test = train_test_split(x_test, y_test, test_size=test/(test + valid))
 
@@ -82,6 +122,7 @@ def main():
     width = 128
     input_channel = 3
     desired_channel = 2
+    epoch = 30
 
     ready_model = model(height, width, input_channel, desired_channel)
     ready_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
@@ -90,15 +131,30 @@ def main():
     print(ready_model.summary())
 
 
-    # # train model
-    history = ready_model.fit(x_train, y_train, 
+    ## train model
+    results = ready_model.fit(x_train, y_train, 
                batch_size=2, verbose=1, 
-               epochs=15, 
+               epochs=epoch, 
                validation_data=(x_valid, y_valid), 
                shuffle=False)
 
-    # # save model
+    ## save model
     ready_model.save("Improved_Jian_Epoch15_Batch2.hdf5")
+
+    # plotting losses and accuracy
+    loss_graph(results, epoch)
+    accuracy_graph(results, epoch)
+
+    # evaluate model and get accuracy
+    _, accuracy = ready_model.evaluate(x_test, y_test)
+    print(f"Accuracy -> {accuracy * 100}%")
+
+    predicted = ready_model.predict(x_test)
+
+    # dice scores for each 2 channels
+    for c in range(desired_channel):
+        coeff = dice(predicted[:,:,:,c], y_test[:,:,:,c])
+        print(f"Dice Score for Channel {c}: {coeff}")
 
 
 if __name__ == "__main__":
