@@ -18,27 +18,28 @@ DATA = "/home/azureuser/cloudfiles/code/Users/zhien.zhang/keras_png_slices_data/
 OUTPUT_DIR = "/home/azureuser/cloudfiles/code/Users/zhien.zhang/Output"
 
 # 128
-RESOLUTION = 128
-G_INPUT_RES = 8
-G_INIT_FILTERS = 512
-D_FINAL_RES = 8
-D_INPUT_FILTERS = 32
-EPOCHS = 30
-NEPTUNE = True
-batch = 64
-LATENT = 100
-
-# 64
-# RESOLUTION = 64
-# G_INPUT_RES = 4
+# RESOLUTION = 128
+# G_INPUT_RES = 8
 # G_INIT_FILTERS = 512
-# D_FINAL_RES = 4
-# D_INPUT_FILTERS = 64
+# D_FINAL_RES = 8
+# D_INPUT_FILTERS = 32
 # EPOCHS = 30
 # NEPTUNE = True
 # batch = 64
+# LATENT = 100
+
+# 64
+RESOLUTION = 64
+G_INPUT_RES = 8
+G_INIT_FILTERS = 512
+D_FINAL_RES = 8
+D_INPUT_FILTERS = 64
+EPOCHS = 30
+NEPTUNE = False
+LATENT = 100
+batch = 64
 
 trainer = Trainer(DATA, OUTPUT_DIR, G_INPUT_RES, G_INIT_FILTERS, D_FINAL_RES, D_INPUT_FILTERS, batch=batch,
-                  width=RESOLUTION, height=RESOLUTION, epochs=EPOCHS, use_neptune=NEPTUNE)
+                  image_res=RESOLUTION, epochs=EPOCHS, use_neptune=NEPTUNE, latent_dim=LATENT)
 
 trainer.train()
