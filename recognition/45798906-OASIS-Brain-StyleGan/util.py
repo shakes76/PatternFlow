@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 24/10/2021
+    Date last modified: 29/10/2021
     Python version: 3.9.7
 """
 
@@ -136,7 +136,7 @@ def visualise_loss(
 
 # ==========================================================
 # Saving
-def save_figure(figure: plt.Figure, file_path: str, close: bool = True) -> None:
+def save_figure(figure: plt.Figure, file_path: str) -> None:
 
     figure.savefig(file_path, bbox_inches="tight")
     plt.close(figure)
