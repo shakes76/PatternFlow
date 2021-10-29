@@ -87,7 +87,7 @@ image_callbacks = [learning_schedule(5e-4, 0.6, 2),
                    tf.keras.callbacks.EarlyStopping(monitor='val_dice', patience=5, mode='max', restore_best_weights=True)]
 
 # train model
-history = model.fit(train_ds.batch(32), epochs=30, validation_data=val_ds.batch(32), callbacks=image_callbacks, verbose=1)
+history = model.fit(train_ds.batch(32), epochs=50, validation_data=val_ds.batch(32), callbacks=image_callbacks, verbose=1)
 
 # evaluate model
 plt.figure(figsize=(10, 6))
