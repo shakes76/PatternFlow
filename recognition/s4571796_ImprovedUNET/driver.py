@@ -15,10 +15,12 @@ References:
 """
 # Imports
 from model import unet_model
+from tensorflow.keras.utils import to_categorical
 import os
 import glob
 import cv2
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 
 # Check for GPU -> Use Anaconda3\python.exe
@@ -88,7 +90,7 @@ def format_images_jpg(directory=None):
         for directory_path in glob.glob(directory):
             for img_path in glob.glob(os.path.join(directory_path, "*.jpg")):
                 # Open the image
-                img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)       
+                img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
                 # Resize image as per limitations of GPU
                 img = cv2.resize(img, (width, height))
                 # Append images to list
@@ -99,6 +101,73 @@ def format_images_jpg(directory=None):
 
     return images
 
+def map_images(masks):
+    """ Takes in a set of images and masks, and performs a mapping
+    which converts the images and masks into a 4D Array. Also maps
+    each of the values in the array representing the masks into either
+    of 2 prominent values representing the feature set. [0, 255]
+
+    Obtain 2 Prominent Feature Values by taking the 4 numbers with the
+    largest occurences in the array. Refer to Lines 133 to 143 below
+    2 Feature Peak Values: 0, 255
+    Midpoint Formula: (x + y) / 2
+    Midpoints: 127.5 (128)
+    Define Ranges to convert values to
+       Range (0, 128) set to 0
+       Range (129, 255) set to 255
+
+    Arguments:
+    masks: The set of masks represented in a 3D numpy array
+
+    Requires:
+    images and masks have to come from the same set, i.e Training, Test
+
+    Returns:
+    images: The set of images represented in a 4D numpy array
+    masks: The set of masks represented in a 4D numpy array with 2 values
+    representing the 2 features
+    """
+    encoder = LabelEncoder()
+
+    # Get the first mask as an example
+    # firstmask = masks[0]
+    # print(firstmask.shape)
+
+    # # Change the 2D Array of size 64*64 into a single 1D Array of size 4096
+    # firstmask = np.ravel(firstmask)
+
+    # # Print the frequency of occurences for each of the values of range 0 to 255
+    # unique, counts = np.unique(firstmask, return_counts=True)
+    # frequencies = np.asarray((unique, counts)).T
+    # print(frequencies)
+
+    # Store Original Size of Array into 3 Variables: 
+    # Number of Images (n), Height (h), Width (w)
+    n, h, w = masks.shape
+
+    # Convert Numpy Array consisting of Training Masks to 1D
+    masks = masks.reshape(-1,1)
+
+    # Iterate through all pixels in the entire training set and replace values
+    # while using Numpy's fast time complexity methods.
+    masks[(masks > 0)&(masks < 129)] = 0
+    masks[(masks >= 129)&(masks <= 255)] = 255
+
+    # Transform (0, 255) into (0, 1)
+    masks = encoder.fit_transform(masks)
+
+    # Validate that the array is supposed to only consist of 4 feature values,
+    # Correct Values: 0, 1
+    # print(np.unique(masks))
+
+    # Transform the Train Masks back into the original n, h and w
+    masks = masks.reshape(n, h, w)
+
+    # Perform Addition of Channel Dimension of Train Masks
+    masks = np.expand_dims(masks, axis=3)
+
+    return masks
+
 def main():
     # Loading the Directories containing the Images
     images = format_images_jpg("ISIC_Images")
@@ -108,6 +177,16 @@ def main():
     # Training (0.7), Validation (0.15), Test (0.15)
     train_images, val_images, train_masks, val_masks = train_test_split(images, masks, test_size=0.3, random_state=42)
     val_images, test_images, val_masks, test_masks = train_test_split(val_images, val_masks, test_size=0.5, random_state=42)
+
+    # Change the values of Masks to [0,1]
+    train_masks = map_images(train_masks)
+    val_masks = map_images(val_masks)
+    test_masks = map_images(test_masks)
+
+    # Convert the Masks to 2 channels
+    train_masks = to_categorical(train_masks, num_classes=classes)
+    val_masks = to_categorical(val_masks, num_classes=classes)
+    test_masks = to_categorical(test_masks, num_classes=classes)
 
 if __name__ == "__main__":
     main()
