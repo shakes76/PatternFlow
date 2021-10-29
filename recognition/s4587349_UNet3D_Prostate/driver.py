@@ -156,19 +156,21 @@ def main():
     # label_small_test = sorted([os.path.join(os.getcwd(), 'p/label_test', x)
     #                            for x in os.listdir('p/label_test')])
 
-    # """ Test generator, try to visualise - small"""
-    # training_generator = sm.ProstateSequence(data_small_train,
-    #                                          label_small_train, batch_size=1)
-    # validation_generator = sm.ProstateSequence(data_small_validate,
-    #                                         label_small_validate, batch_size=1)
-
-
-    """ Test generator, try to visualise - full"""
-    training_generator = sm.ProstateSequence(image_train,
-                                             label_train, batch_size=1)
-    validation_generator = sm.ProstateSequence(image_validate,
-                                               label_validate, batch_size=1)
+    """ Test generator, try to visualise - small"""
+    training_generator = sm.ProstateSequence(data_small_train,
+                                             label_small_train, batch_size=1)
+    validation_generator = sm.ProstateSequence(data_small_validate,
+                                            label_small_validate, batch_size=1)
     pred_generator = sm.ProstateSequence(image_test, label_test, batch_size=1, training=False)
+
+
+
+    # """ Test generator, try to visualise - full"""
+    # training_generator = sm.ProstateSequence(image_train,
+    #                                          label_train, batch_size=1)
+    # validation_generator = sm.ProstateSequence(image_validate,
+    #                                            label_validate, batch_size=1)
+    # pred_generator = sm.ProstateSequence(image_test, label_test, batch_size=1, training=False)
 
 
 
@@ -194,21 +196,23 @@ def main():
 
     # """ MODEL """
     # # todo update with BN, Relu
-    model = mdl.unet3d(inputsize=(256, 256, 128, 1), kernelSize=3)
+    # model = mdl.unet3d(inputsize=(256, 256, 128, 1), kernelSize=3)
 
     # SMALL 3 SAMPLE MODEL
-    # model = mdl.unet3d_small(inputsize= (256,256,128,1), kernelSize=3)  #attempt to run smaller model
+    model = mdl.unet3d_small(inputsize= (256,256,128,1), kernelSize=3)  #attempt to run smaller model
 
     model.compile(optimizer='adam', loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    model.summary(print_fn=sm.model_summary_print)  #todo correct
+    # model.summary(print_fn=sm.model_summary_print)  #todo correct
     model.summary()
 
-    with open('model_sum2.txt', 'w') as ff:
+    # print model summary
+    with open('model_summary.txt', 'w') as ff:
         model.summary(print_fn=lambda x: ff.write(x + '\n'))
         # https://newbedev.com/how-to-save-model-summary-to-file-in-keras
 
-    keras.utils.plot_model(model, "unet3d.png", show_shapes=True)
+    # Print model using pydotplus
+    #keras.utils.plot_model(model, "unet3d.png", show_shapes=True)
 
     # WORKING HERE TESTING SUMMARY PLOT
     history = model.fit(training_generator, validation_data=validation_generator, batch_size=1, verbose=2, epochs=3)
@@ -220,14 +224,21 @@ def main():
     pred_argmax = np.argmax(pred, axis=4)
 
     # Get an array of test labels -> (18, 256, 256, 128)
-    y_true = np.empty((len(label_test), 256, 256, 128))
+    y_true = np.empty((len(label_test), 256, 256, 128, 6))
     for i, id in enumerate(label_test):
         y2 = sm.read_nii(id)
-        y_true[i,] = y2
-    # calculate & print dsc
-    dice = sm.dice_coef_multiclass(y_true, pred_argmax, 6)
+        ohe = tf.keras.utils.to_categorical(y2, num_classes = 6)
+        y_true[i,] = ohe
+    print (y_true.shape)
 
-    # WORKING HERE 557
+    y_pred_ohe = tf.keras.utils.to_categorical(pred_argmax, num_classes = 6)
+
+
+
+    # calculate & print dsc
+    dice = sm.dice_coef_multiclass(y_true, y_pred_ohe, 6)
+
+    # WORKING HERE 560
     # PRINT SLICES OF y_true and  y_pred
     sm.slices_pred(y_true, "y_true.png")
 

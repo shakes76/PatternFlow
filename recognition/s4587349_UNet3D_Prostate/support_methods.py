@@ -77,11 +77,7 @@ class ProstateSequence(keras.utils.Sequence):
         X = np.empty((self.batch_size, *self.dim))
 
         for i, id in enumerate(list_data_tmp):
-            # print("i, id: ", i, id) #
-            # k = self.read_nii(id)  #
-            # print("L100 kx: ", k.shape)  #
             X[i,] = self.read_nii(id)
-            # print("L102 X.shape, i: ", X.shape, i)
         return X
 
     def _generation_y(self, list_label_tmp):
@@ -89,19 +85,14 @@ class ProstateSequence(keras.utils.Sequence):
         Generates one batch of labels, given a list of labels file paths/names.
         The labels match the data files from _generation_x()
         :param list_data_tmp:
-        :return: One batch of nparray of data.
+        :return: a single batch in an nparray
         """
         y = np.empty((self.batch_size, *self.dim, self.n_classes), dtype=int)
 
         for i, id in enumerate(list_label_tmp):
-            # k = self.read_nii(id)  #
-            # slices(k)
-            # print("L115 ky: ", k.shape)  #
-            y2 = self.read_nii(id)  # todo investigate
-
+            y2 = self.read_nii(id)
             y[i,] = tf.keras.utils.to_categorical(y2, num_classes=self.n_classes,
                                                   dtype='uint8')
-            # print("L119 y.shape, i : ", y.shape, i)
         return y
 
     def read_nii(self, file_path):
@@ -120,6 +111,7 @@ class ProstateSequence(keras.utils.Sequence):
     def _data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
         # Initialization
+        print("114 never called check")
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty(self.batch_size, dtype=int)
 
@@ -135,7 +127,12 @@ class ProstateSequence(keras.utils.Sequence):
 
 
 def plot_loss(history):
-    # Plot training & val accuracy and loss at each epoch
+    """
+    Plots training and validation losses
+
+    :param history: from model.fit()
+    :return: outputs a figure of the plot
+    """
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     epochs = range(1, len(loss)+1)
@@ -151,6 +148,12 @@ def plot_loss(history):
 
 
 def plot_accuracy(history):
+    """
+    Plot training and validation accuracy
+
+    :param history: from model.fit()
+    :return: outputs a figure of the plot
+    """
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
     epochs = range(1, len(acc)+1)
@@ -186,14 +189,15 @@ def raw_data_info(image):
 
 
 def slices(img):
-    """ takes slices of input image."""
+    """ takes slices of input image and sends them to be printed to screen."""
     slice_0 = img[127, :, :]
     slice_1 = img[:, 127, :]
     slice_2 = img[:, :, 63]
     show_slices([slice_0, slice_1, slice_2])
 
 def slices_ohe(img):
-    """ takes slices of input image."""
+    """ takes slices of one hot encoded label and sends them to be printed to
+    screen. Looking for slices that include a portion of each class """
     slice_0 = img[:,128,:,0]  # Background
     slice_1 = img[:,128,:,1]  # Body
     slice_2 = img[:,128,:,2]  # Bones
@@ -212,7 +216,7 @@ def slices_pred(img, filename):
     :return: Nothing
     """
     slice_0 = img[0:,:,]
-    plt.imshow(slice_0.T)
+    plt.imshow(slice_0)
     show_slices([slice_0])
     plt.savefig(filename)
 
@@ -240,10 +244,6 @@ def show_slices(sliced):
     #     axes[i].imshow(slice.T, cmap="gray", origin="lower")
 
 
-def label_array(label_test):
-    pred_true = np.array()
-
-
 def dice_coef(y_true, y_pred):
     """
 
@@ -251,20 +251,27 @@ def dice_coef(y_true, y_pred):
     :param y_pred: Array output from pred_argmax
     :return: return
     """
-    smooth = 0.000001
-    # print("240 y true: ", y_true.shape)
-    # print(" y pred: ", y_pred.shape)
+    smooth = 0.1
+    print("255 y_true", y_true.shape) #todo
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
-    print("dice is ", (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth))
     return (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
 
 
 def dice_coef_multiclass(y_true, y_pred, classes):
+    """
+    Inspired by gattia, 7 April 2018
+    https://github.com/keras-team/keras/issues/9395
+
+    :param y_true: labels for test data
+    :param y_pred: predicted labels for test data
+    :param classes: 6 classes in data set
+    :return: a list containing DSC values for each class
+    """
     dice = []
     for index in range(classes):
-        x = dice_coef(y_true[:,:,:,index], y_pred[:,:,:,index]) # 535 5 dim but only 4 provided
+        x = dice_coef(y_true[:,:,:, :,index], y_pred[:,:,:,:,index]) # 535 5 dim but only 4 provided
         dice = dice + [x]
     print_dice(dice)
     return dice  # taking average
