@@ -1,3 +1,5 @@
+import math
+
 import torch
 import torch.nn as nn
 
@@ -19,32 +21,81 @@ import torch.nn as nn
 # converted to RGB using a separate 1 × 1 convolution, similar to
 # Karras et al. [30]. "
 
+def scale(module):
+    '''
+    Scaling weights for ConvLayer, FullyConnected and Synthesis Network blocks
+    '''
+    name = "weight"
+    hook = ScaleWeights(name)
+    weight = getattr(module, name)
+    module.register_parameter(name + '_orig', nn.Parameter(weight.data))
+    del module._parameters[name]
+    module.register_forward_pre_hook(hook)
+    return module
 
-class FullyConnected(nn.Module):
-    def __init__(self, dim_in, dim_out):
-        super().__init__()
-        pass
 
-    def forward(self, x):
-        pass
+class ScaleWeights:
+    '''
+    Apply scaling on a module
+    '''
+    def __init__(self, name):
+        # the name of the attribute to scale
+        self.name = name
 
+    def scale(self, module):
+        w = getattr(module, self.name + '_orig')
+        fin = w.data[0][0].numel() * w.data.size(1)
 
-class ConvLayer(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        pass
+        return w * math.sqrt(2 / fin)
 
-    def forward(self, x):
-       pass
+    def __call__(self, module, _):
+        weight = self.scale(module)
+        setattr(module, self.name, weight)
 
 
 class Normalize(nn.Module):
+    '''
+    Normalisation for Mapping Network f, applied on input vector
+    '''
     def __init__(self):
         super().__init__()
-        pass
 
     def forward(self, x):
-        pass
+        return x / torch.sqrt(torch.mean(x ** 2, keepdim=True, dim=1) + 1e-10)
+
+
+class FullyConnected(nn.Module):
+    '''
+    Fully connected layer
+    '''
+    def __init__(self, in_dim, out_dim):
+        super().__init__()
+
+        linear_layer = nn.Linear(in_dim, out_dim)
+        linear_layer.weight.data.normal_()
+        linear_layer.bias.data.zero_()
+
+        self.linear = scale(linear_layer)
+
+    def forward(self, x):
+        return self.linear(x)
+
+
+class ConvLayer(nn.Module):
+    '''
+    Convolutional layer
+    '''
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        conv2d = nn.Conv2d(*args, **kwargs)
+        # "initialize all weights ... using N(0, 1)" [page 9]
+        conv2d.weight.data.normal_()
+        conv2d.bias.data.zero_()
+
+        self.conv2d = scale(conv2d)
+
+    def forward(self, x):
+        return self.conv2d(x)
 
 
 class A(nn.Module):
@@ -54,10 +105,26 @@ class A(nn.Module):
 
     def __init__(self, latent_dim, channels):
         super().__init__()
-        pass
+
+        self.transform = FullyConnected(latent_dim, channels * 2)
+
+        self.transform.linear.bias.data[:channels] = 1
+        self.transform.linear.bias.data[channels:] = 0
 
     def forward(self, w):
-        pass
+        return self.transform(w).unsqueeze(2).unsqueeze(3)
+
+class B(nn.Module):
+    '''
+    "“B” applies learned per-channel scaling factors to the noise input"
+    '''
+
+    def __init__(self, channels):
+        super().__init__()
+        self.w = nn.Parameter(torch.zeros((1, channels, 1, 1)))
+
+    def forward(self, noise):
+        return noise * self.w
 
 
 class AdaIn(nn.Module):
@@ -70,23 +137,11 @@ class AdaIn(nn.Module):
 
     def __init__(self, x):
         super().__init__()
-        pass
+        self.norm2d = nn.InstanceNorm2d(x)
 
     def forward(self, image, style):
-        pass
-
-
-class B(nn.Module):
-    '''
-    " “B” applies learned per-channel scaling factors to the noise input"
-    '''
-
-    def __init__(self, channels):
-        super().__init__()
-        pass
-
-    def forward(self, noise):
-        pass
+        factor, bias = style.chunk(2, 1)
+        return self.norm2d(image) * factor + bias
 
 
 class FirstSynthesisNetworkBlock(nn.Module):
@@ -130,14 +185,22 @@ class MappingNetwork(nn.Module):
     '''
     Mapping network has number_of_mapping_network_blocks fully connected layers
     Maps latent z to w.
+    "...the mapping f is implemented using an 8-layer MLP" [page 2]
+
     '''
 
     def __init__(self, number_of_mapping_network_blocks, latent_dim):
         super().__init__()
-        pass
+        layers = []
+        layers.append(Normalize())
+        for i in range(number_of_mapping_network_blocks):
+            layers.append(FullyConnected(latent_dim, latent_dim))
+            layers.append(nn.LeakyReLU(0.2))
+
+        self.mapping = nn.Sequential(*layers)
 
     def forward(self, z):
-        pass
+        return self.mapping(z)
 
 
 class StyleBasedGenerator(nn.Module):
