@@ -7,6 +7,8 @@ num_classes = 100
 input_shape = (64, 64, 3)
 
 learning_rate = 0.001
+initial_learning_rate = 0.05
+minimum_learning_rate = 0.0001
 weight_decay = 0.0001
 # batch_size = 64
 batch_size = 16

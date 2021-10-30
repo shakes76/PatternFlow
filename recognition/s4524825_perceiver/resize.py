@@ -9,13 +9,6 @@ import data
 
 START_DIR = "data/AKOA_Analysis/"
 
-VALIDATION_SPLIT = 0.3
-
-train_labels = ""
-validation_labels = ""
-label_to_content = {}
-
-
 label = 0
 for dir in os.listdir(START_DIR):
     for file in os.listdir(START_DIR + "/" + dir):
@@ -26,11 +19,11 @@ for dir in os.listdir(START_DIR):
         # plt.imshow(cv2.resize(image, (32, 32)))
         # plt.show()
         image = cv2.resize(image, (64, 64))
-        plt.imshow(image)
-        print("normal")
-        plt.show()
-        plt.imshow(data.random_flip(image))
-        print("flip")
-        plt.show()
-        print(filename, newfilename)
+        # plt.imshow(image)
+        # print("normal")
+        # plt.show()
+        # plt.imshow(data.random_flip(image))
+        # print("flip")
+        # plt.show()
+        # print(filename, newfilename)
         cv2.imwrite(newfilename, image)
