@@ -16,7 +16,7 @@ def create_encoder_model(latent_dimensions: int,
         keras.layers.Conv2D(
                 64, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2D(latent_dimensions, 1, padding="same")
-    ])
+    ], name="encoder")
 
 def create_decoder_model(input_shape: Tuple[int, int, int]) \
         -> keras.models.Sequential:
@@ -29,7 +29,7 @@ def create_decoder_model(input_shape: Tuple[int, int, int]) \
                 32, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2DTranspose(
                 1, 3, padding="same")
-    ])
+    ], name="decoder")
 
 def create_vqvae_model(latent_dimensions: int, number_of_embeddings: int,
         input_shape: Tuple[int, int, int]) -> keras.models.Sequential:
