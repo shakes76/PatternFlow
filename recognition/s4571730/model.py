@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 from cross_attention import cross_attention_layer
-from transformer import transformer_layer
+from transformer import Transformer
 from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
 
@@ -71,8 +71,7 @@ class Perceiver(tf.keras.Model):
         )
 
         # Create Transformer module.
-        self.transformer = transformer_layer(
-            self.latent_size,
+        self.transformer = Transformer(
             self.proj_size,
             self.num_heads,
             self.num_trans_blocks,

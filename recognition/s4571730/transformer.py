@@ -4,48 +4,62 @@ import copy
 
 """
 Create a self-attention (transformer) layer, with structure mirroring the paper's spec
-
-Params:
-    latent_size: int, size of the latent dimension
-    proj_size: int, embedding size of fourier features, applied to
-                    each element in the data and latent arrays
-    num_heads: int number of heads in the MultiHeadAttention layer
-    num_trans_blocks: int, number of transformer blocks in the model
-    
-Returns:
-    a transformer model, taking in an img and a latent array 
-    and outputing QKV self-attention
 """
-def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
-    inputs_orig = layers.Input(shape=(latent_size, proj_size))
+class Transformer(layers.Layer):
+    """
+    The transformer layer. Process params and create a model.
 
-    input_plus_output = copy.deepcopy(inputs_orig)
-    # Create multiple layers of the Transformer block.
-    for _ in range(num_trans_blocks):
-        # Layer norm
-        norm = layers.LayerNormalization()(inputs_orig)
-        # Create QKV self-attention layer.
-        # Multihead becomes self-attetion when q = k = v. v = k if not supplied
-        attention = layers.MultiHeadAttention(
-            num_heads, proj_size)(norm, norm)
+    Params:
+        latent_size: int, size of the latent dimension
+        proj_size: int, embedding size of fourier features, applied to
+                        each element in the data and latent arrays
+        num_heads: int number of heads in the MultiHeadAttention layer
+        num_trans_blocks: int, number of transformer blocks in the model
+    """
+    def __init__(self, proj_size, num_heads, num_trans_blocks):
+        super(Transformer, self).__init__()
+        self.norm = layers.LayerNormalization()
+        self.attention = layers.MultiHeadAttention(num_heads, proj_size)
+        self.dense = layers.Dense(proj_size)
+        self.add = layers.Add()
+        self.dense_gelu = layers.Dense(proj_size, activation=tf.nn.gelu)
+        self.num_trans_blocks = num_trans_blocks
 
-        # pass to a linear layer
-        attention = layers.Dense(proj_size)(attention)
+    """
+    Call the transformer layer to model the input imgs
 
-        # Add output to input
-        attention = layers.Add()([attention, inputs_orig])
+    Params:
+        inputs: output from the cross-attention layer
 
-        # Apply layer normalizationn
-        attention = layers.LayerNormalization()(attention)
+    Returns: 
+        QKV self-attention
+    """
+    def call(self, inputs):
+        # Create multiple layers of the Transformer block.
+        input_plus_output = inputs
+        for _ in range(self.num_trans_blocks):
+            # Layer norm
+            norm = self.norm(inputs)
+            # Create QKV self-attention layer.
+            # Multihead becomes self-attetion when q = k = v. v = k if not supplied
+            attention = self.attention(norm, norm)
 
-        # Dense MLP block
-        outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
+            # pass to a linear layer
+            attention = self.dense(attention)
 
-        # Final linear layer
-        outputs = layers.Dense(proj_size)(outputs)
+            # Add output to input
+            attention = self.add([attention, inputs])
 
-         # Add output to input
-        input_plus_output = layers.Add()([outputs, attention])
+            # Apply layer normalizationn
+            attention = self.norm(attention)
 
-    # Create the Keras model.
-    return tf.keras.Model(inputs=inputs_orig, outputs=input_plus_output)
+            # Dense MLP block
+            outputs = self.dense_gelu(attention)
+
+            # Final linear layer
+            outputs = self.dense(outputs)
+
+            # Add output to input
+            input_plus_output = self.add([outputs, attention])
+
+        return input_plus_output
