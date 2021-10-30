@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 from torch import nn, einsum
 from einops import rearrange, repeat
 from math import pi
@@ -20,16 +19,25 @@ def fourier_encode(x, max_freq, num_bands=4):
     x = torch.cat((x, orig_x), dim=-1)
     return x
 
+"""
+Feed forward network after the attention layer
+"""
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim = -1)
+        return x * F.gelu(gates)
+
 class FeedForward(nn.Module):
     def __init__(self, dim, mult = 4):
         super().__init__()
-        self.upsample = nn.Linear(dim, dim * mult * 2)
-        self.downsample = nn.Linear(dim * mult, dim)
+        self.net = nn.Sequential(
+            nn.Linear(dim, dim * mult * 2),
+            GEGLU(),
+            nn.Linear(dim * mult, dim)
+        )
 
     def forward(self, x):
-        x = self.upsample(x)
-        x, gates = x.chunk(2, dim=-1)
-        return self.downsample(x * F.gelu(gates))
+        return self.net(x)
 
 
 """

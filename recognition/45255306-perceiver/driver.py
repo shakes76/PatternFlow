@@ -50,7 +50,7 @@ def setup_train(config, train_transform, test_transform, data_paths):
 
     model  = Perceiver(6, 10., 6, input_channels=1, input_axis=2,
             num_latents=512, latent_dim=512, cross_heads=1, latent_heads=8,
-            cross_dim_head=64, latent_dim_head=64, num_classes=10, attention_dropout=0.)
+            cross_dim_head=64, latent_dim_head=64, num_classes=config['classes'], attention_dropout=0.)
     model.to(config['device'])
     
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
