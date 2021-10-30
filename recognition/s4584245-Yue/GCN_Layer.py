@@ -5,6 +5,9 @@ import torch.nn.functional as fun
 
 
 class GCNLayer(nn.Module):
+    """
+    GCN layer class.
+    """
     def __init__(self, input_dim, output_dim, use_bias=True):
         super(GCNLayer, self).__init__()
         self.input_dim = input_dim
