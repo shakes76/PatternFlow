@@ -3,11 +3,8 @@ This script creates an Improved U-Net model.
 Specifications of the model can be found at: https://arxiv.org/abs/1802.10508v1
 @author: Mujibul Islam Dipto
 """
-from os import name
-import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dropout, Input, concatenate, Add, UpSampling2D, LeakyReLU
 from tensorflow.keras import Model
-from tensorflow.python.eager.context import context
 from tensorflow_addons.layers import InstanceNormalization
 from tensorflow.keras.layers import  Conv2D
 
@@ -166,3 +163,4 @@ def create_model(output_channels):
     output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax")(add_layer_7) # softmax
     model = Model(name="ImprovedUnet", inputs=input_layer, outputs=output) # final model
     return model
+ 
