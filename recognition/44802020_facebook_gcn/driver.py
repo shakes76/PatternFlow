@@ -7,6 +7,8 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dense, Softmax, Input
 from tensorflow.keras import losses, layers, models, activations
 import scipy.sparse as spr
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -154,9 +156,8 @@ def main():
 
     my_model.add(Input(shape=tf.Tensor.get_shape(train_feats)))
 
-    # my_model.add(Dense(96))
     my_model.add(myGraphModel.FaceGCNLayer(a_bar, a_bar_test))
-    # my_model.add((Dense(64)))
+    my_model.add((Dense(64)))
     my_model.add(myGraphModel.FaceGCNLayer(a_bar, a_bar_test))
     my_model.add(Dense(4))
 
@@ -164,21 +165,29 @@ def main():
     # my_model.
     my_model.fit(train_feats,
                  train_labels,
-                 epochs=100,
-                 batch_size=22470, shuffle=True
+                 epochs=50,
+                 batch_size=22470, shuffle=False
                  )
 
     print(my_model.summary())
 
     # Evaluate
-
     my_model.evaluate(test_feats,
                       test_labels,
                       batch_size=22470)
 
-    # Predict
-
     # TSNE
+    tsne = TSNE(2)
+    tsne_data = tsne.fit_transform(test_feats)
+    labels = test_labels
+    print(tsne_data.shape)
+
+    plt.figure(figsize=(6, 5))
+    plt.scatter(tsne_data[labels == 0, 0], tsne_data[labels == 0, 1], c='b')
+    plt.scatter(tsne_data[labels == 1, 0], tsne_data[labels == 1, 1], c='r')
+    plt.scatter(tsne_data[labels == 2, 0], tsne_data[labels == 2, 1], c='g')
+    plt.scatter(tsne_data[labels == 3, 0], tsne_data[labels == 3, 1], c='y')
+    plt.show()
 
 
 if __name__ == '__main__':
