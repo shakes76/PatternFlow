@@ -4,6 +4,8 @@ import keras.layers
 import keras.models
 import tensorflow as tf
 
+# VQ VAE Model
+
 def create_encoder_model(latent_dimensions: int,
         input_shape: Tuple[int, int, int]) -> keras.models.Sequential:
     '''Returns the Encoder model used for the VQ VAE.'''
@@ -97,3 +99,106 @@ class VectorQuantizer(keras.layers.Layer):
         quantized_original_dims = x + tf.stop_gradient(
                 quantized_original_dims - x)
         return quantized_original_dims
+
+# PixelCNN Prior Model
+
+def create_pixel_cnn(height, width, number_of_channels) \
+        -> keras.layers.Sequential:
+    return keras.layers.Sequential([
+        keras.layers.Input(shape=(height, width, number_of_channels)),
+        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=True),
+        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
+        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
+        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
+        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
+    ])
+
+class MaskedConv2D(keras.layers.Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(MaskedConv2D, self).__init__()
+        self.mask_type = mask_type
+        self.conv = keras.layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        self.conv.build(input_shape)
+        mask = tf.ones(shape=self.conv.kernel.get_shape())
+        center_h = input_shape[0] // 2
+        center_w = input_shape[1] // 2
+        if self.mask_type == "V":
+            mask[center_h + 1:, :, :, :] = 0.0
+        else:
+            mask[:center_h, :, :] = 0.0
+            mask[center_h + 1:, :, :] = 0.0
+            if self.mask_type == "A":
+                mask[center_h, center_w:, :, :] = 0.0
+            elif self.mask_type == "B":
+                mask[center_h, center_w + 1:, :, :] = 0.0
+
+        self.mask = tf.constant(mask, dtype=tf.float32)
+
+    def call(self, input):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(input)
+
+class GatedPixelCnnBlock(keras.models.Model):
+    def __init__(self, filters, kernel_size, is_first: bool = False):
+        super(GatedPixelCnnBlock, self).__init__()
+
+        self.filters = filters
+        self.kernel_size = kernel_size
+        self.is_first = is_first
+
+        self.vertical_conv = MaskedConv2D(mask_type="V",
+                filters=2 * filters, kernel_size=kernel_size)
+        self.horizontal_conv = MaskedConv2D(
+                mask_type=("A" if is_first else "B"), filters=2 * filters,
+                kernel_size=kernel_size)
+
+        self.v_to_h_conv = keras.layers.Conv2D(
+                filters=2 * self.filters, kernel_size=1, strides=(1,1),
+                padding="same")
+        self.horizontal_after_gate_conv = keras.layers.Conv2D(
+            filters=self.filters, kernel_size=1, strides=(1,1), padding="same")
+
+        self.vertical_top_padding = keras.layers.ZeroPadding2D(
+                padding=((1, 0), (0, 0)))
+        self.vertical_bottom_crop = keras.layers.Cropping2D(
+                cropping=((0, 1), (0, 0)))
+
+    def _split_feature_maps(self, x):
+        return tf.split(x, 2, axis=-1)
+
+    def _apply_gate_activation(self, x):
+        split = self._split_feature_maps(x)
+        return tf.math.multiply(
+            tf.math.tanh(split[0]),
+            tf.math.sigmoid(split[1])
+        )
+
+    def call(self, inputs):
+        vertical_stack_in = inputs[0]
+        horizontal_stack_in = inputs[1]
+
+        vertical_before_gate = self.vertical_conv(vertical_stack_in)
+        vertical_stack_out = self._apply_gate_activation(vertical_before_gate)
+
+        vertical_for_horizontal = self.vertical_top_padding(
+                vertical_before_gate)
+        vertical_for_horizontal = self.vertical_bottom_crop(
+                vertical_for_horizontal)
+        vertical_for_horizontal = self.v_to_h_conv(vertical_before_gate)
+
+        horizontal_before_gate = self.horizontal_conv(horizontal_stack_in)
+        horizontal_before_gate = vertical_for_horizontal \
+                    + horizontal_before_gate
+
+        horizontal_stack_out = self._apply_gate_activation(
+                horizontal_before_gate)
+        horizontal_stack_out = self.horizontal_after_gate_conv(
+                horizontal_stack_out)
+
+        # Add residual if this isn't the first block in the network
+        if self.is_first:
+            return vertical_stack_out, horizontal_stack_out
+
+        return vertical_stack_out, horizontal_stack_in + horizontal_stack_out

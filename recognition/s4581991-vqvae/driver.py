@@ -1,4 +1,3 @@
-from pickle import load
 from typing import Tuple
 
 from keras.datasets import mnist
@@ -22,7 +21,7 @@ def load_and_preprocess_mnist_data():
     test_X = np.expand_dims(test_X, -1) / 255.0
     return (train_X, train_y), (test_X, test_y)
 
-def run_mnist():
+def run_mnist_vqvae():
     '''
     Train and test the VQ VAE model on MNIST data
     '''
@@ -35,6 +34,9 @@ def run_mnist():
         plt.subplot(4, 5, i)
         plt.imshow(recreated[i - 1])
     plt.show()
+
+def generate_mnist_with_pixel_cnn(vqvae_model):
+    pass
 
 def train(data: np.array, sample_shape: Tuple[int, int, int],
         latent_dimensions: int, number_of_embeddings: int)\
@@ -70,7 +72,7 @@ def vq_vae_loss(variance):
     return calc_loss
 
 def main():
-    run_mnist()
+    run_mnist_vqvae()
 
 if __name__ == "__main__":
     main()
