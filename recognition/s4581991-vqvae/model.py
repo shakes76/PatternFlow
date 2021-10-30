@@ -103,8 +103,8 @@ class VectorQuantizer(keras.layers.Layer):
 # PixelCNN Prior Model
 
 def create_pixel_cnn(height, width, number_of_channels) \
-        -> keras.layers.Sequential:
-    return keras.layers.Sequential([
+        -> keras.models.Sequential:
+    return keras.models.Sequential([
         keras.layers.Input(shape=(height, width, number_of_channels)),
         GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=True),
         GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
