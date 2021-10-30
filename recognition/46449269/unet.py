@@ -11,6 +11,8 @@ from google.colab import drive
 drive.mount('/content/drive')
 
 import os
+import glob
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from PIL import Image
 import tensorflow as tf
@@ -18,71 +20,64 @@ from tensorflow.keras import layers, models, Input, Model
 from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras import backend as K
 
-img_GroundTruth = os.chdir('/content/drive/MyDrive/ISIC2018_Task1_Training_GroundTruth_x2')
-img_Input = os.chdir('/content/drive/MyDrive/ISIC2018_Task1-2_Training_Input_x2')
+img_GroundTruth = '/content/drive/MyDrive/ISIC2018_Task1_Training_GroundTruth_x2/*.png'
+img_Input = '/content/drive/MyDrive/ISIC2018_Task1-2_Training_Input_x2/*.jpg'
 
-img_Input = [os.path.join('/content/drive/MyDrive/ISIC2018_Task1-2_Training_Input_x2', path) for path in img_Input[1:-1]]
+img_height = 256
+img_width = 192
 
-print(len(img_GroundTruth), len(img_input))
+def improved_unet(input_size):
+  """
+  build improved UNET model
+  """
 
-#target image size and color channels
-rows = 128
-cols = 128
-channels = 1
+  #Input
+  inputs = Input(input_size)
 
-epoch_no = 5
-batch_size = 8
+  #encoder
+  conv1 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(inputs)
+  conv1 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv1)
+  p1 = layers.MaxPool2D(pool_size=(2,2))(conv1)
 
-def model_unet(rows, cols, channels=1):
-    #this is an exact implementation of the model described in (Ronneberger et al, 2015)
-    #Input
-    ins = K.Input((rows,cols,channels))
+  conv2 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(p1)
+  conv2 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv2)
+  p2 = layers.MaxPool2D(pool_size=(2,2))(conv2)
 
-    #downsample part of UNET
-    #step 1
-    conv1 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(ins)
-    conv1 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv1)
-    mp1 = layers.MaxPool2D(pool_size=(2,2))(conv1)
-    #step 2
-    conv2 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(mp1)
-    conv2 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv2)
-    mp2 = layers.MaxPool2D(pool_size=(2,2))(conv2)
-    #step 3
-    conv3 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(mp2)
-    conv3 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv3)
-    mp3 = layers.MaxPool2D(pool_size=(2,2))(conv3)
-    #step 4
-    conv4 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(mp3)
-    conv4 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv4)
-    mp4 = layers.MaxPool2D(pool_size=(2,2))(conv4)
-    #step 5
-    conv5 = layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(mp4)
-    conv5 = layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(conv5)
-    
-    #upsampling part of UNET
-    #step6
-    ups6 = layers.Conv2DTranspose(filters=512, kernel_size=3, strides=(2,2), padding="same")(conv5)
-    conc6 = layers.concatenate([conv4, ups6], axis=3)
-    conv6 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc6)
-    conv6 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv6)
-    #step7
-    ups7 = layers.Conv2DTranspose(filters=256, kernel_size=3, strides=(2,2), padding="same")(conv6)
-    conc7 = layers.concatenate([conv3, ups7], axis=3)
-    conv7 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conc7)
-    conv7 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv7)
-    #step8
-    ups8 = layers.Conv2DTranspose(filters=128, kernel_size=3, strides=(2,2), padding="same")(conv7)
-    conc8 = layers.concatenate([conv2, ups8], axis=3)
-    conv8 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conc8)
-    conv8 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv8)
-    #step9
-    ups9 = layers.Conv2DTranspose(filters=64, kernel_size=3, strides=(2,2), padding="same")(conv8)
-    conc9 = layers.concatenate([conv1, ups9], axis=3)
-    conv9 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conc9)
-    conv9 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv9)
+  conv3 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(p2)
+  conv3 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv3)
+  p3 = layers.MaxPool2D(pool_size=(2,2))(conv3)
 
-    outs = layers.Conv2D(filters=1, kernel_size=1, padding="same", activation="sigmoid")(conv9)
-    
-    model = layers.Model(inputs=ins, outputs=outs)
+  conv4 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(p3)
+  conv4 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv4)
+  p4 = layers.MaxPool2D(pool_size=(2,2))(conv4)
 
-    return model
+  conv5 = layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(p4)
+  conv5 = layers.Conv2D(filters=1024, kernel_size=3, padding="same", activation="relu")(conv5)
+  drop = Dropout(0.5)(conv5)
+
+  #decoder
+  ups6 = layers.Conv2DTranspose(filters=512, kernel_size=3, strides=(2,2), padding="same")(conv5)
+  conc6 = layers.concatenate([conv4, ups6], axis=3)
+  conv6 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conc6)
+  conv6 = layers.Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(conv6)
+
+  ups7 = layers.Conv2DTranspose(filters=256, kernel_size=3, strides=(2,2), padding="same")(conv6)
+  conc7 = layers.concatenate([conv3, ups7], axis=3)
+  conv7 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conc7)
+  conv7 = layers.Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(conv7)
+
+  ups8 = layers.Conv2DTranspose(filters=128, kernel_size=3, strides=(2,2), padding="same")(conv7)
+  conc8 = layers.concatenate([conv2, ups8], axis=3)
+  conv8 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conc8)
+  conv8 = layers.Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(conv8)
+
+  ups9 = layers.Conv2DTranspose(filters=64, kernel_size=3, strides=(2,2), padding="same")(conv8)
+  conc9 = layers.concatenate([conv1, ups9], axis=3)
+  conv9 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conc9)
+  conv9 = layers.Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(conv9)
+
+  outputs = layers.Conv2D(filters=1, kernel_size=1, padding="same", activation="sigmoid")(conv9)
+  
+  model = Model(inputs=ins, outputs=outputs)
+
+  return model
