@@ -4,11 +4,11 @@ from tensorflow.keras import layers
 
 
 """ 
-Image Patch extractor to extract a tensor of patches from each image. Taken from keras tutorial.
+Image Patch extractor to extract a tensor of patches from each image. Taken from keras perceiver tutorial.
 """
-class Patches(layers.Layer):
+class PatchExtractor(layers.Layer):
     def __init__(self, patch_size):
-        super(Patches, self).__init__()
+        super(PatchExtractor, self).__init__()
         self.patch_size = patch_size
 
     # Returns a tensor of patches from the image
@@ -38,15 +38,15 @@ class PatchEncoder(layers.Layer):
         return encoded
 
 
-class Perceiver:
-    def __init__(self, patch_size, data_dim, latent_size, projection_size, num_heads, transformer_layers, dense_units, dropout_rate, depth, classifier_units):
+class Perceiver(keras.Model):
+    def __init__(self, patch_size, data_dim, latent_size, projection_size, num_heads, transformer_depth, dense_units, dropout_rate, depth, classifier_units):
         super(Perceiver, self).__init__()
         self.latent_size = latent_size
         self.data_dim = data_dim
         self.patch_size = patch_size
         self.projection_size = projection_size
         self.num_heads = num_heads
-        self.transformer_module_layers = transformer_layers
+        self.transformer_depth = transformer_depth
         self.dense_units = dense_units
         self.dropout_rate = dropout_rate
         self.depth = depth
@@ -55,12 +55,12 @@ class Perceiver:
     # Override the keras build method to initialise the required layers in the model
     def build(self, input_shape):
         self.latent_data = self.add_weight(shape=(self.latent_size, self.projection_size), initializer="random_normal", trainable=True)
-        self.patch_extractor = Patches(self.patch_size)
+        self.patch_extractor = PatchExtractor(self.patch_size)
         self.patch_encoder = PatchEncoder(self.data_dim, self.projection_size)
-        self.cross_attention_module = create_cross_attention_module(self.latent_size, self.data_dim, self.projection_size, self.dense_units, self.dropout_rate)
-        self.transformer_module = create_transformer_module(self.latent_size, self.projection_size, self.num_heads, self.transformer_module_layers, self.dense_units, self.dropout_rate)
+        self.cross_attention_module = Perceiver.create_cross_attention_module(self.latent_size, self.data_dim, self.projection_size, self.dense_units, self.dropout_rate)
+        self.transformer_module = Perceiver.create_transformer_module(self.latent_size, self.projection_size, self.num_heads, self.transformer_depth, self.dense_units, self.dropout_rate)
         self.global_average_pooling = layers.GlobalAveragePooling1D()
-        self.dense_classification = create_dense_layers(output_units=self.classifier_units, dropout_rate=self.dropout_rate)
+        self.dense_classification = Perceiver.create_dense_layers(output_units=self.classifier_units, dropout_rate=self.dropout_rate)
 
         super(Perceiver, self).build(input_shape)
 
@@ -75,7 +75,7 @@ class Perceiver:
         }
 
         # Send our latent data through the cross attention and transformer modules iteratively
-        for unused in range(self.depth):
+        for i in range(self.depth):
             latent_data = self.cross_attention_module(cross_attention_inputs)
             latent_data = self.transformer_module(latent_data)
             # Set the latent data of the next iteration.
@@ -146,11 +146,11 @@ class Perceiver:
     skip connections connecting to the next block. This was modified from the keras transformer tutorial.
     """
     @staticmethod
-    def create_transformer_module(latent_size, projection_size, num_heads, transformer_layers, dense_units, dropout_rate):
+    def create_transformer_module(latent_size, projection_size, num_heads, depth, dense_units, dropout_rate):
         inputs = layers.Input(shape=(latent_size, projection_size))
         x0 = inputs
         # Loop through, creating each transformer block
-        for unused in range(transformer_layers):
+        for i in range(depth):
             # Apply layer normalization.
             x1 = layers.LayerNormalization()(x0)
             # Create a multi-head self-attention layer.
@@ -168,4 +168,3 @@ class Perceiver:
         # Construct into model and return
         model = keras.Model(inputs=inputs, outputs=x0)
         return model
-
