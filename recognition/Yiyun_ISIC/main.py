@@ -20,6 +20,8 @@ EPOCHS = 20
 
 
 def main():
+    """Main driver function.
+    """
     # load datasets
     features, labels = get_filenames(isic_dir=ISIC_DIR)
     train_features, train_labels, val_features, val_labels, test_features, test_labels = split_data(
