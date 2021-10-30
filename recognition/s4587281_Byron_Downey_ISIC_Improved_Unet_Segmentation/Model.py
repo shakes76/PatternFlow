@@ -35,3 +35,17 @@ y_val = y_dataset.take(math.floor(val_split * dataset_size))
 #contains test data
 x_test = x_dataset.skip(math.floor(val_split * dataset_size))
 y_test = y_dataset.skip(math.floor(val_split * dataset_size))
+
+#normalise all images
+def normalise(image):
+  normalised_image = tf.math.divide(image, 255.0)
+  return normalised_image
+
+x_train = x_train.map(normalise)
+y_train = y_train.map(normalise)
+
+x_val = x_val.map(normalise)
+y_val = y_val.map(normalise)
+
+x_test = x_test.map(normalise)
+y_test = y_test.map(normalise)
