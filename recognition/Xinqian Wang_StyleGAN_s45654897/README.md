@@ -59,7 +59,9 @@ For people who would like to know more about which according to a specific conce
 1. [Demystifying Neural Style Transfer](https://arxiv.org/abs/1701.01036)
 2. [Image style transfer using convolutional neural networks](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf)
 #### Exponential Moving Average
-to be continue
+1. [Large Scale GAN Training for High Fidelity Natural Image Synthesis](https://arxiv.org/abs/1809.11096)
+2. [Which Training Methods for GANs do actually Converge?](https://arxiv.org/abs/1801.04406)
+3. [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALITY, STABILITY, AND VARIATION](https://arxiv.org/abs/1710.10196)
 **********************************************************************************************************************
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
