@@ -4,8 +4,6 @@ from recognition.ISIC_UNET.ImprovedUnet import *
 from recognition.ISIC_UNET.UnetData import *
 import matplotlib.pyplot
 
-from recognition.ISIC_UNET.IUnet import *
-
 
 # https://www.fatalerrors.org/a/dice-loss-in-medical-image-segmentation.html
 def dsc_co(ytrue, ypred):
@@ -14,7 +12,7 @@ def dsc_co(ytrue, ypred):
     true_flat = tf.keras.backend.flatten(ytrue)
     pred_flat = tf.keras.backend.flatten(ypred)
     inter = tf.keras.backend.sum(true_flat * pred_flat)
-    return 2 * (inter + smooth) / (tf.keras.backend.sum(true_flat + pred_flat) + smooth)
+    return 2 * (inter + smooth) / (tf.keras.backend.sum(true_flat) + tf.keras.backend.sum(pred_flat) + smooth)
 
 
 def dsc_loss(ytrue, ypred):
@@ -91,11 +89,11 @@ if __name__ == '__main__':
             print(e)
 
     # sets the max amount of images
-    max_images = 100
+    max_images = 1800
 
     # https://stackoverflow.com/questions/52123670/neural-network-converges-too-fast-and-predicts-blank-results
     # sets the learning rate
-    learning_rate = 4*10**(-5)
+    learning_rate = 3*10**(-5)
 
     # prepare a given number of images
     final_train, final_test, final_val = prepare_images(max_images)
@@ -105,15 +103,15 @@ if __name__ == '__main__':
 
     # compile the model with a specified learning rate, loss and given metrics
     model.compile(tf.keras.optimizers.Adam(lr=learning_rate), loss=dsc_loss, metrics=['accuracy', dsc_co])
-    model.summary() # gives a summary of the model to debug
+    model.summary()  # gives a summary of the model to help with debugging
 
     # training the model with a given batch size and number of epochs
     print("Training model")
-    history = model.fit(final_train.batch(7), epochs=10, validation_data=final_val.batch(7))
+    history = model.fit(final_train.batch(8), epochs=15, validation_data=final_val.batch(8))
 
     # evaluates the model with a given batch size
     print("Evaluating model")
-    evaluation = model.evaluate(final_test.batch(7))
+    evaluation = model.evaluate(final_test.batch(8))
 
     # calls the function which plots all the graphs
     plot_graphs(history, evaluation)

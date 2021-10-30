@@ -44,13 +44,13 @@ def prepare_images(max_images):
     new_x = x_images[0:max_images]
     new_mask = mask_images[0:max_images]
 
-    print("Length of total images split 49% in training, 30% testing and 21% validation:")
+    print("Length of total images split 60% in training, 20% testing and 20% validation:")
     print(len(new_x))
     print(len(new_mask))
     # split the images into training, testing and validation
-    # 49% training, 30% testing, 21% val
-    X_train, X_test, y_train, y_test = train_test_split(new_x, new_mask, test_size=0.3, random_state=1)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.3, random_state=1)
+    # 60% training, 20% testing, 20% val
+    X_train, X_test, y_train, y_test = train_test_split(new_x, new_mask, test_size=0.2, random_state=1)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=1)
 
     # Put the images into a dataset from a list
     train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train))
