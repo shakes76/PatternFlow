@@ -233,7 +233,7 @@ The following are some samples of the results achieved when training the model o
 </table>
 
 <p align="center">
-    <img src="./resources/final_evolution.gif" alt="Training sample evolution" width="400px"/>
+    <img src="./resources/final_evolution.gif" alt="Training sample evolution"/>
     <p align="center">Training Samples</p>
 </p>
 
