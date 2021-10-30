@@ -17,6 +17,8 @@ from tensorflow.keras import layers
 from keras import backend as K
 from matplotlib import pyplot as plt
 import numpy as np
+import tensorflow_probability as tfp
+
 print(tf.config.list_physical_devices('GPU'))
 
 #%%
@@ -184,11 +186,159 @@ for i in range(10):
 # training history
 # Plot training results.
 loss = history.history['loss'] # Training loss.
+recon_loss = history.history['reconstruction_loss']
+vq_loss = history.history['vqvae_loss']             
 num_epochs = range(1, 1 + len(history.history['loss'])) # Number of training epochs.
 
 plt.figure(figsize=(16,9))
-plt.plot(num_epochs, loss, label='Training loss') # Plot training loss.
+plt.plot(num_epochs, loss, label='Total loss') # Plot training loss.
+plt.plot(num_epochs, recon_loss, label='Reconstruction loss') # Plot training loss.
+plt.plot(num_epochs, vq_loss, label='VQ-VAE loss') # Plot training loss.
 
 plt.title('Training loss')
 plt.legend(loc='best')
 plt.show()
+#%%
+
+tfd = tfp.distributions
+from pixel_cnn import PixelConvLayer, ResidualBlock
+
+dist = tfd.PixelCNN(
+    image_shape=(128,128,1),
+    num_resnet=1,
+    num_hierarchies=2,
+    num_filters=32,
+    num_logistic_mix=5,
+    dropout_p=.3,
+)
+
+encoded_outputs = encoder(xtrain[1:10])
+flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
+codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+print("codes", codebook_indices.shape)
+codebook_indices = tf.squeeze(codebook_indices)
+
+for i in range(1):
+    plt.subplot(1, 2, 1)
+    plt.imshow(tf.squeeze(xtrain[i]) + 0.5)
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(codebook_indices[i])
+    plt.title("Code")
+    plt.axis("off")
+    plt.show()
+    
+num_residual_blocks = 2
+num_pixelcnn_layers = 2
+pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+
+
+
+pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
+ohe = tf.one_hot(pixelcnn_inputs, num_embeddings)
+x = PixelConvLayer(
+    mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
+)(ohe)
+
+for _ in range(num_residual_blocks):
+    x = ResidualBlock(filters=128)(x)
+
+for _ in range(num_pixelcnn_layers):
+    x = PixelConvLayer(
+        mask_type="B",
+        filters=128,
+        kernel_size=1,
+        strides=1,
+        activation="relu",
+        padding="valid",
+    )(x)
+
+out = keras.layers.Conv2D(
+    filters=num_embeddings, kernel_size=1, strides=1, padding="valid"
+)(x)
+
+pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
+pixel_cnn.summary()
+
+
+# Generate the codebook indices.
+encoded_outputs = encoder(xtrain[1:10])
+flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
+codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
+
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
+
+pixel_cnn.compile(
+    optimizer=keras.optimizers.Adam(3e-4),
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+pixel_cnn.fit(
+    x=codebook_indices,
+    y=codebook_indices,
+    batch_size=128,
+    epochs=30,
+    validation_split=0.1,
+)
+
+print(pixel_cnn.input_shape[1:])
+# Create a mini sampler model.
+inputs = layers.Input(shape=pixel_cnn.input_shape[1:])
+x = pixel_cnn(inputs, training=False)
+dist = tfp.distributions.Categorical(logits=x)
+sampled = dist.sample()
+sampler = keras.Model(inputs, sampled)
+
+
+# Create an empty array of priors.
+batch = 10
+priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+print(priors.shape)
+_,batch, rows, cols = priors.shape
+
+# # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+# for row in range(rows):
+#     for col in range(cols):
+#         # Feed the whole array and retrieving the pixel value probabilities for the next
+#         # pixel.
+#         first = pixel_cnn.predict(priors)
+#         second = tfp.distributions.Categorical(first)
+#         third = second.sample()
+#         probs = third
+        
+#         #probs = sampler.predict(priors)
+#         # Use the probabilities to pick pixel values and append the values to the priors.
+#         priors[:, row, col] = probs[:, row, col]
+
+print(f"Prior shape: {priors.shape}")
+
+
+
+# Perform an embedding lookup.
+pretrained_embeddings = vq_vae.embeddings
+priors_ohe = tf.one_hot(priors.astype("int32"), num_embeddings).numpy()
+quantized = tf.matmul(
+    priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+)
+quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
+# Generate novel images.
+
+generated_samples = decoder(quantized[1])
+
+for i in range(batch):
+    plt.subplot(1, 2, 1)
+    plt.imshow(priors[i])
+    plt.title("Code")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated_samples[i].squeeze() + 0.5)
+    plt.title("Generated Sample")
+    plt.axis("off")
+    plt.show()
