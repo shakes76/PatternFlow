@@ -32,9 +32,7 @@ def load_data(image_directory, image_resize):
 if __name__ == '__main__':
     # Hyper parameters
     num_classes = 2  # Left or Right
-    learning_rate = 0.001
-    weight_decay = 0.0001
-    num_epochs = 10
+    num_epochs = 3
     dropout_rate = 0.2  # Dropout rate for dense layers
     resized_image_size = 128  # We'll resize input images to this size.
     patch_size = 2  # Size of the patches to be extracted from the images.
@@ -46,38 +44,14 @@ if __name__ == '__main__':
     transformer_depth = 4  # Depth of each transformer module
     depth = 2  # How many data iterations our model performs - each depth has a cross-attention and transformer module.
     classifier_units = [projection_size, num_classes]  # Size of the dense network of the final classifier.
-    
-    perceiver_classifier = Perceiver(
-        patch_size=patch_size,
-        data_dim=(resized_image_size // patch_size) ** 2,
-        latent_size=latent_size,
-        projection_size=projection_size,
-        num_heads=num_heads,
-        transformer_depth=transformer_depth,
-        dense_units=dense_units,
-        dropout_rate=dropout_rate,
-        depth=depth,
-        classifier_units=classifier_units,
-    )
 
+    # Use the perceiver to classify OAI AKOA Knee data laterality
     train_ds, val_ds, test_ds = load_data("images", resized_image_size)
-
-    # Create LAMB optimizer with weight decay.
-    # optimizer = tfa.optimizers.LAMB(learning_rate=learning_rate, weight_decay_rate=weight_decay)
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-
-    # Compile the model.
-    perceiver_classifier.compile(optimizer=optimizer, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name="acc")])
-
-    # Create a learning rate scheduler callback.
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.2, patience=3)
-
-    # Create an early stopping callback.
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=15, restore_best_weights=True)
-
-    # Fit the model.
-    history = perceiver_classifier.fit(x=train_ds, epochs=num_epochs, validation_data=val_ds, callbacks=[early_stopping, reduce_lr])
+    perceiver_classifier = Perceiver(patch_size=patch_size, data_dim=(resized_image_size // patch_size) ** 2,
+                                     latent_size=latent_size, projection_size=projection_size, num_heads=num_heads,
+                                     transformer_depth=transformer_depth, dense_units=dense_units, dropout_rate=dropout_rate,
+                                     depth=depth, classifier_units=classifier_units)
+    history = perceiver_classifier.compile_and_fit(train_ds, val_ds, num_epochs)
 
     _, accuracy = perceiver_classifier.evaluate(train_ds, test_ds)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")

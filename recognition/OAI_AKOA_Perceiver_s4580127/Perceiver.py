@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
 from tensorflow import keras
 from tensorflow.keras import layers
 
@@ -85,6 +86,21 @@ class Perceiver(keras.Model):
         output = self.global_average_pooling(latent_data)
         classification_logits = self.dense_classification(output)
         return classification_logits
+
+    def compile_and_fit(self, train_ds, val_ds, num_epochs):
+        learning_rate = 0.001
+        weight_decay = 0.0001
+        # Use LAMB optimizer - much better performance and faster convergence than adam
+        optimizer = tfa.optimizers.LAMB(learning_rate=learning_rate, weight_decay_rate=weight_decay)
+        self.compile(optimizer=optimizer, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name="acc")])
+
+        # Create a learning rate scheduler callback to reduce the LR when learning stagnates
+        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.25, patience=3)
+
+        # Fit the model
+        history = perceiver_classifier.fit(x=train_ds, epochs=num_epochs, validation_data=val_ds,
+                                           callbacks=[reduce_lr])
+        return history
 
     """
     Creates and returns several dense layers followed by a dropout layer
