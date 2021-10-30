@@ -1,6 +1,6 @@
 import tensorflow as tf
 from driver import pre_process
-from keras.layers import Input
+from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 from model import *
 
@@ -27,30 +27,28 @@ def main():
         except RuntimeError as e:
             # Memory growth must be set before GPUs have been initialized
             print(e)
-    model = pre_process()
-    model.load_data()
+    pre_p = pre_process()
+    pre_p.load_data()
     # model.visualise_loaded_data()
     input = Input((IMG_WIDTH, IMG_HEIGHT, IMG_CHANNELS))
-    model.improved_unet(input_img=input)
-    model.model.summary()
-    learning_rate = 0.001
-    epochs = 5000
-    # decay_rate = learning_rate / epochs
-    # modelt.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
-    #                     loss=pre_process.dice_loss,
-    #                     metrics=pre_process.dice_coefficient)
-    # # model.show_predictions()  # sanity check
+    pre_p.Improved_unet(input)
+    pre_p.model.summary()
 
-    # history = modelt.fit(x=model.train_ds.batch(BATCH_SIZE),
-    #                           validation_data=model.val_ds.batch(BATCH_SIZE),
-    #                           epochs=15)
-    # modelt.show_predictions()
+    pre_p.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                        loss=pre_process.dice_loss,
+                        metrics=pre_process.dice_coefficient)
+    # pre_p.show_predictions()  # sanity check
+
+    history = pre_p.model.fit(x=pre_p.train_ds.batch(BATCH_SIZE),
+                              validation_data=pre_p.val_ds.batch(BATCH_SIZE),
+                              epochs=15)
+    pre_p.show_predictions()
 
     # # Get dice similarity for test set and show result
     # print("Evaluate")
     # # result = model.model.evaluate(model.test_ds.batch(BATCH_SIZE))
-    # result = modelt.evaluate(model.test_ds.batch(BATCH_SIZE))
-    # print(dict(zip(model.model.metrics_names,result)))
+    # result = pre_p.model.evaluate(pre_p.test_ds.batch(BATCH_SIZE))
+    # print(dict(zip(pre_p.model.metrics_names,result)))
 
     print("END")
     
