@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from scipy.sparse import coo_matrix, csr_matrix, eye, diags
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
@@ -50,6 +51,19 @@ def main():
     degrees_inverse = np.power(d.diagonal(), -1)
     d_inverse = diags(degrees_inverse)  # degree matrix inverse
     facebook_features = d_inverse.dot(facebook_features)
+
+    # Convert to tensor
+    facebook_features = torch.FloatTensor(np.array(facebook_features.todense()))
+    facebook_target = torch.LongTensor(np.where(facebook_target)[1])
+    adjacency_matrix = torch.sparse.FloatTensor(
+        torch.LongTensor(np.vstack((adjacency_matrix.row, adjacency_matrix.col))),
+        torch.FloatTensor(adjacency_matrix.data),
+        torch.Size(adjacency_matrix.shape)
+    )
+
+    print(facebook_features)
+    print(facebook_target)
+    print(adjacency_matrix)
 
 
 if __name__ == '__main__':
