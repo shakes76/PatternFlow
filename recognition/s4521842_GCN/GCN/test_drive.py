@@ -91,9 +91,12 @@ def plot_TSNE(y_pred, labels, n_components=2, perplexity=30, init='pca', n_iter=
     plt.scatter(data_low_dim[:, 0], data_low_dim[:, 1], marker='o', c=labels)
     plt.show()
 
+# data path
+PATH='dataset/facebook.npz'
 
 # load data
-dataset = DataPreprocessing()
+# the data path has been preset, change parameter PATH to change data path
+dataset = DataPreprocessing(path=PATH)
 (features, labels, adjacency,
  train_mask, val_mask, test_mask,
  train_labels, val_labels, test_labels) = dataset.get_data()
