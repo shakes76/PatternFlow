@@ -3,6 +3,8 @@
 Created on Sat Oct 30 21:28:48 2021
 
 @author: shane
+
+reference: https://github.com/rosinality/style-based-gan-pytorch.git
 """
 
 import torch
@@ -28,13 +30,22 @@ def init_conv(conv, glu=True):
         conv.bias.data.zero_()
 
 
-
+'''
 class PixelNorm(nn.Module):
     def __init__(self):
         super().__init__()
 
     def forward(self, input):
         return input / torch.sqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
+'''
+
+
+class PixelNorm(nn.Module):
+    def __init__(self, epsilon=1e-8):
+        super().__init__()
+        self.epsilon = epsilon
+    def forward(self, x):
+        return x * torch.rsqrt(torch.mean(x**2, dim=1, keepdim=True) + self.epsilon)
 
 
 class EqualLR:
@@ -127,4 +138,41 @@ class FusedDownsample(nn.Module):
         return out
 
 
+class Blur2d(nn.Module):
+    def __init__(self, f=[1,2,1], normalize=True, flip=False, stride=1):
+        """
+            depthwise_conv2d:
+            https://blog.csdn.net/mao_xiao_feng/article/details/78003476
+        """
+        super(Blur2d, self).__init__()
+        assert isinstance(f, list) or f is None, "kernel f must be an instance of python built_in type list!"
+
+        if f is not None:
+            f = torch.tensor(f, dtype=torch.float32)
+            f = f[:, None] * f[None, :]
+            f = f[None, None]
+            if normalize:
+                f = f / f.sum()
+            if flip:
+                # f = f[:, :, ::-1, ::-1]
+                f = torch.flip(f, [2, 3])
+            self.f = f
+        else:
+            self.f = None
+        self.stride = stride
+
+    def forward(self, x):
+        if self.f is not None:
+            # expand kernel channels
+            kernel = self.f.expand(x.size(1), -1, -1, -1).to(x.device)
+            x = F.conv2d(
+                x,
+                kernel,
+                stride=self.stride,
+                padding=int((self.f.size(2)-1)/2),
+                groups=x.size(1)
+            )
+            return x
+        else:
+            return x
 
