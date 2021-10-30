@@ -159,8 +159,7 @@ def create_model(output_channels):
     add_layer_6_up = UpSampling2D()(add_layer_6) # element-wise sum
     segmentation_3 = segmentation_layer(conv_layer_6, output_channels) # segmentation layer
     add_layer_7 = Add()([add_layer_6_up, segmentation_3]) # element-wise sum
-
-    output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax")(add_layer_7) # softmax
+    output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax", padding="same")(add_layer_7) # softmax
     model = Model(name="ImprovedUnet", inputs=input_layer, outputs=output) # final model
     return model
  
