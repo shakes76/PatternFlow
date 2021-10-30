@@ -40,9 +40,9 @@ def evaluate(model, mask, y_true, graph):
     y_pred = tf.gather_nd(y, tf.where(mask))
 
     # Returns the truth if y_pred=y_true.
-    ll = tf.math.equal(tf.math.argmax(y_true, -1), tf.math.argmax(y_pred, -1))
+    accuarcy = tf.math.equal(tf.math.argmax(y_true, -1), tf.math.argmax(y_pred, -1))
     # calculate accuracy
-    accuarcy = tf.reduce_mean(tf.cast(ll, dtype=tf.float32))
+    accuarcy = tf.reduce_mean(tf.cast(accuarcy, dtype=tf.float32))
 
     return accuarcy
 
@@ -53,8 +53,9 @@ def train(epochs, model, graph, train_mask, train_labels, val_labels):
     val_acc_ls = []
 
     for epoch in range(epochs):
+        # calculate the training loss
         loss = train_step(model, graph, train_labels, train_mask)
-
+        # calculate the training and validation accuracy
         train_acc = evaluate(model, train_mask, train_labels, graph)
         val_acc = evaluate(model, val_mask, val_labels, graph)
 
@@ -86,21 +87,23 @@ def plot_result(train_loss_ls, train_acc_ls, val_acc_ls):
 
 def plot_TSNE(y_pred, labels, n_components=2, perplexity=30, init='pca', n_iter=3000):
     tsne = TSNE(n_components=n_components, perplexity=perplexity, init=init, n_iter=n_iter)
+    # reduce the dimensions
     data_low_dim = tsne.fit_transform(y_pred)
     plt.title('TSNE Visualisation')
     plt.scatter(data_low_dim[:, 0], data_low_dim[:, 1], marker='o', c=labels)
     plt.show()
 
+
 # data path
-PATH='dataset/facebook.npz'
+PATH = 'dataset/facebook.npz'
 
 # load data
-# the data path has been preset, change parameter PATH to change data path
 dataset = DataPreprocessing(path=PATH)
 (features, labels, adjacency,
  train_mask, val_mask, test_mask,
  train_labels, val_labels, test_labels) = dataset.get_data()
 
+# initialization
 EPOCHS = 100
 graph = [features, adjacency]
 GCN_model = GCN()
@@ -120,6 +123,3 @@ if __name__ == '__main__':
     y_pred = predict(GCN_model, graph, test_mask)
     labels_test = dataset.get_test_labels()
     plot_TSNE(y_pred, labels_test)
-
-
-
