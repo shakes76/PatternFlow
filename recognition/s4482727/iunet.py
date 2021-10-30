@@ -1,27 +1,42 @@
+"""
+Improved U-Net
+Based on the model appearing in https://arxiv.org/abs/1802.10508v1
+"""
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Concatenate,\
     Dropout, Add, UpSampling2D, Activation
 from tensorflow.keras.models import Model
 from tensorflow.keras import Input
 
+# Dimensions of the input image to the model.
 IMG_HEIGHT = 96
 IMG_WIDTH = 128
 IMG_CHANNELS = 3
 
 
 def iunet_conv2d(filters: int, name: str) -> Conv2D:
+    """
+    A 3x3 convolution layer
+    """
     return Conv2D(filters=filters, kernel_size=(3, 3), padding="same",
                   activation=tf.keras.activations.relu,
                   name=name)
 
 
 def iunet_conv2d_stride2(filters: int, name: str) -> Conv2D:
+    """
+    A 3x3 convolution layer with stride 2
+    """
     return Conv2D(filters=filters, kernel_size=(3, 3), padding="same",
                   activation=tf.keras.activations.relu,
                   strides=2, name=name)
 
 
-def iunet_context(inputs, filters, name):
+def iunet_context(inputs, filters: int, name: str):
+    """
+    A "context module" which consists of two convolution layers followed by a
+    dropout layer.
+    """
     conv_a = iunet_conv2d(filters, name + "_conv_a")(inputs)
     conv_b = iunet_conv2d(filters, name + "_conv_b")(conv_a)
     dropout = Dropout(0.3, name=name + "_dropout")(conv_b)
@@ -29,19 +44,29 @@ def iunet_context(inputs, filters, name):
 
 
 def iunet_upsample(filters: int, name: str) -> Conv2DTranspose:
+    """
+    An "upsampling module", which we implement as a single Conv2DTranspose
+    """
     return Conv2DTranspose(filters=filters, kernel_size=(3, 3),
                            name=name, strides=(2, 2),
                            padding="same")
 
 
-def iunet_segment(name):
+def iunet_segment(name: str):
+    """
+    A "segmentation layer"
+    """
     return Conv2D(filters=1, kernel_size=(1, 1),
                   padding="same",
                   activation=None,
                   name=name)
 
 
-def iunet_localize(inputs, filters, name):
+def iunet_localize(inputs, filters: int, name: str):
+    """
+    A "localization module", which consists of a normal 3x3 convolution layer
+    followed by a 1x1 convolution layer.
+    """
     conv_a = iunet_conv2d(filters, name + "_conv_a")(inputs)
     conv_b = Conv2D(filters=filters, kernel_size=(1, 1), padding="same",
                     activation=tf.keras.activations.relu,
@@ -49,7 +74,11 @@ def iunet_localize(inputs, filters, name):
     return conv_b
 
 
-def build_iunet():
+def build_iunet() -> Model:
+    """
+    Builds an "improved U-Net", i.e. a model based on the one appearing at
+    https://arxiv.org/abs/1802.10508v1
+    """
     inputs = Input(
         shape=(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS),
         name="input")
