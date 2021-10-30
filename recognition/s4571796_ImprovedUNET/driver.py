@@ -282,5 +282,25 @@ def main():
     val_masks = to_categorical(val_masks, num_classes=classes)
     test_masks = to_categorical(test_masks, num_classes=classes)
 
+    # Input Channels = The number of the last dimension of the images = 3
+    UNET_model = get_model(classes, height, width, 3)
+    UNET_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
+    # Summary of the UNET Model
+    print(UNET_model.summary())
+
+    history = UNET_model.fit(train_images, train_masks, 
+                           batch_size=2,
+                           verbose=1,
+                           epochs=30,
+                           validation_data=(val_images, val_masks),
+                           shuffle=False)
+
+    # Save the model
+    UNET_model.save('UNET_ISIC_30Epochs.hdf5')
+
+    # Plot the Training and Validation Loss and Accuracy
+    plot_graphs(history, epoch=30, type="loss")
+    plot_graphs(history, epoch=30, type="accuracy")
+
 if __name__ == "__main__":
     main()
