@@ -5,16 +5,20 @@ from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 
 
-# TODO: F1 Score (Dice Similarity)
+
 # Expects Probabilities, not logits
-def f1_score(y_true, y_pred):
+def f1_score(y_true, y_pred, return_list=False, verbose=True):
+    """Computes the Dice Similarity Co-efficient per class (Expects Channels Last).
+    Expects probabilities (eg. post Softmax) - do not feed in logits!.
+    Returns a tensor by default, unless return_list is True."""
     # print("Dice score begin")
     # print('y_pred.shape =', y_pred.shape)
     # print('y_true.shape =', y_true.shape)
+    n_classes = y_true.shape[-1]  # Number of classes = Number of channels (assumes channels last)
     y_pred_argmax = tf.math.argmax(y_pred, axis=4)
-    y_pred_onehot = to_categorical(y_pred_argmax, num_classes=6)
+    y_pred_onehot = to_categorical(y_pred_argmax, num_classes=n_classes)
     dices = []
-    for i in range(6):
+    for i in range(n_classes):
         tmp_y_pred = y_pred_onehot[..., i]
         tmp_y_true = y_true[..., i]
         # print('y slice shape:', tmp_y_true.shape)
@@ -26,8 +30,8 @@ def f1_score(y_true, y_pred):
         dice = numerator / denominator
         #print("dice: {}".format(dice))
         dices.append(dice)
-    print('dices:', dices)
-    return tf.constant(dices)
+    print('dices:', dices) if verbose else None
+    return dices if return_list else tf.constant(dices)
 
 
 @tf.function
@@ -69,9 +73,18 @@ class UNetCSIROMalePelvic:
     __opt = None
     __loss = None
     train_batch_count = None
+    _mdl_nodes = None
+    _num_classes = None
+
+    class CustomCallBack(tf.keras.callbacks.Callback):
+        """Custom Callbacks."""
+
+        def on_train_batch_end(self, batch, logs=None):
+            pass
 
     # Holds a dictionary of nodes and the last node to be added to the DAG
     class ModelNodes:
+        """Holds all model nodes in a Dictionary keyed by Layer Names."""
         nodes = [{}, None]
 
         def __init__(self):
@@ -87,20 +100,27 @@ class UNetCSIROMalePelvic:
             self.nodes[0][name] = node
             self.nodes[1] = node
 
-    def __init__(self, given_name):
+    def __init__(self, given_name, num_classes, feature_map_scale=1):
+        """Create a new UNetCSIROMalePelvic Model. Generates the underlying TF Model
+        with the given name, number of classes and feature map scale (1 = 32/64 maps in the first Analysis Layer)
+        Scale of 2 will double the number of feature maps in each Conv3D layer in the network etc. Defaults to 1."""
         # Set up model parameters
         self.__init = keras.initializers.RandomNormal(stddev=0.02)
         self.__opt = tf.keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5)
         self.__loss = tf.keras.losses.CategoricalCrossentropy()
         self.train_batch_count = 0
+        self._num_classes = num_classes
         # Create Model
-        self._create_model(given_name)
+        self._create_model(given_name, num_classes, feature_map_scale)
 
-    def _create_model(self, given_name):
+    def _create_model(self, given_name, num_classes, feature_map_scale=1):
+        """Generates the Unet3D TF Model with the given name."""
         layer_len = 2
         stages = ['ANL', 'SYN']
 
         def _conv_block(mdl_nodes, layer_num, num_maps, analysis=True):
+            """Generates a single Convolution Block (made of several Conv3D+BN+ReLU layers).
+            Used in both the Analysis and Synthesis stages of UNet3D."""
             stage = stages[0] if analysis else stages[1]
             for i in range(1, layer_len + 1):
                 # Create Conv3D Layer
@@ -120,6 +140,8 @@ class UNetCSIROMalePelvic:
             pass
 
         def _analysis_block_trailer(mdl_nodes, layer_num):
+            """Generates the analysis block Trailer (MaxPooling), which inputs into the next
+            (higher resolution) Analysis Block."""
             stage = stages[0]
             new_node_name = "L{}_{}_MaxPool".format(layer_num, stage)
             new_node = MaxPooling3D(name=new_node_name, pool_size=2, strides=2, padding='same')(mdl_nodes.last())
@@ -127,11 +149,13 @@ class UNetCSIROMalePelvic:
             pass
 
         def _synthesis_block(mdl_nodes, layer_num, num_maps):
+            """Generates a full Synthesis Block."""
             _synthesis_block_header(mdl_nodes, layer_num)
             _conv_block(mdl_nodes, layer_num, num_maps, analysis=False)
             pass
 
         def _synthesis_block_header(mdl_nodes, layer_num):
+            """Generates a new Synthesis Block (UpConv and Concat)."""
             stage = stages[1]
             concat_analysis_layer_name = "L{}_{}_BN_{}".format(layer_num - 1, stages[0], layer_len)
             concat_analysis_layer = mdl_nodes.find(concat_analysis_layer_name)  # Search Dict and retrieve node
@@ -148,6 +172,7 @@ class UNetCSIROMalePelvic:
             pass
 
         def _analysis_block(mdl_nodes, layer_num, num_maps):
+            """Generates a full Analysis Block."""
             _conv_block(mdl_nodes, layer_num, num_maps, analysis=True)
             _analysis_block_trailer(mdl_nodes, layer_num)
             pass
@@ -156,42 +181,46 @@ class UNetCSIROMalePelvic:
         # Begin creating model
         input_shape = (128, 128, 64, 1)
         # Create a model nodes tracker
-        mdl_nodes = self.ModelNodes()
+        self._mdl_nodes = self.ModelNodes()
         # Input Layer
         mdl_input = Input(name="Input", shape=input_shape)
-        mdl_nodes.add("Input", mdl_input)
-        scale = 1
+        self._mdl_nodes.add("Input", mdl_input)
+        scale = int(feature_map_scale)
         # Build Analysis Arm of UNet
-        _analysis_block(mdl_nodes, layer_num=1, num_maps=[16*scale, 32*scale])
-        _analysis_block(mdl_nodes, layer_num=2, num_maps=[32*scale, 64*scale])
-        _analysis_block(mdl_nodes, layer_num=3, num_maps=[64*scale, 128*scale])
+        _analysis_block(self._mdl_nodes, layer_num=1, num_maps=[int(16*scale), int(32*scale)])
+        _analysis_block(self._mdl_nodes, layer_num=2, num_maps=[int(32*scale), int(64*scale)])
+        _analysis_block(self._mdl_nodes, layer_num=3, num_maps=[int(64*scale), int(128*scale)])
         # Last layer does not have a trailer
-        _conv_block(mdl_nodes, layer_num=4, num_maps=[128*scale, 256*scale])
+        _conv_block(self._mdl_nodes, layer_num=4, num_maps=[int(128*scale), int(256*scale)])
         # Build Synthesis Arm of UNet
-        _synthesis_block(mdl_nodes, layer_num=4, num_maps=[128*scale, 128*scale])
-        _synthesis_block(mdl_nodes, layer_num=3, num_maps=[64*scale, 64*scale])
-        _synthesis_block(mdl_nodes, layer_num=2, num_maps=[32*scale, 32*scale])
+        _synthesis_block(self._mdl_nodes, layer_num=4, num_maps=[int(128*scale), int(128*scale)])
+        _synthesis_block(self._mdl_nodes, layer_num=3, num_maps=[int(64*scale), int(64*scale)])
+        _synthesis_block(self._mdl_nodes, layer_num=2, num_maps=[int(32*scale), int(32*scale)])
         # Final Convolution Layer
         new_node_name = "L{}_{}_FinalConv3D".format(1, 'SYN')
         new_node = Conv3D(name=new_node_name, kernel_size=1, strides=1, padding='same',
-                          filters=6, activation='softmax')(mdl_nodes.last())
-        mdl_nodes.add(name=new_node_name, node=new_node)
+                          filters=num_classes, activation='softmax')(self._mdl_nodes.last())
+        self._mdl_nodes.add(name=new_node_name, node=new_node)
         # Instantiate & compile model object
-        self.mdl = tf.keras.Model(inputs=mdl_input, outputs=mdl_nodes.last())
+        self.mdl = tf.keras.Model(name=given_name, inputs=mdl_input, outputs=self._mdl_nodes.last())
         self.mdl.compile(optimizer=self.__opt, loss=self.__loss, metrics=[f1_score], run_eagerly=True)
-        # , tfa.metrics.F1Score(num_classes=2, threshold=0.5)],
         pass
 
     # TODO: Decide if required or not
-    def train_batch(self, batch_size=32):
+    def train_on_batch(self, batch_size=32):
         print("Training '{}' on a batch of {}...".format(self.mdl.name, batch_size))
         return self.mdl.train_on_batch()
         pass
 
-    # TODO: Yet to implement saving feature
-    def save_model(self, model, model_series, curr_epoch, loc):
-        save_name = model_series + "_" + model.name + "_AtEpoch_" + str(curr_epoch)
-        model.save(r"models\{}".format(save_name))
+    # Save the underlying TF Model to file
+    def save_model(self, suffix_note=None, loc=None):
+        """Saves the current model in a subdirectory called 'models'.
+        Save name includes model name, learning experience (number of training batches)
+        and an optional user provided suffix string."""
+        save_name = self.mdl.name + "_AtExp_" + str(self.train_batch_count)
+        save_name += '_' + str(suffix_note) if suffix_note is not None else None
+        save_loc = loc + r"\models\{}".format(save_name)
+        self.mdl.save(save_loc)
         pass
 
     pass

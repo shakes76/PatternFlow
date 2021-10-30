@@ -148,7 +148,7 @@ def main():
     y_subdir = '/semantic_labels_anon'
     output_dir = orig_data_dir + '/processed_downsampled'
     # Augment!
-    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, ds_factor=2, aug_count=0, verbose=True)
+    data_preprocess_augment(orig_data_dir, x_subdir, y_subdir, output_dir, ds_factor=2, aug_count=2, verbose=True)
     pass
 
 
