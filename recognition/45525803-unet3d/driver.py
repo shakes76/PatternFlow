@@ -8,10 +8,16 @@ import os
 PROCESSED_MRI_PATH = '/home/Student/s4552580/mri_data/processed_mri'
 PROCESSED_LABEL_PATH = '/home/Student/s4552580/mri_data/processed_label'
 
-TRAIN_CASE_NUMBERS = range(4,25)
-TEST_CASE_NUMBERS = range(30,43)
+MRI_PATH = '/home/Student/s4552580/mri_data/semantic_MRs_anon'
+LABEL_PATH = '/home/Student/s4552580/mri_data/semantic_labels_anon'
 
-TRAIN_VAL_RATIO = 0.85
+CHECKPOINT_PATH = '/home/Student/s4552580/unet3d.ckpt'
+HISTORY_PATH = '/home/Student/s4552580/history.csv'
+
+TRAIN_CASE_NUMBERS = range(4,35)
+TEST_CASE_NUMBERS = range(35,43)
+
+TRAIN_VAL_RATIO = 0.8
 
 def main():
 
@@ -22,10 +28,9 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
     
     train_case_weeks = get_case_weeks(TRAIN_CASE_NUMBERS)
-    mri_filenames, label_filenames = write_original_and_augmented(train_case_weeks, PROCESSED_MRI_PATH, PROCESSED_LABEL_PATH, 0)
 
-    mri_paths = [os.path.join(PROCESSED_MRI_PATH, x) for x in mri_filenames]
-    label_paths = [os.path.join(PROCESSED_LABEL_PATH, x) for x in label_filenames]
+    mri_paths = [os.path.join(MRI_PATH, f'{x}_LFOV.nii.gz') for x in train_case_weeks]
+    label_paths = [os.path.join(LABEL_PATH, f'{x}_SEMANTIC_LFOV.nii.gz') for x in train_case_weeks]
 
     train_val_split_index = math.ceil(len(mri_paths) * TRAIN_VAL_RATIO)
 
@@ -38,9 +43,18 @@ def main():
     val_seq = MRISequence(val_mri_paths, val_label_paths)
     
     model = unet3d_model()
-    print(model.summary(line_length=150))
 
-    history = model.fit(x=train_seq, validation_data=val_seq, epochs=5)
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=CHECKPOINT_PATH,
+                                                    save_weights_only=True,
+                                                    verbose=1)
+
+    history_callback = tf.keras.callbacks.CSVLogger(HISTORY_PATH, separator=",", append=True)
+
+    history = model.fit(
+        x=train_seq, 
+        validation_data=val_seq, 
+        callbacks=[cp_callback, history_callback],
+        epochs=5)
 
 if __name__ == '__main__':
     main()
