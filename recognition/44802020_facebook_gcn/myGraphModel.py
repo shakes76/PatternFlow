@@ -1,7 +1,7 @@
 import keras.initializers.initializers_v1
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.layers import Dense, Input, Dropout
 
 
 def makeMyModel(a_bar, a_bar_test, train_feats):
@@ -10,8 +10,13 @@ def makeMyModel(a_bar, a_bar_test, train_feats):
     my_model.add(Input(shape=tf.Tensor.get_shape(train_feats)))
 
     my_model.add(FaceGCNLayer(a_bar, a_bar_test))
-    my_model.add((Dense(64)))
+    my_model.add(Dropout(0.4))
+    Dense(64)
     my_model.add(FaceGCNLayer(a_bar, a_bar_test))
+    my_model.add(Dropout(0.4))
+    Dense(32)
+    my_model.add(FaceGCNLayer(a_bar, a_bar_test))
+    my_model.add(Dropout(0.4))
     my_model.add(Dense(4))
 
     return my_model
@@ -30,6 +35,8 @@ class FaceGCNLayer(tf.keras.layers.Layer):
 
     def call(self, feature_matrix, training=None):
         print(training)
+        print(feature_matrix)
+        print(type(feature_matrix))
         feature_matrix = tf.squeeze(feature_matrix)
         if training:
             ax = tf.sparse.sparse_dense_matmul(tf.cast(self.adj_m, float), feature_matrix)

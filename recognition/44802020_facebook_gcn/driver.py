@@ -1,3 +1,5 @@
+import random
+
 import myGraphModel
 import tensorflow as tf
 
@@ -35,7 +37,7 @@ def summarise_data(data, aspect):
     print("====================")
 
 
-def plot_tsne(labels, feats):
+def generate_tsne_plot(labels, feats):
     # TSNE
     print("Executing TSNE, this might take a moment...")
     tsne = TSNE(2)
@@ -50,7 +52,15 @@ def plot_tsne(labels, feats):
     plt.show()
 
 
-def parse_data(data, test_split):
+def shuffle(page_one, page_two, feats, labels):
+    z = list(zip(page_one, page_two, feats, labels))
+    random.shuffle(z)
+    page_one, page_two, feats, labels = zip(*z)
+
+    return page_one, page_two, feats, labels
+
+
+def parse_data(data, train_split, val_split):
     # Adjacency Matrix
     # Split EdgeList into two tensors
     page_one = data['edges'][:, 0]
@@ -60,10 +70,24 @@ def parse_data(data, test_split):
     # Labels
     labels = tf.convert_to_tensor(data['target'])
 
+    # Split Data
+    # Data needs to be manually split here because the current implementation requires
+    page_one, page_two, feats, labels = shuffle(page_one, page_two, feats, labels)
+
+    page_one = tf.convert_to_tensor(page_one)
+    page_two = tf.convert_to_tensor(page_two)
+    feats = tf.convert_to_tensor(feats)
+    labels = tf.convert_to_tensor(labels)
+
     # Convert split percentage into integer
-    split = int(round(labels.shape[0] * test_split))
-    train_labels, test_labels = labels[:split], labels[split:]
-    train_feats, test_feats = feats[:split], feats[split:]
+    print("SHAPE")
+    print(labels.shape[0])
+    split_t = int(round(labels.shape[0] * train_split))
+    split_v = split_t + int(round(labels.shape[0] * val_split))
+    print(f"T:{split_t}, V:{split_v}")
+
+    train_labels, val_labels, test_labels = labels[:split_t], labels[split_t:split_v], labels[split_v:]
+    train_feats, val_feats, test_feats = feats[:split_t], feats[split_t:split_v], feats[split_v:]
 
     # Convert EdgeList to Sparse Adjacency Matrix
     ones = tf.ones_like(page_one)  # Create Ones Matrix to set
@@ -73,8 +97,11 @@ def parse_data(data, test_split):
     a_dense = a_bar.todense()  # Convert to Dense to  easily split into test/train
 
     # Re-create two adjacency matrices for training/testing
-    a_bar = a_dense[:split, :split]
-    a_bar_test = a_dense[split:, split:]
+    a_bar = a_dense[:split_t, :split_t]
+    a_bar_test = a_dense[split_t:split_v, split_t:split_v]
+
+    print(a_bar.shape)
+    print(a_bar_test.shape)
 
     # Convert back to COO Matrix
     a_bar = spr.coo_matrix(a_bar)
@@ -88,25 +115,54 @@ def parse_data(data, test_split):
     a_bar = coo_matrix_to_sparse_tensor(a_bar)
     a_bar_test = coo_matrix_to_sparse_tensor(a_bar_test)
 
-    return train_feats, train_labels, a_bar, test_feats, test_labels, a_bar_test
+    print(a_bar.shape)
+    print(a_bar_test.shape)
+
+    return train_feats, train_labels, a_bar, test_feats, test_labels, a_bar_test, val_feats, val_labels
+
+
+def ensure_valid_split(train, test, val):
+    if train+test+val == 1.0 and train==val:
+        return True
+    else:
+        print("Train Split + Validation Split + Test Split must equal 1.0.")
+        print("Validation Split and Test Split must currently also be equal")
+        print("to support multiplication by by th Adjacency Matrix")
+        print("Please ensure values for these variables sum to 1.0 and")
+        print("that the Test Split and Validation Split are equal")
+        exit(1)
 
 
 def main():
     print("Tensorflow version:", tf.__version__)
     print("Numpy version:", np.__version__)
-
     file_path = r"C:\Users\johnv\Documents\University\COMP3710\Pattern Flow Project\facebook.npz"
+
+    # Variables
+    plot_tsne = False
+
+    epochs = 100
+    learning_rate = 0.05
+
+    train_split = 0.80
+    validate_split = 0.10
+    test_split = 0.10
+
+    ensure_valid_split(test_split, train_split, validate_split)
 
     # Load in Data
     data = np.load(file_path)
-
     # There are 22 470 Pages
     # Each with 128 features
     # Each falls into 1 of 4 categories
     # There are 342 004 Edges between the pages
 
-    test_split = 0.2
-    train_feats, train_labels, a_bar, test_feats, test_labels, a_bar_test = parse_data(data, test_split)
+    # test_split = 0.2
+    train_feats, train_labels, a_bar, \
+        test_feats, test_labels, a_bar_test, \
+            val_feats, val_labels = parse_data(data,
+                                               train_split,
+                                               validate_split)
 
     # ================== REAL MODEL ========================
     print("=============== Building Model ===============")
@@ -114,15 +170,17 @@ def main():
     my_model = myGraphModel.makeMyModel(a_bar, a_bar_test, train_feats)
 
     loss_fn = losses.SparseCategoricalCrossentropy(from_logits=True)
-    opt = op.Adam(learning_rate=0.05)
+    opt = op.Adam(learning_rate=learning_rate)
     my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
 
     # ================== RUN MODEL ========================
     # Train Model
     my_model.fit(train_feats,
                  train_labels,
-                 epochs=50,
-                 batch_size=22470, shuffle=False
+                 epochs=epochs,
+                 batch_size=22470,
+                 shuffle=True,
+                 validation_data=(val_feats, val_labels)
                  )
 
     print(my_model.summary())
@@ -133,7 +191,8 @@ def main():
                       batch_size=22470)
 
     # Plot TSNE
-    plot_tsne(test_labels, test_feats)
+    if plot_tsne:
+        generate_tsne_plot(test_labels, test_feats)
 
 
 if __name__ == '__main__':
