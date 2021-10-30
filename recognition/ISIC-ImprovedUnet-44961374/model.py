@@ -87,7 +87,7 @@ def localization_module(input_layer, filters):
         keras.layer: final layer of this module
     """
     conv_layer_1 = create_conv2d(input_layer, filters, KERNEL_SIZE, INIT_STRIDES)
-    conv_layer_2 = create_conv2d(conv_layer_1, filters, (1,1))
+    conv_layer_2 = create_conv2d(conv_layer_1, filters, (1, 1), INIT_STRIDES)
     return conv_layer_2
 
 
@@ -163,7 +163,7 @@ def create_model(output_channels):
     add_layer_7 = Add()([add_layer_6_up, segmentation_3])
 
     output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax")(add_layer_7)
-    model = Model(input=input_layer, outputs=output)
+    model = Model(inputs=input_layer, outputs=output)
     return model
 
 
