@@ -92,6 +92,32 @@ class Mapping(Model):
         return latent
 
 
+class ModDemod(layers.Layer):
+    """
+    The layer modulate and then demodulate a disentangled latent A
+    """
+    # a small constant to avoid numerical issues in demodulation
+    EPSILON = 1e-8
+
+    def __init__(self, filters, **kwargs):
+        super(ModDemod, self).__init__(**kwargs)
+        self.filters = filters
+
+        # layer used to modulate A
+        self.modulate = layers.Dense(filters, bias_initializer='ones')
+
+    def call(self, A):
+
+        # modulate - equation 1 in StyleGAN2 paper
+        w = self.modulate(A)
+        w = w[:, np.newaxis, np.newaxis, :, np.newaxis]
+
+        # demodulate - equation 3 in StyleGAN2 paper
+        ww = tf.math.rsqrt(tf.reduce_sum(tf.square(w), axis=[1, 2, 3]) + self.EPSILON)
+
+        return ww[:, :, np.newaxis, np.newaxis]
+
+
 class _Generator(Model):
     KERNEL = 3
 
@@ -101,16 +127,25 @@ class _Generator(Model):
             self.filters = filters
             self.kernel = kernel
             self.stride = stride
+            self.noise_strength = tf.Variable([0.0] * filters, trainable=True, shape=[filters])
 
             # layers
+            self.mod_demod = ModDemod(filters)
             self.conv1 = layers.Conv2DTranspose(filters, (kernel, kernel), strides=(stride, stride), padding='same',
                                                 use_bias=False, kernel_initializer=w_init, kernel_constraint=w_const)
-            self.layer_epilogue = _Generator.LayerEpilogue(self.filters, w_init=w_init, w_const=w_const)
+            self.activation = layers.LeakyReLU()
 
         def call(self, inputs):
-            X, A, noise_strength = inputs
-            Y = self.layer_epilogue((self.conv1(X), A, noise_strength))
+            X, A = inputs
+            demoduated = self.mod_demod(A)
+            down_sampled = self.conv1(X)
+            Y = down_sampled * demoduated
 
+            # add noise
+            noise = tf.random.normal([tf.shape(Y)[0], Y.shape[1], Y.shape[2], 1], dtype=Y.dtype)
+            Y += noise * self.noise_strength
+
+            Y = self.activation(Y)
             return Y
 
     class LayerEpilogue(layers.Layer):
@@ -163,7 +198,6 @@ class _Generator(Model):
         super().__init__()
         self.init_filters = init_filters
         self.init_res = init_resolution
-        self.noise_strength = []
 
         # kernel initializer and constraints
         weight_init = initializers.RandomNormal(stddev=0.02)
@@ -183,11 +217,8 @@ class _Generator(Model):
 
         # input block
         print(f"Input: ({latent_dim}, )")
-        self.input_dense = layers.Dense(self.init_res * self.init_res * self.init_filters,
-                                        kernel_initializer=weight_init, kernel_constraint=weight_const)
-        self.input_reshape = layers.Reshape((self.init_res, self.init_res, self.init_filters))
-        self.input_noise_strength = tf.Variable([0.0] * init_filters, trainable=True, shape=[init_filters])
-        self.input_epilogue = _Generator.LayerEpilogue(self.init_filters, w_init=weight_init, w_const=weight_const)
+        input_noise = tf.random.normal(shape=(1, self.init_res, self.init_res, self.init_filters))
+        self.input_noise = tf.Variable(input_noise, trainable=True)
 
         # convolutional layers
         for i in range(self.num_of_conv_layers):
@@ -202,7 +233,6 @@ class _Generator(Model):
             self.conv_layers.append(self.ConvLayer(filters, self.KERNEL, 2, w_init=weight_init, w_const=weight_const))
             self.to_rgb.append(self.ToRGB(channels, w_init=weight_init, w_const=weight_const))
             self.upsample.append(layers.UpSampling2D())
-            self.noise_strength.append(tf.Variable([0.0] * filters, trainable=True, shape=[filters]))
 
             resolution = init_resolution * 2**(i + 1)
             print(f"Conv2dTranspose output: ({resolution}, {resolution}, {filters})")
@@ -215,14 +245,10 @@ class _Generator(Model):
 
         # input block
         i = 0
+        input_noise = tf.tile(self.input_noise, [tf.shape(W)[0], 1, 1, 1])
         layer = self.conv_layers[i]
         to_rgb = self.to_rgb[i]
-        noise_strength = self.noise_strength[i]
-
-        X = self.input_dense(W)
-        X = self.input_reshape(X)
-        X = self.input_epilogue((X, W, self.input_noise_strength))
-        X = layer((X, W, noise_strength))
+        X = layer((input_noise, W))
         Y = to_rgb(X, Y)
         i += 1
 
@@ -231,9 +257,8 @@ class _Generator(Model):
             layer = self.conv_layers[i]
             to_rgb = self.to_rgb[i]
             up_sampling = self.upsample[i - 1]
-            noise_strength = self.noise_strength[i]
 
-            X = layer((X, W, noise_strength))
+            X = layer((X, W))
             Y = up_sampling(Y)
             Y = to_rgb(X, Y=Y)
 
