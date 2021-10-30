@@ -2,15 +2,18 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
 from perceiver import train, Perceiver
+import random, os
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import img_to_array
+import numpy as np
 
-IMAGE_DIR = 'D:/AKOA_Analysis'
+IMAGE_DIR = './AKOA_Analysis'
 BATCH_SIZE = 32
 IMG_SIZE = (64, 64) # image resize
 ROWS, COLS = IMG_SIZE
 TEST_PORTION = 5 # portion of validation set to become test set
 SHUFFLE_RATE = 512
 AUTO_TUNE = tf.data.experimental.AUTOTUNE
-
 LATENT_SIZE = 256  # Size of the latent array.
 NUM_BANDS = 4 # Number of bands in Fourier encode. Used in the paper
 NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
@@ -23,6 +26,74 @@ LR = 0.001
 WEIGHT_DECAY = 0.0001
 EPOCHS = 10
 
+def split_by_patients(image_names, train_split):
+
+    patient_batches = dict()
+    train_image_names = []
+    test_image_names = []
+    for name in image_names:
+        patient_id = name.split('_')[0]
+        if patient_id in patient_batches:
+            patient_batches[patient_id].append(name)
+        else:
+            patient_batches[patient_id] = [name]
+    print("unique patients in entire dataset: ", len(patient_batches))
+    building_train = True
+    for patient_batch in patient_batches.values():
+        for name in patient_batch:
+            if building_train:  # first step: building training set
+                if len(train_image_names) <= len(image_names) * train_split:
+                    train_image_names.append(name)
+                else:
+                    building_train = False  # start building test set now
+                    break
+            else:  # second step: building testing set
+                if len(test_image_names) <= len(image_names) * (1-train_split):
+                    test_image_names.append(name)
+                else:
+                    break  # done building test set
+    return train_image_names, test_image_names
+
+def process_dataset(dir_data, train_split):
+
+    all_image_names = os.listdir(dir_data)
+
+    train_image_names, test_image_names = split_by_patients(all_image_names,
+                                                            train_split)
+    random.shuffle(train_image_names)
+    random.shuffle(test_image_names)
+
+    img_shape = (64, 64)
+    def get_data(image_names):
+        """
+        Helper function for loading a X and y set based of the image names
+        Args:
+            image_names: The image names to build the data set from
+        Returns:
+            X_set, y_set: the tf array of the X and y set built
+        """
+        X_set = []
+        y_set = []
+        for i, name in enumerate(image_names):
+            image = load_img(dir_data + "/" + name,
+                             target_size=(img_shape), color_mode="grayscale")
+
+            image = img_to_array(image)
+            X_set.append(image)
+            if "LEFT" in name or "L_E_F_T" in name or \
+                    "Left" in name or "left" in name:
+                label = 0
+            else:
+                label = 1
+            y_set.append(label)
+        X_set = np.array(X_set)
+        X_set /= 255.0
+        return X_set, np.array(y_set, dtype=np.uint8).flatten()
+    X_train, y_train = get_data(train_image_names)
+    X_val, y_val = get_data(test_image_names)
+    X_test, y_test = X_val[len(X_val) // 5 * 4:], y_val[len(y_val) // 5 * 4:]
+    X_val, y_val = X_val[0:len(X_val) // 5 * 4], y_val[0:len(y_val) // 5 * 4]
+    return X_train, y_train, X_val, y_val, X_test, y_test
 def create_dataset(image_dir, img_size):
 
     training_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
@@ -33,21 +104,14 @@ def create_dataset(image_dir, img_size):
                                                       subset="validation", seed=46, label_mode='int',
                                                       batch_size=1, image_size=img_size)
 
-
     val_batches = tf.data.experimental.cardinality(validation_dataset)
     test_dataset = validation_dataset.take(val_batches // TEST_PORTION)
     validation_dataset = validation_dataset.skip(val_batches // TEST_PORTION)
 
-
     training_dataset = training_dataset.map(process).prefetch(AUTO_TUNE)
     validation_dataset = validation_dataset.map(process).prefetch(AUTO_TUNE)
     test_dataset = test_dataset.map(process).prefetch(AUTO_TUNE)
-
     return training_dataset, validation_dataset, test_dataset
-
-
-
-
 
 def dataset_to_numpy_util(dataset, len_ds):
   dataset = dataset.batch(len_ds)
@@ -55,12 +119,8 @@ def dataset_to_numpy_util(dataset, len_ds):
     numpy_images = images.numpy()
     numpy_labels = labels.numpy()
     break
-
   return numpy_images, numpy_labels
 
-"""
-Normalize image to range [0,1]
-"""
 def process(image,label):
     image = tf.cast(image / 255. ,tf.float32)
     return image,label
@@ -69,10 +129,8 @@ def get_numpy_ds():
     training_set, validation_set, test_set = create_dataset(IMAGE_DIR, IMG_SIZE)
     X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
     X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
-
     X_val, y_val = dataset_to_numpy_util(validation_set, len(validation_set))
     X_val = X_val.reshape((len(validation_set), ROWS, COLS, 1))
-
     X_test, y_test = dataset_to_numpy_util(test_set, len(test_set))
     X_test = X_test.reshape((len(test_set), ROWS, COLS, 1))
     del training_set
@@ -81,13 +139,11 @@ def get_numpy_ds():
     return (X_train, y_train, X_val, y_val, X_test, y_test)
 
 def plot_data(history):
-
+    # Plotting the Learning curves
     acc = history.history['acc']
     val_acc = history.history['val_acc']
-
     loss = history.history['loss']
     val_loss = history.history['val_loss']
-
     plt.figure(figsize=(8, 8))
     plt.subplot(2, 1, 1)
     plt.plot(acc, label='Training Accuracy')
@@ -97,7 +153,6 @@ def plot_data(history):
     plt.ylabel('Accuracy')
     plt.ylim([min(plt.ylim()), 1])
     plt.title('Training and Validation Accuracy')
-
     plt.subplot(2, 1, 2)
     plt.plot(loss, label='Training Loss')
     plt.plot(val_loss, label='Validation Loss')
@@ -108,12 +163,12 @@ def plot_data(history):
     plt.title('Training and Validation Loss')
     plt.xlabel('epoch')
     plt.show()
-
 if __name__ == "__main__":
 
-
-    X_train, y_train, X_val, y_val, X_test, y_test = get_numpy_ds()
-
+    train_split = 0.8
+    X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
+    print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
+    print(X_train.shape)
 
     knee_model = Perceiver(patch_size=0,
                             data_size=ROWS*COLS, 
@@ -130,6 +185,8 @@ if __name__ == "__main__":
 
 
 
+
+    # checkpoint.restore(ckpt_manager.latest_checkpoint)
     history = train(knee_model,
                     train_set=(X_train, y_train),
                     val_set=(X_val, y_val),
@@ -139,7 +196,7 @@ if __name__ == "__main__":
 
     plot_data(history)
 
-
+    # Retrieve a batch of images from the test set
     image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
     image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
     predictions = knee_model.predict_on_batch(image_batch).flatten()
