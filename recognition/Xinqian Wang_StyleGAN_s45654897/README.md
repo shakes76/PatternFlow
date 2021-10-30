@@ -33,7 +33,20 @@ Image Dataset (type: Folder)
 > to be continue
 3. prepare the lmdb dataset
 > to be continue
-
+***********************************************************************************************************************
+## Introduction
+### Model Structure
+### Reference Destruction
+For people who would like to know more about which according to a specific concept in the StyleGan.
+#### Max Blur pooling
+1. [Making Convolutional Networks Shift-Invariant Again](https://arxiv.org/abs/1904.11486)`Max Blur pooling`
+2. [Using pre-training can improve model robustness and uncertainty](https://arxiv.org/abs/1901.09960)`robustness`
+3. [A rotation and a translation suffice: Fooling cnns with simple transformations](https://openreview.net/forum?id=BJfvknCqFQ)`Max-pooling failed on anti-aliasing`
+4. [Why do deep convolutional networks generalize so poorly to small image transformations?](https://arxiv.org/abs/1805.12177)`Max-pooling failed on anti-aliasing`
+#### Equalized Learning Rate and Pixel Norm
+1. [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALITY, STABILITY, AND VARIATION](https://arxiv.org/abs/1710.10196)`Equalized Learning Rate` `Pixel Norm`
+2. [Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification](https://arxiv.org/abs/1502.01852)`Kaiming He’s normalization way`
+**********************************************************************************************************************
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
