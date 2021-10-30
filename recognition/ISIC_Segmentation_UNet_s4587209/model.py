@@ -6,7 +6,8 @@ Model Architecture for an improved UNet.
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import concatenate, Conv2D, BatchNormalization, Dropout, Input, LeakyReLU, UpSampling2D
+from tensorflow.keras.layers import concatenate, Conv2D, BatchNormalization, Dropout, Input, LeakyReLU, MaxPooling2D,\
+    UpSampling2D
 
 
 def improved_unet(height, width, channels):
@@ -35,7 +36,7 @@ def improved_unet(height, width, channels):
     # Building the model
     inputs = Input((height, width, channels))
 
-    # 3x3x3 convolution - 16 filters
+    # 3x3x3 convolution
     conv1 = Conv2D(fil, kern, padding=pad)(inputs)
     # Instance Normalisation
     bat1 = BatchNormalization()(conv1)
@@ -52,8 +53,10 @@ def improved_unet(height, width, channels):
     # Element-wise sum
     out1 = conv1 + relu1
 
-    # 3x3x3 stride 2 convolution - 32 filters
-    conv2 = Conv2D(fil * 2, kern, padding=pad)(out1)
+    # Down-sampling
+    down_samp2 = MaxPooling2D()(out1)
+    # 3x3x3 stride 2 convolution
+    conv2 = Conv2D(fil * 2, kern, padding=pad)(down_samp2)
     # Instance Normalisation
     bat2 = BatchNormalization()(conv2)
     # Leaky ReLU
@@ -69,8 +72,10 @@ def improved_unet(height, width, channels):
     # Element-wise sum
     out2 = conv2 + relu2
 
-    # 3x3x3 stride 2 convolution - 64 filters
-    conv3 = Conv2D(fil * 4, kern, padding=pad)(out2)
+    # Down-sampling
+    down_samp3 = MaxPooling2D()(out2)
+    # 3x3x3 stride 2 convolution
+    conv3 = Conv2D(fil * 4, kern, padding=pad)(down_samp3)
     # Instance Normalisation
     bat3 = BatchNormalization()(conv3)
     # Leaky ReLU
@@ -86,8 +91,10 @@ def improved_unet(height, width, channels):
     # Element-wise sum
     out3 = conv3 + relu3
 
-    # 3x3x3 stride 2 convolution - 128 filters
-    conv4 = Conv2D(fil * 8, kern, padding=pad)(out3)
+    # Down-sampling
+    down_samp4 = MaxPooling2D()(out3)
+    # 3x3x3 stride 2 convolution
+    conv4 = Conv2D(fil * 8, kern, padding=pad)(down_samp4)
     # Instance Normalisation
     bat4 = BatchNormalization()(conv4)
     # Leaky ReLU
@@ -103,8 +110,10 @@ def improved_unet(height, width, channels):
     # Element-wise sum
     out4 = conv4 + relu4
 
-    # 3x3x3 stride 2 convolution - 256 filters
-    conv5 = Conv2D(fil * 16, kern, padding=pad)(out4)
+    # Down-sampling
+    down_samp5 = MaxPooling2D()(out4)
+    # 3x3x3 stride 2 convolution
+    conv5 = Conv2D(fil * 16, kern, padding=pad)(down_samp5)
     # Instance Normalisation
     bat5 = BatchNormalization()(conv5)
     # Leaky ReLU
@@ -119,36 +128,36 @@ def improved_unet(height, width, channels):
     relu5 = LeakyReLU(alpha=alp)(bat5)
     # Element-wise sum
     out5 = conv5 + relu5
-    # Up-sampling - 128 filters
-    upsamp5 = UpSampling2D(size=(2, 2))(out5)
-    upsamp5 = Conv2D(fil * 8, kern, padding=pad, strides=(2, 2))(upsamp5)
+    # Up-sampling
+    up_samp5 = UpSampling2D(size=(2, 2))(out5)
+    up_samp5 = Conv2D(fil * 8, kern, padding=pad)(up_samp5)
 
     # Expansive path
 
     # Instance Normalisation
-    bat6 = BatchNormalization()(upsamp5)
+    bat6 = BatchNormalization()(up_samp5)
     # Leaky ReLU
     relu6 = LeakyReLU(alpha=alp)(bat6)
     # Concatenation
     concat6 = concatenate([relu6, out4])
-    # Localisation - 128 filters
+    # Localisation
     local6 = Conv2D(fil * 8, kern, padding=pad)(concat6)
     local6 = Conv2D(fil * 8, (1, 1), padding=pad)(local6)
     # Instance Normalisation
     bat6 = BatchNormalization()(local6)
     # Leaky ReLU
     relu6 = LeakyReLU(alpha=alp)(bat6)
-    # Up-sampling - 64 filters
-    upsamp6 = UpSampling2D(size=(2, 2))(relu6)
-    upsamp6 = Conv2D(fil * 4, (2, 2), padding=pad, strides=(2, 2))(upsamp6)
+    # Up-sampling
+    up_samp6 = UpSampling2D(size=(2, 2))(relu6)
+    up_samp6 = Conv2D(fil * 4, (2, 2), padding=pad)(up_samp6)
 
     # Instance Normalisation
-    bat7 = BatchNormalization()(upsamp6)
+    bat7 = BatchNormalization()(up_samp6)
     # Leaky ReLU
     relu7 = LeakyReLU(alpha=alp)(bat7)
     # Concatenation
     concat7 = concatenate([relu7, out3])
-    # Localisation - 64 filters
+    # Localisation
     local7 = Conv2D(fil * 4, kern, padding=pad)(concat7)
     local7 = Conv2D(fil * 4, (1, 1), padding=pad)(local7)
     # Instance Normalisation
@@ -157,17 +166,17 @@ def improved_unet(height, width, channels):
     relu7 = LeakyReLU(alpha=alp)(bat7)
     # Segmentation
     segment7 = relu7
-    # Up-sampling - 32 filters
-    upsamp7 = UpSampling2D(size=(2, 2))(relu7)
-    upsamp7 = Conv2D(fil * 2, (2, 2), padding=pad, strides=(2, 2))(upsamp7)
+    # Up-sampling
+    up_samp7 = UpSampling2D(size=(2, 2))(relu7)
+    up_samp7 = Conv2D(fil * 2, (2, 2), padding=pad)(up_samp7)
 
     # Instance Normalisation
-    bat8 = BatchNormalization()(upsamp7)
+    bat8 = BatchNormalization()(up_samp7)
     # Leaky ReLU
     relu8 = LeakyReLU(alpha=alp)(bat8)
     # Concatenation
     concat8 = concatenate([relu8, out2])
-    # Localisation - 32 filters
+    # Localisation
     local8 = Conv2D(fil * 2, kern, padding=pad)(concat8)
     local8 = Conv2D(fil * 2, (1, 1), padding=pad)(local8)
     # Instance Normalisation
@@ -176,17 +185,17 @@ def improved_unet(height, width, channels):
     relu8 = LeakyReLU(alpha=alp)(bat8)
     # Segmentation
     segment8 = relu8
-    # Up-sampling - 16 filters
-    upsamp8 = UpSampling2D(size=(2, 2))(relu8)
-    upsamp8 = Conv2D(fil, (2, 2), padding=pad, strides=(2, 2))(upsamp8)
+    # Up-sampling
+    up_samp8 = UpSampling2D(size=(2, 2))(relu8)
+    up_samp8 = Conv2D(fil, (2, 2), padding=pad)(up_samp8)
 
     # Instance Normalisation
-    bat9 = BatchNormalization()(upsamp8)
+    bat9 = BatchNormalization()(up_samp8)
     # Leaky ReLU
     relu9 = LeakyReLU(alpha=alp)(bat9)
     # Concatenation
     concat9 = concatenate([relu9, out1])
-    # 3x3x3 convolution - 32 filters
+    # 3x3x3 convolution
     conv9 = Conv2D(fil, kern, padding=pad)(concat9)
     # Instance Normalisation
     bat9 = BatchNormalization()(conv9)
@@ -197,10 +206,10 @@ def improved_unet(height, width, channels):
 
     # Upscale Segmented Layers and apply
     segment7 = UpSampling2D(size=(2, 2))(segment7)
-    segment7 = Conv2D(fil * 2, (1, 1), strides=(2, 2))(segment7)
+    segment7 = Conv2D(fil * 2, (1, 1))(segment7)
     segment8 = segment8 + segment7
     segment8 = UpSampling2D(size=(2, 2))(segment8)
-    segment8 = Conv2D(fil, (1, 1), strides=(2, 2))(segment8)
+    segment8 = Conv2D(fil, (1, 1))(segment8)
     segment9 = segment9 + segment8
 
     # Softmax

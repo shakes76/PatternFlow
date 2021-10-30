@@ -14,14 +14,13 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.optimizers import SGD
 
 from model import improved_unet
 
 """File Constants"""
 # Link to the online repository that hosts the ISIC2018 dataset
 ISIC2018_data_link = "https://cloudstor.aarnet.edu.au/sender/download.php?token=b66a9288-2f00-4330-82ea-9b8711d27643" \
-                     "&files_ids=14200406 "
+                     "&files_ids=14200406"
 # Download directory for the dataset
 download_directory = os.getcwd() + "\ISIC2018_Task1-2_Training_Data.zip"
 
@@ -55,15 +54,13 @@ validation_split = 0.1
 shuffle_size = 50
 
 # The height and width of the processed image
-img_height = img_width = 150
+img_height = img_width = 256
 # The batch size to be used
-batch_size = 32
+batch_size = 16
 # The number of training epochs
-epochs = 15
+epochs = 10
 # The number of times a similar validation dice coefficient score is achieved before training is stopped early
-patience = 10
-# SGD learning rate's parameter
-sgd_lr = 0.01
+patience = 8
 
 
 def process_images(file_path, is_mask):
@@ -76,7 +73,7 @@ def process_images(file_path, is_mask):
     """
     # Decodes the image at the given file location
     if is_mask:
-        image = tf.image.decode_png(tf.io.read_file(file_path), channels=0)
+        image = tf.image.decode_png(tf.io.read_file(file_path), channels=1)
     else:
         image = tf.image.decode_jpeg(tf.io.read_file(file_path), channels=3)
     # Converts the image to float32
@@ -234,7 +231,7 @@ def initialise_model():
     # Creates the improved UNet model
     unet_model = improved_unet(img_height, img_width, 3)
     # Sets the training parameters for the model
-    unet_model.compile(optimizer=SGD(learning_rate=sgd_lr), loss=[dice_sim_coef_loss],
+    unet_model.compile(optimizer='adam', loss=[dice_sim_coef_loss],
                        metrics=[dice_sim_coef])
     # Prints a summary of the model compiled
     unet_model.summary()
@@ -347,7 +344,7 @@ else:
     # Initialise the model
     model = initialise_model()
     # Creates a condition where training will stop when there is no progress on val_loss
-    callback = EarlyStopping(monitor='val_dice_sim_coef', patience=patience, restore_best_weights=True)
+    callback = EarlyStopping(monitor='val_dice_sim_coef', patience=patience, mode='max', restore_best_weights=True)
     # Trains the model
     history = model.fit(train_ds.batch(batch_size), batch_size=batch_size, epochs=epochs,
                         validation_data=val_ds.batch(batch_size), shuffle=shuffle, callbacks=callback)
