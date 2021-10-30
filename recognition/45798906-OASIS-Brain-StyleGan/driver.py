@@ -12,7 +12,7 @@
 
     Author: Keith Dao
     Date created: 14/10/2021
-    Date last modified: 29/10/2021
+    Date last modified: 30/10/2021
     Python version: 3.9.7
 """
 
@@ -51,9 +51,9 @@ IMAGE_PATHS: list[str] = [
     # NOTE: All paths must end with a file separator
     "./keras_png_slices_data/unsegmented/"
 ]
-EPOCHS: int = 300
+EPOCHS: int = 200
 TOTAL_PREVIOUS_EPOCHS: int = 0  # This is set to 0 if LOAD_WEIGHTS is FALSE
-MODEL_NAME: str = "Final"
+MODEL_NAME: str = "StyleGAN"
 
 # Model weight variables
 # Model weight loading
@@ -83,10 +83,10 @@ def main():
     gen_optimizer = disc_optimizer = None
     if TRAIN:
         gen_optimizer = get_optimizer(
-            learning_rate=1e-7, beta_1=0.5, beta_2=0.999
+            learning_rate=2e-7, beta_1=0.5, beta_2=0.999
         )
         disc_optimizer = get_optimizer(
-            learning_rate=2.5e-8, beta_1=0.5, beta_2=0.999
+            learning_rate=2.5e-7, beta_1=0.5, beta_2=0.999
         )
         print("Loaded optimizers.")
 
