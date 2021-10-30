@@ -13,9 +13,9 @@ Improved UNet Network Architecture:
 1. Download the ISIC2018 datasets at: https://challenge.isic-archive.com/data/#2018, specifically these two folders:
     - ISIC2018_Task1-2_Training_Input
     - ISIC2018_Task1_Training_GroundTruth
-2. Put these two folders under ./datasets
-3. Open the terminal and `cd` to the project directory
-4. Install the Python libraries listed in ./requirements.txt
+2. Put these two folders under `./datasets`
+3. Open the terminal and `cd` to the project directory (`/recognition/Yiyun_ISIC`)
+4. Install the Python libraries listed in `./requirements.txt`: `pip install -r ./requirements.txt`
 5. Run the driver script `python3 ./main.py`
 
 ## Results
