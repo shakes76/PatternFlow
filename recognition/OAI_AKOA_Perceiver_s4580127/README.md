@@ -38,3 +38,8 @@ tensorflow prefetching for performance optimization.
 * matplotlib (Optional - Only used in driver code to plot training cycle)
 
 ### Example Training Cycle Plot
+![Example Training Cycle Plot](training_plot.png)
+
+### Example OAI AKOA Images
+![Example Knee Image](Example_Image.png)
+![Example Knee Image](Example_Image2.png)
