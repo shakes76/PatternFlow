@@ -9,6 +9,16 @@ from metrics import dice_coef, dice_loss
 
 
 def __encoder_module(input, num_filters, strides=(1, 1)):
+    """Encoder module for the Improved UNet
+
+    Args:
+        input (layers.Layer): Input layer to the encoder module
+        num_filters (int): Number of filters
+        strides (tuple, optional): Strides for the convolution. Defaults to (1, 1).
+
+    Returns:
+        layers.Layer: Output layer of the encoder module
+    """
     conv = layers.Conv2D(num_filters, (3, 3), strides,
                          padding="same", activation=layers.LeakyReLU(0.01))(input)
 
@@ -27,6 +37,17 @@ def __encoder_module(input, num_filters, strides=(1, 1)):
 
 
 def __decoder_module(input, encode_output, num_filters, localization_module=True):
+    """Decoder module for the Improved UNet
+
+    Args:
+        input (layers.Layer): Input layer to the decoder module
+        encode_output (layers.Layer): Output layer of the encoder module
+        num_filters (int): Number of filters
+        localization_module (bool, optional): Whether to use the localization module. Defaults to True.
+
+    Returns:
+        layers.Layer: Output layer of the decoder module
+    """
     # upsampling module
     up = layers.UpSampling2D((2, 2))(input)
     conv1 = layers.Conv2D(num_filters, (3, 3), padding="same",
@@ -45,6 +66,14 @@ def __decoder_module(input, encode_output, num_filters, localization_module=True
 
 
 def build_model(input_shape):
+    """Builds the Improved UNet model
+
+    Args:
+        input_shape (tuple): Shape of the input image
+
+    Returns:
+        models.Model: Model of the Improved UNet
+    """
     inputs = layers.Input(input_shape)
 
     # downsampling
@@ -80,16 +109,40 @@ def build_model(input_shape):
 
 
 class AdvUNet:
+    """The Improved UNet model
+    """
     def __init__(self, input_shape):
         self.model = build_model(input_shape)
 
     def compile(self):
+        """Compiles the model
+        """
         self.model.compile(optimizer=optimizers.Adam(learning_rate=5e-4),
                            loss=dice_loss, metrics=["accuracy", dice_coef])
 
     def fit(self, train_dataset, val_dataset, batch_size, epochs):
+        """Fits the model
+
+        Args:
+            train_dataset (tf.data.Dataset): Training dataset
+            val_dataset (tf.data.Dataset): Validation dataset
+            batch_size (int): Batch size
+            epochs (int): Number of epochs
+
+        Returns:
+            History: Training history
+        """
         return self.model.fit(train_dataset.batch(batch_size), validation_data=val_dataset.batch(batch_size),
                               epochs=epochs, verbose=1)
 
     def evaluate(self, dataset, batch_size):
+        """Evaluates the model
+
+        Args:
+            dataset (tf.data.Dataset): Test dataset
+            batch_size (int): Batch size
+
+        Returns:
+            tuple: Loss, accuracy and dice coefficient
+        """
         return self.model.evaluate(dataset.batch(batch_size), verbose=1)
