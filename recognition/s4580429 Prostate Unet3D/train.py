@@ -57,14 +57,11 @@ print("validation", X_val.shape, y_val.shape, type(X_val), type(y_val))
 
 print("Successfully loaded and converted data!")
 
-def dice_coefficient(y_true, y_pred, smooth=1):
-    y_true_flat = K.flatten(y_true)
-    y_pred_flat = K.flatten(y_pred)
-    inters = K.sum(y_true_flat * y_pred_flat)
-    return (2. * inters + smooth) / (K.sum(y_true_flat) + K.sum(y_pred_flat) + smooth)
-
-def dice_coefficient_loss(y_true, y_pred):
-    return 1 - dice_coefficient(y_true, y_pred)
+def dice_coefficient(y_true, y_pred):
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.math.sigmoid(y_pred)
+    inters = tf.reduce_sum(y_true * y_pred)
+    return 1 - (2. * inters) / (tf.reduce_sum(y_true + y_pred))
 
 encoder_weights = 'imagenet'
 BACKBONE = 'resnet50'
@@ -77,7 +74,7 @@ batch_size = 1
 batch_num = 50
 optim = K.optimizers.Adam(LR)
 
-total_loss = dice_coefficient_loss + (1 * sm.losses.CategoricalFocalLoss())
+total_loss = sm.losses.DiceLoss() + (1 * sm.losses.CategoricalFocalLoss())
 
 metrics = [sm.metrics.IOUScore(threshold=0.5), dice_coefficient]
 
@@ -94,8 +91,40 @@ model = sm.Unet(BACKBONE, classes=n_classes,
 model.compile(optimizer = optim, loss=total_loss, metrics=metrics)
 print(model.summary())
 
-history=model.fit(X_train_prep, y_train, batch_size=batch_size,
+history = model.fit(X_train_prep, y_train, batch_size=batch_size,
                   epochs=batch_num, verbose=1,
                   validation_data=(X_val_prep, y_test))
 
 model.save('/home/Student/s4580429/segment_out/3D_model_res50_patches.h5')
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(loss) + 1)
+plt.plot(epochs, loss, 'b', label='Training loss')
+plt.plot(epochs, val_loss, 'g', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.savefig("/home/Student/s4580429/segment_out/loss.png")
+plt.close()
+
+acc = history.history['dice_coefficient']
+val_acc = history.history['dice_coefficient']
+
+plt.plot(epochs, acc, 'b', label='Training Dice')
+plt.plot(epochs, val_acc, 'g', label='Validation Dice')
+plt.title('Training and validation Dice Scores')
+plt.xlabel('Epochs')
+plt.ylabel('IOU')
+plt.legend()
+plt.savefig("/home/Student/s4580429/segment_out/dice.png")
+plt.close()
+
+y_pred = model.predict(X_test)
+y_pred_argmax = tf.argmax(y_pred, axis=4)
+y_test_argmax = tf.argmax(y_test, axis=4)
+
+print(y_pred_argmax.shape)
+print(y_test_argmax.shape)
+print(tf.unique(tf.reshape(y_pred_argmax, (-1))))
