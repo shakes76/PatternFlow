@@ -33,7 +33,8 @@ def create_conv2d(input_layer, filters, kernel_size, strides):
     Returns:
         keras.layer.Conv2D: the conv2d layer that has been created
     """
-    conv2d_layer = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same', activation=LeakyReLU(alpha=LEAKY_RELU_ALPHA))(input_layer)
+    conv2d_layer = Conv2D(filters=filters, kernel_size=kernel_size, 
+        strides=strides, padding='same', activation=LeakyReLU(alpha=LEAKY_RELU_ALPHA))(input_layer)
     return conv2d_layer
 
 
@@ -111,6 +112,7 @@ def create_model(output_channels):
     """
     ########## INPUT ##########
     input_layer = Input(shape=(IMAGE_ROWS, IMAGE_COLS, IMAGE_CHANNELS))
+    
     ########## CONTRACTING PATH ##########
     # level 1
     conv_layer_1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
