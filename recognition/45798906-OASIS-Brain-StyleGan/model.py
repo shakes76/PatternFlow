@@ -11,7 +11,7 @@
 
     Author: Keith Dao
     Date created: 13/10/2021
-    Date last modified: 29/10/2021
+    Date last modified: 30/10/2021
     Python version: 3.9.7
 """
 
@@ -250,7 +250,7 @@ def generate_generator_inputs(
     while curr_size <= img_size:
         mapping_inputs.append(tf.random.normal([batch_size, latent_dimension]))
         noise_inputs.append(
-            tf.random.normal([batch_size, curr_size, curr_size, 1])
+            tf.random.uniform([batch_size, curr_size, curr_size, 1])
         )
         curr_size *= 2
 
