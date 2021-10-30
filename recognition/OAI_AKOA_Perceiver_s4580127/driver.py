@@ -6,8 +6,7 @@ from matplotlib import pyplot as plt
 
 """
 Loads the images and returns a tf dataset which can be used to train the perceiver.
-Requires the iamge directory to be on the same level as the driver and Perceiver files and this folder must contains 
-two subdirectories "left" and "right" which contains their respective images.
+The image directory folder must contains two subdirectories "left" and "right" which contains their respective images.
 """
 def load_data(image_directory, image_resize):
     # Load images, split into train, val, test and normalise to (0, 1)
@@ -39,14 +38,14 @@ def plot_history(history):
     plt.title('Accuracy over Epochs')
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
-    plt.legend(['Training Loss', 'Validation Loss'], loc='upper left')
+    plt.legend(['Training Accuracy', 'Validation Accuracy'], loc='upper left')
     plt.show()
 
 
 if __name__ == '__main__':
-    # Hyper parameters
+    # (Hyper) Parameters
     num_classes = 2  # 2 Classes: Left or Right
-    num_epochs = 3  # 3 Appears to be enough to get over 90% test accuracy - more epochs leads to increased performance
+    num_epochs = 10  # 3 epochs appears to be enough to get over 97% test accuracy - more epochs leads to increased performance
     dropout_rate = 0.2  # Dropout rate for dense layers
     resized_image_size = 128  # We'll resize input images to this size.
     patch_size = 2  # Size of the patches to be extracted from the images.
@@ -66,8 +65,9 @@ if __name__ == '__main__':
                                      transformer_depth=transformer_depth, dense_units=dense_units, dropout_rate=dropout_rate,
                                      depth=depth, classifier_units=classifier_units)
     history = perceiver_classifier.compile_and_fit(train_ds, val_ds, num_epochs)
-    plot_history(history)
 
+    # Evaluate the performance on the test data set and plot the training loss
     _, accuracy = perceiver_classifier.evaluate(x=test_ds)
     print("Test accuracy:", accuracy)
+    plot_history(history)
 
