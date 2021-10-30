@@ -27,9 +27,9 @@ StyleGAN builds upon ProGAN by introducing a mapping network for the latent vect
 
 As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, $\gamma$ abd $\beta$ respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
 
-$$
-\text{AdaIN}(x_i, \gamma, \beta) = \gamma \frac{x_i-\mu(x_i)}{\sigma(x_i)} + \beta
-$$
+<center>
+<img src="https://render.githubusercontent.com/render/math?math=\text{AdaIN}(x_i, \gamma, \beta) = \gamma \frac{x_i-\mu(x_i)}{\sigma(x_i)} + \beta">
+</center>
 
 The use of AdaIN replaces the need for any other normalisation layers as it provides control over the style.
 
@@ -85,33 +85,12 @@ The graphs and images are display using `matplotlib.pyplot`. The graphs are achi
 
 | Training environment | Recommendations              | Reasoning                                                                                                                                                                                                                                                                      |
 | -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 32GB of RAM          | Minimum 16GB of RAM          | Training uses 10GB+ of RAM                                                                                                                                                                                                                                                     |
+| 32GB of RAM          | Minimum 16GB of RAM          | Training uses 10GB+ of RAM.                                                                                                                                                                                                                                                    |
 | Nvdia RTX2070 8GB    | Nvidia GPU with 8GB+ of VRAM | Training uses 7GB+ of VRAM. More VRAM would also allow for higher resolution images and batch sizes. A GPU is MANDATORY to be able to train in a timely manner. Although an AMD GPU can be used, additional libraries need to be instead and has not been tested to be stable. |
 
 ### Training Parameters
 
-<style>
-    th, td {
-        text-align: center;
-    }
-    th:first-child, td:first-child {
-        text-align: left;
-    }
-    /* .side-by-side th, .side-by-side tr {
-        text-align: left
-    }  */
-    .image-grid tr td {
-        text-align: center;
-    }
-    .image-grid img {
-        width: 500px;
-    }
-    .image-grid, .side-by-side{
-        margin: 0 auto;
-    }
-</style>
-
-<table class="side-by-side">
+<table>
     <tr> 
         <td>
             <table>
@@ -125,20 +104,20 @@ The graphs and images are display using `matplotlib.pyplot`. The graphs are achi
                 <tbody>
                     <tr>
                         <td>Optimizer</td>
-                        <td colspan=2>Adam</td>
+                        <td colspan=2 align="center">Adam</td>
                     </tr>
                     <tr>
                         <td>Learning Rate</td>
-                        <td>2e-7</td>
-                        <td>2.5e-8</td>
+                        <td align="center">2e-7</td>
+                        <td align="center">2.5e-8</td>
                     </tr>
                     <tr>
                         <td>Beta 1</td>
-                        <td colspan=2>0.5</td>
+                        <td colspan=2 align="center">0.5</td>
                     </tr>
                     <tr>
                         <td>Beta 2</td>
-                        <td colspan=2>0.999</td>
+                        <td colspan=2 align="center">0.999</td>
                     </tr>
                 </tbody>
             </table>
@@ -154,27 +133,27 @@ The graphs and images are display using `matplotlib.pyplot`. The graphs are achi
                 <tbody>
                     <tr>
                         <td>Image Size</td>
-                        <td>256</td>
+                        <td align="center">256</td>
                     </tr>
                     <tr>
                         <td>Batch Size</td>
-                        <td>32</td>
+                        <td align="center">32</td>
                     </tr>
                     <tr>
                         <td>Number of filters</td>
-                        <td> 512</td>
+                        <td align="center"> 512</td>
                     </tr>
                     <tr>
                         <td>Latent dimension</td>
-                        <td>512</td>
+                        <td align="center">512</td>
                     </tr>
                     <tr>
                         <td>Kernel size</td>
-                        <td>3</td>
+                        <td align="center">3</td>
                     </tr>
                     <tr>
                         <td>Total Epochs</td>
-                        <td>200</td>
+                        <td align="center">200</td>
                     </tr>
                 </tbody>
             </table>
@@ -190,10 +169,10 @@ The following are some samples of the results achieved when training the model o
 
 <table class="image-grid">
     <tr>
-        <td>
+        <td align="center">
             Epoch 154
         </td>
-        <td>
+        <td align="center">
             Epoch 158
         </td>
     </tr>
@@ -206,10 +185,10 @@ The following are some samples of the results achieved when training the model o
         </td>
     </tr>
     <tr>
-        <td>
+        <td align="center">
             Epoch 159
         </td>
-        <td>
+        <td align="center">
             Epoch 161
         </td>
     </tr>
@@ -222,10 +201,10 @@ The following are some samples of the results achieved when training the model o
         </td>
     </tr>
     <tr>
-        <td>
+        <td align="center">
             Epoch 162
         </td>
-        <td>
+        <td align="center">
             Epoch 167
         </td>
     </tr>
@@ -238,10 +217,10 @@ The following are some samples of the results achieved when training the model o
         </td>
     </tr>
     <tr>
-        <td>
+        <td align="center">
             Epoch 195
         </td>
-        <td>
+        <td align="center">
             Epoch 200
         </td>
     </tr>
@@ -255,22 +234,25 @@ The following are some samples of the results achieved when training the model o
     </tr>
 </table>
 
+<center>
 <table class="image-grid">
     <tr>
-        <td>Training Samples</td>
+        <td align="center">Training Samples</td>
     </tr>
     <tr>
         <td>
-            <img src="https://media.giphy.com/media/8IJHKVouQJ3BZOJ8Vt/giphy-downsized-large.gif" alt="Training sample evolution" />
+            <img src="https://media.giphy.com/media/8IJHKVouQJ3BZOJ8Vt/source.gif" alt="Training sample evolution" />
         </td>
     </tr>
 </table>
+</center>
 
 Although samples are not perfect, the shape and some details of the brain MRIs can be seen. Some higher quality images could possibly be generated by lowering the learning rate further then training for more epochs or adding more training data.
 
+<center>
 <table class="image-grid">
     <tr>
-        <td>GAN Loss</td>
+        <td align="center">GAN Loss</td>
     </tr>
     <tr>
         <td>
@@ -278,6 +260,7 @@ Although samples are not perfect, the shape and some details of the brain MRIs c
         </td>
     </tr>
 </table>
+</center>
 
 Although it may appear the loss has converged, it is quite evident that the images generated by the generator are definitely improving after the 20th epoch.
 
