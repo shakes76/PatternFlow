@@ -19,7 +19,13 @@ There are a total of 7640 images for left knee. For the experiment, the left kne
 * Val - 800
 * Test - 800
 
-The original MRI data is a 3D knee nii data, however, it is converted to 2D images by splitting a 3D data into 40 seperate images. In order to prevent data leakage, the 40 images of a single 3D knee needs to be in either train, validation or test dataset.
+The original MRI data is a 3D knee nii data, however, it is converted to 2D images by splitting a 3D data into 40 seperate images. In order to prevent data leakage, the 40 images of a single 3D knee needs to be in either train, validation or test dataset. As a result, the following steps are done to split the data.
+
+1. Image data paths of left and right knee are extracted and sorted.
+2. The dataset for train, validation and test are split by numbers divisible by 40, to ensure no data leakage.
+3. Left and right knee dataset are merged to each respective dataset subset of train, validation and test.
+
+Following these steps prevents data leakage and also ease the experiment for reproducibility.
 
 ## Model usage
 ```python
@@ -57,3 +63,16 @@ Experiment setup
 * Scheduler - ExponentialLR with decay rate of 0.995
 * Batch Size - 64
 
+#### Accuracy and Loss graph
+![Perceiver with GeGlu](https://user-images.githubusercontent.com/67994195/139536462-7ce3ca84-e560-43cb-9474-8b5710d21dc9.png)
+
+The experiment saves the best validation loss model, the best model has following result:
+|            | Accuracy | Loss   |
+|------------|----------|--------|
+| Train      | 93.8%    | 0.1822 |
+| Validation | 94.9%    | 0.1348 |
+
+#### Confusion Matrix For Test Dataset
+![Test Confusion Matrix](https://user-images.githubusercontent.com/67994195/139536573-956953d0-ac5b-4324-8ee0-bcc3037c9d7e.png)
+
+The best model has a test accuracy of 92.6%.
