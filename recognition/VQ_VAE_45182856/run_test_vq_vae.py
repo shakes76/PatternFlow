@@ -7,8 +7,8 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # Define parameters for the data loader
-h = 176
-w = 176
+h = 256
+w = 256
 
 test_loader = tf.keras.preprocessing.image_dataset_from_directory(
     TEST_DATA_PATH,
@@ -24,7 +24,7 @@ normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(scale
 normalized_test_loader = test_loader.map(lambda x: normalization_layer(x))
 
 # Load the model
-vq_vae_wrapper = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=0.0347, embedding_dim=24, n_embeddings=1024, recon_loss_type='MSE', commitment_factor=2)
+vq_vae_wrapper = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=0.0347, embedding_dim=24, n_embeddings=256, recon_loss_type='MSE', commitment_factor=2)
 vq_vae_wrapper.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-3))
 #vq_vae_wrapper.vq_vae = tf.keras.models.load_model('vq_vae')
 vq_vae_wrapper.load_weights(TRAINED_VQ_PATH)
@@ -44,4 +44,6 @@ for i in range(n_images):
     axs[i, 0].set_title('Original version of image {}'.format(i+1))
     axs[i, 1].imshow(reconstructed_imgs[i], cmap=plt.cm.gray)
     axs[i, 1].set_title('Reconstructed version of image {}'.format(i+1))
+    axs[i, 0].axis('off')
+    axs[i, 1].axis('off')
 plt.show()

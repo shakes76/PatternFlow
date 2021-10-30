@@ -8,8 +8,8 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # Define parameters for the data loader
 batch_size = 64
-h = 176
-w = 176
+h = 256
+w = 256
 train_loader = tf.keras.preprocessing.image_dataset_from_directory(
     TRAIN_DATA_PATH,
     label_mode=None,
@@ -38,7 +38,7 @@ for batch in normalized_train_loader:
 train_variance /= (n_training_samples * h * w) - 1
 print('Train variance {}'.format(train_variance))
 
-vq_vae_trainer = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=train_variance, embedding_dim=24, n_embeddings=1024, recon_loss_type='MSE', commitment_factor=3)
+vq_vae_trainer = VQ_VAE(img_h=h, img_w=w, img_c=1, train_variance=train_variance, embedding_dim=24, n_embeddings=256, recon_loss_type='MSE', commitment_factor=3)
 # Print out the architecture of the VQ VAE
 vq_vae_trainer.vq_vae.summary()
 
