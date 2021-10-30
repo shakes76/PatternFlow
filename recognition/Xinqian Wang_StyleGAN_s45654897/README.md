@@ -44,7 +44,7 @@ I made a plot for better explain how the class in the file `model.py` construct 
 </p>
 
 ### Reference Destruction
-For people who would like to know more about which according to a specific concept in the StyleGan.
+For people who would like to know more about the literatures which according to a specific concept in the StyleGan.
 #### Max Blur pooling
 1. [Making Convolutional Networks Shift-Invariant Again](https://arxiv.org/abs/1904.11486)`Max Blur pooling`
 2. [Using pre-training can improve model robustness and uncertainty](https://arxiv.org/abs/1901.09960)`robustness`
@@ -72,8 +72,24 @@ For people who would like to know more about which according to a specific conce
 **********************************************************************************************************************
 ## Model Visulization
 ### UMAP Visulization
-We set the seed and output 10 codes with the same shape of (1,512) and index them from 0 to 9. The only difference between these 10 codes is just from the 98th row's value. We set the 0-th code's value in 98th row as the original value v. For the i-th code, the value from 98th equals to <img src="https://latex.codecogs.com/svg.image?v&space;&plus;&space;i^{3}&space;" title="v + i^{3} " />
-too be continue
+We madke 10 basically same codes with the shape of [,512] and index them from 0 to 9. The only difference between these 10 codes is within the 98th value. We set the code with 0 index's valur in the 98th as the original value v. For the i-th code, the value in the 98th equals to <img src="https://latex.codecogs.com/svg.image?v&space;&plus;&space;i^{3}&space;" title="v + i^{3} " />. Then, we plot the codes which outputed by the Mapping Network using U-MAP function. The plot is as below:
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/86015cf5f42b1d2a07143fbdef9f2b7bdd54333a/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Umap.jpg" alt="" width='70%' height='70%'/>
+</p>
+For comparison, we also made three plots which attached their generated images. As below:
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/86015cf5f42b1d2a07143fbdef9f2b7bdd54333a/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Maniford_01257.png" alt="" width='70%' height='70%'/>
+</p>
+**Inference:**  We can deduce for the index set of 0, 1, 2, the generated image is more bright.
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/86015cf5f42b1d2a07143fbdef9f2b7bdd54333a/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Maniford_123467.png" alt="" width='70%' height='70%'/>
+</p>
+**Inference:**  We can deduce for the index set of 1, 2, 3, 4, 6, 7, the generated image is generally changing. It doesn't seem like we have a model collapse.
+<p align="center">
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/86015cf5f42b1d2a07143fbdef9f2b7bdd54333a/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Maniford_56789.png" alt="" width='70%' height='70%'/>
+</p>
+**Inference:**  We can deduce for the index set of 5, 6, 7, 8, 9, the generated image is very similar to each other. Additionally, it appears that the black area in the middle of the brain tends to be larger if the point is closed to the y-axis.
+
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
