@@ -15,6 +15,16 @@ def coo_matrix_to_sparse_tensor(coo):
     indices = np.mat([coo.row, coo.col]).transpose()
     return tf.SparseTensor(indices, coo.data, coo.shape)
 
+
+def normalize_adjacency_matrix(a_bar):
+    row_sum = np.array(a_bar.sum(1))
+    d_inv_sqr = np.power(row_sum, -0.5).flatten()
+    d_inv_sqr[np.isinf(d_inv_sqr)] = 0
+    d_mat_inv_sqrt = spr.diags(d_inv_sqr)
+    a_bar = a_bar.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
+    return a_bar
+
+
 def summarise_data(data, aspect):
     print(f"===== {aspect} =====")
     aspect_d = data[aspect]
@@ -97,9 +107,6 @@ def main():
     # Labels
     labels = tf.convert_to_tensor(data['target'])
 
-    dataset = tf.data.Dataset.from_tensor_slices((feats, labels))
-    print(dataset)
-
     # Split Data
     split = 18000
     # train_adj_p1, test_adj_p1 = page_one[:split], page_one[split:]
@@ -119,51 +126,55 @@ def main():
     print(a_dense.shape)
 
     a_bar = a_dense[:18000, :18000]
+    a_bar_test = a_dense[18000:, 18000:]
+    print("Done Splitting")
 
     a_bar = spr.coo_matrix(a_bar)
+    a_bar_test = spr.coo_matrix(a_bar_test)
+    print("Done converting to coo")
 
     # Normalize
-    row_sum = np.array(a_bar.sum(1))
-    d_inv_sqr = np.power(row_sum, -0.5).flatten()
-    d_inv_sqr[np.isinf(d_inv_sqr)] = 0
-    d_mat_inv_sqrt = spr.diags(d_inv_sqr)
-    a_bar = a_bar.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
+    a_bar = normalize_adjacency_matrix(a_bar=a_bar)
+    a_bar_test = normalize_adjacency_matrix(a_bar=a_bar_test)
 
     # Convert to Sparse Tensor
     a_bar = coo_matrix_to_sparse_tensor(a_bar)
+    a_bar_test = coo_matrix_to_sparse_tensor(a_bar_test)
 
     # ================== REAL MODEL DONE ===================
 
     print("===== Running Model =====")
+
     # Construct Model
     my_model = Sequential()
+    print(a_bar)
+    #my_model = myGraphModel.MyModel(a_bar, a_bar_test, train_feats.shape)
     loss_fn = losses.SparseCategoricalCrossentropy(from_logits=True)
+    opt = op.Adam(learning_rate=0.05)
 
     my_model.add(Input(shape=tf.Tensor.get_shape(train_feats)))
 
-    my_model.add(Dense(96))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add((Dense(64)))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(myGraphModel.FaceGCNLayer(adj_m=a_bar))
-    my_model.add(layers.Dropout(0.8))
-
+    # my_model.add(Dense(96))
+    my_model.add(myGraphModel.FaceGCNLayer(a_bar, a_bar_test))
+    # my_model.add((Dense(64)))
+    my_model.add(myGraphModel.FaceGCNLayer(a_bar, a_bar_test))
     my_model.add(Dense(4))
 
-    opt = op.Adam(learning_rate=0.05)
-
     my_model.compile(optimizer=opt, loss=loss_fn, metrics=['accuracy'])
+    # my_model.
     my_model.fit(train_feats,
                  train_labels,
-                 epochs=1500,
+                 epochs=100,
                  batch_size=22470, shuffle=True
                  )
-
 
     print(my_model.summary())
 
     # Evaluate
+
+    my_model.evaluate(test_feats,
+                      test_labels,
+                      batch_size=22470)
 
     # Predict
 
