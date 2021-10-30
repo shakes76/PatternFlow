@@ -16,7 +16,7 @@ The following packages are required to use this. Only tensorflow is used in the 
 ## File location
 The ISIC image data must be saved in the same folder as the program. This folder must have 2 subdirectories (ISIC2018_Task1-2_Training_Input_x2, ISIC2018_Task1_Training_GroundTruth_x2). The image path can be changed in the driver file, and the subdirectories can be changed in the UnetData file.
 
-##Usage
+## Usage
 the driver file is the file that contains most of the logical flow and calls functions from the other 2 files, UnetData and ImprovedUnet. The UnetData handles the data preparation and the ImprovedUnet file is the model. To make the model, the driver file has to be run. Some important features that can be altered in the diver file is the batch size, the number of images used and the learning rate. All of these were altered until the dice co-efficient was above 80%.
 
 The size of the images were also reshaped to be 256 by 256 pixels. 
