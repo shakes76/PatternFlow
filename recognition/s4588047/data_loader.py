@@ -3,7 +3,17 @@ import tensorflow as tf
 batch_size = 256
 
 def load_data(path):
-    # Returns images dataset of each data catagory
+    '''
+    Load the images from the path and returns them in a tuple of tensors of 
+    train and validate
+
+            Parameters:
+                    path: path string of the dataset
+
+            Returns:
+                    x_train, x_validate: a tuple of two data arrays
+    '''
+    # gets images dataset of each data catagory
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         path,
         label_mode=None,
@@ -26,10 +36,23 @@ def load_data(path):
 
 
 def process_data(train, validate):
-    x_train = tf.concat([tf.image.rgb_to_grayscale(x) for x in train], axis=0)
-    x_validate = tf.concat([tf.image.rgb_to_grayscale(x) for x in validate], axis=0)
+    '''
+    Takes the train and validate TF Dataset and converts them to two arrays
+    and normalises the scale between 0-255.
 
+            Parameters:
+                    train: the training TF Dataset object
+                    validate: the validation TF Dataset object
+
+            Returns:
+                    x_train, x_validate: a tuple of two data arrays 
+                    (normalised)
+    '''
+    x_train = tf.concat([tf.image.rgb_to_grayscale(x) for x in train], axis=0)
+    x_validate = tf.concat([tf.image.rgb_to_grayscale(x) for x in validate], 
+                           axis=0)
+    # scale between 0 to 255.
     x_train = tf.cast(x_train, 'float32') / 255.
     x_validate = tf.cast(x_validate, 'float32') / 255.
-
+    
     return x_train, x_validate

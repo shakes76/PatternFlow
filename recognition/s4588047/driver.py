@@ -8,16 +8,15 @@
 #%%
 # importing helper classes and functions
 from data_loader import load_data
-from model import Encoder, Decoder, VectorQuantizer
+from model import Encoder, Decoder, VectorQuantizer, PixelConvLayer, ResidualBlock
 
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from keras import backend as K
 from matplotlib import pyplot as plt
-import numpy as np
 import tensorflow_probability as tfp
+tfd = tfp.distributions
 
 print(tf.config.list_physical_devices('GPU'))
 
@@ -49,7 +48,8 @@ plt.show()
 
 # mean of the data
 # mean, var = tf.nn.moments(x_train, axes=[1])
-data_variance = np.var(x_train / 255.0) # only works with np
+#data_variance = np.var(x_train / 255.0) # only works with np
+data_variance = 0
 
 
 # Build modules.
@@ -139,7 +139,7 @@ class VQVAETrainer(keras.models.Model):
 vqvae_trainer = VQVAETrainer(encoder, decoder, vq_vae, pre_vq_conv1, data_variance)
 # using adam optimizer for the gradient training
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam(learning_rate))
-history = vqvae_trainer.fit(x_train, epochs=20, batch_size=batch_size, validation_data=(x_validate,))
+history = vqvae_trainer.fit(x_train, epochs=100, batch_size=batch_size, validation_data=(x_validate,))
 #%%
 
 
@@ -200,9 +200,6 @@ plt.legend(loc='best')
 plt.show()
 #%%
 
-tfd = tfp.distributions
-from pixel_cnn import PixelConvLayer, ResidualBlock
-
 dist = tfd.PixelCNN(
     image_shape=(128,128,1),
     num_resnet=1,
@@ -216,8 +213,8 @@ encoded_outputs = encoder(xtrain[1:10])
 flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
 codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-print("codes", codebook_indices.shape)
-codebook_indices = tf.squeeze(codebook_indices)
+print("codes", tf.squeeze(codebook_indices, 1).shape)
+codebook_indices = tf.squeeze(codebook_indices, 1)
 
 for i in range(1):
     plt.subplot(1, 2, 1)
@@ -233,7 +230,7 @@ for i in range(1):
     
 num_residual_blocks = 2
 num_pixelcnn_layers = 2
-pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+pixelcnn_input_shape = (32, 32)
 print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
 
 
@@ -271,6 +268,7 @@ flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
 codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
 
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+codebook_indices = tf.squeeze(codebook_indices, 1)
 print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
 
 pixel_cnn.compile(
@@ -282,7 +280,7 @@ pixel_cnn.fit(
     x=codebook_indices,
     y=codebook_indices,
     batch_size=128,
-    epochs=30,
+    epochs=100,
     validation_split=0.1,
 )
 
@@ -294,13 +292,31 @@ dist = tfp.distributions.Categorical(logits=x)
 sampled = dist.sample()
 sampler = keras.Model(inputs, sampled)
 
+def short_pass(priors):
+    first = pixel_cnn.predict(priors)
+    second = tfp.distributions.Categorical(first)
+    third = second.sample()
+    probs = third
+    #print(probs.shape)
+    return probs
 
 # Create an empty array of priors.
 batch = 10
-priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+priors = tf.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
 print(priors.shape)
-_,batch, rows, cols = priors.shape
+batch, rows, cols = priors.shape
 
+# Iterate over the priors because generation has to be done sequentially pixel by pixel.
+for row in range(rows):
+    for col in range(cols):
+        # Feed the whole array and retrieving the pixel value probabilities for the next
+        # pixel.
+        probs = short_pass(priors)
+        # Use the probabilities to pick pixel values and append the values to the priors.
+        priors[:, row, col] = probs[:, row, col]
+        
+        
+        
 # # Iterate over the priors because generation has to be done sequentially pixel by pixel.
 # for row in range(rows):
 #     for col in range(cols):
@@ -327,18 +343,22 @@ quantized = tf.matmul(
 )
 quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
 
+print(quantized.shape)
+
 # Generate novel images.
 
-generated_samples = decoder(quantized[1])
+generated_samples = decoder(quantized[0])
 
-for i in range(batch):
+print(generated_samples.shape)
+
+for i in range(1):
     plt.subplot(1, 2, 1)
     plt.imshow(priors[i])
     plt.title("Code")
     plt.axis("off")
 
     plt.subplot(1, 2, 2)
-    plt.imshow(generated_samples[i].squeeze() + 0.5)
+    plt.imshow(generated_samples[i] + 0.5)
     plt.title("Generated Sample")
     plt.axis("off")
     plt.show()
