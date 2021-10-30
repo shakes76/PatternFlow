@@ -106,11 +106,11 @@ def localization_module(input_layer,filters):
 
 
 
-def unet_improved(img_height,img_width,num_channels):
+def unet_improved(img_height,img_width,in_channels,out_channels):
 
     #down sample
 
-    inputs = Input((img_height,img_width,1))
+    inputs = Input((img_height,img_width,in_channels))
 
     term_1a = Conv2D(16, (3,3), padding="same")(inputs)
     term_1b = context_module(term_1a, 16)
@@ -153,15 +153,15 @@ def unet_improved(img_height,img_width,num_channels):
     concat_1c = Concatenate()([concat_1a,concat_1b])
     conv_output = Conv2D(32, (3,3), padding="same")(concat_1c)
 
-    level_1 = Conv2D(num_channels, (1,1), padding="same")(conv_output)
-    level_2 = Conv2D(num_channels, (1,1), padding="same")(local_out_2)
-    level_3 = Conv2D(num_channels, (1,1), padding="same")(local_out_3)
+    level_1 = Conv2D(out_channels, (1,1), padding="same")(conv_output)
+    level_2 = Conv2D(out_channels, (1,1), padding="same")(local_out_2)
+    level_3 = Conv2D(out_channels, (1,1), padding="same")(local_out_3)
     
-    final_term_3 = Conv2DTranspose(num_channels, (2, 2), strides=2, padding="same")(level_3)
+    final_term_3 = Conv2DTranspose(out_channels, (2, 2), strides=2, padding="same")(level_3)
 
     second_last_sum = Add()([final_term_3,level_2])
 
-    final_term_2 = Conv2DTranspose(num_channels, (2, 2), strides=2, padding="same")(second_last_sum)
+    final_term_2 = Conv2DTranspose(out_channels, (2, 2), strides=2, padding="same")(second_last_sum)
 
     last_sum = Add()([final_term_2,level_1])
 

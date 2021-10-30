@@ -30,7 +30,7 @@ print("Iterating through training input...")
 #Iterate through folder reading each image and resizing them to a 4:3 aspect ratio of 256 x 192 then adding them to a global list
 path = os.path.join(root, "ISIC2018_Task1-2_Training_Input_x2") 
 for img in os.listdir(path): 
-    img_array = cv2.imread(os.path.join(path,img),cv2.IMREAD_GRAYSCALE)
+    img_array = cv2.imread(os.path.join(path,img),cv2.IMREAD_UNCHANGED)
     img_array = resize(img_array, resize_dim, order=1, preserve_range=True, anti_aliasing=False).astype('uint8')
     X.append(img_array)
 
@@ -68,16 +68,16 @@ Y_test = tf.convert_to_tensor(Y_test, dtype=tf.float32)
 
 
 #Add extra dimension needed for cnn input
-X_train = tf.expand_dims(X_train,-1)
-X_test = tf.expand_dims(X_test,-1)
+#X_train = tf.expand_dims(X_train,-1)
+#X_test = tf.expand_dims(X_test,-1)
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
-model = unet_improved(height,width,1)
+model = unet_improved(height,width,3,1)
 
 model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss=loss_fn, metrics=['accuracy'])
 
-unet_trained = model.fit(X_train, Y_train, epochs=20, batch_size=63, shuffle=True, validation_split=0.1)
+unet_trained = model.fit(X_train, Y_train, epochs=50, batch_size=20, shuffle=True, validation_split=0.1)
 
 predictions = model.predict(X_test)
 
@@ -102,12 +102,14 @@ print(average_dice, "Average")
 
 #tf.print(match)
 
-index = 4
+index = 30
 
-plt.imshow(X_test[index,:,:,0],cmap="gray")
+plt.imshow(X_test[index,:,:,0])
 plt.show()
 plt.imshow(Y_test[index,:,:,0],cmap="gray")
 plt.show()
 plt.imshow(match[index,:,:,0],cmap="gray")
+plt.show()
+plt.imshow(X_test[index])
 plt.show()
 
