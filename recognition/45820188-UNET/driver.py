@@ -48,8 +48,6 @@ def plot_prediction(model, X_test, y_test):
     Plots the images with Original vs Prediction vs Expected
     """
     prediction = model.predict(X_test)
-    print(prediction.shape)
-    print(prediction[0].shape)
     plt.figure(figsize=(10, 10))
     n = 4
     for i in range(n):
@@ -59,7 +57,8 @@ def plot_prediction(model, X_test, y_test):
         plt.title("Original", size=11)
 
         plt.subplot(n, 3, i*3+2)
-        plt.imshow(prediction[i])
+        
+        plt.imshow(tf.cast(prediction[i] * 255.,'uint8'))
         plt.axis('off')
         plt.title("Prediction", size=11)
 
@@ -72,7 +71,7 @@ def plot_prediction(model, X_test, y_test):
 if __name__ == "__main__":
     batch_size = 16
     depth = 16
-    epochs = 1
+    epochs = 10
     n = 192
     m = 256
 
@@ -101,6 +100,10 @@ if __name__ == "__main__":
     y_test = tf.concat([x for x in y_test_ds], axis=0)
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=dice_coefficient_loss, metrics=[dice_coefficient])
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, shuffle=True, validation_data=(X_test, y_test))
+    output = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, shuffle=True, validation_data=(X_test, y_test))
 
+    print(model.evaluate(X_test))
+    print(output["loss"])
+    print(output["accuracy"])
+    
     plot_prediction(model, X_test, y_test)
