@@ -87,14 +87,14 @@ A mAP result on the test set can be calculated.
   The mAP result over 0.5 IOU threshold
 </p>
 <p align="center">
-<img src="https://github.com/slowlier/PatternFlow/blob/87d7c88fc9b019cf00e1db6313465c398bd28092/recognition/S4607867_Jiaqiyu/pics/my_map_calc.png" width=100% height=100%>
+<img src="https://github.com/slowlier/PatternFlow/blob/79c7f7f3feb69617ad62c6809e62e5e7703b1c5a/recognition/S4607867_Jiaqiyu/pics/my_map_calc.png" width=100% height=100%>
 </p>
 </n>
 <p align="center">
   The mAP result over 0.8 IOU threshold
 </p>
 <p align="center">
-<img src="https://github.com/slowlier/PatternFlow/blob/937f496c7b24bc01819e35d079f288e19fb9f234/recognition/S4607867_Jiaqiyu/pics/my_map_calc@0.8.png" width=100% height=100%>
+<img src="https://github.com/slowlier/PatternFlow/blob/79c7f7f3feb69617ad62c6809e62e5e7703b1c5a/recognition/S4607867_Jiaqiyu/pics/my_map_calc@0.8.png" width=100% height=100%>
 </p>
 
 # Conclusion
