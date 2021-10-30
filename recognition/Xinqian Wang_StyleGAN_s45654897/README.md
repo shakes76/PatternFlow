@@ -189,3 +189,7 @@ We done its trial for a hundred times, the case where the MSE loss between [imag
 
 
 **Inference:**  In conlusion, we deduce a image in the generation process would tend to be similar in shape with the style from coarse spatial resolutions. However, in terms of mean and MSE distence between Gram Matrix, it tends to be closed to the style inputed from higher resolutions.
+
+## Model Visulization
+### UMAP
+to be continue
