@@ -8,27 +8,59 @@ if device == '[]':
 print("Found GPU at: {}".format(device))
 
 import segmentation_models_3D as sm
-from patchify import patchify, unpatchify
 from matplotlib import pyplot as plt
 from tensorflow.keras.utils import to_categorical
 import nibabel as nib
 from math import floor, ceil
+import glob
 
-X_train = tf.reshape(patchify(nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata(), (64,64,64), step=64), (-1, 64, 64, 64))
-X_val = tf.reshape(patchify(nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week1_LFOV.nii.gz").get_fdata(), (64,64,64), step=64), (-1, 64, 64, 64))
+def getScans(dataFolder, labelsFolder):
+    dataFiles = sorted(glob.glob(dataFolder + "*"))
+    labelsFiles = sorted(glob.glob(labelsFolder + "*"))
+    
+    return list(zip(dataFiles, labelsFiles))
 
-y_train = tf.reshape(patchify(nib.load("/home/Student/s4580429/dataset/semantic_labels_anon/Case_004_Week0_SEMANTIC_LFOV.nii.gz").get_fdata(), (64,64,64), step=64), (-1, 64, 64, 64))
-y_val = tf.reshape(patchify(nib.load("/home/Student/s4580429/dataset/semantic_labels_anon/Case_004_Week1_SEMANTIC_LFOV.nii.gz").get_fdata(), (64,64,64), step=64), (-1, 64, 64, 64))
+fileNames = getScans("/home/Student/s4580429/dataset/semantic_MRs_anon/", "/home/Student/s4580429/dataset/semantic_labels_anon/")
+total_images = len(fileNames)
+
+dataset = tf.data.Dataset.from_tensor_slices((tf.constant(range(len(fileNames))), tf.constant(range(len(fileNames)))))
+
+shape = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata().shape
+BACKBONE = 'resnet50'
+preprocess_input = sm.get_preprocessing(BACKBONE)
+
+def im_file_to_tensor(dataPath, labelPath):
+    def _im_file_to_tensor(dataPath, labelPath):
+        dp, lp = fileNames[dataPath]
+        image = tf.convert_to_tensor(nib.load(dp).get_fdata().astype('float32'))
+        image = tf.cast(image, tf.float32)
+        image = tf.stack((image,)*channels, axis=-1)
+        image = preprocess_input(image)
+        image = tf.expand_dims(image, axis=0)
+        labels = tf.convert_to_tensor(nib.load(lp).get_fdata().astype('float32'))
+        labels = to_categorical(tf.expand_dims(labels, axis=3), num_classes=n_classes)
+        labels = tf.cast(labels, tf.float32)
+        labels = tf.expand_dims(labels, axis=0)
+        return image, labels
+    data, label = tf.py_function(_im_file_to_tensor, 
+                                 inp=(dataPath, labelPath), 
+                                 Tout=(tf.float32, tf.float32))
+    data.set_shape((1,) + shape + (channels,))
+    label.set_shape((1,) + shape + (n_classes,))
+    return data, label
+
+dataset = dataset.map(im_file_to_tensor,
+    num_parallel_calls=tf.data.AUTOTUNE)
 
 n_classes = 6
 
-process = lambda x, fun : tf.stack((x,)*3, axis=-1) if fun == 0 else \
-        to_categorical(tf.expand_dims(x, axis=4), num_classes=n_classes)
-
-X_train = process(X_train, 0)
-y_train = process(y_train, 1)
-X_val = process(X_val, 0)
-y_val = process(y_val, 1)
+#process = lambda x, fun : tf.stack((x,)*3, axis=-1) if fun == 0 else \
+#        to_categorical(tf.expand_dims(x, axis=4), num_classes=n_classes)
+#
+#X_train = process(X_train, 0)
+#y_train = process(y_train, 1)
+#X_val = process(X_val, 0)
+#y_val = process(y_val, 1)
 
 #image = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz")
 #image_patch = patchify(image.get_fdata(), (64,64,64), step=64)
@@ -67,8 +99,8 @@ y_val = process(y_val, 1)
 #y_val = process(X_val, 1)
 #X_val = process(X_val, 0)
 
-print("train", X_train.shape, y_train.shape, type(X_train), type(y_train))
-print("validation", X_val.shape, y_val.shape, type(X_val), type(y_val))
+#print("train", X_train.shape, y_train.shape, type(X_train), type(y_train))
+#print("validation", X_val.shape, y_val.shape, type(X_val), type(y_val))
 
 print("Successfully loaded and converted data!")
 
@@ -80,7 +112,6 @@ def dice_coefficient(y_true, y_pred):
     return 1 - (2. * inters) / (tf.reduce_sum(y_true + y_pred))
 
 encoder_weights = 'imagenet'
-BACKBONE = 'resnet50'
 activation = 'softmax'
 patch_size = 64
 channels = 3
@@ -97,9 +128,6 @@ metrics = [sm.metrics.IOUScore(threshold=0.5), dice_coefficient]
 
 preprocess_input = sm.get_preprocessing(BACKBONE)
 
-X_train_prep = preprocess_input(X_train)
-X_val_prep = preprocess_input(X_val)
-
 model = sm.Unet(BACKBONE, classes=n_classes,
                 input_shape=(patch_size, patch_size, patch_size, channels),
                 encoder_weights=encoder_weights,
@@ -108,11 +136,10 @@ model = sm.Unet(BACKBONE, classes=n_classes,
 model.compile(optimizer = optim, loss=total_loss, metrics=metrics)
 print(model.summary())
 
-history = model.fit(X_train_prep, y_train, batch_size=batch_size,
-                  epochs=batch_num, verbose=1,
-                  validation_data=(X_val_prep, y_val))
+history = model.fit(dataset, batch_size=batch_size,
+                  epochs=batch_num, verbose=1)
 
-model.save('/home/Student/s4580429/segment_out/3D_model_res50_patches.h5')
+model.save('/home/Student/s4580429/segment_out/3D_model_res10_full.h5')
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']
