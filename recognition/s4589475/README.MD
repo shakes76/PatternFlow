@@ -59,7 +59,7 @@ There is still some blurring of the output image evident compared to the input, 
 
 *Figure 5: Mean Structual Similarity Score across all images in the test images dataset*
 
-While the reconstruction loss (orange curve in Figure 4) consistently decreased throughout training, the committment loss (green curve) first peaked, before gradually improving over the course of the epochs. The total loss was determined by the sum of the committment and reconstruction losses, and is shown in blue in Figure 4. 
+While the reconstruction loss (orange curve in Figure 6) consistently decreased throughout training, the committment loss (green curve) first peaked, before gradually improving over the course of the epochs. The total loss was determined by the sum of the committment and reconstruction losses, and is shown in blue in Figure 6. 
 
 ![](./resources/Loss_curve.PNG)
 
