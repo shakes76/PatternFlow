@@ -14,13 +14,11 @@ def create_encoder(latent_dimensions):
     encoder = Sequential(name="encoder")
     encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(img_length, img_length, 1)))
     encoder.add(Conv2D(64, 3, activation="relu", strides=2, padding="same"))
-    encoder.add(Conv2D(128, 3, activation="relu", strides=2, padding="same"))
     encoder.add(Conv2D(latent_dimensions, 1, padding="same"))
     return encoder
 
 def create_decoder():
     decoder = Sequential(name="decoder")
-    decoder.add(Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(1, 3, padding="same"))
@@ -126,21 +124,20 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
     test_samples = x_test_normalised[indices]
 
     reconstructed = vqvae.predict(test_samples)
-    test_samples = normalise_255(test_samples)
-    reconstructed = normalise_255(reconstructed)
     calculate_ssim(test_samples, reconstructed)
+
     # Output image comparisons
     for i in range(n_images):
         original_image = test_samples[i].squeeze()
         reconstructed_image = reconstructed[i].squeeze()
 
         plt.subplot(1, 2, 1)
-        plt.imshow(original_image + 0.5, vmin=0, vmax=255)
+        plt.imshow(original_image, vmin=0, vmax=1)
         plt.title("Original")
         plt.axis("off")
 
         plt.subplot(1, 2, 2)
-        plt.imshow(reconstructed_image + 0.5)
+        plt.imshow(reconstructed_image, vmin=0, vmax=1)
         plt.title("Reconstructed")
         plt.axis("off")
 
@@ -148,11 +145,9 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
         plt.savefig(f"reconstructions_{i}.png")
         plt.close()
 
-def normalise_255(samples):
-    return 255 * (samples - np.min(samples)) / np.ptp(samples)
 
 def calculate_ssim(original_images, reconstructed_images):
-    similarity = tf.image.ssim(original_images, reconstructed_images, max_val=255)
+    similarity = tf.image.ssim(original_images, reconstructed_images, max_val=1)
     print("Structured similarity is:", similarity)
 
 
