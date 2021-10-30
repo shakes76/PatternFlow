@@ -24,6 +24,11 @@ Improved UNet Network Architecture:
 
 ![Metrics Plot](./images/plot_metrics_sample.png)
 
+## Troubleshoot
+`tensorflow.python.framework.errors_impl.InvalidArgumentError: buffer_size must be greater than zero. [Op:ShuffleDatasetV3]`
+- The datasets have not been properly read.
+- Check if the `ISIC_DIR` directory in `main.py` and `ISIC_INPUT_DIR`/`ISIC_GROUNDTRUTH_DIR` folder names in `data.py` match.
+
 ## References
 \[1\] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation
 and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. \[Online\].

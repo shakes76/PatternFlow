@@ -16,7 +16,7 @@ IMAGE_WIDTH = 256  # Width of the input images
 # Hyperparameters
 NUM_CLASSES = 1  # Number of classes for classification
 BATCH_SIZE = 32  # Batch size for training
-EPOCHS = 20  # Number of epochs for training
+EPOCHS = 10  # Number of epochs for training
 
 
 def main():
@@ -57,9 +57,12 @@ def main():
 
     # generate plots for predictions and metrics
     print("[5/5] Generating plots...")
-    plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5)
-    plot_metrics(history)
-    print("Saved plots to ./images")
+    try:
+        plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5)
+        plot_metrics(history)
+        print("Saved plots to ./images/plot.png and ./images/plot_metrics.png")
+    except Exception:
+        print("There was a problem when saving plots.")
 
 
 if __name__ == "__main__":
