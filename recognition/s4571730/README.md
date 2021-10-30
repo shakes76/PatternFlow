@@ -37,6 +37,7 @@ edited to False if NumPy datasets are already available at said path.
 ## Dependencies
 - Tensorflow (2.6 used in the report)
 - Tensorflow Add-ons
+- CUDA and CuDNN (download from NVIDIA, if trained with NVIDIA GPU)
 - Keras (included in Tensorflow package)
 - NumPy (for processing the dataset)
 
@@ -54,7 +55,12 @@ binary classification head.
 
 ## Data pre-processing
 - Download the data from the supplied cloudstore link
-- The dataset contain the label (left/right) in each filename, so no manual
+- Image size of the dataset is 260 * 228 in RGB format, which is rather large for 
+the laboratory GPU (RTX 2080 with 8GB VRAM). As the images are grayscale (the red,
+ green and blue values are the same), they are loaded in grayscale mode (2D array)
+and resolution reduced to 73 * 64 for memory saving. This does not affect the
+training process. 
+- The dataset contains the label (left/right) in each filename, so no manual
 labelling is required.
 - The dataset is extremely vulnerable to data leakage, since a patient 
 (identified by the patient ID OAIxxxxxx) can have several images, each one being
