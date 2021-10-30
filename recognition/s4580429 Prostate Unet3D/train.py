@@ -59,6 +59,7 @@ print("Successfully loaded and converted data!")
 
 def dice_coefficient(y_true, y_pred):
     y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
     y_pred = tf.math.sigmoid(y_pred)
     inters = tf.reduce_sum(y_true * y_pred)
     return 1 - (2. * inters) / (tf.reduce_sum(y_true + y_pred))
@@ -93,7 +94,7 @@ print(model.summary())
 
 history = model.fit(X_train_prep, y_train, batch_size=batch_size,
                   epochs=batch_num, verbose=1,
-                  validation_data=(X_val_prep, y_test))
+                  validation_data=(X_val_prep, y_val))
 
 model.save('/home/Student/s4580429/segment_out/3D_model_res50_patches.h5')
 
