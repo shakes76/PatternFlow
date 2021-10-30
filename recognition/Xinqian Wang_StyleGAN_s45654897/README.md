@@ -1,5 +1,6 @@
 This is my first style GAN impelementation. Because of short in GPU, the model is intermittently trained on Colab.
 The README file is consisted of two parts, firstly general introduce the Style model and the rest part is some tests I did.
+Name: Xinqian Wang | Student_ID: 45654897 | Update_Time: 17:20/30/10/2021
 
 # MRI Image Gereration By Implementing StyleGan
 > **A Style-Based Generator Architecture for Generative Adversarial Networks**<br>
