@@ -1,38 +1,79 @@
+"""
+Driver script to import/ download and pre-process the ISIC2018 dataset. It will compile, build, and train an
+improved UNet model for the image segmentation. It will also generate example plots of the original images and masks,
+the model's architecture, dice similarity coefficient over epochs, training validation and loss, and a true mask and
+predicted mask comparison plot.
+
+@author Tompnyx
+@email tompnyx@outlook.com
+"""
+
 import glob
 import os
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.optimizers import SGD
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 from model import improved_unet
 
-# Constants
-ISIC2018_data_link = "https://cloudstor.aarnet.edu.au/sender/download.php?token=b66a9288-2f00-4330-82ea-9b8711d27643&files_ids=14200406"
-download_directory = os.getcwd() + '\ISIC2018_Task1-2_Training_Data.zip'
+"""File Constants"""
+# Link to the online repository that hosts the ISIC2018 dataset
+ISIC2018_data_link = "https://cloudstor.aarnet.edu.au/sender/download.php?token=b66a9288-2f00-4330-82ea-9b8711d27643" \
+                     "&files_ids=14200406 "
+# Download directory for the dataset
+download_directory = os.getcwd() + "\ISIC2018_Task1-2_Training_Data.zip"
 
+"""Graph Constants"""
+# Number of examples to display
 num_display_examples = 3
+# If a subset of the original images and masks is to be graphed and printed
 print_original_images = True
+# If a subset of the processed images and masks is to be graphed and printed
 print_processed_images = True
+# If a subset of the predicted images and masks is to be graphed and printed
 print_predicted_images = True
+# If the graphs should be saved as .png files in the Results subdirectory
 save_photos = True
 
+"""Model Saving Constants"""
+# If a pre-trained model should be used
 use_saved_model = False
+# If the model being trained should be saved (Note: Only works if use_saved_model = True)
 save_model = True
 
+"""Model Training Constants"""
+# If the images should be shuffled (Note: Masks and their related image are not changed)
 shuffle = True
+# The dataset split percentage for the training dataset
 training_split = 0.8
+# The dataset split percentage for the validation dataset
+# (Note: The testing dataset will be the remaining dataset once the training and validation datasets have been taken)
 validation_split = 0.1
+# The shuffle size to be used
 shuffle_size = 50
 
+# The height and width of the processed image
 img_height = img_width = 150
-batch_size = 4
-n_channels = 3
-epochs = 10
+# The batch size to be used
+batch_size = 32
+# The number of training epochs
+epochs = 15
+# The number of times a similar validation dice coefficient score is achieved before training is stopped early
+patience = 10
+# SGD learning rate's parameter
+sgd_lr = 0.01
 
 
 def process_images(file_path, is_mask):
+    """
+    Processes the given image/ mask
+
+    :param file_path: The path of the file
+    :param is_mask: If the file given is a mask or not
+    :return: The processed image
+    """
     # Decodes the image at the given file location
     if is_mask:
         image = tf.image.decode_png(tf.io.read_file(file_path), channels=0)
@@ -50,8 +91,17 @@ def process_images(file_path, is_mask):
     return image_final
 
 
-# Plots images to subplot given position
 def plot_images(pic_array, rows, index, original, cols=2):
+    """
+    Plots the given images in a subplot of the given rows/ columns at a given position index
+
+    :param pic_array: The array of pictures to plot
+    :param rows: The number of rows the subplot should have
+    :param index: The index of the subplot at which the images should be plotted at
+    :param original: If the plotted image should be read from a file path or processed normally
+    :param cols: The number of columns the subplot should have
+    :return: NULL
+    """
     title = ['Original Input', 'True Mask', 'Predicted Mask']
     for i in range(len(pic_array)):
         plt.subplot(rows, cols, index + 1)
@@ -65,8 +115,33 @@ def plot_images(pic_array, rows, index, original, cols=2):
         index += 1
 
 
-# Displays a database ds given how many rows
+def show_original_images(rows, index=0):
+    """
+    Displays original images as read into the program
+
+    :param rows: The number of rows the subplot should have
+    :param index: The index to start at
+    :return: NULL
+    """
+    fig = plt.figure(figsize=(5, 5))
+    for i in range(rows):
+        image, mask = image_file_list[i], mask_file_list[i]
+        plot_images([image, mask], rows, index, True)
+        index += 2
+    plt.show()
+    if save_photos:
+        fig.savefig('Results/OriginalExample.png', dpi=fig.dpi)
+
+
 def show_processed_images(rows, ds, index=0):
+    """
+    Displays the processed images, given in a dataset ds, in a subplot
+
+    :param rows: The number of rows the subplot should have
+    :param ds: The dataset used to find the processed images
+    :param index: The index to start at
+    :return: NULL
+    """
     fig = plt.figure(figsize=(5, 5))
     for images, masks in ds.take(rows):
         image = images
@@ -78,19 +153,15 @@ def show_processed_images(rows, ds, index=0):
         fig.savefig('Results/ProcessedExample.png', dpi=fig.dpi)
 
 
-# Displays original images as read into the program
-def show_original_images(rows, index=0):
-    fig = plt.figure(figsize=(5, 5))
-    for i in range(rows):
-        image, mask = image_file_list[i], mask_file_list[i]
-        plot_images([image, mask], rows, index, True)
-        index += 2
-    plt.show()
-    if save_photos:
-        fig.savefig('Results/OriginalExample.png', dpi=fig.dpi)
-
-
 def show_predicted_images(rows, unet_model, index=0):
+    """
+    Displays the processed images, given in a model unet_model, in a subplot
+
+    :param rows: The number of rows the subplot should have
+    :param unet_model: The model used to find the processed images
+    :param index: The index to start at
+    :return: NULL
+    """
     fig = plt.figure(figsize=(5, 5))
     for image, mask in test_ds.batch(batch_size).take(num_display_examples):
         pred_mask = tf.cast(unet_model.predict(image), tf.float32)
@@ -102,6 +173,11 @@ def show_predicted_images(rows, unet_model, index=0):
 
 
 def create_ds():
+    """
+    Creates the training, validation, and testing dataset specified in the constant section above
+
+    :return: Training, Validation, and Testing datasets
+    """
     # Calculates the size of each test, train, and validation subset
     files_ds_size = len(list(files_ds))
     train_ds_size = int(training_split * files_ds_size)
@@ -120,9 +196,16 @@ def create_ds():
 
 def dice_sim_coef(y_true, y_pred, epsilon=1.0):
     """
+    Function to determine the dice similarity coefficient given a true and predicted input
+
     Code adapted from:
     "An overview of semantic image segmentation.", Jeremy Jordan, 2021.
     [Online]. Available: https://www.jeremyjordan.me/semantic-segmentation/. [Accessed: 26-Oct-2021].
+
+    :param y_true: The true parameter
+    :param y_pred: The predicted parameter
+    :param epsilon: A constant to normalise the result
+    :return: The Dice similarity coefficient
     """
     axes = tuple(range(1, len(y_pred.shape) - 1))
     numerator = 2. * tf.math.reduce_sum(y_pred * y_true, axes)
@@ -131,27 +214,49 @@ def dice_sim_coef(y_true, y_pred, epsilon=1.0):
 
 
 def dice_sim_coef_loss(y_true, y_pred):
+    """
+    The loss of the dice similarity coefficient given a true and predicted input
+
+    :param y_true: The true parameter
+    :param y_pred: The predicted parameter
+    :return: 1 - dice similarity coefficient
+    """
     return 1 - dice_sim_coef(y_true, y_pred)
 
 
 def initialise_model():
+    """
+    Initialises the model, compiles it, and creates a plot of the model
+    This file is located in the sub directory called "Results/model.png"
+
+    :return: The model initialised
+    """
     # Creates the improved UNet model
-    unet_model = improved_unet(img_height, img_width, n_channels)
+    unet_model = improved_unet(img_height, img_width, 3)
     # Sets the training parameters for the model
-    unet_model.compile(optimizer=SGD(lr=0.01), loss=[dice_sim_coef_loss],
+    unet_model.compile(optimizer=SGD(learning_rate=sgd_lr), loss=[dice_sim_coef_loss],
                        metrics=[dice_sim_coef])
     # Prints a summary of the model compiled
     unet_model.summary()
     # Plots a summary of the model's architecture
     tf.keras.utils.plot_model(unet_model, show_shapes=True)
+    # Moves the model.png file created to the Results folder. If model.png is already present in the Results
+    # sub directory, it is deleted and replaced with the new model.png
+    if os.path.exists(os.getcwd() + "\Results\model.png"):
+        os.remove(os.getcwd() + "\Results\model.png")
+    os.rename(os.getcwd() + "\model.png", os.getcwd() + "\Results\model.png")
     return unet_model
 
 
 def plot_performance_loss_model(model_history):
     """
+    Plots the trained model's training loss vs validation loss over epochs run
     Code adapted from:
     "Image segmentation", TensorFlow, 2021.
     [Online]. Available: https://www.tensorflow.org/tutorials/images/segmentation. [Accessed: 28-Oct-2021].
+
+    :param model_history: The model's history to draw information from
+    :return: NULL
     """
     fig = plt.figure()
     val_loss = model_history.history['val_loss']
@@ -169,14 +274,21 @@ def plot_performance_loss_model(model_history):
 
 
 def plot_performance_model(model_history):
+    """
+    Plots the trained model's training dice similarity coefficient vs validation dice similarity coefficient
+    over run epochs
+
+    :param model_history: The model's history to draw information from
+    :return: NULL
+    """
     fig = plt.figure()
     dice = model_history.history['dice_sim_coef']
     val_dice = model_history.history['val_dice_sim_coef']
     plt.plot(model_history.epoch, dice, 'r', label='Training')
     plt.plot(model_history.epoch, val_dice, 'b', label='Validation')
-    plt.title('Dice Similarity Coefficient over Epochs ')
+    plt.title('Dice Similarity Coefficient over Epochs')
     plt.xlabel('Epoch')
-    plt.ylabel('Accuracy (Dice Similarity Coefficient')
+    plt.ylabel('Accuracy (Dice Similarity Coefficient)')
     plt.ylim([0, 1])
     plt.legend(loc='lower right')
     plt.show()
@@ -189,6 +301,16 @@ tf.keras.utils.get_file(origin=ISIC2018_data_link, fname=download_directory, ext
 # Segments folders into arrays
 image_file_list = list(glob.glob('datasets/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))
 mask_file_list = list(glob.glob('datasets/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))
+
+# Create sub directories needed by later processes
+try:
+    os.mkdir("Results")
+except OSError:
+    print("Results sub directory already present or could not create folder")
+try:
+    os.mkdir("Saved_Model")
+except OSError:
+    print("Saved_Model sub directory already present or could not create folder")
 
 # Show original images and masks
 print("Size of Training Pictures: %d\nSize of Segmented Pictures: %d\n"
@@ -224,8 +346,8 @@ if use_saved_model:
 else:
     # Initialise the model
     model = initialise_model()
-    # Creates a condition where training will stop when there is no progress on val_loss over 6 epochs
-    callback = EarlyStopping(monitor='val_dice_sim_coef', patience=5, restore_best_weights=True)
+    # Creates a condition where training will stop when there is no progress on val_loss
+    callback = EarlyStopping(monitor='val_dice_sim_coef', patience=patience, restore_best_weights=True)
     # Trains the model
     history = model.fit(train_ds.batch(batch_size), batch_size=batch_size, epochs=epochs,
                         validation_data=val_ds.batch(batch_size), shuffle=shuffle, callbacks=callback)
@@ -236,10 +358,9 @@ else:
     if save_model:
         model.save('Saved_Model')
 
-if print_predicted_images:
-    show_predicted_images(num_display_examples, model)
-
 # Evaluates the model
 loss, acc = model.evaluate(test_ds.batch(batch_size), verbose=2)
-# # Uses the test dataset to test the model on the predicted masks
-# predictions = model.predict(test_ds.batch(batch_size)
+
+# Uses the test dataset to test the model on the predicted masks and displays a subset of results
+if print_predicted_images:
+    show_predicted_images(num_display_examples, model)

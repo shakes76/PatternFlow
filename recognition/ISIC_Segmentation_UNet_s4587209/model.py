@@ -1,13 +1,37 @@
+"""
+Model Architecture for an improved UNet.
+
+@author Tompnyx
+@email tompnyx@outlook.com
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import concatenate, Conv2D, BatchNormalization, Dropout, Input, LeakyReLU, UpSampling2D
 
 
 def improved_unet(height, width, channels):
+    """
+    The improved UNet model's architecture. Given a height, width, and number of channels it will return a
+    improved UNet model ready for training.
+
+    :param height: The height of the image
+    :param width: The width of the image
+    :param channels: The number of channels the image has
+    :return: A keras model of a improved UNet
+    """
+
+    """Constants"""
+    # The number of filters for each convolutional layer
     fil = 16
+    # The kernel size to use
     kern = (3, 3)
+    # The padding argument used for each convolutional layer
     pad = 'same'
+    # The dropout rate used by each Dropout layer
     drop = 0.3
+    # The alpha rate used by each LeakyReLU layer
     alp = 0.01
+
     # Building the model
     inputs = Input((height, width, channels))
 
