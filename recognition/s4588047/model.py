@@ -1,14 +1,24 @@
 import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow import keras
 
 """
 Reference:
     https://github.com/deepmind/sonnet/blob/v2/sonnet/src/nets/vqvae.py
     Tom Hennigan, VectorQuantizer layer 
+    
+    https://keras.io/examples/generative/vq_vae/
+    Sayak Paul, Vector-Quantized Variational Autoencoders
 
 """
 
 class VectorQuantizer(layers.Layer):
+    '''
+    Teh Vector Quantizer layer to encapsulate the vector quantizer logic along
+    with embedding table that is then initialized to learn a codebook and
+    return a quantized representatin of the image
+
+    '''
     def __init__(self, num_embeddings, embedding_dim, beta=0.25, **kwargs):
         super().__init__(**kwargs)
         self.embedding_dim = embedding_dim
@@ -51,6 +61,16 @@ class VectorQuantizer(layers.Layer):
         return quantized
 
     def get_code_indices(self, flattened_inputs):
+        '''
+        Gets the code indices in the codebook and returns them in an array
+        
+                Parameters:
+                        flattened_inputs: a flatten shape of input 1D array
+        
+                Returns:
+                        encoding_indices: a 1D array representing the codebook
+                        representation
+        '''
         # Calculate L2-normalized distance between the inputs and the codes.
         similarity = tf.matmul(flattened_inputs, self.embeddings)
         distances = (
@@ -65,6 +85,12 @@ class VectorQuantizer(layers.Layer):
 
 
 class ResidualStack(layers.Layer):
+    '''
+    The residual stack to keep information from the original array after the
+    Conv2D operation and concatinate it with the after array
+    4 * (Conv2D -> relu -> Conv2D -> relu)
+
+    '''
     def __init__(self, num_hiddens, num_residual_layers, num_residual_hiddens):
         super(ResidualStack, self).__init__()
         self._num_hiddens = num_hiddens
@@ -82,15 +108,17 @@ class ResidualStack(layers.Layer):
             h_i = tf.keras.activations.relu(h)
             h_i = self._c1(h_i)
             h_i = tf.keras.activations.relu(h_i)
-            #print("ok h_i: {}".format(h_i.shape))
-
             h_i = self._c2(h_i)
-            #print("ok h_i: {}".format(h_i.shape))
             h += h_i
         return tf.keras.activations.relu(h)        
 
 
 class Encoder(layers.Layer):
+    '''
+    A Decoder for the network
+    Conv2D -> Conv2D -> Conv2D -> ResidualStack
+
+    '''
     def __init__(self, num_hiddens, num_residual_layers, num_residual_hiddens,
                name=None):
         super(Encoder, self).__init__(name=name)
@@ -134,6 +162,11 @@ class Encoder(layers.Layer):
     
     
 class Decoder(layers.Layer):
+    '''
+    A Decoder for the network
+    Conv2D -> ResidualStack -> Conv2DTranpose -> Conv2DTranpose
+
+    '''
     def __init__(self, num_hiddens, num_residual_layers, num_residual_hiddens,
                name=None):
         super(Decoder, self).__init__(name=name)
@@ -171,3 +204,58 @@ class Decoder(layers.Layer):
         h = self._dec_2(h)
         x_recon = self._dec_3(h)
         return x_recon
+
+
+class PixelConvLayer(layers.Layer):
+    '''
+    The first layer is the PixelCNN layer. This layer simply
+    builds on the 2D convolutional layer, but includes masking.
+    
+    '''
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        # Build the conv2d layer to initialize kernel variables
+        self.conv.build(input_shape)
+        # Use the initialized kernel to create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = tf.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+    
+    
+class ResidualBlock(layers.Layer):
+    '''
+    This is just a normal residual block, but based on the PixelConvLayer.
+    
+    '''
+    def __init__(self, filters, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.conv1 = keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+        self.pixel_conv = PixelConvLayer(
+            mask_type="B",
+            filters=filters // 2,
+            kernel_size=3,
+            activation="relu",
+            padding="same",
+        )
+        self.conv2 = keras.layers.Conv2D(
+            filters=filters, kernel_size=1, activation="relu"
+        )
+
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return keras.layers.add([inputs, x])
