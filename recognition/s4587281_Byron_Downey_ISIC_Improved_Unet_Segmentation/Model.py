@@ -3,8 +3,11 @@ import os
 import tensorflow as tf
 from PIL import Image
 import math
-from tensorflow.keras.layers import Input, Conv2D, Dropout, LeakyReLU, BatchNormalization, UpSampling2D, concatenate, Add, Softmax
+from tensorflow.keras.layers import Input, ZeroPadding2D, Conv2D, Dropout, LeakyReLU, BatchNormalization, UpSampling2D, concatenate, Add, Softmax
 from tensorflow.keras import Model
+from tensorflow.math import reduce_sum
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.image import resize_with_pad
 
 num_epochs = argv[1]
 batch_size = argv[2]
@@ -17,8 +20,7 @@ image_width = argv[8]
 x_data_location = argv[9]
 y_data_location = argv[10]
 if len(argv) != 8 or not math.isclose(float(train_split) + float(validation_split) + float(test_split), 1):
-  print("Usage: Model.py [num_epochs] [batch_size] [train_split] [validation_split] [test_split] [dataset_size] [image_height] [image_width] [x_data_location] [y_data_location].\nPlease ensure train, validation and test split add up to 1 (e.g. 0.7, 0.15, 0.15)")
-script arguments
+  print("Usage: Model.py [num_epochs] [batch_size] [train_split] [validation_split] [test_split] [dataset_size] [largest_image_height] [largest_image_width] [x_data_location] [y_data_location].\nPlease ensure train, validation and test split add up to 1 (e.g. 0.7, 0.15, 0.15)\nlargest_image_height and largest_image_width should be the largest height and width values of all the input images, respectively. This is to ensure all images are padded to the a valid size. Alternatively, you can just input very large values but this may cause problems")
 
 #Load images into Tensorflow Datasets
 x_dataset = tf.keras.utils.image_dataset_from_directory(x_data_location, labels=None)
@@ -54,9 +56,10 @@ y_val = y_val.map(normalise)
 x_test = x_test.map(normalise)
 y_test = y_test.map(normalise)
 
-#pad images to be usable by Unet (both dimensions must be divisble by 81)
+##pad images to be usable by Unet (both dimensions must be divisble by 81)
+
 def pad_for_Unet(image):
-  padded_image = tf.pad(image, tf.constant([[0,0], [0, height_padding], [0, width_padding], [0, 0]]))
+  padded_image = resize_with_pad(image, image_height + height_padding, image_width + width_padding)
   return padded_image
 
 height_padding = 0
@@ -69,9 +72,23 @@ if image_width%81 != 0:
   width_padding =  81 - (image_width%81)
 
 x_train = x_train.map(pad_for_Unet)
+y_train = y_train.map(pad_for_Unet)
+
+x_val = x_val.map(pad_for_Unet)
+y_val = y_val.map(pad_for_Unet)
+
+x_test = x_test.map(pad_for_Unet)
+y_test = y_test.map(pad_for_Unet)
 
 #Defining Model Structure with Keras
 base_channels = 16
+dropout_rate = 0.3
+leaky_relu_slope = 0.01
+kernel_size = (3,3)
+upsampling_kernel_size = (3,3)
+
+#Defining Model Structure with Keras
+base_channels = 4
 dropout_rate = 0.3
 leaky_relu_slope = 0.01
 kernel_size = (3,3)
@@ -159,3 +176,23 @@ segmentation_layer3 = Conv2D(1, 1, activation=LeakyReLU(leaky_relu_slope)) (fina
 add2 = Add() ([add1_upsampled, segmentation_layer3])
 
 output = Conv2D(1, (1,1), padding = "same", activation="sigmoid") (add2)
+
+unet = Model(input, output)
+print(unet.summary())
+
+def dice_coef_loss(true, predicted):
+  #dice coefficient modified from: https://stackoverflow.com/questions/49785133/keras-dice-coefficient-loss-function-is-negative-and-increasing-with-epochs
+    true_flat = tf.reshape(true, [-1])
+    predicted_flat = tf.reshape(predicted, [-1])
+    numerator = 2. * (reduce_sum(true_flat * predicted_flat) + 1.)
+    denominator = (reduce_sum(true_flat) + reduce_sum(predicted_flat) + 1.)
+    return 1. - numerator / denominator
+    
+#define dice coefficent loss function
+callback = EarlyStopping(monitor='val_loss', patience = 2)
+unet.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy'])
+
+history = unet.fit(train, epochs = num_epochs, batch_size=batch_size, shuffle=True, validation_data=val, callbacks=callback)
+
+predictions = unet.predict(test)
+print(predictions[0][128])
