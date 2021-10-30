@@ -89,6 +89,7 @@ Last but not least, to leverage the generative ability of VQ-VAE, one can use an
  <p align='center'>
      Fig. 4. The masked 3x3 filter of a 2D convolutional layer (Image source: <a href="https://arxiv.org/pdf/1606.05328.pdf">van den Oord et al,. 2016</a>)
  </p>
+
 ## Dataset structure
 
 To make sure the code is executable, images must be stored in the following format:
