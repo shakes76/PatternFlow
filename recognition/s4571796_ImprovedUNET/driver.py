@@ -13,6 +13,7 @@ References:
     https://arxiv.org/pdf/1802.10508v1.pdf
 
 """
+
 # Imports
 from model import unet_model
 from tensorflow.keras.utils import to_categorical
@@ -263,6 +264,8 @@ def dice_coef_multilabel(y_true, y_pred, labels):
     return score
 
 def main():
+    # Lines 268 to 289 are Preprocessing of Data
+
     # Loading the Directories containing the Images
     images = format_images_jpg("ISIC_Images")
     masks = format_images_png("ISIC_Labels")
@@ -271,6 +274,11 @@ def main():
     # Training (0.7), Validation (0.15), Test (0.15)
     train_images, val_images, train_masks, val_masks = train_test_split(images, masks, test_size=0.3, random_state=42)
     val_images, test_images, val_masks, test_masks = train_test_split(val_images, val_masks, test_size=0.5, random_state=42)
+
+    # Save the Real Image for Comparison (Do this beforehand, or to_categorical will produce errors)
+    # Taking the image with index 1
+    seg_real_masks = test_masks[1]
+    cv2.imwrite("segmentation_real_masks.png", seg_real_masks)
 
     # Change the values of Masks to [0,1]
     train_masks = map_images(train_masks)
@@ -286,21 +294,40 @@ def main():
     UNET_model = get_model(classes, height, width, 3)
     UNET_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
     # Summary of the UNET Model
-    print(UNET_model.summary())
+    #print(UNET_model.summary())
 
-    history = UNET_model.fit(train_images, train_masks, 
-                           batch_size=2,
-                           verbose=1,
-                           epochs=30,
-                           validation_data=(val_images, val_masks),
-                           shuffle=False)
+    #history = UNET_model.fit(train_images, train_masks, 
+    #                       batch_size=2,
+    #                       verbose=1,
+    #                       epochs=30,
+    #                       validation_data=(val_images, val_masks),
+    #                       shuffle=False)
 
     # Save the model
-    UNET_model.save('UNET_ISIC_30Epochs.hdf5')
+    #UNET_model.save('UNET_ISIC_30Epochs.hdf5')
 
     # Plot the Training and Validation Loss and Accuracy
-    plot_graphs(history, epoch=30, type="loss")
-    plot_graphs(history, epoch=30, type="accuracy")
+    #plot_graphs(history, epoch=30, type="loss")
+    #plot_graphs(history, epoch=30, type="accuracy")
+
+    # Load the model
+    UNET_model.load_weights('UNET_ISIC_30Epochs.hdf5')
+    
+    # Make Predictions
+    predictions = UNET_model.predict(test_images)
+
+    # Get Dice Score Coefficient
+    print("Average Dice Score", dice_coef_multilabel(predictions, test_masks, classes))
+
+    predictions_argmax = np.argmax(predictions, axis=3)
+
+    # Save the Test Images and Predicted Images for Comparison
+    # Taking the image with index 1
+    test_real_image = test_images[1]
+    cv2.imwrite("test_real_image.png", test_real_image)
+
+    seg_pred_masks = predictions_argmax[1]
+    cv2.imwrite("segmentation_predicted_masks.png", seg_pred_masks)
 
 if __name__ == "__main__":
     main()
