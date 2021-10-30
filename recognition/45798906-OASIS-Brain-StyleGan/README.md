@@ -1,5 +1,9 @@
 # Pattern Recognition: StyleGAN for the OASIS brain dataset
 
+## Author
+
+Keith Dao (45798906)
+
 ## Problem Overview
 
 GANs allow for the generation of synthetic but real looking data. The most common use case of GANs are images, which is also being tackled here. A GAN model following the StyleGAN architecture must be used to generate real looking MRIs of a brain. The OASIS brain dataset had already been preprocessed and is ready to be used as training data for the GAN. Ideally, the GAN would be able to generate MRIs with features similar to those in the OASIS dataset.
