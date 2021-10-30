@@ -46,6 +46,20 @@ For people who would like to know more about which according to a specific conce
 #### Equalized Learning Rate and Pixel Norm
 1. [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALITY, STABILITY, AND VARIATION](https://arxiv.org/abs/1710.10196)`Equalized Learning Rate` `Pixel Norm`
 2. [Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification](https://arxiv.org/abs/1502.01852)`Kaiming He’s normalization way`
+#### Double Backpropagation
+1. [A Closer Look at Double Backpropagation](https://arxiv.org/abs/1906.06637)`2019`
+2. [Improving generalization performance using double Backpropagation](http://yann.lecun.com/exdb/publis/pdf/drucker-lecun-92.pdf)`1992`
+#### Disentanglement
+1. [On the emergence of invariance and disentangling in deep representations](https://arxiv.org/abs/1706.01350)
+2. [Isolating sources of disentanglement in variational autoencoders](https://arxiv.org/abs/1802.04942)
+3. [A framework for the quantitative evaluation of disentangled representations](https://openreview.net/pdf?id=By-7dz-AZ)
+4. [A survey of inductive biases for factorial representation-learning](https://arxiv.org/abs/1612.05299)
+5. [Learning factorial codes by predictability minimization](https://ieeexplore.ieee.org/document/6795705)
+#### Gram Matrix
+1. [Demystifying Neural Style Transfer](https://arxiv.org/abs/1701.01036)
+2. [Image style transfer using convolutional neural networks](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf)
+#### Exponential Moving Average
+to be continue
 **********************************************************************************************************************
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
