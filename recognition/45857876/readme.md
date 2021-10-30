@@ -1,16 +1,12 @@
 # Knee MRI Image stylegan
+student name: Mengyao Ma
 
 ## Algorithm description
+**GAN** is short for **Generative Adversarial Network** proposed by Ian Goodfellow in 2014. The main structure of GAN includes a **Generator(G)** and a **Discriminator (D)**. 
 
-![arch](C:\Users\karee\PatternFlow\recognition\arch.JPG)
+## Difference between 
 
-On high level u-net has contracting path (on the left side) and an expansive path. The contracting path of the improved u-net is built using context modules which are pre-activated residual blocks, each consists of batch normalization layer, activation, 3x3 conv, BN, Activation, 3x3 conv and addition layer. The down sampling is done using 3x3 convolution with 2x2 stride. The expansive path is built using localization module followed by up sampling modules. The localization module has 3x3 convolution layer followed by 1x1 convolution that half the number of feature maps. The up sample module is made of 2x2 up sample layer that expand the image size followed by 3x3 convolution that doubles the number of feature maps. Improved u-net uses the traditional skip connections but also has additional residual connection aggregating segmentation output from different levels of the architecture to augment the final output.  
-
-
-
-![res_block](C:\Users\karee\PatternFlow\recognition\res_block.JPG)
-
-## Semantic image segmentation problem
+## Style mixing
 This is about identifying the four segments or parts in the brain from MRI images. It is basically pixel wise classification of the image i.e. identify for each pixel to which class it belongs.
 
 ## Train parameters and procedure
