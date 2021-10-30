@@ -8,9 +8,8 @@ import matplotlib.pyplot as plt
 from functools import partial
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, LeakyReLU
-from keras.layers import Input, merge, UpSampling2D,BatchNormalization, Add
+from keras.layers import Input, merge, UpSampling2D,BatchNormalization
 from keras.models import Model
-import tensorflow_addons as tfa
 
 image_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2'
 mask_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2'
@@ -171,152 +170,131 @@ class pre_process:
             print('Image shape:', image.numpy().shape)
             print('Mask shape:', mask.numpy().shape)
   
-  def context_block(self,input_mat,num_filters):
-      
-    
-    c1 = Conv2D(num_filters, kernel_size =(3,3), padding = 'same')(input_mat)
-    c1 = BatchNormalization()(c1)
-    c1 = LeakyReLU(alpha=0.01)(c1)
-    c1 = Dropout(.3)(c1)
-    
-    c2 = Conv2D(num_filters, kernel_size =(3,3), padding = 'same')(c1)
-    c2 = BatchNormalization()(c2)
-    c2 = LeakyReLU(alpha=0.01)(c2)
-    
-    # conMod = tfa.layers.InstanceNormalization()(input_mat)
-    # conMod = Activation(activation=LeakyReLU(alpha=0.01))(conMod)
-    # conMod = Conv2D(num_filters, (3, 3), padding="same")(conMod)
-    # conMod = Dropout(0.3)(conMod)
 
-    # conMod = tfa.layers.InstanceNormalization()(conMod)
-    # conMod = Activation(activation=LeakyReLU(alpha=0.01))(conMod)
-    # conMod = Conv2D(num_filters, (3, 3), padding="same")(conMod)
+  def Improved_unet(self):
+        dropout = 0.1
+        # encoder/downsampling
+        input_size = (IMG_WIDTH, IMG_HEIGHT, IMG_CHANNELS)
+        inputs = Input(input_size)
+        inputs = tf.keras.Input(input_size)
+        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(inputs)
+        conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv1)
+        conv1 = BatchNormalization()(conv1)
+        pool1 = tf.keras.layers.MaxPool2D((2, 2))(conv1)
+        pool1 = tf.keras.layers.Dropout(dropout)(pool1)
 
-    return c2
-
-  def upsample_block(self,input_mat,num_filters):
-    c1 = UpSampling2D()(input_mat)
-    c2 = Conv2D(num_filters, (3,3), activation=LeakyReLU(alpha=0.01), padding = 'same')(c1)
-    
-    return c2
-  
-  def local_block(self,input_mat,num_filters):
-        # temp = input_mat
-        x1 = Conv2D(num_filters, kernel_size =(3,3), activation=LeakyReLU(alpha=0.01), padding = 'same')(input_mat)
+        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool1)
+        conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv2)
+        pool2 = tf.keras.layers.MaxPool2D((2, 2))(conv2)
+        pool2 = tf.keras.layers.Dropout(dropout)(pool2)
         
-        x2 = Conv2D(num_filters, kernel_size =(1,1), activation=LeakyReLU(alpha=0.01), padding = 'same')(x1)
+        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool2)
+        conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv3)
+        conv3 = BatchNormalization()(conv3)
+        pool3 = tf.keras.layers.MaxPool2D((2, 2))(conv3)
+        pool3 = tf.keras.layers.Dropout(dropout)(pool3)
         
-        return x2
-    
-  def Unet(self, input_img, n_filters = 16, dropout = 0.2):
+        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool3)
+        conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv4)
+        pool4 = tf.keras.layers.MaxPool2D((2, 2))(conv4)
+        pool4 = tf.keras.layers.Dropout(dropout)(pool4)
+        
+        # bridge/bottleneck/shared layer
+        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(pool4)
+        conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv5)
 
-    c1 = self.conv_block(input_img,n_filters)
+        # decoder/upsampling
+        up6 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv5)
+        up6 = tf.keras.layers.Conv2D(512, (2, 2), padding="same")(up6)
+        up6 = tf.keras.layers.concatenate([conv4, up6])
+        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up6)
+        conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv6)
+        conv6 = tf.keras.layers.Dropout(dropout)(conv6)
+
+        up7 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv6)
+        up7 = tf.keras.layers.Conv2D(256, (2, 2),  padding="same")(up7)
+        up7 = tf.keras.layers.concatenate([conv3, up7])
+        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up7)
+        conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv7)
+        conv7 = tf.keras.layers.Dropout(dropout)(conv7)
+
+        up8 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv7)
+        up8 = tf.keras.layers.Conv2D(128, (2, 2), padding="same")(up8)
+        up8 = tf.keras.layers.concatenate([conv2, up8])
+        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up8)
+        conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv8)
+        conv8 = tf.keras.layers.Dropout(dropout)(conv8)
+
+        up9 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv8)
+        up9 = tf.keras.layers.Conv2D(64, (2, 2), padding="same")(up9)
+        up9 = tf.keras.layers.concatenate([conv1, up9])
+        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(up9)
+        conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation=partial(tf.nn.leaky_relu, alpha=0.01))(conv9)
+        conv9 = tf.keras.layers.Dropout(dropout)(conv9)
+
+        # segmentation (output) layer
+        outputs = tf.keras.layers.Conv2D(1, (1, 1), padding="same", activation='softmax')(conv9)
+
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+  def conv_block(self,input_mat,num_filters,kernel_size,batch_norm):
+        X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(input_mat)
+        if batch_norm:
+            X = BatchNormalization()(X)
+        
+        X = Activation(partial(tf.nn.leaky_relu, alpha=0.01))(X)
+
+        X = Conv2D(num_filters,kernel_size=(kernel_size,kernel_size),strides=(1,1),padding='same')(X)
+        if batch_norm:
+            X = BatchNormalization()(X)
+        
+        X = Activation(partial(tf.nn.leaky_relu, alpha=0.01))(X)
+        
+        return X
+    
+  def Unet(self, input_img, n_filters = 16, dropout = 0.2, batch_norm = True):
+
+    c1 = self.conv_block(input_img,n_filters,3,batch_norm)
     p1 = MaxPooling2D(pool_size=(2, 2), strides=2)(c1)
     p1 = Dropout(dropout)(p1)
     
-    c2 = self.conv_block(p1,n_filters*2);
+    c2 = self.conv_block(p1,n_filters*2,3,batch_norm);
     p2 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c2)
     p2 = Dropout(dropout)(p2)
-    
-    c3 = self.conv_block(p2,n_filters*4);
+
+    c3 = self.conv_block(p2,n_filters*4,3,batch_norm);
     p3 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c3)
     p3 = Dropout(dropout)(p3)
     
-    c4 = self.conv_block(p3,n_filters*8);
+    c4 = self.conv_block(p3,n_filters*8,3,batch_norm);
     p4 = MaxPooling2D(pool_size=(2,2) ,strides=2)(c4)
     p4 = Dropout(dropout)(p4)
     
-    c5 = self.conv_block(p4,n_filters*16);
+    c5 = self.conv_block(p4,n_filters*16,3,batch_norm);
 
     u6 = Conv2DTranspose(n_filters*8, (3,3), strides=(2, 2), padding='same')(c5);
     u6 = concatenate([u6,c4]);
-    c6 = self.conv_block(u6,n_filters*8)
+    c6 = self.conv_block(u6,n_filters*8,3,batch_norm)
     c6 = Dropout(dropout)(c6)
     u7 = Conv2DTranspose(n_filters*4,(3,3),strides = (2,2) , padding= 'same')(c6);
 
     u7 = concatenate([u7,c3]);
-    c7 = self.conv_block(u7,n_filters*4)
+    c7 = self.conv_block(u7,n_filters*4,3,batch_norm)
     c7 = Dropout(dropout)(c7)
     u8 = Conv2DTranspose(n_filters*2,(3,3),strides = (2,2) , padding='same')(c7);
     u8 = concatenate([u8,c2]);
 
-    c8 = self.conv_block(u8,n_filters*2)
+    c8 = self.conv_block(u8,n_filters*2,3,batch_norm)
     c8 = Dropout(dropout)(c8)
     u9 = Conv2DTranspose(n_filters,(3,3),strides = (2,2) , padding='same')(c8);
 
     u9 = concatenate([u9,c1]);
 
-    c9 = self.conv_block(u9,n_filters)
+    c9 = self.conv_block(u9,n_filters,3,batch_norm)
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
     self.model = tf.keras.Model(inputs=input_img, outputs=outputs)
-    
-  def improved_unet(self, input_img, n_filters = 16, dropout = 0.3):
-      
-      ## block 1
-      c1 = Conv2D(n_filters, (3,3), padding='same')(input_img)
-      c1 = LeakyReLU(alpha=0.01)(c1)
-      c2 = self.context_block(c1, n_filters)
-      add1 = Add()([c1,c2])
 
-      ## block 2
-      c3 = Conv2D(n_filters*2, (3,3),padding='same')(add1)
-      c3 = LeakyReLU(alpha=0.01)(c3)
-      c4 = self.context_block(c3, n_filters*2)
-      add2 = Add()([c3,c4])
-      
-      ## block 3
-      c5 = Conv2D(n_filters*4, (3,3),padding='same')(add2)
-      c5 = LeakyReLU(alpha=0.01)(c5)
-      c6 = self.context_block(c5, n_filters*4)
-      add3 = Add()([c5,c6])
-      print("Block3 ", add3.shape)
-      
-      ## block 4
-      c7 = Conv2D(n_filters*8, (3,3),padding='same')(add3)
-      c7 = LeakyReLU(alpha=0.01)(c7)
-      c8 = self.context_block(c7, n_filters*8)
-      add4 = Add()([c7,c8])
-      print("Block4: ", add4.shape)
-      
-      ## block 5
-      c9 = Conv2D(n_filters*16, kernel_size=(3,3),padding='same')(add4)
-      c9 = LeakyReLU(alpha=0.01)(c9)
-      c10 = self.context_block(c9, n_filters*16)
-      add5 = Add()([c9,c10])
-      print("Add1: ", add5.shape)
-      
-      up1 = self.upsample_block(add5, n_filters*8)
-      con1 = concatenate([add4, up1])
-      
-      ## block 6
-      c12 = self.local_block(con1, n_filters*8)
-      c12 = self.upsample_block(c12, n_filters*4)
-      con2 = concatenate([add3, c12])
-      
-      ##block 7
-      c13 = self.local_block(con2, n_filters*4)
-      segment1 = Conv2D(1,(1,1), activation=LeakyReLU(alpha=0.01), padding='same')(c13)
-      segment1 = UpSampling2D(interpolation='bilinear')(segment1)
-      c13 = self.upsample_block(c13, n_filters*2)
-      block7 = concatenate([add2, c13])
-      
-      ## block 8
-      c14 = self.local_block(block7, n_filters*4)
-      segment2 = Conv2D(1,(1,1), activation=LeakyReLU(alpha=0.01), padding='same')(c14)
-      segment2 = UpSampling2D(interpolation='bilinear')(segment2)
-      c14 = self.upsample_block(c14, n_filters)
-      block8 = concatenate([add1, c14])
-      
-      ##block 9
-      c15 = Conv2D(n_filters*2, kernel_size=(3,3), padding='same')(block8)
-      segment3 = Conv2D(1,(1,1), activation=LeakyReLU(alpha=0.01), padding='same')(c15)
-      block9 = Add()([segment1,segment2,segment3])
-      
-      ## output
-      outputs = Conv2D(1, (1, 1), activation='sigmoid')(block9)
-      self.model = tf.keras.Model(inputs=input_img, outputs=outputs)
-      
   def show_predictions(self):
       """
       Perform prediction on validation set and report performance
@@ -335,17 +313,14 @@ class pre_process:
           plt.subplot(3, 3, 3*i+1)
           plt.imshow(image_batch[i])
           plt.axis('off')
-          plt.title("Base Image")
 
           # show true mask
           plt.subplot(3, 3, 3*i+2)
           plt.imshow(mask_batch[i])
           plt.axis('off')
-          plt.title("True Mask")
 
           # show predicted mask
           plt.subplot(3, 3, 3*i+3)
           plt.imshow(predictions[i])
           plt.axis('off')
-          plt.title("Predicted mask")
       plt.show()    
