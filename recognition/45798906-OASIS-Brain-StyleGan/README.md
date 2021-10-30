@@ -251,7 +251,7 @@ Although it may appear the loss has converged, it is quite evident that the imag
 `resources` contains the images used in this README.  
 `model.py` contains the helper functions required to generate and train the StyleGAN models.  
 `util.py` contains the helper functions required to load, augment and visualise the training images. Also includes helper functions to generate and visualise the loss history plots and save any figures.  
-`driver.py` uses the functions from `model.py` and `util.py` to train the network and show the results of the training. For instructions on how to configure `driver.py`, see [Usage](#usage)
+`driver.py` uses the functions from `model.py` and `util.py` to train the network and show the results of the training. For instructions on how to configure `driver.py`, see [Usage](#usage).
 
 ## Usage
 
