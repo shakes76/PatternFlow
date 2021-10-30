@@ -259,7 +259,7 @@ Although it may appear the loss has converged, it is quite evident that the imag
 
 ## Usage
 
-Before running `driver.py`, the [dependencies](#dependencies) must be met. It is recommended that the global variables must be configured before running to prevent undesired outcomes. The variables are explained below.
+Before running `driver.py`, the [dependencies](#dependencies) must be met. The global variables must be configured before running to prevent undesired outcomes, as the filepaths used are most likely configured appropriately. The variables are explained below.
 
 **NOTE:** All file paths must end with a file separator. These paths can be a relative or absolute path.  
 For UNIX based systems, the file separator is "/" i.e. `"dir/sub_dir/file`.  
