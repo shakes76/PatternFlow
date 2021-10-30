@@ -39,7 +39,7 @@ Image Dataset (type: Folder)
 I made a plot for better explain how the class in the file `model.py` construct the StyleGan. The name of the class I used is in the grid tracked by the red line.
 
 <p align="center">
-  <img src="https://github.com/Wangxinqian/PatternFlow/blob/47a84614d5c88e2d87c55cd2b1ddb6b77d9a70b8/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Model%20Structure.png" alt="" width='80%' height='80%'/>
+  <img src="https://github.com/Wangxinqian/PatternFlow/blob/566d7c282d2fc64490219a38d07c6cf7379591cf/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Model%20Structure.png" alt="" width='80%' height='80%'/>
 </p>
 
 ### Reference Destruction
