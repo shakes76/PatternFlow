@@ -48,7 +48,7 @@ class ListDataset(Dataset):
     
  #this is the padding for the left, top, right and bottom borders respectively.
         img_transforms = transforms.Compose([ transforms.Resize((imh, imw)),
-         transforms.Pad(pad,(128,128,128)),
+         transforms.Pad(pad,0),
          transforms.ToTensor(),
          ])
         
