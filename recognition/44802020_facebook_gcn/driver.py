@@ -137,7 +137,6 @@ def main():
     print("Tensorflow version:", tf.__version__)
     print("Numpy version:", np.__version__)
 
-
     # Variables
     plot_tsne = False
 
