@@ -1,5 +1,5 @@
-
-from Data_prepare import *
+# Imort the packages.
+from load_data import *
 from GCN_Layer import *
 import numpy as np
 import scipy.sparse as sp
