@@ -64,7 +64,7 @@ Experiment setup
 * Batch Size - 64
 
 #### Accuracy and Loss graph
-![Perceiver with GeGlu](https://user-images.githubusercontent.com/67994195/139536462-7ce3ca84-e560-43cb-9474-8b5710d21dc9.png)
+![Perceiver with GeGlu](https://user-images.githubusercontent.com/67994195/139537574-f8965638-49f2-4538-9c04-9d8c3f6f94ae.png)
 
 The experiment saves the best validation loss model, the best model has following result:
 |            | Accuracy | Loss   |
@@ -73,6 +73,6 @@ The experiment saves the best validation loss model, the best model has followin
 | Validation | 94.9%    | 0.1348 |
 
 #### Confusion Matrix For Test Dataset
-![Test Confusion Matrix](https://user-images.githubusercontent.com/67994195/139536573-956953d0-ac5b-4324-8ee0-bcc3037c9d7e.png)
+![Test Confusion Matrix](https://user-images.githubusercontent.com/67994195/139537568-94e4c2ba-ecdd-464f-bdb0-eb06371bf812.png)
 
 The best model has a test accuracy of 92.6%.
