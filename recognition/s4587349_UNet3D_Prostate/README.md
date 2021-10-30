@@ -4,8 +4,9 @@ The 3D U-Net is based on that described in the paper [1] "3D U-Net: Learning
 Dense Volumetric Segmentation from Sparse Annotation" by Cicek et al.  The 
 following flow diagram is the u-net illustrated in the paper.
 
-![](3dunet_Cikek_etal.png)
-## Semantic image segmentation of 3D images
+![](Images/3dunet_Cikek_etal.png)
+
+## Semantic image segmentation of 3D images: The problem and the solution.
 Semantic image segmentation is the labelling of each pixel (or voxel) of an 
 image with a corresponding class. For example an image of bike riders might 
 have 3 classes: humans, bikes and background. Semantic segmentation is a tedious
@@ -54,7 +55,7 @@ were then allocated into train, validation and test subdirectories on an
 approximate 70:20:10 ratio. 
 
 
-![](train_val_test_allocation.png)
+![](Images/train_val_test_allocation.png)
 
 A review of the data structure of all images found one scan that had a different 
 dimension to all others. That client had seven other scans that were expected to
@@ -109,19 +110,47 @@ expansion side. There were 3 data pass-throughs with Concatenate between
 identical levels. 
 
 
-![](unet3d.png)
+![](Images/unet3d.png)
 
 
 
-dsc
+## Dice coefficient - DSC
+The target was to have a Dice score exceeding 0.7 for each class. 
+
+The DSC is poor at low epochs, particularly for the prostate and rectum. These 
+improve at higher epochs. The target DSC is well exceeded by 50 epochs. Run time 
+on the cluster is around 11 hrs for 50 epochs. 
+
+![](Images/DSC_score_50_epochs.png)
+
 ### training param, 
 
 
 
-![](slice.png)
+![](Images/slice.png)
 ##  
 #### and again
 
+## Future work
+Work I would like follow up on to extend this project include:
+* Data augmentation to increase the training sample size. Siyu Lui provides some
+methods for augmenting 3D data [7].
+
+* Add N4ITK normalisation to lessen field bias.
+* Add DSC loss function to model.compile() for one of the classes 
+    with poorer performing DSC scores (ie prostate or rectum), to 
+    investigate if this would improve overall performance. 
+* Save and re-use weights
+
+## Dependencies & resources
+* Python
+* Tensorflow 
+* Matplotlib
+* Numpy 
+* Nibabel
+
+The model only ran on Goliath starting with 8 filters on the c4130-2s. It would
+report out of resources errors on c4130 and c4130-s.
 
 # References
 <a id="1">[1]</a>
