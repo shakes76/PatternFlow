@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from model import *
 from tensorflow.keras import datasets, layers, models, callbacks
 from tensorflow.keras.utils import Sequence
 
@@ -68,11 +69,13 @@ def main():
     train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
 
     # shuffle and batch testing dataset
-    test = test.repeat()
+    test_dataset = test_dataset.repeat()
     test_dataset = test_dataset.batch(batch_size)
     test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
 
-
+    model = improved_unet(256,256,3)
+    model.compile(optimizer='adam', loss= 'binary_crossentropy', metrics=['accuracy'])
+    model.summary()
 
 if __name__ == "__main__":
     main()
