@@ -128,3 +128,29 @@ y_test_argmax = tf.argmax(y_test, axis=4)
 print(y_pred_argmax.shape)
 print(y_test_argmax.shape)
 print(tf.unique(tf.reshape(y_pred_argmax, (-1))))
+
+import random
+test_slice = random.randint(floor(128 * (1/3)), ceil(128 * (2/3)))
+test_img_ind = random.randint(0, len(X_test))
+test_img = X_test[test_img_ind]
+ground_truth = y_test[test_img_ind]
+
+test_img_input = tf.expand_dims(test_img, 0)
+test_img_input1 = preprocess_input(test_img_input)
+
+test_pred1 = model.predict(test_img_input1)
+test_prediction1 = tf.argmax(test_pred1, axis=4)[0,:,:,:]
+ground_truth_argmax = tf.argmax(ground_truth, axis=3)
+
+plt.figure(figsize=(12, 8))
+plt.subplot(231)
+plt.title('Testing Image')
+plt.imshow(test_img[test_slice,:,:,0], cmap='gray')
+plt.subplot(232)
+plt.title('Testing Label')
+plt.imshow(ground_truth_argmax[test_slice,:,:])
+plt.subplot(233)
+plt.title('Prediction on test image')
+plt.imshow(test_prediction1[test_slice,:,:])
+plt.savefig("/home/Student/s4580429/segment_out/slices.png")
+plt.close()
