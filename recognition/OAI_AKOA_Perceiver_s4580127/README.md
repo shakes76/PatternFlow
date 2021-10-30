@@ -38,6 +38,7 @@ tensorflow prefetching for performance optimization.
 * matplotlib (Optional - Only used in driver code to plot training cycle)
 
 ### Example Training Cycle Plot
+Training cycle of a model which achieved a final accuracy of 98.8% on the test data set. <br>
 ![Example Training Cycle Plot](training_plot.png)
 
 ### Example OAI AKOA Images
