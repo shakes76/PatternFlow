@@ -14,13 +14,13 @@ Usage:
 ```
 Image Dataset (type: Folder)
 │
-└───class1 folder (type: Folder)
+└───class1 (type: Folder)
 │   │   image01.jpg
 │   │   image02.jpg
 │   │   image03.jpg
 │   │   ...
 │   
-└───class2 folder (type: Folder)
+└───class2 (type: Folder)
 │   │   image01.jpg
 │   │   image02.jpg
 │   │   ...
