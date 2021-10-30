@@ -36,6 +36,11 @@ YOLOv3 divides the input image into SxS lattices, and each lattice predicts B bo
 In the data pre-processing stage, the ISIC dataset segmentation image set is used. The first white pixel values (x_min,y_min) and (x_max,y_max) of each image were found during image pixel iterations and making to tags for the xml files. Also, when splitting the dataset, the training and test sets split into 80% and 20%. According to the YoloV3 data loading method, these training and test sets are made into absolute paths and stored in train.txt and test.txt for Dataloader.
 Finally, in the process of loading the dataset in pytorch, when the imported data is the training set, the images will be enhanced to reduce the impact of insufficient data, improving the robustness of the model, providing various "invariants" to the model, and to increase the model's ability to resist overfitting, including resizing, adding gray bars, and image flipping. 
 ## Results
+![loss3 14314](https://user-images.githubusercontent.com/65603393/139538340-83ee43cd-1e61-45f9-92a6-9bb96b90ca1b.png)
+
+![loss4 73156](https://user-images.githubusercontent.com/65603393/139538254-ca583fa7-c163-4ff1-8e68-976c028614bb.png)
+![loss2 26325](https://user-images.githubusercontent.com/65603393/139538438-f970684f-efc1-44ed-b161-b99ed08df998.png)
+
 
 
 
