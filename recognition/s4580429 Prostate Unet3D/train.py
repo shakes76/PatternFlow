@@ -1,5 +1,4 @@
-print("Hello world! We've changed!")
-
+"""  imports  """
 import tensorflow as tf
 from tensorflow import keras as K
 device = tf.config.experimental.list_physical_devices("GPU")
@@ -15,6 +14,19 @@ from math import floor, ceil
 import glob
 import re
 
+""" model parameters """
+shape = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata().shape
+channels = 3
+n_classes = 6
+BACKBONE = 'resnet50'  #Try vgg16, efficientnetb7, inceptionv3, resnet50
+encoder_weights = 'imagenet'
+activation = 'softmax'
+
+LR = 0.0001
+batch_size = 1
+batch_num = 10
+optim = K.optimizers.Adam(LR)
+
 def getScans(dataFolder, labelsFolder):
     dataFiles = sorted(glob.glob(dataFolder + "*"))
     labelsFiles = sorted(glob.glob(labelsFolder + "*"))
@@ -24,6 +36,7 @@ def getScans(dataFolder, labelsFolder):
 fileNames = getScans("/home/Student/s4580429/dataset/semantic_MRs_anon/", "/home/Student/s4580429/dataset/semantic_labels_anon/")
 total_images = len(fileNames)
 
+""" get each group of cases' positions """
 ind_of_first_case = []
 i = 0
 lastCase = None
@@ -36,11 +49,9 @@ for path, _ in fileNames:
 
 dataset = tf.data.Dataset.from_tensor_slices((tf.constant(range(len(fileNames))), tf.constant(range(len(fileNames)))))
 
-shape = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata().shape
-BACKBONE = 'resnet50'
 preprocess_input = sm.get_preprocessing(BACKBONE)
-n_classes = 6
 
+""" lazily convert paths to files into images / labels """
 def im_file_to_tensor(dataPath, labelPath):
     def _im_file_to_tensor(dataPath, labelPath):
         dp, lp = fileNames[dataPath]
@@ -64,6 +75,8 @@ def im_file_to_tensor(dataPath, labelPath):
 dataset = dataset.map(im_file_to_tensor,
     num_parallel_calls=tf.data.AUTOTUNE)
 
+""" train/test/val split """
+# TODO try to add shuffle
 i_train = floor(0.7 * total_images)
 while i_train not in ind_of_first_case:
     i_train += 1
@@ -81,40 +94,32 @@ print("train", train_ds.cardinality())
 print("test", test_ds.cardinality())
 print("validation", val_ds.cardinality())
 
-print("Successfully loaded and converted data!")
+print("Successfully created, processed and split dataset!")
 
+# dice coefficient function
 def dice_coefficient(y_true, y_pred):
-    y_true = tf.cast(y_true, tf.float32)
-    y_pred = tf.cast(y_pred, tf.float32)
     y_pred = tf.math.sigmoid(y_pred)
     inters = tf.reduce_sum(y_true * y_pred)
     return 1 - (2. * inters) / (tf.reduce_sum(y_true + y_pred))
 
-encoder_weights = 'imagenet'
-activation = 'softmax'
-patch_size = 64
-channels = 3
-
-LR = 0.0001
-batch_size = 1
-batch_num = 50
-optim = K.optimizers.Adam(LR)
-
+# the loss that we will use
 total_loss = sm.losses.DiceLoss(class_weights=tf.ones((n_classes,))/n_classes) \
            + (1 * sm.losses.CategoricalFocalLoss())
 
+# using metrics IOU and dice score to evaluate
 metrics = [sm.metrics.IOUScore(threshold=0.5), dice_coefficient]
 
-preprocess_input = sm.get_preprocessing(BACKBONE)
-
+# create model
 model = sm.Unet(BACKBONE, classes=n_classes, 
                 input_shape=shape+(channels,), 
                 encoder_weights=encoder_weights,
                 activation=activation)
 
+# compile model
 model.compile(optimizer = optim, loss=total_loss, metrics=metrics)
 print(model.summary())
 
+# fit model with train_ds, validate on val_ds
 history = model.fit(train_ds, batch_size=batch_size, epochs=batch_num, verbose=1,
                   validation_data=val_ds)
 
