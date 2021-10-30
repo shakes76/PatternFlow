@@ -4,13 +4,13 @@
 The task I choose for COMP3710 report is Yolo Object Detection task.
 It is widely used algorithm in computer vision tasks such as image annotation,vehicle counting, activity recognition,or face detection.
 The task here is to identify the Lesion Objects on patients' skin pictures. 
-The dataset I used was ISIC-Challenge-2017 dataset, which can be downloaded from https://challenge.isic-archive.com/data/  
-
+Because the downsampled ISIC-Challenge-2018 dataset has no test set (Also, there is only test set without ground truth labels on the challenge official website),The dataset I used in this assignment was ISIC-Challenge-2017 dataset, which can be downloaded from https://challenge.isic-archive.com/data/  
+</n>
 It includes a training subset of 2000 samples, a validation subset of 150 samples and a test subset of 600 samples.
 Each of the samples contains a lesion image in JPEG format and a corresponding superpixel mask in PNG format.
-
+</n>
 E.G. :
-
+</n>
 <p align="center">
   Image of a Lesion Sample
 </p>
@@ -96,6 +96,7 @@ A mAP result on the test set can be calculated.
 <p align="center">
 <img src="https://github.com/slowlier/PatternFlow/blob/937f496c7b24bc01819e35d079f288e19fb9f234/recognition/S4607867_Jiaqiyu/pics/my_map_calc@0.8.png" width=100% height=100%>
 </p>
+
 # Conclusion
 
 
