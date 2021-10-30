@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 IMG_DIR = "" #Some directory that contains the image
 IMG_SIZE = (73, 64)
 
-# Maps the id to file respectively
+# Maps the id to file respectively and returns the file
 def id_to_files(files, id_to_files):
     file_check = files[0].split("_")[0]
     print(file_check)
@@ -25,7 +25,7 @@ def id_to_files(files, id_to_files):
     return id_to_files
 
 
-# Maps the file to the respective label
+# Maps the file to its respective label and returns it, with 1 representing right and 0 being left
 def get_label(file):
     label = 0 # label of the file, 0 being left and 1 being right
     file = file.replace("_", "") # replace redundant symbols in the filename
@@ -37,14 +37,15 @@ def get_label(file):
     return label
 
 
-# Gets the image the of the file represented in array format (with color mode being gray scale)
+# Gets the image the of the file represented in array format (with color mode being gray scale) 
 def get_img(directory, img_size):
     img = img_to_array(load_img(directory, target_size=img_size, color_mode="grayscale"))
 
     return img
 
 
-# sanity check for intersection between test and training id
+# sanity check for intersection between test and training id set, otherwise we would artificially get 
+# high accuracy for test set data
 def intersection_check(train_pids, test_pids):
     # display the unique id in training and testing procedure
     print("unique pid in train: ", len(train_pids))
@@ -55,7 +56,7 @@ def intersection_check(train_pids, test_pids):
 
 
 # Splits the data set randomly now to add in a validation set within them
-# returns the training, test and validation data set
+# and returns the training, test and validation data set
 def random_split(X_train, X_test, y_train, y_test):
     # randomnly shuffling the data set
     train_indices = list(range(0, len(X_train)))
@@ -85,6 +86,8 @@ def random_split(X_train, X_test, y_train, y_test):
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
+# Processes the data set, given the directory of the images
+# returns the training, validation and test data set
 def process_dataset(dir):
     files = os.listdir(dir)
 
@@ -145,7 +148,7 @@ def main():
         #print(len(X_train), len(X_test), len(X_val), len(y_train), len(y_test), len(y_val))
         # for printing and visualising the length of the data sets
     else:
-        X_train = np.load("D:/data/X_train.npy")
+        X_train = np.load("D:/data/X_train.npy") # load saved data depending where the saved data is from. 
         y_train = np.load("D:/data/y_train.npy")
         X_val = np.load("D:/data/X_val.npy")
         y_val = np.load("D:/data/y_val.npy")
