@@ -192,6 +192,8 @@ layer.
 - A binary classification dense layer is used, with sigmoid activation function.
 
 ### Results
+- Training time: ~130s each epoch * 10 epochs ~ 22 minutes, in the laboratory
+condition (RTX 2080 with 8GB VRAM)
 - Using the Perceiver model, with the listed hyperparameters, achieved test accuracy is 
 approximately 94%
 <img src="./imgs/test_acc.png" width="250">
