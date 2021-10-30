@@ -91,13 +91,13 @@ def train_step(S, G, D, gen_model, batch_size, im_size, gen_model_optimiser, D_o
         gen_images = G((w, noise))
         
         #discriminate between the two
-        more_noise = tf.random.normal([batch_size, im_size, im_size, 1])*0.01
-        real_output = D(images + more_noise, training = True)
+        more_noise = tf.random.normal([batch_size, im_size, im_size, 1])*0.01 #add a small amount of noise to the real images to make the D job harder
+        real_output = D(images + more_noise, training = True)   #training set to True for the dropout layers to function
         fake_output = D(gen_images, training=True)
 
         #loss functions
         gen_loss = K.mean(fake_output)
-        disc_loss = K.mean(K.relu(1+real_output) + K.relu(1 - fake_output))*0.9
+        disc_loss = K.mean(K.relu(1+real_output) + K.relu(1 - fake_output))*0.9 #x0.9 to make the D job harder
         
         #gradient penalty
         disc_loss += gradient_penalty(images, real_output, 10)

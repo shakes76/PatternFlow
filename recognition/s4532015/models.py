@@ -40,12 +40,13 @@ def g_block(inputs, input_style, input_noise, im_size, filters, upsampling=True)
     #main block
     #style stuff
     style = Dense(inputs.shape[-1], kernel_initializer = 'he_uniform')(input_style)
-    delta = Lambda(crop_to_fit)([input_noise, out])
+    #added noise
+    delta = Lambda(crop_to_fit)([input_noise, out]) #making sure that the noise for this layer is the right size
     d = Dense(filters, kernel_initializer='zeros')(delta)
 
     #ModConv2D block
     out = ModConv2D(filters, (3,3), strides=(1,1), padding="same", kernel_initializer = 'he_uniform')([out, style])
-    out = Add()([out, d])
+    out = Add()([out, d]) #adding noise
     out = LeakyReLU(0.2)(out)
 
     return out, to_output(out, out_style, im_size)
@@ -54,7 +55,6 @@ def g_block(inputs, input_style, input_noise, im_size, filters, upsampling=True)
 def make_synthesis_network (n_layers, im_size, batch_size, depth):
     #Inputs
     input_styles = []
-    #input_noises = []
     for i in range(n_layers):
         input_styles.append(Input(shape=[512]))
 
@@ -64,9 +64,12 @@ def make_synthesis_network (n_layers, im_size, batch_size, depth):
 
     x = tf.ones([batch_size, 1]) #c
 
-    x = Dense(4*4*4*depth, activation='relu', kernel_initializer='random_normal')(x) #learned constant input vector
-    x = Reshape([4, 4, 4*depth])(x) #a [4, 4, 4*depth] tensor --> to feed next layer of 4x4
+    start_shape = 4
+    x = Dense(start_shape*start_shape*4*depth, activation='relu', kernel_initializer='random_normal')(x) #learned constant input vector
+    x = Reshape([start_shape, start_shape, 4*depth])(x) #a [4, 4, 4*depth] tensor --> to feed next layer of 4x4
 
+    #The modualted convolution layer is in each g_block, and upsamples for all except the first one
+    #with r being the residual output
     x, r = g_block(x, input_styles[1], input_noise, im_size, 64*depth, upsampling=False)    #4x4
     outs.append(r)
     x, r = g_block(x, input_styles[2], input_noise, im_size, 32*depth)                      #8x8
@@ -84,13 +87,14 @@ def make_synthesis_network (n_layers, im_size, batch_size, depth):
 
     x = Add()(outs)
 
-    #normalise
+    #normalise between 0 and 1
     x = Lambda(lambda y: y/2 + 0.5)(x)
     
     model = Model(inputs = [input_styles, input_noise], outputs = x)
     return model
 
 #generator model
+#this model just links the G and S models to make it easier to use the whole system
 def make_generator_model(S, G, n_layers, latent_size, im_size):
     input_z = []
     W = []
@@ -129,6 +133,7 @@ def d_block(inputs, filters, pooling=True):
 def make_discriminator_model(im_size, depth):
     inputs = Input(shape=(im_size, im_size, 1))
 
+    #normal convolutional classifer network with increasing depth as the layers get smaller
     x = d_block(inputs, depth)
     x = d_block(x, depth * 2)
     x = d_block(x, depth * 4)
