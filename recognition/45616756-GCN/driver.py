@@ -61,10 +61,6 @@ def main():
         torch.Size(adjacency_matrix.shape)
     )
 
-    print(facebook_features)
-    print(facebook_target)
-    print(adjacency_matrix)
-
 
 if __name__ == '__main__':
     main()
