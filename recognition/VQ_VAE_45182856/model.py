@@ -104,19 +104,19 @@ class VQ_VAE(tfk.Model):
         '''
         inputs = tfk.Input(shape=(self.img_h, self.img_w, self.img_c), name='encoder_input')
         ## First CNN block
-        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same')(inputs) # 88x88
+        x = tfk.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same')(inputs) # 128x128
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Second CNN block
-        x = tfk.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding='same')(x) # 44x44
+        x = tfk.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding='same')(x) # 64x64
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Third CNN block
-        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding='same')(x) # 22x22
+        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding='same')(x) # 32x32
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Residual blocks
-        x = createResidualBlock(x, 64, 3, 1, True) # 22x22
+        x = createResidualBlock(x, 64, 3, 1, True) # 32x32
         x = createResidualBlock(x, 64, 3, 1, False)
         x = createResidualBlock(x, 64, 3, 1, False)
         x = createResidualBlock(x, 64, 3, 1, False)
@@ -147,15 +147,15 @@ class VQ_VAE(tfk.Model):
         x = createResidualBlock(x, 64, 3, 1, False)
         x = createResidualBlock(x, 256, 3, 1, True)
         ## First CNN block
-        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding='same')(x) # 22x22
+        x = tfk.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding='same')(x) # 32x32
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Second Transposed CNN block
-        x = tfk.layers.Conv2DTranspose(filters=128, kernel_size=3, strides=2, padding='same')(x) # 44x44
+        x = tfk.layers.Conv2DTranspose(filters=128, kernel_size=3, strides=2, padding='same')(x) # 64x64
         x = tfk.layers.BatchNormalization()(x)
         x = tf.nn.relu(x)
         ## Third Transposed CNN block
-        x = tfk.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same')(x) # 88x88
+        x = tfk.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same')(x) # 128x128
         x = tfk.layers.BatchNormalization()(x)
         outputs = tfk.layers.Conv2DTranspose(filters=self.img_c, kernel_size=3, strides=2, padding='same')(x)
         decoder = tfk.Model(inputs, outputs, name='decoder')
@@ -227,7 +227,7 @@ class PixelCNN(tfk.Model):
     '''
         This class uses PixelCNN model, which is defined by https://www.tensorflow.org/probability/api_docs/python/tfp/distributions/PixelCNN, to train the prior of a VQ-VAE
     '''
-    def __init__(self, h, w, embedding_dim, encoder, quantizer, min_val, max_val, num_resnet, num_hierarchies, num_filters, num_logistic_mix, kernel_size, dropout_p, **kwargs):
+    def __init__(self, h, w, embedding_dim, encoder, quantizer, min_val, max_val, num_resnet, num_hierarchies, resnet_activation, num_filters, num_logistic_mix, kernel_size, dropout_p, **kwargs):
         '''
             This constructor will initialize the architecture of PixelCNN model according to the given parameters
             
@@ -241,6 +241,7 @@ class PixelCNN(tfk.Model):
             max_val: Maximum value of the discrete code
             num_resnet: Number of gated residual blocks, where the architecture of a block is depicted by Figure 3 in README
             num_hierarchies: Number of highest-level block in PixelCNN++ model (https://www.semanticscholar.org/paper/OTHER-MODIFICATIONS-Karpathy/2e77b99e8bd10b9e4551a780c0bde9dd10fdbe9b/figure/2)
+            resnet_activation: Type of resnet activation, which could be concat_elu, elu, or relu
             num_filters: Number of filters for each conv layer
             num_logistic_mix: Number of components for the Logistic Mixture model
             kernel_size: Size of a receptive field
@@ -257,6 +258,7 @@ class PixelCNN(tfk.Model):
             conditional_shape=None,
             num_resnet = num_resnet,
             num_hierarchies = num_hierarchies,
+            resnet_activation = resnet_activation,
             num_filters = num_filters,
             num_logistic_mix = num_logistic_mix,
             receptive_field_dims = (kernel_size, kernel_size),
@@ -287,7 +289,7 @@ class PixelCNN(tfk.Model):
         flatten_encoded_imgs = tf.reshape(encoded_imgs, [-1, self.embedding_dim]) # (Nxhxw, embedding_dim)
         # Get the discrete codes for the encoded images then reshape them
         quantized_imgs = tf.reshape(self.quantizer.get_closest_codes(flatten_encoded_imgs), [-1, self.h, self.w, 1])
-        return quantized_imgs
+        return tf.cast(quantized_imgs, dtype=tf.float32)
 
     def train_step(self, imgs):
         # Get the discrete codes for the given images
