@@ -93,6 +93,23 @@ Total params: 4,665,809
 Trainable params: 4,665,809
 Non-trainable params: 0
 
+
+## First Epochs Result
+![图片](https://user-images.githubusercontent.com/31636541/139171551-fe47b000-0b8b-482d-ac9d-4008f77a6e32.png)
+## 100TH Epochs Result
+![图片](https://user-images.githubusercontent.com/31636541/139171627-fc64917d-0c09-4487-a663-f24ede88190f.png)
+## 200TH Epochs Result
+![图片](https://user-images.githubusercontent.com/31636541/139171664-5765ebd6-e344-44f6-b78e-f7dd622bcad3.png)
+
+
+## Training History
+
+### Training Accuracy vs Validation Accuracy
+![图片](https://user-images.githubusercontent.com/31636541/139171770-2e25555b-d383-4772-9dd7-95bf6120ad89.png)
+### Training Dice Coefficient vs Validation Dice Coefficient
+![图片](https://user-images.githubusercontent.com/31636541/139171822-8339d4bb-7b98-42f8-948c-b3918ae2caea.png)
+
+
 # RESULTS
 ### Four sets images with the first image being raw image, the second one being raw mask and the third one being predicted mask
 ![图片](https://user-images.githubusercontent.com/31636541/139170066-d00a2ad1-0918-4d08-b7dc-172b2d8e273c.png)
