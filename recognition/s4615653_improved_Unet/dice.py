@@ -20,3 +20,7 @@ def average_dice(data, model,test_size):
     for i in range(test_size):
         sum_DSC = sum_DSC + dice_coefficient(tf.argmax(truth_batch[i], axis=-1), tf.argmax(predict[i], axis=-1)).numpy()
     print(sum_DSC/test_size)
+
+def dice_coefficient_loss(truth, pred):
+    #Computes the dice coefficient loss for a prediction.
+    return 1 - dice_coefficient(truth, pred)
