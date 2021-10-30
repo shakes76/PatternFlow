@@ -1,5 +1,6 @@
 """
-REFERENCE FOR PERCEIVER HELP ON CIFAR10
+This file contains the perceiver model, based on the
+tutorial for building a perciever on the cifar10 dataset:
 https://keras.io/examples/vision/perceiver_image_classification/
 """
 import tensorflow as tf
@@ -8,9 +9,9 @@ from tensorflow.keras import layers
 
 def dense_network(dense_units, dropout):
     """
-
-    :param dense_units:
-    :param dropout:
+    Returns a dense network of data projection size units.
+    :param dense_units: a two item list describing the dimensions of the dense network.
+    :param dropout: the dropout rate to use in the drop out layer
     :return:
     """
 
@@ -24,7 +25,7 @@ def dense_network(dense_units, dropout):
 
 class Patches(layers.Layer):
     """
-    Class which creates patches from an input set of images.
+    Layer which creates patches from an input set of images.
     """
     def __init__(self, patch_size):
         super(Patches, self).__init__()
@@ -45,9 +46,16 @@ class Patches(layers.Layer):
 
 
 class PatchEncoder(layers.Layer):
+    """
+    Layer for encoding image patches of the data array into the latent vector.
+    """
+
     def __init__(self, num_patches, projection_dim):
+
         super(PatchEncoder, self).__init__()
         self.num_patches = num_patches
+
+        # projection dense layer and embedding layer
         self.projection = layers.Dense(units=projection_dim)
         self.position_embedding = layers.Embedding(
             input_dim=num_patches, output_dim=projection_dim
@@ -59,69 +67,90 @@ class PatchEncoder(layers.Layer):
         return encoded
 
 
-def create_cross_attention_module(
-    latent_dim, data_dim, projection_dim, dense_units, dropout_rate
+def cross_attention_module(
+        latent_dim,
+        data_dim,
+        projection_dim,
+        dense_units,
+        dropout
 ):
+    """
+    Builds and returns the cross-attention module of the model (i.e. correlation
+    between latent array, image data array and each class).
+    :param latent_dim: the size of the latent encoding array
+    :param data_dim: the size of the patched image data array
+    :param projection_dim: the size to project the data array to the latent array
+    :param dense_units: the number of dense units in the dense block
+    :param dropout: the rate of dropout in the dense block
+    :return:
+    """
 
     inputs = {
-        # Recieve the latent array as an input of shape [1, latent_dim, projection_dim].
+        # latent array [1, latent_dim, projection_dim].
         "latent_array": layers.Input(shape=(latent_dim, projection_dim)),
-        # Recieve the data_array (encoded image) as an input of shape [batch_size, data_dim, projection_dim].
+        # data_array (encoded image) [batch_size, data_dim, projection_dim].
         "data_array": layers.Input(shape=(data_dim, projection_dim)),
     }
 
-    # Apply layer norm to the inputs
+    # normalise latent array and data array
     latent_array = layers.LayerNormalization(epsilon=1e-6)(inputs["latent_array"])
     data_array = layers.LayerNormalization(epsilon=1e-6)(inputs["data_array"])
 
-    # Create Q array: [1, latent_dim, projection_dim].
+    # Q array: [1, latent_dim, projection_dim].
     Q = layers.Dense(units=projection_dim)(latent_array)
 
-    # Create K array: [batch_size, data_dim, projection_dim].
+    # K array: [batch_size, data_dim, projection_dim].
     K = layers.Dense(units=projection_dim)(data_array)
 
-    # Create V array: [batch_size, data_dim, projection_dim].
+    # V array: [batch_size, data_dim, projection_dim].
     V = layers.Dense(units=projection_dim)(data_array)
 
-    # Generate cross-attention outputs: [batch_size, latent_dim, projection_dim].
+    # cross-attention outputs: [batch_size, latent_dim, projection_dim].
     attention_output = layers.Attention(use_scale=True, dropout=0.1)(
         [Q, K, V], return_attention_scores=False
     )
-    # Skip connection 1.
-    attention_output = layers.Add()([attention_output, latent_array])
 
-    # Apply layer norm.
+    # first skip connection with normalisation
+    attention_output = layers.Add()([attention_output, latent_array])
     attention_output = layers.LayerNormalization(epsilon=1e-6)(attention_output)
 
-    # Dense layers
-    dense = dense_network(dense_units, dropout_rate)
-
-    # Apply dense block
+    # create and apply dense layers
+    dense = dense_network(dense_units, dropout)
     outputs = dense(attention_output)
 
-    # Skip connection 2.
+    # second skip connection
     outputs = layers.Add()([outputs, attention_output])
 
-    # Create the Keras model.
-    model = keras.Model(inputs=inputs, outputs=outputs)
-    return model
+    # return model
+    return keras.Model(inputs=inputs, outputs=outputs)
 
 
-def create_transformer_module(
+def latent_transformer_module(
     latent_dim,
     projection_dim,
     num_heads,
-    num_transformer_blocks,
+    transformer_blocks,
     dense_units,
-    dropout_rate,
+    dropout,
 ):
+    """
+
+    :param latent_dim:
+    :param projection_dim:
+    :param num_heads:
+    :param transformer_blocks:
+    :param dense_units:
+    :param dropout:
+    :return:
+    """
+
 
     # input_shape: [1, latent_dim, projection_dim]
     inputs = layers.Input(shape=(latent_dim, projection_dim))
     outputs = inputs
 
     # iteratively generate transformer block
-    for _ in range(num_transformer_blocks):
+    for i in range(transformer_blocks):
 
         # normalise
         norm_one = layers.LayerNormalization(epsilon=1e-6)(outputs)
@@ -136,119 +165,139 @@ def create_transformer_module(
 
         # normalise again and apply dense network
         norm_two = layers.LayerNormalization(epsilon=1e-6)(skip_one)
-        dense = dense_network(dense_units, dropout_rate)(norm_two)
+        dense = dense_network(dense_units, dropout)(norm_two)
 
         # second skip connection
         outputs = layers.Add()([dense, skip_one])
 
-    # Create the Keras model.
-    model = keras.Model(inputs=inputs, outputs=outputs)
-    return model
+    # return model
+    return keras.Model(inputs=inputs, outputs=outputs)
 
 
 class Perceiver(keras.Model):
     """
     Class representing full model of the perceiver transformer.
+    Default settings have been optimised for classifying laterality
+    in AKOA dataset.
     """
 
     def __init__(
         self,
-        patch_size,
-        data_dim,
-        latent_dim,
-        projection_dim,
-        num_heads,
-        num_transformer_blocks,
-        dense_units,
-        dropout_rate,
-        num_iterations,
-        classifier_units,
+        input_img_size,
+        num_classes,
+        patch_size: int = 2,
+        latent_array_size: int = 128,
+        projection_size: int = 128,
+        transformer_heads: int = 8,
+        transformer_blocks: int = 4,
+        dropout: int = 0.2,
+        model_iterations: int = 2,
     ):
         super(Perceiver, self).__init__()
 
-        self.latent_dim = latent_dim
-        self.data_dim = data_dim
+        # size of  latent array
+        self.latent_array_size = latent_array_size
+
+        # size of patch-encoded image data array
+        self.data_array_size = (input_img_size // patch_size) ** 2
+
+        # size of patches to be extracted from train images
         self.patch_size = patch_size
-        self.projection_dim = projection_dim
-        self.num_heads = num_heads
-        self.num_transformer_blocks = num_transformer_blocks
-        self.dense_units = dense_units
-        self.dropout_rate = dropout_rate
-        self.num_iterations = num_iterations
-        self.classifier_units = classifier_units
+        self.projection_size = projection_size
+
+        # number of transformer heads for self-attention
+        self.transformer_heads = transformer_heads
+
+        # number of blocks of transformers in each model iteration
+        self.transformer_blocks = transformer_blocks
+
+        # size of the transformer dense network
+        self.dense_units = (projection_size, projection_size)
+        self.dropout = dropout
+
+        # repetitions of cross-attention/transformer modules
+        self.model_iterations = model_iterations
+
+        # size of dense network of the final classifier
+        self.classifier_units = (projection_size, num_classes)
+
+        print(f"Image size: {input_img_size} X {input_img_size} = {input_img_size ** 2}")
+        print(f"Patch size: {patch_size} X {patch_size} = {patch_size ** 2} ")
+        print(f"Elements per patch: {(patch_size ** 2)}")
+        print(f"Latent array shape: {latent_array_size} X {projection_size}")
 
     def build(self, input_shape):
 
         # latent array
         self.latent_array = self.add_weight(
-            shape=(self.latent_dim, self.projection_dim),
+            shape=(self.latent_array_size, self.projection_size),
             initializer="random_normal",
             trainable=True,
         )
 
-        # patching module.
+        # patching module
         self.patcher = Patches(self.patch_size)
 
-        # patch encoder.
-        self.patch_encoder = PatchEncoder(self.data_dim, self.projection_dim)
+        # patch encoder
+        self.patch_encoder = PatchEncoder(self.data_array_size, self.projection_size)
 
-        # cross-attention module.
-        self.cross_attention = create_cross_attention_module(
-            self.latent_dim,
-            self.data_dim,
-            self.projection_dim,
+        # cross-attention module
+        self.cross_attention = cross_attention_module(
+            self.latent_array_size,
+            self.data_array_size,
+            self.projection_size,
             self.dense_units,
-            self.dropout_rate,
+            self.dropout,
         )
 
         # transformer module.
-        self.transformer = create_transformer_module(
-            self.latent_dim,
-            self.projection_dim,
-            self.num_heads,
-            self.num_transformer_blocks,
+        self.transformer = latent_transformer_module(
+            self.latent_array_size,
+            self.projection_size,
+            self.transformer_heads,
+            self.transformer_blocks,
             self.dense_units,
-            self.dropout_rate,
+            self.dropout,
         )
 
         # global average pooling
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
         # dense classification block
-        self.classification_head = dense_network(self.classifier_units, self.dropout_rate)
+        self.classification_head = dense_network(self.classifier_units, self.dropout)
 
         super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
 
-        # Create patches.
+        # create patches
         patches = self.patcher(inputs)
 
-        # Encode patches.
+        # encode patches
         encoded_patches = self.patch_encoder(patches)
 
-        # Prepare cross-attention inputs.
+        # cross-attention inputs
         cross_attention_inputs = {
             "latent_array": tf.expand_dims(self.latent_array, 0),
             "data_array": encoded_patches,
         }
 
-        # Apply the cross-attention and the Transformer modules iteratively.
-        for _ in range(self.num_iterations):
+        # iteratively apply cross-attention and transformer modules
+        for i in range(self.model_iterations):
 
-            # Apply cross-attention from the latent array to the data array.
+            # apply cross attention between latent and data array
             latent_array = self.cross_attention(cross_attention_inputs)
 
-            # Apply self-attention Transformer to the latent array.
+            # apply self-attention on latent array in transformer module
             latent_array = self.transformer(latent_array)
 
             # Set the latent array of the next iteration.
             cross_attention_inputs["latent_array"] = latent_array
 
-        # Apply global average pooling to generate a [batch_size, projection_dim] representation tensor.
+        # global average pooling to generate a [batch_size, projection_dim] representation
         representation = self.global_average_pooling(latent_array)
 
-        # Generate logits.
+        # get logits from final classification layers
         logits = self.classification_head(representation)
         return logits
 

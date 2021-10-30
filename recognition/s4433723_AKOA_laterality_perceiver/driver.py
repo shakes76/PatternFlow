@@ -1,3 +1,7 @@
+"""
+This file is the main script that processes input data and trains the perceiver model,
+producing associated output data.
+"""
 from model import *
 import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
@@ -5,54 +9,79 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import os
 
-# Global variables for directory setting
+# Global variables for directory and input data settings
+ORIGINAL_IMG_DIR = "AKOA_Analysis/"
+CLASSES = ("Left", "Right")
+NUM_CLASSES = len(CLASSES)
 DATASET_DIR = 'datasets/'
 OUTPUT_DIR = 'output/'
-INPUT_DS_SIZE = 18680
 
-# Hyper-parameters
+# Training hyper-parameters
 IMG_SIZE = 16  # size to resize input images
-NUM_CLASSES = 2
-NUM_CHANNELS = 1
-LEARN_RATE = 0.001
-WEIGHT_DECAY = 0.0001
+NUM_CHANNELS = 1  # grayscale images have one channel
 EPOCHS = 1
 BATCH_SIZE = 32
-DROPOUT_RATE = 0.2
-PATCH_SIZE = 2  # Size of patches to be extracted from input images.
-PATCHES = (IMG_SIZE // PATCH_SIZE) ** 2  # Size of the img data array.
-LATENT_ARRAY_SIZE = 128  # Size of the latent array.
-PROJECTION_SIZE = 128  # Embedding size of each element in the data and latent arrays.
-NUM_HEADS = 8  # Number of transformer heads.
-dense_units = [PROJECTION_SIZE, PROJECTION_SIZE] # Size of the Transformer Dense network.
-num_transformer_blocks = 4
-num_iterations = 2  # Repetitions of the cross-attention and Transformer modules.
-
-# Size of the Dense network of the final classifier.
-classifier_units = [PROJECTION_SIZE, NUM_CLASSES]
-
-print(f"Image size: {IMG_SIZE} X {IMG_SIZE} = {IMG_SIZE ** 2}")
-print(f"Patch size: {PATCH_SIZE} X {PATCH_SIZE} = {PATCH_SIZE ** 2} ")
-print(f"Patches per image: {PATCHES}")
-print(f"Elements per patch: {(PATCH_SIZE ** 2) * NUM_CHANNELS}")
-print(f"Latent array shape: {LATENT_ARRAY_SIZE} X {PROJECTION_SIZE}")
-print(f"Data array shape: {PATCHES} X {PROJECTION_SIZE}")
+VALIDATION_SPLIT = 0.2
+TEST_SPLIT = 0.25
+LEARN_RATE = 0.001
+WEIGHT_DECAY = 0.0001
 
 
-def load_train_test_data(dataset_dir):
+def underscore_modify(string):
+    """
+    Quick helper to allow for appropriate sorting of class labels in AKOA dataset.
+    :param string: string to modify with underscores
+    :return: the modified string
     """
 
-    :param dataset_dir:
+    modified_string = ""
+    for char in string:
+        modified_string += f"_{char}"
+    return modified_string
+
+
+def create_sorted_data_directory(img_dir, classes):
+    """
+    Take images from input AKOA dataset folder and place them in datasets
+    folder in sub-directories according to their class heading. This is
+    to help in loading data by class later.
+    :param img_dir: the directory to load data from
+    :param classes: the classes to sort into sub-folders from AKOA dataset.
     :return:
     """
 
+    # create subdirectories in dataset folder
+    for class_name in classes:
+        try:
+            os.mkdir(f"{DATASET_DIR}{class_name}")
+        except OSError as e:
+            print(e)
+
+    # move files from input dataset into datasets folder, in class sub-dirs
+    for file_name in os.listdir(img_dir):
+        file_path = os.path.join(img_dir, file_name)
+        for class_name in classes:
+            if class_name in file_name \
+                    or class_name.upper() in file_name \
+                    or underscore_modify(class_name.upper()) in file_name \
+                    or class_name.lower() in file_name:
+                os.rename(file_path, f"{DATASET_DIR}{class_name}/{file_name}")
+
+def load_train_test_data(dataset_dir, test_split):
+    """
+    Loads images from datasets folder with class subdirectories, shuffles the data, resizes it
+    to the given IMG_SIZE by bilinear interpolation, normalises the grayscale images and then
+    returns the data as a train test split of numpy arrays.
+
+    :param dataset_dir: the directory to extract training data from
+    :return: a train test split of numpy arrays
+    """
+
     # count total items in dataset dir
-    #input_ds_size = 0
-    #print(input_ds_size)
     input_ds_size = 0
     for _, _, files in os.walk(dataset_dir):
         input_ds_size += len(files)
-    print(input_ds_size)
+
     # load AKOA dataset from processed datasets directory
     akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=dataset_dir,
                                                                         shuffle=True,
@@ -92,37 +121,26 @@ if __name__ == "__main__":
     print("Tensorflow version: ", tf.__version__)
 
     # if need to sort akoa dataset into datasets folder, do so:
+    if "datasets" not in os.listdir(".") \
+            or "LEFT" not in os.listdir(DATASET_DIR) \
+            or "RIGHT" not in os.listdir(DATASET_DIR):
+        print(f"Sorting {ORIGINAL_IMG_DIR} into datasets folder...")
+        create_sorted_data_directory(ORIGINAL_IMG_DIR, CLASSES)
 
     # load in data from processed directory
-    x_train, x_test, y_train, y_test = load_train_test_data(DATASET_DIR)
+    x_train, x_test, y_train, y_test = load_train_test_data(DATASET_DIR, TEST_SPLIT)
     print("Input Shapes:")
     print("X train: ", x_train.shape)
     print("Y train: ", y_train.shape)
     print("X test: ", x_test.shape)
     print("Y test: ", y_test.shape)
 
-    # Create perceiver model
-    perceiver = Perceiver(
-        PATCH_SIZE,
-        PATCHES,
-        LATENT_ARRAY_SIZE,
-        PROJECTION_SIZE,
-        NUM_HEADS,
-        num_transformer_blocks,
-        dense_units,
-        DROPOUT_RATE,
-        num_iterations,
-        classifier_units,
-    )
+    # build perceiver, pass in keyword args here to modify defaults
+    perceiver = Perceiver(IMG_SIZE, NUM_CLASSES)
 
-    # Create LAMB optimizer with weight decay.
-    lamb = tfa.optimizers.LAMB(
-        learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY,
-    )
-
-    # Compile the model.
+    # compile perceiver
     perceiver.compile(
-        optimizer=lamb,#tf.keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=tfa.optimizers.LAMB(learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY),#tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[keras.metrics.BinaryAccuracy(name="accuracy")],
     )
@@ -133,12 +151,13 @@ if __name__ == "__main__":
         y=y_train,
         batch_size=BATCH_SIZE,
         epochs=EPOCHS,
-        validation_split=0.2,
+        validation_split=VALIDATION_SPLIT,
     )
 
     # visualise shape of model
     perceiver.summary()
 
+    # evaluate model performance on test data
     test_loss, test_accuracy = perceiver.evaluate(x_test, y_test)
     print(f"Test accuracy: {test_accuracy * 100:.2f}%")
     print(f"Test loss: {test_loss * 100:.2f}%")
@@ -146,8 +165,8 @@ if __name__ == "__main__":
     # summarize history for accuracy
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'validation'], loc='upper left')
+    plt.title('Perceiver Model Training Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
     plt.savefig(f'{OUTPUT_DIR}training_curve_epochs_{EPOCHS}.png')
