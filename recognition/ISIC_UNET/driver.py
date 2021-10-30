@@ -95,8 +95,11 @@ if __name__ == '__main__':
     # sets the learning rate
     learning_rate = 3*10**(-5)
 
+    # path to the images
+    imagePath = "C:\\Users\\Mark\\Desktop\\comp3710 report\\PatternFlow\\recognition\\ISIC_UNET\\ISIC2018_Task1-2_Training_Data"
+
     # prepare a given number of images
-    final_train, final_test, final_val = prepare_images(max_images)
+    final_train, final_test, final_val = prepare_images(max_images, imagePath)
 
     # define the model and return it
     model = IUNET_model()

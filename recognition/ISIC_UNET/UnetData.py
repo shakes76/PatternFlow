@@ -34,12 +34,14 @@ def process_images(image_path, mask_path):
     return image, segmentation
 
 
-def prepare_images(max_images):
+def prepare_images(max_images, imagePath):
     # get the path of the images
-    x_images = 'C:\\Users\\Mark\\Downloads\\ISIC2018_Task1-2_Training_Data\\ISIC2018_Task1-2_Training_Input_x2\\*.jpg'
-    mask_images = 'C:\\Users\\Mark\\Downloads\\ISIC2018_Task1-2_Training_Data\\ISIC2018_Task1_Training_GroundTruth_x2\\*.png'
+
+    x_images = imagePath + '\\ISIC2018_Task1-2_Training_Input_x2\\*.jpg'
+    mask_images = imagePath + '\\ISIC2018_Task1_Training_GroundTruth_x2\\*.png'
     x_images = sorted(glob.glob(x_images))
     mask_images = sorted(glob.glob(mask_images))
+    print(x_images)
     # take only a certain number of images to be used
     new_x = x_images[0:max_images]
     new_mask = mask_images[0:max_images]
