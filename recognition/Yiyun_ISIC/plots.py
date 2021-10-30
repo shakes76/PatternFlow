@@ -3,6 +3,14 @@ import matplotlib.gridspec as gridspec
 
 
 def plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5):
+    """Plot predictions of a model on a test dataset.
+
+    Args:
+        model (Model): Model to be evaluated.
+        test_dataset (Dataset): Test dataset.
+        plot_batch (int, optional): Number of examples to be plotted. Defaults to 4.
+        threshold (float, optional): Threshold for binarisation. Defaults to 0.5.
+    """
     # generate predictions
     test_images, test_labels = next(iter(test_dataset.batch(plot_batch)))
     predictions = model.model.predict(test_images)
@@ -44,6 +52,11 @@ def plot_predictions(model, test_dataset, plot_batch=4, threshold=0.5):
 
 
 def plot_metrics(history):
+    """Plot loss, accuracy and dice coefficient of a model.
+
+    Args:
+        history (History): Model training history.
+    """
     figure = plt.figure(constrained_layout=True, figsize=(14, 3))
     figure.set_facecolor('white')
     spec = gridspec.GridSpec(ncols=3, nrows=1, figure=figure, wspace=0.1)
