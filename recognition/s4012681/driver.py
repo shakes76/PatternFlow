@@ -6,7 +6,7 @@ Date: 05/10/2021
 Driver for the UNet3d model for the classification of the Prostate 3D data set
 """
 
-from unet import get_nifti_data, one_hot, normalise, unet, reshape, rotate, scheduler, dice, dice_loss, plt_compare
+from unet import get_image, get_mask, unet, reshape, individual_dice, dice_loss, plt_compare
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,25 +27,37 @@ EPOCHS = 50
 
 class MRISequence(Sequence):
     def __init__(self, x_set, y_set, batch_size):
-        self.rotations = [0, 15]
-        self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
+        # self.rotations = [0, 15]
+        # self.x, self.y = x_set * len(self.rotations), y_set * len(self.rotations)
+        self.x, self.y = x_set, y_set
         self.batch_size = batch_size
-        self.num_imgs = len(x_set)
+        # self.num_imgs = len(x_set)
         self.indices = list(range(len(self.x)))
 
     def __len__(self):
         return math.ceil(len(self.x) / self.batch_size)
 
     def __getitem__(self, idx):
-        rotation = idx // self.num_imgs
+        # rotation = idx // self.num_imgs
         batch_x = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
         batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        return np.array([reshape(1, rotate(normalise(get_nifti_data(file_name)), [self.rotations[rotation]], False))
+
+        return np.array([reshape(1, ((get_image(file_name))))
                          for file_name in batch_x]), \
-               np.array([reshape(6, rotate(one_hot(file_name), [self.rotations[rotation]], True))
+               np.array([reshape(6, (get_mask(file_name)))
                          for file_name in batch_y])
 
+        # return np.array([reshape(1, rotate((get_image(file_name)), [self.rotations[rotation]], False))
+        #                  for file_name in batch_x]), \
+        #        np.array([reshape(6, rotate(get_mask(file_name), [self.rotations[rotation]], True))
+        #                  for file_name in batch_y])
+
+        # return np.array([reshape(1, rotate(normalise(get_nifti_data(file_name)), [self.rotations[rotation]], False))
+        #                  for file_name in batch_x]), \
+        #        np.array([reshape(6, rotate(one_hot(file_name), [self.rotations[rotation]], True))
+        #                  for file_name in batch_y])
+        #
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
 
@@ -57,39 +69,52 @@ class CustomCallback(tf.keras.callbacks.Callback):
         mask = np.argmax(mask, axis=-1)
         fig, ax1 = plt.subplots(1, 1)
         ax1.imshow(mask[mask.shape[0] // 2], cmap='gray')
-        fig.savefig("img{}.png".format(epoch))
+        fig.savefig("simple{}.png".format(epoch))
 
 
-mri_location = "/home/Student/s4012681/semantic_MRs_anon/*.nii.gz"
-label_location = "/home/Student/s4012681/semantic_labels_anon/*nii.gz"
+train_mri_location = "/home/Student/s4012681/semantic_MRs_anon/*.nii.gz"
+train_label_location = "/home/Student/s4012681/semantic_labels_anon/*nii.gz"
 
-mri_names = sorted(glob.glob(mri_location))
-labels_names = sorted(glob.glob(label_location))
+val_mri_location = "/home/Student/s4012681/semantic_MRs_anon/val/*.nii.gz"
+val_label_location = "/home/Student/s4012681/semantic_labels_anon/val/*nii.gz"
 
-# split 5% of the files off as a test set
-x_train, x_test, y_train, y_test = train_test_split(mri_names, labels_names,
-                                                    test_size=0.05)
+test_mri_location = "/home/Student/s4012681/semantic_MRs_anon/test/*.nii.gz"
+test_label_location = "/home/Student/s4012681/semantic_labels_anon/test/*nii.gz"
 
-# split 15% of the training data off for validation
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
-                                                  test_size=0.15)
+train_mri_names = sorted(glob.glob(train_mri_location))
+train_labels_names = sorted(glob.glob(train_label_location))
 
-train = MRISequence(x_train, y_train, BATCH_SIZE)
-test = MRISequence(x_test, y_test, BATCH_SIZE)
-val = MRISequence(x_val, y_val, BATCH_SIZE)
+val_mri_names = sorted(glob.glob(val_mri_location))
+val_labels_names = sorted(glob.glob(val_label_location))
+
+test_mri_names = sorted(glob.glob(test_mri_location))
+test_labels_names = sorted(glob.glob(test_label_location))
+
+# # split 5% of the files off as a test set
+# x_train, x_test, y_train, y_test = train_test_split(mri_names, labels_names,
+#                                                     test_size=0.05)
+#
+# # split 15% of the training data off for validation
+# x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
+#                                                   test_size=0.15)
+
+train = MRISequence(train_mri_names, train_labels_names, BATCH_SIZE)
+val = MRISequence(val_mri_names, val_labels_names, BATCH_SIZE)
+test = MRISequence(test_mri_names, test_labels_names, BATCH_SIZE)
 
 model = unet(FILTERS)
 model_dice = dice_loss(smooth=1)
 
-model.compile(optimizer=Adam(lr=1e-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.000000199),
-              loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# model.compile(optimizer=Adam(lr=1e-5, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.000000199),
+#               loss=model_dice, metrics=['accuracy'])
 model.summary(line_length=120)
 
 
-sched = tf.keras.callbacks.LearningRateScheduler(scheduler)
+# sched = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
 # Fit the training data and store for the plot
-curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[sched])
+curves = model.fit(train, epochs=EPOCHS, validation_data=val, batch_size=BATCH_SIZE, callbacks=[CustomCallback()])
 # Evaluate the model with the test data
 print()
 print("Evaluation:")
@@ -100,16 +125,16 @@ classifications = model.predict(test)
 print(classifications.shape)
 print(type(classifications))
 
-test_labels = np.empty((len(test), IMG_HEIGHT, IMG_DEPTH, IMG_WIDTH, 6))
+test_labels = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 6))
 for i in range(len(test)):
     test_labels[i] = test[i][1]
 
-print("Body: ", dice(test_labels[..., 1], classifications[..., 1]))
-print("Bones: ", dice(test_labels[..., 2], classifications[..., 2]))
-print("Bladder: ", dice(test_labels[..., 3], classifications[..., 3]))
-print("Rectum: ", dice(test_labels[..., 4], classifications[..., 4]))
-print("Prostate: ", dice(test_labels[..., 5], classifications[..., 5]))
-print("Overall (including background): ", dice(test_labels, classifications))
+print("Body: ", individual_dice(test_labels[..., 1], classifications[..., 1]))
+print("Bones: ", individual_dice(test_labels[..., 2], classifications[..., 2]))
+print("Bladder: ", individual_dice(test_labels[..., 3], classifications[..., 3]))
+print("Rectum: ", individual_dice(test_labels[..., 4], classifications[..., 4]))
+print("Prostate: ", individual_dice(test_labels[..., 5], classifications[..., 5]))
+print("Overall (including background): ", individual_dice(test_labels, classifications))
 
 # Plot
 # plot accuracy
@@ -126,4 +151,4 @@ gax2.title.set_text("Loss")
 fig2.savefig('acc_loss.png')
 
 for i in range(len(test)):
-    plt_compare(test[i][0][0], test_labels[i][0], classifications[i][0], i)
+    plt_compare(test[i][0][0], test_labels[i], classifications[i], i)
