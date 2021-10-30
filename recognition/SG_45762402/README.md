@@ -1,1 +1,1 @@
-# COMP3710
+# StyleGan_oasis
