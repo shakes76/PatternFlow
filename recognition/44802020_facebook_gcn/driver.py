@@ -11,6 +11,10 @@ import numpy as np
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+# !!! IMPORTANT !!!
+# Ensure valid file path to facebook.npz here
+FILE_PATH = r"./data/facebook.npz"
+
 
 def coo_matrix_to_sparse_tensor(coo):
     indices = np.mat([coo.row, coo.col]).transpose()
@@ -60,7 +64,7 @@ def shuffle(page_one, page_two, feats, labels):
     return page_one, page_two, feats, labels
 
 
-def parse_data(data, train_split, val_split):
+def parse_data(data, train_val_split):
     # Adjacency Matrix
     # Split EdgeList into two tensors
     page_one = data['edges'][:, 0]
@@ -82,12 +86,11 @@ def parse_data(data, train_split, val_split):
     # Convert split percentage into integer
     print("SHAPE")
     print(labels.shape[0])
-    split_t = int(round(labels.shape[0] * train_split))
-    split_v = split_t + int(round(labels.shape[0] * val_split))
-    print(f"T:{split_t}, V:{split_v}")
+    split_t = int(round(labels.shape[0] * (1 - train_val_split)))
+    print(f"Split: {split_t}")
 
-    train_labels, val_labels, test_labels = labels[:split_t], labels[split_t:split_v], labels[split_v:]
-    train_feats, val_feats, test_feats = feats[:split_t], feats[split_t:split_v], feats[split_v:]
+    train_labels, test_labels = labels[:split_t], labels[split_t:]
+    train_feats, test_feats = feats[:split_t], feats[split_t:]
 
     # Convert EdgeList to Sparse Adjacency Matrix
     ones = tf.ones_like(page_one)  # Create Ones Matrix to set
@@ -98,7 +101,7 @@ def parse_data(data, train_split, val_split):
 
     # Re-create two adjacency matrices for training/testing
     a_bar = a_dense[:split_t, :split_t]
-    a_bar_test = a_dense[split_t:split_v, split_t:split_v]
+    a_bar_test = a_dense[split_t-1:, split_t-1:]
 
     print(a_bar.shape)
     print(a_bar_test.shape)
@@ -118,25 +121,22 @@ def parse_data(data, train_split, val_split):
     print(a_bar.shape)
     print(a_bar_test.shape)
 
-    return train_feats, train_labels, a_bar, test_feats, test_labels, a_bar_test, val_feats, val_labels
+    return train_feats, train_labels, a_bar, test_feats, test_labels, a_bar_test
 
 
-def ensure_valid_split(train, test, val):
-    if train+test+val == 1.0 and train==val:
+def ensure_valid_split(train, test):
+    if train+test == 1.0:
         return True
     else:
         print("Train Split + Validation Split + Test Split must equal 1.0.")
-        print("Validation Split and Test Split must currently also be equal")
-        print("to support multiplication by by th Adjacency Matrix")
-        print("Please ensure values for these variables sum to 1.0 and")
-        print("that the Test Split and Validation Split are equal")
+        print("Please ensure values for these variables sum to 1.0")
         exit(1)
 
 
 def main():
     print("Tensorflow version:", tf.__version__)
     print("Numpy version:", np.__version__)
-    file_path = r"C:\Users\johnv\Documents\University\COMP3710\Pattern Flow Project\facebook.npz"
+
 
     # Variables
     plot_tsne = False
@@ -144,14 +144,13 @@ def main():
     epochs = 100
     learning_rate = 0.05
 
-    train_split = 0.80
-    validate_split = 0.10
-    test_split = 0.10
+    train_split = 0.41
+    test_val_split = 0.59
 
-    ensure_valid_split(test_split, train_split, validate_split)
+    ensure_valid_split(test_val_split, train_split)
 
     # Load in Data
-    data = np.load(file_path)
+    data = np.load(FILE_PATH)
     # There are 22 470 Pages
     # Each with 128 features
     # Each falls into 1 of 4 categories
@@ -159,10 +158,7 @@ def main():
 
     # test_split = 0.2
     train_feats, train_labels, a_bar, \
-        test_feats, test_labels, a_bar_test, \
-            val_feats, val_labels = parse_data(data,
-                                               train_split,
-                                               validate_split)
+        test_feats, test_labels, a_bar_test, = parse_data(data, test_val_split)
 
     # ================== REAL MODEL ========================
     print("=============== Building Model ===============")
@@ -179,8 +175,8 @@ def main():
                  train_labels,
                  epochs=epochs,
                  batch_size=22470,
-                 shuffle=True,
-                 validation_data=(val_feats, val_labels)
+                 shuffle=False,
+                 validation_data=(test_feats, test_labels)
                  )
 
     print(my_model.summary())
