@@ -23,19 +23,21 @@ from PIL import Image
 import math
 import numpy as np # just need this for a single array conversion in the preprocessing step - please don't roast me
 import random
+import copy
 
 print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
 SAVE_DATA			= False
-BATCH_SIZE			= 1
+BATCH				= 8
 TEST_TRAINING_SPLIT	= 0.8
 IMG_WIDTH			= 260
 IMG_HEIGHT			= 228
 SEED				= 123
-BANDS				= 4
-VALIDATION_SPLIT	= 0.5
+BANDS				= 6
+VALIDATION_SPLIT	= 0.2
+EPOCHS				= 6
 
 # ##### Import Data #####
 
@@ -78,8 +80,8 @@ def save_data():
 	# Sort by substring
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
-	# TEMPORARY: REDUCE AMOUNT OF DATA USED!
-	patients = patients[0:math.floor(len(patients) * 0.0025)]
+	# TEMPORARY: REDUCE AMOUNT OF MEMORY USED!
+	patients = patients[0:math.floor(len(patients) * 0.1)]
 
 	# Split data
 	print("Splitting data into training and testing sets")
@@ -128,34 +130,10 @@ def save_data():
 if SAVE_DATA:
 	save_data()
 
+BANDS = 6
+MAX_FREQUENCY = 10
 
-
-'''# Load Data
-print("Loading Data")
-xtrain = np.load('../../../xtrain.npy')
-ytrain = np.load('../../../ytrain.npy')
-xtest = np.load('../../../xtest.npy')
-ytest = np.load('../../../ytest.npy')
-'''
-'''
-#xtrain = np.asarray(xtrain).astype('float32').reshape((-1,BATCH_SIZE))
-ytrain = np.asarray(ytrain).astype('float32').reshape((-1,BATCH_SIZE))
-#xtest = np.asarray(xtest).astype('float32').reshape((-1,BATCH_SIZE))
-ytest = np.asarray(ytest).astype('float32').reshape((-1,BATCH_SIZE))
-'''
-
-print("xtrain shape:", xtrain.shape)
-print("ytrain shape:", ytrain.shape)
-print("xtest shape:", xtest.shape)
-print("ytest shape:", ytest.shape)
-
-train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
-train_dataset = train_dataset.batch(BATCH_SIZE, drop_remainder = True)
-
-test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
-test_dataset = test_dataset.batch(BATCH_SIZE, drop_remainder = True)
-
-def pos_encoding(img, bands, Fs):
+def pos_encoding(img):
 	# Create grid
 	n, x_size, y_size = img.shape
 	img = tf.cast(img, tf.float32)
@@ -164,19 +142,20 @@ def pos_encoding(img, bands, Fs):
 	xy_mesh = tf.meshgrid(x,y)
 	xy_mesh = tf.transpose(xy_mesh)
 	xy_mesh = tf.expand_dims(xy_mesh, -1)
-	xy_mesh = tf.reshape(xy_mesh, [x_size,y_size,2,1])
-	xy_mesh = tf.repeat(xy_mesh, 2 * bands + 1, axis = 3)
+	xy_mesh = tf.reshape(xy_mesh, [2,x_size,y_size,1])
 	#print(xy_mesh)
 	# Frequency logspace of nyquist f for bands
-	up_lim = tf.math.log(Fs/2)/tf.math.log(10.)
+	up_lim = tf.math.log(MAX_FREQUENCY/2)/tf.math.log(10.)
 	low_lim = math.log(1)
-	f_sin = tf.math.sin(tf.experimental.numpy.logspace(low_lim, up_lim, bands) * math.pi)
-	f_cos = tf.math.cos(tf.experimental.numpy.logspace(low_lim, up_lim, bands) * math.pi)
+	f_sin = tf.math.sin(tf.experimental.numpy.logspace(low_lim, up_lim, BANDS) * math.pi)
+	f_cos = tf.math.cos(tf.experimental.numpy.logspace(low_lim, up_lim, BANDS) * math.pi)
+	# Add repeats
+	xy_mesh = tf.repeat(xy_mesh, 2 * BANDS + 1, axis = 3)
 	t = tf.concat([f_sin, f_cos], axis=0)
 	t = tf.concat([t, [1.]], axis=0) # Size is now 2K+1
 	# Get encoding/features
 	encoding = xy_mesh * t
-	encoding = tf.reshape(encoding, [1, x_size, y_size, (2 * bands + 1) * 2])
+	encoding = tf.reshape(encoding, [1, x_size, y_size, (2 * BANDS + 1) * 2])
 	encoding = tf.repeat(encoding, n, 0) # Repeat for all images (on first axis)
 	img = tf.expand_dims(img, axis=3) # resize image data so that it fits
 	out = tf.cast(encoding, tf.float32)
@@ -184,33 +163,69 @@ def pos_encoding(img, bands, Fs):
 	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
 	return out
 
+'''
+# Load Data
+print("Loading Data")
+xtrain = np.load('../../../xtrain.npy')
+ytrain = np.load('../../../ytrain.npy')
+xtest = np.load('../../../xtest.npy')
+ytest = np.load('../../../ytest.npy')
+'''
+
+'''
+#xtrain = np.asarray(xtrain).astype('float32').reshape((-1,BATCH))
+ytrain = np.asarray(ytrain).astype('float32').reshape((-1,BATCH))
+#xtest = np.asarray(xtest).astype('float32').reshape((-1,BATCH))
+ytest = np.asarray(ytest).astype('float32').reshape((-1,BATCH))
+'''
+
+print("xtrain shape:", xtrain.shape)
+print("ytrain shape:", ytrain.shape)
+print("xtest shape:", xtest.shape)
+print("ytest shape:", ytest.shape)
+
+
+#xtrain, ytrain, X_val, y_val, xtest, ytest = split_and_shuffle(xtrain, ytrain, xtest, ytest)
+
+# Ensure data is batched properly
+xtrain = xtrain[0:len(xtrain) // BATCH * BATCH]
+ytrain = ytrain[0:len(ytrain) // BATCH * BATCH]
+xtest = xtest[0:len(xtest) // BATCH * BATCH]
+ytest = ytest[0:len(ytest) // BATCH * BATCH]
+
+'''
+train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
+train_dataset = train_dataset.batch(BATCH, drop_remainder = True)
+
+test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
+test_dataset = test_dataset.batch(BATCH, drop_remainder = True)
+'''
+
 # ##### Define Modules #####
 
 INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
-LATENT_ARRAY_SIZE	= 128 # Paper uses 512
+LATENT_ARRAY_SIZE	= 256 # Paper uses 512
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
 CHANNEL				= (2 * BANDS + 1)
 PROJECTION			= 2 * (2 * BANDS + 1) + 1
 QKV_DIM				= PROJECTION
-CD_DIM				= 128
-EPSILON				= 1e-5
 LEARNING_RATE		= 0.001
-EPOCHS				= 5
-DROPOUT_RATE		= 0.2
-
-TRANSFOMER_NUM		= 2
-MODULES_NUM			= 2
+DROPOUT_RATE		= 0.1
+TRANSFOMER_NUM		= 6
+HEAD_NUM			= 8
+MODULES_NUM			= 6
 OUT_SIZE			= 1 # binary as only left or right knee
 
 def network_attention():
 	# Network structure starting at latent array
 	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, PROJECTION])
-	latent_layer = tf.keras.layers.LayerNormalization()(latent_layer) # Add a cheeky normalization layer
+
+	#latent_layer = tf.keras.layers.LayerNormalization()(latent_layer) # Add a cheeky normalization layer
 	query_layer  = tf.keras.layers.Dense(QKV_DIM)(latent_layer) # Query tensor (dense layer)
 
 	# Network structure starting at byte array
 	byte_layer  = tf.keras.layers.Input(shape = [BYTE_ARRAY_SIZE, PROJECTION])
-	byte_layer  = tf.keras.layers.LayerNormalization()(byte_layer) # Add a cheeky normalization layer
+	#byte_layer  = tf.keras.layers.LayerNormalization()(byte_layer) # Add a cheeky normalization layer
 	key_layer   = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Key tensor (dense layer)
 	value_layer = tf.keras.layers.Dense(QKV_DIM)(byte_layer) # Value tensor (dense layer)
 
@@ -218,15 +233,17 @@ def network_attention():
 	attention_layer = tf.keras.layers.Attention(use_scale=True)([query_layer, key_layer, value_layer])
 	attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
 	#attention_layer = tf.keras.layers.Dense(QKV_DIM)(attention_layer)
-	#attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
+	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 
 	# Combine latent array into cross attention node thingy
-	attention_layer = tf.keras.layers.Add()([attention_layer, latent_layer]) # Add a sneaky connection straight from latent
+	attention_layer = tf.keras.layers.Add()([attention_layer, latent_layer]) # Add a connection straight from latent
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
 	
 	# Need to now add a connecting layer
 	out = tf.keras.layers.Dense(PROJECTION, activation='relu')(attention_layer)
-	out = tf.keras.layers.Dense(PROJECTION)(out)
+	#out = tf.keras.layers.Dropout(DROPOUT_RATE)(out)
+	#out = tf.keras.layers.Dense(PROJECTION)(out)
+	
 	attention_connect_layer = tf.keras.layers.Add()([out, attention_layer])
 
 	out = tf.keras.Model(inputs = [latent_layer, byte_layer], outputs = attention_connect_layer)
@@ -236,22 +253,22 @@ def network_attention():
 def network_transformer():
 	# Get latent_size and PROJECTION
 	latent_input_initial = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, PROJECTION])
-	latent_input = latent_input_initial
+	latent_input = copy.deepcopy(latent_input_initial)
 	# Create as many transformer modules as necessary
 	for i in range(TRANSFOMER_NUM):
-		transformer_layer = tf.keras.layers.LayerNormalization()(latent_input) # probs remove above normalization
+		transformer_layer = tf.keras.layers.LayerNormalization()(latent_input_initial) # probs remove above normalization
 		# Multihead attention layer
-		transformer_layer = tf.keras.layers.MultiHeadAttention(num_heads = TRANSFOMER_NUM, key_dim = PROJECTION)(transformer_layer,transformer_layer)
+		transformer_layer = tf.keras.layers.MultiHeadAttention(num_heads = HEAD_NUM, key_dim = PROJECTION)(transformer_layer,transformer_layer)
 		# Add dense layer
 		transformer_layer = tf.keras.layers.Dense(PROJECTION)(transformer_layer)
 		# Add passthrough connection from input
-		transformer_layer = tf.keras.layers.Add()([latent_input, transformer_layer])
+		transformer_layer = tf.keras.layers.Add()([latent_input_initial, transformer_layer])
 		# Normalize for the fun of it
 		transformer_layer = tf.keras.layers.LayerNormalization()(transformer_layer)
 		# Get query
-		x = tf.keras.layers.Dense(PROJECTION, input_dim=PROJECTION)(transformer_layer)
-		x = tf.keras.layers.Dense(PROJECTION, input_dim=PROJECTION)(x)
-		x = tf.keras.layers.Dropout(DROPOUT_RATE)(x)
+		x = tf.keras.layers.Dense(PROJECTION, activation='relu')(transformer_layer)
+		x = tf.keras.layers.Dense(PROJECTION)(x)
+		#x = tf.keras.layers.Dropout(DROPOUT_RATE)(x) # get some cheeky dropout
 		# Add passthrough connection from transformer_layer
 		transformer_layer = tf.keras.layers.Add()([x, transformer_layer])
 		latent_input = transformer_layer # sketchy but also works
@@ -261,65 +278,89 @@ def network_transformer():
 
 # ##### Create Perceiver Module #####
 
+
+
 # Perceiver class
 class Perceiver(tf.keras.Model):
+
 	def __init__(self):
 		super(Perceiver, self).__init__()
 
-	def build(self, input_shape):
+		#def build(self, input_shape):
+		self.fourier_encoder = FourierEncode(10, 4)
 		# TODO: Custom initializer to get truncated standard deviation thingy from paper
 		self.in_layer = self.add_weight(shape = (LATENT_ARRAY_SIZE, PROJECTION), initializer = 'random_normal', trainable = True)
-		self.in_layer = tf.expand_dims(self.in_layer, axis = 0)
+		#self.in_layer = tf.expand_dims(self.in_layer, axis = 0)
 		# Add attention module
 		self.attention = network_attention()
 		# Add transformer module
 		self.transformer = network_transformer()
 		# Build
-		super(Perceiver, self).build(input_shape)
+		#super(Perceiver, self).build(input_shape)
 
 	def call(self, to_encode):
 		# Attention input
-		f_data = pos_encoding(to_encode, BANDS, 10)
-		frequency_data = _fourier_encode(to_encode)
+		#frequency_data = pos_encoding(to_encode, BANDS, 10)
+		frequency_data = self.fourier_encoder(to_encode)
+		attention_in = [tf.expand_dims(self.in_layer, 0), frequency_data]
 		#print(f_data.shape)
 		#print(frequency_data)
-		attention_in = [self.in_layer, frequency_data]
-		for i in range(MODULES_NUM):
+		#attention_in = [self.in_layer, frequency_data]
+		for _ in range(MODULES_NUM):
 			#print("DDDDDDDDDDDDDDDDDDDDDDDDD")
 			latent = self.attention(attention_in)
 			#print("CCCCCCCCCCCCCCCCCCCCCCCCCCC")
-			query = self.transformer(latent)
+			latent = self.transformer(latent)
 			#print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
-			attention_in[0] = query
+			attention_in[0] = latent
 			#print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
-		out = tf.keras.layers.GlobalAveragePooling1D()(query)
+		out = tf.keras.layers.GlobalAveragePooling1D()(latent)
 		final = tf.keras.layers.Dense(1, activation='sigmoid')(out)
 		return final
 
 # ##### Run Training/Evaluation #####
 
 # Make the model using the perceiver class
-perceiver = Perceiver()
+#perceiver = Perceiver()
+
+IMG_SIZE = (IMG_HEIGHT, IMG_WIDTH) # image resize
+ROWS, COLS = IMG_SIZE
+TEST_PORTION = 5 # 1/n of test set to become real test set (the rest becomes validation)
+NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
+LR = 0.001 # Learning rate for optimizer
+WEIGHT_DECAY = 0.0001 # Weight decay for optimizer
+TRAIN_SPLIT = 0.8 # Portion for training set
+
+perceiver = Perceiver(data_size=ROWS*COLS,
+						lr=LR,
+						weight_decay=WEIGHT_DECAY,
+						epoch=EPOCHS)
 
 # Compile the model
 perceiver.compile(
 	optimizer = tfa.optimizers.LAMB(learning_rate=LEARNING_RATE, weight_decay_rate = 0.0002),
 	loss = tf.keras.losses.BinaryCrossentropy(),
-	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy"),
-	run_eagerly = True)
+	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy")
+)
  
 # Non-constant learning rate
 adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor = "loss", factor = 0.1, patience = 3)
 stop_learning = tf.keras.callbacks.EarlyStopping(monitor = "loss", patience = 15, restore_best_weights = True)
 
-print(train_dataset)
-print(test_dataset)
+#print(train_dataset)
+#print(test_dataset)
 
 # Perform model fit
-model_history = perceiver.fit(train_dataset, batch_size = BATCH_SIZE, epochs = EPOCHS, callbacks = [stop_learning, adjust_learning_rate])
+#model_history = perceiver.fit(train_dataset, batch_size = BATCH, epochs = EPOCHS)#, callbacks = [stop_learning, adjust_learning_rate])
+#model_history = perceiver.fit(xtrain, ytrain, batch_size = BATCH, epochs = EPOCHS)#, callbacks = [stop_learning, adjust_learning_rate])
+history = perceiver.train(
+                    train_set=(xtrain, ytrain),
+                    val_set=(X_val, y_val),
+                    test_set=(xtest, ytest),
+                    batch_size=BATCH)
+
 perceiver.summary()
 
-accuracy, top_5_accuracy = perceiver.evaluate(test_dataset)
-
+_, accuracy = perceiver.evaluate(xtest, ytest)
 print("Accuracy:", accuracy)
-print("Top 5 Accuracy:", top_5_accuracy)
+
