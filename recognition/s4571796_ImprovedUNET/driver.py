@@ -20,6 +20,7 @@ import os
 import glob
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 
@@ -167,6 +168,59 @@ def map_images(masks):
     masks = np.expand_dims(masks, axis=3)
 
     return masks
+
+def get_model(output_classes, height, width, input_classes):
+    """ Gets the imported model (Improved UNET) with specific parameters
+
+    Arguments:
+    output_classes: Number of features as Output
+    height: The height of each image
+    width: The width of each image
+    input_classes: Number of features as Input
+
+    Returns:
+    model: A UNET model with the specified parameters
+    """
+    return unet_model(num_channels=output_classes, image_height=height, image_width=width, image_channels=input_classes)
+
+def plot_graphs(history, epoch, type=None):
+    """ Given the history of the model, plot a graph for viewing.
+
+    Arguments:
+    history: The history of the model during training
+    epoch: Number of epochs
+    type: The graph to be plotted, i.e. Loss or Accuracy
+
+    Returns: 
+    plot: A plot of the type of graph specified displayed
+    """
+    # Define x-axis as Epochs
+    epochs = range(1, epoch+1)
+
+    # Plot loss graph
+    if type == "loss":
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
+        plt.plot(epochs, loss, 'g', label='Training loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+        plt.title('Training and Validation Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+
+    # Plot accuracy graph
+    elif type == "accuracy":
+        accuracy = history.history['accuracy']
+        val_accuracy = history.history['val_accuracy']
+        epochs = range(1, len(accuracy) + 1)
+        plt.plot(epochs, accuracy, 'g', label='Training Accuracy')
+        plt.plot(epochs, val_accuracy, 'b', label='Validation Accuracy')
+        plt.title('Training and Validation Accuracy')
+        plt.xlabel('Number of Epochs')
+        plt.ylabel('Accuracy')
+
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def dice_coef(y_true, y_pred):
     """ Returns the Dice Score for binary image segmentation
