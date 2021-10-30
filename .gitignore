@@ -131,3 +131,8 @@ dmypy.json
 mypy.ini
 
 
+
+/recognition/s4574278/dataset/ground_truth/*
+/recognition/s4574278/dataset/input/*
+/recognition/s4574278/dataset/*.zip
+/recognition/s4574278/note.md

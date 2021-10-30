@@ -1,0 +1,5 @@
+ssl_verify: true
+channels:
+  - defaults
+envs_dirs:
+  - /home/Student/envs

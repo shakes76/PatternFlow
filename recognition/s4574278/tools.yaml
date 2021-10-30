@@ -1,0 +1,13 @@
+name: ml
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - scikit-image
+  - seaborn
+  - tensorflow
+prefix: C:\Users\qians\miniconda3\envs\ml
