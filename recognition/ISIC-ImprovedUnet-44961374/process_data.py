@@ -35,7 +35,7 @@ def process_mask(mask, x, y):
     Returns:
         uint8 or uint16 tensor: decoded mask
     """
-    mask = decode_png(mask)
+    mask = decode_png(mask, channels=1)
     mask = resize(mask, (x, y))
     return mask
 

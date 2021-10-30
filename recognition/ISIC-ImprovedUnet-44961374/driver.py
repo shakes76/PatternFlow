@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt # for plotting images
 from data_loader import load_data # for loading the datasets
 from model import create_model # for creating the improved unet model
 
+
 print(tf. __version__) # check tf version
 print("GPUs in use: ", len(tf.config.list_physical_devices('GPU'))) # check if tf has access to GPU
 
@@ -27,8 +28,8 @@ def main():
     # training parametets
     EPOCHS = 2
     BATCH_SIZE = 16
-    improved_unet_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    history = improved_unet_model.fit(train_data, steps_per_epoch=BATCH_SIZE, epochs=EPOCHS, validation_data=val_data)
+
+
 
 # run main function
 if __name__ == "__main__":
