@@ -71,7 +71,7 @@ def upsampling_module(input_layer, filters):
     Returns:
         keras.layer: final layer of this module
     """
-    upsampling_layer = UpSampling2D(KERNEL_SIZE)(input_layer)
+    upsampling_layer = UpSampling2D((2,2))(input_layer)
     conv2d = create_conv2d(upsampling_layer, filters, KERNEL_SIZE, INIT_STRIDES)
     return conv2d
 
@@ -113,7 +113,6 @@ def create_model(output_channels):
     """
     ########## INPUT ##########
     input_layer = Input(shape=(IMAGE_ROWS, IMAGE_COLS, IMAGE_CHANNELS))
-
     ########## CONTRACTING PATH ##########
     # level 1
     conv_layer_1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
@@ -134,9 +133,8 @@ def create_model(output_channels):
     # base
     conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
     context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16) # context module
-    
     add_layer_5 = Add()([conv_layer_5, context_5]) # element-wise sum
-    print("XXXXXXXXXXXXXXXXXXXXXX", add_layer_5 )
+
     ########## EXPANSIVE PATH ##########
     # base
     upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8) # upsampling module
@@ -166,7 +164,6 @@ def create_model(output_channels):
 
     output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax")(add_layer_7)
     model = Model(input=input_layer, outputs=output)
-    print("Working so far")
     return model
 
 
