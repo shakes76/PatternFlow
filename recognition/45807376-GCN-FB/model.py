@@ -11,7 +11,6 @@ from sklearn.manifold import TSNE
 
 def load_data():
     """  Loads the preprocessed data from provided facebook.npz file.
-    
     Returns:
         Adjacency matrix, features, and labels
     """
@@ -33,97 +32,131 @@ def load_data():
     print("num of edges: "+ str(len(edges)/2))
     print("num of features: " + str(features.shape[1]))
 
-    A_tensorMatrix = tf.constant(A)
+    A_tensorMatrix = tf.constant(A) 
+    return features, A_tensorMatrix, labels
 
-class GCN(Layer):
-    """ Graph Convolution Layer
+def normalise_adj(adj_matrix):
+    """
+    Parameters:
+        adj_matrix: adjacency matrix to be normalised, in form of tensor
+    Returns:
+        normalised adjacency matrix
+    """
+    # get inverse degree matrix
+    total_neighbours = tf.math.reduce_sum(adj_matrix, 1)
+    inv_deg_matrix = tf.linalg.diag(tf.math.reciprocal(total_neighbours))
+    
+    # get half 
+    half_inv_deg_matrix = tf.math.sqrt(inv_deg_matrix)
+    D_half = tf.constant(half_inv_deg_matrix)
+    
+    # multiply D*D*A
+    A = tf.matmul(D_half, tf.matmul(D_half, adj_matrix))
+    return A
+
+class GCN_Layer(Layer):
+    """
+    A GCN layer.
+
+    *Input*
+    - Node features, with shale ([batch], num_nodes, num_features)
+    - 
+
+    *Output*
+    - 
+
+    Parameters:
+        num_channels: number of output channels
+        activation: activation function
+        use_bias: boolean, whether to add a bias vector to output
+        kernel_initialiser: intialiser for weights
+        bias_initialiser: initialiser for bias vector
+        kernel_regulariser: regularisation applied to weights
+        bias_regulariser: regularisation applied to bias vector
+        activity_regulariser: regularisation applied to output
 
     """
+    def __init__(self, num_channels, activation = None, 
+        use_bias = False, 
+        kernel_initialiser = 'glorot_uniform',
+        bias_initaliser = 'zeros',
+        kernel_regulariser = None,
+        bias_regulariser = None,
+        activity_regulariser = None):
 
-    def __init__(self, ):
-        super(GCN, self).__init__()
+        super(GCN_Layer, self).__init__()
+        self.num_channels = num_channels
 
     def build(self, input_shape):
-        return super().build(input_shape)
+        pass
 
     def call(self, inputs):
         pass
 
+    def config(self):
+        return {"channels": self.num_channels}
 
 class GCN_Model(Model):
     """
+    Graph Convolutional Network Model
     
-    """
-
-    def __init__(self, num_features, num_nodes, num_classes):
-        """
-        Creates a Graph Convolutional Network Model
-        Parameters:
-            num_features: number of features
-            num_nodes: number of nodes
-            num_classes: number of classes
-            channels1: number of channels in first layer
-            channels2: number of channels in second layer
-            dropout: dropout rate
-
-        Returns:
-            Multi-layer GCN Model
-        """
-        super(GCN_Model, self).__init__()
-        self.num_features = num_features
-        self.num_nodes = num_nodes
-        self.num_classes = num_classes
-
-
-        self.dense = Dense(4, activation = tf.nn.relu)
-        self.dense2 = Dense(5, activation= tf.nn.softmax)
-
-        self.dropout = Dropout(0.5)
-
-
-def train(num_epochs):
-    """
-    Train model
+    *INPUT*
+    - Node features, with shape = ([batch], num_nodes, num_nodes)
+    - Weighted adjacency matrix, with shape = ([batch], num_nodes, num_nodes)
+    
+    *OUTPUT*
+    - Softmax predictions, with shape = ([batch], num_nodes, num_nodes)
 
     Parameters:
-        num_epochs: number of epochs ie. iterations
-    
-    Returns:
+        num_labels: number of channels in output
+        num_channels: number of channels in first GCN Layer
+        dropout_rate: rate for Dropout Layers
+        kernel_regulariser: regularisation applied to weights
+        num_input_channels: number of input channels aka. node features
 
-    
     """
+    def __init__(self, num_labels, num_channels = 16, 
+        dropout_rate = 0.5, kernel_regulariser = None, num_input_channels = None):
+        
+        super(self).__init__()
 
-    for epoch in range(num_epochs):
+        self.num_labels = num_labels
+        self.num_channels = num_channels
+        self.dropout_rate = dropout_rate
+        self.kernel_regulariser = kernel_regulariser
+        self.num_input_channels = num_input_channels
 
-        # Train
+        # Inputs
+        x_input = Input((num_input_channels,), dtype = tf.float32)
+        filter_input = Input((None,), dtype = tf.float32, sparse = True)
 
+        # Create layers
+        self._dropoutL0 = Dropout(dropout_rate)(x_input)
+        self._gcnL0 = GCN_Layer(num_channels, activation = "relu", 
+            kernel_regulariser= kernel_regulariser)([self._dropoutL0,filter_input])
 
+        self._dropoutL1 = Dropout(dropout_rate)(self._gcnL0)
+        self._gcnL1 = GCN_Layer(num_labels, acitvation = "softmax")([self._dropoutL1, filter_input])
 
+        
 
+    def build(self):
+        self.layers.append(GCN_Layer)
+    
+    def accuracy(self):
+        pass
 
-        # Validate
+    def loss(self):
+        pass
 
+    def getconfig(self):
+        return dict(
+            num_labels = self.num_labels,
+            channels = self.num_channels,
+            activation = self.activation,
+            output_act = self.output_activation,
+            dropout_rate = self.dropout_rate,
+            num_input_channels = self.num_input_channels,
+        )
 
-        # Save
-
-
-
-
-
-
-if __name__ == '__main__':
-    # Load Data
-    load_data()
-
-    # Semi-supervised split -> 20:20:60
-
-
-    # Create GCN
-
-    # Train
-
-    # Validate
-
-    # Test
-
-    # Plot TSNE
+#if __name__ == '__main__':
