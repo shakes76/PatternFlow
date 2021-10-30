@@ -24,14 +24,19 @@ def load_data():
     return sp.csr_matrix(x), sp.csr_matrix(feature, dtype=np.float32), target
 
 def normalize_adj(adjacency):
+    """
+    Take the mean of the feature information of the neighbors.
+    """
     adjacency += sp.eye(adjacency.shape[0])
     degree = np.array(adjacency.sum(1))
     d_hat = sp.diags(np.power(degree, -0.5).flatten())
     return d_hat.dot(adjacency).dot(d_hat).tocoo()
 
 def normalize_features(features):
+    """
+    Take the mean of the feature information of the neighbors.
+    """
     return features / features.sum(1)
-
 
 adjacency, features, labels = load_data()
 encode_onehot = LabelBinarizer()
@@ -42,11 +47,14 @@ features = normalize_features(features)
 features = torch.FloatTensor(np.array(features))
 labels = torch.LongTensor(np.where(labels)[1])
 
+# Split the dataset.
 num_nodes = features.shape[0]
 train_mask = np.zeros(num_nodes, dtype=bool)
 val_mask = np.zeros(num_nodes, dtype=bool)
 test_mask = np.zeros(num_nodes, dtype=bool)
-train_mask[:140] = True
-val_mask[200:500] = True
-test_mask[500:1500] = True
-
+# train data
+train_mask[:10000] = True
+# valid data
+val_mask[10000:12000] = True
+# test data
+test_mask[12000:15000] = True
