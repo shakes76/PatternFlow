@@ -17,4 +17,5 @@ ModelArchitecture
 
 ![image](https://user-images.githubusercontent.com/93363361/139520459-27524030-6f50-430a-83bc-bbc698c41388.png)
 
-The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as the input of the network to convert the Object Detection problem into a Regression problem).
+The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as the input of the network to convert the Object Detection problem into a Regression problem). It is composed of 3 steps: Zoom image, pass the image through a fully convolutional neural network and flitering with maximum suppression (NMS).
+For the first step, an input image is first divided into S × S grids of equal size, and each grid is called a grid cell
