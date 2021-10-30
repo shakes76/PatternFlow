@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from Perceiver import Perceiver
+from matplotlib import pyplot as plt
 
 
 """
@@ -29,10 +30,23 @@ def load_data(image_directory, image_resize):
     return train_ds, val_ds, test_ds
 
 
+"""
+Plots the model accuracy over epochs
+"""
+def plot_history(history):
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('Accuracy over Epochs')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Training Loss', 'Validation Loss'], loc='upper left')
+    plt.show()
+
+
 if __name__ == '__main__':
     # Hyper parameters
-    num_classes = 2  # Left or Right
-    num_epochs = 3
+    num_classes = 2  # 2 Classes: Left or Right
+    num_epochs = 3  # 3 Appears to be enough to get over 90% test accuracy - more epochs leads to increased performance
     dropout_rate = 0.2  # Dropout rate for dense layers
     resized_image_size = 128  # We'll resize input images to this size.
     patch_size = 2  # Size of the patches to be extracted from the images.
@@ -52,7 +66,8 @@ if __name__ == '__main__':
                                      transformer_depth=transformer_depth, dense_units=dense_units, dropout_rate=dropout_rate,
                                      depth=depth, classifier_units=classifier_units)
     history = perceiver_classifier.compile_and_fit(train_ds, val_ds, num_epochs)
+    plot_history(history)
 
-    _, accuracy = perceiver_classifier.evaluate(train_ds, test_ds)
-    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+    _, accuracy = perceiver_classifier.evaluate(x=test_ds)
+    print("Test accuracy:", accuracy)
 

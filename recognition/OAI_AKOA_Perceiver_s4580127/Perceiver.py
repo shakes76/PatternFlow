@@ -65,7 +65,7 @@ class Perceiver(keras.Model):
 
         super(Perceiver, self).build(input_shape)
 
-    # Specifies the flow of data in the network when classifying images
+    # Ovveride the keras call method to specify the flow of data in the network when classifying images
     def call(self, inputs):
         # Extract and encode patches
         patches = self.patch_extractor(inputs)
@@ -87,6 +87,11 @@ class Perceiver(keras.Model):
         classification_logits = self.dense_classification(output)
         return classification_logits
 
+    """
+    Compiles the Perceiver to use the LAMB optimizer and a learning rate scheduler and sparse categorical cross entropy
+    loss. Then fits the model using the provided training and validation data - these should be a tensorflow dataset
+    object. The history of the training process is returned.
+    """
     def compile_and_fit(self, train_ds, val_ds, num_epochs):
         learning_rate = 0.001
         weight_decay = 0.0001
@@ -98,8 +103,7 @@ class Perceiver(keras.Model):
         reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.25, patience=3)
 
         # Fit the model
-        history = perceiver_classifier.fit(x=train_ds, epochs=num_epochs, validation_data=val_ds,
-                                           callbacks=[reduce_lr])
+        history = self.fit(x=train_ds, epochs=num_epochs, validation_data=val_ds, callbacks=[reduce_lr])
         return history
 
     """
