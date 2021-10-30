@@ -1,6 +1,12 @@
 # Improved UNet : Segment the ISICs data set with the Improved UNet
 The problem solved by this report is the binary segmentation of the ISICs melanoma data set. Divided into healthy and unhealthy.
 
+Student Number: 45464948
+
+Student Name: JINGYI LI
+
+Course Number: COMP3710
+
 ## Algorithm
 U-Net is a convolutional neural network. Unet consists of two parts. The first part is feature extraction. The second part is the up-sampling part. In other words, encoder and decoder.
 ![Improved UNet](https://github.com/unicorn10086/PatternFlow/blob/topic-recognition/recognition/45464948-ISICs-UNet/images/improvedunet.png)
