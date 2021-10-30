@@ -12,9 +12,9 @@ image with a corresponding class. For example an image of bike riders might
 have 3 classes: humans, bikes and background. Semantic segmentation is a tedious
 and time-consuming task to undertake manually. Manually segmenting 3D images
 requires slice by slice annotation. The goal of this u-net is to automatically
-annotate 3D images after training. 
+annotate 3D images after training.
 
-# todo add imgaes here
+# todo add imgaes here!
 
 
 ## Data download and preparation
@@ -42,7 +42,7 @@ in respective directories.
         * semantic_MRs_anon 
         * semantic_labels_anon 
     
-There were 211 data images and 211 matching labels. These related to 38
+There were 211 data images with matching labels. These related to 38
 patients with each having from 1 to 8 scans. As multiple scans of a given 
 patient were not expected to show large variations it was appropriate that 
 separation into train, validation and test groupings took patients into 
@@ -64,83 +64,102 @@ be similar. This file was removed.
 The data was provided in NIfTI format (nii.gz) with orientation:('L', 'P', 'S').
 
 ### Data preparation:
-As per ref[2], the data was normalised (mean = 0, stdev=1). Also intensity 
-normalisation, which corrects for gain field, an intra-volume 
-inhomogeneity caused by the image acquisition process and variations of tissue
-penetration, should have been undertaken [2,5,6] . 
+As per ref[2], the data was normalised (mean = 0, stdev=1). 
 
-N4ITK was to be included in the normalisation to correct for gain field but
-couldn't be successfully applied in time. It is expected that the prediction 
-would be improved by its inclusion.
+N4ITK intensity normalisation, which corrects for gain field, an intra-volume 
+inhomogeneity caused by the image acquisition process and variations of tissue
+penetration, was planned to be undertaken, but it couldn't be successfully 
+included in time[2,5,6]. It is expected that the prediction would be improved by 
+its inclusion.
 
 ### Data Augmentation
 While there are 157 training images these scans are only of 27 individuals. Data
-augmentation using publicly available code by Siyu Liu [7] was undertaken
-separately with the images added to the training directory.
+augmentation using publicly available code by Siyu Liu [7] was also planned to 
+be undertaken. 
 
-## Description of the algorithm
+### Description of the algorithm
 The data set is sufficiently large to require the images be provided to the 
 model in batches to avoid out-of-resources errors. Keras.utils.Sequence
-class has been used to create generators to provide image to the model 
+class has been used to create generators to provide images to the model 
 in batch sizes of 1.
 
 If the model is training or validating the generator returns both 
-an image and a label to the model. If the model is predicting the
+an image and a label to the model. If the model is predicting, the
 generator only returns the image. The prediction output is then
 compared to its matching label. 
 
 
-## Description of the model
+### Description of the model
 
-As mentioned above the model is designed on that described in [1]. with several 
-modifications. Relu activation was included in the Conv3D layer
-followed by BatchNormalization. The paper describes these as occuring in the
+As mentioned above the model is designed on that described in [1], with several 
+modifications. Relu activation was included in the Conv3D layer followed by 
+BatchNormalization. The paper describes these as occurring in the
 reverse order. BatchNormalization was only included after the
 first Conv3D in each set. OOM errors were experienced and reducing the 
 number of BatchNormalizations seemed to help, although more testing
 is required to support this.
 
 In addition, the number of filters were reduced by a factor of 4 to 
-stop OOM errors. That is the first layer begins with 8 filters rather than
+limit OOM errors. That is the first layer begins with 8 filters rather than
 32 and scales from there. 
 
 Kernel_initializer was he_normal. MaxPooling after each set of 2 conv3D 
 layers on the compression side with Conv3DTranspose (strides=(2,2,2)) on the
 expansion side. There were 3 data pass-throughs with Concatenate between
-identical levels. 
+equivalent levels. 
 
 
 ![](Images/unet3d.png)
 
 
+## Training parameters
+Adam was used as the optimiser with no modification to the default training 
+rate. Loss was categorical_crossentropy as there were 6 classes, and labels
+were provided after one_hot encoding. Metrics was set to accuracy. Plots of 
+training loss and accuracy are below.
+
 
 ## Dice coefficient - DSC
 The target was to have a Dice score exceeding 0.7 for each class. 
 
-The DSC is poor at low epochs, particularly for the prostate and rectum. These 
-improve at higher epochs. The target DSC is well exceeded by 50 epochs. Run time 
-on the cluster is around 11 hrs for 50 epochs. 
+The DSC is poor at low epochs, particularly for the prostate and rectum (~e-7), 
+and improve at higher epochs. The target DSC is well exceeded by 50 epochs 
+with run time on the cluster at around 11 hrs. Loss and accuracy metrics
+stabilize around 30 epochs.
 
 ![](Images/DSC_score_50_epochs.png)
+ 
+## Predicted vs test labels
 
-### training param, 
+
+| Class | Predicted | Label | 
+| ___ | ___ | ___ | 
+| 0 Background |  a | b | 
+| 1 Body |  a | b | 
+| 2 Bones |  a | b | 
+| 3 Bladder | a | b | 
+| 4 Rectum | a | b | 
+| 5 Prostate | a | b | 
 
 
+# CHANGE THIS IMAGE, AND ITS LOCATION!
 
 ![](Images/slice.png)
 ##  
 #### and again
 
 ## Future work
-Work I would like follow up on to extend this project include:
+Work I would like follow up on to extend this project to improve results and 
+reduce the training time include the following:
 * Data augmentation to increase the training sample size. Siyu Lui provides some
 methods for augmenting 3D data [7].
-
 * Add N4ITK normalisation to lessen field bias.
-* Add DSC loss function to model.compile() for one of the classes 
+* Add DSC loss function to model.compile() for one or a number of the classes 
     with poorer performing DSC scores (ie prostate or rectum), to 
-    investigate if this would improve overall performance. 
+    investigate if this would improve overall performance
 * Save and re-use weights
+* Adjust for class bias, where the size of background and body greatly exceed 
+that of the prostate and rectum. 
 
 ## Dependencies & resources
 * Python
@@ -149,8 +168,9 @@ methods for augmenting 3D data [7].
 * Numpy 
 * Nibabel
 
-The model only ran on Goliath starting with 8 filters on the c4130-2s. It would
-report out of resources errors on c4130 and c4130-s.
+The model only ran on Goliath starting with 8 filters on the c4130-2s at times, 
+but not consistently. It would report OOM errors on a fair number of calls, and
+always on the c4130 and c4130-s. It ran on Rangpur on vgpu20 but not vgpu10. 
 
 # References
 <a id="1">[1]</a>
