@@ -95,15 +95,15 @@ class ResidualBlock(tf.keras.Model):
         Res: shape post con2 (10, 256, 256, 256)
         Res: shape post add (10, 256, 256, 256)
     """
-    def __init__(self, inputs=None):
+    def __init__(self, filters=256, inputs=None):
         super(ResidualBlock, self).__init__(inputs)
         self.relu = tf.keras.layers.ReLU()
 
-        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(3,3), 
+        self.conv1 = tf.keras.layers.Conv2D(filters=filters, kernel_size=(3,3), 
                             strides=(1,1), padding='same',
                             activation='relu', kernel_initializer='he_uniform')
         # is the activation enough or do we need another relu and activation none
-        self.conv2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(1,1), 
+        self.conv2 = tf.keras.layers.Conv2D(filters=filters, kernel_size=(1,1), 
                             strides=(1,1), padding='same',
                             activation=None, kernel_initializer='he_uniform')
 
@@ -128,17 +128,17 @@ class Encoder(tf.keras.Model):
     Enc: shape post resid 2 (10, 62, 62, 256)
     """
     def __init__(self, inputs=None):
-        super(Encoder, self).__init__(inputs)
+        super(Encoder, self).__init__(inputs, name="encoder")
         # Q: no activation? probably yes but not explicitly mentioned in paper
-        self.conv1 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), padding='same',
+        self.conv1 = tf.keras.layers.Conv2D(filters=32, kernel_size=(4,4), strides=(2,2), padding='same',
                             activation='relu', kernel_initializer='he_uniform')
         # activation in resdiaul?
-        self.conv2 = tf.keras.layers.Conv2D(filters=256, kernel_size=(4,4), strides=(2,2), padding='same',
+        self.conv2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(4,4), strides=(2,2), padding='same',
                             activation=None, kernel_initializer='he_uniform')
 
-        self.resid1 = ResidualBlock()
+        self.resid1 = ResidualBlock(filters=16)
 
-        self.resid2 = ResidualBlock()
+        self.resid2 = ResidualBlock(filters=16)
 
     def call(self, X):
         X = self.conv1(X)
@@ -162,16 +162,16 @@ class Decoder(tf.keras.Model):
     fixed
     """
     def __init__(self, inputs=None):
-        super(Decoder, self).__init__(inputs)
+        super(Decoder, self).__init__(inputs, name="decoder")
 
-        self.resid1 = ResidualBlock()
-        self.resid2 = ResidualBlock()
+        self.resid1 = ResidualBlock(16)
+        self.resid2 = ResidualBlock(16)
 
-        self.conv_t_1 = tf.keras.layers.Conv2DTranspose(filters=256, padding='same',
-                            kernel_size=(4,4), strides=(2,2), activation='relu')
+        self.conv_t_1 = tf.keras.layers.Conv2DTranspose(filters=64, padding='same',
+                            kernel_size=(4,4), strides=(2,2), activation='relu', name="s")
 
         self.conv_t_2 = tf.keras.layers.Conv2DTranspose(filters=1, padding='same',
-                            kernel_size=(4,4), strides=(2,2), activation=None)
+                            kernel_size=(4,4), strides=(2,2), activation=None, name="f")
 
     def call(self, X):
         X = self.resid1(X)
@@ -222,7 +222,7 @@ class VQ(tf.keras.Model):
 
         # from paper, need to make sure encoder commits to an embedding so output
         # does not grow. 
-        self.commitment_loss = 0.1 # TODO: i picked this randomly
+        self.commitment_loss = 0.25 
         self.input_dims = indim
 
     def call(self, X):
@@ -315,7 +315,7 @@ class VQVAE(tf.keras.Model):
         self.decoder = Decoder()
 
         # VQ
-        self.vq = VQ(256, 512)
+        self.vq = VQ(64, 16)
 
     def call(self, X):
         latent = self.encoder(X)
@@ -329,7 +329,6 @@ class VQVAE(tf.keras.Model):
     
     def get_decoder(self):
         return self.decoder
-
     
     def get_vq(self):
         return self.vq
@@ -378,10 +377,10 @@ def maskA(shape):
     # TODO change
     mask = tf.zeros(shape).numpy()
     half_way = shape[0]//2
-    mask[:half_way, :,:,:] = 1.0
+    mask[:half_way, ...] = 1.0
     # on middle line, make those to the left 1
     # kenrle is square so same halfway, up to halfway = 1
-    mask[half_way, :half_way,:,:] = 1.0
+    mask[half_way, :half_way, ...] = 1.0
     return mask
 
 def maskB(shape):
@@ -392,9 +391,9 @@ def maskB(shape):
     """
     mask = tf.zeros(shape).numpy()
     half_way = shape[0]//2
-    mask[:half_way,:,:,:] = 1.0
+    mask[:half_way, ...] = 1.0
     # cnter also 1
-    mask[half_way, :half_way+1,:,:] = 1.0
+    mask[half_way, :half_way+1, ...] = 1.0
     return mask
 
 class PixelCNNResidual(tf.keras.Model):
@@ -501,7 +500,7 @@ class PixelCNN(tf.keras.Model):
         self.masked_conv_3 = MaskedConv2D((1,1),"B")
 
         # output layer
-        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=(1,1), 
+        self.conv = tf.keras.layers.Conv2D(filters=128, kernel_size=(1,1), 
                             strides=(1,1), padding='same',
                             activation='sigmoid', kernel_initializer='he_uniform')
 
