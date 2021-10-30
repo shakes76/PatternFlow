@@ -29,7 +29,7 @@ def fourier_encode(x, max_freq, num_bands=4):
     2. Control the number of frequency bands in position encoding independent of the cutoff frequency.
     3. Uniformly sample all frequencies up to a target resolution.
 
-    Arguments:
+    Args:
         x - input
         max_freq - maximmum frequency
         num_bands - size of constructed tensor
@@ -62,7 +62,7 @@ class PreNorm(nn.Module):
     """
     A wrapper used to normalize values before each procedure using LayerNorm.
 
-    Arguments:
+    Args:
         dim - input dimension.
         fn - Layer to be applied post normalization.
         context_dim - Normalizes the context dimension (of fn) if available. Used for cross attention layers.
@@ -83,7 +83,7 @@ class PreNorm(nn.Module):
         x = self.norm(x)
 
         if self.norm_context is not None:
-            context = kwargs["context"]
+            context = kwargs["x_kv"]
             normed_context = self.norm_context(context)
             kwargs.update(context=normed_context)
 
@@ -100,7 +100,7 @@ class Attention(nn.Module):
 
     See https://arxiv.org/abs/1706.03762 for more details.
 
-    Arguments:
+    Args:
         q_channels - Total dimension of model.
         kv_channels - Total number of features of keys and values.
         num_heads - Number of parallel attention heads.
@@ -130,6 +130,7 @@ class Attention(nn.Module):
             attn_mask=attend_mask,
         )
         return attn_output
+
 
 class SelfAttention(nn.Module):
     """
@@ -173,10 +174,113 @@ class CrossAttention(nn.Module):
     def __init__(self, q_channels, kv_channels, num_heads=8, dropout=0.0):
         super().__init__()
         self.attention = PreNorm(
-            num_channels, Attention(num_channels, num_channels, num_heads, dropout)
+            q_channels,
+            Attention(num_channels, num_channels, num_heads, dropout),
+            context_dim=kv_channels,
         )
 
-    def forward(self, x, key_padding_mask=None, attn_mask=None):
+    def forward(self, x_q, x_kv, key_padding_mask=None, attn_mask=None):
         return self.attention(
             x, x, key_padding_mask=key_padding_mask, attn_mask=attn_mask
         )
+
+
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim=-1)
+        return x * F.gelu(gates)
+
+
+class MLP(nn.Module):
+    def __init__(self, num_channels, dropout=0.0):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.LayerNorm(num_channels),
+            nn.Linear(num_channels, num_channels),
+            GEGLU(),
+            nn.Dropout(dropout),
+            nn.Linear(num_channels, num_channels),
+        )
+
+
+class Perceiver(nn.Module):
+    """
+        A scalable, fully attentional architecture.
+        Note that data has to be pre-fourier encoded or it will not work.
+
+        Args:
+            depth - The depth of the network. See code for more information.
+            num_channels - Number of channels.
+            num_latents - Number of latents.
+            latent_dim - Latent dimension.
+            cross_heads - Number of heads for cross attention.
+            latent_heads - Number of heads for self attention.
+            num_classes - Output number of classes.
+            attn_dropout - Attention dropout probability.
+            ff_dropout - MLP dropout probability.
+        Returns:
+            Perceiver layer
+    """
+
+    def __init__(
+        self,
+        depth,
+        num_channels,
+        num_latents,
+        latent_dim,
+        cross_heads=1,
+        latent_heads=8,
+        num_classes=1000,
+        attn_dropout=0.0,
+        ff_dropout=0.0,
+    ):
+        super().__init__()
+        self.depth = depth
+        # Initial latent vectorss
+        self.latents = nn.Parameter(torch.randn(num_latents, latent_dim))
+
+        cross_attn_layer = lambda: CrossAttention(
+            num_latents, input_channels, cross_heads, attn_dropout
+        )
+        cross_ff_layer = lambda: MLP(num_latents, ff_dropout)
+        latent_attn_layer = lambda: SelfAttention(
+            num_channels, latent_heads, attn_dropout
+        )
+        latent_ff_layer = lambda: MLP(num_latents, ff_dropout)
+
+        # Iteratively build the architecture based on params
+        # Depth * (Cross Attention + num_self_per_cross * Self Attention)
+        self.layers = nn.ModuleList([])
+        for i in range(depth):
+            self_attns = nn.ModuleList([])
+
+            # Construct self attention block
+            for _ in range(num_self_per_cross):
+                self_attns.append(
+                    nn.ModuleList([latent_attn_layer(), latent_ff_layer()])
+                )
+
+            # Construct one perceiver block
+            self.layers.append(
+                nn.Modulelist([cross_attn_layer(), cross_ff_layer(), self_attns])
+            )
+
+        self.to_logits = nn.Sequential(
+            nn.LayerNorm(latent_dim),
+            nn.Linear(latent_dim, num_classes),
+        )
+
+        def forward(self, data, pad_mask=None):
+            b, *axis, _, device = *data.shape, data.device
+
+            # TODO Fourier encode, possibly preprocess data prior to sending to perceiver.
+
+            for cross_attn, cross_ff, self_attns in self.layers:
+                x = cross_attn(x, context=data, mask=mask) + x
+                x = cross_ff(x) + x
+
+                for self_attn, self_ff in self_attns:
+                    x = self_attn(x) + x
+                    x = self_ff(x) + x
+
+            return self.to_logits(x)
