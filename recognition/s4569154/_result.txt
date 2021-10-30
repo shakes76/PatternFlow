@@ -1,0 +1,1501 @@
+net.optimized_memory = 0 
+mini_batch = 1, batch = 16, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+
+ seen 64, trained: 614 K-images (9 Kilo-batches_64) 
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012941.jpg: Predicted in 92.387000 milli-seconds.
+lesions: 100%	(left_x: 1324   top_y: 1018   width: 1085   height: 1006)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015223.jpg: Predicted in 92.320000 milli-seconds.
+lesions: 98%	(left_x: 2237   top_y: 1652   width: 1406   height: 1492)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015967.jpg: Predicted in 92.034000 milli-seconds.
+lesions: 100%	(left_x:  876   top_y:  309   width: 1261   height: 1301)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015008.jpg: Predicted in 92.434000 milli-seconds.
+lesions: 100%	(left_x:  107   top_y: -128   width: 6361   height: 4587)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015125.jpg: Predicted in 91.939000 milli-seconds.
+lesions: 100%	(left_x: 1950   top_y: 1407   width: 2901   height: 2344)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015057.jpg: Predicted in 91.764000 milli-seconds.
+lesions: 100%	(left_x: 1253   top_y:   35   width: 3511   height: 3464)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013809.jpg: Predicted in 92.143000 milli-seconds.
+lesions: 96%	(left_x: 1289   top_y:  484   width: 1655   height: 2192)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015142.jpg: Predicted in 92.396000 milli-seconds.
+lesions: 99%	(left_x: 1331   top_y:  -52   width: 4131   height: 4066)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015563.jpg: Predicted in 92.404000 milli-seconds.
+lesions: 100%	(left_x: 2628   top_y: 1900   width: 1811   height: 1122)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013271.jpg: Predicted in 92.118000 milli-seconds.
+lesions: 99%	(left_x: 1887   top_y: 1025   width:  875   height:  653)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016042.jpg: Predicted in 92.388000 milli-seconds.
+lesions: 94%	(left_x: 1810   top_y: 1065   width:  813   height:  628)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015232.jpg: Predicted in 92.179000 milli-seconds.
+lesions: 99%	(left_x:  961   top_y:  711   width: 3822   height: 3238)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016046.jpg: Predicted in 92.366000 milli-seconds.
+lesions: 99%	(left_x: 1279   top_y:  576   width:  527   height:  707)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014489.jpg: Predicted in 91.983000 milli-seconds.
+lesions: 100%	(left_x:  477   top_y:   72   width: 3871   height: 2785)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014677.jpg: Predicted in 92.112000 milli-seconds.
+lesions: 99%	(left_x: 1837   top_y:  200   width: 2648   height: 2904)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014319.jpg: Predicted in 92.140000 milli-seconds.
+lesions: 90%	(left_x: 1525   top_y: 1124   width: 1008   height:  869)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016024.jpg: Predicted in 92.462000 milli-seconds.
+lesions: 99%	(left_x: 1449   top_y:  797   width:  909   height: 1264)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013374.jpg: Predicted in 91.984000 milli-seconds.
+lesions: 100%	(left_x:  529   top_y:  -49   width: 3338   height: 2654)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014619.jpg: Predicted in 92.553000 milli-seconds.
+lesions: 98%	(left_x: 1135   top_y:  756   width:  666   height:  638)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013767.jpg: Predicted in 92.109000 milli-seconds.
+lesions: 99%	(left_x:  875   top_y:  178   width: 2310   height: 2270)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015973.jpg: Predicted in 92.301000 milli-seconds.
+lesions: 100%	(left_x:  276   top_y:  138   width:  528   height:  460)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013739.jpg: Predicted in 92.152000 milli-seconds.
+lesions: 88%	(left_x: 1073   top_y:  581   width:  685   height:  906)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015283.jpg: Predicted in 92.672000 milli-seconds.
+lesions: 100%	(left_x: 1111   top_y:  690   width: 4711   height: 3497)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015150.jpg: Predicted in 92.181000 milli-seconds.
+lesions: 99%	(left_x: 1311   top_y:  105   width: 3876   height: 3956)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014768.jpg: Predicted in 92.365000 milli-seconds.
+lesions: 99%	(left_x: 2565   top_y: 1086   width: 1981   height: 2214)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012152.jpg: Predicted in 92.215000 milli-seconds.
+lesions: 97%	(left_x: 1352   top_y:  432   width:  599   height:  855)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012258.jpg: Predicted in 92.441000 milli-seconds.
+lesions: 99%	(left_x: 2091   top_y: 1206   width:  855   height:  940)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015160.jpg: Predicted in 92.392000 milli-seconds.
+lesions: 100%	(left_x: 1326   top_y:  432   width: 3949   height: 3266)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014729.jpg: Predicted in 92.485000 milli-seconds.
+lesions: 100%	(left_x:  774   top_y:   -5   width: 4840   height: 4281)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016008.jpg: Predicted in 91.820000 milli-seconds.
+lesions: 92%	(left_x: 1015   top_y:  759   width: 1195   height: 1822)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015990.jpg: Predicted in 91.836000 milli-seconds.
+lesions: 100%	(left_x:  992   top_y:  714   width:  963   height:  621)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015021.jpg: Predicted in 92.315000 milli-seconds.
+lesions: 99%	(left_x: 2153   top_y:  992   width: 3013   height: 3022)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015593.jpg: Predicted in 91.799000 milli-seconds.
+lesions: 100%	(left_x: 1196   top_y:  740   width: 3902   height: 2936)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012358.jpg: Predicted in 91.861000 milli-seconds.
+lesions: 99%	(left_x: 1186   top_y:  905   width: 1094   height:  633)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013600.jpg: Predicted in 92.285000 milli-seconds.
+lesions: 100%	(left_x: 1454   top_y: 1066   width: 1530   height:  953)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014634.jpg: Predicted in 92.124000 milli-seconds.
+lesions: 99%	(left_x:  816   top_y:   94   width: 1003   height: 1521)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015455.jpg: Predicted in 92.113000 milli-seconds.
+lesions: 97%	(left_x:  802   top_y:  727   width: 4175   height: 2725)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013794.jpg: Predicted in 92.318000 milli-seconds.
+lesions: 99%	(left_x: 1181   top_y:  685   width:  822   height:  490)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013636.jpg: Predicted in 92.731000 milli-seconds.
+lesions: 99%	(left_x: 1203   top_y:  147   width: 2156   height: 2474)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014883.jpg: Predicted in 91.569000 milli-seconds.
+lesions: 99%	(left_x: 1352   top_y:  358   width: 4338   height: 4225)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014255.jpg: Predicted in 92.397000 milli-seconds.
+lesions: 99%	(left_x:  923   top_y:  621   width: 2597   height: 2032)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015355.jpg: Predicted in 92.475000 milli-seconds.
+lesions: 100%	(left_x: 1855   top_y: 1289   width: 2843   height: 1243)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014921.jpg: Predicted in 92.479000 milli-seconds.
+lesions: 100%	(left_x: 1591   top_y:  781   width: 3432   height: 3336)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015968.jpg: Predicted in 91.362000 milli-seconds.
+lesions: 82%	(left_x: 1197   top_y:  548   width:  783   height:  892)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015251.jpg: Predicted in 92.905000 milli-seconds.
+lesions: 87%	(left_x: 3828   top_y: 1816   width:  696   height: 1320)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012375.jpg: Predicted in 92.155000 milli-seconds.
+lesions: 95%	(left_x:  511   top_y:   77   width: 2071   height: 1743)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014586.jpg: Predicted in 92.392000 milli-seconds.
+lesions: 99%	(left_x: 1688   top_y:  409   width: 2285   height: 2302)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015614.jpg: Predicted in 92.274000 milli-seconds.
+lesions: 99%	(left_x: 2125   top_y: 1763   width: 2614   height: 1775)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015363.jpg: Predicted in 92.131000 milli-seconds.
+lesions: 100%	(left_x:  560   top_y:   51   width: 4657   height: 4268)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015254.jpg: Predicted in 92.441000 milli-seconds.
+lesions: 92%	(left_x: 1963   top_y:  280   width: 3108   height: 2993)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016003.jpg: Predicted in 92.140000 milli-seconds.
+lesions: 98%	(left_x: 1225   top_y:  739   width:  517   height:  539)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014961.jpg: Predicted in 92.270000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014392.jpg: Predicted in 92.506000 milli-seconds.
+lesions: 100%	(left_x: 1308   top_y:  351   width: 1770   height: 2227)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012136.jpg: Predicted in 92.806000 milli-seconds.
+lesions: 100%	(left_x:  247   top_y:  245   width: 2529   height: 1738)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015418.jpg: Predicted in 92.122000 milli-seconds.
+lesions: 99%	(left_x: 1192   top_y: 1148   width: 4533   height: 2012)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012432.jpg: Predicted in 92.515000 milli-seconds.
+lesions: 100%	(left_x: 1016   top_y:  382   width: 1141   height: 1153)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014059.jpg: Predicted in 91.861000 milli-seconds.
+lesions: 99%	(left_x: 1615   top_y: 1438   width: 1087   height:  641)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015180.jpg: Predicted in 92.606000 milli-seconds.
+lesions: 93%	(left_x:  556   top_y:  873   width: 4183   height: 2574)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012837.jpg: Predicted in 92.710000 milli-seconds.
+lesions: 97%	(left_x:   99   top_y: -162   width: 4121   height: 2870)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014974.jpg: Predicted in 92.100000 milli-seconds.
+lesions: 100%	(left_x: 1934   top_y: 1292   width: 2624   height: 2635)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015978.jpg: Predicted in 92.444000 milli-seconds.
+lesions: 97%	(left_x: 1642   top_y:  653   width:  633   height:  632)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015274.jpg: Predicted in 92.262000 milli-seconds.
+lesions: 100%	(left_x:  272   top_y: -217   width: 6164   height: 4841)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015958.jpg: Predicted in 92.203000 milli-seconds.
+lesions: 94%	(left_x: 1396   top_y: 1009   width:  893   height:  622)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014629.jpg: Predicted in 92.877000 milli-seconds.
+lesions: 87%	(left_x:  750   top_y:  575   width: 1206   height:  999)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015026.jpg: Predicted in 91.883000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016054.jpg: Predicted in 92.581000 milli-seconds.
+lesions: 100%	(left_x: 1851   top_y: 1146   width: 1043   height: 1258)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015386.jpg: Predicted in 92.368000 milli-seconds.
+lesions: 99%	(left_x: 1357   top_y:  195   width: 4162   height: 3566)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015941.jpg: Predicted in 91.328000 milli-seconds.
+lesions: 100%	(left_x: 1115   top_y:  756   width:  533   height:  376)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013987.jpg: Predicted in 91.934000 milli-seconds.
+lesions: 100%	(left_x: 1018   top_y:  655   width:  887   height:  796)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013472.jpg: Predicted in 92.922000 milli-seconds.
+lesions: 100%	(left_x: 1488   top_y: 1311   width: 1350   height:  704)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014103.jpg: Predicted in 92.194000 milli-seconds.
+lesions: 98%	(left_x: 1470   top_y:  447   width: 1320   height: 1937)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015046.jpg: Predicted in 92.646000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013073.jpg: Predicted in 92.836000 milli-seconds.
+lesions: 94%	(left_x:  160   top_y:  -28   width: 2328   height: 2004)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014703.jpg: Predicted in 92.118000 milli-seconds.
+lesions: 97%	(left_x: -368   top_y:  126   width: 6454   height: 4076)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015360.jpg: Predicted in 92.183000 milli-seconds.
+lesions: 94%	(left_x:  854   top_y: 1216   width: 5279   height: 2197)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015544.jpg: Predicted in 92.182000 milli-seconds.
+lesions: 100%	(left_x: 2801   top_y:  172   width: 2146   height: 4110)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013565.jpg: Predicted in 92.298000 milli-seconds.
+lesions: 91%	(left_x: 1844   top_y: 1196   width:  748   height:  587)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015035.jpg: Predicted in 92.205000 milli-seconds.
+lesions: 100%	(left_x: 2620   top_y: 1748   width: 1077   height: 1059)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015946.jpg: Predicted in 92.569000 milli-seconds.
+lesions: 86%	(left_x: 1313   top_y:  663   width:  373   height:  545)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014959.jpg: Predicted in 93.324000 milli-seconds.
+lesions: 99%	(left_x: 1466   top_y: 1478   width: 3179   height: 2212)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012989.jpg: Predicted in 91.520000 milli-seconds.
+lesions: 97%	(left_x: 1378   top_y:  886   width:  449   height:  415)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013159.jpg: Predicted in 92.153000 milli-seconds.
+lesions: 98%	(left_x: 1618   top_y:  610   width: 1040   height: 1361)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015201.jpg: Predicted in 92.146000 milli-seconds.
+lesions: 57%	(left_x: 2257   top_y:  856   width:   18   height:   13)
+lesions: 57%	(left_x: 2264   top_y:  818   width:   26   height:   18)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015149.jpg: Predicted in 91.916000 milli-seconds.
+lesions: 99%	(left_x: 1234   top_y:  -39   width: 4266   height: 4214)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015129.jpg: Predicted in 92.063000 milli-seconds.
+lesions: 100%	(left_x: 1728   top_y:  805   width: 2935   height: 2667)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014725.jpg: Predicted in 92.646000 milli-seconds.
+lesions: 100%	(left_x: 1146   top_y:  449   width: 4495   height: 3408)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014652.jpg: Predicted in 92.552000 milli-seconds.
+lesions: 100%	(left_x:  194   top_y:   86   width: 1935   height: 1757)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014992.jpg: Predicted in 92.171000 milli-seconds.
+lesions: 100%	(left_x: 1915   top_y:  705   width: 3580   height: 3048)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015031.jpg: Predicted in 92.439000 milli-seconds.
+lesions: 100%	(left_x: 1270   top_y:   81   width: 4810   height: 2792)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012086.jpg: Predicted in 92.606000 milli-seconds.
+lesions: 100%	(left_x:  734   top_y:   34   width: 2889   height: 2680)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015013.jpg: Predicted in 92.953000 milli-seconds.
+lesions: 100%	(left_x: 1138   top_y:   16   width: 4675   height: 4317)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015011.jpg: Predicted in 92.408000 milli-seconds.
+lesions: 100%	(left_x:  823   top_y:  -59   width: 5335   height: 4370)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015466.jpg: Predicted in 92.400000 milli-seconds.
+lesions: 100%	(left_x:  290   top_y:  102   width: 5302   height: 4100)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012147.jpg: Predicted in 92.284000 milli-seconds.
+lesions: 94%	(left_x: 1269   top_y:  577   width:  545   height:  610)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012786.jpg: Predicted in 92.746000 milli-seconds.
+lesions: 100%	(left_x:  626   top_y:  463   width: 1564   height: 1382)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014221.jpg: Predicted in 92.333000 milli-seconds.
+lesions: 98%	(left_x: 1016   top_y:   57   width: 2240   height: 2446)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015179.jpg: Predicted in 92.722000 milli-seconds.
+lesions: 97%	(left_x: 1092   top_y:   -3   width: 3725   height: 3842)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014879.jpg: Predicted in 92.691000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012272.jpg: Predicted in 91.992000 milli-seconds.
+lesions: 100%	(left_x: 1065   top_y:  229   width: 1582   height: 2415)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016000.jpg: Predicted in 92.059000 milli-seconds.
+lesions: 100%	(left_x: 1636   top_y:  948   width:  716   height:  604)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015056.jpg: Predicted in 92.585000 milli-seconds.
+lesions: 97%	(left_x:  379   top_y:   19   width: 5172   height: 4112)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015994.jpg: Predicted in 91.626000 milli-seconds.
+lesions: 72%	(left_x: 1690   top_y: 1004   width:  476   height:  417)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014219.jpg: Predicted in 92.445000 milli-seconds.
+lesions: 95%	(left_x: 1563   top_y:  784   width: 1454   height: 1638)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014844.jpg: Predicted in 92.952000 milli-seconds.
+lesions: 89%	(left_x: 2144   top_y:  929   width: 2686   height: 2324)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013911.jpg: Predicted in 92.165000 milli-seconds.
+lesions: 95%	(left_x: 1267   top_y:  736   width:  492   height:  506)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015273.jpg: Predicted in 91.975000 milli-seconds.
+lesions: 99%	(left_x: 2200   top_y: 1820   width: 1610   height: 1215)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014687.jpg: Predicted in 92.610000 milli-seconds.
+lesions: 98%	(left_x: 2059   top_y:  200   width: 3489   height: 3485)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015636.jpg: Predicted in 92.186000 milli-seconds.
+lesions: 100%	(left_x: 1492   top_y:  -47   width: 4067   height: 4503)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015411.jpg: Predicted in 92.417000 milli-seconds.
+lesions: 99%	(left_x: 2192   top_y: 1807   width: 2066   height: 1919)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015404.jpg: Predicted in 92.759000 milli-seconds.
+lesions: 100%	(left_x: 1468   top_y:  100   width: 4391   height: 4203)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012852.jpg: Predicted in 92.216000 milli-seconds.
+lesions: 100%	(left_x: 1384   top_y:  505   width:  998   height: 1135)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014693.jpg: Predicted in 92.458000 milli-seconds.
+lesions: 100%	(left_x:  481   top_y:  187   width: 5616   height: 4200)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015953.jpg: Predicted in 91.886000 milli-seconds.
+lesions: 99%	(left_x: 1056   top_y:  480   width:  756   height:  961)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015976.jpg: Predicted in 92.102000 milli-seconds.
+lesions: 100%	(left_x: 1308   top_y:  797   width:  482   height:  430)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016011.jpg: Predicted in 92.234000 milli-seconds.
+lesions: 89%	(left_x: 1834   top_y: 1100   width:  591   height:  533)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012199.jpg: Predicted in 91.367000 milli-seconds.
+lesions: 100%	(left_x:  894   top_y:  495   width: 1129   height: 1248)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015980.jpg: Predicted in 92.618000 milli-seconds.
+lesions: 100%	(left_x: 1150   top_y:  704   width:  872   height:  419)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014567.jpg: Predicted in 91.913000 milli-seconds.
+lesions: 100%	(left_x:  862   top_y:  643   width:  952   height:  692)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015412.jpg: Predicted in 92.638000 milli-seconds.
+lesions: 100%	(left_x: 1209   top_y:  621   width: 4165   height: 2946)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014575.jpg: Predicted in 92.505000 milli-seconds.
+lesions: 97%	(left_x: 1002   top_y:  550   width:  478   height:  652)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015019.jpg: Predicted in 92.383000 milli-seconds.
+lesions: 100%	(left_x:  819   top_y: -144   width: 5085   height: 4229)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016041.jpg: Predicted in 92.126000 milli-seconds.
+lesions: 100%	(left_x: 1245   top_y:  798   width:  572   height:  577)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014876.jpg: Predicted in 92.663000 milli-seconds.
+lesions: 99%	(left_x:  800   top_y:  195   width: 4115   height: 3592)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015988.jpg: Predicted in 92.730000 milli-seconds.
+lesions: 98%	(left_x: 1214   top_y:  723   width:  522   height:  409)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014503.jpg: Predicted in 92.393000 milli-seconds.
+lesions: 100%	(left_x: 1247   top_y:  902   width: 1168   height: 1320)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015009.jpg: Predicted in 92.528000 milli-seconds.
+lesions: 100%	(left_x:  -61   top_y: -280   width: 6752   height: 4585)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013270.jpg: Predicted in 92.193000 milli-seconds.
+lesions: 99%	(left_x: 1624   top_y:  547   width: 1313   height: 1253)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015476.jpg: Predicted in 92.295000 milli-seconds.
+lesions: 100%	(left_x: 1888   top_y:  684   width: 2689   height: 3001)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015347.jpg: Predicted in 92.275000 milli-seconds.
+lesions: 100%	(left_x: 2152   top_y: 1501   width: 2537   height: 1818)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015568.jpg: Predicted in 92.020000 milli-seconds.
+lesions: 100%	(left_x: 1225   top_y:  665   width: 2407   height: 2637)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016030.jpg: Predicted in 92.431000 milli-seconds.
+lesions: 93%	(left_x: 1020   top_y:  571   width: 1321   height: 1013)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016068.jpg: Predicted in 92.698000 milli-seconds.
+lesions: 98%	(left_x: 1477   top_y:  804   width: 1478   height: 1635)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016063.jpg: Predicted in 92.565000 milli-seconds.
+lesions: 62%	(left_x: 2038   top_y: 1566   width:  493   height:  389)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016064.jpg: Predicted in 92.194000 milli-seconds.
+lesions: 83%	(left_x: 1856   top_y: 1009   width:  606   height:  545)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015942.jpg: Predicted in 92.572000 milli-seconds.
+lesions: 98%	(left_x: 1407   top_y:  831   width:  249   height:  325)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013457.jpg: Predicted in 92.125000 milli-seconds.
+lesions: 100%	(left_x: 1323   top_y:  309   width: 1885   height: 2245)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013948.jpg: Predicted in 92.542000 milli-seconds.
+lesions: 98%	(left_x: 1141   top_y:  583   width: 1604   height: 1412)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015051.jpg: Predicted in 92.368000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015936.jpg: Predicted in 92.412000 milli-seconds.
+lesions: 97%	(left_x:  858   top_y:  662   width:  394   height:  523)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015184.jpg: Predicted in 92.128000 milli-seconds.
+lesions: 100%	(left_x: 1702   top_y: 1239   width: 3389   height: 2054)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015007.jpg: Predicted in 92.313000 milli-seconds.
+lesions: 99%	(left_x:  926   top_y:  829   width: 3551   height: 2461)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015416.jpg: Predicted in 92.457000 milli-seconds.
+lesions: 98%	(left_x: 1317   top_y:  420   width: 5167   height: 4073)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015203.jpg: Predicted in 92.514000 milli-seconds.
+lesions: 100%	(left_x: -359   top_y: -294   width: 7066   height: 4827)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015102.jpg: Predicted in 92.609000 milli-seconds.
+lesions: 100%	(left_x:  543   top_y:   64   width: 5681   height: 4206)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014820.jpg: Predicted in 92.051000 milli-seconds.
+lesions: 99%	(left_x: 2652   top_y: 1377   width: 1459   height: 1294)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014966.jpg: Predicted in 92.872000 milli-seconds.
+lesions: 100%	(left_x: 1698   top_y:  194   width: 3993   height: 3398)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016031.jpg: Predicted in 92.977000 milli-seconds.
+lesions: 76%	(left_x: 1429   top_y: 1197   width: 1974   height:  981)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015276.jpg: Predicted in 92.423000 milli-seconds.
+lesions: 99%	(left_x: 3051   top_y: 1636   width: 1645   height: 1238)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014749.jpg: Predicted in 92.968000 milli-seconds.
+lesions: 99%	(left_x:  745   top_y: 1041   width: 4821   height: 2950)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015447.jpg: Predicted in 91.956000 milli-seconds.
+lesions: 98%	(left_x:  232   top_y:  -75   width: 6284   height: 4528)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016028.jpg: Predicted in 92.361000 milli-seconds.
+lesions: 32%	(left_x: 1812   top_y:  696   width:   51   height:   30)
+lesions: 35%	(left_x: 1818   top_y:  661   width:   44   height:   42)
+lesions: 51%	(left_x: 1869   top_y:  705   width:   23   height:   16)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015947.jpg: Predicted in 92.378000 milli-seconds.
+lesions: 96%	(left_x: 1075   top_y:  665   width:  939   height:  560)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013416.jpg: Predicted in 91.860000 milli-seconds.
+lesions: 80%	(left_x: 1959   top_y: 1241   width:  391   height:  343)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014648.jpg: Predicted in 91.962000 milli-seconds.
+lesions: 100%	(left_x:  926   top_y:  238   width: 1115   height: 1409)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014110.jpg: Predicted in 92.377000 milli-seconds.
+lesions: 100%	(left_x: 1280   top_y:  680   width: 1761   height: 1604)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015566.jpg: Predicted in 91.770000 milli-seconds.
+lesions: 99%	(left_x: 1220   top_y:  390   width: 2600   height: 3776)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013230.jpg: Predicted in 92.298000 milli-seconds.
+lesions: 100%	(left_x: 1250   top_y:  696   width:  480   height:  554)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015395.jpg: Predicted in 92.915000 milli-seconds.
+lesions: 100%	(left_x: 1862   top_y:  668   width: 2983   height: 3056)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015383.jpg: Predicted in 92.735000 milli-seconds.
+lesions: 99%	(left_x: 2250   top_y:  610   width: 1809   height: 3150)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013615.jpg: Predicted in 92.068000 milli-seconds.
+lesions: 100%	(left_x: 1633   top_y:  995   width: 1167   height: 1344)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015037.jpg: Predicted in 92.698000 milli-seconds.
+lesions: 100%	(left_x:  506   top_y: -338   width: 5468   height: 4923)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015291.jpg: Predicted in 92.731000 milli-seconds.
+lesions: 99%	(left_x: 1897   top_y: 1567   width: 2608   height: 2288)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014409.jpg: Predicted in 92.374000 milli-seconds.
+lesions: 99%	(left_x: 1449   top_y:  883   width:  918   height:  921)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012537.jpg: Predicted in 92.324000 milli-seconds.
+lesions: 97%	(left_x: 1281   top_y: 1064   width:  813   height:  868)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015964.jpg: Predicted in 93.112000 milli-seconds.
+lesions: 100%	(left_x: 1254   top_y:  635   width:  392   height:  515)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014181.jpg: Predicted in 92.026000 milli-seconds.
+lesions: 99%	(left_x:  584   top_y:   78   width: 3151   height: 2548)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012448.jpg: Predicted in 92.254000 milli-seconds.
+lesions: 73%	(left_x: 1273   top_y:  806   width:  419   height:  344)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013988.jpg: Predicted in 92.380000 milli-seconds.
+lesions: 38%	(left_x:  371   top_y:   38   width: 1455   height: 1913)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015206.jpg: Predicted in 93.075000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012364.jpg: Predicted in 92.829000 milli-seconds.
+lesions: 62%	(left_x:  363   top_y:   -5   width: 2676   height: 1962)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013277.jpg: Predicted in 92.653000 milli-seconds.
+lesions: 100%	(left_x:  812   top_y:  140   width: 1209   height: 1648)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012967.jpg: Predicted in 92.893000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014160.jpg: Predicted in 91.940000 milli-seconds.
+lesions: 94%	(left_x: 1623   top_y:  637   width: 1036   height: 1287)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014932.jpg: Predicted in 92.769000 milli-seconds.
+lesions: 99%	(left_x: 1871   top_y:   73   width: 4679   height: 4336)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014336.jpg: Predicted in 92.333000 milli-seconds.
+lesions: 85%	(left_x:  933   top_y:   14   width: 1966   height: 2329)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016026.jpg: Predicted in 92.699000 milli-seconds.
+lesions: 97%	(left_x: 1291   top_y:  783   width:  459   height:  461)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016018.jpg: Predicted in 92.085000 milli-seconds.
+lesions: 98%	(left_x: 1671   top_y: 1695   width:  934   height:  506)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013473.jpg: Predicted in 92.563000 milli-seconds.
+lesions: 100%	(left_x:  638   top_y:  -86   width: 3511   height: 2958)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015969.jpg: Predicted in 92.361000 milli-seconds.
+lesions: 98%	(left_x: 1189   top_y:  569   width:  967   height: 1078)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013164.jpg: Predicted in 92.893000 milli-seconds.
+lesions: 96%	(left_x: 1344   top_y:  813   width:  302   height:  333)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015215.jpg: Predicted in 91.686000 milli-seconds.
+lesions: 89%	(left_x: 3374   top_y:  701   width:   86   height:   62)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015995.jpg: Predicted in 93.046000 milli-seconds.
+lesions: 82%	(left_x: 1259   top_y:  727   width:  626   height:  828)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014454.jpg: Predicted in 92.056000 milli-seconds.
+lesions: 99%	(left_x:  962   top_y:  -99   width: 2483   height: 2876)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016050.jpg: Predicted in 92.417000 milli-seconds.
+lesions: 85%	(left_x: 1902   top_y: 1556   width:  505   height:  566)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016012.jpg: Predicted in 91.594000 milli-seconds.
+lesions: 93%	(left_x: 1684   top_y: 1669   width:  866   height:  560)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015526.jpg: Predicted in 91.962000 milli-seconds.
+lesions: 99%	(left_x: 2011   top_y:  817   width: 1769   height: 2516)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015949.jpg: Predicted in 92.466000 milli-seconds.
+lesions: 99%	(left_x: 1364   top_y:  764   width:  367   height:  306)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016038.jpg: Predicted in 92.277000 milli-seconds.
+lesions: 99%	(left_x: 1370   top_y:  789   width:  401   height:  298)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016045.jpg: Predicted in 92.361000 milli-seconds.
+lesions: 97%	(left_x: 1524   top_y:  933   width:  740   height:  427)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015952.jpg: Predicted in 92.094000 milli-seconds.
+lesions: 100%	(left_x: 1252   top_y:  840   width:  374   height:  421)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014772.jpg: Predicted in 92.801000 milli-seconds.
+lesions: 95%	(left_x:  995   top_y:  382   width: 3957   height: 3782)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015193.jpg: Predicted in 92.939000 milli-seconds.
+lesions: 100%	(left_x: 1084   top_y:  473   width: 4657   height: 3598)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014910.jpg: Predicted in 92.457000 milli-seconds.
+lesions: 97%	(left_x: 1155   top_y:  -31   width: 4758   height: 4301)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016070.jpg: Predicted in 92.072000 milli-seconds.
+lesions: 96%	(left_x: 1822   top_y: 1336   width:  806   height:  565)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013465.jpg: Predicted in 92.964000 milli-seconds.
+lesions: 100%	(left_x: 1837   top_y: 1023   width:  515   height:  682)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012484.jpg: Predicted in 92.651000 milli-seconds.
+lesions: 99%	(left_x: 1556   top_y:  668   width: 1138   height: 1564)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016005.jpg: Predicted in 92.330000 milli-seconds.
+lesions: 99%	(left_x: 1546   top_y: 1025   width: 1341   height: 1061)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014941.jpg: Predicted in 92.556000 milli-seconds.
+lesions: 100%	(left_x: 1403   top_y:  761   width: 3534   height: 3403)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016017.jpg: Predicted in 92.499000 milli-seconds.
+lesions: 41%	(left_x: 1806   top_y: 1147   width:  608   height:  640)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014957.jpg: Predicted in 92.419000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013459.jpg: Predicted in 92.126000 milli-seconds.
+lesions: 99%	(left_x: 1141   top_y:  424   width: 1470   height: 1865)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015974.jpg: Predicted in 92.848000 milli-seconds.
+lesions: 100%	(left_x:  214   top_y:   84   width:  546   height:  440)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015631.jpg: Predicted in 92.635000 milli-seconds.
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015255.jpg: Predicted in 92.148000 milli-seconds.
+lesions: 100%	(left_x:  264   top_y:  -21   width: 6437   height: 4456)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012757.jpg: Predicted in 92.588000 milli-seconds.
+lesions: 100%	(left_x: 1396   top_y:  827   width: 1605   height: 1016)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014600.jpg: Predicted in 92.242000 milli-seconds.
+lesions: 99%	(left_x:  900   top_y:  647   width:  654   height:  525)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014251.jpg: Predicted in 92.353000 milli-seconds.
+lesions: 98%	(left_x: 1582   top_y:  558   width: 1014   height: 1017)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014746.jpg: Predicted in 92.341000 milli-seconds.
+lesions: 99%	(left_x: 1028   top_y:  126   width: 4990   height: 3891)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013917.jpg: Predicted in 93.168000 milli-seconds.
+lesions: 97%	(left_x: 1695   top_y: 1247   width:  823   height:  979)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015369.jpg: Predicted in 92.146000 milli-seconds.
+lesions: 100%	(left_x: 2664   top_y: 1784   width: 1809   height: 1737)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014090.jpg: Predicted in 92.308000 milli-seconds.
+lesions: 97%	(left_x: 2009   top_y: 1168   width:  432   height:  364)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014826.jpg: Predicted in 92.476000 milli-seconds.
+lesions: 100%	(left_x: 1231   top_y:  169   width: 4200   height: 3604)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013045.jpg: Predicted in 92.897000 milli-seconds.
+lesions: 100%	(left_x: 1610   top_y: 1011   width:  565   height:  836)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012265.jpg: Predicted in 92.410000 milli-seconds.
+lesions: 100%	(left_x:  348   top_y:    5   width: 4265   height: 2890)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015984.jpg: Predicted in 92.413000 milli-seconds.
+lesions: 81%	(left_x: 1710   top_y:  837   width: 1424   height: 1061)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014766.jpg: Predicted in 92.232000 milli-seconds.
+lesions: 99%	(left_x:  557   top_y:  -79   width: 3818   height: 3842)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015258.jpg: Predicted in 92.838000 milli-seconds.
+lesions: 100%	(left_x:  142   top_y:  125   width: 6524   height: 3676)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014942.jpg: Predicted in 92.243000 milli-seconds.
+lesions: 97%	(left_x: 1654   top_y: 1216   width: 2029   height: 1788)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013216.jpg: Predicted in 92.677000 milli-seconds.
+lesions: 95%	(left_x: 1580   top_y:  669   width:  823   height:  822)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012369.jpg: Predicted in 92.590000 milli-seconds.
+lesions: 99%	(left_x: 1519   top_y: 1153   width: 1379   height: 1102)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015417.jpg: Predicted in 91.880000 milli-seconds.
+lesions: 95%	(left_x: 1742   top_y:  820   width: 3444   height: 2747)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014626.jpg: Predicted in 91.755000 milli-seconds.
+lesions: 100%	(left_x:  195   top_y:   54   width: 1798   height: 1852)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016002.jpg: Predicted in 92.318000 milli-seconds.
+lesions: 99%	(left_x: 1276   top_y:  756   width:  506   height:  473)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015174.jpg: Predicted in 92.186000 milli-seconds.
+lesions: 99%	(left_x: 1147   top_y:  816   width: 3961   height: 2161)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015157.jpg: Predicted in 92.104000 milli-seconds.
+lesions: 96%	(left_x: 1083   top_y:  993   width: 4327   height: 3167)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014186.jpg: Predicted in 92.297000 milli-seconds.
+lesions: 100%	(left_x: 1464   top_y:  610   width: 1365   height: 1586)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015992.jpg: Predicted in 92.714000 milli-seconds.
+lesions: 100%	(left_x: 1732   top_y: 1281   width:  568   height:  599)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012248.jpg: Predicted in 92.261000 milli-seconds.
+lesions: 99%	(left_x:  948   top_y:   74   width: 2260   height: 2621)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013908.jpg: Predicted in 92.354000 milli-seconds.
+lesions: 95%	(left_x:  847   top_y:  385   width: 1314   height:  984)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015962.jpg: Predicted in 92.999000 milli-seconds.
+lesions: 100%	(left_x: 1429   top_y:  745   width:  330   height:  416)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013588.jpg: Predicted in 92.311000 milli-seconds.
+lesions: 99%	(left_x: 1481   top_y:  847   width: 1380   height: 1283)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015959.jpg: Predicted in 92.276000 milli-seconds.
+lesions: 99%	(left_x:  564   top_y:  160   width: 1262   height: 1181)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012414.jpg: Predicted in 93.021000 milli-seconds.
+lesions: 62%	(left_x: -300   top_y:  106   width: 3591   height: 2689)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015312.jpg: Predicted in 91.924000 milli-seconds.
+lesions: 100%	(left_x: 1172   top_y:  530   width: 4306   height: 3505)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015940.jpg: Predicted in 91.964000 milli-seconds.
+lesions: 79%	(left_x: 1274   top_y:  817   width:  362   height:  350)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014947.jpg: Predicted in 92.318000 milli-seconds.
+lesions: 98%	(left_x: 2146   top_y:  779   width: 3090   height: 3104)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012314.jpg: Predicted in 92.322000 milli-seconds.
+lesions: 83%	(left_x:  636   top_y:   68   width: 1640   height: 1607)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012705.jpg: Predicted in 92.155000 milli-seconds.
+lesions: 94%	(left_x: 1231   top_y:  785   width:  468   height:  407)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015943.jpg: Predicted in 92.402000 milli-seconds.
+lesions: 93%	(left_x: 1344   top_y:  771   width:  292   height:  375)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015464.jpg: Predicted in 92.776000 milli-seconds.
+lesions: 99%	(left_x:  907   top_y:  331   width: 4517   height: 3582)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015983.jpg: Predicted in 93.307000 milli-seconds.
+lesions: 97%	(left_x:  869   top_y:   45   width: 2034   height: 2396)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015163.jpg: Predicted in 92.743000 milli-seconds.
+lesions: 100%	(left_x: 2535   top_y:  -18   width: 2532   height: 4287)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013269.jpg: Predicted in 92.211000 milli-seconds.
+lesions: 99%	(left_x: 1635   top_y: 1216   width:  557   height:  752)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014964.jpg: Predicted in 92.239000 milli-seconds.
+lesions: 100%	(left_x: 1345   top_y:  225   width: 5139   height: 3469)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015133.jpg: Predicted in 91.991000 milli-seconds.
+lesions: 99%	(left_x: 2734   top_y:  302   width: 2974   height: 3173)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015293.jpg: Predicted in 92.405000 milli-seconds.
+lesions: 98%	(left_x: 1987   top_y: 1412   width: 2426   height: 2030)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012848.jpg: Predicted in 92.084000 milli-seconds.
+lesions: 93%	(left_x: 1109   top_y:  -59   width: 1539   height: 1928)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014958.jpg: Predicted in 92.336000 milli-seconds.
+lesions: 100%	(left_x: 1123   top_y:  637   width: 5093   height: 2597)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016027.jpg: Predicted in 92.497000 milli-seconds.
+lesions: 99%	(left_x: 1994   top_y: 1175   width:  354   height:  432)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016023.jpg: Predicted in 92.348000 milli-seconds.
+lesions: 87%	(left_x: 1574   top_y:  834   width:  689   height:  698)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014284.jpg: Predicted in 92.603000 milli-seconds.
+lesions: 100%	(left_x: 1819   top_y: 1345   width:  571   height:  683)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014697.jpg: Predicted in 92.300000 milli-seconds.
+lesions: 98%	(left_x: 1956   top_y:  489   width: 2067   height: 2902)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015030.jpg: Predicted in 92.312000 milli-seconds.
+lesions: 100%	(left_x: 1404   top_y: 1055   width: 3406   height: 2173)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013577.jpg: Predicted in 92.405000 milli-seconds.
+lesions: 97%	(left_x: 1554   top_y:  472   width: 1449   height: 1826)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016059.jpg: Predicted in 92.384000 milli-seconds.
+lesions: 89%	(left_x: 1910   top_y: 1543   width:  499   height:  490)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012323.jpg: Predicted in 92.950000 milli-seconds.
+lesions: 100%	(left_x:  670   top_y:   28   width: 2115   height: 1871)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015979.jpg: Predicted in 92.435000 milli-seconds.
+lesions: 97%	(left_x: 1352   top_y:  432   width:  599   height:  855)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014587.jpg: Predicted in 92.198000 milli-seconds.
+lesions: 98%	(left_x:  979   top_y:  797   width:  460   height:  554)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014027.jpg: Predicted in 93.122000 milli-seconds.
+lesions: 100%	(left_x: 1083   top_y:  461   width: 1297   height: 1540)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015139.jpg: Predicted in 91.916000 milli-seconds.
+lesions: 100%	(left_x: 1860   top_y:  954   width: 2308   height: 2002)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014695.jpg: Predicted in 92.632000 milli-seconds.
+lesions: 46%	(left_x: 1676   top_y: 1003   width: 4285   height: 3242)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015989.jpg: Predicted in 91.649000 milli-seconds.
+lesions: 99%	(left_x: 1283   top_y:  712   width:  392   height:  444)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014644.jpg: Predicted in 92.686000 milli-seconds.
+lesions: 87%	(left_x: 1861   top_y: 1335   width: 1688   height: 1121)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014542.jpg: Predicted in 91.963000 milli-seconds.
+lesions: 100%	(left_x: 1656   top_y:  154   width: 2362   height: 1744)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016071.jpg: Predicted in 92.520000 milli-seconds.
+lesions: 99%	(left_x: 1615   top_y: 1237   width:  971   height:  548)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016037.jpg: Predicted in 92.240000 milli-seconds.
+lesions: 100%	(left_x: 1625   top_y: 1122   width: 1743   height: 1123)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014349.jpg: Predicted in 92.156000 milli-seconds.
+lesions: 97%	(left_x: 1612   top_y: 1161   width: 1328   height: 1273)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015985.jpg: Predicted in 92.157000 milli-seconds.
+lesions: 100%	(left_x: 1844   top_y: 1110   width:  555   height:  541)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014956.jpg: Predicted in 92.385000 milli-seconds.
+lesions: 100%	(left_x: 1638   top_y:  374   width: 3559   height: 3170)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014470.jpg: Predicted in 92.142000 milli-seconds.
+lesions: 92%	(left_x: 1599   top_y: 1156   width:  920   height: 1220)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013511.jpg: Predicted in 92.010000 milli-seconds.
+lesions: 67%	(left_x: 1244   top_y:  614   width:  781   height:  699)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015309.jpg: Predicted in 92.111000 milli-seconds.
+lesions: 100%	(left_x:  650   top_y: 1291   width: 2485   height: 2781)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015485.jpg: Predicted in 92.558000 milli-seconds.
+lesions: 100%	(left_x:  563   top_y:   47   width: 4625   height: 4221)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013764.jpg: Predicted in 91.992000 milli-seconds.
+lesions: 90%	(left_x: 1230   top_y:  429   width: 1540   height: 1083)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014386.jpg: Predicted in 92.214000 milli-seconds.
+lesions: 100%	(left_x: 1267   top_y:  716   width: 1907   height: 1980)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016025.jpg: Predicted in 92.307000 milli-seconds.
+lesions: 91%	(left_x:  813   top_y:  436   width: 1197   height: 1163)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014833.jpg: Predicted in 92.026000 milli-seconds.
+lesions: 100%	(left_x:  138   top_y:   10   width: 6381   height: 4321)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012395.jpg: Predicted in 92.166000 milli-seconds.
+lesions: 100%	(left_x: 1137   top_y:  425   width:  932   height: 1072)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012223.jpg: Predicted in 92.478000 milli-seconds.
+lesions: 98%	(left_x:  418   top_y:  153   width: 3270   height: 2479)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014728.jpg: Predicted in 91.957000 milli-seconds.
+lesions: 100%	(left_x: 1102   top_y:    8   width: 4610   height: 4256)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013226.jpg: Predicted in 92.809000 milli-seconds.
+lesions: 94%	(left_x: 1733   top_y:  805   width:  591   height:  606)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013733.jpg: Predicted in 93.207000 milli-seconds.
+lesions: 98%	(left_x: 1658   top_y: 1149   width:  957   height:  677)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015963.jpg: Predicted in 92.376000 milli-seconds.
+lesions: 99%	(left_x: 1489   top_y: 1057   width:  950   height:  546)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014977.jpg: Predicted in 92.437000 milli-seconds.
+lesions: 100%	(left_x: 2341   top_y:  867   width: 1950   height: 2497)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012273.jpg: Predicted in 92.580000 milli-seconds.
+lesions: 96%	(left_x:  164   top_y:  138   width: 2118   height: 1519)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0012178.jpg: Predicted in 92.526000 milli-seconds.
+lesions: 99%	(left_x:  930   top_y:  299   width:  798   height: 1037)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013673.jpg: Predicted in 92.686000 milli-seconds.
+lesions: 100%	(left_x: 1361   top_y:  620   width:  462   height:  485)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0016056.jpg: Predicted in 91.823000 milli-seconds.
+lesions: 94%	(left_x: 2048   top_y: 1025   width:  361   height:  562)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014814.jpg: Predicted in 92.375000 milli-seconds.
+lesions: 99%	(left_x: 1303   top_y: 1105   width: 3417   height: 1825)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015132.jpg: Predicted in 91.721000 milli-seconds.
+lesions: 100%	(left_x: 1190   top_y:  228   width: 4542   height: 3974)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014853.jpg: Predicted in 92.711000 milli-seconds.
+lesions: 99%	(left_x: 1992   top_y: 1255   width: 2115   height: 1690)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013813.jpg: Predicted in 92.363000 milli-seconds.
+lesions: 99%	(left_x:  343   top_y:   35   width: 3031   height: 2670)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014698.jpg: Predicted in 92.391000 milli-seconds.
+lesions: 99%	(left_x: 2481   top_y:  928   width: 1858   height: 1861)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013738.jpg: Predicted in 92.383000 milli-seconds.
+lesions: 95%	(left_x: 2121   top_y: 1829   width:  392   height:  336)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015136.jpg: Predicted in 92.119000 milli-seconds.
+lesions: 99%	(left_x: 1021   top_y:  734   width: 4034   height: 3414)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014077.jpg: Predicted in 92.308000 milli-seconds.
+lesions: 100%	(left_x:  939   top_y:  311   width: 2253   height: 2585)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013393.jpg: Predicted in 92.073000 milli-seconds.
+lesions: 86%	(left_x: 1118   top_y:  706   width: 2170   height: 1953)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0015050.jpg: Predicted in 92.292000 milli-seconds.
+lesions: 100%	(left_x:  -47   top_y:   60   width: 6620   height: 4251)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0013617.jpg: Predicted in 92.274000 milli-seconds.
+lesions: 100%	(left_x:  761   top_y:  749   width: 2178   height: 1613)
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/content/darknet/data/test/ISIC_0014675.jpg: Predicted in 92.349000 milli-seconds.
+lesions: 100%	(left_x: 2177   top_y: 1100   width: 2179   height: 2164)
+Enter Image Path: 
