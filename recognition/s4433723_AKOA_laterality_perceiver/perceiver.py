@@ -2,8 +2,6 @@
 REFERENCE FOR PERCEIVER HELP ON CIFAR10
 https://keras.io/examples/vision/perceiver_image_classification/
 """
-import datetime
-
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -12,7 +10,7 @@ import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
-# check tf version etc.
+# check tf version
 print("Tensorflow version: ", tf.__version__)
 
 # =============== PREPARE DATA ===============
@@ -23,7 +21,7 @@ OUTPUT_DIR = 'output/'
 # should get this from directory
 INPUT_DS_SIZE = 18680
 # size to resize input images
-IMG_SIZE = 8
+IMG_SIZE = 16
 
 # load AKOA dataset from processed datasets directory
 akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DATASET_DIR,
@@ -39,15 +37,12 @@ akoa_ds_tuple = tf.keras.preprocessing.image_dataset_from_directory(directory=DA
 
 # extract dataset from tuple
 akoa_ds = akoa_ds_tuple[0]
-assert isinstance(akoa_ds, tf.data.Dataset)
 
-# normalise dataset
-data_augmenter = tf.keras.Sequential([
-    #tf.keras.layers.experimental.preprocessing.Normalization(),
-    tf.keras.layers.experimental.preprocessing.Rescaling(1./127.5),
-    tf.keras.layers.experimental.preprocessing.RandomContrast(1),
+# normalise input images
+normaliser = tf.keras.Sequential([
+    tf.keras.layers.experimental.preprocessing.Rescaling(scale=1./127.5, offset=-1),
 ])
-akoa_ds = akoa_ds.map(lambda x, y: (data_augmenter(x), y))
+akoa_ds = akoa_ds.map(lambda x, y: (normaliser(x), y))
 
 # get data into numpy arrays
 x_data, y_data = next(iter(akoa_ds))
@@ -61,6 +56,9 @@ plt.imsave(OUTPUT_DIR + "eg_img.png", first_image, format="png", cmap=plt.cm.gra
 
 # train test split
 x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.25, random_state=42)
+
+# print(x_train.shape)
+# x_train = np.apply_along_axis(lambda x: data_augmenter(x), 0, x_train)
 
 print("Input Shapes:")
 print("X train: ", x_train.shape)
@@ -88,7 +86,7 @@ dense_units = [PROJECTION_SIZE, PROJECTION_SIZE]
 num_transformer_blocks = 4
 num_iterations = 2  # Repetitions of the cross-attention and Transformer modules.
 
-# Size of the Feedforward network of the final classifier.
+# Size of the Dense network of the final classifier.
 classifier_units = [PROJECTION_SIZE, NUM_CLASSES]
 
 print(f"Image size: {IMG_SIZE} X {IMG_SIZE} = {IMG_SIZE ** 2}")
@@ -112,9 +110,10 @@ def create_dense_block(hidden_units, dropout_rate):
     return keras.Sequential(dense_layers)
 
 
-# =============== PATCH CREATION AS LAYER ===============
-
 class Patches(layers.Layer):
+    """
+    Class which creates patches from an input set of images.
+    """
     def __init__(self, patch_size):
         super(Patches, self).__init__()
         self.patch_size = patch_size
@@ -304,10 +303,10 @@ class Perceiver(keras.Model):
             self.dropout_rate,
         )
 
-        # Create global average pooling layer.
+        # Global average pooling
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
-        # Create a classification head.
+        # Dense classification block
         self.classification_head = create_dense_block(
             hidden_units=self.classifier_units, dropout_rate=self.dropout_rate
         )
@@ -315,8 +314,6 @@ class Perceiver(keras.Model):
         super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
-        # Augment data.
-        #augmented = data_augmentation(inputs)
         # Create patches.
         patches = self.patcher(inputs)
         # Encode patches.
@@ -328,15 +325,19 @@ class Perceiver(keras.Model):
         }
         # Apply the cross-attention and the Transformer modules iteratively.
         for _ in range(self.num_iterations):
+
             # Apply cross-attention from the latent array to the data array.
             latent_array = self.cross_attention(cross_attention_inputs)
+
             # Apply self-attention Transformer to the latent array.
             latent_array = self.transformer(latent_array)
+
             # Set the latent array of the next iteration.
             cross_attention_inputs["latent_array"] = latent_array
 
         # Apply global average pooling to generate a [batch_size, projection_dim] representation tensor.
         representation = self.global_average_pooling(latent_array)
+
         # Generate logits.
         logits = self.classification_head(representation)
         return logits
@@ -360,12 +361,11 @@ def train_model(model):
 
     # fit model
     history = model.fit(
-        x=x_train,#x=x_train,
+        x=x_train,
         y=y_train,
         batch_size=BATCH_SIZE,
         epochs=EPOCHS,
         validation_split=0.2,
-        #callbacks=[early_stopping, reduce_lr],
     )
 
     # visualise shape of model
