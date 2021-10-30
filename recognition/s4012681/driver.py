@@ -125,8 +125,10 @@ classifications = model.predict(test)
 print(classifications.shape)
 print(type(classifications))
 
+test_images = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 1))
 test_labels = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 6))
 for i in range(len(test)):
+    test_images[i] = test[i][0]
     test_labels[i] = test[i][1]
 
 print("Body: ", individual_dice(test_labels[..., 1], classifications[..., 1]))
@@ -152,3 +154,8 @@ fig2.savefig('acc_loss.png')
 
 for i in range(len(test)):
     plt_compare(test[i][0][0], test_labels[i], classifications[i], i)
+
+np.save("test_images", test_images)
+np.save("test_labels", test_labels)
+np.save("classifications", classifications)
+
