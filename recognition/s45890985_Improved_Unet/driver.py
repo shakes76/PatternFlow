@@ -14,8 +14,8 @@ def load_img(img_path):
     image = tf.image.decode_jpeg(image, channels=3)
 
     # change img_path into coresponding mask_path
-    mask_path = tf.strings.regex_replace(img_path, '_Data', '_GroundTruth')
-    mask_path = tf.strings.regex_replace(mask_path, '.jpg', '_Segmentation.png')
+    mask_path = tf.strings.regex_replace(img_path, '-2_Training_Input', '_Training_GroundTruth')
+    mask_path = tf.strings.regex_replace(mask_path, '.jpg', '_segmentation.png')
 
     # read and decode mask to uint8 array
     mask = tf.io.read_file(mask_path)
@@ -31,13 +31,46 @@ def load_img(img_path):
     mask = tf.cast(mask, tf.float32)
 
     # resize image to dims
-    image = tf.image.resize(image, (512, 512))
-    mask = tf.image.resize(mask, (512, 512))
+    image = tf.image.resize(image, (256, 256))
+    mask = tf.image.resize(mask, (256, 256))
     return image, mask
 
-def aug_img(img, mask):
-    pass
+
 def main():
+    #directories and parameters of dataset
+    data_path = os.path.join("D:/UQ/2021 Sem 2/COMP3710/Report", "ISIC_2018\ISIC2018_Task1-2_Training_Input")
+    data_size = len(os.listdir(data_path))
+    training_size = int(np.ceil(data_size * 0.8))
+    testing_size = data_size - training_size
+    AUTOTUNE = tf.data.AUTOTUNE
+    batch_size = 10
+
+    # initiate full dataset containing all file directories
+    full_dataset = tf.data.Dataset.list_files(data_path + "/*.jpg")
+    full_dataset = full_dataset.shuffle(buffer_size=1000)
+
+    # split full dataset into training and testing dataset with a 80-20 split
+    train_dataset = full_dataset.take(training_size)
+    test_dataset = full_dataset.skip(testing_size)
+
+    # map dataset to img and mask
+    train_dataset = train_dataset.map(load_img, num_parallel_calls=AUTOTUNE)
+    test_dataset = test_dataset.map(load_img, num_parallel_calls=AUTOTUNE)
+
+    # print dataset shapes
+    print(train_dataset)
+    print(test_dataset)
+
+    # shuffle, batch and augment training dataset
+    train_dataset = train_dataset.shuffle(buffer_size=1000)
+    train_dataset = train_dataset.repeat()
+    train_dataset = train_dataset.batch(batch_size)
+    train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
+
+    # shuffle and batch testing dataset
+    test = test.repeat()
+    test_dataset = test_dataset.batch(batch_size)
+    test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
 
 
 
