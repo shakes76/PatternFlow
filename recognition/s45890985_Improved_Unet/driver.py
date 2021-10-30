@@ -1,4 +1,3 @@
-import nibabel as nib
 import os
 import numpy as np
 import tensorflow as tf
@@ -6,61 +5,41 @@ import matplotlib.pyplot as plt
 
 from tensorflow.keras import datasets, layers, models, callbacks
 from tensorflow.keras.utils import Sequence
-from pyimgaug3d.augmenters import ImageSegmentationAugmenter
-from pyimgaug3d.augmentation import Flip, GridWarp
-from pyimgaug3d.utils import to_channels
 
 
-class NiftiDataGenerator(Sequence):
+def load_img(img_path):
+    # method taken and derived from Lab2 part 3 code
+    # read and decode image to uint8 array
+    image = tf.io.read_file(img_path)
+    image = tf.image.decode_jpeg(image, channels=3)
 
-    def __init__(self, file_names, image_path, to_fit=True,
-                 batch_size=1, dim=(256, 256, 128),
-                 n_channels=1, n_seg=6, shuffle=True):
-        self.file_names = file_names
-        self.image_path = image_path
-        self.to_fit = to_fit
-        self.batch_size = batch_size
-        self.dim = dim
-        self.n_channels = n_channels
-        self.n_seg = n_seg
-        self.shuffle = shuffle
-        self.indexes = range(len(file_names))
+    # change img_path into coresponding mask_path
+    mask_path = tf.strings.regex_replace(img_path, '_Data', '_GroundTruth')
+    mask_path = tf.strings.regex_replace(mask_path, '.jpg', '_Segmentation.png')
 
-    def __len__(self):
-        return int(np.floor(len(self.file_names) / self.batch_size))
+    # read and decode mask to uint8 array
+    mask = tf.io.read_file(mask_path)
+    mask = tf.image.decode_png(mask)
 
-    def __getitem__(self, index):
-        indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
-        list_filenames_temp = [self.file_names[i] for i in indexes]
+    # one hot encoding
+    mask = tf.where(mask == 0, np.dtype('uint8').type(0), mask)
+    mask = tf.where(mask != 0, np.dtype('uint8').type(1), mask)
 
-        img, mask = self.__data_generation(list_filenames_temp)
+    # normalise and reshape data
+    # convert values from 0-255 to 0 - 1
+    image = tf.cast(image, tf.float32) / 255.0
+    mask = tf.cast(mask, tf.float32)
 
-        return img, mask
+    # resize image to dims
+    image = tf.image.resize(image, (512, 512))
+    mask = tf.image.resize(mask, (512, 512))
+    return image, mask
 
-    def on_epoch_end(self):
-        self.indexes = np.aramge(len(self.file_names))
+def aug_img(img, mask):
+    pass
+def main():
 
-    def load_nifti_files(self, path):
-        # find corresponding mask path
-        mask_path = path.replace('MRs', 'labels')
-        mask_path = mask_path.replace('LFOV', 'SEMANTIC_LFOV')
 
-        # load image as nparray
-        img = nib.load(path).get_fdata()
-        img = img / 255.0
-        mask = nib.load(mask_path).get_fdata()
-        mask = to_channels(mask)
-        img = img[..., None]
 
-        return img, mask
-
-    def __data_generation(self, list_filenames_temp):
-        # create empty arrays to store batches of data
-        imgs = np.empty((self.batch_size, *self.dim, self.n_channels))
-        masks = np.empty((self.batch_size, *self.dim, self.n_seg), dtype=int)
-
-        # generate data
-        for i, name in enumerate(list_filenames_temp):
-            imgs[i,], masks[i,] = self.load_nifti_files(os.path.join(self.image_path, name))
-
-        return imgs, masks
+if __name__ == "__main__":
+    main()
