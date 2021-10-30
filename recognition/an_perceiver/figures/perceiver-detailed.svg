@@ -1,0 +1,518 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-.5 -.5 2090.1 611.1">
+  <defs>
+    <path id="a" stroke="#000" stroke-miterlimit="10" d="m571 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="b" stroke="#000" stroke-miterlimit="10" d="m571 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="c" stroke="#000" stroke-miterlimit="10" d="m741 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="d" stroke="#000" stroke-miterlimit="10" d="m741 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="e" stroke="#000" stroke-miterlimit="10" d="m401 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="f" stroke="#000" stroke-miterlimit="10" d="m401 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="g" stroke="#000" stroke-miterlimit="10" d="m911 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="h" stroke="#000" stroke-miterlimit="10" d="m911 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="i" stroke="#000" stroke-miterlimit="10" d="m151 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="j" stroke="#000" stroke-miterlimit="10" d="m151 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="k" stroke="#000" stroke-miterlimit="10" d="m1541 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="l" stroke="#000" stroke-miterlimit="10" d="m1541 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="m" stroke="#000" stroke-miterlimit="10" d="m1711 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="n" stroke="#000" stroke-miterlimit="10" d="m1711 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="o" stroke="#000" stroke-miterlimit="10" d="m1371 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="p" stroke="#000" stroke-miterlimit="10" d="m1371 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="q" stroke="#000" stroke-miterlimit="10" d="m1881 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="r" stroke="#000" stroke-miterlimit="10" d="m1881 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="s" stroke="#000" stroke-miterlimit="10" d="m1121 231.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+    <path id="t" stroke="#000" stroke-miterlimit="10" d="m1121 331.1 3.5 7-3.5-1.7-3.5 1.7z"/>
+  </defs>
+  <circle cx="1823.1" cy="483.1" r="10" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1823 473v20"/>
+  <rect width="20" height="20" x="1813.1" y="533.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1823.1" y="549.1" font-family="Helvetica" font-size="16" text-anchor="middle">K</text>
+  <rect width="20" height="20" x="1813.1" y="563.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1823.1" y="579.1" font-family="Helvetica" font-size="16" text-anchor="middle">V</text>
+  <rect width="700" height="360" x="284.1" y="93.1" fill="#fff" stroke="#000" rx="54" ry="54"/>
+  <text x="634.1" y="120.1" font-family="Helvetica" font-size="20" text-anchor="middle">Latent Transformer</text>
+  <rect width="110" height="280" x="504.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="524.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="564.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="564.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="524.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="564.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="544.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="564.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#a" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M474 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M474 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="536.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="544.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M544 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m544 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#a" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="544.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="564.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#b" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="556.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="564.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m564 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="576.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="584.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M584 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m584 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M484 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#b" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m564 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="564.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m544 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m584 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m564 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="564.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M564 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="110" height="280" x="674.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="694.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="734.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="734.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="694.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="734.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="714.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="734.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#c" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M644 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M644 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="706.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="714.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M714 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m714 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#c" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="714.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="734.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#d" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="726.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="734.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m734 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="746.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="754.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M754 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m754 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M654 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#d" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m734 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="734.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m714 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m754 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m734 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="734.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M734 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5M379 153v-5q0-5 10-5h55q10 0 10 10v160q0 10 6.9 10h6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m473 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M548 153v-5q0-5 10-5h55q10 0 10 10v160q0 10 7.4 10h7.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m643 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M724 153v-5q0-5 10-5h50q10 0 10 10v160q0 10 6.9 10h6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m813 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <rect width="110" height="280" x="334.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="354.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="394.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="394.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="354.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="394.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="374.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="394.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#e" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M304 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M304 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="366.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="374.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M374 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m374 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#e" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="374.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="394.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#f" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="386.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="394.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m394 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="406.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="414.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M414 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m414 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M314 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#f" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m394 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="394.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m374 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m414 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m394 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="394.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M394 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="110" height="280" x="844.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="864.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="904.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="904.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="864.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="904.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="884.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="904.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#g" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M814 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M814 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="876.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="884.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M884 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m884 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#g" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="884.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="904.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#h" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="896.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="904.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m904 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="916.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="924.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M924 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m924 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M824 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#h" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m904 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="904.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m884 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m924 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m904 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="904.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M904 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="90" height="20" x="99.1" y="523.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="144.1" y="537.1" font-family="Helvetica" font-size="12" text-anchor="middle">Fourier encode</text>
+  <path fill="#fff" stroke="#000" d="M129 573h30v20h-30z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M129 583h30m-20-10v20m10-20v20m-5-20v-20 10-13.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 544.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="160" height="360" x="64.1" y="93.1" fill="#fff" stroke="#000" rx="24" ry="24"/>
+  <text x="144.1" y="120.1" font-family="Helvetica" font-size="20" text-anchor="middle">Cross Attention</text>
+  <rect width="130" height="280" x="79.1" y="153.1" fill="#fff" stroke="#000" rx="19.5" ry="19.5"/>
+  <rect width="80" height="40" x="104.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="144.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="144.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="104.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="144.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="124.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="144.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#i" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M34 308h10v30H34z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M34 318h10m-10 10h10m100-65v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#i" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="124.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="144.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#j" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="136.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="144.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="156.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="164.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M164 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m164 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="144.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 238v10m0 15v-10q0-10 0 0v7.6V248m0 156v-22"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 404v-5.4q0-5.5 10-5.5h5q5 0 5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m164 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="144.1" cy="409.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 404v10m-62.4-91h6.3q6.2 0 6.2-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#j" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <circle cx="76.6" cy="323.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M76.6 318v10M44 323h13.8-3.1 16.8m52.5 37.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m124 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="116.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="124.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M81.6 323h6.3q6.2 0 6.2 10v53q0 10 10 10h10q10 0 10-7v-7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m124 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 153v-5q0-5 10-5h90q10 0 10 10v160q0 10 10 10h33.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m303 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="#fff" stroke="#000" d="M1004 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1004 318h10m-10 10h10M904 163v-10q0-10 10-10h40q10 0 10 10v160q0 10 10 10h23.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1003 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <rect width="700" height="360" x="1254.1" y="93.1" fill="#fff" stroke="#000" rx="54" ry="54"/>
+  <text x="1604.1" y="120.1" font-family="Helvetica" font-size="20" text-anchor="middle">Latent Transformer</text>
+  <rect width="110" height="280" x="1474.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="1494.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="1534.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="1534.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="1494.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1534.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="1514.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1534.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#k" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M1444 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1444 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="1506.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1514.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1514 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1514 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#k" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="1514.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1534.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#l" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="1526.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1534.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1534 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1546.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1554.1" y="370.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1554 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1554 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1454 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#l" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1534 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1534.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1514 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1554 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1534 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1534.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1534 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="110" height="280" x="1644.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="1664.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="1704.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="1704.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="1664.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1704.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="1684.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1704.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#m" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M1614 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1614 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="1676.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1684.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1684 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1684 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#m" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="1684.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1704.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#n" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="1696.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1704.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1704 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1716.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1724.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1724 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1724 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1624 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#n" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1704 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1704.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1684 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1724 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1704 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1704.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1704 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5m-355-260v-5q0-5 10-5h55q10 0 10 10v160q0 10 6.9 10h6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1443 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1518 153v-5q0-5 10-5h55q10 0 10 10v160q0 10 7.4 10h7.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1613 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1694 153v-5q0-5 10-5h50q10 0 10 10v160q0 10 6.9 10h6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1783 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <rect width="110" height="280" x="1304.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="1324.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="1364.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="1364.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="1324.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1364.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="1344.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1364.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#o" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M1274 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1274 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="1336.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1344.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1344 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1344 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#o" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="1344.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1364.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#p" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="1356.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1364.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1364 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1376.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1384.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1384 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1384 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1284 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#p" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1364 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1364.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1344 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1384 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1364 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1364.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1364 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="110" height="280" x="1814.1" y="153.1" fill="#fff" stroke="#000" rx="16.5" ry="16.5"/>
+  <rect width="80" height="40" x="1834.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="1874.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="1874.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="1834.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1874.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="1854.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1874.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#q" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="#fff" stroke="#000" d="M1784 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1784 318h10m-10 10h10m-10 10"/>
+  <rect width="15" height="15" x="1846.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1854.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1854 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1854 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#q" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="1854.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1874.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#r" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="1866.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1874.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1874 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1886.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1894.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1894 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1894 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1794 323h20q10 0 10-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#r" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1874 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1874.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 238v10m0 15v-10q0-10 0 0v7.6V248m0 155v-5q0-5-10-5h-5q-5 0-5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1854 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 403v-5q0-5 10-5h5q5 0 5-5.5V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1894 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 403v-13.6 3-10.3"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1874 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1874.1" cy="408.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1874 403v10m-80-90h20q10 0 10 10v80q0 10 10 10h30q10 0 10-5v-5"/>
+  <rect width="160" height="360" x="1034.1" y="93.1" fill="#fff" stroke="#000" rx="24" ry="24"/>
+  <text x="1114.1" y="120.1" font-family="Helvetica" font-size="20" text-anchor="middle">Cross Attention</text>
+  <rect width="130" height="280" x="1049.1" y="153.1" fill="#fff" stroke="#000" rx="19.5" ry="19.5"/>
+  <rect width="80" height="40" x="1074.1" y="303.1" fill="#fff" stroke="#000" rx="6" ry="6"/>
+  <text x="1114.1" y="319.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan>Multi-Head</tspan><tspan x="1114.1" dy="16.8">Attention</tspan></text>
+  <rect width="80" height="20" x="1074.1" y="203.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1114.1" y="217.1" font-family="Helvetica" font-size="12" text-anchor="middle">Feed Forward</text>
+  <rect width="40" height="20" x="1094.1" y="163.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1114.1" y="177.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 203v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#s" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 263v-5q0-5-10-5h-30q-10 0-10-10v-40q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#s" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="40" height="20" x="1094.1" y="263.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1114.1" y="277.1" font-family="Helvetica" font-size="12" text-anchor="middle">Add</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 303v-10q0-10 0 0v5-8.5"/>
+  <use xlink:href="#t" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <rect width="15" height="15" x="1106.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1114.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">K</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 360.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1126.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1134.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">V</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1134 360.6v-11.1"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1134 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 238v-10q0-10 0 0v8.3-6.8"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 224.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1114.1" cy="243.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 238v10m0 15v-10q0-10 0 0v7.6V248m0 156v-22"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 404v-5.4q0-5.5 10-5.5h5q5 0 5-5.6V382"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1134 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <circle cx="1114.1" cy="409.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 404v10m-62.4-91h6.3q6.2 0 6.2-10v-10q0-10 10-10h30q10 0 10-1.7v-1.8"/>
+  <use xlink:href="#t" width="100%" height="100%" stroke-miterlimit="10" transform="translate(-7 -47)"/>
+  <circle cx="1046.6" cy="323.1" r="5" fill="#fff" stroke="#000"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1046.6 318v10m-32.5-5h13.7-3.1 16.9m52.5 37.6v-10q0-10 0 0v6.3-7.4"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1094 344.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="15" height="15" x="1086.6" y="360.6" fill="#fff" stroke="#000" rx="2.3" ry="2.3"/>
+  <text x="1094.1" y="372.1" font-family="Helvetica" font-size="12" text-anchor="middle">Q</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1051.6 323h6.3q6.2 0 6.2 10v53q0 10 10 10h10q10 0 10-7v-7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1094 376.7 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 153v-5q0-5 10-5h90q10 0 10 10v160q0 10 10 10h33.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1273 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="#fff" stroke="#000" d="M1974 308h10v30h-10z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1974 318h10m-10 10h10m-110-165v-10q0-10 10-10h40q10 0 10 10v160q0 10 10 10h23.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1973 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-dasharray="3 3" stroke-miterlimit="10" d="M144 93V63q0-10 10-10h950q10 0 10 10v23.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 92-3.4-7 3.5 1.7 3.5-1.7z"/>
+  <path fill="none" stroke="#000" stroke-dasharray="3 3" stroke-miterlimit="10" d="M634 93V43q0-10 10-10h950q10 0 10 10v43.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1604 92-3.4-7 3.5 1.7 3.5-1.7z"/>
+  <rect width="60" height="20" x="-353.1" y="2014.1" fill="#fff" stroke="#000" rx="3" ry="3" transform="rotate(-90)"/>
+  <text x="-323.1" y="2028.1" font-family="Helvetica" font-size="12" text-anchor="middle" transform="rotate(-90)">Average</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1984 323h20-10 13.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m2013 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <rect width="50" height="20" x="-348.1" y="2069.1" fill="#fff" stroke="#000" rx="3" ry="3" transform="rotate(-90)"/>
+  <text x="-323.1" y="2083.1" font-family="Helvetica" font-size="12" text-anchor="middle" transform="rotate(-90)">Logits</text>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M2034 323h20-5 13.7"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m2068 323-7 3.6 1.7-3.5-1.7-3.5z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M144 523v-20 10-13.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 494.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="#fff" stroke="#000" d="M109 483h70v10h-70z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M119 483v10m10-10v10m10-10v10m10-10v10m10-10v10m10-10v10m-25-10v-62.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m144 415.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <rect width="90" height="20" x="1069.1" y="523.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1114.1" y="537.1" font-family="Helvetica" font-size="12" text-anchor="middle">Fourier encode</text>
+  <path fill="#fff" stroke="#000" d="M1099 573h30v20h-30z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1099 583h30m-20-10v20m10-20v20m-5-20v-20 10-13.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 544.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 523v-20 10-13.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 494.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1114 483v-62.5"/>
+  <path stroke="#000" stroke-miterlimit="10" d="m1114 415.2 3.6 7-3.5-1.7-3.5 1.7z"/>
+  <path fill="#fff" stroke="#000" d="M1079 483h70v10h-70z"/>
+  <path fill="none" stroke="#000" stroke-miterlimit="10" d="M1089 483v10m10-10v10m10-10v10m10-10v10m10-10v10m10-10v10m0 0"/>
+  <text x="221.1" y="486.1" font-family="Helvetica" font-size="12" text-anchor="middle"><tspan x="221.1">Data Array</tspan><tspan x="221.1" dy="16.8">(M×C)</tspan></text>
+  <text x="1844.1" y="487.1" font-family="Helvetica" font-size="12">Layer Normalisation</text>
+  <rect width="20" height="20" x="1814.1" y="503.1" fill="#fff" stroke="#000" rx="3" ry="3"/>
+  <text x="1824.1" y="519.1" font-family="Helvetica" font-size="16" text-anchor="middle">Q</text>
+  <text x="1844.1" y="517.1" font-family="Helvetica" font-size="12">Queries</text>
+  <text x="1844.1" y="547.1" font-family="Helvetica" font-size="12">Keys</text>
+  <text x="1844.1" y="577.1" font-family="Helvetica" font-size="12">Values</text>
+  <text x="-324.1" y="8.1" font-family="Helvetica" font-size="12" text-anchor="middle" transform="rotate(-90)"><tspan x="-324.1">Latent Array</tspan><tspan x="-324.1" dy="16.8">(N×D)</tspan></text>
+  <text x="144.1" y="608.1" font-family="Helvetica" font-size="12" text-anchor="middle">Input Array</text>
+  <text x="1003.1" y="20.1" font-family="Helvetica" font-size="20" text-anchor="middle">Weights shared between repeats</text>
+</svg>
