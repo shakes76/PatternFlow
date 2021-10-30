@@ -70,6 +70,10 @@ For people who would like to know more about which according to a specific conce
 2. [Which Training Methods for GANs do actually Converge?](https://arxiv.org/abs/1801.04406)
 3. [PROGRESSIVE GROWING OF GANS FOR IMPROVED QUALITY, STABILITY, AND VARIATION](https://arxiv.org/abs/1710.10196)
 **********************************************************************************************************************
+## Model Visulization
+### UMAP Visulization
+We set the seed and output 10 codes with the same shape of (1,512) and index them from 0 to 9. The only difference between these 10 codes is just from the 98th row's value. We set the 0-th code's value in 98th row as the original value v. For the i-th code, the value from 98th equals to <img src="https://latex.codecogs.com/svg.image?v&space;&plus;&space;i^{3}&space;" title="v + i^{3} " />
+too be continue
 ## How the mapping network dis-entangle the random tensor?
 ### Search for distribution
 We first generate 4 sets of random vectors with the dimension of (2000,512) by using 3 different ways, torch.randn(Normal Distribution), torch.rand(Uniform Distribution), and torch.randint(Uniform Distribution with integers). Then, we compared the latent code z (z1,z2,z3,z4) before going into the mapping network with the intermediate latent code w (w1,w2,w3,w4) about their means and standard deviation as the table below:
@@ -190,7 +194,3 @@ We done its trial for a hundred times, the case where the MSE loss between [imag
 
 
 **Inference:**  In conlusion, we deduce a image in the generation process would tend to be similar in shape with the style from coarse spatial resolutions. However, in terms of mean and MSE distence between Gram Matrix, it tends to be closed to the style inputed from higher resolutions.
-
-## Model Visulization
-### UMAP
-to be continue
