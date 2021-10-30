@@ -101,8 +101,7 @@ class Attention(nn.Module):
     See https://arxiv.org/abs/1706.03762 for more details.
 
     Args:
-        q_channels - Total dimension of model.
-        kv_channels - Total number of features of keys and values.
+        embed_dim - Total dimension of model.
         num_heads - Number of parallel attention heads.
         dropout - Dropout probability.
     Returns:
@@ -110,26 +109,15 @@ class Attention(nn.Module):
         sequence length, N is the batch size, and E is embed_dim
     """
 
-    def __init__(self, q_channels, kv_channels, num_heads=8, dropout=0.0):
+    def __init__(self, embed_dim, heads=8, dropout=0.0):
         super().__init__()
         self.attention = nn.MultiHeadAttention(
-            embed_dim=q_channels,
-            num_heads=num_heads,
-            kdim=kv_channels,
-            v_dim=kv_channels,
-            dropout=dropout,
-            batch_first=True,
+            latent_dim, heads, dropout, bias=True, batch_first=True
         )
 
-    def forward(self, query, key_value, key_padding_mask=None, attn_mask=None):
-        attn_output, _ = self.attention(
-            query,
-            key_value,
-            key_value,
-            key_padding_mask=key_padding_mask,
-            attn_mask=attend_mask,
-        )
-        return attn_output
+    def forward(self, x, residual):
+        attn_output, _ = self.attention(residual, x, x)
+        return attn_output + residual
 
 
 class SelfAttention(nn.Module):
@@ -144,18 +132,13 @@ class SelfAttention(nn.Module):
     See https://arxiv.org/abs/1706.03762 for more details.
     """
 
-    def __init__(self, num_channels, num_heads=8, dropout=0.0):
+    def __init__(self, embed_dim, heads=8, dropout=0.0):
         super().__init__()
+        self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-        self.norm = nn.LayerNorm(num_channels)
-        self.attention = PreNorm(
-            num_channels, Attention(num_channels, num_channels, num_heads, dropout)
-        )
-
-    def forward(self, x, key_padding_mask=None, attn_mask=None):
-        return self.attention(
-            x, x, key_padding_mask=key_padding_mask, attn_mask=attn_mask
-        )
+    def forward(self, x, residual):
+        # Self-attention
+        return self.attention(residual, residual)
 
 
 class CrossAttention(nn.Module):
@@ -171,18 +154,12 @@ class CrossAttention(nn.Module):
     See https://arxiv.org/abs/1706.03762 for more details.
     """
 
-    def __init__(self, q_channels, kv_channels, num_heads=8, dropout=0.0):
+    def __init__(self, embed_dim, heads=1, dropout=0.0):
         super().__init__()
-        self.attention = PreNorm(
-            q_channels,
-            Attention(num_channels, num_channels, num_heads, dropout),
-            context_dim=kv_channels,
-        )
+        self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-    def forward(self, x_q, x_kv, key_padding_mask=None, attn_mask=None):
-        return self.attention(
-            x, x, key_padding_mask=key_padding_mask, attn_mask=attn_mask
-        )
+    def forward(x, residual):
+        return self.attention(x, residual)
 
 
 class GEGLU(nn.Module):
@@ -205,34 +182,36 @@ class MLP(nn.Module):
 
 class Perceiver(nn.Module):
     """
-        A scalable, fully attentional architecture.
-        Note that data has to be pre-fourier encoded or it will not work.
+    A scalable, fully attentional architecture.
+    Note that data has to be pre-fourier encoded or it will not work.
 
-        Args:
-            depth - The depth of the network. See code for more information.
-            num_channels - Number of channels.
-            num_latents - Number of latents.
-            latent_dim - Latent dimension.
-            cross_heads - Number of heads for cross attention.
-            latent_heads - Number of heads for self attention.
-            num_classes - Output number of classes.
-            attn_dropout - Attention dropout probability.
-            ff_dropout - MLP dropout probability.
-        Returns:
-            Perceiver layer
+    Args:
+        depth - The depth of the network. See code for more information.
+        input_shape - Size & shape of input.
+        fourier_bands - Number of bands for fourier encoding.
+        num_channels - Number of channels of each input.
+        num_latents - Number of latent vectors.
+        latent_dim - Latent dimension.
+        latent_heads - Number of heads for self attention.
+        attn_dropout - Attention dropout probability.
+        ff_dropout - MLP dropout probability.
+        num_features - How many different classes for output
+    Returns:
+        Perceiver layer
     """
 
     def __init__(
         self,
         depth,
+        input_shape,
+        fourier_bands,
         num_channels,
         num_latents,
         latent_dim,
-        cross_heads=1,
         latent_heads=8,
-        num_classes=1000,
         attn_dropout=0.0,
         ff_dropout=0.0,
+        num_features=2,
     ):
         super().__init__()
         self.depth = depth
