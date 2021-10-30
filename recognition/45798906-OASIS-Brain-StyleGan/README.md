@@ -19,17 +19,15 @@ Some well-known GANs are DCGGAN, ProGAN and StyleGAN. DCGAN (Deep Convolutional 
 StyleGAN builds upon ProGAN by introducing a mapping network for the latent vector, which feeds into the Adaptive Instance Normalisation layers throughout the generator, and the addition of noise throughout the generator. The introduction of a mapping network removes the need to directly feed the latent code to the generator, rather a constant value is used instead as the input of the generator.
 
 <p align="center">
-    <a href="#1">
-        <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
-    </a>
+    <img src="resources/stylegan_architecture.png" alt="StyleGAN architecture" />
     <p> General architecture of GAN (left) and StyleGAN (right). Obtained from https://arxiv.org/abs/1812.04948  </p>
 </p>
 
-As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, $\gamma$ abd $\beta$ respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
+As briefly described above, the latent vector is fed into the mapping network rather than the synthesis network. From the output of the mapping network, the learned affine transform, represented as "A", is obtained. This affine transform is used to generate the weight and bias terms, <img src="https://render.githubusercontent.com/render/math?math=\gamma"> and <img src="https://render.githubusercontent.com/render/math?math=\beta"> respectively, for Adaptive Instance Normalisation (AdaIN). The equation of AdaIN is given by:
 
-<center>
+<p align="center">
 <img src="https://render.githubusercontent.com/render/math?math=\text{AdaIN}(x_i, \gamma, \beta) = \gamma \frac{x_i-\mu(x_i)}{\sigma(x_i)} + \beta">
-</center>
+</p>
 
 The use of AdaIN replaces the need for any other normalisation layers as it provides control over the style.
 
