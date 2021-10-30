@@ -13,6 +13,7 @@ from tensorflow.keras.utils import to_categorical
 import nibabel as nib
 from math import floor, ceil
 import glob
+import re
 
 def getScans(dataFolder, labelsFolder):
     dataFiles = sorted(glob.glob(dataFolder + "*"))
@@ -23,11 +24,22 @@ def getScans(dataFolder, labelsFolder):
 fileNames = getScans("/home/Student/s4580429/dataset/semantic_MRs_anon/", "/home/Student/s4580429/dataset/semantic_labels_anon/")
 total_images = len(fileNames)
 
+ind_of_first_case = []
+i = 0
+lastCase = None
+for path, _ in fileNames:
+    x = re.search("Case_(\d+)_", path).group(1)
+    if lastCase != x:
+        ind_of_first_case.append(i)
+        lastCase = x
+    i += 1
+
 dataset = tf.data.Dataset.from_tensor_slices((tf.constant(range(len(fileNames))), tf.constant(range(len(fileNames)))))
 
 shape = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata().shape
 BACKBONE = 'resnet50'
 preprocess_input = sm.get_preprocessing(BACKBONE)
+n_classes = 6
 
 def im_file_to_tensor(dataPath, labelPath):
     def _im_file_to_tensor(dataPath, labelPath):
@@ -52,55 +64,22 @@ def im_file_to_tensor(dataPath, labelPath):
 dataset = dataset.map(im_file_to_tensor,
     num_parallel_calls=tf.data.AUTOTUNE)
 
-n_classes = 6
+i_train = floor(0.7 * total_images)
+while i_train not in ind_of_first_case:
+    i_train += 1
+rem = total_images - i_train - 1
+i_test = floor(i_train + rem/2)
+while i_test not in ind_of_first_case:
+    i_test += 1
+i_test -= i_train
 
-#process = lambda x, fun : tf.stack((x,)*3, axis=-1) if fun == 0 else \
-#        to_categorical(tf.expand_dims(x, axis=4), num_classes=n_classes)
-#
-#X_train = process(X_train, 0)
-#y_train = process(y_train, 1)
-#X_val = process(X_val, 0)
-#y_val = process(y_val, 1)
+train_ds = dataset.take(i_train)
+test_ds = dataset.skip(i_train).take(i_test)
+val_ds = dataset.skip(i_train + i_test)
 
-#image = nib.load("/home/Student/s4580429/dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz")
-#image_patch = patchify(image.get_fdata(), (64,64,64), step=64)
-#
-#label = nib.load("/home/Student/s4580429/dataset/semantic_labels_anon/Case_004_Week0_SEMANTIC_LFOV.nii.gz")
-#label_patch = patchify(label.get_fdata(), (64,64,64), step=64)
-#
-#input_images = tf.reshape(image_patch, (-1, 64, 64, 64))
-#input_labels = tf.reshape(label_patch, (-1, 64, 64, 64))
-#
-#n_classes = 6
-#
-#if len(input_images) - floor(0.8 * len(input_images)) % 2 == 0:
-#    train_size = floor(0.8 * len(input_images))
-#else:
-#    train_size = ceil(0.8 * len(input_images))
-#
-#val_size = test_size = (len(input_images) - train_size) // 2
-#ds = tf.data.Dataset.from_tensor_slices((input_images, input_labels))
-#ds = ds.shuffle(10000)
-#train_ds = ds.take(train_size)
-#val_ds = ds.skip(train_size).take(val_size)
-#test_ds = ds.skip(train_size + val_size)
-#
-#dataset_to_tensor = lambda tf_dataset : tf.convert_to_tensor([x for x in tf_dataset])
-#process = lambda x, fun : tf.stack((x[:, 0, :, :, :],)*3, axis=-1) if fun == 0 else \
-#        to_categorical(tf.expand_dims(x[:, 1, :, :, :], axis=4), num_classes=n_classes)
-#
-#X_train = dataset_to_tensor(train_ds)
-#y_train = process(X_train, 1)
-#X_train = process(X_train, 0)
-#X_test = dataset_to_tensor(test_ds)
-#y_test = process(X_test, 1)
-#X_test = process(X_test, 0)
-#X_val = dataset_to_tensor(val_ds)
-#y_val = process(X_val, 1)
-#X_val = process(X_val, 0)
-
-#print("train", X_train.shape, y_train.shape, type(X_train), type(y_train))
-#print("validation", X_val.shape, y_val.shape, type(X_val), type(y_val))
+print("train", train_ds.cardinality())
+print("test", test_ds.cardinality())
+print("validation", val_ds.cardinality())
 
 print("Successfully loaded and converted data!")
 
@@ -128,16 +107,16 @@ metrics = [sm.metrics.IOUScore(threshold=0.5), dice_coefficient]
 
 preprocess_input = sm.get_preprocessing(BACKBONE)
 
-model = sm.Unet(BACKBONE, classes=n_classes,
-                input_shape=(patch_size, patch_size, patch_size, channels),
+model = sm.Unet(BACKBONE, classes=n_classes, 
+                input_shape=shape+(channels,), 
                 encoder_weights=encoder_weights,
                 activation=activation)
 
 model.compile(optimizer = optim, loss=total_loss, metrics=metrics)
 print(model.summary())
 
-history = model.fit(dataset, batch_size=batch_size,
-                  epochs=batch_num, verbose=1)
+history = model.fit(train_ds, batch_size=batch_size, epochs=batch_num, verbose=1,
+                  validation_data=val_ds)
 
 model.save('/home/Student/s4580429/segment_out/3D_model_res10_full.h5')
 
@@ -160,7 +139,7 @@ plt.plot(epochs, acc, 'b', label='Training Dice')
 plt.plot(epochs, val_acc, 'g', label='Validation Dice')
 plt.title('Training and validation Dice Scores')
 plt.xlabel('Epochs')
-plt.ylabel('IOU')
+plt.ylabel('Dice')
 plt.legend()
 plt.savefig("/home/Student/s4580429/segment_out/dice.png")
 plt.close()
