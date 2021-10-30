@@ -1,4 +1,3 @@
-# Segmenting ISICs with U-Net
 # Segment the ISICs data set with the U-net
 
 ## Project Overview
