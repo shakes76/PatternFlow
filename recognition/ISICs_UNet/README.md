@@ -1,52 +1,102 @@
 # Segmenting ISICs with U-Net
+# Segment the ISICs data set with the U-net
 
-COMP3710 Report recognition problem 3 (Segmenting ISICs data set with U-Net) solved in TensorFlow
+## Project Overview
+This project aim to solve the segmentation of skin lesian (ISIC2018 data set) using the U-net, with all labels having a minimum Dice similarity coefficient of 0.7 on the test set[Task 3].
 
-Created by Christopher Bailey (45576430)
+## ISIC2018
+![ISIC example](imgs/example.jpg)
 
-## The problem and algorithm
-The problem solved by this program is binary segmentation of the ISICs skin lesion data set. Segmentation is a way to label pixels in an image according to some grouping, in this case lesion or non-lesion. This translates images of skin to masks representing areas of concern for skin lesions.
+Skin Lesion Analysis towards Melanoma Detection
 
-U-Net is a form of autoencoder where the downsampling path is expected to learn the features of the image and the upsampling path learns how to recreate the masks. Long skip connections between downpooling and upsampling layers are utilised to overcome the bottleneck in traditional autoencoders allowing feature representations to be recreated.
-
-## How it works
-A four layer padded U-Net is used, preserving skin features and mask resolution. The implementation utilises Adam as the optimizer and implements Dice distance as the loss function as this appeared to give quicker convergence than other methods (eg. binary cross-entropy).
-
-The utilised metric is a Dice coefficient implementation. My initial implementation appeared faulty and was replaced with a 3rd party implementation which appears correct. 3 epochs was observed to be generally sufficient to observe Dice coefficients of 0.8+ on test datasets but occasional non-convergence was observed and could be curbed by increasing the number of epochs. Visualisation of predictions is also implemented and shows reasonable correspondence. Orange bandaids represent an interesting challenge for the implementation as presented.
-
-### Training, validation and testing split
-Training, validation and testing uses a respective 60:20:20 split, a commonly assumed starting point suggested by course staff. U-Net in particular was developed to work "with very few training images" (Ronneberger et al, 2015) The input data for this problem consists of 2594 images and masks. This split appears to provide satisfactory results.
-
-## Using the model
-### Dependencies required
-* Python3 (tested with 3.8)
-* TensorFlow 2.x (tested with 2.3)
-* glob (used to load filenames)
-* matplotlib (used for visualisations, tested with 3.3)
-
-### Parameter tuning
-The model was developed on a GTX 1660 TI (6GB VRAM) and certain values (notably batch size and image resolution) were set lower than might otherwise be ideal on more capable hardware. This is commented in the relevant code.
-
-### Running the model
-The model is executed via the main.py script.
-
-### Example output
-Given a batch size of 1 and 3 epochs the following output was observed on a single run:
-Era | Loss | Dice coefficient
---- | ---- | ----------------
-Epoch 1 | 0.7433 | 0.2567
-Epoch 2 | 0.3197 | 0.6803
-Epoch 3 | 0.2657 | 0.7343
-Testing | 0.1820 | 0.8180
+Task found in https://challenge2018.isic-archive.com/
 
 
-### Figure 1 - example visualisation plot
-Skin images in left column, true mask middle, predicted mask right column
-![Visualisation of predictions](visual.png)
+## U-net
+![UNet](imgs/uent.png)
 
-## References
-Segments of code in this assignment were used from or based on the following sources:
-1. COMP3710-demo-code.ipynb from Guest Lecture
-1. https://www.tensorflow.org/tutorials/load_data/images
-1. https://www.tensorflow.org/guide/gpu
-1. Karan Jakhar (2019) https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
+U-net is one of the popular image segmentation architectures used mostly in biomedical purposes. The name UNet is because it’s architecture contains a compressive path and an expansive path which can be viewed as a U shape. This architecture is built in such a way that it could generate better results even for a less number of training data sets.
+
+## Data Set Structure
+
+data set folder need to be stored in same directory with structure same as below
+```bash
+ISIC2018
+  |_ ISIC2018_Task1-2_Training_Input_x2
+    |_ ISIC_0000000
+    |_ ISIC_0000001
+    |_ ...
+  |_ ISIC2018_Task1_Training_GroundTruth_x2
+    |_ ISIC_0000000_segmentation
+    |_ ISIC_0000001_segmentation
+    |_ ...
+```
+
+## Dice Coefficient
+
+The Sørensen–Dice coefficient is a statistic used to gauge the similarity of two samples.
+
+Further information in https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+
+## Dependencies
+
+- python 3
+- tensorflow 2.1.0
+- pandas 1.1.4
+- numpy 1.19.2
+- matplotlib 3.3.2
+- scikit-learn 0.23.2
+- pillow 8.0.1
+
+
+## Usages
+
+- Run `train.py` for training the UNet on ISIC data.
+- Run `evaluation.py` for evaluation and case present.
+
+## Advance
+
+- Modify `setting.py` for custom setting, such as different batch size.
+- Modify `unet.py` for custom UNet, such as different kernel size.
+
+## Algorithm
+
+- data set: 
+    - The data set we used is the training set of ISIC 2018 challenge data which has segmentation labels.
+    - Training: Validation: Test = 1660: 415: 519 = 0.64: 0.16 : 0.2 (Training: Test = 4: 1 and in Training, further split 4: 1 for Training: Validation)
+    - Training data augmentations: rescale, rotate, shift, zoom, grayscale
+- model: 
+    - Original UNet with padding which can keep the shape of input and output same.
+    - The first convolutional layers has 16 output channels.
+    - The activation function of all convolutional layers is ELU.
+    - Without batch normalization layers.
+    - The inputs is (384, 512, 1)
+    - The output is (384, 512, 1) after sigmoid activation.
+    - Optimizer: Adam, lr = 1e-4
+    - Loss: dice coefficient loss
+    - Metrics: accuracy & dice coefficient
+    
+## Results
+
+Evaluation dice coefficient is 0.805256724357605.
+
+plot of train/valid Dice coefficient: 
+
+![img](imgs/train_and_valid_dice_coef.png)
+
+case present:
+
+![case](imgs/case%20present.png)
+
+## Reference
+Manna, S. (2020). K-Fold Cross Validation for Deep Learning using Keras. [online] Medium. Available at: https://medium.com/the-owl/k-fold-cross-validation-in-keras-3ec4a3a00538 [Accessed 24 Nov. 2020].
+
+zhixuhao (2020). zhixuhao/unet. [online] GitHub. Available at: https://github.com/zhixuhao/unet.
+
+GitHub. (n.d.). NifTK/NiftyNet. [online] Available at: https://github.com/NifTK/NiftyNet/blob/a383ba342e3e38a7ad7eed7538bfb34960f80c8d/niftynet/layer/loss_segmentation.py [Accessed 24 Nov. 2020].
+
+Team, K. (n.d.). Keras documentation: Losses. [online] keras.io. Available at: https://keras.io/api/losses/#creating-custom-losses [Accessed 24 Nov. 2020].
+
+262588213843476 (n.d.). unet.py. [online] Gist. Available at: https://gist.github.com/abhinavsagar/fe0c900133cafe93194c069fe655ef6e [Accessed 24 Nov. 2020].
+
+Stack Overflow. (n.d.). python - Disable Tensorflow debugging information. [online] Available at: https://stackoverflow.com/questions/35911252/disable-tensorflow-debugging-information [Accessed 24 Nov. 2020].
