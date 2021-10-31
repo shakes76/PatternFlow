@@ -94,8 +94,8 @@ compared to its matching label using the DSC.
 
 ### Description of the model
 
-As mentioned above the model is designed on that described in [1], with several 
-modifications. Relu activation was included in the Conv3D layer followed by 
+The model is designed on that described in [1], with several modifications. 
+Relu activation was included in the Conv3D layer followed by 
 BatchNormalization. The paper describes these as occurring in the
 reverse order. BatchNormalization was only included after the
 first Conv3D in each set. OOM errors were experienced and reducing the 
@@ -153,7 +153,7 @@ the model after 50 epochs.
 
 | True | Predicted   |
 | :---: | :---: |
-| ![](Images/660_y_true.png) | ![](Images/660_pred_argmax.png) |
+| ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
 
 ### Class images
 

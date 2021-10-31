@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
-import math
 import nibabel as nib
 from tensorflow import keras
 import driver as drv
@@ -10,6 +9,7 @@ import driver as drv
 
 # todo need to input X_set, y_set whish are x_
 class ProstateSequence(keras.utils.Sequence):
+    # inspiration
     # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
     # https://towardsdatascience.com/keras-data-generators-and-how-to-use-them-b69129ed779c
     """Data generator"""
@@ -18,7 +18,6 @@ class ProstateSequence(keras.utils.Sequence):
     def __init__(self, x_set, y_set, batch_size=1, training = True):
         # def __init__(self, x_set, y_set, batch_size=1, dim=(256, 256, 128), n_channels=1,
         #              n_classes=6, shuffle=False):
-        # todo return to this
         """
         :param x_set: list of images
         :param y_set: list of labels
@@ -33,7 +32,7 @@ class ProstateSequence(keras.utils.Sequence):
         self.dim = (256, 256, 128)
         self.n_channels = 1
         self.n_classes = 6
-        self.shuffle = False
+        self.shuffle = False   # True may help reduce overfitting
         self.on_epoch_end()
         self.training = training
 
@@ -58,14 +57,11 @@ class ProstateSequence(keras.utils.Sequence):
         y = self._generation_y(list_label_tmp)
         X = X[:, :, :, :, np.newaxis]
 
-        # WORKING HERE 2, CHANGE NORM TO -MEAN/STD -> MEAN = 0, STD = 1 FOR EACH IMAGE
-        #2 max = np.amax(X)  #todo , do a better norm
-        # adjust type. Lessen overhead
-        X = X.astype("float32")         # 0 upwards, max for all images ~1300
+        X = X.astype("float32")         # 0 upwards, max for these images ~1300
         y = y.astype("uint8")           # num 0-5
 
         # Normalise X: (X-mean)/stdev
-        X_norm = z_norm(X)  #2
+        X_norm = z_norm(X)
 
         if self.training:
             return X_norm, y     # for training and validation generation
@@ -106,29 +102,11 @@ class ProstateSequence(keras.utils.Sequence):
         img_data = img.get_fdata()
         return img_data
 
-    def on_epoch_end(self):  # todo currently set to false
-        'Shuffles indexes at end of each epoch'
+    def on_epoch_end(self):
+        'Shuffles indexes at end of each epoch and initalise self . indexes'
         self.indexes = np.arange(len(self.y))
         if self.shuffle:
             np.random.shuffle(self.indexes)
-
-    # todo join _dg_x & _dg_y, not called
-    def _data_generation(self, list_IDs_temp):
-        'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
-        # Initialization
-        print("114 never called check")
-        X = np.empty((self.batch_size, *self.dim, self.n_channels))
-        y = np.empty(self.batch_size, dtype=int)
-
-        # Generate data
-        for i, ID in enumerate(list_IDs_temp):
-            # Store sample
-            X[i,] = np.load('data/' + ID + '.npy')
-
-            # Store class
-            y[i] = self.labels[ID]
-            # label shape (256,256,128) -> (256,256,128,6) <class 'numpy.ndarray'>
-        return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
 
 
 def plot_loss(history):
@@ -148,7 +126,7 @@ def plot_loss(history):
     plt.ylabel('Loss')
     plt.legend()
     plt.savefig('loss.png')
-    # plt.show()
+    plt.show()
     plt.close()
 
 
@@ -169,7 +147,7 @@ def plot_accuracy(history):
     plt.ylabel('Accuracy')
     plt.legend()
     plt.savefig('accuracy.png')
-    # plt.show()
+    plt.show()
     plt.close()
 
 
@@ -213,19 +191,20 @@ def slices_ohe(img):
     show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
 
 
-def slices_pred(img, filename):
+def slices_pred(img, filename, title):
     """
     Save (and display) a slice of either y_predict or y_true.
+    :param title: Title for image
     :param img: Image to print
     :param filename: Name to save file
     :return: Nothing
     """
-    slice_0 = img[0,:,127,:,2] # img[0,:,:,0,1] try [0,:,127,:,2]
+    slice_0 = img[0,:,127,:,2]
     plt.imshow(slice_0)
+    plt.title(title)
     show_slices([slice_0])
     plt.savefig(filename)
-
-    show_slices([slice_0])
+    plt.close()
 
 def show_slices(sliced):
     """
@@ -237,27 +216,17 @@ def show_slices(sliced):
     for i in sliced:
         plt.imshow(i.T)
         plt.show()
-
-    # fig, ax = plt.subplots(1, len(sliced))  #todo, not working in pycharm
-    # fig.suptitle("One hot encoded plots")
-    # for j, sliceded in enumerate(sliced):
-    #     ax[j].imshow(sliceded.T)
-
-    # todo put into subplots (if works in pycharm)
-    # fig, axes = plt.subplots(1, len(sliced))
-    # for i, slice in enumerate(sliced):
-    #     axes[i].imshow(slice.T, cmap="gray", origin="lower")
-
+        # plt.close()
 
 def dice_coef(y_true, y_pred):
     """
+    Calculates DSC
 
     :param y_true: array of all images in label_test
     :param y_pred: Array output from pred_argmax
     :return: return
     """
     smooth = 0.1
-    # print("255 y_true", y_true.shape) #todo (18, 256, 256, 128)
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f * y_pred_f)
@@ -276,14 +245,10 @@ def dice_coef_multiclass(y_true, y_pred, classes):
     """
     dice = []
     for index in range(classes):
-        x = dice_coef(y_true[:,:,:, :,index], y_pred[:,:,:,:,index]) # 535 5 dim but only 4 provided
+        x = dice_coef(y_true[:,:,:, :,index], y_pred[:,:,:,:,index])
         dice = dice + [x]
     print_dice(dice)
-    return dice  # taking average
-    # dice=0
-    # for index in range(classes):
-    #     dice += dice_coef(y_true[:,:,:,index], y_pred[:,:,:,index])
-    # return dice/classes  # taking average
+    return dice
 
 
 def print_dice(dice):
@@ -302,12 +267,14 @@ def print_dice(dice):
     print("DSC list: ", dice)
     print("Average DSC: ", sum(dice) / len(dice))
 
+
 def model_summary_print(summ):
     """ Prints model.summary()  to file.
     :param: print_fn call
     """
     with open('model_summary.txt', 'w+') as f:
         print(summ, file=f)
+
 
 def dim_per_directory():
     """ iterates through data and label directories, checking that dimensions
@@ -364,7 +331,7 @@ def read_nii(filepath):
     return img_data
 
 
-def normalise(image):  # todo test
+def normalise(image):  # Alternative, not used
     """ If minv = 0, then is equiv to dividing all values by image maximum value
     :param image: data image
     :param minv: minimum voxel value
@@ -378,8 +345,13 @@ def normalise(image):  # todo test
     return img_norm
 
 
-def normalise2(path):  # todo test, not complete, needs to iterate thru path
-    """ """
+def normalise2(path):
+    """
+    Normalises image given path to nii.gz file.
+
+    :param path: Path to image
+    :return:  normalised image
+    """
     image = read_nii(path)
     maxv = np.amax(image)
     minv = np.amin(image)
@@ -389,8 +361,8 @@ def normalise2(path):  # todo test, not complete, needs to iterate thru path
 
 
 def z_norm(image):
-    """ Returns z normalised image. This will involve negative values. May require adjusted
-    colour palette to avoid all neg values being coloured black.
+    """ Returns z normalised image. This will involve negative values. May
+    require adjusted colour palette to display.
     :param image:
     :return: z normalised image
     """
