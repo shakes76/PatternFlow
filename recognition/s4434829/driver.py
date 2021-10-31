@@ -27,33 +27,25 @@ import pathlib
 import math
 import time
 
-from model import VQVAE
-from data_loaders import load_oasis_data, load_minst_data
+from model import VQVAE, PixelCNN
+from data_loaders import * 
 
 
 def main():
     print("hello")
     ### load data
-    # train_seq, valid_seq, test_seq = load_oasis_data(path="./keras_png_slices_data/keras_png_slices_data")
-    # X_train, y_train = train_seq.__getitem__(1)
-    # # print(X_train.__len__())
-    # print(tf.image.ssim(X_train[0], X_train[0], 3))
-    # print(tf.image.ssim(X_train[0], X_train[1], 3))
+    width, height = 256, 256
+    train_seq, valid_seq, test_seq = load_oasis_data(batch_size=128)
 
-    # plt.imshow(X_train[0], cmap='gray')
-    # plt.figure()
-    # plt.imshow(y_train[0], cmap='gray')
-    # plt.show()
-    # width, height = 256, 256
 
     # load minst data
-    width, height = 28, 28
-    train_seq, test_seq = load_minst_data(batch_size=128)
+    # width, height = 28, 28
+    # train_seq, test_seq = load_minst_data(batch_size=128)
 
 
     ### initilise model
     model = VQVAE()
-    model.build( input_shape=[10, width, height, 1])
+    model.build(input_shape=[1, width, height, 1])
     print(model.summary())
 
     ### make optimiser and loss
@@ -66,7 +58,7 @@ def main():
     # change much anyway. It does use the loss returned instead of recalcualting loss
     # TODO move
     loss_hist = [] # for plotting
-    EPOCHS = 5
+    EPOCHS = 0 # NOTE SKIPPING but better to make it a function
     idx = 0
     for epoch in range(EPOCHS):
         start = time.time()
@@ -103,8 +95,80 @@ def main():
         if(epoch % 1 == 0):
             print('Epoch {}: \n\ttrain loss: {}'.format(epoch, np.mean(loss)))
 
-
     ### plot results
+    valid_seq = OASISSeq(sorted(X_valid_files),sorted( y_valid_files), 20)
+    X_valid, y_valid = valid_seq.__getitem__(1)
+
+    plt.figure(figsize=(5*8,5))
+    n = 8
+    idx = 8
+    plt.subplot(1, n, 1)
+    plt.axis('off') 
+    plt.imshow(X_valid[idx],  cmap='gray')
+    plt.title("Original")
+
+    model_test = VQVAE()
+
+    # get a list of saved models from file
+    saved_models_r = os.listdir(folder)
+    saved_models = sorted([".".join(saved_model.split(".")[0:-1]) for saved_model in saved_models_r])[2:]
+    saved_models = np.unique(saved_models)
+    # saved_models = saved_models[np.where(saved_models=='model_1_1635414388.8481214model_weights')[0][0]:]
+    saved_models = saved_models[::30]
+    # plot
+    for i in range(n-2):
+        # model_test.build( input_shape=[10, 256, 256, 1])
+        # print(model.summary())
+        model_test.load_weights("./saves/initial/"+saved_models[i])
+        loss, out1 = model_test(X_valid)
+        valid_ssim = (tf.image.ssim(X_valid, out1, 3))
+        avg_ssim = np.mean(valid_ssim)
+        img_ssim = np.mean((tf.image.ssim(X_valid[idx:idx+1], out1[idx:idx+1], 3)))
+        print(avg_ssim, img_ssim)
+        plt.subplot(1, n, i+2)
+        plt.imshow(out1[idx], cmap='gray')
+        plt.axis('off') 
+        plt.title("{} iterations \n{:.2f} batch  ssim\n{:.2f} image ssim".format(7*967*(i+2), avg_ssim, img_ssim), fontsize=22)
+    plt.savefig('figures/epoch_compare_recon_{}.png'.format(idx))
+
+    # Make data for pixelcnn input
+    make_indices_dataset(train_seq, model.get_encoder(), model.get_vq.emb)
+
+    data_dir = pathlib.Path("./")
+    codebook_files = list(data_dir.glob('./encoded_data/*'))
+    codebook_seq = CodeBookSeq(sorted(codebook_files))
+
+    # make pixel cnn model
+    pixel_cnn= PixelCNN()
+
+    # train pixel cnn
+    pixel_cnn.compile(optimizer=keras.optimizers.Adam(lr),
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=["accuracy"])
+
+    # runs=0
+    folder = "./saves/oasis/pixelcnn/"
+    model_name="pcnn"
+
+    runs += 1
+    num_hundreds = 15
+    codebook_indices, _ = codebook_seq.__getitem__(1)
+    for i in range(num_hundreds):
+        start = time.time()
+        pixel_cnn.fit(
+            codebook_seq,
+        #     batch_size=20,
+            epochs=500,
+            validation_data=(codebook_indices, codebook_indices),
+        )
+        time_now = time.time()
+        details_1 = "R{}E{}".format(runs, i)
+        details_2 = "_{}_".format( time_now) 
+        pixel_cnn.save_weights(folder+model_name+details_1+details_2+"model_weights")
+        print("Epoch time", time.time()-start)
+    
+
+
 
     print("Done")
 
