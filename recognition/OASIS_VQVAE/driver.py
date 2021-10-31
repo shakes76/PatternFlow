@@ -196,11 +196,11 @@ def parse_args():
         default="keras_png_slices_data", 
         help="Location of unzipped OASIS dataset. Folder should contain the folders 'keras_png_slices_train' and 'keras_png_slices_validate'.")
 
-    parser.add_argument("--K", "--num-embeddings", type=int, default=512, help="Number of embeddings, described as K in the VQVAE paper (default: 512)")
-    parser.add_argument("--D", "--embedding-dim", type=int, default=2, help="Size of the embedding vectors, described as D in the VQVAE paper (default: 2)")
+    parser.add_argument("--K", "--num-embeddings", type=int, default=256, help="Number of embeddings, described as K in the VQVAE paper (default: 256)")
+    parser.add_argument("--D", "--embedding-dim", type=int, default=64, help="Size of the embedding vectors, described as D in the VQVAE paper (default: 64)")
     parser.add_argument("--beta", type=float, default=1.5, help="Committment cost, described as beta in VQVAE paper (default: 1.5)")
 
-    parser.add_argument("--epochs", type=int, default=1, help="Number of epochs to train for (default: 30)")
+    parser.add_argument("--epochs", type=int, default=30, help="Number of epochs to train for (default: 30)")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training (default: 32)")
     parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate for ADAM optimiser for the VQVAE trainer (default 2e-4)")
 
