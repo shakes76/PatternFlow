@@ -18,7 +18,9 @@ The Perceiver iteratively attends to the input byte array by alternating cross-a
 and latent self-attention blocks." The final results are passed through an 
 average pooling layer and a dense layer for classification.
 
+This is a visualization of the Perceiver model, from the paper:
 <img src="./imgs/perceiver.png" width="700">
+
 
 This dataset contains 18680 preprocessed X-Ray images of left and right knees of
 101 patients. The created model is supposed to distinguish between left and 
