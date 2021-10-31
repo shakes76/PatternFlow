@@ -147,6 +147,26 @@ def dice_coeff(y_true, y_pred, axis=(1, 2, 3)):
     return (2 * num_intersection + smoothing) / (num_y_true + num_y_pred + smoothing)
 
 
+# Taken from https://stackoverflow.com/questions/41908379/keras-plot-training-validation-and-test-set-accuracy
+def plot_accuracy_curve(history):
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.show()
+
+
+# Taken from https://stackoverflow.com/questions/41908379/keras-plot-training-validation-and-test-set-accuracy
+def plot_loss_curve(history):
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.show()
 
 
 def main():
@@ -192,9 +212,10 @@ def main():
 
     print(model.summary())
 
-    epochs = 50
-    model.fit(train_batches, epochs=epochs, validation_data=validation_batches)
-
+    epochs = 2
+    history = model.fit(train_batches, epochs=epochs, validation_data=validation_batches)
+    plot_accuracy_curve(history)
+    plot_loss_curve(history)
     model.evaluate(test_batches)
     show_predictions(model=model, dataset=train_batches)
 
