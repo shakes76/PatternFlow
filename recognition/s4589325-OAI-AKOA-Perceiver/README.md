@@ -4,7 +4,7 @@
 ## Description
 The goal of this project is to develope a perceiver that can be used to classify the OAI AKOA Knee dataset (binary classification). A full description of the Perceiver can be found in [this paper](https://arxiv.org/abs/2103.03206). The basic premise of a perceiver is to have "an architecture based on attentional princicples" capable of making classifications without dommain specific assumptions (i.e. a perceiver should be capable of working on images, videos, audio, point clouds, etc). Initially a byte array of all input data set is parsed through a latent vector (using a cross-attention module) to compress down the relative data size. An arbitrary number of transformer modules using self-attention blocks. This whole process is applied iteratively. The result is then parsed to a global pooling layer and a dense classification layer. The figure below shows the general structure of a perceiver.
 
-![](Images/Perceiver.png)
+![](Images/perceiver.png)
 
 ## Perceiver Dependencies
 - Tensorflow (v2.6)
@@ -45,28 +45,28 @@ The classification portion of the implementation involves a global pooling layer
 
 ### Hyperparameters
 ```
-BATCH				= 8
-IMG_WIDTH			= int(260 / 2)
-IMG_HEIGHT			= int(228 / 2)
-INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT)
-SEED				= 3141
-BANDS				= 6
+BATCH			= 8
+IMG_WIDTH		= int(260 / 2)
+IMG_HEIGHT		= int(228 / 2)
+INPUT_SHAPE		= (IMG_WIDTH, IMG_HEIGHT)
+SEED			= 3141
+BANDS			= 6
 MAX_FREQUENCY		= 10
 VALIDATION_SPLIT	= 0.2
-EPOCHS				= 10
+EPOCHS			= 10
 LATENT_ARRAY_SIZE	= 64 # Paper uses 512
 BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
-CHANNEL				= (2 * BANDS + 1)
-PROJECTION			= 2 * (2 * BANDS + 1) + 1
-QKV_DIM				= PROJECTION
+CHANNEL			= (2 * BANDS + 1)
+PROJECTION		= 2 * (2 * BANDS + 1) + 1
+QKV_DIM			= PROJECTION
 LEARNING_RATE		= 0.0015
 WEIGHT_DECAY_RATE	= 0.0001
 DROPOUT_RATE		= 0.1
 TRANSFOMER_NUM		= 4
-HEAD_NUM			= 6
-MODULES_NUM			= 4
-ITERATIONS			= 2
-OUT_SIZE			= 1 # binary as only left or right knee
+HEAD_NUM		= 6
+MODULES_NUM		= 4
+ITERATIONS		= 2
+OUT_SIZE		= 1 # binary as only left or right knee
 ```
 
 ## Examples and Results
@@ -74,7 +74,10 @@ OUT_SIZE			= 1 # binary as only left or right knee
 The plots below show the accuracy and loss of the model throughout the training process. Final results are also shown and the model achieved an overall accuracy of approximately 93% (although there was some variation in the accuracy achieved on each run).
 
 ![](Images/Accuracy_Plot.png)
+
 ![](Images/Loss_Plot.png)
+
 ![](Images/Result.png)
+
 ![](Images/Accuracy.png)
 
