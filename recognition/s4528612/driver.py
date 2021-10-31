@@ -14,7 +14,10 @@ import numpy as np
 
 IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
 EPOCHS = 10
-
+def shuffle_dictionary(dictionary):
+    items = list(dictionary.items())
+    random.shuffle(items)
+    return dict(items)
 def data_processing(directory, train,validation):
     left = 0
     right = 0
