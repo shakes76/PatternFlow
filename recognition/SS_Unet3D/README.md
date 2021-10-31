@@ -87,7 +87,7 @@ The augmentation script requires its own environment due to dependency conflicts
 ~~~~
 conda create --name unet3d_augmenter python=3.7
 conda activate unet3d_augmenter
-pip install pyimgaud3d
+pip install pyimgaug3d
 ~~~~
 
 ### Execution
