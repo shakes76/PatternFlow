@@ -28,19 +28,19 @@ The goal of this project is to develope a perceiver that can be used to classify
 - `OAI_AKOA_Perceiver.py`: contains the class definition of the perceiver as well as function definitions for the cross attention module, fourier encoding and the transformer module
 - `Parameters.py`: easy access to all the hyperparameters used to tune the model
 
-### Data Split
+### Data Split Overview
 As images from multiple patients exist in the dataset, the patients must be sorted so that the training dataset and testing dataset have none of the same patients (i.e. there must be no leakage). Patient IDs are present in each image name and the driver script initially sorts the data and seperates it into training and testing datasets. Other operation such as image downsizing and shuffling are also performed. The training set is then split by `tf.fit()` into a validation set and the final accuracy is found using `tf.evaluate()` on the testing set.
 
-### Cross-Attention Module
+### Cross-Attention Module Overview
 The cross-attention module followed the general structure outlined by the perceiver paper. Input layers were created for the latent vector and the byte array containing all the data from the images. From here the query was retreived from the latent vector and the key and value were retreived from the byte layer. The query key and value were then combined in a attention layer and then passed through a dense layer followed by a normalization layer. A connection was also passed through a dense layer connected to a dropout layer and this was recombined with the normalization layer.
 
-### Transformer Module
-Initially the input was defined for the transfomer module followed by a `for` loop defining how many transformer modules that were to be used.
+### Transformer Module Overview
+Initially the input was defined for the transfomer module followed by a `for` loop defining how many transformer modules that were to be used. Each loop created a multihead attention layer followed by a dense layer and a combination layer (between the previous dense layer and the initial input). A normalization layer was then added followed several dense layers connected through a combination layer.
 
-### Fouier Encoding
+### Fouier Encoding Overview
+The basic process for fourier encoding was to make a map with the same dimensions of the image with values \[-1, 1\] followed by creating a log-space (from 0 to the Nyquist frequency) and finding the cosine and sine of this. This was repeated for all the images passed to the function and the result was then concatenated with the initial image set.
 
-
-### Classification
+### Classification Overview
 The classification portion of the implementation involves a global pooling layer followed by a dense layer for classification.
 
 ### Hyperparameters
@@ -71,14 +71,10 @@ OUT_SIZE			= 1 # binary as only left or right knee
 
 ## Examples and Results
 
-The plots below show the accuracy and loss of the model throughout the training process. Final results are also shown and the model achieved an overall accuracy of approximately 93%.
+The plots below show the accuracy and loss of the model throughout the training process. Final results are also shown and the model achieved an overall accuracy of approximately 93% (although there was some variation in the accuracy achieved on each run).
 
 ![](Images/Accuracy_Plot.png)
 ![](Images/Loss_Plot.png)
 ![](Images/Result.png)
 ![](Images/Accuracy.png)
-
-
-
-5. describe and justify your training, validation and testing split of the data.
 
