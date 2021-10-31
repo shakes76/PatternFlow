@@ -35,7 +35,8 @@ Chun-Chiao Huang
  
 
 ### Loss
-    
+ ![loss](https://user-images.githubusercontent.com/64058748/139565537-d3292c6d-78f0-406d-8589-1b906f96a223.jpg)
+   
 
 ## Requirements    
 ## Usage  
