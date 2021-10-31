@@ -13,7 +13,7 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
 
 
 def calculate_ssim(original_images, reconstructed_images):
-    similarity = tf.image.ssim(original_images, reconstructed_images, max_val=1)
+    similarity = tf.reduce_mean(tf.image.ssim(original_images, reconstructed_images, max_val=1))
     print("Structured similarity is:", similarity)
 
 def show_reconstructions(n_images, test_samples, reconstructed):
@@ -37,7 +37,7 @@ def show_reconstructions(n_images, test_samples, reconstructed):
 def show_generated_images(n_images, priors, generated):
     for i in range(n_images):
         plt.subplot(1, 2, 1)
-        plt.imshow(priors[i])
+        plt.imshow(priors[i], cmap="gray")
         plt.title("Code")
         plt.axis("off")
 

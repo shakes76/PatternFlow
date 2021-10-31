@@ -6,7 +6,6 @@ from VQVAE import VQVae, VectorQuantiser
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 import tensorflow_probability as tfp
-import matplotlib.pyplot as plt
 
 
 class PixelConvLayer(keras.layers.Layer):
@@ -16,6 +15,9 @@ class PixelConvLayer(keras.layers.Layer):
         self.conv = Conv2D(**kwargs)
 
     def build(self, input_shape):
+        """
+        Initialise the mask
+        """
         self.conv.build(input_shape)
         kernel_shape = self.conv.kernel.get_shape()
 
@@ -60,8 +62,6 @@ class ResidualBlock(keras.layers.Layer):
         x = self.pixel_conv(x)
         x = self.conv2(x)
         return keras.layers.add([inputs, x])
-
-pixel_layer = PixelConvLayer(filters=128, kernel_size=1, strides=1, mask_type='A')
 
 ## params
 n_residual_blocks = 2

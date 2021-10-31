@@ -44,7 +44,7 @@ $ python3 driver.py
 ```
 
 This will load the OASIS brain data into memory, train the VQVAE and PixelCNN, and output
-1. The average structured similarity between images and the test dataset and their reconstructions will be printed to stdout
+1. The average structured similarity between 10 random test images and their reconstructions will be printed to stdout
 2. 10 random test images compared to their respective reconstructions will be saved to the current directory
 3. 10 random generated images will be saved to the current directory.
 
