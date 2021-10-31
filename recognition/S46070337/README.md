@@ -6,3 +6,6 @@ The data set contains and the original skin patch image segmentation, used to de
 
 ## Unet architecture
 <image width="700" src="Screenshots/Unet.png" />
+
+## Improved Unet architecture
+<image width="700" src="Screenshots/Unet.png" />
