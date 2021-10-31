@@ -48,7 +48,7 @@ def generate_samples(instanceIds, dataset_proportion):
                 else:
                     trainIndex.append(fileId)
             else:  # second step: building testing set
-                if len(testIndex) <= len(instanceIds) * (1-dataset_proportion):
+                if (1-dataset_proportion) * len(instanceIds) >= len(testIndex):
                     testIndex.append(fileId)
                 else:
                     break  # done building test set
@@ -70,52 +70,51 @@ def loadInput(dir_data, dataset_proportion):
         Args:
             instanceIds: The image names to build the data set from
         Returns:
-            X_set, y_set: the tf array of the X and y set built
+            input, list_of_labels: the tf array of the X and y set built
         """
-        X_set = []
-        y_set = []
+        input = []
+        list_of_labels = []
         for i, fileId in enumerate(instanceIds):
             image = load_img(dir_data + "/" + fileId,
                              target_size=(img_shape), color_mode="grayscale")
 
             image = img_to_array(image)
-            X_set.append(image)
-            if "LEFT" in fileId or "L_E_F_T" in fileId or \
-                    "Left" in fileId or "left" in fileId:
-                label = 0
-            else:
+            input.append(image)
+            if "RIGHT" in fileId or "R_I_G_H_T" in fileId or "Right" in fileId or "right" in fileId:
                 label = 1
-            y_set.append(label)
-        X_set = np.array(X_set)
-        X_set /= 255.0
-        return X_set, np.array(y_set, dtype=np.uint8).flatten()
-    X_train, y_train = load_samples(trainIndex)
-    X_val, y_val = load_samples(testIndex)
-    X_test, y_test = X_val[len(X_val) // 5 * 4:], y_val[len(y_val) // 5 * 4:]
-    X_val, y_val = X_val[0:len(X_val) // 5 * 4], y_val[0:len(y_val) // 5 * 4]
-    return X_train, y_train, X_val, y_val, X_test, y_test
+            else:
+                label = 0
+            list_of_labels.append(label)
+        input = np.array(input)
+        input /= 255.0
+        return input, np.array(list_of_labels, dtype=np.uint8).flatten()
+    trainX, trainY = load_samples(trainIndex)
+    valX, valY = load_samples(testIndex)
+    testX, testY = valX[len(valX) // 5 * 4:], valY[len(valY) // 5 * 4:]
+    valX, valY = valX[0:len(valX) // 5 * 4], valY[0:len(valY) // 5 * 4]
+    return trainX, trainY, valX, valY, testX, testY
 def create_dataset(image_dir, img_size):
 
-    training_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
+    split_train = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
                                                     subset="training", seed=46, label_mode='int',
                                                     batch_size=1, image_size=img_size)
 
-    validation_dataset = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
+    split_val = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
                                                       subset="validation", seed=46, label_mode='int',
                                                       batch_size=1, image_size=img_size)
 
-    val_batches = tf.data.experimental.cardinality(validation_dataset)
-    test_dataset = validation_dataset.take(val_batches // TEST_PORTION)
-    validation_dataset = validation_dataset.skip(val_batches // TEST_PORTION)
+    foldSize = tf.data.experimental.cardinality(split_val)
+    split_test = split_val.take(foldSize // 5)
+    split_val = split_val.skip(foldSize // 5)
 
-    training_dataset = training_dataset.map(process).prefetch(AUTO_TUNE)
-    validation_dataset = validation_dataset.map(process).prefetch(AUTO_TUNE)
-    test_dataset = test_dataset.map(process).prefetch(AUTO_TUNE)
-    return training_dataset, validation_dataset, test_dataset
+    split_train = split_train.map(process).prefetch(AUTO_TUNE)
+    split_val = split_val.map(process).prefetch(AUTO_TUNE)
+    split_test = split_test.map(process).prefetch(AUTO_TUNE)
+    return split_train, split_val, split_test
 
-def process(image,label):
-    image = tf.cast(image / 255. ,tf.float32)
-    return image,label
+def process(inputImg, groundTruth):
+    inputImg = tf.cast(inputImg / 255. ,tf.float32)
+    return inputImg, groundTruth
 
 def plot_data(history):
     # Plotting the Learning curves
@@ -145,11 +144,11 @@ def plot_data(history):
 if __name__ == "__main__":
 
     dataset_proportion = 0.8
-    X_train, y_train, X_val, y_val, X_test, y_test = loadInput(IMAGE_DIR, dataset_proportion)
-    print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
-    print(X_train.shape)
+    trainX, trainY, valX, valY, testX, testY = loadInput(IMAGE_DIR, dataset_proportion)
+    print(len(trainX), len(trainY), len(valX), len(valY), len(testX), len(testY))
+    print(trainX.shape)
 
-    knee_model = Perceiver(patch_size=0,
+    perceiverTransformer = Perceiver(patch_size=0,
                             data_size=ROWS*COLS, 
                             latent_size=LATENT_SIZE,
                             num_bands=NUM_BANDS,
@@ -162,32 +161,33 @@ if __name__ == "__main__":
                             weight_decay=WEIGHT_DECAY,
                             epoch=EPOCHS)
 
-
+ 
 
 
     # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    history = train(knee_model,
-                    train_set=(X_train, y_train),
-                    val_set=(X_val, y_val),
-                    test_set=(X_test, y_test),
+    history = train(perceiverTransformer,
+                    train_set=(trainX, trainY),
+                    val_set=(valX, valY),
+                    test_set=(testX, testY),
                     batch_size=BATCH_SIZE)
 
 
     plot_data(history)
-
+    print("Evaluation")
     # Retrieve a batch of images from the test set
-    image_batch, label_batch = X_test[:BATCH_SIZE], y_test[:BATCH_SIZE]
-    image_batch = image_batch.reshape((BATCH_SIZE, ROWS, COLS, 1))
-    predictions = knee_model.predict_on_batch(image_batch).flatten()
-    label_batch = label_batch.flatten()
+    testData, testClass = testX[:BATCH_SIZE], testY[:BATCH_SIZE]
+    testData = testData.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    evaluation = perceiverTransformer.predict_on_batch(testData).flatten()
+    testClass = testClass.flatten()
 
-    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
-    class_names = {0: "left", 1: "right"}
+    evaluation = tf.where(evaluation < 0.5, 0, 1).numpy()
+    label = {0: "left", 1: "right"}
 
     plt.figure(figsize=(10, 10))
     for i in range(9):
         ax = plt.subplot(3, 3, i + 1)
-        plt.imshow(image_batch[i], cmap="gray")
-        plt.title("pred: " + class_names[predictions[i]] + ", real: " + class_names[label_batch[i]])
+        plt.imshow(testData[i], cmap="gray")
+        plt.title("pred: " + label[evaluation[i]] + ", real: " + label[testClass[i]])
         plt.axis("off")
     plt.show()
+    print("Finished")
