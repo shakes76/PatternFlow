@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from tensorflow.keras import optimizers, losses
+from tensorflow.keras import optimizers, losses, activations, initializers
 from tensorflow.keras.layers import Input, Layer, Dropout, Dot
 from tensorflow.keras.models import Model
 
@@ -79,9 +79,12 @@ def split_index(data):
     
     return train_set, val_set, test_set
 
-def GCN_Model(num_classes, num_channels = 16, dropout_rate = 0.5, kernel_regulariser = None, num_input_channels = None):
+def GCN_Model(num_features, num_classes, 
+              num_channels = 16, dropout_rate = 0.5, 
+              kernel_regulariser = None, num_input_channels = None):
     """ Creates a GCN Model
     Parameters:
+        num_features: number of features
         num_classes: number of channels in output
         num_channels: number of channels in first GCN Layer
         dropout_rate: rate for Dropout Layers
@@ -90,18 +93,18 @@ def GCN_Model(num_classes, num_channels = 16, dropout_rate = 0.5, kernel_regular
     """
 
     # Inputs
-    x_input = Input((num_input_channels,), dtype = tf.float32)
-    filter_input = Input((None,), dtype = tf.float32, sparse = True)
+    x_input = Input((num_features,), dtype = tf.float32)
+    node_input = Input((num_input_channels,), dtype = tf.float32, sparse = True)
 
     # Create layers
     dropout_L0 = Dropout(dropout_rate)(x_input)
-    gcn_L0 = GCN_Layer(num_channels, activation = "relu", kernel_regulariser= kernel_regulariser)([dropout_L0,filter_input])
+    gcn_L0 = GCN_Layer(num_channels, activations.relu, kernel_regulariser)([dropout_L0,node_input])
 
     dropout_L1 = Dropout(dropout_rate)(gcn_L0)
-    gcn_L1 = GCN_Layer(num_classes, acitvation = "softmax")([dropout_L1, filter_input])
+    gcn_L1 = GCN_Layer(num_classes, activations.softmax)([dropout_L1, node_input])
     
     # Model
-    model = Model(inputs = [x_input, filter_input], outputs = gcn_L1)
+    model = Model(inputs = [x_input, node_input], outputs = gcn_L1)
 
     return model
 
@@ -123,7 +126,7 @@ class GCN_Layer(Layer):
     """
     def __init__(self, 
         num_channels, 
-        activation = None, 
+        activation, 
         use_bias = False, 
         kernel_initialiser = 'glorot_uniform',
         bias_initaliser = 'zeros',
@@ -131,7 +134,14 @@ class GCN_Layer(Layer):
         bias_regulariser = None,
         activity_regulariser = None, **kwargs):
 
-        super(GCN_Layer, self).__init__(**kwargs)
+        super(GCN_Layer, self).__init__(**kwargs) 
+        self.activation = activations.get(activation) 
+        self.use_bias = use_bias
+        self.kernel_initialiser = initializers.get(kernel_initialiser)
+        self.bias_initaliser = initializers.get(bias_initaliser)
+        self.kernel_regulariser = regularizers.get(kernel_regulariser)
+        self.bias_regulariser = regularizers.get(bias_regulariser)
+        self.activity_regulariser = regularizers.get(activity_regulariser)
         self.num_channels = num_channels
 
     def build(self, input_shape): 
@@ -140,21 +150,20 @@ class GCN_Layer(Layer):
 
         # create weights of layer
         self.w = self.add_weight(shape = (input_dim, self.num_channels), 
-            initializer= self.kernel_initialiser,
+            initializer = self.kernel_initialiser,
             name = "kernel",
-            regularizer= self.kernel_regulariser)
+            regularizer = self.kernel_regulariser)
 
     def call(self, inputs):
         x, a = inputs
 
-        output = tf.matmul(x, self.w)
-        output = tf.matmul(a, output)
+        output = tf.keras.backend.dot(x, self.w)
+        output = tf.keras.backend.dot(a, output)
 
         return self.activation(output)
 
     def config(self):
         return {"channels": self.num_channels}
-
 
 #class GCN_Model(Model):
     """
