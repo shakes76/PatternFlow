@@ -13,7 +13,7 @@
 * [Introduction to the Problem and the Dataset](#Introduction to the Problem and the Dataset)<br>
 * [The Algorithm](#The Algorithm)<br>
 * [Project Structure](#Project Structure)<br>
-* [Running the Model](#Running the Model)<br>
+* [Running the Model and Dependencies](#Running the Model and Dependencies)<br>
 * [Data and Training](#Data and Training)<br>
 * [Building the Model](#Building the Model)<br>
 * [Compiling the Model](#Compiling the Model)<br>
@@ -59,13 +59,16 @@ model which represents mt GCN and contains all the relevant layers).
 from `myGraphModel.py`, parsing and splitting the data in training/validation sets,
 running the model, tracking and displaying the progress/accuracy of the model and 
 plotting a TSNE plot of the data.
-- `resources`: This is where you should put the facebook.npz file. This is
+- `resources`: This is where you should put the `facebook.npz` file. This is
 also where the images embedded in this file are stored.
 
-### Running the Model
+### Running the Model and Dependencies
 
 To run the model, run `driver.py.main()`. Ensure that the `FILE_PATH` variable is set
-to the location of the `facebook.npz` file. The user can easily adjust the following
+to the location of the `facebook.npz` file. The `facebook.npz` file will need to be 
+downloaded to an appropriate local location. by default the `FILE_PATH` variable points
+to the `resources` folder in the same directory as the `driver.py` file. The user can 
+easily adjust the following
 model variables prior to running:
 - `PLOT_TSNE`: Set whether you want to plot accuracy.
 - `PLOT_ACCURACY`: Set whether you want to plot accuracy.
@@ -74,7 +77,8 @@ model variables prior to running:
 - `TRAIN_SPLIT`: The portion of the data to split into the training set.
 - `TEST_VAL_SPLIT`: The portion of the data to split into the test/validation set.
 
-**Dependencies:**
+The user should also ensure that the following **dependencies** are installed and up to date:
+
 - Tensorflow 2.6.0
 - Keras 2.6.0
 - Scipy 1.7.1

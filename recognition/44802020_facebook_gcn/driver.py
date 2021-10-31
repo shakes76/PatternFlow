@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 FILE_PATH = r"./resources/facebook.npz"
 
 # Plotting Variables
-PLOT_TSNE = True  # Set whether or not you want to plot accuracy
-PLOT_ACCURACY = True  # Set whether or not you want to plot accuracy
+PLOT_TSNE = False  # Set whether or not you want to plot accuracy
+PLOT_ACCURACY = False  # Set whether or not you want to plot accuracy
 
 # model Variables
 EPOCHS = 200  # Set the number of epochs over which the Model should train
