@@ -3,20 +3,15 @@
 <br>
 The skin is the largest organ of the human body. Some skin diseases, such as malignant black, melanoma. These diseases are likely to cause death, and the consequences of misdiagnosis will be very serious. Moles are skin diseases with mild symptoms, but some fatal skin diseases such as malignant black and mildly symptomatic skin diseases and their Similar. Effectively locating and detecting these skin diseases plays a critical role in saving the lives of patients. The ISIC data set contains 23k melanoma examples of malignant and benign images that classify skin injuries. Yolo is a kind of slider image The detection technology is different from mask-rcnn in that it uses a one-stage algorithm, which only uses a convolutional neural network to directly predict the classes and positions of different targets. In here, YoloV3 is used to detect the lesion area of the ISIC data set. The goal of this task is that all detections having a minimum Intersection Over Union of 0.8 on the test set.
 
-<br>
-<br>
+
+
 *[ISIC dataset](#ISIC-dataset)
-<br>
 *[YoloV3](#YoloV3)
-<br>
 *[Pre-processing](#Pre-processing)
-<br>
 *[Results](#Results)
-<br>
 *[Dependencies](#Dependencies)
-<br>
 *[Reference](#Reference)
-<br>
+
 
 ### ISIC-dataset
 In this task, we have given the preprocessed data set, which includes 2594 pictures and the corresponding segmented black and white pictures. 
