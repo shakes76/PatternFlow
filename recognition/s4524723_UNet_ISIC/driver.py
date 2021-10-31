@@ -36,6 +36,10 @@ def verify_gpu():
     # os.getcwd()
 
 
+# Note: For the following file processing functions, I looked at the previous year's cohort in PatternFlow GitHub to get
+# started. In particular, usage of the glob function.
+# However, I have written the functions myself.
+
 def decode_image(img):
     """
     Decode the image in jpeg format into a tensor.
@@ -58,6 +62,8 @@ def process_path(image_path, mask_path):
     """
     Read the path string for the files and mask.
     Output a tuple consisting of decoded image and mask tensors.
+    Reference:
+        https://www.tensorflow.org/tutorials/load_data/images
     """
     img = tf.io.read_file(image_path)
     img = decode_image(img)
@@ -132,6 +138,8 @@ def create_mask(pred_mask):
 def display(display_list):
     """
     Show the image file, true mask and predicted mask.
+    Reference:
+        https://www.tensorflow.org/tutorials/images/segmentation
     """
     plt.figure(figsize=(15, 15))
 
@@ -148,6 +156,8 @@ def display(display_list):
 def show_predictions(model, dataset=None, num=1):
     """
     Show the predictions for num items in dataset using display().
+    Reference:
+        https://www.tensorflow.org/tutorials/images/segmentation
     """
     if dataset:
         for image, mask in dataset.take(num):

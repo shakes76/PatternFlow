@@ -3,6 +3,8 @@ Originally created by me in Google Colab.
 
 This file defines a UNet based on the architecture in https://arxiv.org/abs/1802.10508v1.
 Note that this UNet is 3 layers deep as compared to the 5 layers in the paper.
+
+@author Yash Talekar
 """
 
 # Start by importing dependencies.
