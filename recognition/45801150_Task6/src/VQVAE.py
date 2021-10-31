@@ -127,25 +127,8 @@ def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
 
     reconstructed = vqvae.predict(test_samples)
     calculate_ssim(test_samples, reconstructed)
-
+    return test_samples, reconstructed
     # Output image comparisons
-    for i in range(n_images):
-        original_image = test_samples[i].squeeze()
-        reconstructed_image = reconstructed[i].squeeze()
-
-        plt.subplot(1, 2, 1)
-        plt.imshow(original_image, vmin=0, vmax=1)
-        plt.title("Original")
-        plt.axis("off")
-
-        plt.subplot(1, 2, 2)
-        plt.imshow(reconstructed_image, vmin=0, vmax=1)
-        plt.title("Reconstructed")
-        plt.axis("off")
-
-        # plt.show()
-        plt.savefig(f"reconstructions_{i}.png")
-        plt.close()
 
 
 def calculate_ssim(original_images, reconstructed_images):
