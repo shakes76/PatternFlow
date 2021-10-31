@@ -7,6 +7,7 @@ The algorithm involves multiple layers of convolution and extra element-wise sum
 
 
 ## Dependencies
+The model and all related files can be found in Mark_ISIC_UNET folder.
 The following packages are required to use this. Only tensorflow is used in the model itself, the other packages are used for data preparation and displaying graphs and images.
 - Tensorflow
 - glob
