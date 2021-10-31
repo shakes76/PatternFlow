@@ -77,8 +77,8 @@ by its inclusion.
 
 ### Data Augmentation
 While there are 157 training images these scans are only of 27 individuals. Data
-augmentation using publicly available code by Siyu Liu [7] was also planned to 
-be undertaken. 
+augmentation, using methods such as those indicated by Siyu Liu [7] were also 
+planned to be undertaken. 
 
 ### Description of the algorithm
 The data set is sufficiently large to require the images be provided to the 
@@ -127,11 +127,10 @@ rate. Loss was categorical_crossentropy as there were 6 classes, and labels
 were provided after one_hot encoding. Metrics was set to accuracy. Plots of 
 training loss and accuracy are below.
 
-# PLOTS TRAINING / ACCURACY!!
 
 | Accuracy | Loss  |
 | :---: | :---: |
-| ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
+| ![](Images/accuracy.png) | ![](Images/loss.png) |
 
 
 
@@ -179,7 +178,7 @@ methods for augmenting 3D data [7].
 * Add DSC loss function to model.compile() for one or a number of the classes 
     with poorer performing DSC scores (ie prostate or rectum), to 
     investigate if this would improve overall performance
-* Save and re-use weights
+* Save and re-use weights.
 * Adjust for class bias, as the size of background and body greatly exceed 
 that of the prostate and rectum. 
 
