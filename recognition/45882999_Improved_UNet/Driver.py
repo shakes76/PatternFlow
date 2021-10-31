@@ -1,6 +1,7 @@
 import os
 import tensorflow as tf
 from tensorflow.keras import layers, models
+import matplotlib.pyplot as plt
 import glob
 from Model import improved_model
 img_input = "C:/Users/s4588299/Downloads/ISIC2018_Task1-2_Training_Input_x2"

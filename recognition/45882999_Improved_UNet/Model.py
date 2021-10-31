@@ -104,7 +104,7 @@ def improved_model(input_size = (256, 256, 1)):
     seg3 = layers.Conv2D(1, (1, 1), padding = "same")(conv6)
     add7 = layers.Add()([add6, seg3])
     
-    outputs = layers.Conv2D(4, (1, 1), activation = "softmax")(add7)
+    outputs = layers.Conv2D(1, (1, 1), activation = "sigmoid")(add7)
     model = tf.keras.Model(inputs = input_layer, outputs = outputs)
     
     return model
