@@ -12,7 +12,7 @@ In our project, only task one is focused and addressed. Our model use Imporved U
 
 ## DATASET DESCRIPTION
 
-The datasets used in this project from training, validating and testing are all from ISICs 2018 Challenge Data set. The datasets contains two matched groups with each group has 2594 images. The first group of images is the raw melanoma images and the second groups of image (mask image) is the segmentation of the lesion area which will serve as labels in following model training.  mask images are binary images with only pixel value of 0 and 255. Pixel value = 255 means the lesion area while 0 means background area. Figure 1 is an example of melanoma raw image (group 1 image) and Figure 2 is the responding mask image.
+The datasets used in this project from training, validating and testing are all from ISICs 2018 Challenge Data set. The datasets contain two matched groups with each group has 2594 images. The first group of images is the raw melanoma images and the second groups of images (mask image) is the segmentation of the lesion area which will serve as labels in following model training.  mask images are binary images with only pixel value of 0 and 255. Pixel value = 255 means the lesion area while 0 means background area. Figure 1 is an example of melanoma raw image (group 1 image) and Figure 2 is the responding mask image.
 
 ![](./images/ISIC_0000008.jpg)
 
@@ -50,7 +50,7 @@ Figure 4, Example of resized image and mask
 ## MODEL TRAINING 
 
 ### Model Description
-U-Net is a convolutional neural network that is originally developed for biomedical image segmentation [2]. It has two stage. The first stage is VGG stage to encode the image and the second stage is CONCAT stage by combining the symmetric VGG with previous step out put for further convolution. Figure 5 is a sampled structure of UNet. 
+U-Net is a convolutional neural network that is originally developed for biomedical image segmentation [2]. It has two stages. The first stage is VGG stage to encode the image and the second stage is CONCAT stage by combining the symmetric VGG with previous step output for further convolution. Figure 5 is a sampled structure of UNet. 
 
 ![](./images/unet.jpg)
 
@@ -90,7 +90,7 @@ In this project, 100 epochs of training are applied with the bach size of 8.
 ### Training Dice Coefficient vs Validation Dice Coefficient
 ![](./images/DSC.png)
 
-### Loss of Trainig Dataset vs Loss of Validating Dataset 
+### Loss of Training Dataset vs Loss of Validating Dataset 
 ![](./images/loss.png)
 
 ## RESULTS
