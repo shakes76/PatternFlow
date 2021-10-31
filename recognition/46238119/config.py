@@ -11,3 +11,5 @@ IMG_RESOLUTION = 256
 NUM_WORKERS = 0
 PIN_MEMORY = True if device == 'cuda' else False
 FIXED_SAMPLE = torch.randn(9, Z_DIM).to(DEVICE)
+NUM_EPOCH = 60
+RESULT_ROOT = '/content/drive/MyDrive/results/'
