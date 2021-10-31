@@ -135,9 +135,7 @@ def get_codebook_mapper_fn(encoder, embeddings):
 
     return mapper
 
-
-if __name__ == "__main__":
-    # Parse arguments
+def parse_args():
     parser = argparse.ArgumentParser(description="VQVAE trainer")
 
     parser.add_argument("--data", 
@@ -163,6 +161,11 @@ if __name__ == "__main__":
     parser.add_argument("--pcnn-layers", type=int, default=2, help="Number of extra convolutional layers to use in PixelCNN (default: 2)")
 
     args = parser.parse_args()
+    return args
+
+if __name__ == "__main__":
+    # Parse arguments
+    args = parse_args()
 
     # load OASIS images from folder
     dataset             = load_images(args.data + "/keras_png_slices_train", (IMG_SIZE, IMG_SIZE), args.batch_size)
