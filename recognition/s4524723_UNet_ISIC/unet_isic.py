@@ -91,34 +91,36 @@ def get_UNET_model(img_size_params=(128, 128, 3), num_classes=1):  # Only 3 laye
 
 def context_module(inputs, n_filters=32, drop_prob=0.3):
     conv1 = layers.Conv2D(filters=n_filters, kernel_size=(3, 3), strides=1, padding="same")(inputs)
-    leaky_relu = layers.LeakyReLU(0.01)(conv1)
+    leaky_relu1 = layers.LeakyReLU(0.01)(conv1)
+    batch_norm1 = layers.BatchNormalization()(leaky_relu1)
 
-    # Optionally, put a batch norm layer here, do LATER.
+    dropout = layers.Dropout(drop_prob)(batch_norm1)
 
-    # x3 = tfa.layers.InstanceNormalization(axis=3,
-    #                                       center=True,
-    #                                       scale=True,
-    #                                       beta_initializer="random_uniform",
-    #                                       gamma_initializer="random_uniform")(x2)
-
-    dropout = layers.Dropout(drop_prob)(leaky_relu)
     conv2 = layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same")(dropout)
-    leaky_relu = layers.LeakyReLU(0.01)(conv2)
+    leaky_relu2 = layers.LeakyReLU(0.01)(conv2)
+    batch_norm2 = layers.BatchNormalization()(leaky_relu2)
 
-    # skip_connection = leaky_relu
-    next_layer = leaky_relu
-    return next_layer
+    return batch_norm2
 
 
 def upsampling_module(inputs, n_filters=32, drop_prob=0.3):
     upsampling1 = layers.UpSampling2D(size=(2, 2))(inputs)
     conv1 = layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same")(upsampling1)
-    return conv1
+    leaky_relu1 = layers.LeakyReLU(0.01)(conv1)
+    batch_norm1 = layers.BatchNormalization()(leaky_relu1)
+
+    return batch_norm1
 
 
 def localization_module(inputs, n_filters=32, drop_prob=0.3):
     conv1 = layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same")(inputs)
-    conv2 = layers.Conv2D(filters=n_filters/2, kernel_size=(1, 1), padding="same")(conv1)
-    return conv2
+    leaky_relu1 = layers.LeakyReLU(0.01)(conv1)
+    batch_norm1 = layers.BatchNormalization()(leaky_relu1)
+
+    conv2 = layers.Conv2D(filters=n_filters/2, kernel_size=(1, 1), padding="same")(batch_norm1)
+    leaky_relu2 = layers.LeakyReLU(0.01)(conv2)
+    batch_norm2 = layers.BatchNormalization()(leaky_relu2)
+
+    return batch_norm2
 
 
