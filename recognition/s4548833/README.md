@@ -20,8 +20,8 @@ The main idea of YOLO is regressing the position of the bounding box and the cat
 For the first step, an input image is first divided into S × S grids of equal size, and each grid is called a grid cell. The second step is the bounding boxes predition. In this step, YOLO provides two prediction frames for each grid. These prediction frames are based on the center of the grid and have a custom size. Each grid predicts B bounding boxes, and each bounding box has four coordinates and a confidence level, so the final prediction result is S × S × (B ∗ 5 + C) vectors. The third step is to use the NMS to find the most appropriate frame.
 
 ## Dataset
-Training set: ISIC 2018 training set, with 2594 images.
-Testing set: ISIC 2016 with 379 images.
+Training set: ISIC 2018 training set, with 2594 images and the groudtruth greyscale imgs of each imgs.
+Testing set: ISIC 2016 with 379 images the groudtruth greyscale imgs of each imgs.
 
 ## Processing
 1. Connect to the darknet package
