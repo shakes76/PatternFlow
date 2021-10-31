@@ -26,62 +26,62 @@ LR = 0.001
 WEIGHT_DECAY = 0.0001
 EPOCHS = 10
 
-def split_by_patients(image_names, train_split):
+def generate_samples(instanceIds, dataset_proportion):
 
-    patient_batches = dict()
-    train_image_names = []
-    test_image_names = []
-    for name in image_names:
-        patient_id = name.split('_')[0]
-        if patient_id in patient_batches:
-            patient_batches[patient_id].append(name)
+    samples = dict()
+    trainIndex = []
+    testIndex = []
+    for fileId in instanceIds:
+        fileName = fileId.split('_')[0]
+        if fileName in samples:
+            samples[fileName].append(fileId)
         else:
-            patient_batches[patient_id] = [name]
-    print("unique patients in entire dataset: ", len(patient_batches))
+            samples[fileName] = [fileId]
+    print("unique patients in entire dataset: ", len(samples))
     building_train = True
-    for patient_batch in patient_batches.values():
-        for name in patient_batch:
+    for imgIndex in samples.values():
+        for fileId in imgIndex:
             if building_train:  # first step: building training set
-                if len(train_image_names) <= len(image_names) * train_split:
-                    train_image_names.append(name)
-                else:
+                if dataset_proportion * len(instanceIds) < len(trainIndex):
                     building_train = False  # start building test set now
                     break
+                else:
+                    trainIndex.append(fileId)
             else:  # second step: building testing set
-                if len(test_image_names) <= len(image_names) * (1-train_split):
-                    test_image_names.append(name)
+                if len(testIndex) <= len(instanceIds) * (1-dataset_proportion):
+                    testIndex.append(fileId)
                 else:
                     break  # done building test set
-    return train_image_names, test_image_names
+    return trainIndex, testIndex
 
-def process_dataset(dir_data, train_split):
+def loadInput(dir_data, dataset_proportion):
 
-    all_image_names = os.listdir(dir_data)
+    all_instanceId = os.listdir(dir_data)
 
-    train_image_names, test_image_names = split_by_patients(all_image_names,
-                                                            train_split)
-    random.shuffle(train_image_names)
-    random.shuffle(test_image_names)
+    trainIndex, testIndex = generate_samples(all_instanceId,
+                                                            dataset_proportion)
+    random.shuffle(trainIndex)
+    random.shuffle(testIndex)
 
     img_shape = (64, 64)
-    def get_data(image_names):
+    def load_samples(instanceIds):
         """
         Helper function for loading a X and y set based of the image names
         Args:
-            image_names: The image names to build the data set from
+            instanceIds: The image names to build the data set from
         Returns:
             X_set, y_set: the tf array of the X and y set built
         """
         X_set = []
         y_set = []
-        for i, name in enumerate(image_names):
-            image = load_img(dir_data + "/" + name,
+        for i, fileId in enumerate(instanceIds):
+            image = load_img(dir_data + "/" + fileId,
                              target_size=(img_shape), color_mode="grayscale")
 
             image = img_to_array(image)
             X_set.append(image)
-            if "LEFT" in name or "L_E_F_T" in name or \
-                    "Left" in name or "left" in name:
+            if "LEFT" in fileId or "L_E_F_T" in fileId or \
+                    "Left" in fileId or "left" in fileId:
                 label = 0
             else:
                 label = 1
@@ -89,8 +89,8 @@ def process_dataset(dir_data, train_split):
         X_set = np.array(X_set)
         X_set /= 255.0
         return X_set, np.array(y_set, dtype=np.uint8).flatten()
-    X_train, y_train = get_data(train_image_names)
-    X_val, y_val = get_data(test_image_names)
+    X_train, y_train = load_samples(trainIndex)
+    X_val, y_val = load_samples(testIndex)
     X_test, y_test = X_val[len(X_val) // 5 * 4:], y_val[len(y_val) // 5 * 4:]
     X_val, y_val = X_val[0:len(X_val) // 5 * 4], y_val[0:len(y_val) // 5 * 4]
     return X_train, y_train, X_val, y_val, X_test, y_test
@@ -113,30 +113,9 @@ def create_dataset(image_dir, img_size):
     test_dataset = test_dataset.map(process).prefetch(AUTO_TUNE)
     return training_dataset, validation_dataset, test_dataset
 
-def dataset_to_numpy_util(dataset, len_ds):
-  dataset = dataset.batch(len_ds)
-  for images, labels in dataset:
-    numpy_images = images.numpy()
-    numpy_labels = labels.numpy()
-    break
-  return numpy_images, numpy_labels
-
 def process(image,label):
     image = tf.cast(image / 255. ,tf.float32)
     return image,label
-
-def get_numpy_ds():
-    training_set, validation_set, test_set = create_dataset(IMAGE_DIR, IMG_SIZE)
-    X_train, y_train = dataset_to_numpy_util(training_set, len(training_set))
-    X_train = X_train.reshape((len(training_set), ROWS, COLS, 1))
-    X_val, y_val = dataset_to_numpy_util(validation_set, len(validation_set))
-    X_val = X_val.reshape((len(validation_set), ROWS, COLS, 1))
-    X_test, y_test = dataset_to_numpy_util(test_set, len(test_set))
-    X_test = X_test.reshape((len(test_set), ROWS, COLS, 1))
-    del training_set
-    del validation_set
-    del test_set
-    return (X_train, y_train, X_val, y_val, X_test, y_test)
 
 def plot_data(history):
     # Plotting the Learning curves
@@ -165,8 +144,8 @@ def plot_data(history):
     plt.show()
 if __name__ == "__main__":
 
-    train_split = 0.8
-    X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, train_split)
+    dataset_proportion = 0.8
+    X_train, y_train, X_val, y_val, X_test, y_test = loadInput(IMAGE_DIR, dataset_proportion)
     print(len(X_train), len(y_train), len(X_val), len(y_val), len(X_test), len(y_test))
     print(X_train.shape)
 
