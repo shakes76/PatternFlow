@@ -275,7 +275,7 @@ def parse_args():
     # PixelCNN args
     parser.add_argument(
         "--pcnn-epochs",
-        type=float,
+        type=int,
         default=10,
         help="Number of epochs to train the PixelCNN (default: 10)")
     parser.add_argument(
