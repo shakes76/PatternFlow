@@ -112,7 +112,21 @@ max_batches means that the model will stop learning when it reaches max_batches,
 
 The 9 anchors here are the ones proposed in the paper using k-means. yolov3 has three prediction paths (from which multiscale is derived) mask=0, 1, 2 for the first branch, corresponding to its anchors. classes is the number of categories.
 
-Based on the results of the training, I performed tuning as well as validation. Here is a comparison of the results when batch=96, subdivision=16 and batch=64, subdivision=16 in the validation set.
+Based on the results of the training, I performed tuning as well as validation. Here are some results.
+
+![b00be2104a5b05bf9bf53b8ac5c38a4](https://user-images.githubusercontent.com/75237235/139576509-227e68c6-cc2b-4bb4-9b64-d279a54afef0.png)
+![dc281ce8fcc97babdc3aa7fb3090a60](https://user-images.githubusercontent.com/75237235/139576514-10d568b1-ab0e-45ff-b14d-f4da7e39b823.png)
+![4c454394e1539d1379a0888eed28280](https://user-images.githubusercontent.com/75237235/139576584-c0246a50-3616-47d9-a4f6-f25e69b206eb.png)
+![c06d997d1aa037315b0f750e64917af](https://user-images.githubusercontent.com/75237235/139576586-6e187665-2a88-45f8-b76b-ab111f74976d.png)
+
+
+Here is a comparison of the results when batch=96, subdivision=16 and batch=64, subdivision=16 in the validation set.
+
+![1b480c6a536934196010f1ac4f852f2](https://user-images.githubusercontent.com/75237235/139576670-e261fb78-39a8-455f-89a2-25589b090524.png)
+
+At the same time, we can also see that as the number of iterations increases, the F1 etc. score also increases, peaking at 4000 iterations.
+
+![0f74247fbcdb9ed49608eb3032fec6e](https://user-images.githubusercontent.com/75237235/139576675-7ef986b2-8635-4454-a7e0-bc445cdc89b4.png)
 
 We found that the higher the batch, the better the f1 score and other metrics.
 
