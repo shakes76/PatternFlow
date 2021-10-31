@@ -20,7 +20,8 @@ The Training, Testing and Validation data split that was chosen was 70 / 15 / 15
 ## Architecture
 Proposed in 2018 [1], the Improved UNet is designed upon the original model of UNet, proposed in 2015 [2]. 
 
-_Image of architecture_
+![](https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ImprovedUNetArchitecture.png?raw=true)
+
 _Figure 2: Improved UNet Architecture [1]_
 
 The Improved UNet is composed of two main sections, the encoding path and the decoding path.
