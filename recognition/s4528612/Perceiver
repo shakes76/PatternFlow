@@ -174,3 +174,17 @@ class Perceiver(tf.keras.Model):
             cross_attention[0] = latent_array
             i += 1
         return self.classify(self.global_average_pooling(cross_attention[0]))
+
+def train_perceiver(perceiver,X_train, y_train,X_val, y_val,X_test, y_test,epochs):
+
+    perceiver.compile(optimizer=tfa.optimizers.LAMB(learning_rate=0.001, weight_decay_rate=0.0001,), loss=tf.keras.losses.BinaryCrossentropy(), metrics=[tf.keras.metrics.BinaryAccuracy(name="acc")])
+    history = perceiver.fit(
+        X_train, y_train,
+        epochs= epochs,
+        batch_size=32,
+        validation_data=(X_val, y_val),
+        validation_batch_size=32
+    )
+    _, accuracy = perceiver.evaluate(X_test, y_test)
+    print("Test accuracy:" + str(accuracy))
+    return history
