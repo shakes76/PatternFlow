@@ -177,9 +177,10 @@ As evident, the model has performed well. A larger dataset with more images or d
 ## Usage
 
 ### Dependencies
-1. TensorFlow 2.5.0
-2. Python 3.7+
+1. Python 3.7+
+2. TensorFlow 2.5.0+
 3. Matplotlib 3.3+
+4. TensorFlow-Addons
 
 ### Setup Instructions
 
