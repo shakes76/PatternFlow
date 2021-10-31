@@ -80,7 +80,7 @@ def plot_prediction(model, X_test, y_test):
 if __name__ == "__main__":
     batch_size = 16
     depth = 16
-    epochs = 10
+    epochs = 100
     n = 192
     m = 256
 
