@@ -6,7 +6,6 @@ Image Segmentation for prostate dataset using UNet-3D
  ## UNet-3D
  
  Volumetric data is abundant in biomedical data analysis. UNet-3D is a variant of UNet for volumetric segmentaton that learns from sparsely annotated volumetric images. Instead of using 2D images, each sample in a 3d unet is a volumetric image.
- The architecture of a 3d unet is like the following figure.
  
  
  
