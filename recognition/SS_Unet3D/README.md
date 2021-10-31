@@ -1,26 +1,37 @@
 # UNet3D - CSIRO 3D Male Pelvic MRI Segmentation
-
+## Author: `Shravan Shivpuri`
 # Introduction
 This project implements the UNet3D[[1]](#ref1) Convolutional Neural Network architecture in Tensorflow 2.6, and applies it on the (downsampled) CSIRO 3D Male Pelvic MRI dataset[[2]](#ref2) to achieve dense volumetric segmentation of the pelvis.
 
-The model achieved a per-class Dice Similarity Co-efficient ranging from X (worst class) to Y (best class) excluding the background voxels (trained for ~Z hours on a 20GB partition of an Nvidia Tesla A100 Tensor Core GPU).
+The model achieved the following Dice Similarity Coefficients on the **test set**. This result was attained after training for ~13 hours on a 20GB partition of an Nvidia Tesla A100 Tensor Core GPU.
+
+|Class|Label|DSC|
+|--|--|--|
+|0|Background|0.998|
+|1|Body|0.987|
+|2|Bones|0.926|
+|3|Bladder|0.920|
+|4|Rectum|0.858|
+|5|Prostate|0.799|
 
 # Architecture
-The UNet3D was implemented very similarly to the network described in [[1]](#ref1). Key differences include:
+This UNet3D was implemented very similarly to the network described in [[1]](#ref1). Key differences include:
 
 - Input and output shapes
-- Loss Function (Unweighted Categorical Cross Entropy)
+- Loss Function (the standard unweighted Categorical Cross Entropy was used with one-hot encoding)
 - Optimiser (ADAM)
 - Augmentation regime (materialised & deterministic; not on-the-fly)
+- Conv3D weights initialised using a Standard Normal with `stdev=0.2` (unclear how weights were initialised in  [[1]](#ref1))
 
-The architecture contains 19,078,662 parameters and is visualised below:
+The architecture yields 19,078,662 parameters and is visualised below:
 
+<div align="center">
 <a href="https://ibb.co/KXh9qSf"><img src="https://i.ibb.co/kxBh8vw/download-6.png" alt="download-6" border="0"></a>
-
+</div>
 
 # Methodology
 ## Data Pre-processing & Augmentation
-The CSIRO dataset contains 211 anonymised 3D MRI scans (with a resolution of 256 x 256 x 128), however they belong to 38 patients only (weekly scans). Thus, there are only 38 independent samples, with the rest treated as derivatives. Although achieving good performance whilst training on small dataset is possible for this architecture, augmentation was undertaken to enrich the dataset, using the pyimgaug3d library[[3]](#ref3). Each image was augmented twice, with the transform for each augment randomly chosen between:
+The CSIRO dataset contains 211 anonymised 3D MRI scans (with a resolution of 256 x 256 x 128), however they belong to 38 patients only (weekly scans). Thus, there are only 38 independent samples, with the rest treated as derivatives. Although achieving good performance whilst training on small dataset is possible for this architecture, augmentation was undertaken to enrich the dataset, using the `pyimgaug3d` library[[3]](#ref3). Each image was augmented twice, with the transform for each augment randomly chosen between:
 
 - Flip (Lateral)
 - Elastic Deformation
@@ -32,20 +43,30 @@ Each image (including the original) was also downsampled by a factor of 2 (no an
 
 The final dataset contained 633 MRI images.
 
+<div align="center">
+<a href="https://ibb.co/LQYnrNt"><img src="https://i.ibb.co/9wcshZT/data-example.png" alt="data-example" border="0"></a>
+</div>
+
 ## Data Splitting
 Due to the independence constraints highlighted above, the train / validation / test splits were done on a patient by patient basis. The following split percentages were used, w.r.t number of patients in each split (no weighting was applied based on number of scans for each patients, which does vary):
 
-- Train: 0.6
-- Val: 0.2
-- Test: 0.2
+|Split|Perf|
+|--|--|
+|Train|0.6|
+|Val|0.2|
+|Test|0.2|
 
-The RNG used for splitting was initialised using the same seed during training and final testing, to safeguard against data leakage and bias.
+The RNG used for splitting was initialised using the same seed value of `12345` during training and final testing, to safeguard against data leakage and bias.
 
 ## Training
-The model was trained on 30,000 batches (batch size of 1) and models saved and evaluated on the validation set every 1,000 batches. The final model was selected according to the best validation loss and test performance ascertained **subsequent to the selection**.
+The model was trained on 30,000 batches (batch size of 1) and models saved and evaluated on the validation set every 1,000 batches. The final model was selected according to the best validation loss. Test performance was ascertained **subsequent to the selection**.
 
 ## Results
 
+<div align="center">
+<a href="https://ibb.co/hczhn5J"><img src="https://i.ibb.co/ypjGMTc/train-losspng.png" alt="train-losspng" border="0"></a><br /><a target='_blank' href='https://imgbb.com/'></a><br />
+<a href="https://ibb.co/kK63yNN"><img src="https://i.ibb.co/Nxn13cc/train-dsc-indiv.png" alt="train-dsc-indiv" border="0"></a>
+</div>
 
 # Usage
 
@@ -63,7 +84,7 @@ This module contains functions which pre-process and augment the CSIRO dataset. 
 ### Environment
 The augmentation script requires its own environment due to dependency conflicts.
 ~~~~
-conda create unet3d_augmenter python=3.7
+conda create --name unet3d_augmenter python=3.7
 conda activate unet3d_augmenter
 pip install pyimgaud3d
 ~~~~
@@ -83,10 +104,10 @@ This module contains core functions for dataset splitting (train / val / test), 
 ### Environment
 The driver requires its own clean environment to run.
 ~~~~
-conda create unet3d_driver python=3.7
+conda create --name unet3d_driver python=3.7
 conda activate unet3d_driver
 conda install pip
-pip install tensorflow nibabel matplotlib pandas
+pip install tensorflow==2.6.0 nibabel==3.2.1 pandas==1.3.3
 ~~~~
 
 ### Execution - Train
