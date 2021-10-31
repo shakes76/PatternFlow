@@ -47,14 +47,17 @@ Image Segmentation for prostate dataset using UNet-3D
   
  ## Experiment Result
   
-  The experiment took 8 epochs and average Dice Similarity Coefficient of all 6 labels reached over 0.45.
+  The experiment took 8 epochs and average Dice Similarity Coefficient of all 6 labels reached over 0.45. label 0 and label 1 reached over 0.9, label 2 and 3 reached over 0.7, while the proportion of label 4 and label 5 in the dataset are extremely small thus this unet 3d model can not identify them properly yet. 
   
+  ![image](https://github.com/aCoalBall/PatternFlow/blob/topic-recognition/recognition/45979189unet3d/Figure_1.png)
   
   
   
   The following figure is a result on Case_004_Week0_LFOV.nii.gz.
   
-  
+  ![image](https://github.com/aCoalBall/PatternFlow/blob/topic-recognition/recognition/45979189unet3d/visualization/axial.png)
+  ![image](https://github.com/aCoalBall/PatternFlow/blob/topic-recognition/recognition/45979189unet3d/visualization/coronal.png)
+  ![image](https://github.com/aCoalBall/PatternFlow/blob/topic-recognition/recognition/45979189unet3d/visualization/sagittal.png)
   
   
   
