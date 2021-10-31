@@ -53,12 +53,12 @@ The details of modules in the network are shown as below:
 Implemented as function `context_module()` in `model.py`.  
 
 - Instance Normalization Layer 
-- 2D Convolution Layer (3 x 3)
 - Leaky ReLU Layer
+- 2D Convolution Layer (3 x 3)
 - Dropout Layer
 - Instance Normalization Layer 
-- 2D Convolution Layer (3 x 3)
 - Leaky ReLU Layer
+- 2D Convolution Layer (3 x 3)
 ---  
 
 **Upsampling Module**  
