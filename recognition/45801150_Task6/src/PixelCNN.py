@@ -60,9 +60,18 @@ n_residual_blocks = 2
 n_pixel_cnn_layers = 2
 
 x = keras.Input(shape=10, dtype=tf.int32)
+
+class OneHotLayer(tf.keras.layers.Layer):
+    def __init__(self, n_embeddings):
+        super(OneHotLayer, self).__init__()
+        self.n_embeddings = n_embeddings
+
+    def call(self, inputs):
+        return tf.one_hot(inputs, self.n_embeddings)
+
 def create_pixel_cnn(input_shape, n_embeddings):
     model = Sequential()
-    model.add(Lambda(lambda inputs: tf.one_hot(inputs, n_embeddings)))
+    model.add(OneHotLayer(n_embeddings))
     model.add(
         PixelConvLayer(
             mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
@@ -116,7 +125,7 @@ def train_pixel_cnn(pixel_cnn, vqvae: VQVae, x_train_normalised, n_epochs):
 
 def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
     n_priors = 10
-    priors = tf.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:], dtype=tf.int32)
+    priors = np.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:])
 
     _, rows, cols = priors.shape
 
@@ -126,8 +135,9 @@ def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
             dist = tfp.distributions.Categorical(logits=pixel_cnn(priors, training=False))
             probs = dist.sample()
 
-            indices = tf.constant(tf.expand_dims(tf.range(n_priors), axis=1))
-            tf.tensor_scatter_nd_update(priors, indices, probs)
+            priors[:, row, col] = probs[:, row, col]
+            #indices = tf.constant(tf.expand_dims(tf.range(n_priors), axis=1))
+            #tf.tensor_scatter_nd_update(priors, indices, probs)
 
     quantiser = vqvae.get_layer("quantiser")
 

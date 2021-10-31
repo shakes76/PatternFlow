@@ -1,4 +1,24 @@
-# Vector-Quantised Variational Autoencoder for a preprocessed OASIS brain dataset
+# Generative model for the preprocessed OASIS brain dataset using a Vector-Quantised Variational Autoencoder and PixelCNN
+
+## Vector-Quantised Variational Autoencoder
+The Vector-Quantised Variational Autoencoder (VQ-VAE) is a generative model.
+
+## PixelCNN
+
+## Preprocessed OASIS brain dataset
+This generative model is used to generate 
+
+## VQ-VAE results
+OASIS brain images from the test set reconstructed by the VQ-VAE achieved an average structural similarity of ~80%
+to the original. Visually they look almost identical, with some slight expected degradation in sharpness.
+
+
+
+## OASIS brain generation results
+The reconstruction 
+
+## Usage
+
 ## Dependencies
 - tensorflow 2.6.0
 - numpy 1.19

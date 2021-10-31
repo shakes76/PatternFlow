@@ -29,4 +29,5 @@ pixel_cnn = PixelCNN.create_pixel_cnn(encoder_output_shape, num_embeddings)
 
 PixelCNN.train_pixel_cnn(pixel_cnn, vqvae, x_train_normalised, 2)
 
+PixelCNN.generate_image(vqvae, pixel_cnn, pixel_cnn.input_shape, encoder_output_shape)
 
