@@ -3,6 +3,17 @@ import tensorflow as tf
 import numpy as np
 from VQVAE import VQVae
 
+def show_vqvae_training_loss(vqvae: VQVae):
+    plt.plot(vqvae.total_loss_list)
+    plt.plot(vqvae.reconstruction_loss_list)
+    plt.plot(vqvae.vq_loss_list)
+    plt.savefig("loss_graph.png")
+    plt.title("VQ-VAE training losses")
+    plt.legend(["Total loss", "Reconstruction loss", "VQ loss"])
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.close()
+
 def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
     indices = np.random.choice(len(x_test_normalised), n_images)
     test_samples = x_test_normalised[indices]

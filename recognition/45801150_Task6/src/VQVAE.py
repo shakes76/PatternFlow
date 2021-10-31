@@ -79,6 +79,9 @@ class VQVae(keras.models.Sequential):
     def __init__(self, variance, latent_dimensions, num_embeddings, **kwargs):
 
         super(VQVae, self).__init__(**kwargs)
+        self.total_loss_list = []
+        self.reconstruction_loss_list = []
+        self.vq_loss_list = []
         self.variance = variance
         self.latent_dimensions = latent_dimensions
         self.num_embeddings = num_embeddings
@@ -123,6 +126,9 @@ class VQVae(keras.models.Sequential):
             "reconstruction_loss": self.loss_reconstruction.result(),
             "vqvae_loss": self.loss_vq.result(),
         }
+        self.total_loss_list.append(losses["loss"])
+        self.reconstruction_loss_list.append(losses["reconstruction_loss"])
+        self.vq_loss_list.append(losses["vqvae_loss"])
 
         return losses
 
@@ -130,7 +136,7 @@ def train_vqvae(vqvae, x_train_normalised, x_val_normalised, n_epochs):
     vqvae.compile(optimizer=keras.optimizers.Adam())
     vqvae.get_layer("encoder").summary()
     vqvae.get_layer("decoder").summary()
-    vqvae.fit(x_train_normalised, epochs=n_epochs, batch_size=128)
+    vqvae.fit(x_train_normalised, validation_data=(x_val_normalised, x_val_normalised), epochs=n_epochs, batch_size=128)
 
 
 
