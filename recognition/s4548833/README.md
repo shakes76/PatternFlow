@@ -16,8 +16,8 @@ os
 
 ![image](https://user-images.githubusercontent.com/93363361/139520459-27524030-6f50-430a-83bc-bbc698c41388.png)
 
-The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as the input of the network to convert the Object Detection problem into a Regression problem). It is composed of 3 steps: Zoom image, pass the image through a fully convolutional neural network and flitering with maximum suppression (NMS).
-For the first step, an input image is first divided into S × S grids of equal size, and each grid is called a grid cell. The second step is the bounding boxes predition. In this step, YOLO provides two prediction frames for each grid. These prediction frames are based on the center of the grid and have a custom size. Each grid predicts B bounding boxes, and each bounding box has four coordinates and a confidence level, so the final prediction result is S × S × (B ∗ 5 + C) vectors. The third step is to use the NMS to find the most appropriate frame.
+The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as an input of the model and It convert the Object Detection problem into a Regression problem). It is composed of 3 steps: Zoom image, pass the image through a fully convolutional neural network and flitering with maximum suppression (NMS).
+For the first step, an input image is first divided into S × S grids of equal size, and each grid is called a grid cell. The second step is the bounding boxes predition. In this step, YOLO provides two prediction frames for each grid. These prediction frames are based on the center of the grid and have a custom size. Each grid predicts B bounding boxes which has 4 coordinateds and a confidence level. Therefore, the prediction is composed of S × S × (B ∗ 5 + C) vectors. The third step is to use the NMS to find the most appropriate frame.
 
 ## Dataset
 Training set: ISIC 2018 training set, with 2594 images and the groudtruth greyscale imgs of each imgs.
