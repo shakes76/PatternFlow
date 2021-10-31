@@ -51,7 +51,7 @@ The clasifier head consists of a global average pooling layer which takes in the
 
 ## Results
 
-91% on test set (1000 images). Training: 2000 images, validation: 450 images.
+91% on test set (1000 images). Training: 2000 images, validation: 450 images. Batch size: 8.
 
 ![](./diagrams/accuracy.png)
 
