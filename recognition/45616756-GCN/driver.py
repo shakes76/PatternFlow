@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from model import GCN
 
+
 def main():
     # Load Facebook dataset
     data = np.load('./data/facebook.npz')

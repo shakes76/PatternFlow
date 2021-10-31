@@ -9,6 +9,7 @@ class GraphConvolution(nn.Module):
     """
     Layer
     """
+
     def __init__(self, in_features, out_features):
         super(GraphConvolution, self).__init__()
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
@@ -22,10 +23,12 @@ class GraphConvolution(nn.Module):
         x = torch.spmm(adjacency_matrix, x)
         return x + self.bias
 
+
 class GCN(nn.Module):
     """
     Model
     """
+
     def __init__(self, input_size, hidden_size, num_classes, dropout=0.5):
         super(GCN, self).__init__()
         self.gconv1 = GraphConvolution(input_size, hidden_size)
