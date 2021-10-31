@@ -6,8 +6,7 @@ import glob
 import matplotlib.pyplot as plt
 import tensorflow_probability as tfp
 
-# Encoder and decoder network functions
-
+# Encoder and decoder network functions #
 # Encoder network (inference/recognition model)
 def get_encoder(latent_dim=16): #Define the latent dimension
     
@@ -27,3 +26,20 @@ def get_decoder(latent_dim=16):
     decoder_outputs = layers.Conv2DTranspose(1, 3, padding="same")(convTran) #Output layer
     
     return keras.Model(latent_inputs, decoder_outputs, name="decoder")
+
+# Stand alone VQVAE #
+def get_vqvae(latent_dim=16, num_embeddings=32):
+    vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+    encoder = get_encoder(latent_dim)
+    decoder = get_decoder(latent_dim)
+    inputs = keras.Input(shape=(128, 128, 1)) #Define the input shape
+    encoder_outputs = encoder(inputs) #Set encoder outputs to encoder(inputs)
+    quantized_latents = vq_layer(encoder_outputs) 
+    # Need to ensure the output channels of the encoder match the latent dimension
+    # of the VQ
+    reconstructions = decoder(quantized_latents)
+    
+    return keras.Model(inputs, reconstructions, name="vq_vae")
+
+# Print summary of stand alone VQ-VAE model
+get_vqvae().summary()
