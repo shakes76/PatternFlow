@@ -60,7 +60,7 @@ batch_size = 16
 # The number of training epochs
 epochs = 10
 # The number of times a similar validation dice coefficient score is achieved before training is stopped early
-patience = 8
+patience = 5
 
 
 def process_images(file_path, is_mask):
