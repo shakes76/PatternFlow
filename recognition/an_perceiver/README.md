@@ -10,7 +10,7 @@ The Perceiver is "permutation invariant" (Jaegle et.al., 2021, p. 5), meaning it
 
 This module implements the Perceiver as a Tensorflow-Keras model. The model architecture and configuration (including initialisers, layer normalisation epsilon, etc.) are as described in the ImageNet classification task described in the Perceiver paper, and as implemented in [deepmind-research](https://github.com/deepmind/deepmind-research/tree/master/perceiver). The lone exception: weights are unconditionally shared between repeats. The paper suggests that weights for the first _block_ shouldn't be shared as this leads to training instability; this wasn't observed during training, so repeats share weights due to simpler implementation.
 
-### Usage
+### Model usage
 
 ```python
 from perceiver import Perceiver
@@ -78,7 +78,7 @@ The splits are as follows:
 
 Laterality was balanced in this way with the intent to augment training and validation by horizontally flipping the images and reversing the labels, then concatenating with the input; doubling the size of both training and validation splits.
 
-#### Usage
+#### Dataset usage
 
 This dataset (with defined splits) has been implemented as a Tensorflow dataset, implementation can be found in [`aoi_akoa.py`](./aoi_akoa.py). To use this dataset, the zip archive must be manually downloaded to `<data-dir>/downloads/manual/akoa_analysis.zip`. The default location for `<data-dir>` is `~/tensorflow_datasets`.
 
