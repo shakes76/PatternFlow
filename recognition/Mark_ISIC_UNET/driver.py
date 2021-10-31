@@ -89,14 +89,14 @@ if __name__ == '__main__':
             print(e)
 
     # sets the max amount of images
-    max_images = 1800
+    max_images = 10
 
     # https://stackoverflow.com/questions/52123670/neural-network-converges-too-fast-and-predicts-blank-results
     # sets the learning rate
     learning_rate = 3*10**(-5)
 
     # path to the images
-    imagePath = "C:\\Users\\Mark\\Desktop\\comp3710 report\\PatternFlow\\recognition\\ISIC_UNET\\ISIC2018_Task1-2_Training_Data"
+    imagePath = "ISIC2018_Task1-2_Training_Data"
 
     # prepare a given number of images
     final_train, final_test, final_val = prepare_images(max_images, imagePath)
