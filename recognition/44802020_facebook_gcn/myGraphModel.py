@@ -5,6 +5,17 @@ from tensorflow.keras.layers import Dense, Input, Dropout
 
 
 def makeMyModel(a_bar, a_bar_test, train_feats):
+    """
+    Creates a model with the desired layers.
+    Args:
+        a_bar: The Adjacency Matrix for the training data.
+        a_bar_test: The Adjacency Matrix for the training data.
+        train_feats: The Feature Matrix for the training data. This is required to know the input dimensions.
+
+    Returns: A `tensorflow.keras.models.Sequential` model, containing all of the appropriate layers added in
+    this function.
+
+    """
     my_model = Sequential()
 
     my_model.add(Input(shape=tf.Tensor.get_shape(train_feats)))
@@ -23,6 +34,9 @@ def makeMyModel(a_bar, a_bar_test, train_feats):
 
 
 class FaceGCNLayer(tf.keras.layers.Layer):
+    """
+    My custom network layer.
+    """
     def __init__(self, adj_m, test_adj_m):
         super(FaceGCNLayer, self).__init__()
         self.adj_m = adj_m

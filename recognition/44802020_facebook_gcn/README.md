@@ -10,26 +10,42 @@
 
 * * *
 ### Contents
-* [Introduction](#Introduction)<br>
+* [Introduction to the Problem and the Dataset](#Introduction to the Problem and the Dataset)<br>
+* [The Algorithm](#The Algorithm)<br>
 * [Project Structure](#Project Structure)<br>
 * [Running the Model](#Running the Model)<br>
-* [Graph Convolutional Networks Theory](#Graph Convolutional Networks Theory)<br>
 * [Data and Training](#Data and Training)<br>
 * [Building the Model](#Building the Model)<br>
 * [Compiling the Model](#Compiling the Model)<br>
 * [Performance and Analysis](#Performance and Analysis)<br>
 * * *
 
-### Introduction
+### Introduction to the Problem and the Dataset
 
 The data is a connected graph of Facebook pages which can each be categorised
 as 1 of 4 types of pages (TV Shows, Companies, Government Agencies or 
 Politicians). The model is a Graph Convolutional Neural Network (GCN) which 
 aims to be able to categorise a given page into one of these 4 categories. The 
-data set contains 22470 nodes. Using SciKitLearn's TSNE analysis, the data 
-generates the following TSNE plot:
+data set contains 22470 nodes. 
+
+Using SciKitLearn's TSNE analysis, the data generates the following TSNE plot:
 
 ![TSNE_Train](./resources/TSNE_Plot_(Train%20Data).png)
+
+### The Algorithm
+
+The algorithm revolves around taking advantage of the fact that any given node
+may be likely to be of the same category as its neighbours.
+
+We take the normalized Adjacency Matrix A_bar (where all nodes are self connected)
+and multiply it by the Feature Matrix and by the Weights Matrix. The result is then
+run through an activation function (I used softmax) and the loss is calculated with 
+a loss function (I used Sparse Categorical Cross Entropy). The then model tries to 
+minimize this loss with an optimization function (I used Adam) and adjusts the 
+Weights Matrices accordingly.
+
+Overtime, hopefully, the losses will be minimized by optimal weights and the model
+will become more accurate.
 
 ###  Project Structure
 
@@ -59,20 +75,27 @@ model variables prior to running:
 - `TEST_VAL_SPLIT`: The portion of the data to split into the test/validation set.
 
 **Dependencies:**
-
-- Tensorflow
-- Keras
-- Scipy
-- Numpy
-- Sklearn
-- Matplotlib
-
-### Graph Convolutional Networks Theory
-
+- Tensorflow 2.6.0
+- Keras 2.6.0
+- Scipy 1.7.1
+- Numpy 1.19.5
+- Sklearn 1.0.1
+- Matplotlib 3.4.3
 
 ### Data and Training 
 
-The dataset has a stated density of 0.001, making it a very sparse graph
+The dataset has a stated density of 0.001, making it a very sparse graph.
+This is ideal for use of a Tensorflow Sparse Tensor to improve performance.
+
+An 80:20 Training:Testing/Validation split was used. This is because the fast nature
+of the model (Using Sparse Tensors and multiple Dense layers to reduce 
+dimensionality, as well as a relatively small dataset) mean it would be 
+ideal for the model to be trained as large a portion of the data as possible.
+
+It is however, as was found in testing, very easy for a GCN model to over-fit to
+data. It was therefore not feasible to split the data 90:10, or something similar, 
+as it was important that the model's accuracy could be validated on  a large
+testing/validation set to ensure it is not over-fitted.
 
 ###  Building the Model
 
@@ -115,12 +138,15 @@ and Adamax), none yielded any significant improvement in terms of accuracy.
 
 ### Performance and Analysis
 
-The model reaches around 72.01% Validated Accuracy with 200 epochs, 
+The model reaches around 72% Validated Accuracy with 200 epochs, 
 plateauing at this value at around 30 epochs.
 
 ![Learning_200](./resources/Learning_(200).png)
 
-The data plateau is likely due to
+The data plateau is likely due to the model over-fitting. I tried to remedy
+this by using Dropout layers, as these would randomly eliminate some 
+weights responsible for the over-fitting. THis did help initially as the 
+model was plateauing at around 53%, but the model still plateaus at 72%
 
 As can be seen from the following TSNE plots (one of the training data 
 one of the testing data), while there are pockets that are clearly segmented, 
