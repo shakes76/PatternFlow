@@ -63,9 +63,10 @@ def cross_attention(image_size):
 model = cross_attention(73*64, 2*(2*6 + 1) + 1)
 model.summary()
 
-#Reshape The Fourier Encoder to The array shape then performe calculation
+#Reshape The Fourier Encoder to The array shape then perform calculation
 def fourier_encode(image):
-   
+    axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
+    array = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)   
     array = tf.cast(tf.expand_dims(array,-1), dtype=tf.float32)
     array_copy = array # Tensors aren't reference types 
     encode = tf.reshape(tf.experimental.numpy.logspace(start=0.0,stop=0.69, num=6, dtype=tf.float32,),(*((1,) * (len(array.shape) - 1)), 6)) 
