@@ -11,14 +11,15 @@ from tensorflow.python.keras.layers.advanced_activations import LeakyReLU
 from tensorflow.python.keras.models import Model
 
 def context_module(input, filters):
-    """[summary]
+    """ A context module to reduce the resolution feature maps to
+        allow more features while descending down the model's pathway. 
 
     Args:
-        input ([type]): [description]
-        filters ([type]): [description]
+        input (Conv2D): the layer after Conv2d with input stride of 2
+        filters (int): number of output filters
 
     Returns:
-        [type]: [description]
+        [Conv2D]: tensors that has reduced the resolution feature maps.
     """
     conv_one = Conv2D(filters, kernel_size=3, padding="same", activation=LeakyReLU(alpha=0.1))(input)
     conv_one_batch = BatchNormalization()(conv_one)
@@ -27,14 +28,15 @@ def context_module(input, filters):
     return conv_two
 
 def localisation_module(input, filters):
-    """[summary]
+    """ A localisation module to recombine the features together, and 
+        reduces the number of feature maps for reducing computer consumption. 
 
     Args:
-        input ([type]): [description]
-        filters ([type]): [description]
+        input (Conv2D): the layer after the concatenation
+        filters (int): number of output filters
 
     Returns:
-        [type]: [description]
+        [Conv2D]: tensors that has feature maps recombined and reduced. 
     """
     conv1 = Conv2D(filters, 3, padding="same", activation=LeakyReLU(alpha=0.1))(input)
     conv1_batch = BatchNormalization()(conv1)
@@ -45,8 +47,17 @@ def localisation_module(input, filters):
 
 
 def model(height, width, input_channel, desired_channnel):
-    """
-    [Add docstrings]
+    """ Here lies the pipeline of the Improved Unet model inspired by the paper:
+        https://arxiv.org/pdf/1802.10508v1.pdf. 
+
+    Args:
+        height (int): height of the input images
+        width (int): width of the input images
+        input_channel (int): number of channels from input images
+        desired_channnel (int): expected output channels 
+
+    Returns:
+        [Model]: an Improved Unet model
     """
     input = Input((height, width, input_channel))
 
@@ -115,14 +126,9 @@ def model(height, width, input_channel, desired_channnel):
     segment_3 = Conv2D(64, kernel_size=(1, 1), padding="same")(conv_last)
     sum_2 = tf.math.add(upscale_2, segment_3)
 
-
     output = Conv2D(desired_channnel, (1, 1), activation="softmax")(sum_2)
 
     improved_model = Model(input, output)
 
     return improved_model
-
-
-
-    # segmentation with filter size 2 (for channel) and kernel size of 1 (removes the height and width )
 
