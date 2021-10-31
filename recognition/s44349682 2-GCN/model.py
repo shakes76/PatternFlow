@@ -66,3 +66,31 @@ class GraphConvolutionLayer(Layer):
             output = self.activation(output)
 
         return output
+
+# GCN Model, contains 2 Convolutional Layers, with dimensions 128->32->4
+# Layer 1 uses relu activation while layer 2 uses softmax for accurate classification
+# as each node only has a single label
+class GCN(Model):
+    def __init__(self):
+        super(GCN, self).__init__()
+        
+        self.layer1 = GraphConvolutionLayer(input_dim=128,
+                                            output_dim=32,
+                                            activation=activations.relu,
+                                            kernel_regularizer=l2(5e-4))
+        
+        self.layer2 = GraphConvolutionLayer(input_dim=32,
+                                            output_dim=4,
+                                            activation=activations.softmax)
+
+    def call(self, inputs):
+        # Extract Adjacency matrix to be input to each conv layer
+        A = inputs[1]
+        
+        # Structure used from Kipf (2017)
+        H = Dropout(0.5)(inputs[0])
+        H = self.layer1([H, A])
+        H = Dropout(0.5)(H)
+        Y = self.layer2([H, A])
+
+        return Y
