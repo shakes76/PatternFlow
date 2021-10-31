@@ -16,12 +16,14 @@ def save_as_nifti(data, folder, name, affine=np.eye(4)):
     pass
 
 
-# Pre-process and Augment the CSIRO 3D Male Pelvic dataset
-# Original data is expected in two sub-folders, but is outputted to a single directory
-# Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
-# alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
 def data_preprocess_augment(orig_data_dirpath, orig_data_x_subdirname, orig_data_y_subdirname, output_data_dirpath,
                             ds_factor=1, aug_count=0, verbose=False):
+    """Pre-process and Augment the CSIRO 3D Male Pelvic dataset.
+    Original data is expected in two sub-folders, but is outputted to a single directory
+    Assumption: Both X and Y Folders contain ONLY training data and independently sorting both folders
+    alphabetically will result in the i-th file in both folders being an X,Y pair (for all i)
+    """
+
     expected_img_size = (256, 256, 128)
     # Set up paths
     orig_data_x_dirpath = orig_data_dirpath + '/' + orig_data_x_subdirname
