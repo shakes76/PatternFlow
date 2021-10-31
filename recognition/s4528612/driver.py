@@ -7,6 +7,14 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow.keras as keras
 from tensorflow.keras import layers
 
+import os
+from model import Perceiver
+import random, os
+import numpy as np
+
+IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
+EPOCHS = 10
+
 def data_processing(directory, train,validation):
     left = 0
     right = 0
