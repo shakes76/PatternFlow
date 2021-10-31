@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from vqvae import VQVAE, get_closest_embedding_indices
+from pixelcnn import PixelCNN
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -120,6 +121,21 @@ def load_images(location, image_size, batch_size):
                                         shuffle=True)
 
 
+def get_codebook_mapper_fn(encoder, embeddings):
+    """
+    Returns a mapper function handle that can be passed to the dataset.map function.
+    This function encodes the images into codebook indices
+    """
+    def mapper(x):
+        encoded_outputs = encoder(x)
+        flat_enc_outputs = tf.reshape(encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
+        codebook_indices = get_closest_embedding_indices(embeddings, flat_enc_outputs)
+        codebook_indices = tf.reshape(codebook_indices, tf.shape(encoded_outputs)[:-1])
+        return codebook_indices
+
+    return mapper
+
+
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description="VQVAE trainer")
@@ -135,9 +151,16 @@ if __name__ == "__main__":
 
     parser.add_argument("--epochs", type=int, default=1, help="Number of epochs to train for (default: 30)")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training (default: 32)")
-    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate for ADAM optimiser (default 2e-4)")
+    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate for ADAM optimiser for the VQVAE trainer (default 2e-4)")
 
     parser.add_argument("--shift", type=float, default=0.5, help="Normalisation shift that will be subtracted from each pixel value prior to training (default: 0.5)")
+
+    ## PixelCNN args
+    parser.add_argument("--pcnn-epochs", type=float, default=10, help="Number of epochs to train the PixelCNN (default: 10)")
+    parser.add_argument("--pcnn-learning-rate", type=float, default=3e-4, help="Learning rate for ADAM optimiser for the PixelCNN trainer (default: 3e-4)")
+    parser.add_argument("--pcnn-filters", type=int, default=128, help="Number of filters to use in PixelCNN (default: 128)")
+    parser.add_argument("--pcnn-res-blocks", type=int, default=2, help="Number of residual blocks to use in PixelCNN (default: 2)")
+    parser.add_argument("--pcnn-layers", type=int, default=2, help="Number of extra convolutional layers to use in PixelCNN (default: 2)")
 
     args = parser.parse_args()
 
@@ -171,3 +194,17 @@ if __name__ == "__main__":
     # Need to use this loop hack because of tf.Dataset limitations I can't find a workaround of yet
     for test_images in dataset.take(1).as_numpy_iterator():
         show_reconstruction_examples(vqvae_model, test_images[1:10], args.shift)
+
+    ### PIXELCNN ###
+
+    # Map dataset to their codebooks using the trained VQVAE
+    codebook_mapper = get_codebook_mapper_fn(vqvae_model.encoder(), vqvae_model.quantizer().embeddings())
+    codebook_dataset = dataset.map(codebook_mapper)
+
+    # create PixelCNN and train it
+    pcnn_input_shape = vqvae_model.encoder().output.shape[1:3]
+
+    pixel_cnn = PixelCNN(pcnn_input_shape, args.K, args.pcnn_filters, args.pcnn_res_blocks, args.pcnn_layers)
+    pixel_cnn.compile(optimizer=tf.keras.optimizers.Adam(args.pcnn_learning_rate), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True))
+
+    pixel_cnn.fit(codebook_dataset, batch_size=args.batch_size, epochs=args.pcnn_epochs)
