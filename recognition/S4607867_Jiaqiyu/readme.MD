@@ -64,7 +64,8 @@ I have downloaded ISIC challenge 2017 as the target dataset.
 It contains 2000 train samples, 150 validation samples, and 600 test samples.
 The ground truth of lesion objects are stored as segmentation shadows. 
 So I wrote a couple python script to generate the label files of required input format.
-(see these scripts in addons folder)
+(see these scripts in addons folder：   https://github.com/slowlier/PatternFlow/blob/a65194361f54c4ca6f8034dce7b842cca5a5f811/recognition/S4607867_Jiaqiyu/addons/labellingISIC.py，
+https://github.com/slowlier/PatternFlow/blob/a65194361f54c4ca6f8034dce7b842cca5a5f811/recognition/S4607867_Jiaqiyu/addons/trainlist.py)
 
 
 
