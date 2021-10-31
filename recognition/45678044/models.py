@@ -59,11 +59,13 @@ class VQVAE(nn.Module):
                     + torch.sum(self.codebook.weight**2, dim=1)
                     - 2 * torch.matmul(flat_z_e, self.codebook.weight.t()))
         
-        q = torch.argmin(distances, dim=1, keepdim=True)
-        q_ont_hot = torch.zeros(distances.shape)
-        q_ont_hot.scatter_(1, q, 1)
+        # q = torch.argmin(distances, dim=1, keepdim=True)
+        # q_ont_hot = torch.zeros(distances.shape)
+        # q_ont_hot.scatter_(1, q, 1)
         
-        z_q = torch.matmul(q_ont_hot, self.codebook.weight).view(z_e_shape)
+        # z_q = torch.matmul(q_ont_hot, self.codebook.weight).view(z_e_shape)
+        
+        z_q = self.codebook(q)
         
         codebook_loss = F.mse_loss(z_q.detach(), z_e)
         commit_loss = F.mse_loss(z_q, z_e.detach())
