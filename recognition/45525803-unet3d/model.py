@@ -6,9 +6,12 @@ import nibabel as nib
 
 from pyimgaug3d.utils import to_channels
 
+N_CLASSES = 6
+
 def unet3d_model(input_size=(256,256,128,1), n_classes=6):
     """
-    3D U-Net model, implemented exactly as described in https://arxiv.org/abs/1606.06650
+    3D U-Net model, implemented as described in https://arxiv.org/abs/1606.06650,
+    but with a smaller number of filters at each 3D convolutional layer.
     """
 
     inputs = Input(input_size)
@@ -57,7 +60,7 @@ def unet3d_model(input_size=(256,256,128,1), n_classes=6):
     unet3d = tf.keras.Model(inputs=inputs, outputs=output_seg)
     
     opt = tf.keras.optimizers.Adam(learning_rate=0.0005)
-    unet3d.compile (optimizer=opt, loss='CategoricalCrossentropy', metrics=[dice_coefficient])
+    unet3d.compile (optimizer=opt, loss='CategoricalCrossentropy', metrics=[average_dice_coefficient])
     
     return unet3d
 
@@ -74,6 +77,26 @@ def dice_coefficient(y_true, y_pred):
     
     return 2 * intersection / total_area
 
+def average_dice_coefficient(y_true, y_pred):
+    """
+    Computes the Sørensen–Dice coefficient for each label dimension and returns
+    the average.
+    """
+
+    total_dc = 0
+
+    for i in range(N_CLASSES):
+
+        y_true_f = K.flatten(y_true[...,i])
+        y_pred_f = K.flatten(y_pred[...,i])
+        
+        intersection = K.sum(y_true_f * y_pred_f)
+        total_area = K.sum(y_true_f) + K.sum(y_pred_f)
+
+        total_dc += 2 * intersection / total_area
+    
+    return total_dc / N_CLASSES
+
 class MRISequence(tf.keras.utils.Sequence):
     """
     Overriden Tensorflow Sequence to lazy load the processed MRI and label files.
@@ -87,7 +110,8 @@ class MRISequence(tf.keras.utils.Sequence):
     def __len__(self):
         return len(self.x)
 
-    def __getitem__(self, idx):    
+    def __getitem__(self, idx):
+        # As the batch size is 1, this method simply returns the indexed mri and label
 
         mri_filename = self.x[idx]
         label_filename = self.y[idx]
