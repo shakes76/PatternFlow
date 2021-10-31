@@ -2,7 +2,7 @@
 """
 Created on Mon Oct 18 10:45:43 2021
 
-@author: chris
+@author: christian burbon
 """
 #%%
 
