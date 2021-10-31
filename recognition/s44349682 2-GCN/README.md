@@ -1,32 +1,37 @@
-#COMP3710 Report
-##Problem 2
+# COMP3710 Report
+## Problem 2
 Multilayer GCN classification of Facebook Large Page-Page Network dataset
 
-##Problem Description
+## Problem Description
 
 
-##Usage
+## Usage
 Run the drive.py file to generate the model and receive all outputs seen below.
 
-##Explanation of this project
+## Explanation of this project
 
-##Results
-###Training and Validation
+## Results
+### Training and Validation
+#### Training the Model
+![Training](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/Training.png)
+#### Model Accuracy
+![Accuracy](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/Accuracy.png)
+#### Model Loss
+![Loss](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/Loss.png)
+### Prediction of test set
+![Testing](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/Testing.png)
+### TSNE
+![TSNE](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/TSNE.png)
 
-###Prediction
+## Libraries
+- Tensorflow
+- Keras
+- Numpy
+- Scipy
+- Sklearn
+- Matplotlib
 
-###TSNE
-
-
-##Libraries
-* Tensorflow
-* Keras
-* Numpy
-* Scipy
-* Sklearn
-* Matplotlib
-
-##Citations
+## Citations
 https://towardsdatascience.com/understanding-graph-convolutional-networks-for-node-classification-a2bfdb7aba7b
 
 Kipf, T., & Welling, M. (2017). Semi-Supervised Classification with Graph Convolutional Networks. In International Conference on Learning Representations (ICLR).
