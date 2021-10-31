@@ -60,6 +60,14 @@ Image Segmentation for prostate dataset using UNet-3D
   ![image](https://github.com/aCoalBall/PatternFlow/blob/topic-recognition/recognition/45979189unet3d/visualization/sagittal.png)
   
   
+  ## Reference
+  
+  [U+FFFD] Çiçek, A. Abdulkadir, S. S. Lienkamp, T. Brox, and O. Ronneberger, “3D U-Net: Learning Dense
+Volumetric Segmentation from Sparse Annotation,” in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2016, ser. Lecture Notes in Computer Science, S. Ourselin, L. Joskowicz, M. R. Sabuncu,
+G. Unal, and W. Wells, Eds. Cham: Springer International Publishing, 2016, pp. 424–432.
+
+
+  
   
   
   
