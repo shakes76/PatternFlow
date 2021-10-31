@@ -65,9 +65,7 @@ model.summary()
 
 #Reshape The Fourier Encoder to The array shape then performe calculation
 def fourier_encode(array):
-    array = tf.expand_dims(array-1)
-    array = tf.cast(array, dtype=tf.float32)
-    original_array = array.copy()
+    array = tf.cast(tf.expand_dims(array,-1), dtype=tf.float32)
     encode = tf.reshape(tf.experimental.numpy.logspace(
             start=0.0,
             stop=0.7,
@@ -76,6 +74,7 @@ def fourier_encode(array):
         ),((len(array.shape) - 1), 4))
     array =  3.14 * array * encode
     return tf.concat([tf.math.sin(array), tf.math.cos(array)], axis=-1)
+    
 def transformer_layer():
     inputs = layers.Input(shape=(256, 27))
     input_normalized = layers.LayerNormalization()(inputs)
