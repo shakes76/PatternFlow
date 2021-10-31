@@ -9,3 +9,10 @@ The data set contains and the original skin patch image segmentation, used to de
 
 ## Improved Unet architecture
 <image width="700" src="Screenshots/Improved unet.png" />
+
+## Algorithms
+
+My directory contains a README.md , a directory 'Screenshots' contains several pictures of the outputs from the two python files, model.py and test.py:
+
+Improved Unet model has been built in model.py. and test.py contains other functions and scrips for running the algorithm and results visualization.
+
