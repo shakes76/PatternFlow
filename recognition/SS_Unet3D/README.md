@@ -1,5 +1,6 @@
+
 # UNet3D - CSIRO 3D Male Pelvic MRI Segmentation
-## Author: `Shravan Shivpuri`
+## Author: [Shravan Shivpuri](https://github.com/shravanshivpuri)
 # Introduction
 This project implements the UNet3D[[1]](#ref1) Convolutional Neural Network architecture in Tensorflow 2.6, and applies it on the (downsampled) CSIRO 3D Male Pelvic MRI dataset[[2]](#ref2) to achieve dense volumetric segmentation of the pelvis.
 
