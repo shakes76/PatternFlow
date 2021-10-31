@@ -115,7 +115,7 @@ The final activation was softmax.
 
 The model layout is as follows:
 
-<div style="width:300px">
+<div style="width:200px">
 
 ![](Images/unet3d.png)
 </div>
