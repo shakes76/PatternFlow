@@ -1,10 +1,11 @@
 import os
+import random
 import xml.dom.minidom
 from random import shuffle
 
 xml_root = 'dataset/Annotations/'
 JPEG_root = 'dataset/JPEGImages/'
-
+random.seed(0)  # Ensure that the results of the division dataset can be reproduced
 split_rate = 0.8
 
 
@@ -45,6 +46,18 @@ def make_annotation(xml_root, JPEG_root):
         f.write(
             abs_path + '/' + JPEG_root + test[i][-1] + ".jpg" + " " + test[i][0] + "," + test[i][1] + "," +
             test[i][2] + "," + test[i][3] + "," + test[i][4] + "\n")
+        f.close()
+
+    for i in range(len(train)):
+        f = open(abs_path + "/train_image_name.txt", "a")
+        f.write(
+            train[i][-1] + ".jpg" + "\n")
+        f.close()
+
+    for i in range(len(test)):
+        f = open(abs_path + "/test_image_name.txt", "a")
+        f.write(
+            test[i][-1] + ".jpg" + "\n")
         f.close()
 
 
