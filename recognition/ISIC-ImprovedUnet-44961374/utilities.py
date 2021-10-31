@@ -103,6 +103,8 @@ def dice_similarity(x, y):
 def plot_accuracy(history):
     """Plots accuracy graph showing training and validation accuracy for 
     a given training history of a model
+    Adapted from: 
+    https://machinelearningmastery.com/display-deep-learning-model-training-history-in-keras/
 
     Args:
         history (keras.callbacks.History): training history of a model
