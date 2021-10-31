@@ -128,7 +128,7 @@ if __name__ == "__main__":
     perceiverTransformer = Perceiver(patch_size=0, data_size=64*64, 
             latent_size=256, freq_ban=4, proj_size=19, 
             num_heads=8, num_trans_blocks=6,
-            num_iterations=8, max_freq=10, lr=0.001,
+            num_loop=8, max_freq=10, lr=0.001,
             weight_decay=0.0001, epoch=10)
 
     history = fitModel(perceiverTransformer, train_set=(trainX, trainY),

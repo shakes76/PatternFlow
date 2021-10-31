@@ -7,7 +7,7 @@ import tensorflow_addons as tfa
 
 class Perceiver(tf.keras.Model):
     def __init__(self, patch_size, data_size, latent_size, proj_size, num_heads,
-            num_trans_blocks, num_iterations, max_freq, freq_ban, lr, epoch, 
+            num_trans_blocks, num_loop, max_freq, freq_ban, lr, epoch, 
             weight_decay):
 
         super(Perceiver, self).__init__()
