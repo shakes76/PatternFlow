@@ -1,6 +1,6 @@
 # Perceiver Model for Knee Laterality Classification (OAI AOKA Knee MRI Dataset)
 
-The perceiver is a new model that aims to use transformers for classifcation of data of any modality. This may be a viable method for classifying the laterality of knees (left or right) which may help in automated sorting of data for medical purposes. The dataset is OI AOKA Knee MRI Dataset and contains 18680 images of 427 patients. The Perceiver model successfully classified test set knee data with an accuracy of ___%.
+The perceiver is a new model that aims to use transformers for classifcation of data of any modality. This may be a viable method for classifying the laterality of knees (left or right) which may help in automated sorting of data for medical purposes. The dataset is OI AOKA Knee MRI Dataset and contains 18680 images of 427 patients. The Perceiver model successfully classified test set knee data with an accuracy of 91%.
 
 ## Perceiver
 
@@ -34,6 +34,7 @@ Optimizer: LAMB
 
 ### Fourier Positional Encoding
 A fourier encoding was used to add positional information to the inputs. This follows the technique from the original paper. 4 bands were used, with a maximum sampling frequency (Nyquist) of 10. This was done over the two dimensions in every image. 
+Fourier Encoding partially from https://github.com/Rishit-dagli/Perceiver 
 
 
 ### Cross-Attention Module
@@ -50,6 +51,24 @@ The clasifier head consists of a global average pooling layer which takes in the
 
 ## Results
 
+91% on test set (1000 images). Training: 2000 images, validation: 450 images.
+
+![](./diagrams/accuracy.png)
+
+*Figure 4: Perceiver accuracy for training and validation sets.*
+
+![](./diagrams/loss.png)
+
+*Figure 5: Perceiver loss for training and validation sets.*
+
+![](./diagrams/predictions.png)
+
+*Figure 6: Predictions from the test set. Some are difficult to tell even for a human.*
+
+
+![](./diagrams/training.png)
+
+*Figure 7: Training and test set evaluation.*
 
 ## Dependencies
 - Python 3.7
