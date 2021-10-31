@@ -30,6 +30,10 @@ This is simply the model support file. It should not be executed on its own. How
 The driver file works by making a copy of the Improved UNET model, then loads the data. It loads the images into a dataset which then gets converted into arrays that the model can use for fitting. The model is then compiled using the adam optimisier, and dice coefficient for loss and its metrics before fitting begins.
 Then the output is given to be plotted for all images, loss and accuracy calculation.
 
+## Output
+[output image]
+Here is the output comparing the original, expected and actual output. There are some bugs within this implementation regarding the dice coefficient value being greater than 1. This could be the reason for the less-than optimal output from the model. However we can still see that the output from **model.predict()** is close to the expected output in the right row.
+
 ## Training and Test split
 I chose to use a 90/10 split for training and testing. This is so that model has more images to refine its learning, reading for when a test set is given for its efficiency testing.
 

@@ -1,6 +1,15 @@
-from tensorflow.keras.layers import Input, Conv2D, Dropout, LeakyReLU, UpSampling2D
-from tensorflow.keras.layers import Concatenate, Add, Dense
+"""
+Improved UNET Model
+
+@author Andrew Luong (45820188)
+
+Created: 29/10/2021
+"""
+
+from tensorflow.keras.laers import Input, Conv2D, Dropout, LeakyReLU, UpSampling2D
+from tensorflow.keras.layers import Concatenate, Add, Dense, Activation
 from tensorflow.keras.models import Model
+from tensorflow_addons.layers import InstanceNormalization
 
 # Building the Model
 def conv3x3(input_layer, filters, kernel_size=(3,3), strides=(1,1)):
@@ -17,9 +26,8 @@ def conv3x3(input_layer, filters, kernel_size=(3,3), strides=(1,1)):
         Returns a layer of convolution into a Leaky ReLU activation
     """
     conv1 = Conv2D(filters, kernel_size, strides, padding="same", kernel_initializer="he_normal")(input_layer) 
-    # maybe do a batch norm here too?
-    # https://edstem.org/au/courses/6584/discussion/652021
-    return LeakyReLU(0.01)(conv1)
+    instance = InstanceNormalization()(conv1)
+    return LeakyReLU(0.01)(instance)
 
 def context_module(input_layer, filters):
     """
@@ -123,7 +131,7 @@ def build_model(input_shape, depth):
     save2 = Concatenate()([upsample2, concat3])
     localise2 = localisation_module(save2, depth*4)
     
-    seg1 = conv3x3(localise2, 16, kernel_size=(1,1))
+    seg1 = conv3x3(localise2, 1, kernel_size=(1,1))
     seg1 = UpSampling2D(size=(2,2))(seg1)
     
     upsample3 = upsampling_module(localise2, depth*2)
@@ -133,7 +141,7 @@ def build_model(input_shape, depth):
     # For the last few layers, a segmentation layer is taken
     # then a final 3x3x3 convolution with stride 1
     
-    seg2 = conv3x3(localise3, 16)
+    seg2 = conv3x3(localise3, 1, kernel_size=(1,1))
     seg2 = Add()([seg2, seg1])
     seg2 = UpSampling2D(size=(2,2))(seg2)
     
@@ -141,17 +149,13 @@ def build_model(input_shape, depth):
     save4 = Concatenate()([upsample4, concat1])
     
     conv_last = conv3x3(save4, depth*2)
-    seg3 = conv3x3(conv_last, depth)
+    seg3 = conv3x3(conv_last, 1, kernel_size=(1,1))
     seg3 = Add()([seg3, seg2])
     
-    # Final Softmax as given by the paper
-    softmax = Conv2D(1, kernel_size=(1,1), padding="same", activation="softmax")(seg3)
-
-    # Sigmoid to ensure the output is between 0 and 1
-    sigmoid = Dense(1, activation="sigmoid")(softmax)
+    # We only use sigmoid as there are only 2 categories for the image
+    # We want the output to be within 0 and 1
+    outputs = Activation('sigmoid')(seg3)
     
-    outputs = sigmoid
     model = Model(inputs, outputs)
-    model.summary()
     
     return model 

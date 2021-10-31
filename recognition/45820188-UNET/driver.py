@@ -1,3 +1,12 @@
+"""
+Driver script to run the ISICs 2018 Dataset through
+the Improved UNET Model.
+
+@author Andrew Luong (45820188)
+
+Created: 29/10/2021
+"""
+
 from model import build_model
 from keras import backend as K
 import tensorflow as tf
@@ -77,7 +86,8 @@ if __name__ == "__main__":
 
     # Load the Improved UNET Model
     model = build_model(input_shape=(n, m, 1), depth=depth)
-
+    model.summary()
+    
     # Full Dataset
     X_train_ds = process_images("C:\ISIC Dataset\Full Set\ISIC2018_Task1-2_Training_Input_x2", "training")
     y_train_ds = process_images("C:\ISIC Dataset\Full Set\ISIC2018_Task1_Training_GroundTruth_x2", "training")
@@ -99,11 +109,13 @@ if __name__ == "__main__":
     X_test = tf.concat([x for x in X_test_ds], axis=0)
     y_test = tf.concat([x for x in y_test_ds], axis=0)
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=dice_coefficient_loss, metrics=[dice_coefficient])
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=dice_coefficient_loss, metrics=['accuracy', dice_coefficient])
     output = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, shuffle=True, validation_data=(X_test, y_test))
+    
+    print(output.history['loss'])
+    print(output.history['accuracy'])
+    print(output.history['dice_coefficient'])
 
-    print(model.evaluate(X_test))
-    print(output["loss"])
-    print(output["accuracy"])
+    model.save("saved_model")
     
     plot_prediction(model, X_test, y_test)
