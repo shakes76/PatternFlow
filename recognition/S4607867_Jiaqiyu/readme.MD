@@ -102,8 +102,8 @@ A graph showing the learning loss curve would be saved in the darknet root folde
 
 
 
-The trained weights is stored in [ url  ]
-Weights of my previous attempts can also be found at [url]
+The final trained weights is stored in https://drive.google.com/file/d/1USyV2NJbwAmRXiiyX2i_G7kVBbDgttol/view?usp=sharing
+Weights of my previous attempts can also be found at https://drive.google.com/drive/folders/1j0sUTh0i1Ou-p7pKiCKBQwzX-CilY-Va?usp=sharing
 
 # Step4 validation on test set:
 
