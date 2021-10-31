@@ -21,7 +21,7 @@ def main():
     # training parametets
     EPOCHS = 100
     BATCH_SIZE = 10
-    improved_unet_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    improved_unet_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     history = improved_unet_model.fit(train_data.batch(BATCH_SIZE), epochs=EPOCHS, validation_data=val_data.batch(BATCH_SIZE))
 
 
