@@ -19,7 +19,7 @@ The skin is the largest organ of the human body. Some skin diseases, such as mal
 * [Reference](#Reference)<br>
 
 
-### ISIC-dataset
+## ISIC-dataset
 In this task, we have given the preprocessed data set, which includes 2594 pictures and the corresponding segmented black and white pictures. 
 <p align="center">
   <br>
@@ -32,7 +32,7 @@ In this task, we have given the preprocessed data set, which includes 2594 pictu
   <i>Figure 3: Segmented image.</i>
 </p>
 
-### YoloV3
+## YoloV3
 Yolov3 is based on the changes made in v2 and v1. The main improvements are: 
 1. Adjusted the network structure to use multiscale features for object detection.
 2. Object classification replaced softmax with logistic.
