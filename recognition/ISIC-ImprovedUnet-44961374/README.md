@@ -70,7 +70,7 @@ The **blacks** (**0**) in the mask images represents the **background** and the 
 ### Processing
 The image files have been decoded to Tensors. 
 
-The dataset is split into 80:10:10 == Train:Validation:Test ratio, which is a common standard in deep learning.
+The dataset is split into 80:10:10 == Train:Validation:Test ratio. This is because the dataset is relatively small, so majority of it is used for training.
 
 <!-- About the Model -->
 ## About The Model
@@ -111,6 +111,16 @@ The Improved UNet  Model [5] still follows the "U" shaped structure as the origi
 * Use of context modules which are pre-activation residual blocks with two 3x3x3 convolutional layers and a dropout layer in between [5]
 * Use of localization modules to recombine features 
 
+### Results
+
+#### Dice Similarity Coefficient
+
+Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation. The formula of DSC is:
+
+#### Accuracy 
+The model performed really well and achieved a validation accuracy of over 90% (based o
+
+#### Sample Predictions
 
 <!-- Links to the data set and model paper -->
 ## Quick Links
