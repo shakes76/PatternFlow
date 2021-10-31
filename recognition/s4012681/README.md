@@ -35,7 +35,7 @@ path which help to preserve finer detail which may otherwise be lost.
 The architecture of this U-net3D model is based on Çiçek et al. “3D U-Net: 
 Learning Dense Volumetric Segmentation from Sparse Annotation”[[1](#References)].
 
-![U-net3D Architecture](unet_architecture.png)
+![U-net3D Architecture](images/unet_architecture.png)
 
 In the encoder section each layer consists of two 3 x 3 x 3 3D convolutions 
 with ReLu activation, with a single batch normalisation between and finally a 
@@ -66,11 +66,11 @@ dice similarity coefficients achieved in one run were:
 
 An example slice of one test case and the model's prediction:
 
-![Sample Test and Prediction](656220,%20second%20success/pred_6_crop.png)
+![Sample Test and Prediction](images/pred_6_crop.png)
 
 Model accuracy and loss over 50 epochs.
 
-![Accuracy and Loss](656220,%20second%20success/acc_loss.png)
+![Accuracy and Loss](images/acc_loss.png)
 
 ## Requirements
 
