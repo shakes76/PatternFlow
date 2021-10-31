@@ -38,7 +38,6 @@ Email: mujibulislamdipto@gmail.com
 ## Goal
 The goal of this project is to utilize the Improved UNet Model to segment skin lesions in the ISIC dataset. 
 
-
 <!-- About the dataset -->
 ## The Data - ISIC 2018 Challenge Data For Skin Cancer
 
@@ -69,7 +68,9 @@ The images below illustrate a skin lesion (input) image and its corresponding ma
 The **blacks** (**0**) in the mask images represents the **background** and the **whites** (**255**) represents the **lesion**.
 
 ### Processing
+The image files have been decoded to Tensors. 
 
+The dataset is split into 80:10:10 == Train:Validation:Test ratio, which is a common standard in deep learning.
 
 <!-- About the Model -->
 ## About The Model
