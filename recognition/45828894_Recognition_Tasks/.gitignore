@@ -3,3 +3,6 @@ keras_png_slices_data/
 .idea/
 /Task1_Improved_UNet/ISIC2018_Task1-2_Training_Data/
 /Task7_OASIS_StylanGan/img/
+/Task7_OASIS_StylanGan/img2/
+/Task7_OASIS_StylanGan/checkpoints2/
+/Task7_OASIS_StylanGan/checkpoints/
