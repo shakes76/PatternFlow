@@ -13,6 +13,7 @@
 * [Training Model](#training-model)
     * [Hyper Parameters](#hyper-parameters)
     * [Training Results](#training-results)
+* [Model Evaluation(Test Set Performance)](#model-evaluation(test-set-performance))
 * [Reference](#reference)
 
 ## Introduction
@@ -82,6 +83,18 @@ Using the techniques and hyper parameters mentioned above, we can get the dice l
 
 **Training Result Plot:**<br/>
 ![TrainResult.png](ExampleImage/Plots/TrainResult.png)
+
+## Model Evaluation(Test Set Performance)
+The best Improved UNet model which is the model on epoch 47 will be selected to perform on the test set. The performance we got on the test set is a dice coefficient of **0.8894295** which is greater than 0.8 and is really high. Below are a few random selected test set samples that is visualized on how the model performs on the test set. The first column of the plot is the skin lesion image, the second column is the true segmentation mask, the third column is the prediction of the selected epoch 47 Improved UNet prediction, and the fourth column is the combined image of the skin lesion and the predicted segmentation mask to see how it fits visually. Here the rows are each of the different samples.
+
+**Random Test Set Predictions 1:**<br/>
+![TestSetPredict1.png](ExampleImage/Plots/TestSetPredict1.png)
+
+**Random Test Set Predictions 2:**<br/>
+![TestSetPredict2.png](ExampleImage/Plots/TestSetPredict2.png)
+
+**Random Test Set Predictions 3:**<br/>
+![TestSetPredict3.png](ExampleImage/Plots/TestSetPredict3.png)
 
 ## Reference
 <a name="reference_anchor1"></a>[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)<br/>
