@@ -1,9 +1,11 @@
 import numpy as np
 import torch
+import torch.optim as optim
 from scipy.sparse import coo_matrix, csr_matrix, eye, diags
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
+from model import GCN
 
 def main():
     # Load Facebook dataset
@@ -68,6 +70,17 @@ def main():
     print('facebook_validation_target:', facebook_validation_target)
     print('facebook_test_target:', facebook_test_target)
     print('adjacency_matrix:', adjacency_matrix)
+
+    model = GCN(input_size=facebook_features.shape[1],
+                hidden_size=16,
+                num_classes=facebook_target.max().item() + 1,
+                dropout=0.5)
+    optimizer = optim.Adam(model.parameters(),
+                           lr=0.01,
+                           weight_decay=5e-4)
+
+    print('model', model)
+    print('optimizer', optimizer)
 
 
 if __name__ == '__main__':
