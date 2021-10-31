@@ -1,5 +1,5 @@
 class EarlyStopping():
-    def __init__(self, patience=5, tol=0.005):
+    def __init__(self, patience=5, tol=0.05):
         self.patience = patience
         self.tol = tol
         self.lowest_loss = None

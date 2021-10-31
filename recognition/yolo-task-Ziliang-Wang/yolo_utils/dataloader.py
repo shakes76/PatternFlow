@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from yolo_utiles.utils import cvtColor, preprocess_input
+from yolo_utils.utils import cvtColor, preprocess_input
 
 # code is referenced from https://github.com/bubbliiiing/yolo3-pytorch/blob/master/utils/dataloader.py
 # some adjusted small parts
