@@ -6,13 +6,13 @@ Chun-Chiao Huang
   
 ## Model structue
 ### ProGAN strusture
-![2b8c387b198eefedbeca6bd51f154ea](https://user-images.githubusercontent.com/64058748/139537018-7c6cac0c-9caf-4d2b-9a30-b0673936e46a.png)   
+![](Images/proGAN.png)   
     Tero et al., 2018 
   
   The structure of styleGAN is similar to ProGAN, while the Generator is changed to the structure shown in the below figure.  
   The generator and the discriminator both start at 4 * 4 images and progressively grow to 256 * 256 images.
 ### Structure of Generator
-![96097a522ee08b0721e0753d2355819](https://user-images.githubusercontent.com/64058748/139536816-1ef0d410-bed3-4b83-95f0-920c212481c0.png)   
+![](Images/styleGAN.png)    
    Tero et al., 2020    
    #### AdaIN
    Instead of random noise input to the generator, the input is now changed to constants.   
@@ -29,16 +29,24 @@ Chun-Chiao Huang
    The loss used is Non-Saturating loss, suggested by tutor Siyu.   
    No other loss is added as it works very well.
 ## Results    
-### Images   
-![brain](https://user-images.githubusercontent.com/64058748/139554285-448fd16b-0111-4bdd-84af-1741ebf9a78f.png)   
-![brain](https://user-images.githubusercontent.com/64058748/139554323-e2f4a66d-ce2a-4e3e-be62-798d9f2b6e86.gif)   
+### Images    
+![](Images/brain.png)   
+![](Images/brain.gif)   
+ 
  
 
 ### Loss
- ![loss](https://user-images.githubusercontent.com/64058748/139565537-d3292c6d-78f0-406d-8589-1b906f96a223.jpg)
+ ![](Images/loss.jpg) 
    
 
-## Requirements    
+## Requirements 
+Python 3.7.12
+matplotlib 3.2.2    
+numpy 1.19.5 (numpy is only used for plotting and saving images)    
+torch 1.9.0+cu111   
+torchvision 0.10.0+cu111    
+tqdm 4.62.3   
+Pillow 7.1.2
 ## Usage  
 ### To train the model, run:
     python train.py [data_path] [results_path]  
