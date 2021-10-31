@@ -25,9 +25,14 @@ Training set: ISIC 2018 training set, with 2594 images.
 Testing set: ISIC 2016 with 379 images.
 
 ## Outplots and Results
+![image](https://user-images.githubusercontent.com/93363361/139567948-43addbfa-073f-45dc-8263-3e71c4ea4433.png)
+![image](https://user-images.githubusercontent.com/93363361/139567899-aff38e3e-3b66-4b15-8d30-880895159926.png)
 
-![image](https://user-images.githubusercontent.com/93363361/139567416-64854552-0a20-4f83-87d6-44835b0ace45.png)
 ![image](https://user-images.githubusercontent.com/93363361/139567419-4dd0adb2-51f5-4acb-9a81-00d0742f63ef.png)
+![image](https://user-images.githubusercontent.com/93363361/139567855-dcb00662-d9bd-455a-9bb1-c08978f5a405.png)
+
 ![image](https://user-images.githubusercontent.com/93363361/139567423-cae5341e-cf0c-417e-863f-9543981e16b1.png)
+![image](https://user-images.githubusercontent.com/93363361/139567821-4d054d2e-9a81-4ae0-b97a-1b0c08c2e7af.png)
 
-
+From the images, it is indicate that the shape of the frame of yolo is similar to the groundtruth greysclae images. And from the result_3000.txt file, the IoU threshold is 80%, which means the framed box does have the 80% confidence of the object and the framed box includes all the features of the entire object. The f1-score of the testing set is 0.86 and IoU is 75.94%, which means the performance of the model is good.
+                                                                                                                                          
