@@ -2,6 +2,8 @@
 This script creates an Improved U-Net model.
 Specifications of the model can be found at: https://arxiv.org/abs/1802.10508v1
 @author: Mujibul Islam Dipto
+@date: 31/10/2021
+@license: Attribution-NonCommercial 4.0 International. See license.txt for more details.
 """
 from tensorflow.keras.layers import Conv2D, Dropout, Input, concatenate, Add, UpSampling2D, LeakyReLU
 from tensorflow.keras import Model

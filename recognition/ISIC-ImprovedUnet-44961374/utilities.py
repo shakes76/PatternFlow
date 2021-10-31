@@ -1,6 +1,9 @@
 """
-This script contains functions required for dsiplaying images and calculating DSC.
+This script contains utility functions for processing data, displaying images
+and calculating dice similarity coefficient.
 @author: Mujibul Islam Dipto
+@date: 31/10/2021
+@license: Attribution-NonCommercial 4.0 International. See license.txt for more details.
 """
 import tensorflow as tf # for DL functionalities
 import matplotlib.pyplot as plt # for plotting images

@@ -1,6 +1,8 @@
 """
 This script loads the input and output images from the ISIC dataset for pre-processing.
 @author: Mujibul Islam Dipto
+@date: 31/10/2021
+@license: Attribution-NonCommercial 4.0 International. See license.txt for more details.
 """
 import os # for operating system functionalities 
 from sklearn.utils import shuffle, validation # for shuffling data 
