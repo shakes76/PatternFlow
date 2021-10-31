@@ -118,18 +118,22 @@ def create_model(output_channels):
     conv_layer_1 = create_conv2d(input_layer, INIT_NO_FILTERS, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
     context_1 = context_module(conv_layer_1, INIT_NO_FILTERS) # context module
     add_layer_1= Add()([conv_layer_1, context_1]) # element-wise sum
+
     # level 2
     conv_layer_2 = create_conv2d(add_layer_1, INIT_NO_FILTERS * 2, KERNEL_SIZE, (2, 2)) # 3x3 stride 2 conv
     context_2 = context_module(conv_layer_2, INIT_NO_FILTERS * 2) # context module
     add_layer_2 = Add()([conv_layer_2, context_2]) # element-wise sum
+
     # level 3
     conv_layer_3 = create_conv2d(add_layer_2, INIT_NO_FILTERS * 4, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
     context_3 = context_module(conv_layer_3, INIT_NO_FILTERS * 4) # context module
     add_layer_3 = Add()([conv_layer_3, context_3]) # element-wise sum
+
     # level 4
     conv_layer_4 = create_conv2d(add_layer_3, INIT_NO_FILTERS * 8, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
     context_4 = context_module(conv_layer_4, INIT_NO_FILTERS * 8) # context module
     add_layer_4 = Add()([conv_layer_4, context_4]) # element-wise sum
+
     # base
     conv_layer_5 = create_conv2d(add_layer_4, INIT_NO_FILTERS * 16, KERNEL_SIZE, (2, 2))  # 3x3 stride 2 conv
     context_5 = context_module(conv_layer_5, INIT_NO_FILTERS * 16) # context module
@@ -138,25 +142,32 @@ def create_model(output_channels):
     ########## EXPANSIVE PATH ##########
     # base
     upsample_1 = upsampling_module(add_layer_5, INIT_NO_FILTERS * 8) # upsampling module
+
     # level 4
     concat_1 = concatenate([upsample_1, add_layer_4]) # concatenation
     localization_1 = localization_module(concat_1, INIT_NO_FILTERS * 8) # localization module
     up_sample_2 = upsampling_module(localization_1, INIT_NO_FILTERS * 4) # upsampling module
+
     # level 3
     concat_2 = concatenate([up_sample_2, add_layer_3]) # concatenation
     localization_2 = localization_module(concat_2, INIT_NO_FILTERS * 4) # localization module
     up_sample_3 = upsampling_module(localization_2, INIT_NO_FILTERS * 2) # upsampling module
+
     # level 2
     concat_3 = concatenate([up_sample_3, add_layer_2]) # concatenation
     localization_3 = localization_module(concat_3, INIT_NO_FILTERS * 2) # localization module
     up_sample_4 = upsampling_module(localization_3, INIT_NO_FILTERS) # upsampling module
+
     # level 1
     concat_4 = concatenate([up_sample_4, add_layer_1]) # concatenation
     conv_layer_6 = create_conv2d(concat_4, INIT_NO_FILTERS * 2, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
+
     # handle segmentation layers
+    print(localization_2)
     segmentation_1 = segmentation_layer(localization_2, output_channels) # segmentation layer
     segmentation_1_up = UpSampling2D()(segmentation_1) # upscale
     segmentation_2 = segmentation_layer(localization_3, output_channels) # segmentation layer
+    print(localization_3, segmentation_1, segmentation_2)
     add_layer_6 = Add()([segmentation_1_up, segmentation_2]) # element-wise sum
     add_layer_6_up = UpSampling2D()(add_layer_6) # element-wise sum
     segmentation_3 = segmentation_layer(conv_layer_6, output_channels) # segmentation layer
@@ -165,3 +176,5 @@ def create_model(output_channels):
     model = Model(name="ImprovedUnet", inputs=input_layer, outputs=output) # final model
     return model
  
+test_model = create_model(2)
+print(test_model.summary())
