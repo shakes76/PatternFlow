@@ -1,17 +1,16 @@
 # ISICs Dataset Segmentation with Improved UNet
 
+## Author
+**Name:** Jeng-Chung, Lien<br/>
+**Student ID:** 46232050<br/>
+**Email:** jengchung.lien@uqconnect.edu.au
+
 ## Table of Contents
-* [Author](#author)
 * [Introduction](#introduction)
 * [ISICs Dataset](#isics-dataset)
     * [Data preprocessing](#data-preprocessing)
 * [Improved UNet Model](improved-unet-model)
 * [Reference](#reference)
-
-## Author
-**Name:** Jeng-Chung, Lien<br/>
-**Student ID:** 46232050<br/>
-**Email:** jengchung.lien@uqconnect.edu.au
 
 ## Introduction
 The International Skin Imaging Collaboration (ISIC) is an international effort to improve melanoma diagnosis. Melanoma is the deadliest form of skin cancer which is a major public health problem. The objective here is to used an Improved version of the UNet based model inspired from the paper [[1]](#reference_anchor1) to perform image segmentaion on the ISICs dataset and achieve a [Dice similarity coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) greater than 0.8 on the test set.
