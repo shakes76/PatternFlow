@@ -43,6 +43,9 @@ def equal_lr(module, name='weight'):
 
 
 class FusedUpsample(nn.Module):
+    """
+    (B) Bilinear Interpolation and Deconvolution layers
+    """
     def __init__(self, in_channel, out_channel, kernel_size, padding=0):
         super().__init__()
 
@@ -58,6 +61,7 @@ class FusedUpsample(nn.Module):
         self.pad = padding
 
     def forward(self, input):
+        # Bilinear Interpolation
         weight = F.pad(self.weight * self.multiplier, [1, 1, 1, 1])
         weight = (
                          weight[:, :, 1:, 1:]
@@ -65,13 +69,16 @@ class FusedUpsample(nn.Module):
                          + weight[:, :, 1:, :-1]
                          + weight[:, :, :-1, :-1]
                  ) / 4
-
+        # Deconvolution
         out = F.conv_transpose2d(input, weight, self.bias, stride=2, padding=self.pad)
 
         return out
 
 
 class FusedDownsample(nn.Module):
+    """
+    (B) Bilinear Interpolation and Convolution layer
+    """
     def __init__(self, in_channel, out_channel, kernel_size, padding=0):
         super().__init__()
 
@@ -87,6 +94,7 @@ class FusedDownsample(nn.Module):
         self.pad = padding
 
     def forward(self, input):
+        # Bilinear Interpolation
         weight = F.pad(self.weight * self.multiplier, [1, 1, 1, 1])
         weight = (
                          weight[:, :, 1:, 1:]
@@ -94,7 +102,7 @@ class FusedDownsample(nn.Module):
                          + weight[:, :, 1:, :-1]
                          + weight[:, :, :-1, :-1]
                  ) / 4
-
+        # Convolution
         out = F.conv2d(input, weight, self.bias, stride=2, padding=self.pad)
 
         return out
@@ -274,6 +282,9 @@ class AdaptiveInstanceNorm(nn.Module):
 
 
 class NoiseInjection(nn.Module):
+    """
+    (E) Constant Noise
+    """
     def __init__(self, channel):
         super().__init__()
 
@@ -284,6 +295,9 @@ class NoiseInjection(nn.Module):
 
 
 class ConstantInput(nn.Module):
+    """
+    (D) Constant Input of Synthesis Network
+    """
     def __init__(self, channel, size=4):
         super().__init__()
 
@@ -361,6 +375,9 @@ class StyledConvBlock(nn.Module):
 
 
 class Generator(nn.Module):
+    """
+    (C) Styling
+    """
     def __init__(self, code_dim, fused=True):
         super().__init__()
 
@@ -397,10 +414,10 @@ class Generator(nn.Module):
     def forward(self, style, noise, step=0, alpha=-1, mixing_range=(-1, -1)):
         out = noise[0]
 
-        if len(style) < 2:
+        if len(style) < 2:  # input 1 latent code
             inject_index = [len(self.progression) + 1]
 
-        else:
+        else:   # mix regularization: input more than 1 latent code, to choose some layers use the other latent code
             inject_index = sorted(random.sample(list(range(step)), len(style) - 1))
 
         crossover = 0
@@ -413,10 +430,10 @@ class Generator(nn.Module):
                 style_step = style[crossover]
 
             else:
-                if mixing_range[0] <= i <= mixing_range[1]:
+                if mixing_range[0] <= i <= mixing_range[1]:     # for lower resolutions, use style from latent code 1
                     style_step = style[1]
 
-                else:
+                else:   # for higher resolutions, use style from latent code 0
                     style_step = style[0]
 
             if i > 0 and step > 0:
@@ -440,7 +457,9 @@ class Generator(nn.Module):
 class StyledGenerator(nn.Module):
     def __init__(self, code_dim=512, n_mlp=8):
         super().__init__()
-
+        """
+        (C) mapping network to disentangle and get the styles 
+        """
         self.generator = Generator(code_dim)
 
         layers = [PixelNorm()]
