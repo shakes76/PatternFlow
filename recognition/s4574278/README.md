@@ -6,8 +6,9 @@
 
 ## Abstract
 
-what we did for this report is training a [YOLOX][yolox2021] model on ISIC 2018 Task 1-2 Dataset, to clearly recognize the lesion area.
-Result in mAP with minimum IoU
+what we did for this report is training a simplified [YOLOX][yolox2021] model on ISIC 2018 Task 1-2 Dataset, to clearly recognize the lesion area.
+
+<!-- TODO: put Result in mAP with minimum IoU -->
 
 ## Data preprocessing
 
@@ -19,25 +20,37 @@ Result in mAP with minimum IoU
    3. The coordinate format of our created bounding box is (x_min, y_min, x_max, y_max) to be in line with most used dataset COCO
       - I planned to pretrain our model on COCO, but the benefit of pretraining YOLOX is quite low([YOLOX][yolox2021]: Strong data augmentation), so I skip it
 
-## Data augmentation
+### Data augmentation
 
-The original YOLOX use Mosaic + Mix Up to boost generalization performance, but in our task, there is only one category to classify, and having both augmentation may cause negative impact on performance ([YOLOX: Table 5][yolox2021])
-So we use Scale Jit + Mosaic only
+The original YOLOX use Mosaic(introduced into YOLO family by YOLOv4) + Mix Up to boost generalization performance, but in our task, there is only one category to classify, and having both augmentation may cause negative impact on performance ([YOLOX: Table 5][yolox2021])
+So we plan to use Scale Jit + Mosaic. But, Mosaic is too difficult to do especially we have to turn it off on the last 5+%, not to pullute the distribution of feature. 
 
 ## Model - YOLOX
 
-YOLOX is one of latest work in YOLO Big Family, it utilize an anchor-free approach with a decoupled head. To put it simple, it's a YOLO v3 + Anchor Free approach.
+YOLOX is one of the latest work in YOLO Family, it is built on top of YOLO v3, utilize an anchor-free approach and combined with recent research progress on Deep Learning, like: decoupled head, SimOTA, Mosaic Data Augmentation, etc. Comparing to YOLO v5, it might be slower in some cases, but the AP is largely improved.
 
 The original YOLOX model repo is published on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX).
-But this model is writen in pyTorch, while I am using Tensorflow(for better visualization), I also customized Image dimension
+But this model is written in pyTorch, while I am using Tensorflow(reasons are stated later), I also customized a bit to fit our use case.
 
-## Network - CSPNet
+Some commenter say YOLOX, due to its Anchor free nature, it more similar to "[FCOS](tian2019fcos)".
 
-The CSPNet is firstly introduced by the controversial YOLO v5
+## Barebone - CSPNet
+
+The CSPNet is firstly introduced into YOLO family by YOLO v4. To me, it looks like a modified ResNet. From the dense prediction of YOLO v1 to modified CSPNet in YOLO v5 and YOLOX, the capacity of feature extraction is drastically improved along the way.
+
+### Activation
+
+According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs, it looks like a ReLU but smooth.
+![https://paperswithcode.com/method/silu](./images/SiLU.png)
+Image from [Sigmoid Linear Unit | paperswithcode.com](https://paperswithcode.com/method/silu)
+
 ### Loss function
 
-Why choose AP over AOC? Because in YOLO, we will have many negative cases, in ROC curve true positive is equivalently important as true negative. So a module missed the only bounding box may still get a great AOC score, that's definitely not what we want.
-mAP is 
+CIoU
+
+
+Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
+mAP on the other hand, emphasize on the positive case.
 
 ### Tensorflow Keras
 
@@ -51,12 +64,22 @@ The reason to chose tensorflow over pyTorch.
 
 ## Reference
 
-- [Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian, YOLOX: Exceeding YOLO Series in 2021. arXiv preprint arXiv:2107.08430][yolox2021]
+<!-- https://www.bibtex.com/c/bibtex-to-ieee-converter/ -->
+1. [Z. Ge, S. Liu, F. Wang, Z. Li, en J. Sun, “YOLOX: Exceeding YOLO Series in 2021”, arXiv [cs.CV]. 2021.][yolox2021]
+2. [A. Bochkovskiy, C.-Y. Wang, en H.-Y. M. Liao, “YOLOv4: Optimal Speed and Accuracy of Object Detection”, arXiv [cs.CV]. 2020][bochkovskiy2020yolov4]
+3. [Dan Hendrycks and Kevin Gimpel, Gaussian Error Linear Units (GELUs). arXiv preprint arXiv:][hendrycks2020gaussian]
+4. [S. Elfwing, E. Uchibe, en K. Doya, “Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning”, arXiv [cs.LG]. 2017.][elfwing2017sigmoidweighted]
+5. [Z. Tian, C. Shen, H. Chen, en T. He, “FCOS: Fully Convolutional One-Stage Object Detection”, arXiv [cs.CV]. 2019.][tian2019fcos]
+6. [][]
 
-[yolox2021]: https://arxiv.org/pdf/2107.08430.pdf "Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian, YOLOX: Exceeding YOLO Series in 2021. arXiv preprint arXiv:2107.08430"
+[yolox2021]: https://arxiv.org/abs/2107.08430 "YOLOX: Exceeding YOLO Series in 2021"
+[bochkovskiy2020yolov4]: https://arxiv.org/abs/2004.10934 "YOLOv4: Optimal Speed and Accuracy of Object Detection"
+[hendrycks2020gaussian]: https://arxiv.org/abs/1606.08415 "Gaussian Error Linear Units (GELUs)"
+[elfwing2017sigmoidweighted]: https://arxiv.org/abs/1702.03118v3 "Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning"
+[tian2019fcos]: https://arxiv.org/abs/1904.01355 "FCOS: Fully Convolutional One-Stage Object Detection"
 
 ## Appendix: Challenges faced
 
-My task never run in Goliath servers.
-The dataset is relatively large. So it takes time to upload to any paid service
+My queued task never run in Goliath servers. So I booked a paid GPU service.
+The dataset is relatively large. So it takes time to upload it to the server. Especially if you need to transfer the archive to another country like United States
 
