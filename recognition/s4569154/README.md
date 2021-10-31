@@ -94,7 +94,7 @@ Ignored samples are ignored if the IOU with any of the ground truths is greater 
 
 Negative cases are those where the IOU with all ground truths is less than the threshold (0.5), except for positive cases and ignored cases. Negative cases have only confidence generating loss, with a confidence label of 0.
 
-Configuration files
+### Configuration files
 
 The official code uses a configuration file to build the network, i.e. the cfg file describes the network architecture piece by piece. First I used pytorch to read the network structure to form my own module for forward and backward propagation.
 
@@ -103,6 +103,15 @@ In the Yolov3 code, batch is net->batch, which defaults to 4, i.e. n=64/4=16, so
 ![image](https://user-images.githubusercontent.com/75237235/139571793-df421e2e-6277-4ae1-b9ae-38b80222bee4.png)
 
 At first I used the default values, 64 and 16, but later tried 64 and 8, but since I trained the code at Colab, Colab provided free GPUs of T4 and P100 and 16GB of running memory. The subdivision of 8 crashes due to device limitations. So the 64 and 8 pairing did not yield results. I then tried 64 and 32, 96 and 16 and 96 and 32, but due to time and device constraints, no more combinations were tried.
+
+max_batches means that the model will stop learning when it reaches max_batches, steps=40000,45000 The above two parameters, steps and scale, set the change in learning rate, e.g. the learning rate decays by a factor of ten when the iteration reaches 40,000.
+
+![image](https://user-images.githubusercontent.com/75237235/139571955-d46ba7cf-b6c5-4231-92b4-6f9e6ad4fc67.png)
+
+![image](https://user-images.githubusercontent.com/75237235/139572147-9e6aedb0-4fa0-4f85-9ae9-1281711ac1a2.png)
+
+The 9 anchors here are the ones proposed in the paper using k-means. yolov3 has three prediction paths (from which multiscale is derived) mask=0, 1, 2 for the first branch, corresponding to its anchors. classes is the number of categories.
+
 
 
 
