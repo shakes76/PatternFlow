@@ -18,6 +18,9 @@ from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras import backend as K
 from IPython.display import clear_output
 
+from tensorflow.python.client import device_lib
+device_lib.list_local_devices()
+
 from google.colab import drive
 drive.mount('/content/drive')
 
@@ -186,13 +189,11 @@ def display(display_list):
 
 ## TRAIN THE MODEL
 BATCH_SIZE = 10
-NUM_OF_EPOCH = 7 #just to speed up
-result_images_dir = "result_images/"
+NUM_OF_EPOCH = 10 #just to speed up
 os.makedirs(result_images_dir, exist_ok=True)
 history = improved_unet_model.fit(df_train.batch(BATCH_SIZE), 
           validation_data=df_val.batch(BATCH_SIZE), 
           epochs=NUM_OF_EPOCH)
-show_plots(history, result_images_dir)
 print()
 print("FINISHED TRAINING...")
 print()
@@ -247,3 +248,15 @@ def plot_loss():
 plot_accuracy()
 plot_dice()
 plot_loss()
+
+print("Loss Function: dice similarity coefficient\n")
+improved_unet_model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
+improved_unet_model.summary()
+
+# evaluate
+[loss, accuracy, dsc] = improved_unet_model.evaluate(df_test.batch(BATCH_SIZE), verbose=1)
+print("RESULTS FROM THE EVALUATE FUNCTION:")
+print("Loss (dice similarity coefficient):", loss)
+print("Dice Similarity Coefficient:", dsc)
+print("Accuracy (metrics):", accuracy)
+print()
