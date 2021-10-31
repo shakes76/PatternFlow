@@ -78,8 +78,15 @@ def train(model, optim, epoch_size, train_loader, valid_loader):
     return train_status
     
     
-def test(model, data_loader, optim, epoch_size):
-    pass
+def test(model, test_loader):
+    ssim = 0
+    for batch, imgs in enumerate(test_loader):
+        imgs = imgs.to(device)
+        _, decoded, _ = model(imgs)
+        imgs = make_grid(imgs.detach().data).unsqueeze(0)
+        decoded = make_grid(decoded.detach().data).unsqueeze(0)
+        ssim += cal_ssim(imgs, decoded, data_range=1, size_average=False).item()
+    print("Average SSIM on test dataset:", ssim/(batch+1))
 
 def preload_imgs(path):
     imgs = os.listdir(path)
