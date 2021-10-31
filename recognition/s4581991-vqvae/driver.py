@@ -1,9 +1,10 @@
-from math import pi
+import os
 from typing import Tuple
 
 from keras.datasets import mnist
 from keras.callbacks import History
 import keras.models
+import keras.preprocessing.image
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
@@ -12,7 +13,46 @@ import tensorflow_probability as tfp
 
 import model
 
+# Constants and Parameters
 
+OASIS_TRAIN_DIR = os.path.join(os.curdir, "keras_png_slices_data", "keras_png_slices_train")
+OASIS_TEST_DIR = os.path.join(os.curdir, "keras_png_slices_data", "keras_png_slices_test")
+
+IMAGE_SHAPE = (256, 256, 3)
+
+NUM_LATENT_DIMS = 16
+NUM_EMBEDDINGS = 128
+
+# Functions for OASIS
+
+def load_oasis_data(path):
+    '''
+    Loads preprocessed OASIS Brain data
+    '''
+    files = os.listdir(path)
+    oasis_images = []
+    for filename in files:
+        file_path = os.path.join(path, filename)
+        image = keras.preprocessing.image.load_img(file_path)
+        oasis_images.append(keras.preprocessing.image.img_to_array(image))
+
+    return np.array(oasis_images)
+
+def run_oasis_vqvae():
+    train_data = load_oasis_data(OASIS_TRAIN_DIR)
+    test_data = load_oasis_data(OASIS_TEST_DIR)
+
+    history, vqvae = train_vqvae(train_data, IMAGE_SHAPE,
+        NUM_LATENT_DIMS, NUM_EMBEDDINGS)
+
+    recreated, recreated_ssim = test_vqvae(vqvae, test_data[0:20])
+    print(f"The SSIM is {recreated_ssim}")
+    for i in range(1, 21):
+        plt.subplot(4, 5, i)
+        plt.imshow(recreated[i - 1])
+    plt.show()
+
+# Functions for MNIST
 
 def load_and_preprocess_mnist_data():
     '''
@@ -37,9 +77,11 @@ def run_mnist_vqvae():
     #     plt.imshow(recreated[i - 1])
     # plt.show()
 
-    generate_mnist_with_pixel_cnn(vqvae, train_X)
+    generate_and_plot_with_pixel_cnn(vqvae, train_X)
 
-def generate_mnist_with_pixel_cnn(vqvae_model: keras.models.Model, input):
+# VQ VAE Model functions
+
+def generate_and_plot_with_pixel_cnn(vqvae_model: keras.models.Model, input):
     encoder: keras.layers.Layer = vqvae_model.get_layer("encoder")
     decoder: keras.layers.Layer = vqvae_model.get_layer("decoder")
     vector_quantizer = vqvae_model.get_layer("vector_quantizer")
@@ -123,8 +165,8 @@ def plot_generated_samples(generated_samples, number_of_images):
         plt.imshow(generated_samples[i].squeeze())
         plt.axis("off")
 
-    plt.show()
     plt.savefig("generated_samples.png")
+    plt.show()
 
 # Loss Calculation Helpers
 
@@ -135,7 +177,7 @@ def vq_vae_loss(variance):
     return calc_loss
 
 def main():
-    run_mnist_vqvae()
+    run_oasis_vqvae()
 
 if __name__ == "__main__":
     main()

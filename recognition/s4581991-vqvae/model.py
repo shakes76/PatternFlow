@@ -12,7 +12,7 @@ def create_encoder_model(latent_dimensions: int,
         input_shape: Tuple[int, int, int]) -> keras.models.Sequential:
     '''Returns the Encoder model used for the VQ VAE.'''
     return keras.models.Sequential([
-        keras.layers.Input(shape=(28, 28, 1)),
+        keras.layers.Input(shape=input_shape),
         keras.layers.Conv2D(
                 32, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2D(
@@ -42,7 +42,7 @@ def create_vqvae_model(latent_dimensions: int, number_of_embeddings: int,
     encoder = create_encoder_model(latent_dimensions, input_shape)
     decoder = create_decoder_model(encoder.output_shape[1:])
     return keras.models.Sequential([
-        keras.layers.Input(shape=(28, 28, 1)),
+        keras.layers.Input(shape=input_shape),
         encoder,
         VectorQuantizer(number_of_embeddings, latent_dimensions,
                 name="vector_quantizer"),
