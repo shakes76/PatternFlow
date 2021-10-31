@@ -10,28 +10,36 @@ Email: mujibulislamdipto@gmail.com
 
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#goal"> Project Goal </a>
+    <summary>Table of Contents</summary>
+    <ol>
+      <li>
+        <a href="#goal"> Project Goal </a>
+      </li>
+      <li>
+        <a href="#the-data---isic-2018-challenge-data-for-skin-cancer"> Dataset Information </a>
+        <ul>
+            <li><a href="#overview"> Overview </a></li>
+            <li><a href="#contents"> Contents </a></li>
+            <li><a href="#processing"> Processing </a></li>
+        </ul>
+      </li>
+      <li><a href="#about-the-model"> About the Model </a>
+        <ul>
+            <li><a href="#background"> Background </a></li>
+            <li><a href="#the-improved-unet-model"> The Improved UNet Model </a></li>
+        </ul>
     </li>
-    <li>
-      <a href="#the-data---isic-2018-challenge-data-for-skin-cancer"> Dataset Information </a>
-      <ul>
-          <li><a href="#overview"> Overview </a></li>
-          <li><a href="#contents"> Contents </a></li>
-          <li><a href="#processing"> Processing </a></li>
-      </ul>
+    <li><a href="#results"> Results </a>
+        <ul>
+            <li><a href="#dice-similarity-coefficient"> DSC </a></li>
+            <li><a href="#model-performance"> Model Performance </a></li>
+            <li><a href="#sample-predictions"> Sample Predictions </a></li>
+        </ul>
     </li>
-    <li><a href="#about-the-model"> About the Model </a></li>
-          <ul>
-          <li><a href="#background"> Background </a></li>
-          <li><a href="#the-improved-unet-model"> The Improved UNet Model </a></li>
-      </ul>
-    <li><a href="#quick-links"> Quick Links </a></li>
-    <li><a href="#references"> References </a></li>
-  </ol>
-</details>
+      <li><a href="#quick-links"> Quick Links </a></li>
+      <li><a href="#references"> References </a></li>
+    </ol>
+  </details>
 <hr>
 
 <!-- Goal the project -->
