@@ -10,7 +10,11 @@ class FourierEncode(layers.Layer):
 
     def call(self, patientData):
         
-        num_images, *basis, _ = patientData.shape
+        # num_images, *basis, _ = patientData.shape
+
+        num_images = patientData.shape[0]
+        *basis = patientData.shape[1]
+        
 
         basis = tuple(basis)
 
@@ -21,9 +25,9 @@ class FourierEncode(layers.Layer):
 
         transformedFeature = self._fourier_encode(fearture)
 
-        del fearture
-        
-        transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2*(2*self.freq_ban+1)))
+        # del fearture
+
+        transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2 * (2 * self.freq_ban + 1)))
 
 
         transformedFeature = tf.repeat(transformedFeature, repeats=num_images, axis=0)
@@ -39,8 +43,8 @@ class FourierEncode(layers.Layer):
 
     def _fourier_encode(self, fearture):
 
-        fearture = tf.expand_dims(fearture, -1)
-        fearture = tf.cast(fearture, dtype=tf.float32)
+        # fearture = tf.expand_dims(fearture, -1)
+        fearture = tf.cast(tf.expand_dims(fearture, -1), dtype=tf.float32)
         sampleFeature = fearture
         
         scaledKernel = tf.experimental.numpy.logspace(start=0.0, 
@@ -51,7 +55,7 @@ class FourierEncode(layers.Layer):
         scaledKernel = tf.reshape(scaledKernel, (*((1,) * (len(fearture.shape) - 1)), self.freq_ban))
 
 
-        fearture = fearture * scaledKernel * math.pi
+        fearture = math.pi * scaledKernel * feature 
 
         fearture = tf.concat([tf.math.sin(fearture), tf.math.cos(fearture)], axis=-1)
         fearture = tf.concat((fearture, sampleFeature), axis=-1)
