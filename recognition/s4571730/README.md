@@ -74,7 +74,8 @@ the files.
 are saved in a dictionary (mapping patient ID to the file names). Thus, when
 loading the files into datasets, it is easy to keep track of the patient ID,
 making sure that no overlapping patient ID is found in the testing set
-- The dataset is split into 80% training, 16% validation and 4% testing.
+- The dataset is split into 80% training. In the remaining 20%, 4/5 is used for
+validation and 1/5 used for testing.
 - During the processing, the ratio between left and right labels are also
 calculated. There are 7760 left images and 10920 right images, which is slightly 
 skewed towards the right labels.
