@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
@@ -6,7 +5,6 @@ from tensorflow.keras.layers import Conv2D, Conv2DTranspose
 from tensorflow.keras import layers
 import tensorflow as tf
 
-import load_oasis_data
 
 img_length = 256
 
@@ -121,18 +119,5 @@ def train_vqvae(vqvae, x_train_normalised, x_val_normalised, n_epochs):
     vqvae.fit(x_train_normalised, epochs=n_epochs, batch_size=128)
 
 
-def compare_reconstructions(vqvae: VQVae, x_test_normalised, n_images):
-    indices = np.random.choice(len(x_test_normalised), n_images)
-    test_samples = x_test_normalised[indices]
-
-    reconstructed = vqvae.predict(test_samples)
-    calculate_ssim(test_samples, reconstructed)
-    return test_samples, reconstructed
-    # Output image comparisons
-
-
-def calculate_ssim(original_images, reconstructed_images):
-    similarity = tf.image.ssim(original_images, reconstructed_images, max_val=1)
-    print("Structured similarity is:", similarity)
 
 
