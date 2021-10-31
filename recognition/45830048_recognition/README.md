@@ -12,7 +12,7 @@ The images and masks are loaded in decoded and normalised outputting 256 X 256 X
 
 *figure 1: Example Input Image Data*
 
-![example mask ground truths](example_y.png)
+![example mask ground truths](example_y.PNG)
 
 *figure 2: Example Mask Ground Truth Data*
 
