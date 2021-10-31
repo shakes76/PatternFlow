@@ -59,6 +59,14 @@ cd darknet
 .\build.ps1 -UseVCPKG -EnableOPENCV -EnableCUDA -EnableCUDNN
 ```
 
+
+<p align="center">
+  The GPU smi report of my local device
+</p>
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/ae8700dfdf7f602c2a929fbf078cef2130f47222/recognition/S4607867_Jiaqiyu/pics/nvidiasmi.png" width=50% height=50%>
+</p>
+
 # Step2 preparing support files： 
 I have downloaded ISIC challenge 2017 as the target dataset.
 It contains 2000 train samples, 150 validation samples, and 600 test samples.
@@ -108,6 +116,15 @@ Weights of my previous attempts can also be found at https://drive.google.com/dr
 
 # Step4 validation on test set:
 
+1. IoU (intersect over union) - average intersect over union of objects and detections for a certain threshold 
+
+2. mAP (mean average precision) - mean value of average precisions for each class, where average precision is average value of 11 points on PR-curve for each possible threshold (each probability of detection) for the same class (Precision-Recall in terms of PascalVOC, where Precision=TP/(TP+FP) and Recall=TP/(TP+FN) ), page-11: http://homepages.inf.ed.ac.uk/ckiw/postscript/ijcv_voc09.pdf
+</p>
+<p align="center">
+<img src="https://camo.githubusercontent.com/572aeddce237a60a59fa90d0dcb98a2aa5f2aff5911c9cd3abd16ef625b198b2/68747470733a2f2f6873746f2e6f72672f66696c65732f6361382f3836362f6437362f63613838363664373666623834303232383934306462663434326137663036612e6a7067" width=70% height=70%>
+</p>
+
+
 Darknet has a build-in validation command, which can returns the average IOU ratio and other evaluation metrics.
 By editting the map_calc.cmd file in the darknet root folder: 
 
@@ -133,6 +150,20 @@ A mAP result on the test set can be calculated.
 <p align="center">
 <img src="https://github.com/slowlier/PatternFlow/blob/79c7f7f3feb69617ad62c6809e62e5e7703b1c5a/recognition/S4607867_Jiaqiyu/pics/my_map_calc@0.8.png" width=100% height=100%>
 </p>
+
+
+We can also do the manual test for the target test image:
+```
+ ./darknet detector test cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weights D:/data_science/3710proj/data/test data/ISIC_0015046.jpg
+```
+<p align="center">
+  The test result sample
+</p>
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/ae8700dfdf7f602c2a929fbf078cef2130f47222/recognition/S4607867_Jiaqiyu/darknet/backup/attempt2/predictions(16025).jpg" width=50% height=50%>
+</p>
+
+
 
 # Conclusion
 
