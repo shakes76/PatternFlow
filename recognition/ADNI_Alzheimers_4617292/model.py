@@ -5,6 +5,7 @@ from math import pi, log
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 """
@@ -21,8 +22,8 @@ __author__ = "Chegne Eu Joe"
 __email__ = "e.chegne@uqconnect.edu.au"
 
 
-"""
-def fourier_encode(x, max_freq, num_bands=4):
+def fourier_encode(x, num_bands=4):
+    """
     Allows parameterized fourier feature positional encodings which:
 
     1. Directly represents the position structure of the input data (To compensate for the lack of explicit grid structures).
@@ -30,32 +31,32 @@ def fourier_encode(x, max_freq, num_bands=4):
     3. Uniformly sample all frequencies up to a target resolution.
 
     Args:
-        x - input
-        max_freq - maximmum frequency
+        x - input of format (int, int)
         num_bands - size of constructed tensor
-        base - base of logarithm function
 
     Returns:
         Fourier encoded input x.
+    """
+
+    dim = len(shape)
+    max_freq = x[0]
 
     x = x.unsqueeze(-1)
     device, dtype, orig_x = x.device, x.dtype, x
 
-    scales = torch.logspace(
-        start=1.0,
-        log(max_freq / 2) / log(10),
+    scales = torch.linspace(
+        1.0,
+        log(max_freq / 2),
+        steps=num_bands,
         device=device,
         dtype=dtype,
     )
 
-    scales = scales[(*((None,) * len(x.shape) - 1)), Ellipsis)]
+    scales = scales[(*((None,) * (len(x.shape) - 1)), Ellipsis)]
     x = x * scales * pi
-    x = torch.cat([x.sin(), x.cos()], dim=1)
-    x= torch.cat((x, orig_x), dim=-1)
-
+    x = torch.cat([x.sin(), x.cos()], dim=0)
+    x = torch.cat((x, orig_x), dim=0)
     return x
-
-"""
 
 
 class PreNorm(nn.Module):
@@ -115,9 +116,9 @@ class Attention(nn.Module):
             latent_dim, heads, dropout, bias=True, batch_first=True
         )
 
-    def forward(self, x, residual):
-        attn_output, _ = self.attention(residual, x, x)
-        return attn_output + residual
+    def forward(self, x, latent):
+        attn_output, _ = self.attention(latent, x, x)
+        return attn_output + latent
 
 
 class SelfAttention(nn.Module):
@@ -136,7 +137,7 @@ class SelfAttention(nn.Module):
         super().__init__()
         self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-    def forward(self, x, residual):
+    def forward(self, x, latent):
         # Self-attention
         return self.attention(x, x)
 
@@ -158,8 +159,8 @@ class CrossAttention(nn.Module):
         super().__init__()
         self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-    def forward(x, residual):
-        return self.attention(x, residual)
+    def forward(x, latent):
+        return self.attention(x, latent)
 
 
 class GEGLU(nn.Module):
@@ -180,7 +181,7 @@ class MLP(nn.Module):
         )
 
     def forward(self, x):
-            return self.net(x)
+        return self.net(x)
 
 
 class Perceiver(nn.Module):
@@ -223,6 +224,24 @@ class Perceiver(nn.Module):
         # Initial latent vectorss
         self.latents = nn.Parameter(torch.randn(num_latents, latent_dim))
         self.depth = depth
+        self.fourier_features = fourier_encode(input_shape, fourier_bands)
+        self.embeddings = nn.Conv1d(
+            num_channels + self.fourier_features.shape[0], latent_dim, 1
+        )
+
+        # Perceiver block
+        self.cross_attn = lambda: CrossAttention(
+            latent_dim, heads=1, dropout=attn_dropout
+        )
+        self.cross_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
+        self.latent_attn = lambda: SelfAttention(
+            latent_dim, heads=8, dropout=attn_dropout
+        )
+        self.latent_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
+
+        # Logits
+        self.linear = nn.Linear(latent_dim, latent_dim)
+        self.output = nn.Linear(latent_dim, num_features)
 
         # Build architecture based on params
         # Depth * (cross attention layer + (self_per_cross_attn * self attention layer))
@@ -232,24 +251,37 @@ class Perceiver(nn.Module):
 
             # Construct self attention block
             for _ in range(self_per_cross_attn):
-                self_attns.append(
-                    nn.ModuleList([latent_attn_layer(), latent_ff_layer()])
-                )
+                self_attns.append(nn.ModuleList([latent_attn, latent_ff]))
 
             # Construct one perceiver block
-            self.layers.append(
-                nn.Modulelist([cross_attn_layer(), cross_ff_layer(), self_attns])
-            )
+            self.layers.append(nn.Modulelist([cross_attn, cross_ff, self_attns]))
 
-        def forward(self, data):
-            # TODO Fourier encode, possibly preprocess data prior to sending to perceiver.
+    def forward(self, x):
+        pos = self.fourier_features.unsqueeze(0).expand(
+            (batch_size,) + self.fourier_features.shape
+        )
 
-            for cross_attn, cross_ff, self_attns in self.layers:
-                x = cross_attn(x, context=data, mask=mask) + x
-                x = cross_ff(x) + x
+        # Transform x
+        x = torch.cat([x, pos], dim=1)
+        x = self.embeddings(x.view((x.shape[0], x.shape[1], -1)))
+        x = x.permute(2, 0, 1)
 
-                for self_attn, self_ff in self_attns:
-                    x = self_attn(x) + x
-                    x = self_ff(x) + x
+        # Transform latent
+        z = self.init_latent.unsqueeze(1)
+        z = z.expand(-1, x.shape[1], -1)
 
-            return self.to_logits(x)
+        # Train
+        for cross_attn_lyr, cross_ff_lyr, self_attns_lyr in self.layers:
+            z = cross_attn_lyr(x, z)
+            z = cross_ff_lyr(z)
+
+            for self_attn_lyr, self_ff_lyr in self_attns_lyr:
+                z = self_attn_lyr(z)
+                z = self_ff_lyr(z)
+
+        # To logits
+        z = self.linear(z)
+        z = z.mean(dim=0)
+        z = self.output(z)
+
+        return F.log_softmax(z, dim=-1)
