@@ -62,5 +62,3 @@ def cross_attention(img_size):
     
     # create the corresponding keras model and returns it
     return keras.Model(inputs=[latent_input, data_input], outputs=mlp_output)
-
-
