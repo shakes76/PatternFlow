@@ -222,7 +222,7 @@ class PixelConvLayer(layers.Layer):
         self.conv.build(input_shape)
         # Use the initialized kernel to create the mask
         kernel_shape = self.conv.kernel.get_shape()
-        self.mask = tf.zeros(shape=kernel_shape)
+        self.mask = tf.zeros(kernel_shape).numpy()
         self.mask[: kernel_shape[0] // 2, ...] = 1.0
         self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
         if self.mask_type == "B":

@@ -8,12 +8,15 @@
 #%%
 # importing helper classes and functions
 from data_loader import load_data
-from model import Encoder, Decoder, VectorQuantizer, PixelConvLayer, ResidualBlock
+from model import (Encoder, Decoder, VectorQuantizer, PixelConvLayer, 
+                   ResidualBlock)
 
+# if you want to turn off the GPU
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from keras import backend as K
 from matplotlib import pyplot as plt
 import tensorflow_probability as tfp
 tfd = tfp.distributions
@@ -139,7 +142,7 @@ class VQVAETrainer(keras.models.Model):
 vqvae_trainer = VQVAETrainer(encoder, decoder, vq_vae, pre_vq_conv1, data_variance)
 # using adam optimizer for the gradient training
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam(learning_rate))
-history = vqvae_trainer.fit(x_train, epochs=100, batch_size=batch_size, validation_data=(x_validate,))
+history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size, validation_data=(x_validate,))
 #%%
 
 
@@ -199,7 +202,6 @@ plt.title('Training loss')
 plt.legend(loc='best')
 plt.show()
 #%%
-
 dist = tfd.PixelCNN(
     image_shape=(128,128,1),
     num_resnet=1,
@@ -302,7 +304,9 @@ def short_pass(priors):
 
 # Create an empty array of priors.
 batch = 10
-priors = tf.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+# needed the numpy represenation of the array noting that numpy is not used
+# in this context as an import
+priors = tf.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:]).numpy()
 print(priors.shape)
 batch, rows, cols = priors.shape
 
@@ -314,22 +318,6 @@ for row in range(rows):
         probs = short_pass(priors)
         # Use the probabilities to pick pixel values and append the values to the priors.
         priors[:, row, col] = probs[:, row, col]
-        
-        
-        
-# # Iterate over the priors because generation has to be done sequentially pixel by pixel.
-# for row in range(rows):
-#     for col in range(cols):
-#         # Feed the whole array and retrieving the pixel value probabilities for the next
-#         # pixel.
-#         first = pixel_cnn.predict(priors)
-#         second = tfp.distributions.Categorical(first)
-#         third = second.sample()
-#         probs = third
-        
-#         #probs = sampler.predict(priors)
-#         # Use the probabilities to pick pixel values and append the values to the priors.
-#         priors[:, row, col] = probs[:, row, col]
 
 print(f"Prior shape: {priors.shape}")
 
