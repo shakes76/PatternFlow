@@ -14,12 +14,12 @@ manually. Furthermore, manually segmenting 3D images requires slice by slice
 annotation. The goal of this u-net is to automatically annotate 3D images after
 training.
 
-A typical slice of one of the images used in this project.
-#CHANGE THE IMAGE
-<div style="width:400px">
+Slices of one of the images used in this project at the middle of each axis.
 
-![](Images/slice.png)
-</div>
+| Side | Front   |  Above |
+| :---: | :---: | :---: |
+| ![](Images/slice.png) | ![](Images/slice_1.png) | ![](Images/slice_2.png) |
+
 
 ### Data download and preparation
 The data is 3D MRI scans of the prostate within the lower body. The source of
@@ -124,7 +124,12 @@ rate. Loss was categorical_crossentropy as there were 6 classes, and labels
 were provided after one_hot encoding. Metrics was set to accuracy. Plots of 
 training loss and accuracy are below.
 
-# PLOTS TRAINING / ACCURACY
+# PLOTS TRAINING / ACCURACY!!
+
+| Accuracy | Loss  |
+| :---: | :---: |
+| ![](Images/660_y_true.png) | ![](Images/660_pred_argmax.png) |
+
 
 
 ### Dice coefficient - DSC
@@ -141,7 +146,8 @@ stabilize around 20-30 epochs.
 The following image slices compare the true values versus those predicted by 
 the model after 50 epochs.
 
-### Segmented images
+### Segmented images 
+
 | True | Predicted   |
 | :---: | :---: |
 | ![](Images/660_y_true.png) | ![](Images/660_pred_argmax.png) |
@@ -150,12 +156,12 @@ the model after 50 epochs.
 
 | True | Predicted   |
 | :---: | :---: |
-| ![](true_background.png) | ![](pred_background.png) |
-| ![](true_body.png) | ![](pred_body.png) |
-| ![](true_bones.png) | ![](pred_bones.png) |
-| ![](true_bladder.png) | ![](pred_bladder.png) |
-| ![](true_rectum.png) | ![](pred_rectum.png) |
-|  ![](true_prostate.png)| ![](pred_prostate.png) |
+| ![](Images/true_background.png) | ![](Images/pred_background.png) |
+| ![](Images/true_body.png) | ![](Images/pred_body.png) |
+| ![](Images/true_bones.png) | ![](Images/pred_bones.png) |
+| ![](Images/true_bladder.png) | ![](Images/pred_bladder.png) |
+| ![](Images/true_rectum.png) | ![](Images/pred_rectum.png) |
+|  ![](Images/true_prostate.png)| ![](Images/pred_prostate.png) |
  
 
 
