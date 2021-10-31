@@ -12,7 +12,7 @@ The skin is the largest organ of the human body. Some skin diseases, such as mal
 
 ### ISIC dataset
 In this task, we have given the preprocessed data set, which includes 2594 pictures and the corresponding segmented black and white pictures. 
-![ISIC_0016037](https://user-images.githubusercontent.com/65603393/138678240-f794ef8b-b534-4a91-a953-96f2cb366411.jpg)
+![ISIC_0016037](https://user-images.githubusercontent.com/65603393/138678240-f794ef8b-b534-4a91-a953-96f2cb366411.jpg)(ISIC_0016037.png =100x20)
 *Figure 1: Training image.*
 
 ![ISIC_0016037_segmentation](https://user-images.githubusercontent.com/65603393/138678838-ce003a09-fb42-41b2-96dd-31819110ff42.png)
@@ -21,7 +21,8 @@ In this task, we have given the preprocessed data set, which includes 2594 pictu
 
 ### YoloV3
 Yolov3 is based on the changes made in v2 and v1. The main improvements are: 1. Adjusted the network structure to use multiscale features for object detection 2. Object classification replaced softmax with logistic.
-![image](https://user-images.githubusercontent.com/65603393/138707537-3a35da27-fb4a-49a5-ab36-e0b259372e13.png)
+<img src="https://user-images.githubusercontent.com/65603393/138707537-3a35da27-fb4a-49a5-ab36-e0b259372e13.png" width="200">
+
 *Figure 3: Resnet skip connection.*
 
 YoloV3 adopts Darknet53 for image feature extraction. In Darknet53, some convolutional layers adopt the practice of residual network, and some layers directly set up skip connections to make the network deeper and extract more features. The pooling layer is replaced by a convolution operation with a step size of 2 for deep extrating the features.
