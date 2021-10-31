@@ -112,6 +112,8 @@ max_batches means that the model will stop learning when it reaches max_batches,
 
 The 9 anchors here are the ones proposed in the paper using k-means. yolov3 has three prediction paths (from which multiscale is derived) mask=0, 1, 2 for the first branch, corresponding to its anchors. classes is the number of categories.
 
+Based on the results of the training, I performed tuning as well as validation. Here is a comparison of the results when batch=96, subdivision=16 and batch=64, subdivision=16 in the validation set.
 
+We found that the higher the batch, the better the f1 score and other metrics.
 
 
