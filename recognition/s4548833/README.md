@@ -23,6 +23,13 @@ For the first step, an input image is first divided into S × S grids of equal s
 Training set: ISIC 2018 training set, with 2594 images.
 Testing set: ISIC 2016 with 379 images.
 
+## Processing
+1. Connect to the darknet package
+2. Adjust the configuration of the darknet, in the yolov3_custom.cfg file,  I change the batch to 128 and subdivision to 16 and random=1. For the obj.name, I add the label of the recognization, which is the only label called lesions. For the obj.data, I change the path of the function to load file.
+3. Use the labelImg to get the range of the lesions of each image of the training set.
+4. Train the model and the weights every 1000 batches.
+5. Use the testing set to get the prediciton and the performance of the model.
+
 ## Outplots and Results
 ![image](https://user-images.githubusercontent.com/93363361/139567948-43addbfa-073f-45dc-8263-3e71c4ea4433.png)
 ![image](https://user-images.githubusercontent.com/93363361/139567899-aff38e3e-3b66-4b15-8d30-880895159926.png)
