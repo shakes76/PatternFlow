@@ -10,20 +10,20 @@ class FourierEncode(layers.Layer):
 
     def call(self, patientData):
         
-        num_images, *axis, _ = patientData.shape
+        num_images, *basis, _ = patientData.shape
 
-        axis = tuple(axis)
-        
-        rows, cols = axis[0], axis[1]
+        basis = tuple(basis)
 
-        axis_feature = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
+        basis_feature = list(map(lambda x: tf.linspace(-1.0, 1.0, num=x), basis))
 
-        fearture = tf.stack(tf.meshgrid(*axis_feature, indexing="ij"), axis=-1)
+        fearture = tf.stack(tf.meshgrid(*basis_feature, indexing="ij"), axis=-1)
 
 
         transformedFeature = self._fourier_encode(fearture)
+
         del fearture
-        transformedFeature = tf.reshape(transformedFeature, (1, rows, cols, 2*(2*self.freq_ban+1)))
+        
+        transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2*(2*self.freq_ban+1)))
 
 
         transformedFeature = tf.repeat(transformedFeature, repeats=num_images, axis=0)
@@ -31,7 +31,7 @@ class FourierEncode(layers.Layer):
         transformedData = tf.concat((patientData, transformedFeature), axis=-1)
 
 
-        transformedData = tf.reshape(transformedData, (num_images, rows*cols, -1)) 
+        transformedData = tf.reshape(transformedData, (num_images, basis[0]*basis[1], -1)) 
         return transformedData
 
 
