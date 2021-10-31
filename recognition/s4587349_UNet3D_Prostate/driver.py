@@ -36,6 +36,7 @@ def main():
 
 
     """ DATA SOURCES"""
+    # UNCOMMENT THE DIRECTORY STRUCTURE FOR THE SYSTEM YOU ARE WORKING ON.
 
     # """ Data Sources Windows D: """
     X_TRAIN_DIR = 'D:\\prostate\\mr_train'
@@ -164,7 +165,7 @@ def main():
     #                                         label_small_validate, batch_size=1)
     # pred_generator = sm.ProstateSequence(image_test, label_test, batch_size=1, training=False)
 
-    """ Test generator, try to visualise - full"""
+    """ GENERATORS"""
     training_generator = sm.ProstateSequence(image_train,
                                              label_train, batch_size=1)
     validation_generator = sm.ProstateSequence(image_validate,
@@ -185,7 +186,7 @@ def main():
     #     model.summary(print_fn=lambda x: ff.write(x + '\n'))
     #     # https://newbedev.com/how-to-save-model-summary-to-file-in-keras
 
-    # # Print model using pydotplus
+    # # Print model structure using pydotplus
     # keras.utils.plot_model(model, "unet3d.png", show_shapes=True)
 
     # Model fit, plot loss and accuracy

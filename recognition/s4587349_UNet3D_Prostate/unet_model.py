@@ -11,7 +11,7 @@ def unet3d(inputsize= (256,256,128,1), kernelSize=3):
     c1 = tf.keras.layers.BatchNormalization()(c1)
     c1 = tf.keras.layers.Conv3D(16, kernelSize, activation='relu', padding='same', kernel_initializer='he_normal')(c1)
     # c1 = tf.keras.layers.BatchNormalization()(c1)
-    p1 = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=(2, 2, 2))(c1)  # consider padding="same"?
+    p1 = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=(2, 2, 2))(c1)  # padding="same"?
 
     c2 = tf.keras.layers.Conv3D(16, kernelSize, activation='relu', padding='same', kernel_initializer='he_normal')(p1)
     c2 = tf.keras.layers.BatchNormalization()(c2)

@@ -12,7 +12,7 @@ image with a corresponding class (background, bone, bladder, prostate...).
 Semantic segmentation is a tedious and time-consuming task to undertake 
 manually. Furthermore, manually segmenting 3D images requires slice by slice
 annotation. The goal of this u-net is to automatically annotate 3D images after
-training.
+the model is trained.
 
 Slices of one of the images used in this project at the middle of each axis.
 
@@ -23,9 +23,9 @@ Slices of one of the images used in this project at the middle of each axis.
 
 ### Data download and preparation
 The data is 3D MRI scans of the prostate within the lower body. The source of
-the data is well described in ref[2] and had been acquired as part of a 
+the data is well described in ref [2] and had been acquired as part of a 
 retrospective MRI-alone radiation therapy study from the Calvary Mater Newcastle 
-Hospital [3]. Patients had up to 8 MRI scans. The first,week0, was taken prior 
+Hospital [3]. Patients had up to 8 MRI scans. The first, week0, was taken prior 
 to treatment. The remaining were taken at week1 to week7 during a course of 
 prostate cancer radiation therapy.
 
@@ -62,23 +62,25 @@ approximate 70:20:10 ratio, with labels being allocated in an identical manner.
 
 A review of the data structure of all images found one scan that had a different 
 dimension to all others. That client had seven other scans that were expected to
-be similar. This file was removed. 
+be similar and so the removal of this image wasn't expected to influence 
+training. 
 
 The data was provided in NIfTI format (nii.gz) with orientation:('L', 'P', 'S').
 
 ### Data preparation:
-As per ref[2], the data was normalised (mean = 0, stdev=1). 
+As per ref [2], the data was normalised (mean = 0, stdev=1) on a per-image 
+basis. 
 
 N4ITK intensity normalisation, which corrects for gain field, an intra-volume 
 inhomogeneity caused by the image acquisition process and variations of tissue
 penetration, was planned to be undertaken, but it couldn't be successfully 
-implemented in time[2,5,6]. It is expected that the prediction would be improved
-by its inclusion.
+implemented in time [2,5,6]. It is expected that the prediction would be 
+improved by its inclusion.
 
 ### Data Augmentation
 While there are 157 training images these scans are only of 27 individuals. Data
-augmentation, using methods such as those indicated by Siyu Liu [7] were also 
-planned to be undertaken. 
+augmentation, using methods such as those coded by Siyu Liu [7] may improve
+prediction outcomes. Data augmentation has not yet been applied.
 
 ### Description of the algorithm
 The data set is sufficiently large to require the images be provided to the 
@@ -111,14 +113,7 @@ layers on the compression side with Conv3DTranspose (strides=(2,2,2)) on the
 expansion side. There were 3 data pass-throughs using Concatenate between
 equivalent levels. 
 
-The final activation was softmax.
-
-The model layout is as follows:
-
-<div style="width:200px">
-
-![](Images/unet3d.png)
-</div>
+The final activation was softmax. 
 
 
 ### Training parameters
@@ -178,20 +173,25 @@ methods for augmenting 3D data [7].
 * Add DSC loss function to model.compile() for one or a number of the classes 
     with poorer performing DSC scores (ie prostate or rectum), to 
     investigate if this would improve overall performance
-* Save and re-use weights.
+* Save weights to reduce training time.
 * Adjust for class bias, as the size of background and body greatly exceed 
 that of the prostate and rectum. 
 
-## Dependencies & resources
+## Dependencies, resources and running code
 * Python
 * Tensorflow 
 * Matplotlib
 * Numpy 
 * Nibabel
 
-The model only ran on Goliath starting with 8 filters on the c4130-2s at times, 
-but not consistently. It would report OOM errors on a fair number of calls, and
-always on the c4130 and c4130-s. It ran on Rangpur on vgpu20 but not vgpu10. 
+The model starting with 8 filters only ran on Goliath's c4130-2s sometimes, 
+but not consistently. It would report OOM errors on number of calls on the 
+c4130-2, and always on the c4130 and c4130-s. It ran on Rangpur on vgpu20 but
+not vgpu10. 
+
+driver.py contains a main function and will run the code. Uncomment the 
+directory paths for the system you are running on, after manually setting up
+the data directory structure, as described above.
 
 # References
 <a id="1">[1]</a>

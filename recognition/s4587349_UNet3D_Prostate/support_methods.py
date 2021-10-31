@@ -331,7 +331,7 @@ def read_nii(filepath):
     return img_data
 
 
-def normalise(image):  # Alternative, not used
+def normalise(image):  
     """ If minv = 0, then is equiv to dividing all values by image maximum value
     :param image: data image
     :param minv: minimum voxel value
