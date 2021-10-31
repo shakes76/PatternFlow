@@ -48,5 +48,5 @@ def detect_image(model_conf_path,img_size,weights_path,img ,conf_thres,nms_thres
     with torch.no_grad():
         detections = model(input_img)
     # call this function to filter best bounding box out of multiple detected bounding boxes        
-        detections = utils.non_max_suppression(detections, 80, conf_thres, nms_thres)
+        detections = utils.non_max_suppression(detections, 1, conf_thres, nms_thres)
     return detections[0]
