@@ -64,6 +64,9 @@ I have downloaded ISIC challenge 2017 as the target dataset.
 It contains 2000 train samples, 150 validation samples, and 600 test samples.
 The ground truth of lesion objects are stored as segmentation shadows. 
 So I wrote a couple python script to generate the label files of required input format.
+(see these scripts in addons folder)
+
+
 
 The darknet also requires us to set some parameters for the network.
 Here is the configuration of my yoloV3 network:
@@ -90,6 +93,13 @@ If you have a pre-trained weights checkpoint in the backup, you can continue tra
 
 
 A graph showing the learning loss curve would be saved in the darknet root folder as:
+<p align="center">
+  The Loss Curve of Training
+</p>
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/8b0c1be2d82c3c35ce1291aef389e0af23c89da0/recognition/S4607867_Jiaqiyu/darknet/backup/attempt4/chart.png" width=70% height=70%>
+</p>
+
 
 
 The trained weights is stored in [ url  ]
