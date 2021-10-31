@@ -10,12 +10,9 @@ IMG_CHANNELS = 3
 
 def main():
     print(tf.__version__)
-    # use batch size of 1 to save VRAM
+    # use batch size of 2 to save VRAM
     BATCH_SIZE = 2
 
-    # TensorFlow provided code to limit GPU memory growth
-    # Retrieved from:
-    # https://www.tensorflow.org/guide/gpu
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -43,13 +40,9 @@ def main():
                               validation_data=pre_p.val_ds.batch(BATCH_SIZE),
                               epochs=15)
     pre_p.show_predictions()
-
-    # # Get dice similarity for test set and show result
-    # print("Evaluate")
-    # # result = model.model.evaluate(model.test_ds.batch(BATCH_SIZE))
-    # result = pre_p.model.evaluate(pre_p.test_ds.batch(BATCH_SIZE))
-    # print(dict(zip(pre_p.model.metrics_names,result)))
-
+    
+    result = pre_p.model.evaluate(pre_p.test_ds.batch(BATCH_SIZE))
+    print(dict(zip(pre_p.model.metrics_names,result)))
     print("END")
     
 if __name__ == "__main__":

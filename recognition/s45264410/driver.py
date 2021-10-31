@@ -1,9 +1,5 @@
 import os
-from threading import main_thread
 import tensorflow as tf
-from absl import flags
-import cv2
-import glob
 import matplotlib.pyplot as plt
 from functools import partial
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
@@ -13,6 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.python.ops.gen_array_ops import pad
 import tensorflow_addons as tfa
 
+## Change dataset path here
 image_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1-2_Training_Input_x2'
 mask_path = r'C:\Users\desmo\Downloads\ISIC2018_Task1-2_Training_Data\ISIC2018_Task1_Training_GroundTruth_x2'
 
@@ -173,6 +170,11 @@ class pre_process:
             print('Mask shape:', mask.numpy().shape)
   
   def conv_block(self,input_mat,num_filters):
+    """
+    Context module with two 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between.
+    Instance normalization as the stochasticity induced by our small batch sizes may destabilize batch normalization.
+    """
+    
     c1 = tfa.layers.InstanceNormalization()(input_mat)
     c1 = Activation(activation=LeakyReLU(alpha=0.01))(c1)
     c1 = Conv2D(num_filters, (3, 3), padding="same")(c1)
@@ -185,19 +187,32 @@ class pre_process:
     return c1
     
   def upsample_block(self,input_mat,num_filters):
+    """
+    A simple upsample that repeats the feature voxels twice in each spatial dimension followed by a 3x3x3 convolution 
+    that halves the number of feature maps.
+    """
+    
     u1 = UpSampling2D()(input_mat)
     u1 = Conv2D(num_filters, (3,3), activation=LeakyReLU(alpha=0.01), padding='same')(u1)
     
     return u1
   
   def local_block(self, input_mat, num_filter):
+    """
+    A localisation module that recombined the features together. Consist of a 3x3x3 convolution followed by a 
+    1x1x1 convolution that halves the number of feature maps.
+    """
+    
     loc1 = Conv2D(num_filter, (3,3), activation=LeakyReLU(alpha=0.01), padding='same')(input_mat)
     loc2 = Conv2D(num_filter, (1,1), activation=LeakyReLU(alpha=0.01), padding='same')(input_mat)
     
     return loc2
     
   def Unet(self, input_img, n_filters = 16, dropout = 0.2, batch_norm = True):
-
+    """
+    A basic Unet model. 
+    """
+    
     c1 = self.conv_block(input_img,n_filters,3,batch_norm)
     p1 = MaxPooling2D(pool_size=(2, 2), strides=2)(c1)
     p1 = Dropout(dropout)(p1)
@@ -240,7 +255,11 @@ class pre_process:
     self.model = tf.keras.Model(inputs=input_img, outputs=outputs)
 
   def Improved_unet(self, input_img, n_filter = 16):
+    """
+    An improved unet model
+    """
     
+    ## Downsampling
     c1 = Conv2D(n_filter * 1, (3,3), activation=LeakyReLU(alpha=0.01), padding='same')(input_img)
     p1 = self.conv_block(c1, n_filter)
     add1 = Add()([p1,c1])
@@ -261,6 +280,7 @@ class pre_process:
     p5 = self.conv_block(c5, n_filter * 16)
     add5 = Add()([p5,c5])
     
+    ## Upsampling
     up1 = self.upsample_block(add5, n_filter * 8)
     con1 = concatenate([up1, add4])
     
@@ -280,14 +300,14 @@ class pre_process:
     con4  = concatenate([up4, add1])
     ## segmentation layer
     segment_ = Conv2D(1, (1,1), activation=LeakyReLU(alpha=0.01), padding='same')(loc3)
-    segment2 = Add()([segment1, segment_])
+    segment2 = Add()([segment1, segment_]) ## element-wise sum of the segmentation layer
     segment2 = UpSampling2D(interpolation='bilinear')(segment2)
     
     conv_final = Conv2D(32, (3,3), activation=LeakyReLU(alpha=0.01), padding='same')(con4)
     segment3 = Conv2D(1,(1,1), activation=LeakyReLU(alpha=0.01),padding='same')(conv_final)
     segment_final = Add()([segment2, segment3])
     
-    
+    ## Output layer
     outputs = Conv2D(1, (1,1), activation='sigmoid', padding='same')(segment_final)
     
     self.model = Model(inputs = input_img, outputs= outputs)
@@ -323,4 +343,5 @@ class pre_process:
           plt.imshow(predictions[i])
           plt.title("Predicted mask")
           plt.axis('off')
-      plt.show()    
+          plt.show()
+          
