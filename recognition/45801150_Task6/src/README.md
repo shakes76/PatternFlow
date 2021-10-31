@@ -9,6 +9,7 @@ latent space - as opposed to a normal distribution used by a typical VAE, a Vect
 latent space. This is done by creating a codebook of discrete latent vectors, with which the output of the encoder is
 "snapped" to, to produce its latent representation. These vectors are snapped to the nearest discrete latent vector,
 as determined by the L2 norm [1]. A diagram of this model is shown below [1]
+
 ![image](https://user-images.githubusercontent.com/55824662/139584374-4f695009-10a7-4a9e-a8b6-85d40a4e4192.png)
 
 
@@ -30,10 +31,7 @@ clearly resemble the original.
 Below are examples of this reconstruction, with images from the test set on the left, and respective reconstructions
 on the right
 
-
-![reconstructions_0](https://user-images.githubusercontent.com/55824662/139584398-377d087f-04e0-48a0-8c8e-b7a5c470964c.png)
-![reconstructions_1](https://user-images.githubusercontent.com/55824662/139584400-3158b834-421f-41fb-baee-e52d27632d53.png)
-![reconstructions_2](https://user-images.githubusercontent.com/55824662/139584402-ffe265f8-a13c-4adb-9017-1b3e2c3919f6.png)
+![image](https://user-images.githubusercontent.com/55824662/139584730-bb6a2898-5e6a-4283-abc2-f77a488180d9.png)
 
 
 ## OASIS brain generation results
@@ -41,9 +39,7 @@ The trained PixelCNN can be used in conjunction with the VQ-VAE to create novel 
 with the current parameters managed to generate images that looked like reasonably like brains, and were similar
 to the brains provided in the OASIS dataset.
 
-![generated_0](https://user-images.githubusercontent.com/55824662/139584406-6bba19a5-b7bc-45b7-bf3e-0370d33c086f.png)
-![generated_1](https://user-images.githubusercontent.com/55824662/139584407-f9b3b708-2e6b-458a-aeaa-735caf5f37a1.png)
-![generated_2](https://user-images.githubusercontent.com/55824662/139584415-0e9adda4-651e-4a0a-8932-da9f95760977.png)
+![image](https://user-images.githubusercontent.com/55824662/139584718-85259335-372a-40ce-b9ab-710368dd2439.png)
 
 
 ## Usage
