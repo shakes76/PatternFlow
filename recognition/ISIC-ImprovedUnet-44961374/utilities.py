@@ -65,7 +65,7 @@ def process_data(image_path, mask_path):
     return image, valid_mask
 
 def display(data, figsize, cmap):
-    """Displays a scan, mask and predicted mask of a lesion from given data.
+    """Displays scan, mask and predicted mask of a lesion from given data.
 
     Args:
         data (list): list containing scan, mask and predicted mask Tensors
