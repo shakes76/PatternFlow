@@ -1,4 +1,4 @@
-# Segement the ISICs data set with the Improved UNet
+# Segment the ISICs data set with the Improved UNet
 
 This project is aimed to train a improved UNet model for detecting the melanoma shape from its photo. After properly trained, the model achieves the accuracy over 0.92 and dice similarity coefficient (DSC) over 0.8.
 
