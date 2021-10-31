@@ -11,13 +11,13 @@ def makeMyModel(a_bar, a_bar_test, train_feats):
 
     my_model.add(FaceGCNLayer(a_bar, a_bar_test))
     my_model.add(Dropout(0.4))
-    Dense(64)
+    my_model.add(Dense(64))
     my_model.add(FaceGCNLayer(a_bar, a_bar_test))
     my_model.add(Dropout(0.4))
-    Dense(32)
+    my_model.add(Dense(32))
     my_model.add(FaceGCNLayer(a_bar, a_bar_test))
     my_model.add(Dropout(0.4))
-    my_model.add(Dense(4))
+    my_model.add(Dense(4, activation='softmax'))
 
     return my_model
 
@@ -34,9 +34,6 @@ class FaceGCNLayer(tf.keras.layers.Layer):
                                        initializer=keras.initializers.initializers_v1.RandomNormal)
 
     def call(self, feature_matrix, training=None):
-        print(training)
-        print(feature_matrix)
-        print(type(feature_matrix))
         feature_matrix = tf.squeeze(feature_matrix)
         if training:
             ax = tf.sparse.sparse_dense_matmul(tf.cast(self.adj_m, float), feature_matrix)
