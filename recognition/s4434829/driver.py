@@ -19,6 +19,8 @@ they reccomend starting with minst
 
 import numpy as np
 import tensorflow as tf
+import tensorflow_probability as tfp
+
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -29,6 +31,59 @@ import time
 
 from model import VQVAE, PixelCNN
 from data_loaders import * 
+
+def gen_images(pixel_cnn, vq, decoder, indices_shape, num):
+    """
+    Generate images using the pixelcnn
+    
+
+    Source: the code for this comes from here: 
+    https://keras.io/examples/generative/vq_vae/#codebook-sampling
+    although I use embedding_lookup which makes it a bit simpler. Most
+    notably making a model specifically to sample the distribution comes from ehre 
+    because the rest of it was more obvious but sampling in tf was 
+    new to me.
+    Also this explanation https://bjlkeng.github.io/posts/pixelcnn/ helped me 
+    understnad how to go from pixelcnn to images.
+    """
+    # Make a sampler model that takes the output of pixel_cnn
+    # and use it as the probabilities in a catagorical ditribution
+    # So when we sample the  distribution it's catagories and probabilities for
+    # outputs come from the output of pixel_cnn
+    # In this way we are making random samples with the same distribution
+    # as the pixel cnn
+    # this comes from https://keras.io/examples/generative/vq_vae/#codebook-sampling
+    inputs = tf.keras.layers.Input(shape=indices_shape, dtype=tf.int32)
+    idxs = pixel_cnn(inputs, training=False)
+    dist = tfp.distributions.Categorical(logits=idxs)
+    sampled = dist.sample()
+    sampler = tf.keras.Model(inputs, sampled)
+
+    # to generate an image we need to sample the distribution for a set of pixels
+    # however the probabilty is conditional, so every pixel depends on all
+    # other pixels before and to the left of it
+    # therefore we need to create an empty set of pixels, then go through
+    # each pixel from the top left, generating each subsequenct pixel based on 
+    # all previous pixels.
+
+    # create a set of empty pixels with the same shape as the output of the sampleer
+    priors = np.zeros(shape=(num,) + (pixel_cnn.input_shape)[1:])
+    num, rows, cols = priors.shape
+
+    # iterate through rows and columns, using the previously sampled priors
+    # as the input for sampler model
+    for row in range(rows):
+        for col in range(cols):
+            probs = sampler.predict(priors)
+            # update values only for this row and column
+            priors[:, row, col] = probs[:, row, col]
+
+    # Now we need to do the reverse part of the vqvae from after calculting
+    # indices. We use the generated rpriors as the indices and then decode
+    quantised = tf.nn.embedding_lookup(tf.transpose(vq.emb, [1, 0]), priors.astype("int32"))
+    # print(quantised.shape)
+    generated = decoder.predict(quantised)
+    return generated
 
 
 def main():
@@ -131,6 +186,12 @@ def main():
         plt.title("{} iterations \n{:.2f} batch  ssim\n{:.2f} image ssim".format(7*967*(i+2), avg_ssim, img_ssim), fontsize=22)
     plt.savefig('figures/epoch_compare_recon_{}.png'.format(idx))
 
+
+    encoder = model.get_encoder()
+    decoder = model.get_decoder()
+    vq = model.get_vq()
+
+
     # Make data for pixelcnn input
     make_indices_dataset(train_seq, model.get_encoder(), model.get_vq.emb)
 
@@ -151,7 +212,7 @@ def main():
     model_name="pcnn"
 
     runs += 1
-    num_hundreds = 15
+    num_hundreds = 0
     codebook_indices, _ = codebook_seq.__getitem__(1)
     for i in range(num_hundreds):
         start = time.time()
@@ -167,7 +228,14 @@ def main():
         pixel_cnn.save_weights(folder+model_name+details_1+details_2+"model_weights")
         print("Epoch time", time.time()-start)
     
+    pixel_cnn.load_weights("./saves/oasis/pixelcnn/pcnnR9E8_1635711787.0700958_model_weights")
 
+    generated = gen_images(pixel_cnn, vq, decoder, codebook_indices.shape[1:], 5)
+    for i in range(5):
+        plt.subplot(1, 5, i+1)
+        plt.imshow(generated_samples[i].squeeze(), cmap='gray')
+        plt.axis('off')
+    plt.show()
 
 
     print("Done")
