@@ -7,25 +7,6 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 import numpy as np
 
-IMAGE_DIR = './AKOA_Analysis'
-BATCH_SIZE = 32
-IMG_SIZE = (64, 64) # image resize
-ROWS, COLS = IMG_SIZE
-TEST_PORTION = 5 # portion of validation set to become test set
-SHUFFLE_RATE = 512
-AUTO_TUNE = tf.data.experimental.AUTOTUNE
-LATENT_SIZE = 256  # Size of the latent array.
-NUM_BANDS = 4 # Number of bands in Fourier encode. Used in the paper
-NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
-PROJ_SIZE = 2*(2*NUM_BANDS + 1) + 1  # Projection size of data after fourier encoding
-NUM_HEADS = 8  # Number of Transformer heads.
-NUM_TRANS_BLOCKS = 6 # Number of transformer blocks in the transformer layer. Used in the paper
-NUM_ITER = 8  # Repetitions of the cross-attention and Transformer modules. Used in the paper
-MAX_FREQ = 10 # Max frequency in Fourier encode
-LR = 0.001
-WEIGHT_DECAY = 0.0001
-EPOCHS = 10
-
 def generate_samples(instanceIds, dataset_proportion):
 
     samples = dict()
@@ -38,45 +19,37 @@ def generate_samples(instanceIds, dataset_proportion):
         else:
             samples[fileName] = [fileId]
     print("unique patients in entire dataset: ", len(samples))
-    building_train = True
+    completedTrainSet = False
     for imgIndex in samples.values():
         for fileId in imgIndex:
-            if building_train:  # first step: building training set
+            if not completedTrainSet:
                 if dataset_proportion * len(instanceIds) < len(trainIndex):
-                    building_train = False  # start building test set now
+                    completedTrainSet = True
                     break
                 else:
                     trainIndex.append(fileId)
-            else:  # second step: building testing set
-                if (1-dataset_proportion) * len(instanceIds) >= len(testIndex):
+            else:
+                if (1 - dataset_proportion) * len(instanceIds) >= len(testIndex):
                     testIndex.append(fileId)
                 else:
-                    break  # done building test set
+                    break
     return trainIndex, testIndex
 
 def loadInput(dir_data, dataset_proportion):
 
     all_instanceId = os.listdir(dir_data)
 
-    trainIndex, testIndex = generate_samples(all_instanceId,
-                                                            dataset_proportion)
-    random.shuffle(trainIndex)
-    random.shuffle(testIndex)
+    trainIndex, testIndex = generate_samples(all_instanceId, dataset_proportion)
 
-    img_shape = (64, 64)
+    # random.shuffle(trainIndex)
+    # random.shuffle(testIndex)
+
     def load_samples(instanceIds):
-        """
-        Helper function for loading a X and y set based of the image names
-        Args:
-            instanceIds: The image names to build the data set from
-        Returns:
-            input, list_of_labels: the tf array of the X and y set built
-        """
+
         input = []
         list_of_labels = []
         for i, fileId in enumerate(instanceIds):
-            image = load_img(dir_data + "/" + fileId,
-                             target_size=(img_shape), color_mode="grayscale")
+            image = load_img(dir_data + "/" + fileId, target_size=((64, 64)), color_mode="grayscale")
 
             image = img_to_array(image)
             input.append(image)
@@ -88,11 +61,14 @@ def loadInput(dir_data, dataset_proportion):
         input = np.array(input)
         input /= 255.0
         return input, np.array(list_of_labels, dtype=np.uint8).flatten()
+
     trainX, trainY = load_samples(trainIndex)
     valX, valY = load_samples(testIndex)
     testX, testY = valX[len(valX) // 5 * 4:], valY[len(valY) // 5 * 4:]
     valX, valY = valX[0:len(valX) // 5 * 4], valY[0:len(valY) // 5 * 4]
+    
     return trainX, trainY, valX, valY, testX, testY
+
 def create_dataset(image_dir, img_size):
 
     split_train = image_dataset_from_directory(image_dir, validation_split=0.2, color_mode='grayscale',
@@ -141,42 +117,29 @@ def plot_data(history):
     plt.title('Training and Validation Loss')
     plt.xlabel('epoch')
     plt.show()
+
 if __name__ == "__main__":
 
     dataset_proportion = 0.8
-    trainX, trainY, valX, valY, testX, testY = loadInput(IMAGE_DIR, dataset_proportion)
+    trainX, trainY, valX, valY, testX, testY = loadInput('./AKOA_Analysis', dataset_proportion)
     print(len(trainX), len(trainY), len(valX), len(valY), len(testX), len(testY))
     print(trainX.shape)
 
-    perceiverTransformer = Perceiver(patch_size=0,
-                            data_size=ROWS*COLS, 
-                            latent_size=LATENT_SIZE,
-                            freq_ban=NUM_BANDS,
-                            proj_size=PROJ_SIZE, 
-                            num_heads=NUM_HEADS,
-                            num_trans_blocks=NUM_TRANS_BLOCKS,
-                            num_iterations=NUM_ITER,
-                            max_freq=MAX_FREQ,
-                            lr=LR,
-                            weight_decay=WEIGHT_DECAY,
-                            epoch=EPOCHS)
+    perceiverTransformer = Perceiver(patch_size=0, data_size=64*64, 
+            latent_size=256, freq_ban=4, proj_size=19, 
+            num_heads=8, num_trans_blocks=6,
+            num_iterations=8, max_freq=10, lr=0.001,
+            weight_decay=0.0001, epoch=10)
 
- 
-
-
-    # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    history = fitModel(perceiverTransformer,
-                    train_set=(trainX, trainY),
-                    val_set=(valX, valY),
-                    test_set=(testX, testY),
-                    batch_size=BATCH_SIZE)
+    history = fitModel(perceiverTransformer, train_set=(trainX, trainY),
+            val_set=(valX, valY), test_set=(testX, testY), batch_size=32)
 
 
     plot_data(history)
     print("Evaluation")
     # Retrieve a batch of images from the test set
-    testData, testClass = testX[:BATCH_SIZE], testY[:BATCH_SIZE]
-    testData = testData.reshape((BATCH_SIZE, ROWS, COLS, 1))
+    testData, testClass = testX[:32], testY[:32]
+    testData = testData.reshape((32, 64, 64, 1))
     evaluation = perceiverTransformer.predict_on_batch(testData).flatten()
     testClass = testClass.flatten()
 
