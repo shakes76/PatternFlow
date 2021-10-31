@@ -12,13 +12,19 @@ import matplotlib.patches as patches
 from PIL import Image
 from PIL import ImageDraw
 
-def detect_image(img ,conf_thres,nms_thres ):
+def detect_image(model_conf_path,img_size,weights_path,img ,conf_thres,nms_thres ):
+    Tensor = torch.cuda.FloatTensor     
+    model = Darknet(model_conf_path, img_size=img_size)
+    model.load_weights(weights_path)
+    model.cuda()
+    model.eval()
     # create scales and padding data to convert the input image to a square shape 416*416
     width, height = img.size
     max_v = max(height, width)
     ratio = 416 / max_v
     imw = round(img.size[0] * ratio)
-    imh = round(img.size[1] * ratio)     
+    imh = round(img.size[1] * ratio) 
+    #Tensor = torch.cuda.FloatTensor    
     if imh>imw: 
         dim_diff =imh - imw
         pad_left, pad_right = dim_diff // 2, dim_diff - dim_diff // 2
