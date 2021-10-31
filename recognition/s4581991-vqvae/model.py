@@ -1,8 +1,10 @@
 from typing import Tuple
 
+import keras
 import keras.layers
 import keras.models
 import tensorflow as tf
+import numpy as np
 
 # VQ VAE Model
 
@@ -55,13 +57,13 @@ class VectorQuantizer(keras.layers.Layer):
     def __init__(self, number_of_embeddings: int, embedding_dimensions,
             beta: int = 0.25, **kwargs):
         super().__init__(**kwargs)
-        self._number_of_embeddings = number_of_embeddings
+        self.number_of_embeddings = number_of_embeddings
         self._embedding_dimensions = embedding_dimensions
         self._beta = beta
 
-        self._embeddings = tf.Variable(
+        self.embeddings = tf.Variable(
             initial_value=tf.random_uniform_initializer()(
-                shape=(self._embedding_dimensions, self._number_of_embeddings),
+                shape=(self._embedding_dimensions, self.number_of_embeddings),
                 dtype="float32"
             ),
             trainable=True,
@@ -76,14 +78,11 @@ class VectorQuantizer(keras.layers.Layer):
         '''
         flat = tf.reshape(x, [-1, self._embedding_dimensions])
         # Distances for each data point to the centres given by the embeddings
-        distances = tf.reduce_sum(flat**2, 1, keepdims=True) \
-                - 2 * tf.matmul(flat, self._embeddings) \
-                + tf.reduce_sum(self._embeddings**2, 0, keepdims=True)
-        encodings = tf.one_hot(tf.argmax(-distances, 1),
-                self._number_of_embeddings, dtype=distances.dtype)
+        encodings = self.encode(flat)
+        encodings = tf.one_hot(encodings, self.number_of_embeddings)
 
         # Quantize the given input based on the generated embeddings
-        quantized = tf.matmul(encodings, self._embeddings, transpose_b=True)
+        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
         quantized_original_dims = tf.reshape(quantized, tf.shape(x))
 
         # Calculate the loss for this layer based on VQ objective and
@@ -100,18 +99,29 @@ class VectorQuantizer(keras.layers.Layer):
                 quantized_original_dims - x)
         return quantized_original_dims
 
+    def encode(self, x):
+        distances = tf.reduce_sum(x**2, 1, keepdims=True) \
+                - 2 * tf.matmul(x, self.embeddings) \
+                + tf.reduce_sum(self.embeddings**2, 0, keepdims=True)
+        return tf.argmin(distances, axis=1)
+
+
 # PixelCNN Prior Model
 
-def create_pixel_cnn(height, width, number_of_channels) \
-        -> keras.models.Sequential:
-    return keras.models.Sequential([
-        keras.layers.Input(shape=(height, width, number_of_channels)),
-        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=True),
-        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
-        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
-        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
-        GatedPixelCnnBlock(filters=1, kernel_size=3, is_first=False),
-    ])
+def create_pixel_cnn(height, width, num_embeddings) \
+        -> keras.Model:
+    input = keras.layers.Input(shape=(7, 7), dtype=tf.int32)
+    one_hot = tf.one_hot(input, num_embeddings)
+    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=True)([one_hot, one_hot])
+    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
+    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
+    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
+    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
+    x = keras.layers.Activation(activation="relu")(h)
+    x = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(x)
+    x = keras.layers.Activation(activation="relu")(x)
+    x = keras.layers.Conv2D(filters=num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
+    return keras.models.Model(input, x)
 
 class MaskedConv2D(keras.layers.Layer):
     def __init__(self, mask_type, **kwargs):
@@ -121,9 +131,11 @@ class MaskedConv2D(keras.layers.Layer):
 
     def build(self, input_shape):
         self.conv.build(input_shape)
-        mask = tf.ones(shape=self.conv.kernel.get_shape())
-        center_h = input_shape[0] // 2
-        center_w = input_shape[1] // 2
+        kernel_shape = tf.shape(self.conv.kernel)
+        mask = np.ones(shape=kernel_shape)
+        # print(mask.shape)
+        center_h = kernel_shape[0] // 2
+        center_w = kernel_shape[1] // 2
         if self.mask_type == "V":
             mask[center_h + 1:, :, :, :] = 0.0
         else:
@@ -133,11 +145,16 @@ class MaskedConv2D(keras.layers.Layer):
                 mask[center_h, center_w:, :, :] = 0.0
             elif self.mask_type == "B":
                 mask[center_h, center_w + 1:, :, :] = 0.0
-
+        # print("A")
+        # print(mask.shape)
         self.mask = tf.constant(mask, dtype=tf.float32)
 
     def call(self, input):
         self.conv.kernel.assign(self.conv.kernel * self.mask)
+        # print("B")
+        # print(input.shape)
+        # print(self.conv.kernel.shape)
+        # print(self.conv(input).shape)
         return self.conv(input)
 
 class GatedPixelCnnBlock(keras.models.Model):
@@ -181,7 +198,7 @@ class GatedPixelCnnBlock(keras.models.Model):
 
         vertical_before_gate = self.vertical_conv(vertical_stack_in)
         vertical_stack_out = self._apply_gate_activation(vertical_before_gate)
-
+        # print(vertical_before_gate.shape)
         vertical_for_horizontal = self.vertical_top_padding(
                 vertical_before_gate)
         vertical_for_horizontal = self.vertical_bottom_crop(
@@ -197,8 +214,13 @@ class GatedPixelCnnBlock(keras.models.Model):
         horizontal_stack_out = self.horizontal_after_gate_conv(
                 horizontal_stack_out)
 
+        # print(horizontal_stack_out.shape)
+        # print(vertical_stack_out.shape)
+
+
         # Add residual if this isn't the first block in the network
         if self.is_first:
             return vertical_stack_out, horizontal_stack_out
 
-        return vertical_stack_out, horizontal_stack_in + horizontal_stack_out
+        return vertical_stack_out, keras.layers.add(
+                [horizontal_stack_in, horizontal_stack_out])

@@ -1,3 +1,4 @@
+from math import pi
 from typing import Tuple
 
 from keras.datasets import mnist
@@ -7,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 import tensorflow as tf
+import tensorflow_probability as tfp
 
 import model
 
@@ -26,19 +28,34 @@ def run_mnist_vqvae():
     Train and test the VQ VAE model on MNIST data
     '''
     (train_X, train_y), (test_X, test_y) = load_and_preprocess_mnist_data()
-    history, vqvae = train(train_X, (28, 28, 1), 16, 128)
+    history, vqvae = train_vqvae(train_X, (28, 28, 1), 16, 128)
 
-    recreated, recreated_ssim = test(vqvae, test_X[0:20])
-    print(f"The SSIM is {recreated_ssim}")
-    for i in range(1, 21):
-        plt.subplot(4, 5, i)
-        plt.imshow(recreated[i - 1])
-    plt.show()
+    # recreated, recreated_ssim = test_vqvae(vqvae, test_X[0:20])
+    # print(f"The SSIM is {recreated_ssim}")
+    # for i in range(1, 21):
+    #     plt.subplot(4, 5, i)
+    #     plt.imshow(recreated[i - 1])
+    # plt.show()
 
-def generate_mnist_with_pixel_cnn(vqvae_model):
-    pass
+    generate_mnist_with_pixel_cnn(vqvae, train_X)
 
-def train(data: np.array, sample_shape: Tuple[int, int, int],
+def generate_mnist_with_pixel_cnn(vqvae_model: keras.models.Model, input):
+    encoder: keras.layers.Layer = vqvae_model.get_layer("encoder")
+    decoder: keras.layers.Layer = vqvae_model.get_layer("decoder")
+    vector_quantizer = vqvae_model.get_layer("vector_quantizer")
+
+    encoded = encoder.predict(input)
+    flattened_encoded = encoded.reshape(-1, encoded.shape[-1])
+    quantized = vector_quantizer.encode(flattened_encoded)
+    quantized = quantized.numpy().reshape(encoded.shape[:-1])
+
+    print(quantized.shape)
+
+    pixel_cnn = train_pixel_cnn(quantized, quantized, vector_quantizer.number_of_embeddings)
+    pixel_cnn.summary()
+    generate_using_pixel_cnn(pixel_cnn, decoder, vector_quantizer, 10, encoded.shape[1:])
+
+def train_vqvae(data: np.array, sample_shape: Tuple[int, int, int],
         latent_dimensions: int, number_of_embeddings: int)\
         -> Tuple[History, keras.models.Sequential]:
     '''
@@ -50,7 +67,7 @@ def train(data: np.array, sample_shape: Tuple[int, int, int],
     return vqvae.fit(
             data, data, validation_split=0.1, batch_size=64, epochs=10), vqvae
 
-def test(vqvae_model: keras.models.Sequential, test_data):
+def test_vqvae(vqvae_model: keras.models.Sequential, test_data):
     '''
     Test the VQ VAE model and return relavent stats
     '''
@@ -62,6 +79,51 @@ def test(vqvae_model: keras.models.Sequential, test_data):
     recreated_ssim = total_ssim / test_data.shape[0]
 
     return recreated, recreated_ssim
+
+def train_pixel_cnn(x, y, number_of_embeddings):
+    pixel_cnn = model.create_pixel_cnn(7, 7, number_of_embeddings)
+    pixel_cnn.compile(
+            optimizer="adam",
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=["accuracy"])
+    pixel_cnn.fit(x, y, batch_size=128, epochs=10, validation_split=0.1)
+
+    return pixel_cnn
+
+def generate_using_pixel_cnn(pixel_cnn_model, vqvae_decoder_model, vector_quantizer, number_of_images, quantized_shape):
+    priors = np.zeros(shape=(10,) + (pixel_cnn_model.input_shape)[1:])
+    batch, rows, cols = priors.shape
+
+    # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+    for row in range(rows):
+        for col in range(cols):
+            logits = pixel_cnn_model(priors, training=False)
+            next_sample = tfp.distributions.Categorical(logits=logits).sample()
+            print(next_sample[:, row, col])
+            print(priors[:, row, col])
+            priors[:, row, col] = next_sample.numpy()[:, row, col]
+
+    pretrained_embeddings = vector_quantizer.embeddings
+    priors_ohe = tf.one_hot(priors.astype("int32"),
+            vector_quantizer.number_of_embeddings).numpy()
+    quantized = tf.matmul(
+        priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+    )
+    quantized = tf.reshape(quantized, (-1, *(quantized_shape)))
+
+    generated_samples = vqvae_decoder_model.predict(quantized)
+
+    for i in range(batch):
+        plt.subplot(1, 2, 1)
+        plt.imshow(priors[i])
+        plt.title("Code")
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(generated_samples[i].squeeze() + 0.5)
+        plt.title("Generated Sample")
+        plt.axis("off")
+        plt.show()
 
 # Loss Calculation Helpers
 
