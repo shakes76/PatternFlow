@@ -5,10 +5,10 @@ and calculating dice similarity coefficient.
 @date: 31/10/2021
 @license: Attribution-NonCommercial 4.0 International. See license.txt for more details.
 """
-import tensorflow as tf # for DL functionalities
-import matplotlib.pyplot as plt # for plotting images
-from tensorflow.image import resize, decode_jpeg, decode_png # for handling jpg and png images
-from tensorflow.io import read_file # for reading image files
+import tensorflow as tf 
+import matplotlib.pyplot as plt
+from tensorflow.image import resize, decode_jpeg, decode_png
+from tensorflow.io import read_file
 
 
 def process_image(image, x, y):
@@ -64,7 +64,7 @@ def process_data(image_path, mask_path):
     valid_mask = mask == [0, 255]
     return image, valid_mask
 
-def display(data, figsize, cmap):
+def display_images(data, figsize, cmap):
     """Displays scan, mask and predicted mask of a lesion from given data.
 
     Args:

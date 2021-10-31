@@ -5,12 +5,10 @@ TODO: Add descriptions of future implementations here.
 @date: 31/10/2021
 @license: Attribution-NonCommercial 4.0 International. See license.txt for more details.
 """
-from sklearn.utils import shuffle, validation # for shuffling data 
-from process_data import process_data # for dataset processing functionalities
-import matplotlib.pyplot as plt # for plotting images
-from data_loader import load_data # for loading the datasets
-from model import create_model # for creating the improved unet model
-
+import tensorflow as tf
+from data_loader import load_data
+from model import create_model 
+from utilities import dice_similarity, display_images, plot_accuracy 
 
 def main():
     """
@@ -21,10 +19,21 @@ def main():
     # create an improved unet model
     improved_unet_model = create_model(2)
     # training parametets
-    EPOCHS = 100
+    EPOCHS = 10
     BATCH_SIZE = 10
-    improved_unet_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    # train model
+    improved_unet_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[dice_similarity])
     history = improved_unet_model.fit(train_data.batch(BATCH_SIZE), epochs=EPOCHS, validation_data=val_data.batch(BATCH_SIZE))
+    # plot accuracy graphs
+    plot_accuracy(history)
+    # evaluate on test dataset
+    improved_unet_model.evaluate(test_data.batch(BATCH_SIZE))
+    # display scan, mask and predicted mask from test dataset
+    for scan, label in test_data.take(3):
+        predicted_mask = improved_unet_model.predict(scan[tf.newaxis])
+        predicted_mask = tf.argmax(predicted_mask[0], axis=-1)
+        display_images([tf.squeeze(scan), tf.argmax(label, axis=-1), 
+            predicted_mask], figsize=(6, 6), cmap='gray')
 
 
 # run main function
