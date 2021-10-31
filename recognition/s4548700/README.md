@@ -1,10 +1,11 @@
 # The Detection and Identification of Yolov3 on ISICs Pictures
 This project is the detections within the ISICs dataset with YOLOv3 network with all detections having a minimum Intersection Over Union of 0.8 on the test set and a suitable accuracy for classification.
 ## The principle of Yolov3
-Yolov3 is based on a niche deep learning framework——darknet's target detection open source project. Darknet is short and powerful, fast, and gives full play to the parallel computing functions of multi-core processors and GPUs. Therefore, Yolov3’s rapid detection is just right for our projects that require real-time detection of video frames; in addition, its accuracy is also very high, and it has a very high accuracy rate on objects of medium to small size, thanks to its The training method (will be introduced below), but for large-sized objects, such as objects that account for 60% of the entire image, the recognition rate is not satisfactory.[1]
+Yolov3 depends on a specialty profound learning system— — darknet's objective recognition open source project. Darknet is short and incredible, quick, and gives full play to the equal registering elements of multi-center processors and GPUs. In this way, Yolov3's quick discovery is perfect for our undertakings that require constant location of video outlines; moreover, its exactness is additionally exceptionally high, and it has an extremely high precision rate on objects of medium to little measure, because of its The preparation strategy (will be presented underneath), yet for enormous estimated objects, for example, protests that record for 60% of the whole picture, the acknowledgment rate isn't acceptable.[1]
+
 ![image](https://user-images.githubusercontent.com/87461237/139569875-f9094ecc-2023-4fe9-a0f1-8d87aadff9bd.png)
 
-The basic idea of this algorithm: First, extract features from the input features through a feature extraction network, and obtain a feature map output of a specific size. The input image is divided into 13×13 grid cells, and then if the center coordinates of an object in the real frame fall in a certain grid cell, then the grid cell will predict the object. Each object has a fixed number of bounding boxes. There are three bounding boxes in YOLO v3. Logistic regression is used to determine the regression box used for prediction.
+The essential thought of this calculation: First, extricate highlights from the info highlights through an element extraction organization, and acquire an element map yield of a particular size. The info picture is isolated into 13×13 network cells, and afterward if the middle directions of an item in the genuine casing fall in a specific matrix cell, then, at that point, the framework cell will foresee the article. Each item has a decent number of jumping boxes. There are three bouncing boxes in YOLOv3. Strategic relapse is utilized to decide the relapse box utilized for expectation. [6]
 
 ## The network structure [5]
 ![139566717-231cc039-41ba-4eb3-9e45-6f0166ac62ac](https://user-images.githubusercontent.com/87461237/139570034-8206dd78-6fca-4ffa-bd70-896f950cc721.png)
@@ -13,8 +14,6 @@ The basic idea of this algorithm: First, extract features from the input feature
 **resn**: n represents a number, res1, res2, …, res8, etc., indicating how many res_units are contained in this res_block.
 
 **concat**: tensor splicing. Join the upsampling of the darknet middle layer and a later layer. The splicing operation is different from the residual layer add operation. The splicing will expand the dimension of the tensor, while the direct addition of add will not cause the tensor dimension to change.
-
-YOLOv3 predicts an objectness score for each bounding box using logistic regression. This should be 1 if the bounding box prior overlaps a ground truth object by more than any other bounding box prior. If the bounding box prior is not the best but does overlap a ground truth object by more than some threshold we ignore the prediction, following [17]. We use the threshold of .5. Unlike [17] our system only assigns one bounding box prior for each ground truth object. If a bounding box prior is not assigned to a ground truth object it incurs no loss for coordinate or class predictions, only objectness.
 
 ## Description of usage and comments throughout scripts
 1. python3.8
@@ -65,4 +64,4 @@ This is the statistical results of the prediction. The iou_threshold is set at 0
 
 [5] qqwweee(2018) https://github.com/qqwweee/keras-yolo3
 
-[6] JosephRedmonAliFarhadi(2018) YOLOv3:AnIncrementalImprovement
+[6] ZhongQiang Huang etc.(2021) Immature Apple Detection Method Based on Improved Yolov3
