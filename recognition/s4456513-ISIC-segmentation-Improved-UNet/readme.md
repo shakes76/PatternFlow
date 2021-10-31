@@ -10,118 +10,60 @@ Task 3: Disease Classification
 
 In our project, only task one is focused and addressed. Our model use Imporved UNet to segement the lesion area from background with a high accuracy and DSC. 
 
-## DATA SET DESCRIPTION
+## DATASET DESCRIPTION
 
 The datasets used in this project from training, validating and testing are all from ISICs 2018 Challenge Data set. The datasets contains two matched groups with each group has 2594 images. The first group of images is the raw melanoma images and the second groups of image (mask image) is the segmentation of the lesion area which will serve as labels in following model training.  mask images are binary images with only pixel value of 0 and 255. Pixel value = 255 means the lesion area while 0 means background area. Figure 1 is an example of melanoma raw image (group 1 image) and Figure 2 is the responding mask image.
 
 ![](./images/ISIC_0000008.jpg)
-*Figure 1, An example of melanoma raw image
+Figure 1, An example of melanoma raw image
 
 ![](./images/ISIC_0000008_segmentation.png)
-*Figure 2, Mask image (segmentation image) of Figure 1 
+Figure 2, Mask image (segmentation image) of Figure 1 
 
 
 ## DATA PREPROCESSING
 
-Data preprocessing of this project including four steps:
+Data preprocessing of this project including three steps:
 
-1. load raw data
+### 1. Load Rwa Data
 
-In this project, the grayscale version of images are loaded for training in the model 
+In this project, the grayscale version of images are loaded for training in the model because the task of this project is to segment the lesion area without analysising the attribute of lesion area. Load the grayscale only can be helpful in reducing the unnecessary computing resources. 
 
-2. split raw data into training set, validating set and test set 
+### 2. Split Raw Data
 
-3. decode the image into predefined size 256*192
+There are 2594 pairs of image & mask supplied. In this project, 60% of them will be used for model training and 20% of them for model calidation and the rest 20% for testing the trained model. That is, training set has 1556 pairs of images, both validating and testing sets have 519 pairs of images. To make sure the credibility of the model, all datasets will be shuffled before training. 
 
-4. map the training image and segmentation masks
+### 3. Map and Decode Raw Images
 
-## Model Description
+Before datasets are ready to be trained in the model, all images and masks will be rescaled into the same size with matching mask. In this model, the predefined image size is 512 * 384 because the balance between image actual size and computing resources. The raw image size distribution is as following. Since the number of large image accounts for over 2/3, it is not suitable to rescale image to a very small size, but large size will cause slow training process. 512 * 384 is the chosen predefined image size . 
+![](./images/width_distribution.png)
+Figure 3, width distribution of all images
+
+
+## MODEL TRAINING 
+
+### Model Description
+U-Net is a convolutional neural network that is originally developed for biomedical image segmentation. It has two stage. The first stage is VGG stage to encode the image and the second stage is CONCAT stage by combining the symmetric VGG with previous step out put for further convolution. Figure 4 is a sampled structure of UNet. 
+
+![](./images/unet.jpg)
+Figure 4, Sample Unet Structure
+
+Each VGG stage contains a seriers of convolution layer with a max pooling layer to encode raw image. CONCAT stage requires up sampling (upsampling with convolution) at first and concat output of symmetric VGG concolution output. then perform a seriers of convolution action and also perform a max pooling action. Final convolution layer will be used to segment the image based on the predefined settings (num of classes, activation functions and so on). 
+
 
 ### Model Structure
-__________________________________________________________________________________________________
-Layer (type)                    Output Shape         Param #     Connected to                     
-__________________________________________________________________________________________________
-input_1 (InputLayer)            [(None, 256, 192, 1) 0                                            
-__________________________________________________________________________________________________
-conv2d (Conv2D)                 (None, 256, 192, 16) 160         input_1[0][0]                    
-__________________________________________________________________________________________________
-conv2d_1 (Conv2D)               (None, 256, 192, 16) 2320        conv2d[0][0]                     
-__________________________________________________________________________________________________
-max_pooling2d (MaxPooling2D)    (None, 128, 96, 16)  0           conv2d_1[0][0]                   
-__________________________________________________________________________________________________
-conv2d_2 (Conv2D)               (None, 128, 96, 32)  4640        max_pooling2d[0][0]              
-__________________________________________________________________________________________________
-conv2d_3 (Conv2D)               (None, 128, 96, 32)  9248        conv2d_2[0][0]                   
-__________________________________________________________________________________________________
-max_pooling2d_1 (MaxPooling2D)  (None, 64, 48, 32)   0           conv2d_3[0][0]                   
-__________________________________________________________________________________________________
-dropout (Dropout)               (None, 64, 48, 32)   0           max_pooling2d_1[0][0]            
-__________________________________________________________________________________________________
-conv2d_4 (Conv2D)               (None, 64, 48, 64)   18496       dropout[0][0]                    
-__________________________________________________________________________________________________
-conv2d_5 (Conv2D)               (None, 64, 48, 64)   36928       conv2d_4[0][0]                   
-__________________________________________________________________________________________________
-max_pooling2d_2 (MaxPooling2D)  (None, 32, 24, 64)   0           conv2d_5[0][0]                   
-__________________________________________________________________________________________________
-conv2d_6 (Conv2D)               (None, 32, 24, 128)  73856       max_pooling2d_2[0][0]            
-__________________________________________________________________________________________________
-conv2d_7 (Conv2D)               (None, 32, 24, 128)  147584      conv2d_6[0][0]                   
-__________________________________________________________________________________________________
-dropout_1 (Dropout)             (None, 32, 24, 128)  0           conv2d_7[0][0]                   
-__________________________________________________________________________________________________
-max_pooling2d_3 (MaxPooling2D)  (None, 16, 12, 128)  0           dropout_1[0][0]                  
-__________________________________________________________________________________________________
-conv2d_8 (Conv2D)               (None, 16, 12, 256)  295168      max_pooling2d_3[0][0]            
-__________________________________________________________________________________________________
-conv2d_9 (Conv2D)               (None, 16, 12, 1024) 2360320     conv2d_8[0][0]                   
-__________________________________________________________________________________________________
-up_sampling2d (UpSampling2D)    (None, 32, 24, 1024) 0           conv2d_9[0][0]                   
-__________________________________________________________________________________________________
-concatenate (Concatenate)       (None, 32, 24, 1152) 0           conv2d_7[0][0]                   
-                                                                 up_sampling2d[0][0]              
-__________________________________________________________________________________________________
-conv2d_11 (Conv2D)              (None, 32, 24, 128)  1327232     concatenate[0][0]                
-__________________________________________________________________________________________________
-conv2d_12 (Conv2D)              (None, 32, 24, 128)  147584      conv2d_11[0][0]                  
-__________________________________________________________________________________________________
-up_sampling2d_1 (UpSampling2D)  (None, 64, 48, 128)  0           conv2d_12[0][0]                  
-__________________________________________________________________________________________________
-conv2d_13 (Conv2D)              (None, 64, 48, 64)   73792       up_sampling2d_1[0][0]            
-__________________________________________________________________________________________________
-concatenate_1 (Concatenate)     (None, 64, 48, 128)  0           conv2d_5[0][0]                   
-                                                                 conv2d_13[0][0]                  
-__________________________________________________________________________________________________
-conv2d_14 (Conv2D)              (None, 64, 48, 64)   73792       concatenate_1[0][0]              
-__________________________________________________________________________________________________
-conv2d_15 (Conv2D)              (None, 64, 48, 64)   36928       conv2d_14[0][0]                  
-__________________________________________________________________________________________________
-up_sampling2d_2 (UpSampling2D)  (None, 128, 96, 64)  0           conv2d_15[0][0]                  
-__________________________________________________________________________________________________
-conv2d_16 (Conv2D)              (None, 128, 96, 32)  18464       up_sampling2d_2[0][0]            
-__________________________________________________________________________________________________
-concatenate_2 (Concatenate)     (None, 128, 96, 64)  0           conv2d_3[0][0]                   
-                                                                 conv2d_16[0][0]                  
-__________________________________________________________________________________________________
-conv2d_17 (Conv2D)              (None, 128, 96, 32)  18464       concatenate_2[0][0]              
-__________________________________________________________________________________________________
-conv2d_18 (Conv2D)              (None, 128, 96, 32)  9248        conv2d_17[0][0]                  
-__________________________________________________________________________________________________
-up_sampling2d_3 (UpSampling2D)  (None, 256, 192, 32) 0           conv2d_18[0][0]                  
-__________________________________________________________________________________________________
-conv2d_19 (Conv2D)              (None, 256, 192, 16) 4624        up_sampling2d_3[0][0]            
-__________________________________________________________________________________________________
-concatenate_3 (Concatenate)     (None, 256, 192, 32) 0           conv2d_1[0][0]                   
-                                                                 conv2d_19[0][0]                  
-__________________________________________________________________________________________________
-conv2d_20 (Conv2D)              (None, 256, 192, 16) 4624        concatenate_3[0][0]              
-__________________________________________________________________________________________________
-conv2d_21 (Conv2D)              (None, 256, 192, 16) 2320        conv2d_20[0][0]                  
-__________________________________________________________________________________________________
-conv2d_22 (Conv2D)              (None, 256, 192, 1)  17          conv2d_21[0][0]                  
-Total params: 4,665,809
-Trainable params: 4,665,809
-Non-trainable params: 0
 
+Model straucture of this project is as following with four VGG block, one bottom block and four CONCAT block. The output layer use 'Sigmoid' as the activation function.
+
+Input size for each image: (512， 384， 1)
+
+Encode output size for each image: (32, 24, 1024)
+
+Figure 5 shows the structure of applied UNet.
+
+![](./images/UNet_cons_1.png)
+![](./images/UNet_cons_1.png)
+Figure 5, UNet structure in this project
 
 ## First Epochs Result
 ![图片](https://user-images.githubusercontent.com/31636541/139171551-fe47b000-0b8b-482d-ac9d-4008f77a6e32.png)
@@ -134,7 +76,8 @@ Non-trainable params: 0
 ## Training History
 
 ### Training Accuracy vs Validation Accuracy
-![图片](https://user-images.githubusercontent.com/31636541/139171770-2e25555b-d383-4772-9dd7-95bf6120ad89.png)
+Figure 6, shows the accuracy change of training dataset and validating dataset
+![](./images/accuracy.png)
 ### Training Dice Coefficient vs Validation Dice Coefficient
 ![图片](https://user-images.githubusercontent.com/31636541/139171822-8339d4bb-7b98-42f8-948c-b3918ae2caea.png)
 
