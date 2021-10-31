@@ -169,7 +169,7 @@ https://github.com/tzutalin/labelImg
 
 * ``README.md`` -  This file.
 * ``_result.txt`` - The result of test set.
-* ``map.txt`` - Results of the last iteration of other model.
+* ``mapother.txt`` - Results of the last iteration of other model.
 * ``map1000.txt`` - Results of the 1000th iteration.
 * ``map2000.txt`` - Results of the 2000th iteration.
 * ``map3000.txt`` - Results of the 3000th iteration.
