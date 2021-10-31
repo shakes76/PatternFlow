@@ -82,6 +82,9 @@ def loss_graph(results, epoch_num):
     plt.title('Loss Graph')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def accuracy_graph(results, epoch_num):
     """[summary]
@@ -90,21 +93,24 @@ def accuracy_graph(results, epoch_num):
         results ([type]): [description]
         epoch_num ([type]): [description]
     """
-    loss = results.history["accuraccy"]
-    val_loss = results.history["accuracy_loss"]
+    loss = results.history["accuracy"]
+    val_loss = results.history["val_accuracy"]
     plt.plot(range(1, epoch_num+1), loss, 'k', label='Training')
     plt.plot(range(1, epoch_num+1), val_loss, 'r', label='Validation')
     plt.title('Accuracy Graph')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def main():
     
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
     # read images from file directory, and ensure variables with 4 dimensions
-    inputs = to_numpy("jian-improved-unet-45731462/Input_x2", "rgb")
-    labels = to_numpy("jian-improved-unet-45731462/GroundTruth_x2", "bw")
+    inputs = to_numpy("Input_x2", "rgb")
+    labels = to_numpy("GroundTruth_x2", "bw")
 
     # converts label mask to either 0 or 1 value, expand to 4 dimensions
     labels = encode_bw(labels)
@@ -128,22 +134,24 @@ def main():
     ready_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
 
     # model summary
-    print(ready_model.summary())
-
+    # print(ready_model.summary())
 
     ## train model
-    results = ready_model.fit(x_train, y_train, 
-               batch_size=2, verbose=1, 
-               epochs=epoch, 
-               validation_data=(x_valid, y_valid), 
-               shuffle=False)
+    # results = ready_model.fit(x_train, y_train, 
+    #            batch_size=2, verbose=1, 
+    #            epochs=epoch, 
+    #            validation_data=(x_valid, y_valid), 
+    #            shuffle=False)
 
     ## save model
-    ready_model.save("Improved_Jian_Epoch15_Batch2.hdf5")
+    # ready_model.save("Improved_Jian_Epoch30_Batch2.hdf5")
+
+    # load weights from previous trained models
+    ready_model.load_weights("Improved_Jian_Epoch30_Batch2.hdf5")
 
     # plotting losses and accuracy
-    loss_graph(results, epoch)
-    accuracy_graph(results, epoch)
+    # loss_graph(results, epoch)
+    # accuracy_graph(results, epoch)
 
     # evaluate model and get accuracy
     _, accuracy = ready_model.evaluate(x_test, y_test)
