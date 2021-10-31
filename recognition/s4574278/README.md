@@ -42,7 +42,7 @@ The CSPNet is firstly introduced into YOLO family by YOLO v4. To me, it looks li
 
 According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs, it looks like a ReLU but smooth.
 ![https://paperswithcode.com/method/silu](./images/SiLU.png)
-Image from [Sigmoid Linear Unit | paperswithcode.com](https://paperswithcode.com/method/silu)
+SiLU(red) vs ReLU(blue)
 
 ### Loss function
 
