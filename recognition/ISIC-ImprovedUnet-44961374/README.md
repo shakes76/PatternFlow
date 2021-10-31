@@ -113,9 +113,9 @@ The Improved UNet  Model [5] still follows the "U" shaped structure as the origi
 * Use of context modules which are pre-activation residual blocks with two 3x3x3 convolutional layers and a dropout layer in between [5]
 * Use of localization modules to recombine features 
 
-### Results
+## Results
 
-#### Dice Similarity Coefficient
+### Dice Similarity Coefficient
 
 Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation. The formula of DSC is:
 
@@ -132,7 +132,7 @@ Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation. The 
 A DSC score lies in the range [0,1], where 1 denotes perfect segmentation.
 
 
-#### Model Performance
+### Model Performance
 The model performed really well and achieved a validation accuracy of over 90% (DSC metrics)
 
 The image below shows the training vs validation accuracy graphs.
@@ -144,8 +144,16 @@ The image below shows the training vs validation accuracy graphs.
 </p>
 
 
-#### Sample Predictions
+### Sample Predictions
+The images below show sample images of scans, their corresponding masks and predicted masks.
 
+<p align="center">
+  <kbd>
+  <img src="images/results.png" height="550px"/>
+  </kbd>
+</p>
+
+As evident, the model has performed well. A larger dataset with more images or data augmentation to generate more training data would increase the accuracy further.
 <!-- Links to the data set and model paper -->
 ## Quick Links
 [ISIC 2018 Challenge Data](https://challenge2018.isic-archive.com/)
