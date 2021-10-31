@@ -77,6 +77,9 @@ class UnetTrainer:
         """
         Plots the Dice coefficient and accuracy per epoch.
         """
+        if self.history is None:
+            print("Error: Model has not been trained yet")
+            return
         acc = self.history.history['accuracy']
         val_acc = self.history.history['val_accuracy']
         dice = self.history.history['dice_coef']
@@ -84,12 +87,18 @@ class UnetTrainer:
 
         plt.figure()
         plt.plot(self.history.epoch, acc, 'r', label='Training Accuracy')
-        plt.plot(self.history.epoch, val_acc, 'bo', label='Validation loss')
+        plt.plot(self.history.epoch, val_acc, 'bo', label='Validation Accuracy')
         plt.plot(self.history.epoch, dice, 'gold', label="Training dice")
-        plt.plot(self.history.epoch, val_dice, 'green', label="Val Dice")
+        plt.plot(self.history.epoch, val_dice, 'green', label="Validation Dice")
         plt.title('Training and Validation Accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Value')
         plt.ylim([0, 1])
         plt.legend()
         plt.show()
+
+    def evaluate(self):
+        test_loss, test_acc, test_dice = self.model.evaluate(self.data.get_test_set(), verbose=1)
+        print("test loss:", test_loss)
+        print("test accuracy:", test_acc)
+        print("test dice:", test_dice)
