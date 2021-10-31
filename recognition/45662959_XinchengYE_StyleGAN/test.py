@@ -145,11 +145,11 @@ if __name__ == '__main__':
     step = int(math.log(args.size, 2)) - 2
     n_row, n_col = 1, 5
     img_sample = sample(generator, step, mean_style, n_row*n_col, device)
-    sample_grid = make_grid(img_sample, nrow=n_col)
+    sample_grid = make_grid(img_sample, nrow=n_col, normalize=True, value_range=(-1, 1))
     show(sample_grid, 'Sample')
 
     img_mix = style_mixing(generator, step, mean_style, n_col, n_row, device)
-    grid_mix = make_grid(img_mix, nrow=n_col)
+    grid_mix = make_grid(img_mix, nrow=n_col, normalize=True, value_range=(-1, 1))
     show(grid_mix, 'mix regularization')
 
 
