@@ -50,6 +50,7 @@ Upsample: The role of the upsample layer is to generate a large image from a sma
 
 Datasets
 -------
+
 ISIC2018_Task1-2_Training_Data
 ISIC2016_Task1-2_Test_Input
 
@@ -77,4 +78,31 @@ In addition, I also tagged the data via opencv to identify the ISIC2018_Task1_Tr
 The tagged dataset generates a txt file with the corresponding name, which contains the class name, the centroid x coordinate, the centroid y coordinate, the width of the tagged box, and the height of the tagged box. This is shown in the figure below.
 
 ![image](https://user-images.githubusercontent.com/75237235/139570969-69eadf08-9266-426d-b009-923b96d41d5d.png)
+
+To verify the accuracy of the training, I randomly selected 300 images from ISIC2018_Task1-2_Training_Input_x2 as the validation set to perform model parameter tuning.
+
+Training, validation, testing and parameter tuning
+-------
+
+Yolov3's training strategy is particularly important. 
+
+The prediction frames are divided into positive, negative and ignore cases.
+
+A positive example means that any ground truth is taken and the IOU is calculated with all 4032 frames, and the frame with the largest IOU is the positive example. The order of the ground truths can be ignored. The positive example generates confidence loss, detection box loss, and category loss; the prediction box is the corresponding ground truth box label; the category label corresponds to category 1 and the rest to 0; the confidence label is 1.
+
+Ignored samples are ignored if the IOU with any of the ground truths is greater than a threshold (0.5 is used in the paper), except for positive exceptions. Ignored cases do not generate any loss.
+
+Negative cases are those where the IOU with all ground truths is less than the threshold (0.5), except for positive cases and ignored cases. Negative cases have only confidence generating loss, with a confidence label of 0.
+
+Configuration files
+
+The official code uses a configuration file to build the network, i.e. the cfg file describes the network architecture piece by piece. First I used pytorch to read the network structure to form my own module for forward and backward propagation.
+
+In the Yolov3 code, batch is net->batch, which defaults to 4, i.e. n=64/4=16, so subdivision=16. Conversely, with a subdivision of 16, the number of batches is divided into 16 equal parts, each with 4 images. The training is done 16 times, with 4 images each time.
+
+![image](https://user-images.githubusercontent.com/75237235/139571793-df421e2e-6277-4ae1-b9ae-38b80222bee4.png)
+
+At first I used the default values, 64 and 16, but later tried 64 and 8, but since I trained the code at Colab, Colab provided free GPUs of T4 and P100 and 16GB of running memory. The subdivision of 8 crashes due to device limitations. So the 64 and 8 pairing did not yield results. I then tried 64 and 32, 96 and 16 and 96 and 32, but due to time and device constraints, no more combinations were tried.
+
+
 
