@@ -19,9 +19,9 @@ a validation split.
 
 ## Dependencies and Usage
 
-In order to run this repository, the dependencies listed in the 
-`requirements.txt` file should be installed. These include Tensorflow/Keras 2.4+,
-Tensorflow Probability and Scikit-Image.
+In order to run this repository, Python 3.9+ is required (due to the use of type hints)
+and the dependencies listed in the `requirements.txt` file should be installed. These 
+include Tensorflow/Keras 2.4+, Tensorflow Probability and Scikit-Image.
 
 The file that should be run is `driver.py`. This trains the model and generates
 20 images of Brains with further configuration options available at the top 
