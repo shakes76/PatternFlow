@@ -1,5 +1,5 @@
 """
-[INSERT]
+Preprocessing Dataset, with Model Training and Evaluation
 
 @author Jian Yang Lee
 @email jianyang.lee@uqconnect.edu.au
@@ -16,30 +16,42 @@ from matplotlib import pyplot as plt
 
 
 def to_numpy(path, image_type):
-    """
-    [INSERT]
+    """ Gets file path name and converts to numpy arrays. Read images with flag
+    cv2.IMREAD_COLOR if image is RGB, else with flag 0. Also, we keep the aspect
+    ratio of the image of an estimate of 1 : 0.75. 
+
+    Args:
+        path (string): file path names of either the input or mask images
+        image_type (string): flag to know which image type we're reading
+
+    Returns:
+        [ndarray]: numpy array with dimension (num, height, width). If image is 
+            RGB, returns with additional dimension of channel. 
     """
     numpy_images = []
 
     for filename in os.listdir(path):
         if filename != ".DS_Store":
-            if image_type == "bw":
+            if image_type == "bw": # image is black and white
                 read_img = cv2.imread(os.path.join(path, filename), 0)
-            elif image_type == "rgb":
+            elif image_type == "rgb": # image is RGB
                 read_img = cv2.imread(os.path.join(path, filename), cv2.IMREAD_COLOR)
+
+            # resizes while keeping the aspect ratio
             new_img = cv2.resize(read_img, (128, 96))
             numpy_images.append(new_img)
 
     return np.array(numpy_images)
 
 def encode_bw(input):
-    """[summary]
+    """ Encodes the labelled images to either a value of 0 or 1, with a midpoint
+    of pixel value 128. 
 
     Args:
-        input ([type]): [description]
+        input (ndarray): labelled image in 3D numpy array
 
     Returns:
-        [type]: [description]
+        [ndarray]: numpy array with the same dimensions as before with encoded values.
     """
 
     dim, height, width = input.shape
@@ -54,27 +66,27 @@ def encode_bw(input):
     return input.reshape(dim, height, width)
 
 def dice(predict, test, smooth=1):
-    """[summary]
+    """ Calculates the dice score between the predicted and test numpy arrays. 
 
     Args:
-        predict ([type]): [description]
-        test ([type]): [description]
-        smooth (int, optional): [description]. Defaults to 1.
+        predict (tensor): the predicted tensor values from model.predict
+        test (tensor): the labelled test tensor values
+        smooth (int, optional): Defaults to 1.
 
     Returns:
-        [type]: [description]
+        [int]: the dice score for a particular channel
     """
     intersection = np.sum(predict.flatten() * test.flatten())
     return (2. * intersection + smooth) / (np.sum(predict) + np.sum(test) + smooth)
 
 def loss_graph(results, epoch_num):
-    """[summary]
+    """ Plots the training and validation loss scores. 
 
     Args:
-        results ([type]): [description]
-        epoch_num ([type]): [description]
+        results (history): this History callback object keeps track of the accuracy, loss 
+            and other training metrics of our trained Improved Unet model  
+        epoch_num (int): the epoch number used in training the model
     """
-
     loss = results.history["loss"]
     val_loss = results.history["val_loss"]
     plt.plot(range(1, epoch_num+1), loss, 'k', label='Training')
@@ -87,11 +99,12 @@ def loss_graph(results, epoch_num):
     plt.show()
 
 def accuracy_graph(results, epoch_num):
-    """[summary]
+    """ Plots the training and validation accuracy scores. 
 
     Args:
-        results ([type]): [description]
-        epoch_num ([type]): [description]
+        results (history): this History callback object keeps track of the accuracy, loss 
+            and other training metrics of our trained Improved Unet model 
+        epoch_num (int): the epoch number used in training the model
     """
     loss = results.history["accuracy"]
     val_loss = results.history["val_accuracy"]
@@ -105,6 +118,10 @@ def accuracy_graph(results, epoch_num):
     plt.show()
 
 def main():
+    """ Our pipeline from preprocessing the datasets, performing a train test split, loading and 
+        training the model, with dice scores, accuracy and loss graphs used for evaluations of 
+        the Improved Unet model. 
+    """
     
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 

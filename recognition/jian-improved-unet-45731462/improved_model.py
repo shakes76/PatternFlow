@@ -1,5 +1,5 @@
 """
-Model Architecture of the Improved UNEt
+Model Architecture of the Improved Unet
 
 @author Jian Yang Lee
 @email jianyang.lee@uqconnect.edu.au
