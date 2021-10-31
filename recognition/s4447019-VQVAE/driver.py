@@ -125,4 +125,62 @@ class VectorQuantizer(layers.Layer):
 ###############################################################
 
 
+###### VQ Trainer from Keras tutorial #########################
+# VQVAE Trainer class from Kera's tutorial
+# Reference: https://keras.io/examples/generative/vq_vae/
+# Author: Sayak Paul
 
+class VQVAETrainer(keras.models.Model):
+    def __init__(self, train_variance, latent_dim=16, num_embeddings=128, **kwargs):
+        super(VQVAETrainer, self).__init__(**kwargs)
+        self.train_variance = train_variance #Define the variance of the training image set
+        self.latent_dim = latent_dim #Define the latent dimension of the model
+        self.num_embeddings = num_embeddings #Define the total number of embeddings of the model
+
+        self.vqvae = get_vqvae(self.latent_dim, self.num_embeddings) #Call the model with the given hyperparameters
+        
+        # Define the reconstuction and total loss variables to be printed during training
+        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss_tracker = keras.metrics.Mean(name="reconstruction_loss")
+
+    @property
+    def metrics(self):
+        return [
+            self.total_loss_tracker,
+            self.reconstruction_loss_tracker,
+        ]
+
+    def train_step(self, x):
+        with tf.GradientTape() as tape:
+            # These are the outputs from the VQ-VAE
+            reconstructions = self.vqvae(x)
+
+            # Calculate the total and reconstruction losses
+            reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance)
+            total_loss = reconstruction_loss + sum(self.vqvae.losses)
+
+        # Application of backpropagation
+        grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.vqvae.trainable_variables))
+
+        # Update the loss variables
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+
+        # Print the loss results
+        return {
+            "loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+        }
+    
+###############################################################
+
+# Define the variance of the training images
+data_variance = tf.image.total_variation(next(iter(train_ds.batch(9664)))) 
+# Note: Easiest solution to find variance of all training data
+# was to parse entire training set as one 'batch'
+
+# Train the VQVAE model
+vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=32)
+vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
+vqvae_trainer.fit(train_ds.batch(32), epochs=30) #Training for batch=32 and 30 epochs
