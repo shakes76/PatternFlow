@@ -14,7 +14,7 @@ class Perceiver(tf.keras.Model):
 
         self.latent_size = latent_size
         self.data_size = data_size
-        self.patch_size = patch_size
+        # self.patch_size = patch_size
         self.proj_size = proj_size
         self.num_heads = num_heads
         self.num_trans_blocks = num_trans_blocks
@@ -25,14 +25,10 @@ class Perceiver(tf.keras.Model):
         self.epoch = epoch
         self.weight_decay = weight_decay
 
-    def generateLatent(self, input_shape):
+    def build(self, input_shape):
 
-        self.latents = self.add_weight(
-            shape=(self.latent_size, self.proj_size),
-            initializer="random_normal",
-            trainable=True,
-            name='latent'
-        )
+        self.latents = self.add_weight(shape=(self.latent_size, self.proj_size),
+                initializer="random_normal", trainable=True, name='latent')
 
         self.fourier_encoder = FourierEncode(self.max_freq, self.freq_ban)
 
@@ -47,14 +43,11 @@ class Perceiver(tf.keras.Model):
 
         self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
 
-        super(Perceiver, self).generateLatent(input_shape)
+        super(Perceiver, self).build(input_shape)
 
     def call(self, inputs):
         fourier_transform = self.fourier_encoder(inputs)
-        attention_mechanism_data = [
-            tf.expand_dims(self.latents, 0),
-            fourier_transform
-        ]
+        attention_mechanism_data = [tf.expand_dims(self.latents, 0), fourier_transform]
 
 
         for _ in range(self.loop):
