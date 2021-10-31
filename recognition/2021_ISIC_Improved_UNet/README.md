@@ -8,7 +8,13 @@ segmentation on the aforementioned ISICs dataset.
 ## ISICs dataset
 The ISIC's dataset contains 2594 images and their associated segmentation masks. By default, the dataset contains images of varying sizes and aspect ratios. Data normalisation and resizing was applied to provide consistency throughout the inputs.
 
-_Image of Training data / Image of associated mask_
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ExampleISIC.jpg">
+</p>
+
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ExampleISIC_Segmentation.png">
+</p>
 
 _Figure 1: Sample image and associated mask from the ISICs 2018 dataset_
 
@@ -89,19 +95,57 @@ The [Dice Similarity Coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2
 That is, the DSC is: 2 * the overlap between the pixels in the Ground Truth segmentation mask, and the model-generated Segmentation Mask. This is then divided by the sum of the total pixels in both masks. 
 
 ## Results
-For the following results, the model was run for _ epochs. _Summary of results_
+For the following results, the model was run for 20 epochs. The `validation` performance follows the `training` performance closely throughout training, divering slightly towards the end. The distribution of DSC values on the Test Set evaluation is left-skewed, with few images attaining low DSC scores. Overall, an average DSC of > 0.8 was attained on the Test Set, with > 67% of images yielding a DSC score of 0.8 or higher.
 
 ### Accuracy & Loss Plots
+The following plots show the behaviour of the model in terms of DSC and Loss over a 20 epoch run.
+
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_1.png">
+</p>
+
+_Figure 3: Improved UNet model loss_
+
+
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_2.png">
+</p>
+
+_Figure 4: Improved UNet model dice coefficient_
 
 ### Performance on the Test Set
-#### Dice Similarity Coefficient
+After the model was trained for 20 epochs, its performance was evaluated on the Test Set.
+
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/modelMetrics.png">
+</p>
+
+_Figure 5: Model performance on the Test Set after training_
+
+From _Figure 5_, we see that the average Dice Coefficient was 80.8%. Overall, 67.8% of the test set yielded a DSC of 0.8+.
 
 #### DSC Distribution
+The histogram below shows the distribution of DSC values on the evaluation of the Test Set.
+
+
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/histogram.png">
+</p>
+
+_Figure 6: Distribution of DSC on the Test Set evaluation_
 
 ### Output generated
 Masks output by the model were thresholded such that pixels which were > 0.5 were set to 1, else they were set to 0. Below are some output examples from the trained model, on the test set.
 
-_Image of input / ground truth / result masks_
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_5.png">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_6.png">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_10.png">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_20.png">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/Figure_22.png">
+</p>
+
+_Figure 7: Input image / Ground Truth mask / Model-generated mask_
 
 ## Additions and Changes
 The architecture described above gives an overview of the design of the model.
