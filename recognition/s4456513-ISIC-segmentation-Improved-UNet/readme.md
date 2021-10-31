@@ -79,13 +79,13 @@ Figure 5, UNet structure in this project
 Figure 6, shows the accuracy change of training dataset and validating dataset
 ![](./images/accuracy.png)
 ### Training Dice Coefficient vs Validation Dice Coefficient
-![图片](https://user-images.githubusercontent.com/31636541/139171822-8339d4bb-7b98-42f8-948c-b3918ae2caea.png)
+![](./images/DSC.png)
 
 
 # RESULTS
 ### Four sets images with the first image being raw image, the second one being raw mask and the third one being predicted mask
-![图片](https://user-images.githubusercontent.com/31636541/139170066-d00a2ad1-0918-4d08-b7dc-172b2d8e273c.png)
-![图片](https://user-images.githubusercontent.com/31636541/139170087-35f4f46b-c6fb-4970-9e00-5c3c4d255408.png)
-![图片](https://user-images.githubusercontent.com/31636541/139170100-fa83f098-edc4-4018-bc6b-a3bca900978d.png)
-![图片](https://user-images.githubusercontent.com/31636541/139170110-f0a28387-325b-4d88-8aac-31ad1f579d9f.png)
+![](./images/pred_1.png)
+![](./images/pred_2.png)
+![](./images/pred_3.png)
+![](./images/pred_4.png)
 
