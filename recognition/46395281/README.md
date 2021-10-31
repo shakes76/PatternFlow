@@ -49,7 +49,7 @@ These features include progressively growing, Adaptive Instance Normalization, m
    
 
 ## Requirements 
-Python 3.7.12
+Python 3.7.12       
 matplotlib 3.2.2    
 numpy 1.19.5 (numpy is only used for plotting and saving images)    
 torch 1.9.0+cu111   
