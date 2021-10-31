@@ -17,6 +17,10 @@ def create_encoder_model(latent_dimensions: int,
                 32, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2D(
                 64, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2D(
+                128, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2D(
+                128, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2D(latent_dimensions, 1, padding="same")
     ], name="encoder")
 
@@ -26,11 +30,15 @@ def create_decoder_model(input_shape: Tuple[int, int, int]) \
     return keras.models.Sequential([
         keras.layers.Input(shape=input_shape),
         keras.layers.Conv2DTranspose(
+                128, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2DTranspose(
+                128, 3, activation="relu", strides=2, padding="same"),
+        keras.layers.Conv2DTranspose(
                 64, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2DTranspose(
                 32, 3, activation="relu", strides=2, padding="same"),
         keras.layers.Conv2DTranspose(
-                1, 3, padding="same")
+                3, 3, padding="same")
     ], name="decoder")
 
 def create_vqvae_model(latent_dimensions: int, number_of_embeddings: int,
@@ -87,8 +95,7 @@ class VectorQuantizer(keras.layers.Layer):
 
         # Calculate the loss for this layer based on VQ objective and
         # "commitment loss" used to stop the embeddings from growing given.
-        # Both of these losses are given in the original VQ VAE paper
-        # <add reference>.
+        # Both of these losses are given in the original VQ VAE paper.
         loss = tf.reduce_mean(
                 (tf.stop_gradient(x) - quantized_original_dims) ** 2) \
                 + self._beta * tf.reduce_mean((x - tf.stop_gradient(
@@ -108,8 +115,12 @@ class VectorQuantizer(keras.layers.Layer):
 
 # PixelCNN Prior Model
 
-def create_pixel_cnn(latent_width, latent_height, num_embeddings) \
-        -> keras.Model:
+def create_pixel_cnn(latent_width, latent_height, num_embeddings)\
+        -> keras.models.Model:
+    '''
+    Creates the PixelCNN model with 3 MaskedConv2D layers, 2 PixelCnnBlocks
+    and a single Conv2D layer for output.
+    '''
     input = keras.layers.Input(
             shape=(latent_height, latent_width), dtype=tf.int32)
     one_hot = tf.one_hot(input, num_embeddings)
@@ -126,6 +137,10 @@ def create_pixel_cnn(latent_width, latent_height, num_embeddings) \
     return keras.models.Model(input, x)
 
 class MaskedConv2D(keras.layers.Layer):
+    '''
+    The MaskedConv2D layer is a standard Conv2D layer with a mask applied
+    on top of it to treat the input as a sequence of data.
+    '''
     def __init__(self, mask_type, **kwargs):
         super(MaskedConv2D, self).__init__()
         self.mask_type = mask_type
@@ -134,14 +149,18 @@ class MaskedConv2D(keras.layers.Layer):
     def build(self, input_shape):
         self.conv.build(input_shape)
         kernel_shape = tf.shape(self.conv.kernel)
-        mask = np.zeros(shape=kernel_shape)
-        # print(mask.shape)
+
         center_h = kernel_shape[0] // 2
         center_w = kernel_shape[1] // 2
-        mask[: center_h, ...] = 1.0
-        mask[center_h, : center_w, ...] = 1.0
+        
+        mask = tf.Variable(tf.zeros(shape=kernel_shape))
+        mask_shape = mask[: center_h, ...].shape
+        mask[: center_h, ...].assign(tf.ones(shape=mask_shape))
+        mask_shape = mask[center_h, : center_w, ...].shape
+        mask[center_h, : center_w, ...].assign(tf.ones(shape=mask_shape))
         if self.mask_type == "B":
-            mask[center_h, center_w, ...] = 1.0
+            mask_shape = mask[center_h, center_w, ...].shape
+            mask[center_h, center_w, ...].assign(tf.ones(shape=mask_shape))
 
         self.mask = tf.constant(mask, dtype=tf.float32)
 
@@ -150,6 +169,11 @@ class MaskedConv2D(keras.layers.Layer):
         return self.conv(input)
 
 class PixelCnnBlock(keras.models.Model):
+    '''
+    A PixelCnnBlock contains a MaskedConv2D layer with a convolution
+    before and after it is applied. This Block is also residual,
+    meaning that the input is added to the output.
+    '''
     def __init__(self, filters, kernel_size, is_first: bool = False):
         super(PixelCnnBlock, self).__init__()
 
