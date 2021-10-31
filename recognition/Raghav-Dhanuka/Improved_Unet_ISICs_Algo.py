@@ -11,7 +11,7 @@
 ## Mmaintainer: Raghav Dhanuka
 ## Email: r.dhanuka@uqconnect.edu.au
 ## Status: 'Dev'
-## Description:  All the Modules for the Improved U-Net are present below which will be run using the driver script driver.py
+## Description:  All the Modules for the Improved U-Net are present below which will be run using the driver script main.py
 ##################################################
 """
 
