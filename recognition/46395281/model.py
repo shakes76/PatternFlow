@@ -1,21 +1,16 @@
 import numpy as np
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.autograd import grad
 from torch.utils.data import DataLoader,SubsetRandomSampler
-from torchvision.utils import save_image
 from torchvision.utils import make_grid
-from torchvision.io import read_image
 from torchvision import datasets, transforms
-from torchsummary import summary
 import pickle as pkl
 from tqdm import tqdm
 from PIL import Image
-#torch.manual_seed(777)
 class WScaledConv(nn.Module):
   """
   Weight scaled conv2d,
@@ -23,7 +18,6 @@ class WScaledConv(nn.Module):
   output: b *out_features *H *W (weight scaled)
   """
   def __init__(self, ins, outs, k_size=3, stride=1, padding=1):
-    #super(WScaledConv, self).__init__()
     super().__init__()
     self.k_size = k_size
     self.stride = stride
@@ -35,7 +29,7 @@ class WScaledConv(nn.Module):
   def forward(self, x):
     return F.conv2d(x, self.w*self.scale, self.bias, stride=self.stride, padding=self.padding)
 
-class WScaledLinear(nn.Module):  # output shape tested
+class WScaledLinear(nn.Module):
   """
   Weight scaled Linear,
   input: b *in_channels *H *W
@@ -43,7 +37,6 @@ class WScaledLinear(nn.Module):  # output shape tested
   """
 
   def __init__(self, ins=512, outs=512, lr_mul=1.0):
-        # super(WScaledLinear, self).__init__()
     super().__init__()
     self.ins = ins
     self.outs = outs
@@ -55,7 +48,7 @@ class WScaledLinear(nn.Module):  # output shape tested
 
   def forward(self, x):
     return F.linear(x, self.w * self.scale, self.bias)
-class PixelNorm(nn.Module):  # embedding into MappingNet, not used anymore
+class PixelNorm(nn.Module):  # embedded into MappingNet, not used anymore
   """
   Pixel normalization,
   input: b *z_dimension
@@ -63,7 +56,6 @@ class PixelNorm(nn.Module):  # embedding into MappingNet, not used anymore
   """
 
   def __init__(self, epsilon=1e-8):
-    # super(PixelNorm, self).__init__()
     super().__init__()
     self.epsilon = epsilon
 
@@ -72,7 +64,7 @@ class PixelNorm(nn.Module):  # embedding into MappingNet, not used anymore
     x_ = (x * x).mean(dim=1, keepdim=True) + self.epsilon
     return x / (x_ ** 0.5)
 
-class MappingNet(nn.Module):  # output shape tested
+class MappingNet(nn.Module):
   """
   8-dense-layers MappingNet, projecting latent z(ins) to w(outs)
   PixelNorm is merged into here
@@ -83,7 +75,6 @@ class MappingNet(nn.Module):  # output shape tested
   def __init__(self, ins=512, outs=512, n_layers=8):
     super().__init__()
     self.mapping = nn.ModuleList()
-    # self.mapping.append(PixelNorm())
     self.mapping.append(WScaledLinear(ins, outs, lr_mul=0.01))
     for i in range(n_layers - 1):
       self.mapping.append(nn.ReLU())
@@ -109,7 +100,7 @@ class AdaIN(nn.Module): #output shape tested
   def __init__(self, ins=512, outs=512):
     #super(AdaIN, self).__init__()
     super().__init__()
-    self.insnorm=nn.InstanceNorm2d(outs,affine=False)# facebookresearch uses eps=1e-08
+    self.insnorm=nn.InstanceNorm2d(outs,affine=False)
     self.style_wfactor=WScaledLinear(ins,outs)
     self.style_bias=WScaledLinear(ins,outs)
   def forward(self, x, w):
@@ -121,7 +112,7 @@ class AdaIN(nn.Module): #output shape tested
     return x*style_wf+style_b
 
 
-class Gblock(nn.Module):  # output shape tested
+class Gblock(nn.Module):
   """
   Generative block,
   each block contains one upscale layer and two conv layers (except for the initial block)
@@ -130,7 +121,6 @@ class Gblock(nn.Module):  # output shape tested
   """
 
   def __init__(self, initial=False, ins=512, outs=512, b_size=32, device='cuda'):
-    # super(Gblock, self).__init__()
     super().__init__()
     self.initial = initial
     self.ins = ins
@@ -341,7 +331,7 @@ class Trainer():
 
   def __init__(self, b_size=32, z_dim=512, nc=1, dataroot='sample_data/data',
                sample_path='drive/MyDrive/training_results_style/', device='cuda',
-               prog_epochs=[5, 5, 5, 10, 10, 15, 10], save_only=9):
+               prog_epochs=[10, 10, 10, 10, 10, 10, 10], save_only=9):
     self.b_size = b_size
     self.z_dim = z_dim
     self.nc = nc
