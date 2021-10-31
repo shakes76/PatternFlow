@@ -56,68 +56,6 @@ class PixelNorm(layers.Layer):
         return x * tf.math.rsqrt(tf.reduce_mean(tf.square(x), axis=1, keepdims=True) + epsilon)
 
 
-class Mapping(Model):
-    """
-    The mapping network in the generator
-    """
-
-    def __init__(self, in_latent_size, out_latent_size, fmap, num_of_layers=4, lrmul=0.01, w_init='glorot_uniform',
-                 w_const=None):
-        super().__init__()
-        self.in_latent_size = in_latent_size  # size of the latent code (Z)
-        self.out_latent_size = out_latent_size  # size of the output disentangled latent (W)
-        self.fmap = fmap  # number of activations in the mapping layers
-        self.num_of_layers = num_of_layers  # number of mapping layers
-        self.lrmul = lrmul  # learning rate multiplier for the mapping layers
-
-        # initialize the layers
-        self.mapping_layers = []
-
-        for i in range(self.num_of_layers):
-            if i == self.num_of_layers - 1:
-                fmap = self.out_latent_size
-            else:
-                fmap = self.fmap
-
-            self.mapping_layers.append(layers.Dense(fmap, kernel_initializer=w_init, kernel_constraint=w_const))
-            self.mapping_layers.append(layers.LeakyReLU())
-
-    def call(self, latent):
-        # normalize
-        latent *= tf.math.rsqrt(tf.reduce_mean(tf.square(latent), axis=1, keepdims=True) + 1e-8)
-
-        for layer in self.mapping_layers:
-            latent = layer(latent)
-
-        return latent
-
-
-class ModDemod(layers.Layer):
-    """
-    The layer modulate and then demodulate a disentangled latent A
-    """
-    # a small constant to avoid numerical issues in demodulation
-    EPSILON = 1e-8
-
-    def __init__(self, filters, **kwargs):
-        super(ModDemod, self).__init__(**kwargs)
-        self.filters = filters
-
-        # layer used to modulate A
-        self.modulate = layers.Dense(filters, bias_initializer='ones')
-
-    def call(self, A):
-
-        # modulate - equation 1 in StyleGAN2 paper
-        w = self.modulate(A)
-        w = w[:, np.newaxis, np.newaxis, :, np.newaxis]
-
-        # demodulate - equation 3 in StyleGAN2 paper
-        ww = tf.math.rsqrt(tf.reduce_sum(tf.square(w), axis=[1, 2, 3]) + self.EPSILON)
-
-        return ww[:, :, np.newaxis, np.newaxis]
-
-
 class _Generator(Model):
     KERNEL = 3
 
@@ -127,62 +65,14 @@ class _Generator(Model):
             self.filters = filters
             self.kernel = kernel
             self.stride = stride
-            self.noise_strength = tf.Variable([0.0] * filters, trainable=True, shape=[filters])
-
-            # layers
-            self.mod_demod = ModDemod(filters)
             self.conv1 = layers.Conv2DTranspose(filters, (kernel, kernel), strides=(stride, stride), padding='same',
                                                 use_bias=False, kernel_initializer=w_init, kernel_constraint=w_const)
+            self.pn = PixelNorm()
             self.activation = layers.LeakyReLU()
 
-        def call(self, inputs):
-            X, A = inputs
-            demoduated = self.mod_demod(A)
-            down_sampled = self.conv1(X)
-            Y = down_sampled * demoduated
-
-            # add noise
-            noise = tf.random.normal([tf.shape(Y)[0], Y.shape[1], Y.shape[2], 1], dtype=Y.dtype)
-            Y += noise * self.noise_strength
-
-            Y = self.activation(Y)
+        def call(self, X):
+            Y = self.activation(self.pn(self.conv1(X)))
             return Y
-
-    class LayerEpilogue(layers.Layer):
-        EPSILON = 1e-8
-
-        def __init__(self, filters, w_init='glorot_uniform', w_const=None):
-            super(_Generator.LayerEpilogue, self).__init__()
-            self.act1 = layers.LeakyReLU()
-            self.pixel_norm = PixelNorm()
-            self.dense = layers.Dense(filters * 2, kernel_initializer=w_init, kernel_constraint=w_const)
-            self.act2 = layers.LeakyReLU()
-
-        def call(self, inputs):
-            X, A, noise_strength = inputs
-
-            # add noise
-            noise = tf.random.normal([tf.shape(X)[0], X.shape[1], X.shape[2], 1], dtype=X.dtype)
-            X += noise * tf.reshape(noise_strength, [1, 1, 1, -1])
-
-            # apply activation
-            X = self.act1(X)
-
-            # pixel normalization
-            X = self.pixel_norm(X)
-
-            # AdaIN
-            # instance norm (on each pixel)
-            X -= tf.reduce_mean(X, axis=[1, 2], keepdims=True)      # -> [resolution, resolution]
-            X *= tf.math.rsqrt(tf.reduce_mean(tf.square(X), axis=[1, 2], keepdims=True) + self.EPSILON)
-
-            # style modulation
-            style = self.dense(A)
-            style = self.act2(style)
-            # reshape to (None, 2, resolution, resolution, filters)
-            style = tf.reshape(style, [-1, 2] + [1] * (len(X.shape) - 2) + [X.shape[-1]])
-            return X * (style[:, 0] + 1) + style[:, 1]
-            return X
 
     class ToRGB(Model):
         def __init__(self, num_channels, w_init='glorot_uniform', w_const=None):
@@ -196,74 +86,67 @@ class _Generator(Model):
 
     def __init__(self, latent_dim, channels, init_resolution, output_resolution, init_filters):
         super().__init__()
-        self.init_filters = init_filters
-        self.init_res = init_resolution
-
-        # kernel initializer and constraints
+        print("Generator: ")
         weight_init = initializers.RandomNormal(stddev=0.02)
         weight_const = constraints.MaxNorm(max_value=1.0)
-
-        # the mapping network
-        self.mapping = Mapping(latent_dim, latent_dim, latent_dim, w_init=weight_init, w_const=weight_const)
-
-        print("Generator: ")
-        # layers
-        self.num_of_conv_layers = _get_layers(init_resolution, output_resolution)
+        self.num_of_conv_layers = _get_layers(init_resolution, output_resolution) - 1
         self.input_block = []
         self.conv_layers = []
         self.to_rgb = []
         self.upsample = []
+        self.add = layers.Add()
         print(f"Layers: {self.num_of_conv_layers}")
 
         # input block
         print(f"Input: ({latent_dim}, )")
-        input_noise = tf.random.normal(shape=(1, self.init_res, self.init_res, self.init_filters))
-        self.input_noise = tf.Variable(input_noise, trainable=True)
+        output_shape = init_resolution * init_resolution * init_filters
+        self.input_block.append(layers.Dense(output_shape, use_bias=False, input_shape=(latent_dim,),
+                                             kernel_initializer=weight_init, kernel_constraint=weight_const))
+        print(f"Dense output: ({init_resolution} * {init_resolution} * {init_filters})")
 
         # convolutional layers
+        self.input_block.append(PixelNorm())
+        self.input_block.append(layers.LeakyReLU())
+        self.input_block.append(layers.Reshape((init_resolution, init_resolution, init_filters)))
+        print(f"Reshape output: ({init_resolution}, {init_resolution}, {init_filters})")
+
         for i in range(self.num_of_conv_layers):
-
-            # filters/feature maps of the Conv layer
-            if i == self.num_of_conv_layers - 1:
-                # the output conv layer should have a filter size equals to channels
-                filters = channels
-            else:
-                filters = int(init_filters / 2**(i + 1))
-
+            filters = int(init_filters / 2**(i + 1))
             self.conv_layers.append(self.ConvLayer(filters, self.KERNEL, 2, w_init=weight_init, w_const=weight_const))
             self.to_rgb.append(self.ToRGB(channels, w_init=weight_init, w_const=weight_const))
             self.upsample.append(layers.UpSampling2D())
-
             resolution = init_resolution * 2**(i + 1)
             print(f"Conv2dTranspose output: ({resolution}, {resolution}, {filters})")
 
+        # output layer
+        self.conv_layers.append(layers.Conv2DTranspose(channels, (self.KERNEL, self.KERNEL), strides=(2, 2),
+                                                       padding='same', use_bias=False, activation='tanh',
+                                                       kernel_initializer=weight_init, kernel_constraint=weight_const))
+        self.to_rgb.append(self.ToRGB(channels))
+        resolution = init_resolution * 2**(self.num_of_conv_layers + 1)
+        print(f"Conv2dTranspose output: ({resolution} * {resolution} * {channels})")
+
     def call(self, X):
         Y = None
+        for layer in self.input_block:
+            X = layer(X)
 
-        # get the disentangled latent W
-        W = self.mapping(X)
-
-        # input block
         i = 0
-        input_noise = tf.tile(self.input_noise, [tf.shape(W)[0], 1, 1, 1])
         layer = self.conv_layers[i]
         to_rgb = self.to_rgb[i]
-        X = layer((input_noise, W))
+        X = layer(X)
         Y = to_rgb(X, Y)
         i += 1
-
-        # main convolutional layers
         while i < len(self.conv_layers):
             layer = self.conv_layers[i]
             to_rgb = self.to_rgb[i]
             up_sampling = self.upsample[i - 1]
 
-            X = layer((X, W))
+            X = layer(X)
             Y = up_sampling(Y)
             Y = to_rgb(X, Y=Y)
 
             i += 1
-
         return Y
 
 
@@ -290,7 +173,7 @@ class Generator:
     def build(self):
         self.model = _Generator(self.latent_dim, self.channels, self.input_res, self.output_res, self.init_filters)
 
-    def cross_entropy_loss(self, fake_score):
+    def loss(self, fake_score):
         return self._cross_entropy(tf.ones_like(fake_score), fake_score)
 
 
@@ -426,7 +309,7 @@ class Discriminator:
     def build(self):
         self.model = _Discriminator(self.channels, self.input_res, self.final_res, self.input_filter)
 
-    def cross_entropy_loss(self, real_score, fake_score):
+    def loss(self, real_score, fake_score):
         real_loss = self._cross_entropy(tf.ones_like(real_score), real_score)
         fake_loss = self._cross_entropy(tf.zeros_like(fake_score), fake_score)
         total_loss = real_loss + fake_loss

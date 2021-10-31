@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import neptune.new as neptune
 from neptune.new.types import File
 from datetime import datetime
-from tensorflow.keras import layers
 from tensorflow.keras.utils import image_dataset_from_directory
 
 __author__ = "Zhien Zhang"
@@ -21,10 +20,10 @@ __email__ = "zhien.zhang@uqconnect.edu.au"
 
 class Trainer:
     def __init__(self, data_folder: str, output_dir: str, g_input_res, g_init_filters, d_final_res, d_input_filters,
-                 image_res=64, channels=1, latent_dim=100, batch=128, epochs=20, checkpoint=1, lr=0.0002,
-                 beta_1=0.5, validation_images=16, seed=1, n_critics=2, gp_weight=10.0, use_neptune=False, w_loss=False):
+                 fade_in_base, resolution=64, channels=1, latent_dim=100, batch=128, epochs=20, checkpoint=1,
+                 lr=0.0002, beta_1=0.5, validation_images=16, seed=1, use_neptune=False):
 
-        self.image_res = image_res
+        self.resolution = resolution
         self.channels = channels
         self.rgb = (channels == 3)
         self.latent_dim = latent_dim
@@ -35,11 +34,12 @@ class Trainer:
         self.beta_1 = beta_1
         self.num_of_validation_images = validation_images
         self.output_dir = self._create_output_folder(output_dir)
+        self.fade_in_base = fade_in_base
 
         # initialize models
-        self.generator = Generator(lr, beta_1, latent_dim, g_input_res, image_res, g_init_filters)
+        self.generator = Generator(lr, beta_1, latent_dim, g_input_res, resolution, g_init_filters)
         self.generator.build()
-        self.discriminator = Discriminator(lr, beta_1, image_res, d_final_res, d_input_filters)
+        self.discriminator = Discriminator(lr, beta_1, resolution, d_final_res, d_input_filters)
         self.discriminator.build()
 
         # data
@@ -48,7 +48,7 @@ class Trainer:
             color_mod = "grayscale"
         else:
             color_mod = "rgb"
-        self.load_data(data_folder, (image_res, image_res), color_mod=color_mod)
+        self.load_data(data_folder, (resolution, height), color_mod=color_mod)
 
         # latent code for validation
         self.validation_latent = tf.random.normal([self.num_of_validation_images, latent_dim], seed=seed)
@@ -66,8 +66,7 @@ class Trainer:
                 api_token=token,
             )
 
-            # record hyper-parameters of this training
-            self.run["Image resolution"] = image_res
+            self.run["Image resolution"] = resolution
             self.run["Epochs"] = epochs
             self.run["Batch size"] = self.batch
             self.run["Latent dim"] = self.latent_dim
@@ -77,7 +76,7 @@ class Trainer:
             self.run["D final resolution"] = d_final_res
 
     @staticmethod
-    def _create_output_folder(upper_folder: str) -> str:
+    def _create_output_folder(upper_folder: str):
         run_folder = datetime.now().strftime("%d-%m/%Y_%H_%M_%S")
         output_folder = os.path.join(upper_folder, run_folder)
         os.makedirs(output_folder, exist_ok=True)
@@ -94,13 +93,13 @@ class Trainer:
         )
         self.dataset = train_batches
 
-    def _train_g(self, fade_in) -> tuple:
+    def _train_g(self, fade_in):
         latent = tf.random.normal([self.batch, self.latent_dim])
 
         with tf.GradientTape() as tape:
             fake = self.generator.model(latent, training=True)
             fake_score = self.discriminator.model((fake, fade_in), training=False)
-            loss = self.generator.cross_entropy_loss(fake_score)
+            loss = self.generator.loss(fake_score)
 
         gradient = tape.gradient(loss, self.generator.model.trainable_variables)
         self.generator.optimizer.apply_gradients(zip(gradient, self.generator.model.trainable_variables))
@@ -114,7 +113,7 @@ class Trainer:
             fake = self.generator.model(latent, training=False)
             fake_score = self.discriminator.model((fake, fade_in), training=True)
             real_score = self.discriminator.model((real, fade_in), training=True)
-            loss = self.discriminator.cross_entropy_loss(real_score, fake_score)
+            loss = self.discriminator.loss(real_score, fake_score)
 
         gradient = tape.gradient(loss, self.discriminator.model.trainable_variables)
         self.discriminator.optimizer.apply_gradients(zip(gradient, self.discriminator.model.trainable_variables))
@@ -122,12 +121,12 @@ class Trainer:
         score = 1/2 * tf.reduce_mean(real_score) + 1/2 * tf.reduce_mean(1 - fake_score)
         return score
 
-    def _show_images(self, epoch, save=True) -> plt.Figure:
+    def _show_images(self, epoch, save=True):
         predictions = self.generator.model(self.validation_latent, training=False)
 
         fig = plt.figure(figsize=(7, 7))
 
-        predictions = tf.reshape(predictions, (-1, self.image_res, self.image_res, self.channels))
+        predictions = tf.reshape(predictions, (-1, self.resolution, self.resolution, self.channels))
         for i in range(predictions.shape[0]):
             plt.subplot(4, 4, i + 1)
 
@@ -149,10 +148,8 @@ class Trainer:
         iter = 0
         for epoch in range(self.epochs):
             start = time()
-            # increase the fade in ratio as the number of epochs trained increases
-            fade_in = epoch / float(self.epochs - 1)
+            fade_in = epoch / float(self.fade_in_base)
 
-            # train each batch inside of the dataset
             for image_batch in self.dataset:
                 # normalize to the range [-1, 1] to match the generator output
                 image_batch = (image_batch - 255 / 2) / (255 / 2)
@@ -180,7 +177,7 @@ class Trainer:
                 if self.neptune:
                     self.run["Train/epoch_{}".format(epoch)].upload(fig)
                     single_image = self.generator.model(self.validation_latent_single, training=False)
-                    single_image = tf.reshape(single_image, (self.image_res, self.image_res, self.channels))
+                    single_image = tf.reshape(single_image, (self.resolution, self.resolution, self.channels))
                     # normalize to [0, 1]
                     single_image_norm = single_image * 0.5 + 0.5
                     single_image_norm = np.clip(single_image_norm, 0, 1)
