@@ -4,6 +4,7 @@ The generator and discriminator models of the StyleGAN
 """
 
 from math import log2
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import initializers, layers, Model, constraints
 
