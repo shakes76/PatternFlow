@@ -1,4 +1,5 @@
 """[Driver script] Main script for running Improved UNet
+   Author: Yiyun Zhang (s4513350)
 """
 from model import AdvUNet
 from data import get_filenames, split_data, create_datasets

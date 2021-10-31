@@ -1,4 +1,5 @@
 """Generate plots for the model
+   Author: Yiyun Zhang (s4513350)
 """
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec

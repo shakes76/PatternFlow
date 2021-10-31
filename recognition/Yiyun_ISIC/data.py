@@ -1,4 +1,5 @@
 """Data Pre-processing
+   Author: Yiyun Zhang (s4513350)
 """
 import tensorflow as tf
 import glob

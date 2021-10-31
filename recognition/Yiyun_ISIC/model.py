@@ -1,6 +1,6 @@
 """Improved UNet implementation (2D version)
-
-Reference: https://arxiv.org/abs/1802.10508v1
+   Author: Yiyun Zhang (s4513350)
+   Reference: https://arxiv.org/abs/1802.10508v1
 """
 from tensorflow.keras import layers, models, optimizers
 import tensorflow_addons as tfa
