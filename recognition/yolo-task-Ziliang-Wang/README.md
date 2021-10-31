@@ -13,7 +13,7 @@ The skin is the largest organ of the human body. Some skin diseases, such as mal
 
 * [ISIC dataset](#ISIC-dataset)<br>
 * [YoloV3](#YoloV3)<br>
-* [Pre-processing](#Pre-processing)<br>
+* [How does yolov3 run and use?](#Run&use)<br>
 * [Results](#Results)<br>
 * [Dependencies](#Dependencies)<br>
 * [Reference](#Reference)<br>
@@ -54,9 +54,32 @@ YoloV3 uses three different scales of feature maps for target detection to solve
 The feature fusion layer selects the three scales of feature maps produced by DarkNet as input, and fuses the feature maps of each scale through a series of convolution layers and upsampling.
 
 YOLOv3 divides the input image into SxS lattices, and each lattice predicts B bounding boxes, each bounding box prediction includes: x, y, width, height, Confidence and the probability of C categories, so the number of channels in the output layer of YOLOv3 is Bx(5 + C), in here for the ISIC dataset that is 3x(5+1)=18, 3 means a grid cell contains 3 bounding boxes, 4 means the 4 coordinate information of the box, and 1 means Confidence score. 
+
+## Run&use
 ### Pre-processing
 In the data pre-processing stage, the ISIC dataset segmentation image set is used. The first white pixel values (x_min,y_min) and (x_max,y_max) of each image were found during image pixel iterations and making to tags for the xml files. Also, when splitting the dataset, the training and test sets split into 80% and 20%. According to the YoloV3 data loading method, these training and test sets are made into absolute paths and stored in train.txt and test.txt for Dataloader.
 Finally, in the process of loading the dataset in pytorch, when the imported data is the training set, the images will be enhanced to reduce the impact of insufficient data, improving the robustness of the model, providing various "invariants" to the model, and to increase the model's ability to resist overfitting, including resizing, adding gray bars, and image flipping. 
+For making the xml file for training, you need to prepare the segmented ISIC dataset image and put it in the dataset/Mask_labeling folder. And run
+
+    python dataset/Annotations/making_xml.py
+
+After completing the xml file production, you need to split the test set and training set of the data set, here. The initial segmentation is set to 8:2, you can enter making_annotation.py to make custom adjustments. And run
+
+    python making_annotation.py
+
+### Training
+If you want to start training the network again. Need to set weights_path in drive.py to "" and run train.py at the same time.
+If you want to load, use pre-trained weights to make predictions. You need to click here to download the weights and place the weights in the results/weights/ directory.
+
+    python train.py and edit driver.py
+
+
+### Predicting
+After you have the weights, if you want to predict the picture, you need to correct the img_name to the file name for your need. And run
+
+    python driver.py or test.py
+
+
 ## Results
 In the training process, the segmented training method is used to better visualize the way the loss decreases in different stages. At the same time, the rate of IOU on the test set exceeds 0.8 for the first time at 180 iterations, which is 0.835.
 
