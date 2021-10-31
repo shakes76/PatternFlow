@@ -56,6 +56,11 @@ A detailed explanation about the how the undefined modules have been implemented
 
 ## Results and Discussion
 ***
+From the results attained and the graph seen below, the loss graph shows a decreasing trend with a possible plateau around 0.22. The predicted plateau pattern means that the model is not overfitting, but since the difference between the training and validation loss is still somewhat significant, this implies that the model could be further improved by tuning the Hyperparameters. The accuracy graph also shows an upward trend with the latest value at 30 epochs around 0.94.
+
+![Loss_Graph](./Results/Loss.png)
+
+![Accuracy_Graph](./Results/Accuracy.png)
 
 ## Hyperparameter Tuning
 ***
