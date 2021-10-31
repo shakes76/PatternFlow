@@ -10,6 +10,9 @@ import torchvision
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
+'''
+Decoder layers for the model
+'''
 class Decoder(nn.Module):
   def __init__(self, in_channels, middle_channels, out_channels):
     super(Decoder, self).__init__()
@@ -20,10 +23,21 @@ class Decoder(nn.Module):
         )
   def forward(self, x1, x2):
     x1 = self.up(x1)
-    x1 = torch.cat((x1, x2), dim=1)
+    x1 = torch.cat((x1, x2), dim=1) #add shortcut layer and input layer together
     x1 = self.conv_relu(x1)
     return x1
 
+'''
+The UNet3D class
+
+Architecture
+1,64,128,128             ->                 32,64,128,128 -> 6,64,128,128
+    32,32,64,64          ->            32,32,64,64
+        64,16,32,32      ->      64,16,32,32
+            128,8,16,16  ->  128,8,16,16
+                     256,4,8,8
+
+'''
 class UNet3D(nn.Module):
     def __init__(self):
         super().__init__()
@@ -72,15 +86,16 @@ class UNet3D(nn.Module):
 
 
     def forward(self, input):
-        e1 = self.layer1(input) # 32,64,128,128
-        e2 = self.layer2(e1) # 64,32,64,64
-        e3 = self.layer3(e2) # 128,16,32,32
-        e4 = self.layer4(e3) # 256,8,16,16
+        #size in (Batchsize, channel, height, width, depth)
+        e1 = self.layer1(input) # 32,32,64,64
+        e2 = self.layer2(e1) # 64,16,32,32
+        e3 = self.layer3(e2) # 128,8,16,16
+        e4 = self.layer4(e3) # 256,4,8,8
         
-        d3 = self.decode3(e4, e3) # 128,16,32,32
-        d2 = self.decode2(d3, e2) # 64,32,64,64
-        d1 = self.decode1(d2, e1) # 32,64,128,128
-        d0 = self.decode0(d1) # 32,128,256,256
-        out = self.conv_last(d0) # 6,128,256,256
+        d3 = self.decode3(e4, e3) # 128,8,16,16
+        d2 = self.decode2(d3, e2) # 64,16,32,32
+        d1 = self.decode1(d2, e1) # 32,32,64,64
+        d0 = self.decode0(d1) # 32,64,128,128
+        out = self.conv_last(d0) # 6,64,128,128
         
         return out
