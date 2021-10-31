@@ -30,6 +30,7 @@ Image Dataset (type: Folder)
 ```
 1. Prepare the lmdb dataset, the input **Image Dataset** should have the structure as above
 > python make_imdb.py --out [Location of output] --n_worker 2 [Location of Image Dataset]
+> example: python make_imdb.py --out /content/IM --n_worker 2 /content/data/sample
 2. train the model
 > to be continue
 3. prepare the lmdb dataset
