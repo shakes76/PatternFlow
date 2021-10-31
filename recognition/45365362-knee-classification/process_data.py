@@ -55,7 +55,7 @@ def get_label(dir, images, image_size):
 
         image = img_to_array(image)
 
-        processed_images.append(image[:, :, 0])
+        processed_images.append(image)
     
         if "RIGHT" in image_name or "R_I_G_H_T" in image_name or "Right" in image_name or "right" in image_name:
             label = 1
@@ -65,7 +65,7 @@ def get_label(dir, images, image_size):
         labels.append(label)
 
     processed_images = tf.convert_to_tensor(np.array(processed_images, dtype=np.uint8))
-    processed_images = processed_images.cast(processed_images, tf.float16) / 255.0
+    processed_images = tf.cast(processed_images, tf.float16) / 255.0
     labels = tf.convert_to_tensor(labels)
 
     return processed_images, labels
@@ -73,7 +73,7 @@ def get_label(dir, images, image_size):
 
 
 def main():
-    process_data("AKOA_Analysis\AKOA_Analysis", 80, 20)
+    process_data("AKOA_Analysis", 80, 20)
 
 if __name__ == "__main__":
     main()
