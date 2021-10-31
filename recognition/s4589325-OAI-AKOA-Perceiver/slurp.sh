@@ -15,4 +15,4 @@ nvidia-smi
 
 source ../../../miniconda3/bin/activate s4589325
 
-python3 ./OAI-AKOA-Knee-Perceiver.py
+python3 ./Driver_Script.py
