@@ -8,8 +8,8 @@ from model import *
 from tensorflow.keras import datasets, layers, models, callbacks
 from tensorflow.keras.utils import Sequence
 
-WIDTH = 512
-HEIGHT = 512
+WIDTH = 256
+HEIGHT = 256
 CHANNELS = 3
 
 
@@ -68,21 +68,54 @@ def display_sample(display_list):
     plt.show()
 
 
-def display_prediction(model, dataset, num=1):
+def display_prediction(model, dataset):
     # get a sample from dataset
-    for image, mask in dataset.take(num):
+    for image, mask in dataset.skip(6).take(1):
         sample_image, sample_mask = image, mask
 
     # get prediction based on sample retrieved
-    prediction = model.predict(sample_image[0][tf.newaxis, ...])
-    prediction = np.round(prediction)
+    prediction = model.predict(sample_image[tf.newaxis, ...])
+    x = np.squeeze(prediction)
+    prediction = np.round(x[..., tf.newaxis])
 
     # display samples side by side
-    display_sample([sample_image[0], sample_mask[0], prediction[0]])
+    display_sample([sample_image, sample_mask, prediction])
 
     # print the SDC of the true mask vs the predicted mask
-    print('SDC: ' + str(sdc(sample_mask[0][tf.newaxis, ...], model.predict(sample_image[0][tf.newaxis, ...])).numpy()))
+    print('SDC: ' + str(sdc(sample_mask[tf.newaxis, ...], model.predict(sample_image[tf.newaxis, ...])).numpy()))
 
+def plot_loss(history):
+    plt.figure(0)
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Loss Curves')
+    plt.xlabel('Epoch')
+    plt.legend(['Loss', 'Val_Loss'])
+    plt.show()
+
+
+def plot_accuracy(history):
+    plt.figure(1)
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Accuracy Curves')
+    plt.xlabel('Epoch')
+    plt.legend(['Accuracy', 'Val_accuracy'])
+    plt.show()
+
+#data autmentation class
+#code taken from tensorflow image segmentation tutorial https://www.tensorflow.org/tutorials/images/segmentation
+class Augment(tf.keras.layers.Layer):
+    def __init__(self, seed=42):
+        super().__init__()
+        # both use the same seed, so they'll make the same random changes.
+        self.augment_inputs = tf.keras.layers.RandomFlip(mode="horizontal_and_vertical", seed=seed)
+        self.augment_labels = tf.keras.layers.RandomFlip(mode="horizontal_and_vertical", seed=seed)
+
+    def call(self, inputs, labels):
+        inputs = self.augment_inputs(inputs)
+        labels = self.augment_labels(labels)
+        return inputs, labels
 
 def main():
     # directories and parameters of dataset
@@ -114,29 +147,32 @@ def main():
     print(train_dataset)
     print(test_dataset)
 
-    # shuffle, batch and augment training dataset
-    train_dataset = train_dataset.shuffle(buffer_size=1000)
-    train_dataset = train_dataset.repeat()
-    train_dataset = train_dataset.batch(batch_size)
-    train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
+    #create input pipelines
+    train_batches = (
+        train_dataset
+            .cache()
+            .shuffle(500)
+            .batch(batch_size)
+            .repeat()
+            .map(Augment())
+            .prefetch(buffer_size=AUTOTUNE))
 
-    # batch and prefetch testing dataset
-    test_dataset = test_dataset.repeat()
-    test_dataset = test_dataset.batch(batch_size)
-    test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
+    test_batches = test_dataset.batch(batch_size)
 
     # create and compile unet model
     model = improved_unet(WIDTH, HEIGHT, CHANNELS)
-    model.compile(optimizer='adam',loss=sdc_loss, metrics=['accuracy', sdc])
+    model.compile(optimizer=tf.keras.optimizers.Adam(0.0005), loss=sdc_loss, metrics=['accuracy', sdc])
     model.summary()
 
     # training the model
     epochs = 5
     epoch_steps = training_size // batch_size
     test_steps = testing_size // batch_size
-    history = model.fit(train_dataset, epochs=epochs, steps_per_epoch=epoch_steps,
-                        validation_steps=test_steps, validation_data=test_dataset)
-
+    history = model.fit(train_batches, epochs=epochs, steps_per_epoch=epoch_steps,
+                        validation_steps=test_steps, validation_data=test_batches)
+    plot_accuracy(history)
+    plot_loss(history)
+    display_prediction(model, test_dataset)
 
 if __name__ == "__main__":
     main()
