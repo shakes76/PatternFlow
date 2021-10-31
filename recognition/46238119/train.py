@@ -4,6 +4,7 @@ Student No.: 46238119
 Training loop of StyleGAN2
 """
 
+import os
 import random
 from torch.autograd import Variable
 import torch.optim as optim
@@ -14,7 +15,7 @@ from torchvision import datasets, transforms
 import pickle as pkl
 from tqdm import tqdm 
 from torch.utils.data import Dataset
-from model import *
+import model
 import config
 
 class Train_func():

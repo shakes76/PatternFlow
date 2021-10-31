@@ -39,7 +39,6 @@ class EqualizedLinear(nn.Module):
 
   def forward(self, x):
     w = self.weight * self.weight_factor
-    # Question here: if bias is None, how to operate???
     b = self.bias * self.bias_factor
     x = F.linear(x, w, bias=b)
     return x
@@ -108,6 +107,7 @@ class ModulatedConv2d(nn.Module):
     # get shape of input x
     b, c, h, w = x.shape
     weight = self.weight
+    out_d, in_d, k_h, k_w = weight.shape
 
     # normalize w and s
     if self.demodulate:
@@ -133,7 +133,7 @@ class ModulatedConv2d(nn.Module):
     # reshape x
     x = x.reshape(1, -1, h, w)
     # reshape weight
-    weight = weight.reshape(-1, self.in_dim, self.kernel_size, self.kernel_size)
+    weight = weight.reshape(-1, in_d, k_h, k_w)
     # use grouped convolution
     x = F.conv2d(x, weight, padding=self.padding, groups=b)
     # reshape x
@@ -238,7 +238,6 @@ class ToRGB(nn.Module):
     # add bias
     x += self.bias[None, :, None, None]
 
-    #return self.activation(x)
     return x
 
 class StyleLayer(nn.Module):
@@ -307,7 +306,8 @@ class StyleBlock(nn.Module):
   def __init__(self, 
                in_dim,                # the number of input channel
                out_dim,               # the number of output channel
-               w_dim                 # the deminsion of latent vector
+               w_dim,                 # the dimension of latent vector
+               img_dim                # the dimension of output image
                ):
     super().__init__()
 
@@ -316,40 +316,39 @@ class StyleBlock(nn.Module):
     # the second stylelayer
     self.stylelayer2 = StyleLayer(out_dim, out_dim, w_dim)
     # toRGB layer
-    self.torgb = ToRGB(out_dim, 1, w_dim)
+    self.torgb = ToRGB(out_dim, img_dim, w_dim)
     # upsample layer
     self.upsamplelayer = UpsampleLayer()
 
-  def forward(self, x, w, img):
+  def forward(self, x, img, w1, w2):
     """
     x: input feature map with shape [batch_size, in_dim, height, width]
-    w: w vector with shape [batch_size, w_dim] to transform to affine vector
+    w: w vectors with shape [num_w, batch_size, w_dim] to transform to affine vector
     img: input img with shape [batch_size, 3, height/2, width/2]
     """
-    # two stylelayers
+    # two stylelayers using different w
     # output feature map with shape [batch_size, out_dim, h, w]
-    x = self.stylelayer1(x, w)
+    x = self.stylelayer1(x, w1)
     # output feature map with shape [batch_size, out_dim, h, w]
-    x = self.stylelayer2(x, w)
+    x = self.stylelayer2(x, w2)
     # transform to RGB image
     if img is not None:
       img = self.upsamplelayer(img)    
-    rgb = self.torgb(x, w)
+    # skip connection
+    rgb = self.torgb(x, w2)
     if img is not None:
-      rgb  = rgb + img
+      img  = rgb + img
+    else:
+      img = rgb
     
-    #print(x.shape, rgb.shape)
-    return x, rgb
+    return x, img
 
 class MappingNetwork(nn.Module):
   """
   A non-linear mapping network. Affine transform latent vector z to w. 
-  
   Architiecture: Consist of 8-layer MLP using leakyRelu with a = 0.2, lr' = 0.01*lr.
   Initialize all weihts of FC, affine transform layers using N(0,1), bias = 0.
-
   input: latent vector z with dimension 512.
-
   output: w with dimension 512, control adaptive instance normalization operation in network G.
   """
 
@@ -388,11 +387,11 @@ class MappingNetwork(nn.Module):
     return x
 
 class GeneratorNetwork(nn.Module):
-    """
-    The input of generator network is a constant.
-    The generator network consis of sytleblocks. The resolution of each styleblock is doubled.
-    The output of generator network is an image, summed by each upsampled output image of styleblocks.
-    """
+  """
+  The input of generator network is a constant.
+  The generator network consis of sytleblocks. The resolution of each styleblock is doubled.
+  The output of generator network is an image, summed by each upsampled output image of styleblocks.
+  """
   def __init__(self, 
                  w_dim,                   # the dimension of latent vector w
                  img_resolution,          # the resolution of output image
@@ -422,7 +421,6 @@ class GeneratorNetwork(nn.Module):
     self.num_blocks = len(block_dim)
 
     # initial constant input c with shape [1, 512, 4, 4]
-    #self.initial_constant = nn.Parameter(torch.randn([1, block_dim[4], 4, 4]))
     self.initial_constant = nn.Parameter(torch.randn([block_dim[4], 4, 4]))
 
     # the first style layer with 4*4 resolution and ToRGB layer
@@ -437,7 +435,7 @@ class GeneratorNetwork(nn.Module):
     for res in block_res[1:]:
       in_dim = block_dim[res // 2]
       out_dim = block_dim[res]
-      block = StyleBlock(in_dim=in_dim, out_dim=out_dim, w_dim=w_dim)
+      block = StyleBlock(in_dim=in_dim, out_dim=out_dim, w_dim=w_dim, img_dim=img_dim)
       self.blocks.append(block)
 
   def forward(self, w):
@@ -463,7 +461,7 @@ class GeneratorNetwork(nn.Module):
       # upsample the feature map
       x = self.upsamplelayer(x)
       # output new feature map and rgb
-      x, rgb = self.blocks[i - 1](x, w[i], rgb)
+      x, rgb = self.blocks[i - 1](x, rgb, w[i], w[self.num_blocks + i])
 
     return rgb
 
@@ -486,7 +484,7 @@ class Generator(nn.Module):
     # calculate the number of w needed
     num_w = int(np.log2(img_resolution) - 1)
     # mapping network
-    self.mapping = MappingNetwork(z_dim=z_dim, w_dim=w_dim, num_w=num_w)
+    self.mapping = MappingNetwork(z_dim=z_dim, w_dim=w_dim, num_w=num_w*2)
     # generator network
     self.generatornetwork = GeneratorNetwork(w_dim=w_dim, img_resolution=img_resolution, img_dim=img_dim) 
 
@@ -605,16 +603,13 @@ class Discriminator(nn.Module):
     img_res_log2 = int(np.log2(img_resolution))
 
     # calculate the resolution of each block: [4, ... , 256]
-    block_res = [2 ** i for i in range(2, img_res_log2 + 1)]  
-    print(block_res)  
+    block_res = [2 ** i for i in range(2, img_res_log2 + 1)]    
         
     # calculate the number of channel for each block, max channle is 512, min channel is 32
     # channels = [32, 64, 128, 256, 512, 512, 512]
     channels = [min(dim_max, res * 8) for res in block_res]
-    print(channels)
 
     self.num_blocks = len(block_res) - 1  # 6 for 256
-    print(self.num_blocks)
 
     # from RGB layer
     self.fromRGB = nn.Sequential(
