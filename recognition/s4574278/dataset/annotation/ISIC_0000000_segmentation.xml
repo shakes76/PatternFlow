@@ -1,0 +1,22 @@
+
+<annotation>
+    <filename>ISIC_0000000_segmentation.png</filename>
+    <source>
+        <database>ISIC</database>
+    </source>
+    <size>
+        <width>384</width>
+        <height>511</height>
+        <depth>1</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>lesion</name>
+        <bndbox>
+            <xmin>24.0</xmin>
+            <xmax>22.0<</xmax>
+            <ymin>450.0<</ymin>
+            <ymax>318.0<</ymax>
+        </bndbox>
+    </object>
+</annotation>

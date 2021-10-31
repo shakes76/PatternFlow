@@ -136,3 +136,4 @@ mypy.ini
 /recognition/s4574278/dataset/input/*
 /recognition/s4574278/dataset/*.zip
 /recognition/s4574278/note.md
+/recognition/s4574278/dataset/annotation/*
