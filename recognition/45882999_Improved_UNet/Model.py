@@ -43,6 +43,14 @@ def localization_module(input, filters):
     conv2 = layers.Conv2D(filters, (1, 1), padding = "same", activation = LeakyReLU(alpha = 0.01))(conv1)
     return conv2
 	
+"""
+Creates an improved UNet model based on the paper “Brain Tumor Segmentation 
+and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,”
+Parameters:
+    input_shape: the shape of the data that is inputted
+Returns: 
+    An improved UNet model
+"""
 def improved_model(input_size = (256, 256, 1)):
     
     input_layer = layers.Input(shape=(input_size))
@@ -68,3 +76,35 @@ def improved_model(input_size = (256, 256, 1)):
     conv_module5 = context_module(conv5, 16)
     add5 = layers.Add()([conv5, conv_module5])
     
+	#Decoder
+    up_module1 = upsampling_module(add5, 128)
+    concat1 = layers.concatenate([up_module1, add4])
+    local_module1 = localization_module(concat1, 128)
+    
+    up_module2 = upsampling_module(local_module1, 64)
+    concat2 = layers.concatenate([up_module2, add3])
+    local_module2 = localization_module(concat2, 64)
+    
+    up_module3 = upsampling_module(local_module2, 32)
+    concat3 = layers.concatenate([up_module3, add2])
+    local_module3 = localization_module(concat3, 32)
+    
+    up_module4 = upsampling_module(local_module3, 16)
+    concat4 = layers.concatenate([up_module4, add1])
+    
+    conv6 = layers.Conv2D(32, (3, 3), padding = "same")(concat4)
+    
+    seg1 = layers.Conv2D(1, (1, 1), padding = "same")(local_module2)
+    seg1 = layers.UpSampling2D(size = (2, 2))(seg1)
+    
+    seg2 = layers.Conv2D(1, (1, 1), padding = "same")(local_module3)
+    add6 = layers.Add()([seg1, seg2])
+    add6 = UpSampling2D(size = (2, 2))(add6)
+    
+    seg3 = Conv2D(1, (1, 1), padding = "same")(conv6)
+    add7 = layers.Add()([add6, seg3])
+    
+    outputs = layers.Conv2D(4, (1, 1), activation = "softmax")(add7)
+    model = tf.keras.Model(inputs = inputs, outputs = outputs)
+    
+    return model
