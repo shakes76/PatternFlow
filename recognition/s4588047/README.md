@@ -58,6 +58,8 @@ Later the data are normalised in process_data by converting them into greyscale 
 ### How to run
 The path in driver.py is _C:\Users\Yousif\Desktop\3710\AKOA_Analysis_ change this to the unzipped data path when running the model.
 
+If you get a GPU error uncomment this line on top of driver.py and it will use the CPU only `#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"`
+
 Once the requirements are met, executing the test script out of the box would load the data and plot a sample image from the training dataset. Furthermore, 10 reconstruction plots will be printed after the model has been trained and follows a plot of the losses. Moreover, the Pixel CNN network is trained and an image sample of one of the validation images is printed along with its code indices. Lastly, a new code indices are generated and passed to the decoder resulting in an image of the new code and decoder output of that code.
 
 ##  Result
