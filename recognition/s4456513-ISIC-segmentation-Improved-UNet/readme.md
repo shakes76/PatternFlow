@@ -1,10 +1,39 @@
 # Segement the ISICs data set with the Improved UNet
 
+This project is aimed to train a improved UNet model for detecting the melanoma shape from its photo. After properly trained, the model achieves the accuracy over 0.92 and dice similarity coefficient (DSC) over 0.8.
+
 ## BACKGROUND
+The International Skin Imaging Collaboration is an internationa effrort to improve melanoma disgnosis. The project target is to develop image analysis tools to enable the auto mate disgnosis of melanoma from dermoscopic images [1]. The challenge is divided into three sub tasks which are:
+Task 1: Lesion Segmentation 
+Task 2: Lesion Attribute Detection 
+Task 3: Disease Classification 
+
+In our project, only task one is focused and addressed. Our model use Imporved UNet to segement the lesion area from background with a high accuracy and DSC. 
 
 ## DATA SET DESCRIPTION
 
+The datasets used in this project from training, validating and testing are all from ISICs 2018 Challenge Data set. The datasets contains two matched groups with each group has 2594 images. The first group of images is the raw melanoma images and the second groups of image (mask image) is the segmentation of the lesion area which will serve as labels in following model training.  mask images are binary images with only pixel value of 0 and 255. Pixel value = 255 means the lesion area while 0 means background area. Figure 1 is an example of melanoma raw image (group 1 image) and Figure 2 is the responding mask image.
+
+![](./images/ISIC_0000008.jpg)
+*Figure 1, An example of melanoma raw image
+
+![](./images/ISIC_0000008_segmentation.png)
+*Figure 2, Mask image (segmentation image) of Figure 1 
+
+
 ## DATA PREPROCESSING
+
+Data preprocessing of this project including four steps:
+
+1. load raw data
+
+In this project, the grayscale version of images are loaded for training in the model 
+
+2. split raw data into training set, validating set and test set 
+
+3. decode the image into predefined size 256*192
+
+4. map the training image and segmentation masks
 
 ## Model Description
 
