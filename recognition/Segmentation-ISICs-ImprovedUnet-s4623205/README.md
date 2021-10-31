@@ -21,7 +21,7 @@ The International Skin Imaging Collaboration (ISIC) is an international effort t
 ## ISICs Dataset
 The dataset here to perform the segmentation task is from the [ISIC 2018 challenge](https://challenge2018.isic-archive.com/). The preprocessed version of this dataset contains 2,594 samples. Each sample is a pair of the skin lesion(skin cancer) image and the true label of the skin lesion segmentaion(the target). An example of the sample "ISIC_0000001" in the dataset is shown below, with the skin lesion as the input on the right and the skin lesion segmentation as the target output on the right.
 
-**ISIC_0000001 sample in ISICs dataset example:**
+**ISIC_0000001 sample in ISICs dataset example:**<br/>
 ![ISIC_0000001_example.png](ExampleImage/Dataset/ISIC_0000001_example.png)
 
 ### Data preprocessing
@@ -31,7 +31,7 @@ The dataset here to perform the segmentation task is from the [ISIC 2018 challen
 ## Improved UNet Model
 The Improved UNet model is an improved UNet based model architecture inspired from the original UNet paper [[2]](#reference_anchor2). It is using the U-shape architecture from the original UNet with some additional layers and skip connections across different levels of the netowrk. The Improved UNet model is originally used in the paper [[1]](#reference_anchor1) to deal with a three dimensional image input on brain tumor segmentation. Here the skin lesion segmentation would be performed using this inspired Improved UNet model architecture shown below.
 
-**Improved UNet Model Architecture from [[1]](#reference_anchor1):**
+**Improved UNet Model Architecture from [[1]](#reference_anchor1):**<br/>
 ![Improved_UNet.png](ExampleImage/Model/Improved_UNet.png)
 
 The Improved UNet architecture mentioned above uses a 3x3x3 convolution which is a 3D convolution with a 3D input. Since our dataset is using a 2D image as an input, we will be changing the 3D convolution to a 2D convolution with a 3x3 convolution. To describe clearly what an Improved UNet architectue is shown in the architecture image above, we will be splitting it into three parts to explian it's architecture. First, the left side of the U-shape. Second, the right side of the U-shape. Last, the segmentation level.
@@ -56,14 +56,15 @@ The Improved UNet architecture mentioned above uses a 3x3x3 convolution which is
 ## Training Model
 To train the model we are using the train set to train the model. Using dice coefficient as a metric to evaluate on the validation set and dice loss as the loss function to train the model. The dice coefficient(DC) equation is shown in the image below where dice loss(DL) is one minus the dice coefficient(DC).
 
-**Dice Coefficient and Dice Loss Equation:**
+**Dice Coefficient and Dice Loss Equation:**<br/>
 ![Metrics.png](ExampleImage/MathEquations/Metrics.png)
 
 Inspired from the paper [[1]](#reference_anchor1), instead of using an adam optimizer with L2 regularization weight decay. Here we used an adam optimizer with decoupled weight decay mentioned in the paper [[3]](#reference_anchor3), where it is mentioned that adam optimizer with decoupled weight decay performs better than the adam optimizer with L2 regularization weight decay. A learning rate decay through each epoch is also used in the training procedure, where the learning rate decay equation and plot is shown below.
 
-**Learning Rate Decay Equation:**
+**Learning Rate Decay Equation:**<br/>
 ![lrdecay.png](ExampleImage/MathEquations/lrdecay.png)
-**Learning Rate Decay Plot:**
+
+**Learning Rate Decay Plot:**<br/>
 ![lrdecay_plot.png](ExampleImage/Plots/lrdecay_plot.png)
 
 ### Hyper Parameters
@@ -79,7 +80,7 @@ Here are the hyper parameters that are used to trained the Improved UNet.
 ### Training Results
 Using the techniques and hyper parameters mentioned above, we can get the dice loss and dice coefficient over the epochs on the train and validation set shown below. Where we select out best model as the model on epoch 47 which has the best performance on the validation set with the highest dice coefficient of 0.8717, which the train set dice coefficient is 0.9353.
 
-**Training Result Plot:**
+**Training Result Plot:**<br/>
 ![TrainResult.png](ExampleImage/Plots/TrainResult.png)
 
 ## Reference
