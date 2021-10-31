@@ -44,19 +44,19 @@ def sample(generator, step, mean_style, n_sample, device):
 
 
 @torch.no_grad()
-def style_mixing(generator, step, mean_style, n_source, n_target, device):
+def style_mixing(generator, step, mean_style, n_latent0, n_latent1, device):
     """
 
     :param generator: the generator of StyleGAN
     :param step: resolution stage. e.g. resolution=8 >>> step=1, resolution=16 >>> step=2
     :param mean_style:
-    :param n_source:
-    :param n_target:
+    :param n_latent0:
+    :param n_latent1:
     :param device: cuda or cpu
-    :return:
+    :return: a list of images mixing the style from latent code 0 and latent code 1
     """
-    source_code = torch.randn(n_source, 512).to(device)
-    target_code = torch.randn(n_target, 512).to(device)
+    latent_code0 = torch.randn(n_latent0, 512).to(device)
+    target_code = torch.randn(n_latent1, 512).to(device)
 
     shape = 4 * 2 ** step
     alpha = 1
@@ -64,7 +64,7 @@ def style_mixing(generator, step, mean_style, n_source, n_target, device):
     images = [torch.ones(1, 3, shape, shape).to(device) * -1]   # a black image
     # by decreasing style_weight, truncation can be increased
     source_image = generator(
-        source_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
+        latent_code0, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
     )
     target_image = generator(
         target_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
@@ -72,9 +72,9 @@ def style_mixing(generator, step, mean_style, n_source, n_target, device):
 
     images.append(source_image)
 
-    for i in range(n_target):
+    for i in range(n_latent1):
         image = generator(
-            [target_code[i].unsqueeze(0).repeat(n_source, 1), source_code],
+            [target_code[i].unsqueeze(0).repeat(n_latent0, 1), latent_code0],
             step=step,
             alpha=alpha,
             mean_style=mean_style,
@@ -89,14 +89,16 @@ def style_mixing(generator, step, mean_style, n_source, n_target, device):
     return images
 
 
-def show(imgs):
+def show(imgs, title):
     """
     Display images
     :param imgs: a list of tensor images
+    :param title: str, the title of the images
     """
     if not isinstance(imgs, list):
         imgs = [imgs]
     fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
+    plt.title(title)
     for i, img in enumerate(imgs):
         img = img.detach()
         img = F.to_pil_image(img)
@@ -118,7 +120,13 @@ if __name__ == '__main__':
 
     mean_style = get_mean_style(generator, device)
     step = int(math.log(args.size, 2)) - 2
-    img_sample = sample(generator, step, mean_style, 5, device)
-    sample_grid = make_grid(img_sample)
-    show(sample_grid)
+    n_row, n_col = 1, 5
+    img_sample = sample(generator, step, mean_style, n_row*n_col, device)
+    sample_grid = make_grid(img_sample, nrow=n_col)
+    show(sample_grid, 'Sample')
+
+    img_mix = style_mixing(generator, step, mean_style, n_col, n_row, device)
+    grid_mix = make_grid(img_mix, nrow=n_col)
+    show(grid_mix, 'mix regularization')
+    
 
