@@ -3,19 +3,20 @@
 <br>
 The skin is the largest organ of the human body. Some skin diseases, such as malignant black, melanoma. These diseases are likely to cause death, and the consequences of misdiagnosis will be very serious. Moles are skin diseases with mild symptoms, but some fatal skin diseases such as malignant black and mildly symptomatic skin diseases and their Similar. Effectively locating and detecting these skin diseases plays a critical role in saving the lives of patients. The ISIC data set contains 23k melanoma examples of malignant and benign images that classify skin injuries. Yolo is a kind of slider image The detection technology is different from mask-rcnn in that it uses a one-stage algorithm, which only uses a convolutional neural network to directly predict the classes and positions of different targets. In here, YoloV3 is used to detect the lesion area of the ISIC data set. The goal of this task is that all detections having a minimum Intersection Over Union of 0.8 on the test set.
 
-
+<br>
+<br>
 * [ISIC dataset](#ISIC-dataset)
-* <br>
+<br>
 * [YoloV3](#YoloV3)
-* <br>
+<br>
 * [Pre-processing](#Pre-processing)
-* <br>
+<br>
 * [Results](#Results)
-* <br>
+<br>
 * [Dependencies](#Dependencies)
-* <br>
+<br>
 * [Reference](#Reference)
-* <br>
+<br>
 
 ### ISIC-dataset
 In this task, we have given the preprocessed data set, which includes 2594 pictures and the corresponding segmented black and white pictures. 
@@ -54,13 +55,24 @@ YOLOv3 divides the input image into SxS lattices, and each lattice predicts B bo
 In the data pre-processing stage, the ISIC dataset segmentation image set is used. The first white pixel values (x_min,y_min) and (x_max,y_max) of each image were found during image pixel iterations and making to tags for the xml files. Also, when splitting the dataset, the training and test sets split into 80% and 20%. According to the YoloV3 data loading method, these training and test sets are made into absolute paths and stored in train.txt and test.txt for Dataloader.
 Finally, in the process of loading the dataset in pytorch, when the imported data is the training set, the images will be enhanced to reduce the impact of insufficient data, improving the robustness of the model, providing various "invariants" to the model, and to increase the model's ability to resist overfitting, including resizing, adding gray bars, and image flipping. 
 ## Results
-![loss3 14314](https://user-images.githubusercontent.com/65603393/139538340-83ee43cd-1e61-45f9-92a6-9bb96b90ca1b.png)
-
-![loss4 73156](https://user-images.githubusercontent.com/65603393/139538254-ca583fa7-c163-4ff1-8e68-976c028614bb.png)
-![loss2 26325](https://user-images.githubusercontent.com/65603393/139538438-f970684f-efc1-44ed-b161-b99ed08df998.png)
-
-
-
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/65603393/139538254-ca583fa7-c163-4ff1-8e68-976c028614bb.png" width="650" height="380">
+  <br>
+  <i>Figure 5: ISIC dataset first 9 epochs.</i>
+  <br>
+  <img src="https://user-images.githubusercontent.com/65603393/139538340-83ee43cd-1e61-45f9-92a6-9bb96b90ca1b.png" width="650" height="380">
+  <br>
+  <i>Figure 6: ISIC dataset epoch 10-40</i>
+  <br>
+  <img src="https://user-images.githubusercontent.com/65603393/139538438-f970684f-efc1-44ed-b161-b99ed08df998.png" width="650" height="380">
+  <br>
+  <i>Figure 7: ISIC dataset epoch 41-180.</i>
+  <br>
+  <img src="https://user-images.githubusercontent.com/65603393/139584365-ce215657-c0ee-44d4-a4e8-4939b0c27ed8.png" width="650" height="380">
+  <br>
+  <i>Figure 8: ISIC dataset test set IOU rate.</i>
+  <br>
+</p>
 
 ## Dependencies
 * Python 3.7
