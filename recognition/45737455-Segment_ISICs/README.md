@@ -45,7 +45,7 @@ $ pip install tensorflow-addons==0.14.0
 
 The improved U-Net architecture is proposed by Isensee et al. in paper [[1]](#Reference), and was inspired by the original U-Net architecture [[2]](#Reference). As shown in figure 1, the network includes a context pathway (left) and a localization pathway (right). The network architecture is originally used for solving 3D image segmentation problems while here in this project, I modified it for 2D image usage.  
 
-The details of modules in the network are shown as below:  
+The context pathway aggregates high level information that is subsequently localized precisely in the localization pathway [[1]](#Reference). The details of modules in the network are shown as below:  
 
 ---  
 **Context Module**  
@@ -92,8 +92,7 @@ Included in the function `improved_UNet()` in `model.py`.
 
 ---  
 
-Throughout the network, leaky ReLU nonlinearities with a negative slope of `1e-2`
-is used for all feature map computing convolutions. See also the improved U-Net paper [[1]](#Reference) for more details.  
+Deep supervision is employed in the localization pathway by integrating segmentation layers at different levels of the network, and combining them via elementwise summation to form the final network output. Throughout the network, leaky ReLU nonlinearities with a negative slope of `1e-2` is used for all feature map computing convolutions. The final layer is either a sigmoid activation (for binary class) or a softmax activation (for multi-class). See also the improved U-Net paper [[1]](#Reference) for more details.  
 
 ## Dataset  
 
@@ -105,7 +104,7 @@ is used for all feature map computing convolutions. See also the improved U-Net 
 	Figure 2. image samples
 </p>  
 
-The dataset used in this project comes from [ISIC 2018 challenge data](https://challenge2018.isic-archive.com/task1/) [[3, 4]](#Reference). As shown in figure 2, the dataset includes input images and the corresponding ground truth images. The white part in the ground truth image indicates **skin lesion**, which is segmented from the dermoscopic image. There are overall 2594 input images with their ground truth images.  
+The dataset used in this project comes from [ISIC 2018 challenge data](https://challenge2018.isic-archive.com/task1/) [[3, 4]](#Reference). As shown in figure 2, the dataset includes input images and the corresponding ground truth images. There are overall 2,594 input images with their ground truth images. The white part in the ground truth image indicates **skin lesion**. The goal of this project is to segment the skin lesion part from the dermoscopic image.   
 
 ## Getting Started
 
