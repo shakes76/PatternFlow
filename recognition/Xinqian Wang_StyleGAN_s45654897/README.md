@@ -81,7 +81,7 @@ For people who would like to know more about the literatures which according to 
 **********************************************************************************************************************
 ## Model Visulization
 ### UMAP Visulization
-We madke 10 basically same codes with the shape of [,512] and index them from 0 to 9. The only difference between these 10 codes is within the 98th value. We set the code with 0 index's valur in the 98th as the original value v. For the i-th code, the value in the 98th equals to <img src="https://latex.codecogs.com/svg.image?v&space;&plus;&space;i^{3}&space;" title="v + i^{3} " />. Then, we plot the codes which outputed by the Mapping Network using U-MAP function. The plot is as below:
+We made 10 basically same codes with the shape of [,512] and index them from 0 to 9. The only difference between these 10 codes is within the 98th value. We set the code with 0 index's valur in the 98th as the original value v. For the i-th code, the value in the 98th equals to <img src="https://latex.codecogs.com/svg.image?v&space;&plus;&space;i^{3}&space;" title="v + i^{3} " />. Then, we plot the codes which outputed by the Mapping Network using U-MAP function. The plot is as below:
 
 <p align="center">
   <img src="https://github.com/Wangxinqian/PatternFlow/blob/86015cf5f42b1d2a07143fbdef9f2b7bdd54333a/recognition/Xinqian%20Wang_StyleGAN_s45654897/image/Umap.jpg" alt="" width='70%' height='70%'/>
