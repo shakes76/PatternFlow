@@ -38,9 +38,8 @@ Email: mujibulislamdipto@gmail.com
     </li>
             <li><a href="#usage"> Results </a>
         <ul>
-            <li><a href="#dice-similarity-coefficient"> DSC </a></li>
-            <li><a href="#model-performance"> Model Performance </a></li>
-            <li><a href="#sample-predictions"> Sample Predictions </a></li>
+            <li><a href="#dependencies"> Dependencies </a></li>
+            <li><a href="#setup-instructions"> Setup Instructions </a></li>
         </ul>
     </li>
       <li><a href="#quick-links"> Quick Links </a></li>
