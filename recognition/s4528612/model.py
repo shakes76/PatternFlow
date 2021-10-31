@@ -52,7 +52,8 @@ def fourier_encode(image):
                        (1, image.shape[1], image.shape[2], 2*(2*6+1))), repeats=image.shape[0], axis=0)
 
     return tf.reshape(tf.concat((image, layer), axis=-1), (image.shape[0], image.shape[1]*image.shape[2], -1)) 
-    
+
+# Create Transformer Layer    
 def transformer_layer():
     inputs = layers.Input(shape=(256, 27))
     input_normalized = layers.LayerNormalization()(inputs)
