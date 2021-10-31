@@ -69,7 +69,7 @@ After completing the xml file production, you need to split the test set and tra
 
 ### Training
 If you want to start training the network again. Need to set weights_path in drive.py to "" and run train.py at the same time.
-If you want to load, use pre-trained weights to make predictions. You need to click here to download the weights and place the weights in the results/weights/ directory.
+If you want to load weights, use pre-trained weights to make predictions. You need to click <a herf= "https://drive.google.com/file/d/1aaf8C3VWI8RnXZr1mgPAJgXFaulOX-nc/view?usp=sharing">here</a> to download the weights and place the weights in the results/weights/ directory.
 
     python train.py and edit driver.py
 
