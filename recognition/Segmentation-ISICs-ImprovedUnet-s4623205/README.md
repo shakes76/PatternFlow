@@ -18,6 +18,10 @@
     * [File Descriptions](#file-descriptions)
     * [Examples](#examples)
     * [Experiment Reproduce](#experiment-reproduce)
+* [Dependencies](#dependencies)
+    * [Driver Scripts](#driver-scripts)
+    * [Model Script](#model-script)
+    * [Dataset](#dataset)
 * [Reference](#reference)
 
 ## Introduction
@@ -196,6 +200,24 @@ print("\nTest set Dice Coefficient:", dice)
 To reproduce the test evaluation experiemnt run "[**test_ImprovedUnet_ISICs.py**](test_ImprovedUnet_ISICs.py)", change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will load the best Improved UNet weights in "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" and calculate the dice coefficient on the test set.
 
 To reproduce close to the model training and save the model, there are randomness here. Run [**train_ImprovedUnet_ISICs_save.py**](train_ImprovedUnet_ISICs_save.py) change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will train the Improved UNet model. If the "save_path" of the best model isn't changed then the "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" would be overwritten.
+
+## Dependencies
+### Driver Scripts
+* Python 3.7
+* Tensorflow 2.3.0
+* Tensorflow-addons 0.13.0
+* scikit-learn 0.23.2
+* Numpy 1.18.5
+* OpenCV 4.0.1
+* matplotlib 3.4.3
+
+### Model Script
+* Python 3.7
+* Tensorflow 2.3.0
+* Tensorflow-addons 0.13.0
+
+### Dataset
+* Preprocessed ISICs dataset [link](https://cloudstor.aarnet.edu.au/sender/?s=download&token=723595dd-15b0-4d1e-87b8-237a7fe282ff)
 
 ## Reference
 <a name="reference_anchor1"></a>[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)<br/>
