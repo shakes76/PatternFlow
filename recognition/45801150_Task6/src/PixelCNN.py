@@ -19,14 +19,25 @@ class PixelConvLayer(keras.layers.Layer):
     def build(self, input_shape):
         self.conv.build(input_shape)
         kernel_shape = self.conv.kernel.get_shape()
-        self.mask = np.zeros(shape=kernel_shape)
-        self.mask[: kernel_shape[0] // 2, ...] = 1.0
-        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
         if self.mask_type == "B":
-            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+            self.xmask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+        self.mask = tf.Variable(tf.zeros(shape=kernel_shape, dtype=tf.float32), dtype=tf.float32)
+
+        shape = self.mask[: kernel_shape[0] // 2, ...].shape
+        self.mask = self.mask[: kernel_shape[0] // 2, ...].assign(tf.ones(shape=shape))
+
+        shape = self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...].shape
+        self.mask = self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...].assign(tf.ones(shape=shape))
+        if self.mask_type == "B":
+            shape = self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...].shape
+            self.mask = self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...].assign(tf.ones(shape=shape))
+        self.mask = tf.constant(self.mask)
+
 
     def call(self, inputs):
-        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        x = self.mask * self.conv.kernel
+        self.conv.kernel.assign(x)
         return self.conv(inputs)
 
 
@@ -125,7 +136,7 @@ def train_pixel_cnn(pixel_cnn, vqvae: VQVae, x_train_normalised, n_epochs):
 
 def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
     n_priors = 10
-    priors = np.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:])
+    priors = tf.Variable(tf.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:], dtype=tf.int32))
 
     _, rows, cols = priors.shape
 
@@ -135,9 +146,7 @@ def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
             dist = tfp.distributions.Categorical(logits=pixel_cnn(priors, training=False))
             probs = dist.sample()
 
-            priors[:, row, col] = probs[:, row, col]
-            #indices = tf.constant(tf.expand_dims(tf.range(n_priors), axis=1))
-            #tf.tensor_scatter_nd_update(priors, indices, probs)
+            priors = priors[:, row, col].assign(probs[:, row, col])
 
     quantiser = vqvae.get_layer("quantiser")
 
