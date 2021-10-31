@@ -113,7 +113,14 @@ layers on the compression side with Conv3DTranspose (strides=(2,2,2)) on the
 expansion side. There were 3 data pass-throughs using Concatenate between
 equivalent levels. 
 
-The final activation was softmax. 
+The final activation was softmax. Please find a visualisation of the model
+flow below.
+
+<div style="width:300px">
+
+![](Images/unet3d.png)
+</div>
+
 
 
 ### Training parameters
