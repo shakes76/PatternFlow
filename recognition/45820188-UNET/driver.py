@@ -95,14 +95,6 @@ if __name__ == "__main__":
     X_test_ds = process_images("C:\ISIC Dataset\Full Set\ISIC2018_Task1-2_Training_Input_x2", "validation")
     y_test_ds = process_images("C:\ISIC Dataset\Full Set\ISIC2018_Task1_Training_GroundTruth_x2", "validation")
 
-
-    # Smaller subset of data
-    # X_train_ds = process_images("C:\ISIC Dataset\Smaller\Train", "training")
-    # y_train_ds = process_images("C:\ISIC Dataset\Smaller\Seg", "training")
-
-    # X_test_ds = process_images("C:\ISIC Dataset\Smaller\Train", "validation")
-    # y_test_ds = process_images("C:\ISIC Dataset\Smaller\Seg", "validation")
-
     # Converts the tf dataset into array of images that can be used by the model
     X_train = tf.concat([x for x in X_train_ds], axis=0)
     y_train = tf.concat([x for x in y_train_ds], axis=0)

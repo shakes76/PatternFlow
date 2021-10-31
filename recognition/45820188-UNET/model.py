@@ -6,7 +6,7 @@ Improved UNET Model
 Created: 29/10/2021
 """
 
-from tensorflow.keras.laers import Input, Conv2D, Dropout, LeakyReLU, UpSampling2D
+from tensorflow.keras.layers import Input, Conv2D, Dropout, LeakyReLU, UpSampling2D
 from tensorflow.keras.layers import Concatenate, Add, Dense, Activation
 from tensorflow.keras.models import Model
 from tensorflow_addons.layers import InstanceNormalization
