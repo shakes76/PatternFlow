@@ -131,6 +131,55 @@ def process_dataset(dir):
 
     return random_split(X_train, X_test, y_train, y_test)
 
+
+"""
+Plots the training history to spot the learning curve of the model
+"""
+def plot_learning_curve(training_history):
+    plt.figure(figsize=(8, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(training_history.history['acc'], label='Training Accuracy')
+    plt.plot(training_history.history['val_acc'], label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.xlabel("Epoch num")
+    plt.ylabel('Accuracy')
+    plt.ylim([min(plt.ylim()), 1])
+    plt.title('Accuracy on training and validation data set')
+    plt.subplot(2, 1, 2)
+    plt.plot(training_history.history['loss'], label='Training Loss')
+    plt.plot(training_history.history['val_loss'], label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.xlabel("Epoch num")
+    plt.ylabel('Cross Entropy loss')
+    plt.ylim([0, 1.0])
+    plt.title('Loss on training and validation data set')
+    plt.xlabel('Epoch num')
+    plt.tight_layout()
+    plt.show()
+
+"""
+Plots some prediction of the model with the images true labels
+"""
+def plot_prediction(model, test_data):
+    label_map = {0: "left", 1: "right"}
+    # Retrieve a batch of images from the test set
+    images, labels = test_data[0][:BATCH_SIZE], test_data[1][:BATCH_SIZE]
+    images = images.reshape((BATCH_SIZE, IMG_SIZE[0], IMG_SIZE[1], 1))  # 1D fpr greyscale image
+    predictions = model.predict_on_batch(images).flatten()
+    labels = labels.flatten()
+    # Fix the preds into 0 (left) or 1 (right)
+    predictions = tf.where(predictions < 0.5, 0, 1).numpy()
+    # Plot predictions
+    plt.figure(figsize=(10, 10))
+    for i in range(16):
+        ax = plt.subplot(4, 4, i + 1)
+        plt.imshow(images[i], cmap="gray")
+        plt.title("pred: " + label_map[predictions[i]] + ", real: " + label_map[labels[i]])
+        plt.axis("off")
+
+    plt.tight_layout()
+    plt.show()
+    
 def main():
     # Indicating whether the data is loaded from disk and needs to be saved or has been saved already
     SAVE_DATA = True
