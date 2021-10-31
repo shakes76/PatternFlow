@@ -4,12 +4,10 @@ This uses the Improved UNET on the ISICs dataset to segment the images into back
 
 # Problem 
 
-The ISICs dataset starts with a normal image of the skin cancer, as well as a segmentation image paired with it. Our model must take these images to train using the Improved UNET Model and then be able to segment it on its own using just the skin cancer images. It then compares this to expected output to calculate the efficiency. This output should be above 80%. The below images show what the input image is, with the expected output alongside it.
+The ISICs dataset starts with a normal image of the skin cancer, as well as a segmentation image paired with it. Our model must take these images to train using the Improved UNET Model and then be able to segment it on its own using just the skin cancer images. It then compares this to expected output to calculate the efficiency. This output should be above 80%. The below images show what the input image is, with the expected output below it.
 
-Sample Input Image:
-![skin image](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Input%20Image.jpg?raw=true){:height="50%" width="50%"}
+![skin image](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Input%20Image.jpg?raw=true)
 
-Sample Expected Output Image:
 ![segment image](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Expected%20Output.png?raw=true)
 
 ## Improved UNET Model
