@@ -22,7 +22,7 @@ __email__ = "e.chegne@uqconnect.edu.au"
 
 
 # Copypasta, as sanity check for fourier encoding
-def fourier_encode(shape, bands):
+def fourier_encode(shape, bands, device):
     # This first "shape" refers to the shape of the input data, not the output of this function
     dims = len(shape)
 
@@ -31,20 +31,23 @@ def fourier_encode(shape, bands):
     # Pos is computed for the second tensor dimension
     # (aptly named "dimension"), with respect to all
     # following tensor-dimensions ("x", "y", "z", etc.)
-    pos = torch.stack(list(torch.meshgrid(
-        *(torch.linspace(-1.0, 1.0, steps=n) for n in list(shape))
-    )))
-    pos = pos.unsqueeze(0).expand((bands,) + pos.shape)
+    pos = torch.stack(
+        list(torch.meshgrid(*(torch.linspace(-1.0, 1.0, steps=n) for n in list(shape))))
+    )
+    pos = pos.unsqueeze(0).expand((bands,) + pos.shape).to(device)
 
     # Band frequencies are computed for the first
     # tensor-dimension (aptly named "bands") with
     # respect to the index in that dimension
-    band_frequencies = (torch.logspace(
-        log(1.0),
-        log(shape[0]/2),
-        steps=bands,
-        base=exp
-    )).view((bands,) + tuple(1 for _ in pos.shape[1:])).expand(pos.shape)
+    band_frequencies = (
+        (
+            torch.logspace(
+                log(1.0), log(shape[0] / 2), steps=bands, base=exp, device=device
+            )
+        )
+        .view((bands,) + tuple(1 for _ in pos.shape[1:]))
+        .expand(pos.shape)
+    )
 
     # For every single value in the tensor, let's compute:
     #             freq[band] * pi * pos[d]
@@ -56,12 +59,16 @@ def fourier_encode(shape, bands):
 
     # Use both sin & cos for each band, and then add raw position as well
     # TODO: raw position
-    result = torch.cat([
-        torch.sin(result),
-        torch.cos(result),
-    ], dim=0)
+    result = torch.cat(
+        [
+            torch.sin(result),
+            torch.cos(result),
+        ],
+        dim=0,
+    )
 
     return result
+
 
 class PreNorm(nn.Module):
     """
@@ -157,6 +164,7 @@ class CrossAttention(nn.Module):
     def forward(self, x, z):
         return self.attention(x, z)
 
+
 class MLP(nn.Module):
     def __init__(self, latent_dim, dropout=0.0):
         super().__init__()
@@ -206,25 +214,22 @@ class Perceiver(nn.Module):
         ff_dropout=0.0,
         num_features=2,
         self_per_cross_attn=3,
+        device='cpu'
     ):
         super().__init__()
 
         # Initial latent vectorss
-        self.latents = nn.Parameter(torch.randn(num_latents, latent_dim))
+        self.latents = nn.Parameter(torch.randn(num_latents, latent_dim), device=device)
         self.depth = depth
-        self.fourier_features = fourier_encode(input_shape, fourier_bands)
+        self.fourier_features = fourier_encode(input_shape, fourier_bands, device)
         self.embeddings = nn.Conv1d(
             num_channels + self.fourier_features.shape[0], latent_dim, 1
         )
 
         # Perceiver block
-        cross_attn = lambda: CrossAttention(
-            latent_dim, heads=1, dropout=attn_dropout
-        )
+        cross_attn = lambda: CrossAttention(latent_dim, heads=1, dropout=attn_dropout)
         cross_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
-        latent_attn = lambda: SelfAttention(
-            latent_dim, heads=8, dropout=attn_dropout
-        )
+        latent_attn = lambda: SelfAttention(latent_dim, heads=8, dropout=attn_dropout)
         latent_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
 
         # Logits
