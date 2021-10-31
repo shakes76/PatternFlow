@@ -8,23 +8,26 @@ following flow diagram is the u-net illustrated in the paper.
 
 ## Semantic image segmentation of 3D images: The problem and the solution.
 Semantic image segmentation is the labelling of each pixel (or voxel) of an 
-image with a corresponding class. For example an image of bike riders might 
-have 3 classes: humans, bikes and background. Semantic segmentation is a tedious
-and time-consuming task to undertake manually. Manually segmenting 3D images
-requires slice by slice annotation. The goal of this u-net is to automatically
-annotate 3D images after training.
+image with a corresponding class (background, bone, bladder, prostate...). 
+Semantic segmentation is a tedious and time-consuming task to undertake 
+manually. Furthermore, manually segmenting 3D images requires slice by slice
+annotation. The goal of this u-net is to automatically annotate 3D images after
+training.
 
-# todo add imgaes here!
+A typical slice of one of the images used in this project.
+#CHANGE THE IMAGE
+<div style="width:400px">
 
+![](Images/slice.png)
+</div>
 
-## Data download and preparation
-The data is 3D MRI scans of prostate cancers. The source of the data is well 
-described in ref[2]. Patients had up to 8 MRI scans. The first, week0, was taken 
-prior to treatment. The remaining were taken at week1 to week7 during a course 
-of prostate cancer radiation therapy.
-
-Data have been acquired as part of a retrospective MRI-alone radiation therapy 
-study from the Calvary Mater Newcastle Hospital [3].
+### Data download and preparation
+The data is 3D MRI scans of the prostate within the lower body. The source of
+the data is well described in ref[2] and had been acquired as part of a 
+retrospective MRI-alone radiation therapy study from the Calvary Mater Newcastle 
+Hospital [3]. Patients had up to 8 MRI scans. The first,week0, was taken prior 
+to treatment. The remaining were taken at week1 to week7 during a course of 
+prostate cancer radiation therapy.
 
 The labels are annotated with 6 classes.
 
@@ -52,7 +55,7 @@ validation or test, and not span more than one group.
 Segregation into train, validation and test groups was done manually, by firstly
 ordering by number of scans a patient had, and then by patient ID. Clients
 were then allocated into train, validation and test subdirectories on an 
-approximate 70:20:10 ratio. 
+approximate 70:20:10 ratio, with labels being allocated in an identical manner.
 
 
 ![](Images/train_val_test_allocation.png)
@@ -69,8 +72,8 @@ As per ref[2], the data was normalised (mean = 0, stdev=1).
 N4ITK intensity normalisation, which corrects for gain field, an intra-volume 
 inhomogeneity caused by the image acquisition process and variations of tissue
 penetration, was planned to be undertaken, but it couldn't be successfully 
-included in time[2,5,6]. It is expected that the prediction would be improved by 
-its inclusion.
+implemented in time[2,5,6]. It is expected that the prediction would be improved
+by its inclusion.
 
 ### Data Augmentation
 While there are 157 training images these scans are only of 27 individuals. Data
@@ -86,7 +89,7 @@ in batch sizes of 1.
 If the model is training or validating the generator returns both 
 an image and a label to the model. If the model is predicting, the
 generator only returns the image. The prediction output is then
-compared to its matching label. 
+compared to its matching label using the DSC. 
 
 
 ### Description of the model
@@ -103,54 +106,64 @@ In addition, the number of filters were reduced by a factor of 4 to
 limit OOM errors. That is the first layer begins with 8 filters rather than
 32 and scales from there. 
 
-Kernel_initializer was he_normal. MaxPooling after each set of 2 conv3D 
+Kernel_initializer was he_normal. MaxPooling was used after each set of 2 conv3D 
 layers on the compression side with Conv3DTranspose (strides=(2,2,2)) on the
-expansion side. There were 3 data pass-throughs with Concatenate between
+expansion side. There were 3 data pass-throughs using Concatenate between
 equivalent levels. 
 
+The final activation was softmax.
 
+The model layout is as follows:
 ![](Images/unet3d.png)
 
 
-## Training parameters
+
+### Training parameters
 Adam was used as the optimiser with no modification to the default training 
 rate. Loss was categorical_crossentropy as there were 6 classes, and labels
 were provided after one_hot encoding. Metrics was set to accuracy. Plots of 
 training loss and accuracy are below.
 
+# PLOTS TRAINING / ACCURACY
 
-## Dice coefficient - DSC
+
+### Dice coefficient - DSC
 The target was to have a Dice score exceeding 0.7 for each class. 
 
-The DSC is poor at low epochs, particularly for the prostate and rectum (~e-7), 
-and improve at higher epochs. The target DSC is well exceeded by 50 epochs 
+The DSC was poor at low epochs, particularly for the prostate and rectum (~e-7), 
+and improved at higher epochs. The target DSC is well exceeded by 50 epochs 
 with run time on the cluster at around 11 hrs. Loss and accuracy metrics
-stabilize around 30 epochs.
+stabilize around 20-30 epochs.
 
 ![](Images/DSC_score_50_epochs.png)
  
 ## Predicted vs test labels
+The following image slices compare the true values versus those predicted by 
+the model after 50 epochs.
+
+### Segmented images
+| True | Predicted   |
+| :---: | :---: |
+| ![](Images/660_y_true.png) | ![](Images/660_pred_argmax.png) |
+
+### Class images
+
+| True | Predicted   |
+| :---: | :---: |
+| ![](true_background.png) | ![](pred_background.png) |
+| ![](true_body.png) | ![](pred_body.png) |
+| ![](true_bones.png) | ![](pred_bones.png) |
+| ![](true_bladder.png) | ![](pred_bladder.png) |
+| ![](true_rectum.png) | ![](pred_rectum.png) |
+|  ![](true_prostate.png)| ![](pred_prostate.png) |
+ 
 
 
-| Class | Predicted | Label | 
-| ___ | ___ | ___ | 
-| 0 Background |  a | b | 
-| 1 Body |  a | b | 
-| 2 Bones |  a | b | 
-| 3 Bladder | a | b | 
-| 4 Rectum | a | b | 
-| 5 Prostate | a | b | 
 
-
-# CHANGE THIS IMAGE, AND ITS LOCATION!
-
-![](Images/slice.png)
-##  
-#### and again
 
 ## Future work
-Work I would like follow up on to extend this project to improve results and 
-reduce the training time include the following:
+Work I would like follow up on to extend this project, to improve results and 
+reduce the training time include:
 * Data augmentation to increase the training sample size. Siyu Lui provides some
 methods for augmenting 3D data [7].
 * Add N4ITK normalisation to lessen field bias.
@@ -158,7 +171,7 @@ methods for augmenting 3D data [7].
     with poorer performing DSC scores (ie prostate or rectum), to 
     investigate if this would improve overall performance
 * Save and re-use weights
-* Adjust for class bias, where the size of background and body greatly exceed 
+* Adjust for class bias, as the size of background and body greatly exceed 
 that of the prostate and rectum. 
 
 ## Dependencies & resources
