@@ -23,8 +23,8 @@ All modules use a LeakyReLU activation layer
 
 Here you can see the summary of the model with the accuracy as 0.93 after 15 epochs
 
-<img src="./images/accuracy.PNG" width="400"/>
-<img src="./images/loss.PNG" width="400"/>
+<img src="./images/accuracy.png" width="400"/>
+<img src="./images/loss.png" width="400"/>
 
 ## Dependencies
 * Python 3.7
