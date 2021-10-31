@@ -26,14 +26,14 @@ def improved_unet(width, height, channels):
 
     # segmentation output
     seg1 = segmentation_layer(de2)
-    seg1 = layers.UpSampling2D((2, 2))(seg1)
+    seg1 = upsampling_module(seg1, 32)
     seg2 = segmentation_layer(de3)
     seg2 = layers.Add()([seg1, seg2])
-    seg2 = layers.UpSampling2D((2, 2))(seg2)
+    seg2 = upsampling_module(seg1, 32)
     seg3 = de4
     seg3 = layers.Add()([seg2, seg3])
 
-    outputs = layers.Activation('sigmoid')(seg3)
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(seg3)
 
     model = models.Model(inputs, outputs)
     return model
@@ -75,7 +75,7 @@ def upsampling_module(input_layer, conv_depth):
 
 
 def segmentation_layer(input_layer):
-    seg = layers.Conv2D(1, (1, 1), activation='sigmoid')(input_layer)
+    seg = layers.Activation('sigmoid')(input_layer)
     return seg
 
 
