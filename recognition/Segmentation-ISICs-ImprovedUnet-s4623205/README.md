@@ -14,6 +14,10 @@
     * [Hyper Parameters](#hyper-parameters)
     * [Training Results](#training-results)
 * [Model Evaluation(Test Set Performance)](#model-evaluationtest-set-performance)
+* [How to Use](#how-to-use)
+    * [File Descriptions](#file-descriptions)
+    * [Examples](#examples)
+    * [Experiment Reproduce](#experiment-reproduce)
 * [Reference](#reference)
 
 ## Introduction
@@ -95,6 +99,103 @@ The best Improved UNet model which is the model on epoch 47 will be selected to 
 
 **Random Test Set Predictions 3:**<br/>
 ![TestSetPredict3.png](ExampleImage/Plots/TestSetPredict3.png)
+
+## How to Use
+### File Descriptions
+* [**ExampleImage:**](ExampleImage) The folder that contains example images of the dataset, model architecture and the experiment results used in the report.
+* [**Models:**](Models) The folder that contains the model weights.
+    * [**Imporoved_Unet.h5:**](Models/Imporoved_Unet.h5) The best Improved UNet model weights file trained in this project.
+* [**Modules:**](Modules) The folder that contains modules.
+    * [**SegmentaionModel.py:**](Modules/SegmentaionModel.py) The module that contains the original Unet implementation in [[2]](#reference_anchor2), Improved Unet implementation in [[1]](#reference_anchor1). Functions to train the model with choices of using adam optimizers with decouple weight decay, learning rate decay or activate saving the best model and loading models.
+    * [**SegmentationMetrics.py:**](Modules/SegmentationMetrics.py) The module that contains the evaluation metrics and loss functions used on segmentation tasks. Function of dice coefficient and dice loss.
+    * [**data_utils.py:**](Modules/data_utils.py) The module that contains functions to load and preprocess data.
+    * [**misc_utils.py:**](Modules/misc_utils.py) The module that contains misc functions like print progress bar, get the maximum square image size that could fit in an image, and combine the image and segmentation mask function.
+* [**test_ImprovedUnet_ISICs.py:**](test_ImprovedUnet_ISICs.py) The driver script that contains example on how to predict on the test set with loading the best Improved UNet model weights(**Used in this project to evaluate best model**).
+* [**train_ImprovedUnet_ISICs.py:**](train_ImprovedUnet_ISICs.py) The driver script that contains example on how to train the Improved UNet model without saving the model weights and directly predict on the test set using the last epoch.
+* [**train_ImprovedUnet_ISICs_save.py:**](train_ImprovedUnet_ISICs_save.py) The driver script that contains example on how to train the Improved UNet model with saving the model weights(**Used in this project to train and save best model**).
+
+### Examples
+To load and preprocess the dataset, please change the following variables to the absolute path of the images and mask shown below in one of the driver scripts.
+```python
+image_path = r"...somepath...\*.jpg"
+mask_path = r"...somepath...\*.png"
+```
+
+To get the maximum possible square image shape across all the dataset images. First a path is provided to the "[**get_min_imageshape**](Modules/data_utils.py#L17)" function in the "[**data_utils.py**](Modules/data_utils.py)" module to look trough all the images in the path to get the smallest image shape. Then used the function "[**get_close2power**](Modules/misc_utils.py#L29)" in the "[**misc_utils.py**](Modules/misc_utils.py)" module, providing the smallest side value of the smallest image shape to get the maximum possible square image shape size.
+```python
+from Modules.data_utils import get_min_imageshape
+from Modules.misc_utils import get_close2power
+
+# Image shapes are not consistent, get the minimum image shape. Shape of [283, 340] in this case.
+min_img_shape = get_min_imageshape(mask_path)
+img_height = min_img_shape[0]
+img_width = min_img_shape[1]
+print("Min Image Height:", img_height)
+print("Min Image Width:", img_width)
+
+# Get the maximum possible square image shape. 256x256 in this case.
+new_imageshape = get_close2power(min(img_height, img_width))
+print("\nThe maximum possible square image shape is " + str(new_imageshape) + "x" + str(new_imageshape))
+```
+
+To get the train, validation and test split of the preprocessed dataset with a certain ratio use the function "[**train_val_test_split**](Modules/data_utils.py#136)" in the "[**data_utils.py**](Modules/data_utils.py)" module. Provide the (image_path, mask_path, image_height, image_width, split_ratio, randomstate), here a 256x256 image size with randomstate as 42 is used. In the "split_ratio" it is an array that has to be in a format of [trainset_ratio, validationset_ratio, testset_ratio] where the ratios sums up to 1.
+```python
+from Modules.data_utils train_val_test_split
+
+# Load, preprocess and split the data into 60% train, 20% validation and 20% test set
+split_ratio = [0.6, 0.2, 0.2]
+X_train, X_val, _, y_train, y_val, _ = train_val_test_split(image_path, mask_path, 256, 256, split_ratio, randomstate=42)
+```
+
+To consturct the model import the "[**SegModel**](Modules/SegmentaionModel.py#L22)" class in [**SegmentaionModel.py**](Modules/SegmentaionModel.py). An input_shape of a tuple (image_height, image_width, image_channels) has to be provided. A random_seed that initialize the model weights. Also the model type to construct, the argument "Unet" would construct the original UNet in [[2]](#reference_anchor2) and "Improved_Unet" would construct the Improved UNet model in [[1]](#reference_anchor1).
+```python
+from Modules.SegmentaionModel import SegModel
+
+input_shape = (256, 256, 3)
+model = SegModel(input_shape, random_seed=42, model="Improved_Unet")
+```
+
+To train the model using the constructed model class with a "[**train**](Modules/SegmentaionModel.py#L300)" function. Parameters like optimizers "adam" will use the normal adam optimizer, where "adamW" will use the adam with decouple weight decay a weight decay has to be provided. Set the "lr_decay" to True to apply learning rate decay, a decay rate has to be provided. Set the "save_model" to True to save the best model when training, the metric to monitor and the path to save the model weights has to be provided. The batch_size, epochs and loss functions has to be provided.
+```python
+model.train(X_train=X_train,
+            X_val=X_val,
+            y_train=y_train,
+            y_val=y_val,
+            optimizer='adamW',
+            lr=0.001,
+            loss=dice_loss,
+            metrics=[dice_coef],
+            batch_size=2,
+            epochs=50,
+            lr_decay=True,
+            decay_rate=0.95,
+            save_model=True,
+            save_path=save_path,
+            monitor='val_dice_coef',
+            mode='max')
+```
+
+To predict with the model using the constructed model class with a "[**predict**](Modules/SegmentaionModel.py#L382)" function. A dataset to predict and the batch_size for prediction is required.
+```python
+y_pred = model.predict(X_test, batch_size=32)
+```
+
+To load the model weights using the constructed model class with a "[**load_weights**](Modules/SegmentaionModel.py#L402)" function. A path to load the weights is required.
+```python
+model.load_weights(model_path)
+```
+
+To evaluate the dataset use the function "[**dice_coef**](Modules/SegmentationMetrics.py#L14)" in the "[**SegmentationMetrics.py**](Modules/SegmentationMetrics.py)" module. The true label and the predicted data is reqiured to calculate the dice coefficient between two datasets.
+```python
+from Modules.SegmentationMetrics import dice_coef
+
+dice = dice_coef(y_test, y_pred).numpy()
+print("\nTest set Dice Coefficient:", dice)
+```
+### Experiment Reproduce
+To reproduce the test evaluation experiemnt run "[**train_ImprovedUnet_ISICs.py**](train_ImprovedUnet_ISICs.py)", change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will load the best Improved UNet weights in "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" and calculate the dice coefficient on the test set.
+
+To reproduce close to the model training and save the model, there are randomness here. Run [**train_ImprovedUnet_ISICs_save.py**](train_ImprovedUnet_ISICs_save.py) change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will train the Improved UNet model. If the "save_path" of the best model isn't changed then the "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" would be overwritten.
 
 ## Reference
 <a name="reference_anchor1"></a>[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)<br/>
