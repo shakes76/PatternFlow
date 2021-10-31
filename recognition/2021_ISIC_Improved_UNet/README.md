@@ -68,12 +68,13 @@ Open up a commandline and navigate to the directory where `driver.py` is saved, 
 
 `python driver.py`
 
-To ensure the data was loaded correctly, an image from the Training Input should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
+To ensure the data is loaded correctly, an image from the Training Input should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
 
 ## Dependencies
 - Python _
-- Tensorflow _
-- Matplotlib _
+- Tensorflow 2.6.0
+- Matplotlib 3.4.2
+- Numpy _
 
 ## References
 [1]: Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., Maier-Hein, K.H, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge". _arXiv: Computer Vision and Pattern Recognition_, 2018.
