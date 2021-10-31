@@ -28,7 +28,9 @@ In this task, we have given the preprocessed data set, which includes 2594 pictu
 </p>
 
 ### YoloV3
-Yolov3 is based on the changes made in v2 and v1. The main improvements are: 1. Adjusted the network structure to use multiscale features for object detection 2. Object classification replaced softmax with logistic.
+Yolov3 is based on the changes made in v2 and v1. The main improvements are: 
+1. Adjusted the network structure to use multiscale features for object detection.
+2. Object classification replaced softmax with logistic.
 <p align="center">
   <br>
   <img src="https://user-images.githubusercontent.com/65603393/138707537-3a35da27-fb4a-49a5-ab36-e0b259372e13.png" width="300" height="250">
@@ -51,6 +53,7 @@ YOLOv3 divides the input image into SxS lattices, and each lattice predicts B bo
 In the data pre-processing stage, the ISIC dataset segmentation image set is used. The first white pixel values (x_min,y_min) and (x_max,y_max) of each image were found during image pixel iterations and making to tags for the xml files. Also, when splitting the dataset, the training and test sets split into 80% and 20%. According to the YoloV3 data loading method, these training and test sets are made into absolute paths and stored in train.txt and test.txt for Dataloader.
 Finally, in the process of loading the dataset in pytorch, when the imported data is the training set, the images will be enhanced to reduce the impact of insufficient data, improving the robustness of the model, providing various "invariants" to the model, and to increase the model's ability to resist overfitting, including resizing, adding gray bars, and image flipping. 
 ## Results
+In the training process, the segmented training method is used to better visualize the way the loss decreases in different stages. At the same time, the rate of IOU on the test set exceeds 0.8 for the first time at 180 iterations, which is 0.835.
 <p align="center">
   <img src="https://user-images.githubusercontent.com/65603393/139538254-ca583fa7-c163-4ff1-8e68-976c028614bb.png" width="650" height="380">
   <br>
@@ -68,6 +71,10 @@ Finally, in the process of loading the dataset in pytorch, when the imported dat
   <br>
   <i>Figure 8: ISIC dataset test set IOU rate.</i>
   <br>
+  <img src="https://user-images.githubusercontent.com/65603393/139586796-b0c597f0-3aff-4fb9-90f0-5744f8d476a7.png" width="650" height="380">
+  <br>
+  <i>Figure 9: ISIC dataset test set IOU in particular epochs.</i>
+  <br>
 </p>
 
 ## Dependencies
@@ -80,3 +87,9 @@ Finally, in the process of loading the dataset in pytorch, when the imported dat
 * Matplotlib 3.1.2
 ## Reference
 GitHub - bubbliiiing/yolo3-pytorch. (2020, September 9). GitHub. Retrieved October 15, 2020, from https://github.com/bubbliiiing/yolo3-pytorch
+<br>
+ISIC Challenge. (n.d.). ISIC Challenge. Retrieved October 2, 2021, from https://challenge.isic-archive.com/
+<br>
+Detailed explanation of YOLOv3 loss function. (n.d.). Darknet53. Retrieved October 14, 2021, from https://www.fatalerrors.org/a/detailed-explanation-of-yolov3-loss-function.html
+<br>
+Adaloglou, N. (2020, March 23). Intuitive Explanation of Skip Connections in Deep Learning. AI Summer. Retrieved October 14, 2021, from https://theaisummer.com/skip-connections/
