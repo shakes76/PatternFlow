@@ -16,9 +16,27 @@ https://challenge.isic-archive.com/data/
 
 Yolov3:Real-Time Object Detection
 -------
+
+
+### YOLOv3 structure
+
 YOLOv3 is extremely fast and accurate. In mAP measured at .5 IOU YOLOv3 is on par with Focal Loss but about 4x faster. Moreover, you can easily tradeoff between speed and accuracy simply by changing the size of the model, no retraining required!
 
 The main improvements of YOLO3 are: adjusting the network structure; using multi-scale features for object detection; and replacing softmax with logistic for object classification.
+
+![image](https://user-images.githubusercontent.com/75237235/139569918-ce4ababe-f0b3-4274-9dc3-cb48f270c424.png)
+
+The entire structure of Yolo v3, excluding the pooling and fully connected layers, is a Darknet-53 network, and the Yolo prediction branches are fully convolutional.
+
+As defined by the DarknetConv2D_BN_Leaky function in yolo3.model, Darknet's convolutional layer is followed by BatchNormalization (BN) and LeakyReLU. With the exception of the last convolutional layer, BN and LeakyReLU are already inseparable parts of the convolutional layer in yolo v3. together they form the minimal component.
+
+The backbone network uses five resn structures. n represents a number, res1, res2, ... ,res8, etc., indicating that the res_block contains n res_units, which are the large components of Yolo v3. Moving up from darknet-19 in Yolo v2 to darknet-53 in Yolo v3, the former has no residual structure. yolo v3 starts to borrow the residual structure from ResNet, and using this structure allows for a deeper network structure. An explanation of the res_block can be visualised in the bottom right corner of Figure 1.1, whose basic component is also the DBL.
+
+There is a tensor splicing (concat) operation on the prediction branch. This is implemented by concatenating the intermediate layer of darknet and the upsampling of a layer after the intermediate layer. It is worth noting that tensor concatenation is not the same as the add operation of the Res_unit structure, as tensor concatenation expands the dimensionality of the tensor, whereas add just adds directly without changing the dimensionality of the tensor.
+
+In the overall analysis at the code level, Yolo_body has 252 layers. 23 Res_unit layers correspond to 23 add layers. 72 BN layers and 72 LeakyReLU layers, which are represented in the network structure as follows: each BN layer is followed by a LeakyReLU layer. 2 upsampling and 2 tensor splicing operations each, and 5 zero-fills correspond to 5 res_block. There are 75 convolutional layers, 72 of which are followed by a DBL composed of BatchNormalization and LeakyReLU. Three different scales of output correspond to three convolutional layers, and the final convolutional layer has 255 convolutional kernels for the COCO dataset of class 80: 3 × (80 + 4 + 1) = 255, where 3 means A grid cell contains 3 bounding boxes, 4 indicates the 4 coordinates of the box, and 1 indicates the confidence level.
+
+### Darknet-53 feature extraction network
 
 darknet-53 adopts the idea of resnet and adds a residual module to the original network, which is helpful to solve the gradient problem of the deep network, and each residual module consists of two convolutional layers and a shortcut connections,
 Compared with yolov1 and v2, v3 has no pooling layer and no full connection layer. The down-sampling of the network is achieved by setting the stride of the convolution to 2, and the size of the image is reduced to half after each convolutional layer. The implementation of each convolutional layer consists of convolution + BN + Leaky relu , and each residual module is followed by a zero padding, as shown in the figure below.
@@ -34,9 +52,5 @@ Yolov3 outputs a total of 3 feature maps, the first feature map is downsampled 3
 The difference between the concat operation and the add-and-sum operation: the add-and-sum operation is derived from the ResNet idea of adding the input feature map to the corresponding dimension of the output feature map, while the concat operation is derived from the DenseNet network design idea of stitching the feature map directly according to the channel dimension, for example, an 8*8*16 feature map is stitched with an 8*8*16 feature map to produce an 8*8*32 feature map. 8*32 feature maps.
 
 Upsample: The role of the upsample layer is to generate a large image from a small feature map by interpolation and other methods. The upsample layer does not change the number of channels in the feature map.
-
-### 部署步骤 
-
-![image](https://user-images.githubusercontent.com/75237235/139569918-ce4ababe-f0b3-4274-9dc3-cb48f270c424.png)
 
 
