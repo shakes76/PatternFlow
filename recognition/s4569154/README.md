@@ -112,6 +112,8 @@ max_batches means that the model will stop learning when it reaches max_batches,
 
 The 9 anchors here are the ones proposed in the paper using k-means. yolov3 has three prediction paths (from which multiscale is derived) mask=0, 1, 2 for the first branch, corresponding to its anchors. classes is the number of categories.
 
+### Results
+
 Based on the results of the training, I performed tuning as well as validation. Here are some results.
 
 ![b00be2104a5b05bf9bf53b8ac5c38a4](https://user-images.githubusercontent.com/75237235/139576509-227e68c6-cc2b-4bb4-9b64-d279a54afef0.png)
@@ -128,6 +130,44 @@ At the same time, we can also see that as the number of iterations increases, th
 
 ![0f74247fbcdb9ed49608eb3032fec6e](https://user-images.githubusercontent.com/75237235/139576675-7ef986b2-8635-4454-a7e0-bc445cdc89b4.png)
 
+![image](https://user-images.githubusercontent.com/75237235/139577542-ea41c2dc-18a0-47b7-b713-7dcb3088b648.png)
+
+
 We found that the higher the batch, the better the f1 score and other metrics.
 
+Dependencies
+-------
+Jupyter Notebook
+Google Colab
+Python (3.7)
+matplotlib
+cv2 (4.4.0)
+LabelImg
+darknet
+CUDA
+
+References
+-------
+https://pjreddie.com/darknet/yolo/
+https://zhuanlan.zhihu.com/p/49981816
+https://blog.csdn.net/taifengzikai/article/details/86500753
+https://www.cnblogs.com/ywheunji/p/10809695.html
+https://zhuanlan.zhihu.com/p/76802514
+https://www.youtube.com/watch?v=10joRJt39Ns&t=1365s
+https://github.com/pjreddie/darknet
+https://github.com/tzutalin/labelImg
+
+
+## Files in Repository
+
+* ``README.md`` -  This file.
+* ``_result.txt`` - The result of test set.
+* ``map.txt`` - Results of the last iteration of other model.
+* ``map1000.txt`` - Results of the 1000th iteration.
+* ``map2000.txt`` - Results of the 2000th iteration.
+* ``map3000.txt`` - Results of the 3000th iteration.
+* ``map4000.txt`` - Results of the last iteration.
+* ``validandtest.ipynb`` - valid and test code.
+* ``training.ipynb`` - training code.
+* ``labelling.ipynb`` - labelling the GroundTruth sets.
 
