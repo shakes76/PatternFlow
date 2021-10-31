@@ -4,7 +4,6 @@ The generator and discriminator models of the StyleGAN
 """
 
 from math import log2
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import initializers, layers, Model, constraints
 
@@ -16,6 +15,9 @@ def _get_layers(init_resolution, final_resolution):
     return int(abs(log2(init_resolution) - log2(final_resolution)))
 
 
+#####################################################################
+# self-defined layers used in generator and discriminator
+#####################################################################
 class MinibatchStdev(layers.Layer):
     # initialize the layer
     def __init__(self, group_size=4, **kwargs):
@@ -56,15 +58,84 @@ class PixelNorm(layers.Layer):
         return x * tf.math.rsqrt(tf.reduce_mean(tf.square(x), axis=1, keepdims=True) + epsilon)
 
 
+class ToRGB(Model):
+    """
+    RGB to high-dimensional per-pixel data
+    """
+
+    def __init__(self,
+                 num_channels,  # number of channels in the output
+                 w_init='glorot_uniform',  # kernel initializer
+                 w_const=None):  # kernel constraint
+
+        super().__init__()
+        self.conv = layers.Conv2D(num_channels, (1, 1), strides=(1, 1), padding='same', kernel_initializer=w_init,
+                                  kernel_constraint=w_const)
+
+    def call(self, X, Y=None):
+        t = self.conv(X)
+        return t if Y is None else Y + t
+
+
+class FromRGB(Model):
+    """
+    High-dimension per-pixel data back to RGB
+    """
+    KERNEL = 1
+
+    def __init__(self, filter, w_init='glorot_uniform', w_const=None):
+        super().__init__()
+        self.conv = layers.Conv2D(filter, kernel_size=(self.KERNEL, self.KERNEL), kernel_initializer=w_init,
+                                  kernel_constraint=w_const)
+        self.activation = layers.LeakyReLU()
+
+    def call(self, X, Y=None):
+        t = self.conv(Y)
+        t = self.activation(t)
+        return t if X is None else X + t
+
+
+class WeightedSum(layers.Add):
+    """
+    Interpolation between two images
+    """
+
+    def __init__(self, alpha=0.0, **kwargs):
+        super(WeightedSum, self).__init__(**kwargs)
+        self.alpha = alpha  # the portion of left image during interpolation
+
+    # output a weighted sum of inputs
+    def _merge_function(self, inputs):
+        # only supports a weighted sum of two inputs
+        assert (len(inputs) == 2)
+        # ((1-a) * input1) + (a * input2)
+        output = ((1.0 - self.alpha) * inputs[0]) + (self.alpha * inputs[1])
+        return output
+
+
+#####################################################################
+# Generator and discriminator
+#####################################################################
 class _Generator(Model):
+    """
+    The underlying generator model
+    """
     KERNEL = 3
 
     class ConvLayer(layers.Layer):
-        def __init__(self, filters, kernel, stride, w_init='glorot_uniform', w_const=None):
+        def __init__(self,
+                     filters,                       # number of filters in the output of the convolution
+                     kernel,                        # kernel size in the convolution, e.g. (3, 3) kernel -> kernel=3
+                     stride,                        # stride size in the convolution, e.g. (1, 1) stride -> stride=1
+                     w_init='glorot_uniform',       # kernel initializer
+                     w_const=None):                 # kernel constraints
+
             super(_Generator.ConvLayer, self).__init__()
             self.filters = filters
             self.kernel = kernel
             self.stride = stride
+
+            # convolution block
             self.conv1 = layers.Conv2DTranspose(filters, (kernel, kernel), strides=(stride, stride), padding='same',
                                                 use_bias=False, kernel_initializer=w_init, kernel_constraint=w_const)
             self.pn = PixelNorm()
@@ -74,17 +145,14 @@ class _Generator(Model):
             Y = self.activation(self.pn(self.conv1(X)))
             return Y
 
-    class ToRGB(Model):
-        def __init__(self, num_channels, w_init='glorot_uniform', w_const=None):
-            super().__init__()
-            self.conv = layers.Conv2D(num_channels, (1, 1), strides=(1, 1), padding='same', kernel_initializer=w_init,
-                                      kernel_constraint=w_const)
+    def __init__(self,
+                 latent_dim,            # length of the input latent
+                 channels,              # number of channels in the output images
+                 init_resolution,       # resolution that the input latent is reshaped to, must be a power of 2
+                 output_resolution,     # resolution of the output images, must be a power of 2
+                 init_filters):         # number of filters starting from which will be doubled at each convolutional
+                                        #  layer
 
-        def call(self, X, Y=None):
-            t = self.conv(X)
-            return t if Y is None else Y + t
-
-    def __init__(self, latent_dim, channels, init_resolution, output_resolution, init_filters):
         super().__init__()
         print("Generator: ")
         weight_init = initializers.RandomNormal(stddev=0.02)
@@ -113,7 +181,7 @@ class _Generator(Model):
         for i in range(self.num_of_conv_layers):
             filters = int(init_filters / 2**(i + 1))
             self.conv_layers.append(self.ConvLayer(filters, self.KERNEL, 2, w_init=weight_init, w_const=weight_const))
-            self.to_rgb.append(self.ToRGB(channels, w_init=weight_init, w_const=weight_const))
+            self.to_rgb.append(ToRGB(channels, w_init=weight_init, w_const=weight_const))
             self.upsample.append(layers.UpSampling2D())
             resolution = init_resolution * 2**(i + 1)
             print(f"Conv2dTranspose output: ({resolution}, {resolution}, {filters})")
@@ -122,7 +190,7 @@ class _Generator(Model):
         self.conv_layers.append(layers.Conv2DTranspose(channels, (self.KERNEL, self.KERNEL), strides=(2, 2),
                                                        padding='same', use_bias=False, activation='tanh',
                                                        kernel_initializer=weight_init, kernel_constraint=weight_const))
-        self.to_rgb.append(self.ToRGB(channels))
+        self.to_rgb.append(ToRGB(channels))
         resolution = init_resolution * 2**(self.num_of_conv_layers + 1)
         print(f"Conv2dTranspose output: ({resolution} * {resolution} * {channels})")
 
@@ -131,12 +199,15 @@ class _Generator(Model):
         for layer in self.input_block:
             X = layer(X)
 
+        # the first convolutional layer
         i = 0
         layer = self.conv_layers[i]
         to_rgb = self.to_rgb[i]
         X = layer(X)
         Y = to_rgb(X, Y)
         i += 1
+
+        # iterate through the rest of the convolutional layers
         while i < len(self.conv_layers):
             layer = self.conv_layers[i]
             to_rgb = self.to_rgb[i]
@@ -144,14 +215,29 @@ class _Generator(Model):
 
             X = layer(X)
             Y = up_sampling(Y)
+            # blend in the high-level representation of the last resolution block
             Y = to_rgb(X, Y=Y)
 
             i += 1
+
         return Y
 
 
 class Generator:
-    def __init__(self, lr: float, beta_1: float, latent_dim: int, input_res, output_res, init_filers, rgb=False):
+    """
+    The wrapper class of the generator.
+    """
+    def __init__(self,
+                 lr: float,         # learning rate of the optimizer
+                 beta_1: float,     # exponential decay rate for the first moment estimate
+                 latent_dim: int,   # length of the input latent
+                 input_res: int,    # resolution at the first convolutional layer
+                 output_res,        # output resolution
+                 init_filers,       # number of filters starting from which will be doubled at each convolutional
+                                    #  layer
+
+                 rgb=False):        # whether the output image is in RGB or not
+
         # hyper-parameters
         self.lr = lr
         self.beta_1 = beta_1
@@ -171,20 +257,40 @@ class Generator:
         self.optimizer = tf.keras.optimizers.Adam(self.lr, beta_1=self.beta_1)
 
     def build(self):
+        """
+        Initialize the generator
+        """
         self.model = _Generator(self.latent_dim, self.channels, self.input_res, self.output_res, self.init_filters)
 
     def loss(self, fake_score):
+        """
+        The cross entropy loss of the generator
+
+        :param fake_score: The generator output for generated images
+        :return: cross entropy loss
+        """
         return self._cross_entropy(tf.ones_like(fake_score), fake_score)
 
 
 class _Discriminator(Model):
+    """
+    The underlying discriminator model
+    """
     KERNEL = 3
 
     class ConvLayer(layers.Layer):
-        def __init__(self, filters, stride, input=None, w_init='glorot_uniform', w_const=None):
+        def __init__(self,
+                     filters: int,                   # number of output filters
+                     stride: int,                    # number of strides, e.g. (1, 1) stride -> stride=1
+                     input=None,                     # the input size if it is the input layer
+                     w_init='glorot_uniform',        # kernel initializer
+                     w_const=None):                  # kernel constraint
+
             super(_Discriminator.ConvLayer, self).__init__()
             self.filters = filters
             self.stride = stride
+
+            # convolutional block
             if input is None:
                 self.conv = layers.Conv2D(filters, (_Discriminator.KERNEL, _Discriminator.KERNEL),
                                           strides=(stride, stride), padding='same', kernel_initializer=w_init,
@@ -200,44 +306,17 @@ class _Discriminator(Model):
             Y = self.dropout(self.activation(self.conv(X)))
             return Y
 
-    class FromRGB(Model):
-        KERNEL = 1
-
-        def __init__(self, filter, w_init='glorot_uniform', w_const=None):
-            super().__init__()
-            self.conv = layers.Conv2D(filter, kernel_size=(self.KERNEL, self.KERNEL), kernel_initializer=w_init,
-                                      kernel_constraint=w_const)
-            self.activation = layers.LeakyReLU()
-
-        def call(self, X, Y=None):
-            t = self.conv(Y)
-            t = self.activation(t)
-            return t if X is None else X + t
-
-    class WeightedSum(layers.Add):
-        # init with default value
-        def __init__(self, alpha=0.0, **kwargs):
-            super(_Discriminator.WeightedSum, self).__init__(**kwargs)
-            self.alpha = alpha
-
-        # output a weighted sum of inputs
-        def _merge_function(self, inputs):
-            # only supports a weighted sum of two inputs
-            assert (len(inputs) == 2)
-            # ((1-a) * input1) + (a * input2)
-            output = ((1.0 - self.alpha) * inputs[0]) + (self.alpha * inputs[1])
-            return output
-
     def __init__(self, channels, input_resolution, final_resolution, input_filter):
         super().__init__()
         print("Discriminator: ")
+        # weight initializer and constraint for the convolutional layers
         weight_init = initializers.RandomNormal(stddev=0.02)
         weight_const = constraints.MaxNorm(max_value=1.0)
         self.num_of_conv_layers = _get_layers(input_resolution, final_resolution) - 1
         self.conv_layers = []
         self.skip_layers = []
         self.output_block = []
-        self.from_rgb = self.FromRGB(input_filter)
+        self.from_rgb = FromRGB(input_filter)
 
         # input block
         print(f"Input shape: ({input_resolution}, {input_resolution}, {channels})")
@@ -271,14 +350,17 @@ class _Discriminator(Model):
         image_in, fade_in = input
         X = None
         Y = image_in
-        weighted_sum = self.WeightedSum(alpha=fade_in)
+        weighted_sum = WeightedSum(alpha=fade_in)
 
+        # go through each convolutional layer
         for i in range(len(self.conv_layers)):
             if i == 0:
                 X = self.from_rgb(X, Y=Y)
 
             t = X
             X = self.conv_layers[i](X)
+
+            # blend in the generated image of this layer and the last layer
             t = self.skip_layers[i](t)
             X = weighted_sum([X, t])
 
@@ -288,7 +370,18 @@ class _Discriminator(Model):
 
 
 class Discriminator:
-    def __init__(self, lr, beta_1, input_res, final_res, input_filter, rgb=False):
+    """
+    The wrapper class of the discriminator
+    """
+    def __init__(self,
+                 lr: float,             # learning rate of the optimizer
+                 beta_1: float,         # exponential decay rate for the first moment estimate
+                 input_res: int,        # resolution at the first convolutional layer
+                 final_res: int,        # output resolution
+                 input_filter: int,     # number of filters starting from which will be halved at each convolutional
+                                        #  layer
+                 rgb=False):            # whether the output image is in RGB or not
+
         # hyper-parameters
         self.lr = lr
         self.beta_1 = beta_1
@@ -307,9 +400,19 @@ class Discriminator:
         self.optimizer = tf.keras.optimizers.Adam(self.lr, beta_1=self.beta_1)
 
     def build(self):
+        """
+        Initialize the discriminator
+        """
         self.model = _Discriminator(self.channels, self.input_res, self.final_res, self.input_filter)
 
     def loss(self, real_score, fake_score):
+        """
+        The cross-entropy loss of the discriminator.
+
+        :param real_score: the generator output for the training batch
+        :param fake_score: the generator output for the generated images
+        :return: cross entropy loss
+        """
         real_loss = self._cross_entropy(tf.ones_like(real_score), real_score)
         fake_loss = self._cross_entropy(tf.zeros_like(fake_score), fake_score)
         total_loss = real_loss + fake_loss
