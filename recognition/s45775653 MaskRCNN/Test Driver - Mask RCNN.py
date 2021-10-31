@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
-import pandas as pd
 import os
 import glob
 import cv2
@@ -175,7 +174,7 @@ test_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recog
 test_full_img_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/test_img_full'
 test_full_seg_path = 'D:/UQ Data Science/Subjects/Semester 4/COMP3710 - Pattern Recognition/Final Report/ISIC2018_Task1-2_Training_Data/Data Split/test_seg_full'
 
-
+#%%
 # Generate the augmentations, and save to respective destination folders. Takes time due to augmentations.
 # You can adjust the max_res, and resize factor depending on your GPU
 ds.datasplitter(train_path,seg_path,
@@ -183,7 +182,7 @@ ds.datasplitter(train_path,seg_path,
              val_img_path,val_seg_path,
              test_img_path,test_seg_path, 
              test_full_img_path,test_full_seg_path, 
-             ,max_res=700*700,resize=0.25)
+             max_res=700*700,resize=0.25)
 
 print('Done')
 #%%
