@@ -27,13 +27,21 @@ class VQVAE(nn.Module):
             nn.Conv2d(img_channels, self.D//2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
             nn.Conv2d(self.D//2, self.D, kernel_size=4, stride=2, padding=1),
-            nn.ReLU()
+            nn.ReLU(),
+            ResidualBlock(self.D, self.D), 
+            nn.ReLU(),
+            ResidualBlock(self.D, self.D), 
+            nn.ReLU(),
         )
         
         self.codebook = nn.Embedding(self.K, self.D)
         self.codebook.weight.data.uniform_(-1/self.K, 1/self.K)
         
         self.decoder = nn.Sequential(
+            ResidualBlock(self.D, self.D), 
+            nn.ReLU(),
+            ResidualBlock(self.D, self.D), 
+            nn.ReLU(),
             nn.ConvTranspose2d(self.D, self.D//2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
             nn.ConvTranspose2d(self.D//2, img_channels, kernel_size=4, stride=2, padding=1),
