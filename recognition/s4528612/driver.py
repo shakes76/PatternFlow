@@ -12,7 +12,6 @@ def data_processing(directory, train,validation):
     right = 0
     labels = []
 
-
     patient_knee_collection = dict({})
 
     for dirname, _, filenames in os.walk(directory):
@@ -58,11 +57,8 @@ def data_processing(directory, train,validation):
                     y_test.append(0)
                 else:
                     left += 1
-                    y_test.append(1)
-                    
-                    
-                    
-        
+                    y_test.append(1)                
+                           
     x_train = np.array(x_train)
     x_train /= 255.0
     y_train = np.array(y_train)
@@ -90,3 +86,21 @@ def train_perceiver(perceiver,X_train, y_train,X_val, y_val,X_test, y_test,epoch
     _, accuracy = perceiver.evaluate(X_test, y_test)
     print("Test accuracy:" + str(accuracy))
     return history
+
+
+
+def main():
+    X_train, y_train, X_val, y_val, X_test, y_test = data_processing(IMAGE_DIR, TRAIN_SPLIT,0.04)
+    perceiver = Perceiver()
+    
+    X_train = X_train[0:len(X_train) // 32 * 32]
+    y_train = y_train[0:len(y_train) // 32 * 32]
+    X_val =  X_val[0:len(X_val) // 32 * 32]
+    y_val = y_val[0:len(y_val) // 32 * 32]
+    X_test = X_test[0:len(X_test) // 32 * 32]
+    y_test = y_test[0:len(y_test) // 32 * 32]
+    
+    history = train_perceiver(perceiver,  X_train, y_train,X_val, y_val,X_test, y_test,epochs=EPOCHS)
+
+if __name__ == "__main__":
+    main()
