@@ -1,30 +1,30 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
 
-def attention_mechanism(latent_size, data_size, proj_size):
+def attention_mechanism(latentDim, inputDim, queryDim):
 
-    input_latent = layers.Input((latent_size, proj_size))
-    latents = layers.LayerNormalization()(input_latent)
+    normalizeData = layers.Input((latentDim, queryDim))
+    latents = layers.LayerNormalization()(normalizeData)
 
-    input_data = layers.Input((data_size, proj_size))
-    data_array = layers.LayerNormalization()(input_data)
+    originalSample = layers.Input((inputDim, queryDim))
+    normalizedInput = layers.LayerNormalization()(originalSample)
 
-    query = layers.Dense(proj_size)(latents)
-    key = layers.Dense(proj_size)(data_array)
-    value = layers.Dense(proj_size)(data_array)
+    query = layers.Dense(queryDim)(latents)
+    key = layers.Dense(queryDim)(normalizedInput)
+    value = layers.Dense(queryDim)(normalizedInput)
     
     attention = layers.Attention(use_scale=True)([query, key ,value])
     
-    attention = layers.Dense(proj_size)(attention)
+    attention = layers.Dense(queryDim)(attention)
 
     attention = layers.Add()([attention, latents])
 
     attention = layers.LayerNormalization()(attention)
 
-    outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
+    outputs = layers.Dense(queryDim, activation=tf.nn.gelu)(attention)
 
-    outputs = layers.Dense(proj_size)(outputs)
+    outputs = layers.Dense(queryDim)(outputs)
 
     outputs = layers.Add()([outputs, attention])
 
-    return tf.keras.Model(inputs=[input_latent, input_data], outputs=outputs)
+    return tf.keras.Model(inputs=[normalizeData, originalSample], outputs=outputs)
