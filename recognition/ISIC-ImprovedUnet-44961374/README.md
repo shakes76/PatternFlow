@@ -55,10 +55,18 @@ The dataset for the first problem contains two sets of data.
 1. Input images in jpeg format - these are scan images of the lesions
 2. Output (mask) images in png format - these are the groundtruth.
 
+The images below illustrate a skin lesion (input) image and its corresponding mask.
+
+<p align="center">
+  <kbd>
+  <img src="images/input.jpg" height="200px" width="200px"/>
+  </kbd>
+  <kbd>
+  <img src="images/mask.png" height="200px" width="200px"/>
+   </kbd>
+</p>
+
 The **blacks** (**0**) in the mask images represents the **background** and the **whites** (**255**) represents the **lesion**.
-
-The images below illustrates a skin lesion (input) image and its corresponding mask.
-
 
 ### Processing
 
@@ -73,7 +81,9 @@ the inudustry standard was to perform a sliding window computation on a patch ar
 The original UNet model [4] is a convolutional network that was designed to provide more accurate segmentations with fewer training data and at a much quicker time. The architecture follows a "U" shaped structure (hence the name), where the contracting path that downsamples the image leads to an expansive path that later on upsamples it. The image below shows the original UNet architecture.
 
 <p align="center">
+  <kbd>
   <img src="images/unet.png" height="450px"/>
+  </kbd>
 </p>
 
 UNet performs a _semantic segmentation_, where each pixel of the image is mapped to a class label. The contracting path starts with two 3x3 valid Convolutions, followed by downsampling using MaxPooling. This doubles the number of feature channels. This pattern repeats for a total of four 3x3 valid Convolutions with their corresponding max pooling layers.
@@ -87,7 +97,9 @@ Lastly, a 1x1 Convolution is performed that does not change the input size, rath
 ### The Improved UNet Model
 
 <p align="center">
+  <kbd>
   <img src="images/improved-unet.png" height="450px"/>
+  </kbd>
 </p>
 
 The Improved UNet  Model [5] still follows the "U" shaped structure as the original UNet, but further improvements have been made. The _context module_ in the image above refers to the contracting path and now consists of pre-activation residual blocks. Some key specifications of this model are:
