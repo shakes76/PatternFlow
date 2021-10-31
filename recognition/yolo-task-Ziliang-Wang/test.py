@@ -62,34 +62,6 @@ def get_variable():
 	return weights_path, anchors_mask, input_shape, class_names, num_classes, anchors, num_anchors, confidence, nms_iou, letterbox_image
 
 
-def get_test_iou(weight_folder_path, yolo):
-	"""
-	get the test set iou with weights.
-	"""
-	weights_iou = []
-
-	weights = os.listdir(weight_folder_path)
-	sorted(weights, key=lambda i: i[:2])
-	print(weights)
-	for weight in weights:
-		global weights_path
-		epoch_avg_iou = []
-		weights_path = weight_folder_path + weight
-		yolov3 = yolo.YoloDetect(weights_path)
-
-		for i, line in enumerate(test_img_name_lines):
-			image = Image.open(JPEG_root + line[:-1])
-			img_name = test_img_name_lines[i]
-			iou = yolov3.detect_image(image, line, img_name, detect_image=False)
-			epoch_avg_iou.append(iou)
-		print(torch.mean(
-			torch.tensor(epoch_avg_iou, dtype=torch.float,
-						 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))))
-		print(epoch_avg_iou)
-		weights_iou.append(torch.mean(
-			torch.tensor(epoch_avg_iou, dtype=torch.float,
-						 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))).detach().cpu())
-		Plot_loss(0, 0, weights_iou, epoch=len(weights)).plot_iou()
 
 
 if __name__ == "__main__":
