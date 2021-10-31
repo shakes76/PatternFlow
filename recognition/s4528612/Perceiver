@@ -88,3 +88,40 @@ def transformer_layer():
         i += 1
     return tf.keras.Model(inputs=inputs, outputs=input_output_sum)
 
+class Perceiver(tf.keras.Model):
+
+    def __init__(
+        self,
+        epochs,
+    ):
+        super(Perceiver, self).__init__()
+        self.epoch = epochs
+
+    def build(self, input_shape):
+        self.latent_array = self.add_weight(
+            shape=(256, 27),
+            initializer="random_normal",
+            trainable=True,
+            name='latent'
+        )
+        # Define Required Layers in Model
+        
+        # Cross Attention Layer
+        self.cross_attention = cross_attention()
+        # Transformer Layer
+        self.transformer = transformer_layer()
+        self.global_average_pooling = layers.GlobalAveragePooling1D()
+        self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
+        super(Perceiver, self).build(input_shape)
+
+    def call(self, inputs):
+        cross_attention = [
+            tf.expand_dims(self.latent_array, 0),
+            fourier_encode(inputs)
+        ]
+        i = 0
+        while i < 8:
+            latent_array = self.transformer(self.cross_attention(cross_attention_inputs))
+            cross_attention[0] = latent_array
+            i += 1
+        return self.classify(self.global_average_pooling(cross_attention[0]))
