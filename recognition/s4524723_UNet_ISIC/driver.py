@@ -264,7 +264,7 @@ def main():
 
     print(model.summary())
 
-    epochs = 10
+    epochs = 100
     history = model.fit(train_batches, epochs=epochs, validation_data=validation_batches)
     plot_accuracy_curve(history)
     plot_loss_curve(history)
