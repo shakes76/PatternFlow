@@ -36,7 +36,7 @@ class ListDataset(Dataset):
         ratio = img_size / max_v
         imw = round(img.size[0] * ratio)
         imh = round(img.size[1] * ratio)
-        
+        pad=(0,0,0,0)
         if imh>imw: 
             dim_diff =imh - imw
             pad_left, pad_right = dim_diff // 2, dim_diff - dim_diff // 2
