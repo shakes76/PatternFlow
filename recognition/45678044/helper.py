@@ -5,6 +5,8 @@ import natsort
 from PIL import Image
 import os
 import matplotlib.pyplot as plt
+import pytorch_msssim.ssim as cal_ssim
+from tqdm import tqdm
 
 def train(model, optim, epoch_size, train_loader, valid_loader=None):
     train_loss = []
@@ -62,3 +64,9 @@ def preload_imgs(path):
         dataset[i] = dataset[i] + imgs_tensor[i]
         
     return dataset
+
+def show(img):
+    npimg = img.numpy()
+    plt.figure(figsize=(10, 5))
+    plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
+    plt.axis('off')
