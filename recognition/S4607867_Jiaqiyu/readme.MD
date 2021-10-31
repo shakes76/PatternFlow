@@ -125,7 +125,8 @@ A mAP result on the test set can be calculated.
 
 # Conclusion
 
-
+The mAP result on 0.8 IOU threshold seems not very ideal. Maybe it is because there are some samples in my dataset which are not so typical to get identified. After all, I chose a bigger dataset than the down-sampled one on BB.   
+Also, as I am running darknet on my own device, its GPU memory can only support (batch=72; subdivision=24), but can not support (batch=64, subdivision=16) .  But the training normally takes more than 10 hours, it has a high probability to lose connection if I remotely running the darknet on UQ's lab computer.
 
 
 
