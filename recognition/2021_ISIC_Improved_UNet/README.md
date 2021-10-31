@@ -45,7 +45,7 @@ The layer-by-layer architecture of the Context Modules is as follows:
 |Instance Normalization|
 |Leaky ReLU Activation|
 |3x3 Convolution|
-|Dropout (_0.3 dropout rate_|
+|Dropout (_0.3 dropout rate_)|
 |Instance Normalization|
 |Leaky ReLU Activation|
 |3x3 Convolution|
@@ -171,10 +171,10 @@ You may change the amount of epochs that the network runs for and the `Adam` lea
 - `OPT_LEARNING_RATE` denotes the `Adam` learning rate.
 
 Once the network is finished, 
-1. It will generate `Loss` and `Dice Coefficient` graphs as shown in the `Results` section above. 
-2. It will then proceed to evaluate the test set, and some performance metrics will be output to the screen, as shown in the `Results` section above.
-3. A histogram of the Test Set's DSC distribution throughout evaluation will be generated.
-4. 20 images of the Original Image / Ground Truth Mask / Model-generated Mask will be generated, as shown in the `Results` section above. (_Note: you may change the amount of images output using the `local_batch` variable in the `generatePredictions` method in `driver.py`_)
+1. It will generate `Loss` and `Dice Coefficient` graphs as shown in _Figure 3_ and _Figure 4_ above. 
+2. It will then proceed to evaluate the test set, and some performance metrics will be output to the screen, as shown in _Figure 5_ above.
+3. A histogram of the Test Set's DSC distribution throughout evaluation will be generated, as shown in _Figure 6_ above.
+4. 20 images of the Original Image / Ground Truth Mask / Model-generated Mask will be generated, as shown in _Figure 7_ above. (_Note: you may change the amount of images output using the `local_batch` variable in the `generatePredictions` method in `driver.py`_)
 
 
 
