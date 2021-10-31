@@ -3,13 +3,13 @@
 ##### Student Number: 45872093
 ## Introduction
 In this project an improved UNet model is used for image segmentation to identify Melanoma.
-## Algorithm Description
+### Algorithm Description
 The UNet is an architectural model that consists of two paths: Contraction and Expansion. Contraction is the process
 of capturing the context of an image by reducing its features. This is done traditionally through stacks of
 convolutional and max pooling layers [3]. Expansion is the process of reintroducing information into higher resolution
 layers [3]. In the improved UNet model used, other techniques like dropout, batch normalization, leaky ReLU layers, and
 segmentation are used to improve upon the initial model.
-## Dataset Description
+### Dataset Description
 The ISIC 2018 dataset is a dataset that was released as a resource for an automated image analysis tool development
 competition [2]. The dataset consists of images split into two different folders: Pictures of skin lesions and masks
 that segment the lesions. The goal of this dataset was to promote automated Melanoma detection [2].
@@ -18,7 +18,7 @@ I chose to stick closely to the UNet picture specified in [1]. This involved fiv
 of expansion, with leaky ReLU layers and Batch Normalisation sprinkled throughout. Each contraction layer included a
 context module, with the expansion layers containing a localisation module. Finally, segmentation layers taken from
 stages in between the up-sampling and localisation modules were summed together (element-wise) at the end of the model.
-
+### Hyperparameters
 After modifying the hyperparameters of the model, I found that the best performance occurred with the following values:
 - Training/Validation/Testing split of 80%/10%/10%
 - Batch Size = 16
@@ -30,9 +30,13 @@ After modifying the hyperparameters of the model, I found that the best performa
 - Leaky ReLU alpha parameter (Zero substitution value) = 0.1
 - Model optimizer = 'adam'
 - If the dataset should be shuffled (Set to True be default)
-
-The accuracy and loss metric measured for training is the dice similarity coefficient, to achieve what was asked in
-the assessment specification.
+### Training/ Validating/ Testing data split justification
+A dataset split for training/ validating/ testing was decided to be 80%/10%/10% of the ISIC dataset. This was due to the 
+large amount of data present in the dataset, where I hypothesised that 20% of the dataset was large enough for
+validation and testing.
+### Accuracy and Loss performance metric justification
+The accuracy and loss metric measured for training is the dice similarity coefficient, which was selected to achieve
+what was asked in the assessment specification.
 ## Accuracy of the model
 Trained models with this architecture was able to consistently achieve a dice similarity coefficient of greater or equal
 to 80% in training, validation, and testing. With the default parameters, the following performance was achieved:
