@@ -4,7 +4,7 @@ Author: Anqi Yan S4413599
 
 import pathlib
 import tensorflow as tf
-import sklearn
+import tqdm
 from sklearn.model_selection import train_test_split
 
 '''
@@ -15,7 +15,7 @@ def load_image(inputPath, seg = False):
     train_image_paths = sorted(list(train_data_root.glob('*')))
     train_image_paths = [str(path) for path in train_image_paths]
     train_ds = []
-    for img in train_image_paths:
+    for img in tqdm.tqdm(train_image_paths):
         img_tensor = tf.image.decode_image(tf.io.read_file(img))
         if seg == False:
             img_tensor = tf.image.rgb_to_grayscale(img_tensor, name=None)
