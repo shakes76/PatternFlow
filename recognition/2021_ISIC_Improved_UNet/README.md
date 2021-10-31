@@ -22,7 +22,7 @@ _Figure 1: Sample image and associated mask from the ISICs 2018 dataset_
 As part of the pre-processing phase, all of the images (training images and masks) were normalised. In order to be run through the network, all of the images had to be the same size. The size chosen was (192, 256). The training images kept 3 colour channels: [192, 256, 3]. On the other hand, the segmentation masks were reduced to a single colour channel: [192, 256, 1]. The segmentation masks were also thresholded: pixels with a value > 0.5 after normalisation were set to 1, and the rest were set to 0. 
 
 #### Training, Test & Validation Split.
-The Training, Testing and Validation data split that was chosen was 70 / 15 / 15. Some research was conducted on the optimal split for medical data. In general, it was found that there is no single correct split, however this percentage seemed to be the most highly regarded. For a dataset of this size, that means there was around 1800 training samples, and 390 training & validation samples.  
+The Training, Testing and Validation data split chosen was 70 / 15 / 15. Some research was conducted on the optimal split for medical data. In general, it was found that there is no single correct split, however this percentage seemed to be the most highly regarded. For a dataset of this size, that means there was around 1800 training samples, and 390 training & validation samples.  
 
 ## Architecture
 Proposed in 2018 [1], the Improved UNet is designed upon the original model of UNet, proposed in 2015 [2]. 
@@ -80,7 +80,7 @@ Segmentation occurs 3 times in the Localisation Pathway. Performing segmentation
 
 Segmentation layers are 3x3 convolutions with a single output filter.
 
-The 'U' shaped dashed lines in _Figure 2_ denote the pathway that the segmentation levels take. Output is taken from the levels' Localisation Module and given to a Segmentation Layer. Lower layers are up-sampled to allow element-wise summation to occur. 
+The 'U' shaped dashed lines in _Figure 2_ denote the pathway that the segmentation levels take. Output is taken from the levels' Localisation Module and given to a Segmentation Layer. Lower (smaller) layers are up-sampled to allow element-wise summation to occur. 
 
 ## Optimizer & Loss
 The optimizer used in this implementation was the [Adam optimizer](https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam) with a learning rate of 5e-4, as per [1].
@@ -125,7 +125,7 @@ _Figure 5: Model performance on the Test Set after training_
 From _Figure 5_, we see that the average Dice Coefficient was 80.8%. Overall, 67.8% of the test set yielded a DSC of 0.8+.
 
 #### DSC Distribution
-The histogram below shows the distribution of DSC values on the evaluation of the Test Set.
+The histogram below shows the distribution of the Test Set's DSC values during evaluation.
 
 
 <p align="center">
@@ -163,7 +163,7 @@ Open up a commandline and navigate to the directory where `driver.py` is saved, 
 
 `python driver.py`
 
-To ensure the data is loaded correctly, an image from the Training Input should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
+To ensure the data is loaded correctly, the Training Input from _Figure 1_ should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
 
 You may change the amount of epochs that the network runs for and the `Adam` learning rate by changing the variables at the top of `driver.py`
 
@@ -173,7 +173,7 @@ You may change the amount of epochs that the network runs for and the `Adam` lea
 Once the network is finished, 
 1. It will generate `Loss` and `Dice Coefficient` graphs as shown in the `Results` section above. 
 2. It will then proceed to evaluate the test set, and some performance metrics will be output to the screen, as shown in the `Results` section above.
-3. A histogram of the distribution of the DSC on the test set evaluation will be generated.
+3. A histogram of the Test Set's DSC distribution throughout evaluation will be generated.
 4. 20 images of the Original Image / Ground Truth Mask / Model-generated Mask will be generated, as shown in the `Results` section above. (_Note: you may change the amount of images output using the `local_batch` variable in the `generatePredictions` method in `driver.py`_)
 
 
