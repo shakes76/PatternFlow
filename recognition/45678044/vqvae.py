@@ -1,5 +1,5 @@
 from models import VQVAE
-from helper import train
+from helper import *
 import torch
 import torch.nn as nn
 import torchvision
@@ -13,21 +13,24 @@ transform = transforms.Compose(
      ])
 
 
-train_data = datasets.MNIST(
-    root = './data',
-    train = True,                         
-    transform = transform, 
-    download = True,            
-)
+# train_data = datasets.MNIST(
+#     root = './data',
+#     train = True,                         
+#     transform = transform, 
+#     download = True,            
+# )
 
-test_data = datasets.MNIST(
-    root = './data', 
-    train = False, 
-    transform = transform,
-    download = True,  
-)
+# test_data = datasets.MNIST(
+#     root = './data', 
+#     train = False, 
+#     transform = transform,
+#     download = True,  
+# )
 
-EPOCH_SIZE = 500
+train_data = preload_imgs('D:\学习\COMP3710\demo2\keras_png_slices_data\keras_png_slices_train')
+test_data = preload_imgs('D:\学习\COMP3710\demo2\keras_png_slices_data\keras_png_slices_test')
+
+EPOCH_SIZE = 50
 BATCH_SIZE = 128
 LR = 0.00001
 K = 512

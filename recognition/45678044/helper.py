@@ -1,5 +1,10 @@
 import torch.nn.functional as F
-
+import torch
+import torchvision.transforms as transforms
+import natsort
+from PIL import Image
+import os
+import matplotlib.pyplot as plt
 
 def train(model, optim, epoch_size, train_loader, valid_loader=None):
     train_loss = []
@@ -29,3 +34,31 @@ def train(model, optim, epoch_size, train_loader, valid_loader=None):
     
 def test(model, data_loader, optim, epoch_size):
     pass
+
+def preload_imgs(path):
+    imgs = os.listdir(path)
+
+    transform = transforms.Compose([
+                                    transforms.Grayscale(num_output_channels=1),
+                                    transforms.ToTensor()
+                                    ])
+    
+    imgs_tensor = []
+    
+    for i in range(len(imgs)):
+        img_path = os.path.join(path, imgs[i])
+        image = Image.open(img_path).convert("RGB")
+        img_tensor = transform(image)
+        imgs_tensor.append(img_tensor)
+        print(i)
+        
+    dataset = torch.empty((len(imgs_tensor), 
+                           imgs_tensor[0].shape[0],
+                           imgs_tensor[0].shape[1],
+                           imgs_tensor[0].shape[2],
+                           ))
+    
+    for i in range(len(imgs_tensor)):
+        dataset[i] = dataset[i] + imgs_tensor[i]
+        
+    return dataset
