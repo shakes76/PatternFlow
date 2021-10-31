@@ -51,7 +51,7 @@ plt.imshow(inv_img)
 
 Or use command line to run the main.py script
 ```shell script
-python driver.py
+python main.py
 ```
 ![](correction_result.png)
 

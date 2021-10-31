@@ -12,10 +12,10 @@ Driver script for ImageHistogram module
 
 Usage:
 
-python3 driver.py <image>
-OR python driver.py <image>
+python3 main.py <image>
+OR python main.py <image>
 
-e.g python3 driver.py coins.png
+e.g python3 main.py coins.png
 
 
 """

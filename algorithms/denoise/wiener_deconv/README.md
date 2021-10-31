@@ -52,6 +52,6 @@ img_denoised = wiener(img_noise, psf, 2) # Apply wiener deconvolution to 'img_no
 ```
 Another example for 'camera' from [scikit-image](https://scikit-image.org/docs/dev/api/skimage.data.html).
 ```sh
-python PATH/TO/wiener_deconv/driver.py
+python PATH/TO/wiener_deconv/main.py
 ```
 ![](camera.png)

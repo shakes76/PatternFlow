@@ -33,7 +33,7 @@ class ImageHistogram:
 		Example
 		_______
 
-		See driver.py for example script
+		See main.py for example script
 
 		"""
 		# check the shape of image

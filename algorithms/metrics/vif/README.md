@@ -15,7 +15,7 @@ Visual Infomation Fidelity (VIF) is a measure that evaluates the relative qualit
 ### Built-in driver `main.py`
 The `main()` function imports the images, performs a grayscale conversion, calls the function `pbvif()` of the `vif` module and returns a formatted table with the results.
 ```sh
-driver.py reference_image_filename query_image_filename1 query_image_filename2 query_image_filename3 ...
+main.py reference_image_filename query_image_filename1 query_image_filename2 query_image_filename3 ...
 ```
 
 ### Function pbvif in `vif.py`
@@ -41,7 +41,7 @@ pbvif(ref, query_tab, max_scale=4, var_noise=2.0, mode='nearest')
 
 ### Example
 ```sh
-driver.py lena_ref.bmp lena_gauss_noise.bmp lena_low_pass_filter.bmp lena_jpeg.jpg lena_ref.bmp
+main.py lena_ref.bmp lena_gauss_noise.bmp lena_low_pass_filter.bmp lena_jpeg.jpg lena_ref.bmp
 ```
 
 | ![lena_gauss_noise.bmp](lena_gauss_noise.bmp) | ![lena_low_pass_filter.bmp](lena_low_pass_filter.bmp) | ![lena_jpeg.jpg](lena_jpeg.jpg) | ![lena_ref.bmp](lena_ref.bmp) |  

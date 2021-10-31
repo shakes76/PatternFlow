@@ -100,7 +100,7 @@ def histogram(image, nbins=256, source_range='image', normalize=False):
         warn("This might be a color image. The histogram will be "
              "computed on the flattened image. You can instead "
              "apply this function to each color channel.")
-    # The image dtype has already been converted as tf.int32 in the driver.py file
+    # The image dtype has already been converted as tf.int32 in the main.py file
     image = image.flatten()
     if source_range == 'image':
         hist_range = None

@@ -13,7 +13,7 @@ Student Name: Letian Yan
 Student Number: 44941125
 """
 
-# this is the driver.py which demostrates example usages of the
+# this is the main.py which demostrates example usages of the 
 # gcd and xgcd modules
 
 from number_theory_gcd import gcd as nt_gcd
