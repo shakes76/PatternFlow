@@ -70,7 +70,9 @@ The **blacks** (**0**) in the mask images represents the **background** and the 
 ### Processing
 The image files have been decoded to Tensors. 
 
-The dataset is split into 80:10:10 == Train:Validation:Test ratio. This is because the dataset is relatively small, so majority of it is used for training.
+The dataset is split into 80:10:10 == Train:Validation:Test ratio. 
+
+This is because the dataset is relatively small, so majority of it is used for training.
 
 <!-- About the Model -->
 ## About The Model
@@ -117,8 +119,30 @@ The Improved UNet  Model [5] still follows the "U" shaped structure as the origi
 
 Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation. The formula of DSC is:
 
-#### Accuracy 
-The model performed really well and achieved a validation accuracy of over 90% (based o
+<p align="center">
+  <kbd>
+  <img src="images/dsc.png" height="90px"/>
+  </kbd>
+</p>
+
+|X∩Y| represents the area of overlap
+
+|X| and |Y| are areas of X and Y respectively
+
+A DSC score lies in the range [0,1], where 1 denotes perfect segmentation.
+
+
+#### Model Performance
+The model performed really well and achieved a validation accuracy of over 90% (DSC metrics)
+
+The image below shows the training vs validation accuracy graphs.
+
+<p align="center">
+  <kbd>
+  <img src="images/accuracy.png" height="350px"/>
+  </kbd>
+</p>
+
 
 #### Sample Predictions
 
