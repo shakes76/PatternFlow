@@ -4,11 +4,11 @@
 The skin is the largest organ of the human body. Some skin diseases, such as malignant black, melanoma. These diseases are likely to cause death, and the consequences of misdiagnosis will be very serious. Moles are skin diseases with mild symptoms, but some fatal skin diseases such as malignant black and mildly symptomatic skin diseases and their Similar. Effectively locating and detecting these skin diseases plays a critical role in saving the lives of patients. The ISIC data set contains 23k melanoma examples of malignant and benign images that classify skin injuries. Yolo is a kind of slider image The detection technology is different from mask-rcnn in that it uses a one-stage algorithm, which only uses a convolutional neural network to directly predict the classes and positions of different targets. In here, YoloV3 is used to detect the lesion area of the ISIC data set. The goal of this task is that all detections having a minimum Intersection Over Union of 0.8 on the test set.
 
 
-* [ISIC dataset](#ISICdataset)
+* [ISIC dataset](#ISIC-dataset)
 * <br>
 * [YoloV3](#YoloV3)
 * <br>
-* [Data pre-processing](#Datapre-processing)
+* [Pre-processing](#Pre-processing)
 * <br>
 * [Results](#Results)
 * <br>
@@ -17,7 +17,7 @@ The skin is the largest organ of the human body. Some skin diseases, such as mal
 * [Reference](#Reference)
 * <br>
 
-### ISIC dataset
+### ISIC-dataset
 In this task, we have given the preprocessed data set, which includes 2594 pictures and the corresponding segmented black and white pictures. 
 <p align="center">
   <br>
@@ -50,7 +50,7 @@ YoloV3 uses three different scales of feature maps for target detection to solve
 The feature fusion layer selects the three scales of feature maps produced by DarkNet as input, and fuses the feature maps of each scale through a series of convolution layers and upsampling.
 
 YOLOv3 divides the input image into SxS lattices, and each lattice predicts B bounding boxes, each bounding box prediction includes: x, y, width, height, Confidence and the probability of C categories, so the number of channels in the output layer of YOLOv3 is Bx(5 + C), in here for the ISIC dataset that is 3x(5+1)=18, 3 means a grid cell contains 3 bounding boxes, 4 means the 4 coordinate information of the box, and 1 means Confidence score. 
-### Data pre-processing
+### Pre-processing
 In the data pre-processing stage, the ISIC dataset segmentation image set is used. The first white pixel values (x_min,y_min) and (x_max,y_max) of each image were found during image pixel iterations and making to tags for the xml files. Also, when splitting the dataset, the training and test sets split into 80% and 20%. According to the YoloV3 data loading method, these training and test sets are made into absolute paths and stored in train.txt and test.txt for Dataloader.
 Finally, in the process of loading the dataset in pytorch, when the imported data is the training set, the images will be enhanced to reduce the impact of insufficient data, improving the robustness of the model, providing various "invariants" to the model, and to increase the model's ability to resist overfitting, including resizing, adding gray bars, and image flipping. 
 ## Results
