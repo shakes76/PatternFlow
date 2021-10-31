@@ -47,3 +47,9 @@ After many adjustments, the yolov3_custom3.cfg file is obtained.
 The last configuration file we need before we start training our detector is the train.txt file, which contains the relative paths of all our training images.
 Use generate_train.py and generate_test.py files to generate train.txt and test.txt. Convenient for follow-up training and testing.
 Then we can train the model.This process needs about 10 hours.(Depends on max_batch)
+
+## Reference
+[1]https://www.youtube.com/watch?v=10joRJt39Ns
+[2] https://blog.csdn.net/mieleizhi0522/article/details/79919875
+[3]https://pjreddie.com/darknet/
+[4]https://zhuanlan.zhihu.com/p/91587361
