@@ -56,8 +56,13 @@ This is the statistical results of the prediction. The iou_threshold is set at 0
 
 ## Referrence
 [1] AlexeyAB(2018) https://github.com/pjreddie/darknet 
+
 [2] theAIGuysCode(2021) https://github.com/theAIGuysCode/YOLOv3-Cloud-Tutorial 
+
 [3] Ayoosh Kathuria(2018) https://towardsdatascience.com/yolo-v3-object-detection-53fb7d3bfe6b
+
 [4] Vidushi Meel(2021) https://viso.ai/deep-learning/yolov3-overview/
+
 [5] qqwweee(2018) https://github.com/qqwweee/keras-yolo3
+
 [6] JosephRedmonAliFarhadi(2018) YOLOv3:AnIncrementalImprovement
