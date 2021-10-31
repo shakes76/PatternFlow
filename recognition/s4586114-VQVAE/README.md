@@ -5,7 +5,7 @@ The Vector Quantised Variational AutoEncoder (VQ-VAE), a powerful generative mod
 Additionally, the images constructed by the VQVAE model should achieve a Structured Similarity (SSIM) of over 0.6 for this task.
 
 ## OASIS Brain Dataset
-For the current task, the pre-processed OASIS MRI dataset has been obtained. The model uses 9,664 training images and 544 test images from the respective folders. Note, the brain segment images are not used. An example visualisation of the dataset is shown below.
+For the current task, the pre-processed OASIS MRI dataset has been obtained. The VQVAE model uses 9,664 training images and 544 test images from the respective folders. There are also 1,120 validation images that are not used in the current implementation. Note, the additional brain segment images are ignored for this task. An example visualisation of the dataset is shown below.
 
 ![image](https://user-images.githubusercontent.com/55978813/139571071-3daa6362-09a1-4cd0-8360-e215d2b8f33c.png)
  
@@ -33,13 +33,16 @@ pixels x1, . . . xi−1.*                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n
 
 ## Training
 #### VQVAE
-The VQVAE model is trained to 30 epochs with a batch size of 128. <br /><br />
-![image](https://user-images.githubusercontent.com/55978813/139573217-5832c635-3909-4d85-9b44-036cd8684804.png)
+The pre-processed data set contains a 0.85/0.1/0.05 split of training, testing and validation data. A large training set is required so that the model has sufficient information, can learn from a variety of data and produce accurate reconstructions of images. The testing set is later used to visualise reconstructions and evaluate the model. It is essential that the model has not seen the test set before. The validation set is not required, since the parameter tuning is performed by judging the quality of reconstructions produced on the test set. <br />
+The VQVAE model is trained to 30 epochs with a batch size of 128.  <br /><br />
+![image](https://user-images.githubusercontent.com/55978813/139573217-5832c635-3909-4d85-9b44-036cd8684804.png)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Figure 3: VQVAE Reconstruction Loss*
 
 #### PixelCNN
-The PixelCNN model is trained to 50 epochs with a batch size of 128, using a validation split of 0.1.  <br /><br />
+The codebook indices are the inputs to the PixelCNN model which is trained to 50 epochs with a batch size of 128 and a validation split of 0.1. <br />Note that, 90% of the data is used for training so that the model can learn from a large variety of samples and produce accurate results, whereas 10% is used for validation to verify the accuracy of the model and tune the parameters accordingly.  <br /><br />
 ![image](https://user-images.githubusercontent.com/55978813/139573236-fdf37e4c-82f6-4523-a4a3-440f40f3c945.png)  &nbsp;&nbsp;&nbsp;&nbsp;
-![image](https://user-images.githubusercontent.com/55978813/139573243-07233a5f-ca49-49f5-9147-1b1370566dfb.png)
+![image](https://user-images.githubusercontent.com/55978813/139573243-07233a5f-ca49-49f5-9147-1b1370566dfb.png)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Figure 4: Training loss vs. Validation loss curve.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Figure 5: Training accuracy vs. Validation accuracy curve.
 
 ## Results
 **The reconstructed test images achieved a mean Structured Similarity (SSIM) of 0.82.** <br /><br />
@@ -78,9 +81,9 @@ The PixelCNN model is trained to 50 epochs with a batch size of 128, using a val
 •	Pre-processed OASIS MRI dataset (accessible at <https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA>).
 
 ## References
-A. v. d. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: <https://arxiv.org/pdf/1711.00937.pdf>. <br />
-Oord, A., Kalchbrenner, N., Vinyals, O., Espeholt, L., Graves, A. and Kavukcuoglu, K., 2016. Conditional Image Generation with PixelCNN Decoders. [online] Available at: <https://arxiv.org/pdf/1606.05328.pdf>.
-
+[1] A. v. d. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: <https://arxiv.org/pdf/1711.00937.pdf>. <br />
+[2] Oord, A., Kalchbrenner, N., Vinyals, O., Espeholt, L., Graves, A. and Kavukcuoglu, K., 2016. Conditional Image Generation with PixelCNN Decoders. [online] Available at: <https://arxiv.org/pdf/1606.05328.pdf>. <br />
+[3] Paul, S., 2021. Keras documentation: Vector-Quantized Variational Autoencoders. [online] Keras.io. Available at: <https://keras.io/examples/generative/vq_vae/>.
 
 
 
