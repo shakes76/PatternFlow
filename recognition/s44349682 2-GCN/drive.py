@@ -1,7 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import callbacks, optimizers, regularizers, losses, backend
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.losses import CategoricalCrossentropy
+from tensorflow.keras import callbacks, optimizers
 
 import numpy as np
 import scipy.sparse as sp
@@ -29,7 +27,7 @@ classes = np.unique(fb_data['target'])
 
 # Feature list
 X = fb_data['features']
-# Normalise
+# Normalise features of each node
 X /= X.sum(1).reshape(-1, 1)
 X = tf.convert_to_tensor(X)
 
@@ -44,15 +42,19 @@ lb = LabelBinarizer()
 labels = lb.fit_transform(fb_data['target'])
 
 # Preprocess adjacency matrix by adding identity and dot with degree matrix
+# Giving D^(-1/2) . (A + I) . D^(-1/2)
+# Necessary for correctly calculating adjacent feature values
 AStar = A + sp.eye(A.shape[0])
 D = sp.diags(np.power(np.array(AStar.sum(1)), -0.5).flatten())
 AStar = D.dot(AStar).dot(D).tocoo()
+# Convert to a TF Sparse Array
 indices = np.mat([AStar.row, AStar.col]).transpose()
 AStar = tf.SparseTensor(indices, AStar.data, AStar.shape)
 
+# Establish Graph Input to GCN
 graph = [X, AStar]
 
-
+## Create Masks for train/val/test sets, using 0.2/0.2/0.6 split
 train_mask = np.zeros(nodes, dtype=np.bool)
 val_mask = np.zeros(nodes, dtype=np.bool)
 test_mask = np.zeros(nodes, dtype=np.bool)
@@ -67,16 +69,22 @@ test_mask[train_range] = True
 
 validation_data = (graph, labels, val_mask)
 
+## Running the Model
+# Initialise
 GCN = GCN()
 
-GCN.compile(loss='categorical_crossentropy',#loss=losses.SparseCategoricalCrossentropy(),
+# Compile model using categorical crossentropy, Adam optimizer
+# and record accuracy metric while training
+GCN.compile(loss='categorical_crossentropy',
             optimizer=optimizers.Adam(learning_rate=learning_rate),
             metrics=['accuracy'],
             run_eagerly=True)
 
+# Early Stop callback to prevent overfitting of model
 early_stop = callbacks.EarlyStopping(monitor="val_loss", patience=20,
                                         restore_best_weights=True)
 
+# Fit the model to the graph using the training set mask
 history = GCN.fit(graph,
                 labels,
                 sample_weight=train_mask,
@@ -86,6 +94,25 @@ history = GCN.fit(graph,
                 shuffle=False,
                 callbacks=[early_stop]
                 )
+
+## Displaying Results
+# Show plots of loss and accuracy during fitting over epochs
+plot1 = plt.figure(1)
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['val_loss'], label = 'val_loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.ylim([0, 0.5])
+plt.legend(loc='lower right')
+
+plot2 = plt.figure(2)
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
+plt.show()
 
 
 
