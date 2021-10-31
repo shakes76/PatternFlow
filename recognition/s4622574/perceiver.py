@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers
-from attention import cross_attention_layer
+from attention import attention_mechanism
 from transformer import transformer_layer
 from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
@@ -54,7 +54,7 @@ class Perceiver(tf.keras.Model):
         self.fourier_encoder = FourierEncode(self.max_freq, self.num_bands)
 
 
-        self.cross_attention = cross_attention_layer(
+        self.cross_attention = attention_mechanism(
             self.latent_size,
             self.data_size,
             self.proj_size,

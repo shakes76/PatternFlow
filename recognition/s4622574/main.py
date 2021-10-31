@@ -151,7 +151,7 @@ if __name__ == "__main__":
     perceiverTransformer = Perceiver(patch_size=0,
                             data_size=ROWS*COLS, 
                             latent_size=LATENT_SIZE,
-                            num_bands=NUM_BANDS,
+                            freq_ban=NUM_BANDS,
                             proj_size=PROJ_SIZE, 
                             num_heads=NUM_HEADS,
                             num_trans_blocks=NUM_TRANS_BLOCKS,

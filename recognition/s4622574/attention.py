@@ -1,7 +1,7 @@
 from tensorflow.keras import layers
 import tensorflow as tf 
 
-def cross_attention_layer(latent_size, data_size, proj_size):
+def attention_mechanism(latent_size, data_size, proj_size):
 
     input_latent = layers.Input((latent_size, proj_size))
     latent_array = layers.LayerNormalization()(input_latent)
@@ -9,11 +9,11 @@ def cross_attention_layer(latent_size, data_size, proj_size):
     input_data = layers.Input((data_size, proj_size))
     data_array = layers.LayerNormalization()(input_data)
 
-    q = layers.Dense(proj_size)(latent_array)
-    k = layers.Dense(proj_size)(data_array)
-    v = layers.Dense(proj_size)(data_array)
+    query = layers.Dense(proj_size)(latent_array)
+    key = layers.Dense(proj_size)(data_array)
+    value = layers.Dense(proj_size)(data_array)
     
-    attention = layers.Attention(use_scale=True)([q, k ,v])
+    attention = layers.Attention(use_scale=True)([query, key ,value])
     
     attention = layers.Dense(proj_size)(attention)
 
