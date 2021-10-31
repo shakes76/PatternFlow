@@ -142,4 +142,63 @@ class GatedMaskedConv2d(nn.Module):
 
         return out_v, out_h
     
-    
+class GatedPixelCNN(nn.Module):
+    def __init__(self, input_dim=256, dim=64, n_layers=15):
+        super().__init__()
+        self.dim = dim
+
+        # Create embedding layer to embed input
+        self.embedding = nn.Embedding(input_dim, dim)
+
+        # self.norm = nn.BatchNorm2d(dim)
+        # Building the PixelCNN layer by layer
+        self.layers = nn.ModuleList()
+
+        # Initial block with Mask-A convolution
+        # Rest with Mask-B convolutions
+        for i in range(n_layers):
+            mask_type = 'A' if i == 0 else 'B'
+            kernel = 7 if i == 0 else 3
+            residual = False if i == 0 else True
+
+            self.layers.append(
+                GatedMaskedConv2d(mask_type, dim, kernel, residual)
+            )
+
+        # Add the output layer
+        self.output_conv = nn.Sequential(
+            nn.Conv2d(dim, 512, 1),
+            nn.ReLU(True),
+            nn.Conv2d(512, input_dim, 1)
+        )
+
+        # self.apply(weights_init)
+
+    def forward(self, x):
+        shp = x.size() + (-1, )
+        x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
+        x = x.permute(0, 3, 1, 2)  # (B, C, W, W)
+
+        # x = self.norm(x)
+
+        x_v, x_h = (x, x)
+        for i, layer in enumerate(self.layers):
+            x_v, x_h = layer(x_v, x_h)
+
+        return self.output_conv(x_h)
+
+    def generate(self, shape=(64, 64), batch_size=64):
+        param = next(self.parameters())
+        x = torch.zeros(
+            (batch_size, *shape),
+            dtype=torch.int64, device=param.device
+        )
+
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                logits = self.forward(x)
+                probs = F.softmax(logits[:, :, i, j], -1)
+                x.data[:, i, j].copy_(
+                    probs.multinomial(1).squeeze().data
+                )
+        return x
