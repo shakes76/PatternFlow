@@ -35,7 +35,7 @@ $ pip install tensorflow-addons==0.14.0
 ## Network Architecture  
   
 <p align="center">  
-	<img src="./images/improved_UNet_architecture.PNG" />
+	<img src="./images/improved_UNet_architecture.png" />
 </p>  
 
 <p align="center">  
@@ -98,14 +98,14 @@ is used for all feature map computing convolutions. See also the improved U-Net 
 ## Dataset  
 
 <p align="center"> 
-	<img src="./images/data_samples.PNG" />
+	<img src="./images/data_samples.png" />
 </p>
 
 <p align="center"> 
 	Figure 2. image samples
 </p>  
 
-The dataset used in this project comes from (ISIC 2018 challenge data) [[3, 4]](#Reference). As shown in figure 2, the dataset includes input images and the corresponding ground truth images. The white part in the ground truth image indicates skin lesion, which is segmented from the dermoscopic image. There are overall 2594 input images with their ground truth images.  
+The dataset used in this project comes from [ISIC 2018 challenge data](https://challenge2018.isic-archive.com/task1/) [[3, 4]](#Reference). As shown in figure 2, the dataset includes input images and the corresponding ground truth images. The white part in the ground truth image indicates **skin lesion**, which is segmented from the dermoscopic image. There are overall 2594 input images with their ground truth images.  
 
 ## Getting Started
 
@@ -117,7 +117,7 @@ For data pre-processing, I first resized both input images and ground truth imag
 
 For model compiling, I used `Adam` with default learning rate `0.001` as the optimizer, and used [`DSC`](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) and `accuracy` as metric. Since we want to maximize the dice score, I used `1 - DSC` as the loss function.  
 
-The model is trained with training dataset for `5 epoches`. During the training process, the validation set is used to validate the model performance. The test set is used for testing the model performance at the end.  
+The model is trained with the training set for `5 epoches`. During the training process, the validation set is used to validate the model performance. The test set is used for testing the model performance at the end.  
 
 ### Usage and Example Output
 
@@ -170,14 +170,14 @@ The testing dice similarity coefficient is: 0.847
 ```  
 
 <p align="center"> 
-	<img src="./images/example_test_results.PNG" />
+	<img src="./images/example_test_results.png" />
 </p>
 
 <p align="center"> 
 	Figure 3. example prediceted results
 </p>   
 
-The example result shows that the training DSC is about 0.87 and the validate DSC is 0.84. In addition, it achieves 0.847 DSC of the test set.
+The example result shows that the training DSC is about **0.866** and the validate DSC is **0.842**. In addition, it achieves **0.847** DSC of the test set.
 
 Note: if you want to get the plot like figure 2 as well, you could uncomment the code snippet:
 ```python
