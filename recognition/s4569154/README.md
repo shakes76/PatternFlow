@@ -135,6 +135,11 @@ At the same time, we can also see that as the number of iterations increases, th
 
 We found that the higher the batch, the better the f1 score and other metrics.
 
+Conclusion
+-------
+
+Yolov3 framework performs well in identifying ISIC datasets and is suitable for use as a skin lesion target detection algorithm.
+
 Dependencies
 -------
 Jupyter Notebook
@@ -147,7 +152,8 @@ darknet
 CUDA
 
 References
--------
+---
+
 https://pjreddie.com/darknet/yolo/
 
 https://zhuanlan.zhihu.com/p/49981816
