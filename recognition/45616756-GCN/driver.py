@@ -26,11 +26,11 @@ def main():
     facebook_target = lb.fit_transform(facebook_target)
 
     # Split the target (20:20:60)
-    train_target, test_target = train_test_split(
-        facebook_target, train_size=0.20, test_size=None, stratify=facebook_target
+    facebook_train_target, facebook_test_target = train_test_split(
+        facebook_target, train_size=0.20, shuffle=False
     )
-    validation_target, test_target = train_test_split(
-        test_target, train_size=0.20, test_size=None, stratify=test_target
+    facebook_validation_target, facebook_test_target = train_test_split(
+        facebook_test_target, train_size=0.20, shuffle=False
     )
 
     # Normalize the adjacency matrix
@@ -60,6 +60,14 @@ def main():
         torch.FloatTensor(adjacency_matrix.data),
         torch.Size(adjacency_matrix.shape)
     )
+
+    # print output
+    print('facebook_features:', facebook_features)
+    print('facebook_target:', facebook_target)
+    print('facebook_train_target:', facebook_train_target)
+    print('facebook_validation_target:', facebook_validation_target)
+    print('facebook_test_target:', facebook_test_target)
+    print('adjacency_matrix:', adjacency_matrix)
 
 
 if __name__ == '__main__':
