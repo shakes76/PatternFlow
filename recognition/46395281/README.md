@@ -26,7 +26,7 @@ Chun-Chiao Huang
    During training, whenever the growing happens, the output of the previous layer will be upscaled and mixed with the current layer.
    The proportion of the current layer and the previous layer is controlled by *alpha*, which decays as the current layer being trained.
    #### Loss
-   The loss used is Non-Saturating loss, suggested by tutor Siyu.
+   The loss used is Non-Saturating loss, suggested by tutor Siyu.   
    No other loss is added as it works very well.
 ## Results    
 ### Images   
