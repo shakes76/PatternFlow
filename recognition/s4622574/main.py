@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
-from perceiver import train, Perceiver
+from perceiver import fitModel, Perceiver
 import random, os
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
 
     # checkpoint.restore(ckpt_manager.latest_checkpoint)
-    history = train(perceiverTransformer,
+    history = fitModel(perceiverTransformer,
                     train_set=(trainX, trainY),
                     val_set=(valX, valY),
                     test_set=(testX, testY),
