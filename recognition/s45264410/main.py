@@ -2,7 +2,6 @@ import tensorflow as tf
 from driver import pre_process
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
-from model import *
 
 IMG_WIDTH = 256
 IMG_HEIGHT = 192
