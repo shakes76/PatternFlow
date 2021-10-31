@@ -71,7 +71,7 @@ class CustomCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch):
         pred = model.predict(test)
         mask = pred[0]
-        mask = np.argmax(mask, axis=-1)
+        mask = tf.math.argmax(mask, axis=-1)
         fig, ax1 = plt.subplots(1, 1)
         ax1.imshow(mask[mask.shape[0] // 2], cmap='gray')
         fig.savefig("simple{}.png".format(epoch))

@@ -6,12 +6,12 @@ Date: 05/10/2021
 U-net3D model and additional functions for training and assessing performance.
 """
 
-import numpy as np
 import tensorflow as tf
-import SimpleITK as sitk
 from tensorflow.keras.layers import Input, Conv3D, Conv3DTranspose, concatenate, Dropout, MaxPooling3D, \
     BatchNormalization
 from tensorflow.keras import Model
+from tensorflow.keras import backend as K
+import SimpleITK as sitk
 import matplotlib.pyplot as plt
 
 """
@@ -40,8 +40,8 @@ def get_image(file_name):
     sitk_img = sitk.ReadImage(file_name, sitk.sitkFloat32)
     # Convert to numpy array and normalise
     img_arr = sitk.GetArrayFromImage(sitk_img)
-    avg = np.average(img_arr)
-    sd = np.std(img_arr)
+    avg = tf.reduce_mean(img_arr)
+    sd = tf.math.reduce_std(img_arr)
     img_arr = (img_arr - avg) / sd
     return img_arr
 
@@ -66,7 +66,7 @@ def reshape(dimension, image):
     :param image:
     :return: Reshaped array
     """
-    return np.reshape(image, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
+    return tf.reshape(image, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
 
 
 def unet(filters):
@@ -145,9 +145,9 @@ def plt_compare(img, test_mask, pred, num):
     :param num: Appended to filename when saved
     """
     # reshape
-    img = np.reshape(img, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH))
-    test_mask = np.argmax(test_mask, axis=-1)
-    pred = np.argmax(pred, axis=-1)
+    img = tf.reshape(img, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH))
+    test_mask = tf.math.argmax(test_mask, axis=-1)
+    pred = tf.math.argmax(pred, axis=-1)
 
     # plot
     fig1, (ax1, ax2, ax3) = plt.subplots(1, 3)
@@ -168,8 +168,11 @@ def dice(y_test, y_predict, smooth=0.1):
     :param smooth: Smooth factor
     :return: Dice coefficient
     """
-    y_test_f = y_test.flatten()
-    y_predict_f = y_predict.flatten()
-    intersect = np.sum(y_test_f * y_predict_f)
-    denom = np.sum(y_test_f) + np.sum(y_predict_f) + smooth
-    return (2. * intersect + smooth) / denom
+    y_test_f = K.flatten(y_test)
+    y_test_f = tf.cast(y_test_f, tf.double)
+    y_pred_f = K.flatten(y_predict)
+    y_pred_f = tf.cast(y_pred_f, tf.double)
+    intersect = K.sum(y_test_f * y_pred_f)
+    d = (2. * intersect + smooth) / (K.sum(y_test_f) + K.sum(y_pred_f) + smooth)
+    return d.numpy()
+
