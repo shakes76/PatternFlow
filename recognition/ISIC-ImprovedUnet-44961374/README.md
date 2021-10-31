@@ -12,40 +12,43 @@ Email: mujibulislamdipto@gmail.com
 <details>
     <summary>Table of Contents</summary>
     <ol>
-      <li>
-        <a href="#goal"> Project Goal </a>
-      </li>
-      <li>
-        <a href="#the-data---isic-2018-challenge-data-for-skin-cancer"> Dataset Information </a>
-        <ul>
-            <li><a href="#overview"> Overview </a></li>
-            <li><a href="#contents"> Contents </a></li>
-            <li><a href="#processing"> Processing </a></li>
-        </ul>
-      </li>
-      <li><a href="#about-the-model"> About the Model </a>
-        <ul>
-            <li><a href="#background"> Background </a></li>
-            <li><a href="#the-improved-unet-model"> The Improved UNet Model </a></li>
-        </ul>
-    </li>
-    <li><a href="#results"> Results </a>
-        <ul>
-            <li><a href="#dice-similarity-coefficient"> DSC </a></li>
-            <li><a href="#model-performance"> Model Performance </a></li>
-            <li><a href="#sample-predictions"> Sample Predictions </a></li>
-        </ul>
-    </li>
-            <li><a href="#usage"> Results </a>
-        <ul>
-            <li><a href="#dependencies"> Dependencies </a></li>
-            <li><a href="#setup-instructions"> Setup Instructions </a></li>
-        </ul>
-    </li>
-      <li><a href="#quick-links"> Quick Links </a></li>
-      <li><a href="#references"> References </a></li>
+        <li>
+            <a href="#goal"> Project Goal </a>
+        </li>
+        <li>
+            <a href="#the-data---isic-2018-challenge-data-for-skin-cancer"> Dataset Information </a>
+            <ul>
+                <li><a href="#overview"> Overview </a></li>
+                <li><a href="#contents"> Contents </a></li>
+                <li><a href="#processing"> Processing </a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#about-the-model"> About the Model </a>
+            <ul>
+                <li><a href="#background"> Background </a></li>
+                <li><a href="#the-improved-unet-model"> The Improved UNet Model </a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#results"> Results </a>
+            <ul>
+                <li><a href="#dice-similarity-coefficient"> DSC </a></li>
+                <li><a href="#model-performance"> Model Performance </a></li>
+                <li><a href="#sample-predictions"> Sample Predictions </a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#usage"> Results </a>
+            <ul>
+                <li><a href="#dependencies"> Dependencies </a></li>
+                <li><a href="#setup-instructions"> Setup Instructions </a></li>
+            </ul>
+        </li>
+        <li><a href="#quick-links"> Quick Links </a></li>
+        <li><a href="#references"> References </a></li>
     </ol>
-  </details>
+</details>
 <hr>
 
 <!-- Goal the project -->
@@ -92,8 +95,8 @@ This is because the dataset is relatively small, so majority of it is used for t
 ## About The Model
 
 ### Background
-Contrary to image classification, semantic image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original Unet model,
-the inudustry standard was to perform a sliding window computation on a patch around each pixels. However, as expected this method was computationally expensive.
+Contrary to image classification, semantic image segmentation aims to classify each pixel of an image to respective classes. Prior to the introduction of the original UNet model,
+the industry standard was to perform a sliding window computation on a patch around each pixels. However, as expected this method was computationally expensive.
 
 The original UNet model [4] is a convolutional network that was designed to provide more accurate segmentations with fewer training data and at a much quicker time. The architecture follows a "U" shaped structure (hence the name), where the contracting path that downsamples the image leads to an expansive path that later on upsamples it. The image below shows the original UNet architecture.
 
