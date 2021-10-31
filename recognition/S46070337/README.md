@@ -40,5 +40,5 @@ All the evaluation procedure based on epoch 10.
 
 ##### 1.3 Accuracy and Loss
 #####     The image below is the Accuracy and Loss during training:
-<image width="256" image height="256" src="Screenshots/Unet.png" />
+<image width="700" src="Screenshots/evaluation_curve.png" />
 
