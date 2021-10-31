@@ -14,11 +14,13 @@ def create_encoder(latent_dimensions):
     encoder = Sequential(name="encoder")
     encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(img_length, img_length, 1)))
     encoder.add(Conv2D(64, 3, activation="relu", strides=2, padding="same"))
+    encoder.add(Conv2D(128, 3, activation="relu", strides=2, padding="same"))
     encoder.add(Conv2D(latent_dimensions, 1, padding="same"))
     return encoder
 
 def create_decoder():
     decoder = Sequential(name="decoder")
+    decoder.add(Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
     decoder.add(Conv2DTranspose(1, 3, padding="same"))
