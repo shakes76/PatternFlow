@@ -13,7 +13,7 @@ The skin is the largest organ of the human body. Some skin diseases, such as mal
 
 * [ISIC dataset](#ISIC-dataset)<br>
 * [YoloV3](#YoloV3)<br>
-* [How does yolov3 run and use?](#Run&use)<br>
+* [Run&use](#Run&use)<br>
 * [Results](#Results)<br>
 * [Dependencies](#Dependencies)<br>
 * [Reference](#Reference)<br>
