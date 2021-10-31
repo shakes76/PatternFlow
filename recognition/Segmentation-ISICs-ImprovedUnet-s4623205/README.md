@@ -1,5 +1,13 @@
 # ISICs Dataset Segmentation with Improved UNet
 
+## Table of Contents
+* [Author](#author)
+* [Introduction](#introduction)
+* [ISICs Dataset](#isics-dataset)
+    * [Data preprocessing](#data-preprocessing)
+* [Improved UNet Model](improved-unet-model)
+* [Reference](#reference)
+
 ## Author
 **Name:** Jeng-Chung, Lien<br/>
 **Student ID:** 46232050<br/>
