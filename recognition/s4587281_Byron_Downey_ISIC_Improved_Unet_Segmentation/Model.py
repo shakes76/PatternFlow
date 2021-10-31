@@ -22,24 +22,24 @@ if len(argv) != 8 or not math.isclose(float(train_split) + float(validation_spli
   print("Usage: Model.py [num_epochs] [batch_size] [train_split] [validation_split] [test_split] [dataset_size]  [x_data_location] [y_data_location].\nPlease ensure train, validation and test split add up to 1 (e.g. 0.7, 0.15, 0.15)")
 
 #Load images into Tensorflow Datasets
-x_dataset = tf.keras.utils.image_dataset_from_directory(x_data_location, labels=None)
-y_dataset = tf.keras.utils.image_dataset_from_directory(y_data_location, labels=None)
+x_dataset = tf.keras.utils.image_dataset_from_directory(x_data_location, batch_size=1,shuffle=False, labels=None)
+y_dataset = tf.keras.utils.image_dataset_from_directory(y_data_location, batch_size=1, shuffle=False, labels=None)
 
 #contains training data
 x_train = x_dataset.take(math.floor(train_split * dataset_size))
 y_train = y_dataset.take(math.floor(train_split * dataset_size))
 
 #contains validation and test data
-val_and_test = x_dataset.skip(math.floor(train_split * dataset_size))
-val_and_test = y_dataset.skip(math.floor(train_split * dataset_size))
+x_val_and_test = x_dataset.skip(math.floor(train_split * dataset_size))
+y_val_and_test = y_dataset.skip(math.floor(train_split * dataset_size))
 
 #contains validation data
-x_val = val_and_test.take(math.floor(val_split * dataset_size))
-y_val = val_and_test.take(math.floor(val_split * dataset_size))
+x_val = x_val_and_test.take(math.floor(val_split * dataset_size))
+y_val = y_val_and_test.take(math.floor(val_split * dataset_size))
 
 #contains test data
-x_test = val_and_test.skip(math.floor(val_split * dataset_size))
-y_test = val_and_test.skip(math.floor(val_split * dataset_size))
+x_test = x_val_and_test.skip(math.floor(val_split * dataset_size))
+y_test = y_val_and_test.skip(math.floor(val_split * dataset_size))
 
 def resize_for_Unet(image):
   resized_image = resize(image, (324, 324))
@@ -179,4 +179,3 @@ unet.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy'])
 history = unet.fit(train, epochs = num_epochs, batch_size=batch_size, shuffle=True, validation_data=val, callbacks=callback)
 
 predictions = unet.predict(test)
-print(predictions[0][128])
