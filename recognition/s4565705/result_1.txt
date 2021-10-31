@@ -11,7 +11,13 @@ Create CUDA-stream - 0
  Detection layer: 106 - type = 28 
 
  detections_count = 564, unique_truth_count = 379  
- rank = 0 of ranks = 564  rank = 100 of ranks = 564  rank = 200 of ranks = 564  rank = 300 of ranks = 564  rank = 400 of ranks = 564  rank = 500 of ranks = 564 class_id = 0, name = lesions, ap = 20.95%   	 (TP = 147, FP = 239) 
+ rank = 0 of ranks = 564 
+ rank = 100 of ranks = 564 
+ rank = 200 of ranks = 564 
+ rank = 300 of ranks = 564 
+ rank = 400 of ranks = 564 
+ rank = 500 of ranks = 564 
+class_id = 0, name = lesions, ap = 20.95%   	 (TP = 147, FP = 239) 
 
  for conf_thresh = 0.25, precision = 0.38, recall = 0.39, F1-score = 0.38 
  for conf_thresh = 0.25, TP = 147, FP = 239, FN = 232, average IoU = 32.75 % 
