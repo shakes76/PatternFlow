@@ -70,6 +70,9 @@ OUT_SIZE			= 1 # binary as only left or right knee
 ```
 
 ## Examples and Results
+
+The plots below show the accuracy and loss of the model throughout the training process. Final results are also shown and the model achieved an overall accuracy of approximately 93%.
+
 ![](Images/Accuracy_Plot.png)
 ![](Images/Loss_Plot.png)
 ![](Images/Result.png)
