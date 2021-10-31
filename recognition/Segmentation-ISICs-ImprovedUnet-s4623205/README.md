@@ -10,6 +10,9 @@
 * [ISICs Dataset](#isics-dataset)
     * [Data preprocessing](#data-preprocessing)
 * [Improved UNet Model](#improved-unet-model)
+* [Training Model](#training-model)
+    * [Hyper Parameters](#hyper-parameters)
+    * [Training Results](#training-results)
 * [Reference](#reference)
 
 ## Introduction
@@ -50,6 +53,36 @@ The Improved UNet architecture mentioned above uses a 3x3x3 convolution which is
         * **upscale:** An upsampling layer doubling the input shape as the output shape.
         * **sigmoid:** This performs a 2D convolution with a kernal size of 1x1 with stride one which the input shape and output shape would be the same. Then connected to a sigmoid activation function as the final output.
 
+## Training Model
+To train the model we are using the train set to train the model. Using dice coefficient as a metric to evaluate on the validation set and dice loss as the loss function to train the model. The dice coefficient(DC) equation is shown in the image below where dice loss(DL) is one minus the dice coefficient(DC).
+
+**Dice Coefficient and Dice Loss Equation:**
+![Metrics.png](ExampleImage/MathEquations/Metrics.png)
+
+Inspired from the paper [[1]](#reference_anchor1), instead of using an adam optimizer with L2 regularization weight decay. Here we used an adam optimizer with decoupled weight decay mentioned in the paper [[3]](#reference_anchor3), where it is mentioned that adam optimizer with decoupled weight decay performs better than the adam optimizer with L2 regularization weight decay. A learning rate decay through each epoch is also used in the training procedure, where the learning rate decay equation and plot is shown below.
+
+**Learning Rate Decay Equation:**
+![lrdecay.png](ExampleImage/MathEquations/lrdecay.png)
+**Learning Rate Decay Plot:**
+![lrdecay_plot.png](ExampleImage/Plots/lrdecay_plot.png)
+
+### Hyper Parameters
+Here are the hyper parameters that are used to trained the Improved UNet.
+* **Model Structure:** Same as the Improved UNet in [[1]](#reference_anchor1), using 2D convolution instead of 3D.
+* **Loss Function:** Dice Loss.
+* **Evaluation Metric:** Dice Coefficient.
+* **Optimizer:** Using adam optimizer with decoupled weight decay with a decay rate of 0.00001.
+* **Batch Size:** Using a batch size of 2 to train.
+* **Epochs:** Using 50 epochs to train.
+* **Learning Rate:** Using a learning rate decay through each epoch, with an inital learning rate of 0.001 and a decay rate of 0.95.
+
+### Training Results
+Using the techniques and hyper parameters mentioned above, we can get the dice loss and dice coefficient over the epochs on the train and validation set shown below. Where we select out best model as the model on epoch 47 which has the best performance on the validation set with the highest dice coefficient of 0.8717, which the train set dice coefficient is 0.9353.
+
+**Training Result Plot:**
+![TrainResult.png](ExampleImage/Plots/TrainResult.png)
+
 ## Reference
 <a name="reference_anchor1"></a>[1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: [https://arxiv.org/abs/1802.10508v1](https://arxiv.org/abs/1802.10508v1)<br/>
-<a name="reference_anchor2"></a>[2] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,” May. 2015. [Online]. Available: [https://arxiv.org/abs/1505.04597](https://arxiv.org/abs/1505.04597)
+<a name="reference_anchor2"></a>[2] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,” May. 2015. [Online]. Available: [https://arxiv.org/abs/1505.04597](https://arxiv.org/abs/1505.04597)<br/>
+<a name="reference_anchor3"></a>[3] I. Loshchilov, F. Hutter, “Decoupled Weight Decay Regularization,” Nov. 2017. [Online]. Available: [https://arxiv.org/abs/1711.05101](https://arxiv.org/abs/1711.05101)
