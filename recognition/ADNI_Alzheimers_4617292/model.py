@@ -23,22 +23,13 @@ __email__ = "e.chegne@uqconnect.edu.au"
 
 # Copypasta, as sanity check for fourier encoding
 def fourier_encode(shape, bands, device):
-    # This first "shape" refers to the shape of the input data, not the output of this function
     dims = len(shape)
 
-    # Every tensor we make has shape: (bands, dimension, x, y, etc...)
-
-    # Pos is computed for the second tensor dimension
-    # (aptly named "dimension"), with respect to all
-    # following tensor-dimensions ("x", "y", "z", etc.)
     pos = torch.stack(
         list(torch.meshgrid(*(torch.linspace(-1.0, 1.0, steps=n) for n in list(shape))))
     )
     pos = pos.unsqueeze(0).expand((bands,) + pos.shape).to(device)
 
-    # Band frequencies are computed for the first
-    # tensor-dimension (aptly named "bands") with
-    # respect to the index in that dimension
     band_frequencies = (
         (
             torch.logspace(
@@ -49,16 +40,8 @@ def fourier_encode(shape, bands, device):
         .expand(pos.shape)
     )
 
-    # For every single value in the tensor, let's compute:
-    #             freq[band] * pi * pos[d]
-
-    # We can easily do that because every tensor is the
-    # same shape, and repeated in the dimensions where
-    # it's not relevant (e.g. "bands" dimension for the "pos" tensor)
     result = (band_frequencies * pi * pos).view((dims * bands,) + shape)
 
-    # Use both sin & cos for each band, and then add raw position as well
-    # TODO: raw position
     result = torch.cat(
         [
             torch.sin(result),
@@ -68,29 +51,6 @@ def fourier_encode(shape, bands, device):
     )
 
     return result
-
-
-class PreNorm(nn.Module):
-    """
-    A wrapper used to normalize values before each procedure using LayerNorm.
-
-    Args:
-        dim - input dimension.
-        fn - Layer to be applied post normalization.
-        context_dim - Normalizes the context dimension (of fn) if available. Used for cross attention layers.
-    Returns:
-        Layer with normalized values
-    """
-
-    def __init__(self, dim, fn):
-        super().__init__()
-        self.fn = fn
-        self.norm = nn.LayerNorm(dim)
-
-    def forward(self, x, *args):
-        x = self.norm(x)
-        # Removed extra
-        return self.fn(x, *args)
 
 
 class Attention(nn.Module):
@@ -112,15 +72,41 @@ class Attention(nn.Module):
         sequence length, N is the batch size, and E is embed_dim
     """
 
-    def __init__(self, embed_dim, heads, dropout=0.0):
+    def __init__(self, latent_dim, latent_heads, dropout):
         super().__init__()
-        self.attention = nn.MultiheadAttention(
-            embed_dim, heads, dropout, bias=True, batch_first=True
-        )
 
-    def forward(self, x, z):
-        attn_output, _ = self.attention(z, x, x)
-        return attn_output + z
+        self.layer_norm_x = nn.LayerNorm([latent_dim])
+        self.layer_norm_1 = nn.LayerNorm([latent_dim])
+        self.attention = nn.MultiheadAttention(
+            latent_dim,
+            latent_heads,
+            dropout=0.0,
+            bias=True,
+            add_bias_kv=True,
+        )
+        self.dropout = nn.Dropout(p=dropout)
+        self.linear1 = nn.Linear(latent_dim, latent_dim)
+        self.layer_norm_2 = nn.LayerNorm([latent_dim])
+        self.linear2 = nn.Linear(latent_dim, latent_dim)
+        self.linear3 = nn.Linear(latent_dim, latent_dim)
+
+    def forward(self, x, z_input):
+        # Pre-norm
+        x = self.layer_norm_x(x)
+        z = self.layer_norm_1(z_input)
+
+        z, _ = self.attention(z, x, x)
+        z = self.dropout(z)
+        z = self.linear1(z)
+
+        # MLP
+        z = self.layer_norm_2(z)
+        z = self.linear2(z)
+        z = F.gelu(z)
+        z = self.dropout(z)
+        z = self.linear3(z)
+
+        return z + z_input
 
 
 class SelfAttention(nn.Module):
@@ -135,13 +121,13 @@ class SelfAttention(nn.Module):
     See https://arxiv.org/abs/1706.03762 for more details.
     """
 
-    def __init__(self, embed_dim, heads=8, dropout=0.0):
+    def __init__(self, embed_dim, latent_heads=8, dropout=0.0):
         super().__init__()
-        self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
+        self.attention = Attention(embed_dim, latent_heads, dropout)
 
-    def forward(self, x):
+    def forward(self, x, z):
         # Self-attention
-        return self.attention(x, x)
+        return self.attention(x, z)
 
 
 class CrossAttention(nn.Module):
@@ -157,27 +143,36 @@ class CrossAttention(nn.Module):
     See https://arxiv.org/abs/1706.03762 for more details.
     """
 
-    def __init__(self, embed_dim, heads=1, dropout=0.0):
+    def __init__(self, embed_dim, dropout=0.0):
         super().__init__()
-        self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
+        self.attention = Attention(embed_dim, 1, dropout)
 
     def forward(self, x, z):
         return self.attention(x, z)
 
 
-class MLP(nn.Module):
-    def __init__(self, latent_dim, dropout=0.0):
+class PerceiverBlock(nn.Module):
+    """
+    A perceiver.
+    Depth * (cross attention layer + (self_per_cross_attn * self attention layer))
+    """
+
+    def __init__(self, latent_dim, self_per_cross_attn, dropout, latent_heads):
         super().__init__()
-        self.net = nn.Sequential(
-            nn.LayerNorm(latent_dim),
-            nn.Linear(latent_dim, latent_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(latent_dim, latent_dim),
+
+        self.cross_attention = CrossAttention(latent_dim, dropout=dropout)
+        self.latent_attentions = nn.ModuleList(
+            [
+                SelfAttention(latent_dim, latent_heads=latent_heads, dropout=dropout)
+                for _ in range(self_per_cross_attn)
+            ]
         )
 
-    def forward(self, x):
-        return self.net(x)
+    def forward(self, x, z):
+        z = self.cross_attention(x, z)
+        for latent_attention in self.latent_attentions:
+            z = latent_attention(z, z)
+        return z
 
 
 class Perceiver(nn.Module):
@@ -211,43 +206,56 @@ class Perceiver(nn.Module):
         latent_dim,
         latent_heads=8,
         attn_dropout=0.0,
-        ff_dropout=0.0,
         num_features=2,
         self_per_cross_attn=3,
-        device='cpu'
+        device="cpu",
     ):
         super().__init__()
 
-        # Initial latent vectorss
-        self.latents = nn.Parameter(torch.randn(num_latents, latent_dim), device=device)
+        # Initial latent vectors
+        self.latents = nn.Parameter(torch.randn(num_latents, latent_dim))
         self.depth = depth
         self.fourier_features = fourier_encode(input_shape, fourier_bands, device)
         self.embeddings = nn.Conv1d(
             num_channels + self.fourier_features.shape[0], latent_dim, 1
         )
 
-        # Perceiver block
-        cross_attn = lambda: CrossAttention(latent_dim, heads=1, dropout=attn_dropout)
-        cross_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
-        latent_attn = lambda: SelfAttention(latent_dim, heads=8, dropout=attn_dropout)
-        latent_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
-
         # Logits
         self.linear = nn.Linear(latent_dim, latent_dim)
         self.output = nn.Linear(latent_dim, num_features)
 
-        # Build architecture based on params
-        # Depth * (cross attention layer + (self_per_cross_attn * self attention layer))
-        self.layers = nn.ModuleList([])
-        for i in range(depth):
-            self_attns = nn.ModuleList([])
+        self.block1 = PerceiverBlock(
+            latent_dim,
+            self_per_cross_attn=self_per_cross_attn,
+            latent_heads=latent_heads,
+            dropout=attn_dropout,
+        )
 
-            # Construct self attention block
-            for _ in range(self_per_cross_attn):
-                self_attns.append(nn.ModuleList([latent_attn(), latent_ff()]))
+        self.block2 = nn.ModuleList(
+            [
+                PerceiverBlock(
+                    latent_dim,
+                    self_per_cross_attn=self_per_cross_attn,
+                    latent_heads=latent_heads,
+                    dropout=attn_dropout,
+                )
+                for _ in range(depth - 1)
+            ]
+        )
+        """
+        self.block2 = PerceiverBlockRepeater(
+            PerceiverBlock(
+                latent_dim,
+                self_per_cross_attn=self_per_cross_attn,
+                latent_heads=latent_heads,
+                dropout=attn_dropout,
+            ),
+            depth=max(depth - 1, 0),
+        )
+        """
 
-            # Construct one perceiver block
-            self.layers.append(nn.ModuleList([cross_attn(), cross_ff(), self_attns]))
+        self.linear1 = nn.Linear(latent_dim, latent_dim)
+        self.linear2 = nn.Linear(latent_dim, num_features)
 
     def forward(self, x):
         batch_size = x.shape[0]
@@ -267,17 +275,13 @@ class Perceiver(nn.Module):
         z = z.expand(-1, x.shape[1], -1)
 
         # Train
-        for cross_attn_lyr, cross_ff_lyr, self_attns_lyr in self.layers:
-            z = cross_attn_lyr(x, z)
-            z = cross_ff_lyr(z)
+        z = self.block1(x, z)
+        for perceiver_block in self.block2:
+            z = perceiver_block(x, z)
 
-            for self_attn_lyr, self_ff_lyr in self_attns_lyr:
-                z = self_attn_lyr(z)
-                z = self_ff_lyr(z)
-
-        # To logits
-        z = self.linear(z)
+        # Final classification head
+        z = self.linear1(z)
         z = z.mean(dim=0)
-        z = self.output(z)
+        z = self.linear2(z)
 
         return F.log_softmax(z, dim=-1)
