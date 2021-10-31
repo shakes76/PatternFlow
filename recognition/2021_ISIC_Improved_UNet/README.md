@@ -27,20 +27,63 @@ _Figure 2: Improved UNet Architecture [1]_
 
 The Improved UNet is composed of two main sections, the Context Aggregation pathway and the Localisation pathway. These pathways share information about the input images through Skip Connections from the Context Aggregation Pathway.
 
-### Context Modules (Context Aggregation Pathway)
+### Context Modules & The Context Aggregation Pathway
+The Context Aggregation pathway is designed to encode the input images into increasingly compact representations as the network progresses. To do so, it is composed of a collection of 3x3 Convolutions (with a stride of 2) and Context Modules.
+
+The layer-by-layer architecture of the Context Modules is as follows:
+
+- Instance Normalization
+- Leaky ReLU Activation
+- 3x3 Convolution
+
+- Dropout (_with 0.3 dropout rate_)
+
+- Instance Normalization
+- Leaky ReLU Activation
+- 3x3 Convolution
 
 
-### Localisation Modules (Localisation Pathway)
+### Localisation Modules & The Localisation Pathway
+The Localisation Pathway is designed to increase the dimensionality of the encoded image representation to produce high resolution segmentations by means of Localisation Modules, UpSampling modules and image upscaling.
+
+The layer-by-layer architecture of the Localisation Modules is as follows:
+
+- 3x3 Convolution
+- 1x1 Convolution
+
+
+#### Up-Sampling Modules
+Up-Sampling modules are placed after every localisation module in the Localisation Pathway. 
+
+The layer-by-layer architecture of the Up-Sampling Modules is as follows:
+
+- 2D UpSampling layer (2x2)
+- 3x3 Convolution
 
 ### Skip Connections
+Denoted by the horizontal dashed lines in _Figure 2_, Skip Connections are element-wise summations of the 3x3 (stride 2) Convolutions and Context Module outputs' in the Context Aggregation pathway. Skip Connections are concatenated into the corresponding network level in the Localisation Pathway. 
+
+The Localisation Modules are designed to re-introduce these skip connections into the network after the concatenation. 
+
+### Segmentation
+Segmentation occurs 3 times in the Localisation Pathway. Performing segmentation on multiple levels of the network allows for information from lower levels to be combined with higher segmentation through an element-wise summation.
+
+Segmentation layers are 3x3 convolutions with a single output filter.
+
+The 'U' shaped dashed lines in _Figure 2_ denote the pathway that the segmentation levels take. Output is taken from the levels' Localisation Module and given to a Segmentation Layer. Lower layers are up-sampled to allow element-wise summation to occur. 
 
 ## Optimizer & Loss
-The optimizer used in this implementation was the Adam optimizer with a learning rate of 5e-4.
+The optimizer used in this implementation was the Adam optimizer with a learning rate of 5e-4, as per [1].
 
 ### Dice Similarity Coefficient
-The Dice Similarity Coefficient is a common metric used in segmentation problems.
+The Dice Similarity Coefficient is a common metric used in segmentation problems. Formally, DSC is defined as:
+
+_Image of DSC formula_
+
+That is, the DSC is: 2 * the overlap between the pixels in the Ground Truth segmentation mask, and the model-generated Segmentation Mask. This is then divided by the sum of the total pixels in both masks. 
 
 ## Results
+For the following results, the model was run for _ epochs. _Summary of results_
 
 ### Accuracy & Loss Plots
 
@@ -57,7 +100,7 @@ _Image of input / ground truth / result masks_
 ## Additions and Changes
 The architecture described above gives an overview of the design of the model.
 During development, it was found that making slight tweaks to the architecture resulted in better performance. These changes were:
-- `InstanceNormalisation` layers were added to all convolutions in the encoder pathway.
+- `InstanceNormalisation` layers were added to all 3x3 (stride 2) convolutions in the encoder pathway.
 - `UpSampling2D` layers used the `interpolation='bilinear'` parameter as opposed to the default `interpolation='nearest'`
 
 ## Usage
