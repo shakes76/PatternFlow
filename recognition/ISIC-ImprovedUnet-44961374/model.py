@@ -6,7 +6,7 @@ Specifications of the model can be found at: https://arxiv.org/abs/1802.10508v1
 from tensorflow.keras.layers import Conv2D, Dropout, Input, concatenate, Add, UpSampling2D, LeakyReLU
 from tensorflow.keras import Model
 from tensorflow_addons.layers import InstanceNormalization
-from tensorflow.keras.layers import  Conv2D
+from tensorflow.keras.layers import Conv2D
 
 
 # GLOBAL CONSTANTS (values taken from the paper)
@@ -151,28 +151,27 @@ def create_model(output_channels):
     # level 3
     concat_2 = concatenate([up_sample_2, add_layer_3]) # concatenation
     localization_2 = localization_module(concat_2, INIT_NO_FILTERS * 4) # localization module
+    segmentation_1 = segmentation_layer(localization_2, INIT_NO_FILTERS) # segmentation layer
+    segmentation_1_up = UpSampling2D()(segmentation_1) # upscale
     up_sample_3 = upsampling_module(localization_2, INIT_NO_FILTERS * 2) # upsampling module
+
 
     # level 2
     concat_3 = concatenate([up_sample_3, add_layer_2]) # concatenation
     localization_3 = localization_module(concat_3, INIT_NO_FILTERS * 2) # localization module
+    segmentation_2 = segmentation_layer(localization_3, INIT_NO_FILTERS)
+    segmentation_2 = Add()([segmentation_2, segmentation_1_up])
+    segmentation_2 = UpSampling2D()(segmentation_2)  
     up_sample_4 = upsampling_module(localization_3, INIT_NO_FILTERS) # upsampling module
 
     # level 1
     concat_4 = concatenate([up_sample_4, add_layer_1]) # concatenation
     conv_layer_6 = create_conv2d(concat_4, INIT_NO_FILTERS * 2, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
+    segmentation_3 = segmentation_layer(conv_layer_6, INIT_NO_FILTERS)
+    segmentation_3 = Add()([segmentation_3, segmentation_2])
 
-    # handle segmentation layers
-    print(localization_2)
-    segmentation_1 = segmentation_layer(localization_2, output_channels) # segmentation layer
-    segmentation_1_up = UpSampling2D()(segmentation_1) # upscale
-    segmentation_2 = segmentation_layer(localization_3, output_channels) # segmentation layer
-    print(localization_3, segmentation_1, segmentation_2)
-    add_layer_6 = Add()([segmentation_1_up, segmentation_2]) # element-wise sum
-    add_layer_6_up = UpSampling2D()(add_layer_6) # element-wise sum
-    segmentation_3 = segmentation_layer(conv_layer_6, output_channels) # segmentation layer
-    add_layer_7 = Add()([add_layer_6_up, segmentation_3]) # element-wise sum
-    output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax", padding="same")(add_layer_7) # softmax
+    # output layers
+    output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax", padding="same")(segmentation_3) # softmax
     model = Model(name="ImprovedUnet", inputs=input_layer, outputs=output) # final model
     return model
  
