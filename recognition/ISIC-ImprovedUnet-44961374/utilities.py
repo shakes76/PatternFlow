@@ -99,3 +99,18 @@ def dice_similarity(x, y):
     denominator = (tf.reduce_sum(x) + tf.reduce_sum(y)) #  |x| + |y|
     dsc = numerator / denominator
     return dsc
+
+def plot_accuracy(history):
+    """Plots accuracy graph showing training and validation accuracy for 
+    a given training history of a model
+
+    Args:
+        history (keras.callbacks.History): training history of a model
+    """
+    plt.plot(history.history['dice_similarity'])
+    plt.plot(history.history['val_dice_similarity'])
+    plt.title('Accuracy Graph')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
