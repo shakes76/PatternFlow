@@ -112,5 +112,5 @@ def plot_accuracy(history):
     plt.title('Accuracy Graph')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
