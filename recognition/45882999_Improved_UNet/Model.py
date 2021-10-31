@@ -16,3 +16,16 @@ def context_module(input, filters):
     conv2 = tfa.layers.InstanceNormalization()(dropout)
     conv2 = layers.Conv2D(filters, (3, 3), padding = "same", activation = LeakyReLU(alpha = 0.01))(conv2)
     return conv2
+	
+"""
+Return an upsampling module with a 3x3 convolution
+Parameters:
+    input: The layer prior to this module
+    filters: The number of filters for this module
+Returns:
+    Upsampling module
+"""
+def upsampling_module(input, filters):
+    up = layers.UpSampling2D((2, 2))(input)
+    up = layers.Conv2D(filters, (3, 3), padding = "same", activation = LeakyReLU(alpha = 0.01))(up)
+    return up
