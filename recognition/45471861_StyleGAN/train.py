@@ -19,9 +19,28 @@ __email__ = "zhien.zhang@uqconnect.edu.au"
 
 
 class Trainer:
-    def __init__(self, data_folder: str, output_dir: str, g_input_res, g_init_filters, d_final_res, d_input_filters,
-                 fade_in_base, resolution=64, channels=1, latent_dim=100, batch=128, epochs=20, checkpoint=1,
-                 lr=0.0002, beta_1=0.5, validation_images=16, seed=1, use_neptune=False):
+    """
+    Controls the training of the generative model
+    """
+    def __init__(self,
+                 data_folder: str,      # folder of the training data
+                 output_dir: str,       # output folder
+                 g_init_res: int,       # resolution of the first convolutional layer in the generator
+                 g_init_filters: int,   # number of filters of the first convolutional layer in the generator
+                 d_final_res: int,      # output resolution of the last convolutional layer in the discriminator
+                 d_input_filters: int,  # number of filters of the first convolutional layer in the discriminator
+                 fade_in_base: float,   # the divisor of the current epoch number when calculating the fade in factor
+                 resolution=64,         # the resolution of the output images
+                 channels=1,            # number of channels
+                 latent_dim=100,        # the length of the input latent
+                 batch=128,             # batch size
+                 epochs=20,             # number of training epochs
+                 checkpoint=1,          # save frequency in number of epochs
+                 lr=0.0002,             # learning rate of the optimizers
+                 beta_1=0.5,            # exponential decay rate for the first moment estimate
+                 validation_images=16,  # number of validation images
+                 seed=1,                # random seed
+                 use_neptune=False):    # whether to use Neptune to track the training metrics
 
         self.resolution = resolution
         self.channels = channels
@@ -37,7 +56,7 @@ class Trainer:
         self.fade_in_base = fade_in_base
 
         # initialize models
-        self.generator = Generator(lr, beta_1, latent_dim, g_input_res, resolution, g_init_filters)
+        self.generator = Generator(lr, beta_1, latent_dim, g_init_res, resolution, g_init_filters)
         self.generator.build()
         self.discriminator = Discriminator(lr, beta_1, resolution, d_final_res, d_input_filters)
         self.discriminator.build()
@@ -48,7 +67,7 @@ class Trainer:
             color_mod = "grayscale"
         else:
             color_mod = "rgb"
-        self.load_data(data_folder, (resolution, height), color_mod=color_mod)
+        self.load_data(data_folder, (resolution, resolution), color_mod=color_mod)
 
         # latent code for validation
         self.validation_latent = tf.random.normal([self.num_of_validation_images, latent_dim], seed=seed)
@@ -70,7 +89,7 @@ class Trainer:
             self.run["Epochs"] = epochs
             self.run["Batch size"] = self.batch
             self.run["Latent dim"] = self.latent_dim
-            self.run["G input resolution"] = g_input_res
+            self.run["G input resolution"] = g_init_res
             self.run["G initial filters"] = g_init_filters
             self.run["D input filters"] = d_input_filters
             self.run["D final resolution"] = d_final_res
@@ -94,6 +113,12 @@ class Trainer:
         self.dataset = train_batches
 
     def _train_g(self, fade_in):
+        """
+        Train the generator
+
+        :param fade_in: the fade in factor in the discriminator
+        :return: generator training loss
+        """
         latent = tf.random.normal([self.batch, self.latent_dim])
 
         with tf.GradientTape() as tape:
@@ -108,6 +133,13 @@ class Trainer:
         return score
 
     def _train_d(self, real, fade_in):
+        """
+        Train the discriminator
+
+        :param real: the training batch
+        :param fade_in: the fade in factor in the discriminator
+        :return: the discriminator training loss
+        """
         latent = tf.random.normal([self.batch, self.latent_dim])
         with tf.GradientTape() as tape:
             fake = self.generator.model(latent, training=False)
@@ -122,6 +154,13 @@ class Trainer:
         return score
 
     def _show_images(self, epoch, save=True):
+        """
+        Display validation images.
+
+        :param epoch: the current epoch
+        :param save: whether to save the images under the output folder
+        :return: validation images
+        """
         predictions = self.generator.model(self.validation_latent, training=False)
 
         fig = plt.figure(figsize=(7, 7))
@@ -145,11 +184,16 @@ class Trainer:
         return fig
 
     def train(self):
+        """
+        The training loop of the generative model
+        """
         iter = 0
+
         for epoch in range(self.epochs):
             start = time()
             fade_in = epoch / float(self.fade_in_base)
 
+            # iterate through all batches in the training data
             for image_batch in self.dataset:
                 # normalize to the range [-1, 1] to match the generator output
                 image_batch = (image_batch - 255 / 2) / (255 / 2)
