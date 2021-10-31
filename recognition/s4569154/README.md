@@ -35,5 +35,8 @@ The difference between the concat operation and the add-and-sum operation: the a
 
 Upsample: The role of the upsample layer is to generate a large image from a small feature map by interpolation and other methods. The upsample layer does not change the number of channels in the feature map.
 
+###########部署步骤
 
-#asdsadsadas
+![image](https://user-images.githubusercontent.com/75237235/139569918-ce4ababe-f0b3-4274-9dc3-cb48f270c424.png)
+
+
