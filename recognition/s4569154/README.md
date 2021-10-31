@@ -149,12 +149,19 @@ CUDA
 References
 -------
 https://pjreddie.com/darknet/yolo/
+
 https://zhuanlan.zhihu.com/p/49981816
+
 https://blog.csdn.net/taifengzikai/article/details/86500753
+
 https://www.cnblogs.com/ywheunji/p/10809695.html
+
 https://zhuanlan.zhihu.com/p/76802514
+
 https://www.youtube.com/watch?v=10joRJt39Ns&t=1365s
+
 https://github.com/pjreddie/darknet
+
 https://github.com/tzutalin/labelImg
 
 
