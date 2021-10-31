@@ -37,7 +37,7 @@ def sample(generator, step, mean_style, n_sample, device):
         step=step,
         alpha=1,
         mean_style=mean_style,
-        style_weight=0.7,
+        style_weight=0.7,   # by decreasing style_weight, truncation can be increased
     )
 
     return image
@@ -61,8 +61,8 @@ def style_mixing(generator, step, mean_style, n_source, n_target, device):
     shape = 4 * 2 ** step
     alpha = 1
 
-    images = [torch.ones(1, 3, shape, shape).to(device) * -1]
-
+    images = [torch.ones(1, 3, shape, shape).to(device) * -1]   # a black image
+    # by decreasing style_weight, truncation can be increased
     source_image = generator(
         source_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
     )
@@ -78,7 +78,7 @@ def style_mixing(generator, step, mean_style, n_source, n_target, device):
             step=step,
             alpha=alpha,
             mean_style=mean_style,
-            style_weight=0.7,
+            style_weight=0.7,   # by decreasing style_weight, truncation can be increased
             mixing_range=(0, 1),
         )
         images.append(target_image[i].unsqueeze(0))
@@ -111,12 +111,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
     generator = StyledGenerator(512).to(device)
     ckpt = torch.load(args.path, map_location=device)
     generator.load_state_dict(ckpt['g_running'])
     generator.eval()
-    with torch.no_grad():
-        mean_style = get_mean_style(generator, device)
-        step = int(math.log(args.size, 2)) - 2
-        img = sample(generator, step, mean_style, args.n_row * args.n_col, device)
+
+    mean_style = get_mean_style(generator, device)
+    step = int(math.log(args.size, 2)) - 2
+    img_sample = sample(generator, step, mean_style, 5, device)
+    sample_grid = make_grid(img_sample)
+    show(sample_grid)
+
