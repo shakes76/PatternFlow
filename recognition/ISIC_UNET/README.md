@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿# ISIC image segmentation using UNet
 
 **Author:** Isabel Peters  
