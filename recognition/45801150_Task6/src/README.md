@@ -8,7 +8,9 @@ attempting to maintain as much of the original detail as possible. The differenc
 latent space - as opposed to a normal distribution used by a typical VAE, a Vector Quantiser is used to discretise the
 latent space. This is done by creating a codebook of discrete latent vectors, with which the output of the encoder is
 "snapped" to, to produce its latent representation. These vectors are snapped to the nearest discrete latent vector,
-as determined by the L2 norm [1].
+as determined by the L2 norm [1]. A diagram of this model is shown below [1]
+![image](https://user-images.githubusercontent.com/55824662/139584374-4f695009-10a7-4a9e-a8b6-85d40a4e4192.png)
+
 
 An autoregressive model (such as PixelCNN) can then be used to learn the prior, which can then
 be used to generate high quality images [2]
@@ -16,7 +18,7 @@ be used to generate high quality images [2]
 ## Preprocessed OASIS brain dataset
 This generative model is used to create novel images of brains from the OASIS dataset. This dataset consists of 9664
 training images, 544 testing images and 1120 validation images. Additionally, the images preprocessed such that they 
-are all1 centred, and all are 256 pixels by 256 pixels [5].
+are all centred, and all are 256 pixels by 256 pixels [5].
 
 ## VQ-VAE results
 OASIS brain images from the test set reconstructed by the VQ-VAE achieved an average structural similarity of 73%
@@ -28,9 +30,10 @@ clearly resemble the original.
 Below are examples of this reconstruction, with images from the test set on the left, and respective reconstructions
 on the right
 
-![image](https://user-images.githubusercontent.com/55824662/139584313-401b96f5-056c-4be3-b237-fa499de046b7.png)
-![image](https://user-images.githubusercontent.com/55824662/139584318-4da914b8-5c7b-4f9e-b726-4ebf837bc895.png)
-![image](https://user-images.githubusercontent.com/55824662/139584321-bb0b0e7a-c0be-43be-8ec3-042863237b56.png)
+
+![reconstructions_0](https://user-images.githubusercontent.com/55824662/139584398-377d087f-04e0-48a0-8c8e-b7a5c470964c.png)
+![reconstructions_1](https://user-images.githubusercontent.com/55824662/139584400-3158b834-421f-41fb-baee-e52d27632d53.png)
+![reconstructions_2](https://user-images.githubusercontent.com/55824662/139584402-ffe265f8-a13c-4adb-9017-1b3e2c3919f6.png)
 
 
 ## OASIS brain generation results
@@ -38,9 +41,10 @@ The trained PixelCNN can be used in conjunction with the VQ-VAE to create novel 
 with the current parameters managed to generate images that looked like reasonably like brains, and were similar
 to the brains provided in the OASIS dataset.
 
-![image](https://user-images.githubusercontent.com/55824662/139584322-db964594-a847-4ada-aef9-f9756cd4ec07.png)
-![image](https://user-images.githubusercontent.com/55824662/139584325-05cd025c-9f72-4fce-a8ae-24da960fcdf6.png)
-![image](https://user-images.githubusercontent.com/55824662/139584329-5b71a7b2-2b9b-4c59-a8a4-1bf58884af0d.png)
+![generated_0](https://user-images.githubusercontent.com/55824662/139584406-6bba19a5-b7bc-45b7-bf3e-0370d33c086f.png)
+![generated_1](https://user-images.githubusercontent.com/55824662/139584407-f9b3b708-2e6b-458a-aeaa-735caf5f37a1.png)
+![generated_2](https://user-images.githubusercontent.com/55824662/139584415-0e9adda4-651e-4a0a-8932-da9f95760977.png)
+
 
 ## Usage
 A sample usage of this model can be demonstrated running the driver script:
