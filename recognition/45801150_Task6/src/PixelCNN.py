@@ -1,4 +1,3 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, InputLayer, Input, Lambda
@@ -19,8 +18,6 @@ class PixelConvLayer(keras.layers.Layer):
     def build(self, input_shape):
         self.conv.build(input_shape)
         kernel_shape = self.conv.kernel.get_shape()
-        if self.mask_type == "B":
-            self.xmask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
 
         self.mask = tf.Variable(tf.zeros(shape=kernel_shape, dtype=tf.float32), dtype=tf.float32)
 
