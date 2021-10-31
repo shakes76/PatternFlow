@@ -131,3 +131,14 @@ dmypy.json
 mypy.ini
 
 
+recognition/ISICs_ImprovedUnet_s4561009/.idea/inspectionProfiles/Project_Default.xml
+recognition/ISICs_ImprovedUnet_s4561009/.idea/inspectionProfiles/profiles_settings.xml
+recognition/ISICs_ImprovedUnet_s4561009/.idea/ISICs_ImprovedUnet_s4561009.iml
+recognition/ISICs_ImprovedUnet_s4561009/.idea/modules.xml
+recognition/ISICs_ImprovedUnet_s4561009/.idea/vcs.xml
+recognition/s4434872-unet-improved/.idea/inspectionProfiles/profiles_settings.xml
+recognition/s4434872-unet-improved/.idea/inspectionProfiles/Project_Default.xml
+recognition/s4434872-unet-improved/.idea/misc.xml
+recognition/s4434872-unet-improved/.idea/modules.xml
+recognition/s4434872-unet-improved/.idea/s4434872-unet-improved.iml
+recognition/s4434872-unet-improved/.idea/vcs.xml
