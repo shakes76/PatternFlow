@@ -132,3 +132,5 @@ The Improved UNet  Model [5] still follows the "U" shaped structure as the origi
 [4] O. Ronneberger, P. Fischer, en T. Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation”, arXiv [cs.CV]. 2015.
 
 [5] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, en K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge”, arXiv [cs.CV]. 2018.
+
+[6] https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
