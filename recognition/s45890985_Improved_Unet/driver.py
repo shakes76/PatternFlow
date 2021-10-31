@@ -70,7 +70,7 @@ def display_sample(display_list):
 
 def display_prediction(model, dataset):
     # get a sample from dataset
-    for image, mask in dataset.skip(6).take(1):
+    for image, mask in dataset.skip(11).take(1):
         sample_image, sample_mask = image, mask
 
     # get prediction based on sample retrieved
@@ -102,6 +102,17 @@ def plot_accuracy(history):
     plt.xlabel('Epoch')
     plt.legend(['Accuracy', 'Val_accuracy'])
     plt.show()
+
+def get_avg_sdc(model,dataset, dataset_size):
+    avg_sdc = 0
+    for img, mask in dataset.take(dataset_size):
+        pred = model.predict(img[tf.newaxis, ...])
+        avg_sdc += sdc(mask[tf.newaxis, ...],
+                       pred).numpy()
+
+    avg_sdc = avg_sdc / dataset_size
+    return avg_sdc
+
 
 #data autmentation class
 #code taken from tensorflow image segmentation tutorial https://www.tensorflow.org/tutorials/images/segmentation
@@ -165,7 +176,7 @@ def main():
     model.summary()
 
     # training the model
-    epochs = 5
+    epochs = 3
     epoch_steps = training_size // batch_size
     test_steps = testing_size // batch_size
     history = model.fit(train_batches, epochs=epochs, steps_per_epoch=epoch_steps,
@@ -173,6 +184,6 @@ def main():
     plot_accuracy(history)
     plot_loss(history)
     display_prediction(model, test_dataset)
-
+    print("average dice coefficent: " + str(get_avg_sdc(model, test_dataset, testing_size)))
 if __name__ == "__main__":
     main()
