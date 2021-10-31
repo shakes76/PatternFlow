@@ -8,7 +8,7 @@ Name: Xinqian Wang   |   Student_ID: 45654897   |   Update_Time: 17:20/30/10/202
 > https://arxiv.org/abs/1812.04948
 
 The code I used is basicly from Kim Seonghyeon's Github.
-And thanks for his kindly reply to me for helping me better to understand the model.
+And thanks for his kindly reply to me for helping me better understand the model.
 - Address: https://github.com/rosinality/style-based-gan-pytorch/issues/34
 
 Usage:
