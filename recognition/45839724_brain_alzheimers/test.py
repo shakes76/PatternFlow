@@ -17,7 +17,7 @@ def save_data():
 
     DIR = r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\AKOA_Analysis\\"
     file_paths = [DIR + x for x in os.listdir(DIR)]
-    new_patient_ids = {} # key: e.g. OAI9014797_BaseLine_3_L, value: new id
+    new_patient_ids = {} # key: e.g. OAI9014797_3_L, value: new id
     data = {} # key: unique patient id (created), value: ([xdata], [labels [0 for left, 1 for right]])
     totals = 0
     right = 0
@@ -25,7 +25,8 @@ def save_data():
         is_right = "RIGHT" in file or "Right" in file or "right" in file or "R_I_G_H_T" in file
         right += 1 if is_right else 0
         totals += 1
-        patient_id = file.split("de3d1")[0].split("/")[-1] + ("L" if not is_right else "R")
+        info = file.split("_BaseLine_")
+        patient_id = info[0] + "_" + info[1].split("de3")[0].split("_")[0] + "_" + ("L" if not is_right else "R")
         if patient_id not in new_patient_ids:
             new_patient_ids[patient_id] = len(new_patient_ids)
         new_id = new_patient_ids[patient_id]
@@ -37,12 +38,11 @@ def save_data():
             data[new_id][1].append(label)
         else:
             data[new_id] = ([img], [label])
-    print(totals, right)
 
     # SPLIT DATA. Get train/test split based on patients. 
 
     TEST_SPLIT = 0.4
-    num_patients = len(list(data.keys()))
+    num_patients = len(data)
     patient_ids = list(range(0, num_patients))
     test_patients = random.sample(patient_ids, int(num_patients*TEST_SPLIT))
     train_patients = [x for x in patient_ids if x not in test_patients]
@@ -63,42 +63,42 @@ def save_data():
 
     # SHUFFLE DATA AND SAVE. 
 
-    indices_train = list(range(0, len(xtrain)))
-    indices_test = list(range(0, len(xtest)))
-    random.shuffle(indices_train)
-    random.shuffle(indices_test)
+    #indices_train = list(range(0, len(xtrain)))
+    #indices_test = list(range(0, len(xtest)))
+    #random.shuffle(indices_train)
+    #random.shuffle(indices_test)
     xtrain = np.array(xtrain)
-    xtrain = xtrain[indices_train]
+    #xtrain = xtrain[indices_train]
     np.save("xtrain", xtrain)
     del xtrain
     xtest = np.array(xtest)
-    xtest = xtest[indices_test]
+    #xtest = xtest[indices_test]
     np.save("xtest", xtest)
     del xtest
     ytrain = np.array(ytrain)
-    ytrain = ytrain[indices_train]
+    #ytrain = ytrain[indices_train]
     np.save("ytrain", ytrain)
     del ytrain
     ytest = np.array(ytest)
-    ytest = ytest[indices_test]
+    #ytest = ytest[indices_test]
     np.save("ytest", ytest)
     del ytest
 
 
-SAVE_DATA = False
+SAVE_DATA = True
 
 if SAVE_DATA:
     save_data()
 else:
-    xtrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtrain.npy")
+    xtrain = np.load(r"xtrain.npy")
     xtrain = xtrain[0:400]
-    xtest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\xtest.npy")
+    xtest = np.load(r"xtest.npy")
     xtest = xtest[0:400]
     plt.imshow(xtest[0])
     plt.show()
-    ytrain = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytrain.npy")
+    ytrain = np.load(r"ytrain.npy")
     ytrain = ytrain[0:400]
-    ytest = np.load(r"C:\Users\hmunn\OneDrive\Desktop\COMP3710\Project\Data\ytest.npy")
+    ytest = np.load(r"ytest.npy")
     ytest = ytest[0:400]
 
 
@@ -115,7 +115,8 @@ def get_positional_encodings(img_data, bands=4, sampling_rate=10):
     # logscale for frequencies ( * pi) , 0 start as 10**0 = 1
     frequencies = tf.experimental.numpy.logspace(0.0,(tf.math.log(sampling_rate/2)/tf.math.log(10.)), num = bands, dtype = tf.float32) * math.pi
     # (228,260,2,9)
-    f_features = xd * tf.cast(tf.reshape(tf.concat([tf.math.sin(frequencies), tf.math.cos(frequencies), tf.constant([1.])], axis=0), (1,1,1,2*bands+1)), dtype=tf.double)
+    f_features = tf.cast(xd, tf.float32)
+    f_features = tf.concat([tf.math.sin(f_features[:,:,:,0:4] * frequencies), tf.math.cos(f_features[:,:,:,4:8] * frequencies), tf.expand_dims(f_features[:,:,:,8], -1)], axis=-1)
     f_features = tf.repeat(tf.reshape(f_features, (1,rows,cols,2*(2*bands + 1))), repeats=[data_points],axis=0) # (data_points, 228, 260, 18)
     f_features = tf.cast(f_features, tf.float32)
     return tf.reshape(tf.concat((tf.expand_dims(tf.cast(img_data, tf.float32), 3),f_features),axis=-1), (data_points, rows*cols, -1)) # add data in and flatten images
@@ -238,9 +239,3 @@ learning_rate_fnc = tf.keras.callbacks.LearningRateScheduler(learning_rate_decay
 model = Perceiver()
 
 start_training(model, optimizer, xtrain, xtest, ytrain, ytest, loss_fnc, epochs, learning_rate_fnc, metric)
-
-''' TODO:
-    1. Fix training shape error
-    2. Tuning (dropout, data augmentation etc.)
-    3. Plots, accuracy
-'''
