@@ -9,26 +9,28 @@ segmentation on the aforementioned ISICs dataset.
 The ISIC's dataset contains 2594 images and their associated segmentation masks. By default, the dataset contains images of varying sizes and aspect ratios. Data normalisation and resizing was applied to provide consistency throughout the inputs.
 
 _Image of Training data / Image of associated mask_
+
 _Figure 1: Sample image and associated mask from the ISICs 2018 dataset_
 
 ### Data preprocessing
 As part of the pre-processing phase, all of the images (training images and masks) were normalised. In order to be run through the network, all of the images had to be the same size. The size chosen was (192, 256). The training images kept 3 colour channels: [192, 256, 3]. On the other hand, the segmentation masks were reduced to a single colour channel: [192, 256, 1]. The segmentation masks were also thresholded: pixels with a value > 0.5 after normalisation were set to 1, and the rest were set to 0. 
 
 #### Training, Test & Validation Split.
-The Training, Testing and Validation data split that was chosen was 70 / 15 / 15. Some research was conducted on the optimal split for medical data. In general, it was found that there is no single correct split, however this percentage seemed to be the most widely used. For a dataset of this size, that means there was around 1800 training samples, and 390 training & validation samples.  
+The Training, Testing and Validation data split that was chosen was 70 / 15 / 15. Some research was conducted on the optimal split for medical data. In general, it was found that there is no single correct split, however this percentage seemed to be the most highly regarded. For a dataset of this size, that means there was around 1800 training samples, and 390 training & validation samples.  
 
 ## Architecture
 Proposed in 2018 [1], the Improved UNet is designed upon the original model of UNet, proposed in 2015 [2]. 
 
-![](https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ImprovedUNetArchitecture.png?raw=true)
+![](https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ImprovedUNetArchitecture.png)
 
 _Figure 2: Improved UNet Architecture [1]_
 
-The Improved UNet is composed of two main sections, the encoding path and the decoding path.
+The Improved UNet is composed of two main sections, the Context Aggregation pathway and the Localisation pathway. These pathways share information about the input images through Skip Connections from the Context Aggregation Pathway.
 
-### Context Modules
+### Context Modules (Context Aggregation Pathway)
 
-### Localisation Modules
+
+### Localisation Modules (Localisation Pathway)
 
 ### Skip Connections
 
