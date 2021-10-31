@@ -29,15 +29,30 @@ print("Tensorflow Version:", tf.__version__)
 tf.config.run_functions_eagerly(True)
 
 # ##### Macros #####
-SAVE_DATA			= False
+SAVE_DATA			= True
 BATCH				= 8
-TEST_TRAINING_SPLIT	= 0.8
-IMG_WIDTH			= 260
-IMG_HEIGHT			= 228
-SEED				= 123
+TEST_TRAINING_SPLIT	= 0.75
+IMG_WIDTH			= int(260 / 1)
+IMG_HEIGHT			= int(228 / 1)
+SEED				= 132
 BANDS				= 6
+MAX_FREQUENCY		= 10
 VALIDATION_SPLIT	= 0.2
-EPOCHS				= 6
+EPOCHS				= 1
+INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT)
+LATENT_ARRAY_SIZE	= 256 # Paper uses 512
+BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
+CHANNEL				= (2 * BANDS + 1)
+PROJECTION			= 2 * (2 * BANDS + 1) + 1
+QKV_DIM				= PROJECTION
+LEARNING_RATE		= 0.001
+OPTIMIZER_WEIGHT	= 0.0001
+DROPOUT_RATE		= 0.2
+TRANSFOMER_NUM		= 6
+HEAD_NUM			= 8
+MODULES_NUM			= 6
+ITERATIONS			= 4
+OUT_SIZE			= 1 # binary as only left or right knee
 
 # ##### Import Data #####
 
@@ -81,7 +96,7 @@ def save_data():
 	patients = [list(i) for j, i in itertools.groupby(sorted(patients))]
 
 	# TEMPORARY: REDUCE AMOUNT OF MEMORY USED!
-	patients = patients[0:math.floor(len(patients) * 0.1)]
+	patients = patients[0:math.floor(len(patients) * 0.2)]
 
 	# Split data
 	print("Splitting data into training and testing sets")
@@ -92,6 +107,13 @@ def save_data():
 	patients_train	= [item for sublist in patients_train for item in sublist]
 	patients_test	= [item for sublist in patents_test for item in sublist]
 
+	# Verify no leakage
+	patients_train_array = [i[0] for i in patients_train]
+	patients_train_array = np.array(patients_train_array)
+	patients_test_array = [i[0] for i in patients_test]
+	patients_test_array  = np.array(patients_test_array)
+	print("Intersection: ", np.intersect1d(patients_train_array, patients_test_array))
+
 	# Import/Load images
 	print("Importing training images")
 	xtrain = []
@@ -99,7 +121,7 @@ def save_data():
 	for i in patients_train:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				xtrain.append(np.asarray(PIL.Image.open(j).convert("L")))
+				xtrain.append(np.asarray(PIL.Image.open(j).convert("L").resize(INPUT_SHAPE)))
 				ytrain.append(i[1])
 				break
 	print("Importing testing images")
@@ -108,7 +130,7 @@ def save_data():
 	for i in patients_test:
 		for j in allPics:
 			if i[0].split('.')[0] in j and i[0].split('.')[1] in j.split('de3')[1]:
-				xtest.append(np.asarray(PIL.Image.open(j).convert("L")))
+				xtest.append(np.asarray(PIL.Image.open(j).convert("L").resize(INPUT_SHAPE)))
 				ytest.append(i[1])
 				break
 
@@ -118,6 +140,18 @@ def save_data():
 	xtest  = np.array(xtest, dtype=float)
 	xtrain[:] /= 255
 	xtest[:] /= 255
+
+	# Shuffle xtrain
+	xtrain_order = list(range(0, len(xtrain)))
+	random.shuffle(xtrain_order)
+	xtrain = xtrain[random.shuffle(xtrain_order)]
+	xtrain = np.squeeze(xtrain)
+
+	# Shuffle xtest
+	xtest_order = list(range(0, len(xtest)))
+	random.shuffle(xtest_order)
+	xtest = xtest[random.shuffle(xtest_order)]
+	xtest = np.squeeze(xtest)
 
 	# Save the data to local drive
 	print("Saving data to disk")
@@ -129,9 +163,6 @@ def save_data():
 # Save the data
 if SAVE_DATA:
 	save_data()
-
-BANDS = 6
-MAX_FREQUENCY = 10
 
 def pos_encoding(img):
 	# Create grid
@@ -163,14 +194,13 @@ def pos_encoding(img):
 	out = tf.reshape(out, [n, x_size * y_size, -1]) # Linearise
 	return out
 
-'''
 # Load Data
 print("Loading Data")
 xtrain = np.load('../../../xtrain.npy')
 ytrain = np.load('../../../ytrain.npy')
 xtest = np.load('../../../xtest.npy')
 ytest = np.load('../../../ytest.npy')
-'''
+
 
 '''
 #xtrain = np.asarray(xtrain).astype('float32').reshape((-1,BATCH))
@@ -203,19 +233,6 @@ test_dataset = test_dataset.batch(BATCH, drop_remainder = True)
 
 # ##### Define Modules #####
 
-INPUT_SHAPE			= (IMG_WIDTH, IMG_HEIGHT, 1)
-LATENT_ARRAY_SIZE	= 256 # Paper uses 512
-BYTE_ARRAY_SIZE		= IMG_HEIGHT * IMG_WIDTH
-CHANNEL				= (2 * BANDS + 1)
-PROJECTION			= 2 * (2 * BANDS + 1) + 1
-QKV_DIM				= PROJECTION
-LEARNING_RATE		= 0.001
-DROPOUT_RATE		= 0.1
-TRANSFOMER_NUM		= 6
-HEAD_NUM			= 8
-MODULES_NUM			= 6
-OUT_SIZE			= 1 # binary as only left or right knee
-
 def network_attention():
 	# Network structure starting at latent array
 	latent_layer = tf.keras.layers.Input(shape = [LATENT_ARRAY_SIZE, PROJECTION])
@@ -238,12 +255,12 @@ def network_attention():
 	# Combine latent array into cross attention node thingy
 	attention_layer = tf.keras.layers.Add()([attention_layer, latent_layer]) # Add a connection straight from latent
 	attention_layer = tf.keras.layers.LayerNormalization()(attention_layer)
-	
+
 	# Need to now add a connecting layer
 	out = tf.keras.layers.Dense(PROJECTION, activation='relu')(attention_layer)
-	#out = tf.keras.layers.Dropout(DROPOUT_RATE)(out)
+	out = tf.keras.layers.Dropout(DROPOUT_RATE)(out)
 	#out = tf.keras.layers.Dense(PROJECTION)(out)
-	
+
 	attention_connect_layer = tf.keras.layers.Add()([out, attention_layer])
 
 	out = tf.keras.Model(inputs = [latent_layer, byte_layer], outputs = attention_connect_layer)
@@ -278,11 +295,8 @@ def network_transformer():
 
 # ##### Create Perceiver Module #####
 
-
-
 # Perceiver class
 class Perceiver(tf.keras.Model):
-
 	def __init__(self):
 		super(Perceiver, self).__init__()
 
@@ -320,21 +334,7 @@ class Perceiver(tf.keras.Model):
 
 # ##### Run Training/Evaluation #####
 
-# Make the model using the perceiver class
-#perceiver = Perceiver()
-
-IMG_SIZE = (IMG_HEIGHT, IMG_WIDTH) # image resize
-ROWS, COLS = IMG_SIZE
-TEST_PORTION = 5 # 1/n of test set to become real test set (the rest becomes validation)
-NUM_CLASS = 1 # Number of classes to be predicted (1 for binary)
-LR = 0.001 # Learning rate for optimizer
-WEIGHT_DECAY = 0.0001 # Weight decay for optimizer
-TRAIN_SPLIT = 0.8 # Portion for training set
-
-perceiver = Perceiver(data_size=ROWS*COLS,
-						lr=LR,
-						weight_decay=WEIGHT_DECAY,
-						epoch=EPOCHS)
+perceiver = Perceiver()
 
 # Compile the model
 perceiver.compile(
@@ -342,25 +342,8 @@ perceiver.compile(
 	loss = tf.keras.losses.BinaryCrossentropy(),
 	metrics = tf.keras.metrics.BinaryAccuracy(name="accuracy")
 )
- 
-# Non-constant learning rate
-adjust_learning_rate = tf.keras.callbacks.ReduceLROnPlateau(monitor = "loss", factor = 0.1, patience = 3)
-stop_learning = tf.keras.callbacks.EarlyStopping(monitor = "loss", patience = 15, restore_best_weights = True)
 
-#print(train_dataset)
-#print(test_dataset)
-
-# Perform model fit
-#model_history = perceiver.fit(train_dataset, batch_size = BATCH, epochs = EPOCHS)#, callbacks = [stop_learning, adjust_learning_rate])
-#model_history = perceiver.fit(xtrain, ytrain, batch_size = BATCH, epochs = EPOCHS)#, callbacks = [stop_learning, adjust_learning_rate])
-history = perceiver.train(
-                    train_set=(xtrain, ytrain),
-                    val_set=(X_val, y_val),
-                    test_set=(xtest, ytest),
-                    batch_size=BATCH)
+model_history = perceiver.train_perceiver(train_set=(xtrain, ytrain), test_set=(xtest, ytest))
 
 perceiver.summary()
-
-_, accuracy = perceiver.evaluate(xtest, ytest)
-print("Accuracy:", accuracy)
 
