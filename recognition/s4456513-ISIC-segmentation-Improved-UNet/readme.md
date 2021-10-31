@@ -63,13 +63,14 @@ Each VGG stage contains a seriers of convolution layer with a max pooling layer 
 
 Model straucture of this project is as following with four VGG block, one bottom block and four CONCAT block. The output layer use 'Sigmoid' as the activation function.
 
-Input size for each image: (512， 384， 1)
+Input size for each image: (256， 192， 1)
 
-Encode output size for each image: (32, 24, 1024)
+Encode output size for each image: (16, 12, 1024)
 
 Figure 6 shows the structure of applied UNet.
 
 ![](./images/UNet_cons_1.png)
+
 ![](./images/UNet_cons_2.png)
 Figure 6, UNet structure in this project
 
