@@ -4,12 +4,12 @@ import tensorflow as tf
 def attention_mechanism(latent_size, data_size, proj_size):
 
     input_latent = layers.Input((latent_size, proj_size))
-    latent_array = layers.LayerNormalization()(input_latent)
+    latents = layers.LayerNormalization()(input_latent)
 
     input_data = layers.Input((data_size, proj_size))
     data_array = layers.LayerNormalization()(input_data)
 
-    query = layers.Dense(proj_size)(latent_array)
+    query = layers.Dense(proj_size)(latents)
     key = layers.Dense(proj_size)(data_array)
     value = layers.Dense(proj_size)(data_array)
     
@@ -17,8 +17,7 @@ def attention_mechanism(latent_size, data_size, proj_size):
     
     attention = layers.Dense(proj_size)(attention)
 
-    attention = layers.Add()([attention, latent_array])
-
+    attention = layers.Add()([attention, latents])
 
     attention = layers.LayerNormalization()(attention)
 

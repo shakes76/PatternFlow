@@ -19,7 +19,7 @@ class Perceiver(tf.keras.Model):
         num_trans_blocks,
         num_iterations,
         max_freq, 
-        num_bands,
+        freq_ban,
         lr,
         epoch,
         weight_decay
@@ -34,7 +34,7 @@ class Perceiver(tf.keras.Model):
         self.num_trans_blocks = num_trans_blocks
         self.iterations = num_iterations
         self.max_freq = max_freq
-        self.num_bands = num_bands
+        self.freq_ban = freq_ban
         self.lr = lr
         self.epoch = epoch
         self.weight_decay = weight_decay
@@ -43,7 +43,7 @@ class Perceiver(tf.keras.Model):
 
     def build(self, input_shape):
 
-        self.latent_array = self.add_weight(
+        self.latents = self.add_weight(
             shape=(self.latent_size, self.proj_size),
             initializer="random_normal",
             trainable=True,
@@ -51,10 +51,10 @@ class Perceiver(tf.keras.Model):
         )
 
 
-        self.fourier_encoder = FourierEncode(self.max_freq, self.num_bands)
+        self.fourier_encoder = FourierEncode(self.max_freq, self.freq_ban)
 
 
-        self.cross_attention = attention_mechanism(
+        self.attention_mechanism = attention_mechanism(
             self.latent_size,
             self.data_size,
             self.proj_size,
@@ -79,19 +79,19 @@ class Perceiver(tf.keras.Model):
 
     def call(self, inputs):
         encoded_imgs = self.fourier_encoder(inputs)
-        cross_attention_inputs = [
-            tf.expand_dims(self.latent_array, 0),
+        attention_mechanism_inputs = [
+            tf.expand_dims(self.latents, 0),
             encoded_imgs
         ]
 
 
         for _ in range(self.iterations):
-            latent_array = self.cross_attention(cross_attention_inputs)
-            latent_array = self.transformer(latent_array)
-            cross_attention_inputs[0] = latent_array
+            latents = self.attention_mechanism(attention_mechanism_inputs)
+            latents = self.transformer(latents)
+            attention_mechanism_inputs[0] = latents
 
 
-        outputs = self.global_average_pooling(latent_array)
+        outputs = self.global_average_pooling(latents)
 
 
         logits = self.classify(outputs)

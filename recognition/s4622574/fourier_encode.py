@@ -3,10 +3,10 @@ import tensorflow as tf
 import math
 
 class FourierEncode(layers.Layer):
-    def __init__(self, max_freq=10, num_bands=4):
+    def __init__(self, max_freq=10, freq_ban=4):
         super(FourierEncode, self).__init__()
         self.max_freq = max_freq
-        self.num_bands = num_bands
+        self.freq_ban = freq_ban
 
     def call(self, imgs):
         
@@ -22,7 +22,7 @@ class FourierEncode(layers.Layer):
 
         enc_pos = self._fourier_encode(pos)
         del pos
-        enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.num_bands+1)))
+        enc_pos = tf.reshape(enc_pos, (1, rows, cols, 2*(2*self.freq_ban+1)))
 
 
         enc_pos = tf.repeat(enc_pos, repeats=batch_size, axis=0)
@@ -45,11 +45,11 @@ class FourierEncode(layers.Layer):
         fk = tf.experimental.numpy.logspace(
             start=0.0,
             stop=math.log(self.max_freq / 2) / math.log(10),
-            num=self.num_bands,
+            num=self.freq_ban,
             dtype=tf.float32,
         )
 
-        fk = tf.reshape(fk, (*((1,) * (len(pos.shape) - 1)), self.num_bands))
+        fk = tf.reshape(fk, (*((1,) * (len(pos.shape) - 1)), self.freq_ban))
 
 
         pos = pos * fk * math.pi
