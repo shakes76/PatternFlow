@@ -89,7 +89,7 @@ def run_oasis():
         plt.subplot(4, 5, i + 1)
         plt.imshow(recreated[i].squeeze())
         plt.axis("off")
-    plt.title("'Recreated' Brain MRIs using VQ-VAE")
+    plt.suptitle("'Recreated' Brain MRIs using VQ-VAE")
     plt.savefig("recreation.png")
     print("See recreation.png for recreated test images")
 
@@ -257,7 +257,7 @@ def save_generated_samples(generated_samples, number_of_images):
         plt.subplot(4, 5 , i + 1)
         plt.imshow(generated_samples[i].squeeze())
         plt.axis("off")
-    plt.title("Generated Brain MRIs (using VQ-VAE and PixelCNN)")
+    plt.suptitle("Generated Brain MRIs (using VQ-VAE and PixelCNN)")
     plt.savefig("generated_summary.png")
     plt.close()
     print("Saved summary")
