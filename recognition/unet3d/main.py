@@ -51,7 +51,7 @@ if __name__ == "__main__":
     _ = plt.xlabel('epoch')
     _ = plt.legend(['train', 'validation'], loc='upper right')
     plt.show()
-    plt.savefig('./unet3d/results/images/' + model_name + '_loss.png')
+    plt.savefig('./unet3d/images/' + model_name + '_loss.png')
 
 
     test_results = model.evaluate(test_generator, verbose=0)
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         # True lablel
         _ = ax2.imshow(y_pred[0,:,:,i])
         _ = ax2.set_title('Predicted label')
-        plt.savefig('./unet3d/results/images/' + "The " + str(i+1) + 'th slice of' + model_name + '.png')
+        plt.savefig('./unet3d/images/' + "The " + str(i+1) + 'th slice of' + model_name + '.png')
 
 
 
