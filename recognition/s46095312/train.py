@@ -74,8 +74,8 @@ model.my_compile()
 
 
 print('Training')
-batch_size = 10
-nb_epoch = 25
+batch_size = 11
+nb_epoch = 22
 
 mcp_save = ModelCheckpoint('weight_isic18', save_weights_only=True, save_best_only=True, monitor='dice_coef', mode='min')
 # reduce_lr_loss = ReduceLROnPlateau(monitor='dice_coef', factor=0.85, patience=7, verbose=1, min_delta=1e-4, mode='min')
@@ -92,40 +92,40 @@ with open('hist_isic18', 'wb') as file_pi:
 # Save the weights
 model.my_save('./checkpoints/my_checkpoint')
 
-# compute test data prediction
-testPredictions = model.predict(te_data)
-
-# do a couple of specific sample predictions for visualisation purposes
-samplePrediction_1 = model.predict(te_data[0:1])
-samplePrediction_2 = model.predict(te_data[10:11])
-
-# Re-evaluate the model
-loss, dice_coef, val_dice_coef = model.evaluate(te_data, te_mask)
-print("Restored model, loss: {:5.2f}%".format(100 * loss))
-print("Restored model, dice_coef: {:5.2f}%".format(100 * dice_coef))
-print("Restored model, val_dice_coef: {:5.2f}%".format(100 * val_dice_coef))
-
-# output the dice score of the example predictions
-print("Dice score example 1: ",
-      dice_loss_function(samplePrediction_1[0, :, :, :].argmax(axis=2), te_mask[0, :, :, :].argmax(axis=2)))
-print("Dice score example 2: ",
-      dice_loss_function(samplePrediction_2[0, :, :, :].argmax(axis=2), te_mask[10, :, :, :].argmax(axis=2)))
-# plot the input images and output segmentation maps of the examples
-plt.figure()
-plt.imshow(te_data[0])
-plt.figure()
-plt.imshow(samplePrediction_1[0, :, :, :].argmax(axis=2))
-
-plt.figure()
-plt.imshow(te_data[10])
-plt.figure()
-plt.imshow(samplePrediction_2[0, :, :, :].argmax(axis=2))
-plt.show()
-
-# compute the average dice score over the whole test set
-average_dice_cof = 0.0
-for i in range(520-1):
-    average_dice_cof += dice_loss_function(testPredictions[i, :, :, :].argmax(axis=2), te_mask[i, :, :, :].argmax(axis=2))
-average_dice_cof /= 519
-print("Average dice score on test set is: ", average_dice_cof)
+# # compute test data prediction
+# testPredictions = model.predict(te_data)
+#
+# # do a couple of specific sample predictions for visualisation purposes
+# samplePrediction_1 = model.predict(te_data[0:1])
+# samplePrediction_2 = model.predict(te_data[10:11])
+#
+# # Re-evaluate the model
+# loss, dice_coef, val_dice_coef = model.evaluate(te_data, te_mask)
+# print("Restored model, loss: {:5.2f}%".format(100 * loss))
+# print("Restored model, dice_coef: {:5.2f}%".format(100 * dice_coef))
+# print("Restored model, val_dice_coef: {:5.2f}%".format(100 * val_dice_coef))
+#
+# # output the dice score of the example predictions
+# print("Dice score example 1: ",
+#       dice_loss_function(samplePrediction_1[0, :, :, :].argmax(axis=2), te_mask[0, :, :, :].argmax(axis=2)))
+# print("Dice score example 2: ",
+#       dice_loss_function(samplePrediction_2[0, :, :, :].argmax(axis=2), te_mask[10, :, :, :].argmax(axis=2)))
+# # plot the input images and output segmentation maps of the examples
+# plt.figure()
+# plt.imshow(te_data[0])
+# plt.figure()
+# plt.imshow(samplePrediction_1[0, :, :, :].argmax(axis=2))
+#
+# plt.figure()
+# plt.imshow(te_data[10])
+# plt.figure()
+# plt.imshow(samplePrediction_2[0, :, :, :].argmax(axis=2))
+# plt.show()
+#
+# # compute the average dice score over the whole test set
+# average_dice_cof = 0.0
+# for i in range(520-1):
+#     average_dice_cof += dice_loss_function(testPredictions[i, :, :, :].argmax(axis=2), te_mask[i, :, :, :].argmax(axis=2))
+# average_dice_cof /= 519
+# print("Average dice score on test set is: ", average_dice_cof)
 
