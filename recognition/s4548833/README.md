@@ -8,7 +8,6 @@ darknet
 opencv2
 os
 
-
 ## Model Architecture
 
 ![image](https://user-images.githubusercontent.com/93363361/139520081-f36e8769-8bc7-4ff9-b7b0-62c57c17fc1c.png)
