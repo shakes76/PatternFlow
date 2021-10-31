@@ -6,24 +6,14 @@ import model
 import os
 from model import *
 
-## References
-# list_files, zip, take, skip: https://www.tensorflow.org/api_docs/python/tf/data/Dataset
-# io code: https://www.tensorflow.org/api_docs/python/tf/io/read_file
-# image resizing: https://www.tensorflow.org/api_docs/python/tf/image/resize
-# jpeg decoding: https://www.tensorflow.org/api_docs/python/tf/io/decode_jpeg
-# image thresholding: https://www.tensorflow.org/api_docs/python/tf/where
-# optimizer: https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
-# dice coefficient: https://towardsdatascience.com/metrics-to-evaluate-your-semantic-segmentation-model-6bcb99639aa2
-# dice coefficient 2: https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
-# input dataset to fit(): https://www.tensorflow.org/guide/data
-# plotting predictions: https://www.tensorflow.org/tutorials/load_data/images
+
 
 # Data loading and processing variables
 ISIC_DATA = "./ISIC2018_Task1-2_Training_Input_x2/*.jpg" 
 ISIC_MASKS = "./ISIC2018_Task1_Training_GroundTruth_x2/*.png"
 
-IMAGE_HEIGHT = 192
-IMAGE_WIDTH = 256
+IMAGE_HEIGHT = 192 
+IMAGE_WIDTH = 256 
 
 # Data managing variables
 BATCH_SIZE = 32
@@ -31,7 +21,7 @@ DATASET_SIZE = 2594
 
 # Network variables
 OPT_LEARNING_RATE = 5e-4
-EPOCHS = 13
+EPOCHS = 20
 
 
 def preprocessData(filenames):
@@ -40,6 +30,10 @@ def preprocessData(filenames):
             - decoded
             - reshaped to [IMAGE_HEIGHT, IMAGE_WIDTH] (chosen size)
             - normalised (pixels must be between 0 and 1)
+            
+        Image loading and decoding sourced from Tensorflow:
+        [https://www.tensorflow.org/api_docs/python/tf/io/read_file]
+        [12/08/2021]
             
         @param filenames: the names of all of the image files
         
@@ -66,6 +60,10 @@ def preprocessMasks(filenames):
             - reshaped to [IMAGE_HEIGHT, IMAGE_WIDTH] (chosen size)
             - normalised and thresholded (pixels must be 0 or 1)
             
+        Image loading and decoding sourced from Tensorflow:
+        [https://www.tensorflow.org/api_docs/python/tf/io/read_file]
+        [12/08/2021]
+            
         @param filenames: the names of all of the mask image files
         
         @return the newly processed masks
@@ -88,29 +86,29 @@ def preprocessMasks(filenames):
     
     
 def loadData():
-    print("Function handling the loading, preprocessing and returning of ready-to-use data.")
+    """
+        Handles the loading and preprocessing of the raw data. Loads the 
+        raw dataset from the path defined in ISIC_DATA and ISIC_MASKS. 
+        Data is preprocessed and transformed into a tensorflow Dataset.
+        
+        @return the processed (resized, normalised) raw data as a tensorflow 
+                Dataset.
+    """
     # Get the dataset contents
     isics_data = tf.data.Dataset.list_files(ISIC_DATA, shuffle=False)
     processedData = isics_data.map(preprocessData)
-    print("Finished processing ISICs data...")
     
     # Get the corresponding segmentation masks
     masks_data = tf.data.Dataset.list_files(ISIC_MASKS, shuffle=False)
     processedMasks = masks_data.map(preprocessMasks)
-    print("Finished processing ISICs masks...")
     
     
     # Testing that pre-processing was successful
     for elem in processedData.take(1):
-        print(elem)
-        print(elem.shape)
         plt.imshow(elem.numpy())
         plt.show()
         
     for elem in processedMasks.take(1):
-        print(elem)
-        print(elem.shape)
-        print(np.unique(elem.numpy()))
         plt.imshow(elem.numpy())
         plt.show()
     
@@ -129,7 +127,6 @@ def splitData(dataset):
         
         @return the training, testing and validation datasets, now split 70 / 15 / 15
     """
-    print("Function handling the splitting and batching of data.")
     
     # Define the sizes for a 70 / 15 / 15 split
     training_size = int(0.7 * DATASET_SIZE)
@@ -175,20 +172,22 @@ def diceCoefficient(y_true, y_pred):
          -----------------------------
           Total pixels in both images
           
+        DSC Tensorflow implementation sourced from Medium: 
+        [https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c]
+        [25/10/2019]
+          
         @param y_true: the true output
         @param y_pred: the output predicted by the model
         @return the dice coefficient for the prediction, based on the true output.
     """
-    #overlap = tf.keras.backend.sum(y_true * y_pred, axis=[1, 2, 3])
-    
-    #totalPixels = tf.keras.backend.sum(y_true, axis=[1, 2, 3]) +  tf.keras.backend.sum(y_pred, axis=[1, 2, 3])
-    
-    #diceCoeff = tf.keras.backend.mean((2.0 * overlap + 1) / (totalPixels + 1), axis=0)
-    
     
     y_true_f = tf.keras.backend.flatten(y_true)
     y_pred_f = tf.keras.backend.flatten(y_pred)
+    
+    # Get the pixel intersection of the two images 
     intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
+    
+    # DSC = (2 * intersection) / total_pixels
     diceCoeff = (2. * intersection + 1.) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_pred_f) + 1.)
     
     return diceCoeff
@@ -247,13 +246,10 @@ def generatePredictions(test_data, model):
         # Display 0 or 1 for classes
         prediction = tf.where(mask_prediction[i] > 0.5, 1.0, 0.0)
         plt.imshow(prediction)
-        #print(np.unique(mask_prediction[i]))
         plt.title("Resultant Mask")
         plt.axis("off")
         
         plt.show()
-
-    return 1
 
 
 def plotHistory(history):
@@ -264,7 +260,6 @@ def plotHistory(history):
         @param history: the loss and coefficient history of the model 
                         throughout training.
     """
-    print(history.history.keys())
     modelHistory = history.history
     
     # Loss plots
@@ -302,20 +297,15 @@ def main():
     model = iunet.createPipeline()
     
     # Compile the model, model.compile()
-    print("Compiling model...")
     adamOptimizer = tf.keras.optimizers.Adam(learning_rate=OPT_LEARNING_RATE)
     model.compile(optimizer=adamOptimizer, loss=diceLoss, metrics=[diceCoefficient])
-    print("Model compilation complete.")
     
     # Train the model, model.fit()
-    print("Training the model...")
     history = model.fit(train_data_batched, epochs=EPOCHS, validation_data=validation_data_batched)
-    print("Model training complete.")
     
     plotHistory(history)
     
     # Evaluate performance on test, model.evaluate()
-    print("Evaluating the model on the test set...")
     i = 0
     lossV = []
     coefficientV = []
@@ -348,13 +338,10 @@ def main():
     plt.show()
         
  
-    
-    print("Model evaluation complete.")
+
     
     # Perform predictions, model.predict()
-    print("Displaying model predictions...")
     generatePredictions(test_data, model)
-    print("Model prediction complete.")
     
 
 

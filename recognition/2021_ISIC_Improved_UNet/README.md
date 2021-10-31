@@ -106,7 +106,6 @@ _Image of input / ground truth / result masks_
 ## Additions and Changes
 The architecture described above gives an overview of the design of the model.
 During development, it was found that making slight tweaks to the architecture resulted in better performance. These changes were:
-- `InstanceNormalisation` layers were added to all 3x3 (stride 2) convolutions in the context aggregation pathway.
 - `UpSampling2D` layers used the `interpolation='bilinear'` parameter as opposed to the default `interpolation='nearest'`
 
 ## Usage
@@ -136,10 +135,11 @@ Once the network is finished,
 
 
 ## Dependencies
-- Python _
+- Python 3.9.6
 - Tensorflow 2.6.0
 - Matplotlib 3.4.2
-- Numpy _
+- Numpy 1.19.5
+- Tensorflow Addons 0.14.0
 
 ## References
 [1]: Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., Maier-Hein, K.H, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge". _arXiv: Computer Vision and Pattern Recognition_, 2018.
