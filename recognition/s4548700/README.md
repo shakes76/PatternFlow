@@ -23,7 +23,7 @@ YOLOv3 predicts an objectness score for each bounding box using logistic regress
 4. os
 5. darknet framework：Darknet is an open source neural network framework written in C and CUDA. It is fast, easy to install, and supports CPU and GPU computation.
 ## Dataset
-The training set is the training set of 2018ISICs, which contains 2518 original pictures and 2518 ground truths. The test set is the test set of 2017ISICs, including 600 original pictures and 600 ground truths each
+The training set is the training set of 2018ISICs, which contains 2518 original pictures and 2518 ground truths. The test set is the test set of 2017ISICs, including 600 original pictures and 600 ground truths each. This is the download address of my dataset: https://challenge.isic-archive.com/data/
 ## Model Training and Best Model Selection
 The Yolov3 model is trained on the ISIC training data set and the best model has been selected on the basis of improvement of validation data set dice loss. The specific steps are following:
 1. Download 2018 ISICs trainning data from the url in the assessment pdf.
@@ -43,6 +43,9 @@ lablel.py: Convert the ground truth picture into a recognition frame, each groun
 generate_train/test: Extract image path
 yolov3_customer.cfg: Based on yolov3.cfg in the darknet framework, I modified some of its parameters to improve the performance of the model.
 ## Results
+https://drive.google.com/file/d/1-D8LpGI4TGFUFmvUnLurzplFa5eUUu-k/view?usp=sharing
+This link is my final model file, because it is 200M, I can not upload it to github.
+
 ![example2](https://user-images.githubusercontent.com/87461237/139568968-d2515a49-4b40-41cc-b843-981636372109.png) ![ISIC_0013766_segmentation](https://user-images.githubusercontent.com/87461237/139569088-52d81d68-eb27-4d45-b1e4-c74a30e2ecb2.png)
 
 The first picture is a prediction of my model on the test set. The melanoma is identified in the pink box. The second picture is the ground truth of the test set. Compared with the first picture, it is found that the two pictures have similar recognition of melanoma. This kind of prediction is relatively successful, and the prediction result of iou is relatively high.
