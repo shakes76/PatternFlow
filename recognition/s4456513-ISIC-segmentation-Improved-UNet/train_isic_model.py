@@ -133,15 +133,15 @@ def show_pred_mask(ds, num = 1):
         fig = plt.figure(figsize=(12,12))
         ax1 = fig.add_subplot(1,3,1)
         # plot raw image 
-        plt.imshow(tf.squeeze(image), cmap='gray')
+        ax1.imshow(tf.squeeze(image), cmap='gray')
         ax1.set_title('Raw Grayscale Image')
         ax2 = fig.add_subplot(1,3,2)
         # plot raw mask
-        plt.imshow(tf.squeeze(mask), cmap='gray')
+        ax2.imshow(tf.squeeze(mask), cmap='gray')
         ax2.set_title('Raw Mask')
         ax3 = fig.add_subplot(1,3,3)
         # plot predicted mask
-        plt.imshow(tf.squeeze(pred_mask), cmap='gray')
+        ax3.imshow(tf.squeeze(pred_mask), cmap='gray')
         ax3.set_title('Predicted Mask')
 #         print(dice_coef(mask, pred_mask))
     plt.show()
@@ -152,49 +152,44 @@ def show_pred_mask(ds, num = 1):
 """
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = None):
-        show_pred_mask(val_ds)
+        show_pred_mask(validate)
 
 """
     Plot the train history of UNet model, including accuracy, DSC and loss 
 """
 def plot_train_history():
-
-    # plot the trend of accuracy as the epoch increases
-    plt.figure(0)
-    # plot train dataset accuracy
-    plt.plot(history.history['accuracy'], 'blue', label='train')
+    # Plot Accuracy Trend
+    fig = plt.figure(figsize=(8,27))
+    ax1 = fig.add_subplot(3,1,1)
+    ax1.plot(history.history['accuracy'], 'blue', label='train')
     # plot validating dataset accuracy
-    plt.plot(history.history['val_accuracy'], 'green', label = 'validation')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend(loc='lower right')
-    plt.title("Training Accuracy vs Validation Accuracy")
-    plt.show()
-
-    # plot the trend of dice similarity coefficent (DSC) as the epoch increases
-    plt.figure(1)
-    # plot train dataset DSC
-    plt.plot(history.history['dice_coef'],'purple', label='train')
-    # plot validation dataset DSC
-    plt.plot(history.history['val_dice_coef'],'red', label='validation')
-    plt.xlabel("Epoch")
-    plt.ylabel("Dice Coefficient")
-    plt.legend(loc='lower right')
-    plt.title("Training Dice Coefficient vs Validation Dice Coefficient")
-    plt.show()
-
-    # plot the trend of loss as the epoch increases
-    plt.figure(2)
-    # plot train loss
-    plt.plot(history.history['loss'],'Navy', label='train')
+    ax1.plot(history.history['val_accuracy'], 'green', label = 'validation')
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Accuracy")
+    ax1.legend(loc='lower right')
+    ax1.set_title("Training Accuracy vs Validation Accuracy")
+    
+    # Plot DSC Trend
+    ax2 = fig.add_subplot(3,1,2)
+    ax2.plot(history.history['dice_coef'], 'purple', label='train')
+    # plot validating dataset accuracy
+    ax2.plot(history.history['val_dice_coef'], 'red', label = 'validation')
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Accuracy")
+    ax2.legend(loc='lower right')
+    ax2.set_title("Training Dice Coefficient vs Validation Dice Coefficient")
+    
+    # Plot Loss Trend
+    ax3 = fig.add_subplot(3,1,3)
+    ax3.plot(history.history['loss'],'Navy', label='train')
     # plot validation loss
-    plt.plot(history.history['val_loss'],'Orange', label='validation')
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend(loc='lower right')
-    plt.title("Training Loss vs Validation Loss")
+    ax3.plot(history.history['val_loss'],'Orange', label='validation')
+    ax3.set_xlabel("Epoch")
+    ax3.set_ylabel("Loss")
+    ax3.legend(loc='lower right')
+    ax3.set_title("Training Loss vs Validation Loss")
+    
     plt.show()
-#     fig = figure
 
 
 """
@@ -210,7 +205,7 @@ def cal_test_DSC(dataset, num_test):
         dsc = dice_coef(mask, mask_pred)
         sum += dsc
     #     print(dsc)
-    sum /= 519
+    sum /= num_test
     return sum
 
 
@@ -223,6 +218,7 @@ def cal_test_DSC(dataset, num_test):
 #                                   MODEL DRIVER                                          #
 ###########################################################################################
 
+print('=====> Begin to preprocess the raw images and masks')
 data = DATA_PREPROCESS()
 data.load_data()
 data.preprocess()
@@ -231,14 +227,19 @@ train = data.train_dataset
 validate = data.validate_dataset 
 test = data.test_dataset 
 num_test = data.num_test
+print('=====> Finish preprocessing the raw images and masks\n')
+print('=====> Begin to train UNet Model')
 model = Improved_UNet((data.height, data.width, 1))
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
 history = model.fit(train.batch(12), epochs = 200, validation_data = validate.batch(12), callbacks = [DisplayCallback()])
 plot_train_history()
+print('=====> Finish model trainig and history displaying\n')
+print('=====> Use trained model to perform segmentation')
 # Show model predicted masks.
 show_pred_mask(test, 4)
 dsc = cal_test_DSC(test, num_test)
 tf.print('Average test DSC of this model: ', dsc)
+print('=====> Finish trained model segmentation')
 
 
 
