@@ -9,7 +9,7 @@
 * [Introduction](#introduction)
 * [ISICs Dataset](#isics-dataset)
     * [Data preprocessing](#data-preprocessing)
-* [Improved UNet Model](improved-unet-model)
+* [Improved UNet Model](#improved-unet-model)
 * [Reference](#reference)
 
 ## Introduction
