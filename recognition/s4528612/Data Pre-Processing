@@ -64,16 +64,18 @@ model = cross_attention(73*64, 2*(2*6 + 1) + 1)
 model.summary()
 
 #Reshape The Fourier Encoder to The array shape then performe calculation
-def fourier_encode(array):
+def fourier_encode(image):
+   
     array = tf.cast(tf.expand_dims(array,-1), dtype=tf.float32)
-    encode = tf.reshape(tf.experimental.numpy.logspace(
-            start=0.0,
-            stop=0.7,
-            num=10,
-            dtype=tf.float32,
-        ),((len(array.shape) - 1), 4))
+    array_copy = array # Tensors aren't reference types 
+    encode = tf.reshape(tf.experimental.numpy.logspace(start=0.0,stop=0.69, num=6, dtype=tf.float32,),(*((1,) * (len(array.shape) - 1)), 6)) 
     array =  3.14 * array * encode
-    return tf.concat([tf.math.sin(array), tf.math.cos(array)], axis=-1)
+    
+    # Repeat the Fourier Encoding For the number of times in the batch and reshape to the correct dimension.
+    layer = tf.repeat(tf.reshape(tf.concat((tf.concat([tf.math.sin(array), tf.math.cos(array)], axis=-1),array_copy),axis=-1),
+                       (1, image.shape[1], image.shape[2], 2*(2*6+1))), repeats=image.shape[0], axis=0)
+
+    return tf.reshape(tf.concat((image, layer), axis=-1), (image.shape[0], image.shape[1]*image.shape[2], -1)) 
     
 def transformer_layer():
     inputs = layers.Input(shape=(256, 27))
