@@ -132,8 +132,11 @@ class Perceiver(tf.keras.Model):
 		# Attention input
 		frequency_data = pos_encoding(to_encode)
 		attention_in = [self.in_layer, frequency_data]
+		# Loop for repeats
 		for _ in range(Parameters.ITERATIONS):
+			# Add cross-attemtion layer
 			latent = self.attention(attention_in)
+			# Add transformer layer
 			latent = self.transformer(latent)
 			attention_in[0] = latent
 		# Pool layers together
@@ -148,9 +151,6 @@ class Perceiver(tf.keras.Model):
 		ytrain = ytrain[0:(len(ytrain) // Parameters.BATCH) * Parameters.BATCH]
 		xtest = xtest[0:(len(xtest) // Parameters.BATCH) * Parameters.BATCH]
 		ytest = ytest[0:(len(ytest) // Parameters.BATCH) * Parameters.BATCH]
-
-		# Pack data into proper dataset
-		test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
 
 		self.compile(
 			optimizer=tfa.optimizers.LAMB(learning_rate=Parameters.LEARNING_RATE, weight_decay_rate=Parameters.WEIGHT_DECAY_RATE),

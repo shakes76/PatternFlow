@@ -7,7 +7,7 @@ import Parameters
 import os
 from PIL import Image
 import math
-import numpy as np # just need this for a single array conversion in the preprocessing step - please don't roast me
+import numpy as np
 import random
 import PIL
 import itertools
@@ -16,7 +16,7 @@ import itertools
 
 # Parameters
 SAVE_DATA			= False
-TEST_TRAINING_SPLIT	= 0.75
+TEST_TRAINING_SPLIT	= 0.7
 dataDirectory		= '../../../AKOA_Analysis/'
 
 def save_data(dir):
@@ -138,13 +138,14 @@ ytrain = np.load('../../../ytrain.npy')
 xtest = np.load('../../../xtest.npy')
 ytest = np.load('../../../ytest.npy')
 
-
+# Print data shape
 print("xtrain shape:", xtrain.shape)
 print("ytrain shape:", ytrain.shape)
 print("xtest shape:", xtest.shape)
 print("ytest shape:", ytest.shape)
 
-# ##### Train and Evaluation Perceiver #####
+# ##### Train and Evaluate Perceiver #####
+
 # Create perceiver
 perceiver = OAI_AKOA_Perceiver.Perceiver()
 
@@ -153,8 +154,10 @@ perceiver = OAI_AKOA_Perceiver.Perceiver()
 
 print("\nAccuracy:", accuracy, "\n")
 
+# Show summary
 perceiver.summary()
 
+# Plot
 import matplotlib.pyplot as plt
 
 plt.figure(0)
@@ -164,5 +167,13 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0.5, 1])
 plt.legend(loc='lower left')
-plt.text(3, 0.525, "Test Accuracy: " + str(accuracy), fontsize=12)
-plt.savefig('figure')
+plt.savefig('Accuracy_Plot')
+
+plt.figure(1)
+plt.ylim([0, 1])
+plt.plot(model_history.history['loss'], label='loss')
+plt.plot(model_history.history['val_loss'], label = 'val_loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(loc='lower left')
+plt.savefig('Loss_Plot')
