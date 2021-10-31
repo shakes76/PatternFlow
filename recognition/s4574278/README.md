@@ -31,7 +31,6 @@ So we plan to use only the basic Scale Jit. Mosaic is too troublesome for me to 
 YOLOX is one of the latest work in YOLO Family, it is built on top of YOLO v3, utilize an anchor-free approach and combined with recent research progress on Deep Learning, like: decoupled head, SimOTA, Mosaic Data Augmentation, etc. Comparing to YOLO v5, it might be slower in some cases, but the AP is largely improved.
 
 The original YOLOX model repo is published on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX).
-But this model is written in pyTorch, while I am using Tensorflow(reasons are stated later), I also customized a bit to fit our use case.
 
 Some commenter say YOLOX, due to its Anchor free nature, it more similar to "[FCOS](tian2019fcos)".
 
@@ -47,19 +46,10 @@ Image from [Sigmoid Linear Unit | paperswithcode.com](https://paperswithcode.com
 
 ### Loss function
 
-CIoU
-
+GIoU or latest CIoU.
 
 Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
 mAP on the other hand, emphasize on the positive case.
-
-## Decision Justification
-### Tensorflow Keras
-
-The reason to chose tensorflow over pyTorch.
-1.  TensorBoard. I used the TensorboardX + pyTorch in Lab 2, but it's not very satisfactory, so I want to try tensorflow this time. 
-2.  Tensorflow recently added Functional API that shows similar flexibility of pyTorch functional API.
-3.  Tensorflow have a mobile library called Tensorflow Lite, I want to deploy this API in one of the other project.
 
 ## Results
 
@@ -85,4 +75,5 @@ The reason to chose tensorflow over pyTorch.
 
 - My queued task never run in Goliath servers. So I booked a paid GPU service.
 - The dataset is relatively large. So it takes time to upload it to the server. Especially if you need to transfer the archive to another country like United States, may takes days to complete. *AVOID Paperspace*
+- Originally I used Tensorflow, but I got many wired bugs. Besides, their documentation is terrible, API is chaotic, versioning is a nightmare, and community is fragmented. 
 
