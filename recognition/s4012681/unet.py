@@ -33,13 +33,13 @@ IMG_CHANNELS = 1
 
 def get_image(file_name):
     """
-    Read nifti image from file name, create a numpy array and normalise
+    Read nifti image from file name, create an array and normalise
     :param file_name:
-    :return: Normalised numpy array representation of MRI
+    :return: Normalised array representation of MRI
     """
     sitk_img = sitk.ReadImage(file_name, sitk.sitkFloat32)
-    # Convert to numpy array and normalise
     img_arr = sitk.GetArrayFromImage(sitk_img)
+    # Normalise by subtracting mean and dividing by standard deviation
     avg = tf.reduce_mean(img_arr)
     sd = tf.math.reduce_std(img_arr)
     img_arr = (img_arr - avg) / sd
@@ -50,11 +50,11 @@ def get_mask(file_name):
     """
     Read image mask from file name and create a one-hot encoding
     :param file_name:
-    :return: One-hot numpy array encoding of image mask
+    :return: One-hot array encoding of image mask
     """
     mask = sitk.ReadImage(file_name, sitk.sitkFloat32)
-    # Convert to numpy array and one-hot encoding
     mask = sitk.GetArrayFromImage(mask)
+    # One-hot encoding
     encoding = tf.keras.utils.to_categorical(mask, num_classes=6)
     return encoding
 
@@ -67,6 +67,23 @@ def reshape(dimension, image):
     :return: Reshaped array
     """
     return tf.reshape(image, (IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, dimension))
+
+
+def dice(y_test, y_predict, smooth=0.1):
+    """
+    Calculate the Dice coefficient
+    :param y_test: The masks from the test dataset
+    :param y_predict: The model predictions
+    :param smooth: Smooth factor
+    :return: Dice coefficient
+    """
+    y_test_f = K.flatten(y_test)
+    y_test_f = tf.cast(y_test_f, tf.double)
+    y_pred_f = K.flatten(y_predict)
+    y_pred_f = tf.cast(y_pred_f, tf.double)
+    intersect = K.sum(y_test_f * y_pred_f)
+    d = (2. * intersect + smooth) / (K.sum(y_test_f) + K.sum(y_pred_f) + smooth)
+    return d.numpy()
 
 
 def unet(filters):
@@ -158,21 +175,4 @@ def plt_compare(img, test_mask, pred, num):
     ax3.imshow(pred[pred.shape[0] // 2], cmap='gray')
     ax3.title.set_text("Prediction")
     fig1.savefig("pred_{}.png".format(num))
-
-
-def dice(y_test, y_predict, smooth=0.1):
-    """
-    Calculate the Dice coefficient
-    :param y_test: The masks from the test dataset
-    :param y_predict: The model predictions
-    :param smooth: Smooth factor
-    :return: Dice coefficient
-    """
-    y_test_f = K.flatten(y_test)
-    y_test_f = tf.cast(y_test_f, tf.double)
-    y_pred_f = K.flatten(y_predict)
-    y_pred_f = tf.cast(y_pred_f, tf.double)
-    intersect = K.sum(y_test_f * y_pred_f)
-    d = (2. * intersect + smooth) / (K.sum(y_test_f) + K.sum(y_pred_f) + smooth)
-    return d.numpy()
 

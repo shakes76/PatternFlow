@@ -3,7 +3,7 @@ Author: Richard Wainwright
 Student ID: 40126812
 Date: 05/10/2021
 
-Driver for the UNet3d model for the classification of the Prostate 3D data set.
+Driver for the U-net3d model for the classification of the Prostate 3D data set.
 Presented as a script for ease of use.  Most changes can be made to the factors
 listed at the top of this file.
 """
@@ -64,9 +64,9 @@ class MRISequence(Sequence):
 
 class CustomCallback(tf.keras.callbacks.Callback):
     """
-    Used to save an image after each epoch.  Not currently used or required by
-    the model but useful in assessing performance when adjusting parameters or
-    adding functionality, to use add to model.fit()
+    Used to save a prediction after each epoch.  Not currently used or required
+    by the model but useful in assessing performance when adjusting parameters
+    or adding functionality, to use add to model.fit()
     """
     def on_epoch_end(self, epoch):
         pred = model.predict(test)
@@ -85,7 +85,7 @@ val_labels_names = sorted(glob.glob(val_label_location))
 test_mri_names = sorted(glob.glob(test_mri_location))
 test_labels_names = sorted(glob.glob(test_label_location))
 
-# Create Sequences to generate pairs
+# Create Sequences to generate pairs of MRI and mask
 train = MRISequence(train_mri_names, train_labels_names, BATCH_SIZE)
 val = MRISequence(val_mri_names, val_labels_names, BATCH_SIZE)
 test = MRISequence(test_mri_names, test_labels_names, BATCH_SIZE)
