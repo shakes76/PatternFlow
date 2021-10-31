@@ -70,6 +70,8 @@ Once the requirements are met, executing the test script out of the box would lo
 
 ### Reconstruction after 100 epochs
 
+Note: using tf.image.ssim the self similarity is 0.6 after 100 epochs
+
 100 epochs original and reconstruction sample
 
 ![100 epochs original and reconstruction sample](https://github.com/yousifpatti/PatternFlow/blob/topic-recognition/recognition/s4588047/outputs/100%20epochs/Figure%202021-10-31%20004610.png)
@@ -83,6 +85,7 @@ Once the requirements are met, executing the test script out of the box would lo
 ![100 epochs codebook indices sample](https://github.com/yousifpatti/PatternFlow/blob/topic-recognition/recognition/s4588047/outputs/100%20epochs/Figure%202021-10-31%20004725.png)
 
 100 epochs Pixel CNN output reconstruction sample
+Note: the self similarity expected would be around 0.1 to 0.8 but because the image is not clear the value is small < 0.1
 
 ![100 epochs Pixel CNN output reconstruction sample](https://github.com/yousifpatti/PatternFlow/blob/topic-recognition/recognition/s4588047/outputs/100%20epochs/Figure%202021-10-31%20004827.png)
 
