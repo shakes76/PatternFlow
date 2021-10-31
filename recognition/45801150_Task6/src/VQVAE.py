@@ -136,7 +136,7 @@ def train_vqvae(vqvae, x_train_normalised, x_val_normalised, n_epochs):
     vqvae.compile(optimizer=keras.optimizers.Adam())
     vqvae.get_layer("encoder").summary()
     vqvae.get_layer("decoder").summary()
-    vqvae.fit(x_train_normalised, validation_data=(x_val_normalised, x_val_normalised), epochs=n_epochs, batch_size=128)
+    vqvae.fit(x_train_normalised, validation_split=0.1, epochs=n_epochs, batch_size=128)
 
 
 
