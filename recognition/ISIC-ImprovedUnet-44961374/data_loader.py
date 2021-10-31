@@ -4,9 +4,8 @@ This script loads the input and output images from the ISIC dataset for pre-proc
 """
 import os # for operating system functionalities 
 from sklearn.utils import shuffle, validation # for shuffling data 
-import math # for mathematical operations
 import tensorflow as tf # for DL functionalities 
-from process_data import process_data # for dataset processing functionalities
+from utilities import process_data # for dataset processing functionalities
 import matplotlib.pyplot as plt # for plotting images
 
 IMG_PATH = "../../../isic-data/ISIC2018_Task1-2_Training_Input_x2/" # path of images (scans) from the dataset
