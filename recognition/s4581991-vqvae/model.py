@@ -108,19 +108,21 @@ class VectorQuantizer(keras.layers.Layer):
 
 # PixelCNN Prior Model
 
-def create_pixel_cnn(height, width, num_embeddings) \
+def create_pixel_cnn(latent_width, latent_height, num_embeddings) \
         -> keras.Model:
-    input = keras.layers.Input(shape=(7, 7), dtype=tf.int32)
+    input = keras.layers.Input(
+            shape=(latent_height, latent_width), dtype=tf.int32)
     one_hot = tf.one_hot(input, num_embeddings)
-    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=True)([one_hot, one_hot])
-    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
-    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
-    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
-    v, h = GatedPixelCnnBlock(filters=128, kernel_size=1, is_first=False)([v, h])
-    x = keras.layers.Activation(activation="relu")(h)
-    x = keras.layers.Conv2D(filters=128, kernel_size=1, strides=1)(x)
-    x = keras.layers.Activation(activation="relu")(x)
-    x = keras.layers.Conv2D(filters=num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
+    x = MaskedConv2D(mask_type="A", filters=128, kernel_size=7,
+            activation="relu", padding="same")(one_hot)
+    x = PixelCnnBlock(filters=128, kernel_size=3, is_first=False)(x)
+    x = PixelCnnBlock(filters=128, kernel_size=3, is_first=False)(x)
+    x = MaskedConv2D(mask_type="B", filters=128, kernel_size=1,
+            strides=1, activation="relu", padding="valid")(x)
+    x = MaskedConv2D(mask_type="B", filters=128, kernel_size=1,
+            strides=1, activation="relu", padding="valid")(x)
+    x = keras.layers.Conv2D(filters=num_embeddings, kernel_size=1,
+            strides=1, padding="valid")(x)
     return keras.models.Model(input, x)
 
 class MaskedConv2D(keras.layers.Layer):
@@ -132,95 +134,42 @@ class MaskedConv2D(keras.layers.Layer):
     def build(self, input_shape):
         self.conv.build(input_shape)
         kernel_shape = tf.shape(self.conv.kernel)
-        mask = np.ones(shape=kernel_shape)
+        mask = np.zeros(shape=kernel_shape)
         # print(mask.shape)
         center_h = kernel_shape[0] // 2
         center_w = kernel_shape[1] // 2
-        if self.mask_type == "V":
-            mask[center_h + 1:, :, :, :] = 0.0
-        else:
-            mask[:center_h, :, :] = 0.0
-            mask[center_h + 1:, :, :] = 0.0
-            if self.mask_type == "A":
-                mask[center_h, center_w:, :, :] = 0.0
-            elif self.mask_type == "B":
-                mask[center_h, center_w + 1:, :, :] = 0.0
-        # print("A")
-        # print(mask.shape)
+        mask[: center_h, ...] = 1.0
+        mask[center_h, : center_w, ...] = 1.0
+        if self.mask_type == "B":
+            mask[center_h, center_w, ...] = 1.0
+
         self.mask = tf.constant(mask, dtype=tf.float32)
 
     def call(self, input):
         self.conv.kernel.assign(self.conv.kernel * self.mask)
-        # print("B")
-        # print(input.shape)
-        # print(self.conv.kernel.shape)
-        # print(self.conv(input).shape)
         return self.conv(input)
 
-class GatedPixelCnnBlock(keras.models.Model):
+class PixelCnnBlock(keras.models.Model):
     def __init__(self, filters, kernel_size, is_first: bool = False):
-        super(GatedPixelCnnBlock, self).__init__()
+        super(PixelCnnBlock, self).__init__()
 
         self.filters = filters
         self.kernel_size = kernel_size
         self.is_first = is_first
 
-        self.vertical_conv = MaskedConv2D(mask_type="V",
-                filters=2 * filters, kernel_size=kernel_size)
-        self.horizontal_conv = MaskedConv2D(
-                mask_type=("A" if is_first else "B"), filters=2 * filters,
-                kernel_size=kernel_size)
-
-        self.v_to_h_conv = keras.layers.Conv2D(
-                filters=2 * self.filters, kernel_size=1, strides=(1,1),
-                padding="same")
-        self.horizontal_after_gate_conv = keras.layers.Conv2D(
-            filters=self.filters, kernel_size=1, strides=(1,1), padding="same")
-
-        self.vertical_top_padding = keras.layers.ZeroPadding2D(
-                padding=((1, 0), (0, 0)))
-        self.vertical_bottom_crop = keras.layers.Cropping2D(
-                cropping=((0, 1), (0, 0)))
-
-    def _split_feature_maps(self, x):
-        return tf.split(x, 2, axis=-1)
-
-    def _apply_gate_activation(self, x):
-        split = self._split_feature_maps(x)
-        return tf.math.multiply(
-            tf.math.tanh(split[0]),
-            tf.math.sigmoid(split[1])
-        )
+        self.pre_conv = keras.layers.Conv2D(
+                filters=self.filters, kernel_size=1, activation="relu")
+        masked_conv_type = ("A" if is_first else "B")
+        self.masked_conv = MaskedConv2D(
+                mask_type=masked_conv_type,
+                filters=self.filters // 2,
+                kernel_size=kernel_size, activation="relu", padding="same")
+        self.post_conv = keras.layers.Conv2D(
+                filters=self.filters, kernel_size=1, activation="relu")
 
     def call(self, inputs):
-        vertical_stack_in = inputs[0]
-        horizontal_stack_in = inputs[1]
-
-        vertical_before_gate = self.vertical_conv(vertical_stack_in)
-        vertical_stack_out = self._apply_gate_activation(vertical_before_gate)
-        # print(vertical_before_gate.shape)
-        vertical_for_horizontal = self.vertical_top_padding(
-                vertical_before_gate)
-        vertical_for_horizontal = self.vertical_bottom_crop(
-                vertical_for_horizontal)
-        vertical_for_horizontal = self.v_to_h_conv(vertical_before_gate)
-
-        horizontal_before_gate = self.horizontal_conv(horizontal_stack_in)
-        horizontal_before_gate = vertical_for_horizontal \
-                    + horizontal_before_gate
-
-        horizontal_stack_out = self._apply_gate_activation(
-                horizontal_before_gate)
-        horizontal_stack_out = self.horizontal_after_gate_conv(
-                horizontal_stack_out)
-
-        # print(horizontal_stack_out.shape)
-        # print(vertical_stack_out.shape)
-
-
-        # Add residual if this isn't the first block in the network
-        if self.is_first:
-            return vertical_stack_out, horizontal_stack_out
-
-        return vertical_stack_out, keras.layers.add(
-                [horizontal_stack_in, horizontal_stack_out])
+        pre_conv_applied = self.pre_conv(inputs)
+        mask_applied = self.masked_conv(pre_conv_applied)
+        post_conv_applied = self.post_conv(mask_applied)
+        # This block is residual so add the input value to the result
+        return keras.layers.add([inputs, post_conv_applied])

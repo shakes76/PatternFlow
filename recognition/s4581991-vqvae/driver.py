@@ -12,7 +12,7 @@ import tensorflow_probability as tfp
 
 import model
 
-# The model will be optimised using MNIST before moving on to the
+
 
 def load_and_preprocess_mnist_data():
     '''
@@ -49,11 +49,14 @@ def generate_mnist_with_pixel_cnn(vqvae_model: keras.models.Model, input):
     quantized = vector_quantizer.encode(flattened_encoded)
     quantized = quantized.numpy().reshape(encoded.shape[:-1])
 
-    print(quantized.shape)
-
-    pixel_cnn = train_pixel_cnn(quantized, quantized, vector_quantizer.number_of_embeddings)
-    pixel_cnn.summary()
-    generate_using_pixel_cnn(pixel_cnn, decoder, vector_quantizer, 10, encoded.shape[1:])
+    latent_height = quantized.shape[1]
+    latent_width = quantized.shape[2]
+    pixel_cnn = train_pixel_cnn(quantized, quantized,
+            latent_width, latent_height,
+            vector_quantizer.number_of_embeddings)
+    generated_samples = generate_using_pixel_cnn(
+            pixel_cnn, decoder, vector_quantizer, 10, encoded.shape[1:])
+    plot_generated_samples(generated_samples, 10)
 
 def train_vqvae(data: np.array, sample_shape: Tuple[int, int, int],
         latent_dimensions: int, number_of_embeddings: int)\
@@ -65,7 +68,7 @@ def train_vqvae(data: np.array, sample_shape: Tuple[int, int, int],
             latent_dimensions, number_of_embeddings, sample_shape)
     vqvae.compile(loss=vq_vae_loss(np.var(data)), optimizer="adam")
     return vqvae.fit(
-            data, data, validation_split=0.1, batch_size=64, epochs=10), vqvae
+            data, data, validation_split=0.1, batch_size=128, epochs=10), vqvae
 
 def test_vqvae(vqvae_model: keras.models.Sequential, test_data):
     '''
@@ -80,8 +83,8 @@ def test_vqvae(vqvae_model: keras.models.Sequential, test_data):
 
     return recreated, recreated_ssim
 
-def train_pixel_cnn(x, y, number_of_embeddings):
-    pixel_cnn = model.create_pixel_cnn(7, 7, number_of_embeddings)
+def train_pixel_cnn(x, y, latent_width, latent_height, number_of_embeddings):
+    pixel_cnn = model.create_pixel_cnn(latent_width, latent_height, number_of_embeddings)
     pixel_cnn.compile(
             optimizer="adam",
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -90,40 +93,38 @@ def train_pixel_cnn(x, y, number_of_embeddings):
 
     return pixel_cnn
 
-def generate_using_pixel_cnn(pixel_cnn_model, vqvae_decoder_model, vector_quantizer, number_of_images, quantized_shape):
-    priors = np.zeros(shape=(10,) + (pixel_cnn_model.input_shape)[1:])
+def generate_using_pixel_cnn(pixel_cnn_model, vqvae_decoder_model,
+        vector_quantizer, number_of_images, quantized_shape):
+    # Create priors by sampling the PixelCNN model
+    priors = np.zeros(shape=(number_of_images,)
+            + (pixel_cnn_model.input_shape)[1:])
     batch, rows, cols = priors.shape
-
-    # Iterate over the priors because generation has to be done sequentially pixel by pixel.
     for row in range(rows):
         for col in range(cols):
             logits = pixel_cnn_model(priors, training=False)
             next_sample = tfp.distributions.Categorical(logits=logits).sample()
-            print(next_sample[:, row, col])
-            print(priors[:, row, col])
             priors[:, row, col] = next_sample.numpy()[:, row, col]
 
-    pretrained_embeddings = vector_quantizer.embeddings
-    priors_ohe = tf.one_hot(priors.astype("int32"),
+    # Use the priors to create latent space encodings
+    one_hot_priors = tf.one_hot(priors.astype("int32"),
             vector_quantizer.number_of_embeddings).numpy()
-    quantized = tf.matmul(
-        priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
-    )
+    quantized = tf.matmul(one_hot_priors.astype("float32"),
+        vector_quantizer.embeddings, transpose_b=True)
     quantized = tf.reshape(quantized, (-1, *(quantized_shape)))
 
+    # Generate samples from the latent space
     generated_samples = vqvae_decoder_model.predict(quantized)
 
-    for i in range(batch):
-        plt.subplot(1, 2, 1)
-        plt.imshow(priors[i])
-        plt.title("Code")
+    return generated_samples
+
+def plot_generated_samples(generated_samples, number_of_images):
+    for i in range(number_of_images):
+        plt.subplot(5, number_of_images // 5 , i + 1)
+        plt.imshow(generated_samples[i].squeeze())
         plt.axis("off")
 
-        plt.subplot(1, 2, 2)
-        plt.imshow(generated_samples[i].squeeze() + 0.5)
-        plt.title("Generated Sample")
-        plt.axis("off")
-        plt.show()
+    plt.show()
+    plt.savefig("generated_samples.png")
 
 # Loss Calculation Helpers
 
