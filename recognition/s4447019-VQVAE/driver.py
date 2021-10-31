@@ -14,7 +14,8 @@ dataset_url = "https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download"
 data_dir = tf.keras.utils.get_file(origin=dataset_url, fname='oasis_data', extract=True)
 
 # Use the glob library to separate and save the train, test and validation datasets to local drive
-train_images = glob.glob('C:\\Users\\mmene\\.keras\\datasets\\keras_png_slices_data\\keras_png_slices_train' + '/*.png')
+train_images = glob.glob('C:\\Users\\mmene\\.keras\\datasets\\keras_png_slices_data\\keras_png_slices_train' 
+                         + '/*.png')
 validate_images = glob.glob('C:\\Users\\mmene\\.keras\\datasets\\keras_png_slices_data\\keras_png_slices_validate' + '/*.png')
 test_images = glob.glob('C:\\Users\\mmene\\.keras\\datasets\\keras_png_slices_data\\keras_png_slices_test' + '/*.png')
 
