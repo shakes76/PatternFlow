@@ -4,7 +4,7 @@ This algorithm is a modified version of Unet created by Isensee and colleagues, 
 The file driver.py gives and example of how to use the algorithm. First we create the model through improved_unet.py and its
 build_model function. The model is inspired by the Unet architecture and implements many improvements to enhance the performace [1].
 
-![Image of Yaktocat](Docs\modified_unet.PNG)
+![](Docs/modified_unet.PNG)
 It consists of the following parts:
 - Context module
   - Usually initialised by a convolution layer of stride 2 (except for the first level), this works to reduce
@@ -34,12 +34,17 @@ to increase the amount of trainable data, augmentation is applied randomly to th
 combination of vertical and horizontal flips and saturation amplifications.
 
 ### Results
-Run for 30 epochs at a learning rate of 0.001 and default dataset split.
-![Image of Yaktocat](Docs\Figure_1_64_filters.png)
-![Image of Yaktocat](Docs\Figure_2_64_filters.png)
-![Image of Yaktocat](Docs\Figure_3_64_filters.png)
-![Image of Yaktocat](Docs\Figure_4_64_filters.png)
-Evaluating the model through the test dataset, it was able to obtains values of:
+Run for 30 epochs with a starting filter size of 64 in batches of 1 with default dataset split.
+
+![](Docs/Figure_1_64_filters.png)
+![](Docs/Figure_2_64_filters.png)
+![](Docs/Figure_3_64_filters.png)
+![](Docs/Figure_4.png)
+
+Evaluating the model through the test dataset, it was able to obtains values of: 
+- loss: 0.15029695630073547
+- accuracy: 0.9389772415161133
+- dice: 0.8497030138969421
 
 ## Dependencies
 - Python 3.9.6
