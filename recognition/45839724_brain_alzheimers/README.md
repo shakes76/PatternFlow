@@ -77,6 +77,9 @@ The clasifier head consists of a global average pooling layer which takes in the
 - numpy 1.19.5
 - OAI AOKA Knee Dataset
 
+## Usage
+Run driver.py, and specify arguments manually at the beginning of the code (epochs, batch size etc.)
+Architectural changes can be made in the perceiver_model.py file.
 
 ## References
 
