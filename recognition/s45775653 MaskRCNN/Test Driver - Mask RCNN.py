@@ -187,7 +187,19 @@ ds.datasplitter(train_path,seg_path,
 
 print('Done')
 #%%
+vis_img = []
+for idx,x in enumerate(os.listdir(train_img_path)[60:66]):
+    vis_img.append(cv2.cvtColor(cv2.imread(os.path.join(train_img_path,x)),cv2.COLOR_BGR2RGB))
+    
+plt.figure(figsize=(15,10))    
+plt.subplot(2,3,1);plt.imshow(vis_img[0]);plt.title("resized")
+plt.subplot(2,3,2);plt.imshow(vis_img[1]);plt.title("resized + flip horizontal")
+plt.subplot(2,3,3);plt.imshow(vis_img[2]);plt.title("resized + flip vertical")
+plt.subplot(2,3,4);plt.imshow(vis_img[3]);plt.title("resized")
+plt.subplot(2,3,5);plt.imshow(vis_img[4]);plt.title("resized + flip horizontal")
+plt.subplot(2,3,6);plt.imshow(vis_img[5]);plt.title("resized + flip vertical")
 
+#%%
 # Prepare the Train, Validation, Test datasets. Test set uses full resolution images, others use augmented images.
 
 dataset_train = ISICDataset()
@@ -201,8 +213,8 @@ dataset_val.prepare()
 dataset_test = ISICDataset()
 dataset_test.load_data(test_full_seg_path,test_full_img_path)
 dataset_test.prepare()
-#%%
 
+#%%
 # Visualize the dataset and ensure that images, and ground truth masks are loaded properly
 
 dataset = dataset_test
@@ -210,7 +222,7 @@ image_ids = np.random.choice(dataset.image_ids,4)
 for image_id in image_ids:
     image = dataset.load_image(image_id)
     mask, class_ids = dataset.load_mask(image_id)
-    visualize.display_top_masks(image, mask, class_ids, dataset.class_names)
+    visualize.display_top_masks(image, mask, class_ids, dataset.class_names,limit=1)
 
 #%%
 
@@ -262,6 +274,22 @@ augment_strat = iaa.SomeOf((0,None),[
     ])
 
 gc.collect()
+#%%
+
+# Visualize the Training Augmentations
+
+blur = iaa.Sequential([iaa.GaussianBlur(sigma=(0.0, 3.0))])
+c_dropout = iaa.Sequential([iaa.CoarseDropout((0.0, 0.05), size_percent=(0.02, 0.25))])
+w_bright = iaa.Sequential([iaa.WithBrightnessChannels(iaa.Add((-50, 50)))])
+sharpen = iaa.Sequential([iaa.Sharpen(alpha=0.5)])
+
+iaa_img = dataset_train.load_image(969)
+plt.figure(figsize=(15,15))
+plt.subplot(1,4,1);plt.imshow(blur(image=iaa_img));plt.title("Gaussian Blur")
+plt.subplot(1,4,2);plt.imshow(c_dropout(image=iaa_img));plt.title("Coarse Dropout")
+plt.subplot(1,4,3);plt.imshow(w_bright(image=iaa_img));plt.title("With Brightness Channels")
+plt.subplot(1,4,4);plt.imshow(sharpen(image=iaa_img));plt.title("Sharpen")
+
 #%%
 def scheduler_(epoch, lr = config.LEARNING_RATE):
     '''
