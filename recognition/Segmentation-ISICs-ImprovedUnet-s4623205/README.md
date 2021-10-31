@@ -1,8 +1,8 @@
 # ISICs Dataset Segmentation with Improved UNet
 
 ## Author
-**Name:** Jeng-Chung, Lien
-**Student ID:** 46232050
+**Name:** Jeng-Chung, Lien<br/>
+**Student ID:** 46232050<br/>
 **Email:** jengchung.lien@uqconnect.edu.au
 
 ## Introduction
