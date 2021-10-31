@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-# pi/log for Fourier encoding
-from math import pi, log
+from math import pi, log, e as exp
 
 import torch
 import torch.nn as nn
@@ -22,42 +21,47 @@ __author__ = "Chegne Eu Joe"
 __email__ = "e.chegne@uqconnect.edu.au"
 
 
-def fourier_encode(x, num_bands=4):
-    """
-    Allows parameterized fourier feature positional encodings which:
+# Copypasta, as sanity check for fourier encoding
+def fourier_encode(shape, bands):
+    # This first "shape" refers to the shape of the input data, not the output of this function
+    dims = len(shape)
 
-    1. Directly represents the position structure of the input data (To compensate for the lack of explicit grid structures).
-    2. Control the number of frequency bands in position encoding independent of the cutoff frequency.
-    3. Uniformly sample all frequencies up to a target resolution.
+    # Every tensor we make has shape: (bands, dimension, x, y, etc...)
 
-    Args:
-        x - input of format (int, int)
-        num_bands - size of constructed tensor
+    # Pos is computed for the second tensor dimension
+    # (aptly named "dimension"), with respect to all
+    # following tensor-dimensions ("x", "y", "z", etc.)
+    pos = torch.stack(list(torch.meshgrid(
+        *(torch.linspace(-1.0, 1.0, steps=n) for n in list(shape))
+    )))
+    pos = pos.unsqueeze(0).expand((bands,) + pos.shape)
 
-    Returns:
-        Fourier encoded input x.
-    """
+    # Band frequencies are computed for the first
+    # tensor-dimension (aptly named "bands") with
+    # respect to the index in that dimension
+    band_frequencies = (torch.logspace(
+        log(1.0),
+        log(shape[0]/2),
+        steps=bands,
+        base=exp
+    )).view((bands,) + tuple(1 for _ in pos.shape[1:])).expand(pos.shape)
 
-    dim = len(shape)
-    max_freq = x[0]
+    # For every single value in the tensor, let's compute:
+    #             freq[band] * pi * pos[d]
 
-    x = x.unsqueeze(-1)
-    device, dtype, orig_x = x.device, x.dtype, x
+    # We can easily do that because every tensor is the
+    # same shape, and repeated in the dimensions where
+    # it's not relevant (e.g. "bands" dimension for the "pos" tensor)
+    result = (band_frequencies * pi * pos).view((dims * bands,) + shape)
 
-    scales = torch.linspace(
-        1.0,
-        log(max_freq / 2),
-        steps=num_bands,
-        device=device,
-        dtype=dtype,
-    )
+    # Use both sin & cos for each band, and then add raw position as well
+    # TODO: raw position
+    result = torch.cat([
+        torch.sin(result),
+        torch.cos(result),
+    ], dim=0)
 
-    scales = scales[(*((None,) * (len(x.shape) - 1)), Ellipsis)]
-    x = x * scales * pi
-    x = torch.cat([x.sin(), x.cos()], dim=0)
-    x = torch.cat((x, orig_x), dim=0)
-    return x
-
+    return result
 
 class PreNorm(nn.Module):
     """
@@ -71,24 +75,15 @@ class PreNorm(nn.Module):
         Layer with normalized values
     """
 
-    def __init__(self, dim, fn, context_dim=None):
+    def __init__(self, dim, fn):
         super().__init__()
         self.fn = fn
         self.norm = nn.LayerNorm(dim)
-        if context_dim is not None:
-            self.norm_context = nn.LayerNorm(context_dim)
-        else:
-            self.norm_context = None
 
-    def forward(self, x, **kwargs):
+    def forward(self, x, *args):
         x = self.norm(x)
-
-        if self.norm_context is not None:
-            context = kwargs["x_kv"]
-            normed_context = self.norm_context(context)
-            kwargs.update(context=normed_context)
-
-        return self.fn(x, **kwargs)
+        # Removed extra
+        return self.fn(x, *args)
 
 
 class Attention(nn.Module):
@@ -110,15 +105,15 @@ class Attention(nn.Module):
         sequence length, N is the batch size, and E is embed_dim
     """
 
-    def __init__(self, embed_dim, heads=8, dropout=0.0):
+    def __init__(self, embed_dim, heads, dropout=0.0):
         super().__init__()
-        self.attention = nn.MultiHeadAttention(
-            latent_dim, heads, dropout, bias=True, batch_first=True
+        self.attention = nn.MultiheadAttention(
+            embed_dim, heads, dropout, bias=True, batch_first=True
         )
 
-    def forward(self, x, latent):
-        attn_output, _ = self.attention(latent, x, x)
-        return attn_output + latent
+    def forward(self, x, z):
+        attn_output, _ = self.attention(z, x, x)
+        return attn_output + z
 
 
 class SelfAttention(nn.Module):
@@ -137,7 +132,7 @@ class SelfAttention(nn.Module):
         super().__init__()
         self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-    def forward(self, x, latent):
+    def forward(self, x):
         # Self-attention
         return self.attention(x, x)
 
@@ -159,15 +154,8 @@ class CrossAttention(nn.Module):
         super().__init__()
         self.attention = PreNorm(embed_dim, Attention(embed_dim, heads, dropout))
 
-    def forward(x, latent):
-        return self.attention(x, latent)
-
-
-class GEGLU(nn.Module):
-    def forward(self, x):
-        x, gates = x.chunk(2, dim=-1)
-        return x * F.gelu(gates)
-
+    def forward(self, x, z):
+        return self.attention(x, z)
 
 class MLP(nn.Module):
     def __init__(self, latent_dim, dropout=0.0):
@@ -175,7 +163,7 @@ class MLP(nn.Module):
         self.net = nn.Sequential(
             nn.LayerNorm(latent_dim),
             nn.Linear(latent_dim, latent_dim),
-            GEGLU(),
+            nn.GELU(),
             nn.Dropout(dropout),
             nn.Linear(latent_dim, latent_dim),
         )
@@ -230,14 +218,14 @@ class Perceiver(nn.Module):
         )
 
         # Perceiver block
-        self.cross_attn = lambda: CrossAttention(
+        cross_attn = lambda: CrossAttention(
             latent_dim, heads=1, dropout=attn_dropout
         )
-        self.cross_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
-        self.latent_attn = lambda: SelfAttention(
+        cross_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
+        latent_attn = lambda: SelfAttention(
             latent_dim, heads=8, dropout=attn_dropout
         )
-        self.latent_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
+        latent_ff = lambda: MLP(latent_dim, dropout=ff_dropout)
 
         # Logits
         self.linear = nn.Linear(latent_dim, latent_dim)
@@ -251,23 +239,26 @@ class Perceiver(nn.Module):
 
             # Construct self attention block
             for _ in range(self_per_cross_attn):
-                self_attns.append(nn.ModuleList([latent_attn, latent_ff]))
+                self_attns.append(nn.ModuleList([latent_attn(), latent_ff()]))
 
             # Construct one perceiver block
-            self.layers.append(nn.Modulelist([cross_attn, cross_ff, self_attns]))
+            self.layers.append(nn.ModuleList([cross_attn(), cross_ff(), self_attns]))
 
     def forward(self, x):
+        batch_size = x.shape[0]
         pos = self.fourier_features.unsqueeze(0).expand(
             (batch_size,) + self.fourier_features.shape
         )
 
         # Transform x
         x = torch.cat([x, pos], dim=1)
-        x = self.embeddings(x.view((x.shape[0], x.shape[1], -1)))
+        x = x.view((x.shape[0], x.shape[1], -1))
+        x = self.embeddings(x)
+
         x = x.permute(2, 0, 1)
 
         # Transform latent
-        z = self.init_latent.unsqueeze(1)
+        z = self.latents.unsqueeze(1)
         z = z.expand(-1, x.shape[1], -1)
 
         # Train
