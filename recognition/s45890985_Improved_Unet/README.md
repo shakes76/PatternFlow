@@ -25,10 +25,10 @@ Test_driver.py consists of methods that load data, train the model, and evaluate
 
 ### Sample results 
 The average dice coefficent acheived with 3 epochs was 0.85.A sample display with dice coefficent of 0.96:
-![Sample Display](/images/Displayed_sample.png
+![Sample](images/Displayed_sample.png
 
 Loss and accuracy plots: 
-![Loss Accuracy plot](/images/Loss_accuracy_plots.png)
+![Loss Accuracy plot](images/Loss_accuracy_plots.png)
 
 ### How to use the algorithm
 The algorithm could be used by downloading 'the ISIC 2018 task 1' dataset and changing the data directory in driver.py to match the downloaded location. 
