@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
 import os
+import sys
 
 # Global variables for directory and input data settings
 ORIGINAL_IMG_DIR = "AKOA_Analysis/"
@@ -19,8 +20,8 @@ OUTPUT_DIR = 'output/'
 # Training hyper-parameters
 IMG_SIZE = 16  # size to resize input images
 NUM_CHANNELS = 1  # grayscale images have one channel
-EPOCHS = 1
-BATCH_SIZE = 32
+EPOCHS = 10
+BATCH_SIZE = 128
 VALIDATION_SPLIT = 0.2
 TEST_SPLIT = 0.25
 LEARN_RATE = 0.001
@@ -117,6 +118,16 @@ def load_train_test_data(dataset_dir, test_split):
 
 if __name__ == "__main__":
 
+    # Handle cmd line args just for input image sorting
+    argv = sys.argv
+    argc = len(argv)
+    if argc == 2:
+        input_img_dir = argv[1]
+        print(f"Loading in data from {input_img_dir}...")
+    else:
+        input_img_dir = ORIGINAL_IMG_DIR
+        print("Defaulting to AKOA_Analysis input directory for sorting...")
+
     # check tf version
     print("Tensorflow version: ", tf.__version__)
 
@@ -124,8 +135,11 @@ if __name__ == "__main__":
     if "datasets" not in os.listdir(".") \
             or "LEFT" not in os.listdir(DATASET_DIR) \
             or "RIGHT" not in os.listdir(DATASET_DIR):
+        os.mkdir("datasets")
         print(f"Sorting {ORIGINAL_IMG_DIR} into datasets folder...")
         create_sorted_data_directory(ORIGINAL_IMG_DIR, CLASSES)
+    else:
+        print("Datasets folder already exists...")
 
     # load in data from processed directory
     x_train, x_test, y_train, y_test = load_train_test_data(DATASET_DIR, TEST_SPLIT)
@@ -136,11 +150,11 @@ if __name__ == "__main__":
     print("Y test: ", y_test.shape)
 
     # build perceiver, pass in keyword args here to modify defaults
-    perceiver = Perceiver(IMG_SIZE, NUM_CLASSES)
+    perceiver = Perceiver(IMG_SIZE, NUM_CLASSES, latent_array_size=32)
 
     # compile perceiver
     perceiver.compile(
-        optimizer=tfa.optimizers.LAMB(learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY),#tf.keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=tfa.optimizers.LAMB(learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY),
         loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[keras.metrics.BinaryAccuracy(name="accuracy")],
     )
