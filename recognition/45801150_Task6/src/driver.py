@@ -23,7 +23,7 @@ def main():
 
     # Create and train VQ-VAE
     vqvae = VQVAE.VQVae(variance, latent_dimensions, num_embeddings)
-    VQVAE.train_vqvae(vqvae, x_train_normalised, x_val_normalised, 2)
+    VQVAE.train_vqvae(vqvae, x_train_normalised, x_val_normalised, 30)
 
     # Test VQ-VAE performance on test set
     test_images, reconstructed = visualiser.compare_reconstructions(vqvae, x_test_normalised, 10)
@@ -33,7 +33,7 @@ def main():
     encoder = vqvae.get_layer("encoder")
     encoder_output_shape = encoder.predict(x_test[0:1]).shape
     pixel_cnn = PixelCNN.create_pixel_cnn(encoder_output_shape, num_embeddings)
-    PixelCNN.train_pixel_cnn(pixel_cnn, vqvae, x_train_normalised, 2)
+    PixelCNN.train_pixel_cnn(pixel_cnn, vqvae, x_train_normalised, 60)
 
     # Generate images, testing PixelCNN performance
     codes, generated = PixelCNN.generate_images(vqvae, pixel_cnn, 10, encoder_output_shape)
