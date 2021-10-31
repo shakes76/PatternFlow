@@ -57,6 +57,7 @@ class DATA_PREPROCESS:
         self.train_dataset.shuffle(len(X_train))
         self.validate_dataset.shuffle(len(X_validate))
         self.test_dataset.shuffle(len(X_test))
+        self.num_test = len(X_test)
         
     '''
         resize image, normalize image and reshape image
@@ -145,6 +146,10 @@ def show_pred_mask(ds, num = 1):
 #         print(dice_coef(mask, pred_mask))
     plt.show()
 
+
+"""
+    Display the predicted mask at the end of each epoch
+"""
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = None):
         show_pred_mask(val_ds)
@@ -191,6 +196,10 @@ def plot_train_history():
     plt.show()
 #     fig = figure
 
+
+"""
+    Calculate the average test DSC using trained model
+"""
 def cal_test_DSC(dataset, num_test):
     sum = 0
     # num_test = data.num_test
@@ -221,14 +230,14 @@ data.display_preprocessed_image(1)
 train = data.train_dataset
 validate = data.validate_dataset 
 test = data.test_dataset 
-
+num_test = data.num_test
 model = Improved_UNet((data.height, data.width, 1))
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
 history = model.fit(train.batch(12), epochs = 200, validation_data = validate.batch(12), callbacks = [DisplayCallback()])
 plot_train_history()
 # Show model predicted masks.
 show_pred_mask(test, 4)
-dsc = cal_test_DSC(test, 519)
+dsc = cal_test_DSC(test, num_test)
 tf.print('Average test DSC of this model: ', dsc)
 
 
