@@ -72,6 +72,7 @@ Figure 6 shows the structure of applied UNet.
 ![](./images/UNet_cons_1.png)
 
 ![](./images/UNet_cons_2.png)
+
 Figure 6, UNet structure in this project
 
 ## Training History
@@ -96,6 +97,9 @@ In this project, 100 epochs of training are applied with the bach size of 8.
 As can be seen from the training history, accurcay (Acc) above 90% and dice coefficient (DSC) above 0.8 are achieved in the model. The Acc and DSC of validating dataset began over 90% and 0.8 at 13th epoch and 45th epoch respctively.
 
 ### Model Evaluation Display
+
+The average DSC of 519 test data achieves up to 0.8179469 which is higher than preset 0.8. 
+
 The following four pictures show four testing results from testing dataset. In each row, first image is the grayscale raw image and the second image is the mask and the last one is the predicted mask. The model succesfully segmented lesion area from backgrounds in general and achieves a ideal result in the later three example. 
 
 ![](./images/pred_1.png)

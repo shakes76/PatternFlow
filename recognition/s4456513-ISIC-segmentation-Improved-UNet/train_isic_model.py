@@ -121,54 +121,90 @@ def dice_coef(y_true, y_pred, smooth=0.00001):
     return (2. * intersection + smooth) / (backend.sum(y_true_f) + backend.sum(y_pred_f) + smooth)
 
 
-'''
-    display the images of raw image, raw mask and predicted image
-'''
-def show_predictions(dataset, num = 1):
-    for image, mask in dataset.take(num):
+"""
+Predicts a mask based on image provided, and displays
+the predicted mask alongside the actual segmentation
+mask and original image.
+"""
+def show_pred_mask(ds, num = 1):
+    for image, mask in ds.take(num):
         pred_mask = model.predict(image[tf.newaxis, ...])[0]
-        plt.figure(figsize=(12,12))
-        plt.subplot(1,3,1)
+        fig = plt.figure(figsize=(12,12))
+        ax1 = fig.add_subplot(1,3,1)
+        # plot raw image 
         plt.imshow(tf.squeeze(image), cmap='gray')
-        plt.subplot(1,3,2)
+        ax1.set_title('Raw Grayscale Image')
+        ax2 = fig.add_subplot(1,3,2)
+        # plot raw mask
         plt.imshow(tf.squeeze(mask), cmap='gray')
-        plt.subplot(1,3,3)
+        ax2.set_title('Raw Mask')
+        ax3 = fig.add_subplot(1,3,3)
+        # plot predicted mask
         plt.imshow(tf.squeeze(pred_mask), cmap='gray')
+        ax3.set_title('Predicted Mask')
+#         print(dice_coef(mask, pred_mask))
     plt.show()
 
-'''
-    display predictions
-'''
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs = None):
-        show_predictions(validate)
+        show_pred_mask(val_ds)
 
-def show_train_history():
-    plt.figure(18,12)
-    plt.subplot(1,3,1)
-    plt.plot(history.history['accuracy'], 'seagreen', label='train')
-    plt.plot(history.history['val_accuracy'], label = 'validation')
+"""
+    Plot the train history of UNet model, including accuracy, DSC and loss 
+"""
+def plot_train_history():
+
+    # plot the trend of accuracy as the epoch increases
+    plt.figure(0)
+    # plot train dataset accuracy
+    plt.plot(history.history['accuracy'], 'blue', label='train')
+    # plot validating dataset accuracy
+    plt.plot(history.history['val_accuracy'], 'green', label = 'validation')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
     plt.title("Training Accuracy vs Validation Accuracy")
-    plt.subplot(1,3,2)
+    plt.show()
+
+    # plot the trend of dice similarity coefficent (DSC) as the epoch increases
     plt.figure(1)
-    plt.plot(history.history['dice_coef'],'gold', label='train')
-    plt.plot(history.history['val_dice_coef'],'yellowgreen', label='validation')
+    # plot train dataset DSC
+    plt.plot(history.history['dice_coef'],'purple', label='train')
+    # plot validation dataset DSC
+    plt.plot(history.history['val_dice_coef'],'red', label='validation')
     plt.xlabel("Epoch")
     plt.ylabel("Dice Coefficient")
     plt.legend(loc='lower right')
     plt.title("Training Dice Coefficient vs Validation Dice Coefficient")
-    plt.subplot(1,3,3)
+    plt.show()
+
+    # plot the trend of loss as the epoch increases
     plt.figure(2)
-    plt.plot(history.history['loss'],'orange', label='train')
-    plt.plot(history.history['val_loss'],'salmon', label='validation')
+    # plot train loss
+    plt.plot(history.history['loss'],'Navy', label='train')
+    # plot validation loss
+    plt.plot(history.history['val_loss'],'Orange', label='validation')
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend(loc='lower right')
     plt.title("Training Loss vs Validation Loss")
     plt.show()
+#     fig = figure
+
+def cal_test_DSC(dataset, num_test):
+    sum = 0
+    # num_test = data.num_test
+    for image, mask in dataset.take(num_test):
+
+        mask_pred = model.predict(image[tf.newaxis, ...])[0]
+
+        dsc = dice_coef(mask, mask_pred)
+        sum += dsc
+    #     print(dsc)
+    sum /= 519
+    return sum
+
+
 
 
 
@@ -189,5 +225,13 @@ test = data.test_dataset
 model = Improved_UNet((data.height, data.width, 1))
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy', dice_coef])
 history = model.fit(train.batch(12), epochs = 200, validation_data = validate.batch(12), callbacks = [DisplayCallback()])
+plot_train_history()
+# Show model predicted masks.
+show_pred_mask(test, 4)
+dsc = cal_test_DSC(test, 519)
+tf.print('Average test DSC of this model: ', dsc)
+
+
+
 
     
