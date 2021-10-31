@@ -1,6 +1,6 @@
 import tensorflow as tf
 import os
-from PatternFlow.recognition.ISIC_UNET.UnetData import *
+from PatternFlow.recognition.Mark_ISIC_UNET.UnetData import *
 from PatternFlow.recognition.Mark_ISIC_UNET.ImprovedUnet import *
 import matplotlib.pyplot
 
