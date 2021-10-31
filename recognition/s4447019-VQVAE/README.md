@@ -7,4 +7,4 @@
 - tensorflow-probability 0.14.0
 - numpy 1.21.3
 - matplotlib 3.4.3
-- glob 0.7
+- scikit-image 0.18.1
