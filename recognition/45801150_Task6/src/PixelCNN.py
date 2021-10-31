@@ -116,7 +116,7 @@ def train_pixel_cnn(pixel_cnn, vqvae: VQVae, x_train_normalised, n_epochs):
 
 def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
     n_priors = 10
-    priors = np.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:])
+    priors = tf.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:], dtype=tf.int32)
 
     _, rows, cols = priors.shape
 
@@ -125,15 +125,17 @@ def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
             print(f"\rrow: {row}, col: {col}", end="")
             dist = tfp.distributions.Categorical(logits=pixel_cnn(priors, training=False))
             probs = dist.sample()
-            priors[:, row, col] = probs[:, row, col]
+
+            indices = tf.constant(tf.expand_dims(tf.range(n_priors), axis=1))
+            tf.tensor_scatter_nd_update(priors, indices, probs)
 
     quantiser = vqvae.get_layer("quantiser")
 
     embeddings = quantiser.embeddings
-    priors_one_hot = tf.one_hot(priors.astype("int32"), vqvae.num_embeddings).numpy()
-    quantised = tf.matmul(
-        priors_one_hot.astype("float32"), embeddings, transpose_b=True
-    )
+    priors = tf.cast(priors, tf.int32)
+    priors_one_hot = tf.one_hot(priors, vqvae.num_embeddings)
+    priors_one_hot = tf.cast(priors_one_hot, tf.float32)
+    quantised = tf.matmul(priors_one_hot, embeddings, transpose_b=True)
     quantised = tf.reshape(quantised, (-1, *(output_shape[1:])))
 
     # Generate novel images.
