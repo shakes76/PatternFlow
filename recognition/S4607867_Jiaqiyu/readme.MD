@@ -31,10 +31,20 @@ E.G. :
 
 
 # Step1 building environment：
-I have cloned Datknet library from https://github.com/AlexeyAB/darknet .
-In order to build the yoloV3 model, 
-Also, I have enabled CUDA, CUDNN and OPEN-CV library to accelerate the model with GPU computing.
 
+Darknet is an open source neural network framework written in C and CUDA. It is fast, easy to install, and supports CPU and GPU computation.
+<p align="center">
+  The network Structure of Darknet
+</p>
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/e90a19a3986fb5c8888bae01fe3714dc2014098e/recognition/S4607867_Jiaqiyu/pics/darknet_structure.png" width=50% height=50%>
+</p>
+
+
+
+I have cloned Datknet library from https://github.com/AlexeyAB/darknet (An imporved version over the original darknet).
+Also, I have enabled CUDA, CUDNN and OPEN-CV library to accelerate the model with GPU computing.
+</n>
 I am using Windows10 as OS, so I followed AlexeyAB's tutorial - compile on Windows part.
 I attempted to use Cmake GUI to compile darknet, but failed.
 Then, I decided to compile darknet using vcpkg. This is the vcpkg compiling recommended by AlexeyAB:
@@ -53,21 +63,37 @@ cd darknet
 I have downloaded ISIC challenge 2017 as the target dataset.
 It contains 2000 train samples, 150 validation samples, and 600 test samples.
 The ground truth of lesion objects are stored as segmentation shadows. 
-So I wrote a python script to transform those images into the required format of input labels.
+So I wrote a couple python script to generate the label files of required input format.
 
 The darknet also requires us to set some parameters for the network.
 Here is the configuration of my yoloV3 network:
 
+<p align="center">
+  The Configuration of My YoloV3
+</p>
+<p align="center">
+<img src="https://github.com/slowlier/PatternFlow/blob/a1b43ca1568d70fd927ecb452ee780c38f8f9992/recognition/S4607867_Jiaqiyu/pics/configs.png" width=80% height=80%>
+</p>
+
+
 
 # Step3 training yoloV3 model：
 
-After setting up all the configurations, we can use the following command 
+After setting up all the configurations, we can use the following command to train a yoloV3 model with darknet:
+```
+./darknet detector train cfg/ISIC_train.data cfg/yolo-ISIC.cfg 
+```
+If you have a pre-trained weights checkpoint in the backup, you can continue training from it with the command:
+```
+./darknet detector train cfg/ISIC_train.data cfg/yolo-ISIC.cfg backup/yolo-ISIC_last.weights
+```
 
 
+A graph showing the learning loss curve would be saved in the darknet root folder as:
 
 
 The trained weights is stored in [ url  ]
-
+Weights of my previous attempts can also be found at [url]
 
 # Step4 validation on test set:
 
