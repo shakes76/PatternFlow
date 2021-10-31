@@ -6,6 +6,8 @@ from tensorflow.keras.models import Sequential
 from VQVAE import VQVae, VectorQuantiser
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
+import tensorflow_probability as tfp
+import matplotlib.pyplot as plt
 
 
 class PixelConvLayer(keras.layers.Layer):
@@ -108,6 +110,51 @@ def train_pixel_cnn(pixel_cnn, vqvae: VQVae, x_train_normalised, n_epochs):
         metrics=["accuracy"],
     )
     pixel_cnn.fit(x=code_indices, y=code_indices, batch_size=64, epochs=n_epochs, validation_split=0.1)
+
+
+
+
+def generate_image(vqvae, pixel_cnn, input_shape, output_shape):
+    n_priors = 10
+    priors = np.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:])
+
+    _, rows, cols = priors.shape
+
+    for row in range(rows):
+        for col in range(cols):
+            print(f"\rrow: {row}, col: {col}", end="")
+            dist = tfp.distributions.Categorical(logits=pixel_cnn(priors, training=False))
+            probs = dist.sample()
+            priors[:, row, col] = probs[:, row, col]
+
+    quantiser = vqvae.get_layer("quantiser")
+
+    embeddings = quantiser.embeddings
+    priors_one_hot = tf.one_hot(priors.astype("int32"), vqvae.num_embeddings).numpy()
+    quantised = tf.matmul(
+        priors_one_hot.astype("float32"), embeddings, transpose_b=True
+    )
+    quantised = tf.reshape(quantised, (-1, *(output_shape[1:])))
+
+    # Generate novel images.
+    decoder = vqvae.get_layer("decoder")
+    generated_samples = decoder.predict(quantised)
+
+    for i in range(n_priors):
+        plt.subplot(1, 2, 1)
+        plt.imshow(priors[i])
+        plt.title("Code")
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(generated_samples[i].squeeze(), vmin=0, vmax=1)
+        plt.title("Generated Sample")
+        plt.axis("off")
+        plt.savefig(f"generated_{i}.png")
+        plt.close()
+
+
+
 
 
 
