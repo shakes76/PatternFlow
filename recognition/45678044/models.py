@@ -1,6 +1,21 @@
 import torch
 import torch.nn as nn
 
+class ResidualBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(ResidualBlock, self).__init__()
+        self.block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, 
+                      padding=1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.Conv2d(out_channels, out_channels, kernel_size=1, stride=1,
+                      bias=False)
+        )
+
+    def forward(self, x):
+        return x + self.block(x)
+
 class VQVAE(nn.Module):
     def __init__(self, img_channels, latent_size, latent_dim):
         super(VQVAE, self).__init__()
@@ -9,9 +24,9 @@ class VQVAE(nn.Module):
         self.D = latent_dim
         
         self.encoder = nn.Sequential(
-            nn.Conv2d(img_channels, 16, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(img_channels, self.D//2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(self.D//2, self.D, kernel_size=4, stride=2, padding=1),
             nn.ReLU()
         )
         
@@ -19,9 +34,9 @@ class VQVAE(nn.Module):
         self.codebook.weight.data.uniform_(-1/self.K, 1/self.K)
         
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(self.D, self.D//2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(16, img_channels, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(self.D//2, img_channels, kernel_size=4, stride=2, padding=1),
             nn.ReLU() 
         )
         
