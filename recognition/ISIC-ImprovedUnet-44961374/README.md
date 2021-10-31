@@ -51,6 +51,14 @@ The ISIC 2018 challenge had three main goals:
 As mentioned before, this project aims to solve the first problem.
 
 ### Contents
+The dataset for the first problem contains two sets of data.
+1. Input images in jpeg format - these are scan images of the lesions
+2. Output (mask) images in png format - these are the groundtruth.
+
+The **blacks** (**0**) in the mask images represents the **background** and the **whites** (**255**) represents the **lesion**.
+
+The images below illustrates a skin lesion (input) image and its corresponding mask.
+
 
 ### Processing
 
