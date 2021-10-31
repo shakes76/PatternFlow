@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_probability as tfp
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from vqvae import VQVAE, get_closest_embedding_indices
 from pixelcnn import PixelCNN
@@ -135,6 +136,58 @@ def get_codebook_mapper_fn(encoder, embeddings):
 
     return mapper
 
+
+def show_pixelcnn_samples(pixel_cnn, vqvae, n, num_embeddings, shift):
+    """
+    Parameters:
+        pixel_cnn: trained PixelCNN model
+        vqvae: trained VQVAE network
+        n: number of samples to generate and plot
+        num_embeddings: num of vectors in embedding space
+        shift: shift to add to reconstructed image when plotting
+    """
+
+    pcnn_input_shape = vqvae.encoder().output.shape[1:3]
+
+    # Create a sampler
+    inputs = tf.keras.layers.Input(shape=pcnn_input_shape)
+    outputs = pixel_cnn(inputs, training=False)
+    dist = tfp.distributions.Categorical(logits=outputs)
+    sampler = tf.keras.Model(inputs, dist.sample())
+    sampler.trainable = False
+
+    # Create an empty array of priors.
+    priors = np.zeros(shape=(n,) + pcnn_input_shape)
+    _, rows, cols = priors.shape
+
+    # generation has to be done sequentially by each pixel
+    for row in range(rows):
+        for col in range(cols):
+            # Feed the current array and retrieve the pixel values for the next pixel.
+            probs = sampler.predict(priors)
+            priors[:, row, col] = probs[:, row, col]
+
+    priors_ohe = tf.one_hot(priors.astype("int32"), num_embeddings).numpy()
+    quantized = tf.matmul(priors_ohe.astype("float32"), vqvae.quantizer().embeddings(), transpose_b=True)
+    quantized = tf.reshape(quantized, (-1, *(vqvae.encoder().output.shape[1:])))
+
+    # pass back into the decoder
+    decoder = vqvae.decoder()
+    generated_samples = decoder.predict(quantized)
+
+    for i in range(n):
+        plt.subplot(1, 2, 1)
+        plt.imshow(priors[i])
+        plt.title("Generated codebook sample")
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(generated_samples[i].squeeze() + shift, cmap="gray")
+        plt.title("Decoded sample")
+        plt.axis("off")
+        plt.show()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="VQVAE trainer")
 
@@ -200,6 +253,9 @@ if __name__ == "__main__":
 
     ### PIXELCNN ###
 
+    # Note, the PixelCNN code being used is heavily adapted from:
+    # https://keras.io/examples/generative/pixelcnn/
+
     # Map dataset to their codebooks using the trained VQVAE
     codebook_mapper = get_codebook_mapper_fn(vqvae_model.encoder(), vqvae_model.quantizer().embeddings())
     codebook_dataset = dataset.map(codebook_mapper)
@@ -211,3 +267,6 @@ if __name__ == "__main__":
     pixel_cnn.compile(optimizer=tf.keras.optimizers.Adam(args.pcnn_learning_rate), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True))
 
     pixel_cnn.fit(codebook_dataset, batch_size=args.batch_size, epochs=args.pcnn_epochs)
+
+    # generate 5 samples
+    show_pixelcnn_samples(pixel_cnn, vqvae_model, 5, args.K, args.shift)
