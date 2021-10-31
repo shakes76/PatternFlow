@@ -36,6 +36,13 @@ Email: mujibulislamdipto@gmail.com
             <li><a href="#sample-predictions"> Sample Predictions </a></li>
         </ul>
     </li>
+            <li><a href="#usage"> Results </a>
+        <ul>
+            <li><a href="#dice-similarity-coefficient"> DSC </a></li>
+            <li><a href="#model-performance"> Model Performance </a></li>
+            <li><a href="#sample-predictions"> Sample Predictions </a></li>
+        </ul>
+    </li>
       <li><a href="#quick-links"> Quick Links </a></li>
       <li><a href="#references"> References </a></li>
     </ol>
@@ -121,11 +128,12 @@ The Improved UNet  Model [5] still follows the "U" shaped structure as the origi
 * Use of context modules which are pre-activation residual blocks with two 3x3x3 convolutional layers and a dropout layer in between [5]
 * Use of localization modules to recombine features 
 
+<!-- Performance of the model -->
 ## Results
 
 ### Dice Similarity Coefficient
 
-Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation. The formula of DSC is:
+Dice Similarity Coefficient (DSC) is an evaluation metric for segmentation [7]. The formula of DSC is:
 
 <p align="center">
   <kbd>
@@ -162,6 +170,29 @@ The images below show sample images of scans, their corresponding masks and pred
 </p>
 
 As evident, the model has performed well. A larger dataset with more images or data augmentation to generate more training data would increase the accuracy further.
+
+<!-- Usage information -->
+## Usage
+
+### Dependencies
+1. TensorFlow 2.5.0
+2. Python 3.7+
+3. Matplotlib 3.3+
+
+### Setup Instructions
+
+Step 1: Download the dataset from this [link](https://cloudstor.aarnet.edu.au/sender/?s=download&token=723595dd-15b0-4d1e-87b8-237a7fe282ff)
+
+Step 2: Run [driver.py](driver.py). It will automatically use the following modules to load and train the model:
+
+* [data_loader.py](data_loader.py) - this module will load the dataset, process it and split it into train, validation & test
+
+* [utilities.py](utilities.py) - this module will be used for plotting images and calculating DSC
+
+* [model.py](model.py) - this module will create an Improved UNet Model
+
+Once finished, the accuracy graph will be shown and sample output images will be displayed.
+
 <!-- Links to the data set and model paper -->
 ## Quick Links
 [ISIC 2018 Challenge Data](https://challenge2018.isic-archive.com/)
@@ -184,3 +215,5 @@ As evident, the model has performed well. A larger dataset with more images or d
 [5] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, en K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge”, arXiv [cs.CV]. 2018.
 
 [6] https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
+
+[7] https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient#Formula
