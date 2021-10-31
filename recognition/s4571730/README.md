@@ -1,5 +1,5 @@
-# COMP3710 Pattern Recognition Report
-### Van Nhat Huy Nguyen (45717309)
+# Classify laterality of the OAI AKOA knee data using the Perceiver transformer
+### Van Nhat Huy Nguyen
 
 ## Purpose
 The aim of this project is to create and assess the performance of a binary 
