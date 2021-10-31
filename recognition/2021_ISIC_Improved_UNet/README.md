@@ -21,7 +21,9 @@ The Training, Testing and Validation data split that was chosen was 70 / 15 / 15
 ## Architecture
 Proposed in 2018 [1], the Improved UNet is designed upon the original model of UNet, proposed in 2015 [2]. 
 
-![](https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ImprovedUNetArchitecture.png)
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/ImprovedUNetArchitecture.png">
+</p>
 
 _Figure 2: Improved UNet Architecture [1]_
 
@@ -32,33 +34,35 @@ The Context Aggregation pathway is designed to encode the input images into incr
 
 The layer-by-layer architecture of the Context Modules is as follows:
 
-- Instance Normalization
-- Leaky ReLU Activation
-- 3x3 Convolution
-
-- Dropout (_with 0.3 dropout rate_)
-
-- Instance Normalization
-- Leaky ReLU Activation
-- 3x3 Convolution
-
+|Context Module Architecture|
+|-|
+|Instance Normalization|
+|Leaky ReLU Activation|
+|3x3 Convolution|
+|Dropout (_0.3 dropout rate_|
+|Instance Normalization|
+|Leaky ReLU Activation|
+|3x3 Convolution|
 
 ### Localisation Modules & The Localisation Pathway
 The Localisation Pathway is designed to increase the dimensionality of the encoded image representation to produce high resolution segmentations by means of Localisation Modules, UpSampling modules and image upscaling.
 
 The layer-by-layer architecture of the Localisation Modules is as follows:
 
-- 3x3 Convolution
-- 1x1 Convolution
-
+|Localisation Module Architecture|
+|-|
+|3x3 Convolution|
+|1x1 Convolution|
 
 #### Up-Sampling Modules
 Up-Sampling modules are placed after every localisation module in the Localisation Pathway. 
 
 The layer-by-layer architecture of the Up-Sampling Modules is as follows:
 
-- 2D UpSampling layer (2x2)
-- 3x3 Convolution
+|Up-Sampling Module Architecture|
+|-|
+|2D UpSampling layer (2x2)|
+|3x3 Convolution|
 
 ### Skip Connections
 Denoted by the horizontal dashed lines in _Figure 2_, Skip Connections are element-wise summations of the 3x3 (stride 2) Convolutions and Context Module outputs' in the Context Aggregation pathway. Skip Connections are concatenated into the corresponding network level in the Localisation Pathway. 
@@ -73,12 +77,14 @@ Segmentation layers are 3x3 convolutions with a single output filter.
 The 'U' shaped dashed lines in _Figure 2_ denote the pathway that the segmentation levels take. Output is taken from the levels' Localisation Module and given to a Segmentation Layer. Lower layers are up-sampled to allow element-wise summation to occur. 
 
 ## Optimizer & Loss
-The optimizer used in this implementation was the Adam optimizer with a learning rate of 5e-4, as per [1].
+The optimizer used in this implementation was the [Adam optimizer](https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam) with a learning rate of 5e-4, as per [1].
 
 ### Dice Similarity Coefficient
-The Dice Similarity Coefficient is a common metric used in segmentation problems. Formally, DSC is defined as:
+The [Dice Similarity Coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient) is a common metric used in segmentation problems. Formally, DSC is defined as:
 
-_Image of DSC formula_
+<p align="center">
+  <img src="https://github.com/default-jamc/PatternFlow/blob/topic-recognition/recognition/2021_ISIC_Improved_UNet/images/DiceCoefficient.png">
+</p>
 
 That is, the DSC is: 2 * the overlap between the pixels in the Ground Truth segmentation mask, and the model-generated Segmentation Mask. This is then divided by the sum of the total pixels in both masks. 
 
@@ -100,7 +106,7 @@ _Image of input / ground truth / result masks_
 ## Additions and Changes
 The architecture described above gives an overview of the design of the model.
 During development, it was found that making slight tweaks to the architecture resulted in better performance. These changes were:
-- `InstanceNormalisation` layers were added to all 3x3 (stride 2) convolutions in the encoder pathway.
+- `InstanceNormalisation` layers were added to all 3x3 (stride 2) convolutions in the context aggregation pathway.
 - `UpSampling2D` layers used the `interpolation='bilinear'` parameter as opposed to the default `interpolation='nearest'`
 
 ## Usage
@@ -115,6 +121,19 @@ Open up a commandline and navigate to the directory where `driver.py` is saved, 
 `python driver.py`
 
 To ensure the data is loaded correctly, an image from the Training Input should appear on-screen, followed by its corresponding mask from the Training GroundTruth. 
+
+You may change the amount of epochs that the network runs for and the `Adam` learning rate by changing the variables at the top of `driver.py`
+
+- `EPOCHS` denotes the total amount of epochs.
+- `OPT_LEARNING_RATE` denotes the `Adam` learning rate.
+
+Once the network is finished, 
+1. It will generate `Loss` and `Dice Coefficient` graphs as shown in the `Results` section above. 
+2. It will then proceed to evaluate the test set, and some performance metrics will be output to the screen, as shown in the `Results` section above.
+3. A histogram of the distribution of the DSC on the test set evaluation will be generated.
+4. 20 images of the Original Image / Ground Truth Mask / Model-generated Mask will be generated, as shown in the `Results` section above. (_Note: you may change the amount of images output using the `local_batch` variable in the `generatePredictions` method in `driver.py`_)
+
+
 
 ## Dependencies
 - Python _
