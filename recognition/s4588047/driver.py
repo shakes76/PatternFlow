@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Autoencoders
-# 
-# Autoencoder in TF Keras with the AKOA Knee dataset
+# VQ Variational Autoencoder in TF Keras with the AKOA Knee dataset
+# Author: Yousif Al-Patti
+# 45880472
 
 #%%
 # importing helper classes and functions
@@ -16,7 +16,6 @@ from model import (Encoder, Decoder, VectorQuantizer, PixelConvLayer,
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from keras import backend as K
 from matplotlib import pyplot as plt
 import tensorflow_probability as tfp
 tfd = tfp.distributions
@@ -58,7 +57,8 @@ data_variance = 0
 # Build modules.
 encoder = Encoder(num_hiddens, num_residual_layers, num_residual_hiddens)
 decoder = Decoder(num_hiddens, num_residual_layers, num_residual_hiddens)
-pre_vq_conv1 = layers.Conv2D(embedding_dim, (1, 1), strides=(1, 1), name="to_vq")
+pre_vq_conv1 = layers.Conv2D(embedding_dim, (1, 1), strides=(1, 1), 
+                             name="to_vq")
 vq_vae = VectorQuantizer(
   embedding_dim=embedding_dim,
   num_embeddings=num_embeddings,
@@ -80,7 +80,20 @@ hh = keras.Sequential(
 hh.summary()
 
 class VQVAETrainer(keras.models.Model):
-    def __init__(self, encoder, decoder, vq_vae, pre_vq_conv1, data_variance, **kwargs):
+    '''
+    The model trainer encapsulate all the layers encoder, pre-vq_vae, vq and 
+    decoder into one trainer that has loss tracking and manual gradient 
+    calculation.
+
+            Parameters:
+                    encoder: the model encoder
+                    decoder: the model decoder
+                    vq_vae: the VQ layer
+                    pre_vq_conv1: the pre VQ layer 
+
+    '''
+    def __init__(self, encoder, decoder, vq_vae, pre_vq_conv1, 
+                 data_variance, **kwargs):
         super(VQVAETrainer, self).__init__(**kwargs)
 
         self._encoder = encoder
@@ -118,7 +131,8 @@ class VQVAETrainer(keras.models.Model):
 
 
         grads = tape.gradient(loss, self._vqvae.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self._vqvae.trainable_variables))
+        self.optimizer.apply_gradients(
+            zip(grads, self._vqvae.trainable_variables))
 
         # Loss tracking.
         self.total_loss_tracker.update_state(loss)
@@ -142,11 +156,20 @@ class VQVAETrainer(keras.models.Model):
 vqvae_trainer = VQVAETrainer(encoder, decoder, vq_vae, pre_vq_conv1, data_variance)
 # using adam optimizer for the gradient training
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam(learning_rate))
-history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size, validation_data=(x_validate,))
+history = vqvae_trainer.fit(x_train, epochs=1, batch_size=batch_size,
+                            validation_data=(x_validate,))
 #%%
 
 
 def show_subplot(original, reconstructed, i):
+    '''
+    Plots the original and reconstructed images
+
+            Parameters:
+                    original: the original image from training dataset
+                    reconstructed: the reconstructed using VQ-VAE model
+                    i: used for saving multiple images
+    '''
     plt.subplot(1, 2, 1)
     plt.imshow(original)
     plt.title("Original")
@@ -163,8 +186,10 @@ def show_subplot(original, reconstructed, i):
     #plt.savefig('outputs/sample' + str(i) + '.png')
     
     im1 = tf.image.convert_image_dtype(original, tf.float32)
-    im2 = tf.image.convert_image_dtype(tf.cast(reconstructed * 255.,'uint8'), tf.float32)
-    ssim2 = tf.image.ssim(im1, im2, max_val=1.0, filter_size=11,filter_sigma=1.5, k1=0.01, k2=0.03)
+    im2 = tf.image.convert_image_dtype(tf.cast(reconstructed * 255.,'uint8'),
+                                       tf.float32)
+    ssim2 = tf.image.ssim(im1, im2, max_val=1.0, filter_size=11,
+                          filter_sigma=1.5, k1=0.01, k2=0.03)
     print(ssim2)
     
 xtrain = tf.expand_dims(x_validate, axis=1)
@@ -202,16 +227,7 @@ plt.title('Training loss')
 plt.legend(loc='best')
 plt.show()
 #%%
-dist = tfd.PixelCNN(
-    image_shape=(128,128,1),
-    num_resnet=1,
-    num_hierarchies=2,
-    num_filters=32,
-    num_logistic_mix=5,
-    dropout_p=.3,
-)
-
-encoded_outputs = encoder(xtrain[1:10])
+encoded_outputs = encoder(xtrain[1:200])
 flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
 codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
@@ -265,7 +281,7 @@ pixel_cnn.summary()
 
 
 # Generate the codebook indices.
-encoded_outputs = encoder(xtrain[1:10])
+encoded_outputs = encoder(xtrain[1:200])
 flat_enc_outputs = tf.reshape(encoded_outputs, (-1, encoded_outputs.shape[-1]))
 codebook_indices = vq_vae.get_code_indices(flat_enc_outputs)
 
@@ -295,6 +311,16 @@ sampled = dist.sample()
 sampler = keras.Model(inputs, sampled)
 
 def short_pass(priors):
+    '''
+    performs a small pass of the priors through to calculate the sample 
+    probabilities
+
+            Parameters:
+                    priors: the priors shape
+
+            Returns:
+                    probs: the probabilities for the model
+    '''
     first = pixel_cnn.predict(priors)
     second = tfp.distributions.Categorical(first)
     third = second.sample()
