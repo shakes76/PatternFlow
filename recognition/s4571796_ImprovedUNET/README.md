@@ -64,6 +64,10 @@ From the results attained and the graph seen below, the loss graph shows a decre
 
 ## Hyperparameter Tuning
 ***
+The initial hyperparameters chosen was 10 epochs with a batch size of 2, with the image widths and heights being 128 and 96 to preserve the aspect ratio. For the model downsampling step in the context module, this was done with 2 Convolutional Layers and a dropout in between with a value of 0.3. However, this resulted in many attempts with exploding gradients, which made the model unstable and the training step had to be restarted. To fix this issue, an additional batch normalization layer was added, and this improved the training significantly.
+
+However, there was another issue where the model would overfit, as the validation loss graph would start an upward trend after 15 epochs. This was resolved by choosing a lower value for the dropout layer, which was 0.1. This produced a better model that could train for 30 epochs instead and return a better result overall for the dice coefficient.
+
 
 ## Dependencies
 ***
