@@ -30,13 +30,14 @@ class VectorQuantizer(layers.Layer):
         )
 
     def call(self, x):
-        # Calculate the input shape of the inputs and
-        # then flatten the inputs keeping `embedding_dim` intact.
+        # Calculate the input shape of the inputs
         input_shape = tf.shape(x)
+        # Flatten the inputs keeping embedding_dim intact
         flattened = tf.reshape(x, [-1, self.embedding_dim])
 
         # Quantization.
         encoding_indices = self.get_code_indices(flattened)
+        # Apply one hot encoding.
         encodings = tf.one_hot(encoding_indices, self.num_embeddings)
         quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
         quantized = tf.reshape(quantized, input_shape)
@@ -134,6 +135,7 @@ class VQVAETrainer(keras.models.Model):
         ]
 
     def train_step(self, x):
+        
         with tf.GradientTape() as tape:
             # Outputs from the VQ-VAE.
             reconstructions = self.vqvae(x)
