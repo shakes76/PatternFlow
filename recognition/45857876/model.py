@@ -1,3 +1,7 @@
+import os
+import datetime
+import time
+import timeit
 import copy
 import random
 from collections import OrderedDict
@@ -6,11 +10,10 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import interpolate
 
-import models.Losses as Losses
-from data import get_data_loader
-from models import update_average
-from models.Blocks import DiscriminatorTop, DiscriminatorBlock, InputBlock, GSynthesisBlock
-from models.CustomLayers import EqualizedConv2d, PixelNormLayer, EqualizedLinear, Truncation
+from utils import get_data_loader
+from utils import update_average
+from Blocks import DiscriminatorTop, DiscriminatorBlock, InputBlock, GSynthesisBlock
+from CustomLayers import EqualizedConv2d, PixelNormLayer, EqualizedLinear
 
 
 class GMapping(nn.Module):
@@ -21,18 +24,6 @@ class GMapping(nn.Module):
         """
         Mapping network used in the StyleGAN paper.
 
-        :param latent_size: Latent vector(Z) dimensionality.
-        # :param label_size: Label dimensionality, 0 if no labels.
-        :param dlatent_size: Disentangled latent (W) dimensionality.
-        :param dlatent_broadcast: Output disentangled latent (W) as [minibatch, dlatent_size]
-                                  or [minibatch, dlatent_broadcast, dlatent_size].
-        :param mapping_layers: Number of mapping layers.
-        :param mapping_fmaps: Number of activations in the mapping layers.
-        :param mapping_lrmul: Learning rate multiplier for the mapping layers.
-        :param mapping_nonlinearity: Activation function: 'relu', 'lrelu'.
-        :param use_wscale: Enable equalized learning rate?
-        :param normalize_latents: Normalize latent vectors (Z) before feeding them to the mapping layers?
-        :param kwargs: Ignore unrecognized keyword args.
         """
 
         super().__init__()
@@ -81,29 +72,11 @@ class GSynthesis(nn.Module):
     def __init__(self, dlatent_size=512, num_channels=3, resolution=1024,
                  fmap_base=8192, fmap_decay=1.0, fmap_max=512,
                  use_styles=True, const_input_layer=True, use_noise=True, nonlinearity='lrelu',
-                 use_wscale=True, use_pixel_norm=False, use_instance_norm=True, blur_filter=None,
+                 use_wscale=True, use_pixel_norm=False, use_instance_norm=True, blur_filter=[1,2,1],
                  structure='linear', **kwargs):
         """
         Synthesis network used in the StyleGAN paper.
 
-        :param dlatent_size: Disentangled latent (W) dimensionality.
-        :param num_channels: Number of output color channels.
-        :param resolution: Output resolution.
-        :param fmap_base: Overall multiplier for the number of feature maps.
-        :param fmap_decay: log2 feature map reduction when doubling the resolution.
-        :param fmap_max: Maximum number of feature maps in any layer.
-        :param use_styles: Enable style inputs?
-        :param const_input_layer: First layer is a learned constant?
-        :param use_noise: Enable noise inputs?
-        # :param randomize_noise: True = randomize noise inputs every time (non-deterministic),
-                                  False = read noise inputs from variables.
-        :param nonlinearity: Activation function: 'relu', 'lrelu'
-        :param use_wscale: Enable equalized learning rate?
-        :param use_pixel_norm: Enable pixel_wise feature vector normalization?
-        :param use_instance_norm: Enable instance normalization?
-        :param blur_filter: Low-pass filter to apply when resampling activations. None = no filtering.
-        :param structure: 'fixed' = no progressive growing, 'linear' = human-readable
-        :param kwargs: Ignore unrecognized keyword args.
         """
 
         super().__init__()
@@ -150,12 +123,7 @@ class GSynthesis(nn.Module):
 
     def forward(self, dlatents_in, depth=0, alpha=0., labels_in=None):
         """
-            forward pass of the Generator
-            :param dlatents_in: Input: Disentangled latents (W) [mini_batch, num_layers, dlatent_size].
-            :param labels_in:
-            :param depth: current depth from where output is required
-            :param alpha: value of alpha for fade-in effect
-            :return: y => output
+
         """
 
         assert depth < self.depth, "Requested output depth cannot be produced"
@@ -191,15 +159,6 @@ class Generator(nn.Module):
         """
         # Style-based generator used in the StyleGAN paper.
         # Composed of two sub-networks (G_mapping and G_synthesis).
-
-        :param resolution:
-        :param latent_size:
-        :param dlatent_size:
-        :param truncation_psi: Style strength multiplier for the truncation trick. None = disable.
-        :param truncation_cutoff: Number of layers for which to apply the truncation trick. None = disable.
-        :param dlatent_avg_beta: Decay for tracking the moving average of W during training. None = disable.
-        :param style_mixing_prob: Probability of mixing styles during training. None = disable.
-        :param kwargs: Arguments for sub-networks (G_mapping and G_synthesis).
         """
 
         super(Generator, self).__init__()
@@ -211,35 +170,28 @@ class Generator(nn.Module):
         self.g_mapping = GMapping(latent_size, dlatent_size, dlatent_broadcast=self.num_layers, **kwargs)
         self.g_synthesis = GSynthesis(resolution=resolution, **kwargs)
 
-
-
     def forward(self, latents_in, depth, alpha):
         """
-        :param latents_in: First input: Latent vectors (Z) [mini_batch, latent_size].
-        :param depth: current depth from where output is required
-        :param alpha: value of alpha for fade-in effect
-        :param labels_in: Second input: Conditioning labels [mini_batch, label_size].
-        :return:
+
         """
 
         dlatents_in = self.g_mapping(latents_in)
 
         if self.training:
             # Update moving average of W(dlatent).
-            if self.truncation is not None:
-                self.truncation.update(dlatents_in[0, 0].detach())
+            # if self.truncation is not None:
+            #     self.truncation.update(dlatents_in[0, 0].detach())
 
             # Perform style mixing regularization.
             if self.style_mixing_prob is not None and self.style_mixing_prob > 0:
                 latents2 = torch.randn(latents_in.shape).to(latents_in.device)
                 dlatents2 = self.g_mapping(latents2)
-                layer_idx = torch.unsqueeze(torch.arange(self.num_layers),1).to(
+                layer_idx = torch.unsqueeze(torch.arange(self.num_layers), 1).to(
                     latents_in.device)
                 cur_layers = 2 * (depth + 1)
                 mixing_cutoff = random.randint(1,
                                                cur_layers) if random.random() < self.style_mixing_prob else cur_layers
                 dlatents_in = torch.where(layer_idx < mixing_cutoff, dlatents_in, dlatents2)
-
 
         fake_images = self.g_synthesis(dlatents_in, depth, alpha)
 
@@ -254,19 +206,6 @@ class Discriminator(nn.Module):
         """
         Discriminator used in the StyleGAN paper.
 
-        :param num_channels: Number of input color channels. Overridden based on dataset.
-        :param resolution: Input resolution. Overridden based on dataset.
-        # label_size=0,  # Dimensionality of the labels, 0 if no labels. Overridden based on dataset.
-        :param fmap_base: Overall multiplier for the number of feature maps.
-        :param fmap_decay: log2 feature map reduction when doubling the resolution.
-        :param fmap_max: Maximum number of feature maps in any layer.
-        :param nonlinearity: Activation function: 'relu', 'lrelu'
-        :param use_wscale: Enable equalized learning rate?
-        :param mbstd_group_size: Group size for the mini_batch standard deviation layer, 0 = disable.
-        :param mbstd_num_features: Number of features for the mini_batch standard deviation layer.
-        :param blur_filter: Low-pass filter to apply when resampling activations. None = no filtering.
-        :param structure: 'fixed' = no progressive growing, 'linear' = human-readable
-        :param kwargs: Ignore unrecognized keyword args.
         """
         super(Discriminator, self).__init__()
 
@@ -312,11 +251,6 @@ class Discriminator(nn.Module):
 
     def forward(self, images_in, depth, alpha=1., labels_in=None):
         """
-        :param images_in: First input: Images [mini_batch, channel, height, width].
-        :param labels_in: Second input: Labels [mini_batch, label_size].
-        :param depth: current height of operation (Progressive GAN)
-        :param alpha: current value of alpha for fade-in
-        :return:
         """
 
         assert depth < self.depth, "Requested output depth cannot be produced"
@@ -344,33 +278,52 @@ class Discriminator(nn.Module):
         return scores_out
 
 
+class LogisticGAN:
+    def __init__(self, dis):
+        self.dis = dis
+
+    # gradient penalty
+    def R1Penalty(self, real_img, height, alpha):
+        # TODO: use_loss_scaling, for fp16
+        apply_loss_scaling = lambda x: x * torch.exp(x * [torch.log(torch.tensor(2.0))].to(real_img.device))
+        undo_loss_scaling = lambda x: x * torch.exp(-x * [torch.log(torch.tensor(2.0))].to(real_img.device))
+
+        real_img = torch.autograd.Variable(real_img, requires_grad=True)
+        real_logit = self.dis(real_img, height, alpha)
+        # real_logit = apply_loss_scaling(torch.sum(real_logit))
+        real_grads = torch.autograd.grad(outputs=real_logit, inputs=real_img,
+                                         grad_outputs=torch.ones(real_logit.size()).to(real_img.device),
+                                         create_graph=True, retain_graph=True)[0].view(real_img.size(0), -1)
+        # real_grads = undo_loss_scaling(real_grads)
+        r1_penalty = torch.sum(torch.mul(real_grads, real_grads))
+        return r1_penalty
+
+    def dis_loss(self, real_samps, fake_samps, height, alpha, r1_gamma=10.0):
+        # Obtain predictions
+        r_preds = self.dis(real_samps, height, alpha)
+        f_preds = self.dis(fake_samps, height, alpha)
+
+        loss = torch.mean(nn.Softplus()(f_preds)) + torch.mean(nn.Softplus()(-r_preds))
+
+        if r1_gamma != 0.0:
+            r1_penalty = self.R1Penalty(real_samps.detach(), height, alpha) * (r1_gamma * 0.5)
+            loss += r1_penalty
+
+        return loss
+
+    def gen_loss(self, real_samps, fake_samps, height, alpha):
+        f_preds = self.dis(fake_samps, height, alpha)
+
+        return torch.mean(nn.Softplus()(-f_preds))
+
+
 class StyleGAN:
 
-    def __init__(self, structure, resolution, num_channels, latent_size,
-                 g_args, d_args, g_opt_args, d_opt_args, loss="relativistic-hinge", drift=0.001,
+    def __init__(self, structure, resolution, num_channels, latent_size,drift=0.001,
                  d_repeats=1, use_ema=False, ema_decay=0.999, device=torch.device("cpu")):
         """
         Wrapper around the Generator and the Discriminator.
 
-        :param structure: 'fixed' = no progressive growing, 'linear' = human-readable
-        :param resolution: Input resolution. Overridden based on dataset.
-        :param num_channels: Number of input color channels. Overridden based on dataset.
-        :param latent_size: Latent size of the manifold used by the GAN
-        :param g_args: Options for generator network.
-        :param d_args: Options for discriminator network.
-        :param g_opt_args: Options for generator optimizer.
-        :param d_opt_args: Options for discriminator optimizer.
-        :param loss: the loss function to be used
-                     Can either be a string =>
-                          ["wgan-gp", "wgan", "lsgan", "lsgan-with-sigmoid",
-                          "hinge", "standard-gan" or "relativistic-hinge"]
-                     Or an instance of GANLoss
-        :param drift: drift penalty for the
-                      (Used only if loss is wgan or wgan-gp)
-        :param d_repeats: How many times the discriminator is trained per G iteration.
-        :param use_ema: boolean for whether to use exponential moving averages
-        :param ema_decay: value of mu for ema
-        :param device: device to run the GAN on (GPU / CPU)
         """
 
         # state of the object
@@ -385,23 +338,24 @@ class StyleGAN:
         self.ema_decay = ema_decay
 
         # Create the Generator and the Discriminator
-        self.gen = Generator(num_channels=num_channels,
-                             resolution=resolution,
-                             structure=self.structure,
-                             **g_args).to(self.device)
-        self.dis = Discriminator(num_channels=num_channels,
-                                 resolution=resolution,
-                                 structure=self.structure,
-                                 **d_args).to(self.device)
 
+        self.gen = Generator(num_channels=3,
+                             resolution=resolution,
+                             structure=self.structure
+                             ).to(self.device)
+
+        self.dis = Discriminator(num_channels=3,
+                                 resolution=resolution,
+                                 structure=self.structure
+                                 ).to(self.device)
 
         # define the optimizers for the discriminator and generator
-        self.__setup_gen_optim(**g_opt_args)
-        self.__setup_dis_optim(**d_opt_args)
+        self.__setup_gen_optim()
+        self.__setup_dis_optim()
 
         # define the loss function used for training the GAN
         self.drift = drift
-        self.loss = self.__setup_loss(loss)
+        self.loss = self.__setup_loss()
 
         # Use of ema
         if self.use_ema:
@@ -412,29 +366,14 @@ class StyleGAN:
             # initialize the gen_shadow weights equal to the weights of gen
             self.ema_updater(self.gen_shadow, self.gen, beta=0)
 
-    def __setup_gen_optim(self, learning_rate, beta_1, beta_2, eps):
-        self.gen_optim = torch.optim.Adam(self.gen.parameters(), lr=learning_rate, betas=(beta_1, beta_2), eps=eps)
+    def __setup_gen_optim(self):
+        self.gen_optim = torch.optim.Adam(self.gen.parameters(), lr=0.003, betas=(0, 0.99), eps=1e-8)
 
-    def __setup_dis_optim(self, learning_rate, beta_1, beta_2, eps):
-        self.dis_optim = torch.optim.Adam(self.dis.parameters(), lr=learning_rate, betas=(beta_1, beta_2), eps=eps)
+    def __setup_dis_optim(self):
+        self.dis_optim = torch.optim.Adam(self.dis.parameters(),lr=0.003, betas=(0, 0.99), eps=1e-8)
 
-    def __setup_loss(self, loss):
-        if isinstance(loss, str):
-            loss = loss.lower()  # lowercase the string
-
-            if loss == "standard-gan":
-                loss = Losses.StandardGAN(self.dis)
-            elif loss == "hinge":
-                loss = Losses.HingeGAN(self.dis)
-            elif loss == "relativistic-hinge":
-                loss = Losses.RelativisticAverageHingeGAN(self.dis)
-            elif loss == "logistic":
-                loss = Losses.LogisticGAN(self.dis)
-            else:
-                raise ValueError("Unknown loss function requested")
-
-        elif not isinstance(loss, Losses.GANLoss):
-            raise ValueError("loss is neither an instance of GANLoss nor a string")
+    def __setup_loss(self):
+        loss = LogisticGAN(self.dis)
 
         return loss
 
@@ -443,10 +382,6 @@ class StyleGAN:
         private helper for down_sampling the original images in order to facilitate the
         progressive growing of the layers.
 
-        :param real_batch: batch of real samples
-        :param depth: depth at which training is going on
-        :param alpha: current value of the fade-in alpha
-        :return: real_samples => modified real batch of samples
         """
 
         from torch.nn import AvgPool2d
@@ -456,8 +391,8 @@ class StyleGAN:
             return real_batch
 
         # down_sample the real_batch for the given depth
-        down_sample_factor = int(torch.pow(2, self.depth - depth - 1))
-        prior_down_sample_factor = max(int(torch.pow(2, self.depth - depth)), 0)
+        down_sample_factor = int(torch.pow(torch.tensor(2), torch.tensor(self.depth - depth - 1)))
+        prior_down_sample_factor = max(int(torch.pow(torch.tensor(2), torch.tensor(self.depth - depth))), 0)
 
         ds_real_samples = AvgPool2d(down_sample_factor)(real_batch)
 
@@ -475,12 +410,6 @@ class StyleGAN:
     def optimize_discriminator(self, noise, real_batch, depth, alpha):
         """
         performs one step of weight update on discriminator using the batch of data
-
-        :param noise: input noise of sample generation
-        :param real_batch: real samples batch
-        :param depth: current depth of optimization
-        :param alpha: current alpha for fade-in
-        :return: current loss (Wasserstein loss)
         """
 
         real_samples = self.__progressive_down_sampling(real_batch, depth, alpha)
@@ -505,11 +434,6 @@ class StyleGAN:
         """
         performs one step of weight update on generator for the given batch_size
 
-        :param noise: input random noise required for generating samples
-        :param real_batch: batch of real samples
-        :param depth: depth of the network at which optimization is done
-        :param alpha: value of alpha for fade-in effect
-        :return: current loss (Wasserstein estimate)
         """
 
         real_samples = self.__progressive_down_sampling(real_batch, depth, alpha)
@@ -534,7 +458,141 @@ class StyleGAN:
         # return the loss value
         return loss.item()
 
+    @staticmethod
+    def create_grid(samples, scale_factor, img_file):
+        """
+        utility function to create a grid of GAN samples
 
+        """
+        from torchvision.utils import save_image
+        from torch.nn.functional import interpolate
+
+        # upsample the image
+        if scale_factor > 1:
+            samples = interpolate(samples, scale_factor=scale_factor)
+
+        # save the images:
+        save_image(samples, img_file, nrow=int(torch.sqrt(torch.tensor(len(samples)))),
+                   normalize=True, scale_each=True, pad_value=128, padding=1)
+
+    def train(self, dataset, num_workers, epochs, batch_sizes, fade_in_percentage, logger, output,
+              num_samples=36, start_depth=0, feedback_factor=100, checkpoint_factor=1):
+        """
+        Utility method for training the GAN. 
+
+        """
+
+        assert self.depth <= len(epochs), "epochs not compatible with depth"
+        assert self.depth <= len(batch_sizes), "batch_sizes not compatible with depth"
+        assert self.depth <= len(fade_in_percentage), "fade_in_percentage not compatible with depth"
+
+        # turn the generator and discriminator into train mode
+        self.gen.train()
+        self.dis.train()
+        if self.use_ema:
+            self.gen_shadow.train()
+
+        # create a global time counter
+        global_time = time.time()
+
+        # create fixed_input for debugging
+        fixed_input = torch.randn(num_samples, self.latent_size).to(self.device)
+
+        # config depend on structure
+        logger.info("Starting the training process ... \n")
+        if self.structure == 'fixed':
+            start_depth = self.depth - 1
+        step = 1  # counter for number of iterations
+        for current_depth in range(start_depth, self.depth):
+            current_res = torch.pow(torch.tensor(2), torch.tensor(current_depth + 2))
+            logger.info("Currently working on depth: %d", current_depth + 1)
+            logger.info("Current resolution: %d x %d" % (int(current_res), int(current_res)))
+
+            ticker = 1
+
+            # Choose training parameters and configure training ops.
+            # TODO
+            data = get_data_loader(dataset, batch_sizes[current_depth], num_workers)
+
+            for epoch in range(1, epochs[current_depth] + 1):
+                start = timeit.default_timer()  # record time at the start of epoch
+
+                logger.info("Epoch: [%d]" % epoch)
+                # total_batches = len(iter(data))
+                total_batches = len(data)
+
+                fade_point = int((fade_in_percentage[current_depth] / 100)
+                                 * epochs[current_depth] * total_batches)
+
+                for (i, batch) in enumerate(data, 1):
+                    # calculate the alpha for fading in the layers
+                    alpha = ticker / fade_point if ticker <= fade_point else 1
+
+                    # extract current batch of data for training
+                    images = batch.to(self.device)
+                    gan_input = torch.randn(images.shape[0], self.latent_size).to(self.device)
+
+                    # optimize the discriminator:
+                    dis_loss = self.optimize_discriminator(gan_input, images, current_depth, alpha)
+
+                    # optimize the generator:
+                    gen_loss = self.optimize_generator(gan_input, images, current_depth, alpha)
+
+                    # provide a loss feedback
+                    if i % int(total_batches / feedback_factor + 1) == 0 or i == 1:
+                        elapsed = time.time() - global_time
+                        elapsed = str(datetime.timedelta(seconds=elapsed)).split('.')[0]
+                        logger.info(
+                            "Elapsed: [%s] Step: %d  Batch: %d  D_Loss: %f  G_Loss: %f"
+                            % (elapsed, step, i, dis_loss, gen_loss))
+
+                        # create a grid of samples and save it
+                        os.makedirs(os.path.join(output, 'samples'), exist_ok=True)
+                        gen_img_file = os.path.join(output, 'samples', "gen_" + str(current_depth)
+                                                    + "_" + str(epoch) + "_" + str(i) + ".png")
+
+                        with torch.no_grad():
+                            self.create_grid(
+                                samples=self.gen(fixed_input, current_depth, alpha).detach() if not self.use_ema
+                                else self.gen_shadow(fixed_input, current_depth, alpha).detach(),
+                                scale_factor=int(
+                                    torch.pow(torch.tensor(2), torch.tensor(
+                                        self.depth - current_depth - 1))) if self.structure == 'linear' else 1,
+                                img_file=gen_img_file,
+                            )
+
+                    # increment the alpha ticker and the step
+                    ticker += 1
+                    step += 1
+
+                elapsed = timeit.default_timer() - start
+                elapsed = str(datetime.timedelta(seconds=elapsed)).split('.')[0]
+                logger.info("Time taken for epoch: %s\n" % elapsed)
+
+                if epoch % checkpoint_factor == 0 or epoch == 1 or epoch == epochs[current_depth]:
+                    save_dir = os.path.join(output, 'models')
+                    os.makedirs(save_dir, exist_ok=True)
+                    gen_save_file = os.path.join(save_dir, "GAN_GEN_" + str(current_depth) + "_" + str(epoch) + ".pth")
+                    dis_save_file = os.path.join(save_dir, "GAN_DIS_" + str(current_depth) + "_" + str(epoch) + ".pth")
+                    gen_optim_save_file = os.path.join(
+                        save_dir, "GAN_GEN_OPTIM_" + str(current_depth) + "_" + str(epoch) + ".pth")
+                    dis_optim_save_file = os.path.join(
+                        save_dir, "GAN_DIS_OPTIM_" + str(current_depth) + "_" + str(epoch) + ".pth")
+
+                    torch.save(self.gen.state_dict(), gen_save_file)
+                    logger.info("Saving the model to: %s\n" % gen_save_file)
+                    torch.save(self.dis.state_dict(), dis_save_file)
+                    torch.save(self.gen_optim.state_dict(), gen_optim_save_file)
+                    torch.save(self.dis_optim.state_dict(), dis_optim_save_file)
+
+                    # also save the shadow generator if use_ema is True
+                    if self.use_ema:
+                        gen_shadow_save_file = os.path.join(
+                            save_dir, "GAN_GEN_SHADOW_" + str(current_depth) + "_" + str(epoch) + ".pth")
+                        torch.save(self.gen_shadow.state_dict(), gen_shadow_save_file)
+                        logger.info("Saving the model to: %s\n" % gen_shadow_save_file)
+
+        logger.info('Training completed.\n')
 
 
 if __name__ == '__main__':
