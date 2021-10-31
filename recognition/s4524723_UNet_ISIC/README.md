@@ -96,7 +96,7 @@ The model achieved a dice score greater than 0.8 on the test set.
 The following are some examples of the masks predicted by the model:
 
 ![pred1](resources/prediction1.png)
-![pred3](resources/prediction3.png)
+![pred3](resources/prediction2.png)
 *fig6. Example Predictions on test set.*
 
 ## References/Resources used in order of importance.
