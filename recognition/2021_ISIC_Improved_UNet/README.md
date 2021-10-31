@@ -70,7 +70,7 @@ Denoted by the horizontal dashed lines in _Figure 2_, Skip Connections are eleme
 The Localisation Modules are designed to re-introduce these skip connections into the network after the concatenation. 
 
 ### Segmentation
-Segmentation occurs 3 times in the Localisation Pathway. Performing segmentation on multiple levels of the network allows for information from lower levels to be combined with higher segmentation through an element-wise summation.
+Segmentation occurs 3 times in the Localisation Pathway. Performing segmentation on multiple levels of the network allows for segmented information from the lower levels to propagate into the higher levels through an element-wise summation.
 
 Segmentation layers are 3x3 convolutions with a single output filter.
 
