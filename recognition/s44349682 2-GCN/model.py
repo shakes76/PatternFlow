@@ -54,6 +54,7 @@ class GraphConvolutionLayer(Layer):
         A = inputs[1]
         
         # Matrix operations to calculate output based on adjacent features
+        # A.H.W
         support = K.dot(features, self.weight)
         output = K.dot(A, support)
 
