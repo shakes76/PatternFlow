@@ -9,6 +9,9 @@ Created on Mon Oct 25 19:16:25 2021
 import os
 import cv2
 
+
+
+
 def read_directory(directory_name):
     
     array_of_name=[]
@@ -21,16 +24,21 @@ def read_directory(directory_name):
         size = img.shape
         x_len=size[1]
         y_len=size[0]
-        
+        """Use CV2 to detect the boundary contours"""
         ret,thresh =cv2.threshold(gray,127,255,cv2.THRESH_BINARY)
         contours, hier = cv2.findContours(thresh,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     
-        """only need the first contour"""
+        """only need the last contour"""
         #print(len(contours))
         for c in contours:
             # find bounding box coordinates
             x,y,w,h = cv2.boundingRect(c)
             output="0 "    
+            
+            
+            """the output format is the normalized center cordinates 
+            and the normalized width/height:"""
+            """E.G.: <x_center,y_center,w_normalized, h_normalized>"""
             x_center=round((x+w/2)/x_len,6)
             y_center=round((y+h/2)/y_len,6)
             w_normalized=round(w/x_len,6)
@@ -43,12 +51,12 @@ def read_directory(directory_name):
             
         cv2.drawContours(img, contours, -1, (255, 0, 0), 1)
     
-        """show image"""
+        """show image(Optional)"""
         #img = cv2.resize(img, (1502, 1024))
         #cv2.imshow("contours", img)
         #cv2.waitKey()
         #cv2.destroyAllWindows()
-        """collect output"""
+        """show output(Default)"""
         print(output)
         array_of_output.append(output)
         del img
@@ -58,7 +66,16 @@ def read_directory(directory_name):
     return array_of_output,array_of_name
 
 
-array_of_output,names=read_directory("validation label")
+""" switch target from {"validation","train","test"}"""
+target="validation"
+
+
+
+
+
+
+"""main func"""
+array_of_output,names=read_directory(target+" label")
 
 array_of_name=[]
 for name in names:
@@ -67,26 +84,15 @@ for name in names:
 
 
 
+"""if folder not exists, create a new folder"""    
+if not os.path.exists("./"+target+" label output"):
+    os.makedirs("./"+target+" label output")
 
 
-
-
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-if not os.path.exists("./validation label output"):
-    os.makedirs("./validation label output")
+"""write the output result"""    
 for i in range(len(array_of_name)):
     
-    with open("./validation label output/"+array_of_name[i]+".txt","w") as f:
+    with open("./"+target+" label output"+array_of_name[i]+".txt","w") as f:
         f.write(array_of_output[i])
     
     
