@@ -25,8 +25,6 @@ def main():
     vqvae = VQVAE.VQVae(variance, latent_dimensions, num_embeddings)
     VQVAE.train_vqvae(vqvae, x_train_normalised, x_val_normalised, 30)
 
-    # Save loss graph
-    visualiser.show_vqvae_training_loss(vqvae)
     # Test VQ-VAE performance on test set
     test_images, reconstructed = visualiser.compare_reconstructions(vqvae, x_test_normalised, 10)
     visualiser.show_reconstructions(10, test_images, reconstructed)
