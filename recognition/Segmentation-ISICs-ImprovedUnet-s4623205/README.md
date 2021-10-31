@@ -138,7 +138,7 @@ new_imageshape = get_close2power(min(img_height, img_width))
 print("\nThe maximum possible square image shape is " + str(new_imageshape) + "x" + str(new_imageshape))
 ```
 
-To get the train, validation and test split of the preprocessed dataset with a certain ratio use the function "[**train_val_test_split**](Modules/data_utils.py#136)" in the "[**data_utils.py**](Modules/data_utils.py)" module. Provide the (image_path, mask_path, image_height, image_width, split_ratio, randomstate), here a 256x256 image size with randomstate as 42 is used. In the "split_ratio" it is an array that has to be in a format of [trainset_ratio, validationset_ratio, testset_ratio] where the ratios sums up to 1.
+To get the train, validation and test split of the preprocessed dataset with a certain ratio use the function "[**train_val_test_split**](Modules/data_utils.py#L136)" in the "[**data_utils.py**](Modules/data_utils.py)" module. Provide the (image_path, mask_path, image_height, image_width, split_ratio, randomstate), here a 256x256 image size with randomstate as 42 is used. In the "split_ratio" it is an array that has to be in a format of [trainset_ratio, validationset_ratio, testset_ratio] where the ratios sums up to 1.
 ```python
 from Modules.data_utils train_val_test_split
 
@@ -193,7 +193,7 @@ dice = dice_coef(y_test, y_pred).numpy()
 print("\nTest set Dice Coefficient:", dice)
 ```
 ### Experiment Reproduce
-To reproduce the test evaluation experiemnt run "[**train_ImprovedUnet_ISICs.py**](train_ImprovedUnet_ISICs.py)", change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will load the best Improved UNet weights in "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" and calculate the dice coefficient on the test set.
+To reproduce the test evaluation experiemnt run "[**test_ImprovedUnet_ISICs.py**](test_ImprovedUnet_ISICs.py)", change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will load the best Improved UNet weights in "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" and calculate the dice coefficient on the test set.
 
 To reproduce close to the model training and save the model, there are randomness here. Run [**train_ImprovedUnet_ISICs_save.py**](train_ImprovedUnet_ISICs_save.py) change the "image_path" and "mask_path" variable to the target dataset absolute path. This dirver script will train the Improved UNet model. If the "save_path" of the best model isn't changed then the "[**Models/Imporoved_Unet.h5**](Models/Imporoved_Unet.h5)" would be overwritten.
 
