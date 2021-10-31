@@ -42,19 +42,19 @@ class DiceLoss(nn.Module):
     '''
     def forward(self, inputs, targets, smooth=0.1):    
         
-        input0 = (inputs.argmax(1) == 0)
-        input1 = (inputs.argmax(1) == 1)
-        input2 = (inputs.argmax(1) == 2)
-        input3 = (inputs.argmax(1) == 3)
-        input4 = (inputs.argmax(1) == 4)
-        input5 = (inputs.argmax(1) == 5)
+        input0 = (inputs.argmax(1) == 0) # prediction of label 0
+        input1 = (inputs.argmax(1) == 1) # prediction of label 1
+        input2 = (inputs.argmax(1) == 2) # prediction of label 2
+        input3 = (inputs.argmax(1) == 3) # prediction of label 3
+        input4 = (inputs.argmax(1) == 4) # prediction of label 4
+        input5 = (inputs.argmax(1) == 5) # prediction of label 5
 
-        target0 = (targets == 0)
-        target1 = (targets == 1)
-        target2 = (targets == 2)
-        target3 = (targets == 3)
-        target4 = (targets == 4)
-        target5 = (targets == 5)
+        target0 = (targets == 0) # target of label 0
+        target1 = (targets == 1) # target of label 1
+        target2 = (targets == 2) # target of label 2
+        target3 = (targets == 3) # target of label 3
+        target4 = (targets == 4) # target of label 4
+        target5 = (targets == 5) # target of label 5
         
         dice0 = self.single_loss(input0, target0)
         dice1 = self.single_loss(input1, target1)
@@ -77,12 +77,13 @@ class NiiImageLoader(DataLoader) :
         self.masks = []
 
         self.totensor = transforms.ToTensor()
-        self.resize = tio.CropOrPad((128,256,256))
-        self.filp0 = tio.RandomFlip(axes = 0, flip_probability = 1)
-        self.filp1 = tio.RandomFlip(axes = 1, flip_probability = 1)
-        self.filp2 = tio.RandomFlip(axes = 2, flip_probability = 1)
+        self.resize = tio.CropOrPad((64,128,128)) #resize the graph to decrease space complexity
+        self.filp0 = tio.RandomFlip(axes = 0, flip_probability = 1) # data augmentation
+        self.filp1 = tio.RandomFlip(axes = 1, flip_probability = 1) # data augmentation
+        self.filp2 = tio.RandomFlip(axes = 2, flip_probability = 1) # data augmentation
 
-        for f in sorted(glob.iglob(image_path)):
+        #retrieve path from dataset
+        for f in sorted(glob.iglob(image_path)): 
             self.inputs.append(f)
 
         for f in sorted(glob.iglob(mask_path)):
@@ -92,7 +93,8 @@ class NiiImageLoader(DataLoader) :
     def __len__(self):
         return len(self.inputs)
 
-    def __getitem__(self, idx):
+    #open files
+    def __getitem__(self, idx): 
         image_p = self.inputs[idx]
         mask_p = self.masks[idx]
 
@@ -115,7 +117,7 @@ class NiiImageLoader(DataLoader) :
         mask = mask.data
         
         
-        #data augmentation
+        #random data augmentation
         i = random.randint(0,4)
         if i == 0 :
             image = self.filp0(image)
@@ -140,11 +142,16 @@ Batch_size : 1
 '''
 
 def main() :
+    #change path to current directory
     os.chdir(os.path.dirname(__file__))
+
+    #check whether gpu is available
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device, flush = True)
 
     torch.cuda.empty_cache()
+
+    #build model and optimizer
     model = UNet3D().to(device)
     loss_fn = nn.CrossEntropyLoss().to(device)
     dice_loss = DiceLoss()
@@ -153,9 +160,11 @@ def main() :
     batch_size = 1
     epoch = 8
 
+    #load the dataset
     dataset = NiiImageLoader("v1/semantic_MRs_anon/*.nii.gz", 
                       "v1/semantic_labels_anon/*.nii.gz")
 
+    #split the dataset
     trainset, valset, testset = torch.utils.data.random_split(dataset, [179, 16, 16])
 
     trainloader = DataLoader(trainset, batch_size=batch_size,
@@ -166,7 +175,8 @@ def main() :
                         
     testloader = DataLoader(testset, batch_size=batch_size,
                         shuffle=True)
-    
+
+    #main train loop
     for i in range(epoch) :
         model.train()
         for index, data in enumerate(trainloader, 0) :
@@ -180,9 +190,8 @@ def main() :
             loss.backward()
             optimizer.step()
 
-        '''
-        run the model on the val set after each train loop
-        '''
+        
+        #run the model on the val set after each train loop
         model.eval()
         size = len(valloader.dataset)
         num_batches = len(valloader)
@@ -204,9 +213,7 @@ def main() :
         print('One Epoch Finished', flush = True)
         torch.save(model.state_dict(), 'net_paras.pth')
 
-    '''
-    run on test set after the train is finished
-    '''
+    #run on test set after the train is finished
     model.eval()
     num_batches = len(testloader)
     dice_all = 0
