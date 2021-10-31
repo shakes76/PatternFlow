@@ -189,7 +189,7 @@ def display(display_list):
 
 ## TRAIN THE MODEL
 BATCH_SIZE = 10
-NUM_OF_EPOCH = 10 #just to speed up
+NUM_OF_EPOCH = 50
 os.makedirs(result_images_dir, exist_ok=True)
 history = improved_unet_model.fit(df_train.batch(BATCH_SIZE), 
           validation_data=df_val.batch(BATCH_SIZE), 
