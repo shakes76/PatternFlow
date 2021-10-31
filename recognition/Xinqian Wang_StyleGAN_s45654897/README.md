@@ -31,12 +31,13 @@ Image Dataset (type: Folder)
 0. Install packages
 > pip install -r requirements.txt
 1. Prepare the lmdb dataset, the input **Image Dataset** should have the structure as above
-> python make_imdb.py --out [Location of output] --n_worker 2 [Location of Image Dataset]  
+> python make_imdb.py --out [Location of IMDB's output] --n_worker 2 [Location of Image Dataset]  
 > **example:** python make_imdb.py --out /content/IM --n_worker 2 /content/data/sample
 2. train the model
-> to be continue
+> python train.py [Location of IMDB]  
+> **example:** python train.py /content/IM
 3. prepare the lmdb dataset
-> to be continue
+> python test.py [Location of checkpoint]
 ***********************************************************************************************************************
 ## Introduction
 ### Model Structure
