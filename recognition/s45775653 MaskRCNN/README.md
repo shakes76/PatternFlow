@@ -76,6 +76,7 @@ Figure 9: Prediction Result on Test Set
 
 
 ![Precition Basis](https://github.com/christianburbon/isic_maskrcnn_copy/blob/master/predictions/gt_2.png)
+
 Figure 10: Original Image and Mask from Prediction
 
 
