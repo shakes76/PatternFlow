@@ -35,20 +35,25 @@ class VQVAE(nn.Module):
                     + torch.sum(self.codebook.weight**2, dim=1)
                     - 2 * torch.matmul(flat_z_e, self.codebook.weight.t()))
         
-        embedding_indices = torch.argmin(distances, dim=1, keepdim=True)
+        q = torch.argmin(distances, dim=1, keepdim=True)
         q_ont_hot = torch.zeros(distances.shape)
-        q_ont_hot.scatter_(1, embedding_indices, 1)
+        q_ont_hot.scatter_(1, q, 1)
         
         z_q = torch.matmul(q_ont_hot, self.codebook.weight).view(z_e_shape)
+        
+        codebook_loss = F.mse_loss(z_q.detach(), z_e)
+        commit_loss = F.mse_loss(z_q, z_e.detach())
+        vq_loss = codebook_loss + commit_loss
+        
         z_q = z_e + (z_q - z_e).detach()
         
-        return z_q.permute(0, 3, 1, 2).contiguous()
+        return q, vq_loss, z_q.permute(0, 3, 1, 2).contiguous()
     
     def forward(self, imgs):
         z_e = self.encoder(imgs)
-        encoded = self.vector_quantize(z_e)
+        _, vq_loss, encoded = self.vector_quantize(z_e)
         decoded = self.decoder(encoded)
         
-        return z_e, encoded, decoded
+        return encoded, decoded, vq_loss
     
     

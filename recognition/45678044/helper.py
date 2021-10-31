@@ -9,12 +9,11 @@ def train(model, optim, epoch_size, train_loader, valid_loader=None):
         epoch_loss = []
         
         for batch, (imgs, _) in enumerate(train_loader):
-            z_e, encoded, decoded = model(imgs)
+            encoded, decoded, vq_loss = model(imgs)
           
             reconst_loss = F.mse_loss(decoded, imgs)
-            codebook_loss = F.mse_loss(encoded, z_e.detach())
-            commit_loss = F.mse_loss(z_e, encoded.detach())
-            loss = reconst_loss + codebook_loss + 0.25 * commit_loss
+            
+            loss = reconst_loss + vq_loss
           
             optim.zero_grad()
             loss.backward()
