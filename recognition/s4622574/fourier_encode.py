@@ -37,13 +37,13 @@ class FourierEncode(layers.Layer):
 
         # transformedFeature = tf.repeat(transformedFeature, repeats=num_images, axis=0)
 
-        transformedFeature = encoding(transformedFeature, basis, self.freq_ban, num_images)
+        transformedFeature = self.encoding(transformedFeature, basis, self.freq_ban, num_images)
 
         # transformedData = tf.concat((patientData, transformedFeature), axis=-1)
 
 
         # transformedData = tf.reshape(transformedData, (num_images, basis[0]*basis[1], -1)) 
-        transformedData = getCombinedData(patientData, transformedFeature, num_imaes, basis)
+        transformedData = self.getCombinedData(patientData, transformedFeature, num_images, basis)
         return transformedData
 
     def getCombinedData(patientData, transformedFeature, basis, num_images):
