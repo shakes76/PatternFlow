@@ -159,21 +159,18 @@ def create_model(output_channels):
     # level 2
     concat_3 = concatenate([up_sample_3, add_layer_2]) # concatenation
     localization_3 = localization_module(concat_3, INIT_NO_FILTERS * 2) # localization module
-    segmentation_2 = segmentation_layer(localization_3, INIT_NO_FILTERS)
-    segmentation_2 = Add()([segmentation_2, segmentation_1_up])
-    segmentation_2 = UpSampling2D()(segmentation_2)  
+    segmentation_2 = segmentation_layer(localization_3, INIT_NO_FILTERS) # segmentation layer
+    segmentation_2 = Add()([segmentation_2, segmentation_1_up])  # element-wise sum
+    segmentation_2 = UpSampling2D()(segmentation_2)  # upsacle
     up_sample_4 = upsampling_module(localization_3, INIT_NO_FILTERS) # upsampling module
 
     # level 1
     concat_4 = concatenate([up_sample_4, add_layer_1]) # concatenation
     conv_layer_6 = create_conv2d(concat_4, INIT_NO_FILTERS * 2, KERNEL_SIZE, INIT_STRIDES) # 3x3 conv
-    segmentation_3 = segmentation_layer(conv_layer_6, INIT_NO_FILTERS)
-    segmentation_3 = Add()([segmentation_3, segmentation_2])
+    segmentation_3 = segmentation_layer(conv_layer_6, INIT_NO_FILTERS) # segmentation layer
+    segmentation_3 = Add()([segmentation_3, segmentation_2]) # element-wise sum
 
     # output layers
     output = Conv2D(output_channels, KERNEL_SIZE, activation="softmax", padding="same")(segmentation_3) # softmax
     model = Model(name="ImprovedUnet", inputs=input_layer, outputs=output) # final model
     return model
- 
-test_model = create_model(2)
-print(test_model.summary())
