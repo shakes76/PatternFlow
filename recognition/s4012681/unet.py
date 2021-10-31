@@ -78,9 +78,7 @@ def dice(y_test, y_predict, smooth=0.1):
     :return: Dice coefficient
     """
     y_test_f = K.flatten(y_test)
-    y_test_f = tf.cast(y_test_f, tf.double)
     y_pred_f = K.flatten(y_predict)
-    y_pred_f = tf.cast(y_pred_f, tf.double)
     intersect = K.sum(y_test_f * y_pred_f)
     d = (2. * intersect + smooth) / (K.sum(y_test_f) + K.sum(y_pred_f) + smooth)
     return d.numpy()
@@ -167,7 +165,7 @@ def plt_compare(img, test_mask, pred, num):
     pred = tf.math.argmax(pred, axis=-1)
 
     # plot
-    fig1, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    fig1, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 15))
     ax1.imshow(img[img.shape[0] // 2], cmap='gray')
     ax1.title.set_text("Image Slice")
     ax2.imshow(test_mask[test_mask.shape[0] // 2], cmap='gray')

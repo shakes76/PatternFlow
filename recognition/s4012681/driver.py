@@ -106,11 +106,14 @@ model.evaluate(test)
 predictions = model.predict(test)
 
 # Separate the test images and labels for Dice calculation and printing
-test_images = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 1))
-test_labels = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 6))
+test_images = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 1), dtype=np.float32)
+test_labels = np.empty((len(test), IMG_WIDTH, IMG_HEIGHT, IMG_DEPTH, 6), dtype=np.float32)
 for i in range(len(test)):
     test_images[i] = test[i][0]
     test_labels[i] = test[i][1]
+
+print(type(predictions))
+print(type(test_labels))
 
 # Report Dice similarity coefficients for each category
 print("Body: ", dice(test_labels[..., 1], predictions[..., 1]))
