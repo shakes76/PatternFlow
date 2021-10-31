@@ -12,7 +12,7 @@ The images and masks are loaded in decoded and normalised outputting 256 X 256 X
 
 *figure 1: Example Input Image Data*
 
-![example mask ground truths](example_y.PNG)
+![example mask ground truths](example_y.png)
 
 *figure 2: Example Mask Ground Truth Data*
 
@@ -20,7 +20,7 @@ The images and masks are loaded in decoded and normalised outputting 256 X 256 X
 
 The Improved U-Net model [1] Is very similar to the original U-Net architecture but with a few extra modules. Like the original U-Net the improved U-Net architecture is roughly split into encoding and decoding parts. The encoding section downsamples the image through with convolutional layers however unlike the original U-Net each encoding block also contains a context module and the result of a block is the sum of the convolutional layer and the context module. A context module contains convolutional layers separated by dropout layers to dilute the data. The decoding section upsamples the image taking into account the results from encoding blocks to generate segments which are combined for the final result. The general layout of this model can be seen in the figure below. Improvements not specifiedin the original archtecture have also been implemented such as the addition of many leakyRelu and normilisation layers.
 
-![Improved U-net](Improved_Unet.png)
+![Improved U-net](Improved_Unet.PNG)
 
 *figure 3: Improved U-Net architecure [1]*
 
