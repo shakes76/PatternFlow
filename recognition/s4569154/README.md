@@ -1,22 +1,17 @@
 README (Runqi Lin, 45691548)
 ====
+
 Background
 -------
+
 Detect lesions within the ISICs data set with a YOLO network such as the original YOLO with all detections having a minimum Intersection Over Union of 0.8 on the test set and a suitable accuracy for classification.
 
 ISIC 2018 challenge data for skin cancer - This is part of the ISIC 2018 challenge and comes with segmentation labels. The preprocessed version of this data set can be found on the course Blackboard site.
 
-Datasets
--------
-ISIC2018_Task1-2_Training_Data
-ISIC2018_Task1-2_Test_Input
-
-To test the model I trained, I also downloaded the corresponding test dataset containing 300 images.
-https://challenge.isic-archive.com/data/
+The aim of this project is to detect the lesioned skin in the image using the yolov3 target detection algorithm.
 
 Yolov3:Real-Time Object Detection
 -------
-
 
 ### YOLOv3 structure
 
@@ -53,4 +48,33 @@ The difference between the concat operation and the add-and-sum operation: the a
 
 Upsample: The role of the upsample layer is to generate a large image from a small feature map by interpolation and other methods. The upsample layer does not change the number of channels in the feature map.
 
+Datasets
+-------
+ISIC2018_Task1-2_Training_Data
+ISIC2016_Task1-2_Test_Input
+
+To test the model I trained, I also downloaded the corresponding test dataset containing 300 images.
+https://challenge.isic-archive.com/data/
+
+![image](https://user-images.githubusercontent.com/75237235/139570210-38c671e2-f376-4ea9-80fb-cf65e03a79e2.png)
+
+As shown above, the dataset contains images of skin lesions. 
+
+In a deep learning target detection task, the model is first trained using a training set. How good the training dataset is determines the upper limit of the task.
+So we need to manually label the dataset first, and I used the LabelImg image target detection labeling tool.
+It comes from this project: https://github.com/tzutalin/labelImg
+
+The application interface is shown below
+
+![1635661030](https://user-images.githubusercontent.com/75237235/139570721-95e49a99-eefd-4ed7-affd-f6bed5c56aad.jpg)
+
+LabelImg is a graphical image annotation tool.
+
+In addition, I also tagged the data via opencv to identify the ISIC2018_Task1_Training_GroundTruth_x2 dataset, which is more accurate than the first manual tagging.
+
+![image](https://user-images.githubusercontent.com/75237235/139570977-40b67c38-a0b4-4797-b434-8c43085c72f2.png)
+
+The tagged dataset generates a txt file with the corresponding name, which contains the class name, the centroid x coordinate, the centroid y coordinate, the width of the tagged box, and the height of the tagged box. This is shown in the figure below.
+
+![image](https://user-images.githubusercontent.com/75237235/139570969-69eadf08-9266-426d-b009-923b96d41d5d.png)
 
