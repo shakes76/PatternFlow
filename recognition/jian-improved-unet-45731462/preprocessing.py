@@ -126,8 +126,8 @@ def main():
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
     # read images from file directory, and ensure variables with 4 dimensions
-    inputs = to_numpy("Input_x2", "rgb")
-    labels = to_numpy("GroundTruth_x2", "bw")
+    inputs = to_numpy("jian-improved-unet-45731462/Input_x2", "rgb")
+    labels = to_numpy("jian-improved-unet-45731462/GroundTruth_x2", "bw")
 
     # converts label mask to either 0 or 1 value, expand to 4 dimensions
     labels = encode_bw(labels)
@@ -164,7 +164,7 @@ def main():
     # ready_model.save("Improved_Jian_Epoch30_Batch2.hdf5")
 
     # load weights from previous trained models
-    ready_model.load_weights("Improved_Jian_Epoch30_Batch2.hdf5")
+    ready_model.load_weights("jian-improved-unet-45731462/Improved_Jian_Epoch30_Batch2.hdf5")
 
     # plotting losses and accuracy
     # loss_graph(results, epoch)
