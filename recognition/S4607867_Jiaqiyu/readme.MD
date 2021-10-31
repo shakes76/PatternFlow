@@ -171,7 +171,10 @@ The mAP result on 0.8 IOU threshold seems not very ideal. Maybe it is because th
 Also, as I am running darknet on my own device, its GPU memory can only support (batch=72; subdivision=24), but can not support (batch=64, subdivision=16) .  But the training normally takes more than 10 hours, it has a high probability to lose connection if I remotely running the darknet on UQ's lab computer.
 
 
-
+Possible ways to improve object detection:
+1. Filter the train/test set, making sure for each test sample there must be a sample in the train set with similar shape.
+2. Upgrade the model to yoloV4 or yoloV5.
+3. Run the model with better GPU.
 
 
 
