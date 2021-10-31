@@ -76,11 +76,16 @@ class GCN(Model):
         super(GCN, self).__init__()
         
         self.layer1 = GraphConvolutionLayer(input_dim=128,
+                                            output_dim=64,
+                                            activation=activations.relu,
+                                            kernel_regularizer=l2(5e-4))
+        
+        self.layer2 = GraphConvolutionLayer(input_dim=64,
                                             output_dim=32,
                                             activation=activations.relu,
                                             kernel_regularizer=l2(5e-4))
         
-        self.layer2 = GraphConvolutionLayer(input_dim=32,
+        self.layer3 = GraphConvolutionLayer(input_dim=32,
                                             output_dim=4,
                                             activation=activations.softmax)
 
@@ -92,6 +97,8 @@ class GCN(Model):
         H = Dropout(0.5)(inputs[0])
         H = self.layer1([H, A])
         H = Dropout(0.5)(H)
-        Y = self.layer2([H, A])
+        H = self.layer2([H, A])
+        H = Dropout(0.5)(H)
+        Y = self.layer3([H, A])
 
         return Y
