@@ -114,8 +114,11 @@ equivalent levels.
 The final activation was softmax.
 
 The model layout is as follows:
-![](Images/unet3d.png)
 
+<div style="width:300px">
+
+![](Images/unet3d.png)
+</div>
 
 
 ### Training parameters
@@ -128,7 +131,7 @@ training loss and accuracy are below.
 
 | Accuracy | Loss  |
 | :---: | :---: |
-| ![](Images/660_y_true.png) | ![](Images/660_pred_argmax.png) |
+| ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
 
 
 
