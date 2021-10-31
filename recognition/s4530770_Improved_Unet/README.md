@@ -5,6 +5,7 @@ The file driver.py gives and example of how to use the algorithm. First we creat
 build_model function. The model is inspired by the Unet architecture and implements many improvements to enhance the performace [1].
 
 ![](Docs/modified_unet.PNG)
+
 It consists of the following parts:
 - Context module
   - Usually initialised by a convolution layer of stride 2 (except for the first level), this works to reduce
