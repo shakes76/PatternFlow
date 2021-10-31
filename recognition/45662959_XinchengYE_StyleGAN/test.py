@@ -1,3 +1,16 @@
+"""
+This file is to test the performance of the generator.
+:param path: a path of a checkpoint, this is obligatory
+:param --size: the resolution of the images
+    e.g.: python test.py checkpoint/train_step-7 --size 256
+:return: two grid images: with/without style mixing.
+NOTE:
+train_step-2 will generate images with resolution = 8
+train_step-3 will generate images with resolution = 16
+train_step-4 will generate images with resolution = 32
+The step should match the resolution, otherwise the images will be weird.
+"""
+
 import torch
 import torchvision.transforms.functional as F
 from torchvision.utils import make_grid
@@ -10,10 +23,11 @@ import argparse
 @torch.no_grad()
 def get_mean_style(generator, device):
     """
-
+    Sample 1024 latent codes, put them into mapping network and get a mean,
+    repeat 10 times, and return a mean style.
     :param generator: the generator of StyleGAN
     :param device: cuda or cpu
-    :return:
+    :return: mean style
     """
     mean_style = None
 
@@ -32,6 +46,15 @@ def get_mean_style(generator, device):
 
 @torch.no_grad()
 def sample(generator, step, mean_style, n_sample, device):
+    """
+    Sample images without style mixing.
+    :param generator: the generator of StyleGAN
+    :param step: resolution stage. e.g step=7, resolution=256
+    :param mean_style: a mean style only through mapping network
+    :param n_sample: number of sample images
+    :param device: cuda or cpu
+    :return: n_sample images generate by generator
+    """
     image = generator(
         torch.randn(n_sample, 512).to(device),
         step=step,
@@ -46,42 +69,42 @@ def sample(generator, step, mean_style, n_sample, device):
 @torch.no_grad()
 def style_mixing(generator, step, mean_style, n_latent0, n_latent1, device):
     """
-
+    Mix Regularization. Mix style from two latent codes
     :param generator: the generator of StyleGAN
     :param step: resolution stage. e.g. resolution=8 >>> step=1, resolution=16 >>> step=2
-    :param mean_style:
-    :param n_latent0:
-    :param n_latent1:
+    :param mean_style: a mean style only through mapping network
+    :param n_latent0: number of latent code 0
+    :param n_latent1: number of latent code 1
     :param device: cuda or cpu
     :return: a list of images mixing the style from latent code 0 and latent code 1
     """
     latent_code0 = torch.randn(n_latent0, 512).to(device)
-    target_code = torch.randn(n_latent1, 512).to(device)
+    latent_code1 = torch.randn(n_latent1, 512).to(device)
 
     shape = 4 * 2 ** step
     alpha = 1
 
     images = [torch.ones(1, 3, shape, shape).to(device) * -1]   # a black image
     # by decreasing style_weight, truncation can be increased
-    source_image = generator(
+    latent0_image = generator(
         latent_code0, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
     )
-    target_image = generator(
-        target_code, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
+    latent1_image = generator(
+        latent_code1, step=step, alpha=alpha, mean_style=mean_style, style_weight=0.7
     )
 
-    images.append(source_image)
+    images.append(latent0_image)
 
     for i in range(n_latent1):
         image = generator(
-            [target_code[i].unsqueeze(0).repeat(n_latent0, 1), latent_code0],
+            [latent_code1[i].unsqueeze(0).repeat(n_latent0, 1), latent_code0],
             step=step,
             alpha=alpha,
             mean_style=mean_style,
             style_weight=0.7,   # by decreasing style_weight, truncation can be increased
-            mixing_range=(0, 1),
+            mixing_range=(0, 1),    # low resolutions will mix features from latent_code0
         )
-        images.append(target_image[i].unsqueeze(0))
+        images.append(latent1_image[i].unsqueeze(0))
         images.append(image)
 
     images = torch.cat(images, 0)
@@ -115,7 +138,7 @@ if __name__ == '__main__':
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     generator = StyledGenerator(512).to(device)
     ckpt = torch.load(args.path, map_location=device)
-    generator.load_state_dict(ckpt['g_running'])
+    generator.load_state_dict(ckpt['g_running'])    # g_running is the shadow generator which is more stable.
     generator.eval()
 
     mean_style = get_mean_style(generator, device)
@@ -128,5 +151,5 @@ if __name__ == '__main__':
     img_mix = style_mixing(generator, step, mean_style, n_col, n_row, device)
     grid_mix = make_grid(img_mix, nrow=n_col)
     show(grid_mix, 'mix regularization')
-    
+
 
