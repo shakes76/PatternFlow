@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
+import random
 
-from tensorflow.keras import activations, initializers
+from tensorflow.keras import activations, initializers, regularizers
 from tensorflow.keras.layers import Input, Layer, Dropout
 from tensorflow.keras.models import Model
 
@@ -75,9 +76,7 @@ def split_index(data):
     
     return train_set, val_set, test_set
 
-def GCN_Model(num_features, num_classes, 
-              num_channels = 16, dropout_rate = 0.5, 
-              kernel_regulariser = None, num_input_channels = None):
+def GCN_Model(num_features, num_classes, num_channels = 16, dropout_rate = 0.5, kernel_regulariser = None, num_input_channels = None):
     """ Creates a GCN Model
     Parameters:
         num_features: number of features
