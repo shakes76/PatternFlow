@@ -136,9 +136,8 @@ if __name__ == "__main__":
     print("Tensorflow version: ", tf.__version__)
 
     # if need to sort akoa dataset into datasets folder, do so:
-    if "datasets" not in os.listdir(".") \
-            or "LEFT" not in os.listdir(DATASET_DIR) \
-            or "RIGHT" not in os.listdir(DATASET_DIR):
+    if "datasets" not in os.listdir("."):
+        print(os.listdir("."))
         os.mkdir("datasets")
         print(f"Sorting {input_img_dir} into datasets folder...")
         create_sorted_data_directory(input_img_dir, CLASSES)
