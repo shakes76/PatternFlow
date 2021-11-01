@@ -110,7 +110,7 @@ def main(path_to_model):
 
     print("Successfully created, processed and split dataset!")
 
-    model = load_model(path_to_model, compile=False)
+    model = load_model(path_to_model)
 
     # evaluate performance against test set
     test_loss, test_acc = model.evaluate(test_ds, verbose=2)
@@ -118,12 +118,12 @@ def main(path_to_model):
 
     # save a test comparison slice for visualisation
     import random
-    test_img_number = random.randint(0, len(test_ds))
     test_img = None
     ground_truth = None
     for image, label in test_ds.take(1):
         test_img = image
         ground_truth = label
+        break
 
     test_pred1 = model.predict(test_img)
     test_prediction1 = tf.argmax(test_pred1, axis=4)[0,:,:,:]
