@@ -34,7 +34,7 @@ _Figure 3: Improved Unet Architecture_
 
 Inspired by the original UNet architecture, with an introduction of the context and localisation module. 
 
-As we can see above, the model architecture is similar to the ordinary Unet model, with the encoding section on the left and decoding on the right. The context module on each encoding layer follows to have two 3x3 convolution layers with a dropout layer of 0.3 in between the layers, using LeakyReLU as our activation. Likewise for other conv2d layers. An improvement was added with an additonal batch normalization before the dropout layer. The localisation module follows to have a 3x3 convolution followed by a 1x1 convolution which halves the feature maps. 
+As we can see above, the model architecture is similar to the ordinary Unet model, with the encoding section on the left and decoding on the right. The context module on each encoding layer follows to have two 3x3 convolution layers with a dropout layer of 0.3 in between the layers, using LeakyReLU as our activation. Likewise for other conv2d layers. An improvement was added with an additonal batch normalization before the dropout layer for the context module. The localisation module follows to have a 3x3 convolution followed by a 1x1 convolution which halves the feature maps, and an additional batch normalization, just like the context module, in between the convolution layers. 
 
 For the upsampling module, we used Conv2D Transpose with a stride of 2. To upscale the images, we used UpSampling2D with size of (2, 2). Finally on the last step of decoding, softmax activation was used. 
 
@@ -50,6 +50,8 @@ _Figure 4: Training Accuracy v.s. Validation Accuracy scores_
 ![loss](images/loss.png)
 
 _Figure 5: Training Loss v.s. Validation Loss scores_
+
+We can observe that both the accuracy and loss values eventually plateau before it overfits after further epochs. Around epoch number 6, we can see that the accuracy for both training and validation coincide with the same values, likewise for the loss values. 
 
 
 ![dice-score](images/dice-scores.png)
