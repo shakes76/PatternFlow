@@ -4,11 +4,11 @@ Generative adversarial networks are capable of synthesising complex and realisti
 ### StyleGAN architecture vs traditional GAN
 ![](images/stylegan.png)
 ### Applying style to layers
-In the original StyleGAN this was done through the use of adaptive instance normalisation. Howthey noticed that this produced what is termed droplet artifacts in the generated images. To resolve this issue in the revised StyleGAN2 they used weight modulation and demodulation of the convolution weights. This means that a modified convolutional layer must be used during synthesis.
+In the original StyleGAN this was done through the use of adaptive instance normalisation. However they noticed that this produced what is termed droplet artifacts in the generated images. To resolve this issue in the revised StyleGAN2 they used weight modulation and demodulation of the convolution weights. This means that a modified convolutional layer must be used during synthesis.
 ### Applying consistent features 
-In the original StyleGAN to improve training stability and to preserver broader features like between layers they used what is called a Progressive GAN architecture. This is where the network first produces smaller resolution images and then scale them up eventually to the desired size. In the revised StyleGAN2 it was shown that a similar effect could be achieved through using residual connections with down sampling in the discriminator and skip connections in the generator with up sampling. This was shown to preserver more consistent feature impact on the ffinal high resolution images rather than just having a sharper low resolution image.
+In the original StyleGAN to improve training stability and to preserver broader features between layers they used what is called a Progressive GAN architecture. This is where the network first produces smaller resolution images and then scale them up eventually to the desired size. In the revised StyleGAN2 it was shown that a similar effect could be achieved through using residual connections with down sampling in the discriminator and skip connections in the generator with up sampling. This was shown to preserve more consistent feature impact on the final high resolution images rather than just having a sharper low resolution image.
 ### Stochastic Variation
-Noise is inserted to every block in order to generate more realistic images which helps with tcomplex textures like hair. 
+Noise is inserted to every block in order to generate more realistic images which helps with complex textures like hair. 
 ### Path Length Regularization
 Path length regularization encourages a mapping between a fixed size step in the w space and a fixed magnitude change in the resulting image.
 ### StyleGAN architecture vs revised StyleGAN2
@@ -23,7 +23,7 @@ Python version: 3.9.7
 | matplotlib | 3.4.3   |
 ## Methodology
 ### Data processing
-To try and minimise dependancies and ease of use the preprocessing was done through `tensorflow.data.Dataset.from_tensor_slices` provided with image paths from standard library `glob.glob`. Due to the nature of GAN`s there is no need for any train/test/validation split and can simple all be fed into the dataset. Then a custom preprocessing function is mapped to each input which rescales the image to the desired size, converts to grayscale and normalises the image. It is then cached and seperated into batches for easier training and testing.
+To try and minimise dependancies and ease of use the preprocessing was done through `tensorflow.data.Dataset.from_tensor_slices` provided with image paths from standard library `glob.glob`. Due to the nature of GAN`s there is no need for any train/test/validation split and can simply all be fed into the dataset. Then a custom preprocessing function is mapped to each input which rescales the image to the desired size, converts to grayscale and normalises the image. It is then cached and seperated into batches for easier training and testing.
 ### Building the model
 The model is separated into different files with `generator.py` and `discriminator.py` housing the respective networks with their own global parameters for easy tuning. There is then a `gan.py` file which builds the two models and implements the simultaneous training as well as every other utility function that would be useful for monitoring performance and saving progress.
 The generator uses a modified convolution layer which is stored in `layers.py`.
@@ -47,12 +47,14 @@ Unfortunately no decent images where produced within the time frame. However I w
 Even in the official StyleGAN2 implementations several loss functions are utilised I will outline those attempted to be used and all of which can be used by calling the different loss function stored in each class.
 #### `loss` Generic Loss 
 This loss function is the generic binary cross entropy loss used in traditional GAN's. It can make the model very unpredictable sometimes collapsing which happened multiple times. This produced the most varied results. Below is a plot of losses over 50 epochs with 256x256 no convergence visible.
+\
 ![](images/glosses.png)
 #### `w_loss` Wasserstein Loss 
 In the official implementation their is a WGAN_GP loss, this was compeletely implemented and clearly was more stable than the generic loss. In a WGAN it is recommended to train the discriminator multiple times more than the generator per each batch. A `train_step_seperated` was created for this purpose and thus it is slightly harder to implement. However no percievable results were found in testing. Multiple discriminator to generator ratios were tested.
 #### `h_loss` Hinge Loss
 This loss was used in the below referenced implementation and had the best results, but still took far too long to converge to anything as I only got success using a smaller image size and smaller dataset, this does not often translate to the larger dataset. The below
 loss plot was trained for around 80 epochs at size 64x64.
+\
 ![](images/hlosses.png)
 #### `l_loss` Logistic Loss
 This was the least tested loss and was taken from the official implementation. No converging results.
@@ -65,6 +67,7 @@ The learning rate can swing the balance between how powerful each side of the ne
 Images and architecture sourced from original StyleGAN paper: 
 \
 https://arxiv.org/abs/1812.04948\
+\
 And revised StyleGAN2 paper: 
 \
 https://arxiv.org/abs/1912.04958
