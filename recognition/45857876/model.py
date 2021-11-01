@@ -12,7 +12,7 @@ from torch.nn.functional import interpolate
 
 from utils import get_data_loader
 from utils import update_average
-from CustomLayers import EqualizedConv2d, PixelNormLayer, EqualizedLinear
+from CustomLayers import import PixelNormLayer, EqualizedLinear, LayerEpilogue, EqualizedConv2d, BlurLayer, View, StddevLayer
 
 ###### Mapping network
 class GMapping(nn.Module):
@@ -478,7 +478,7 @@ class RelativisticAverageHingeGAN:
 ###### stylegan class (wrap generator and diacriminator together)
 class StyleGAN:
 
-    def __init__(self, structure, resolution, num_channels, latent_size,drift=0.001,
+    def __init__(self, structure, resolution, num_channels, latent_size,loss,drift=0.001,
                  d_repeats=1, use_ema=False, ema_decay=0.999, device=torch.device("cpu")):
         """
         Wrapper around the Generator and the Discriminator.
@@ -531,8 +531,11 @@ class StyleGAN:
     def __setup_dis_optim(self):
         self.dis_optim = torch.optim.Adam(self.dis.parameters(),lr=0.003, betas=(0, 0.99), eps=1e-8)
 
-    def __setup_loss(self):
-        loss = LogisticGAN(self.dis)
+    def __setup_loss(self,loss):
+        if loss == "logistic":
+            loss = LogisticGAN(self.dis)
+        elif loss == "RAhinge":
+            loss = RelativisticAverageHingeGAN(self.dis)
 
         return loss
 
