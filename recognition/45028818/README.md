@@ -8,7 +8,9 @@ The model design is an implementation of the improved U-Net from the paper writt
 The architecture of the model is shown in this image from the paper.
 ![image](https://user-images.githubusercontent.com/14146158/139621908-c9d467e4-2e76-4a61-a60e-e914604e5c73.png)
 
-Like the original U-Net there is a context aggregation pathway (context pathway) responsible for encoding increasingly abstract representations of the original input as it 'descends' down the layers. Following this pathway is the localization pathway that recombines the aggregation output of that layer with the up-sampled features from the layer below. 
+Like the original U-Net there is a context aggregation pathway (context pathway) responsible for encoding increasingly abstract representations of the original input as it 'descends' down the levels. Following this pathway is the localization pathway that recombines the aggregation output of that level with the up-sampled features from the level below. 
+### Notes on Normalization
+Instead of batch normalization the paper recommended the use of instance normalization, this was because of the small batch size of two as that can cause instability in batch normalization.
 
 ### Context Pathway
 The context pathway begins with a 3x3x3 convolution, following this is the first of the context module. The context module consists of seven layers: two 3x3x3 convolutional layers with each convolutional layer followed by instance normalization layer and a leaky ReLu activation layer with an alpha of 0.01. In between each stack of three layers (convolutional/normalization/activation) is a dropout layer with a dropout probability of 0.3.
