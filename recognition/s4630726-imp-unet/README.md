@@ -49,15 +49,15 @@ The model definitely works and segements moles, some very accurately and some no
 * optimizer: Adam
 
 #### PROCEDURE:
-The data is first loaded into each array iteratively where it is resized to a 4:3 aspect ratio at 256 x 192 resolution, that being the most accurate representation of the majority of the images in the dataset. This is because all the images are different resolutions and aspect ratios. 
+1. The data is first loaded into each array iteratively where it is resized to a 4:3 aspect ratio at 256 x 192 resolution, that being the most accurate representation of the majority of the images in the dataset. This is because all the images are different resolutions and aspect ratios. 
 
-Then the arrays are split into testing and training sets with a test size of 0.2. This is the optimal test split ratio.
+1. Then the arrays are split into testing and training sets with a test size of 0.2. This is the optimal test split ratio.
 
-Next the 4 arrays are turned into tensors with datatype float32. The X tensors are normalized by /255, and the Y tesnors get an extra dimensione added so they are the correct format.
+1. Next the 4 arrays are turned into tensors with datatype float32. The X tensors are normalized by /255, and the Y tesnors get an extra dimensione added so they are the correct format.
 
-This data is then fed into the unet, during training there were issues where the loss function would sheldom change and thus would not segment properly. This was fixed by decreasing the learning rate to 1e-5. A split of 0.1 is used for the validation split when fitting the model. This again is optimal. The paper uses Leaky ReLU, however this resulted in the model not training correctly, changing the learning rate in these instances was unsuccessful.
+1. This data is then fed into the unet, during training there were issues where the loss function would sheldom change and thus would not segment properly. This was fixed by decreasing the learning rate to 1e-5. A split of 0.1 is used for the validation split when fitting the model. This again is optimal. The paper uses Leaky ReLU, however this resulted in the model not training correctly, changing the learning rate in these instances was unsuccessful.
 
-Finally the dice scores are calculated.
+1. Finally the dice scores are calculated.
 
 
 
