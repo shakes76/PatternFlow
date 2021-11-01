@@ -24,7 +24,8 @@ The localization module consists of a 3x3x3 convolutional block followed by a 1x
 The output consists of the sum of the segmentation layers from level 1, 2, and 3. The output of this sum is put into a final sigmoid activation layer, this is a different implementation to the paper as it used a softmax layer. 
 
 ## Training Details
-My model is trained using images resized to 512x512, with data augmentation done through Keras's ImageDataGenerator. This augmentation consists of shearing, zooming, and horizontal and vertical flips. 
+My model is trained using images resized to 512x512x3, with data augmentation done through Keras's ImageDataGenerator. This augmentation consists of shearing, zooming, and horizontal and vertical flips. The data preprocessing only splits the data into a training set and a testing set, while I would usually do a validation set as well to help guide parameter tuning and for general model completeness, for several reasons I did not for this network. Firstly, since the goal was to reproduce the Improved U-Net the previously noted paper, this meant there would be no need for the model comparisons which the validation test results can help show. In addition to this the standard parameter selection was already completed by the authors of the paper. Secondly, not having a validation test set meant I could use Keras's lightweight ImageDataGenerator for preprocessing, this greatly simplified pre-processing and processing, however the only way to introduce three way training/validation/testing splits with that generator is to have the data already split into training and testing datasets. The final reason was because of the relatively quick training time and the good results the model achieved straight away meant I had little reason to reduce the size of the training dataset for the creation of a validation set.
+
 The network is trained for 10 epochs using an Adam optimizer with a learning rate of 0.0004.
 
 ## Training Results
@@ -32,5 +33,6 @@ During training it reached a training Dice Coefficient of 0.8464 and a test Dice
 
 ## Visualisation of Results
 ![image](https://user-images.githubusercontent.com/14146158/139622258-6b6f91cc-259e-4217-ab04-ef73eae4865c.png)
+Another set of test images.
 ![Predict_Images](https://user-images.githubusercontent.com/14146158/139622109-59963ea6-523b-478e-9271-81e7784acb26.png)
 
