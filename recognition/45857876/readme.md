@@ -12,7 +12,7 @@ Student number: s4585787
 
 
 ## The main StyleGAN structure  
-[Traditional genertaor and StyleGAN generator](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/20190325144840976.png)  
+![Traditional genertaor and StyleGAN generator](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/20190325144840976.png)  
 Through observation, it can be found that different layers and resolutions will affect different features. The lower the layer and resolution, the coarser the features it affects. We can divide these characteristics into three types:  
 1. Rough-(resolution 0-8^2), affecting posture, general hairstyle, facial shape, etc.; 
 2. Medium-(resolution 16^2-32^2), affecting finer facial features, hairstyles, opening of eyes or Closed, etc.; 
@@ -25,7 +25,7 @@ To better solve the Feature unwrapping problem, the Mapping network is added int
 
 ### AdaIN module
 
-[AdaIN](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/20190325144840976.png)   
+![AdaIN](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/20190325144840976.png)   
 At each resolution, two A will affect the generator twice, once after Upsampling and once after Convolution by using AdaIN.
 Like the equation ablow, expand A into scaling factors y~𝑠,𝑖~ and deviation factors y~𝑏,𝑖~, and make a weighted sum of these two factors and the normalized convolution output to apply an influence.  
 
@@ -43,18 +43,18 @@ In this task, I explore two loss functions to find the influence of loss functio
 
 ### 1.  Logistic loss function
 Output for logistic loss function for resolution 256 shows below:  
-[resolution 256 epoch9](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/logistic_256gen_6_9_1.png) 
+![resolution 256 epoch9](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/logistic_256gen_6_9_1.png) 
 
 ### 2. Relativistic Average Hinge loss function
 Output for logistic loss function for resolution 256 shows below:  
-[resolution 256 epoch9](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/rahingegen_6_9_1.png) 
+![resolution 256 epoch9](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/rahingegen_6_9_1.png) 
 
 ## **Output of each resolution**
 
 
 ## **Style mixing output**
 
-[test_image](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/figure03-style-mixing.png)  
+1[test_image](https://github.com/MMMMMYY/PatternFlow/blob/topic-recognition/recognition/45857876/images/figure03-style-mixing.png)  
 
 ## Requirments
 
