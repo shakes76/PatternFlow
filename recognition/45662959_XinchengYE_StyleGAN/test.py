@@ -13,7 +13,7 @@ The step should match the resolution, otherwise the images will be weird.
 
 import torch
 import torchvision.transforms.functional as F
-from torchvision.utils import make_grid
+from torchvision.utils import make_grid, save_image
 import matplotlib.pyplot as plt
 from model import StyledGenerator
 import math
@@ -145,11 +145,13 @@ if __name__ == '__main__':
     step = int(math.log(args.size, 2)) - 2
     n_row, n_col = 1, 5
     img_sample = sample(generator, step, mean_style, n_row*n_col, device)
+    save_image(img_sample, 'Sample.png', nrow=n_col, normalize=True, range=(-1, 1))
     sample_grid = make_grid(img_sample, nrow=n_col, normalize=True, value_range=(-1, 1))
     show(sample_grid, 'Sample')
 
     img_mix = style_mixing(generator, step, mean_style, n_col, n_row, device)
-    grid_mix = make_grid(img_mix, nrow=n_col, normalize=True, value_range=(-1, 1))
+    save_image(img_mix, 'sample_mixing.png', nrow=n_col + 1, normalize=True, range=(-1, 1))
+    grid_mix = make_grid(img_mix, nrow=n_col+1, normalize=True, value_range=(-1, 1))
     show(grid_mix, 'mix regularization')
 
 
