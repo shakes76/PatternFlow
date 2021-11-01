@@ -1,26 +1,10 @@
 """
 Driver script to show an example usage of the model
-
-TODO: unsure if training can be here or needs to be separate
-or maybe training needs to be in the class?
-can I have other files?
-From ed: yeah training can be in here thats ok
-        maybe ake it a funciton at least
-        also probabyl move dataloader, especially if will have more than one
-
-TODO:
-they reccomend starting with minst
-- add rest of vq
-- train with minst to see how good reconstructions are and make sure works
-- then either train on data, later add prior for generation
-    or add prior and test with misnt then train with data
-    not sure if can use same trained after ahve prior
 """
 
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -36,15 +20,14 @@ def gen_images(pixel_cnn, vq, decoder, indices_shape, num):
     """
     Generate images using the pixelcnn
     
-
     Source: the code for this comes from here: 
     https://keras.io/examples/generative/vq_vae/#codebook-sampling
     although I use embedding_lookup which makes it a bit simpler. Most
-    notably making a model specifically to sample the distribution comes from ehre 
-    because the rest of it was more obvious but sampling in tf was 
+    notably making a model specifically to sample the distribution comes from here 
+    because the rest of it was more obvious but sampling a distribution in tf was 
     new to me.
     Also this explanation https://bjlkeng.github.io/posts/pixelcnn/ helped me 
-    understnad how to go from pixelcnn to images.
+    understand how to go from pixelcnn to images.
     """
     # Make a sampler model that takes the output of pixel_cnn
     # and use it as the probabilities in a catagorical ditribution
@@ -92,11 +75,9 @@ def main():
     width, height = 256, 256
     train_seq, valid_seq, test_seq = load_oasis_data("./keras_png_slices_data/keras_png_slices_data", batch_size=128)
 
-
     # load minst data
     # width, height = 28, 28
     # train_seq, test_seq = load_minst_data(batch_size=128)
-
 
     ### initilise model
     model = VQVAE()
@@ -121,14 +102,9 @@ def main():
             idx+=1
             with tf.GradientTape() as tape:
                 internal_loss, out = model(sample, training=True) 
-    #             print(sample.shape, out.shape, internal_loss.shape)
                 # need to take some measure of closeness of image into accoutn
-                # TODO: try another loss
                 image_dif = 1- tf.image.ssim(sample, out, 3)
                 loss = internal_loss + image_dif 
-    #             loss, out = model(sample, training=True) 
-                
-    #             loss = tf.nn.sparse_softmax_cross_entropy_with_logits(target,out)
 
             # step of optamisiser
             grads = tape.gradient(loss, model.trainable_weights)
@@ -151,7 +127,6 @@ def main():
             print('Epoch {}: \n\ttrain loss: {}'.format(epoch, np.mean(loss)))
 
     ### plot results
-    valid_seq = OASISSeq(sorted(X_valid_files),sorted( y_valid_files), 20)
     X_valid, y_valid = valid_seq.__getitem__(1)
 
     plt.figure(figsize=(5*8,5))
@@ -186,7 +161,7 @@ def main():
         plt.title("{} iterations \n{:.2f} batch  ssim\n{:.2f} image ssim".format(7*967*(i+2), avg_ssim, img_ssim), fontsize=22)
     plt.savefig('figures/epoch_compare_recon_{}.png'.format(idx))
 
-
+    # Get encoder/decoder/vq separately for use in pixelcnn
     encoder = model.get_encoder()
     decoder = model.get_decoder()
     vq = model.get_vq()

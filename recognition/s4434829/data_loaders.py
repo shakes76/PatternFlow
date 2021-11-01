@@ -30,45 +30,21 @@ class OASISSeq(tf.keras.utils.Sequence):
         return math.ceil(len(self.x) / self.batch_size)
 
     def __getitem__(self, idx):
-        """ Returns one batch of data, X and y as a tuple """
+        """ Returns one batch of data, two copies of X as a tuple """
         # select set of file names that corrospond to index idx
         X_train_files = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
-        y_train_files = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
         # open each file and load them into the list as an image
         X_train = []
-        y_train = []
         for file in X_train_files:
             img = mpimg.imread(file)
-         
             X_train.append(img)
-        for file in y_train_files:
-            img = mpimg.imread(file)
-            
-            y_train.append(img)
-       
-            
-        # change label names from floats to ints
-        labels_o = np.unique(y_train)
 
         # add an extra dimention 
         X_train = np.array(X_train).reshape(-1, self.x_img_size, self.y_img_size, 1)
-        y_train = np.array(y_train).reshape(-1, self.x_img_size, self.y_img_size, 1)
-        
-        # rename labels from floats to integers
-        y_train[np.where(y_train==labels_o[0])] = 0
-        y_train[np.where(y_train==labels_o[-1])] = 3
-        y_train[np.where(y_train==labels_o[1])] = 1
-        y_train[np.where(y_train==labels_o[2])] = 2 
-        
-        # remove extra dimention in y now that labels are correct and cast as int
-        y_train = np.array(y_train).reshape(-1, self.x_img_size, self.y_img_size).astype(np.int32)
-        # print(y_train.dtype)
-        # should i return tensors or numpy arrays
         if self.downsample:
-#             print("downsampling")
             X_train = tf.image.resize(X_train, [self.downsample, self.downsample])
-        return tf.constant(X_train), tf.constant(X_train)#, tf.constant(y_train)
+        return tf.constant(X_train), tf.constant(X_train)
 
 
 def load_oasis_data(path, batch_size):
@@ -77,7 +53,6 @@ def load_oasis_data(path, batch_size):
     returns three sequences: train, valid, test
     """
     data_dir = pathlib.Path(path)
-    # actually realised don't need y. remove those
     X_train_files = list(data_dir.glob('./keras_png_slices_train/*'))
     y_train_files = list(data_dir.glob('./keras_png_slices_seg_train/*'))
 
@@ -110,6 +85,10 @@ def load_minst_data(batch_size):
     return train_data_loader, test_data_loader
 
 def make_indices(X_reshaped, emb):
+    """
+    Copy of how indices are made in VQ to be used when generating data for
+    pixelCNN
+    """
     distances = tf.math.reduce_sum(X_reshaped**2, axis=1, keepdims=True) +\
                 tf.math.reduce_sum(emb**2, axis=0, keepdims=True) -\
                 2*tf.linalg.matmul(X_reshaped, emb)
@@ -124,7 +103,6 @@ def make_indices_dataset(train_seq, encoder, emb, save_folder ="./encoded_data/"
         indices = make_indices(reashaped_enc_outputs, emb)
 
         indices = indices.numpy().reshape(enc_outputs.shape[:-1])
-    #     print("Saving")
         np.save(save_folder+"cbindices_{}".format(i), indices)
 
 class CodeBookSeq(tf.keras.utils.Sequence):
@@ -135,26 +113,21 @@ class CodeBookSeq(tf.keras.utils.Sequence):
     def __init__(self, x_set):
         """
         Initialises a data loader for a set of data
-        x_set, y_set: set of file paths for x and y files
-        batch_size: number of images in each batch
+        x_set:  set of file paths for x  files
+        batch_size: number of images in each batch, since the codebook files are
+        already batched I set this to 1
         """
-        self.x = x_set# y_set
-        self.batch_size = 1#batch_size
-#         self.x_img_size=256
-#         self.y_img_size=256
-#         self.downsample = downsample
+        self.x = x_set
+        self.batch_size = 1
 
     def __len__(self):
-        """ Returns length of batch set"""
+        """ Returns length of batch set, should be multiplied by 64"""
         return math.ceil(len(self.x) / self.batch_size)
 
     def __getitem__(self, idx):
-        """ Returns one batch of data, X and y as a tuple """
+        """ Returns one batch of data, X and X as a tuple """
         # files are already batched so just want to return one
         X_train_files = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
-#         print(X_train_files)
-        # open each file and load them into the list as an image
-    
         X_train = np.load(X_train_files[0])
 
         return tf.constant(X_train), tf.constant(X_train)#, tf.constant(y_train)
