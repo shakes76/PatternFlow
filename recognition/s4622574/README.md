@@ -20,6 +20,7 @@ Task 5. Classify laterality (left or right sided knee) of the OAI AKOA knee data
 * `Numpy`
 
 # Implementation
+* Download OAI AKOA knee dataset and put into the same folder as source code
 The implementation is divided into 4 parts:
 * `main.py` :  Dataset preparation, initialize Perceiver Transformer, then train model from scratch
 * `perceiver.py` :  Architecture of Perceiver Transformer
