@@ -31,11 +31,11 @@ All the evaluation procedure based on epoch 10.
 #### 1. Visualization of the prediction
 ##### 1.1 Ground Truth
 #####     The image below is the ground truth image:
-<image width="256" image height="256" src="Screenshots/Unet.png" />
+<image width="256" image height="256" src="Screenshots/ground_truth.png" />
 
 ##### 1.2 Prediction
 #####     The image below is the ground truth image:
-<image width="256" image height="256" src="Screenshots/Unet.png" />
+<image width="256" image height="256" src="Screenshots/prediction.png" />
 
 
 ##### 1.3 Accuracy and Loss
