@@ -172,12 +172,10 @@ class GatedPixelCNN(nn.Module):
             nn.Conv2d(512, input_dim, 1)
         )
 
-        # self.apply(weights_init)
-
     def forward(self, x):
         shp = x.size() + (-1, )
         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
-        x = x.permute(0, 3, 1, 2)  # (B, C, W, W)
+        x = x.permute(0, 3, 1, 2)  # (B, C, H, W)
 
         # x = self.norm(x)
 
