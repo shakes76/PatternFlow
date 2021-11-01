@@ -6,9 +6,9 @@ import tensorflow_addons as tfa
 import copy
 
 class Perceiver(tf.keras.Model):
-    def __init__(self, inDim, latentDim, proj_size, num_heads,
-            num_trans_blocks, num_loop, max_freq, freq_ban, lr, epoch, 
-            weight_decay):
+    def __init__(self, inDim, latentDim, proj_size, max_freq, freq_ban, num_heads=8,
+            num_trans_blocks=6, num_loop=8,  lr=0.001, epoch=10, 
+            weight_decay=0.0001):
 
         super(Perceiver, self).__init__()
 
@@ -31,12 +31,9 @@ class Perceiver(tf.keras.Model):
 
         self.fourier_encoder = FourierEncode(self.max_freq, self.freq_ban)
 
+        self.attention_mechanism = attention_mechanism(self.latentDim, self.inDim, self.proj_size)
 
-        self.attention_mechanism = attention_mechanism(self.latentDim,
-                self.inDim, self.proj_size)
-
-        self.transformer = transform(self.latentDim, self.proj_size,
-                self.num_heads, self.num_trans_blocks)
+        self.transformer = transform(self.latentDim, self.proj_size, self.num_heads, self.num_trans_blocks)
 
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
@@ -54,9 +51,7 @@ class Perceiver(tf.keras.Model):
             latents = self.transformer(latents)
             attention_mechanism_data[0] = latents
 
-
         outputs = self.global_average_pooling(latents)
-
 
         logits = self.classify(outputs)
         return logits
@@ -82,7 +77,6 @@ def fitModel(model, train_set, val_set, test_set, batch_size):
     model.compile(optimizer=optimizer, loss=tf.keras.losses.BinaryCrossentropy(),
             metrics=[tf.keras.metrics.BinaryAccuracy(name="acc"),])
 
-
     history = model.fit(X_train, y_train, epochs=model.epoch, batch_size=batch_size, 
             validation_data=(X_val, y_val), validation_batch_size=batch_size)
 
@@ -96,7 +90,7 @@ def transform(latentDim, proj_size, num_heads, num_trans_blocks):
     originalInput = copy.deepcopy(data)
     for _ in range(num_trans_blocks):
         norm = layers.LayerNormalization()(data)
-        attOut = layers.MultiHeadattOut(num_heads, proj_size)(norm, norm)
+        attOut = layers.MultiHeadAttention(num_heads, proj_size)(norm, norm)
         attOut = layers.Dense(proj_size)(attOut)
         attOut = layers.Add()([attOut, data])
         attOut = layers.LayerNormalization()(attOut)
