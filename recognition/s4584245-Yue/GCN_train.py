@@ -2,29 +2,25 @@
 from load_data import *
 from GCN_Layer import *
 import numpy as np
-import scipy.sparse as sp
 import torch
-
 import torch.nn as nn
-import torch.nn.functional as fun
-import torch.nn.init as init
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelBinarizer
 
-
+#model Hyperparameter.
 learning_rate = 0.1
 weight_decay = 5e-4
 epochs = 150
 
+#Model definition:Model, Loss, Optimizer.
 device = "cpu"
 model = GCN().to(device)
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-
-
+# Feature and labels.
 tensor_x = features.to(device)
 tensor_y = labels.to(device)
+#Split the data.(load_data part)
 tensor_train_mask = torch.from_numpy(train_mask).to(device)
 tensor_val_mask = torch.from_numpy(val_mask).to(device)
 tensor_test_mask = torch.from_numpy(test_mask).to(device)
@@ -33,8 +29,9 @@ values = torch.from_numpy(adjacency.data.astype(np.float32))
 tensor_adjacency = torch.sparse.FloatTensor(indices, values, (22470, 22470)).to(device)
 
 class Train:
-    # Train class.
+
     def test(self,capsys):
+        # Tset the GCN model.
         model.eval()
         with torch.no_grad():
             logits = model(tensor_adjacency, tensor_x)
@@ -44,12 +41,13 @@ class Train:
         return accuarcy, test_mask_logits.cpu().numpy(), tensor_y[capsys].cpu().numpy()
 
     def train(self):
+        #Train the GCN model
         self.loss_history = []
         self.val_acc_history = []
         model.train()
         train_y = tensor_y[tensor_train_mask]
         for epoch in range(epochs):
-            logits = model(tensor_adjacency, tensor_x)
+            logits = model(tensor_adjacency, tensor_x)# Forward propagation
             train_mask_logits = logits[tensor_train_mask]
             loss = criterion(train_mask_logits, train_y)
             optimizer.zero_grad()
@@ -57,6 +55,7 @@ class Train:
             optimizer.step()
             train_acc, _, _ = self.test(tensor_train_mask)
             val_acc, _, _ = self.test(tensor_val_mask)
+            #Record the change of loss value and accuracy rate during training for drawing
             self.loss_history.append(loss.item())
             self.val_acc_history.append(val_acc.item())
             # Print GCN model result.
@@ -66,6 +65,7 @@ class Train:
 
 
     def acc(self):
+        # Drawing the accuracy trend.
         plt.plot(self.val_acc_history, label='val_accuracy')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
