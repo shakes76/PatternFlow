@@ -80,3 +80,14 @@ def unet(height, width, channels, filters = 16, kernel_size = (3,3), padding = "
     us4 = upsampling(us4_l, filters)
     us4_output = concatenate([ds1_output, us4])
     
+    seg1 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us2_l)
+    seg1 = UpSampling2D(size=(8,8))(seg1)
+    seg2 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us3_l)
+    seg2 = UpSampling2D(size=(4,4))(seg2)
+    seg3 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us4_output)
+
+    output = Add() [seg1, seg2, seg3]
+
+    unet_model = keras.models.Model(input, output)
+
+    return unet_model
