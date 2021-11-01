@@ -4,8 +4,9 @@ The ISIC challenge is an annual challenge in which participants attempt to
 use computer vision to solve problems related to melanoma diagnosis. In the
 2018 challenge, task 1 requires participants to segment images of skin lesions,
 into background (not a skin lesion) and foreground (skin lesion). Here, we
-use the "Improved U-Net" model, a convolutional neural network for segmenting
-images. This model, whose layers are connected in a way that resembles a "U"
+use the "[Improved U-Net](https://arxiv.org/abs/1802.10508v1)" model, a
+convolutional neural network for segmenting images.
+This model, whose layers are connected in a way that resembles a "U"
 shape, takes input images and segments them into background and foreground,
 as required by the task.
 
@@ -33,6 +34,16 @@ overfitting.
 
 ## Dependencies
 The main dependencies required to run the driver are:
-- TensorFlow: The machine learning library that allows us to build this model
+- TensorFlow: The machine learning library that powers the model
 - Matplotlib: For visualising results
 
+## Results
+
+Here is an example output from running the driver script. This plot
+shows rows, each containing an input, ground truth, and prediction.
+Observe that all DSC values are above 0.8.
+
+![Example output by the driver script.](example_output.png)
+
+On average, we can expect to achieve an average Dice coefficient of
+about 0.86, but some extreme outliers below 0.8 are often recorded.

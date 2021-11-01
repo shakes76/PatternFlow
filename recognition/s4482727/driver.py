@@ -18,7 +18,7 @@ image_generator = ImageDataGenerator()
 # number of images in training set
 TRAINING_COUNT = 2594
 
-# load training inputs from disk
+# load training inputs from folder "~/ISIC2018_Task1-2_Training_Input_x2"
 training_input_gen = input_image_generator.flow_from_directory(
     directory=os.path.expanduser('~'),
     batch_size=TRAINING_COUNT,  # just get all images in one batch for now
@@ -27,7 +27,8 @@ training_input_gen = input_image_generator.flow_from_directory(
     target_size=(IMG_HEIGHT, IMG_WIDTH),
     class_mode='input')
 
-# load training ground truths from disk
+# load training ground truths from folder
+# "~/ISIC2018_Task1_Training_GroundTruth_x2"
 training_gt_gen = input_image_generator.flow_from_directory(
     directory=os.path.expanduser('~'),
     batch_size=TRAINING_COUNT,  # just get all images in one batch for now
@@ -69,7 +70,7 @@ model.save("model.tf")
 # number of images in test set
 TEST_COUNT = 100
 
-# load test inputs from disk
+# load test inputs from folder "~/ISIC2018_Task1-2_Validation_Input"
 test_input_gen = input_image_generator.flow_from_directory(
     directory=os.path.expanduser('~'),
     batch_size=TEST_COUNT,
@@ -78,7 +79,7 @@ test_input_gen = input_image_generator.flow_from_directory(
     target_size=(IMG_HEIGHT, IMG_WIDTH),
     class_mode='input')
 
-# load test ground truths from disk
+# load test ground truths from folder "~/ISIC2018_Task1_Validation_GroundTruth"
 test_gt_gen = input_image_generator.flow_from_directory(
     directory=os.path.expanduser('~'),
     batch_size=TEST_COUNT,
@@ -98,6 +99,18 @@ test_gen = image_generator.flow(x_test, y_test, shuffle=True)
 
 # use model to segment test images
 predictions = model.predict(x_test)
+
+# Print DSC of each test
+min_dsc = sorensen_dice(y_test[0], predictions[0])
+dscs = []
+for i in range(TEST_COUNT):
+    current_dsc = sorensen_dice(y_test[i], predictions[i])
+    dscs.append(current_dsc)
+    print("Test {0}: dsc={1}".format(i, current_dsc))
+    if current_dsc < min_dsc:
+        min_dsc = current_dsc
+print("Minimum DSC: {0}".format(min_dsc))
+print("Average DSC: {0}".format(sum(dscs) / TEST_COUNT))
 
 # number of tests to plot
 TESTS = 3
