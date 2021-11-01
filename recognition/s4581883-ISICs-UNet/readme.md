@@ -2,13 +2,13 @@
 This task uses an improved UNet model which maintains the same convolutional neural network structure of a regular UNet, combined with dice loss functions to more suitably segment brain tumours. 
 
 ## The Improved UNet
-The paper supplied with this task focuses on 3D input blocks, below is an image of their architecture, which will be used to loosely base this task's architecture off. The paper utilises multiple 3x3x3 filter sized convolutional layers 
+The paper supplied with this task focuses on 3D input blocks, below is an image of their architecture, which will be used to loosely base this task's architecture off. 
 
 ![](./figures/architecture.JPG)
 
 *Figure 1: Network Architecture for Improved UNet*
 
-For this task, 2D images will be used as the input, and as such, a simpler approach can be taken.
+For this task, 2D images will be used as the input, and as such, a simpler approach can be taken. The aim of this project is to be able to segment the ISIC dataset provided with all labels having a minimum Dice Similarity coefficient of 0.8 using an improved UNet model.
 
 ## ISIC 2018 Task 1 Dataset
 The dataset given for this task was a preprocessed ISIC 2018 Melanoma Dermoscopy dataset, based off the ISIC 2018 segmentation task challenge. The dataset was downsampled by 2, and contained around 3000 images of dermoscopies and masks. Below are examples are the training data and segmentation data. 
