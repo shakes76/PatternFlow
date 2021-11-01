@@ -16,58 +16,52 @@ GCN (Graph Convolutional Network) is similar with CNN(convolutional neural netwo
 
 <br/>
 
-Formally, GCN is a neural network that operates on graphs. Given a graph \\(G = (V, E)\\), GCN takes as input:
+Formally, GCN is a neural network that operates on graphs. Given a graph G = (V, E), GCN takes as input:
 
-- The feature description \\(x_i\\) of each node \\(i\\); summarized in an \\(N × D \\) feature matrix \\(X \\) (\\(N \\): number of nodes, \\(D \\): number of input features)
-- \\(A \\) representative description of the graph structure in matrix form; usually in the form of the adjacency matrix (\\(A \\))
+- The feature description xi of each node i; summarized in an N × D feature matrix X ( N: number of nodes, D: number of input features)
+- A representative description of the graph structure in matrix form; usually in the form of the adjacency matrix A
 
-And then generate output \\(Z \\) (\\(N × F \\) feature matrix, \\(F \\): the number of output features for each node). 
+And then generate output Z ( N × F feature matrix, (F: the number of output features for each node)). 
 
 <br/>
 
-Each neural network layer take input with the adjacency matrix \\(A \\) and feature matrix \\(H \\), so the simple forward propagation equation is:
+Each neural network layer take input with the adjacency matrix A and feature matrix H, so the simple forward propagation equation is:
 
-$$H^{(l+1)}=\sigma(AH^{(l)}W^{(l)})$$
+<img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(AH^{(l)}W^{(l)})"/>
 
-- \\(W^{(l)} \\) is a weight matrix for the \\(l \\)-th neural network layer 
-- \\(\sigma \\) is a activation function
+- W^(l) is a weight matrix for the l-th neural network layer 
+- σ is a activation function
 
 <br/>
 
 The simple model has two limitations:
 
-1. When we multiply \\(A \\), for each note, we add all the feature vectors of all adjacent nodes, not the node itself. Therefore, the identity matrix will be added to \\(A \\).
-2. \\(A \\) is not unnormalized, so if multipling with \\(A \\), the scale of the feature vectors will be change. Therefore, \\(A \\) should be normalized.
+1. When we multiply A, for each note, we add all the feature vectors of all adjacent nodes, not the node itself. Therefore, the identity matrix will be added to A.
+2. A is not unnormalized, so if multipling with A, the scale of the feature vectors will be change. Therefore, A should be normalized.
 
 After applying these two solution, we will get a new forward propagation equation:
 
-$$
-H^{(l+1)}=\sigma(\widetilde{D}^{-\frac{1}{2}}\widetilde{A}\widetilde{D}^{-\frac{1}{2}} H^{(l)}W^{(l)})
-$$
+<img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(\widetilde{D}^{-\frac{1}{2}}\widetilde{A}\widetilde{D}^{-\frac{1}{2}}&space;H^{(l)}W^{(l)})"/>
 
-- \\(\hat{A} = A + I \\)
-- \\(I \\) is the identity matrix
-- \\(\hat{D} \\) is degree matrix of \\(\hat{A} \\)
+- 𝐴̂ = A + I
+- I is the identity matrix
+- 𝐷̂ is degree matrix of 𝐴̂
 
 <br/>
 
 With 3-Layer GCN,the form of the forward model is:
 
-$$
-Z = f(X,A) = softmax(\hat{A}ReLU(\hat{A} ReLU(\hat{A} X W^{(0)}) W^{(1)}) W^{(2)})
-$$
+<img src="https://latex.codecogs.com/gif.latex?Z&space;=&space;f(X,A)&space;=&space;softmax(\hat{A}ReLU(\hat{A}&space;ReLU(\hat{A}&space;X&space;W^{(0)})&space;W^{(1)})&space;W^{(2)})"/>
 
-After one-hot encoding, we get a 4-dimensional label dataset, and \\(F \\) will be set to 4. After obtaining 4-dimensional vectors in the third layer, we use the softmax function to predict these vectors.
+After one-hot encoding, we get a 4-dimensional label dataset, and F will be set to 4. After obtaining 4-dimensional vectors in the third layer, we use the softmax function to predict these vectors.
 
 <br/>
 
 Finally, we use categorical cross-entropy to calculate the error.
 
-$$
-\mathrm{Loss} = -\sum_{l∈y_L} \sum_{f=1}^{F} Y_{lf}\ln{Z_{lf}}
-$$
+<img src="https://latex.codecogs.com/gif.latex?\mathrm{Loss}&space;=&space;-\sum_{l&space;\in&space;y_L}&space;\sum_{f=1}^{F}&space;Y_{lf}\ln{Z_{lf}} "/>
 
-- \\(y_L \\) is the set of node indices that have labels
+- y(L) is the set of node indices that have labels
 
 
 
