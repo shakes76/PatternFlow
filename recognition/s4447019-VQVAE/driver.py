@@ -220,3 +220,23 @@ for i in range(batch):
     plt.axis("off")
     plt.show()
 #############################################################
+
+#############################################################
+# Reference : https://ourcodeworld.com/articles/read/991/how-to-calculate-the-structural-similarity-index-ssim-between-two-images-with-python
+# Author: Carlos Delgado
+
+# Compute the Structural Similarity Index (SSIM) between the two images for all test images
+total_score = 0
+
+for i in range(544): #544 is the number of test images
+    test_images = next(iter(test_ds.batch(1)))
+    reconstructions_test = trained_vqvae_model.predict(test_images)
+    (score, diff) = structural_similarity(test_images.numpy()[0], reconstructions_test[0], full=True, multichannel=True)
+    diff = (diff * 255).astype("uint8")
+    total_score += score
+
+total_score = total_score / 544 #Get the mean SSIM from all test images
+
+# Print the mean SSIM
+print("Total SSIM: {}".format(total_score))
+#############################################################
