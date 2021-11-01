@@ -26,11 +26,14 @@ As the first image shown, only one latnet code is input to the mapping network, 
 
 ![mix_style](images/mix_style.PNG)    
 
-## Introduction to WGAN-PG Loss<sup>[3]</sup>    
-WGAN-PG is based on WGAN 
+## Introduction to WGAN-GP Loss<sup>[3]</sup>    
+A common problem of GAN is instability during training. WGAN proposed Wasserstein-1 distance is suitable for GAN, this requires the discriminator to meet Lipschitz constraint which means the gradient cannot exceed to a certain constant. To guarantee this constraint, WGAN applies weight clipping. However, this weight clipping sometimes makes discriminator fails to converge. Consequently,  WGAN with gradient penalty (WGAN-GP) is proposed. WGAN-GP adds a gradient penalty based on WGAN, this penalty can enforce L2 norm of the discriminator approximates to L1 norm. In original StyleGAN, they apply WGAN-GP loss on CELEBA-HQ dataset, another loss on FFHQ dataset. Here, I used WGAN-GP.       
+
 ## Usage  
 - ### Requirements 
-    
+  |       | preprocessing.py | train.py | test.py |
+  | ----------- | ----------- | --------|---------|
+  | Library | zipfile <br> io <br> multiprocessing<br> functools<br> PIL<br> lmdb<br> tqdm <br>torchvision |io<br> lmdb<br> PIL<br> os<br> argparse<br> random<br> math<br> tqdm<br> torch<br> time |torch<br> torchvision<br> matplotlib<br> math<br> argparse|
 - ### Preprocessing  
   ```python
   python preprocessing.py
