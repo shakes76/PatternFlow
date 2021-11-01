@@ -12,12 +12,13 @@ X_train, y_train, X_test, y_test = process_data("AKOA_Analysis\AKOA_Analysis", 8
 PATCH_SIZE = 2
 PATCH_COUNT = (128 // PATCH_SIZE) ** 2
 PROJECTION_DIMENSION = 256
-LATENT_DIMENSOINS = 256
+LATENT_DIMENSIONS = 256
 ffn_units = [
     PROJECTION_DIMENSION,
     PROJECTION_DIMENSION,
 ]
-
+HEAD_COUNT = 8
+TRANSFORMER_BLOCK_COUNT = 4
 
 # feed forward
 def get_feed_forward_network(hidden_units, dropout_rate):
@@ -69,7 +70,7 @@ def get_cross_attention(
 ):
 
     inputs = {
-        "latent_array": layers.Input(shape=(LATENT_DIMENSOINS, PROJECTION_DIMENSION)),
+        "latent_array": layers.Input(shape=(LATENT_DIMENSIONS, PROJECTION_DIMENSION)),
         "data_array": layers.Input(shape=(data_dim, PROJECTION_DIMENSION)),
     }
 
@@ -94,4 +95,26 @@ def get_cross_attention(
     outputs = layers.Add()([outputs, attention_output])
 
     model = keras.Model(inputs=inputs, outputs=outputs)
+    return model
+
+def get_transformer(
+    ffn_units,
+    dropout_rate,
+):
+
+    inputs = layers.Input(shape=(LATENT_DIMENSIONS, PROJECTION_DIMENSION))
+
+    x0 = inputs
+    for _ in range(TRANSFORMER_BLOCK_COUNT):
+        x1 = layers.LayerNormalization(epsilon=1e-6)(x0)
+        attention_output = layers.MultiHeadAttention(
+            num_heads=HEAD_COUNT, key_dim=PROJECTION_DIMENSION, dropout=0.1
+        )(x1, x1)
+        x2 = layers.Add()([attention_output, x0])
+        x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
+        ffn = get_feed_forward_network(hidden_units=ffn_units, dropout_rate=dropout_rate)
+        x3 = ffn(x3)
+        x0 = layers.Add()([x3, x2])
+
+    model = keras.Model(inputs=inputs, outputs=x0)
     return model
