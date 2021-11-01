@@ -50,12 +50,17 @@ usage: vqvae.py [-h] [--epoch EPOCH] [--batch BATCH] [--lr LR] [--k K] [--d D]
 VQVAE
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --epoch EPOCH  Epoch size (default: 50)
-  --batch BATCH  Batch size (default: 32)
-  --lr LR        learning rate for Adam optimizer (default: 0.002)
-  --k K          Num of latent vectors (default: 512)
-  --d D          Dim of latent vectors (default: 64)
+  -h, --help            show this help message and exit
+  --epoch EPOCH         Epoch size for training vqvae (default: 50)
+  --batch BATCH         Batch size for training vqvae (default: 32)
+  --lr LR               learning rate for training vqvae (default: 0.002)
+  --epoch_prior EPOCH_PRIOR
+                        Epoch size for training pixelcnn (default: 100)
+  --batch_prior BATCH_PRIOR
+                        Batch size for training pixelcnn (default: 64)
+  --lr_prior LR_PRIOR   learning rate for training pixelcnn (default: 0.001)
+  --k K                 Num of latent vectors (default: 512)
+  --d D                 Dim of latent vectors (default: 64)
 ~~~  
 
 ## Requirements
