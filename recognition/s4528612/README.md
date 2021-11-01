@@ -43,11 +43,11 @@ Following the structure of the paper, the transformer first normalizes the input
 
 # Results
 **Accuracy Scores Per Epoch**
-
+![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Accuracies.PNG?raw=true)
 **Training and Validation Scores**
-
+![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Knee_samples.PNG?raw=true)
 **Sample Knee Images**
-
+![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Train_test_accuracies.PNG?raw=true)
 # References
 *Rishit Dagli* (26 April 2021). *Perceiver* https://github.com/Rishit-dagli/Perceiver. 
 
