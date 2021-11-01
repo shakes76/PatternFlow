@@ -12,10 +12,9 @@ from torch.nn.functional import interpolate
 
 from utils import get_data_loader
 from utils import update_average
-from Blocks import DiscriminatorTop, DiscriminatorBlock, InputBlock, GSynthesisBlock
 from CustomLayers import EqualizedConv2d, PixelNormLayer, EqualizedLinear
 
-
+###### Mapping network
 class GMapping(nn.Module):
 
     def __init__(self, latent_size=512, dlatent_size=512, dlatent_broadcast=None,
@@ -67,6 +66,7 @@ class GMapping(nn.Module):
         return x
 
 
+###### Generator Synthesis block
 class GSynthesis(nn.Module):
 
     def __init__(self, dlatent_size=512, num_channels=3, resolution=1024,
@@ -151,7 +151,7 @@ class GSynthesis(nn.Module):
 
         return images_out
 
-
+###### Generator block
 class Generator(nn.Module):
 
     def __init__(self, resolution, latent_size=512, dlatent_size=512,
@@ -198,6 +198,8 @@ class Generator(nn.Module):
         return fake_images
 
 
+
+###### Discriminator block
 class Discriminator(nn.Module):
 
     def __init__(self, resolution, num_channels=3, fmap_base=8192, fmap_decay=1.0, fmap_max=512,
@@ -215,8 +217,6 @@ class Discriminator(nn.Module):
         self.mbstd_num_features = mbstd_num_features
         self.mbstd_group_size = mbstd_group_size
         self.structure = structure
-        # if blur_filter is None:
-        #     blur_filter = [1, 2, 1]
 
         resolution_log2 = int(torch.log2(torch.tensor(resolution)))
         assert resolution == 2 ** resolution_log2 and resolution >= 4
@@ -229,7 +229,6 @@ class Discriminator(nn.Module):
         blocks = []
         from_rgb = []
         for res in range(resolution_log2, 2, -1):
-            # name = '{s}x{s}'.format(s=2 ** res)
             blocks.append(DiscriminatorBlock(nf(res - 1), nf(res - 2),
                                              gain=gain, use_wscale=use_wscale, activation_layer=act,
                                              blur_kernel=blur_filter))
@@ -277,24 +276,144 @@ class Discriminator(nn.Module):
 
         return scores_out
 
+###### Constant Input block
+class InputBlock(nn.Module):
+    """
+    The fixed constant as input for 4*4 resolution
+    """
 
+    def __init__(self, nf, dlatent_size, const_input_layer, gain,
+                 use_wscale, use_noise, use_pixel_norm, use_instance_norm, use_styles, activation_layer):
+        super().__init__()
+        self.const_input_layer = const_input_layer
+        self.nf = nf
+
+        if self.const_input_layer:
+            # called 'const' in torch
+            self.const = nn.Parameter(torch.ones(1, nf, 4, 4))
+            self.bias = nn.Parameter(torch.ones(nf))
+        else:
+            self.dense = EqualizedLinear(dlatent_size, nf * 16, gain=gain / 4,
+                                         use_wscale=use_wscale)
+            # tweak gain to match the official implementation of Progressing GAN
+
+        self.epi1 = LayerEpilogue(nf, dlatent_size, use_wscale, use_noise, use_pixel_norm, use_instance_norm,
+                                  use_styles, activation_layer)
+        self.conv = EqualizedConv2d(nf, nf, 3, gain=gain, use_wscale=use_wscale)
+        self.epi2 = LayerEpilogue(nf, dlatent_size, use_wscale, use_noise, use_pixel_norm, use_instance_norm,
+                                  use_styles, activation_layer)
+
+    def forward(self, dlatents_in_range):
+        batch_size = dlatents_in_range.size(0)
+
+        if self.const_input_layer:
+            x = self.const.expand(batch_size, -1, -1, -1)
+            x = x + self.bias.view(1, -1, 1, 1)
+        else:
+            x = self.dense(dlatents_in_range[:, 0]).view(batch_size, self.nf, 4, 4)
+
+        x = self.epi1(x, dlatents_in_range[:, 0])
+        x = self.conv(x)
+        x = self.epi2(x, dlatents_in_range[:, 1])
+
+        return x
+
+###### Generator Synthesis Block
+class GSynthesisBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, blur_filter, dlatent_size, gain,
+                 use_wscale, use_noise, use_pixel_norm, use_instance_norm, use_styles, activation_layer):
+        # 2**res x 2**res
+        # res = 3..resolution_log2
+        super().__init__()
+
+        if blur_filter:
+            blur = BlurLayer(blur_filter)
+        else:
+            blur = None
+
+        self.conv0_up = EqualizedConv2d(in_channels, out_channels, kernel_size=3, gain=gain, use_wscale=use_wscale,
+                                        intermediate=blur, upscale=True)
+        self.epi1 = LayerEpilogue(out_channels, dlatent_size, use_wscale, use_noise, use_pixel_norm, use_instance_norm,
+                                  use_styles, activation_layer)
+        self.conv1 = EqualizedConv2d(out_channels, out_channels, kernel_size=3, gain=gain, use_wscale=use_wscale)
+        self.epi2 = LayerEpilogue(out_channels, dlatent_size, use_wscale, use_noise, use_pixel_norm, use_instance_norm,
+                                  use_styles, activation_layer)
+
+    def forward(self, x, dlatents_in_range):
+        x = self.conv0_up(x)
+        x = self.epi1(x, dlatents_in_range[:, 0])
+        x = self.conv1(x)
+        x = self.epi2(x, dlatents_in_range[:, 1])
+        return x
+
+###### Discriminator top Block
+class DiscriminatorTop(nn.Sequential):
+    def __init__(self,
+                 mbstd_group_size,
+                 mbstd_num_features,
+                 in_channels,
+                 intermediate_channels,
+                 gain, use_wscale,
+                 activation_layer,
+                 resolution=4,
+                 in_channels2=None,
+                 output_features=1,
+                 last_gain=1):
+        """
+
+        """
+
+        layers = []
+        if mbstd_group_size > 1:
+            layers.append(('stddev_layer', StddevLayer(mbstd_group_size, mbstd_num_features)))
+
+        if in_channels2 is None:
+            in_channels2 = in_channels
+
+        layers.append(('conv', EqualizedConv2d(in_channels + mbstd_num_features, in_channels2, kernel_size=3,
+                                               gain=gain, use_wscale=use_wscale)))
+        layers.append(('act0', activation_layer))
+        layers.append(('view', View(-1)))
+        layers.append(('dense0', EqualizedLinear(in_channels2 * resolution * resolution, intermediate_channels,
+                                                 gain=gain, use_wscale=use_wscale)))
+        layers.append(('act1', activation_layer))
+        layers.append(('dense1', EqualizedLinear(intermediate_channels, output_features,
+                                                 gain=last_gain, use_wscale=use_wscale)))
+
+        super().__init__(OrderedDict(layers))
+
+
+###### Discriminator Block(wrap discrimnator together)
+class DiscriminatorBlock(nn.Sequential):
+    def __init__(self, in_channels, out_channels, gain, use_wscale, activation_layer, blur_kernel):
+        super().__init__(OrderedDict([
+            ('conv0', EqualizedConv2d(in_channels, in_channels, kernel_size=3, gain=gain, use_wscale=use_wscale)),
+            # out channels nf(res-1)
+            ('act0', activation_layer),
+            ('blur', BlurLayer(kernel=blur_kernel)),
+            ('conv1_down', EqualizedConv2d(in_channels, out_channels, kernel_size=3,
+                                           gain=gain, use_wscale=use_wscale, downscale=True)),
+            ('act1', activation_layer)]))
+
+
+###### Loss function of logistic
 class LogisticGAN:
     def __init__(self, dis):
         self.dis = dis
 
     # gradient penalty
     def R1Penalty(self, real_img, height, alpha):
-        # TODO: use_loss_scaling, for fp16
+        
         apply_loss_scaling = lambda x: x * torch.exp(x * [torch.log(torch.tensor(2.0))].to(real_img.device))
         undo_loss_scaling = lambda x: x * torch.exp(-x * [torch.log(torch.tensor(2.0))].to(real_img.device))
 
         real_img = torch.autograd.Variable(real_img, requires_grad=True)
         real_logit = self.dis(real_img, height, alpha)
-        # real_logit = apply_loss_scaling(torch.sum(real_logit))
+        
         real_grads = torch.autograd.grad(outputs=real_logit, inputs=real_img,
                                          grad_outputs=torch.ones(real_logit.size()).to(real_img.device),
                                          create_graph=True, retain_graph=True)[0].view(real_img.size(0), -1)
-        # real_grads = undo_loss_scaling(real_grads)
+        
         r1_penalty = torch.sum(torch.mul(real_grads, real_grads))
         return r1_penalty
 
@@ -317,6 +436,46 @@ class LogisticGAN:
         return torch.mean(nn.Softplus()(-f_preds))
 
 
+###### Loss function of Relativistic Average Hinge 
+class RelativisticAverageHingeGAN:
+
+    def __init__(self, dis):
+        self.dis = dis
+
+    def dis_loss(self, real_samps, fake_samps, height, alpha):
+        # Obtain predictions
+        r_preds = self.dis(real_samps, height, alpha)
+        f_preds = self.dis(fake_samps, height, alpha)
+
+        # difference between real and fake:
+        r_f_diff = r_preds - torch.mean(f_preds)
+
+        # difference between fake and real samples
+        f_r_diff = f_preds - torch.mean(r_preds)
+
+        # return the loss
+        loss = (torch.mean(nn.ReLU()(1 - r_f_diff))
+                + torch.mean(nn.ReLU()(1 + f_r_diff)))
+
+        return loss
+
+    def gen_loss(self, real_samps, fake_samps, height, alpha):
+        # Obtain predictions
+        r_preds = self.dis(real_samps, height, alpha)
+        f_preds = self.dis(fake_samps, height, alpha)
+
+        # difference between real and fake:
+        r_f_diff = r_preds - torch.mean(f_preds)
+
+        # difference between fake and real samples
+        f_r_diff = f_preds - torch.mean(r_preds)
+
+        # return the loss
+        return (torch.mean(nn.ReLU()(1 + r_f_diff))
+                + torch.mean(nn.ReLU()(1 - f_r_diff)))
+
+
+###### stylegan class (wrap generator and diacriminator together)
 class StyleGAN:
 
     def __init__(self, structure, resolution, num_channels, latent_size,drift=0.001,
@@ -568,6 +727,7 @@ class StyleGAN:
                 elapsed = timeit.default_timer() - start
                 elapsed = str(datetime.timedelta(seconds=elapsed)).split('.')[0]
                 logger.info("Time taken for epoch: %s\n" % elapsed)
+                logger.info("Current Alpha is %f" % alpha)
 
                 if epoch % checkpoint_factor == 0 or epoch == 1 or epoch == epochs[current_depth]:
                     save_dir = os.path.join(output, 'models')
