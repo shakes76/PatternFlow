@@ -41,8 +41,8 @@ class MinibatchStdev(layers.Layer):
         y = tf.sqrt(y + 1e-8)  # [MRRC]  Calc stddev over group.
         y = tf.reduce_mean(y, axis=[1, 2, 3], keepdims=True)  # [M111]  Take average over fmaps and pixels.
         y = tf.cast(y, x.dtype)  # [M111]  Cast back to original data type.
-        y = tf.tile(y, [group_size, s[1], s[2], 1])  # [BRR1]  Replicate over group and pixels.
-        return tf.concat([x, y], axis=-1)
+        y = tf.tile(y, [group_size, 1, s[2], s[3]])  # [BRR1]  Replicate over group and pixels.
+        return tf.concat([x, y], axis=1)
 
 
 class PixelNorm(layers.Layer):
