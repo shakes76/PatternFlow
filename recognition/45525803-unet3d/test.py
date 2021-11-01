@@ -1,3 +1,11 @@
+"""
+Author: Joshua Knowles
+Student ID: 45525803
+Date: 30/10/2021
+
+Tests the 3D U-Net model on the test data given the latest checkpoint.
+"""
+
 from process_data import get_case_weeks
 from model import unet3d_model, dice_coefficient, MRISequence
 from pyimgaug3d.utils import to_channels

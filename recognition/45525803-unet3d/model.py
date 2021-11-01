@@ -1,3 +1,11 @@
+"""
+Author: Joshua Knowles
+Student ID: 45525803
+Date: 27/10/2021
+
+Contains the functions and classes required to build the 3D U-Net model.
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv3D, MaxPool3D, UpSampling3D, concatenate
 from tensorflow.keras import backend as K

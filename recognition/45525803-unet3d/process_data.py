@@ -1,3 +1,11 @@
+"""
+Author: Joshua Knowles
+Student ID: 45525803
+Date: 27/10/2021
+
+Contains the functions to process the 3D MRI images for the 3D U-Net model.
+"""
+
 import numpy as np
 import nibabel as nib
 import glob

@@ -1,3 +1,11 @@
+"""
+Author: Joshua Knowles
+Student ID: 45525803
+Date: 26/10/2021
+
+Trains the 3D U-Net model and saves the checkpoints and history to a specified directory.
+"""
+
 from process_data import get_case_weeks, write_original_and_augmented
 from model import unet3d_model, MRISequence
 
