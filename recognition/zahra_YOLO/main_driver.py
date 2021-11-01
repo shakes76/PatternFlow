@@ -54,7 +54,7 @@ class_path='config/OASIS.names'
 
 #initialize the Non Max Suppression parameter to filter the detected bounding boxes
 conf_thres=0.9 # confidence threshold. Any box that has a confidence below this threshold will be removed.
-nms_thres=0.5  #threshold for IOU . This threshold is used to remove boxes that have a high overlap
+nms_thres=0.3  #threshold for IOU . This threshold is used to remove boxes that have a high overlap
 img_path = "data/ISIS/images/ISIC_0014805_segmentation.png" # the path of the test image for object detection
 
 img = Image.open(img_path)
