@@ -4,6 +4,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
+import argparse
 from scipy.ndimage import zoom
 from tensorflow import keras
 from tensorflow.keras import backend as K
@@ -50,9 +51,9 @@ def train_val_test_split(train_split, val_split, test_split, patient_data):
 
 	assert train_split + val_split + test_split == 1.0
 
+	# Data is not shuffled, so we have identical buckets each time. This means that across
+	# Multiple runs of the driver.py, there is no possibility of cheating
 	patient_ids = list(patient_data.keys())
-	# Randomise the order in which we loop over the data - gives a more random distribution of data in each bucket
-	np.random.shuffle(patient_ids)
 	
 	train_data = []
 	val_data = []
@@ -93,6 +94,10 @@ class Prostate3DGenerator(keras.utils.Sequence):
 	def __len__(self):
 		return int(np.floor(len(self.data_paths) / self.batch_size))
 	
+	# Used to infer data paths from generator object - used for test generator
+	def get_data_paths(self):
+		return self.data_paths
+
 	def __getitem__(self, index):
 		start_index = index * self.batch_size
 		batch_data_paths = self.data_paths[start_index : start_index + self.batch_size]
@@ -101,27 +106,38 @@ class Prostate3DGenerator(keras.utils.Sequence):
 		labels = np.empty((self.batch_size, *self.data_dimensions, self.class_count), dtype=int)
 		
 		for dataIndex in range(len(batch_data_paths)):
-			# Populate "scans"
-			#scan_voxels = nib.load(batch_data_paths[dataIndex][0])
-			#scans[dataIndex] = tf.cast(np.array(scan_voxels.dataobj) / 1023.0, tf.float32)
-			
+			# Populate "scans"	
 			scan_voxels = nib.load(batch_data_paths[dataIndex][0])
+			# Downscale, so the shape is 2x smaller on each dimension
 			np_scan_voxels = zoom(np.array(scan_voxels.dataobj), 0.5)
 			scans[dataIndex] = tf.cast(np_scan_voxels / 1023.0, tf.float32)
 			
 			# Populate "labels"
-			#nibabel_voxels = nib.load(batch_data_paths[dataIndex][1])
-			#prepared_voxels = tf.cast(np.array(nibabel_voxels.dataobj), tf.float32)
-			#labels[dataIndex] = keras.utils.to_categorical(prepared_voxels, num_classes=self.class_count)
-			
 			nibabel_voxels = nib.load(batch_data_paths[dataIndex][1])
-			np_nibabel_voxels = zoom(np.array(nibabel_voxels.dataobj), 0.5)
-			print(nib.volumeutils.finite_range(np_nibabel_voxels))
-			labels[dataIndex] = keras.utils.to_categorical(np_nibabel_voxels, num_classes=self.class_count)
+			np_nibabel_voxels = np.array(nibabel_voxels.dataobj)
+			# Since we don't want interpolated values for classes, just do a stride based downscale instead of spline interpolation
+			downscaled_voxels = np_nibabel_voxels[0:256:2, 0:256:2, 0:128:2]
+			labels[dataIndex] = keras.utils.to_categorical(downscaled_voxels, num_classes=self.class_count)
 			
 		return scans, labels
 
-def build_generators(scans_directory, labels_directory):
+def strip_anomolous_data(data_paths, expected_scan_shape):
+	# Scan for anomolous data, with unexpected dimensions (CSIRO dataset has one of these) 
+	print("Processing Data for Anomolous Entries")
+	anomaly_count = 0
+	for idx in reversed(range(0, len(data_paths))):
+		scan_path = data_paths[idx][0]
+		scan_voxels = nib.load(scan_path)
+		if (np.array(scan_voxels.dataobj).shape != expected_scan_shape):
+			print("Anomaly Found: " + scan_path)
+			anomaly_count += 1
+
+			# Remove the anomaly from data_paths
+			del data_paths[idx]
+
+	print("Anomaly Scan Finished. " + str(anomaly_count) + " Anomalies Found And Removed.")
+
+def build_generators(scans_directory, labels_directory, model_input_size, expected_scan_shape):
 	scans = get_nifti_files_in(scans_directory)
 	labels = get_nifti_files_in(labels_directory)
 
@@ -129,11 +145,11 @@ def build_generators(scans_directory, labels_directory):
 	assert len(scans) == len(labels)
 
 	# Zips the two "scans" and "labels" arrays together to produce [[scan_filename, label_filename], ...]
-	data_paths = np.dstack((scans, labels))[0]
+	data_paths = list(np.dstack((scans, labels))[0])
 
 	print("Raw Labelled Scans: " + str(len(data_paths)))
 
-
+	strip_anomolous_data(data_paths, expected_scan_shape)
 
 	# Categorise data paths into patient based buckets
 	patient_data = generate_patient_data_heirarchy(data_paths)
@@ -141,9 +157,8 @@ def build_generators(scans_directory, labels_directory):
 	print("Patient Count: " + str(len(patient_data.keys())))
 
 
-
 	# Formulate training splits using patient categorised data
-	train_paths, val_paths, test_paths = train_val_test_split(0.85, 0.1, 0.05, patient_data)
+	train_paths, val_paths, test_paths = train_val_test_split(0.7, 0.15, 0.15, patient_data)
 
 	# Sanity checks
 	source_data_length = len(data_paths)
@@ -154,59 +169,74 @@ def build_generators(scans_directory, labels_directory):
 	print("Test Count: " + str(len(test_paths)))
 
 
-
 	# Initialize generators
 	batch_size = 1
 
-	train_generator = Prostate3DGenerator(train_paths, batch_size, data_dimensions, class_count)
-	val_generator = Prostate3DGenerator(val_paths, batch_size, data_dimensions, class_count)
-	test_generator = Prostate3DGenerator(test_paths, batch_size, data_dimensions, class_count)
+	train_generator = Prostate3DGenerator(train_paths, batch_size, model_input_size, class_count)
+	val_generator = Prostate3DGenerator(val_paths, batch_size, model_input_size, class_count)
+	test_generator = Prostate3DGenerator(test_paths, batch_size, model_input_size, class_count)
 	
 	return train_generator, val_generator, test_generator
-
-# Loss Function and coefficients to be used during training:
-def dice_coefficient(y_true, y_pred):
-	y_true = tf.cast(y_true, tf.float32)
-	#y_pred = tf.cast(y_pred, tf.float32)
 	
-	smoothing_factor = 1
-	flat_y_true = K.flatten(y_true)
-	flat_y_pred = K.flatten(y_pred)
-	#print(flat_y_pred.shape)
-	return (2. * K.sum(flat_y_true * flat_y_pred) + smoothing_factor) / (K.sum(flat_y_true) + K.sum(flat_y_pred) + smoothing_factor)
+def evaluate_model_with_upscale(model, test_scan_path, test_label_path, class_count):
+	print(test_scan_path)
+	print(test_label_path)
 
-def dice_coefficient_loss(y_true, y_pred):
-	return 1 - dice_coefficient(y_true, y_pred)
+	# Load scan downscaled, to put into the model
+	scan_voxels = nib.load(test_scan_path)
+	# Downscale, so the shape is 2x smaller on each dimension
+	np_scan_voxels = zoom(np.array(scan_voxels.dataobj), 0.5)
+	scan_in = tf.cast(np_scan_voxels / 1023.0, tf.float32)
 
+	# Load ground truth labels at full resolution to test against downscaled predictions
+	nibabel_voxels = nib.load(test_label_path)
+	np_nibabel_voxels = np.array(nibabel_voxels.dataobj)
+	ground_truth_full = keras.utils.to_categorical(np_nibabel_voxels, num_classes=class_count)
 
+	predicted_labels = model.predict(scan_in)
+	print(predicted_labels.shape)
 
-## Main
+parser = argparse.ArgumentParser(description='A Simple UNet 3D Driver')
+parser.add_argument("--mode", help="Mode the driver will run in.", default="train")
+parser.add_argument("--epochs", help="The number of epochs to train if the driver is in train mode.", default="10")
+args = parser.parse_args()
+
+# Main
 base_path = "data"
-#data_dimensions = (256, 256, 128)
-data_dimensions = (128, 128, 64)
+model_input_size = (128, 128, 64)
+# Used to detect anomolous data
+expected_scan_shape = (256, 256, 128)
 
 # Background, Body, Bone, Bladder, Rectum, Prostate
 class_count = 6
 
 scans_directory = os.path.join(base_path, "semantic_MRs_anon")
 labels_directory = os.path.join(base_path, "semantic_labels_anon")
-train_generator, val_generator, test_generator = build_generators(scans_directory, labels_directory)
+train_generator, val_generator, test_generator = build_generators(scans_directory, labels_directory, model_input_size, expected_scan_shape)
 
-model = unet3d([16, 32, 64], data_dimensions, class_count)
-#print(model.summary())
+if args.mode == "train":
+	model = unet3d([32, 64, 128], model_input_size, class_count)
+	#print(model.summary())
 
-model.compile(optimizer="adam", loss=dice_coefficient_loss, metrics=["accuracy"])
+	model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
 
-callbacks = [
-	keras.callbacks.ModelCheckpoint("model.h5", save_best_only=True)
-]
+	callbacks = [
+		keras.callbacks.ModelCheckpoint("prostate_model.h5", save_best_only=True)
+	]
 
-# Train the model, doing validation at the end of each epoch.
-epochs = 1
+	# Train the model, doing validation at the end of each epoch.
+	epochs = int(args.epochs)
 
-#model.load_weights("model.h5")
-print("Starting Training!")
+	print("Starting Training!")
 
-train_data = model.fit(train_generator, epochs=epochs, validation_data=val_generator, callbacks=callbacks)
+	train_data = model.fit(train_generator, epochs=epochs, validation_data=val_generator, callbacks=callbacks)
 
-print("Training Complete!")
+	print("Training Complete!")
+
+elif args.mode == "evaluate":
+	model = unet3d([32, 64, 128], model_input_size, class_count)
+	model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
+	model.load_weights("prostate_model.h5")
+
+	test_scan_path, test_label_path = test_generator.get_data_paths()[0]
+	evaluate_model_with_upscale(model, test_scan_path, test_label_path, class_count)

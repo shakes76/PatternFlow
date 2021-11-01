@@ -14,7 +14,7 @@ def unet3d(filters, data_dimensions, class_count):
 	downscale_tails = []
 	for i in range(downscale_layers):
 		previous = layers.Conv3D(downscale_filters[i], (3, 3, 3), padding='same', activation='relu')(previous)
-		previous = layers.BatchNormalization()(previous)
+		#previous = layers.BatchNormalization()(previous)
 		previous = layers.Conv3D(downscale_filters[i], (3, 3, 3), padding='same', activation='relu')(previous)
 		
 		if i != downscale_layers - 1:
@@ -39,7 +39,7 @@ def unet3d(filters, data_dimensions, class_count):
 		
 		# Convolutions
 		previous = layers.Conv3D(upscale_filters[i], (3, 3, 3), padding='same', activation='relu')(previous)
-		previous = layers.BatchNormalization()(previous)
+		#previous = layers.BatchNormalization()(previous)
 		previous = layers.Conv3D(upscale_filters[i], (3, 3, 3), padding='same', activation='relu')(previous)
 			
 	last_layer = layers.Conv3D(class_count, (1, 1, 1), activation='softmax')(previous)
