@@ -5,6 +5,7 @@ import torch.optim as optim
 from scipy.sparse import coo_matrix, csr_matrix, eye, diags
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.manifold import TSNE
 
 from model import GCN
 
@@ -81,6 +82,7 @@ def main():
     print('facebook_test_target:', facebook_test_target.size())
     print('adjacency_matrix:', adjacency_matrix)
 
+    # Create model
     model = GCN(input_size=facebook_features.shape[1],
                 hidden_size=16,
                 num_classes=4,
@@ -89,9 +91,6 @@ def main():
                            lr=0.01,
                            weight_decay=5e-4)
 
-    print('model', model)
-    print('optimizer', optimizer)
-
     train_size = facebook_train_target.size()[0]
     validation_size = facebook_validation_target.size()[0]
     test_size = facebook_test_target.size()[0]
@@ -99,14 +98,22 @@ def main():
                          facebook_validation_target.size()[0] +
                          facebook_test_target.size()[0])
 
+    train_losses = []
+    train_accuracies = []
+    validation_losses = []
+    validation_accuracies = []
+
+    # Training
     for epoch in range(200):
         model.train()
         optimizer.zero_grad()
         output = model(facebook_features, adjacency_matrix)
         train_loss = F.nll_loss(output[range(0, train_size)],
                                 facebook_train_target)
+        train_losses.append(train_loss.item())
         train_accuracy = accuracy(output[range(0, train_size)],
                                   facebook_train_target)
+        train_accuracies.append(train_accuracy.item())
         train_loss.backward()
         optimizer.step()
 
@@ -114,8 +121,10 @@ def main():
         output = model(facebook_features, adjacency_matrix)
         validation_loss = F.nll_loss(output[range(train_size, (train_size + validation_size))],
                                      facebook_validation_target)
+        validation_losses.append(validation_loss.item())
         validation_accuracy = accuracy(output[range(train_size, (train_size + validation_size))],
                                        facebook_validation_target)
+        validation_accuracies.append(validation_accuracy)
 
         print('Epoch: {:04d}'.format(epoch + 1),
               'Train loss: {:.4f}'.format(train_loss.item()),
@@ -123,6 +132,7 @@ def main():
               'Validation loss: {:.4f}'.format(validation_loss.item()),
               'Validation accuracy: {:.4f}'.format(validation_accuracy.item()))
 
+    # Test
     model.eval()
     output = model(facebook_features, adjacency_matrix)
     test_loss = F.nll_loss(output[range((train_size + validation_size), total_target_size)],
@@ -133,6 +143,19 @@ def main():
     print('Test set results:',
           'Test loss: {:.4f}'.format(test_loss.item()),
           'Test accuracy: {:.4f}'.format(test_accuracy.item()))
+
+    np.save('train_losses', train_losses)
+    np.save('train_accuracies', train_accuracies)
+    np.save('validation_losses', validation_losses)
+    np.save('validation_accuracies', validation_accuracies)
+
+    # Node embeddings
+    model.eval()
+    with torch.no_grad():
+        x = model(facebook_features, adjacency_matrix)
+    x_embedded = TSNE(n_components=2).fit_transform(x)
+
+    np.save('x_embedded', x_embedded)
 
 
 if __name__ == '__main__':
