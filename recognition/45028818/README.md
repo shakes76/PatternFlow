@@ -52,6 +52,15 @@ During training it reached a training Dice Coefficient of 0.8443 and a test Dice
 
 ![Predict_Images](https://user-images.githubusercontent.com/14146158/139622109-59963ea6-523b-478e-9271-81e7784acb26.png)
 
+## Dependencies 
+1. Python 3.9.7
+2. Tensorflow 2.5
+3. Matplotlib 3.4.3
+4. Tensorflow addons 0.14.0
+
+### Format of image files
+Images must be placed inside the data/masks and data/images inside **another** folder, for example, masks would be inside data/masks/[otherFolder]
+
 ## References 
 [1] F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation
 and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online].
