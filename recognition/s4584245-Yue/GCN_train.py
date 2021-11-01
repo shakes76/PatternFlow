@@ -59,7 +59,7 @@ class Train:
             self.loss_history.append(loss.item())
             self.val_acc_history.append(val_acc.item())
             # Print GCN model result.
-            print("Epoch {:03d}: Loss {:.4f}, TrainAcc {:.4}, ValAcc {:.4f}".format(
+            print("Epoch %3d: Loss %.4f, Train_accuracy %.4f, Validation_accuracy %.4f" % (
                 epoch, loss.item(), train_acc.item(), val_acc.item()))
         return self.loss_history, self.val_acc_history
 
