@@ -11,9 +11,10 @@
 
 GCN (Graph Convolutional Network) is similar with CNN(convolutional neural network) that can work directly on the graph and utilize its structural information. Early variants of neural networks can only be implemented using conventional or Euclidean data, but a large amount of real-world data has a non-Euclidean underlying graph structure, which causes the developments in GCN.
 
-
-<img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_process.png?raw=true">
-
+<p align="center">
+ <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_process.png?raw=true">
+</p>
+ 
 <br/>
 
 Formally, GCN is a neural network that operates on graphs. Given a graph G = (V, E), GCN takes as input:
@@ -27,7 +28,9 @@ And then generate output Z ( N × F feature matrix, (F: the number of output fea
 
 Each neural network layer take input with the adjacency matrix A and feature matrix H, so the simple forward propagation equation is:
 
-<img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(AH^{(l)}W^{(l)})"/>
+<p align="center">
+ <img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(AH^{(l)}W^{(l)})"/>
+</p>
 
 - W^(l) is a weight matrix for the l-th neural network layer 
 - σ is a activation function
@@ -41,7 +44,9 @@ The simple model has two limitations:
 
 After applying these two solution, we will get a new forward propagation equation:
 
-<img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(\widetilde{D}^{-\frac{1}{2}}\widetilde{A}\widetilde{D}^{-\frac{1}{2}}&space;H^{(l)}W^{(l)})"/>
+<p align="center">
+ <img src="https://latex.codecogs.com/gif.latex?H^{(l&plus;1)}=\sigma(\widetilde{D}^{-\frac{1}{2}}\widetilde{A}\widetilde{D}^{-\frac{1}{2}}&space;H^{(l)}W^{(l)})"/>
+</p>
 
 - 𝐴̂ = A + I
 - I is the identity matrix
@@ -51,7 +56,9 @@ After applying these two solution, we will get a new forward propagation equatio
 
 With 3-Layer GCN,the form of the forward model is:
 
-<img src="https://latex.codecogs.com/gif.latex?Z&space;=&space;f(X,A)&space;=&space;softmax(\hat{A}ReLU(\hat{A}&space;ReLU(\hat{A}&space;X&space;W^{(0)})&space;W^{(1)})&space;W^{(2)})"/>
+<p align="center">
+ <img src="https://latex.codecogs.com/gif.latex?Z&space;=&space;f(X,A)&space;=&space;softmax(\hat{A}ReLU(\hat{A}&space;ReLU(\hat{A}&space;X&space;W^{(0)})&space;W^{(1)})&space;W^{(2)})"/>
+</p>
 
 After one-hot encoding, we get a 4-dimensional label dataset, and F will be set to 4. After obtaining 4-dimensional vectors in the third layer, we use the softmax function to predict these vectors.
 
@@ -59,7 +66,9 @@ After one-hot encoding, we get a 4-dimensional label dataset, and F will be set 
 
 Finally, we use categorical cross-entropy to calculate the error.
 
-<img src="https://latex.codecogs.com/gif.latex?\mathrm{Loss}&space;=&space;-\sum_{l&space;\in&space;y_L}&space;\sum_{f=1}^{F}&space;Y_{lf}\ln{Z_{lf}} "/>
+<p align="center">
+ <img src="https://latex.codecogs.com/gif.latex?\mathrm{Loss}&space;=&space;-\sum_{l&space;\in&space;y_L}&space;\sum_{f=1}^{F}&space;Y_{lf}\ln{Z_{lf}} "/>
+</p>
 
 - y(L) is the set of node indices that have labels
 
