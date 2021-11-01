@@ -4,7 +4,7 @@ Perceiver transformer architecture:
 
 Introduction: Usual transformers have the problem of quadratic bottle-neck(output query vector has too much of a dimension to handle). In the perceiver transformer architecture, high dimensional input such as images, video is represented as byte array, where it uses cross-attention with the use of Latent array to solve this problem (The input sequence gets transformed to a shorter sequence through the Latent state). 
 
-To be more specific, in each layer of the perceiver transformer architecture, the inputs are fed into the each of the cross attention layer with the use of the Latent array to perform cross-attention. This allows for a deeper neural net when compared to usual transformer model (one of the biggest improvement over past transformer models). Visually, this is represented in the image Perceiver_architecture.png in the images folder.
+To be more specific, in each layer of the perceiver transformer architecture, the inputs are fed into the each of the cross attention layer with the use of the Latent array to perform cross-attention. This allows for a deeper neural net when compared to usual transformer model (one of the biggest improvement over past transformer models). Visually, this is represented in the image Perceiver_architecture.png in the images folder. We can also see that Perceiver's impressive result when compared to non-global based attention neural netork, which is shown in Perceiver_result.png. 
 
 Moreover, in the perceiver transformer architecture, the transformers are invariant to positional encoding of the data, i.e. different permutation of the input data does not affect the overall model. This is accomplished through the Fourier encoding as described in the paper. 
 
