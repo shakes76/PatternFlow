@@ -10,21 +10,19 @@
 
 
 ## Brain image generation problem
-This is about creating the similar pictures of OASIS brain. It using the random latent factors to fit the distribution of pixels of the real image data and try to use the trained function to create the clear image.
+<br>This is about creating the similar pictures of OASIS brain. It using the random latent factors to fit the distribution of pixels of the real image data and try to use the trained function to create the clear image.
 
 ## Train parameters and procedure
-The used activation is leaky Relu with alpha = .01.
-The used optimizer is Adam and I used learning rate of .0005 
-The project used  similarity loss to train their model, but I couldn’t implement it, so I used Categorical cross entropy, and used Dice Similarity Coefficient as a metric to monitor training. 
-I used multiples of 16 filters at each level of the network exactly as specified by the paper.  
-I trained the model for 200 ephocs.
+&emsp;Due to the time limit, I just sucessfully achevie the DCGAN and then try to achieve the StyleGAN. However, I didn't achieve it totally, so this documentation would introduce the training parameters of DCGAN and explain the model of StyleGAN. <br>
+&emsp;The used activation is leaky Relu with alpha = 0.01.<br>
+&emsp;The used optimizer is Adam and I used learning rate of .0005 <br>
+&emsp;This project used Categorical cross entropy, and try to use thenon-saturating losses to measure. However, due to the time limit, I just used Structural Similarity Coefficient as a metric to monitor training. <br>
+I trained the model for 40 ephocs.<br>
 
-The dataset was already split into training, validation and test data sets. Validation dataset is useful during training to monitor training for overfitting and I used test dataset to assess model generalization capability on a set not seen during training. 
+The dataset was already split into training test data sets. I used test dataset to assess model generalization capability on a set not seen during training. 
+
 ## Dependencies and data pre-processing 
-The test script download , unzip the dataset images. The methods that load and process dataset take the directory path were the images were downloaded as a parameter. An update to these file paths might be required for the algorithm to run. 
-
-Training data was normalized by subtracting mean and dividing by standard deviation and then normalizing the pixel values between 0-1. I noticed that normalizing the data this way results in a more stable training vs dividing by 255.
-The label images as well need to be pre-processed and converted to one hot encoding representation. 
+&emsp;The OASIS dataset this project used is from the blackboard. It is the dealt datasets with the image. In order to use the dataset properly, this proejct write the function of loading the image and transfer them into npz format. An update to these file paths might be required for the algorithm to run. 
 
 
 
@@ -35,5 +33,9 @@ The below results show the ssim score is 0.625's graph.
 
 
 ## model summery
+
+&emsp;The StyleGAN first using the map function to transform the latent data distribution to the similiar and then add this points to the networks of GAN. During the transformation of data to the pixels, it also add the noise points to make it more real. These designs would sucessfully create the image that is similar style to the picture we use.
+
+![res_block](https://github.com/Kevinli12123/PatternFlow/blob/s4574204-boli-styleGAN2/picture/Generator-architecture-of-the-StyleGAN-neural-network-1.png)
 
 
