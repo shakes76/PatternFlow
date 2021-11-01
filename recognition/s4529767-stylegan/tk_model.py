@@ -324,7 +324,7 @@ class Discriminator(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.number_of_layers = 8
+        self.number_of_layers = 9
 
         self.discriminator_blocks = nn.ModuleList([
             DiscriminatorBlock(16, 32, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
@@ -332,6 +332,7 @@ class Discriminator(nn.Module):
             DiscriminatorBlock(64, 128, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
             DiscriminatorBlock(128, 256, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
             DiscriminatorBlock(256, 512, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
+            DiscriminatorBlock(512, 512, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
             DiscriminatorBlock(512, 512, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
             DiscriminatorBlock(512, 512, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=3, layer2_padding=1),
             DiscriminatorBlock(513, 512, layer1_kernel_size=3, layer1_padding=1, layer2_kernel_size=4, layer2_padding=0)
@@ -343,6 +344,7 @@ class Discriminator(nn.Module):
             ConvLayer(3, 64, 1),
             ConvLayer(3, 128, 1),
             ConvLayer(3, 256, 1),
+            ConvLayer(3, 512, 1),
             ConvLayer(3, 512, 1),
             ConvLayer(3, 512, 1),
             ConvLayer(3, 512, 1)
@@ -369,12 +371,12 @@ class Discriminator(nn.Module):
             x = self.discriminator_blocks[current_layer](x)
 
             if i > 0:
-                x = nn.functional.interpolate(x, scale_factor=0.5, mode='bilinear')
+                x = nn.functional.interpolate(x, scale_factor=0.5, mode='bilinear', align_corners=False)
                 if i == level and 0 <= alpha < 1:
-                    result_next = self.from_rgbs[current_layer + 1](image)
-                    result_next = nn.functional.interpolate(result_next, scale_factor=0.5, mode='bilinear')
+                    x_next = self.from_rgbs[current_layer + 1](image)
+                    x_next = nn.functional.interpolate(x_next, scale_factor=0.5, mode='bilinear', align_corners=False)
 
-                    x = alpha * x + (1 - alpha) * result_next
+                    x = alpha * x + (1 - alpha) * x_next
 
         x = x.squeeze(2).squeeze(2)
         return self.fully_connected(x)
