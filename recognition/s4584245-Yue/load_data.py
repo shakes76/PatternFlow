@@ -38,6 +38,7 @@ def normalize_features(features):
     """
     return features / features.sum(1)
 
+# Build the graph
 adjacency, features, labels = load_data()
 encode_onehot = LabelBinarizer()
 labels = encode_onehot.fit_transform(labels)
