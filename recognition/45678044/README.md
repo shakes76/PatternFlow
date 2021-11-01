@@ -20,6 +20,6 @@
 # Generating
 | | Prior | images |
 | ------------- | ------------- | ------------- |
-| Test data | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/test_q.png) | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/test_imgs.png) |
-| Generated | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_q.png) | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_imgs.png) |
-| Generated | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_q2.png) | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_imgs2.png) |
+| Test data | <img src="https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/test_q.png" width="600"> | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/test_imgs.png) |
+| Generated | <img src="https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_q.png" width="600"> | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_imgs.png) |
+| Generated | <img src="https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_q2.png" width="600"> | ![](https://github.com/CarrickC/PatternFlow/blob/topic-recognition/recognition/45678044/images/generated_imgs2.png) |
