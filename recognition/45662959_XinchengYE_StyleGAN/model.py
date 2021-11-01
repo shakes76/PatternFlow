@@ -283,7 +283,7 @@ class AdaptiveInstanceNorm(nn.Module):
 
 class NoiseInjection(nn.Module):
     """
-    (E) Constant Noise
+    (E) Noise of stochastic variation
     """
     def __init__(self, channel):
         super().__init__()
