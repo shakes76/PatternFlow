@@ -8,7 +8,7 @@ class FourierEncode(layers.Layer):
         self.max_freq = max_freq
         self.freq_ban = freq_ban
 
-    def encoding(transformedFeature, basis, fred_ban, num_images):
+    def encoding(transformedFeature, basis, freq_ban, num_images):
         transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2 * (2 * freq_ban + 1)))
 
         return tf.repeat(transformedFeature, repeats=num_images, axis=0)
@@ -32,18 +32,18 @@ class FourierEncode(layers.Layer):
 
         # del feature
 
-        # transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2 * (2 * self.freq_ban + 1)))
+        transformedFeature = tf.reshape(transformedFeature, (1, basis[0], basis[1], 2 * (2 * self.freq_ban + 1)))
 
 
-        # transformedFeature = tf.repeat(transformedFeature, repeats=num_images, axis=0)
+        transformedFeature = tf.repeat(transformedFeature, repeats=num_images, axis=0)
 
-        transformedFeature = self.encoding(transformedFeature, basis, self.freq_ban, num_images)
+        # transformedFeature = self.encoding(transformedFeature, basis, self.freq_ban, num_images)
 
-        # transformedData = tf.concat((patientData, transformedFeature), axis=-1)
+        transformedData = tf.concat((patientData, transformedFeature), axis=-1)
 
 
-        # transformedData = tf.reshape(transformedData, (num_images, basis[0]*basis[1], -1)) 
-        transformedData = self.getCombinedData(patientData, transformedFeature, num_images, basis)
+        transformedData = tf.reshape(transformedData, (num_images, basis[0]*basis[1], -1)) 
+        # transformedData = self.getCombinedData(patientData, transformedFeature, num_images, basis)
         return transformedData
 
     def getCombinedData(patientData, transformedFeature, basis, num_images):
