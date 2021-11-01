@@ -1,11 +1,3 @@
-"""
--------------------------------------------------
-   File Name:    CustomLayers.py
-   Date:         2019/10/17
-   Description:  Copy from: https://github.com/lernapparat/lernapparat
--------------------------------------------------
-"""
-
 
 from collections import OrderedDict
 
