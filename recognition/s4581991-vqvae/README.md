@@ -60,6 +60,7 @@ can be generated from the PixelCNN and passed to the decoder trained as part of
 the VQ-VAE allowing for images to be generated [2].
 
 The standard PixelCNN architecture is included in the below table from the paper.
+
 ![PixelCNN architecture](https://user-images.githubusercontent.com/9525422/139608120-36e35f9f-e75f-47cc-b47b-07be54b51fad.png)
 
 The general architecture for the PixelCNN can be seen above - essentially the model iterates through inputs in a pixel-by-pixel manner (starting at the center) and treats images as sequences [4], which improves learning in generation applications. More specifically the PixelCNN used here has a single masked convolution layer followed by two residual masked convolution blocks and another two masked convolution layers. Each masked convolution layer applies a mask to the input in-order to essentially treat the input as a sequential input and only look at pixels to the left and above of the current pixel being predicted or generated. The residual masked block is similar, however applies a residual to the output by adding the input and applying 2 more convolutions as seen above.
