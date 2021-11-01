@@ -2,7 +2,9 @@ from process_data import process_data
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras import layers
+from tensorflow import keras
 import tensorflow_addons as tfa
+import matplotlib.pyplot as plt
 
 num_classes = 2
 input_shape = (228, 260, 3)
@@ -19,6 +21,14 @@ ffn_units = [
 ]
 HEAD_COUNT = 8
 TRANSFORMER_BLOCK_COUNT = 4
+LEARNING_RATE = 0.001
+WEIGHT_DECAY = 0.0001
+DROPOUT_RATE = 0.2
+ITERATION_COUNT = 2
+classifier_units = [
+    PROJECTION_DIMENSION,
+    num_classes,
+]
 
 # feed forward
 def get_feed_forward_network(hidden_units, dropout_rate):
@@ -126,7 +136,6 @@ class Perceiver(keras.Model):
         data_dim,
         ffn_units,
         dropout_rate,
-        num_iterations,
         classifier_units,
     ):
         super(Perceiver, self).__init__()
@@ -134,7 +143,6 @@ class Perceiver(keras.Model):
         self.data_dim = data_dim
         self.ffn_units = ffn_units
         self.dropout_rate = dropout_rate
-        self.num_iterations = num_iterations
         self.classifier_units = classifier_units
 
     def build(self, input_shape):
@@ -177,7 +185,7 @@ class Perceiver(keras.Model):
             "data_array": encoded_patches,
         }
 
-        for _ in range(self.num_iterations):
+        for _ in range(ITERATION_COUNT):
             latent_array = self.cross_attention(cross_attention_inputs)
             latent_array = self.transformer(latent_array)
             cross_attention_inputs["latent_array"] = latent_array
@@ -186,14 +194,12 @@ class Perceiver(keras.Model):
         logits = self.classification_head(representation)
         return logits
 
-def train(model):
+def run_model(model):
 
-    # Create LAMB optimizer with weight decay.
     optimizer = tfa.optimizers.LAMB(
-        learning_rate=learning_rate, weight_decay_rate=weight_decay,
+        learning_rate=LEARNING_RATE, weight_decay_rate=WEIGHT_DECAY,
     )
 
-    # Compile the model.
     model.compile(
         optimizer=optimizer,
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -202,12 +208,10 @@ def train(model):
         ],
     )
 
-    # learning rate adjustment
     reduce_lr = keras.callbacks.ReduceLROnPlateau(
         monitor="val_loss", factor=0.2, patience=3
     )
 
-    # Fit the model.
     history = model.fit(
         x=X_train,
         y=y_train,
@@ -219,26 +223,26 @@ def train(model):
     _, accuracy = model.evaluate(X_test, y_test)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
 
-    # Return history to plot learning curves.
     return history
 
 
 perceiver_classifier = Perceiver(
-    patch_size,
-    num_patches,
-    latent_dim,
-    projection_dim,
-    num_heads,
-    num_transformer_blocks,
+    PATCH_COUNT,
     ffn_units,
-    dropout_rate,
-    num_iterations,
+    DROPOUT_RATE,
     classifier_units,
 )
 
-
 def main():
-    history = run_experiment(perceiver_classifier)
+    history = run_model(perceiver_classifier)
+
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
 if __name__ == "__main__":
     main()
