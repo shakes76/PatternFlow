@@ -20,6 +20,10 @@ def _get_layers(init_resolution, final_resolution):
 # self-defined layers used in generator and discriminator
 #####################################################################
 class MinibatchStdev(layers.Layer):
+    """
+    Calculate the statistics of each pixel in a group of images and append as an extra channel
+    """
+
     # initialize the layer
     def __init__(self, group_size=4, **kwargs):
         super(MinibatchStdev, self).__init__(**kwargs)
@@ -29,25 +33,16 @@ class MinibatchStdev(layers.Layer):
     def call(self, x):
         group_size = tf.minimum(self.group_size,
                                 tf.shape(x)[0])  # Minibatch must be divisible by (or smaller than) group_size.
-        s = x.shape  # [NCHW]  Input shape.
-        y = tf.reshape(x, [group_size, -1, s[1], s[2], s[3]])  # [GMCHW] Split minibatch into M groups of size G.
-        y = tf.cast(y, tf.float32)  # [GMCHW] Cast to FP32.
-        y -= tf.reduce_mean(y, axis=0, keepdims=True)  # [GMCHW] Subtract mean over group.
-        y = tf.reduce_mean(tf.square(y), axis=0)  # [MCHW]  Calc variance over group.
-        y = tf.sqrt(y + 1e-8)  # [MCHW]  Calc stddev over group.
+        s = x.shape  # [BRRC]
+        y = tf.reshape(x, [group_size, -1, s[1], s[2], s[3]])  # [GMRRC] Split minibatch into M groups of size G.
+        y = tf.cast(y, tf.float32)
+        y -= tf.reduce_mean(y, axis=0, keepdims=True)  # [GMCRRC] Subtract mean over group.
+        y = tf.reduce_mean(tf.square(y), axis=0)  # [MRRC]  Calc variance over group.
+        y = tf.sqrt(y + 1e-8)  # [MRRC]  Calc stddev over group.
         y = tf.reduce_mean(y, axis=[1, 2, 3], keepdims=True)  # [M111]  Take average over fmaps and pixels.
         y = tf.cast(y, x.dtype)  # [M111]  Cast back to original data type.
-        y = tf.tile(y, [group_size, 1, s[2], s[3]])  # [N1HW]  Replicate over group and pixels.
-        return tf.concat([x, y], axis=1)
-
-    # define the output shape of the layer
-    def compute_output_shape(self, input_shape):
-        # create a copy of the input shape as a list
-        input_shape = list(input_shape)
-        # add one to the channel dimension (assume channels-last)
-        input_shape[-1] += 1
-        # convert list to a tuple
-        return tuple(input_shape)
+        y = tf.tile(y, [group_size, s[1], s[2], 1])  # [BRR1]  Replicate over group and pixels.
+        return tf.concat([x, y], axis=-1)
 
 
 class PixelNorm(layers.Layer):
