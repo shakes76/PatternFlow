@@ -29,7 +29,7 @@ My model is trained using images resized to 512x512x3, with data augmentation do
 The network is trained for 10 epochs using an Adam optimizer with a learning rate of 0.0004.
 
 ## Training Results
-During training it reached a training Dice Coefficient of 0.8464 and a test Dice Coefficient of 0.9025. The binary accuracy and Dice loss values over the period of the training can be seen below.
+During training it reached a training Dice Coefficient of 0.8443 and a test Dice Coefficient of 0.9025. The binary accuracy and Dice loss values over the period of the training can be seen below.
 ![image](https://user-images.githubusercontent.com/14146158/139624335-2c2a7aad-c67d-44e1-a80d-5f03a4b54327.png)
 ![image](https://user-images.githubusercontent.com/14146158/139624380-53a0b9c5-91b2-4d1a-80cd-93cf13caf535.png)
 ![image](https://user-images.githubusercontent.com/14146158/139624359-17b0b529-33d0-44ce-8f30-432318a34618.png)
