@@ -13,6 +13,7 @@ from sklearn.metrics import jaccard_score
 from sklearn.metrics import f1_score
 from model import IUNet
 
+
 # ===== normalize over the dataset
 def dataset_normalized(imgs):
     imgs_normalized = np.empty(imgs.shape)
@@ -28,7 +29,6 @@ def dataset_normalized(imgs):
 ####################################  Load Data #####################################
 te_data = np.load('data_test.npy')
 te_mask = np.load('mask_test.npy')
-
 
 print('ISIC18 Dataset loaded')
 
@@ -148,11 +148,13 @@ for idx in range(predictions.shape[0]):
         good_prediction[id_m] = idx
         id_m += 1
 
-fig, ax = plt.subplots(10, 3, figsize=[15, 15])
-idx = 0
-while idx < 51:
+fig, ax = plt.subplots(5, 3, figsize=[50, 50])
+
+for idx in range(5):
     ax[idx, 0].imshow(np.uint8(te_data[good_prediction[idx, 0]]))
     ax[idx, 1].imshow(np.squeeze(te_mask[good_prediction[idx, 0]][:, :, 0]), cmap='gray')
     ax[idx, 2].imshow(np.squeeze(predictions[good_prediction[idx, 0]][:, :, 0]), cmap='gray')
-    idx += 10
+
 plt.savefig(output_folder + 'sample_results.png')
+
+print("end test")

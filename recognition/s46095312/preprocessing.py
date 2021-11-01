@@ -1,11 +1,7 @@
 from __future__ import division
 import numpy as np
-import scipy.io as sio
-import scipy.misc as sc
 import glob
-import tensorflow as tf
 from PIL import Image
-from skimage.transform import resize
 import time
 import imageio
 
@@ -37,7 +33,7 @@ for idx in range(len(Tr_list)):
     b = b[len(b) - 16: len(b) - 4]
     add = (a + 'ISIC2018_Task1_Training_GroundTruth/' + b + '_segmentation.png')
     img2 = Image.open(add).resize((width, height))
-    temp = np.asarray(img2) / 255
+    temp = np.asarray(img2) / 255.0
     Label_train_2018[idx, :, :] = np.eye(2)[temp.astype(int)]
 
 print(len(Tr_list) / (time.time() - tic), 'images decoded per second with imageio')
