@@ -87,6 +87,9 @@ results from doing this. Lastly, the test set provided as part of OASIS was
 used to test the VQVAE recreation quality, however the PixelCNN did not
 require the use of such a test set as explained further below.
 
+Images were resized to 96x96 due to constraints on the training time and amount of memory
+available. This still produced quite detailed results and was a good level of trade-off.
+
 ### Loss
 
 Through trial and error good results were achieved when trained with 50 epochs
