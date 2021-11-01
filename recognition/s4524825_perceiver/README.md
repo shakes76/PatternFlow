@@ -3,11 +3,13 @@
 This folder contains an implementation of a [Perceiver](https://arxiv.org/pdf/2103.03206.pdf).
 
 The perceiver combines the previous works on transformers 
-with a new iterative attention mechanism that allows it to discern a latent array iteratively by consecutively applying cross-attention and a transformer (for images, similar to [ViT](https://arxiv.org/abs/2010.11929)). This architecture allows any data 
+with a new iterative attention mechanism that allows it to discern a latent array iteratively by consecutively applying cross-attention and a transformer (for images, similar to [ViT](https://arxiv.org/abs/2010.11929)). The model iteratively sees the summary latent array from the previous block, and sees the original data array, basing the attention on the data array on the latent array and the queries, keys, and values generated from the previous iteration. This allows it to fine tune the attention on the original image as it goes on. At the end a basic MLP classification head decides on the output based on the latent array after global average pooling.
+
+This architecture allows any data 
 format to be input into the model, rather than just images (e.g. ViT). 
 As attention based methods tend to iteratively focus on key features, they often provide better classification results than previous convolutional methods. 
 
-The model inputs the data array as a vector, and as the model doesn't care about the position of the data relative to other datapoints, the model requires that a positional encoding is 
+The model inputs the data array as a vector, and as the model doesn't care about the position of the data relative to other datapoints, the model requires that a positional encoding is supplied.
 
 These attention based methods offer more accuracy with supposed less resources to train.
 
