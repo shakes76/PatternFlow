@@ -21,11 +21,12 @@ def contract(input, filter_mul):
     Returns: processed array
 
     """
-    conv = Conv2D(filter_mul*FILTER_NUM, padding=PADDING, strides=STRIDE, kernel_size=KER_SIZE)(input)
-    cont = Conv2D(filter_mul*FILTER_NUM, padding=PADDING, strides=STRIDE, kernel_size=KER_SIZE)(conv_1)
+    conv = Conv2D(filter_mul*FILTER_NUM, activation="relu", padding=PADDING, strides=STRIDE, kernel_size=KER_SIZE)(input)
+    cont = Conv2D(filter_mul*FILTER_NUM, activation="relu", padding=PADDING, strides=STRIDE, kernel_size=KER_SIZE)(conv_1)
     cont = Dropout(DROP)(cont)
     concat = concatenate([conv, cont])
     return concat
+
 
 def expand(input, concat, filter_mul):
     """
@@ -39,8 +40,8 @@ def expand(input, concat, filter_mul):
 
     """
     concat_n = concatenate([input, concat])      
-    conv = Conv2D(filter_mul*FILTER_NUM, padding=PADDING, kernel_size=KER_SIZE)(concat_n)
-    conv = Conv2D(filter_mul*FILTER_NUM, padding=PADDING, kernel_size=1)(conv)
+    conv = Conv2D(filter_mul*FILTER_NUM, activation="relu", padding=PADDING, kernel_size=KER_SIZE)(concat_n)
+    conv = Conv2D(filter_mul*FILTER_NUM, activation="relu", padding=PADDING, kernel_size=1)(conv)
     up_samp = UpSampling2D()(conv)
     return up_samp
     
@@ -52,7 +53,7 @@ def improv_unet():
 
     """
     input = InputLayer(input_shape=(256, 256, 1))
-    layers = {input}
+    layers = [input]
 
     # contraction
     for i in range(1, 5):
@@ -66,9 +67,9 @@ def improv_unet():
 
     # finishing up
     concat_n = concatenate([input, layers[0]])      
-    layer_temp = Conv2D(FILTER_NUM, padding=PADDING, kernel_size=KER_SIZE)(concat_n)
-    layers[8] = Conv2D(1, activation='softmax', kernel_size=1)(layer_temp)
-    return Model(layers[0], layers[-1])
+    layer_temp = Conv2D(FILTER_NUM, activation="relu", padding=PADDING, kernel_size=KER_SIZE)(concat_n)
+    layers[8] = Conv2D(1, activation='sigmoid', kernel_size=1)(layer_temp)
+    return tf.keras.Model(layers[0], layers[-1])
 
 
 
