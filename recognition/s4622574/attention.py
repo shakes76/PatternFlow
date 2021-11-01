@@ -9,43 +9,38 @@ def MLP_module(input, queryDim):
     return layers.Dense(queryDim)(result)
 
 def attention_mechanism(latentDim, inputDim, queryDim):
-
+    """Attention Mechanism:
+    Return: Attention Layers having latent and patient picture
+    with corresponding output
+    """
+    # To be normalized 
     normalizeData = layers.Input(shape=(latentDim, queryDim))
+    # To be normalized 
     originalSample = layers.Input(shape=(inputDim, queryDim))
-    
     latents = layers.LayerNormalization()(normalizeData)
+
     normalizedInput = layers.LayerNormalization()(originalSample)
 
-    # query = layers.Dense(queryDim)(latents)
-    # key = layers.Dense(queryDim)(normalizedInput)
-    # value = layers.Dense(queryDim)(normalizedInput)
-
+    # Query -> Key, Value - Attention Mechanism
     value = projection(queryDim, normalizedInput)
+
     key = projection(queryDim, normalizedInput)
+
     query = projection(queryDim, latents)
-    
-    attention = layers.Attention(use_scale=True)(
+    isScaled = True
+    att = layers.Attention(use_scale=isScaled)(
         [query, key ,value]
     )
-    
-    attention = layers.Dense(queryDim)(attention)
+    att = layers.Dense(queryDim)(att)
 
-    attention = layers.Add()([attention, latents])
+    att = layers.Add()([att, latents])
+    result = MLP_module(att, queryDim) #Feedforward to fully connected layers
+    result = layers.Add()([result, att])
 
-    # attention = layers.LayerNormalization()(attention)
-
-    # outputs = layers.Dense(queryDim, activation=tf.nn.gelu)(attention)
-
-    # outputs = layers.Dense(queryDim)(outputs)
-
-    result = MLP_module(attention, queryDim)
-
-    result = layers.Add()([result, attention])
-
-    model = tf.keras.Model(inputs=[normalizeData, originalSample], outputs=result)
-
+    model = tf.keras.Model(outputs=result, inputs=[normalizeData, originalSample])
     return model
 
 def projection(queryDim, input):
+    """Projection of input with corresponding dimension"""
     output = layers.Dense(queryDim)(input)
     return output

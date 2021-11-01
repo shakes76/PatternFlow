@@ -3,7 +3,7 @@ Task 5. Classify laterality (left or right sided knee) of the OAI AKOA knee data
 0.9 on the test set. [Hard Difficulty]
 
 # Perceiver Transformer
-![Architecture](https://github.com/camapcanhcut/PatternFlow/blob/topic-recognition/recognition/s4622574/resources/architecture.png)
+![Architecture](https://github.com/camapcanhcut/PatternFlow/blob/topic-recognition/recognition/s4622574/resources/architecture.png?raw=true)
 
 # Environment Setup
 * `conda env create -n env`
@@ -35,4 +35,4 @@ Main executable can be run from main.py which calls:
 * `python main.py`
 
 Testing Accuracy:
-![Accuracy](https://github.com/camapcanhcut/PatternFlow/blob/topic-recognition/recognition/s4622574/resources/result.png)
+![Accuracy](https://github.com/camapcanhcut/PatternFlow/blob/topic-recognition/recognition/s4622574/resources/result.png?raw=true)

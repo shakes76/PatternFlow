@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 from attention import attention_mechanism
-# from transformer import transformer_layer
 from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
 import copy
