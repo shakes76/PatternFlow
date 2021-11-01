@@ -76,6 +76,45 @@ def train(model, optim, epoch_size, train_loader, valid_loader):
                 )
         
     return train_status
+
+
+def train_prior(model, prior, optim, epoch_size, train_loader, valid_loader=None):
+    train_status = {'train_loss': []}
+    
+    model.eval()
+    prior.train()
+    
+    for epoch in range(epoch_size):
+        epoch_loss = []
+        
+        train_loop = tqdm(enumerate(train_loader), total=len(train_loader))
+        train_loop.set_description(f"Epoch [{epoch+1}/{epoch_size}]")
+        
+        for batch, imgs in train_loop:
+            imgs = imgs.to(device)
+
+            with torch.no_grad():
+                z_e = model.encoder(imgs)
+                q, _, _ = model.vector_quantize(z_e)
+                q = q.detach()
+
+            out = prior(q)
+            out = out.permute(0, 2, 3, 1).contiguous()
+            loss = F.cross_entropy(out.view(-1, K), q.view(-1))
+
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+            
+            del imgs
+
+            epoch_loss.append(loss.detach().cpu().numpy())
+            train_loop.set_postfix(loss=np.mean(epoch_loss))
+
+        train_status['train_loss'].append(np.mean(epoch_loss))
+        
+        
+    return train_status
     
     
 def test(model, test_loader):
