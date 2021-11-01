@@ -30,15 +30,26 @@ My model is trained using images resized to 512x512x3, with data augmentation do
 
 The network is trained for 10 epochs using an Adam optimizer with a learning rate of 0.0004.
 
+The network used a custom loss metric that calculated the dice coefficient between the predicted mask and the ground truth mask, this was done to get the percentage of pixels that the two masks shared, a dice coefficient of 1 would be a perfect match.
+
 ## Training Results
 During training it reached a training Dice Coefficient of 0.8443 and a test Dice Coefficient of 0.9025. The binary accuracy and Dice loss values over the period of the training can be seen below.
 ![image](https://user-images.githubusercontent.com/14146158/139624335-2c2a7aad-c67d-44e1-a80d-5f03a4b54327.png)
+
+**Training Data**
+
 ![image](https://user-images.githubusercontent.com/14146158/139624380-53a0b9c5-91b2-4d1a-80cd-93cf13caf535.png)
+
+
+**Testing Data**
+
 ![image](https://user-images.githubusercontent.com/14146158/139624359-17b0b529-33d0-44ce-8f30-432318a34618.png)
 
 ## Visualisation of Results
 ![image](https://user-images.githubusercontent.com/14146158/139622258-6b6f91cc-259e-4217-ab04-ef73eae4865c.png)
-Another set of test images.
+
+**Another set of test images.**
+
 ![Predict_Images](https://user-images.githubusercontent.com/14146158/139622109-59963ea6-523b-478e-9271-81e7784acb26.png)
 
 ## References 
