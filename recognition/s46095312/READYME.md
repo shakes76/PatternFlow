@@ -1,6 +1,23 @@
 # Segment the ISICs data set with the Improved UNet
 Author: Tuo Yuan (46095312) 
 
+### Usage
+firstly, run the `preprocessing.py` to load the data from ISIC dataset, 
+it splite the data to
+
+- data_train
+- data_test
+- data_val
+- mask_train
+- mask_test
+- mask_val
+
+as .npy file.
+
+run `train.py`[2] to start trainning the model which is in the `model.py`[3]
+
+finally, run `driver.py`[2] to evaluate/test the performance
+
 ### Discription
 This module uses an improved U-Net neural network with 
 all labels having a minimum DIce similarity coefficient 
@@ -16,24 +33,6 @@ subsequently localized precisely in the localization pathway.
 
 ### Challenge
 [1]In medical image segmentation problem, due to the class imbalance in the datasets, Dice coefficient performs better at class imbalanced problems than cross-entropy, it measures the similarity between two sets of data, in this case, it compare pixel to pixel between mask labels and train_data.
-
-
-### Usage
-run the `preprocessing.py` to load the data from ISIC dataset, 
-it splite the data to
-
-- data_train
-- data_test
-- data_val
-- mask_train
-- mask_test
-- mask_val
-
-as .npy file.
-
-run `train.py`[2] to start trainning the model which is in the `model.py`[3]
-
-finally, run `test.py`[2] to evaluate the performance
 
 ##Results
 
