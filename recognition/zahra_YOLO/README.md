@@ -60,9 +60,10 @@ To re-train the model and detecting the lesion object in ISIC dataset, I have wr
 * main_driver.py
 	* this script firstly initializes the parameters for re-training the model on ISIC dataset and then call train_model function to perform training.To perform training and then run the detection using the generated weight in the training step, please take following steps:
 		* download the pretrained YOLO weight and put it into the directory specified in the Weights_path parameter.
+		* create a directory named "checkpoints" and put its path to checkpoint_dir variable.
 		* comment out the script from line 50 to the end and just run the training.
 		* After the training run is finished, then uncomment the commented section in previous step and comment out line 44 which calls train_model func.
-		* you also need to replace the pretrained weight file with the weight file generated in previous step. For each epoch a weight file is generated, please pick up the latest one.
+		* you also need to replace the pretrained weight file with the weight file generated in previous step. For each epoch a weight file is generated in checkpoints directory, please pick up the latest one.
 		* in line 58, image_path parameter has to be updated by the path of a test image which can be copied from val.tx file.
 	* the ouput of the function is a predicted bounding box around the detected lesion.
 	* this is a picture of the predicted bounding box around one lesion image:
