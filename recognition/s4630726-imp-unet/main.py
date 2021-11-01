@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from model import *
 
+#Dice loss function
 def loss_fn(y_true, y_pred):
 
     return 1-(tf.reduce_sum(y_true*y_pred)*2/(tf.reduce_sum(y_true) + tf.reduce_sum(y_pred)))
@@ -45,17 +46,6 @@ for img in os.listdir(path):
     img_array_2 = resize(img_array_2, resize_dim, order=0, preserve_range=False, anti_aliasing=False).astype('uint8') 
     Y.append(img_array_2)
 
-
-#print(img_array)
-#print(img)                             @for debugging purposes
-#plt.imshow(img_array,cmap="gray")
-#plt.show()
-#print(img_array_2)
-#print(img)                             
-#plt.imshow(img_array_2,cmap="gray")
-#plt.show()
-
-
 #Split the data into training and testing sets; validations sets are split during model.fit()
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42) 
 
@@ -67,40 +57,46 @@ Y_train = tf.convert_to_tensor(Y_train, dtype=tf.float32)
 Y_test = tf.convert_to_tensor(Y_test, dtype=tf.float32)
 
 
-#Add extra dimension needed for cnn input
-#X_train = tf.expand_dims(X_train,-1)
-#X_test = tf.expand_dims(X_test,-1)
+#Add extra dimension needed for bgr input
 Y_train = tf.expand_dims(Y_train,-1)
 Y_test = tf.expand_dims(Y_test,-1)
 
+#use model.py functions to build unet
 model = unet_improved(height,width,3,1)
 
-model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss=loss_fn, metrics=['accuracy'])
+#compile using static learning_rate and custom dice loss function
+model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss=loss_fn)
 
-unet_trained = model.fit(X_train, Y_train, epochs=50, batch_size=20, shuffle=True, validation_split=0.1)
+#fit model for 100 epochs for best results
+unet_trained = model.fit(X_train, Y_train, epochs=100, batch_size=20, shuffle=True, validation_split=0.1)
 
+#run test X set through predictions
 predictions = model.predict(X_test)
 
-
-#VISUALISATION OF RESULTS
-
-#tf.print(predictions)
+#threshold predictions
 match = tf.greater(predictions, 0.91)
-match = tf.cast(match, dtype=tf.float32)
+#cast true and false values as 0's and 1's
+white_class = tf.cast(match, dtype=tf.float32)
 
-total_dice = 0
+#swap 0--->1 1---->0 so we can measure the dice of the black class
+black_class = (white_class - 1) * -1
+black_class_gt = (Y_test - 1) * -1
 
+white_dice_total = 0
+black_dice_total = 0
+
+#compute average dice for each of the classes
 for i in range(match.shape[0]):
-    dice = 1-loss_fn(Y_test[i],match[i])
-    print(dice)
-    total_dice += dice
-#numerator_mole = pass
-average_dice = total_dice/match.shape[0]
-print(average_dice, "Average")
+    dice_white = 1-loss_fn(Y_test[i],white_class[i])
+    dice_black = 1-loss_fn(black_class_gt[i],black_class[i])
+    white_dice_total += dice_white
+    black_dice_total += dice_black
+avg_white = white_dice_total/white_class.shape[0]
+avg_black = black_dice_total/black_class.shape[0]
+print("Average - Mole:",avg_white,"Skin:",avg_black,"number of observations:",match.shape[0])
 
-#match = tf.math.argmax(predictions,axis=3)
 
-#tf.print(match)
+#visualisation
 
 index = 30
 
@@ -109,7 +105,5 @@ plt.show()
 plt.imshow(Y_test[index,:,:,0],cmap="gray")
 plt.show()
 plt.imshow(match[index,:,:,0],cmap="gray")
-plt.show()
-plt.imshow(X_test[index])
 plt.show()
 
