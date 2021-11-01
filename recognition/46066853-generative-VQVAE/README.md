@@ -14,7 +14,7 @@ To reproduce results using any dataset. Prepare dataset by structureing the data
 
 Results may be volatile and vary with iterations. I recommend performing multiple runs of the notebook and selecting the best model. Due to the current limitations of the implementation, it is recommended to train the VQ-VAE for at most two epochs ergo restricting the number of unique q(z|x) values preferably to 2.
 
-# Model Overview
+# Model and Training Overview
 #### VQ-VAE 
 Variational autoencoder (VQVAE) is a VAE network where the encoder network outputs discrete, rather than continuous, codes [1]. We use vector quantisation to learn a codebook (embedding space).
 
@@ -41,7 +41,7 @@ All models are defined in PyTorch in the models module:
 - `models.discriminator` Discriminator used in DCGAN.
 
 # Results on OASIS brain dataset
-The VQVAE was trained only for two epochs to minimise unique q(z|x) values. (2 in the best case) Followed by training the DCGAN. Intermediate results from steps and training parameters are saved in driver.ipynb.
+The VQVAE was trained only for two epochs to minimise unique q(z|x) values. (2 in the best case) Followed by training the DCGAN. *Intermediate results from steps and training parameters can be viewed in `driver.ipynb`*.
 
 SSIM was >0.60 in 7809 out of 10000 training images used. Best SSIM archived was 0.698\
 ![image](./images/result.png)
@@ -53,4 +53,5 @@ The main drawback of the current implementation is the limitation of mapping GAN
 
 # References
 [1] van den Oord, A., Vinyals, O., & Kavukcuoglu, K. (2017). Neural Discrete Representation Learning. CoRR, abs/1711.00937. Opgehaal van http://arxiv.org/abs/1711.00937
+
 [2] Alec Radford, Luke Metz, & Soumith Chintala. (2016). Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks.
