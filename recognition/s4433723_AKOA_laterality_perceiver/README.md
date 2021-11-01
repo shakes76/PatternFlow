@@ -123,7 +123,7 @@ Instructions:
 1. Place labelled AKOA dataset in the project directory.
 2. Create conda environment and install requirements:
    - conda create -n <ENV_NAME> tensorflow-gpu
-   - pip install requirements
+   - pip install other requirements as listed above
     
 3. Run: driver.py <NAME_OF_AKOA_DATASET_DIRECTORY>
     - on the first run this will sort images into the 'datasets' directory

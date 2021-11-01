@@ -114,7 +114,6 @@ def load_train_test_data(dataset_dir, test_split):
         ax.imshow(x_data[i, :, :, 0], cmap=plt.cm.gray)
         ax.axis('off')
     plt.tight_layout()
-    plt.title("Normalised input images")
     plt.show()
 
     # train test split
@@ -141,8 +140,8 @@ if __name__ == "__main__":
             or "LEFT" not in os.listdir(DATASET_DIR) \
             or "RIGHT" not in os.listdir(DATASET_DIR):
         os.mkdir("datasets")
-        print(f"Sorting {ORIGINAL_IMG_DIR} into datasets folder...")
-        create_sorted_data_directory(ORIGINAL_IMG_DIR, CLASSES)
+        print(f"Sorting {input_img_dir} into datasets folder...")
+        create_sorted_data_directory(input_img_dir, CLASSES)
     else:
         print("Datasets folder already exists...")
 
