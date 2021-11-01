@@ -31,7 +31,7 @@ exponential decay optimiser and the DICE loss function. The final DICE coefficie
 coefficient on the test set eclipsing 0.8.
 
 <p float="left">
-<center><img src="./figures/Figure_1.png">
+<center><img src="./figures/results.png">
 </center>
 </p>
 
