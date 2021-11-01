@@ -1,4 +1,3 @@
-
 import re
 
 import tensorflow as tf
@@ -6,22 +5,23 @@ import random, os
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow.keras as keras
 from tensorflow.keras import layers
-
+import matplotlib.pyplot as plt
+import tensorflow_addons as tfa
 import os
-from model import Perceiver
+
 import random, os
 import numpy as np
-
-IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
-EPOCHS = 10
 def shuffle_dictionary(dictionary):
     items = list(dictionary.items())
     random.shuffle(items)
     return dict(items)
-def data_processing(directory, train,validation):
+
+
+def process_dataset(directory, train,validation):
     left = 0
     right = 0
     labels = []
+
 
     patient_knee_collection = dict({})
 
@@ -41,20 +41,22 @@ def data_processing(directory, train,validation):
     y_test = []
     x_val = [] 
     y_val = []
+    #j = 0
     
     for index, patient in enumerate(patient_knee_collection.items()):
         for i in range(len(patient[1])):
+
             if (index/len(list(patient_knee_collection.items()))) < train:
-                x_train.append(img_to_array(load_img(directory + patient[1][i], target_size=IMG_SIZE, color_mode="grayscale")))
+                x_train.append(img_to_array(load_img(directory + patient[1][i], target_size=(73,64), color_mode="grayscale")))
                 if re.search('right', patient[1][i].replace("_",""), re.IGNORECASE):
                     right += 1
                     y_train.append(0)
                 else:
                     left += 1
                     y_train.append(1)
-                    
+
             if (index/len(list(patient_knee_collection.items()))) < (train+validation):
-                x_test.append(img_to_array(load_img(directory + patient[1][i], target_size=IMG_SIZE, color_mode="grayscale")))
+                x_test.append(img_to_array(load_img(directory + patient[1][i], target_size=(73,64), color_mode="grayscale")))
                 if re.search('right', patient[1][i].replace("_",""), re.IGNORECASE):
                     right += 1
                     y_test.append(0)
@@ -62,14 +64,17 @@ def data_processing(directory, train,validation):
                     left += 1
                     y_test.append(1)
             else:
-                x_val.append(img_to_array(load_img(directory + patient[1][i], target_size=IMG_SIZE, color_mode="grayscale")))
+                x_val.append(img_to_array(load_img(directory + patient[1][i], target_size=(73,64), color_mode="grayscale")))
                 if re.search('right', patient[1][i].replace("_",""), re.IGNORECASE):
                     right += 1
-                    y_test.append(0)
+                    y_val.append(0)
                 else:
                     left += 1
-                    y_test.append(1)                
-                           
+                    y_val.append(1)
+
+                    
+                    
+        
     x_train = np.array(x_train)
     x_train /= 255.0
     y_train = np.array(y_train)
@@ -79,6 +84,12 @@ def data_processing(directory, train,validation):
     x_val = np.array(x_val)
     x_val /= 255.0
     y_val = np.array(y_val)
+    #verify_no_leakage(patient_knee_collection, train_ids, test_ids)
+    print(x_train.shape)
+    print(y_train.shape)
+    print(x_val.shape)
+    print(y_val.shape)
+    print(x_test.shape)
     return x_train, y_train, x_val, y_val, x_test, y_test
 
 
@@ -101,7 +112,10 @@ def train_perceiver(perceiver,X_train, y_train,X_val, y_val,X_test, y_test,epoch
 
 
 def main():
-    X_train, y_train, X_val, y_val, X_test, y_test = data_processing(IMAGE_DIR, TRAIN_SPLIT,0.04)
+
+    IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
+    EPOCHS = 10
+    X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, 0.8,0.04)
     perceiver = Perceiver()
     
     X_train = X_train[0:len(X_train) // 32 * 32]
@@ -113,5 +127,32 @@ def main():
     
     history = train_perceiver(perceiver,  X_train, y_train,X_val, y_val,X_test, y_test,epochs=EPOCHS)
 
+    
+    
+    accuracy = history.history['acc']
+    validation_accuracy = history.history['val_acc']
+    plt.figure()
+
+    plt.plot(accuracy, label='Training Accuracy')
+    plt.plot(validation_accuracy, label='Validation Accuracy')
+    plt.xlabel("Epochs")
+    plt.ylabel('Accuracy')
+    plt.title('Training and Validation Accuracy of Perceiver on OAI AKOA Dataset Laterality classification')
+    plt.show()
+    
+    test_images = X_test[:32].reshape((32, 73, 64, 1))
+    test_labels = y_test[:32].flatten()
+    
+    predictions = tf.where(perceiver.predict_on_batch(test_images).flatten() < 0.5, 0, 1).numpy()
+    
+    for i in range(32):
+        plt.imshow(X_test[i], cmap="gray")
+        laterality = {0: "right", 1: "left"} 
+        if predictions[i] < 0.5:
+            plt.title("Predicted Right," "Actually: " + laterality[test_labels[i]])
+        else:
+            plt.title("Predicted Left," "Actually: " + laterality[test_labels[i]])
+
+        plt.show() # This Line may only produce one plot at a time on a normal python environment. On Kaggle it shows all images. 
 if __name__ == "__main__":
     main()

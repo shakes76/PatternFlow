@@ -3,17 +3,25 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow.keras as keras
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+def attention_component(inputs,input_normalized):
+        attention_layer = layers.MultiHeadAttention(8, 27)(input_normalized, input_normalized)
 
-#Cross Attention Layer
-def cross_attention(image_size):
-    
+        attention_layer = layers.Dense(27)(attention_layer)
+
+        attention_layer = layers.Add()([attention_layer, inputs])
+
+        attention_layer = layers.LayerNormalization()(attention_layer)
+
+        return attention_layer, layers.Dense(27, activation=tf.nn.gelu)(attention_layer)
+def cross_attention():
+    image_size = 73 * 64
     # Number of Pixels in the Scaled Image
     print(image_size)
     latent_input = layers.Input(shape=(256, 2*(2*6 + 1) + 1))
     data_array_input = layers.Input(shape=(image_size, 2*(2*6 + 1) + 1))
 
-    latent_array = layers.LayerNormalization()(latent_input)
-    data_array = layers.LayerNormalization()(data_array_input)
+    latent_array = layers.LayerNormalization(epsilon=1e-6)(latent_input)
+    data_array = layers.LayerNormalization(epsilon=1e-6)(data_array_input)
 
     query_key_value_vector = []
     
@@ -27,7 +35,7 @@ def cross_attention(image_size):
     )
     attention = layers.Add()([attention, latent_array])
 
-    attention = layers.LayerNormalization()(attention)
+    attention = layers.LayerNormalization(epsilon=1e-6)(attention)
     
     # Feedforward network.
     feedforward_network = [] # May need to add more layers
@@ -40,6 +48,7 @@ def cross_attention(image_size):
 
 #Reshape The Fourier Encoder to The array shape then perform calculation
 def fourier_encode(image):
+    batch_size, *axis, _ = image.shape
     axis_pos = list(map(lambda size: tf.linspace(-1.0, 1.0, num=size), axis))
     array = tf.stack(tf.meshgrid(*axis_pos, indexing="ij"), axis=-1)   
     array = tf.cast(tf.expand_dims(array,-1), dtype=tf.float32)
@@ -66,12 +75,8 @@ def transformer_layer():
 
 class Perceiver(tf.keras.Model):
 
-    def __init__(
-        self,
-        epochs,
-    ):
+    def __init__(self):
         super(Perceiver, self).__init__()
-        self.epoch = epochs
 
     def build(self, input_shape):
         self.latent_array = self.add_weight(
@@ -97,9 +102,7 @@ class Perceiver(tf.keras.Model):
         ]
         i = 0
         while i < 8:
-            latent_array = self.transformer(self.cross_attention(cross_attention_inputs))
+            latent_array = self.transformer(self.cross_attention(cross_attention))
             cross_attention[0] = latent_array
             i += 1
         return self.classify(self.global_average_pooling(cross_attention[0]))
-
-
