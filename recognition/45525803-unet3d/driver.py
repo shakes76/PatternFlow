@@ -5,17 +5,14 @@ import tensorflow as tf
 import math
 import os
 
-PROCESSED_MRI_PATH = '/home/Student/s4552580/mri_data/processed_mri'
-PROCESSED_LABEL_PATH = '/home/Student/s4552580/mri_data/processed_label'
 
 MRI_PATH = '/home/Student/s4552580/mri_data/semantic_MRs_anon'
 LABEL_PATH = '/home/Student/s4552580/mri_data/semantic_labels_anon'
 
-CHECKPOINT_PATH = '/home/Student/s4552580/unet3d.ckpt'
-HISTORY_PATH = '/home/Student/s4552580/history.csv'
+CHECKPOINT_PATH = '/home/Student/s4552580/unet3d2.ckpt'
+HISTORY_PATH = '/home/Student/s4552580/history2.csv'
 
 TRAIN_CASE_NUMBERS = range(4,35)
-TEST_CASE_NUMBERS = range(35,43)
 
 TRAIN_VAL_RATIO = 0.8
 
@@ -54,7 +51,7 @@ def main():
         x=train_seq, 
         validation_data=val_seq, 
         callbacks=[cp_callback, history_callback],
-        epochs=5)
+        epochs=13)
 
 if __name__ == '__main__':
     main()

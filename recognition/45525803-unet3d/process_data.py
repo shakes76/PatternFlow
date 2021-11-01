@@ -12,7 +12,7 @@ LABEL_PATH = '/home/Student/s4552580/mri_data/semantic_labels_anon/'
 
 N_CLASSES = 6
 
- # This case and week has dims that do not match the rest of the dataset
+# This case and week has dims that do not match the rest of the dataset
 MISMATCHED_SHAPE_NAME = 'Case_019_Week1'
 
 def get_case_weeks(case_numbers):
@@ -86,7 +86,7 @@ def write_original_and_augmented(case_weeks, processed_mri_math, processed_label
         save_nifti(mri, processed_mri_math, mri_filename)
         save_nifti(label, processed_label_path, label_filename)
 
-        # Now apply three GridWarp augmentations and save to the new directory
+        # Now apply the GridWarp augmentations and save to the new directory
         for i in range(num_augs):
 
             aug = ImageSegmentationAugmenter()
