@@ -22,15 +22,15 @@ def convert_png(f):
     Returns: images for model
 
     """
-    seg = tf.io.read_file(f)
-    seg = tf.image.decode_png(seg, channels=1)  # gray scale
-    seg = tf.image.resize(seg, (256, 256))
-    seg = tf.cast(seg, tf.float32) / 255.0  # need to divide
-    seg = tf.math.round(seg)  # round so that it is binary
-    return seg
+    png = tf.io.read_file(f)
+    png = tf.image.decode_png(png, channels=1)
+    png = tf.image.resize(png, (256, 256))
+    png = tf.cast(png, tf.float32) / 255.0
+    png = tf.math.round(png)
+    return png
 
 
-def process_images(image_path, mask_path):
+def converted_images(image_path, mask_path):
     """
     process source into images for model
     Args:
@@ -40,16 +40,14 @@ def process_images(image_path, mask_path):
     Returns: list of images
 
     """
-    image = tf.io.read_file(image_path)
-    image = tf.image.decode_jpeg(image, channels=1)
-    image = tf.image.resize(image, (256, 256))
-    image = tf.cast(image, tf.float32) / 255.0
-    segmentation = convert_png(mask_path)
-
-    # reshape them both to be 256, 256, 1
-    image = tf.reshape(image, (256, 256, 1))
-    segmentation = tf.reshape(segmentation, (256, 256, 1))
-    return image, segmentation
+    img = tf.io.read_file(image_path)
+    img = tf.image.decode_jpeg(img, channels=1)
+    img = tf.image.resize(img, (256, 256))
+    img = tf.cast(img, tf.float32) / 255.0
+    reshaped = convert_png(mask_path)
+    img = tf.reshape(img, (256, 256, 1))
+    reshaped = tf.reshape(reshaped, (256, 256, 1))
+    return img, reshaped
 
 
 def dice_coefficient(x, y):
@@ -81,24 +79,24 @@ def return_model_results():
                  fname=os.getcwd() + '\ISIC2018_Task1-2_Training_Data.zip', extract=True, cache_dir=os.getcwd())
     x_images = sorted(glob.glob('datasets/ISIC2018_Task1-2_Training_Input_x2/*.jpg'))[:SAMPLING_SIZE]
     mask_images = sorted(glob.glob('datasets/ISIC2018_Task1_Training_GroundTruth_x2/*.png'))[:SAMPLING_SIZE]
-    # split the images into training, testing and validation
+
     x_train, x_test, y_train, y_test = train_test_split(x_images, mask_images, test_size=TEST_RATIO)
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=TEST_RATIO)
 
-    # Put the images into a data set from a list
+
     train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     test_data = tf.data.Dataset.from_tensor_slices((x_test, y_test))
     val_data = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 
-    # shuffle the images
+
     train_set = train_data.shuffle(len(x_train))
     test_set = test_data.shuffle(len(x_test))
     validation_set = val_data.shuffle(len(x_val))
 
-    # put the images into a map
-    train_set = train_set.map(process_images)
-    test_set = test_set.map(process_images)
-    validation_set = validation_set.map(process_images)
+
+    train_set = train_set.map(converted_images)
+    test_set = test_set.map(converted_images)
+    validation_set = validation_set.map(converted_images)
 
     model = improv_unet()
     model.compile(tf.keras.optimizers.Adam(lr=LEARN_RATE), metrics=[dice_coefficient, 'accuracy'], loss=dice_loss)
@@ -131,7 +129,6 @@ axs[2].plot(hist.history['val_dice_coefficient'], label='validation dice coeffic
 matplotlib.plt.show()
 
 
-# shows predictions of model
 print("Predictions")
 matplotlib.plt.figure(figsize=(4 * 4, 3 * 4))
 i = 0
