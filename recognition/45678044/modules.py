@@ -25,9 +25,9 @@ class VQVAE(nn.Module):
         self.D = latent_dim
         
         self.encoder = nn.Sequential(
-            nn.Conv2d(img_channels, self.D//2, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(img_channels, self.D, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(self.D//2, self.D, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(self.D, self.D, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
             ResidualBlock(self.D, self.D), 
             nn.ReLU(),
@@ -43,18 +43,20 @@ class VQVAE(nn.Module):
             nn.ReLU(),
             ResidualBlock(self.D, self.D), 
             nn.ReLU(),
-            nn.ConvTranspose2d(self.D, self.D//2, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(self.D, self.D, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(self.D//2, img_channels, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(self.D, img_channels, kernel_size=4, stride=2, padding=1),
             nn.ReLU() 
         )
         
     def vector_quantize(self, z_e):
+        # Reshape (B, C, H, W) => (B, H, W, C)
         z_e = z_e.permute(0, 2, 3, 1).contiguous()
         z_e_shape = z_e.shape
-
+        
         flat_z_e = z_e.view(-1, self.D)
         
+        # (a-b)^2 = a^2 + b^2 - 2a*b
         distances = (torch.sum(flat_z_e**2, dim=1, keepdim=True) 
                     + torch.sum(self.codebook.weight**2, dim=1)
                     - 2 * torch.matmul(flat_z_e, self.codebook.weight.t()))
@@ -150,7 +152,6 @@ class GatedPixelCNN(nn.Module):
         # Create embedding layer to embed input
         self.embedding = nn.Embedding(input_dim, dim)
 
-        # self.norm = nn.BatchNorm2d(dim)
         # Building the PixelCNN layer by layer
         self.layers = nn.ModuleList()
 
@@ -176,8 +177,6 @@ class GatedPixelCNN(nn.Module):
         shp = x.size() + (-1, )
         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
         x = x.permute(0, 3, 1, 2)  # (B, C, H, W)
-
-        # x = self.norm(x)
 
         x_v, x_h = (x, x)
         for i, layer in enumerate(self.layers):
