@@ -150,24 +150,24 @@ def main():
     ready_model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
 
     # model summary
-    # print(ready_model.summary())
+    print(ready_model.summary())
 
     ## train model
-    # results = ready_model.fit(x_train, y_train, 
-    #            batch_size=2, verbose=1, 
-    #            epochs=epoch, 
-    #            validation_data=(x_valid, y_valid), 
-    #            shuffle=False)
+    results = ready_model.fit(x_train, y_train, 
+               batch_size=2, verbose=1, 
+               epochs=epoch, 
+               validation_data=(x_valid, y_valid), 
+               shuffle=False)
 
     ## save model
-    # ready_model.save("Improved_Jian_Epoch30_Batch2.hdf5")
+    ready_model.save("Improved_Jian_Epoch30_Batch2.hdf5")
 
     # load weights from previous trained models
     ready_model.load_weights("jian-improved-unet-45731462/Improved_Jian_Epoch30_Batch2.hdf5")
 
     # plotting losses and accuracy
-    # loss_graph(results, epoch)
-    # accuracy_graph(results, epoch)
+    loss_graph(results, epoch)
+    accuracy_graph(results, epoch)
 
     # evaluate model and get accuracy
     _, accuracy = ready_model.evaluate(x_test, y_test)
@@ -179,33 +179,6 @@ def main():
     for c in range(desired_channel):
         coeff = dice(predicted[:,:,:,c], y_test[:,:,:,c])
         print(f"Dice Score for Channel {c}: {coeff}")
-
-    # Get predicted image
-    # predicted = np.argmax(predicted, axis=3)
-
-    # Save the First Image
-    # image_saved = predicted[0]
-
-    # h, w = image_saved.shape
-    # print(h)
-    # print(w)
-
-    # # converts to 1D
-    # saved = np.ravel(image_saved)
-
-    # # ensures the input image is either values of 0 or 1
-    # saved[saved == 1] = 255
-
-    # saved = saved.reshape((h, w))
-    # print(saved.shape)
-
-    # cv2.imwrite("predicted.png", saved)
-
-    # get test image
-
-    
-
-
 
 
 if __name__ == "__main__":
