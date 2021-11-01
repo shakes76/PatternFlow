@@ -1,11 +1,19 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 import torch.optim as optim
 from scipy.sparse import coo_matrix, csr_matrix, eye, diags
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 from model import GCN
+
+
+def accuracy(output, features):
+    predicts = output.max(1)[1].type_as(features)
+    correct = predicts.eq(features).double()
+    correct = correct.sum()
+    return correct / len(features)
 
 
 def main():
@@ -83,6 +91,48 @@ def main():
 
     print('model', model)
     print('optimizer', optimizer)
+
+    train_size = facebook_train_target.size()[0]
+    validation_size = facebook_validation_target.size()[0]
+    test_size = facebook_test_target.size()[0]
+    total_target_size = (facebook_train_target.size()[0] +
+                         facebook_validation_target.size()[0] +
+                         facebook_test_target.size()[0])
+
+    for epoch in range(200):
+        model.train()
+        optimizer.zero_grad()
+        output = model(facebook_features, adjacency_matrix)
+        train_loss = F.nll_loss(output[range(0, train_size)],
+                                facebook_train_target)
+        train_accuracy = accuracy(output[range(0, train_size)],
+                                  facebook_train_target)
+        train_loss.backward()
+        optimizer.step()
+
+        model.eval()
+        output = model(facebook_features, adjacency_matrix)
+        validation_loss = F.nll_loss(output[range(train_size, (train_size + validation_size))],
+                                     facebook_validation_target)
+        validation_accuracy = accuracy(output[range(train_size, (train_size + validation_size))],
+                                       facebook_validation_target)
+
+        print('Epoch: {:04d}'.format(epoch + 1),
+              'Train loss: {:.4f}'.format(train_loss.item()),
+              'Train accuracy: {:.4f}'.format(train_accuracy.item()),
+              'Validation loss: {:.4f}'.format(validation_loss.item()),
+              'Validation accuracy: {:.4f}'.format(validation_accuracy.item()))
+
+    model.eval()
+    output = model(facebook_features, adjacency_matrix)
+    test_loss = F.nll_loss(output[range((train_size + validation_size), total_target_size)],
+                           facebook_test_target)
+    test_accuracy = accuracy(output[range((train_size + validation_size), total_target_size)],
+                             facebook_test_target)
+
+    print('Test set results:',
+          'Test loss: {:.4f}'.format(test_loss.item()),
+          'Test accuracy: {:.4f}'.format(test_accuracy.item()))
 
 
 if __name__ == '__main__':
