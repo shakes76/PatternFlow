@@ -177,25 +177,8 @@ def build_generators(scans_directory, labels_directory, model_input_size, expect
 	test_generator = Prostate3DGenerator(test_paths, batch_size, model_input_size, class_count)
 	
 	return train_generator, val_generator, test_generator
-	
-def evaluate_model_with_upscale(model, test_scan_path, test_label_path, class_count):
-	print(test_scan_path)
-	print(test_label_path)
 
-	# Load scan downscaled, to put into the model
-	scan_voxels = nib.load(test_scan_path)
-	# Downscale, so the shape is 2x smaller on each dimension
-	np_scan_voxels = zoom(np.array(scan_voxels.dataobj), 0.5)
-	scan_in = tf.cast(np_scan_voxels / 1023.0, tf.float32)
-
-	# Load ground truth labels at full resolution to test against downscaled predictions
-	nibabel_voxels = nib.load(test_label_path)
-	np_nibabel_voxels = np.array(nibabel_voxels.dataobj)
-	ground_truth_full = keras.utils.to_categorical(np_nibabel_voxels, num_classes=class_count)
-
-	predicted_labels = model.predict(scan_in)
-	print(predicted_labels.shape)
-
+# Argument handling
 parser = argparse.ArgumentParser(description='A Simple UNet 3D Driver')
 parser.add_argument("--mode", help="Mode the driver will run in.", default="train")
 parser.add_argument("--epochs", help="The number of epochs to train if the driver is in train mode.", default="10")
@@ -233,10 +216,40 @@ if args.mode == "train":
 
 	print("Training Complete!")
 
+
 elif args.mode == "evaluate":
 	model = unet3d([32, 64, 128], model_input_size, class_count)
 	model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
 	model.load_weights("prostate_model.h5")
 
-	test_scan_path, test_label_path = test_generator.get_data_paths()[0]
-	evaluate_model_with_upscale(model, test_scan_path, test_label_path, class_count)
+	# Different masking thresholds for different classes
+	thresholds = [0.5, 0.5, 0.5, 0.5, 0.1, 0.1]
+
+	# Keep sum for each class, to average later on
+	dice_sums = [0, 0, 0, 0, 0, 0]
+	for test_index in range(len(test_generator)):
+		print("Evaluating " + str(test_index + 1) + "/" + str(len(test_generator)))
+		scans, labels = test_generator.__getitem__(test_index)
+		
+		# Since we have a batch size of 1, just get first item
+		test_scan = scans[0]
+		test_labels = labels[0]
+		
+		predicted_labels = model.predict(scans)
+		for focus_class in range(class_count):
+			# Get 3D masks for both ground truth and predicted
+			class_ground_truth = test_labels[:, :, :, focus_class]
+			class_predicted = predicted_labels[0][:, :, :, focus_class] >= thresholds[focus_class]
+
+			# Calculate DICE from the two 3D Masks
+			class_intersection = (class_ground_truth * class_predicted).sum()
+			class_union = class_ground_truth.sum() + class_predicted.sum()
+			dice = (2*class_intersection)/class_union
+
+			# Add dice for this image to the sum, to be averaged later on
+			dice_sums[focus_class] += dice
+			
+	for class_index in range(class_count):
+		print("Class " + str(class_index) + " DICE: " + str(dice_sums[class_index] / len(test_generator)))
+
+	print("Evaluation Complete")
