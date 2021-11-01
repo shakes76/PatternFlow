@@ -105,7 +105,7 @@ issue. Therefore, none of them is not added to the program.
 ![latent_mapping](Images/adain_comparison.001.jpeg)
 
 ### Implementation for limited computing resources
-In order to meet the requirement of existing computing infrastructure,  
+In order to meet the requirement of existing computing infrastructure, 
 the structures of generator and discriminator are not exactly the same as the
 official implementation of StyleGAN2. 
 
