@@ -6,9 +6,9 @@ import torch
 from torch.backends import cudnn
 
 from utils import make_dataset,make_logger, list_dir_recursively_with_ignore, copy_files_and_create_dirs
-from models.GAN import StyleGAN
+from model.GAN import StyleGAN
 
-output_dir = '/stylegan/new256'
+output_dir = '/stylegan/rahinge256'
 device = "cuda"
 device_id = "0"
 resolution = 256
@@ -45,17 +45,22 @@ if __name__ == '__main__':
 
 
     # make output dir
-    if os.path.exists(output_dir):
-        raise KeyError("Existing path: ", output_dir)
-    os.makedirs(output_dir)
 
+
+    # if os.path.exists(output_dir):
+    #     raise KeyError("Existing path: ", output_dir)
+    # os.makedirs(output_dir)
     print("copy")
     # copy codes and config file
     files = list_dir_recursively_with_ignore('.', ignores=['diagrams', 'configs'])
+
     files = [(f[0], os.path.join(output_dir, "src", f[1])) for f in files]
+
+    # copy_files_and_create_dirs(files)
+
+    # shutil.copy2(args.config, output_dir)
     print("finish copy")
     # logger
-
     logger = make_logger("project", output_dir, 'log')
 
     # device
@@ -75,6 +80,7 @@ if __name__ == '__main__':
                          resolution= resolution,
                          num_channels= 3,
                          latent_size= 512,
+                         loss = "RAhinge",
                          drift=0.001,
                          d_repeats=1,
                          use_ema=True,
