@@ -28,13 +28,6 @@ Where N is the number of nodes, D the number of features per node, and E the num
 This data is loaded and preprocessed, before it is used to build and train the GCN model.
 The preprocessing also includes normalisation of the adjacency matrix, for better scalability.
 
-### How It Works -- Justification
-
-- The algorithm works by splitting the processed data into a train, validate, test split, of 20:20:60. As the goal is to use a semi-supervised learning approach, the labelled data is to be kept to a smaller ratio to the unlabelled data, hence the choice of a 20:20:60 split. This was done by random sampling and applying a mask to the datasets.
-
-- The GCN model applies a weight to the inputs (the adjacency matrix and features) in order to create the multiple layers of the GCN. The final layer produces a prediction of the classes, which can then be visualised using a t-SNE plot.
-
-
 ### Dependencies
 
 - Tensorflow 2.5.0
@@ -43,15 +36,22 @@ The preprocessing also includes normalisation of the adjacency matrix, for bette
 - matplotlib 3.4.2
 - scikit-learn 0.24.2
 
+### How It Works -- Justification
+
+- The algorithm works by splitting the processed data into a train, validate, test split, of 20:20:60. As the goal is to use a semi-supervised learning approach, the labelled data is to be kept to a smaller ratio to the unlabelled data, hence the choice of a 20:20:60 split. This was done by random sampling and applying a mask to the datasets.
+
+- The GCN model applies a weight to the inputs (the adjacency matrix and features) in order to create the multiple layers of the GCN. The final layer produces a prediction of the classes, which can then be visualised using a t-SNE plot.
+
+### Example Results
+
+![Accuracy](https://user-images.githubusercontent.com/92434786/139611789-b865da5f-b5ed-425d-bb08-e7d577c8c1d7.jpeg)
+
+![Loss Plot](https://user-images.githubusercontent.com/92434786/139611814-ad46a3bd-ea19-47c3-bb37-8485adafa546.jpeg)
 
 ## Visualisation
+A t-distributed Stochastic Neighbour Embedding (t-SNE) plot was used to visualise the results.
 
-
-### Examples
-
-
-
-
+![t-SNE Plot](https://user-images.githubusercontent.com/92434786/139611845-5b7230f1-4a40-4b9d-b5d9-2d355c5d15ca.jpeg)
 
 ## References
 
