@@ -1,3 +1,10 @@
+"""
+Functions for building and returning a 3D UNet model
+
+@author Cody Baldry
+@student_number 45804290
+@date 1 November 2021
+"""
 from tensorflow import keras as K
 
 # convolution block described in unet papers
