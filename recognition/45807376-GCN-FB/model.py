@@ -5,6 +5,11 @@ import random
 from tensorflow.keras import activations, initializers, regularizers
 from tensorflow.keras.layers import Input, Layer, Dropout
 from tensorflow.keras.models import Model
+from tensorflow.keras.utils import to_categorical
+
+from sklearn.preprocessing import LabelEncoder
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 
 def load_data():
     """  Loads the preprocessed data from provided facebook.npz file.
@@ -54,6 +59,12 @@ def normalise_adj(adj_matrix):
     A = tf.matmul(D_half, tf.matmul(D_half, adj_matrix))
     return A
 
+def encode(labels):
+    encoder = LabelEncoder()
+    labels = encoder.fit_transform(labels) # returns encoded labels
+    encoded_labels = to_categorical(labels)
+    return encoded_labels, encoder.classes_, encoder
+
 def split_index(data):
     """ Partitions the dataset into training, validation, and testing splits
         of 0.2 : 0.2 : 0.6 since semi-supervised.
@@ -75,6 +86,23 @@ def split_index(data):
     test_set = list(set(remainder).difference(val_set))
     
     return train_set, val_set, test_set
+
+def plot_tsne(output, encoded_labels, num_classes):
+    """ Uses TSNE to plot predictions """
+
+    tsne = TSNE(n_components = 2).fit_transform(output)
+    plt.figure(figsize = (10,10))
+    colour_map = np.argmax(encoded_labels, axis = 1)
+
+    for class_ in range(num_classes):
+        indices = np.where(colour_map == class_)
+        plt.scatter(tsne[indices[0], 0], tsne[indices[0],1], label = class_)
+        
+    plt.title('tSNE Plot')
+    plt.legend()
+
+    plt.savefig("tsne_plot.jpeg")
+    plt.show()
 
 def GCN_Model(num_features, num_classes, num_channels = 16, dropout_rate = 0.5, kernel_regulariser = None, num_input_channels = None):
     """ Creates a GCN Model
