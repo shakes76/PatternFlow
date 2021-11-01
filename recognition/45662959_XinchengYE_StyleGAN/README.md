@@ -32,23 +32,35 @@ A common problem of GAN is instability during training. WGAN proposed Wasserstei
 ## Usage  
 - ### Requirements 
   |       | preprocessing.py | train.py | test.py |
-  | ----------- | ----------- | --------|---------|
+  | ------ | ----------- | --------|---------|
   | Library | zipfile <br> io <br> multiprocessing<br> functools<br> PIL<br> lmdb<br> tqdm <br>torchvision |io<br> lmdb<br> PIL<br> os<br> argparse<br> random<br> math<br> tqdm<br> torch<br> time |torch<br> torchvision<br> matplotlib<br> math<br> argparse|
-- ### Preprocessing  
+- ### Preprocessing   
+  StyleGAN will firstly train images with lower resolutions, with the growth of epoch (or phase in this implementation), alpha rises gradually. After alpha reaches 1, StyleGAN can smoothly and steadily move to training next higher resolution. Consequently, the dataset should have all images with all resolutions (8,16,32,64,128,256,512,1024). Here, use Lightening Memory Mapped Database Manager to store the preprocessed images.   
+  - input: a __zip__ file of AKOA Analysis png images, each one is about 128 KB.  
+  - output: a folder named __AKOA_PRE__ containing two files, data.mdb and lock.mdb.  
   ```python
   python preprocessing.py
   ```
-- ### Training 
+- ### Training   
+  Before training, preprocessing.py must be executed. The path to dataset should be the output of preprocessing.py.  
+  - input: path ot dataset, when training on high resolutions, "--sched" should be considered, this argument is to reduce batch size and adjust learning rate of higher resolutions. "--mixing" is to use mix regularization during training.  
+  - output: checkpoint folder: training model with different step (e.g. train_step-2 for resolution 8); g_running model, because training model is only stored when this resolution is done, higher resolution will take much more time, this model can be as a checkpoint for discrete training.  
+            sample folder: sample images generated during training.  
   ```python
   python train.py [path/to/dataset] --sched --mixing
   ```
-  Or training from a chekcpoint,  
+  or training from a checkpoint,  
   ```python
   python train.py [path/to/dataset] --sched --init_size [resolution of ckpt] --ckpt [path/to/ckpt] --mixing
   ```
-- ### Testing  
+- ### Testing    
+  - input: path to a checkpoint, the resolution must match the resolution of checkpoint.  
+  - output: two grid images with/without mixing regularization.  
   ```python
   python test.py [path/to/checkpoint] --size [resolution]
   ```
 
-## Result  
+## Result   
+original real images  
+![real_images](images/real_images.png)  
+
