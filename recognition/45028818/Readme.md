@@ -1,0 +1,32 @@
+# ISIC Dataset with Improved UNet
+***
+## Introduction
+This aim of this model was to perform image segmentation on the ISIC dataset, this dataset contains images of skin cancer and their respective ground truth mask values. 
+
+## Model Design
+The model design is an implementation of the improved U-Net from this paper 'reference'. 
+The architecture of the model is shown in this image from the paper.
+
+
+
+Like the original U-Net there is a context aggregation pathway (context pathway) responsible for encoding increasingly abstract representations of the original input as it 'descends' down the layers. Following this pathway is the localization pathway that recombines the aggregation output of that layer with the up-sampled features from the layer below. 
+
+### Context Pathway
+The aggregation pathway begins with a 3x3x3 convolution, following this is the first of the context module. The context module consists of seven layers: two 3x3x3 convolutional layers with each convolutional layer followed by instance normalization layer and a leaky ReLu activation layer with an alpha 0.01. In between each stack of three layers (convolutional/normalization/activation) is a dropout layer with a dropout probability of 0.3.
+The final part of the context module is that the seven layers described previously are surrounded by a pre-activation residual block which sums the input into the context module with the output.
+
+The final component of the context pathway is each context module being connected by a 3x3x3 convolutional block with a stride of 2 to reduce the resolution of the feature maps.
+
+### Localization Pathway 
+The localization pathway begins after the context pathway has reached layer 5, it begins with an upsampling module which consists of upsampling layer followed by 3x3x3 convolutional block. The output of this upsampling layer is then recombined with the corresponding output of the context pathway on that level, the recombination is via concatenation. Each following level of the localization pathway consists of a localization module followed by an upsampling module and concatenation. With the exception of level 1, which consists of a 3x3x3 convolutional block followed by a segmentation layer.
+
+The localization module consists of a 3x3x3 convolutional block followed by a 1x1x1 convolutional block. 
+
+The output consists of the sum of the segmentation layers from level 1, 2, and 3. The output of this sum is put into a final sigmoid activation layer, this is a different implementation to the paper as it used a softmax layer. 
+
+## Training Details
+My model is trained using images resized to 512x512, with data augmentation done through Keras's ImageDataGenerator. This augmentation consists of shearing, zooming, and horizontal and vertical flips. 
+The network is trained for 10 epochs using an Adam optimizer with a learning rate of 0.0004.
+
+## Training Results
+During training it reached a training Dice Coefficient of ___ test Dice Coefficient of ___
