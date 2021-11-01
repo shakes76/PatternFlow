@@ -6,13 +6,12 @@ This aim of this model was to perform image segmentation on the ISIC dataset, th
 ## Model Design
 The model design is an implementation of the improved U-Net from this paper 'reference'. 
 The architecture of the model is shown in this image from the paper.
-
-
+![image](https://user-images.githubusercontent.com/14146158/139621908-c9d467e4-2e76-4a61-a60e-e914604e5c73.png)
 
 Like the original U-Net there is a context aggregation pathway (context pathway) responsible for encoding increasingly abstract representations of the original input as it 'descends' down the layers. Following this pathway is the localization pathway that recombines the aggregation output of that layer with the up-sampled features from the layer below. 
 
 ### Context Pathway
-The aggregation pathway begins with a 3x3x3 convolution, following this is the first of the context module. The context module consists of seven layers: two 3x3x3 convolutional layers with each convolutional layer followed by instance normalization layer and a leaky ReLu activation layer with an alpha 0.01. In between each stack of three layers (convolutional/normalization/activation) is a dropout layer with a dropout probability of 0.3.
+The context pathway begins with a 3x3x3 convolution, following this is the first of the context module. The context module consists of seven layers: two 3x3x3 convolutional layers with each convolutional layer followed by instance normalization layer and a leaky ReLu activation layer with an alpha 0.01. In between each stack of three layers (convolutional/normalization/activation) is a dropout layer with a dropout probability of 0.3.
 The final part of the context module is that the seven layers described previously are surrounded by a pre-activation residual block which sums the input into the context module with the output.
 
 The final component of the context pathway is each context module being connected by a 3x3x3 convolutional block with a stride of 2 to reduce the resolution of the feature maps.
@@ -29,4 +28,8 @@ My model is trained using images resized to 512x512, with data augmentation done
 The network is trained for 10 epochs using an Adam optimizer with a learning rate of 0.0004.
 
 ## Training Results
-During training it reached a training Dice Coefficient of ___ test Dice Coefficient of ___
+During training it reached a training Dice Coefficient of 0.8464 and a test Dice Coefficient of 0.9025. The binary accuracy and Dice loss values over the period of the training can be seen below.
+
+## Visualisation of Results
+![Predict_Images](https://user-images.githubusercontent.com/14146158/139622109-59963ea6-523b-478e-9271-81e7784acb26.png)
+
