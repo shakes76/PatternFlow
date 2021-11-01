@@ -17,7 +17,7 @@ _Figure 2: Segmented Image for ISIC_0000003_
 
 ### Data pre-processing
 
-The dimensions of the images in the dataset have an aspect ratio of 1:0.75. The original and mask images have been resized to a dimension of 96 x 128, in respect to the aspect ratio, before encoding the pixel values for the mask images to either 0 or 1 values. Orignal images will maintain their pixel values. 
+The dimensions of the images in the dataset have an aspect ratio of 1:0.75. The original and mask images have been resized to a dimension of 96 x 128, in respect to the aspect ratio, before encoding the pixel values for the mask images to either 0 or 1 values. This is to ensure that we don't lose any important features in the image. Orignal images will maintain their pixel values. 
 
 
 For the segmented gray-scaled mask images, we have ensured to have the pixel values either 0 or 1, with utilising the midpoint of 128. Pixel values below 128 will be changed to 0, vice versa. 
@@ -58,7 +58,7 @@ We can observe that both the accuracy and loss values eventually plateau before 
 
 _Figure 6: Dice Coefficient scores for Channel 0 and 1_
 
-For both channels, we can see that we have acheived a dice coefficient score of above 0.8. We can evaluate by comparing between the orignal, mask and predicted images below. 
+For both channels, we can see that we have acheived a dice coefficient score of above 0.8. We can evaluate by comparing between the orignal, mask and predicted images in Figure 7. 
 
 ![original](images/original.jpg) ![mask](images/mask.png) ![predicted](images/predicted.png)
 
