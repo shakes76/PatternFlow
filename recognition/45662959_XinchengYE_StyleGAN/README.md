@@ -61,6 +61,19 @@ A common problem of GAN is instability during training. WGAN proposed Wasserstei
   ```
 
 ## Result   
-original real images  
+Original Real Images  
 ![real_images](images/real_images.png)  
+Fake Images  
+resolution 8  
+![sample8](images/sample8.png)   
+resolution 16  
+![sample16](images/sample16.png)   
+resolution 32  
+![sample32](images/sample32.png)    
+resolution 64  
+![sample64](images/sample64.png)  
+resolution 128  
+![sample128](images/sample128.png)   
+resolution 256
+![sample256](images/sample256.png)   
 
