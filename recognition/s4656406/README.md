@@ -1,5 +1,5 @@
 ## Improved UNet 
-
+#### Author: Yujian Yuan s4656406
 #### Introduction
 
 For this work,I built an improved UNet model and performed image segmentation on the ISICs dataset, which is an image 
