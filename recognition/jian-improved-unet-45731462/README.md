@@ -7,11 +7,11 @@ In this project, we'll be using a UNet convolutional neural network model to per
 
 The dataset consists of 2,597 images of lesions with their respective segmentation labels which contain a pixel value of 0, representing the areas outside the lesion, and pixel value of 255 for areas within the lesion. Below is an example of a pair of the original and segmented image of the lesion. 
 
-![segmented](Input_x2/ISIC_0000003.jpg) 
+![segmented](images/ISIC_0000003.jpg) 
 
 _Figure 1: Original Image for ISIC_0000003_
 
-![original](GroundTruth_x2/ISIC_0000003_segmentation.png) 
+![original](images/ISIC_0000003_segmentation.png) 
 
 _Figure 2: Segmented Image for ISIC_0000003_
 
