@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov  1 08:04:47 2021
 
-@author: jmill
+@Author Justin Millbanks
+@Student ID - 46312206
+@Comp3710
 """
 
 import tensorflow as tf

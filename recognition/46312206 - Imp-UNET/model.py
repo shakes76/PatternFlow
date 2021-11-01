@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov  1 07:46:19 2021
 
-@author: jmill
+@Author Justin Millbanks
+@Student ID - 46312206
+@Comp3710
 """
-
 #!/usr/bin/env python3
 import tensorflow as tf
 from tensorflow.keras.layers import *
@@ -14,7 +14,9 @@ from tensorflow.keras.optimizers import Adam
 """
 Improved UNet Architecture:
     
-    This model is based out of the improved 
+    This model is based out of the Improved U-net architecture in "Brain Tumor Segmentation and Radiomics Suvival Prediction: Contribution to te BRATS 2017 Challenge
+    by F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein
+    
     
 """
 
