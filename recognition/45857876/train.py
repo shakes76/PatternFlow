@@ -6,7 +6,7 @@ import torch
 from torch.backends import cudnn
 
 from utils import make_dataset,make_logger, list_dir_recursively_with_ignore, copy_files_and_create_dirs
-from model.GAN import StyleGAN
+from model import StyleGAN
 
 output_dir = '/stylegan/rahinge256'
 device = "cuda"
@@ -45,11 +45,10 @@ if __name__ == '__main__':
 
 
     # make output dir
+    if os.path.exists(output_dir):
+        raise KeyError("Existing path: ", output_dir)
+    os.makedirs(output_dir)
 
-
-    # if os.path.exists(output_dir):
-    #     raise KeyError("Existing path: ", output_dir)
-    # os.makedirs(output_dir)
     print("copy")
     # copy codes and config file
     files = list_dir_recursively_with_ignore('.', ignores=['diagrams', 'configs'])

@@ -12,7 +12,7 @@ from torch.nn.functional import interpolate
 
 from utils import get_data_loader
 from utils import update_average
-from CustomLayers import import PixelNormLayer, EqualizedLinear, LayerEpilogue, EqualizedConv2d, BlurLayer, View, StddevLayer
+from CustomLayers import PixelNormLayer, EqualizedLinear, LayerEpilogue, EqualizedConv2d, BlurLayer, View, StddevLayer
 
 ###### Mapping network
 class GMapping(nn.Module):
@@ -514,7 +514,7 @@ class StyleGAN:
 
         # define the loss function used for training the GAN
         self.drift = drift
-        self.loss = self.__setup_loss()
+        self.loss = self.__setup_loss(loss)
 
         # Use of ema
         if self.use_ema:

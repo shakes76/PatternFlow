@@ -5,7 +5,7 @@ from PIL import Image
 
 import torch
 
-from models.GAN import Generator
+from model import Generator
 
 
 def adjust_dynamic_range(data, drange_in=(-1, 1), drange_out=(0, 1)):
