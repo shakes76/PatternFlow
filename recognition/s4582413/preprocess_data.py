@@ -3,6 +3,7 @@ from random import random # for data shuffling
 import numpy as np # for linear algebra
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
+from Perceiver import Perceiver
 
 IMG_DIR = "" #Some directory that contains the image
 IMG_SIZE = (73, 64)
@@ -194,8 +195,6 @@ def main():
         np.save("../data/y_val.npy", y_val)
         np.save("../data/X_test.npy", X_test)
         np.save("../data/y_test.npy", y_test)
-        #print(len(X_train), len(X_test), len(X_val), len(y_train), len(y_test), len(y_val))
-        # for printing and visualising the length of the data sets
     else:
         X_train = np.load("D:/data/X_train.npy") # load saved data depending where the saved data is from. 
         y_train = np.load("D:/data/y_train.npy")
@@ -203,4 +202,41 @@ def main():
         y_val = np.load("D:/data/y_val.npy")
         X_test = np.load("D:/data/X_test.npy")
         y_test = np.load("D:/data/y_test.npy")
-        #print(len(X_train), len(X_test), len(X_val), len(y_train), len(y_test), len(y_val))
+      
+
+    # create the model
+    model = Perceiver(data_size=73 * 64,  # size of data in rows multiplied by column
+                      latent_size=256,  # size of latent array specified in paper
+                      proj_size=27,  # size of projection after encoding, also equivalent to 2*(2*num_bands + 1) + 1
+                      num_heads=8,  # The number of transformer head
+                      num_trans_blocks=6,  # Number of transformer blocks used in the paper
+                      num_iterations=8,  # Repetition of cross-attention and transformer modules used in the paper
+                      max_freq=10,  # Maximum frequency for fourier encoding
+                      num_bands=6,  # Number of bands for fourier encode used in paper
+                      lr=0.001,  # The learning rate for the optimiser
+                      epoch=10,  # Number of epochs for training process
+                      weight_decay=0.0001,  # Decay weight for the optimiser
+                      )
+
+    # Saving the model if required, but can be omitted. Uncomment if model needs to be saved
+    # save_dir = './model_save'
+    # save_model = tf.train.Checkpoint(
+    #         model=model)
+
+    # model_save_manager = tf.train.CheckpointManager(save_model, save_dir, max_to_keep=3)
+
+    # Now training the model with the given the training, validation, test and batch size
+    # as well as saving the model
+    training_history = model.train(
+                    (X_train, y_train),
+                    (X_val, y_val),
+                    (X_test, y_test),
+                    32)
+
+    # model_save_manager.save()
+
+    # Plotting the learning curves
+    plot_learning_curve(training_history)
+    plot_prediction(model, (X_test, y_test))
+
+    
