@@ -7,10 +7,14 @@ import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
 
 num_classes = 2
-input_shape = (228, 260, 3)
+input_shape = (128, 128, 1)
+
+# get data
 
 X_train, y_train, X_test, y_test = process_data("AKOA_Analysis\AKOA_Analysis", 80, 20)
 
+
+# setting constants
 PATCH_SIZE = 2
 PATCH_COUNT = (128 // PATCH_SIZE) ** 2
 PROJECTION_DIMENSION = 256
@@ -30,7 +34,7 @@ classifier_units = [
     num_classes,
 ]
 
-# feed forward
+# feed forward network
 def get_feed_forward_network(hidden_units, dropout_rate):
     
     network_layers = []
@@ -43,7 +47,7 @@ def get_feed_forward_network(hidden_units, dropout_rate):
     network = keras.Sequential(network_layers)
     return network
 
-
+# Patching
 class Patches(layers.Layer):
     def __init__(self, ):
         super(Patches, self).__init__()
@@ -84,24 +88,30 @@ def get_cross_attention(
         "data_array": layers.Input(shape=(data_dim, PROJECTION_DIMENSION)),
     }
 
-
+    # normalise the inputs
     latent_array = layers.LayerNormalization(epsilon=1e-6)(inputs["latent_array"])
     data_array = layers.LayerNormalization(epsilon=1e-6)(inputs["data_array"])
 
+    # query key and value [1, LATENT_DIMENSION, PROJECTION_DIMENSION] -> [batch_size, data_dim, PROJECTION_DIMENSION].
     query = layers.Dense(units=PROJECTION_DIMENSION)(latent_array)
     key = layers.Dense(units=PROJECTION_DIMENSION)(data_array)
     value = layers.Dense(units=PROJECTION_DIMENSION)(data_array)
 
+    # generate cross attention [batch_size, data_dim, PROJECTION_DIMENSION] -> [batch_size, LATENT_DIMENSION, PROJECTION_DIMENSION]
     attention_output = layers.Attention(use_scale=True, dropout=0.1)(
         [query, key, value], return_attention_scores=False
     )
 
+    # skip and norm
     attention_output = layers.Add()([attention_output, latent_array])
-
     attention_output = layers.LayerNormalization(epsilon=1e-6)(attention_output)
+    
+    # apply feed forward
     feed_forward_network = get_feed_forward_network(hidden_units=ffn_units, dropout_rate=dropout_rate)
    
     outputs = feed_forward_network(attention_output)
+
+    # skip
     outputs = layers.Add()([outputs, attention_output])
 
     model = keras.Model(inputs=inputs, outputs=outputs)
@@ -147,12 +157,14 @@ class Perceiver(keras.Model):
 
     def build(self, input_shape):
 
+        # make latent
         self.latent_array = self.add_weight(
             shape=(LATENT_DIMENSIONS, PROJECTION_DIMENSION),
             initializer="random_normal",
             trainable=True,
         )
 
+        # apply patch, encode and cross attention
         self.patcher = Patches(PATCH_SIZE)
 
         self.patch_encoder = PatchEncoder(self.data_dim, PROJECTION_DIMENSION)
@@ -163,14 +175,16 @@ class Perceiver(keras.Model):
             self.dropout_rate,
         )
 
-
+        # create transformer
         self.transformer = get_transformer(
             self.ffn_units,
             self.dropout_rate,
         )
 
+        # pooling
         self.global_average_pooling = layers.GlobalAveragePooling1D()
 
+        # classification head
         self.classification_head = get_feed_forward_network(
             hidden_units=self.classifier_units, dropout_rate=self.dropout_rate
         )
@@ -208,10 +222,12 @@ def run_model(model):
         ],
     )
 
+    # reduce learning rates as model progresses
     reduce_lr = keras.callbacks.ReduceLROnPlateau(
         monitor="val_loss", factor=0.2, patience=3
     )
 
+    # fit the model :)
     history = model.fit(
         x=X_train,
         y=y_train,
@@ -234,8 +250,11 @@ perceiver_classifier = Perceiver(
 )
 
 def main():
+
     history = run_model(perceiver_classifier)
 
+
+    # plot results
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
     plt.title('model accuracy')
