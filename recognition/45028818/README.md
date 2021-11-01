@@ -31,5 +31,6 @@ The network is trained for 10 epochs using an Adam optimizer with a learning rat
 During training it reached a training Dice Coefficient of 0.8464 and a test Dice Coefficient of 0.9025. The binary accuracy and Dice loss values over the period of the training can be seen below.
 
 ## Visualisation of Results
+![image](https://user-images.githubusercontent.com/14146158/139622226-2bbe575b-ed97-4fd1-a52c-eb076b390142.png)
 ![Predict_Images](https://user-images.githubusercontent.com/14146158/139622109-59963ea6-523b-478e-9271-81e7784acb26.png)
 
