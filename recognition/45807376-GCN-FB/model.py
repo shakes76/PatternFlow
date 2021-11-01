@@ -1,13 +1,9 @@
-import pandas as pd
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
-from tensorflow.keras import optimizers, losses, activations, initializers
-from tensorflow.keras.layers import Input, Layer, Dropout, Dot
+from tensorflow.keras import activations, initializers
+from tensorflow.keras.layers import Input, Layer, Dropout
 from tensorflow.keras.models import Model
-
-from sklearn.manifold import TSNE
 
 def load_data():
     """  Loads the preprocessed data from provided facebook.npz file.
@@ -148,7 +144,7 @@ class GCN_Layer(Layer):
         assert len(input_shape)>= 2
         input_dim = input_shape[0][-1]
 
-        # create weights of layer
+        # add weights to layer
         self.w = self.add_weight(shape = (input_dim, self.num_channels), 
             initializer = self.kernel_initialiser,
             name = "kernel",
@@ -164,57 +160,3 @@ class GCN_Layer(Layer):
 
     def config(self):
         return {"channels": self.num_channels}
-
-#class GCN_Model(Model):
-    """
-    Graph Convolutional Network Model
-    
-    *INPUT*
-    - Node features, with shape = ([batch], num_nodes, num_nodes)
-    - Weighted adjacency matrix, with shape = ([batch], num_nodes, num_nodes)
-    
-    *OUTPUT*
-    - Softmax predictions, with shape = ([batch], num_nodes, num_nodes)
-
-    Parameters:
-        num_labels: number of channels in output
-        num_channels: number of channels in first GCN Layer
-        dropout_rate: rate for Dropout Layers
-        kernel_regulariser: regularisation applied to weights
-        num_input_channels: number of input channels aka. node features
-
-    """
-    def __init__(self, num_labels, num_channels = 16, 
-        dropout_rate = 0.5, kernel_regulariser = None, num_input_channels = None):
-        
-        super().__init__()
-
-        self.num_labels = num_labels
-        self.num_channels = num_channels
-        self.dropout_rate = dropout_rate
-        self.kernel_regulariser = kernel_regulariser
-        self.num_input_channels = num_input_channels
-
-        # Inputs
-        x_input = Input((num_input_channels,), dtype = tf.float32)
-        filter_input = Input((None,), dtype = tf.float32, sparse = True)
-
-        # Create layers
-        self._dropoutL0 = Dropout(dropout_rate)(x_input)
-        self._gcnL0 = GCN_Layer(num_channels, activation = "relu", 
-            kernel_regulariser= kernel_regulariser)([self._dropoutL0,filter_input])
-
-        self._dropoutL1 = Dropout(dropout_rate)(self._gcnL0)
-        self._gcnL1 = GCN_Layer(num_labels, acitvation = "softmax")([self._dropoutL1, filter_input])
-        
-    def getconfig(self):
-        return dict(
-            num_labels = self.num_labels,
-            channels = self.num_channels,
-            activation = self.activation,
-            output_act = self.output_activation,
-            dropout_rate = self.dropout_rate,
-            num_input_channels = self.num_input_channels,
-        )
-
-#if __name__ == '__main__':
