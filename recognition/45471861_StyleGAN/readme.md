@@ -169,7 +169,13 @@ OUTPUT_DIR=./Output
 
 python run.py --resolution 256 --epochs 40 --batch 64 --lr 0.0001 $DATA_DIR $OUTPUT_DIR 8 512 8 32 80
 ```
+Alternatively, run the test.sh script to start a simple training. Please make sure the 
+training data is put in the right place, or manually replace the training data path
+in the shell script.
 
+```shell
+./test.sh
+```
 ### Hardware requirements
 This project has been tested on a standard_NC6 Microsoft Azure computing instance.
 It has
