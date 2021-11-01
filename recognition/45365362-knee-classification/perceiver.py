@@ -51,7 +51,7 @@ def get_feed_forward_network(hidden_units, dropout_rate):
 
 # Patching
 class Patches(layers.Layer):
-    def __init__(self, ):
+    def __init__(self):
         super(Patches, self).__init__()
 
     def call(self, images):
@@ -167,9 +167,9 @@ class Perceiver(keras.Model):
         )
 
         # apply patch, encode and cross attention
-        self.patcher = Patches(PATCH_SIZE)
+        self.patcher = Patches()
 
-        self.patch_encoder = PatchEncoder(self.data_dim, PROJECTION_DIMENSION)
+        self.patch_encoder = PatchEncoder()
         
         self.cross_attention = get_cross_attention(
             self.data_dim,

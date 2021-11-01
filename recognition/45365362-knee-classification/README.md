@@ -28,3 +28,5 @@ Tensorflow_addons
 
 
 ### Results Plot
+In an example running of the model, it achieved a final accuracy of 93%
+![Results](results.png)
