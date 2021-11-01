@@ -11,6 +11,51 @@ import os
 
 import random, os
 import numpy as np
+from model import Perceiver
+def main():
+
+    IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
+    EPOCHS = 10
+    X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, 0.8,0.04)
+    perceiver = Perceiver()
+    
+    X_train = X_train[0:len(X_train) // 32 * 32]
+    y_train = y_train[0:len(y_train) // 32 * 32]
+    X_val =  X_val[0:len(X_val) // 32 * 32]
+    y_val = y_val[0:len(y_val) // 32 * 32]
+    X_test = X_test[0:len(X_test) // 32 * 32]
+    y_test = y_test[0:len(y_test) // 32 * 32]
+    
+    history = train_perceiver(perceiver,  X_train, y_train,X_val, y_val,X_test, y_test,epochs=EPOCHS)
+
+    
+    
+    accuracy = history.history['acc']
+    validation_accuracy = history.history['val_acc']
+    plt.figure()
+
+    plt.plot(accuracy, label='Training Accuracy')
+    plt.plot(validation_accuracy, label='Validation Accuracy')
+    plt.xlabel("Epochs")
+    plt.ylabel('Accuracy')
+    plt.title('Training and Validation Accuracy of Perceiver on OAI AKOA Dataset Laterality classification')
+    plt.show()
+    
+    test_images = X_test[:32].reshape((32, 73, 64, 1))
+    test_labels = y_test[:32].flatten()
+    
+    predictions = tf.where(perceiver.predict_on_batch(test_images).flatten() < 0.5, 0, 1).numpy()
+    
+    for i in range(32):
+        plt.imshow(X_test[i], cmap="gray")
+        laterality = {0: "right", 1: "left"} 
+        if predictions[i] < 0.5:
+            plt.title("Predicted Right," "Actually: " + laterality[test_labels[i]])
+        else:
+            plt.title("Predicted Left," "Actually: " + laterality[test_labels[i]])
+
+        plt.show() # This Line may only produce one plot at a time on a normal python environment. On Kaggle it shows all images. 
+
 def shuffle_dictionary(dictionary):
     items = list(dictionary.items())
     random.shuffle(items)
