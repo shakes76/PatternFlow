@@ -24,3 +24,9 @@ The PixelCNN is used to generate a set of encodings that can be decoded by the V
 ![pixel_cnn](images/pixelcnn_generations.png)
 
 As such, while this does not generate a brain entirely, it demonstrates that the algorithm holds promise and could be refined further to generate images with the same fidelity as the VQVAE.
+
+### Dependencies
+This algorithm is built in Tensorflow Keras, which means the end product models are reasonably simple to use and adapt. As such, many sections of Tensorflow and its sub-categories are required. In addition, numpy is utilised for direct data training of the PixelCNN on VectorQuantizer codebook indices as this mode requires a non-Tensor data structure. Further, for the graphing and image processing; matplotlib, imageio and mpl_toolkits were utilised.
+
+### Dataset Loading
+In order to efficiently train the VQVAE, the OASIS3 data was loaded into Tensorflow BatchDataset objects. This greatly reduced the memory required to store the 10000 images predivided into training, validation and testing data. These images are pre-downloaded to a file location of choice, then batched in by filepath as required during training.
