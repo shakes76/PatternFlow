@@ -60,7 +60,25 @@ From the results attained and the graph seen below, the loss graph shows a decre
 
 ![Loss_Graph](./Results/Loss.png)
 
+*Figure 4: Loss Graph*
+
 ![Accuracy_Graph](./Results/Accuracy.png)
+
+*Figure 5: Accuracy Graph*
+
+As seen below, I included images for the real image containing a skin lesion, the real masks that have been used for testing, and my predicted results using the model. We can observe that the results are quite similar.
+
+![Loss_Graph](./Results/test_real_image.png)
+
+*Figure 6: Actual Image*
+
+![Loss_Graph](./Results/segmentation_real_masks.png)
+
+*Figure 7: Predicted Image*
+
+![Loss_Graph](./Results/segmentation_predicted_masks.png)
+
+*Figure 8: Predicted Masks*
 
 ## Hyperparameter Tuning
 ***
