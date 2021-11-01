@@ -65,7 +65,14 @@ To re-train the model and detecting the lesion object in ISIC dataset, I have wr
 		* you also need to replace the pretrained weight file with the weight file generated in previous step. For each epoch a weight file is generated, please pick up the latest one.
 		* in line 58, image_path parameter has to be updated by the path of a test image which can be copied from val.tx file.
 	* the ouput of the function is a predicted bounding box around the detected lesion.
-	* this is a picture of the predicted bounding box around one lesion image.
+	* this is a picture of the predicted bounding box around one lesion image:
+
+
+
+
+
+
+
 	![](https://github.com/zaragolshani/PatternFlow/blob/topic-recognition/recognition/zahra_YOLO/150150.png ) 
 
 
