@@ -35,7 +35,7 @@ class Perceiver(tf.keras.Model):
         self.attention_mechanism = attention_mechanism(self.latentDim,
                 self.inDim, self.proj_size)
 
-        self.transformer = transformer_layer(self.latentDim, self.proj_size,
+        self.transformer = transform(self.latentDim, self.proj_size,
                 self.num_heads, self.num_trans_blocks)
 
         self.global_average_pooling = layers.GlobalAveragePooling1D()
@@ -91,36 +91,16 @@ def fitModel(model, train_set, val_set, test_set, batch_size):
 
     return history
 
-def transformer_layer(latentDim, proj_size, num_heads, num_trans_blocks):
-    inputs_orig = layers.Input(shape=(latentDim, proj_size))
-
-    input_plus_output = copy.deepcopy(inputs_orig)
-
+def transform(latentDim, proj_size, num_heads, num_trans_blocks):
+    data = layers.Input(shape=(latentDim, proj_size))
+    originalInput = copy.deepcopy(data)
     for _ in range(num_trans_blocks):
-
-        norm = layers.LayerNormalization()(inputs_orig)
-
-
-        attention = layers.MultiHeadAttention(
-            num_heads, proj_size)(norm, norm)
-
-
-        attention = layers.Dense(proj_size)(attention)
-
-
-        attention = layers.Add()([attention, inputs_orig])
-
-
-        attention = layers.LayerNormalization()(attention)
-
-
-        outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attention)
-
-
+        norm = layers.LayerNormalization()(data)
+        attOut = layers.MultiHeadattOut(num_heads, proj_size)(norm, norm)
+        attOut = layers.Dense(proj_size)(attOut)
+        attOut = layers.Add()([attOut, data])
+        attOut = layers.LayerNormalization()(attOut)
+        outputs = layers.Dense(proj_size, activation=tf.nn.gelu)(attOut)
         outputs = layers.Dense(proj_size)(outputs)
-
-
-        input_plus_output = layers.Add()([outputs, attention])
-
-
-    return tf.keras.Model(inputs=inputs_orig, outputs=input_plus_output)
+        finalOut = layers.Add()([outputs, attOut])
+    return tf.keras.Model(inputs=data, outputs=finalOut)
