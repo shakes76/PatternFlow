@@ -14,11 +14,14 @@ import numpy as np
 from model import Perceiver
 def main():
 
+
     IMAGE_DIR = '../input/knee-data/AKOA_Analysis/'
     EPOCHS = 10
+
     X_train, y_train, X_val, y_val, X_test, y_test = process_dataset(IMAGE_DIR, 0.8,0.04)
     perceiver = Perceiver()
     
+    # Ensure training set doesn not exceed batch size to avoid fourier encoder error
     X_train = X_train[0:len(X_train) // 32 * 32]
     y_train = y_train[0:len(y_train) // 32 * 32]
     X_val =  X_val[0:len(X_val) // 32 * 32]
@@ -34,6 +37,7 @@ def main():
     validation_accuracy = history.history['val_acc']
     plt.figure()
 
+    #Plot Accuracies
     plt.plot(accuracy, label='Training Accuracy')
     plt.plot(validation_accuracy, label='Validation Accuracy')
     plt.xlabel("Epochs")
@@ -55,6 +59,7 @@ def main():
             plt.title("Predicted Left," "Actually: " + laterality[test_labels[i]])
 
         plt.show() # This Line may only produce one plot at a time on a normal python environment. On Kaggle it shows all images. 
+
 
 def shuffle_dictionary(dictionary):
     items = list(dictionary.items())
@@ -129,7 +134,6 @@ def process_dataset(directory, train,validation):
     x_val = np.array(x_val)
     x_val /= 255.0
     y_val = np.array(y_val)
-    #verify_no_leakage(patient_knee_collection, train_ids, test_ids)
     print(x_train.shape)
     print(y_train.shape)
     print(x_val.shape)

@@ -3,16 +3,18 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow.keras as keras
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+
 def attention_component(inputs,input_normalized):
-        attention_layer = layers.MultiHeadAttention(8, 27)(input_normalized, input_normalized)
+    #Produces the attention layers
+    attention_layer = layers.MultiHeadAttention(8, 27)(input_normalized, input_normalized)
 
-        attention_layer = layers.Dense(27)(attention_layer)
+    attention_layer = layers.Dense(27)(attention_layer)
 
-        attention_layer = layers.Add()([attention_layer, inputs])
+    attention_layer = layers.Add()([attention_layer, inputs])
 
-        attention_layer = layers.LayerNormalization()(attention_layer)
+    attention_layer = layers.LayerNormalization()(attention_layer)
 
-        return attention_layer, layers.Dense(27, activation=tf.nn.gelu)(attention_layer)
+    return attention_layer, layers.Dense(27, activation=tf.nn.gelu)(attention_layer)
 def cross_attention():
     image_size = 73 * 64
     # Number of Pixels in the Scaled Image
@@ -23,6 +25,7 @@ def cross_attention():
     latent_array = layers.LayerNormalization(epsilon=1e-6)(latent_input)
     data_array = layers.LayerNormalization(epsilon=1e-6)(data_array_input)
 
+    # Produce Querys Keys and Values of inputs
     query_key_value_vector = []
     
 
@@ -91,7 +94,9 @@ class Perceiver(tf.keras.Model):
         self.cross_attention = cross_attention()
         # Transformer Layer
         self.transformer = transformer_layer()
+        # Global Pooling Layer
         self.global_average_pooling = layers.GlobalAveragePooling1D()
+        # Classifier Output
         self.classify = layers.Dense(units=1, activation=tf.nn.sigmoid)
         super(Perceiver, self).build(input_shape)
 
@@ -101,6 +106,7 @@ class Perceiver(tf.keras.Model):
             fourier_encode(inputs)
         ]
         i = 0
+        
         while i < 8:
             latent_array = self.transformer(self.cross_attention(cross_attention))
             cross_attention[0] = latent_array
