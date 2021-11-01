@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 import tensorflow_probability as tfp
 from skimage.metrics import structural_similarity
 
-###### VQ from Keras tutorial #################################
+###############################################################
 # Vector Quantizer class from Kera's tutorial
 # Reference: https://keras.io/examples/generative/vq_vae/
+# Author: Sayak Paul
 
 class VectorQuantizer(layers.Layer):
     def __init__(self, num_embeddings, embedding_dim, beta=0.25, **kwargs):
@@ -67,8 +68,10 @@ class VectorQuantizer(layers.Layer):
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
 ###############################################################
-
+    
+###############################################################
 # Encoder and decoder network functions #
+
 # Encoder network (inference/recognition model)
 def get_encoder(latent_dim=16): #Define the latent dimension
     
@@ -105,10 +108,9 @@ def get_vqvae(latent_dim=16, num_embeddings=32):
 
 # Print summary of stand alone VQ-VAE model
 get_vqvae().summary()
-
 ###############################################################
 
-###### VQ Trainer from Keras tutorial #########################
+###############################################################
 # VQVAE Trainer class from Kera's tutorial
 # Reference: https://keras.io/examples/generative/vq_vae/
 # Author: Sayak Paul
@@ -128,10 +130,8 @@ class VQVAETrainer(keras.models.Model):
 
     @property
     def metrics(self):
-        return [
-            self.total_loss_tracker,
-            self.reconstruction_loss_tracker,
-        ]
+        return [self.total_loss_tracker,
+            self.reconstruction_loss_tracker]
 
     def train_step(self, x):
         with tf.GradientTape() as tape:
@@ -150,10 +150,50 @@ class VQVAETrainer(keras.models.Model):
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
 
-        # Print the loss results
-        return {
-            "loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-        }
+        # Print the loss results during the training
+        return {"loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result()}
+
+###############################################################
     
+###############################################################
+# PIXELCNN from Kera's tutorial
+# Reference: https://keras.io/examples/generative/vq_vae/
+# Author: Sayak Paul
+
+# PixelCNN layer class defined
+class PixelConvLayer(layers.Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        # Build the conv2d layer to initialize kernel variables
+        self.conv.build(input_shape)
+        # Use the initialized kernel to create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+# Residual block layer class defined
+class ResidualBlock(keras.layers.Layer):
+    def __init__(self, filters, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.pixel_conv = PixelConvLayer(mask_type="B", filters=filters // 2, kernel_size=3, activation="relu", padding="same")
+        self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return keras.layers.add([inputs, x])
 ###############################################################
