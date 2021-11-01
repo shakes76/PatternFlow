@@ -15,7 +15,6 @@ ORIGINAL_IMG_DIR = "AKOA_Analysis/"
 CLASSES = ("Left", "Right")
 NUM_CLASSES = len(CLASSES)
 DATASET_DIR = 'datasets/'
-OUTPUT_DIR = 'output/'
 
 # Training hyper-parameters
 IMG_SIZE = 16  # size to resize input images
@@ -24,8 +23,8 @@ EPOCHS = 10
 BATCH_SIZE = 128
 VALIDATION_SPLIT = 0.2
 TEST_SPLIT = 0.25
-LEARN_RATE = 0.001
-WEIGHT_DECAY = 0.0001
+LR = 0.001
+WD = 0.0001
 
 
 def underscore_modify(string):
@@ -108,9 +107,15 @@ def load_train_test_data(dataset_dir, test_split):
     x_data = np.array(x_data)
     y_data = np.array(y_data)
 
-    # save e.g. image from ds
-    first_image = x_data[0, :, :, 0]
-    plt.imsave(OUTPUT_DIR + "input_train_image.png", first_image, format="png", cmap=plt.cm.gray)
+    # plot grid of images
+    f, axs = plt.subplots(8, 8)
+    axs = axs.flatten()
+    for i, ax in enumerate(axs):
+        ax.imshow(x_data[i, :, :, 0], cmap=plt.cm.gray)
+        ax.axis('off')
+    plt.tight_layout()
+    plt.title("Normalised input images")
+    plt.show()
 
     # train test split
     return train_test_split(x_data, y_data, test_size=0.25, random_state=42)
@@ -154,7 +159,7 @@ if __name__ == "__main__":
 
     # compile perceiver
     perceiver.compile(
-        optimizer=tfa.optimizers.LAMB(learning_rate=LEARN_RATE, weight_decay_rate=WEIGHT_DECAY),
+        optimizer=tfa.optimizers.LAMB(learning_rate=LR, weight_decay_rate=WD),
         loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[keras.metrics.BinaryAccuracy(name="accuracy")],
     )
@@ -183,4 +188,4 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig(f'{OUTPUT_DIR}training_curve_epochs_{EPOCHS}.png')
+    plt.savefig(f'training_curve_epochs_{EPOCHS}.png')
