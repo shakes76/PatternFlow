@@ -7,8 +7,6 @@ Github: [@ByronDowney](https://github.com/ByronDowney/)
 
 ## Using the File
 This repository contains two python files. Driver.py is an example of how to run Model.py, whereas Model.py contains the model itself and accepts the following parameters:
-#parameters here
-
 
 ## Problem and Solution
 The problem that my model attempts to solve is the segmentation of the Preprocessed ISIC 2018 Melanoma Dermoscopy Dataset available on the COMP3710 blackboard. The dataset contains images of each melanoma as well as their segmented counterparts. Each image is segmented into areas of melanoma and areas of normal skin. 
@@ -21,23 +19,21 @@ The picture above, taken from [1], describes the general structure of the improv
 
 ##  Results
 A fairly standard training, validation and test split of (0.8, 0.1, 0.1) was used in order to leave as much data possible for the training set while still having a reasonable amount for validation and testing.
-Below are results for a model created with the Driver.py file. Looking at the graphs, you can see that it easily achieves > 0.8 dice coefficient on the validation set, but unfortunately it only achieves 0.7 on the test set. The lack of generalisation may be due to the test set containing some images from different sources, because the training, validation and test data was split according to file name. Taking a different approach to pre-processing by randomising the contents of the splits may have yielded better results.
+Below are results for a model created with the Driver.py file. Looking at the graphs, you can see that it easily achieves > 0.8 dice coefficient on the validation set, but unfortunately it only achieves 0.7 on the test set. The lack of generalisation may be due to the test set containing some images from different sources, because the training, validation and test data was split according to file name. Taking a different approach to pre-processing by randomising the contents of the splits may have yielded better results.\
 ![](README_Images/test_Dice_Coefficient.png)
 
-Loss Over Epochs (Loss is 1 - dice coefficient):
-![](README_Images/Loss_Graph.png)
-Dice Coefficient Over Epochs:
-![](README_Images/Dice_Coefficient_Graph.png)
+Loss Over Epochs (Loss is 1 - dice coefficient):\
+![](README_Images/Loss_Graph.png)\
+Dice Coefficient Over Epochs:\
+![](README_Images/Dice_Coefficient_Graph.png)\
 ![](README_Images/Comparison_1.png)
 ![](README_Images/Comparison_2.png)
 ![](README_Images/Comparison_3.png)
 ![](README_Images/Comparison_4.png)
 ![](README_Images/Comparison_5.png)
 
-#example outputs here
-
 ## Dependencies
-Python v3.8.5
+Python v3.8.5\
 Tensorflow v2.6.0
 
 ## References
