@@ -90,7 +90,7 @@ def main():
     print("hello")
     ### load data
     width, height = 256, 256
-    train_seq, valid_seq, test_seq = load_oasis_data(batch_size=128)
+    train_seq, valid_seq, test_seq = load_oasis_data("./keras_png_slices_data/keras_png_slices_data", batch_size=128)
 
 
     # load minst data

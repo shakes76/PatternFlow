@@ -95,7 +95,7 @@ class ResidualBlock(tf.keras.Model):
         Res: shape post con2 (10, 256, 256, 256)
         Res: shape post add (10, 256, 256, 256)
     """
-    def __init__(self, filters=256, inputs=None):
+    def __init__(self, filters=16, inputs=None):
         super(ResidualBlock, self).__init__(inputs)
         self.relu = tf.keras.layers.ReLU()
 
@@ -212,7 +212,7 @@ class VQ(tf.keras.Model):
         # once the input has come in
         # https://www.tensorflow.org/guide/keras/custom_layers_and_models
         # add weight, or just make a variable? 
-        self.emb = tf.Variable(initial_value=tf.random_uniform_initializer()(shape=(indim, outdim)), 
+        self.emb = tf.Variable(initial_value=tf.random_uniform_initializer()(shape=(outdim, indim)), 
                         trainable=True, name="emb")
 
         # self.emb =  add_weight(name="emb", shape=[indim, outdim],  
@@ -506,7 +506,7 @@ class PixelCNN(tf.keras.Model):
 
     def call(self, X):
 #         print("Pre anything {}".format(X.shape))
-
+        X = tf.one_hot(X, 64)
         X = self.masked_conv_1(X)
         for layer in self.list_resid_layers:
             X = layer(X)

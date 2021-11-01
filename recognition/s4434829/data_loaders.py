@@ -1,7 +1,7 @@
 from tensorflow.keras.datasets import mnist
 import numpy as np
 import tensorflow as tf
-
+import matplotlib.image as mpimg
 import pathlib
 import math
 
@@ -71,7 +71,7 @@ class OASISSeq(tf.keras.utils.Sequence):
         return tf.constant(X_train), tf.constant(X_train)#, tf.constant(y_train)
 
 
-def load_oasis_data(path):
+def load_oasis_data(path, batch_size):
     """ 
     loads oasis data in default structure at path
     returns three sequences: train, valid, test
@@ -87,9 +87,9 @@ def load_oasis_data(path):
     X_valid_files = list(data_dir.glob('./keras_png_slices_validate/*'))
     y_valid_files = list(data_dir.glob('./keras_png_slices_seg_validate/*'))
 
-    train_seq = OASISSeq(sorted(X_train_files),sorted( y_train_files), 10)
-    valid_seq = OASISSeq(sorted(X_valid_files),sorted( y_valid_files), 5)
-    test_seq = OASISSeq(sorted(X_test_files),sorted( y_test_files), 5)
+    train_seq = OASISSeq(sorted(X_train_files),sorted( y_train_files), batch_size)
+    valid_seq = OASISSeq(sorted(X_valid_files),sorted( y_valid_files), batch_size)
+    test_seq = OASISSeq(sorted(X_test_files),sorted( y_test_files), 20)
     return train_seq, valid_seq, test_seq
 
 def load_minst_data(batch_size):
@@ -117,7 +117,7 @@ def make_indices(X_reshaped, emb):
     indices = tf.argmin(distances, axis=1)
     return indices
 
-def make_indices_dataset(train_seq, encoder, emb, save_folder = save_folder = "./encoded_data/"):
+def make_indices_dataset(train_seq, encoder, emb, save_folder ="./encoded_data/"):
     for i, X_data in enumerate(train_seq):
         enc_outputs = encoder.predict(X_data)
         reashaped_enc_outputs = enc_outputs.reshape(-1, enc_outputs.shape[-1])
@@ -126,6 +126,7 @@ def make_indices_dataset(train_seq, encoder, emb, save_folder = save_folder = ".
         indices = indices.numpy().reshape(enc_outputs.shape[:-1])
     #     print("Saving")
         np.save(save_folder+"cbindices_{}".format(i), indices)
+
 class CodeBookSeq(tf.keras.utils.Sequence):
     """
     Sequence to load saved embedding indices from file
