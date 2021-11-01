@@ -101,7 +101,7 @@ image_pil
 #filter detected bounding box with maximum class score
 def bbox_max_class_trs(detection):
     value, index =torch.max(detections,  0)
-    return detection[index[5],0:4]
+    return detection[index[4],0:4]
 
 #show the image with the selected bounding box
 image_target = img_transforms(img)
