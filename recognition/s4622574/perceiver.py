@@ -5,6 +5,7 @@ from fourier_encode import FourierEncode
 import tensorflow_addons as tfa
 import copy
 
+"""Perceiver Transformer"""
 class Perceiver(tf.keras.Model):
     def __init__(self, inDim, latentDim, queryDim, max_freq, freq_ban, head=8,
             block=6, num_loop=8,  learningRate=0.001, epoch=10, 

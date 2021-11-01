@@ -97,7 +97,7 @@ if __name__ == "__main__":
     print(len(trainX), len(trainY), len(valX), len(valY), len(testX), len(testY))
     print(trainX.shape)
 
-    perceiverTransformer = Perceiver(inDim=64*64, latentDim=256, freq_ban=4, proj_size=19, max_freq=10)
+    perceiverTransformer = Perceiver(inDim=64*64, latentDim=256, freq_ban=4, queryDim=19, max_freq=10)
 
-    history = fitModel(perceiverTransformer, train_set=(trainX, trainY),
-            val_set=(valX, valY), test_set=(testX, testY), batch_size=32)
+    history = fitModel(perceiverTransformer, training=(trainX, trainY),
+            validation=(valX, valY), testing=(testX, testY), numSamples=32)

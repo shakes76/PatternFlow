@@ -2,6 +2,7 @@ from tensorflow.keras import layers
 import tensorflow as tf 
 import math
 
+"""Fourier Encoding"""
 class FourierEncode(layers.Layer):
     def __init__(self, max_freq=10, freq_ban=4):
         super(FourierEncode, self).__init__()
@@ -36,7 +37,7 @@ class FourierEncode(layers.Layer):
         return tf.reshape(transformedData, (num_images, basis[0] * basis[1], -1)) 
 
     def _fourier_encode(self, feature):
-
+        """Concat original feature and Fourier Transform"""
         # feature = tf.expand_dims(feature, -1)
         feature = tf.cast(tf.expand_dims(feature, -1), dtype=tf.float32)
         sampleFeature = feature       
@@ -47,7 +48,7 @@ class FourierEncode(layers.Layer):
         scaledKernel = tf.reshape(scaledKernel, (*((1,) * (len(feature.shape) - 1)), self.freq_ban))
         feature = math.pi * scaledKernel * feature 
         feature = tf.concat([tf.math.sin(feature), tf.math.cos(feature)], axis=-1)
-        
+
         feature = tf.concat((feature, sampleFeature), axis=-1)
         return feature
 
