@@ -341,21 +341,6 @@ class AdaptiveInstanceNorm(nn.Module):
 
         return out
 
-'''
-class AdaIn(nn.Module):
-    '''
-    #adaptive instance normalization
-    '''
-    def __init__(self, n_channel):
-        super().__init__()
-        self.norm = nn.InstanceNorm2d(n_channel)
-        
-    def forward(self, image, style):
-        factor, bias = style.chunk(2, 1)
-        result = self.norm(image)
-        result = result * factor + bias  
-        return result
-'''
 
 
 '''
