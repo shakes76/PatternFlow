@@ -107,7 +107,7 @@ data_loaders.py
     contains helper functions and sequence classes for generating and loading the required data.  
 driver.py
     uses data_loaders to load data, trains the models, and plots and saves some of the figures shown here. 
-test.ipynb 
+test_driver.ipynb 
     was used to test the code for models and training, and generate the images in this readme. 
 
 ## Dependencies
