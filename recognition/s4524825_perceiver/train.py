@@ -14,19 +14,10 @@ training_it = d.training_data_iterator()
 testing_it = d.test_data_iterator()
 
 def train(model):
-    # learning_rate_schedules = tf.keras.optimizers.schedules.CosineDecay(
-    #     c.initial_learning_rate, c.num_epochs * c.iterations_per_epoch - c.warm_iterations, alpha=c.minimum_learning_rate, name=None
-    # )
-
-    # #SGD optimizer as learnt in class
-    # optimizer = optimizers.SGD(learning_rate=learning_rate_schedules, momentum=0.9)
-
-
     # Create LAMB optimizer with weight decay.
     optimizer = tfa.optimizers.LAMB(
         learning_rate=c.learning_rate, weight_decay_rate=c.weight_decay,
     )
-
 
     #loss function for train step
     loss_f = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -82,23 +73,9 @@ def train(model):
             print(f"TEST {sum_correct_num / c.test_num}, {sum_loss / c.test_num}\n")
 
 
-    
-
         with open("test_history.csv", 'a') as f:
             f.write(f"{epoch_num}, {sum_correct_num / c.test_num}, {sum_loss / c.test_num}\n")  
 
-# perceiver_classifier = Perceiver(
-#     c.patch_size,
-#     c.num_patches,
-#     c.latent_dim,
-#     c.projection_dim,
-#     c.num_heads,
-#     c.num_transformer_blocks,
-#     c.ffn_units,
-#     c.dropout_rate,
-#     c.num_iterations,
-#     c.classifier_units,
-# )
 perceiver_classifier = Perceiver()
 
 @tf.function

@@ -160,7 +160,6 @@ class Patches(layers.Layer):
         )
         patch_dims = patches.shape[-1]
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-        # patches = tf.reshape(patches, [-1, patch_dims])
         return patches
 
 class PatchEncoder(layers.Layer):
@@ -174,11 +173,7 @@ class PatchEncoder(layers.Layer):
 
     def call(self, patches):
         positions = tf.range(start=0, limit=self.num_patches, delta=1)
-        print('patch encoding')
-        print(patches)
-        print(positions)
         encoded = self.projection(patches) + self.position_embedding(positions)
-        print(encoded)
         return encoded
 
 

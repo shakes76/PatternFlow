@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-num_classes = 100
+num_classes = 2
 input_shape = (64, 64, 3)
 
 learning_rate = 0.001
