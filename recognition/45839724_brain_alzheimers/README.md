@@ -1,6 +1,6 @@
-# Perceiver Model for Knee Laterality Classification (OAI AOKA Knee MRI Dataset)
+# Perceiver Model for Knee Laterality Classification (OAI AKOA Knee MRI Dataset)
 
-The perceiver is a new model that aims to use transformers for classifcation of data of any modality. This may be a viable method for classifying the laterality of knees (left or right) which may help in automated sorting of data for medical purposes. The dataset is OI AOKA Knee MRI Dataset and contains 18680 images of 427 patients. The Perceiver model successfully classified test set knee data with an accuracy of 91%.
+The perceiver is a new model that aims to use transformers for classifcation of data of any modality. This may be a viable method for classifying the laterality of knees (left or right) which may help in automated sorting of data for medical purposes. The dataset is OI AKOA Knee MRI Dataset and contains 18680 images of 427 patients. The Perceiver model successfully classified test set knee data with an accuracy of 91%.
 
 ## Perceiver
 
@@ -15,13 +15,13 @@ The perceiver is a model recently released by Google Deepmind, that uses less ar
 *Figure 2: Perceiver accuracy competitive on ImageNET with Fourier Features (FF).*
 
 
-## Dataset (OAI AOKA) pre-processing
+## Dataset (OAI AKOA) pre-processing
 
 The data was pre-processed from the COMP3710 blackboard already. However, this was just a directory of images. The data was sorted based on which patient it belonged to, so a train/test set would not have leakage between patients. Patients and the laterality of knees are determined based on the string in the file names. The data is then shuffled. The data contains 7760 left knees and 10920 right knees. The same image resolution size was kept (228, 260) with a single channel as it only requires greyscale.
 
 ![](./diagrams/left_knee.png)
 
-*Figure 3: Example left knee image from OAI AOKA.*
+*Figure 3: Example left knee image from OAI AKOA.*
 
 ## Perceiver Architecture & Hyperparameters
 
@@ -75,7 +75,7 @@ The clasifier head consists of a global average pooling layer which takes in the
 - TensorFlow 2.6.0
 - Pillow 8.3.1
 - numpy 1.19.5
-- OAI AOKA Knee Dataset
+- OAI AKOA Knee Dataset
 
 ## Usage
 Run driver.py, and specify arguments manually at the beginning of the code (epochs, batch size etc.)
