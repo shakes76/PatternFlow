@@ -9,7 +9,67 @@
 
 ## Introduction
 
-GCN (Graph Convolutional Network) is similar with CNN(convolutional neural network) that can work directly on the graph and utilize its structural information. 
+GCN (Graph Convolutional Network) is similar with CNN(convolutional neural network) that can work directly on the graph and utilize its structural information. Early variants of neural networks can only be implemented using conventional or Euclidean data, but a large amount of real-world data has a non-Euclidean underlying graph structure, which causes the developments in GCN.
+
+
+<img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_process.png?raw=true">
+
+<br/>
+
+Formally, GCN is a neural network that operates on graphs. Given a graph \\(G = (V, E)\\), GCN takes as input:
+
+- The feature description \\(x_i\\) of each node \\(i\\); summarized in an \\(N × D \\) feature matrix \\(X \\) (\\(N \\): number of nodes, \\(D \\): number of input features)
+- \\(A \\) representative description of the graph structure in matrix form; usually in the form of the adjacency matrix (\\(A \\))
+
+And then generate output \\(Z \\) (\\(N × F \\) feature matrix, \\(F \\): the number of output features for each node). 
+
+<br/>
+
+Each neural network layer take input with the adjacency matrix \\(A \\) and feature matrix \\(H \\), so the simple forward propagation equation is:
+
+$$
+H^{(l+1)}=\sigma(AH^{(l)}W^{(l)})
+$$
+
+- \\(W^{(l)} \\) is a weight matrix for the \\(l \\)-th neural network layer 
+- \\(\sigma \\) is a activation function
+
+<br/>
+
+The simple model has two limitations:
+
+1. When we multiply \\(A \\), for each note, we add all the feature vectors of all adjacent nodes, not the node itself. Therefore, the identity matrix will be added to \\(A \\).
+2. \\(A \\) is not unnormalized, so if multipling with \\(A \\), the scale of the feature vectors will be change. Therefore, \\(A \\) should be normalized.
+
+After applying these two solution, we will get a new forward propagation equation:
+
+$$
+H^{(l+1)}=\sigma(\widetilde{D}^{-\frac{1}{2}}\widetilde{A}\widetilde{D}^{-\frac{1}{2}} H^{(l)}W^{(l)})
+$$
+
+- \\(\hat{A} = A + I \\)
+- \\(I \\) is the identity matrix
+- \\(\hat{D} \\) is degree matrix of \\(\hat{A} \\)
+
+<br/>
+
+With 3-Layer GCN,the form of the forward model is:
+
+$$
+Z = f(X,A) = softmax(\hat{A}ReLU(\hat{A} ReLU(\hat{A} X W^{(0)}) W^{(1)}) W^{(2)})
+$$
+
+After one-hot encoding, we get a 4-dimensional label dataset, and \\(F \\) will be set to 4. After obtaining 4-dimensional vectors in the third layer, we use the softmax function to predict these vectors.
+
+<br/>
+
+Finally, we use categorical cross-entropy to calculate the error.
+
+$$
+\mathrm{Loss} = -\sum_{l∈y_L} \sum_{f=1}^{F} Y_{lf}\ln{Z_{lf}}
+$$
+
+- \\(y_L \\) is the set of node indices that have labels
 
 
 
@@ -47,7 +107,8 @@ GCN (Graph Convolutional Network) is similar with CNN(convolutional neural netwo
 - load the dataset of Facebook Large Page-Page Network
 - normalize the feature data
 - build and normalize the adjacency matrix
-- one-hot encode labels  
+- convert labels to one-hot encoding
+- create Boolean masks for training, validation, and testing dataset. The elements of those masks are True when they belong to corresponding dataset. 
 
 2. build GCN model: 
 
@@ -57,8 +118,9 @@ GCN (Graph Convolutional Network) is similar with CNN(convolutional neural netwo
 - layer_4: Dropout(0.3)
 - layer_5: GraphConvolutionLayer(input_dim=16, output_dim=4, activation=softmax)
 
-3. Train GCN model:
+3. train GCN model:
 
+- GCN model take 2 input, the Node Features Matrix (X) and Adjacency Matrix (A), respectively
 - calculate loss by Categorical Cross entropy function
 - calculate gradients
 - update weights (Adam: learning rate = 0.01, decay = 5e-5)
@@ -119,8 +181,3 @@ _________________
 ## Reference
 
 [1] T. N. Kipf and M. Welling, [“Semi-Supervised Classification with Graph Convolutional Networks,”](http://arxiv.org/abs/1609.02907) 2016.
-
-
-```python
-
-```
