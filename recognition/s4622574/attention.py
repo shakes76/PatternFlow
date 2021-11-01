@@ -2,10 +2,10 @@ from tensorflow.keras import layers
 import tensorflow as tf
 
 def MLP_module(input, queryDim):
+    """Feedforward the input to MLP"""
+    #use GELU
     input = layers.LayerNormalization()(input)
-
-    result = layers.Dense(queryDim, activation=tf.nn.gelu)(input)
-
+    result = layers.Dense(queryDim, activation=tf.nn.gelu)(input)  
     return layers.Dense(queryDim)(result)
 
 def attention_mechanism(latentDim, inputDim, queryDim):

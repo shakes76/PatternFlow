@@ -6,15 +6,14 @@ import tensorflow_addons as tfa
 import copy
 
 class Perceiver(tf.keras.Model):
-    def __init__(self, patch_size, data_size, latent_size, proj_size, num_heads,
+    def __init__(self, inDim, latentDim, proj_size, num_heads,
             num_trans_blocks, num_loop, max_freq, freq_ban, lr, epoch, 
             weight_decay):
 
         super(Perceiver, self).__init__()
 
-        self.latent_size = latent_size
-        self.data_size = data_size
-        # self.patch_size = patch_size
+        self.latentDim = latentDim
+        self.inDim = inDim
         self.proj_size = proj_size
         self.num_heads = num_heads
         self.num_trans_blocks = num_trans_blocks
@@ -27,16 +26,16 @@ class Perceiver(tf.keras.Model):
 
     def build(self, input_shape):
 
-        self.latents = self.add_weight(shape=(self.latent_size, self.proj_size),
+        self.latents = self.add_weight(shape=(self.latentDim, self.proj_size),
                 initializer="random_normal", trainable=True, name='latent')
 
         self.fourier_encoder = FourierEncode(self.max_freq, self.freq_ban)
 
 
-        self.attention_mechanism = attention_mechanism(self.latent_size,
-                self.data_size, self.proj_size)
+        self.attention_mechanism = attention_mechanism(self.latentDim,
+                self.inDim, self.proj_size)
 
-        self.transformer = transformer_layer(self.latent_size, self.proj_size,
+        self.transformer = transformer_layer(self.latentDim, self.proj_size,
                 self.num_heads, self.num_trans_blocks)
 
         self.global_average_pooling = layers.GlobalAveragePooling1D()
@@ -92,8 +91,8 @@ def fitModel(model, train_set, val_set, test_set, batch_size):
 
     return history
 
-def transformer_layer(latent_size, proj_size, num_heads, num_trans_blocks):
-    inputs_orig = layers.Input(shape=(latent_size, proj_size))
+def transformer_layer(latentDim, proj_size, num_heads, num_trans_blocks):
+    inputs_orig = layers.Input(shape=(latentDim, proj_size))
 
     input_plus_output = copy.deepcopy(inputs_orig)
 
