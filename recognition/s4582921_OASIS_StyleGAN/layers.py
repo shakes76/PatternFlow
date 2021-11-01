@@ -1,3 +1,19 @@
+"""
+layers.py
+
+File containing any modified layers in the StyleGAN2.
+
+Requirements:
+    - tensorflow-gpu - 2.4.1
+    - matplotlib - 3.4.3
+
+Author: Bobby Melhem
+Python Version: 3.9.7
+
+Code logic based from : https://github.com/manicman1999/StyleGAN2-Tensorflow-2.0/blob/989306792ca49dcbebb353c4f06c7b48aeb3a9e3/conv_mod.py
+"""
+
+
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, InputSpec
 from tensorflow.keras.backend import expand_dims, sqrt, sum, square

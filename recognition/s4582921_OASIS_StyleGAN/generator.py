@@ -1,3 +1,16 @@
+"""
+generator.py
+
+The file containing the generator class and its parameters.
+
+Requirements:
+    - tensorflow-gpu - 2.4.1
+    - matplotlib - 3.4.3
+
+Author: Bobby Melhem
+Python Version: 3.9.7
+"""
+
 import tensorflow as tf
 from tensorflow.keras.backend import *
 from tensorflow.keras.layers import *
@@ -10,7 +23,8 @@ from layers import Conv2DModulation
 #Hyper Parameters
 KERNEL_SIZE = 3
 ALPHA = 0.2
-BETA = 0.999
+BETA1 = 0
+BETA2 = 0.999
 
 
 class Generator():
@@ -41,7 +55,7 @@ class Generator():
         self.style = self.build_style()
         self.model = self.build_model()
 
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0, BETA)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, BETA1, BETA2)
 
 
     def train_block(self, input, style, noise, filters):

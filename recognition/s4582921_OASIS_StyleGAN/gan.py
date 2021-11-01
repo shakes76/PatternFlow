@@ -1,3 +1,17 @@
+"""
+gan.py
+
+The file containing the GAN class and its parameters.
+
+Requirements:
+    - tensorflow-gpu - 2.4.1
+    - matplotlib - 3.4.3
+
+Author: Bobby Melhem
+Python Version: 3.9.7
+"""
+
+
 import os
 from time import time
 from math import log2
@@ -16,20 +30,20 @@ from discriminator import Discriminator
 DELTA = 0.000001
 
 #Number of epochs
-EPOCHS = 200
+EPOCHS = 500
 
 #Number of times to run discriminator/generator in seperate training
 DISCRIMINATOR_RUNS = 1
 GENERATOR_RUNS = 1
 
 #Context specific image settings
-IMAGE_SIZE = 256
+IMAGE_SIZE = 128
 CHANNELS = 1
-BATCH_SIZE = 4 
+BATCH_SIZE = 8 
 
 #Hyper Parameters
 LEARNING_RATE = 0.0001
-LATENT_SIZE = 128
+LATENT_SIZE = 256
 PENALTY = 10
 MIXED_PROBABILITY = 0.9
 PATH_LENGTH_DECAY = 0.01
@@ -81,7 +95,7 @@ class GAN():
         self.path_length_average = 0
 
 
-    def load_data(self, image_paths): 
+    def load_data(self, cache_path, image_paths): 
         """
         Loads the data into a tensorflow tensor and scales down to image size and appropriate channels.
         Segments and caches data into batches.
@@ -90,9 +104,13 @@ class GAN():
             image_paths : A list of paths to the images to load
 
         """
+
+        if not os.path.exists(cache_path):
+            os.mkdir(cache_path)
+
         image_tensor = tf.convert_to_tensor(image_paths, dtype=tf.string)
         dataset = tf.data.Dataset.from_tensor_slices(image_tensor)
-        dataset = dataset.map(preprocessing, num_parallel_calls=8).cache(CACHE_PATH)
+        dataset = dataset.map(preprocessing, num_parallel_calls=8).cache(cache_path)
         dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE).batch(BATCH_SIZE)
         self.dataset = dataset
 
@@ -162,8 +180,8 @@ class GAN():
         w_delta = []
 
         for i in range(len(w)):
-            deviation = std(w[i], axis=0, keepdims=True, )
-            w_delta.append(w[i] + random_normal(tf.shape(w[i])) / deviation)
+            deviation = std(w[i], axis=0, keepdims=True)
+            w_delta.append(w[i] + random_normal(tf.shape(w[i])) * deviation * PENALTY)
 
         new_images = self.generator.model(w_delta + noise)
 
@@ -201,7 +219,7 @@ class GAN():
                 real_predictions = self.discriminator.model(batch, training=True)
                 fake_predictions = self.discriminator.model(fake_batch, training=True)
 
-                discriminator_loss = self.discriminator.h_loss(real_predictions, fake_predictions)
+                discriminator_loss = self.discriminator.w_loss(real_predictions, fake_predictions)
 
                 discriminator_loss += self.gradient_penalty(batch, fake_batch)
 
@@ -221,7 +239,7 @@ class GAN():
 
                 fake_predictions = self.discriminator.model(fake_batch, training=True)
 
-                generator_loss = self.generator.h_loss(fake_predictions)
+                generator_loss = self.generator.w_loss(fake_predictions)
 
                 if penalty:
                     path_lengths = self.path_length_regularization(w, noise, fake_batch)
@@ -245,15 +263,16 @@ class GAN():
         return tf.reduce_mean(generator_loss), tf.reduce_mean(discriminator_losses)
 
 
-    def train_step(self, batch): 
+    def train_step(self, batch, path_regularization): 
         """
         Training step for the StyleGAN over a batch of images.
 
         Args:
             batch : batch of input images
+            path_regularization : whether to calculate new path lengths
 
         Returns:
-            A tuple containing the calculated generator and discriminator loss.
+            A tuple containing the calculated generator and discriminator loss as well as path lengths.
         """
 
         style = self.generate_style(MIXED_PROBABILITY)
@@ -269,14 +288,13 @@ class GAN():
             real_predictions = self.discriminator.model(batch, training=True)
             fake_predictions = self.discriminator.model(fake_batch, training=True)
 
-            generator_loss = self.generator.loss(fake_predictions)
-            discriminator_loss = self.discriminator.loss(real_predictions, fake_predictions)
+            generator_loss = self.generator.h_loss(fake_predictions)
+            discriminator_loss = self.discriminator.h_loss(real_predictions, fake_predictions)
 
             discriminator_loss += self.gradient_penalty(batch, fake_batch)
 
-            #Had better results without path length regularisation.
-            """
-            if False:
+            if path_regularization:
+
                 path_lengths = self.path_length_regularization(w, noise, fake_batch)
 
                 if self.path_length_average > 0:
@@ -284,19 +302,13 @@ class GAN():
             else:
                 path_lengths = self.path_length_average
 
-            if self.path_length_average == 0:
-                self.path_length_average = tf.get_static_value(tf.reduce_mean(path_lengths))
-
-            self.path_length_average = PATH_LENGTH_DECAY * tf.get_static_value(tf.reduce_mean(path_lengths)) + (1 - PATH_LENGTH_DECAY) * self.path_length_average
-            """
-            
             generator_variables = self.generator.model.trainable_variables
             discriminator_variables = self.discriminator.model.trainable_variables
 
             self.generator.optimizer.apply_gradients(zip(generator_tape.gradient(generator_loss, generator_variables), generator_variables))
             self.discriminator.optimizer.apply_gradients(zip(discriminator_tape.gradient(discriminator_loss, discriminator_variables), discriminator_variables))
 
-        return generator_loss, discriminator_loss
+        return generator_loss, discriminator_loss, path_lengths
 
 
     def train(self, epochs):
@@ -316,13 +328,27 @@ class GAN():
             generator_losses = []
             discriminator_losses = []
 
+            fixed_style =  [tf.random.normal([SAMPLE_COUNT, LATENT_SIZE], 0, 1)] * BLOCKS
+
+            fixed_noise = [tf.random.uniform([BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1], 0, 1)]
+
+            path_regularization = True
+
             for batch in self.dataset:
 
-                generator_loss, discriminator_loss = self.train_step(batch)
+                path_regularization = not path_regularization
 
+                generator_loss, discriminator_loss, path_lengths = self.train_step(batch, path_regularization)
 
                 generator_losses.append(generator_loss)
                 discriminator_losses.append(discriminator_loss)
+
+                if self.path_length_average == 0:
+
+                    self.path_length_average = tf.get_static_value(tf.reduce_mean(path_lengths))
+
+                self.path_length_average = PATH_LENGTH_DECAY * tf.get_static_value(tf.reduce_mean(path_lengths)) + (1 - PATH_LENGTH_DECAY) * self.path_length_average
+            
 
             epoch_end = time()
             epoch_time = epoch_end - epoch_start
@@ -334,7 +360,7 @@ class GAN():
                 ", generator_loss =" , str(self.generator_loss_averages[-1]), \
                 ", discriminator_loss =" , str(self.discriminator_loss_averages[-1]))
 
-            self.save_samples(SAMPLE_COUNT, SAMPLE_PATH, epoch)
+            self.save_samples(fixed_style, fixed_noise, SAMPLE_PATH, epoch)
 
             self.plot_losses(SAMPLE_PATH)
 
@@ -354,6 +380,9 @@ class GAN():
             path : the path to save the weight files at.
             epoch : the current epoch of training
         """
+
+        if not os.path.exists(path):
+            os.mkdir(path)
 
         self.generator.model.save_weights(path + '/generator/epoch' + str(epoch) + '.ckpt')
         self.discriminator.model.save_weights(path + '/discriminator/epoch' + str(epoch) + '.ckpt')
@@ -395,21 +424,21 @@ class GAN():
         self.generator.style.load_weights(tf.train.latest_checkpoint(path + '/style'))
 
 
-    def save_samples(self, count, path, epoch):
+    def save_samples(self, style, noise, path, epoch):
         """
         Save a batch of images to a file based on the given epoch.
 
         Args:
-            count : number of samples to save
+            style : style to generate images from
+            noise : noise to generate images from
             path : the path to save the samples to
             epoch : the current epoch
         """
 
-        style = [tf.random.normal([count, LATENT_SIZE], 0, 1)] * BLOCKS
-
-        noise = [tf.random.uniform([BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 1], 0, 1)]
-
         samples = self.generator.model(style + noise)
+
+        if not os.path.exists(path):
+            os.mkdir(path)
 
         if not os.path.exists(path + '/epoch' + str(epoch)):
             os.mkdir(path + '/epoch' + str(epoch))

@@ -1,3 +1,18 @@
+"""
+driver.py
+
+The driver script containing main for the StyleGan2 implementation.
+
+Requirements:
+    - tensorflow-gpu - 2.4.1
+    - matplotlib - 3.4.3
+
+Author: Bobby Melhem
+Python Version: 3.9.7
+
+"""
+
+
 import argparse
 import os
 from glob import glob 
@@ -66,7 +81,7 @@ def main():
     print(styleGAN.generator.model.summary())
     print(styleGAN.discriminator.model.summary())
 
-    styleGAN.load_data(IMAGE_PATHS)
+    styleGAN.load_data(gan.CACHE_PATH, IMAGE_PATHS)
 
     if args.load == "weights":
         styleGAN.load_weights(gan.CHECKPOINTS_PATH)

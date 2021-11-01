@@ -1,3 +1,17 @@
+"""
+discriminator.py
+
+The file containing the discriminator class and its parameters.
+
+Requirements:
+    - tensorflow-gpu - 2.4.1
+    - matplotlib - 3.4.3
+
+Author: Bobby Melhem
+Python Version: 3.9.7
+"""
+
+
 import tensorflow as tf
 from tensorflow.keras.backend import *
 from tensorflow.keras.layers import *
@@ -6,7 +20,8 @@ from tensorflow.keras.models import Model
 
 #Hyper Parameters
 KERNEL_SIZE = 3
-BETA = 0.999
+BETA1 = 0
+BETA2 = 0.999
 ALPHA = 0.2
 
 
@@ -35,7 +50,7 @@ class Discriminator():
         self.channels = channels
 
         self.model = self.build_model()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0, BETA)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, BETA1, BETA2)
 
 
     def train_block(self, input, filters):
@@ -95,7 +110,7 @@ class Discriminator():
 
         criterion = tf.keras.losses.BinaryCrossentropy()
 
-        return criterion(tf.ones_like(real_output), real_output) + criterion(tf.zeros_like(fake_output), fake_output)
+        return criterion(tf.ones_like(real_output), real_output) + criterion(tf.zeros_like(fake_output), fake_output) / 2
 
 
     def l_loss(self, real_output, fake_output):
