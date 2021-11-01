@@ -1,12 +1,14 @@
 # StyleGAN Implementation
 
 ## Preview
-This project is an implementtion on StyleGAN networks based on
-the paper ...
+This project is a PyTorch implemention on StyleGAN networks based on
+the paper [A Style-Based Generator Architecture for Generative Adversarial Networks](https://arxiv.org/abs/1812.04948)
 
-![img.png](img.png)
+![](previews/style-based-generator.png)
 
-"We first map the input to an intermediate latent space W,
+*Image 1. A style-based generator*
+
+>"We first map the input to an intermediate latent space W,
 which then controls the generator through adaptive
 instance normalization (AdaIN) at each convolution layer.
 Gaussian noise is added after each convolution, before
@@ -19,7 +21,7 @@ converted to RGB using a separate 1 × 1 convolution, similar to
 Karras et al. [30]. Our generator has a total of 26.2M trainable
 parameters, compared to 23.1M in the traditional generator."
 
-As an example, we will train a StyleGAN model to generate MRI image slices of 
+To demonstrate the generation power of StyleGANs, we will train a model to generate MRI image slices of 
 the human brain.
 
 ## Training
@@ -74,11 +76,11 @@ For comparison, this is an original image:
 
 ![](previews/case_018_slice_20.nii.png)
 
-It takes a long time and a lot of samples and progressive levels to reach 
-these generated images. In the process, images similar to these
-were generated:
+The following series of images illustrate the process of learning:
 
-![](previews/generated-87900.png)
+![](previews/generated-62000.png)![](previews/generated-82800.png)![](previews/generated-90600.png)
+![](previews/generated-105800.png)![](previews/generated-112600.png)
+![](previews/generated-138000.png)![](previews/generated-164600.png)
 
 ### Dependencies
 Training uses the following dependencies:
