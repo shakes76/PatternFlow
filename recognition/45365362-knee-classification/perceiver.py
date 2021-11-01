@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 
 num_classes = 2
 input_shape = (128, 128, 1)
+batch_size = 16
+EPOCHS = 10
 
 # get data
 
@@ -232,7 +234,7 @@ def run_model(model):
         x=X_train,
         y=y_train,
         batch_size=batch_size,
-        epochs=num_epochs,
+        epochs=EPOCHS,
         callbacks=[reduce_lr],
     )
 
