@@ -34,6 +34,10 @@ The preprocessing also includes normalisation of the adjacency matrix, for bette
 
 - The GCN model applies a weight to the inputs (the adjacency matrix and features) in order to create the multiple layers of the GCN. The final layer produces a prediction of the classes, which can then be visualised using a t-SNE plot.
 
+### Example Results
+
+![Accuracy Plot](model accuracy.jpeg)
+![Loss Plot](model loss.jpeg)
 
 ### Dependencies
 
@@ -45,13 +49,8 @@ The preprocessing also includes normalisation of the adjacency matrix, for bette
 
 
 ## Visualisation
-
-
-### Examples
-
-
-
-
+A t-distributed Stochastic Neighbour Embedding (t-SNE) plot was used to visualise the results.
+![t-SNE Plot](tsne_plot.jpeg)
 
 ## References
 
