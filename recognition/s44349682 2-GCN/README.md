@@ -5,7 +5,7 @@
 Multilayer GCN classification of Facebook Large Page-Page Network dataset
 
 ## Problem Description
-The Facebook Large Page-Page Network dataset is a connected undirected graph of linked Facebook pages, [link](https://graphmining.ai/datasets/ptg/facebook.npz).
+The Facebook Large Page-Page Network dataset is a connected, undirected, unweighted graph of linked Facebook pages, [link](https://graphmining.ai/datasets/ptg/facebook.npz).
 
 Each page is provided with a set of features representing extracted information from the page's description.
 
@@ -38,21 +38,23 @@ The matrix operation which computes this feature update is shown below:
 ![Layer Output](https://lh5.googleusercontent.com/fCocp4xdLQkhtbKLAbrnnokRoagd_Q2BRKuMCNdwWaGIN-zOL0Mywefl-GOGf0bVllh-got4D3bpnuRpp4eiWp0Be-LsvwozavnyXT6LguFDQ_8QPYp0IPs1T44jwA0pc2PXcPS9)
 https://www.experoinc.com/post/node-classification-by-graph-convolutional-network
 - Sigma: The activation function
-- D^: The degree matrix of the updated Adjacency matrix (A Diagonal matric where D(i,i) = the number of edges from Node i)
-- A^: The updated Adjacency matrix, where A(i,j) = 1 if there is an edge between nodes i and j, with added self-loops (edges from a node to itself)
+- D^: The degree matrix of the normalised Adjacency matrix (A Diagonal matric where D(i,i) = the number of edges from Node i)
+- A^: The normalised Adjacency matrix, where A(i,j) = 1 if there is an edge between nodes i and j, with added self-loops (edges from a node to itself i.e. A + I)
 - H: The feature matrix for each node
 - W: The weight matrix which is optimized when learning the model
 
 ### Setup
 The data is broken into a 0.2/0.2/0.6 train/val/test split for semi-supervised learning.
-The GCN contains three convolutional layers with dropout between, reducing the 128 features into 64 then 32 hidden layers, before reducing into the 4 classifiers.
+Labels were one-hot encoded as the categories are nominalised.
+The GCN contains three convolutional layers with dropout layers between, reducing the 128 features into 64 then 32 hidden layers, before reducing into the 4 classifiers. The dropout layers randomly drop values, generating some variation in the training to improve robustness and accuracy of the model.
 The first two layers use ReLU activation while the final uses softmax.
 
 The model was originally set up as seen below, however testing showed improvements to the accuracy and loss metrics after adding the additional convolution and dropout layers.
 ![Example model](https://lh5.googleusercontent.com/3B2YByoRwIDHupMT8zI2seOkl4ETPP0DySySOV55aF2R5mPyksmbYgLZuXCrAKWJ5OzmtCqpeqXEb409Mf4NMfM7iJ7zhcEpOY5oirZ--Ap8904oleE-Y03xlq8rhIvs5hNBECYM)
 https://www.experoinc.com/post/node-classification-by-graph-convolutional-network
 
-
+Number of epochs was 200 and learning rate was 0.01.
+Kernel regularizer of GCN layers was l2(5e-4)
 
 ## Results
 ### Training and Validation
@@ -66,6 +68,9 @@ https://www.experoinc.com/post/node-classification-by-graph-convolutional-networ
 ![Testing](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/Testing.png)
 ### TSNE
 ![TSNE](https://raw.githubusercontent.com/Sinquios/PatternFlow/topic-recognition/recognition/s44349682%202-GCN/TSNE.png)
+
+Testing with additional convolutional layers may improve results, as moving from 2 to 3 increased accuracy by around 8%.
+Hyperparameters could be changed to improve results as well, however I would suggest splitting the data randomly to produce unique training sets for each epoch to help reduce overfitting issues and improve overall precision.
 
 ## Usage
 Run the drive.py file to generate the model and receive all outputs seen below.
