@@ -1,11 +1,8 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import keras
 from tensorflow import keras
-from keras import layers, preprocessing
 from tensorflow.keras.layers import Conv2D, UpSampling2D, LeakyReLU, Dropout, BatchNormalization, Input, Add, concatenate
-from tensorflow.python.keras.layers.core import Activation
 from tensorflow.python.ops.numpy_ops import np_config
 np_config.enable_numpy_behavior()
 
