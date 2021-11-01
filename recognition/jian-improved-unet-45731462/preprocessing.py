@@ -122,7 +122,6 @@ def main():
         training the model, with dice scores, accuracy and loss graphs used for evaluations of 
         the Improved Unet model. 
     """
-    
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
     # read images from file directory, and ensure variables with 4 dimensions
@@ -138,8 +137,8 @@ def main():
     train = 0.7
     valid= 0.15
     test = 0.15
-    x_train, x_test, y_train, y_test = train_test_split(inputs, labels, test_size=1-train)
-    x_valid, x_test, y_valid, y_test = train_test_split(x_test, y_test, test_size=test/(test + valid))
+    x_train, x_test, y_train, y_test = train_test_split(inputs, labels, test_size=1-train, random_state=0)
+    x_valid, x_test, y_valid, y_test = train_test_split(x_test, y_test, test_size=test/(test + valid), random_state=0)
 
     height = 96
     width = 128
@@ -180,6 +179,33 @@ def main():
     for c in range(desired_channel):
         coeff = dice(predicted[:,:,:,c], y_test[:,:,:,c])
         print(f"Dice Score for Channel {c}: {coeff}")
+
+    # Get predicted image
+    # predicted = np.argmax(predicted, axis=3)
+
+    # Save the First Image
+    # image_saved = predicted[0]
+
+    # h, w = image_saved.shape
+    # print(h)
+    # print(w)
+
+    # # converts to 1D
+    # saved = np.ravel(image_saved)
+
+    # # ensures the input image is either values of 0 or 1
+    # saved[saved == 1] = 255
+
+    # saved = saved.reshape((h, w))
+    # print(saved.shape)
+
+    # cv2.imwrite("predicted.png", saved)
+
+    # get test image
+
+    
+
+
 
 
 if __name__ == "__main__":
