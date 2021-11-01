@@ -27,7 +27,7 @@ GCN is a neural network for a graph data. The graph consists of two components: 
 #### Training Plot
 ![GCN](./data/Accuracy.png)
 #### Node embeddings
-![GCN](./data/Node embeddings.png)
+![GCN](./data/Embedding.png)
 
 ## Reference
 [1] https://arxiv.org/abs/1609.02907
