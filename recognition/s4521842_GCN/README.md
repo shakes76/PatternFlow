@@ -26,10 +26,7 @@ And then generate output \\(Z \\) (\\(N × F \\) feature matrix, \\(F \\): the n
 <br/>
 
 Each neural network layer take input with the adjacency matrix \\(A \\) and feature matrix \\(H \\), so the simple forward propagation equation is:
-
-$$
-H^{(l+1)}=\sigma(AH^{(l)}W^{(l)})
-$$
+![](http://latex.codecogs.com/gif.latex?$$H^{(l+1)}=\sigma(AH^{(l)}W^{(l)})$$)
 
 - \\(W^{(l)} \\) is a weight matrix for the \\(l \\)-th neural network layer 
 - \\(\sigma \\) is a activation function
