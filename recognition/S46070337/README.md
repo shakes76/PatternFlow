@@ -25,9 +25,10 @@ As well the upsampling module can replace the convolution layers' transpose, the
 My directory contains a README.md , a directory 'Screenshots' contains several pictures of the outputs from the two python files, model.py and test.py:
 
 Improved Unet model has been built in model.py. and test.py contains other functions and scrips for running the algorithm and results visualization.
+My dice coefficient value on test set is 0.81. 
 
 ## Evaluation
-All the evaluation procedure based on epoch 10.
+All the evaluation procedure based on epoch 50.
 #### 1. Visualization of the prediction
 ##### 1.1 Ground Truth
 #####     The image below is the ground truth image:
@@ -42,3 +43,11 @@ All the evaluation procedure based on epoch 10.
 #####     The image below is the Accuracy and Loss during training:
 <image width="700" src="Screenshots/evaluation_curve.png" />
 
+#### Dependencies
+
+1. Python 3.7
+2. Tensorflow-gpu 2.1.0
+3. Keras
+4. scikit-learn model_selection
+5. Matplotlib
+6. Tensorflow_addons 
