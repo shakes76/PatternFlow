@@ -155,8 +155,22 @@ def preload_imgs(path):
         
     return dataset
 
-def show(img):
+def show_grid(img, save_path=None):
     npimg = img.numpy()
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(10, 10))
     plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
     plt.axis('off')
+    if save_path is not None:
+        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+    plt.show()
+
+def show_generated(vqvae, generated_q, save_path=None):
+    generated_encoded = vqvae.codebook(generated_q).permute(0, 3, 1, 2).contiguous()
+    generated = vqvae.decoder(generated_encoded)
+    show_grid(make_grid(generated.detach().cpu().data, nrow=8, padding=0), save_path=save_path)
+
+def show_q(q, save_path=None):
+    plt.imshow(q.detach().cpu().numpy()[0], cmap='gray')
+    if save_path is not None:
+        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+    plt.show()
