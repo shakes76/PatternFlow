@@ -2,21 +2,19 @@
 Author: Tuo Yuan (46095312) 
 
 ### Usage
-firstly, run the `preprocessing.py` to load the data from ISIC dataset, 
-it splite the data to
+1. Firstly, run the `preprocessing.py` to load the data from ISIC dataset, 
+it splite the data to .npy file.
 
-- data_train
-- data_test
-- data_val
-- mask_train
-- mask_test
-- mask_val
+   - data_train
+   - data_test
+   - data_val
+   - mask_train
+   - mask_test
+   - mask_val
 
-as .npy file.
+1. run `train.py`[2] to start trainning the model which is in the `model.py`[3]
 
-run `train.py`[2] to start trainning the model which is in the `model.py`[3]
-
-finally, run `driver.py`[2] to evaluate/test the performance
+2. Finally, run `driver.py`[2] to evaluate/test the performance
 
 ### Discription
 This module uses an improved U-Net neural network with 
