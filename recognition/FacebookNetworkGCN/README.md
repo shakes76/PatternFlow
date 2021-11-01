@@ -65,13 +65,15 @@ The src consists of FacebookNetworkGCNN.ipynb, which consists of all of the func
 ### GCN Implementation
 
 #### Facebook Large Page-Page Network dataset
-Since we used the partially processed dataset version, data preprocessing consisted only of converting the data to Pandas datasets.
+Since we used the partially processed dataset version, data preprocessing consisted only of converting the data to Pandas datasets. The graph can be seen below.
+
+![Graph](https://github.com/EvaHolden/PatternFlow/blob/topic-recognition/recognition/FacebookNetworkGCN/graph.png?raw=true)
 
 #### GCN
 
 The GCN is built using the Keras Functional API. We use Input layers, Dropout layers, and graph Convolution layers. The graph convolution layers are GATConv layers, from the Spektral package. The layers and parameters details are below. 
 
-![Convolution Theorem](https://miro.medium.com/max/900/1*d63IS1Rn8TgYLN2V6XKndw.png)
+![GCN Layers](https://github.com/EvaHolden/PatternFlow/blob/topic-recognition/recognition/FacebookNetworkGCN/gcnlayer.JPG?raw=true)
 
 #### Training the model
 
@@ -84,17 +86,17 @@ To evaluate the model we will use the T-distributed Stochastic Neighbour Embeddi
 
 t-SNE converts similarities between datapoints to probabilities and uses these to visualise high-dimensional data. The t-SNE embedding can be seen below. The grouping of data seen in the red lines indicates a high similarity between those data points, and as such we should expect to see a higher accuracy in the classification report for this category. However, the lines aren't continuous and the data points aren't necessarily grouped in the same location, so this could negatively affect the accuracy. Also category 3, coloured in red, is the category with the most notable grouping, whilst the others have significantly more variation. 
 
-![Convolution Theorem](https://miro.medium.com/max/900/1*d63IS1Rn8TgYLN2V6XKndw.png)
+![tSNE](https://github.com/EvaHolden/PatternFlow/blob/topic-recognition/recognition/FacebookNetworkGCN/tsne.png?raw=true)
 
 #### Accuracy
 The research conducted by [S. Lui, J. Park, and S. Yoo](https://www.osti.gov/servlets/purl/1580233) concludes that an accuracy of greater than 60% for GCN is required for a model to be valuable. This model reaches this accuracy, as seen in the figure below, however an even greater accuracy could be obtained by further processing the data to remove uncorrelated data or by using a larger dataset to train on. Alternatively, the t-SNE plot shows data of all categories grouping, and the separations between the groups are independent of the category. This heavily implies that the categories chosen, of politicians, government organisations, television shows and companies, are not the best feature to categorise the nodes by and there is likely some other feature that the groups have in common that could be more accurate in classifying the nodes.
 
-![Convolution Theorem](https://miro.medium.com/max/900/1*d63IS1Rn8TgYLN2V6XKndw.png)
+![Accuracy Plot](https://github.com/EvaHolden/PatternFlow/blob/topic-recognition/recognition/FacebookNetworkGCN/accuracy.png?raw=true)
 
 #### Loss
 The loss evaluates how much the predicted node classification deviates from the nodes actual classification. The figure below shows that the loss of the model is minimised, indicating that the node classification was accurate.
 
-![Convolution Theorem](https://miro.medium.com/max/900/1*d63IS1Rn8TgYLN2V6XKndw.png)
+![Loss Plot](https://github.com/EvaHolden/PatternFlow/blob/topic-recognition/recognition/FacebookNetworkGCN/loss.png?raw=true)
 
 ### References
 * https://www.osti.gov/servlets/purl/1580233 <br>
