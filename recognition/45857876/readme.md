@@ -79,7 +79,7 @@ torch
 ## Execute the code
 Training:  
     python train.py 
-Generate mixing image(test):  
+Generate mixing image(test):   
     python generate_mixing_figure.py --generator_file [new256/models/GAN_GEN_4_16.pth](for example)
 
 
