@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import os
@@ -15,7 +15,7 @@ import numpy as np
 import imageio
 
 
-# In[2]:
+# In[3]:
 
 
 #First loading all images into numpy arrays
@@ -50,7 +50,7 @@ print("X_train shape:",X_train.shape)
 print("X_test shape:",X_test.shape)
 
 
-# In[3]:
+# In[4]:
 
 
 class VQ(layers.Layer):
@@ -109,21 +109,16 @@ def encoder(dim=128):
     x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
     x = layers.Conv2D(128, (3,3), activation="relu", strides=1, padding="same")(x)
     x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
-    x = layers.Dropout(0.25,seed=55)(x)
     x = layers.Conv2D(64, (3,3), activation="relu", strides=1, padding='same')(x)
     x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
-    x = layers.Dropout(0.125,seed=55)(x)
     enc_outputs = layers.Conv2D(dim,(3,3),padding='same')(x)
 
     return keras.Model(enc_inputs,enc_outputs,name='encoder')
 
 def decoder(dim=128):
     latents = keras.Input(shape=encoder().output.shape[1:])
-    x = layers.Dropout(0.125,seed=55)(latents)
-    x = layers.Conv2DTranspose(64,(3,3),activation='relu',strides=(2,2),padding='same')(x)
-    x = layers.Dropout(0.25,seed=55)(x)
+    x = layers.Conv2DTranspose(64,(3,3),activation='relu',strides=(2,2),padding='same')(latents)
     x = layers.Conv2DTranspose(128,(3,3),activation='relu',strides=(2,2),padding='same')(x)
-    x = layers.Dropout(0.5,seed=55)(x)
     x = layers.Conv2DTranspose(256,(3,3),activation='relu',strides=(2,2),padding='same')(x)
     decoded = layers.Conv2DTranspose(1,3,padding='same')(x)
     return keras.Model(latents,decoded,name='decoder')
@@ -145,7 +140,7 @@ def vqvae(dim=128,N=512):
 vqvae().summary()
 
 
-# In[4]:
+# In[6]:
 
 
 #On to the training module
@@ -187,7 +182,7 @@ class vqvae_trainer(keras.models.Model):
               "VQVAE loss": self.vq_loss_tracker.result(),}
 
 
-# In[5]:
+# In[7]:
 
 
 train_var = np.var(X_train)
@@ -195,14 +190,14 @@ VQVAE_trainer = vqvae_trainer(train_var,dim=128,N=512)
 VQVAE_trainer.compile(optimizer=keras.optimizers.Adam())
 
 
-# In[6]:
+# In[8]:
 
 
 #VQVAE_trainer.fit(X_train,epochs=20,batch_size=32)
 VQVAE_trainer.load_weights('VQVAE')
 
 
-# In[7]:
+# In[9]:
 
 
 #Taking a look at reconstruction results
@@ -228,7 +223,7 @@ for test_image, reconstructed_image in zip(test_images, reconstructions_test):
     show_subplot(test_image, reconstructed_image)
 
 
-# In[8]:
+# In[10]:
 
 
 #Let us now have a look at the codes
@@ -240,6 +235,8 @@ encoded_outputs = my_encoder.predict(test_images)
 flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
 codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+print(codebook_indices.shape)
 
 for i in range(len(test_images)):
     plt.subplot(1, 2, 1)
@@ -254,19 +251,38 @@ for i in range(len(test_images)):
     plt.show()
 
 
-# In[9]:
+# In[26]:
+
+
+#Reconstructing the images in the test set to calculate SSIM
+reconstructed_test_images = trained_vqvae.predict(X_test)
+
+from skimage.metrics import structural_similarity as ssim
+
+SSIM=np.zeros(shape=(reconstructed_test_images.shape[0],))
+
+for i in range(len(SSIM)):
+    SSIM[i]=ssim(X_test[i,:,:,0],reconstructed_test_images[i,:,:,0])
+
+total_ssim=np.sum(SSIM)
+mean_ssim = total_ssim/X_test.shape[0]
+
+print("The mean SSIM on the test dataset is",mean_ssim)
+
+
+# In[102]:
 
 
 #Let's try to generate images with the codes using a PixelCNN
 
 #Defining the hyperparameters first
-n_residual_blocks = 2
-n_pixelcnn_layers = 2
+n_residual_blocks = 16
+n_pixelcnn_layers = 16
 pixelcnn_input_shape = encoded_outputs.shape[1:-1]
 print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
 
 
-# In[10]:
+# In[139]:
 
 
 class PixelCNNLayer(layers.Layer):
@@ -311,42 +327,179 @@ PixelCNN_inputs = keras.Input(pixelcnn_input_shape,dtype=tf.int32)
 
 one_hot = tf.one_hot(PixelCNN_inputs,VQVAE_trainer.N)
 
-x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(one_hot)
-x = PixelCNNLayer(mask_type='A',filters=512,kernel_size=32,activation='relu',padding='same')(x)
-x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
+x = PixelCNNLayer(mask_type='A',filters=128,kernel_size=7,activation='relu',padding='same')(one_hot)
 for elt in range(n_residual_blocks):
-    x = ResidualBlock(filters=512)(x)
-    x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
+    x = ResidualBlock(filters=128)(x)
 for elt in range(n_pixelcnn_layers):
-    x = PixelCNNLayer(mask_type='B',filters=512,kernel_size=1,strides=1,
+    x = PixelCNNLayer(mask_type='B',filters=128,kernel_size=1,strides=1,
                      activation='relu',padding='valid')(x)
-    x = layers.MaxPool2D(pool_size=(2,2),strides=2,padding='same')(x)
-
 output_layer = layers.Conv2D(filters=VQVAE_trainer.N,kernel_size=1,strides=1,padding='same')(x)
 
 PixelCNN = keras.Model(PixelCNN_inputs,output_layer,name='PixelCNN')
 PixelCNN.summary()
 
 
-# In[19]:
+# In[133]:
 
 
-#Generating the codebook indices.
-#print(encoded_outputs.shape)
-#print(encoded_outputs.reshape(-1, encoded_outputs.shape[-1]).shape)
-#print(X_train.shape)
-for i in range(X_train.shape[0]):
-    encoded_outputs = my_encoder.predict(X_train[i])
-    print(encoded_outputs.reshape(-1, encoded_outputs.shape[-1]).shape)
-    flat_enc_outputs = encoded_outputs.reshape(-1,encoded_outputs.shape[-1])
-    codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
-    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-#encoded_outputs = my_encoder.predict(X_train)
-#flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-#codebook_indices = my_quantiser.get_code_indices(flat_enc_outputs)
+new_codebook_indices = np.zeros(shape=(9664,32,32))
 
-#codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-#print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
+#Generating the codebook indices
+#Had to do it batch by batch (each containing 64 images)
+#hence why the loop goes to 151, because 64x151=9664 which
+#is the size of the training set
+for i in range(151):
+    encoded_output = my_encoder.predict(X_train[64*i:64*(i+1)])
+    flat_enc_output = encoded_output.reshape(-1,encoded_output.shape[-1])
+    codebook_idx = my_quantiser.get_code_indices(flat_enc_output)
+    codebook_idx = codebook_idx.numpy().reshape(encoded_output.shape[:-1])
+    new_codebook_indices[64*i:64*(i+1)] = codebook_idx
+
+print(f"Shape of the training data for PixelCNN: {new_codebook_indices.shape}")
+
+
+# In[140]:
+
+
+PixelCNN.compile(
+    optimizer=keras.optimizers.Adam(0.001),
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+PixelCNN.fit(
+    x=new_codebook_indices,
+    y=new_codebook_indices,
+    batch_size=32,
+    epochs=100,
+    validation_split=0.1,
+)
+
+PixelCNN.save_weights('PixelCNN')
+
+
+# In[141]:
+
+
+#We can now focus on image generation.
+#Below we create a non trained model off the previous pixelCNN
+#which will serve for generation
+
+import tensorflow_probability as tfp
+
+pixel_inputs = layers.Input(shape=PixelCNN.input_shape[1:])
+x = PixelCNN(pixel_inputs,training=False)
+dist = tfp.distributions.Categorical(logits=x)
+sampled = dist.sample()
+sampler = keras.Model(pixel_inputs,sampled)
+
+
+# In[142]:
+
+
+#Let's finally generate images
+
+nb_images = 10
+priors = np.zeros(shape=(nb_images,)+(PixelCNN.input_shape[1:]))
+nb_images, rows, cols = priors.shape
+
+for row in range(rows):
+    for col in range(cols):
+        probs = sampler.predict(priors)
+        priors[:,row,col]=probs[:,row,col]
+
+print(f"Prior shape : {priors.shape}")
+
+
+# In[143]:
+
+
+pretrained_embeddings = my_quantiser.codebook
+priors_one_hot = tf.one_hot(priors.astype("int32"),VQVAE_trainer.N).numpy()
+quantised = tf.matmul(priors_one_hot.astype("float32"),pretrained_embeddings,transpose_b=True)
+quantised = tf.reshape(quantised,(-1,*((32,32,128))))
+
+pixel_decoder = VQVAE_trainer.vq_vae.get_layer("decoder")
+generated_samples = pixel_decoder.predict(quantised)
+
+for i in range(nb_images):
+    plt.subplot(1, 2, 1)
+    plt.imshow(priors[i],cmap='gray')
+    plt.title("Code")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated_samples[i].squeeze(),cmap='gray')
+    plt.title("Generated Sample")
+    plt.axis("off")
+    plt.show()
+
+
+# In[164]:
+
+
+#Now generating the test codebook indices to generate images off them with the pixel CNN
+
+test_encoded_outputs = my_encoder.predict(X_test)
+test_flat_enc_outputs = test_encoded_outputs.reshape(-1,test_encoded_outputs.shape[-1])
+test_codebook_indices = my_quantiser.get_code_indices(test_flat_enc_outputs)
+test_codebook_indices = test_codebook_indices.numpy().reshape(test_encoded_outputs.shape[:-1])
+
+print(f"Shape of the test data for PixelCNN: {test_codebook_indices.shape}")
+
+
+# In[167]:
+
+
+#Onto the actual generation
+test_codebook_indices_one_hot = tf.one_hot(test_codebook_indices.astype("int32"),VQVAE_trainer.N).numpy()
+test_quantised = tf.matmul(test_codebook_indices_one_hot.astype("float32"),pretrained_embeddings,transpose_b=True)
+test_quantised = tf.reshape(test_quantised,(-1,*((32,32,128))))
+
+generated_test_samples = pixel_decoder.predict(test_quantised)
+generated_test_samples.shape
+
+
+# In[171]:
+
+
+#Little visualisation of a random 10 images
+test_idx = np.random.choice(len(X_test), 10)
+for i in range(len(test_idx)):
+    plt.subplot(1, 3, 1)
+    plt.imshow(X_test[test_idx[i]],cmap='gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 3, 2)
+    plt.imshow(test_codebook_indices[test_idx[i]],cmap='gray')
+    plt.title("Code")
+    plt.axis("off")
+    
+    plt.subplot(1, 3, 3)
+    plt.imshow(generated_test_samples[test_idx[i]].squeeze(),cmap='gray')
+    plt.title("PixelCNN generated Sample")
+    plt.axis("off")
+    plt.show()
+
+
+# In[172]:
+
+
+test_SSIM=np.zeros(shape=(X_test.shape[0],))
+
+for i in range(len(test_SSIM)):
+    test_SSIM[i]=ssim(X_test[i,:,:,0],generated_test_samples[i,:,:,0])
+
+test_total_ssim=np.sum(test_SSIM)
+test_mean_ssim = test_total_ssim/X_test.shape[0]
+
+print("The mean SSIM on the test dataset is",test_mean_ssim)
+
+
+# In[173]:
+
+
+get_ipython().system('pip show tensorflow-probability')
 
 
 # In[ ]:
