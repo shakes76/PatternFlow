@@ -28,7 +28,7 @@ Results will be produced in `.gif` format under the current folder.
 StyleGAN is the current state-of-the-art realistic image generation model. Example can be found on the website https://thispersondoesnotexist.com/.
 Rather than using a traditional topdown convolution layer setup. It is feeding the input through a mapping layer instead.
 Then applying the style through AdaIN to achieve navigate-able feature space. Addition noise is also inputed throughout the network to increase entropy in fine details.
-![A high level descriptions of the structure] (https://www.google.com/url?sa=i&url=https%3A%2F%2Fmachinelearningmastery.com%2Fintroduction-to-style-generative-adversarial-network-stylegan%2F&psig=AOvVaw0-k5h7boKF6ws1XintDpwG&ust=1635820173778000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJiClJWP9vMCFQAAAAAdAAAAABAD)
+![A high level descriptions of the structure](stylegan_description.PNG)
 
 My implementation of the StyleGAN consists of two main models: Generator and Discriminator.
 
@@ -59,20 +59,20 @@ As it is very small in size (28x28), therefore it is faster to train and better 
 
 ### MNIST
 After success with MNIST dataset has been achieved, I moved onto Brain dataset and Knee dataset afterwards.
-![MNIST] (MNIST_result.png)
+![MNIST](MNIST_result.png)
 
 ### OASIS Brain
 With Brain dataset, the images are \`reasonably clear\`, but there was immediate mode collapse after the first epoch.
-![OASIS Brain] (brain_result.png)
+![OASIS Brain](brain_result.png)
 
 ### OAI AKOA Knee
 With the Knee dataset, the images are also \`reasonably clear\` and there are still variation. But after the 7th epoch or so, mode collapse strike again.
 
 This is the result before mode collapse
-![Knee Before] (knee_result_before.png)
+![Knee Before](knee_result_before.png)
 
 This is the result after mode colapse
-![Knee After] (knee_result_after.png)
+![Knee After](knee_result_after.png)
 
 ## References
  - https://arxiv.org/pdf/1812.04948.pdf
