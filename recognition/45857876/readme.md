@@ -1,5 +1,5 @@
-# Knee MRI Image stylegan
-Student name: Mengyao Ma
+# **Knee MRI Image stylegan**
+Student name: Mengyao Ma  
 Student number: s4585787  
 
 ### Generative Adversarial Network 
@@ -37,17 +37,22 @@ To control the character detail and diversity of image generated, add a scaled n
 
 
 
-## loss function applied
+## **Loss function applied**
 
 In this task, I explore two loss functions to find the influence of loss function.  
 
-### 1.  Logistic  loss function
+### 1.  Logistic loss function
+Output for logistic loss function for resolution 256 shows below:  
+[resolution 256 epoch9](recognition\45857876\images\logistic_256gen_6_9_1.png) 
+
 ### 2. Relativistic Average Hinge loss function
+Output for logistic loss function for resolution 256 shows below:  
+[resolution 256 epoch9](recognition\45857876\images\rahingegen_6_9_1.png) 
+
+## **Output of each resolution**
 
 
-## Output of each resolution 
-
-## Style mixing output
+## **Style mixing output**
 
 [test_image](recognition\45857876\images\figure03-style-mixing.png)  
 
@@ -60,13 +65,61 @@ torchvision
 torch
 
 ## Execute the code
+Training:  
+    python train.py --
+Generate mixing image(test):  
+    python generate_mixing.py --
 
-python train.py
-The default setting:
+## The default setting:  
+
+general setting:  
+    device = 'cuda'  
+    number of preview samples = 36  
+    make checkpoint every/epoch = 10  
+    test loss:  
+        epochs: [2,4,8,8,16,24,32]  
+    style mixing:  
+        epochs: [2,4,8,8,16,24,32,40]  
+
+Generator setting:  
+    latent size = 512  
+    mapping layers = 4(8 in original paper, but 4 layers when latene size = 512)  
+    blur_filter = [1, 2, 1]   
+
+Discriminator setting:  
+    enable equalized learning rate = True  
+    blur_filter = [1, 2, 1]  
+
+Generator Optimizer setting:
+    optimizer = Adam  
+    learning_rate = 0.003  
+    betas = [0,0.99]  
+    eps = defualt
+
+Discriminator Optimizer setting:
+    optimizer = Adam  
+    learning_rate = 0.003  
+    betas = [0,0.99]  
+    eps = defualt
+    
+    
 
 ## Reference
 Paper:  
+A Style-Based Generator Architecture for Generative Adversarial Networks
+Tero Karras (NVIDIA), Samuli Laine (NVIDIA), Timo Aila (NVIDIA)
+https://arxiv.org/abs/1812.04948
+Progressive Growing of GANs for Improved Quality, Stability, and Variation
+Tero Karras, Timo Aila, Samuli Laine, Jaakko Lehtinen
+https://arxiv.org/abs/1710.10196
+Generative Adversarial Networks
+Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, Yoshua Bengio
+https://arxiv.org/abs/1406.2661
+
 Code:   
+https://github.com/huangzh13/StyleGAN.pytorch  
 https://github.com/lernapparat/lernapparat
 https://github.com/NVlabs/stylegan
 https://github.com/akanimax/pro_gan_pytorch
+https://github.com/rosinality/style-based-gan-pytorch
+https://github.com/goodfeli/adversarial
