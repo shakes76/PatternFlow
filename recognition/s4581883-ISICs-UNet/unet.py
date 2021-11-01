@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 from tensorflow import keras
-from tensorflow.keras.layers import Conv2D, UpSampling2D, LeakyReLU, Dropout, BatchNormalization, Input, Add, concatenate
+from tensorflow.keras.layers import Conv2D, UpSampling2D, LeakyReLU, Dropout, BatchNormalization, Input, Add, concatenate, Activation
 from tensorflow.python.ops.numpy_ops import np_config
 np_config.enable_numpy_behavior()
 
@@ -66,23 +66,24 @@ def unet(height, width, channels, filters = 16, kernel_size = (3,3), padding = "
 
     us2_l = localize(us1_output, filters * 8)
     us2 = upsampling(us2_l, filters * 4)
-    us2_output = Add()([ds3_output, us2])
+    us2_output = concatenate([ds3_output, us2])
 
     us3_l = localize(us2_output, filters * 4)
     us3 = upsampling(us3_l, filters * 2)
-    us3_output = Add()([ds2_output, us3])
+    us3_output = concatenate([ds2_output, us3])
     
     us4_l = localize(us3_output, filters * 2)
     us4 = upsampling(us4_l, filters)
-    us4_output = Add()([ds1_output, us4])
+    us4_output = concatenate([ds1_output, us4])
     
-    seg1 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us2_l)
-    seg1 = UpSampling2D(size=(8,8))(seg1)
-    seg2 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us3_l)
+    seg1 = Activation("sigmoid") (us2_l)
+    seg1 = UpSampling2D(size=(8,8)) (seg1)
+    seg2 = Activation("sigmoid") (us3_l)
     seg2 = UpSampling2D(size=(4,4))(seg2)
-    seg3 = Conv2D(1, kernel_size = kernel_size, padding = padding)(us4_output)
+    seg3 = Conv2D(1, kernel_size = kernel_size, padding = padding, activation = "sigmoid")(us4_output)
 
     output = Add()([seg1, seg2, seg3])
+    output = Activation("softmax") (output)
 
     unet_model = keras.models.Model(input, output)
 
