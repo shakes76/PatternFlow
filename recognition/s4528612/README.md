@@ -48,11 +48,14 @@ Following the structure of the paper, the transformer first normalizes the input
 
 **Training and Validation Scores**
 
-![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Knee_samples.PNG?raw=true)
+![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Train_test_accuracies.PNG?raw=true)
 
 **Sample Knee Images**
 
-![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Train_test_accuracies.PNG?raw=true)
+![alt text](https://github.com/Majurran/PatternFlow/blob/topic-recognition/recognition/s4528612/Images/Knee_samples.PNG?raw=true)
+
+**Issues**
+Unfortunately, the test set shown only shows images from the right knee. However, the high test set accuracy shows that the classifier performs on the left knee as well.
 
 # References
 *Rishit Dagli* (26 April 2021). *Perceiver* https://github.com/Rishit-dagli/Perceiver. 
