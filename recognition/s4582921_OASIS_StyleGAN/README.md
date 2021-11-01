@@ -46,9 +46,14 @@ Unfortunately no decent images where produced within the time frame. However I w
 ### Loss Functions
 Even in the official StyleGAN2 implementations several loss functions are utilised I will outline those attempted to be used and all of which can be used by calling the different loss function stored in each class.
 #### `loss` Generic Loss 
-This loss function is the generic binary cross entropy loss used in traditional GAN's. It can make the model very unpredictable sometimes collapsing which happened multiple times. This produced the most varied results. Below is a plot of losses over 50 epochs with 256x256 no convergence visible.
+This loss function is the generic binary cross entropy loss used in traditional
+GAN's. It can make the model very unpredictable sometimes collapsing which
+happened multiple times. This produced the most varied results. Below is a plot
+of losses over 50 epochs with 256x256 the clearest images can be found below
+this was unable to be reproduced due to model collapsing.
 \
 ![](images/glosses.png)
+![](images/samples.png)
 #### `w_loss` Wasserstein Loss 
 In the official implementation their is a WGAN_GP loss, this was compeletely implemented and clearly was more stable than the generic loss. In a WGAN it is recommended to train the discriminator multiple times more than the generator per each batch. A `train_step_seperated` was created for this purpose and thus it is slightly harder to implement. However no percievable results were found in testing. Multiple discriminator to generator ratios were tested.
 #### `h_loss` Hinge Loss
