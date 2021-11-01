@@ -14,8 +14,8 @@ Student number: s4585787
 ## The main StyleGAN structure  
 [Traditional genertaor and StyleGAN generator](recognition\45857876\images\v2-f1db8c75f4efd04e7eef68b56fefc4d3_1440w.jpg)  
 Through observation, it can be found that different layers and resolutions will affect different features. The lower the layer and resolution, the coarser the features it affects. We can divide these characteristics into three types:  
-1. Rough-(resolution 0-8^2^), affecting posture, general hairstyle, facial shape, etc.; 
-2. Medium-(resolution 16^2^-32^2^), affecting finer facial features, hairstyles, opening of eyes or Closed, etc.; 
+1. Rough-(resolution 0-8^2), affecting posture, general hairstyle, facial shape, etc.; 
+2. Medium-(resolution 16^2-32^2), affecting finer facial features, hairstyles, opening of eyes or Closed, etc.; 
 3. High-quality-(resolution 64^2^-1024^2^), affecting color (eyes, hair and skin) and microscopic features;  
 
 In traditional gan, the generator only feeds the random variables as latent code into input layer.
