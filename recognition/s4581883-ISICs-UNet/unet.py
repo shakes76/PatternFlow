@@ -6,6 +6,11 @@ from tensorflow.keras.layers import Conv2D, UpSampling2D, LeakyReLU, Dropout, Ba
 from tensorflow.python.ops.numpy_ops import np_config
 np_config.enable_numpy_behavior()
 
+'''
+File containing the UNet model and all related modules.
+'''
+
+# Call for each downsampling block in the model
 def down_sampling(init, filter, strides, kernel_size = (3,3), padding = "same"):
     conv = Conv2D(filter, kernel_size, padding = padding, strides = strides) (init)
     conv = BatchNormalization() (conv)
@@ -16,6 +21,7 @@ def down_sampling(init, filter, strides, kernel_size = (3,3), padding = "same"):
     conv = LeakyReLU(0.01) (conv)
     return conv 
 
+# Call for each upsampling block in the model
 def upsampling(init, filters, kernel_size = (3,3), padding = "same", strides = 1):
     upsample = UpSampling2D((2,2)) (init)
     upsample = Conv2D(filters, kernel_size, padding, strides = strides) (upsample)
@@ -23,6 +29,7 @@ def upsampling(init, filters, kernel_size = (3,3), padding = "same", strides = 1
     upsample = LeakyReLU(0.01) (upsample)
     return upsample
 
+# Call for each localisation block in the model
 def localize(init, filters, kernel_size = (3,3), padding = "same", strides = 1):
     local = Conv2D(filters, kernel_size, padding, strides = strides) (init)
     local = BatchNormalization() (local)
@@ -32,10 +39,11 @@ def localize(init, filters, kernel_size = (3,3), padding = "same", strides = 1):
     local = LeakyReLU(0.01) (local)
     return local
 
-
+# Overall definition of the UNet model being implemented
 def unet(height, width, channels, filters = 16, kernel_size = (3,3), padding = "same"):
     input = Input(shape = (width, height, channels))
 
+    # ds1 - ds5 are the downsampling blocks as shown in the paper
     ds1 = Conv2D(filters, kernel_size = kernel_size, padding = padding) (input)
     ds1 = LeakyReLU(0.01) (ds1)
     ds1_call = down_sampling(ds1, filters, 1)
@@ -61,6 +69,7 @@ def unet(height, width, channels, filters = 16, kernel_size = (3,3), padding = "
     ds5_call = down_sampling(ds5, filters * 16, 2)
     ds5_output = Add()([ds5, ds5_call])
 
+    # us1 - us4 are the upsampling blocks as shown in the paper
     us1 = upsampling(ds5_output, filters * 8)
     us1_output = Add()([ds4_output, us1])
 
@@ -76,15 +85,18 @@ def unet(height, width, channels, filters = 16, kernel_size = (3,3), padding = "
     us4 = upsampling(us4_l, filters)
     us4_output = concatenate([ds1_output, us4])
     
+    # Segmentation layers 
     seg1 = Activation("sigmoid") (us2_l)
     seg1 = UpSampling2D(size=(8,8)) (seg1)
     seg2 = Activation("sigmoid") (us3_l)
     seg2 = UpSampling2D(size=(4,4))(seg2)
     seg3 = Conv2D(1, kernel_size = kernel_size, padding = padding, activation = "sigmoid")(us4_output)
 
+    # Finalise the output
     output = Add()([seg1, seg2, seg3])
     output = Activation("softmax") (output)
 
+    # Create the model
     unet_model = keras.models.Model(input, output)
 
     return unet_model
