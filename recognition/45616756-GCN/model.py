@@ -7,7 +7,7 @@ from torch.nn.parameter import Parameter
 
 class GraphConvolution(nn.Module):
     """
-    Layer
+    GCN Layer
     """
 
     def __init__(self, in_features, out_features):

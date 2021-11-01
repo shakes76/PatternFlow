@@ -57,24 +57,25 @@ def main():
 
     # Convert to tensor
     facebook_features = torch.FloatTensor(np.array(facebook_features.todense()))
-    facebook_target = torch.LongTensor(np.where(facebook_target)[1])
+    facebook_train_target = torch.LongTensor(np.where(facebook_train_target)[1])
+    facebook_validation_target = torch.LongTensor(np.where(facebook_validation_target)[1])
+    facebook_test_target = torch.LongTensor(np.where(facebook_test_target)[1])
     adjacency_matrix = torch.sparse.FloatTensor(
         torch.LongTensor(np.vstack((adjacency_matrix.row, adjacency_matrix.col))),
         torch.FloatTensor(adjacency_matrix.data),
         torch.Size(adjacency_matrix.shape)
     )
 
-    # print output
+    # Print output
     print('facebook_features:', facebook_features)
-    print('facebook_target:', facebook_target)
-    print('facebook_train_target:', facebook_train_target)
-    print('facebook_validation_target:', facebook_validation_target)
-    print('facebook_test_target:', facebook_test_target)
+    print('facebook_train_target:', facebook_train_target.size())
+    print('facebook_validation_target:', facebook_validation_target.size())
+    print('facebook_test_target:', facebook_test_target.size())
     print('adjacency_matrix:', adjacency_matrix)
 
     model = GCN(input_size=facebook_features.shape[1],
                 hidden_size=16,
-                num_classes=facebook_target.max().item() + 1,
+                num_classes=4,
                 dropout=0.5)
     optimizer = optim.Adam(model.parameters(),
                            lr=0.01,
