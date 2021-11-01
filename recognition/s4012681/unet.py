@@ -39,7 +39,7 @@ def get_image(file_name):
     """
     sitk_img = sitk.ReadImage(file_name, sitk.sitkFloat32)
     img_arr = sitk.GetArrayFromImage(sitk_img)
-    # Normalise by subtracting mean and dividing by standard deviation
+    # Normalise
     avg = tf.reduce_mean(img_arr)
     sd = tf.math.reduce_std(img_arr)
     img_arr = (img_arr - avg) / sd
@@ -54,7 +54,6 @@ def get_mask(file_name):
     """
     mask = sitk.ReadImage(file_name, sitk.sitkFloat32)
     mask = sitk.GetArrayFromImage(mask)
-    # One-hot encoding
     encoding = tf.keras.utils.to_categorical(mask, num_classes=6)
     return encoding
 
@@ -173,4 +172,3 @@ def plt_compare(img, test_mask, pred, num):
     ax3.imshow(pred[pred.shape[0] // 2], cmap='gray')
     ax3.title.set_text("Prediction")
     fig1.savefig("pred_{}.png".format(num))
-
