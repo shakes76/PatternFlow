@@ -18,7 +18,7 @@ def generate_samples(instanceIds, dataset_proportion):
             samples[fileName].append(fileId)
         else:
             samples[fileName] = [fileId]
-    print("unique patients in entire dataset: ", len(samples))
+
     completedTrainSet = False
     for imgIndex in samples.values():
         for fileId in imgIndex:
@@ -53,10 +53,10 @@ def loadInput(dir_data, dataset_proportion):
 
             image = img_to_array(image)
             input.append(image)
-            if "RIGHT" in fileId or "R_I_G_H_T" in fileId or "Right" in fileId or "right" in fileId:
-                label = 1
-            else:
+            if "LEFT" in fileId or "L_E_F_T" in fileId or "Left" in fileId or "left" in fileId:
                 label = 0
+            else:
+                label = 1
             list_of_labels.append(label)
         input = np.array(input)
         input /= 255.0
