@@ -41,6 +41,13 @@ def process_data(dir, train_count, test_count):
 
     X_train, y_train = get_label(dir, train_images, image_size)
     X_test, y_test = get_label(dir, test_images, image_size)
+    print(X_train[0].shape)
+    
+    #train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+    #test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test))
+    
+
+    print(type(X_train))
 
     return X_train, y_train, X_test, y_test
 
@@ -51,7 +58,7 @@ def get_label(dir, images, image_size):
     labels = []
 
     for i, image_name in enumerate(images):
-        image = load_img(dir + "/" + image_name, target_size = image_size)
+        image = load_img(dir + "/" + image_name, target_size = (128, 128, 3))
 
         image = img_to_array(image)
 
@@ -68,12 +75,13 @@ def get_label(dir, images, image_size):
     processed_images = tf.cast(processed_images, tf.float16) / 255.0
     labels = tf.convert_to_tensor(labels)
 
+
     return processed_images, labels
 
 
 
 def main():
-    process_data("AKOA_Analysis", 80, 20)
+    process_data("AKOA_Analysis\AKOA_Analysis", 80, 20)
 
 if __name__ == "__main__":
     main()
