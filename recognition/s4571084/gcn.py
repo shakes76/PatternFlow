@@ -34,7 +34,7 @@ def normalize_features(features):
 load data from facebook.npz and set adjacency/features/labels
 """
 def load_data():
-    dataset = np.load('/content/drive/My Drive/Dataset/facebook.npz')
+    dataset = np.load('./facebook.npz')
     edges = dataset['edges']
     features = dataset['features']
     target = dataset['target']
