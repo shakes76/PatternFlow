@@ -67,12 +67,18 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
 
 ### Loss function
 
-GIoU or latest CIoU.
+For bounding boxes, we use the latest CIoU. IoU is ratio but as a loss function, scale matters, so we have Generalized IoU, the GIoU. CIoU is built on top of Distance-IoU, which also take account for distance and the aspect ratio.
 
 Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
 mAP on the other hand, emphasize on the positive case.
 
-## Results
+## 4. Training
+
+The CPU we used is Intel® Xeon® Silver 4210R Processor(10 core 20 threads), the GPU we used is RTX3090.
+
+I only manage to use 30% of GPU, Seems there is a restriction on the server-side. 
+
+We use Adam + CosineAnnealingLR
 
 ## 5. How to use & Results
 ### Requirement
@@ -80,9 +86,18 @@ mAP on the other hand, emphasize on the positive case.
 - Require Torch & cudatoolkit=10.2 for training, detailed in [yaml](misc/tools.yaml) file
 - May require OpenCV for data augmentation
 - Require Numpy, PIL for Image visualization
+### Usage
+To Train
 
+```shell
+python3 ./train.py
+```
+To Test
 
-## Reference
+```shell
+python3 ./test.py
+```
+## References
 
 <!-- https://www.bibtex.com/c/bibtex-to-ieee-converter/ -->
 1. [Z. Ge, S. Liu, F. Wang, Z. Li, en J. Sun, “YOLOX: Exceeding YOLO Series in 2021”, arXiv [cs.CV]. 2021.][yolox2021]
