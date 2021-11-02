@@ -60,8 +60,10 @@ Path Aggregation Feature Pyramid Networks (PAFPN) looks like a upside-down U-Net
 ### Activation
 
 According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs, it looks like a ReLU but smooth.
-![https://paperswithcode.com/method/silu](./images/SiLU.png)
-SiLU(red) vs ReLU(blue)
+<figure>
+   <img alt="comparison with ReLU" src="./images/SiLU.png" width="400px" />
+   <figcaption>SiLU(red) vs ReLU(blue)</figcaption>
+</figure>
 
 ### Loss function
 
