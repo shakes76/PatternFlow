@@ -10,8 +10,6 @@ Original Paper: https://arxiv.org/abs/1812.04948
 
 The OASIS datasets hosted by central.xnat.org provide the community with open access to a significant database of neuroimaging and processed imaging data across a broad demographic, cognitive, and genetic spectrum an easily accessible platform for use in neuroimaging, clinical, and cognitive research on normal aging and cognitive decline. All data is available via [www.oasis-brains.org](https://www.oasis-brains.org/).s
 
-
-
 ## Requirements
 
 - Python3
@@ -22,13 +20,31 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 ## Usage
 
-- ### prepare the data
+- ### Prepare the data
 
   ```
-  !python prepare_data.py --out LMDB_PATH --n_worker N Data_path
+  !python prepare_data.py --out LMDB_PATH --n_worker N DATAPATH
   ```
 
   This step will generate a LMDB Dataset for training
 
 - ### Training StyleGan
+
+  ```
+  !python train.py --ckpt checkpoint.model --mixing LMDB_PATH
+  ```
+
+- ### Samples
+
+  #### 8*8 images
+
+  #### 64*64 images
+
+  #### 128*128 images
+
+  #### 256*256 images
+
+  
+
+## Model Structure
 
