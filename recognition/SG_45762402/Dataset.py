@@ -17,7 +17,6 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 
-# In[5]:
 
 
 '''
@@ -61,7 +60,6 @@ class MultiResolutionDataset(Dataset):
         return img
 
 
-# In[ ]:
 
 
 
