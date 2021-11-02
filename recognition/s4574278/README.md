@@ -106,6 +106,7 @@ python3 ./test.py
 4. [Z. Tian, C. Shen, H. Chen, en T. He, “FCOS: Fully Convolutional One-Stage Object Detection”, arXiv [cs.CV]. 2019.][tian2019fcos]
 5. [S. Elfwing, E. Uchibe, en K. Doya, “Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning”, arXiv [cs.LG]. 2017.][elfwing2017sigmoidweighted]
 6. [Dan Hendrycks and Kevin Gimpel, Gaussian Error Linear Units (GELUs). arXiv preprint arXiv:][hendrycks2020gaussian]
+7. [Z. Zheng, P. Wang, W. Liu, J. Li, R. Ye, en D. Ren, “Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression”, arXiv [cs.CV]. 2019.][zheng2019distanceiou]
 
 [yolox2021]: https://arxiv.org/abs/2107.08430 "YOLOX: Exceeding YOLO Series in 2021"
 [bochkovskiy2020yolov4]: https://arxiv.org/abs/2004.10934 "YOLOv4: Optimal Speed and Accuracy of Object Detection"
@@ -113,6 +114,7 @@ python3 ./test.py
 [tian2019fcos]: https://arxiv.org/abs/1904.01355 "FCOS: Fully Convolutional One-Stage Object Detection"
 [elfwing2017sigmoidweighted]: https://arxiv.org/abs/1702.03118v3 "Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning"
 [hendrycks2020gaussian]: https://arxiv.org/abs/1606.08415 "Gaussian Error Linear Units (GELUs)"
+[zheng2019distanceiou]: https://arxiv.org/abs/1911.08287 "Z. Zheng, P. Wang, W. Liu, J. Li, R. Ye, en D. Ren, “Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression”, arXiv [cs.CV]. 2019."
 
 ## Appendix: Challenges faced
 
