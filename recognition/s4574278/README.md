@@ -13,11 +13,11 @@ YOLOX is a latest algorithm which utilized many state-of-the-art techniques. By 
 
 We will first extract a set of bounding boxes, then write a modified version of CSPNet as the backbone of PAFPN net. The PAFPN is the backbone of the entire YOLOX model, then we output 3 levels of abstraction, each have a 2x scaling factor on top of previous layer. For each layer we attach a YOLOX detection head, this head consist of 3 decouple component that coresponding to the object, the bounding box and classification respectively. each component have its very own loss logic: We use CIoU\[[7][zheng2019distanceiou]\] Loss for bounding box, and BCEWithLogitsLoss for classification of "if contains Obj" and "which class it belong". 
 
-Eventually the model is built in Torch, I abandon tensorflow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
+For implementation, I abandon tensorflow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
 
-Then the training process is done in a paid server, the challenges are listed in the Appendix also.
+Then the training process is done in a paid server, the challenges are also listed in the Appendix also.
 
-After that the extracted bounding boxes are also saved in logs, then we run a set of evaluations, the results are shown in section 5, Results.
+After that we extract bounding boxes. Test results are kept in logs, then we run a set of evaluations, the results are shown in section 5, Results.
 
 ## 2. Data
 
@@ -29,7 +29,7 @@ We reserve 10% for testing(260). And reserve 10% for validation(234), 90% for tr
 
 ### preprocessing & augmentation
 
-Firstly, We need to extract a set of bounding boxes out of the segment mask. We can use OpenCV to do this task, but I craft a simple script in tensorflow 2.6. the bounding box for each segmentation is put in a COCO format xml under the same filename.
+Firstly, We need to extract a set of bounding boxes out of the segment mask. We should not use OpenCV to do this task, so I craft a simple script using tensorflow 2.6. the bounding box for each segmentation is put in a xml under the same filename.
 
 The original YOLOX use Mosaic / Mix Up / Copy-Paste to boost generalization performance. In our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance\[[1][yolox2021]\]
 So we plan to use only the basic random Scale Jitter & horizontal flip. Besides, those strong augmentations are too troublesome to use, we have to turn it off earlier before the training ends to have the best result.
@@ -47,7 +47,7 @@ Some commenter say YOLOX, due to its Anchor free nature, it more similar to "[FC
 
 The CSPNet is firstly introduced into YOLO family by YOLO v4. YOLOX used the same modified CSPNet as YOLO v5. From the dense prediction of YOLO v1 to modified CSPNet in YOLO v5 and YOLOX, the capacity of feature extraction is drastically improved along the way.
 
-Path Aggregation Feature Pyramid Networks (PAFPN) looks like a upside-down U-Net with some residual links.
+Path Aggregation Feature Pyramid Networks (PAFPN) looks like an upside-down U-Net.
 
 ### Detection Head
 
@@ -81,10 +81,10 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
 ## 4. Training
 
 The CPU we used is Intel® Xeon® Silver 4210R Processor(10 core 20 threads), the GPU we used is RTX3090.
+I only manage to use 30% of GPU after maximized the CPU worker, Seems there is a restriction on the server-side. 
 
-I only manage to use 30% of GPU, Seems there is a restriction on the server-side. 
-
-We use Adam + CosineAnnealingLR
+For Optimizer, I us Adam, instead of SGD with momentum, because it's easier to tune. 
+I also used CosineAnnealingLR scheduler, because It work well with Adam.
 
 ## 5. How to use & Results
 ### Requirement
@@ -107,17 +107,19 @@ python3 ./test.py
 ## Result
 
 ### Learning curve
+
 <figure>
    <img alt="Curve" src="./images/curve.png" width="400px" />
-   <figcaption>Traning</figcaption>
+   <figcaption>Learning curve for the first 22 epochs</figcaption>
 </figure>
+Initially the loss is over hundreds, then it slowly but steadily go all the way down to 5~6 at 16 epoch.
 
 ### Demo detection
 <figure>
-   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.png" width="400px" />
-   <figcaption>Traning</figcaption>
+   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.jpg" width="400px" />
+   <figcaption>Predicted with IOU 0.2</figcaption>
 </figure>
-
+The result is not very satisfactory.
 
 ## References
 
