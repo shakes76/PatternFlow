@@ -83,6 +83,8 @@ def bbox_to_corner(boxes: List):
 
 
 def ciou(boxes_pred, boxes_target):
+    """Copied from
+    https://github.com/Zzh-tju/CIoU/blob/master/layers/modules/multibox_loss.py"""
     boxes_pred = torch.sigmoid(boxes_pred)
     boxes_target = torch.sigmoid(boxes_target)
     rows = boxes_pred.shape[0]
