@@ -53,6 +53,13 @@ mAP on the other hand, emphasize on the positive case.
 
 ## Results
 
+## 5. How to use & Results
+### Requirement
+
+- Require Torch & cudatoolkit=10.2 for training, detailed in [yaml](misc/tools.yaml) file
+- May require OpenCV for data augmentation
+- Require Numpy, PIL for Image visualization
+
 
 ## Reference
 

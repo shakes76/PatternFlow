@@ -3,11 +3,10 @@ channels:
   - defaults
 dependencies:
   - numpy
-  - scipy
   - matplotlib
-  - pandas
-  - scikit-learn
-  - scikit-image
-  - seaborn
-  - tensorflow
+  - torch
+  - cudatoolkit=10.2
+  - opencv
+  - pip:
+    - torch-summary
 prefix: C:\Users\qians\miniconda3\envs\ml
