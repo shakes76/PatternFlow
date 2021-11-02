@@ -50,9 +50,12 @@ The original YOLOX model repo is published on [GitHub](https://github.com/Megvii
 
 Some commenter say YOLOX, due to its Anchor free nature, it more similar to "[FCOS](tian2019fcos)".
 
-### Backbone - CSPNet\[[3][wang2019cspnet]\]
+### Backbone - Modified CSPNet\[[3][wang2019cspnet]\] + PA FPN
 
-The CSPNet is firstly introduced into YOLO family by YOLO v4. To me, it looks like a modified ResNet. From the dense prediction of YOLO v1 to modified CSPNet in YOLO v5 and YOLOX, the capacity of feature extraction is drastically improved along the way.
+The CSPNet is firstly introduced into YOLO family by YOLO v4. YOLOX used the same modified CSPNet as YOLO v5. From the dense prediction of YOLO v1 to modified CSPNet in YOLO v5 and YOLOX, the capacity of feature extraction is drastically improved along the way.
+
+Path Aggregation Feature Pyramid Networks (PAFPN) looks like a upside-down U-Net with some residual links.
+
 
 ### Activation
 
