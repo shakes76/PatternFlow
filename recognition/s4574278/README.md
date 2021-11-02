@@ -6,25 +6,18 @@
 
 ## Abstract
 
-what we did for this report is training a simplified [YOLOX][yolox2021] model on ISIC 2018 Task 1-2 Dataset, to clearly recognize the lesion area.
+I trained a simplified [YOLOX][yolox2021] model on ISIC 2018 Task 1-2 Dataset, to clearly recognize the lesion area.
+YOLOX is a latest algorithm which utilized many state-of-the-art techniques. By studying this algorithm, we can actually learn the latest progress in this field. Also since it's new, not many implementation out there.
 
-## Introduction
-<!-- TODO: put Result in mAP with minimum IoU -->
+## 1. Introduction
 
-## Data preprocessing
+We will first extract a set of bounding boxes, then write a modified version of CSPNet as the backbone of PAFPN net. The PAFPN is the backbone of the entire YOLOX model, then we output 3 levels of abstraction, each have a 2x scaling factor on top of previous layer. For each layer we attach a YOLOX detection head, this head consist of 3 decouple component that coresponding to the object, the bounding box and classification respectively. each component have its very own loss logic: We use CIoU\[[7][zheng2019distanceiou]\] Loss for bounding box, and BCEWithLogitsLoss for classification of "if contains Obj" and "which class it belong". 
 
-1. Training Image: 
-   1. None. Because we are going to do advanced augmentation on the image, we don't have to do too much here
-2. Annotation:
-   1. Firstly we need to apply the same transformation to the annotation.
-   2. Draw the bounding box according to the shape of silhouette(first and last non-zero row/column)
-   3. The coordinate format of our created bounding box is (x_min, y_min, x_max, y_max) to be in line with most used dataset COCO
-      - I planned to pretrain our model on COCO, but the benefit of pretraining YOLOX is quite low([YOLOX][yolox2021]: Strong data augmentation), so I skip it
+Eventually the model is built in Torch, I abandon tensorflow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
 
-### Data augmentation
+Then the training process is done in a paid server, the challenges are listed in the Appendix also.
 
-The original YOLOX use Mosaic + Mix Up to boost generalization performance, but in our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance\[[1][yolox2021]\]
-So we plan to use only the basic Scale Jit. Mosaic is too troublesome for me to do, besides, we can use simplier model when the input is also simple. 
+After that the extracted bounding boxes are also saved in logs, then we run a set of evaluations, the results are shown in section 5, Results.
 
 ## 2. Data
 
