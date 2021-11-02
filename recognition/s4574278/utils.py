@@ -1,8 +1,10 @@
 import math
+from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import patches
 import torch
+from torch import nn
 
 ##########################################################
 # Visualization
@@ -28,7 +30,8 @@ def draw_bbox(image, boxes):
         / 255
     )
 
-    plt.imshow(image)
+    plt.imshow(image, interpolation="nearest")
+    plt.axis("off")
 
     def plot_bbox(bbox, color):
         plt.gca().add_patch(
@@ -105,3 +108,67 @@ def ciou(boxes_pred, boxes_target):
     if exchange:
         ciou_arr = ciou_arr.T
     return torch.sum(1 - ciou_arr)
+
+class YoloxLoss(nn.Module):    
+    def __init__(self, num_classes, strides=[8, 16, 32]):
+        super().__init__()
+        self.num_classes = num_classes
+        self.strides = strides
+
+        self.bcewithlog_loss = nn.BCEWithLogitsLoss(reduction="none")
+        self.iou_loss = ciou
+        self.grids = [torch.zeros(1)] * len(strides)
+
+    def forward(self, inputs):
+        results = []
+        x_offset = []
+        y_offset = []
+        expanded_strides = []
+
+        for k, (stride, output) in enumerate(zip(self.strides, inputs)):
+            output, grid = self.get_output_and_grid(output, k, stride)
+            x_offset.append(grid[:, :, 0])
+            y_offset.append(grid[:, :, 1])
+            expanded_strides.append(torch.ones_like(grid[:, :, 0]) * stride)
+            results.append(output)
+
+        return self.get_losses(x_offset, y_offset, expanded_strides, torch.cat(results, dim=1))
+
+
+##########################################################
+# Helpers
+##########################################################
+
+
+def resize(image_path, target_size, boxes, dtype=torch.float16):
+    """resize image and annotation box"""
+    # TODO resize image and annotation box
+    image = Image.open(image_path)
+    # Size of image
+    image_height, image_width = image.size
+    width, height = target_size
+    # resize
+    scale = min(width / image_width, height / image_height)
+    new_width = int(image_width * scale)
+    new_height = int(image_height * scale)
+    delta_x = (width - new_width) // 2
+    delta_y = (height - new_height) // 2
+
+    # fill black background
+    image = image.resize((new_width, new_height))
+    new_image = Image.new("RGB", (width, height), (0, 0, 0))
+    new_image.paste(image, (delta_x, delta_y))
+    image_tensor = torch.tensor(new_image, dtype)
+
+    # Adjust BBox accordingly
+    if len(boxes) > 0:
+        boxes[:, [0, 2]] = boxes[:, [0, 2]] * new_width / image_width + delta_x
+        boxes[:, [1, 3]] = boxes[:, [1, 3]] * new_height / image_height + delta_y
+        boxes[:, 0:2][boxes[:, 0:2] < 0] = 0
+        boxes[:, 2][boxes[:, 2] > width] = width
+        boxes[:, 3][boxes[:, 3] > height] = height
+        box_w = boxes[:, 2] - boxes[:, 0]
+        box_h = boxes[:, 3] - boxes[:, 1]
+        boxes = boxes[torch.logical_and(box_w > 1, box_h > 1)]
+
+    return image_tensor, boxes
