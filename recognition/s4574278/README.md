@@ -90,6 +90,22 @@ To Test
 ```shell
 python3 ./test.py
 ```
+
+## Result
+
+### Learning curve
+<figure>
+   <img alt="Curve" src="./images/curve.png" width="400px" />
+   <figcaption>Traning</figcaption>
+</figure>
+
+### Demo detection
+<figure>
+   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.png" width="400px" />
+   <figcaption>Traning</figcaption>
+</figure>
+
+
 ## References
 
 <!-- https://www.bibtex.com/c/bibtex-to-ieee-converter/ -->
