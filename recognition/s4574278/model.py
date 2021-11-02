@@ -65,18 +65,21 @@ class YOLOModel(nn.Module):
 class PAFPN(nn.Module):
     def __init__(self, model_size: ModelSize) -> None:
         super().__init__()
-        depth, width = model_size.value
         in_channels = (1024, 512, 256)
         self.backbone = CSPNet(model_size)
+        depth, width = model_size.value
         self.up_conv0 = ConvBlock(
-            in_channels[0] * width, in_channels[1] * width, kernel_size=1, stride=1
+            int(in_channels[0] * width),
+            int(in_channels[1] * width),
+            kernel_size=1,
+            stride=1,
         )
         self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
         self.csp0 = CSPLayer(
             int(in_channels[1] * width * 2),
             int(in_channels[1] * width),
-            round(depth * 3),
             shortcut=False,
+            num_bottleneck=round(depth * 3),
         )
         self.up_conv1 = ConvBlock(
             int(in_channels[1] * width),
@@ -87,8 +90,8 @@ class PAFPN(nn.Module):
         self.csp1 = CSPLayer(
             int(in_channels[2] * width * 2),
             int(in_channels[2] * width),
-            round(depth * 3),
             False,
+            num_bottleneck=round(depth * 3),
         )
         self.down_conv0 = ConvBlock(
             int(in_channels[2] * width),
@@ -99,8 +102,8 @@ class PAFPN(nn.Module):
         self.csp2 = CSPLayer(
             int(in_channels[2] * width * 2),
             int(in_channels[1] * width),
-            round(depth * 3),
             shortcut=False,
+            num_bottleneck=round(depth * 3),
         )
         self.down_conv1 = ConvBlock(
             int(in_channels[2] * width),
@@ -111,8 +114,8 @@ class PAFPN(nn.Module):
         self.csp3 = CSPLayer(
             int(in_channels[1] * width * 2),
             int(in_channels[0] * width),
-            round(depth * 3),
             shortcut=False,
+            num_bottleneck=round(depth * 3),
         )
 
     def forward(self, x):
@@ -167,7 +170,9 @@ class CSPNet(nn.Module):
         base_channels = int(width * 64)  # 64
         base_depth = max(round(3 * depth), 1)  # 3
         # stem + focus 512,512,3 => 256,256,64
-        self.focus = FocusLayer(in_channels=base_channels, kernel_size=3)
+        self.focus = FocusLayer(
+            in_channels=3, out_channels=base_channels * 4, kernel_size=3
+        )
         # dark2: 256,256,64 => 128,128,128
         self.dark2 = ResBlock(base_channels, base_channels * 2, depth=base_depth)
         # dark 3: 128,128,128 => 64,64,256
@@ -205,22 +210,28 @@ class FocusLayer(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1) -> None:
         super().__init__()
-        self.stem = ConvBlock(in_channels, kernel_size)
+        self.stem = ConvBlock(in_channels * 4, out_channels, kernel_size, stride)
 
     def forward(self, x):
         x = torch.cat(
             [
-                x[..., ::2, ::2, :],
-                x[..., 1::2, ::2, :],
-                x[..., ::2, 1::2, :],
-                x[..., 1::2, 1::2, :],
+                # pixel top-left
+                x[..., ::2, ::2],
+                # pixel bottom-left
+                x[..., 1::2, ::2],
+                # pixel top-right
+                x[..., ::2, 1::2],
+                # pixel bottom-right
+                x[..., 1::2, 1::2],
             ],
-            axis=-1,
+            dim=-1,
         )
+        return self.stem(x)
 
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, depth, is_last=False):
+        super().__init__()
         layers = []
         layers.append(ConvBlock(in_channels, out_channels, kernel_size=3, stride=2))
         if is_last:
@@ -243,18 +254,20 @@ class ResBlock(nn.Module):
 class CSPLayer(nn.Module):
     def __init__(
         self, in_channels, out_channels, shortcut=True, num_bottleneck=1, expansion=0.5
-    ):
+    ) -> None:
+        super().__init__()
         hidden_channels = int(out_channels * expansion)
         self.conv1 = ConvBlock(in_channels, hidden_channels, kernel_size=1, stride=1)
         self.conv2 = ConvBlock(in_channels, hidden_channels, kernel_size=1, stride=1)
-        self.conv3 = ConvBlock(
-            2 * hidden_channels, out_channels, kernel_size=1, stride=1
-        )
         self.layers = nn.Sequential(
             *[
                 Bottleneck(hidden_channels, hidden_channels, shortcut=shortcut)
                 for _ in range(num_bottleneck)
             ]
+        )
+        # stack together
+        self.conv3 = ConvBlock(
+            hidden_channels * 2, out_channels, kernel_size=1, stride=1
         )
 
     def forward(self, x):
@@ -264,17 +277,17 @@ class CSPLayer(nn.Module):
         # right
         y_2 = self.conv2(x)
         # concat
-        y = torch.cat((y, y_2), axis=1)
+        y = torch.cat((y, y_2), dim=1)
         # fusion
         return self.conv3(y)
 
 
 class Bottleneck(nn.Module):
     def __init__(self, in_channels, out_channels, shortcut=True, expansion=0.5) -> None:
-        super.__init__()
+        super().__init__()
         inner_channels = int(out_channels * expansion)
         self.layers = nn.Sequential(
-            [
+            *[
                 ConvBlock(in_channels, inner_channels, kernel_size=1, stride=1),
                 ConvBlock(inner_channels, out_channels, 3, stride=1),
             ]
@@ -290,7 +303,7 @@ class Bottleneck(nn.Module):
 
 class SPPBottleneck(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_sizes=(5, 9, 13)):
-        super.__init__()
+        super().__init__()
         hidden_channels = in_channels // 2
         self.conv1 = ConvBlock(in_channels, hidden_channels, 1, stride=1)
         self.modules = nn.Sequential(
@@ -308,7 +321,7 @@ class SPPBottleneck(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = torch.cat([x] + [pool(x) for pool in self.modules], axis=1)
+        x = torch.cat([x] + [pool(x) for pool in self.modules], dim=1)
         x = self.conv2(x)
         return x
 
@@ -322,10 +335,16 @@ class ConvBlock(nn.Module):
     """Conv2D -> BatchNorm -> ACT"""
 
     def __init__(
-        self, in_channels, out_channels, kernel_size=1, stride=1, act: str = "silu"
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=1,
+        stride=1,
+        bias=False,
+        act: str = "silu",
     ) -> None:
         super().__init__()
-        padding = "valid" if stride == 2 else "same"
+        padding = (kernel_size - 1) // 2
         activation = (
             nn.LeakyReLU(inplace=True)
             if act.lower() != "silu"
@@ -336,8 +355,10 @@ class ConvBlock(nn.Module):
                 nn.Conv2d(
                     in_channels,
                     out_channels,
+                    kernel_size=kernel_size,
                     padding=padding,
-                    bias=False,
+                    stride=stride,
+                    bias=bias,
                 ),
                 nn.BatchNorm2d(out_channels),
                 activation,
@@ -354,20 +375,21 @@ class ConvBlock(nn.Module):
 class DetectionHead(nn.Module):
     def __init__(
         self,
-        in_channels=[256, 512, 1024],
         num_classes=50,
         width=1.0,
+        in_channels=[256, 512, 1024],
         strides=[8, 16, 32],
     ) -> None:
         super().__init__()
 
-        self.cls_convs = nn.ModuleList()
-        self.reg_convs = nn.ModuleList()
-        self.cls_preds = nn.ModuleList()
-        self.reg_preds = nn.ModuleList()
-        self.obj_preds = nn.ModuleList()
+        self.class_conv_layer = nn.ModuleList()
+        self.box_conv_layer = nn.ModuleList()
+        self.class_predictor = nn.ModuleList()
+        self.box_predictor = nn.ModuleList()
+        self.obj_predictor = nn.ModuleList()
         self.stems = nn.ModuleList()
 
+        # Loop through 3 levels of Heads (default)
         for i in range(len(in_channels)):
             self.stems.append(
                 ConvBlock(
@@ -377,65 +399,65 @@ class DetectionHead(nn.Module):
                     stride=1,
                 )
             )
-            self.cls_convs.append(
+            self.class_conv_layer.append(
                 nn.Sequential(
                     *[
                         ConvBlock(
                             in_channels=int(256 * width),
                             out_channels=int(256 * width),
-                            ksize=3,
+                            kernel_size=3,
                             stride=1,
                         ),
                         ConvBlock(
                             in_channels=int(256 * width),
                             out_channels=int(256 * width),
-                            ksize=3,
+                            kernel_size=3,
                             stride=1,
                         ),
                     ]
                 )
             )
-            self.cls_preds.append(
+            self.class_predictor.append(
                 nn.Conv2d(
-                    in_channels=int(256 * width),
-                    out_channels=num_classes,
+                    int(256 * width),
+                    num_classes,
                     kernel_size=1,
                     stride=1,
                     padding=0,
                 )
             )
 
-            self.reg_convs.append(
+            self.box_conv_layer.append(
                 nn.Sequential(
                     *[
                         ConvBlock(
-                            in_channels=int(256 * width),
-                            out_channels=int(256 * width),
+                            int(256 * width),
+                            int(256 * width),
                             kernel_size=3,
-                            stride=1
+                            stride=1,
                         ),
                         ConvBlock(
-                            in_channels=int(256 * width),
-                            out_channels=int(256 * width),
+                            int(256 * width),
+                            int(256 * width),
                             kernel_size=3,
-                            stride=1
+                            stride=1,
                         ),
                     ]
                 )
             )
-            self.reg_preds.append(
+            self.box_predictor.append(
                 nn.Conv2d(
-                    in_channels=int(256 * width),
-                    out_channels=4,
+                    int(256 * width),
+                    4,
                     kernel_size=1,
                     stride=1,
                     padding=0,
                 )
             )
-            self.obj_preds.append(
+            self.obj_predictor.append(
                 nn.Conv2d(
-                    in_channels=int(256 * width),
-                    out_channels=1,
+                    int(256 * width),
+                    1,
                     kernel_size=1,
                     stride=1,
                     padding=0,
@@ -443,27 +465,26 @@ class DetectionHead(nn.Module):
             )
 
     def forward(self, inputs):
-        """ inputs:
-                feature3  64, 64, 256
-                feature4  32, 32, 512
-                feature5  16, 16, 1024
+        """inputs:
+        feature3  64, 64, 256
+        feature4  32, 32, 512
+        feature5  16, 16, 1024
         """
         outputs = []
         for k, x in enumerate(inputs):
             # cross-channel fusion with 1x1 kernel
             x = self.stems[k](x)
-            # extract feature
-            cls_feat = self.cls_convs[k](x)
-            # predict class
-            cls_output = self.cls_preds[k](cls_feat)
 
-            # extract feature
-            reg_feat = self.reg_convs[k](x)
+            # predict class
+            cls_feat = self.class_conv_layer[k](x)
+            cls_output = self.class_predictor[k](cls_feat)
+
             # predict bbox
-            reg_output = self.reg_preds[k](reg_feat)
+            reg_feat = self.box_conv_layer[k](x)
+            reg_output = self.box_predictor[k](reg_feat)
 
             # predict if object exist
-            obj_output = self.obj_preds[k](reg_feat)
+            obj_output = self.obj_predictor[k](reg_feat)
 
             output = torch.cat([reg_output, obj_output, cls_output], 1)
             outputs.append(output)
