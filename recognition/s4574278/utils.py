@@ -1,4 +1,3 @@
-from typing import List
 import math
 import numpy as np
 from matplotlib import pyplot as plt
@@ -45,36 +44,6 @@ def draw_bbox(image, boxes):
 
     for i, box in enumerate(boxes):
         plot_bbox(box, tableau_light[i % 10])
-
-
-##########################################################
-# Helpers
-##########################################################
-
-
-def bbox_to_center(boxes: List):
-    """convert (top-left,bottom-right) bbox to (center-x, center-y, width, height)"""
-    x_min, y_min, x_max, y_max = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
-    center_x = (x_min + x_max) / 2
-    center_y = (y_min + y_max) / 2
-    width = x_max - x_min
-    height = y_max - y_min
-    return torch.stack((center_x, center_y, width, height), axis=-1)
-
-
-def bbox_to_corner(boxes: List):
-    """convert (center-x, center-y, width, height) bbox to (top-left, bottom-right)"""
-    center_x, center_y, width, height = (
-        boxes[:, 0],
-        boxes[:, 1],
-        boxes[:, 2],
-        boxes[:, 3],
-    )
-    x_min = center_x - 0.5 * width
-    y_min = center_y - 0.5 * height
-    x_max = center_x + 0.5 * width
-    y_max = center_y + 0.5 * height
-    return torch.stack((x_min, y_min, x_max, y_max), axis=-1)
 
 
 ##########################################################
