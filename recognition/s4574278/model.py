@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from enum import Enum
+import utils
 
 """
 Assume input width/height to be 416/480/512 (could be any the multiple of 32)
@@ -26,14 +27,32 @@ class ModelSize(Enum):
 
 
 class YOLOModel(nn.Module):
-    def __init__(self, num_classes, model_size: ModelSize) -> None:
+    def __init__(self, num_classes: int, model_size: ModelSize) -> None:
+        super().__init__()
         self.backbone = PAFPN(model_size)
-        self.head = DetectionHead(model_size)
+        self.head = DetectionHead(num_classes, width=model_size.value[1])
 
     def forward(self, x):
         features = self.backbone.forward(x)
-        detection = self.head.forward(features)
-        return detection
+        return self.head.forward(features)
+
+    def load_state(self, file):
+        self.load_state_dict(
+            torch.load(
+                file,
+                map_location=torch.device(
+                    "cuda" if torch.cuda.is_available() else "cpu"
+                ),
+            )
+        )
+
+    def see(self, image):
+        size = image.shape()[0:2]
+        images = torch.unsqueeze(image, 0)
+        image_tensors, _ = utils.resize(images, size, [])
+        with torch.no_grad():
+            boxes = self.forward(image_tensors)[0]
+        return boxes[0]
 
 
 ##########################################################
