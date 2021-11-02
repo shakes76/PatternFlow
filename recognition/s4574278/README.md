@@ -26,7 +26,23 @@ what we did for this report is training a simplified [YOLOX][yolox2021] model on
 The original YOLOX use Mosaic + Mix Up to boost generalization performance, but in our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance\[[1][yolox2021]\]
 So we plan to use only the basic Scale Jit. Mosaic is too troublesome for me to do, besides, we can use simplier model when the input is also simple. 
 
-## Model - YOLOX
+## 2. Data
+
+### Dataset
+
+We use the ISIC 2018 challenge task 1 dataset, there are 2594 preprocessed images with different sizes.
+The image size range from (384x288) to (2044x1424).
+We reserve 10% for testing(260). And reserve 10% for validation(234), 90% for training(2100) in the remaining 90%.
+
+### preprocessing & augmentation
+
+Firstly, We need to extract a set of bounding boxes out of the segment mask. We can use OpenCV to do this task, but I craft a simple script in tensorflow 2.6. the bounding box for each segmentation is put in a COCO format xml under the same filename.
+
+The original YOLOX use Mosaic / Mix Up / Copy-Paste to boost generalization performance. In our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance\[[1][yolox2021]\]
+So we plan to use only the basic random Scale Jitter & horizontal flip. Besides, those strong augmentations are too troublesome to use, we have to turn it off earlier before the training ends to have the best result.
+
+
+## 3. Model - YOLOX
 
 YOLOX is one of the latest work in YOLO Family, it is built on top of YOLO v3, utilize an anchor-free approach and combined with recent research progress on Deep Learning, like: decoupled head, SimOTA, Mosaic Data Augmentation, etc. Comparing to YOLO v5, it might be slower in some cases, but the AP is largely improved.
 
