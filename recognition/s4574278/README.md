@@ -49,6 +49,24 @@ The CSPNet is firstly introduced into YOLO family by YOLO v4. YOLOX used the sam
 
 Path Aggregation Feature Pyramid Networks (PAFPN) looks like a upside-down U-Net with some residual links.
 
+### Detection Head
+
+As for detection head, there are 3 components, 1 regression for bounding box(4 numbers)
+1 binary classification for detecting if the anchor-point detects an object.
+1 multiple classification fo detecting object class. 
+
+#### Loss function
+
+For bounding boxes, we use the latest CIoU. IoU is ratio but as a loss function, scale matters, so we have Generalized IoU, the GIoU. CIoU is evolved from Distance-IoU. It take account for both centerpoint distance and the aspect ratio. it converge faster
+
+For classification components, we use BCEWithLogitsLoss instead of traditional Cross-Entropy. It produce higher gradient, result in faster convergence.
+
+I didn't fully understand the SimOAT part.
+
+### Evaluation
+
+Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
+mAP on the other hand, emphasize on the positive case.
 
 ### Activation
 
@@ -58,12 +76,7 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
    <figcaption>SiLU(red) vs ReLU(blue)</figcaption>
 </figure>
 
-### Loss function
 
-For bounding boxes, we use the latest CIoU. IoU is ratio but as a loss function, scale matters, so we have Generalized IoU, the GIoU. CIoU is built on top of Distance-IoU, which also take account for distance and the aspect ratio.
-
-Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
-mAP on the other hand, emphasize on the positive case.
 
 ## 4. Training
 
