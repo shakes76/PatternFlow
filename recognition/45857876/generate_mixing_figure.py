@@ -94,7 +94,7 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--config', default='./configs/sample_race_256.yaml')
+    # parser.add_argument('--config', default='./configs/sample_race_256.yaml')
     parser.add_argument("--generator_file", action="store", type=str,
                         help="pretrained weights file for generator", required=True)
 
