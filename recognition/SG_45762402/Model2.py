@@ -6,6 +6,7 @@ Created on Sun Oct 31 01:04:17 2021
 """
 from Model1 import *
 
+
 class StyledConvBlock(nn.Module):
     def __init__(
         self,
@@ -163,10 +164,10 @@ class StyledGenerator(nn.Module):
     def forward(
         self,
         input,
-        noise=None,
-        step=0,
-        alpha=-1,
-        mean_style=None,
+        noise=None,# TODO: support input noise
+        step=0, # Step means how many layers (count from 4 x 4) are used to train
+        alpha=-1,# alpha is the parameter of smooth conversion of resolution):
+        mean_style=None,# TODO: support mean_style
         style_weight=0,
         mixing_range=(-1, -1),
     ):
@@ -247,8 +248,6 @@ class Discriminator(nn.Module):
 
         self.linear = EqualLinear(512, 1)
 
-# step:how many layers (count from 4 x 4) are used to train
-# Alpha is the parameter of smooth conversion of resolution):
     def forward(self, input, step=0, alpha=-1):
         for i in range(step, -1, -1):
             index = self.n_layer - i - 1
@@ -276,3 +275,5 @@ class Discriminator(nn.Module):
         out = self.linear(out)
 
         return out
+
+ 
