@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import List
-import xml.etree.ElementTree as ET
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
-import torchvision.transforms as transforms
+from torchvision import transforms as transforms
+from typing import List
+from xml.etree import ElementTree as ET
 
 
 class IsicDataSet(Dataset):
@@ -18,7 +19,7 @@ class IsicDataSet(Dataset):
         self.images = [
             filename
             for filename in self.image_folder.iterdir()
-            if filename.suffix.lower()==".jpg"
+            if filename.suffix.lower() == ".jpg"
             and self.annotations.__contains__(filename.name)
         ]
         self.transform = transforms.Compose([transforms.ToTensor()])
@@ -52,6 +53,56 @@ class IsicDataSet(Dataset):
                 ]
                 annotation.append(bbox)
             self.annotations[image_name] = annotation
+
+
+##########################################################
+# Loader
+##########################################################
+
+
+
+
+##########################################################
+# Helpers
+##########################################################
+
+
+def resize(image_path, target_size, boxes, dtype=torch.float16):
+    """resize image and annotation box"""
+    image = Image.open(image_path)
+    # Size of image
+    image_height, image_width = image.size
+    width, height = target_size
+    # resize
+    scale = min(width / image_width, height / image_height)
+    new_width = int(image_width * scale)
+    new_height = int(image_height * scale)
+    delta_x = (width - new_width) // 2
+    delta_y = (height - new_height) // 2
+
+    # fill black background
+    image = image.resize((new_width, new_height))
+    new_image = Image.new("RGB", (width, height), (0, 0, 0))
+    new_image.paste(image, (delta_x, delta_y))
+    image_tensor = torch.tensor(new_image, dtype)
+
+    # Adjust BBox accordingly
+    if len(boxes) > 0:
+        # new x min and x max
+        boxes[:, [0, 2]] = boxes[:, [0, 2]] * new_width / image_width + delta_x
+        # new y min and y max
+        boxes[:, [1, 3]] = boxes[:, [1, 3]] * new_height / image_height + delta_y
+        # x_min y_min must >= 0
+        boxes[:, 0:2][boxes[:, 0:2] < 0] = 0
+        # adjust the x_max, y_max according to the width and height
+        boxes[:, 2][boxes[:, 2] > width] = width
+        boxes[:, 3][boxes[:, 3] > height] = height
+        # drop the boxes if any dimension collapse to zero
+        box_w = boxes[:, 2] - boxes[:, 0]
+        box_h = boxes[:, 3] - boxes[:, 1]
+        boxes = boxes[torch.logical_and(box_w > 1, box_h > 1)]
+
+    return image_tensor, boxes
 
 
 if __name__ == "__main__":
