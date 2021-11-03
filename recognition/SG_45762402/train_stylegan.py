@@ -7,33 +7,22 @@ Original file is located at
     https://colab.research.google.com/drive/1z2Vt8eaB3pyMR9xx6spcpFYFaCk1XLdz
 """
 
-from google.colab import drive
-drive.mount('/content/drive')
-
-#!git clone https://github.com/rosinality/style-based-gan-pytorch.git  /content/drive/MyDrive/StyleGAN_rosin
-
-#cd /content/drive/MyDrive/StyleGAN_rosin
-
-#!python prepare_data.py --out /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH --n_worker 2 /content/drive/MyDrive/Dataset_brain/keras_png_slices_data/
-
-#!python train.py --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
 
 """Test"""
 
 #!python train.py --ckpt /content/drive/MyDrive/StyleGAN_rosin/checkpoint/train_step-4.model --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
-
+'''
 import os
 
 os.chdir('/content/drive/MyDrive/Stylegan_shang')   #修改当前工作目录
-
-!python train_SG.py --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
+'''
 
 import argparse
 import random
 import math
 
 from tqdm import tqdm
-import numpy as np
+#import numpy as np
 from PIL import Image
 
 import torch
@@ -48,7 +37,7 @@ from Model2 import StyledGenerator, Discriminator
 import matplotlib.pyplot as plt
 
 # use idel gpu
-# it's better to use enviroment variable
+# it's better to use environment variable
 # if using multiple gpus, please
 # modify hyperparameters at the same time
 # And Make Sure Your Pytorch Version >= 1.0.1
@@ -59,10 +48,8 @@ device            = torch.device('cuda:0')
 Path='/content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH'
 ckpt=None
 
+#Settings
 
-
-
-#learning_rate     = {128: 0.0015, 256: 0.002, 512: 0.003, 1024: 0.003}
 batch_size_1gpu   = {4: 128, 8: 128, 16: 64, 32: 32, 64: 16, 128: 16}
 mini_batch_size_1 = 8
 #batch_size        = {4: 256, 8: 256, 16: 128, 32: 64, 64: 32, 128: 16}
@@ -75,13 +62,11 @@ n_fc              = 8
 dim_latent        = 512
 dim_input         = 4
 n_sample          = 120000     #number of samples used for each training phases
-DGR               = 1
+#DGR               = 1
 n_show_loss       = 500
 step              = 1 # Train from (8 * 8)
 max_step          = 8 # Maximum step (8 for 1024^2)
 #style_mixing      = [] # Waiting to implement
-image_folder_path = '/content/drive/MyDrive/Dataset_brain/keras_png_slices_data'
-save_folder_path  = '/content/drive/MyDrive/Stylegan_shang/results'
 
 low_steps         = [0, 1, 2]
 # style_mixing    += low_steps
@@ -95,16 +80,6 @@ startpoint        = 0
 used_sample       = 0
 alpha             = 0
 
-# Mode: Evaluate? Train?
-is_train          = True
-
-# How to start training?
-# True for start from saved model
-# False for retrain from the very beginning
-is_continue       = True
-d_losses          = [float('inf')]
-g_losses          = [float('inf')]
-inputs, outputs = [], []
 
 def set_grad_flag(module, flag=True):
     for p in module.parameters():
@@ -355,6 +330,7 @@ def train(dataset, generator, discriminator,loss):
                 normalize=True,
                 range=(-1, 1),
             )
+            #Show image
             imshow(torch.cat(images, 0), i)
 
         if (i + 1) % 10000 == 0:
@@ -368,8 +344,6 @@ def train(dataset, generator, discriminator,loss):
         )
 
         pbar.set_description(state_msg)
-
-no_from_rgb_activate=True
 
 if __name__ == '__main__':
 
