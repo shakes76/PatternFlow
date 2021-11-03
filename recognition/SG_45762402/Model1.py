@@ -2,7 +2,6 @@
 """
 Created on Sat Oct 30 21:28:48 2021
 
-@author: shane
 
 reference: https://github.com/rosinality/style-based-gan-pytorch.git
 """
