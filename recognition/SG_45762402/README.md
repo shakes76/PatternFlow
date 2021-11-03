@@ -63,14 +63,18 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 - ### Some Generate Samples 
 
+  #### 64*64 images
+
+  <img src="./Images/size_64.png" width = "500" height = "280" alt="size128" align=center />
+
   #### 128*128 images
 
   <img src="./Images/size_128.png" width = "500" height = "280" alt="size128" align=center />
 
   
-
+  
   #### 256*256 images
-
+  
   <img src="./Images/size_256.png" width = "500" height = "280" alt="size256" align=center />
   
   
