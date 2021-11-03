@@ -348,58 +348,17 @@ class SPPBottleneck(nn.Module):
 
 
 ##########################################################
-#   General Building blocks
-##########################################################
-
-
-class ConvBlock(nn.Module):
-    """Conv2D -> BatchNorm -> ACT"""
-
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size=1,
-        stride=1,
-        bias=False,
-        act: str = "silu",
-    ) -> None:
-        super().__init__()
-        padding = (kernel_size - 1) // 2
-        activation = (
-            nn.LeakyReLU(inplace=True)
-            if act.lower() != "silu"
-            else nn.SiLU(inplace=True)
-        )
-        self.layers = nn.Sequential(
-            *[
-                nn.Conv2d(
-                    in_channels,
-                    out_channels,
-                    kernel_size=kernel_size,
-                    padding=padding,
-                    stride=stride,
-                    bias=bias,
-                ),
-                nn.BatchNorm2d(out_channels),
-                activation,
-            ]
-        )
-
-        def forward(self, x):
-            return self.layers(x)
-
-
-##########################################################
 #   PAFPN: Path Aggregation feature pyramid network
 ##########################################################
+
+
 class DetectionHead(nn.Module):
     def __init__(self, num_classes=50, width=1.0, in_channels=[256, 512, 1024]) -> None:
         super().__init__()
 
-        self.class_conv_layer = nn.ModuleList()
-        self.box_conv_layer = nn.ModuleList()
-        self.class_predictor = nn.ModuleList()
+        self.cls_conv_layer = nn.ModuleList()
+        self.reg_conv_layer = nn.ModuleList()
+        self.cls_predictor = nn.ModuleList()
         self.box_predictor = nn.ModuleList()
         self.obj_predictor = nn.ModuleList()
         self.stems = nn.ModuleList()
@@ -414,7 +373,7 @@ class DetectionHead(nn.Module):
                     stride=1,
                 )
             )
-            self.class_conv_layer.append(
+            self.cls_conv_layer.append(
                 nn.Sequential(
                     *[
                         ConvBlock(
@@ -432,7 +391,7 @@ class DetectionHead(nn.Module):
                     ]
                 )
             )
-            self.class_predictor.append(
+            self.cls_predictor.append(
                 nn.Conv2d(
                     int(256 * width),
                     num_classes,
@@ -442,7 +401,7 @@ class DetectionHead(nn.Module):
                 )
             )
 
-            self.box_conv_layer.append(
+            self.reg_conv_layer.append(
                 nn.Sequential(
                     *[
                         ConvBlock(
@@ -496,14 +455,14 @@ class DetectionHead(nn.Module):
             x = self.stems[i](x)
 
             # predict class
-            class_features = self.class_conv_layer[i](x)
+            class_features = self.cls_conv_layer[i](x)
             # Output
             #   80,80,num_classes
             #
-            class_output = self.class_predictor[i](class_features)
+            class_output = self.cls_predictor[i](class_features)
 
             # extract features for box and obj
-            box_features = self.box_conv_layer[i](x)
+            box_features = self.reg_conv_layer[i](x)
 
             # predict bbox
             box_output = self.box_predictor[i](box_features)
@@ -517,94 +476,43 @@ class DetectionHead(nn.Module):
 
 
 ##########################################################
-# Loss
+#   General Building blocks
 ##########################################################
 
 
-class YoloxLoss(nn.Module):
-    def __init__(self, num_classes, strides=[8, 16, 32]):
+class ConvBlock(nn.Module):
+    """Conv2D -> BatchNorm -> ACT"""
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=1,
+        stride=1,
+        bias=False,
+        act: str = "silu",
+    ) -> None:
         super().__init__()
-        self.num_classes = num_classes
-        self.strides = strides
-
-        self.classification_loss = nn.BCEWithLogitsLoss(reduction="none")
-        self.iou_loss = GIoU(loss_reduction="none")
-        # grids = [tensor([0.]), tensor([0.]), tensor([0.])]
-        self.grids = [torch.zeros(1)] * len(strides)
-
-    def forward(self, inputs):
-        # inputs is the 3 layers of features from 3 to 5
-        # see model.py YOLOModel.forward()
-        results = []
-        x_offset = []
-        y_offset = []
-        expanded_strides = []
-
-        for k, (stride, output) in enumerate(zip(self.strides, inputs)):
-            output, grid = self.get_output_and_grid(output, k, stride)
-            x_offset.append(grid[:, :, 0])
-            y_offset.append(grid[:, :, 1])
-            expanded_strides.append(torch.ones_like(grid[:, :, 0]) * stride)
-            results.append(output)
-
-        return self.get_losses(
-            x_offset, y_offset, expanded_strides, torch.cat(results, dim=1)
+        padding = (kernel_size - 1) // 2
+        activation = (
+            nn.LeakyReLU(inplace=True)
+            if act.lower() != "silu"
+            else nn.SiLU(inplace=True)
+        )
+        self.layers = nn.Sequential(
+            *[
+                nn.Conv2d(
+                    in_channels,
+                    out_channels,
+                    kernel_size=kernel_size,
+                    padding=padding,
+                    stride=stride,
+                    bias=bias,
+                ),
+                nn.BatchNorm2d(out_channels),
+                activation,
+            ]
         )
 
-
-class LossType(Enum):
-    IoU = 0
-    GIoU = 1
-
-
-class LossReduction(Enum):
-    none = 0
-    mean = 1
-    sum = 2
-
-
-class GIoU(nn.Module):
-    def __init__(self, loss_reduction="none", loss_type: LossType = LossType.GIoU):
-        super(GIoU, self).__init__()
-        self.reduction = loss_reduction
-        self.type = loss_type
-
-    def forward(self, boxes, boxes_gt):
-        assert boxes.shape[0] == boxes_gt.shape[0]
-
-        boxes = boxes.view(-1, 4)
-        boxes_gt = boxes_gt.view(-1, 4)
-        tl = torch.max(
-            (boxes[:, :2] - boxes[:, 2:] / 2), (boxes_gt[:, :2] - boxes_gt[:, 2:] / 2)
-        )
-        br = torch.min(
-            (boxes[:, :2] + boxes[:, 2:] / 2), (boxes_gt[:, :2] + boxes_gt[:, 2:] / 2)
-        )
-
-        area_boxes = torch.prod(boxes[:, 2:], 1)
-        area_gt = torch.prod(boxes_gt[:, 2:], 1)
-
-        en = (tl < br).type(tl.type()).prod(dim=1)
-        area_intersect = torch.prod(br - tl, 1) * en
-        area_union = area_boxes + area_gt - area_intersect
-        iou = (area_intersect) / (area_union + 1e-16)
-
-        if self.type == LossType.IoU:
-            loss = 1 - iou ** 2
-        elif self.type == LossType.GIoU:
-            center_tl = torch.min(
-                (boxes[:, :2] - boxes[:, 2:] / 2), (boxes_gt[:, :2] - boxes_gt[:, 2:] / 2)
-            )
-            center_br = torch.max(
-                (boxes[:, :2] + boxes[:, 2:] / 2), (boxes_gt[:, :2] + boxes_gt[:, 2:] / 2)
-            )
-            area_c = torch.prod(center_br - center_tl, 1)
-            giou = iou - (area_c - area_union) / area_c.clamp(1e-16)
-            loss = 1 - giou.clamp(min=-1.0, max=1.0)
-
-        if self.reduction == LossReduction.mean:
-            loss = loss.mean()
-        elif self.reduction == LossReduction.sum:
-            loss = loss.sum()
-
-        return loss
+        def forward(self, x):
+            return self.layers(x)

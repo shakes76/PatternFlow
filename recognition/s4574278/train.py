@@ -9,7 +9,7 @@ from torch.cuda.amp import autocast, GradScaler
 from dataset import IsicDataSet
 
 from model import ModelSize, YoloxModel
-from utils import yolox_loss
+from loss import yolox_loss
 
 ##########################################################
 #   Constants
