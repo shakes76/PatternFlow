@@ -1,10 +1,6 @@
-import math
-from PIL import Image
+from matplotlib import pyplot as plt, patches
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib import patches
 import torch
-from torch import nn
 
 ##########################################################
 # Visualization
@@ -23,30 +19,55 @@ tableau_light = np.array(
         (174, 199, 232),
     ]
 )
+colormap = tableau_light / 255
 
 
 def draw_bbox(image, boxes):
     """Drop the bounding box"""
-    colormap = tableau_light / 255
-
-    plt.imshow(image, interpolation="nearest")
-    plt.axis("off")
-
-    def plot_bbox(bbox, color):
-        plt.gca().add_patch(
-            patches.Rectangle(
-                xy=(bbox[0], bbox[1]),
-                width=bbox[2] - bbox[0],
-                height=bbox[3] - bbox[1],
-                fill=False,
-                edgecolor=color,
-                linewidth=2,
-            )
-        )
+    plot_image(image)
     for i, box in enumerate(boxes):
-        plot_bbox(box, colormap[i % 10])
+        plot_rectangle(box, colormap[i % 10])
 
 
+def draw_bbox_label(image, boxes, labels):
+    plot_image(image)
+    ax = plt.gca()
+    # label = '{} {:.2f}'.format(predicted_class, score)
+    for i, (box, label) in enumerate(zip(boxes, labels)):
+        color = colormap[i % 10]
+        plot_rectangle(box, color)
+        x = box[0]
+        y = box[1]
+        ax.text(
+            x,
+            (y - 10),
+            label,
+            verticalalignment="center",
+            color="black",
+            fontsize=10,
+            weight="bold",
+        ).set_bbox(dict(facecolor=color, edgecolor='transparent'))
+
+
+def plot_image(image, ax=plt.gca()):
+    if torch.is_tensor(image):
+        image = image.permute(1, 2, 0)
+    plt.axis("off")
+    return plt.imshow(image, interpolation="nearest")
+
+
+def plot_rectangle(bbox, color, ax=plt.gca()):
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    return ax.add_patch(
+        patches.Rectangle(
+            xy=(bbox[0], bbox[1]),
+            width=width,
+            height=height,
+            fill=False,
+            edgecolor=color,
+            linewidth=2,
+        )
 
 ##########################################################
 # Loss
