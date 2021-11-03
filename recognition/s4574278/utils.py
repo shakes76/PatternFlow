@@ -142,7 +142,6 @@ class YoloxLoss(nn.Module):
 
 def resize(image_path, target_size, boxes, dtype=torch.float16):
     """resize image and annotation box"""
-    # TODO resize image and annotation box
     image = Image.open(image_path)
     # Size of image
     image_height, image_width = image.size
@@ -162,11 +161,16 @@ def resize(image_path, target_size, boxes, dtype=torch.float16):
 
     # Adjust BBox accordingly
     if len(boxes) > 0:
+        # new x min and x max
         boxes[:, [0, 2]] = boxes[:, [0, 2]] * new_width / image_width + delta_x
+        # new y min and y max
         boxes[:, [1, 3]] = boxes[:, [1, 3]] * new_height / image_height + delta_y
+        # x_min y_min must >= 0
         boxes[:, 0:2][boxes[:, 0:2] < 0] = 0
+        # adjust the x_max, y_max according to the width and height
         boxes[:, 2][boxes[:, 2] > width] = width
         boxes[:, 3][boxes[:, 3] > height] = height
+        # drop the boxes if any dimension collapse to zero
         box_w = boxes[:, 2] - boxes[:, 0]
         box_h = boxes[:, 3] - boxes[:, 1]
         boxes = boxes[torch.logical_and(box_w > 1, box_h > 1)]
