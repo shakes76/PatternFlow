@@ -17,7 +17,6 @@ class IsicDataSet(Dataset):
             for filename in os.listdir(image_folder)
             if filename.endswith(".jpg") and self.annotations.__contains__(filename)
         ]
-        self._resize()
 
     def __len__(self):
         len(self.images)
@@ -33,18 +32,18 @@ class IsicDataSet(Dataset):
             xml = ET.parse(os.path.join(annotation_folder, filename)).getroot()
             image_name = xml.subelement("filename").text
             annotation = []
-            for obj in xml.iter("object"):
-                cls = obj.find("name").text
-                if cls not in self.classes:
+            for object in xml.iter("object"):
+                classname = object.find("name").text
+                if classname not in self.classes:
                     continue
-                cls_id = self.classes.index(cls)
-                xmlbox = obj.find("bndbox")
+                class_index = self.classes.index(classname)
+                bndbox = object.find("bndbox")
                 bbox = [
-                    int(float(xmlbox.find("xmin").text)),
-                    int(float(xmlbox.find("ymin").text)),
-                    int(float(xmlbox.find("xmax").text)),
-                    int(float(xmlbox.find("ymax").text)),
-                    cls_id,
+                    int(float(bndbox.find("xmin").text)),
+                    int(float(bndbox.find("ymin").text)),
+                    int(float(bndbox.find("xmax").text)),
+                    int(float(bndbox.find("ymax").text)),
+                    class_index,
                 ]
                 annotation.append(bbox)
             self.annotations[image_name] = annotation
