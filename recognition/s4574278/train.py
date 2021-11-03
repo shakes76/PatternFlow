@@ -47,8 +47,10 @@ device = torch.device("cuda:0")
 # tune down if no enough ram
 num_workers = 8
 
-# Init Learning Rate
-lr = 1e-4
+# Optimizer HP
+lr = 1e-3
+momentum = 0.937
+weight_decay = 5e-4
 
 # Batch size for training
 batch_size = 64
@@ -111,7 +113,9 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 # Optimizer
-optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
+optimizer = optim.Adam(
+    model.parameters(), lr=lr, betas=(momentum, 0.999), weight_decay=weight_decay
+)
 lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
 cudnn.benchmark = True
 
