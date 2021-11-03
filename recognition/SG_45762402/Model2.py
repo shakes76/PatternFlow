@@ -6,7 +6,9 @@ Created on Sun Oct 31 01:04:17 2021
 """
 from Model1 import *
 
-
+"""
+Style_generator and discriminator
+"""
 class StyledConvBlock(nn.Module):
     def __init__(
         self,
