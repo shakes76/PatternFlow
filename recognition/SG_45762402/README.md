@@ -61,7 +61,7 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 ​        To continue training from previous training -model ,change default `ckpt=pre-trained.model` in train_stylegan.py. 
 
-- ### Some Generate Samples 
+- ### Some Generate Samples --style mixing
 
   #### 64*64 images
 
