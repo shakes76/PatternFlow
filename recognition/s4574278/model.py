@@ -1,11 +1,15 @@
+from enum import Enum
+import math
 import torch
 from torch import nn
-from enum import Enum
-import utils
+from typing import List
+
+from torch.utils.data import dataset
 
 """
 Assume input width/height to be 416/480/512 (could be any the multiple of 32)
 """
+
 
 ##########################################################
 #   CONSTANTS
@@ -26,13 +30,18 @@ class ModelSize(Enum):
 ##########################################################
 
 
-class YOLOModel(nn.Module):
-    def __init__(self, num_classes: int, model_size: ModelSize) -> None:
+class YoloxModel(nn.Module):
+    def __init__(
+        self, classes: List[str], model_size: ModelSize, input_shape=(512, 512)
+    ) -> None:
         super().__init__()
+        self.num_classes = len(classes)
+        self.input_shape = input_shape
         self.backbone = PAFPN(model_size)
-        self.head = DetectionHead(num_classes, width=model_size.value[1])
+        self.head = DetectionHead(self.num_classes, width=model_size.value[1])
 
     def forward(self, x):
+        # PAFPN
         features = self.backbone.forward(x)
         return self.head.forward(features)
 
@@ -47,12 +56,26 @@ class YOLOModel(nn.Module):
         )
 
     def see(self, image):
-        size = image.shape()[0:2]
+        image_shape = image.shape()[0:2]
         images = torch.unsqueeze(image, 0)
-        image_tensors, _ = utils.resize(images, size, [])
+        image_tensors, _ = dataset.resize(images, image_shape, [])
         with torch.no_grad():
-            boxes = self.forward(image_tensors)[0]
+            outputs = self.forward(image_tensors)
+            outputs = self.post_process(outputs)
+        boxes = nms(
+            outputs,
+            self.num_classes,
+            self.input_shape,
+            image_shape,
+            self.letterbox_image,
+            conf_thres=self.confidence,
+            nms_thres=self.nms_iou,
+        )
         return boxes[0]
+
+    def post_process(self, outputs) -> torch.Tensor:
+        """Restore Image size,"""
+        pass
 
 
 ##########################################################
@@ -373,13 +396,7 @@ class ConvBlock(nn.Module):
 #   PAFPN: Path Aggregation feature pyramid network
 ##########################################################
 class DetectionHead(nn.Module):
-    def __init__(
-        self,
-        num_classes=50,
-        width=1.0,
-        in_channels=[256, 512, 1024],
-        strides=[8, 16, 32],
-    ) -> None:
+    def __init__(self, num_classes=50, width=1.0, in_channels=[256, 512, 1024]) -> None:
         super().__init__()
 
         self.class_conv_layer = nn.ModuleList()
@@ -465,27 +482,38 @@ class DetectionHead(nn.Module):
             )
 
     def forward(self, inputs):
-        """inputs:
-        feature3  64, 64, 256
-        feature4  32, 32, 512
-        feature5  16, 16, 1024
+        """
+        inputs:
+            feature3  64, 64, 256
+            feature4  32, 32, 512
+            feature5  16, 16, 1024
+        outputs:
+            feature3 64, 64, (4 + 1 + num_classes)
+            feature3 32, 32, (4 + 1 + num_classes)
+            feature3 16, 16, (4 + 1 + num_classes)
         """
         outputs = []
-        for k, x in enumerate(inputs):
+        for i, x in enumerate(inputs):
             # cross-channel fusion with 1x1 kernel
-            x = self.stems[k](x)
+            x = self.stems[i](x)
 
             # predict class
-            cls_feat = self.class_conv_layer[k](x)
-            cls_output = self.class_predictor[k](cls_feat)
+            class_features = self.class_conv_layer[i](x)
+            # Output
+            #   80,80,num_classes
+            #
+            class_output = self.class_predictor[i](class_features)
+
+            # extract features for box and obj
+            box_features = self.box_conv_layer[i](x)
 
             # predict bbox
-            reg_feat = self.box_conv_layer[k](x)
-            reg_output = self.box_predictor[k](reg_feat)
+            box_output = self.box_predictor[i](box_features)
 
             # predict if object exist
-            obj_output = self.obj_predictor[k](reg_feat)
+            obj_output = self.obj_predictor[i](box_features)
 
-            output = torch.cat([reg_output, obj_output, cls_output], 1)
+            output = torch.cat([box_output, obj_output, class_output], 1)
             outputs.append(output)
         return outputs
+

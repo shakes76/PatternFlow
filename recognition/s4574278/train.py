@@ -1,5 +1,5 @@
 import os
-
+import Pathlib as Path
 import torch
 from torch import nn, optim
 from torch.backends import cudnn
@@ -8,20 +8,18 @@ from torchsummary import summary
 from torch.cuda.amp import autocast, GradScaler
 from dataset import IsicDataSet
 
-from model import ModelSize, YOLOModel
+from model import ModelSize, YoloxModel
 from utils import yolox_loss
-
 
 ##########################################################
 #   Constants
 ##########################################################
 
 # where the cache saves
-model_data_path = os.path.join("snapshot", "yolox.pth")
+model_data_path = Path("snapshot") / "yolox.pth"
 
 # for use we only have 1 class
 classes = ["lesion"]
-num_classes = len(classes)
 
 # Must be multiple of 32
 input_shape = (512, 512)
@@ -30,8 +28,8 @@ input_shape = (512, 512)
 model_size: ModelSize = ModelSize.S
 
 # Image Folder
-image_folder = "dataset/input"
-annotation_folder = "dataset/annotation"
+image_folder = Path("dataset") / "input"
+annotation_folder = Path("dataset") / "annotation"
 
 # Suppress candidate boxes below this confidence
 threshold = 0.5
@@ -40,12 +38,11 @@ threshold = 0.5
 iou = 0.8
 
 # Turn on GPU or not
-device = torch.device("cuda:0")
+device = torch.device('cuda') 
 
 # How many CPU threads required
-# tune up if CPU is the hurdle
-# tune down if no enough ram
-num_workers = 8
+# default 4 times of # of GPU
+num_workers = 4
 
 # Optimizer HP
 lr = 1e-3
@@ -79,7 +76,7 @@ def _init_weight(module: nn.Module):
 
 
 # Creates model and optimizer in default precision
-model: nn.Module = YOLOModel(num_classes, model_size)
+model: nn.Module = YoloxModel(classes, model_size)
 model.apply(_init_weight)
 # read existing model data
 if os.path.exists(model_data_path):
@@ -152,5 +149,5 @@ for epoch in range(max_epochs):
 
     torch.save(
         model.state_dict(),
-        f"logs/ep{epoch + 1:3d}-loss{total_loss/steps:3f}-val_loss{total_val_loss/val_steps:3f}.pth",
+        f"logs/ep{epoch + 1:3d}-loss{total_loss / steps:3f}-val_loss{total_val_loss / val_steps:3f}.pth",
     )
