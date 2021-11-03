@@ -38,14 +38,12 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
   #### 8*8 images
 
-  ```
   ![Size_8](https://github.com/ShangGao-forever/PatternFlow/blob/topic-recognition/recognition/SG_45762402/Images/size_8.png) 
-  ```
 
   #### 64*64 images
 
   #### 128*128 images
-  
+
   #### 256*256 images
   
   
