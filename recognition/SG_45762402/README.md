@@ -38,7 +38,7 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
   #### 8*8 images
 
-  ![avatar](/Image/size_8.png)
+  ![size_8](\Images\size_8.png)
 
   #### 64*64 images
 
