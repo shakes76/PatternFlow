@@ -66,6 +66,7 @@ def resize(image_path, target_size, boxes, dtype=torch.float16):
     # Size of image
     image_height, image_width = image.size
     width, height = target_size
+    
     # resize
     scale = min(width / image_width, height / image_height)
     new_width = int(image_width * scale)
@@ -73,11 +74,8 @@ def resize(image_path, target_size, boxes, dtype=torch.float16):
     delta_x = (width - new_width) // 2
     delta_y = (height - new_height) // 2
 
-    # fill black background
-    image = image.resize((new_width, new_height))
-    new_image = Image.new("RGB", (width, height), (0, 0, 0))
-    new_image.paste(image, (delta_x, delta_y))
-    image_tensor = torch.tensor(new_image, dtype)
+    # Resize the image to fit our "perception"
+    image_tensor = image.resize((new_width, new_height))
 
     # Adjust BBox accordingly
     if len(boxes) > 0:
@@ -90,7 +88,7 @@ def resize(image_path, target_size, boxes, dtype=torch.float16):
         # adjust the x_max, y_max according to the width and height
         boxes[:, 2][boxes[:, 2] > width] = width
         boxes[:, 3][boxes[:, 3] > height] = height
-        # drop the boxes if any dimension collapse to zero
+        # drop the boxes if any dimension collapse to zero, should not happen
         box_w = boxes[:, 2] - boxes[:, 0]
         box_h = boxes[:, 3] - boxes[:, 1]
         boxes = boxes[torch.logical_and(box_w > 1, box_h > 1)]
