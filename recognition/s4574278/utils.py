@@ -24,29 +24,35 @@ colormap = tableau_light / 255
 
 def draw_bbox(image, boxes):
     """Drop the bounding box"""
-    plot_image(image)
+    ax = plt.subplot(111)
+    plot_image(image, ax)
     for i, box in enumerate(boxes):
-        plot_rectangle(box, colormap[i % 10])
+        plot_rectangle(box, colormap[i % 10], ax)
+    plt.show()
 
 
 def draw_bbox_label(image, boxes, labels):
-    plot_image(image)
     ax = plt.gca()
+    plot_image(image, ax)
     # label = '{} {:.2f}'.format(predicted_class, score)
     for i, (box, label) in enumerate(zip(boxes, labels)):
         color = colormap[i % 10]
-        plot_rectangle(box, color)
+        plot_rectangle(box, color, ax)
         x = box[0]
         y = box[1]
         ax.text(
-            x,
-            (y - 10),
+            (x + 5),
+            (y - 12),
             label,
-            verticalalignment="center",
+            verticalalignment="baseline",
             color="black",
             fontsize=10,
             weight="bold",
-        ).set_bbox(dict(facecolor=color, edgecolor='transparent'))
+            clip_on=False,
+            fontfamily='sans-serif',
+            bbox=dict(facecolor=color, edgecolor=color)
+        )
+    plt.show()
 
 
 def plot_image(image, ax=plt.gca()):
