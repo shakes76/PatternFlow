@@ -1,10 +1,16 @@
 # StyleGan_Oasis
 
-This project is an implementation of StyleGan based on the Oasis brain dataset.
+This project is an unofficial implementation of StyleGan based on the Oasis brain dataset.
 
-Reference: https://github.com/rosinality/style-based-gan-pytorch.git
+Reference: https://github.com/rosinality/style-based-gan-pytorch.git ,  https://github.com/SiskonEmilia/StyleGAN-PyTorch.git
 
 Original Paper: https://arxiv.org/abs/1812.04948
+
+## Introduction
+
+"Style" in StyleGAN here refers to the main attributes of the brain region in the data set, where Style refers to the style of the brain structure, such as brain gray matter, brain lesions, etc. 
+
+StyleGAN uses **style** to affect rough information such as brain size and shape, and uses **noise** to affect the details of the cross-section of the brain.
 
 ## Dataset
 
@@ -73,7 +79,17 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 ### Overview
 
+<img src="./Images/structure.png" width = "500" height = "300" alt="size256" align=center />
 
+**Mapping network** --- **latent code**
+
+Mapping network changes the latent code **z** into **w**. In GAN, z is a random vector that conforms to a uniform distribution or a Gaussian distribution. The Mapping network consists of 8 fully connected layers. Through a series of affine transformations, w is obtained from z, and this w is converted into style Y=(Ys,Yb), combined with the AdaIN (adaptive instance normalization) style transformation method:
+
+<img src="./Images/ADAIN.png" width = "500" height = "80" alt="adain" align=center />
+
+**Style-mixing**
+
+The style-mixing part is the biggest difference compared to GAN. The specific method of style-mixing is to input two different latent codes ***z1*** and ***z2*** into the mapping network, and get ***w1*** and ***w2*** respectively, which represent two different styles, and then randomly select an intermediate intersection point in the synthesis network. Use ***w1*** for the part before the intersection and ***w2*** for the part after the intersection. The generated image should have both source A and source B features.
 
 ### Parameters
 
