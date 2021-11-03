@@ -38,7 +38,7 @@ threshold = 0.5
 iou = 0.8
 
 # Turn on GPU or not
-device = torch.device('cuda') 
+device = torch.device('cuda')
 
 # How many CPU threads required
 # default 4 times of # of GPU
@@ -46,8 +46,6 @@ num_workers = 4
 
 # Optimizer HP
 lr = 1e-3
-momentum = 0.937
-weight_decay = 5e-4
 
 # Batch size for training
 batch_size = 64
@@ -110,9 +108,7 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 # Optimizer
-optimizer = optim.Adam(
-    model.parameters(), lr=lr, betas=(momentum, 0.999), weight_decay=weight_decay
-)
+optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=5e-4)
 lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
 cudnn.benchmark = True
 
