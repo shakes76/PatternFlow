@@ -2,7 +2,6 @@
 """
 Created on Sun Oct 31 01:04:17 2021
 
-@author: shane
 """
 from Model1 import *
 
