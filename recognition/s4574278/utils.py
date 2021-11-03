@@ -9,26 +9,25 @@ from torch import nn
 ##########################################################
 # Visualization
 ##########################################################
+tableau_light = np.array(
+    [
+        (158, 218, 229),
+        (219, 219, 141),
+        (199, 199, 199),
+        (247, 182, 210),
+        (196, 156, 148),
+        (197, 176, 213),
+        (255, 152, 150),
+        (152, 223, 138),
+        (255, 187, 120),
+        (174, 199, 232),
+    ]
+)
 
 
 def draw_bbox(image, boxes):
-    tableau_light = (
-        np.array(
-            [
-                (158, 218, 229),
-                (219, 219, 141),
-                (199, 199, 199),
-                (247, 182, 210),
-                (196, 156, 148),
-                (197, 176, 213),
-                (255, 152, 150),
-                (152, 223, 138),
-                (255, 187, 120),
-                (174, 199, 232),
-            ]
-        )
-        / 255
-    )
+    """Drop the bounding box"""
+    colormap = tableau_light / 255
 
     plt.imshow(image, interpolation="nearest")
     plt.axis("off")
@@ -44,9 +43,9 @@ def draw_bbox(image, boxes):
                 linewidth=2,
             )
         )
-
     for i, box in enumerate(boxes):
-        plot_bbox(box, tableau_light[i % 10])
+        plot_bbox(box, colormap[i % 10])
+
 
 
 ##########################################################
