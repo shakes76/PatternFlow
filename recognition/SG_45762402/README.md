@@ -33,12 +33,27 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
   To start train, use `path=LMDB_PATH`in train_stylegan.py.
 
   ```
-  !python train.py
+  !python train_stylegan.py
+  ```
+
+  ### Generate Pictures
+
+  Run generate_mixing.py , note that default parameters should be changed
+
+  `size=64`
+  `n_row=1`
+  `n_col=5`
+  `path=model.path`
+  `mixing=True`
+  `num_mixing=20`
+
+  ```
+  !python generate_mixing.py
   ```
 
 - ### Train from pre-trained model
 
-  To continue training from previous training -model ,change default `ckpt=pre-trained.model` in train_stylegan.py. 
+​        To continue training from previous training -model ,change default `ckpt=pre-trained.model` in train_stylegan.py. 
 
 - ### Some Generate Samples 
 
@@ -55,6 +70,10 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
   
 
 ## Model Structure
+
+### Overview
+
+
 
 ### Parameters
 
