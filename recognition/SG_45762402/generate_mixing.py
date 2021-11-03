@@ -107,17 +107,6 @@ from train_stylegan import imshow
 
 if __name__ == '__main__':
 
-    '''
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--size', type=int, default=1024, help='size of the image')
-    parser.add_argument('--n_row', type=int, default=3, help='number of rows')
-    parser.add_argument('--n_col', type=int, default=5, help='number of columns')
-    parser.add_argument('path', type=str, help='path to checkpoint file')
-    
-    args = parser.parse_args()
-    
-    device = 'cuda'
-    '''
 
     #512
     generator = StyledGenerator().to(device)
