@@ -3,3 +3,5 @@ dataset/input/*
 dataset/annotation/*
 dataset/*.zip
 note.md
+**.pdf
+**.html
