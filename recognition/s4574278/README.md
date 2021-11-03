@@ -11,9 +11,9 @@ YOLOX is a latest algorithm which utilized many state-of-the-art techniques. By 
 
 ## 1. Introduction
 
-We will first extract a set of bounding boxes, then write a modified version of CSPNet as the backbone of PAFPN net. The PAFPN is the backbone of the entire YOLOX model, then we output 3 levels of abstraction, each have a 2x scaling factor on top of previous layer. For each layer we attach a YOLOX detection head, this head consist of 3 decouple component that coresponding to the object, the bounding box and classification respectively. each component have its very own loss logic: We use CIoU\[[7][zheng2019distanceiou]\] Loss for bounding box, and BCEWithLogitsLoss for classification of "if contains Obj" and "which class it belong". 
+We will first extract a set of bounding boxes, then write a modified version of CSPNet as the backbone of PAFPN net. The PAFPN is the backbone of the entire YOLOX model, then we output 3 levels of abstraction, each have a 2x scaling factor on top of previous layer. For each layer we attach a YOLOX detection head, this head consist of 3 decouple component that corresponding to the object, the bounding box and classification respectively. each component have its very own loss logic: We use CIoU\[[7][zheng2019distanceiou]\] Loss for the regression of bounding box, and `BCEWithLogitsLoss `for classification of "if contains Obj" and "which class it belong". 
 
-For implementation, I abandon tensorflow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
+For implementation, I abandon TensorFlow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
 
 Then the training process is done in a paid server, the challenges are also listed in the Appendix also.
 
@@ -27,7 +27,7 @@ We use the ISIC 2018 challenge task 1 dataset, there are 2594 preprocessed image
 The image size range from (384x288) to (2044x1424).
 We reserve 10% for testing(260). And reserve 10% for validation(234), 90% for training(2100) in the remaining 90%.
 
-### preprocessing & augmentation
+### Preprocessing & augmentation
 
 Firstly, We need to extract a set of bounding boxes out of the segment mask. We should not use OpenCV to do this task, so I craft a simple script using tensorflow 2.6. the bounding box for each segmentation is put in a xml under the same filename.
 
@@ -57,9 +57,9 @@ As for detection head, there are 3 components, 1 regression for bounding box(4 n
 
 #### Loss function
 
-For bounding boxes, we use the latest CIoU. IoU is ratio but as a loss function, scale matters, so we have Generalized IoU, the GIoU. CIoU is evolved from Distance-IoU. It take account for both centerpoint distance and the aspect ratio. it converge faster
+For bounding boxes, we use the latest `CIoU`. `IoU `is ratio but as a loss function, scale matters, so we have `Generalized IoU,` the `GIoU`. `CIoU ` is evolved from `Distance-IoU`. It take account for both center point distance and the aspect ratio. it converge faster
 
-For classification components, we use BCEWithLogitsLoss instead of traditional Cross-Entropy. It produce higher gradient, result in faster convergence.
+For classification components, we use `BCEWithLogitsLoss `instead of traditional Cross-Entropy. It produce higher gradient, result in faster convergence.
 
 I didn't fully understand the SimOAT part.
 
@@ -71,8 +71,8 @@ mAP on the other hand, emphasize on the positive case.
 ### Activation
 
 According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs, it looks like a ReLU but smooth.
-<figure>
-   <img alt="comparison with ReLU" src="./images/SiLU.png" width="400px" />
+<figure style="overflow:hidden">
+   <img alt="comparison with ReLU" src="./images/SiLU.png"  style="width:400px" />
    <figcaption>SiLU(red) vs ReLU(blue)</figcaption>
 </figure>
 
@@ -81,9 +81,9 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
 ## 4. Training
 
 The CPU we used is Intel® Xeon® Silver 4210R Processor(10 core 20 threads), the GPU we used is RTX3090.
-I only manage to use 30% of GPU after maximized the CPU worker, Seems there is a restriction on the server-side. 
+I only manage to use 30% of GPU after maximizing the CPU worker, Seems there is a restriction on the server-side. 
 
-For Optimizer, I us Adam, instead of SGD with momentum, because it's easier to tune. 
+For Optimizer, I use Adam, instead of SGD with momentum, because it's easier to tune. 
 I also used CosineAnnealingLR scheduler, because It work well with Adam.
 
 ## 5. How to use & Results
@@ -109,14 +109,14 @@ python3 ./test.py
 ### Learning curve
 
 <figure>
-   <img alt="Curve" src="./images/curve.png" width="400px" />
+   <img alt="Curve" src="./images/curve.png"  />
    <figcaption>Learning curve for the first 22 epochs</figcaption>
 </figure>
-Initially the loss is over hundreds, then it slowly but steadily go all the way down to 5~6 at 16 epoch.
+Initially the loss is over hundreds, then it slowly but steadily go all the way down to 5~6 at 16 epoch. 
 
 ### Demo detection
 <figure>
-   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.jpg" width="400px" />
+   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.jpg" />
    <figcaption>Predicted with IOU 0.2</figcaption>
 </figure>
 The result is not very satisfactory.
@@ -124,6 +124,7 @@ The result is not very satisfactory.
 ## References
 
 <!-- https://www.bibtex.com/c/bibtex-to-ieee-converter/ -->
+
 1. [Z. Ge, S. Liu, F. Wang, Z. Li, en J. Sun, “YOLOX: Exceeding YOLO Series in 2021”, arXiv [cs.CV]. 2021.][yolox2021]
 2. [A. Bochkovskiy, C.-Y. Wang, en H.-Y. M. Liao, “YOLOv4: Optimal Speed and Accuracy of Object Detection”, arXiv [cs.CV]. 2020][bochkovskiy2020yolov4]
 3. [C.-Y. Wang, H.-Y. M. Liao, I.-H. Yeh, Y.-H. Wu, P.-Y. Chen, en J.-W. Hsieh, “CSPNet: A New Backbone that can Enhance Learning Capability of CNN”, arXiv [cs.CV]. 2019.][wang2019cspnet]
