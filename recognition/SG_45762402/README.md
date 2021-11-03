@@ -58,27 +58,25 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 ### Parameters
 
-```
-|Parameter|Description|
-|:-:|:-:|
-|n_gpu|number of GPUs used to train the model|
-|device|default device to create and save tensors|
-|learning_rate|a dict to indicate learning rate at different stage of training|
-|batch_size*|a dict to indicate batch size at different stage of training|
-|mini_batch_size*|minimal batch size|
-|n_fc|number of layers in the full-connected mapping network|
-|dim_latent|dimension of latent space|
-|dim_input|size of the first layer of generator|
-|n_sample|how many samples will be used to train a single layer|
-|n_sample_total|how many samples will be used to train the whole model|
-|DGR|how many times will discriminator be trained before training generator|
-|n_show_loss|loss will be recorded every `n_show_loss` iterations|
-|step|which layer to start training|
-|max_step|maximum resolution of images is 2 ^ (max_step + 2)|
-|style_mixing|layers to use 2nd style to evaluate|
-|image_folder_path|path to the dataset folder that contains images|
-|save_folder_path|path to the folder that generated images will be saved to|
-|is_train|set to `True` if you want to train the model|
-|is_continue|set to `True` if you want to load pre-trained model|
-|CUDA_VISIBLE_DEVICES|specify indexes of available GPU|
-```
+|      Parameter       |                         Description                          |
+| :------------------: | :----------------------------------------------------------: |
+|        n_gpu         |            number of GPUs used to train the model            |
+|        device        |          default device to create and save tensors           |
+|    learning_rate     | a dict to indicate learning rate at different stage of training |
+|     batch_size*      | a dict to indicate batch size at different stage of training |
+|   mini_batch_size*   |                      minimal batch size                      |
+|         n_fc         |    number of layers in the full-connected mapping network    |
+|      dim_latent      |                  dimension of latent space                   |
+|      dim_input       |             size of the first layer of generator             |
+|       n_sample       |    how many samples will be used to train a single layer     |
+|    n_sample_total    |    how many samples will be used to train the whole model    |
+|         DGR          | how many times will discriminator be trained before training generator |
+|     n_show_loss      |     loss will be recorded every `n_show_loss` iterations     |
+|         step         |                which layer to start training                 |
+|       max_step       |      maximum resolution of images is 2 ^ (max_step + 2)      |
+|     style_mixing     |             layers to use 2nd style to evaluate              |
+|  image_folder_path   |       path to the dataset folder that contains images        |
+|   save_folder_path   |  path to the folder that generated images will be saved to   |
+|       is_train       |         set to `True` if you want to train the model         |
+|     is_continue      |     set to `True` if you want to load pre-trained model      |
+| CUDA_VISIBLE_DEVICES |               specify indexes of available GPU               |
