@@ -30,23 +30,55 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 - ### Training StyleGan
 
+  To start train, use `path=LMDB_PATH`in train_stylegan.py.
+
   ```
-  !python train.py 
+  !python train.py
   ```
 
-- ### Some Generate Samples
+- ### Train from pre-trained model
 
-  #### 8*8 images
+  To continue training from previous training -model ,change default `ckpt=pre-trained.model` in train_stylegan.py. 
 
-  <img src=“\Images\size_8.png” style=“width:200px height:300px” />
-
-  #### 64*64 images
+- ### Some Generate Samples 
 
   #### 128*128 images
 
+  <img src="./Images/size_128.png" width = "500" height = "300" alt="size128" align=center />
+
+  
+
   #### 256*256 images
+
+  <img src="./Images/size_256.png" width = "500" height = "300" alt="size256" align=center />
   
   
 
 ## Model Structure
 
+### Parameters
+
+```
+|Parameter|Description|
+|:-:|:-:|
+|n_gpu|number of GPUs used to train the model|
+|device|default device to create and save tensors|
+|learning_rate|a dict to indicate learning rate at different stage of training|
+|batch_size*|a dict to indicate batch size at different stage of training|
+|mini_batch_size*|minimal batch size|
+|n_fc|number of layers in the full-connected mapping network|
+|dim_latent|dimension of latent space|
+|dim_input|size of the first layer of generator|
+|n_sample|how many samples will be used to train a single layer|
+|n_sample_total|how many samples will be used to train the whole model|
+|DGR|how many times will discriminator be trained before training generator|
+|n_show_loss|loss will be recorded every `n_show_loss` iterations|
+|step|which layer to start training|
+|max_step|maximum resolution of images is 2 ^ (max_step + 2)|
+|style_mixing|layers to use 2nd style to evaluate|
+|image_folder_path|path to the dataset folder that contains images|
+|save_folder_path|path to the folder that generated images will be saved to|
+|is_train|set to `True` if you want to train the model|
+|is_continue|set to `True` if you want to load pre-trained model|
+|CUDA_VISIBLE_DEVICES|specify indexes of available GPU|
+```
