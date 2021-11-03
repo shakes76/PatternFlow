@@ -31,19 +31,21 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 - ### Training StyleGan
 
   ```
-  !python train.py --ckpt checkpoint.model --mixing LMDB_PATH
+  !python train.py 
   ```
 
-- ### Samples
+- ### Some Generate Samples
 
   #### 8*8 images
+
+  ![avatar](/Image/size_8.png)
 
   #### 64*64 images
 
   #### 128*128 images
 
   #### 256*256 images
-
+  
   
 
 ## Model Structure
