@@ -1,22 +1,24 @@
 import os
-import Pathlib as Path
+from pathlib import Path
+
 import torch
 from torch import nn, optim
 from torch.backends import cudnn
 from torch.utils.data.dataset import random_split
 from torchsummary import summary
 from torch.cuda.amp import autocast, GradScaler
-from dataset import IsicDataSet
-
+import wandb
+from data import IsicDataSet
 from model import ModelSize, YoloxModel
-from loss import yolox_loss
+from loss import YoloxLoss
 
 ##########################################################
 #   Constants
 ##########################################################
 
 # where the cache saves
-model_data_path = Path("snapshot") / "yolox.pth"
+model_data_folder = Path("snapshot")
+model_data_path = model_data_folder / "yolox.pth"
 
 # for use we only have 1 class
 classes = ["lesion"]
@@ -53,35 +55,20 @@ batch_size = 64
 # Max Epochs
 max_epochs = 50
 
-
-#####################################################
-# Helpers
-#####################################################
-
-
-def _init_weight(module: nn.Module):
-    classname = module.__class__.__name__
-    if classname.find("BatchNorm2d") != -1:
-        torch.nn.init.normal_(module.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(module.bias.data, 0.0)
-    elif (classname.find("Conv2d") != -1) and hasattr("weight"):
-        torch.nn.init.xavier_normal_(module.weight.data, gain=0.3)
-
-
 #####################################################
 # Training
 #####################################################
-
-
 # Creates model and optimizer in default precision
-model: nn.Module = YoloxModel(classes, model_size)
-model.apply(_init_weight)
-# read existing model data
-if os.path.exists(model_data_path):
-    model.load_state_dict(torch.load(model_data_path, map_location=device))
+model = YoloxModel(classes, model_size).cuda()
+# If model_data_path is not supplied, or prefer train from scratch
+# leave it as None, not ""
+model_data_path = None
+model.init_state(model_data_path, map_location=device)
 
 # Show model summary
-summary(model, (3, 512, 512)).cuda()
+wandb.init()
+wandb.watch(model)
+# summary(model, (3, 512, 512)).cuda()
 
 # dataset
 data = IsicDataSet(image_folder, annotation_folder, classes)
@@ -110,8 +97,12 @@ valid_loader = torch.utils.data.DataLoader(
 # Optimizer
 optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=5e-4)
 lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
+lr_scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, epochs=max_epochs, steps_per_epoch=len(train_loader))
+
+# Higher performance
 cudnn.benchmark = True
 
+# Mixed precision
 scaler = GradScaler()
 
 for epoch in range(max_epochs):
@@ -119,12 +110,18 @@ for epoch in range(max_epochs):
     steps = 0
     total_loss = 0
     for input, target in train_loader:
-        # zero the parameter gradients
+        # clear the parameter gradients
         optimizer.zero_grad()
-        # forward with autocast
+        
+        # load data
+        with torch.no_grad():
+            input = target.type(torch.half).cuda()
+            target = [bboxes.type(torch.half).cuda() for bboxes in target]
+                
+        # forward with autocast for Mixed precision
         with autocast():
             output = model(input)
-            loss = yolox_loss(output, target)
+            loss = YoloxLoss(output, target)
             total_loss = total_loss + loss
             steps = total_loss + 1
 
@@ -143,7 +140,5 @@ for epoch in range(max_epochs):
             total_val_loss = total_val_loss + val_loss
             val_steps = val_steps + 1
 
-    torch.save(
-        model.state_dict(),
-        f"logs/ep{epoch + 1:3d}-loss{total_loss / steps:3f}-val_loss{total_val_loss / val_steps:3f}.pth",
-    )
+    model.save_state(
+        model_data_folder / f"ep{epoch + 1:3d}-loss{total_loss / steps:3f}-val_loss{total_val_loss / val_steps:3f}.pth")
