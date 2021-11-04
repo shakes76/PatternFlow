@@ -15,7 +15,7 @@ class YoloxLoss(nn.Module):
         self.strides = strides
 
         self.bce_w_logits_loss = nn.BCEWithLogitsLoss(reduction="sum")
-        self.iou_loss = GIoU(loss_reduction="num")
+        self.iou_loss = GIoU(loss_reduction="sum")
         # grids = [tensor([0.]), tensor([0.]), tensor([0.])]
         self.grids = [torch.zeros(1)] * len(strides)
 

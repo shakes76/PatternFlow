@@ -9,12 +9,13 @@ from xml.etree import ElementTree as ET
 
 class IsicDataSet(Dataset):
     def __init__(
-        self, image_folder: str, annotation_folder: str, classes: List[str]
+        self, image_folder: str, annotation_folder: str, classes: List[str], image_shape=(512, 512)
     ) -> None:
         super().__init__()
         self.image_folder = Path(image_folder)
         self.annotation_folder = Path(annotation_folder)
         self.classes = classes
+        self.image_shape=image_shape
         self._read_annotation(self.annotation_folder)
         self.images = [
             filename
@@ -25,12 +26,12 @@ class IsicDataSet(Dataset):
         self.transform = transforms.Compose([transforms.ToTensor()])
 
     def __len__(self):
-        len(self.images)
+        return len(self.images)
 
     def __getitem__(self, index):
         image = self.transform(Image.open(self.images[index]).convert("RGB"))
-        annotation = self.annotations[self.images[index].name]
-        return image, annotation
+        annotation = self.annotations[self.images[index].name]        
+        return resize(image,self.image_shape,annotation)
 
     def _read_annotation(self, annotation_folder):
         self.annotations = {}
@@ -60,9 +61,8 @@ class IsicDataSet(Dataset):
 ##########################################################
 
 
-def resize(image_path, target_size, boxes, dtype=torch.float16):
+def resize(image, target_size, boxes, dtype=torch.float16):
     """resize image and annotation box"""
-    image = Image.open(image_path)
     # Size of image
     image_height, image_width = image.size
     width, height = target_size

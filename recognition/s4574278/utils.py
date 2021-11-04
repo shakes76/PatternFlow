@@ -23,7 +23,7 @@ colormap = tableau_light / 255
 
 
 def draw_bbox(image, boxes):
-    """Drop the bounding box"""
+    """Draw the bounding box"""
     ax = plt.subplot(111)
     plot_image(image, ax)
     for i, box in enumerate(boxes):

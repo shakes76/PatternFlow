@@ -1,11 +1,9 @@
-import os
 from pathlib import Path
 
 import torch
-from torch import nn, optim
+from torch import optim
 from torch.backends import cudnn
 from torch.utils.data.dataset import random_split
-from torchsummary import summary
 from torch.cuda.amp import autocast, GradScaler
 import wandb
 from data import IsicDataSet
@@ -117,12 +115,12 @@ for epoch in range(max_epochs):
     for input, target in train_loader:
         # clear the parameter gradients
         optimizer.zero_grad()
-        
+
         # load data
         with torch.no_grad():
-            input = target.type(torch.half).cuda()
+            input = input.type(torch.half).cuda()
             target = [bboxes.type(torch.half).cuda() for bboxes in target]
-                
+
         # forward with autocast for Mixed precision
         with autocast():
             output = model(input)
@@ -135,13 +133,13 @@ for epoch in range(max_epochs):
         scaler.step(optimizer)
         scaler.update()
 
-    val_loss = loss
+    val_loss = 0
     total_val_loss = 0
     val_steps = 0
     for input, target in valid_loader:
         with torch.no_grad():
             output = model(input)
-            val_loss = yolox_loss(output, target)
+            val_loss = YoloxLoss(output, target)
             total_val_loss = total_val_loss + val_loss
             val_steps = val_steps + 1
 
