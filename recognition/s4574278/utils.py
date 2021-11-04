@@ -32,6 +32,7 @@ def draw_bbox(image, boxes):
 
 
 def draw_bbox_label(image, boxes, labels):
+    """Draw the image then the bounding box with label on top"""
     ax = plt.gca()
     plot_image(image, ax)
     # label = '{} {:.2f}'.format(predicted_class, score)
@@ -56,6 +57,7 @@ def draw_bbox_label(image, boxes, labels):
 
 
 def plot_image(image, ax=plt.gca()):
+    """Show image on the pyplot figure"""
     if torch.is_tensor(image):
         image = image.permute(1, 2, 0)
     ax.axis("off")
@@ -63,6 +65,7 @@ def plot_image(image, ax=plt.gca()):
 
 
 def plot_rectangle(bbox, color, ax=plt.gca()):
+    """Plot the holo rectangle of bounding box"""
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
     return ax.add_patch(

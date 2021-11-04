@@ -9,13 +9,17 @@ from xml.etree import ElementTree as ET
 
 class IsicDataSet(Dataset):
     def __init__(
-        self, image_folder: str, annotation_folder: str, classes: List[str], image_shape=(512, 512)
+        self,
+        image_folder: str,
+        annotation_folder: str,
+        classes: List[str],
+        image_shape=(512, 512),
     ) -> None:
         super().__init__()
         self.image_folder = Path(image_folder)
         self.annotation_folder = Path(annotation_folder)
         self.classes = classes
-        self.image_shape=image_shape
+        self.image_shape = image_shape
         self._read_annotation(self.annotation_folder)
         self.images = [
             filename
@@ -23,17 +27,20 @@ class IsicDataSet(Dataset):
             if filename.suffix.lower() == ".jpg"
             and self.annotations.__contains__(filename.name)
         ]
+        # we use tensor instead of PIL.Image for training
         self.transform = transforms.Compose([transforms.ToTensor()])
 
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, index):
-        image = self.transform(Image.open(self.images[index]).convert("RGB"))
-        annotation = self.annotations[self.images[index].name]        
-        return resize(image,self.image_shape,annotation)
+        image = Image.open(self.images[index]).convert("RGB")
+        annotation = self.annotations[self.images[index].name]
+        image, annotation = resize(image, self.image_shape, annotation)
+        return self.transform(image), annotation
 
     def _read_annotation(self, annotation_folder):
+        """Read Annotation XMLs"""
         self.annotations = {}
         for file in annotation_folder.iterdir():
             xml = ET.parse(file).getroot()
@@ -53,7 +60,7 @@ class IsicDataSet(Dataset):
                     class_index,
                 ]
                 annotation.append(bbox)
-            self.annotations[image_name] = annotation
+            self.annotations[image_name] = torch.Tensor(annotation)
 
 
 ##########################################################
@@ -61,12 +68,12 @@ class IsicDataSet(Dataset):
 ##########################################################
 
 
-def resize(image, target_size, boxes, dtype=torch.float16):
+def resize(image, target_size, boxes, dtype=torch.half):
     """resize image and annotation box"""
     # Size of image
     image_height, image_width = image.size
     width, height = target_size
-    
+
     # resize
     scale = min(width / image_width, height / image_height)
     new_width = int(image_width * scale)
@@ -75,7 +82,10 @@ def resize(image, target_size, boxes, dtype=torch.float16):
     delta_y = (height - new_height) // 2
 
     # Resize the image to fit our "perception"
-    image_tensor = image.resize((new_width, new_height))
+    image = image.resize((new_width, new_height))
+    new_image = Image.new("RGB", target_size, (0, 0, 0))
+    new_image.paste(image, (delta_x, delta_y))
+    image_tensor = torch.Tensor(new_image, dtype=dtype)
 
     # Adjust BBox accordingly
     if len(boxes) > 0:
