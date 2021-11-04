@@ -1,11 +1,8 @@
 # Graph Convolutional Networks
 
-
- - COMP3710 Report-task 2
  - Student Name: Zhu Gao
  - Student ID: 45218422
  - TensorFlow implementation of Graph Convolutional Networks based on Facebook Large Page-Page Network dataset for semi-supervised multi-class node classification.
-
 
 ## Introduction
 
@@ -174,10 +171,8 @@ _________________
 
 ## Visualisation
 
-* T-SNE (based on test set):
-<img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/t-sne.png?raw=true">
-* Accuracy (Training Loss, Training Accuracy, Validation Accuracy):
-<img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_history.png?raw=true">
+- T-SNE (based on test set): <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/t-sne.png?raw=true">
+- Accuracy (Training Loss, Training Accuracy, Validation Accuracy): <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_history.png?raw=true">
 
 ## Reference
 
