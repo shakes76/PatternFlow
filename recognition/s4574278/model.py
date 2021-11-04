@@ -49,10 +49,18 @@ class YoloxModel(nn.Module):
         if file is None:
             self.apply(self._init_weight)
             print("Model generated")
-        if map_location is None:
+        elif map_location is None:
             map_location = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model_data=torch.load(file, map_location=map_location)
+            if model_data.__contains__('state_dict'):
+                self.load_state_dict(model_data['state_dict'])
+            else:
+                self.load_state_dict(model_data)
+            print(f"Model loaded from {file}")
+        else:
             self.load_state_dict(torch.load(file, map_location=map_location))
             print(f"Model loaded from {file}")
+            
 
     @staticmethod
     def _init_weight(module: nn.Module):
@@ -60,8 +68,8 @@ class YoloxModel(nn.Module):
             if isinstance(m, nn.BatchNorm2d):
                 m.eps = 1e-3
                 m.momentum = 0.03
-            elif isinstance(m, nn.Conv2d):
-                nn.init.xavier_normal_(module.weight.data, gain=2e-2)
+            elif isinstance(m, nn.Conv2d) and hasattr(m,'weight'):
+                nn.init.xavier_normal_(m.weight.data, gain=2e-2)
 
     def save_state(self, file):
         torch.save(self.state_dict(), file)
@@ -634,6 +642,16 @@ class ConvBlock(nn.Module):
 ##########################################################
 # Helpers
 ##########################################################
+
+
+def bbox_to_center(boxes: torch.Tensor):
+    """convert xyxy (top-left,bottom-right) bbox to cxcywh (center-x, center-y, width, height)"""
+    x_min, y_min, x_max, y_max = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
+    center_x = (x_min + x_max) / 2
+    center_y = (y_min + y_max) / 2
+    width = x_max - x_min
+    height = y_max - y_min
+    return torch.stack((center_x, center_y, width, height), axis=-1)
 
 
 def bbox_to_corner(boxes: torch.Tensor):

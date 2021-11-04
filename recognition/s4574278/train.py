@@ -66,8 +66,13 @@ model_data_path = None
 model.init_state(model_data_path, map_location=device)
 
 # Show model summary
-wandb.init()
+wandb.init(project="pattern", entity="parisq")
 wandb.watch(model)
+wandb.config = {
+  "learning_rate": lr,
+  "epochs": max_epochs,
+  "batch_size": batch_size
+}
 # summary(model, (3, 512, 512)).cuda()
 
 # dataset
@@ -96,7 +101,7 @@ valid_loader = torch.utils.data.DataLoader(
 
 # Optimizer
 optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=5e-4)
-lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
+# lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
 lr_scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, epochs=max_epochs, steps_per_epoch=len(train_loader))
 
 # Higher performance
