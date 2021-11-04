@@ -39,9 +39,10 @@ So we plan to use only the basic random Scale Jitter & horizontal flip. Besides,
 
 YOLOX is one of the latest work in YOLO Family, it is built on top of YOLO v3, utilize an anchor-free approach and combined with recent research progress on Deep Learning, like: decoupled head, SimOTA, Mosaic Data Augmentation, etc. Comparing to YOLO v5, it might be slower in some cases, but the AP is largely improved.
 
-The original YOLOX model repo is published on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX).
+The original YOLOX model repo is published on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX), 
+however it's written in megengine framework instead of PyTorch.
 
-Some commenter say YOLOX, due to its Anchor free nature, it more similar to "[FCOS](tian2019fcos)".
+Some commenters say YOLOX, due to its Anchor free nature, it is more similar to "[FCOS](tian2019fcos)".
 
 ### Backbone - Modified CSPNet\[[3][wang2019cspnet]\] + PA FPN
 
@@ -83,8 +84,8 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
 The CPU we used is Intel® Xeon® Silver 4210R Processor(10 core 20 threads), the GPU we used is RTX3090.
 I only manage to use 30% of GPU after maximizing the CPU worker, Seems there is a restriction on the server-side. 
 
-For Optimizer, I use Adam, instead of SGD with momentum, because it's easier to tune. 
-I also used CosineAnnealingLR scheduler, because It work well with Adam.
+For Optimizer, I use a modified Adam, instead of SGD with momentum, because it's easier to tune. In particular, we use AdamW, promoted by FastAI, because it works better with a correct weight_decay.
+I also used CosineAnnealingLR scheduler, because It works well with Adam.
 
 ## 5. How to use & Results
 ### Requirement
