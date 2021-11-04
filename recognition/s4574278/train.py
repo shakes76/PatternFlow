@@ -48,7 +48,7 @@ num_workers = 4
 lr = 1e-3
 
 # Batch size for training
-batch_size = 64
+batch_size = 32
 
 # Max Epochs
 max_epochs = 50
@@ -67,9 +67,9 @@ model.init_state(model_data_path, map_location=device)
 wandb.init(project="pattern", entity="parisq")
 wandb.watch(model)
 wandb.config = {
-  "learning_rate": lr,
-  "epochs": max_epochs,
-  "batch_size": batch_size
+    "learning_rate": lr,
+    "epochs": max_epochs,
+    "batch_size": batch_size
 }
 # summary(model, (3, 512, 512)).cuda()
 
@@ -99,13 +99,14 @@ valid_loader = torch.utils.data.DataLoader(
 
 # Optimizer
 optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=5e-4)
+#   Can choose between 2 scheduler, OneCycle may require some extra hyperparameter tuning.
 # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
 lr_scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, epochs=max_epochs, steps_per_epoch=len(train_loader))
 
-# Higher performance
+# Turn on for Higher performance according to Nvidia
 cudnn.benchmark = True
 
-# Mixed precision
+# Enable Mixed precision
 scaler = GradScaler()
 
 for epoch in range(max_epochs):
