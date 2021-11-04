@@ -83,28 +83,26 @@ class YoloxLoss(nn.Module):
 
         num_fg = 0.0
         for batch_idx in range(outputs.shape[0]):
-            num_gt = len(labels[batch_idx])
-            if num_gt == 0:
+            n_gt = len(labels[batch_idx])
+            if n_gt == 0:
                 cls_target = outputs.new_zeros((0, self.num_classes))
                 reg_target = outputs.new_zeros((0, 4))
                 obj_target = outputs.new_zeros((total_n_points, 1))
                 fg_mask = outputs.new_zeros(total_n_points).bool()
             else:
-                # -----------------------------------------------#
-                #   gt_bboxes_per_image     [num_gt, num_classes]
-                #   gt_classes              [num_gt]
-                #   bboxes_preds_per_image  [n_anchors_all, 4]
-                #   cls_preds_per_image     [n_anchors_all, num_classes]
-                #   obj_preds_per_image     [n_anchors_all, 1]
-                # -----------------------------------------------#
+                # gt_bboxes_per_image    n_gt, num_classes
+                # gt_classes             n_gt
+                # bboxes_preds_per_image n_anchors, 4
+                # cls_preds_per_image    n_anchors, num_classes
+                # obj_preds_per_image    n_anchors, 1
                 gt_bboxes_per_image = labels[batch_idx][..., :4]
                 gt_classes = labels[batch_idx][..., 4]
                 bboxes_preds_per_image = bbox_preds[batch_idx]
                 cls_preds_per_image = cls_preds[batch_idx]
                 obj_preds_per_image = obj_preds[batch_idx]
 
-                gt_matched_classes, fg_mask, pred_ious_this_matching, matched_gt_inds, num_fg_img = self.get_assignments(
-                    num_gt, total_n_points, gt_bboxes_per_image, gt_classes, bboxes_preds_per_image,
+                gt_matched_classes, fg_mask, pred_ious_this_matching, matched_gt_inds, num_fg_img = self.sim_oat(
+                    n_gt, total_n_points, gt_bboxes_per_image, gt_classes, bboxes_preds_per_image,
                     cls_preds_per_image, obj_preds_per_image,
                     expanded_strides, x_offset, y_offset,
                 )
@@ -133,6 +131,149 @@ class YoloxLoss(nn.Module):
 
         return loss / num_fg
 
+    @torch.no_grad()
+    def sim_oat(self, n_gt, n_anchors, gt_boxes_per_image, gt_classes, bboxes_preds_per_image, cls_preds_per_image,
+                obj_preds_per_image, expanded_strides, x_offset, y_offset):
+        """
+        Logic from official YOLOX, it consists of 4 steps, 
+            1. Define a set of positive cases by look into the pixels around center points
+            2. Calculate the pair-wise reg/cls loss of samples against each gt (Loss-aware)
+            3. From each GT determine a dynamic K (can be manually stated, from 5 ~ 15)
+            4. From the bigger picture, eliminate double-assigned samples
+        """
+        # fg_mask: [n_anchors]
+        # is_in_centers_of_boxes: [n_gt, len(fg_mask)]
+        fg_mask, is_in_centers_of_boxes = self.check_in_boxes(gt_boxes_per_image, expanded_strides, x_offset,
+                                                              y_offset, n_anchors, n_gt)
+
+        # fg_mask: [n_anchors]
+        # bboxes_preds_per_image : [fg_mask, 4]
+        # cls_preds : [fg_mask, num_classes]
+        # obj_preds : [fg_mask, 1]
+        bboxes_preds_per_image = bboxes_preds_per_image[fg_mask]
+        cls_preds = cls_preds_per_image[fg_mask]
+        obj_preds = obj_preds_per_image[fg_mask]
+        num_in_boxes_anchor = bboxes_preds_per_image.shape[0]
+
+        # pair_wise_ious      [n_gt, fg_mask]
+        pair_wise_ious = self.bboxes_iou(gt_boxes_per_image, bboxes_preds_per_image, False)
+        pair_wise_ious_loss = -torch.log(pair_wise_ious + 1e-8)
+
+        # cls_preds: n_gt, fg_mask, num_classes
+        # gt_cls_per_image: n_gt, fg_mask, num_classes
+        cls_preds = cls_preds.float().unsqueeze(0).repeat(n_gt, 1, 1).sigmoid_() * obj_preds.unsqueeze(0).repeat(
+            n_gt, 1, 1).sigmoid_()
+        gt_cls_per_image = F.one_hot(gt_classes.to(torch.int64), self.num_classes).type(torch.half).unsqueeze(1). \
+            repeat(1, num_in_boxes_anchor, 1)
+        pair_wise_cls_loss = F.binary_cross_entropy(cls_preds.sqrt_(), gt_cls_per_image, reduction="none").sum(-1)
+        del cls_preds
+
+        costs = pair_wise_cls_loss + 3.0 * pair_wise_ious_loss + 100000.0 * (~is_in_centers_of_boxes).half()
+
+        num_fg, gt_matched_classes, pred_ious, matched_gt_idx = self.dynamic_k_matching(costs,
+                                                                                                       pair_wise_ious,
+                                                                                                       gt_classes,
+                                                                                                       n_gt, fg_mask)
+        del pair_wise_cls_loss, costs, pair_wise_ious, pair_wise_ious_loss
+        return gt_matched_classes, fg_mask, pred_ious, matched_gt_idx, num_fg
+
+
+    def check_in_boxes(self, gt_boxes_per_image, expanded_strides, x_offset, y_offset, total_num_anchors, n_gt, center_radius = 2.5):
+        # expanded_strides_per_image : n_anchors
+        # {x/y}_centers_per_image: n_gt, n_anchors
+        expanded_strides_per_image  = expanded_strides[0]
+        x_centers_per_image         = ((x_offset[0] + 0.5) * expanded_strides_per_image).unsqueeze(0).repeat(n_gt, 1)
+        y_centers_per_image         = ((y_offset[0] + 0.5) * expanded_strides_per_image).unsqueeze(0).repeat(n_gt, 1)
+
+        # gt_bboxes_per_image_x       [n_gt, n_anchors]
+        gt_bboxes_per_image_l = (gt_boxes_per_image[:, 0] - 0.5 * gt_boxes_per_image[:, 2]).unsqueeze(1).repeat(1, total_num_anchors)
+        gt_bboxes_per_image_r = (gt_boxes_per_image[:, 0] + 0.5 * gt_boxes_per_image[:, 2]).unsqueeze(1).repeat(1, total_num_anchors)
+        gt_bboxes_per_image_t = (gt_boxes_per_image[:, 1] - 0.5 * gt_boxes_per_image[:, 3]).unsqueeze(1).repeat(1, total_num_anchors)
+        gt_bboxes_per_image_b = (gt_boxes_per_image[:, 1] + 0.5 * gt_boxes_per_image[:, 3]).unsqueeze(1).repeat(1, total_num_anchors)
+
+
+        # bbox_deltas: n_gt, n_anchors, 4
+        b_l = x_centers_per_image - gt_bboxes_per_image_l
+        b_r = gt_bboxes_per_image_r - x_centers_per_image
+        b_t = y_centers_per_image - gt_bboxes_per_image_t
+        b_b = gt_bboxes_per_image_b - y_centers_per_image
+        bbox_deltas = torch.stack([b_l, b_t, b_r, b_b], 2)
+
+        # is_in_boxes : n_gt, n_anchors
+        # is_in_boxes_all: n_anchors
+        is_in_boxes     = bbox_deltas.min(dim=-1).values > 0.0
+        is_in_boxes_all = is_in_boxes.sum(dim=0) > 0
+
+        gt_bboxes_per_image_l = (gt_boxes_per_image[:, 0]).unsqueeze(1).repeat(1, total_num_anchors) - center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_r = (gt_boxes_per_image[:, 0]).unsqueeze(1).repeat(1, total_num_anchors) + center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_t = (gt_boxes_per_image[:, 1]).unsqueeze(1).repeat(1, total_num_anchors) - center_radius * expanded_strides_per_image.unsqueeze(0)
+        gt_bboxes_per_image_b = (gt_boxes_per_image[:, 1]).unsqueeze(1).repeat(1, total_num_anchors) + center_radius * expanded_strides_per_image.unsqueeze(0)
+
+        # center_deltas: n_gt, n_anchors, 4
+        c_l = x_centers_per_image - gt_bboxes_per_image_l
+        c_r = gt_bboxes_per_image_r - x_centers_per_image
+        c_t = y_centers_per_image - gt_bboxes_per_image_t
+        c_b = gt_bboxes_per_image_b - y_centers_per_image
+        center_deltas       = torch.stack([c_l, c_t, c_r, c_b], 2)
+
+        # is_in_centers: n_gt, n_anchors
+        # is_in_centers_all: n_anchors
+        is_in_centers       = center_deltas.min(dim=-1).values > 0.0
+        is_in_centers_all   = is_in_centers.sum(dim=0) > 0
+
+
+        # is_in_boxes_anchor: n_anchors
+        # is_in_boxes_and_center: n_gt, is_in_boxes_anchor
+        is_in_boxes_anchor      = is_in_boxes_all | is_in_centers_all
+        is_in_boxes_and_center  = is_in_boxes[:, is_in_boxes_anchor] & is_in_centers[:, is_in_boxes_anchor]
+        return is_in_boxes_anchor, is_in_boxes_and_center
+
+def dynamic_k_matching(self, costs, pair_wise_ious, gt_classes, n_gt, fg_mask):
+    # Inputs
+    #   costs : n_gt, fg_mask
+    #   pair_wise_ious : n_gt, fg_mask
+    #   gt_classes : n_gt
+    #   fg_mask : n_anchors
+    
+    # matching_matrix : n_gt, fg_mask
+    matching_matrix = torch.zeros_like(costs)
+
+    # select n_candidate_k points with maximum iou
+    # then sum and calculate
+    n_candidate_k = min(10, pair_wise_ious.size(1))
+    # topk_ious      : n_gt, n_candidate_k
+    topk_ious, _ = torch.topk(pair_wise_ious, n_candidate_k, dim=1)
+    # dynamic_ks     : n_gt
+    dynamic_ks = torch.clamp(topk_ious.sum(1).int(), min=1)
+
+    for gt_idx in range(n_gt):
+        # select k points with minimum cost for each gt
+        _, pos_idx = torch.topk(costs[gt_idx], k=dynamic_ks[gt_idx].item(), largest=False)
+        matching_matrix[gt_idx][pos_idx] = 1.0
+    del topk_ious, dynamic_ks, pos_idx
+
+    # anchor_matching_gt: fg_mask
+    anchor_matching_gt = matching_matrix.sum(0)
+    if (anchor_matching_gt > 1).sum() > 0:
+        
+        # When a anchor point matching mulitple gt, we only keep the one with smallest cost
+        _, cost_argmin = torch.min(costs[:, anchor_matching_gt > 1], dim=0)
+        matching_matrix[:, anchor_matching_gt > 1] *= 0.0
+        matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1.0
+    # fg_mask_inboxes  [fg_mask]
+    fg_mask_inboxes = matching_matrix.sum(0) > 0.0
+    # num_fg = num of feature point for positive samples
+    num_fg = fg_mask_inboxes.sum().item()
+
+    # update fg_mask
+    fg_mask[fg_mask.clone()] = fg_mask_inboxes
+
+    # Find the classes matched by the anchor point
+    matched_gt_inds = matching_matrix[:, fg_mask_inboxes].argmax(0)
+    gt_matched_classes = gt_classes[matched_gt_inds]
+
+    pred_ious_this_matching = (matching_matrix * pair_wise_ious).sum(0)[fg_mask_inboxes]
+    return num_fg, gt_matched_classes, pred_ious_this_matching, matched_gt_inds
 
 class LossType(Enum):
     IoU = 0
@@ -183,5 +324,5 @@ class GIoU(nn.Module):
         elif self.reduction == "sum":
             loss = loss.sum()
 
-        # by default there no reduction
+        # if no reduction
         return loss
