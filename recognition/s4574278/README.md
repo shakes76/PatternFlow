@@ -6,14 +6,19 @@
 
 ## Abstract
 
-I trained a simplified [YOLOX][yolox2021] model on ISIC 2018 Task 1-2 Dataset, to clearly recognize the lesion area.
+I trained a simplified **[YOLOX][yolox2021] model** on **ISIC 2018 Task 1-2 Dataset**, **to clearly recognize the lesion area**.
 YOLOX is a latest algorithm which utilized many state-of-the-art techniques. By studying this algorithm, we can actually learn the latest progress in this field. Also since it's new, not many implementation out there.
 
-## 1. Introduction
+## 1. Algorithm Description
 
-We will first extract a set of bounding boxes, then write a modified version of CSPNet as the backbone of PAFPN net. The PAFPN is the backbone of the entire YOLOX model, then we output 3 levels of abstraction, each have a 2x scaling factor on top of previous layer. For each layer we attach a YOLOX detection head, this head consist of 3 decouple component that corresponding to the object, the bounding box and classification respectively. each component have its very own loss logic: We use CIoU\[[7][zheng2019distanceiou]\] Loss for the regression of bounding box, and `BCEWithLogitsLoss `for classification of "if contains Obj" and "which class it belong". 
 
-For implementation, I abandon TensorFlow, because Life is Short, YOLO. The longer complaints is detailed in the Appendix.
+We will first extract a set of bounding boxes, then write a YOLOX network, which consists of 2 components, PAFPN net + YOLO Head. 
+
+We use a modified version of CSPNet as the backbone network for PAFPN net. From the PAFPN we extract 3 levels of abstraction, each layer have a 2x scaling factor on top of the previous layer. We conduct the features into YOLOX detection head, this head consist of 3 decouple component that corresponding to the object checker, the bounding box extractor and a classifier respectively. To train the network we need 2 type of Loss function: We use GIoU\[[7][zheng2019distanceiou]\] Loss for the regression of bounding box, and `BCEWithLogitsLoss` for 2 classification loss: 1. "if contains Obj" and 2. "which class it belong". In the end, the detection head returns matrixes of anchor points.
+
+Beyond the network, we need to determine weather or not the anchor points contains positive case for object, and which category it belong. This portion id done using a complex SimOAT algorithm. It can be break down to 4 major steps: 1. Define a set of positive cases by look into the pixels around center points (similar to FCOS & CenterNet) 2. Calculate the pair-wise reg/cls loss of samples against each gt (Loss-aware) 3. From each GT determine a dynamic K (can be manually set a number, from 5 ~ 15, does not affect the end result too much, because the actual filtering is an automated process) 4. From the bigger picture, we need to eliminate double-assigned samples.
+
+For implementation, I abandon TensorFlow, because of the YOLO spirit, Life is Short. The longer complaints is detailed in the Appendix.
 
 Then the training process is done in a paid server, the challenges are also listed in the Appendix also.
 
@@ -26,13 +31,16 @@ After that we extract bounding boxes. Test results are kept in logs, then we run
 We use the ISIC 2018 challenge task 1 dataset, there are 2594 preprocessed images with different sizes.
 The image size range from (384x288) to (2044x1424).
 We reserve 10% for testing(260). And reserve 10% for validation(234), 90% for training(2100) in the remaining 90%.
+Ideally, we should go for a higher ratio like 8:2 or 7:3. Our challenge is the data set itself is too small, contains only 2594 images. we must reserve a larger portion for training. To avoid overfiting, we need to monitor the validation loss, more over to avoid "cheating", we should not use our test set for training or validation.  
 
 ### Preprocessing & augmentation
 
 Firstly, We need to extract a set of bounding boxes out of the segment mask. We should not use OpenCV to do this task, so I craft a simple script using tensorflow 2.6. the bounding box for each segmentation is put in a xml under the same filename.
 
-The original YOLOX use Mosaic / Mix Up / Copy-Paste to boost generalization performance. In our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance\[[1][yolox2021]\]
+The original YOLOX use Mosaic / Mix Up / Copy-Paste(segmentation mask based) to boost generalization performance. In our task, there is only one category to classify, and having too much augmentation may cause negative impact on performance in small YoloX models\[[1][yolox2021]\]
 So we plan to use only the basic random Scale Jitter & horizontal flip. Besides, those strong augmentations are too troublesome to use, we have to turn it off earlier before the training ends to have the best result.
+
+The challenge is, when we modify the image, we must adjust the bonding box simultaneously.
 
 
 ## 3. Model - YOLOX
@@ -40,15 +48,15 @@ So we plan to use only the basic random Scale Jitter & horizontal flip. Besides,
 YOLOX is one of the latest work in YOLO Family, it is built on top of YOLO v3, utilize an anchor-free approach and combined with recent research progress on Deep Learning, like: decoupled head, SimOTA, Mosaic Data Augmentation, etc. Comparing to YOLO v5, it might be slower in some cases, but the AP is largely improved.
 
 The original YOLOX model repo is published on [GitHub](https://github.com/Megvii-BaseDetection/YOLOX), 
-however it's written in megengine framework instead of PyTorch.
+however it's written in MegEngine framework instead of PyTorch.
 
-Some commenters say YOLOX, due to its Anchor free nature, it is more similar to "[FCOS](tian2019fcos)".
+Some engineers say YOLOX, due to its Anchor free nature, it is more similar to "[FCOS](tian2019fcos)".
 
 ### Backbone - Modified CSPNet\[[3][wang2019cspnet]\] + PA FPN
 
 The CSPNet is firstly introduced into YOLO family by YOLO v4. YOLOX used the same modified CSPNet as YOLO v5. From the dense prediction of YOLO v1 to modified CSPNet in YOLO v5 and YOLOX, the capacity of feature extraction is drastically improved along the way.
 
-Path Aggregation Feature Pyramid Networks (PAFPN) looks like an upside-down U-Net.
+Path Aggregation Feature Pyramid Networks (PAFPN) looks like an upside-down U-Net. In highly abstractive layers, the perception field is actually larger, many small details are lost though.
 
 ### Detection Head
 
@@ -58,16 +66,9 @@ As for detection head, there are 3 components, 1 regression for bounding box(4 n
 
 #### Loss function
 
-For bounding boxes, we use the latest `CIoU`. `IoU `is ratio but as a loss function, scale matters, so we have `Generalized IoU,` the `GIoU`. `CIoU ` is evolved from `Distance-IoU`. It take account for both center point distance and the aspect ratio. it converge faster
+For bounding boxes, I want to use the latest `CIoU`. `IoU `is ratio but as a loss function, scale matters, so we have `Generalized IoU,` the `GIoU`. `CIoU ` is evolved from `Distance-IoU`. It take account for both center point distance and the aspect ratio. it converge faster. But In the end, I only manage to implement a GIoU. Some people suggest, CIoU may be over-engineered for YOLO algorithms.  
 
-For classification components, we use `BCEWithLogitsLoss `instead of traditional Cross-Entropy. It produce higher gradient, result in faster convergence.
-
-I didn't fully understand the SimOAT part.
-
-### Evaluation
-
-Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
-mAP on the other hand, emphasize on the positive case.
+For classification components, we use `BCEWithLogitsLoss `instead of traditional Cross-Entropy. It produce slightly higher gradient, result in faster convergence.
 
 ### Activation
 
@@ -77,12 +78,16 @@ According to the paper[\[1\]][yolox2021], We used Sigmoid Linear Units, or SiLUs
    <figcaption>SiLU(red) vs ReLU(blue)</figcaption>
 </figure>
 
+### Evaluation
+
+Why choose AP over AOC(Area under ROC-curve)? Because in YOLO, we will generate many anchor boxes(anchor points in YOLOX) most of them are negative cases and should be cancelled anyway. In ROC curve true positive is equivalently important as true negative. So in this unbalanced scenario, a model which missed the only bounding box may still get a pretty decent AOC score, that's definitely not what we want.
+mAP on the other hand, emphasize on the positive case.
 
 
 ## 4. Training
 
 The CPU we used is Intel® Xeon® Silver 4210R Processor(10 core 20 threads), the GPU we used is RTX3090.
-I only manage to use 30% of GPU after maximizing the CPU worker, Seems there is a restriction on the server-side. 
+I only manage to use 30% of GPU after maximizing the CPU worker, I guess the issue is due to lack of sufficient VRAM. 
 
 For Optimizer, I use a modified Adam, instead of SGD with momentum, because it's easier to tune. In particular, we use AdamW, promoted by FastAI, because it works better with a correct weight_decay.
 I also used CosineAnnealingLR scheduler, because It works well with Adam.
@@ -116,9 +121,16 @@ python3 ./test.py
 Initially the loss is over hundreds, then it slowly but steadily go all the way down to 5~6 at 16 epoch. 
 
 ### Demo detection
+
+I randomly grabs a set of images, and put them together in PhotoShop. I also added some blurry effect to the edges of images to prevent any impact on the distribution. Then plot the predicted bounding box with confidence level (product of obj confidence * cls confidence). The boxes also went through Non Maximum Suppression with threshhold of 0.5.
+
 <figure>
-   <img alt="Predicted with IOU 0.2" src="./images/merged-predicted.jpg" />
-   <figcaption>Predicted with IOU 0.2</figcaption>
+   <img alt="Predicted run on Epoch 29 with IOU threshhold 0.5" src="./images/merged-epoch17-0.5.jpg" />
+   <figcaption>Predicted on Epoch 29 with NMS 0.5</figcaption>
+</figure>
+<figure>
+   <img alt="Predicted run on Epoch 49 with IOU threshhold 0.5" src="./images/merged-epoch37-0.5.jpg" />
+   <figcaption>Prediction on epoch 49 with NMS 0.5</figcaption>
 </figure>
 The result is not very satisfactory.
 
