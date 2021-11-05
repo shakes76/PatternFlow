@@ -375,3 +375,16 @@ for i in range(epoch):
     model_test_dice.append(dice)
     print(dice, iou)
     n_iter += 1
+   
+#######################################################
+# Ploting
+#######################################################
+plt.figure(figsize=(20, 5))
+plt.subplot(1,5,1) 
+plt.plot(source)
+plt.subplot(1,5,2) 
+plt.plot(source)
+plt.subplot(1,5,3) 
+plt.plot(source)
+plt.subplot(1,5,4) 
+plt.plot(source)
