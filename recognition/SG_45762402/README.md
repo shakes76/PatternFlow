@@ -65,7 +65,7 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
   
 
-  <img src="./Images/sample-iter5000.png" width = "200" height = "200" alt="sample1"><img src="./Images/sample-iter20500.png" width = "200" height = "200" alt="sample2" ><img src="./Images/sample-iter32500.png" width = "200" height = "200" alt="sample1" align=center /><img src="./Images/sample-iter55000.png" width = "200" height = "200" alt="sample1">
+  <img src="./Images/sample-iter5000.png" width = "200" height = "200" alt="sample1"><img src="./Images/sample-iter20500.png" width = "200" height = "200" alt="sample2" ><img src="./Images/sample-iter32500.png" width = "200" height = "200" alt="sample3"><img src="./Images/sample-iter55000.png" width = "200" height = "200" alt="sample4">
 
   
 
