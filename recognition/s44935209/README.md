@@ -11,16 +11,27 @@ This project is finished by Xinwei Li, 44935209.
 #####################################################################################################
 
 ### Dependencies
+
 python>=3.6
+
 torch>=0.4.0
+
 torchvision
+
 torchsummary
+
 tensorboardx
+
 natsort
+
 numpy
+
 pillow
+
 scipy
+
 scikit-image
+
 sklearn
 
 ### Dataset
