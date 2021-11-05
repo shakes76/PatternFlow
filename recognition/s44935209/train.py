@@ -241,3 +241,75 @@ for i in range(epoch):
         x_size1 = lossL.item() * x1.size(0)
         
      ### Saving the predictions
+    m_tb = Image.open(test_image)
+    im_label = Image.open(test_label)
+    s_tb = data_transform(im_tb)
+    s_label = data_transform2(im_label)
+    s_label = s_label.detach().numpy()
+
+    pred_tb = model_test(s_tb.unsqueeze(0).to(device)).cpu()
+    pred_tb = F.sigmoid(pred_tb)
+    pred_tb = pred_tb.detach().numpy()
+
+   #pred_tb = threshold_predictions_v(pred_tb)
+
+    x1 = plt.imsave(
+        './model/pred/img_iteration_' + str(n_iter) + '_epoch_'
+        + str(i) + '.png', pred_tb[0][0])
+    
+     ### To write in Tensorboard
+     train_loss = train_loss / len(train_idx)
+    valid_loss = valid_loss / len(valid_idx)
+
+    if (i+1) % 1 == 0:
+        print('Epoch: {}/{} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(i + 1, epoch, train_loss,
+                                                                                      valid_loss))
+    # writer1.add_scalar('Train Loss', train_loss, n_iter)
+    # writer1.add_scalar('Validation Loss', valid_loss, n_iter)
+    # writer1.add_image('Pred', pred_tb[0]) #try to get output of shape 3
+        
+     ### Early Stopping
+
+    if valid_loss <= valid_loss_min and epoch_valid >= i: # and i_valid <= 2:
+
+        print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model '.format(valid_loss_min, valid_loss))
+        torch.save(model_test.state_dict(),'./model/Unet_D_' +
+                                              str(epoch) + '_' + str(batch_size) + '/Unet_epoch_' + str(epoch)
+                                              + '_batchsize_' + str(batch_size) + '.pth')
+       # print(accuracy)
+        if round(valid_loss, 4) == round(valid_loss_min, 4):
+            print(i_valid)
+            i_valid = i_valid+1
+        valid_loss_min = valid_loss
+        #if i_valid ==3:
+         #   break
+            
+    ### Extracting the intermediate layers
+    
+    ### for kernals
+    
+    x1 = torch.nn.ModuleList(model_test.children())
+    # x2 = torch.nn.ModuleList(x1[16].children())
+     #x3 = torch.nn.ModuleList(x2[0].children())
+
+    # To get filters in the layers
+    # plot_kernels(x1.weight.detach().cpu(), 7)
+
+    ### for images
+
+    x2 = len(x1)
+    dr = LayerActivations(x1[x2-1]) #Getting the last Conv Layer
+
+    img = Image.open(test_image)
+    s_tb = data_transform(img)
+
+    pred_tb = model_test(s_tb.unsqueeze(0).to(device)).cpu()
+    pred_tb = F.sigmoid(pred_tb)
+    pred_tb = pred_tb.detach().numpy()
+
+    plot_kernels(dr.features, n_iter, 7, cmap="rainbow")
+
+    time_elapsed = time.time() - since
+    print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    n_iter += 1
+
