@@ -85,3 +85,79 @@ model_test = model_unet(model_Inputs[0], 3, 1)
 
 
 model_test.to(device)
+
+### summary of model 
+torchsummary.summary(model_test, input_size=(3, 128, 128))
+
+### Passing the Dataset of Images and Labels
+t_data = './ISIC/ISIC2018_Task1-2_Training_Input_x2/'
+l_data = './ISIC/ISIC2018_Task1_Training_GroundTruth_x2/'
+test_image = './ISIC/ISIC2018_Task1-2_Training_Input_x2/ISIC_0000999.jpg'
+test_label = './ISIC/ISIC2018_Task1_Training_GroundTruth_x2/ISIC_0000999_segmentation.png'
+test_folderP = './ISIC-copy/ISIC2018_Task1-2_Training_Input_x2/'
+test_folderL = './ISIC-copy/ISIC2018_Task1_Training_GroundTruth_x2/'
+
+### Giving a transformation for input data
+
+data_transform = torchvision.transforms.Compose([
+           torchvision.transforms.Resize((128, 128)),
+         #   torchvision.transforms.CenterCrop(96),
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+        ])
+
+data_transform2 = torchvision.transforms.Compose([
+           torchvision.transforms.Resize((128, 128)),
+         #   torchvision.transforms.CenterCrop(96),
+            torchvision.transforms.Grayscale(),
+            torchvision.transforms.ToTensor(),
+        ])
+
+Training_Data = Images_Dataset_folder(t_data, l_data, data_transform, data_transform2)
+
+### Training Validation Split
+num_train = len(Training_Data)
+indices = list(range(num_train))
+split = int(np.floor(valid_size * num_train))
+
+if shuffle:
+    np.random.seed(random_seed)
+    np.random.shuffle(indices)
+
+train_idx, valid_idx = indices[split:], indices[:split]
+train_sampler = SubsetRandomSampler(train_idx)
+valid_sampler = SubsetRandomSampler(valid_idx)
+
+train_loader = torch.utils.data.DataLoader(Training_Data, batch_size=batch_size, sampler=train_sampler,
+                                           num_workers=num_workers, pin_memory=pin_memory,)
+
+valid_loader = torch.utils.data.DataLoader(Training_Data, batch_size=batch_size, sampler=valid_sampler,
+                                           num_workers=num_workers, pin_memory=pin_memory,)
+
+### Using Adam as Optimizer
+
+
+initial_lr = 0.001
+opt = torch.optim.Adam(model_test.parameters(), lr=initial_lr) # try SGD
+#opt = optim.SGD(model_test.parameters(), lr = initial_lr, momentum=0.99)
+
+MAX_STEP = int(1e10)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, MAX_STEP, eta_min=1e-5)
+#scheduler = optim.lr_scheduler.CosineAnnealingLr(opt, epoch, 1)
+
+### Creating a Folder for every data of the program
+New_folder = './model'
+
+if os.path.exists(New_folder) and os.path.isdir(New_folder):
+    shutil.rmtree(New_folder)
+
+try:
+    os.mkdir(New_folder)
+except OSError:
+    print("Creation of the main directory '%s' failed " % New_folder)
+else:
+    print("Successfully created the main directory '%s' " % New_folder)
+
+### Setting the folder of saving the predictions
+read_pred = './model/pred'
+
