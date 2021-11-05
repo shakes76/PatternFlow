@@ -377,14 +377,14 @@ for i in range(epoch):
     n_iter += 1
    
 #######################################################
-# Ploting
+# Ploting the comparision plot - 
 #######################################################
 plt.figure(figsize=(20, 5))
 plt.subplot(1,5,1) 
-plt.plot(source)
+plt.plot(model_train_loss)
 plt.subplot(1,5,2) 
-plt.plot(source)
+plt.plot(model_valid_loss)
 plt.subplot(1,5,3) 
-plt.plot(source)
+plt.plot(model_test_dice)
 plt.subplot(1,5,4) 
-plt.plot(source)
+plt.plot(model_test_iou)
