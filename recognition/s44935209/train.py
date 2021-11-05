@@ -47,7 +47,7 @@ print('batch_size = ' + str(batch_size))
 
 valid_size = 0.15
 
-epoch = 10
+epoch = 25
 print('epoch = ' + str(epoch))
 
 random_seed = random.randint(1, 100)
@@ -74,17 +74,12 @@ if train_on_gpu:
 
 model_Inputs = [U_Net, R2U_Net, AttU_Net, R2AttU_Net, NestedUNet]
 
-
 def model_unet(model_input, in_channel=3, out_channel=1):
     model_test = model_input(in_channel, out_channel)
     return model_test
 
 # passsing this string so that if it's AttU_Net or R2ATTU_Net it doesn't throw an error at torchSummary
-
-
 model_test = model_unet(model_Inputs[0], 3, 1)
-
-
 model_test.to(device)
 
 #######################################################
@@ -208,10 +203,31 @@ except OSError:
 else:
     print("Successfully created the model directory '%s' " % read_model_path)
 
+data_transform3 = torchvision.transforms.Compose([
+           torchvision.transforms.Resize((128, 128)),
+        ])
+data_transform4 = torchvision.transforms.Compose([
+           torchvision.transforms.Resize((128, 128)),
+         #   torchvision.transforms.CenterCrop(96),
+            torchvision.transforms.Grayscale(),
+        ])
+
+x_sort_testP = sorted(os.listdir(test_folderP))
+x_sort_testP = [test_folderP + i for i in sorted(os.listdir(test_folderP))]
+
+x_sort_testL = sorted(os.listdir(test_folderL))
+x_sort_testL = [test_folderL + i for i in sorted(os.listdir(test_folderL))]
+
+x_sort_test = [test_folderP + i for i in sorted(os.listdir(test_folderP))]
+
 #######################################################
 #Training loop
 #######################################################
 
+model_train_loss = []
+model_valid_loss = []
+model_test_dice = []
+model_test_iou = []
 for i in range(epoch):
 
     train_loss = 0.0
@@ -231,11 +247,10 @@ for i in range(epoch):
 
         #If want to get the input images with their Augmentation - To check the data flowing in net
         input_images(x, y, i, n_iter, k)
-
         opt.zero_grad()
 
         y_pred = model_test(x)
-        lossT = calc_loss(y_pred, y)     # Dice_loss Used
+        lossT = calc_loss(y_pred, y) # Dice_loss Used
 
         train_loss += lossT.item() * x.size(0)
         lossT.backward()
@@ -283,6 +298,9 @@ for i in range(epoch):
     train_loss = train_loss / len(train_idx)
     valid_loss = valid_loss / len(valid_idx)
 
+    model_train_loss.append(train_loss)
+    model_valid_loss.append(valid_loss)
+    
     if (i+1) % 1 == 0:
         print('Epoch: {}/{} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(i + 1, epoch, train_loss,
                                                                                       valid_loss))
@@ -329,4 +347,31 @@ for i in range(epoch):
 
     time_elapsed = time.time() - since
     print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    
+    im = Image.open(x_sort_test[0])
+
+    im1 = im
+    im_n = np.array(im1)
+    im_n_flat = im_n.reshape(-1, 1)
+
+    for j in range(im_n_flat.shape[0]):
+        if im_n_flat[j] != 0:
+            im_n_flat[j] = 255
+
+    s = data_transform(im)
+    pred = model_test(s.unsqueeze(0).cuda()).cpu()
+    pred = F.sigmoid(pred)
+    pred = pred.detach().numpy()
+    
+    it = Image.open(x_sort_testL[0])
+    A = np.array(data_transform4(it))//255
+    B = pred[0][0]
+    
+    intersection = (A * B).sum()
+    union = A.sum() + B.sum() - intersection
+    iou = intersection / union
+    model_test_iou.append(iou)
+    dice = 2/(1/iou + 1)
+    model_test_dice.append(dice)
+    print(dice, iou)
     n_iter += 1
