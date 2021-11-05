@@ -10,13 +10,6 @@ Original file is located at
 from google.colab import drive
 drive.mount('/content/drive')
 
-#!git clone https://github.com/rosinality/style-based-gan-pytorch.git  /content/drive/MyDrive/StyleGAN_rosin
-
-#cd /content/drive/MyDrive/StyleGAN_rosin
-
-#!python prepare_data.py --out /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH --n_worker 2 /content/drive/MyDrive/Dataset_brain/keras_png_slices_data/
-
-#!python train.py --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
 
 """Test"""
 
