@@ -34,7 +34,7 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
   This step will generate a LMDB Dataset for training
 
-- ### Training StyleGan
+- ### Training StyleGan(Driver.script)
 
   To start train, use `path=LMDB_PATH`in train_stylegan.py.
 
@@ -60,6 +60,12 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 - ### Train from pre-trained model
 
 ​        To continue training from previous training -model ,change default `ckpt=pre-trained.model` in train_stylegan.py. 
+
+- ### During Training Process--examples
+
+  <img src="./Images/sample-iter5000.png" width = "200" height = "200" alt="sample1" align=center /><img src="./Images/sample-iter20500.png" width = "200" height = "200" alt="sample1" align=center/><img src="./Images/sample-iter32500.png" width = "200" height = "200" alt="sample1" align=center /><img src="./Images/sample-iter55000.png" width = "200" height = "200" alt="sample1" align=center />
+
+  
 
 - ### Some Generate Samples --style mixing
 
