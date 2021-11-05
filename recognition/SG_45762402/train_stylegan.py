@@ -24,7 +24,7 @@ drive.mount('/content/drive')
 
 import os
 
-os.chdir('/content/drive/MyDrive/Stylegan_shang')   #修改当前工作目录
+#os.chdir('/content/drive/MyDrive/Stylegan_shang')   #修改当前工作目录
 
 #!python train_SG.py --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
 
