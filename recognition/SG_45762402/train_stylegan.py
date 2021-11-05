@@ -22,7 +22,6 @@ drive.mount('/content/drive')
 
 #!python train.py --ckpt /content/drive/MyDrive/StyleGAN_rosin/checkpoint/train_step-4.model --mixing /content/drive/MyDrive/StyleGAN_rosin/LMDB_PATH
 
-import os
 
 #os.chdir('/content/drive/MyDrive/Stylegan_shang')   #修改当前工作目录
 
