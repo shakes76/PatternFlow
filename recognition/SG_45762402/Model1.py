@@ -68,6 +68,15 @@ def equal_lr(module, name='weight'):
     return module
 
 
+'''
+The upsampling is achieved by deconvolution: 
+F.conv_transpose2d(input, weight, self.bias, stride=2, padding=self.pad) 
+and the downsampling is achieved by ordinary convolution: 
+out = F. conv2d(input, weight, self.bias, stride=2, padding=self.pad).
+
+'''
+
+
 class FusedUpsample(nn.Module):
     def __init__(self, in_channel, out_channel, kernel_size, padding=0):
         super().__init__()
