@@ -5,9 +5,17 @@ Created on Sun Oct 31 01:04:17 2021
 """
 from Model1 import *
 
-"""
-Style_generator and discriminator
-"""
+'''
+The first convolutional layer, if upsampling is required, this layer is responsible;
+The first noise injection layer is used to inject random factors;
+LeakyReLU is activated;
+The first adaptive instance normalization layer is used to inject styles;
+The second convolutional layer;
+The second noise injection layer;
+LeakyReLU is activated;
+The second adaptive instance normalization layer;
+
+'''
 class StyledConvBlock(nn.Module):
     def __init__(
         self,
