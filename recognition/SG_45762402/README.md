@@ -83,7 +83,7 @@ The OASIS datasets hosted by central.xnat.org provide the community with open ac
 
 ### Overview
 
-<img src="./Images/structure.png" width = "500" height = "300" alt="size256" align=center />
+<img src="./Images/structure.png" width = "500" height = "300" alt="structure" align=center />
 
 **Mapping network** --- **latent code**
 
