@@ -12,27 +12,17 @@ This project is finished by Xinwei Li, 44935209.
 
 ### Dependencies
 
-python>=3.6
-
-torch>=0.4.0
-
-torchvision
-
-torchsummary
-
-tensorboardx
-
-natsort
-
-numpy
-
-pillow
-
-scipy
-
-scikit-image
-
-sklearn
+1. python>=3.6
+2. torch>=0.4.0
+3. torchvision
+4. torchsummary
+5. tensorboardx
+6. natsort
+7. numpy
+8. pillow
+9. scipy
+10. scikit-image
+11. sklearn
 
 ### Dataset
 Assuming users who run this model have downloaded and unzipped the ISICs 2018 dataset.
