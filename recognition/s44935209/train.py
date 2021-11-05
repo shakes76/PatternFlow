@@ -68,7 +68,6 @@ pin_memory = False
 if train_on_gpu:
     pin_memory = True
 
-
 #######################################################
 #Setting up the model
 #######################################################
@@ -80,7 +79,7 @@ def model_unet(model_input, in_channel=3, out_channel=1):
     model_test = model_input(in_channel, out_channel)
     return model_test
 
-#passsing this string so that if it's AttU_Net or R2ATTU_Net it doesn't throw an error at torchSummary
+# passsing this string so that if it's AttU_Net or R2ATTU_Net it doesn't throw an error at torchSummary
 
 
 model_test = model_unet(model_Inputs[0], 3, 1)
@@ -111,7 +110,6 @@ test_folderL = './ISIC-copy/ISIC2018_Task1_Training_GroundTruth_x2/'
 
 data_transform = torchvision.transforms.Compose([
            torchvision.transforms.Resize((128, 128)),
-         #   torchvision.transforms.CenterCrop(96),
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
