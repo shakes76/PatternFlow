@@ -161,3 +161,86 @@ else:
 ### Setting the folder of saving the predictions
 read_pred = './model/pred'
 
+### Checking if prediction folder exixts
+if os.path.exists(read_pred) and os.path.isdir(read_pred):
+    shutil.rmtree(read_pred)
+
+try:
+    os.mkdir(read_pred)
+except OSError:
+    print("Creation of the prediction directory '%s' failed of dice loss" % read_pred)
+else:
+    print("Successfully created the prediction directory '%s' of dice loss" % read_pred)
+    
+### checking if the model exists and if true then delete
+read_model_path = './model/Unet_D_' + str(epoch) + '_' + str(batch_size)
+
+if os.path.exists(read_model_path) and os.path.isdir(read_model_path):
+    shutil.rmtree(read_model_path)
+    print('Model folder there, so deleted for newer one')
+
+try:
+    os.mkdir(read_model_path)
+except OSError:
+    print("Creation of the model directory '%s' failed" % read_model_path)
+else:
+    print("Successfully created the model directory '%s' " % read_model_path)
+    
+### Training loop
+for i in range(epoch):
+
+    train_loss = 0.0
+    valid_loss = 0.0
+    since = time.time()
+    scheduler.step(i)
+    lr = scheduler.get_lr()
+    
+    ### Training Data
+
+    model_test.train()
+    k = 1
+
+    for x, y in train_loader:
+        x, y = x.to(device), y.to(device)
+
+        #If want to get the input images with their Augmentation - To check the data flowing in net
+        input_images(x, y, i, n_iter, k)
+
+       # grid_img = torchvision.utils.make_grid(x)
+        #writer1.add_image('images', grid_img, 0)
+
+       # grid_lab = torchvision.utils.make_grid(y)
+       opt.zero_grad()
+
+        y_pred = model_test(x)
+        lossT = calc_loss(y_pred, y)     # Dice_loss Used
+
+        train_loss += lossT.item() * x.size(0)
+        lossT.backward()
+      #  plot_grad_flow(model_test.named_parameters(), n_iter)
+        opt.step()
+        x_size = lossT.item() * x.size(0)
+        k = 2
+
+    #    for name, param in model_test.named_parameters():
+    #        name = name.replace('.', '/')
+    #        writer1.add_histogram(name, param.data.cpu().numpy(), i + 1)
+    #        writer1.add_histogram(name + '/grad', param.grad.data.cpu().numpy(), i + 1)
+    
+    ### Validation Step
+    model_test.eval()
+    torch.no_grad() #to increase the validation process uses less memory
+
+    for x1, y1 in valid_loader:
+        x1, y1 = x1.to(device), y1.to(device)
+
+        y_pred1 = model_test(x1)
+        lossL = calc_loss(y_pred1, y1)     # Dice_loss Used
+
+        valid_loss += lossL.item() * x1.size(0)
+        x_size1 = lossL.item() * x1.size(0)
+        
+     ### Saving the predictions
+     
+
+
