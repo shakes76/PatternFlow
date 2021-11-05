@@ -1,0 +1,87 @@
+from __future__ import print_function, division
+import os
+import numpy as np
+from PIL import Image
+import glob
+#import SimpleITK as sitk
+from torch import optim
+import torch.utils.data
+import torch
+import torch.nn.functional as F
+
+import torch.nn
+import torchvision
+import matplotlib.pyplot as plt
+import natsort
+from torch.utils.data.sampler import SubsetRandomSampler
+from Data_Loader import Images_Dataset, Images_Dataset_folder
+import torchsummary
+#from torch.utils.tensorboard import SummaryWriter
+#from tensorboardX import SummaryWriter
+
+import shutil
+import random
+from Models import Unet_dict, NestedUNet, U_Net, R2U_Net, AttU_Net, R2AttU_Net
+from losses import calc_loss, dice_loss, threshold_predictions_v,threshold_predictions_p
+from ploting import plot_kernels, LayerActivations, input_images, plot_grad_flow
+from Metrics import dice_coeff, accuracy_score
+import time
+#from ploting import VisdomLinePlotter
+#from visdom import Visdom
+
+### GPU
+train_on_gpu = torch.cuda.is_available()
+
+if not train_on_gpu:
+    print('CUDA is not available. Training on CPU')
+else:
+    print('CUDA is available. Training on GPU')
+
+device = torch.device("cuda:0" if train_on_gpu else "cpu")
+
+
+
+### setting parameters
+
+batch_size = 4
+print('batch_size = ' + str(batch_size))
+
+valid_size = 0.15
+
+epoch = 10
+print('epoch = ' + str(epoch))
+
+random_seed = random.randint(1, 100)
+print('random_seed = ' + str(random_seed))
+
+shuffle = True
+valid_loss_min = np.Inf
+num_workers = 4
+lossT = []
+lossL = []
+lossL.append(np.inf)
+lossT.append(np.inf)
+epoch_valid = epoch-2
+n_iter = 1
+i_valid = 0
+
+pin_memory = False
+if train_on_gpu:
+    pin_memory = True
+
+###setting up the model
+
+model_Inputs = [U_Net, R2U_Net, AttU_Net, R2AttU_Net, NestedUNet]
+
+
+def model_unet(model_input, in_channel=3, out_channel=1):
+    model_test = model_input(in_channel, out_channel)
+    return model_test
+
+#passsing this string so that if it's AttU_Net or R2ATTU_Net it doesn't throw an error at torchSummary
+
+
+model_test = model_unet(model_Inputs[0], 3, 1)
+
+
+model_test.to(device)
