@@ -82,8 +82,10 @@ By reading the literature, I found a way to significantly improve the resolution
     <tr>
         <td ><center><img src="./img/pgD1.png" width = "250" height = "150" alt="d1" align=center /></td>
         <td ><center><img src="./img/pgD2.png" width = "250" height = "150" alt="d1" align=center /></td>
+        <td ><center><img src="./img/pgD3.png" width = "250" height = "150" alt="d1" align=center /></td>
     </tr>
 </table>
+
 **Picture:** *Drafts of this repository's Progressive growth.*
 
 ###  3. StyleGAN
@@ -97,37 +99,43 @@ and random noise to control the training model.
 
 ## How to use this code
 
+1. put dataset images under root dirctory named "BrainMRI"  
+ 
+3.run mainToRun.py script
+
 ```shell
 python run mainToRun.py
 ```
 
-### Any optional sections
 
-## Usage
+## Experimental analysis
 
-```
-```
+This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
 
-Note: The `license` badge image link at the top of this file should be updated with the correct `:user` and `:repo`.
+| Dataset                           | Network                                       | Time                      |
+| :-------------------------------- | :-------------------------------------------: | :-----------------------: |
+| OSAIA brain MRI                   | PGGAN                                         | 14 hours(64 * 64)         |
+| Multi-GPU support                 | StyleGAN                                      | 36 hours(128 * 128)       |
 
-### Any optional sections
 
-## API
+### baseine (PGGAN) result:
+<table>
+    <tr>
+        <td ><center><img src="./img/pgLoss.png" width = "250" height = "150" alt="d1" align=center /></td>
+        <td ><center><img src="./img/pgImg.png" width = "250" height = "150" alt="d1" align=center /></td>
+    </tr>
+</table>
 
-### Any optional sections
+### baseine (StyleGAN) result:
+<table>
+    <tr>
+        <td ><center><img src="./img/sgLoss.png" width = "250" height = "150" alt="d1" align=center /></td>
+        <td ><center><img src="./img/sgImg.png" width = "250" height = "150" alt="d1" align=center /></td>
+    </tr>
+</table>
 
-## More optional sections
 
-## Contributing
+## useful Tricks
 
-See [the contributing file](CONTRIBUTING.md)!
 
-PRs accepted.
 
-Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
-
-### Any optional sections
-
-## License
-
-[MIT © Richard McRichface.](../LICENSE)
