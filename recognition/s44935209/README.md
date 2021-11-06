@@ -53,6 +53,6 @@ Assuming users who run this model have downloaded and unzipped the ISICs 2018 da
 
 At the end of this algorithm, the average DSC are around 0.91. The result of test image could also demonstrate this fact.
 
-![upper image: previous image -> resize -> generated -> target -> real target.] (test image.png)
+![image](https://github.com/Liz-Xinwei/PatternFlow/blob/topic-recognition/recognition/s44935209/result_images/test%20image.png)
 
 ### Reference
