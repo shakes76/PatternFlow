@@ -8,7 +8,6 @@ import torch.autograd as autograd
 from torch.utils.data import Dataset
 from torchvision import transforms, utils, datasets
 from PIL import Image
-# from PGNetwork import Generator, Discriminator
 from StyleGANNetwork import Generator, Discriminator
 from tensorboardX import SummaryWriter
 
