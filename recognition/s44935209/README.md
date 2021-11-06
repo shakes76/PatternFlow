@@ -53,6 +53,8 @@ Assuming users who run this model have downloaded and unzipped the ISICs 2018 da
 
 At the end of this algorithm, the average DSC are around 0.91. The result of test image could also demonstrate this fact.
 
-![image](https://github.com/Liz-Xinwei/PatternFlow/blob/topic-recognition/recognition/s44935209/result_images/test%20image.png)
+![below image: previous image -> resize -> generated -> target -> real target](https://github.com/Liz-Xinwei/PatternFlow/blob/topic-recognition/recognition/s44935209/result_images/test%20image.png)
+
+!(Learning curve: Train loss -> Valid loss -> Test Dice -> Test IoU)[https://github.com/Liz-Xinwei/PatternFlow/blob/topic-recognition/recognition/s44935209/result_images/train_loss.png]
 
 ### Reference
