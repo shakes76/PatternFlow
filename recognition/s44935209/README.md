@@ -10,6 +10,24 @@ This project is finished by Xinwei Li, 44935209.
 
 #####################################################################################################
 
+### Introduction
+
+### Methodology
+
+### Project Structure
+
+In this repository, there are serveral Python scripts used for different conditions:
+
+- train.py - Trainning script. 
+- test.py - The main driver script when running the model. 
+- Data_Loader.py - Image data preprocessing. Getting individual transformations and data (as a Dict)
+- image.py - Imgae data preprocessing, creating 2D image from 3D.
+- Metrics.py - Calculates the dice coefficient for the images and getting the accuracy of the model.
+- losses.py - Calculating the dice loss and metrics
+- Models.py - The implemenation of the improved U-Net model
+- ploting.py - Generating the output images and metric plot.
+- Unet_ISICs_JupyterBook.ipynb - Additional Jupyter Notebook for displaying the esssential process step by step.
+
 ### Dependencies
 
 1. python>=3.6
