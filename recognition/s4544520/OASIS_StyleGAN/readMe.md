@@ -77,7 +77,6 @@ In this project, I used the WGAN-GP
 
 By reading the literature, I found a way to significantly improve the resolution of the generated images called Progressive Growth, which improves the quality of the generated images by training the network and the residual module on a resolution-by-resolution basis. The additional benefit is that it can prevent the network collapse to some extent.Since the PGGAN paper doesn't mention specific design details, I drew up a draft.
 
-![GitHub Logo](/img/pgD1.png)
  <img src="./img/pgD1.png" width = "300" height = "200" alt="图片名称" align=center />
 
 **Picture:** *Drafts of this repository's Progressive growth.*
