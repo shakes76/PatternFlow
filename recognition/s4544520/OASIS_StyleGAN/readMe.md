@@ -104,8 +104,7 @@ GAN can generate similar images based on real data distribution.StyleGAN allows 
 ```shell
 python run mainToRun.py
 ```
-
-
+ 
 ## Experimental analysis
 
 This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
