@@ -1,6 +1,6 @@
 # Improved UNet for ISICs dataset - Task 1
 
-#####################################################################################################
+###################################################################
 
 This project is created for COMP3710 Pattern Recognition Report. 
 
@@ -8,7 +8,7 @@ This project aim to segment the ISICs data set with the Improved UNet model with
 
 This project is finished by Xinwei Li, 44935209.
 
-#####################################################################################################
+###################################################################
 
 ### Introduction
 
@@ -50,5 +50,9 @@ Assuming users who run this model have downloaded and unzipped the ISICs 2018 da
 ### Testing
 
 ### Result
+
+At the end of this algorithm, the average DSC are around 0.91. The result of test image could also demonstrate this fact.
+
+![upper image: previous image -> resize -> generated -> target -> real target.] (test image.png)
 
 ### Reference
