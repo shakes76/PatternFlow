@@ -140,8 +140,15 @@ This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
 3. Progressive growth: use average pooling to resize is better than dataset's resize.
 
 ## Future work:
+
 1. Multiple graphics cards trained in parallel to increase resolution.
 2. Conditional GAN can be added
+
+## References:
+
+https://github.com/facebookresearch/pytorch_GAN_zoo/blob/b75dee40918caabb4fe7ec561522717bf096a8cb/models/networks/custom_layers.py#L29
+https://github.com/tkarras/progressive_growing_of_gans
+https://github.com/SaoYan/GenerativeSkinLesion
 
 
 
