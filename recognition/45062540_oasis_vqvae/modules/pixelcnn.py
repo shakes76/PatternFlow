@@ -4,11 +4,11 @@ from tensorflow.keras import layers
 
 class MaskedConvLayer(layers.Layer):
     """
-    Create PixelCNN layer with masks.
+    Create PixelCNN layer with masks
     """
     def __init__(self, mask_type, **kwargs):
         """
-        Create a PixelCNN layer with masks.
+        Create a PixelCNN layer with masks
         
         Params:
             mask_type: an alphabet character indicating the mask type, value = 'A' or 'B'
@@ -20,11 +20,10 @@ class MaskedConvLayer(layers.Layer):
 
     def build(self, input_shape):
         """
-        Create the variables of the layer.
+        Create the variables of the layer
         
         Params:
-            input_shape(tf.TensorShape): Instance of TensorShape, or list of instances of TensorShape 
-            if the layer expects a list of inputs (one instance per input).
+            input_shape(tf.TensorShape): the shaper of the input data
         """
         # Build the conv2d layer to initialize kernel variables
         self.conv.build(input_shape)
@@ -37,13 +36,12 @@ class MaskedConvLayer(layers.Layer):
         part3 = tf.zeros((kernel_shape[0] // 2, kernel_shape[1], kernel_shape[2], kernel_shape[3]))
 
         if self.mask_type == "A":
-            #set mask value of cells in the same row but before the current pixel to 1
+            #set mask value of cells in the same row but before the central pixel to 1
             c1 = tf.ones((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c2 = tf.zeros((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c1,c2], axis = 1)
         else:
-            #set mask value of cells in the same row but before the current pixel to 1
-            #set the mask value of the center pixel to 1 if mask type is B
+            #set mask value of cells in the same row but before the central pixel, plus the central pixel to 1, if mask type is B
             c3 = tf.ones((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c4 = tf.zeros((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c3,c4], axis = 1)
@@ -52,7 +50,7 @@ class MaskedConvLayer(layers.Layer):
                               
     def call(self, inputs):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             inputs(tf.Tensor): the input data
@@ -67,14 +65,14 @@ class MaskedConvLayer(layers.Layer):
 
 class ResidualBlock(keras.layers.Layer):
     """
-    Create residual block layer.
+    Create residual block layer
     """
     def __init__(self, filters, **kwargs):
         """
-        Create a residual block layer.
+        Create a residual block layer
         
         Params:
-            filters: the size of the filter
+            filters: the number of filters
         """
         super(ResidualBlock, self).__init__(**kwargs)
         self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
@@ -93,13 +91,13 @@ class ResidualBlock(keras.layers.Layer):
 
     def call(self, inputs):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             inputs(tf.Tensor): the input data
             
         Returns:
-            (tf.Tensor): sum of the input data and output, has the same shape as the inputs.
+            (tf.Tensor): sum of the input data and output, has the same shape as the inputs
         """
         x = self.conv1(inputs)
         x = self.norm1(x)
@@ -111,11 +109,11 @@ class ResidualBlock(keras.layers.Layer):
 
 class PixelCNN(tf.keras.Model):
     """
-    Create PixelCNN model.
+    Create PixelCNN model
     """
     def __init__(self, num_residual_blocks, num_pixelcnn_layers, num_embeddings, **kwargs):
         """
-        Create a PixelCNN model.
+        Create a PixelCNN model
     
         Params:
             num_residual_blocks: number of residual blocks
@@ -148,7 +146,7 @@ class PixelCNN(tf.keras.Model):
         
     def call(self, x):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             x(tf.Tensor): the input data

@@ -4,15 +4,15 @@ from tensorflow.keras import layers
 
 class VectorQuantizer(tf.keras.layers.Layer):
     """
-    Create the Vector quantizer layer(custom layer).
+    Create the Vector quantizer layer (custom layer).
     """
 
     def __init__(self, num_embeddings, embedding_dim, beta: float = 0.25, **kwargs):
         """
-        Create a vector quantizer layer.
+        Create a vector quantizer layer
         
         Params:
-            num_embeddings(int): number of embeddings in the codebook(discrete latent space)
+            num_embeddings(int): number of embeddings in the codebook (discrete latent space)
             embedding_dim(int): the dimensionality of each latent embedding vector
             beta(int): used when calculating the loss, best kept between 0.1 to 2, default to 0.25
             **kwargs: additional keyword arguments
@@ -22,7 +22,7 @@ class VectorQuantizer(tf.keras.layers.Layer):
         self.embedding_dim = embedding_dim
         self.beta = beta
         
-        # Initialize the embeddings that we will quantize.
+        #Initialize the embeddings that we will quantize.
         w_init = tf.random_uniform_initializer()
         self.embeddings = tf.Variable(
             initial_value = w_init(shape=(self.embedding_dim, self.num_embeddings), dtype="float32"),
@@ -30,7 +30,7 @@ class VectorQuantizer(tf.keras.layers.Layer):
 
     def call(self, inputs):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             inputs(tf.Tensor): the input data
@@ -38,7 +38,7 @@ class VectorQuantizer(tf.keras.layers.Layer):
         Returns:
             (tf.Tensor): the embedding closet to the inputs in the codebook
         """
-        # Calculate the input shape of the inputs
+        # Get the input shape of the inputs
         input_shape = tf.shape(inputs)
         # Flatten the inputs while keeping embedding_dim
         flattened = tf.reshape(inputs, [-1, self.embedding_dim])
@@ -62,13 +62,13 @@ class VectorQuantizer(tf.keras.layers.Layer):
 
     def get_code_indices(self, flattened_inputs):
         """
-        Calculate the L2-normalized distance between the inputs and the codebook.
+        Calculate the L2-normalized distance between the inputs and the embeddings in the codebook
         
         Params:
             flattened_inputs(tf.Tensor): the input data flattened
         
         Returns:
-            (tf.Tensor): the encoding indices with the field(index of embedding) has the minimum distance to the input set to 1, 
+            (tf.Tensor): the encoding indices with the field (index of embedding) has the minimum distance to the input set to 1, 
             all other fields equals to 0
         """
         similarity = tf.matmul(flattened_inputs, self.embeddings)
@@ -82,14 +82,14 @@ class VectorQuantizer(tf.keras.layers.Layer):
 
 class Encoder(keras.models.Model):
     """
-    Create the VQ-VAE Encoder.
+    Create the VQ-VAE Encoder
     """
     def __init__(self, latent_dim = 256, **kwargs):
         """
-        Create a VQ-VAE encoder.
+        Create a VQ-VAE encoder
         
         Params:
-            latent_dim(int): the dimensionality of the ouput of the encoder.
+            latent_dim(int): the dimensionality of the ouput of the encoder
             **kwargs: additional keyword arguments
         """
         super().__init__(**kwargs)
@@ -101,7 +101,7 @@ class Encoder(keras.models.Model):
 
     def call(self, inputs):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             inputs(tf.Tensor): the input data
@@ -117,11 +117,11 @@ class Encoder(keras.models.Model):
 
 class Decoder(keras.models.Model):
     """
-    Create the VQ-VAE Decoder.
+    Create the VQ-VAE Decoder
     """
     def __init__(self, **kwargs):
         """
-        Creates a VQ-VAE encoder.
+        Create a VQ-VAE decoder
         
         Params:
             **kwargs: additional keyword arguments
@@ -136,7 +136,7 @@ class Decoder(keras.models.Model):
 
     def call(self, inputs):
         """
-        Customize the forward pass behavior.
+        Customize the forward pass behavior
         
         Params:
             inputs(tf.Tensor): the input data
@@ -152,14 +152,14 @@ class Decoder(keras.models.Model):
 
 class VQVAE(tf.keras.Model):
     """
-    Create the VQ-VAE model.
+    Create the VQ-VAE model
     """
-    def __init__(self,num_embeddings = 512,latent_dim = 256,**kwargs):
+    def __init__(self,num_embeddings = 256,latent_dim = 256,**kwargs):
         """
-        Creates the VQ-VAE model.
+        Create a VQ-VAE model
         
         Params:
-            num_embeddings(int): number of embeddings in the codebook(discrete latent space)
+            num_embeddings(int): number of embeddings in the codebook (discrete latent space)
             embedding_dim(int): the dimensionality of each latent embedding vector
             **kwargs: additional keyword arguments
         """
@@ -193,16 +193,16 @@ class VQVAE(tf.keras.Model):
     @property
     def metrics(self):
         """
-        Model metrics.
+        Model metrics
         
         Returns:
-            the losses(total loss, reconstruction loss and the vq_loss)
+            the losses (total loss, reconstruction loss and the vq_loss)
         """
         return [self.total_loss, self.reconstruction_loss, self.vq_loss]
 
     def train_step(self, inputs):
         """
-        Customize the the logic of a training step(calculate losses, backpropagation, and update metrics).
+        Customize the the logic of a training step(calculate losses, backpropagation, and update metrics)
         
         Params:
             inputs(tf.Tensor): the input data
@@ -211,7 +211,7 @@ class VQVAE(tf.keras.Model):
             (tf.Tensor): the metric values
         """
         with tf.GradientTape() as tape:
-            # Outputs from the VQ-VAE.
+            # Output from the VQ-VAE.
             reconstructions = self(inputs, training=True)
 
             # Calculate the losses.
@@ -221,7 +221,8 @@ class VQVAE(tf.keras.Model):
         # Compute the gradients
         trainable_vars = self.trainable_variables
         grads = tape.gradient(total_loss, trainable_vars)
-        # Update weights
+        
+        # Update the weights
         self.optimizer.apply_gradients(zip(grads, trainable_vars))
 
         # Update the metrics
@@ -234,7 +235,7 @@ class VQVAE(tf.keras.Model):
 
     def test_step(self, inputs):
         """
-        Customize the the logic of a testing step(calculate losses).
+        Customize the the logic of a testing step (calculate losses)
         
         Params:
             inputs(tf.Tensor): the input data
@@ -255,4 +256,3 @@ class VQVAE(tf.keras.Model):
 
         # Log results.
         return {metric.name: metric.result() for metric in self.metrics}
-

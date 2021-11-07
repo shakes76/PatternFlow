@@ -28,7 +28,7 @@ def show_subplot(original, reconstructed):
 
 def plot_images(img_count, data_test, vqvae_trainer):
     """
-    Randomly select img_count number of images in the test dataset, test it on the model and
+    Randomly select img_count number of images from the test dataset, test it on the vqvae model and
     plot the output(reconstruction image) against the original image
     
     Params:
@@ -43,7 +43,7 @@ def plot_images(img_count, data_test, vqvae_trainer):
         original_img = np.asarray(original_img)
         img = dataset.preprocess_image(original_img)
         img = np.expand_dims(img, axis=0) 
-        #test the image on the model
+        #generate the reconstructed image using the vqvae model
         reconstruction_img = vqvae_trainer.predict(img)
         reconstruction_img = reconstruction_img * 255
         #plot
@@ -123,7 +123,7 @@ def calc_covariance(x, pred, mean_x, mean_pred):
 
 def ssim(mean_x, mean_pred, std_x, std_pred, covariance):
     """
-    Calculate the structured similarity between two images.
+    Calculate the structured similarity between two images
     
     Params:
         mean_x: the mean pixel value for the original image
@@ -133,10 +133,10 @@ def ssim(mean_x, mean_pred, std_x, std_pred, covariance):
         covariance: the pixel covariance value for the orignal image and the reconstructed image
     
     Returns:
-        The structured similarity of the original and reconstructed images.
+        The structured similarity of the original and reconstructed images
     """
     #k1 = 0.01 and k2 = 0.03 by default
-    #L is hte dynamic range of the pixel-values(2^bits per pixel -1)
+    #L is the dynamic range of the pixel-values(2^bits per pixel -1)
     K1 = 0.01
     K2 = 0.03
     L = 255
