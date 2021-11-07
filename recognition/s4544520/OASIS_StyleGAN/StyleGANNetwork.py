@@ -108,7 +108,7 @@ class Generator(nn.Module):
                  batch_size=12,
                  ):
         super(Generator, self).__init__()
-        self.nc = nc  # output's channel : 3 for rgb ; 1 for grey
+        self.nc = nc  # output's dimension
         self.nz = nz  # latent variable dimension
         self.size = size  # target image's size H W
         self.stages = int(math.log2(self.size / 4)) + 1  # based on paper's progressive growth get stages
@@ -246,7 +246,7 @@ class Discriminator(nn.Module):
     def grow_network(self):
         self.current_stage -= 1
         print('growing Discriminator...\n')
-        # old block (used for fade in)
+        # old block 
         old_from_rgb = copy_previous_layer(self.model, 'from_rgb')
         old_block = nn.Sequential(
             OrderedDict([
@@ -276,7 +276,6 @@ class Discriminator(nn.Module):
         print('flushing Discriminator\n')
         new_block = copy_previous_layer(self.model.residual_module.current_featureMap, 'new_block')
         new_from_rgb = copy_previous_layer(self.model.residual_module.current_featureMap, 'new_from_rgb')
-        # preserve the new block
         layer_name = 'stage_{}'.format(self.current_stage)
         new_model = nn.Sequential(
             OrderedDict(
