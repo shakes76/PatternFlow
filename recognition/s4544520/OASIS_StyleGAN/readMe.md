@@ -115,7 +115,7 @@ This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
 | Multi-GPU support                 | StyleGAN                                      | 36 hours(128 * 128)       |
 
 
-### baseine (PGGAN) result:
+### baseline (PGGAN) result:
 <table>
     <tr>
         <td ><center><img src="./img/pgLoss.png" width = "250" height = "150" alt="d1" align=center /></td>
@@ -123,7 +123,7 @@ This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
     </tr>
 </table>
 
-### baseine (StyleGAN) result:
+### StyleGAN result:
 <table>
     <tr>
         <td ><center><img src="./img/sgLoss.png" width = "250" height = "150" alt="d1" align=center /></td>
