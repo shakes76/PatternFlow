@@ -8,7 +8,6 @@ import torch.autograd as autograd
 from torch.utils.data import Dataset
 from torchvision import transforms, utils, datasets
 from PIL import Image
-# from PGNetwork import Generator, Discriminator
 from StyleGANNetwork import Generator, Discriminator
 from tensorboardX import SummaryWriter
 
@@ -268,7 +267,7 @@ class Trainer:
                     if index % 10 == 0:
                         print(
                             "Stage {}/{} epoch {}/{} G_loss {:4f} D_loss{:4f} W_dis {:4f}" \
-                                .format(stage, num_stage, epoch + 1, stage_epoch, G_loss, D_loss, W_dis)
+                                .format(stage, num_stage, epoch + 1, real_epoch, G_loss, D_loss, W_dis)
                         )
                         self.writer.add_scalar('train/G_loss', G_loss, x_axis)
                         self.writer.add_scalar('train/D_loss', D_loss, x_axis)
