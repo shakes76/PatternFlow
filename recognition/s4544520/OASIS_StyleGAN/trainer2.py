@@ -63,8 +63,8 @@ class Trainer:
     """
 
     def __init__(self, arg):
-        self.nc = arg.nc
-        self.nz = arg.nz
+        self.nc = arg.nc # ouput's dimension 1:grey 3:RGB
+        self.nz = arg.nz # latent space dimension
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.init_size = arg.init_size
         self.output_size = arg.size
@@ -116,17 +116,6 @@ class Trainer:
         gradients = gradients.norm(2, dim=1) # weight norm
         gradient_penalty = (gradients - 1.0).pow(2.).mean()
         return gradient_penalty
-
-    def update_moving_average(self, decay=0.999):
-        # update exponential running average (EMA) for the weights of the generator
-        # W_EMA_t = decay * W_EMA_{t-1} + (1-decay) * W_G
-        with torch.no_grad():
-            # param_dict_G = dict(self.G.module.named_parameters())
-            param_dict_G = dict(self.G.named_parameters())
-
-            for name, param_EMA in self.G_cpu_eval.named_parameters():
-                param_G = param_dict_G[name]
-                param_EMA.copy_(decay * param_EMA + (1. - decay) * param_G.detach().cpu())
 
     def loss(self, label):
         """
@@ -261,9 +250,8 @@ class Trainer:
                     G_loss, D_loss, W_dis = self.loss(label)
                     count += 1
                     x_axis += 1
-                    # self.update_moving_average()
-
-                    # val the result every 10 index
+                    
+                    # val the result every 10 index (10 * batch_size's imgages)
                     if index % 10 == 0:
                         print(
                             "Stage {}/{} epoch {}/{} G_loss {:4f} D_loss{:4f} W_dis {:4f}" \
