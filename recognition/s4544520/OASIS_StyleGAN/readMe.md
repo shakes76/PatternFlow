@@ -137,6 +137,7 @@ This experiment used PGGAN as baseline and add Mapping network and AdaIn moudle.
 1. Equalized learning rate :As mentioned in the paper, using this method to initialize the convolution kernel and the coefficients of the fully connected layer makes the training more stable.
 2. MiniBatchStd deviation: In training, GANs are often prone to learn only a few patterns, and adding this method to the last layer of the discriminator makes it possible to share statistical information between training and validation
 3. Progressive growth: use average pooling to resize is better than dataset's resize.
+4. Exponential Moving Average: This trick can help model become more stable.
 
 ## Future work:
 
