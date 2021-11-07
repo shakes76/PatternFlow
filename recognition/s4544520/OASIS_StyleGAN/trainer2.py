@@ -180,14 +180,12 @@ class Trainer:
         factor = self.G.model.residual_module.get_factor()
         return factor
     
-    def EMA(self):
-        #W_EMA_t = decay * W_EMA_{t-1} + (1-decay) * W_G
+    def exponential_moving_average(self):
         with torch.no_grad():
-            param_dict_G = dict(self.G.named_parameters())
-
-            for name, param_EMA in self.G_cpu_eval.named_parameters():
-                param_G = param_dict_G[name]
-                param_EMA.copy_(decay * param_EMA + (1. - 0.999) * param_G.detach().cpu())
+            G_dict= dict(self.G.named_parameters())
+            for item in self.G_cpu_eval.named_parameters():
+                G_params = G_dict[item[0]]
+                item[1].copy_(0.999 * item[1] + (1. - 0.999) * G_params.detach().cpu())
                 
     def train(self):
         """
@@ -258,7 +256,7 @@ class Trainer:
                     label = label.mul(2.).sub(1.)
                     
                     G_loss, D_loss, W_dis = self.loss(label)
-                    self.EMA()
+                    self.exponential_moving_average()
                     count += 1
                     x_axis += 1
                     
