@@ -118,7 +118,6 @@ class Generator(nn.Module):
         self.z = torch.randn(self.batch_size, 512, 1, 1)
         self.latent_space = self.mapping(self.z)
         self.latent_space = self.latent_space.detach()  # solve can not support deepcopy problem
-        # self.model = self.create_init_module()
         self.model = nn.Sequential(
             OrderedDict([
                 ("stage_{}".format(self.current_stage), self.start_block()),
