@@ -13,7 +13,7 @@ This model aims to implement the Improved UNet over the ISIC 2018 dataset in ord
 
 ![Improved UNet architecture by Isensee et. al.](https://user-images.githubusercontent.com/64070555/140685643-f7781184-baf4-4d88-92bc-eb00d5ecf667.PNG)
 
-### Parameters and Results
+### Parameters
 
 I split the ISIC dataset into training, validation, and testing sets for this model at a 6:2:2 ratio. At the time of submission, I have only run the model over a portion of the images due to time limitations in reading the full dataset. Since the dataset contains images of differing dimensions, I also resized the original images to be 256x256x3, and the segmented images to be 256x256. 
 
