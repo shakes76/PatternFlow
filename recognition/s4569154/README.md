@@ -61,11 +61,13 @@ https://challenge.isic-archive.com/data/
 
 As shown above, the dataset contains images of skin lesions. 
 
-In a deep learning target detection task, the model is first trained using a training set. How good the training dataset is determines the upper limit of the task.
+From the feedback,  Using LabelImg for ground truth bounding box annotations is unacceptable
+
+'''In a deep learning target detection task, the model is first trained using a training set. How good the training dataset is determines the upper limit of the task.
 So we need to manually label the dataset first, and I used the LabelImg image target detection labeling tool.
 It comes from this project: https://github.com/tzutalin/labelImg
 
-The application interface is shown below
+The application interface is shown below'''
 
 ![1635661030](https://user-images.githubusercontent.com/75237235/139570721-95e49a99-eefd-4ed7-affd-f6bed5c56aad.jpg)
 
