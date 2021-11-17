@@ -11,14 +11,14 @@ def main():
     model = Unet_model.Unet()
 
     #Compile the model
-    model.compile(optimizer="adam",loss = "categorical_crossentropy",metrics=[dice.dice_coefficient] )
+    model.compile(optimizer="adam",loss = "binary_crossentropy",metrics=[dice.dice_coefficient] )
 
     # model.summary()
 
     #plots.plots(val_ds,model,num=3)
 
     #Training the model
-    history = model.fit(train_ds.batch(32), epochs=30, validation_data=val_ds.batch(32))
+    history = model.fit(train_ds.batch(32), epochs=5, validation_data=val_ds.batch(32))
 
     # PLot the prediction and compare with inputs and ground-truth images.
     plots.plots(test_ds, model, num=5)
