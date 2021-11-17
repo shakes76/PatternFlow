@@ -12,15 +12,18 @@ def plots(data, model,num):
         plt.subplot(num, 3, 3*i+1)
         plt.imshow(inputs_batch[i])
         plt.axis('off')
+        plt.title('Inputs')
 
         # ground-truth images
         plt.subplot(num, 3, 3*i+2)
         plt.imshow(tf.argmax(truth_batch[i],axis=-1),cmap="gray")
         plt.axis('off')
+        plt.title('Ground-truth')
 
         # predict images
         plt.subplot(num, 3, 3*i+3)
         plt.imshow(tf.argmax(prediction[i],axis=-1),cmap="gray")
         plt.axis('off')
+        plt.title('Predictions')
 
     plt.show()
