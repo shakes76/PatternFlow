@@ -9,15 +9,16 @@ opencv2
 os
 
 ## Model Architecture
+The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as an input of the model and It convert the Object Detection problem into a Regression problem). It is composed of 3 steps: Zoom image, pass the image through a fully convolutional neural network and flitering with maximum suppression (NMS).
 
-![image](https://user-images.githubusercontent.com/93363361/139520081-f36e8769-8bc7-4ff9-b7b0-62c57c17fc1c.png)
+In this project, I use the YOLOV3 with the darknet53. This network is mainly composed of a series of 1x1 and 3x3 convolutional layers (each convolutional layer will be followed by a Batch normalization layer and a LeakyReLU) layer. The author said that because there are 53 convolutional layers in the network, it is called Darknet- 53 (2 + 1*2 + 1 + 2*2 + 1 + 8*2 + 1 + 8*2 + 1 + 4*2 + 1 = 53 According to the sequence number, the last Connected is a fully connected layer, which is also considered a convolution There are 53 layers in total). The figure below is the structure of Darknet-53
+![image](https://user-images.githubusercontent.com/93363361/142148254-f8833af9-95f8-428e-99a4-ed9128673590.png)
 
-![image](https://user-images.githubusercontent.com/93363361/139520451-9d02fa5f-4928-4e18-b63d-f2738a47a0bf.png)
-
-![image](https://user-images.githubusercontent.com/93363361/139520459-27524030-6f50-430a-83bc-bbc698c41388.png)
+The YOLOv3 network uses (4+1+c) k convolution kernels of size 11 to perform convolution prediction in the three feature maps, and k is the number of preset bounding box priors (k defaults to 3 ), c is the number of categories of the predicted target, 4k parameters are responsible for predicting the offset of the target bounding box, k parameters are responsible for predicting the probability of the target contained in the bounding box of the target, and ck parameters are responsible for predicting the k preset bounding boxes Corresponding to the probability of c target categories. The following figure shows the prediction process of the target bounding box. The dotted rectangular box in the figure is the preset bounding box, and the solid rectangular box is the predicted bounding box obtained by calculating the offset predicted by the network. The conversion process from the preset bounding box to the final predicted bounding box is shown in the formula on the right, where the function is the sigmoid function whose purpose is to scale the predicted offset to between 0 and 1.
+![image](https://user-images.githubusercontent.com/93363361/142149089-df9dd514-9323-46d5-a7ce-89c42f45049b.png)
 
 The main idea of YOLO is regressing the position of the bounding box and the category to which the bounding box belongs directly in the output layer (the whole picture is used as an input of the model and It convert the Object Detection problem into a Regression problem). It is composed of 3 steps: Zoom image, pass the image through a fully convolutional neural network and flitering with maximum suppression (NMS).
-For the first step, an input image is first divided into S × S grids of equal size, and each grid is called a grid cell. The second step is the bounding boxes predition. In this step, YOLO provides two prediction frames for each grid. These prediction frames are based on the center of the grid and have a custom size. Each grid predicts B bounding boxes which has 4 coordinateds and a confidence level. Therefore, the prediction is composed of S × S × (B ∗ 5 + C) vectors. The third step is to use the NMS to find the most appropriate frame.
+
 
 ## Dataset
 Training set: ISIC 2018 training set, with 2594 images and the groudtruth greyscale imgs of each imgs.
