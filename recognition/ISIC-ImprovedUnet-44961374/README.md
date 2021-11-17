@@ -161,6 +161,7 @@ The image below shows the training vs validation accuracy graphs.
   </kbd>
 </p>
 
+Test Set Average DSC: 0.901
 
 ### Sample Predictions
 The images below show sample images of scans, their corresponding masks and predicted masks.
