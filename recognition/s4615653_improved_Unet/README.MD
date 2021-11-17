@@ -14,7 +14,7 @@ The improved U-Net architecture is proposed by Isensee et al. in paper[1], and w
 original U-Net architecture . As shown in figure, the network includes a context pathway (left) and a localization 
 pathway (right).
 
-<img alt="improvedUNet" src="D:\s4615653_improved_Unet\PatternFlow\recognition\s4615653_improved_Unet\Image\improvedUNet.png"/>
+![ImprovedUNet](./Image/improvedUNet.png)
 
          
 ## Dependencies
