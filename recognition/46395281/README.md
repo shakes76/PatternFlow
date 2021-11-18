@@ -31,7 +31,7 @@ These features include progressively growing, Adaptive Instance Normalization, m
    All the weights of Conv layers and dense layers are devided by a factor (He's std) to ensure the dynamic range and the learning speed for them are the same. (Tero et al., 2018 )    
    #### Noise Injection (implemented in each GBlock)
    Noises are scaled by learnable parameters and then injected before every AdaIN.
-   #### Fade-in (implemented in Dnet and Gnet,function name fadeIn)  
+   #### Fade-in (implemented in Dnet and Gnet, function name fadeIn)  
    During training, whenever the growing happens, the output of the previous layer will be upscaled and mixed with the current layer.
    The proportion of the current layer and the previous layer is controlled by *alpha*, which decays as the current layer being trained.
    #### Loss
