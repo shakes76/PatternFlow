@@ -34,9 +34,9 @@ This model is able to achieve >0.8 dice similarity on the test dataset in 50 epo
 ### Loss Function and Accuracy Plot
 
 A Dice Similarity Loss function is used as we are aiming for a Dice similarity of over 0.8. The Dice Coefficient was chosen as the metric to evaluate the model as it is a straightforward mechanism used to evaluate the similarity of two images. A higher value represents higher similarity. The below image plots the training set results.
-<p align="center"><img src='images/training_accuracy.jpg'></p>
-<p align="center"><img src='images/training_dice_coefficient.jpg'></p>
-<p align="center"><img src='images/training_loss.jpg'></p>
+<p align="center"><img src='images/training_accuracy.jpeg'></p>
+<p align="center"><img src='images/training_dice_coefficient.jpeg'></p>
+<p align="center"><img src='images/training_loss.jpeg'></p>
 
 ### Data Visualisation
 
