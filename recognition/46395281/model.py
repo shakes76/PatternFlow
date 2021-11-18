@@ -13,7 +13,9 @@ from tqdm import tqdm
 from PIL import Image
 class WScaledConv(nn.Module):
   """
-  Weight scaled conv2d,
+  Weight scaled(Equalised Learning Rate) conv2d,
+  All the weights are devided by a factor (He's std) to ensure the dynamic range and the learning speed for them are the same. (Tero et al., 2018)
+
   input: b *in_features *H *W
   output: b *out_features *H *W (weight scaled)
   """
@@ -31,7 +33,9 @@ class WScaledConv(nn.Module):
 
 class WScaledLinear(nn.Module):
   """
-  Weight scaled Linear,
+  Weight scaled(Equalised Learning Rate) Linear,
+  All the weights are devided by a factor (He's std) to ensure the dynamic range and the learning speed for them are the same. (Tero et al., 2018)
+
   input: b *in_channels *H *W
   output: b *out_channels *H *W (weight scaled)
   """
@@ -51,6 +55,8 @@ class WScaledLinear(nn.Module):
 class PixelNorm(nn.Module):  # embedded into MappingNet, not used anymore
   """
   Pixel normalization,
+  Normalization on dimension 1
+
   input: b *z_dimension
   output: b *z_dimension (normalized)
   """
@@ -67,7 +73,9 @@ class PixelNorm(nn.Module):  # embedded into MappingNet, not used anymore
 class MappingNet(nn.Module):
   """
   8-dense-layers MappingNet, projecting latent z(ins) to w(outs)
+  where w is fed to AdaIN(Adaptive Instance Normalization)
   PixelNorm is merged into here
+
   input: b *z_dimension
   output: b *w_dimension
   """
@@ -94,6 +102,7 @@ class AdaIN(nn.Module): #output shape tested
   Adaptive Instance Norm,
   latent w required for using "style", use WScaledLinear(ins(w), outs(c))
   where w is the #-output of the mapping net and c is the #-output channels of the previous layer
+
   input: w, b *w_dim, and x, b *in_features *H *W
   output: x, b *out_features *H *W (multiplied by and added with style)
   """
@@ -107,6 +116,7 @@ class AdaIN(nn.Module): #output shape tested
     #latent w is the output of the mapping net
     #x is the output of the previous layer
     size=x.size()
+    #style are used as weight factors and biases
     style_wf=self.style_wfactor(w).view(size[0],size[1],1,1)
     style_b=self.style_bias(w).view(size[0],size[1],1,1)
     return x*style_wf+style_b
@@ -116,6 +126,7 @@ class Gblock(nn.Module):
   """
   Generative block,
   each block contains one upscale layer and two conv layers (except for the initial block)
+
   input: w, b *w_dim, and x, b *in_features *H *W
   output: x, b *out_features *H *W
   """
@@ -204,6 +215,11 @@ class Gnet(nn.Module):
       self.upscale_conv.append(WScaledConv(ins=1, outs=nc, k_size=1, stride=1, padding=0))
 
   def fadeIn(self, x_cur=None, x_pre=None):
+    """
+    fade-in
+    when ever growing happens, the img of old, trained block will be mixed into the img of new block for a while
+    the proportion of them is decided by alpha, which decays with iterations
+    """
     last = self.toImg[self.steps](x_cur)
     if self.alpha > 0:
       Sndlast = self.toImg[self.steps - 1](x_pre)
@@ -233,11 +249,13 @@ class Gnet(nn.Module):
 
 class Dblock(nn.Module):
   """
+  Discriminator Block,
+  each block contains 2 conv layers and 1 down scale layer
+  the initial(last in the forward process) block has an extra conv layer
+
   input: b*n_features*H*W
   output: b*(n_features/2)*H*W, for the initial(last) layer is b*1(classification result)
-  minibatch_std not implemented yet
   """
-
   def __init__(self, initial=False, ins=512, outs=512, b_size=32):
     super().__init__()
     self.initial = initial
@@ -299,6 +317,11 @@ class Dnet(nn.Module):
       self.fromImg.append(WScaledConv(ins=nc, outs=n_features[i], k_size=1, stride=1, padding=0))
 
   def fadeIn(self, x):
+    """
+    fade-in
+    when ever growing happens, the img of old, trained block will be mixed into the img of new block for a while
+    the proportion of them is decided by alpha, which decays with iterations
+    """
     t = self.n_layers - self.steps - 1
     last = self.Dblocks[t](self.fromImg[t](x))
     if self.alpha > 0:
@@ -380,11 +403,15 @@ class Trainer():
       fake = self.G(noise, self.alpha, self.step)
       D_real = self.D(real, self.alpha, self.step)
       D_fake = self.D(fake.detach(), self.alpha, self.step)
+      # minimise the prob. of classifying fake img as real
+      # maximise the prob. of classifying real img as real
       loss_D1 = F.softplus(D_fake)
       loss_D2 = F.softplus(-D_real)
       loss_Dall = torch.mean(loss_D1 + loss_D2)
 
+    #record the loss for plotting
     self.loss_D += loss_Dall.item()
+    #backward and update
     self.scaler_D.scale(loss_Dall).backward()
     self.scaler_D.step(self.opt_D)
     self.scaler_D.update()
@@ -396,9 +423,12 @@ class Trainer():
     with torch.cuda.amp.autocast():
       fake = self.G(noise, self.alpha, self.step)
       D_fake = self.D(fake, self.alpha, self.step)
+      # maximise the prob. of D classifying fake img as real
       loss_G = torch.mean(F.softplus(-D_fake))
 
+    # record the loss for plotting
     self.loss_G += loss_G.item()
+    # backward and update
     self.scaler_G.scale(loss_G).backward()
     self.scaler_G.step(self.opt_G)
     self.scaler_G.update()
@@ -440,10 +470,12 @@ class Trainer():
       # upscale all images to 256*256 to make .gif
       if fixed_fakes.shape[2] < 256:
         fixed_fakes = F.interpolate(fixed_fakes, scale_factor=int(256 / fixed_fakes.shape[2]))
+      # save images
       for i, img in enumerate(fixed_fakes):
         if i + 1 > self.save_only:
           break
         grid_cells.append(img)
+        #transfer format
         img = np.transpose(img.cpu().numpy(), (1, 2, 0))
         img = (img * 255).astype(np.uint8)
         plt.imsave(
