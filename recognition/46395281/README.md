@@ -23,15 +23,15 @@ These features include progressively growing, Adaptive Instance Normalization, m
 ### Structure of Generator
 ![](Images/styleGAN.png)    
    Tero et al., 2020    
-   #### AdaIN and Mapping network
+   #### AdaIN and Mapping network (function name AdaIN and MappingNet)  
    Instead of random noise input to the generator, the input is now changed to constants.   
    A 8-layers mapping net is added to project random noise *z* to latent *w*.   
    Then, *w* go through a dense layer and become factors and biases for Adaptive Instance Normorlization. (AdaIN)
-   #### Equlised Learning Rate (Weight Scaled)    
+   #### Equlised Learning Rate (Weight Scaled) (implemented in all dense and conv layers, function name WSCaledLinear and WScaledConv)   
    All the weights of Conv layers and dense layers are devided by a factor (He's std) to ensure the dynamic range and the learning speed for them are the same. (Tero et al., 2018 )    
-   #### Noise Injection   
+   #### Noise Injection (implemented in each GBlock)
    Noises are scaled by learnable parameters and then injected before every AdaIN.
-   #### Fade-in
+   #### Fade-in (implemented in Dnet and Gnet,function name fadeIn)  
    During training, whenever the growing happens, the output of the previous layer will be upscaled and mixed with the current layer.
    The proportion of the current layer and the previous layer is controlled by *alpha*, which decays as the current layer being trained.
    #### Loss
