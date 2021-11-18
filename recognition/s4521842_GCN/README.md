@@ -96,7 +96,7 @@ Finally, we use categorical cross-entropy to calculate the error.
     - Number of features of each node: 128
     - Categories of labels: {0, 1, 2, 3}
 - Data split: 
-    - Training set : Validation set : Test set = 0.5 : 0.25 :0.25
+    - Training set : Validation set : Test set = 0.3 : 0.2 :0.5
 
 ## Implementation 
 
@@ -144,35 +144,37 @@ Number of nodes:  22470
 Number of features of each node:  128
 Categories of labels:  {0, 1, 2, 3}
 
-Epoch_1: loss=1.38999 tr_acc=0.56440 val_acc=0.56703
-Epoch_2: loss=1.35644 tr_acc=0.66008 val_acc=0.65302
-Epoch_3: loss=1.32523 tr_acc=0.68376 val_acc=0.67545
-Epoch_4: loss=1.29111 tr_acc=0.69025 val_acc=0.68649
-Epoch_5: loss=1.25130 tr_acc=0.69337 val_acc=0.68613
-Epoch_6: loss=1.21046 tr_acc=0.69150 val_acc=0.68613
-Epoch_7: loss=1.16554 tr_acc=0.69390 val_acc=0.68916
-Epoch_8: loss=1.12079 tr_acc=0.70280 val_acc=0.69753
-Epoch_9: loss=1.06966 tr_acc=0.71633 val_acc=0.70981
-Epoch_10: loss=1.02601 tr_acc=0.72603 val_acc=0.72085
+Epoch_1: loss=1.39647 tr_acc=0.43184 val_acc=0.43836
+Epoch_2: loss=1.36725 tr_acc=0.43688 val_acc=0.44326
+Epoch_3: loss=1.34257 tr_acc=0.43243 val_acc=0.45127
+Epoch_4: loss=1.31326 tr_acc=0.46328 val_acc=0.48331
+Epoch_5: loss=1.27634 tr_acc=0.50067 val_acc=0.52292
+Epoch_6: loss=1.23863 tr_acc=0.55022 val_acc=0.56609
+Epoch_7: loss=1.19732 tr_acc=0.60050 val_acc=0.61282
+Epoch_8: loss=1.14876 tr_acc=0.63685 val_acc=0.65087
+Epoch_9: loss=1.09742 tr_acc=0.67423 val_acc=0.68447
+Epoch_10: loss=1.04080 tr_acc=0.70776 val_acc=0.72385
 ...
-Epoch_91: loss=0.24722 tr_acc=0.93574 val_acc=0.92594
-Epoch_92: loss=0.24228 tr_acc=0.93556 val_acc=0.92594
-Epoch_93: loss=0.24013 tr_acc=0.93485 val_acc=0.92523
-Epoch_94: loss=0.24372 tr_acc=0.93627 val_acc=0.92612
-Epoch_95: loss=0.24348 tr_acc=0.93778 val_acc=0.92772
-Epoch_96: loss=0.24097 tr_acc=0.93823 val_acc=0.92790
-Epoch_97: loss=0.23825 tr_acc=0.93769 val_acc=0.92772
-Epoch_98: loss=0.24018 tr_acc=0.93734 val_acc=0.92612
-Epoch_99: loss=0.23857 tr_acc=0.93752 val_acc=0.92594
-Epoch_100: loss=0.23755 tr_acc=0.93885 val_acc=0.92701
-Test Accuracy: tf.Tensor(0.9304023, shape=(), dtype=float32)
+Epoch_91: loss=0.20986 tr_acc=0.94081 val_acc=0.92479
+Epoch_92: loss=0.20879 tr_acc=0.93977 val_acc=0.92457
+Epoch_93: loss=0.20582 tr_acc=0.94096 val_acc=0.92412
+Epoch_94: loss=0.20737 tr_acc=0.94200 val_acc=0.92546
+Epoch_95: loss=0.20878 tr_acc=0.94289 val_acc=0.92679
+Epoch_96: loss=0.20830 tr_acc=0.94274 val_acc=0.92768
+Epoch_97: loss=0.20568 tr_acc=0.94229 val_acc=0.92701
+Epoch_98: loss=0.20955 tr_acc=0.94229 val_acc=0.92768
+Epoch_99: loss=0.20333 tr_acc=0.94333 val_acc=0.92657
+Epoch_100: loss=0.20432 tr_acc=0.94407 val_acc=0.92635
+Test Accuracy: tf.Tensor(0.9270138, shape=(), dtype=float32)
 ```
 _________________
 
 ## Visualisation
 
-- T-SNE (based on test set): <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/t-sne.png?raw=true">
-- Accuracy (Training Loss, Training Accuracy, Validation Accuracy): <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_history.png?raw=true">
+- T-SNE (based on test set): 
+  <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/t-sne.png?raw=true">
+- Accuracy (Training Loss, Training Accuracy, Validation Accuracy): 
+  <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_history.png?raw=true">
 
 ## Reference
 
