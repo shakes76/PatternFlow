@@ -171,7 +171,7 @@ _________________
 
 ## Visualisation
 
-- T-SNE (based on test set): 
+- T-SNE (based on test set):                                        
   <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/t-sne.png?raw=true">
 - Accuracy (Training Loss, Training Accuracy, Validation Accuracy): 
   <img src="https://github.com/SteveInUQ/PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/image/GCN_history.png?raw=true">
