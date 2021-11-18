@@ -56,12 +56,12 @@ class DataPreprocessing:
     def data_split(self, n_nodes):
         """
             Split dataset into training, validation, test set.
-            training_set : validation_set : test_set = 0.5:0.25:0.25
+            training_set : validation_set : test_set = 0.3:0.2:0.5
         """
         # get the index of each dataset
-        train_idx = range(int((n_nodes) * 0.5))
-        val_idx = range(int((n_nodes) * 0.5), int((n_nodes) * 0.75))
-        test_idx = range(int((n_nodes) * 0.75), n_nodes)
+        train_idx = range(int((n_nodes) * 0.3))
+        val_idx = range(int((n_nodes) * 0.3), int((n_nodes) * 0.5))
+        test_idx = range(int((n_nodes) * 0.5), n_nodes)
 
         # set the mask
         train_mask = np.zeros(n_nodes, dtype=np.bool)
