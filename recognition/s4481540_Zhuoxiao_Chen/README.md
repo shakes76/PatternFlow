@@ -221,6 +221,8 @@ optional arguments:
                         the dimension of the generated AKOA image
 ```
 
+Once the output image dimension and the checkpoint containing trained model parameters are defined for the generate_AKOA.py script, it will generate images starting from the constant and a latent code inputted to the 8-layer MLP that produces styles inserted to each convolution block for upsampling. Finally, it outputs the generated images saved to the root directory. 
+
 ## Result and Analysis
 
 The visualisation of the generated AKOA images (256 times 256 resolution each).
