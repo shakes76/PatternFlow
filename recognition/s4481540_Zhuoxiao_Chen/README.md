@@ -3,7 +3,7 @@ Authour: [Zhuoxiao Chen](https://zhuoxiao-chen.github.io)
 
 Student ID: 44815404
 
-Email: zhuoxiao \[dot\] chen \[dot\] uq \[dot\] edu \[dot\] au
+Email: zhuoxiao \[dot\] chen \[at\] uq \[dot\] edu \[dot\] au
 
 [School of Information Technology and Electrical Engineering (ITEE)](https://itee.uq.edu.au/)
 
