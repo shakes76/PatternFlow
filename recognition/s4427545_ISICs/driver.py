@@ -1,4 +1,5 @@
 import yolov5.train as train
+import yolov5.detect as detect
 import sys
 
 # Uses https://github.com/ultralytics/yolov5
@@ -21,7 +22,7 @@ def main(arg):
         train.run(img=640,batch=batch_size,epochs=epochs,data=data,weights=model)
     else:
         print(f'Beginning {mode} on a batch size of {batch_size}')
-        #yolo.predict()
+        detect.run(weights=model, imgsz=640, conf_thres=0.5, source='datasets/ISIC/test/images')
 
 if __name__ == '__main__':
     print('Program takes inputs of the form: batch_size, mode (training or predict), epochs, data (.yaml file), model_type (.pt file)')

@@ -131,7 +131,7 @@ def main(args):
     training_validation_test_write(args[0], args[1], args[2])
 
 if __name__ == '__main__':
-    print('Program takes inputs of the form: current_dataset_directory, validation_data_split')
+    print('Program takes inputs of the form: current_dataset_directory, validation_data_split, test_data_split')
     if len(sys.argv) > 2:
         main(sys.argv[1:])
     else:
