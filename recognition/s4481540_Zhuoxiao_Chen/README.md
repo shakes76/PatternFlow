@@ -244,4 +244,14 @@ However, when the StyleGAN is trained with 60k iterations, the produced fake AKO
 
 
 ## Conconlution
-In this project, the AKOA Knee images are used as datasets to train the StyleGAN. After 40 hours of training using two top graphical cards, the result is perfect, and there is nearly no difference between fake generated AKOA images and authentic AKOA images. This report, written with markdown, discusses the methodology of basic GAN, progressive GAN up to StyleGAN and how it can be used to produce fake AKOA images. Also, this report gives a very detailed implementation for users to re-run the code without any difficulty. Because of the deadline limitation of the COMP3710 assignment, a higher resolution such as 512 and 1024 is not attempted. Training the StyleGAN to produce AKOA images of 1024 resolution may take several weeks. Thus, in future work after the deadline, this work can be extended to produce much better AKOA images with 1024 resolutions. Also, [StyleGAN3](https://github.com/NVlabs/stylegan3) is recently published. In the future, this work can be further extended using the state-of-the-art StyleGAN3 model to produce better results. 
+In this project, the AKOA Knee images are used as datasets to train the StyleGAN. After 40 hours of training using two top graphical cards, the result is perfect, and there is nearly no difference between fake generated AKOA images and authentic AKOA images. This report, written with markdown, discusses the methodology of basic GAN, progressive GAN up to StyleGAN and how it can be used to produce fake AKOA images. Also, this report gives a very detailed implementation for users to re-run the code without any difficulty. Because of the deadline limitation of the COMP3710 assignment, a higher resolution such as 512 and 1024 is not attempted. Training the StyleGAN to produce AKOA images of 1024 resolution may take several weeks. Thus, in future work after the deadline, this work can be extended to produce much better AKOA images with 1024 resolutions. Also, [StyleGAN3](https://github.com/NVlabs/stylegan3) is recently published. In the future, this work can be further extended using the state-of-the-art StyleGAN3 model to produce better results.
+
+
+## Reference List
+\[1] T. Karras, S. Laine, and T. Aila, ‘A Style-Based Generator Architecture for Generative Adversarial Networks’, 2019, pp. 4401–4410. Accessed: Nov. 19, 2021. [Online]. Available: https://openaccess.thecvf.com/content_CVPR_2019/html/Karras_A_Style-Based_Generator_Architecture_for_Generative_Adversarial_Networks_CVPR_2019_paper.html
+\[2] T. Karras et al., ‘Alias-Free Generative Adversarial Networks’, Jun. 2021, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/2106.12423v4
+\[3] I. J. Goodfellow et al., ‘Generative Adversarial Networks’, Jun. 2014, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/1406.2661v1
+\[4] T. Karras, T. Aila, S. Laine, and J. Lehtinen, ‘Progressive Growing of GANs for Improved Quality, Stability, and Variation’, Oct. 2017, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/1710.10196v3
+
+
+
