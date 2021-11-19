@@ -154,6 +154,7 @@ def train(args, dataset, generator, discriminator):
             plt.title(f'Loss for Resolution{step}')
             plt.legend()
             plt.savefig(f'./losses/loss-step{step}.png')
+            plt.close()
 
             disc_list = []
             gen_list = []
