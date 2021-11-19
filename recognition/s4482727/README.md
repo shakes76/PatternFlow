@@ -46,4 +46,4 @@ Observe that all DSC values are above 0.8.
 ![Example output by the driver script.](example_output.png)
 
 On average, we can expect to achieve an average Dice coefficient of
-about 0.86, but some extreme outliers below 0.8 are often recorded.
+about 0.86 on the test set, but some extreme outliers below 0.8 are often recorded.
