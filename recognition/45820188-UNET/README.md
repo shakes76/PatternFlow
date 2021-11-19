@@ -43,7 +43,7 @@ The number of epochs can be modified using the *epoch* variable. For this run, 1
 ## Output
 ![model output](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Sample%20Output.png?raw=true)
 
-Here is the output comparing the original, expected and actual output. After leaving it to run overnight with 1000 epochs, the dice coefficient value of 86.84% was found. The following graphs show the change of dice coefficient as well as the loss over the 1000 epochs that were run. It looks to peak above 90%, which is unexpected, but could be due to the large number of epochs or an error causing overfitting and leakage.
+Here is the output comparing the original, expected and actual output. After leaving it to run overnight with 1000 epochs, the dice coefficient value of 86.84% was found. The following graphs show the change of dice coefficient as well as the loss over the 1000 epochs that were run. It looks to peak above 90%, which is unexpected, but could be due to the large number of epochs or an error causing overfitting and leakage. The dice coefficient value was computed using the test set in comparison to the expected output images.
 
 ### Dice Coefficient 
 ![dice coefficient](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Dice%20Value.png?raw=true)
