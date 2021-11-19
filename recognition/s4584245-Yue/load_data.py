@@ -53,6 +53,7 @@ num_nodes = features.shape[0]
 train_mask = np.zeros(num_nodes, dtype=bool)
 val_mask = np.zeros(num_nodes, dtype=bool)
 test_mask = np.zeros(num_nodes, dtype=bool)
+
 # train data
 train_mask[:2000] = True
 # valid data
