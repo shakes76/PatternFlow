@@ -30,6 +30,9 @@ Here is a gif showing the output after each of the 30 epochs used for testing. A
 Here is the output from the final epoch after being trained for ~8 hours and 30 epochs
 ![final_output](./images/Final_training_images.png)
 
+The loss functions were averaged over every epoch and graphed for the 30 epochs that were trained. In the graph blue represents the Discriminator loss and orange is the Generator loss.
+![output](./images/output.png)
+
 
 ## Usage
 To make the model train, all that needs to be changed in the driver.py file is the parameters up the top. For the case of the OASIS Brain dataset, all that should be changed is batch_size, depth, and epochs. For other datasets, the datapath should be changed to where the data images are stored. For datsets that have different sized images, the actual models need to be changed (an example of this can be found in the MNIST folder of this repository), in models.py the synthesis netowork, and discriminator need to have the appropriate amount of blocks so that up/down sampling doesnt go beyond the dataset. 
@@ -42,3 +45,10 @@ The code requires these python libraries to run:
 * tqdm
 * imageio   (for making the gif)
 * glob      (for making the gif)
+
+## References
+* https://www.tensorflow.org/api_docs
+* https://arxiv.org/abs/1812.04948 (paper for StyleGAN)
+* https://arxiv.org/abs/1912.04958 (paper for StyleGAN2)
+* https://github.com/manicman1999/StyleGAN2-Tensorflow-2.0 (a tf 2.x implementation of StyleGAN2)
+* https://keras.io/guides/making_new_layers_and_models_via_subclassing/ (making a custom layer)
