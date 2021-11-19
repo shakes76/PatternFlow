@@ -19,7 +19,7 @@ def result():
 # Train model class and draw the accuracy and loss.
 train = Train()
 train.train()
-train.los_acc()
+train.acc()
 # TSNE embeddings plot
 tsne()
 # The TSNE result image.
