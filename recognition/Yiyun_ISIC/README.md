@@ -92,9 +92,18 @@ Here are the example outputs when applying this model on the ISIC2018 dataset:
 
 ![Predictions Plot](./images/plot_sample.png)
 
+## Metrics
+
 For the loss, accuracy and dice coefficient metrics during training:
 
 ![Metrics Plot](./images/plot_metrics_sample.png)
+
+Metrics on the test set:
+
+| Accuracy  | Dice Coefficient (DSC) | Loss |
+| ------------- | ------------- | ------------- | 
+| 0.9436604976654053 | 0.9721283912658691 | 0.028115030378103256 |
+
 
 ## Troubleshoot
 `tensorflow.python.framework.errors_impl.InvalidArgumentError: buffer_size must be greater than zero. [Op:ShuffleDatasetV3]`
