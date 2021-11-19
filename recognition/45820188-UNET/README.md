@@ -31,20 +31,31 @@ This is simply the model support file. It should not be executed on its own. How
 The driver file works by making a copy of the Improved UNET model, then loads the data. It loads the images into a dataset which then gets converted into arrays that the model can use for fitting. The model is then compiled using the adam optimisier, and dice coefficient for loss and its metrics before fitting begins.
 Then the output is given to be plotted for all images, loss and accuracy calculation.
 
-The number of epochs can be modified using the *epoch* variable. For this run, 100 epochs were run as this seemed to provide sufficient results and learning.
+The number of epochs can be modified using the *epoch* variable. For this run, 1000 epochs were run as this seemed to provide sufficient results and learning.
+
+### Hyper Parameters:
+**Batch Size**: 16
+**Epochs**: 1000
+**Image Size**: (96 x 128)
 
 ## Output
 ![model output](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Sample%20Output.png?raw=true)
 
-Here is the output comparing the original, expected and actual output. There are some bugs within this implementation regarding the dice coefficient value being greater than 1. This could be the reason for the less-than optimal output from the model. However we can still see that the output from **model.predict()** is close to the expected output in the right row. When looking at the 'accuracy' metric given to **model.compile**, we can see that this value reaches around 60% accuracy. This is above the 80% expected, however with more epochs or a bigger batch size, a higher accuracy could be achieved. The batch size of 16 was selected as this was the memory limit of my RTX3070, higher sizes would exceed the memory capacity of my GPU.
+Here is the output comparing the original, expected and actual output. After leaving it to run overnight with 1000 epochs, the dice coefficient value of 86.84% was found. The following graphs show the change of dice coefficient as well as the loss over the 1000 epochs that were run. It looks to peak above 90%, which is unexpected, but could be due to the large number of epochs or an error causing overfitting and leakage.
+
+### Dice Coefficient 
+![dice coefficient](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Dice%20Valuepng?raw=true)
+
+### Loss Value
+![loss value](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Loss%20Valuepng?raw=true)
 
 ## Training and Test split
-I chose to use a 90/10 split for training and testing. This is so that model has more images to refine its learning, reading for when a test set is given for its efficiency testing.
+I chose to use a 80/20 split for training and testing. This is so that model has more images to refine its learning, reading for when a test set is given for its efficiency testing.
 
 
 #### References
 [Paper on Improved UNET Model](https://arxiv.org/pdf/1802.10508v1.pdf)
 
-[Dice Coefficient Function](https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c)
+[Dice Coefficient Function](https://www.jeremyjordan.me/semantic-segmentation/)
 
 [ISICs Dataset from 2018 Challenge](https://challenge2018.isic-archive.com/)

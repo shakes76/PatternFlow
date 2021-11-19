@@ -16,13 +16,13 @@ def dice_coefficient(y_true, y_pred, smooth=1):
     """
     Dice Coefficient required model compiling metrics
 
-    Source: https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c
+    Source: https://www.jeremyjordan.me/semantic-segmentation/
     """
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    union = K.sum(y_true_f) + K.sum(y_pred_f)
-    return (2. * intersection + smooth) / (union + smooth)
+    axes = tuple(range(1, len(y_pred.shape)-1)) 
+    numerator = 2. * tf.reduce_mean(y_pred * y_true, axes)
+    denominator = tf.reduce_mean(tf.math.square(y_pred) + tf.math.square(y_true), axes)
+    
+    return 1 - tf.reduce_mean((numerator + smooth) / (denominator + smooth))
 
 def dice_coefficient_loss(y_true, y_pred):
     """
@@ -42,7 +42,7 @@ def process_images(path, segmentation):
         labels=None,
         label_mode = 'binary',
         batch_size = batch_size,
-        validation_split = 0.1,
+        validation_split = 0.2,
         subset=segmentation,
         image_size = (n, m),
         color_mode = 'grayscale',
@@ -77,13 +77,55 @@ def plot_prediction(model, X_test, y_test):
         plt.title("Expected", size=11)
     plt.show()
 
+def plot_dice_coefficient(output):
+    """
+    Plots the dice coefficient value over the epochs
+
+    Compares the Train and Validate sets
+    """
+    dice = output.history['dice_coefficient']
+    val_dice = output.history['val_dice_coefficient']
+
+    plt.plot(output.epoch, dice, 'b', label='Train')
+    plt.plot(output.epoch, val_dice, 'r', label='Validate')
+
+    plt.ylim([0, 1])
+    
+    plt.title('Dice Coefficient Value over Epoch')
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Dice Coefficient')
+    plt.legend(loc="lower right")
+    plt.show()
+
+def plot_loss(output):
+    """
+    Plots the loss value over the epochs
+
+    Compares the Train and Validate Sets
+    """
+    loss = output.history['loss']
+    val_loss = output.history['val_loss']
+
+    plt.plot(output.epoch, loss, 'b', label='Training Loss')
+    plt.plot(output.epoch, val_loss, 'r', label='Validation Loss')
+
+    plt.ylim([0, 1])
+
+    plt.title('Training Loss vs Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss Value')
+    plt.legend(loc="upper right")
+    plt.show()
+
+
+
 if __name__ == "__main__":
     batch_size = 16
     depth = 16
-    epochs = 100
-    n = 192
-    m = 256
-
+    epochs = 1000
+    n = 96
+    m = 128
+    
     # Load the Improved UNET Model
     model = build_model(input_shape=(n, m, 1), depth=depth)
     model.summary()
@@ -101,13 +143,19 @@ if __name__ == "__main__":
     X_test = tf.concat([x for x in X_test_ds], axis=0)
     y_test = tf.concat([x for x in y_test_ds], axis=0)
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=dice_coefficient_loss, metrics=['accuracy', dice_coefficient])
+    X_train = X_train / 255.
+    y_train = y_train / 255.
+    X_test = X_test / 255.
+    y_test = y_test / 255.
+
+    model.compile(optimizer='adam', loss=dice_coefficient_loss, metrics=[dice_coefficient, 'accuracy'])
     output = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, shuffle=True, validation_data=(X_test, y_test))
     
-    print(output.history['loss'])
-    print(output.history['accuracy'])
-    print(output.history['dice_coefficient'])
-
     model.save("saved_model")
+
+    total = sum(output.history['dice_coefficient'])
+    print("Average Dice: " + str(total/epochs))
     
     plot_prediction(model, X_test, y_test)
+    plot_dice_coefficient(output)
+    plot_loss(output)
