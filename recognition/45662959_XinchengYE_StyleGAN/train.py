@@ -1,7 +1,3 @@
-"""
-:papram  path: a path of a checkpoint, this is obligatory
-:param
-"""
 from io import BytesIO
 import lmdb
 from PIL import Image
