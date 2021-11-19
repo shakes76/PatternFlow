@@ -35,7 +35,9 @@ The number of epochs can be modified using the *epoch* variable. For this run, 1
 
 ### Hyper Parameters:
 **Batch Size**: 16
+
 **Epochs**: 1000
+
 **Image Size**: (96 x 128)
 
 ## Output
@@ -44,10 +46,10 @@ The number of epochs can be modified using the *epoch* variable. For this run, 1
 Here is the output comparing the original, expected and actual output. After leaving it to run overnight with 1000 epochs, the dice coefficient value of 86.84% was found. The following graphs show the change of dice coefficient as well as the loss over the 1000 epochs that were run. It looks to peak above 90%, which is unexpected, but could be due to the large number of epochs or an error causing overfitting and leakage.
 
 ### Dice Coefficient 
-![dice coefficient](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Dice%20Valuepng?raw=true)
+![dice coefficient](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Dice%20Value.png?raw=true)
 
 ### Loss Value
-![loss value](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Loss%20Valuepng?raw=true)
+![loss value](https://github.com/AndrewLuong6/PatternFlow/blob/topic-recognition/recognition/45820188-UNET/Images/Loss%20Value.png?raw=true)
 
 ## Training and Test split
 I chose to use a 80/20 split for training and testing. This is so that model has more images to refine its learning, reading for when a test set is given for its efficiency testing.
