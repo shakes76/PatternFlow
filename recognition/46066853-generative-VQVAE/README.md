@@ -43,6 +43,8 @@ All models are defined in PyTorch in the models module:
 # Results on OASIS brain dataset
 The VQVAE was trained only for two epochs to minimise unique q(z|x) values. (2 in the best case) Followed by training the DCGAN. *Intermediate results from steps and training parameters can be viewed in `driver.ipynb`*.
 
+Training data shape was (3,256,256) and pixel values were in the range [0, 255]. In this case, no pixel normalization was applied.
+
 SSIM was >0.60 in 7809 out of 10000 training images used. Best SSIM archived was 0.698\
 ![image](./images/result.png)
 
@@ -50,6 +52,7 @@ SSIM was >0.60 in 7809 out of 10000 training images used. Best SSIM archived was
 The main drawback of the current implementation is the limitation of mapping GAN generated codebook indices to discrete codebook indices learned by the decoder. Current implementation performs best when the number of discrete elements is small. Possible improvements to increase accuracy and allow training the VQVAE for higher epochs:
 - Optimise mapping algorithm: The current mapping relies on uniformly diving the output in intervals of the same size. Can be improved and optimized by training the bin sizes to improve mapping accuracy.
 - Modify the DCGAN to output multichannel one hot encoded codebook indices rather than an image representation.
+- Use pixel normalisation on data.
 
 # References
 [1] van den Oord, A., Vinyals, O., & Kavukcuoglu, K. (2017). Neural Discrete Representation Learning. CoRR, abs/1711.00937. Opgehaal van http://arxiv.org/abs/1711.00937
