@@ -249,8 +249,11 @@ In this project, the AKOA Knee images are used as datasets to train the StyleGAN
 
 ## Reference List
 \[1] T. Karras, S. Laine, and T. Aila, ‘A Style-Based Generator Architecture for Generative Adversarial Networks’, 2019, pp. 4401–4410. Accessed: Nov. 19, 2021. [Online]. Available: https://openaccess.thecvf.com/content_CVPR_2019/html/Karras_A_Style-Based_Generator_Architecture_for_Generative_Adversarial_Networks_CVPR_2019_paper.html
+
 \[2] T. Karras et al., ‘Alias-Free Generative Adversarial Networks’, Jun. 2021, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/2106.12423v4
+
 \[3] I. J. Goodfellow et al., ‘Generative Adversarial Networks’, Jun. 2014, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/1406.2661v1
+
 \[4] T. Karras, T. Aila, S. Laine, and J. Lehtinen, ‘Progressive Growing of GANs for Improved Quality, Stability, and Variation’, Oct. 2017, Accessed: Nov. 19, 2021. [Online]. Available: https://arxiv.org/abs/1710.10196v3
 
 
