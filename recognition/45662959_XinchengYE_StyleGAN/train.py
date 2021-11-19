@@ -23,7 +23,8 @@ from torch.autograd import Variable, grad
 from torch.autograd import Function
 from model import StyledGenerator, Discriminator
 import time
-
+import datetime
+import matplotlib.pyplot as plt
 
 class MultiResolutionDataset(Dataset):
     def __init__(self, path, transform, resolution=8):
@@ -99,7 +100,7 @@ def adjust_lr(optimizer, lr):
         mult = group.get('mult', 1)
         group['lr'] = lr * mult
 
-
+# 18680 images
 def train(args, dataset, generator, discriminator):
     """
     Main train loop.
@@ -123,7 +124,9 @@ def train(args, dataset, generator, discriminator):
     requires_grad(discriminator, True)
 
     disc_loss_val = 0
+    disc_list = []
     gen_loss_val = 0
+    gen_list = []
     grad_loss_val = 0
 
     alpha = 0   # interpolation between previous resolutions and new (larger) resolutions
@@ -132,7 +135,7 @@ def train(args, dataset, generator, discriminator):
     max_step = int(math.log2(args.max_size)) - 2
     final_progress = False
     t0 = time.time()
-    train_time = []
+    # train_time = []
 
     for i in progress_bar:
         discriminator.zero_grad()
@@ -145,6 +148,19 @@ def train(args, dataset, generator, discriminator):
         if used_sample > args.phase * 2:
             used_sample = 0
             step += 1
+
+            if not os.path.exists('losses'):
+                os.mkdir('losses')
+            plt.plot(disc_list, label="discriminator")
+            plt.plot(gen_list, label='generator')
+            plt.xlabel('iterations')
+            plt.ylabel('loss')
+            plt.title(f'Loss for Resolution{step}')
+            plt.legend()
+            plt.savefig(f'./losses/loss-step{step}.png')
+
+            disc_list = []
+            gen_list = []
 
             if step > max_step:
                 step = max_step
@@ -162,8 +178,9 @@ def train(args, dataset, generator, discriminator):
             )
             data_loader = iter(loader)
             t = time.time() - t0
+            t = datetime.timedelta(seconds=t)
             print('\nrunning time', t)
-            train_time.append(t)
+            # train_time.append(t)
             t0 = time.time()
             torch.save(
                 {
@@ -230,6 +247,7 @@ def train(args, dataset, generator, discriminator):
         if i % 10 == 0:
             grad_loss_val = grad_penalty.item()
             disc_loss_val = (-real_predict + fake_predict).item()
+            disc_list.append(disc_loss_val)
         d_optimizer.step()
 
         # calculate the loss of generator and backpropagation
@@ -246,6 +264,7 @@ def train(args, dataset, generator, discriminator):
 
             if i % 10 == 0:
                 gen_loss_val = loss.item()
+                gen_list.append(gen_loss_val)
 
             loss.backward()
             g_optimizer.step()
@@ -295,7 +314,7 @@ def train(args, dataset, generator, discriminator):
 if __name__ == '__main__':
     code_size = 512
     n_critic = 1    # the number of critic (discriminator) iterations per generator iteration
-                    # In WGAN-PG paper, they use n_critic = 5
+                    # In WGAN-GP paper, they use n_critic = 5
 
     parser = argparse.ArgumentParser(description='train StyleGAN')
 
@@ -303,7 +322,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--phase',
         type=int,
-        default=600_000,    # phase should be large enough, it also controls alpha, otherwise generator will be unstable
+        default=300_000,    # phase should be large enough, it also controls alpha, otherwise generator will be unstable
         help='number of samples used for each training phases',
     )
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
