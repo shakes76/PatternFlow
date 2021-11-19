@@ -10,8 +10,6 @@ NUM_FILES = 2594
 IMG_SIZE = 640
 AUGMENTATIONS = 2
 
-# TODO: Python doc
-
 # Should make 6 times the data by doing all rotations and a flip from the base, and even cropping...
 def split_and_write_files(ids, old_img_dir, img_dirs, mask_dir, file_ext, training_stop_id, valid_stop_id):
     train_dirs = [img_dirs[0], mask_dir, img_dirs[0].replace('images', 'labels')]
@@ -42,7 +40,7 @@ def split_and_write_files(ids, old_img_dir, img_dirs, mask_dir, file_ext, traini
     print(f'{files_written} files written')
 
 def save_img_with_augmentations(image : im.Image, new_image_dir, mask_dir, new_label_dir, filename):
-    # Have 6 times more training, validation, and test data. But, be careful not to contaminate!!!
+    # Have 6 times more training data. But, be careful not to contaminate!!!
     name = filename.replace('.jpg', '')
     images = {}
     images['base'] = image
