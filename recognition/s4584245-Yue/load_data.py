@@ -54,8 +54,8 @@ train_mask = np.zeros(num_nodes, dtype=bool)
 val_mask = np.zeros(num_nodes, dtype=bool)
 test_mask = np.zeros(num_nodes, dtype=bool)
 # train data
-train_mask[:10000] = True
+train_mask[:2000] = True
 # valid data
-val_mask[10000:12000] = True
+val_mask[2000:4000] = True
 # test data
-test_mask[12000:15000] = True
+test_mask[4000:12000] = True
