@@ -33,7 +33,7 @@ A common problem of GAN is instability during training. WGAN proposed Wasserstei
 - ### Requirements 
   |       | preprocessing.py | train.py | test.py |
   | ------ | ----------- | --------|---------|
-  | Library | zipfile <br> io <br> multiprocessing<br> functools<br> PIL<br> lmdb<br> tqdm <br>torchvision |io<br> lmdb<br> PIL<br> os<br> argparse<br> random<br> math<br> tqdm<br> torch<br> time |torch<br> torchvision<br> matplotlib<br> math<br> argparse|
+  | Library | zipfile <br> io <br> multiprocessing<br> functools<br> PIL<br> lmdb<br> tqdm <br>torchvision |io<br> lmdb<br> PIL<br> os<br> argparse<br> random<br> math<br> tqdm<br> torch<br> time<br> datetime<br> matplotlib|torch<br> torchvision<br> matplotlib<br> math<br> argparse|
 - ### Preprocessing   
   StyleGAN will firstly train images with lower resolutions, with the growth of epoch (or phase in this implementation), alpha rises gradually. After alpha reaches 1, StyleGAN can smoothly and steadily move to training next higher resolution. Consequently, the dataset should have all images with all resolutions (8,16,32,64,128,256,512,1024). Here, use Lightening Memory Mapped Database Manager to store the preprocessed images.   
   - input: a __zip__ file of AKOA Analysis png images, each one is about 128 KB.  
