@@ -476,6 +476,10 @@ def test_unet_improved():
     plt.show()
 
 if __name__ == '__main__':
+    # Training functions
+    train_unet()
+    train_unet_improved()
+    
     # Test functions
     test_unet()
     test_unet_improved()

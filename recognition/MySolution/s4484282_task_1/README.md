@@ -37,14 +37,8 @@ The report and a large percentage of the code used is documented in the [Colab d
 
 # Test scripts
 
-The model can be tested by cloning the repository and running the `main.py` file in the `s4484282_task_1` directory. The test script uses a pre-trained model (stored in the h5 format).
-
-**NOTE**:
-This model was trained using Keras 2.6.0 on Google Colab. Many users have reported some issues loading these models on their local machines.
-
-If this happens, either ensure your version is the same, or if not, retrain the model and verify for yourself.
-
-The models are also available in the standard format as zip files.
+The model can be tested by cloning the repository and running the `main.py` file in the `s4484282_task_1` directory. As per request, the model files have been removed (so no pre-trained model will be present). Hence, please ensure the
+model is trained and saved as a `'h5` file on your local drive before you run the test functions.
 
 Note that this model was largely developed and tested using google Colab. As such, you can verify the originality of the document, the integrity of the training and testing outcomes by viewing the [Colab document](https://colab.research.google.com/drive/1YwaXD-fa3LNqCvG4Pb1gB-krDDrrUhF-?usp=sharing) without the need to run the scripts. Note however that you will not have access my google drive, so you'll need to setup your own with the same training dataset offered by UQ.
 
