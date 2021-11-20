@@ -21,6 +21,9 @@ This generative model is used to create novel images of brains from the OASIS da
 training images, 544 testing images and 1120 validation images. Additionally, the images preprocessed such that they 
 are all centred, and all are 256 pixels by 256 pixels [5].
 
+In this implementation, further processing has been done to normalise the pixel values such that they occupy a range
+of 0 to 1
+
 ## VQ-VAE results
 OASIS brain images from the test set reconstructed by the VQ-VAE achieved an average structural similarity of 73%
 between the test dataset and their respective reconstruction (higher than the 60% benchmark).
