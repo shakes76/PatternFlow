@@ -65,9 +65,19 @@ The model was trained on 30,000 batches (batch size of 1) and models saved and e
 ## Results
 
 <div align="center">
-<a href="https://ibb.co/hczhn5J"><img src="https://i.ibb.co/ypjGMTc/train-losspng.png" alt="train-losspng" border="0"></a><br /><a target='_blank' href='https://imgbb.com/'></a><br />
+<!--<a href="https://ibb.co/hczhn5J"><img src="https://i.ibb.co/ypjGMTc/train-losspng.png" alt="train-losspng" border="0"></a><br /><a target='_blank' href='https://imgbb.com/'></a><br /> -->
+<a href="https://ibb.co/GFFH1hY"><img src="https://i.ibb.co/rvvdLW8/download.png" alt="download" border="0"></a>
+<a href="https://ibb.co/r4zPbGF"><img src="https://i.ibb.co/XSKByZj/download-1.png" alt="download-1" border="0"></a>
+  
 <a href="https://ibb.co/kK63yNN"><img src="https://i.ibb.co/Nxn13cc/train-dsc-indiv.png" alt="train-dsc-indiv" border="0"></a>
+
+|![](https://i.ibb.co/5rKFvVs/Case-014-Week4-slice-063-jpeg.gif)  |  ![](https://i.ibb.co/FsTgD7C/Case-026-Week5-slice-063-jpeg.gif)|
+:-------------------------:|:-------------------------:
+![](https://i.ibb.co/Qfqpgcg/Case-029-Week3-slice-063-jpeg.gif)  |  ![](https://i.ibb.co/ZSFr3cB/Case-037-Week0-slice-063-jpeg-gif.gif)
+![](https://i.ibb.co/X2KdR2N/Case-038-Week0-slice-063-jpeg.gif)  |  ![](https://i.ibb.co/DK4HBJf/Case-039-Week5-slice-063-jpeg-gif.gif)
+
 </div>
+
 
 # Usage
 
