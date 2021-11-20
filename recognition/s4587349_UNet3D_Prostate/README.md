@@ -154,7 +154,7 @@ the model after 50 epochs.
 
 | Image | True | Predicted   |
 | :---: | :---: | :---: |
-| ![](Images/Input_image.png)  | ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
+| ![](Images/Input_Image.png)  | ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
 
 ### Class images
 
