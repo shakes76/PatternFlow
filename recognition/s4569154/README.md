@@ -63,11 +63,12 @@ As shown above, the dataset contains images of skin lesions.
 
 From the feedback,  Using LabelImg for ground truth bounding box annotations is unacceptable
 
+###Delete
 (In a deep learning target detection task, the model is first trained using a training set. How good the training dataset is determines the upper limit of the task.
 So we need to manually label the dataset first, and I used the LabelImg image target detection labeling tool.
 It comes from this project: https://github.com/tzutalin/labelImg
 
-The application interface is shown below)---old version
+The application interface is shown below)---old version###
 
 ![1635661030](https://user-images.githubusercontent.com/75237235/139570721-95e49a99-eefd-4ed7-affd-f6bed5c56aad.jpg)
 
@@ -136,6 +137,16 @@ At the same time, we can also see that as the number of iterations increases, th
 
 
 We found that the higher the batch, the better the f1 score and other metrics.
+
+### New Results
+
+Due to the performance of old model is somewhat poor - has not achieved 0.8 IoU
+So I change the hyperparameters in yolov3.cfg.
+Including max_batches = 6000, steps = 4800, 5600, batch = 128, subvision = 32.
+And I get the better formance than before.
+![image](https://user-images.githubusercontent.com/75237235/142727196-17b7b3fb-11d5-4466-839e-f56fe20d5f57.png)
+See max6000.txt for details
+
 
 Conclusion
 -------
