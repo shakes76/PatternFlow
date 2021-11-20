@@ -1,6 +1,12 @@
 # COMP3710 Preort - OAI AKOA Perceiver
 #### Ahmed Hafeez-Baig (s4589325)
 
+## General References:
+- https://keras.io/examples/vision/perceiver_image_classification/ (good resource to see general structure)
+- https://github.com/Rishit-dagli/Perceiver (decent for seeing how some functions are implemented)
+- https://keras.io/api/layers/base_layer/ (how to use classes with tf)
+- https://arxiv.org/abs/2103.03206 (perceiver paper)
+
 ## Description
 The goal of this project is to develope a perceiver that can be used to classify the OAI AKOA Knee dataset (binary classification). A full description of the Perceiver can be found in [this paper](https://arxiv.org/abs/2103.03206). The basic premise of a perceiver is to have "an architecture based on attentional princicples" capable of making classifications without dommain specific assumptions (i.e. a perceiver should be capable of working on images, videos, audio, point clouds, etc). Initially a byte array of all input data set is parsed through a latent vector (using a cross-attention module) to compress down the relative data size. An arbitrary number of transformer modules using self-attention blocks. This whole process is applied iteratively. The result is then parsed to a global pooling layer and a dense classification layer. The figure below shows the general structure of a perceiver.
 
@@ -71,13 +77,24 @@ OUT_SIZE		= 1 # binary as only left or right knee
 
 ## Examples and Results
 
+### Dataset Used
+- Images: 18680
+- Unique patients: 101
+- Right knees: 10920
+- Left knees: 7760
+
+### Results Overview
 The plots below show the accuracy and loss of the model throughout the training process. Final results are also shown and the model achieved an overall accuracy of approximately 93% (although there was some variation in the accuracy achieved on each run).
 
+### Accuracy Plot
 ![](Images/Accuracy_Plot.png)
 
+### Loss Plot
 ![](Images/Loss_Plot.png)
 
+### Training
 ![](Images/Result.png)
 
+### Test Set Accuracy
 ![](Images/Accuracy.png)
 
