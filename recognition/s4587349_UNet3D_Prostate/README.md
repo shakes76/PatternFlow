@@ -152,9 +152,9 @@ the model after 50 epochs.
 
 ### Segmented images 
 
-| True | Predicted   |
-| :---: | :---: |
-| ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
+| Image | True | Predicted   |
+| :---: | :---: | :---: |
+| ![](Images/Input_image.png)  | ![](Images/y_true.png) | ![](Images/pred_argmax.png) |
 
 ### Class images
 
