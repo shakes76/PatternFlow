@@ -1,0 +1,32 @@
+net.optimized_memory = 0 
+mini_batch = 1, batch = 16, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+
+ seen 64, trained: 96 K-images (1 Kilo-batches_64) 
+
+ calculation mAP (mean average precision)...
+ Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+
+ detections_count = 659, unique_truth_count = 300  
+ rank = 0 of ranks = 659 
+ rank = 100 of ranks = 659 
+ rank = 200 of ranks = 659 
+ rank = 300 of ranks = 659 
+ rank = 400 of ranks = 659 
+ rank = 500 of ranks = 659 
+ rank = 600 of ranks = 659 
+class_id = 0, name = lesions, ap = 12.07%   	 (TP = 72, FP = 226) 
+
+ for conf_thresh = 0.25, precision = 0.24, recall = 0.24, F1-score = 0.24 
+ for conf_thresh = 0.25, TP = 72, FP = 226, FN = 228, average IoU = 20.70 % 
+
+ IoU threshold = 80 %, used Area-Under-Curve for each unique Recall 
+ mean average precision (mAP@0.80) = 0.120739, or 12.07 % 
+
+Set -points flag:
+ `-points 101` for MS COCO 
+ `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data) 
+ `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom dataset
