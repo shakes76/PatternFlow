@@ -26,12 +26,16 @@ def getScans(dataFolder, labelsFolder):
     
     return list(zip(dataFiles, labelsFiles))
 
+def normalise(img):
+    return (img - tf.math.reduce_mean(img)) / tf.math.reduce_std(img)
+
 # lazily convert paths to files into images / labels
 def im_file_to_tensor(dataPath, labelPath, fileNames, channels, n_classes, shape):
     def _im_file_to_tensor(dataPath, labelPath):
         dp, lp = fileNames[dataPath]
         image = tf.convert_to_tensor(nib.load(dp).get_fdata().astype('float32'))
         image = tf.cast(image, tf.float32)
+        image = normalise(image)
         image = tf.stack((image,)*channels, axis=-1)
         image = tf.expand_dims(image, axis=0)
         labels = tf.convert_to_tensor(nib.load(lp).get_fdata().astype('float32'))
@@ -46,13 +50,26 @@ def im_file_to_tensor(dataPath, labelPath, fileNames, channels, n_classes, shape
     label.set_shape((1,) + shape + (n_classes,))
     return data, label
 
-# dice coefficient function
-def dice_coefficient(y_true, y_pred):
+# dice coefficient for binary classes
+def dice_coefficient_bin(y_true, y_pred):
     y_true = K.backend.flatten(y_true)
     y_pred = K.backend.flatten(y_pred)
-    intersection = K.backend.sum(K.backend.abs(y_true * y_pred), axis=-1)
-    return (2. * intersection + 1) / (K.backend.sum(K.backend.square(y_true),-1)
-            + K.backend.sum(K.backend.square(y_pred),-1) + 1)
+    intersection = K.backend.sum(y_true * y_pred, axis=-1)
+    smooth = 0.0001
+    return (2. * intersection + smooth) / (K.backend.sum(y_true, axis=-1) + K.backend.sum(y_pred, axis=-1) + smooth)
+
+# dice coefficient for multiple (default six) classes
+def dice_coefficient(y_true, y_pred, n_classes=6, ret_indv=False):
+    dice_total = 0
+    dices = []
+    for index in range(n_classes):
+        dice_bin = dice_coefficient_bin(y_true[:,:,:,index], y_pred[:,:,:,index])
+        dice_total += dice_bin
+        dices.append(dice_bin)
+    if ret_indv:
+        return dice_total / n_classes, dices
+    else:
+        return dice_total / n_classes
 
 # dice loss
 def dice_loss(y_true, y_pred):
@@ -61,7 +78,7 @@ def dice_loss(y_true, y_pred):
 def main():
     # model parameters
     shape = nib.load("./dataset/semantic_MRs_anon/Case_004_Week0_LFOV.nii.gz").get_fdata().shape
-    channels = 3
+    channels = 1
     n_classes = 6
 
     LR = 0.0001
@@ -117,7 +134,7 @@ def main():
     model = unet_3d(new_shape, n_classes)
 
     # compile model
-    model.compile(optimizer = optim, loss=dice_loss, metrics=metrics)
+    model.compile(optimizer=optim, loss=dice_loss, metrics=metrics)
     print(model.summary())
 
     # fit model with train_ds, validate on val_ds
