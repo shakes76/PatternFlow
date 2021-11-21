@@ -202,6 +202,7 @@ class Blur(nn.Module):
 class EqualConv2d(nn.Module):
     """
     Similar to EqualLR, BUT will slightly rescale the weight after every updates.
+    Return the convolutional layer after weight rescaling.
     """
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -216,6 +217,9 @@ class EqualConv2d(nn.Module):
 
 
 class EqualLinear(nn.Module):
+    """
+    Return the linear layer after weight rescaling.
+    """
     def __init__(self, in_dim, out_dim):
         super().__init__()
 
@@ -230,6 +234,9 @@ class EqualLinear(nn.Module):
 
 
 class ConvBlock(nn.Module):
+    """
+    A convolutional block in discriminator.
+    """
     def __init__(
             self,
             in_channel,
@@ -288,6 +295,9 @@ class ConvBlock(nn.Module):
 
 
 class AdaptiveInstanceNorm(nn.Module):
+    """
+
+    """
     def __init__(self, in_channel, style_dim):
         super().__init__()
 
@@ -337,6 +347,9 @@ class ConstantInput(nn.Module):
 
 
 class StyledConvBlock(nn.Module):
+    """
+    A styled convolutional block in generator.
+    """
     def __init__(
             self,
             in_channel,
@@ -540,7 +553,11 @@ class StyledGenerator(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, fused=True, from_rgb_activate=False):
         super().__init__()
-
+        """
+        For the last convblock:
+        Mean of batch standard deviation of feature maps is concatenated to conv feature maps 
+        (to increase sample variations). So input channel become 512 + 1.
+        """
         self.progression = nn.ModuleList(
             [
                 ConvBlock(16, 32, 3, 1, downsample=True, fused=fused),  # 512
