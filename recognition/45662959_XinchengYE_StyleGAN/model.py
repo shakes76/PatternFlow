@@ -296,7 +296,7 @@ class ConvBlock(nn.Module):
 
 class AdaptiveInstanceNorm(nn.Module):
     """
-
+    (C) Adaptive Instance Normalization
     """
     def __init__(self, in_channel, style_dim):
         super().__init__()
@@ -494,6 +494,9 @@ class Generator(nn.Module):
 
 
 class StyledGenerator(nn.Module):
+    """
+    Main Generator, style-based generator.
+    """
     def __init__(self, code_dim=512, n_mlp=8):
         super().__init__()
         """
@@ -551,6 +554,9 @@ class StyledGenerator(nn.Module):
 
 
 class Discriminator(nn.Module):
+    """
+    Main Discriminator, similar with progressive GAN.
+    """
     def __init__(self, fused=True, from_rgb_activate=False):
         super().__init__()
         """
