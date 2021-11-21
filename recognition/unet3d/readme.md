@@ -53,11 +53,11 @@ unet3d (project folder)
 ![Train & Validation Loss Curve](images/epoch.png)
 ## Compare predictions with labels
 #### The 33th slice
-![1 st list](images/The_33th_slice_of_unet_aug1.png)
+![1 st list](images/The_33th_slice_of_result.png)
 #### The 65th slice
-![65 th list](images/The_65th_slice_of–unet_aug1.png)
+![65 th list](images/The_65th_slice_of_result.png)
 #### The 128th slice
-![128 th list](images/The_128th_slice_of_unet_aug1.png)
+![128 th list](images/The_128th_slice_of_result.png)
 
 
 
