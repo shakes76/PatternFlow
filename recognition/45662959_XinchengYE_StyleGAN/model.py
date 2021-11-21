@@ -11,6 +11,9 @@ import random
 
 
 class EqualLR:
+    """
+    Obtain the parameter of the input layer.
+    """
     def __init__(self, name):
         self.name = name
 
@@ -37,6 +40,12 @@ class EqualLR:
 
 
 def equal_lr(module, name='weight'):
+    """
+    Obtain the weight of the input layer.
+    :param module: can be a layer like cov oe linear, or a network block.
+    :param name: weight
+    :return: the weight of the module
+    """
     EqualLR.apply(module, name)
 
     return module
@@ -109,6 +118,9 @@ class FusedDownsample(nn.Module):
 
 
 class PixelNorm(nn.Module):
+    """
+    Pixel Normalization, normalize the latent code by its standard deviation.
+    """
     def __init__(self):
         super().__init__()
 
@@ -117,6 +129,9 @@ class PixelNorm(nn.Module):
 
 
 class BlurFunctionBackward(Function):
+    """
+    Double backpropagation for Blur, for gradient penalty.
+    """
     @staticmethod
     def forward(ctx, grad_output, kernel, kernel_flip):
         ctx.save_for_backward(kernel, kernel_flip)
@@ -139,6 +154,10 @@ class BlurFunctionBackward(Function):
 
 
 class BlurFunction(Function):
+    """
+    Make the networks shift-invariant, corresponds to bilinear interpolation.
+    https://arxiv.org/abs/1904.11486
+    """
     @staticmethod
     def forward(ctx, input, kernel, kernel_flip):
         ctx.save_for_backward(kernel, kernel_flip)
@@ -160,6 +179,10 @@ blur = BlurFunction.apply
 
 
 class Blur(nn.Module):
+    """
+    Make the networks shift-invariant, corresponds to bilinear interpolation.
+    https://arxiv.org/abs/1904.11486
+    """
     def __init__(self, channel):
         super().__init__()
 
@@ -177,6 +200,9 @@ class Blur(nn.Module):
 
 
 class EqualConv2d(nn.Module):
+    """
+    Similar to EqualLR, BUT will slightly rescale the weight after every updates.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__()
 
