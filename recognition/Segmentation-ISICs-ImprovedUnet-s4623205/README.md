@@ -107,8 +107,8 @@ The best Improved UNet model which is the model on epoch 47 will be selected to 
 ## How to Use
 ### File Descriptions
 * [**ExampleImage:**](ExampleImage) The folder that contains example images of the dataset, model architecture and the experiment results used in the report.
-* [**Models:**](Models) The folder that contains the model weights.
-    * [**Imporoved_Unet.h5:**](Models/Imporoved_Unet.h5) The best Improved UNet model weights file trained in this project.
+* ~~[**Models:**](Models) The folder that contains the model weights.~~
+    * ~~[**Imporoved_Unet.h5:**](Models/Imporoved_Unet.h5) The best Improved UNet model weights file trained in this project.~~(Removed model file as requested from the upstream repository, please contact me privately if this file is needed.)
 * [**Modules:**](Modules) The folder that contains modules.
     * [**SegmentaionModel.py:**](Modules/SegmentaionModel.py) The module that contains the original Unet implementation in [[2]](#reference_anchor2), Improved Unet implementation in [[1]](#reference_anchor1). Functions to train the model with choices of using adam optimizers with decouple weight decay, learning rate decay or activate saving the best model and loading models.
     * [**SegmentationMetrics.py:**](Modules/SegmentationMetrics.py) The module that contains the evaluation metrics and loss functions used on segmentation tasks. Function of dice coefficient and dice loss.
