@@ -1,3 +1,4 @@
+recognition/s4481540_Zhuoxiao_Chen/data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -131,3 +132,4 @@ dmypy.json
 mypy.ini
 
 
+*.xml
