@@ -1,10 +1,3 @@
-import tensorflow as tf
-import numpy as np
-import os
-import cv2
-
-import config as c
-
 """
     data.py provides functions for loading and augmenting images. 
     These were used rather than tensorflow functions to be 
@@ -12,6 +5,13 @@ import config as c
     and keras preprocessing layers.
 
 """
+
+import tensorflow as tf
+import numpy as np
+import os
+import cv2
+
+import config as c
 
 def load_list_from_txt(txt_path, image_dir_path):
     """
@@ -70,11 +70,7 @@ def load_image_from_path(image_path, label):
 def training_data_iterator():
     images, labels = load_list_from_txt(c.train_file_path, c.train_data_path)
     dataset = tf.data.Dataset.from_tensor_slices((images, labels))
-    # dataset.shuffle(len(images))
-    # dataset = dataset.cache()
     dataset = dataset.shuffle(buffer_size=1000)
-
-    # dataset = dataset.repeat()
     #convert image file names to actual image data
     dataset = dataset.map(lambda filename, label: tf.py_function(load_image_from_path, inp=[filename, label], Tout=[tf.float32, tf.float32]),
                           num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -85,11 +81,8 @@ def training_data_iterator():
 def test_data_iterator():
     images, labels = load_list_from_txt(c.test_file_path, c.test_data_path)
     dataset = tf.data.Dataset.from_tensor_slices((images, labels))
-    # dataset.shuffle(len(images))
-    # dataset.shuffler()
     dataset = dataset.cache()
     dataset = dataset.shuffle(buffer_size=1000)
-    # dataset = dataset.repeat()
     #convert image file names to actual image data
     dataset = dataset.map(lambda filename, label: tf.py_function(load_image_from_path, inp=[filename, label], Tout=[tf.float32, tf.float32]),
                           num_parallel_calls=tf.data.experimental.AUTOTUNE)

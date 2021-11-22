@@ -1,13 +1,3 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tqdm import tqdm
-import tensorflow_addons as tfa
-import math
-import data as d
-import config as c
-
 """
     Perceiver implemented with reference to the ViT Paper 
     and https://github.com/google-research/vision_transformer 
@@ -27,6 +17,15 @@ import config as c
     In the paper, Fourier encodings are used.
     However in this code I could not get them to work.
 """
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tqdm import tqdm
+import tensorflow_addons as tfa
+import math
+import data as d
+import config as c
 
 
 def latent_transformer_encoder():

@@ -1,3 +1,9 @@
+"""
+    Trains the model given the already done train/test/split. 
+    Needs generate_labels.py to be ran first so the splits 
+    are done, then can run train.py.
+"""
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -31,7 +37,8 @@ def train(model):
     #call to initialize
     model(np.zeros((1, 64, 64, 3)))
 
-    model.load_weights("goliath/weights_old.h5")
+    if os.path.isfile("goliath/weights_old.h5"):
+        model.load_weights("goliath/weights_old.h5")
 
     for epoch_num in range(c.num_epochs):
         training_it = d.training_data_iterator()
@@ -60,7 +67,6 @@ def train(model):
             try:
                 images, labels = testing_it.next()
                 loss, prediction = test_step(model, images, labels, loss_f)
-                # print("labels, pred", labels, prediction)
                 correct_num = correct_num_batch(labels, prediction)
                 print(f"correct num:{correct_num}")
                 sum_correct_num += correct_num 

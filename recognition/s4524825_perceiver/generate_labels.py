@@ -1,9 +1,13 @@
+"""
+ iterates through directories, and does train test split. 
+ Saves labels to .txt files so same splits on goliath / local machine can 
+ be loaded from the .txt lists.
+
+"""
+
 import os
 import numpy as np
 import json
-
-#iterates through directories, and does train test split
-
 
 START_DIR = "data/AKOA_Analysis/"
 START_DIR = "data/resize/"

@@ -1,3 +1,7 @@
+"""
+Plots training history from csv log written by goliath process
+"""
+
 import os 
 import numpy as np 
 import matplotlib.pyplot as plt 

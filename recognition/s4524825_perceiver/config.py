@@ -1,3 +1,8 @@
+"""
+    Parameters for model ad training loop. 
+    Can 
+"""
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -31,8 +36,6 @@ classifier_units = [
     num_classes,
 ]  # Size of the Feedforward network of the final classifier.
 
-
-
 # text files describing which is train and which is validation data, setup in datasetup.py
 train_file_path = 'train.txt'
 test_file_path = 'validation.txt'
@@ -41,6 +44,7 @@ test_file_path = 'validation.txt'
 train_data_path = 'data/resize/'
 test_data_path = train_data_path
 
+# dataset stats
 train_num = 11352
 test_num = 4768
 iterations_per_epoch = int(train_num / batch_size)

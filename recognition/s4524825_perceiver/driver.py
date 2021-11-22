@@ -1,5 +1,10 @@
+"""
+    driver for model, loads first test image, 
+    and classifies the image using the Perceiver model. 
+    If trained weights exist, will load those. 
+"""
+
 import numpy as np
-# from recognition.s4524825_perceiver.train import correct_num_batch
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -12,6 +17,7 @@ import data as d
 import config as c
 from perceiver import Perceiver
 import json
+import os
 
 def correct(y_true, y_pred):
     pred = tf.argmax(y_pred, -1)
@@ -30,13 +36,15 @@ model = Perceiver()
 #call to initialize
 model(np.zeros((1, 64, 64, 3)))
 
-model.load_weights("goliath/weights_old.h5")
+if os.path.isfile("goliath/weights_old.h5"):
+    model.load_weights("goliath/weights_old.h5")
 
 images, labels = testing_it.next()
 
 image = images[0]
 label = labels[0]
 
+# normalize
 im = image.numpy()
 for i in range(3):
     im[..., i] = ((im[..., i] * 127.5) + 127.5)
