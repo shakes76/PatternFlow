@@ -1,0 +1,6 @@
+# conda install pip
+# pip install -r /recognition/Yiyun_ISIC/requirements.txt
+
+tensorflow>=2.6.0
+tensorflow_addons>=0.14.0
+matplotlib>=3.4.3
