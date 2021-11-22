@@ -129,6 +129,4 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
-
-
-recognition/s4433723_ADNI_alzheimers_perceiver/AKOA_Analysis
+*.xml
