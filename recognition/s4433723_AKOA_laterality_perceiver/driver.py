@@ -114,7 +114,6 @@ def load_train_test_data(dataset_dir, test_split):
         ax.imshow(x_data[i, :, :, 0], cmap=plt.cm.gray)
         ax.axis('off')
     plt.tight_layout()
-    plt.show()
 
     # train test split
     return train_test_split(x_data, y_data, test_size=0.25, random_state=42)

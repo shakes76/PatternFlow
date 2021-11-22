@@ -14,7 +14,7 @@ dimensionality of the model and thus allow it to process larger more complex dat
 depth. 
 
 
-![img.png](perceiver_architecture.png)
+![img.png](images/perceiver_architecture.png)
 
 
 The Osteoarthritis Initiative Accelerated Knee Osteroarthritis (OAI AKOA) dataset contains 
@@ -25,11 +25,11 @@ laterality (left or right) of images in the AKOA dataset.
 
 *Left*
 
-![left_eg.png](left_eg.png)         
+![left_eg.png](images/left_eg.png)         
 
 *Right*
 
-![right.png](right_eg.png)
+![right.png](images/right_eg.png)
 
 The Perceiver model constructed in the current report has the following structure:
 
@@ -71,7 +71,7 @@ experiments. Overall this training procedure produced excellent results, as obse
 
 *E.g. training images resized to 16 * 16:*
 
-![training_inputs.png](training_inputs.png)
+![training_inputs.png](images/training_inputs.png)
 
 Results
 -
@@ -83,9 +83,9 @@ with a high test set accuracy of 97.16%.
 *LATENT ARRAY SIZE = 128*
 
 
-![test_acc.png](test_acc_128.png)
+![test_acc.png](images/test_acc_128.png)
 
-![Successful_Training_1.png](training_128.png)
+![Successful_Training_1.png](images/training_128.png)
 
 
 Interestingly, initial results were strong with a latent array size of 128, but with subsequent
@@ -98,15 +98,15 @@ with low required computing power.
 *LATENT ARRAY SIZE = 32*
 
 
-![test_acc.png](test_acc_32.png)
+![test_acc.png](images/test_acc_32.png)
 
-![Successful_Training_1.png](training_32.png)
+![Successful_Training_1.png](images/training_32.png)
 
 *LATENT ARRAY SIZE = 16*
 
-![test_acc.png](test_acc_16_actual.png)
+![test_acc.png](images/test_acc_16_actual.png)
 
-![Successful_Training_1.png](training_16.png)
+![Successful_Training_1.png](images/training_16.png)
 
 
 Requirements:
