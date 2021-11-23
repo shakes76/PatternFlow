@@ -80,6 +80,11 @@ As seen below, I included images for the real image containing a skin lesion, th
 
 *Figure 8: Predicted Masks*
 
+For the results based off DSC (Dice Score), I obtained these values.
+- Overall: 0.9051
+- Label 0 (Background): 0.9605
+- Label 1 (Lesion): 0.8497
+
 ## Hyperparameter Tuning
 ***
 The initial hyperparameters chosen was 10 epochs with a batch size of 2, with the image widths and heights being 128 and 96 to preserve the aspect ratio. For the model downsampling step in the context module, this was done with 2 Convolutional Layers and a dropout in between with a value of 0.3. However, this resulted in many attempts with exploding gradients, which made the model unstable and the training step had to be restarted. To fix this issue, an additional batch normalization layer was added, and this improved the training significantly.
