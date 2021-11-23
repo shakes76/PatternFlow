@@ -1,3 +1,8 @@
+# Model.py by Paul Turculetu (GCN algortihm)
+# Feel free to use any of this code for any of your needs
+# November 2021
+# Final report
+# Training a GCN for the facebook dataset and producing a tsne
 
 import pandas as pd
 import numpy as np
