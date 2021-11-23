@@ -1,0 +1,12 @@
+name: ml
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - matplotlib
+  - torch
+  - cudatoolkit=10.2
+  - opencv
+  - pip:
+    - torch-summary
+prefix: C:\Users\qians\miniconda3\envs\ml
