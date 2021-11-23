@@ -130,4 +130,6 @@ dmypy.json
 # no tracking mypy config file
 mypy.ini
 
-
+# custom
+/**/*.zip
+.DS_Store
