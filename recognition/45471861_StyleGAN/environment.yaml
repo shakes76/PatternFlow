@@ -1,0 +1,12 @@
+name: tensorflow26
+channels:
+- conda-forge
+- default
+dependencies:
+- python=3.8
+- pip:
+  - tensorflow-gpu==2.6.0
+  - matplotlib
+  - neptune-client
+  - neptune-tensorflow-keras
+  - numpy
