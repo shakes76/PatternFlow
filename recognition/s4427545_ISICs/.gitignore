@@ -1,0 +1,10 @@
+*.h5
+*.pt
+*.DS_Store
+/datasets/**/*.jpg
+/datasets/**/*.png
+/datasets/**/*.txt
+/wandb/**/*.json
+/wandb/**/*.yaml
+/wandb/**/*.txt
+/wandb/**/*.wandb

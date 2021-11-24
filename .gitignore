@@ -128,5 +128,8 @@ dmypy.json
 # vscode config file
 .vscode/
 
+# custom
+/**/*.zip
+.DS_Store
 # no tracking mypy config file
 mypy.ini
