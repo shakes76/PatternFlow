@@ -129,4 +129,15 @@ dmypy.json
 .vscode/
 
 # no tracking mypy config file
+topic-recognition
 mypy.ini
+
+
+
+recognition/s46095312/dataset_isic18/ISIC2018_Task1-2_Test_Input/ATTRIBUTION.txt
+recognition/s46095312/dataset_isic18/ISIC2018_Task1-2_Test_Input/LICENSE.txt
+*.png
+*.jpg
+=======
+mypy.ini
+topic-recognition
