@@ -32,7 +32,7 @@
 * The sourced OASIS dataset had already divided its images into training, validation and testing sets (segmented and not segmented). The segmented training set was used to train the model and the segmented validation set was used to test the model.
 
 ## References
-*README.md information: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a
-*Laoding images/extracting image information: https://colab.research.google.com/github/keras-team/keras-io/blob/master/examples/vision/ipynb/oxford_pets_image_segmentation.ipynb?authuser=2#scrollTo=Nw6C51plO7cD
-*Model: https://keras.io/examples/generative/vq_vae/
-*Other: https://www.youtube.com/watch?v=YV9D3TWY5Zo&ab_channel=DigitalSreeni ; https://www.youtube.com/watch?v=c27SHdQr4lw&t=360s&ab_channel=PaulHand ; https://www.youtube.com/watch?v=52G6WhBDQ3c&ab_channel=DeepFoundations
+* README.md information: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a
+* Laoding images/extracting image information: https://colab.research.google.com/github/keras-team/keras-io/blob/master/examples/vision/ipynb/oxford_pets_image_segmentation.ipynb?authuser=2#scrollTo=Nw6C51plO7cD
+* Model: https://keras.io/examples/generative/vq_vae/
+* Other: https://www.youtube.com/watch?v=YV9D3TWY5Zo&ab_channel=DigitalSreeni ; https://www.youtube.com/watch?v=c27SHdQr4lw&t=360s&ab_channel=PaulHand ; https://www.youtube.com/watch?v=52G6WhBDQ3c&ab_channel=DeepFoundations
