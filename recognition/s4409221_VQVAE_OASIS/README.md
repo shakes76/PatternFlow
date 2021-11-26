@@ -3,7 +3,7 @@
 ## VQ-VAE Model Description and Suitability for OASIS dataset.
 ### The VQVAE model has 3 components. It's a variational autoencoder with an encoder, decoder and vector quantizer (as shown below).
 ![](./VQVAE_figure.png)
-####* from: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a
+#### Above image from: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a
 
 ### VQVAE model adds a (continuous latent distribution. It extends the standard autoencoders by adding a list of vectors with indexes that are used to quantize the bottleneck/differences of the autoencoder i.e. the output of the encoder network is compared to all the vectors within the vector quantizer and the vector with least Euclidean distance difference is fed to the decoder. 
 
@@ -11,7 +11,7 @@
 
 
 ## Dependencies/Challenges 
-*	Down-sampling of image size due to limitation of Colab resources (RAM) - 
+*	Down-sampling of image size due to limitation of Colab resources (RAM) 
 *	Choosing appropriate dimensions for model layers accordingly to the data
 *	Using SSIM as the loss function for model fit and evaluating model performance 
 
