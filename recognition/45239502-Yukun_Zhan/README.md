@@ -26,7 +26,7 @@ Resize the image data and segmentation masks to (192, 256). The images data have
 
 The dataset is divided into training set, validation set and test set in a ratio of 7:2:1.
 ## Prediction examples
-
+The following figure is the comparison of the segmentation masks predicted by the model and the original labels
 ![image](https://user-images.githubusercontent.com/79847033/150814056-a30dba61-c078-43fa-bd07-06613a87eae9.png)
 
 ## Evaluation
@@ -36,6 +36,20 @@ The figure below is the dice coefficient value and loss value of the model evalu
 ![image](https://user-images.githubusercontent.com/79847033/150814340-32525c02-3c40-454f-8ce7-55defaadea90.png)
 
 ## Dependencies
+Python 3.9.5
 
+Tensorflow 2.7.0
+
+Tensorflow-addons 0.15.0
+
+Numpy 1.22.1
+
+Matplotlib 3.5.1
 ## References
- 
+F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1
+
+Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., & Maier-hein, K. H. (2018, February). Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge. Retrieved from https://arxiv.org/abs/1802.10508
+
+Wikipedia. (2022). Sørensen–Dice Coefficient. Retrieved from https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+
+Chandra, S. (2021). Report Pattern Recognition. Retrieved from comp3710 course page
