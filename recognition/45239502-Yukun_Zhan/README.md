@@ -46,8 +46,6 @@ Numpy 1.22.1
 
 Matplotlib 3.5.1
 ## References
-F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, and K. H. Maier-Hein, “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,” Feb. 2018. [Online]. Available: https://arxiv.org/abs/1802.10508v1
-
 Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., & Maier-hein, K. H. (2018, February). Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge. Retrieved from https://arxiv.org/abs/1802.10508
 
 Wikipedia. (2022). Sørensen–Dice Coefficient. Retrieved from https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
