@@ -32,7 +32,8 @@ The following figure is the comparison of the segmentation masks predicted by th
 ## Evaluation
 The figure below is the dice coefficient values and loss values of the model in 20 epoch runs
 ![image](https://user-images.githubusercontent.com/79847033/150814174-589bb12a-e2c0-4671-aba5-b08048046212.png)
-The figure below is the dice coefficient value and loss value of the model evaluated using the test dataset. The dice coefficient up to 0.8528
+
+The figure below is the dice coefficient value and loss value of the model evaluated using the test dataset.
 ![image](https://user-images.githubusercontent.com/79847033/150814340-32525c02-3c40-454f-8ce7-55defaadea90.png)
 ## Operation mode
 Running the driver.py file.
