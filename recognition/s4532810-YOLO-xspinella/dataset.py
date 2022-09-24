@@ -19,5 +19,8 @@ if not(os.path.exists(Train_output) and os.path.exists(Test_output) and os.path.
     gdown.download(Test_url, Test_output, quiet=True)
     gdown.download(Validation_url, Validation_output, quiet=True)
 
+# TODO:
+# 1. Figure out how the test/train/validation sets need to be structured in the file
+# 2. use ZipFile to 
 # with ZipFile("celeba_gan/data.zip", "r") as zipobj:
 #     zipobj.extractall("celeba_gan")
