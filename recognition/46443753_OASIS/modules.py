@@ -1,11 +1,12 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, AveragePooling2D
+from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, \
+    LeakyReLU, Dropout, AveragePooling2D, UpSampling2D, add, Lambda, Activation
 from tensorflow.keras.models import Sequential
 
 
-def discriminator_model(kernel_size=3, input_shape=(256, 256, 3)):
+def discriminator_model(kernel_size=3, input_shape=(256, 256, 1)):
     """ Create discriminator model with Inputshape = [img_size, img_size, channel] """
     initial_filter_size = initial_filter_size
     discriminator_model = Sequential([
@@ -56,7 +57,64 @@ def discriminator_model(kernel_size=3, input_shape=(256, 256, 3)):
     return discriminator_model
 
 
-def Generator_model(latent_dim=100, image_shape=(256, 256, 3)):
+def AdaIN(input, epsilon=1e-8):
+    x, scale, bias = input
+    mean = tf.keras.backend.mean(x, axis=[1, 2], keepdims=True)
+    std = tf.keras.backend.std(x, axis=[1, 2], keepdims=True) + epsilon
+    norm = (x - mean) / std
+
+    scale = tf.reshape(scale, (-1, 1, 1, norm.shape[-1])) + 1.0
+    bias = tf.reshape(bias, (-1, 1, 1, norm.shape[-1]))
+    return scale * norm + bias
+
+
+def generator_block(x, noise, scale, bias, num_filters):
+    noise = Dense(num_filters)(noise)
+    x = Conv2D(filters=num_filters, kernel_size=3,
+               strides=1, padding='same')(x)
+    x = add([x, noise])
+    x = Lambda(AdaIN)([x, scale, bias])
+    return x
+
+
+def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filters):
+    # Synthesis network
+    # Initialise synthesis network
+
+    w = w_mapping_network(z[:, 0])
+    # Affine transformation A
+    scale = Dense(num_filters)(w)
+    bias = Dense(num_filters)(w)
+
+    # Noise B
+    noise = Dense(num_filters)(noise_[:, :const.shape[1], :const.shape[2], :])
+    x = Activation("linear")(const)
+
+    x = add([x, noise])
+    x = Lambda(AdaIN)([x, scale, bias])
+
+    noise = Dense(num_filters)(noise_[:, :x.shape[1], :x.shape[2], :])
+    x = generator_block(x, noise, scale, bias, num_filters)
+
+    # Create rest of the blocks untill reaching the target resolution
+    # add block -> repeat above and upsample each block
+    for i in range(1, num_blocks):
+        x = UpSampling2D()(x)
+        w = w_mapping_network(z[:, i])
+
+        scale = Dense(num_filters)(w)
+        bias = Dense(num_filters)(w)
+
+        noise = Dense(num_filters)(noise_[:, :x.shape[1], :x.shape[2], :])
+        x = generator_block(x, noise, scale, bias, num_filters)
+
+        noise = Dense(num_filters)(noise_[:, :x.shape[1], :x.shape[2], :])
+        x = generator_block(x, noise, scale, bias, num_filters)
+        x = LeakyReLU(0.2)(x)
+    return x
+
+
+def Generator_model(latent_dim=100, image_shape=(256, 256, 1)):
     num_blocks = 7  # upsample from  4*4  to 256*256
     initial_size = 4
     latent_dim = 512  # according to the paper
@@ -87,3 +145,15 @@ def Generator_model(latent_dim=100, image_shape=(256, 256, 3)):
 
     # Create noise B
     noise = Input(image_shape)
+
+    # Synthesis network
+    x = synthesis_network(w_mapping_network, noise,
+                          num_blocks, const, z, num_filters)
+
+    # conv2d last layer with 1 channel for grayscale. Sigmoid to output between 0, 1
+    x = Conv2D(1, kernel_size=3, strides=1,
+               padding="same", activation="sigmoid")(x)
+
+    generator = tf.keras.Model(inputs=[ones, z, noise], outputs=x)
+
+    return generator
