@@ -129,3 +129,5 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+
+recognition/AKOA_Analysis

@@ -24,7 +24,7 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         image = Image.open(self.path + self.files[index])
         image = image.resize((self.im_size, self.im_size))
-        return self.trf(image)
+        return self.trf(image)  * 2 - 1
 
 class DatasetDiffusion(Dataset):
     def __init__(self, path, im_size=255, timesteps=300, start=0.0001, end=0.05):
@@ -77,10 +77,12 @@ class DatasetDiffusion(Dataset):
 
         returns noisy image and noise within image
         """
+        self.t = torch.randint(0,self.timesteps, (1,))
+
         image = super().__getitem__(index) * 2 - 1 #Scale image between -1 and 1
         noise = torch.randn_like(image)
         self.sqrt_alphas_cumprod_t = self.get_index_from_list(self.sqrt_alphas_cumprod, self.t, image.shape)
         self.sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(self.sqrt_one_minus_alphas_cumprod, self.t, image.shape)
-        return self.sqrt_alphas_cumprod_t * image + self.sqrt_one_minus_alphas_cumprod_t * noise, noise
+        return self.sqrt_alphas_cumprod_t * image + self.sqrt_one_minus_alphas_cumprod_t * noise, noise, self.t
 
     
