@@ -131,3 +131,7 @@ dmypy.json
 mypy.ini
 
 recognition/AKOA_Analysis
+
+recognition/outputs
+recognition/plots
+recognition/runs
