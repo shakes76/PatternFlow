@@ -1,21 +1,4 @@
-from __future__ import annotations
-
-import time
-
-import matplotlib.pyplot
-import torch
-import torch.nn as nn
-import torchvision.datasets
-from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
-import torch.optim as optim
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-import numpy as np
-from PIL import Image
-import os
-from tqdm import tqdm
-
+from
 
 class convReLU(nn.Module):
     def __init__(self, num_in, num_out):
@@ -108,32 +91,7 @@ class MainNetwork(nn.Module):
 
 
 
-class ImageLoader(Dataset):
-    def __init__(self, main_dir_slice, main_dir_seg):
-        self.main_dir_slice = main_dir_slice
-        self.total_imgs_slice = os.listdir(main_dir_slice)
 
-        self.main_dir_seg = main_dir_seg
-        self.total_imgs_seg = os.listdir(main_dir_seg)
-        self.total_imgs_slice.sort()
-        self.total_imgs_seg.sort()
-
-    def __len__(self):
-        return len(self.total_imgs_slice)
-
-    def __getitem__(self, idx):
-        trans = transforms.ToTensor()
-
-        img_slice = os.path.join(self.main_dir_slice, self.total_imgs_slice[idx])
-        slice = trans(Image.open(img_slice).convert("L"))
-
-        img_seg = os.path.join(self.main_dir_seg, self.total_imgs_seg[idx])
-        seg = trans(Image.open(img_seg).convert("L"))
-        
-        t = transforms.ConvertImageDtype(torch.int8)
-        seg = t(seg).div(42, rounding_mode = 'trunc').type(torch.int8)
-
-        return slice, seg
 
 
 def train_model():
@@ -270,12 +228,6 @@ def show_comparision():
         plt.title("Generated Segementation Map")
         break
     plt.show()
-
-
-if __name__ == '__main__':
-    #train_model()
-    #calculate_dice_loss()
-    show_comparision()
 
 
 
