@@ -137,3 +137,4 @@ recognition/plots
 recognition/runs
 
 .DS_Store
+*.pth
