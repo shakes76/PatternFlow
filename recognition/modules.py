@@ -203,6 +203,7 @@ class Trainer:
     def sample_reverse(self, x, t):
         """
         Performs reverse step taking noisy image and calls model to denoise.
+        Returns denoised image
         """
         betas_t = self.get_index_from_list(self.betas, t, x.shape)
         sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(
