@@ -312,7 +312,8 @@ class Trainer:
                     #tensorboard
                     sw.add_scalar("Loss", loss, epoch)
                     self.save_model('autosave.pth')
-            print("Done!")
+        
+        print("Done!")
 
     def save_model(self, path):
         """
