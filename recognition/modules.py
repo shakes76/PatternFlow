@@ -3,6 +3,35 @@ import torch
 import math
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from torchvision import transforms
+import numpy as np
+import matplotlib.image as mpimg
+import os
+import glob
+from torch.utils.tensorboard import SummaryWriter
+
+def show_tensor_image(image):
+    """
+    Helper function to display images from tensors
+    """
+    reverse_transforms = transforms.Compose([
+        transforms.Lambda(lambda t: (t + 1) / 2),
+        transforms.Lambda(lambda t: t.permute(1, 2, 0)), # CHW to HWC
+        transforms.Lambda(lambda t: t * 255.),
+        transforms.Lambda(lambda t: t.numpy().astype(np.uint8)),
+        transforms.ToPILImage(),
+    ])
+
+    # Take first image of batch
+    if len(image.shape) == 4:
+        image = image[0, :, :, :] 
+    plt.imshow(reverse_transforms(image))
+
+"""
+----------
+Networks
+-----------
+"""
 
 class Block(nn.Module):
     """
@@ -103,27 +132,25 @@ class Unet(nn.Module):
             x = up(x, t)
         return self.output(x)
 
+"""
+------------
+Training
+------------
+"""
+
 class Trainer:
-    def __init__(self, model, img_size=255, timesteps=300, start=0.0001, end=0.02):
+    """
+    Class to train Unet Diffusion model
+    """
+    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
         self.end = end
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print("Using Device: ", self.device)
-        self.setup()
-        self.model = model.to(self.device)
 
-    def linear_beta_schedule(self):
-        """
-        Diffusion noise schedule
-        """
-        return torch.linspace(self.start, self.end, self.T)
-
-    def setup(self):
-        """
-        Precalculate required values 
-        """
+        #Precalculate normal distribution values
         self.betas = self.linear_beta_schedule()
         self.alphas = 1. - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, axis=0)
@@ -132,7 +159,22 @@ class Trainer:
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
         self.posterior_variance = self.betas * (1. - self.alphas_cumprod_prev) / (1. - self.alphas_cumprod)
+
+        #Attach model to device
+        self.model = model.to(self.device)
+
+    def linear_beta_schedule(self):
+        """
+        Diffusion noise schedule
+        """
+        return torch.linspace(self.start, self.end, self.T)
     
+    def loss_fn(self, noise, noise_pred):
+        """
+        Loss function
+        """
+        return F.l1_loss(noise, noise_pred)
+
     def get_index_from_list(self, vals, t, x_shape):
         """ 
         Returns a specific index t of a passed list of values vals
@@ -142,30 +184,25 @@ class Trainer:
         out = vals.gather(-1, t.cpu())
         return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(t.device)
 
-    def forward_diffusion_sample(self, x_0, t):
-        """ 
-        Takes an image and a timestep as input and 
-        returns the noisy version of it
+    def sample_forward(self, x_0, t):
+        """
+        Performs forward step adding noise to image.
+
+        Takes noiseless image x_0 and adds equavalent noise to timestep t
         """
         noise = torch.randn_like(x_0)
         sqrt_alphas_cumprod_t = self.get_index_from_list(self.sqrt_alphas_cumprod, t, x_0.shape)
         sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(
             self.sqrt_one_minus_alphas_cumprod, t, x_0.shape
         )
+
         # mean + variance
         return sqrt_alphas_cumprod_t.to(self.device) * x_0.to(self.device) + sqrt_one_minus_alphas_cumprod_t.to(self.device) * noise.to(self.device), noise.to(self.device)
 
-    def get_loss(self, x_0, t):
-        x_noisy, noise = self.forward_diffusion_sample(x_0, t)
-        noise_pred = self.model(x_noisy, t)
-        return F.l1_loss(noise, noise_pred)
-
     @torch.no_grad()
-    def sample_timestep(self, x, t):
+    def sample_reverse(self, x, t):
         """
-        Calls the model to predict the noise in the image and returns 
-        the denoised image. 
-        Applies noise to this image, if we are not in the last step yet.
+        Performs reverse step taking noisy image and calls model to denoise.
         """
         betas_t = self.get_index_from_list(self.betas, t, x.shape)
         sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(
@@ -177,40 +214,96 @@ class Trainer:
         model_mean = sqrt_recip_alphas_t * (
             x - betas_t * self.model(x, t) / sqrt_one_minus_alphas_cumprod_t
         )
-        posterior_variance_t = self.get_index_from_list(posterior_variance, t, x.shape)
+        posterior_variance_t = self.get_index_from_list(self.posterior_variance, t, x.shape)
         
         if t == 0:
             return model_mean
         else:
             noise = torch.randn_like(x)
-            return model_mean + torch.sqrt(posterior_variance_t) * noise 
+            return model_mean + torch.sqrt(posterior_variance_t) * noise
 
+    def predict(self, x_0, t):
+        """
+        Creates an image with noise of timestep t and calls model to predict noise.
+
+        Returns loss between actual noise and predicted noise.
+        """
+        x_noisy, noise = self.sample_forward(x_0, t)
+        noise_pred = self.model(x_noisy, t)
+        return self.loss_fn(noise, noise_pred)
+    
     @torch.no_grad()
-    def sample_plot_image(self, num_images=10):
-        # Sample noise
+    def generate_image_plot(self, path, num_images=10):
+        """
+        Performs backward denoising to noise to generate new image.
+        Plots num_images over all timesteps
+        """
         img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
         plt.figure(figsize=(15,15))
         plt.axis('off')
         stepsize = int(self.T/num_images)
 
-        for i in range(0,self.T)[::-1]:
+        for i in range(0, self.T)[::-1]:
             t = torch.full((1,), i, device=self.device, dtype=torch.long)
-            img = self.sample_timestep(img, t)
+            img = self.sample_reverse(img, t)
             if i % stepsize == 0:
-                plt.subplot(1, num_images, i/stepsize+1)
-                plt.imshow((img.cpu().numpy().T + 1) * 0.5)
-        plt.show()
+                plt.subplot(1, num_images, int(i/stepsize+1))
+                show_tensor_image(img.detach().cpu())
+        plt.savefig(path, bbox_inches='tight')
+
+    @torch.no_grad()
+    def generate_image(self, path):
+        """
+        Generates new image by completing full reverse denoising of all timesteps.
+
+        Saves image to path.
+        """
+        img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
+
+        for i in range(0, self.T)[::-1]:
+            t = torch.full((1,), i, device=self.device, dtype=torch.long)
+            img = self.sample_reverse(img, t)
+        
+        mpimg.imsave(path, np.clip((img.detach().cpu().numpy()[0].T + 1) * 0.5, 0.0, 1.0))
     
-    def fit(self, dataloader, epochs, optimizer, batch_size):
+    def fit(self, dataloader, epochs, optimizer):
+        """
+        Trains model for epochs using dataloader and optimizer 
+        """
+        #Create or empty output folders
+        exists = os.path.exists('outputs')
+        if not exists:
+            os.makedirs(path)
+        exists = os.path.exists('plots')
+        if not exists:
+            os.makedirs(path)
+        files = glob.glob("outputs/*")
+        for f in files:
+            os.remove(f)
+        files = glob.glob("plots/*")
+        for f in files:
+            os.remove(f)
+
+        #Create tensorboard run
+        #sw = SummaryWriter("runs")
+
+        #detect batch size
+        batch_size = dataloader.batch_size
+
+        #Train
         for epoch in range(epochs):
             for step, batch in enumerate(dataloader):
                 optimizer.zero_grad()
-
+                #create random timestep in possible timesteps
                 t = torch.randint(0, self.T, (batch_size,), device=self.device).long()
-                loss = self.get_loss(batch, t)
+
+                loss = self.predict(batch, t)
                 loss.backward()
                 optimizer.step()
 
-                if epoch % 5 == 0 and step == 0:
-                    print(f"Epoch {epoch} | step {step:03d} Loss: {loss.item()} ")
-                    #self.sample_plot_image()
+                if step == 0:
+                    print(f"Epoch {epoch} Loss: {loss.item()}")
+                    self.generate_image_plot(f"plots/plot_epoch{epoch}.jpeg")
+                    self.generate_image(f"outputs/diff_epoch{epoch}.jpeg")
+                    #tensorboard
+                    #sw.add_scalar("Loss", loss, self.current_epoch)
