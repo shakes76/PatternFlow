@@ -142,7 +142,7 @@ class Trainer:
     """
     Class to train Unet Diffusion model
     """
-    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02):
+    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
@@ -162,6 +162,9 @@ class Trainer:
 
         #Attach model to device
         self.model = model.to(self.device)
+
+        self.create_images = create_images
+        self.tensorboard = tensorboard
 
     def linear_beta_schedule(self):
         """
@@ -273,24 +276,26 @@ class Trainer:
         Trains model for epochs using dataloader and optimizer 
         """
         #Create or empty output folders
-        exists = os.path.exists('outputs')
-        if not exists:
-            os.makedirs('outputs')
-        else:
-            files = glob.glob("outputs/*")
-            for f in files:
-                os.remove(f)
+        if self.create_images:
+            exists = os.path.exists('outputs')
+            if not exists:
+                os.makedirs('outputs')
+            else:
+                files = glob.glob("outputs/*")
+                for f in files:
+                    os.remove(f)
 
-        exists = os.path.exists('plots')
-        if not exists:
-            os.makedirs('plots')
-        else:
-            files = glob.glob("plots/*")
-            for f in files:
-                os.remove(f)
+            exists = os.path.exists('plots')
+            if not exists:
+                os.makedirs('plots')
+            else:
+                files = glob.glob("plots/*")
+                for f in files:
+                    os.remove(f)
 
         #Create tensorboard run
-        sw = SummaryWriter("runs")
+        if self.tensorboard:
+            sw = SummaryWriter("runs")
 
         #detect batch size
         batch_size = dataloader.batch_size
@@ -308,10 +313,14 @@ class Trainer:
 
                 if step == 0:
                     print(f"Epoch {epoch} Loss: {loss.item()}")
-                    self.generate_image_plot(f"plots/plot_epoch{epoch}.jpeg")
-                    self.generate_image(f"outputs/diff_epoch{epoch}.jpeg")
+                    #create images
+                    if self.create_images:
+                        self.generate_image_plot(f"plots/plot_epoch{epoch}.jpeg")
+                        self.generate_image(f"outputs/diff_epoch{epoch}.jpeg")
                     #tensorboard
-                    sw.add_scalar("Loss", loss, epoch)
+                    if self.tensorboard:
+                        sw.add_scalar("Loss", loss, epoch)
+                    #autosave model
                     self.save_model('autosave.pth')
         
         print("Done!")
