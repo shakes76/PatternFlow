@@ -1,0 +1,15 @@
+name: diff
+channels:
+  - pytorch
+  - anaconda
+dependencies:
+  - python
+  - ipykernel #Remove when notebooks not required
+  - pytorch
+  - torchvision
+  - cudatoolkit=11.3
+  - matplotlib
+  - pip
+  - pip:
+    - tensorboard
+
