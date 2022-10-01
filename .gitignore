@@ -135,3 +135,5 @@ recognition/AKOA_Analysis
 recognition/outputs
 recognition/plots
 recognition/runs
+
+.DS_Store
