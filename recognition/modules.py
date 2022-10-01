@@ -250,6 +250,7 @@ class Trainer:
                 plt.subplot(1, num_images, int(i/stepsize+1))
                 show_tensor_image(img.detach().cpu())
         plt.savefig(path, bbox_inches='tight')
+        plt.close()
 
     @torch.no_grad()
     def generate_image(self, path):
@@ -273,19 +274,22 @@ class Trainer:
         #Create or empty output folders
         exists = os.path.exists('outputs')
         if not exists:
-            os.makedirs(path)
+            os.makedirs('outputs')
+        else:
+            files = glob.glob("outputs/*")
+            for f in files:
+                os.remove(f)
+
         exists = os.path.exists('plots')
         if not exists:
-            os.makedirs(path)
-        files = glob.glob("outputs/*")
-        for f in files:
-            os.remove(f)
-        files = glob.glob("plots/*")
-        for f in files:
-            os.remove(f)
+            os.makedirs('plots')
+        else:
+            files = glob.glob("plots/*")
+            for f in files:
+                os.remove(f)
 
         #Create tensorboard run
-        #sw = SummaryWriter("runs")
+        sw = SummaryWriter("runs")
 
         #detect batch size
         batch_size = dataloader.batch_size
@@ -306,4 +310,23 @@ class Trainer:
                     self.generate_image_plot(f"plots/plot_epoch{epoch}.jpeg")
                     self.generate_image(f"outputs/diff_epoch{epoch}.jpeg")
                     #tensorboard
-                    #sw.add_scalar("Loss", loss, self.current_epoch)
+                    sw.add_scalar("Loss", loss, epoch)
+                    self.save_model('autosave.pth')
+            print("Done!")
+
+    def save_model(self, path):
+        """
+        Save model to path
+        """
+        torch.save(self.model, path)
+
+    def load_model(self, path):
+        """
+        Load model
+        """
+        if 'model' in locals():
+            self.model.cpu()
+            torch.cuda.empty_cache()
+        
+        self.model = torch.load(path, map_location='cpu')
+        self.model.to(self.device)
