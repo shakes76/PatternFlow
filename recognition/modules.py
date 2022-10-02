@@ -62,93 +62,6 @@ class Block(nn.Module):
         # Down or Upsample
         return self.transform(h)
 
-class ConvNextBlock(nn.Module):
-    """https://arxiv.org/abs/2201.03545"""
-
-    def __init__(self, dim, dim_out, *, time_emb_dim=None, mult=2, norm=True):
-        super().__init__()
-        self.mlp = (
-            nn.Sequential(nn.GELU(), nn.Linear(time_emb_dim, dim))
-            if exists(time_emb_dim)
-            else None
-        )
-
-        self.ds_conv = nn.Conv2d(dim, dim, 7, padding=3, groups=dim)
-
-        self.net = nn.Sequential(
-            nn.GroupNorm(1, dim) if norm else nn.Identity(),
-            nn.Conv2d(dim, dim_out * mult, 3, padding=1),
-            nn.GELU(),
-            nn.GroupNorm(1, dim_out * mult),
-            nn.Conv2d(dim_out * mult, dim_out, 3, padding=1),
-        )
-
-        self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
-
-    def forward(self, x, time_emb=None):
-        h = self.ds_conv(x)
-
-        if exists(self.mlp) and exists(time_emb):
-            assert exists(time_emb), "time embedding must be passed in"
-            condition = self.mlp(time_emb)
-            h = h + rearrange(condition, "b c -> b c 1 1")
-
-        h = self.net(h)
-        return h + self.res_conv(x)
-
-class Attention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32):
-        super().__init__()
-        self.scale = dim_head**-0.5
-        self.heads = heads
-        hidden_dim = dim_head * heads
-        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
-        self.to_out = nn.Conv2d(hidden_dim, dim, 1)
-
-    def forward(self, x):
-        b, c, h, w = x.shape
-        qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
-        q = q * self.scale
-
-        sim = einsum("b h d i, b h d j -> b h i j", q, k)
-        sim = sim - sim.amax(dim=-1, keepdim=True).detach()
-        attn = sim.softmax(dim=-1)
-
-        out = einsum("b h i j, b h d j -> b h i d", attn, v)
-        out = rearrange(out, "b h (x y) d -> b (h d) x y", x=h, y=w)
-        return self.to_out(out)
-
-class LinearAttention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32):
-        super().__init__()
-        self.scale = dim_head**-0.5
-        self.heads = heads
-        hidden_dim = dim_head * heads
-        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
-
-        self.to_out = nn.Sequential(nn.Conv2d(hidden_dim, dim, 1), 
-                                    nn.GroupNorm(1, dim))
-
-    def forward(self, x):
-        b, c, h, w = x.shape
-        qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
-
-        q = q.softmax(dim=-2)
-        k = k.softmax(dim=-1)
-
-        q = q * self.scale
-        context = torch.einsum("b h d n, b h e n -> b h d e", k, v)
-
-        out = torch.einsum("b h d e, b h d n -> b h e n", context, q)
-        out = rearrange(out, "b h c (x y) -> b (h c) x y", h=self.heads, x=h, y=w)
-        return self.to_out(out)
-
 class PreNorm(nn.Module):
     def __init__(self, dim, fn):
         super().__init__()
@@ -182,12 +95,12 @@ class Unet(nn.Module):
         down_channels = (im_size, im_size * 2, im_size * 4, im_size * 8)#(64, 128, 256, 512, 1024)
         up_channels = (im_size * 8, im_size * 4, im_size * 2, im_size)#(1024, 512, 256, 128, 64)
         out_dim = 1 
-        time_emb_dim = im_size * 4
+        time_emb_dim = int(im_size/2)
 
         # Time embedding
         self.time_mlp = nn.Sequential(
-                SinusoidalPositionEmbeddings(self.img_size),
-                nn.Linear(self.img_size, time_emb_dim),
+                SinusoidalPositionEmbeddings(im_size),
+                nn.Linear(im_size, time_emb_dim),
                 nn.GELU(),
                 nn.Linear(time_emb_dim, time_emb_dim)
             )
@@ -230,7 +143,7 @@ class Trainer:
     """
     Class to train Unet Diffusion model
     """
-    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True):
+    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='cosine'):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
@@ -239,7 +152,7 @@ class Trainer:
         print("Using Device: ", self.device)
 
         #Precalculate normal distribution values
-        self.betas = self.linear_beta_schedule()
+        self.betas = self.beta_schedule(schedule)
         self.alphas = 1. - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, axis=0)
         self.alphas_cumprod_prev = F.pad(self.alphas_cumprod[:-1], (1, 0), value=1.0)
@@ -254,11 +167,28 @@ class Trainer:
         self.create_images = create_images
         self.tensorboard = tensorboard
 
-    def linear_beta_schedule(self):
+    def beta_schedule(self, type):
         """
         Diffusion noise schedule
         """
-        return torch.linspace(self.start, self.end, self.T)
+        if type == 'linear':
+            return torch.linspace(self.start, self.end, self.T)
+        elif type == 'cosine':
+            s=0.008
+            steps = self.T + 1
+            x = torch.linspace(0, self.T, steps)
+            alphas_cumprod = torch.cos(((x / self.T) + s) / (1 + s) * torch.pi * 0.5) ** 2
+            alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
+            betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
+            return torch.clip(betas, 0.0001, 0.9999)
+        elif type == 'quadratic':
+            return torch.linspace(self.start**0.5, self.end**0.5, self.T) ** 2
+        elif type == 'sigmoid':
+            betas = torch.linspace(-6, 6, self.T)
+            return torch.sigmoid(betas) * (self.end - self.start) + self.start
+        else:
+            raise Exception("No valid beta schedule supplied. Please use: 'cosine', 'linear', 'quadratic' or 'sigmoid'.")
+
     
     def loss_fn(self, noise, noise_pred):
         """
