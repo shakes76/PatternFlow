@@ -10,6 +10,7 @@ import os
 import glob
 from torch.utils.tensorboard import SummaryWriter
 
+
 def show_tensor_image(image):
     """
     Helper function to display images from tensors
@@ -32,11 +33,7 @@ def show_tensor_image(image):
 Networks
 -----------
 """
-
 class Block(nn.Module):
-    """
-    Single unet block
-    """
     def __init__(self, in_ch, out_ch, time_emb_dim, up=False):
         super().__init__()
         self.time_mlp =  nn.Linear(time_emb_dim, out_ch)
@@ -65,10 +62,104 @@ class Block(nn.Module):
         # Down or Upsample
         return self.transform(h)
 
+class ConvNextBlock(nn.Module):
+    """https://arxiv.org/abs/2201.03545"""
+
+    def __init__(self, dim, dim_out, *, time_emb_dim=None, mult=2, norm=True):
+        super().__init__()
+        self.mlp = (
+            nn.Sequential(nn.GELU(), nn.Linear(time_emb_dim, dim))
+            if exists(time_emb_dim)
+            else None
+        )
+
+        self.ds_conv = nn.Conv2d(dim, dim, 7, padding=3, groups=dim)
+
+        self.net = nn.Sequential(
+            nn.GroupNorm(1, dim) if norm else nn.Identity(),
+            nn.Conv2d(dim, dim_out * mult, 3, padding=1),
+            nn.GELU(),
+            nn.GroupNorm(1, dim_out * mult),
+            nn.Conv2d(dim_out * mult, dim_out, 3, padding=1),
+        )
+
+        self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
+
+    def forward(self, x, time_emb=None):
+        h = self.ds_conv(x)
+
+        if exists(self.mlp) and exists(time_emb):
+            assert exists(time_emb), "time embedding must be passed in"
+            condition = self.mlp(time_emb)
+            h = h + rearrange(condition, "b c -> b c 1 1")
+
+        h = self.net(h)
+        return h + self.res_conv(x)
+
+class Attention(nn.Module):
+    def __init__(self, dim, heads=4, dim_head=32):
+        super().__init__()
+        self.scale = dim_head**-0.5
+        self.heads = heads
+        hidden_dim = dim_head * heads
+        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
+        self.to_out = nn.Conv2d(hidden_dim, dim, 1)
+
+    def forward(self, x):
+        b, c, h, w = x.shape
+        qkv = self.to_qkv(x).chunk(3, dim=1)
+        q, k, v = map(
+            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
+        )
+        q = q * self.scale
+
+        sim = einsum("b h d i, b h d j -> b h i j", q, k)
+        sim = sim - sim.amax(dim=-1, keepdim=True).detach()
+        attn = sim.softmax(dim=-1)
+
+        out = einsum("b h i j, b h d j -> b h i d", attn, v)
+        out = rearrange(out, "b h (x y) d -> b (h d) x y", x=h, y=w)
+        return self.to_out(out)
+
+class LinearAttention(nn.Module):
+    def __init__(self, dim, heads=4, dim_head=32):
+        super().__init__()
+        self.scale = dim_head**-0.5
+        self.heads = heads
+        hidden_dim = dim_head * heads
+        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
+
+        self.to_out = nn.Sequential(nn.Conv2d(hidden_dim, dim, 1), 
+                                    nn.GroupNorm(1, dim))
+
+    def forward(self, x):
+        b, c, h, w = x.shape
+        qkv = self.to_qkv(x).chunk(3, dim=1)
+        q, k, v = map(
+            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
+        )
+
+        q = q.softmax(dim=-2)
+        k = k.softmax(dim=-1)
+
+        q = q * self.scale
+        context = torch.einsum("b h d n, b h e n -> b h d e", k, v)
+
+        out = torch.einsum("b h d e, b h d n -> b h e n", context, q)
+        out = rearrange(out, "b h c (x y) -> b (h c) x y", h=self.heads, x=h, y=w)
+        return self.to_out(out)
+
+class PreNorm(nn.Module):
+    def __init__(self, dim, fn):
+        super().__init__()
+        self.fn = fn
+        self.norm = nn.GroupNorm(1, dim)
+
+    def forward(self, x):
+        x = self.norm(x)
+        return self.fn(x)
+
 class SinusoidalPositionEmbeddings(nn.Module):
-    """
-    Embeds timestep position
-    """
     def __init__(self, dim):
         super().__init__()
         self.dim = dim
@@ -83,35 +174,31 @@ class SinusoidalPositionEmbeddings(nn.Module):
         return embeddings
 
 class Unet(nn.Module):
-    """
-    Simple Unet
-    """
-    def __init__(self):
+    def __init__(self, im_size):
+        self.img_size = im_size
         super().__init__()
         image_channels = 3
-        down_channels = (64, 128, 256, 512, 1024)
-        up_channels = (1024, 512, 256, 128, 64)
+        #Autoconfigure Unet using image size
+        down_channels = (im_size, im_size * 2, im_size * 4, im_size * 8)#(64, 128, 256, 512, 1024)
+        up_channels = (im_size * 8, im_size * 4, im_size * 2, im_size)#(1024, 512, 256, 128, 64)
         out_dim = 1 
-        time_emb_dim = 32
+        time_emb_dim = im_size * 4
 
         # Time embedding
         self.time_mlp = nn.Sequential(
-                SinusoidalPositionEmbeddings(time_emb_dim),
-                nn.Linear(time_emb_dim, time_emb_dim),
-                nn.ReLU()
+                SinusoidalPositionEmbeddings(self.img_size),
+                nn.Linear(self.img_size, time_emb_dim),
+                nn.GELU(),
+                nn.Linear(time_emb_dim, time_emb_dim)
             )
         
         # Initial projection
         self.conv0 = nn.Conv2d(image_channels, down_channels[0], 3, padding=1)
 
         # Downsample
-        self.downs = nn.ModuleList([Block(down_channels[i], down_channels[i+1], \
-                                    time_emb_dim) \
-                    for i in range(len(down_channels)-1)])
+        self.downs = nn.ModuleList([Block(down_channels[i], down_channels[i+1], time_emb_dim) for i in range(len(down_channels)-1)])
         # Upsample
-        self.ups = nn.ModuleList([Block(up_channels[i], up_channels[i+1], \
-                                        time_emb_dim, up=True) \
-                    for i in range(len(up_channels)-1)])
+        self.ups = nn.ModuleList([Block(up_channels[i], up_channels[i+1], time_emb_dim, up=True) for i in range(len(up_channels)-1)])
 
         self.output = nn.Conv2d(up_channels[-1], 3, out_dim)
 
@@ -131,6 +218,7 @@ class Unet(nn.Module):
             x = torch.cat((x, residual_x), dim=1)           
             x = up(x, t)
         return self.output(x)
+
 
 """
 ------------
