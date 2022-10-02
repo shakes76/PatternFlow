@@ -14,6 +14,7 @@ parser.add_argument('--batch_size', '-b', help="Training mini-batch size. Defaul
 parser.add_argument('--image_size', '-i', help="Dimensions to resize all images to. eg 255 -> 255x255 Default = 64", type=int)
 parser.add_argument('--disable_images', '-d', help="Images will not be output during training")
 parser.add_argument('--disable_tensorboard', '-x', help="Tensorboard support will be disabled")
+parser.add_argument('--beta_schedule', '-s', help="Schdedule for calculating betas. Choose : linear, cosine, quadratic, sigmoid. Default: linear")
 args = parser.parse_args()
 
 #Load values from arguments
@@ -49,19 +50,23 @@ if args.disable_tensorboard:
     disable_tensorboard = True
 else:
     disable_tensorboard = False
+if args.beta_schedule:
+    beta_schedule = args.beta_schedule
+else:
+    beta_schedule = 'linear'
 
 #load dataset
 ds = Dataset(path, img_size=image_size)
 dataloader = DataLoader(ds, batch_size=batch_size, shuffle=True, drop_last=True)
 
 #create model
-model = Unet()
+model = Unet(image_size)
 
 #Create optimizer
 optimizer = Adam(model.parameters(), lr=0.001)
 
 #create trainer
-trainer = Trainer(model, img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= not disable_images, tensorboard = not disable_tensorboard)
+trainer = Trainer(model, img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= not disable_images, tensorboard = not disable_tensorboard, schedule=beta_schedule)
 
 #train model
 trainer.fit(dataloader, epochs, optimizer)
