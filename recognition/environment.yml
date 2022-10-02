@@ -12,4 +12,6 @@ dependencies:
   - pip
   - pip:
     - tensorboard
+    - einops
+    - datasets
 
