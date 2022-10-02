@@ -1,4 +1,5 @@
-from
+from diffusion_imports import *
+from diffusion_image_loader import *
 
 class convReLU(nn.Module):
     def __init__(self, num_in, num_out):
@@ -200,34 +201,6 @@ def calculate_dice_loss():
                 
     print(1 - running_dice / count)               
 
-def show_comparision():
-    model = torch.load('Attempt10')
-    model.eval()
-
-    test_slices_loader = ImageLoader("keras_png_slices_data/keras_png_slices_test",
-                                     "keras_png_slices_data/keras_png_slices_seg_test")
-    test_slices = DataLoader(test_slices_loader, batch_size=1, shuffle=True)
-    fig = plt.figure(figsize=(10, 7))
-    
-    for index, data in enumerate(test_slices):
-        x,y = data    
-        
-        output_image = model.forward(x.cuda())
-        output_image = output_image[0]
-
-        output_image  = torch.argmax(output_image, 0)
-
-        fig.add_subplot(1, 3, 1)
-        plt.imshow(x[0].permute(1,2,0).detach().cpu().numpy())
-        plt.title("Test Image Non Segmented (X)")
-        fig.add_subplot(1, 3, 2)
-        plt.imshow(y[0].permute(1,2,0).detach().cpu().numpy())
-        plt.title("Reference Test Image Segmented (Y)")
-        fig.add_subplot(1, 3, 3)
-        plt.imshow(output_image.detach().cpu().numpy())
-        plt.title("Generated Segementation Map")
-        break
-    plt.show()
 
 
 
