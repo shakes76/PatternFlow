@@ -13,10 +13,25 @@ ISIC is an organisation that aims to "Support efforts to reduce melanoma-related
 ### How YOLO Works
 The YOLO model is so successful because it frames object detection as a single regression problem; mapping image pixels to bounding box coordinates and class probabilities. The system works by splitting the input into an S x S grid (S is a hyperparameter). If the centre of an object falls inside box 2 x 2, then this box is responsible for detecting said object. When implemented, each grid cell will predict B bounding boxes, where B is also a hyperparameter. Each computed bounding box is comprised of 5 values:
 
+![image](https://user-images.githubusercontent.com/32262943/193556475-503dec60-c9d1-4135-a001-7a910bee09ea.png)
+
 x, y: The x/y-coordinate of the bounding box centre, relative to the bounds of the grid cell.
 
 w, h: The width and height of the bounding box, relative to the whole image.
 
 C: The confidence score, which is both a measure of how confident the model is that this bounding box contains an object, and how accurate it thinks the predicted box is. If trained perfectly, this value should be equal to the Intersection Over Union (IOU) between the predicted box, and the ground truth, if there is one in the grid cell of interest. If there is no ground truth in the grid cell, this value should be 0. When implemented, the contained object confidence value is multipled by the IOU box accuracy value:  
 ![image](https://user-images.githubusercontent.com/32262943/193551577-41be3605-3038-4d9a-999f-c1fe5cabb0bb.png)
+
+The loss function evaluated during training is as follows:
+![image](https://user-images.githubusercontent.com/32262943/193552858-933318ae-473a-4766-8f8c-243e365df288.png)
+
+This is a multi-part loss function which specifies terms for defining the loss of 
+
+- Bounding box location and size (the first two terms)
+- Confidence predictions for boxes that contain objects, and boxes that dont contain objects (third and fourth terms, respectively)
+- Classification predictions for the objects inside the boxes (the last term).
+
+These terms are balanced by parameters \lambda_coord and \lambda_noobj to ensure that confidence scores from grid cells without objects don't overpower the gradient from cells which do contain objects. 
+
+### YOLOv__ netowrk model: (select a yolo pls)
 
