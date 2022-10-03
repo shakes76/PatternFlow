@@ -1,5 +1,6 @@
 # Diffusion Image Generation
 Diffusion based image generation using pytorch.
+![](https://hcloudh.com/nextcloud/s/YnMBoAK6atDYztj/download/plot_epoch98.jpeg)
 #### References
 Huge thanks to these videos for helping my understanding:
 * [Diffusion models from scratch in PyTorch](https://www.youtube.com/watch?v=a4Yfz2FxXiY&t=912s)
