@@ -3,8 +3,9 @@ Diffusion based image generation using pytorch.
 #### References
 Huge thanks to these videos for helping my understanding:
 * [Diffusion models from scratch in PyTorch](https://www.youtube.com/watch?v=a4Yfz2FxXiY&t=912s)
+    * The code base was built using heavy references from this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) that accompanies the first video.
 * [Diffusion Models | Paper Explanation | Math Explained](https://www.youtube.com/watch?v=HoKDTa5jHvg&t=1338s)  
-The code base was built using heavy references from this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) that accompanies the first video.
+
 
 ## Usage
 Two command line modules are provided: `train.py` and  `predict.py` that can be used to train models and predict new images from existing models respectively.
@@ -14,7 +15,7 @@ Two command line modules are provided: `train.py` and  `predict.py` that can be 
   * A beefy GPU with at least 12GB memory if you plan to train models
 
 ### Steps
-1. Clone this repo and cd to the `recognition` folder
+1. Clone this branch and cd to the `recognition` folder
 2. Setup a new conda environment. An  `environment.yml` file is supplied to do this automatically.
     ```bash
     conda env create -f environment.yml
@@ -37,7 +38,6 @@ Two command line modules are provided: `train.py` and  `predict.py` that can be 
     ```
     tensorboard --logdir ./
     ```
-    and opening the returned https link in a browser.
 5. Once training has finished, the model will be saved as `some_name.pth` in the local directory. Additionally every epoch an `autosave.pth` file is also created.
     
 #### Using an existing model
