@@ -24,3 +24,7 @@ if not(os.path.exists(Train_output) and os.path.exists(Test_output) and os.path.
 # 2. use ZipFile to 
 # with ZipFile("celeba_gan/data.zip", "r") as zipobj:
 #     zipobj.extractall("celeba_gan")
+
+
+# TODO: Questions to ask:
+# 1. am I just using yolo to draw box around the lesions? or is it this + 
