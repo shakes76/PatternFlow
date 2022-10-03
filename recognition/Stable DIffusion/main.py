@@ -1,62 +1,74 @@
-import torch
-
 from diffusion_imports import *
 from unet_model import *
 from diffusion_image_loader import *
 
+BETAS = torch.linspace(0.0001, 0.02, 1000)
+ALPHAS = 1.0 - BETAS
+ALPHAS_CUMPROD = torch.cumprod(ALPHAS, axis=0)
 
-def load_data(path, batch_size=4, show=False):
-    loader = ImageLoader(path)
-    data = DataLoader(loader, batch_size=batch_size, shuffle=True)
 
-    if show:
-        fig = plt.figure(figsize=(10, 7))
-        for index, data in enumerate(data):
-            x = data
+def get_index(vals, t, x_shape):
+    """
+    Returns a specific index t of a passed list of values vals
+    while considering the batch dimension.
 
-            fig.add_subplot(1, 1, 1)
-            plt.imshow(x[0].permute(1, 2, 0).detach().cpu().numpy())
-            plt.title("Reference Image (X)")
+    Used in apply noise and de noise
+    """
+    batch_size = t.shape[0]
+    out = vals.gather(-1, t.cpu())
+    return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(t.device)
 
-            break
-
-    return data
 
 def apply_noise(image, iteration):
-
-    alpha = torch.cumprod(1.0 - torch.linspace(0.0001, 0.02, 1000), axis=0)
-    sqrt_alpha_t = torch.sqrt(alpha)[iteration]
-    sqrt_minus_one_alpha = torch.sqrt(1. - alpha)[iteration]
+    """
+    Adapted from https://huggingface.co/blog/annotated-diffusion
+    """
+    sqrt_alpha_t = get_index(torch.sqrt(ALPHAS_CUMPROD), iteration, image.shape)
+    sqrt_minus_one_alpha = get_index(torch.sqrt(1.0 - ALPHAS_CUMPROD), iteration, image.shape)
 
     noise = torch.randn_like(image)
+    return sqrt_alpha_t.to(0) * image.to(0) + sqrt_minus_one_alpha.to(0) * noise.to(0), noise
 
-    return sqrt_alpha_t.to(0) * image.to(0) + sqrt_minus_one_alpha.to(0) * noise.to(0)
 
 
+
+
+def train_model(model):
+    batchsize = 4
+    data_set = load_data(os.path.join(pathlib.Path(__file__).parent.resolve(), "AKOA_Analysis/"), show=True,
+                         batch_size=batchsize)
+
+    model = model.cuda()
+
+    optimizer = Adam(model.parameters(), lr=0.001)
+    criterion = F.l1_loss
+
+    for epoch in range(10):
+        running_loss = 0
+        model.train(True)
+
+        for index, data in enumerate(tqdm(data_set)):
+            pos = torch.randint(0, 1000, [batchsize]).long()
+
+            data_noisy, noise = apply_noise(data, pos)
+
+            optimizer.zero_grad()
+
+            predicted_noise = model(data_noisy.cuda(), pos.cuda()).cuda()
+
+            loss = criterion(predicted_noise, noise).cuda()
+            loss.backward()
+            running_loss += loss.item()
+            optimizer.step()
+
+        print(running_loss / len(data_set))
+
+    torch.save(model, "Attempt4")
 
 
 def main():
-    torch.set_printoptions(profile="full")
-    data = load_data(os.path.join(pathlib.Path(__file__).parent.resolve(), "AKOA_Analysis/"), show=True)
-
-    num_images = 10
-    stepsize = int(300 / num_images)
-
-
-    for image in data:
-        break
-
-    fig = plt.figure(figsize=(10, 7))
-    print(image.shape)
-    for idx in range(0, 300, stepsize):
-        t = torch.Tensor([idx]).type(torch.int64)
-        plt.subplot(1, num_images+1, int((idx/stepsize) + 1))
-        image = apply_noise(image, t)
-        print(image.shape)
-        plt.imshow(image[3].cpu())
-    plt.show()
-
-
+    model = torch.load('Attempt3')
+    # train_model(model)
 
 
 

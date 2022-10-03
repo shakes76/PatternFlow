@@ -14,3 +14,5 @@ from PIL import Image
 import os
 from tqdm import tqdm
 import pathlib
+import torch
+from torch.optim import Adam
