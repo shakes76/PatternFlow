@@ -7,17 +7,17 @@ Diffusion based image generation using pytorch.
 Huge thanks to these videos for helping my understanding:
 
 * [Diffusion models from scratch in PyTorch](https://www.youtube.com/watch?v=a4Yfz2FxXiY&t=912s)
-  * The code base was built using heavy references from this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) that accompanies the first video.
+  * This repo was built largely from code in this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) from the video.
 * [Diffusion Models | Paper Explanation | Math Explained](https://www.youtube.com/watch?v=HoKDTa5jHvg&t=1338s)
 
 ## Usage
 
-Two command line modules are provided: `train.py` and `predict.py` that can be used to train models and predict new images from existing models respectively.
+Two command line modules are provided: `train.py` and `predict.py` that can be used to train models and predict new images from existing models respectively. A pre-trained model that was trained on a portion of the [OAI Knee](https://nda.nih.gov/oai/) dataset is also supplied.
 
 ### Prerequisites
 
 * A system (preferably linux) with either [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
-* A beefy GPU with at least 12GB memory if you plan to train models
+* A GPU with at least 12GB memory if you plan to train models
 
 ### Steps
 
