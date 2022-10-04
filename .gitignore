@@ -135,6 +135,8 @@ recognition/AKOA_Analysis
 recognition/outputs
 recognition/plots
 recognition/runs
+recognition/brain
 
 .DS_Store
 *.pth
+
