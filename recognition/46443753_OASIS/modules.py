@@ -4,69 +4,66 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, \
     LeakyReLU, Dropout, AveragePooling2D, UpSampling2D, add, Lambda, Activation
 from tensorflow.keras.models import Sequential
+from tensorflow.keras import backend as K
+from tensorflow.keras import Model
 
-
-def discriminator_model(kernel_size=3, input_shape=(256, 256, 1)):
-    """ Create discriminator model with Inputshape = [img_size, img_size, channel] """
-    initial_filter_size = initial_filter_size
+def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)):
+    """ Inputshape = [img_size, img_size, channel] """
     discriminator_model = Sequential([
         # Downsample the input to 128 * 128
-        Conv2D(initial_filter_size, kernel_size=kernel_size,
+        Conv2D(filter_size, kernel_size=kernel_size,
                padding='same', input_shape=input_shape),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # Downsample the input to 64 * 64
-        Conv2D(2*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(2*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # Downsample the input to 32 * 32
-        Conv2D(4*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(4*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # Down sample the input to 16 * 16
-        Conv2D(4*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(4*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # Down sample the input to 8 * 8
-        Conv2D(8*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(8*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # Down sample the input to 4 * 4
-        Conv2D(8*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(8*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
         # 4 * 4 block
-        Conv2D(8*initial_filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(8*filter_size, kernel_size=kernel_size, padding='same'),
         LeakyReLU(alpha=0.2),
 
         # Flattent the input to a 1d array for classication 4*4*512 = 8192
         Flatten(),
-        Dense(4*initial_filter_size),
+        Dense(4*filter_size),
         Dropout(0.4),
         # Dense layer with 1 output for deciding whether the input is real or fake.
         # Sigmoid -> output is between 0 and 1, closer to 1 indicates discriminator detects as real, otherwise fake
         Dense(1, activation='sigmoid'),
     ])
-
     return discriminator_model
-
 
 def AdaIN(input, epsilon=1e-8):
     x, scale, bias = input
-    mean = tf.keras.backend.mean(x, axis=[1, 2], keepdims=True)
-    std = tf.keras.backend.std(x, axis=[1, 2], keepdims=True) + epsilon
+    mean = K.mean(x, axis=[1, 2], keepdims=True)
+    std = K.std(x, axis=[1, 2], keepdims=True) + epsilon
     norm = (x - mean) / std
 
-    scale = tf.reshape(scale, (-1, 1, 1, norm.shape[-1])) + 1.0
     bias = tf.reshape(bias, (-1, 1, 1, norm.shape[-1]))
+    scale = tf.reshape(scale, (-1, 1, 1, norm.shape[-1])) + 1.0
     return scale * norm + bias
-
 
 def generator_block(x, noise, scale, bias, num_filters):
     noise = Dense(num_filters)(noise)
@@ -76,12 +73,11 @@ def generator_block(x, noise, scale, bias, num_filters):
     x = Lambda(AdaIN)([x, scale, bias])
     return x
 
-
 def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filters):
     # Synthesis network
     # Initialise synthesis network
-
     w = w_mapping_network(z[:, 0])
+
     # Affine transformation A
     scale = Dense(num_filters)(w)
     bias = Dense(num_filters)(w)
@@ -113,14 +109,12 @@ def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filte
         x = LeakyReLU(0.2)(x)
     return x
 
-
-def Generator_model(latent_dim=100, image_shape=(256, 256, 1)):
-    num_blocks = 7  # upsample from  4*4  to 256*256
+def generator_model(latent_dim=100, num_filters=64, image_shape=(256, 256, 1)):
+    # upsample from  4*4  to 256*256
+    num_blocks = 7
     initial_size = 4
-    latent_dim = 512  # according to the paper
-    num_filters = 512
 
-    # create z layer -> can normalise the z when we generate it using randnormmal or add a normalisation layer?
+    # create z layer
     z = Input(shape=[num_blocks, latent_dim])
 
     # create w Mapping network
@@ -136,7 +130,7 @@ def Generator_model(latent_dim=100, image_shape=(256, 256, 1)):
         Dense(num_filters, activation=LeakyReLU(0.2)),
     ])
 
-    # create constant / starting layer : 4*4*512
+    # create constant / starting layer : 4*4*num_filters
     ones = Input((1,))
     const = Sequential([
         Dense(initial_size * initial_size * num_filters),
@@ -154,6 +148,6 @@ def Generator_model(latent_dim=100, image_shape=(256, 256, 1)):
     x = Conv2D(1, kernel_size=3, strides=1,
                padding="same", activation="sigmoid")(x)
 
-    generator = tf.keras.Model(inputs=[ones, z, noise], outputs=x)
-
+    # create generator
+    generator = Model(inputs=[ones, z, noise], outputs=x)
     return generator
