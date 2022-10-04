@@ -44,9 +44,11 @@ class Block(nn.Module):
             self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
             self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 1)
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
-        self.bnorm1 = nn.BatchNorm2d(out_ch)
-        self.bnorm2 = nn.BatchNorm2d(out_ch)
-        self.relu  = nn.ReLU()
+        #self.bnorm1 = nn.BatchNorm2d(out_ch)
+        #self.bnorm2 = nn.BatchNorm2d(out_ch)
+        self.bnorm1 = nn.GroupNorm(1, out_ch)
+        self.bnorm2 = nn.GroupNorm(1, out_ch)
+        self.relu  = nn.GELU()
         
     def forward(self, x, t, ):
         # First Conv
@@ -99,19 +101,28 @@ class Unet(nn.Module):
 
         # Time embedding
         self.time_mlp = nn.Sequential(
-                SinusoidalPositionEmbeddings(im_size),
-                nn.Linear(im_size, time_emb_dim),
-                nn.GELU(),
-                nn.Linear(time_emb_dim, time_emb_dim)
+                SinusoidalPositionEmbeddings(time_emb_dim),
+                nn.Linear(time_emb_dim, time_emb_dim),
+                nn.GELU()
             )
         
         # Initial projection
         self.conv0 = nn.Conv2d(image_channels, down_channels[0], 3, padding=1)
 
+        self.downs = nn.ModuleList([])
+        self.ups = nn.ModuleList([])
+
         # Downsample
-        self.downs = nn.ModuleList([Block(down_channels[i], down_channels[i+1], time_emb_dim) for i in range(len(down_channels)-1)])
+        for i in range(len(down_channels)-1):
+            self.downs.append(#nn.ModuleList([
+                Block(down_channels[i], down_channels[i+1], time_emb_dim),
+            )
+            
         # Upsample
-        self.ups = nn.ModuleList([Block(up_channels[i], up_channels[i+1], time_emb_dim, up=True) for i in range(len(up_channels)-1)])
+        for i in range(len(up_channels)-1):
+            self.ups.append(#nn.ModuleList([
+                Block(up_channels[i], up_channels[i+1], time_emb_dim, up=True),
+            )
 
         self.output = nn.Conv2d(up_channels[-1], 3, out_dim)
 
@@ -143,7 +154,7 @@ class Trainer:
     """
     Class to train Unet Diffusion model
     """
-    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='cosine'):
+    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
