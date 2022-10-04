@@ -1,0 +1,9 @@
+- contain a title
+- a description of the algorithm and the problem that it solves (approximately a paragraph)
+- how it works in a paragraph
+- a figure/visualisation
+- list any dependencies required, including versions
+- address reproduciblility of results, if applicable
+- provide example inputs, outputs and plots of your algorithm
+- Describe any specific pre-processing you have used with references
+- Justify your training, validation and testing splits of the data
