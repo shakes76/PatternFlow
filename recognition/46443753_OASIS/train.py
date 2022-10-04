@@ -19,6 +19,10 @@ from modules import (
 )
 
 def get_inputs(n, img_shape, latent_dim, n_style_block=7):
+    """
+    Create random inputs for the generator model in the form of [ones, z_space, noise]
+    from gaussian normal distribution.
+    """
     if rand() < 0.5:
         available_z = [random.normal((n, 1, latent_dim)) for _ in range(2)]
         z = tf.concat([available_z[randint(0, len(available_z))] for _ in range(n_style_block)], axis=1)
@@ -30,6 +34,10 @@ def get_inputs(n, img_shape, latent_dim, n_style_block=7):
 
 
 def generate_real_samples(dataset, n_samples):
+    """
+    Select specified random samples of images from the given dataset. 
+    Assign class label of 1 to the selected images. 
+    """
     # choose random instances
     ix = randint(0, dataset.shape[0], n_samples)
     # retrieve selected images
@@ -40,6 +48,9 @@ def generate_real_samples(dataset, n_samples):
 
 
 def create_checkpoint(gen_optimizer, disc_optimizer, generator, discriminator):
+    """
+    Create checkpoint for the generator and discriminator model. 
+    """
     checkpoint = train.Checkpoint(generator_optimizer=gen_optimizer,
                                   discriminator_optimizer=disc_optimizer,
                                   generator=generator,
@@ -47,7 +58,10 @@ def create_checkpoint(gen_optimizer, disc_optimizer, generator, discriminator):
     return checkpoint
 
 
-def summarize_performance(epoch, g_model, d_model, dataset, latent_dim, n_samples=9):
+def plot_model_performance(epoch, g_model, d_model, dataset, latent_dim, n_samples=9):
+    """
+    Generate and save 9 plotted fake images from the trained model.
+    """
     # prepare fake examples
     generator_inputs = get_inputs(n_samples, dataset[0].shape, latent_dim)
     x_fake = g_model(generator_inputs, training=False)
@@ -67,6 +81,9 @@ def summarize_performance(epoch, g_model, d_model, dataset, latent_dim, n_sample
 
 @tf.function
 def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generator_optimizer, discriminator_optimizer):
+    """
+    Train model by given batch_size, update the discriminator and generator's weights with learnt gradient. 
+    """
     generator_inputs = get_inputs(batch_size, real_samples[0].shape,  latent_dim)
 
     with tf.GradientTape() as generator_tape, tf.GradientTape() as discriminator_tape:
@@ -91,11 +108,14 @@ def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generato
 
 
 def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer):
+    """
+    StyleGAN Training
+    """
     bat_per_epo = 10000 #int(data.shape[0] / epochs)
     half_batch = 12 #int(epochs / 2)
     checkpoint = create_checkpoint(gen_optimizer, disc_optimizer, g_model, d_model)
 
-    g_losses, d_real_losses, d_fake_losses = [], [], []
+    gen_losses, disc_real_losses, disc_fake_losses = [], [], []
     for epoch in range(epochs):
         start_time = time.time()
         for i in range(bat_per_epo):
@@ -103,29 +123,30 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
             X_real, _ = generate_real_samples(data, half_batch)
 
             # Train model according to given half batch size
-            g_loss, d_real_loss, d_fake_loss = train_batch(X_real, half_batch, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
+            gen_loss, disc_real_loss, disc_fake_loss = \
+                train_batch(X_real, half_batch, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
 
             # Get model summary every 100 batches.
             if i % 100 == 0:
-                g_losses.append(g_loss)
-                d_real_losses.append(d_real_loss)
-                d_fake_losses.append(d_fake_loss)
+                gen_losses.append(gen_loss)
+                disc_real_losses.append(disc_real_loss)
+                disc_fake_losses.append(disc_fake_loss)
 
                 # Print training progress.
-                summarize_performance(epoch, g_model, d_model, X_real, latent_dim)
+                plot_model_performance(epoch, g_model, d_model, X_real, latent_dim)
 
                 print(
-                    f'\rEpoch: {epoch} / {epochs} | batch: {i} / {bat_per_epo} | '
-                    f'g_loss: {round(g_loss, 4)} | d_fake_loss: {round(d_fake_loss, 4)} | '
-                    f'd_real_loss: {round(d_real_loss, 4)} | '
-                    f'Time taken: {round(((time.time() - start_time) / 60), 2)} minutes', end='')
+                    f'\rEpoch num: {epoch} / {epochs} | batch: {i} / {bat_per_epo} | \
+                    gen_loss: {round(gen_loss, 4)} | disc_real_loss: {round(disc_real_loss, 4)} | \
+                    disc_fake_loss: {round(disc_fake_loss, 4)} | \
+                    Time taken: {round(((time.time() - start_time) / 60), 2)} min', end='')
                 print()
         
         # Save checkpoint every 10 epochs.
         if epoch % 10 == 0:
             checkpoint.save(file_prefix=os.path.join('./model/model_checkpoints', "ckpt"))
 
-    return g_losses, d_real_losses, d_fake_losses
+    return gen_losses, disc_real_losses, disc_fake_losses
 
 def main():
     PIC_DIR = ["./keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/", 
@@ -142,11 +163,11 @@ def main():
     d_model = discriminator_model()
     gen_optimizer = Adam(learning_rate=2e-7, beta_1=0.5, beta_2=0.99)
     disc_optimizer = Adam(learning_rate=1.5e-7, beta_1=0.5, beta_2=0.99)
-    g_losses, d_real_losses, d_fake_losses= train(images, epochs , latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
+    gen_losses, disc_real_losses, disc_fake_losses= train(images, epochs , latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
 
-    np.save("g_losses", g_losses)
-    np.save("d_real_losses", d_real_losses)
-    np.save('d_fake_losses',d_fake_losses)
+    np.save("g_losses", gen_losses)
+    np.save("d_real_losses", disc_real_losses)
+    np.save('d_fake_losses',disc_fake_losses)
 
 if __name__ == '__main__':
     main()
