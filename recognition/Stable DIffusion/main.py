@@ -30,7 +30,61 @@ def apply_noise(image, iteration):
     return sqrt_alpha_t.to(0) * image.to(0) + sqrt_minus_one_alpha.to(0) * noise.to(0), noise
 
 
+def de_noise(img, timestep, model):
+    """
+    Applies denoising to an image adapted from https://huggingface.co/blog/annotated-diffusion
+    """
 
+    alphas_cumprod_prev = F.pad(ALPHAS_CUMPROD[:-1], (1, 0), value=1.0)
+    sqrt_recip_alphas = torch.sqrt(1.0 / ALPHAS)
+
+    sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - ALPHAS_CUMPROD)
+
+    sqrt_one_minus_alphas_cumprod_t = get_index(sqrt_one_minus_alphas_cumprod, timestep, img.shape)
+    sqrt_recip_alphas_t = get_index(sqrt_recip_alphas, timestep, img.shape)
+
+    # Call model (current image - noise prediction)
+    model_mean = sqrt_recip_alphas_t * (img - get_index(BETAS, timestep, img.shape) * model(img, timestep) / sqrt_one_minus_alphas_cumprod_t)
+
+    if timestep == 0:
+        return model_mean
+    else:
+        noise = torch.randn_like(img)
+        posterior_variance = BETAS * (1. - alphas_cumprod_prev) / (1. - ALPHAS_CUMPROD)
+
+        return model_mean + torch.sqrt(get_index(posterior_variance, timestep, img.shape)) * noise
+
+
+def generate_image(model, number = 10):
+    model = model.cuda()
+
+    plt.figure(figsize=(15,15))
+    rows = number
+    column = 10
+    counter = 1
+    plt.axis("off")
+    plt.title("Generated Images Based off Stable Diffusion")
+    plt.title("Generated Images Based off Stable Diffusion")
+
+    for row in range(1, rows + 1):
+        img = torch.randn((1, 1, 256, 256)).cuda()
+        stepsize = int(1000 / column)
+        # loop removing noise step by step
+        for i in range(999, -1, -1):
+
+            with torch.no_grad():
+                img = de_noise(img, torch.tensor([i]).cuda(), model)
+
+            if i % stepsize == 0:
+                ax = plt.subplot(rows, column, counter)
+                ax.axis('off')
+                plt.imshow(img[0].permute(1, 2, 0).detach().cpu())
+
+                counter += 1
+
+
+    plt.savefig("Generated 10 Images.png")
+    plt.show()
 
 
 def train_model(model):
@@ -69,7 +123,7 @@ def train_model(model):
 def main():
     model = torch.load('Attempt3')
     # train_model(model)
-
+    generate_image(model)
 
 
 if __name__ == "__main__":
