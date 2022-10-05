@@ -1,8 +1,4 @@
-import pandas as pd
-import torch
-import torch.nn as nn
 import torch.utils as utils
-import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 
