@@ -3,7 +3,7 @@
 ## Overview
 
 
-## Overview of File Design
+## File Design
 The project has been split up into 4 distinct files primarily:
 - diffusion_imports.py - wrapper file for all required imports used for code simplicity 
 - diffusion_image_loader.py - primarily handles loading loading data and preprocessing
@@ -90,7 +90,7 @@ flowchart LR
 start((Input Data)) --> ConvTranspose2d[ConvTranspose2d] --> Cat[Concat];
 startB((Skip Data)) --> Cat[Concat];
 Cat[Concat]-->Relu[ReLU Block];
-startC((Position Data)) --> Relu[ReLU Block]
+startC((Position Data)) --> Relu[ReLU Block]--> Out((Out))
 ```
 ### CalculatePositionEncodingBlock
 The calculate position encoding block, as the name implies, handles calculating a position encoding for a given position
@@ -107,7 +107,7 @@ much noise has been applied from [0,100])
 flowchart LR
 startB((Position Step)) --> CalculatePositionEncodingBlock[CalculatePositionEncodingBlock];
 CalculatePositionEncodingBlock[CalculatePositionEncodingBlock] --> U-Net;
-starta((Noised Image)) --> U-Net;
+starta((Noised Image)) --> U-Net --> Out((Predicted Noise));
 ```
 
 ## Training
@@ -167,7 +167,21 @@ training can be visualised below:
 
 ## Validation
 
-## Visualization
+## Visualization & Results
+The stable diffusion model can be ran and utilised in `predict.py` to generate scans, three functions have been provided
+namely:
+1. Generate Single Image - Generates and displays a single image
+2. Generate Single Image Steps - Generates and displays a single image with the conversion process
+3. Generate N Images - Generates N images and displays them in a canvas style
+
+Below is a single image that has been generated. This took approximately 20 seconds.
+
+
+Below is an example of function 2 showing 10 images and conversion process from noise into a knee scan
+![image](Generated%2010%20Images.png)
+
+Below is 100 images that have been generated. This took approximately 30 minutes.
+![image](99%20Generated%20Images.png)
 
 
 ## Dependencies
