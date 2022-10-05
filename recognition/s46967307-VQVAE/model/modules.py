@@ -1,12 +1,18 @@
 import tensorflow as tf
 import numpy as np
 
+latent_dims = 10
+image_shape = (28,28,1)
+
 class AE(tf.keras.Model):
-    def __init__(self, latent_dim=4, image_shape=(28,28,1), **kwargs):
+    def __init__(self, **kwargs):
         super(AE, self).__init__(**kwargs)
 
-        self.latent_dim = latent_dim
-
+        # ------ ENCODER -------
+        # Takes image as input, runs it through 3 convolutional
+        # layers which each halve the size of the image.
+        # The remaining image is flattened and shrunk into a 
+        # latent space.
         input = tf.keras.layers.Input(shape=image_shape, name="input")
         x = tf.keras.layers.Conv2D(
             filters = 32, 
@@ -30,11 +36,15 @@ class AE(tf.keras.Model):
             padding = "same", 
             name = "compression_3")(x)
         x = tf.keras.layers.Flatten(name="flatten")(x)
-        self.latent_space = tf.keras.layers.Dense(latent_dim, name="latent_space")(x)
+        self.latent_space = tf.keras.layers.Dense(latent_dims, name="latent_space")(x)
 
         self.encoder = tf.keras.Model(input, self.latent_space, name="encoder")
 
-        input = tf.keras.layers.Input(shape=latent_dim, name="input")
+        # ------ DECODER -------
+        # Takes output from encoder. 
+        # Structure is identical but with Conv2DTranspose to
+        # upscale the image rather than downscale.
+        input = tf.keras.layers.Input(shape=latent_dims, name="input")
         x = tf.keras.layers.Dense(
             np.prod([max(int(np.floor(el/(2*2*2))),1) for el in image_shape]), 
             activation = 'relu', 
@@ -77,6 +87,7 @@ class AE(tf.keras.Model):
         x, _ = train_data
         with tf.GradientTape() as tape:
             out = self.decoder(self.encoder(x))
+            # MSE loss is taken on original image and encoded(decoded) image
             loss = tf.keras.losses.mean_squared_error(x, tf.reshape(out, shape=tf.shape(x)))
         
         gradients = tape.gradient(loss, self.trainable_weights)
