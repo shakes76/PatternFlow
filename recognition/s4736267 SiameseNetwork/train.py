@@ -66,6 +66,16 @@ image1,image2 = data.classification_data()
 print(image2)
 print(image1)
 
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.normal_(m.weight, mean=0.0, std=0.01)
+        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
+        
+    if isinstance(m, nn.Conv2d):
+        nn.init.normal_(m.weight, mean=0.0, std=0.2)
+        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
+    
+net.apply(init_weights)
 
 
 
