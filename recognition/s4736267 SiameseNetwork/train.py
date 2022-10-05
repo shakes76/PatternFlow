@@ -19,7 +19,7 @@ import numpy as np
 import gc 
 
 #Importing CNN Model
-import model
+import modules
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -36,7 +36,7 @@ test_factor=1#0
 modulo=round(train_factor/10) +1#Print frequency while training
 
 #Importing Custom Dataloader
-import dataset_sim as data
+import dataset as data
 train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = batch_size*train_factor, VALID_SIZE= 100, TEST_SIZE=batch_size*test_factor)
 
 
