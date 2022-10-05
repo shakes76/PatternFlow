@@ -5,6 +5,8 @@
 
 
 
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,8 +37,8 @@ class Net(nn.Module):
         #self.pdist = nn.PairwiseDistance(p=1, keepdim=True)    
         #self.final = nn.Linear(4096, 1)
 
-        self.final = nn.Sequential(nn.Linear(4096, 1),
-                                   nn.Sigmoid())
+        #self.final = nn.Sequential(nn.Linear(4096, 1),
+        #                           nn.Sigmoid())
 
 
     def forward_once(self, x):
@@ -49,7 +51,8 @@ class Net(nn.Module):
     def forward(self, x,y):
         out_x = self.forward_once(x)
         out_y = self.forward_once(y)
-        out  = torch.abs((out_x-out_y))
-        out  = self.final(out)
+        #out  = torch.abs((out_x-out_y))
+        #out  = self.final(out)
 
-        return out
+        return out_x, out_y
+

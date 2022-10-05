@@ -1,10 +1,3 @@
-#train.py
-
-#Containing the source code for training, validating, testing and saving your model.
-#The model should be imported from “modules.py” and the data loader should be imported from “dataset.py”. 
-#Make sure to plot the losses and metrics during training.
-
-
 
 #Defining CNN
 
@@ -34,21 +27,44 @@ net = model.Net()
 net = net.to(device)
 
 #Constants
-epoch_range = 2
-modulo=1 #Print frequency while training
+epoch_range = 20
+
 batch_size=128
+train_factor=1#00
+test_factor=1#0
+
+modulo=round(train_factor/10) +1#Print frequency while training
 
 #Importing Custom Dataloader
 import dataset_sim as data
-train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = 10, VALID_SIZE= 10, TEST_SIZE=10)
+train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = batch_size*train_factor, VALID_SIZE= 100, TEST_SIZE=batch_size*test_factor)
 
+
+
+class ContrastiveLoss(torch.nn.Module):
+    """
+    Contrastive loss function.
+    Based on: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
+    """
+
+    def __init__(self, margin=2.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, output1, output2, label):
+        euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
+        loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2) +
+                                      (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
+
+
+        return loss_contrastive
 
 
 
 #Optimizer
-
-criterion = nn.BCELoss()
-optimizer = optim.Adam(net.parameters())
+criterion = ContrastiveLoss()
+#criterion = nn.BCELoss()
+optimizer = optim.Adam(net.parameters(),lr = 0.0005)
 
 
 #Loss tracking during training
@@ -58,13 +74,9 @@ test_accuracy=torch.zeros(epoch_range)
 
 
 #xy,yz = data.mean_std_calculation(valid_loader)
-#print(xy)
-#print(yz)
+#print(xy, flush=True)
+#print(yz, flush=True)
 
-
-image1,image2 = data.classification_data()
-print(image2)
-print(image1)
 
 def init_weights(m):
     if isinstance(m, nn.Linear):
@@ -77,11 +89,16 @@ def init_weights(m):
     
 net.apply(init_weights)
 
+class_image_NC , class_image_AD = data.classification_data()
 
+class_image_NC = class_image_NC[None, :].to(device) 
+class_image_AD = class_image_AD[None, :].to(device) 
+
+print("Initialitaion finished", flush=True)
 
 for epoch in range(epoch_range):  # loop over the dataset multiple times
     
-    print(f'EPOCH NUMBER: {epoch}', end ="", flush=True) 
+    print(f'EPOCH NUMBER: {epoch} =', end ="", flush=True) 
 
 
     total = 0
@@ -95,23 +112,15 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         labels= data[2].to(device).to(torch.float32)
 
         
-        #print(torch.sum(inputs_2-inputs_1))
-        #print(labels)    
         #zero gradients
         optimizer.zero_grad()
-        #print(torch.sum(torch.isnan(inputs_1)))
-        #print(torch.max(inputs_2))
-        # Optimization
-        outputs = net(inputs_1,inputs_2).squeeze(1)
-        
-        if torch.sum(torch.isnan(outputs))>0:
-            print(outputs)
 
-       
-        loss = criterion(outputs, labels)
+        output1,output2 = net(inputs_1,inputs_2)#.squeeze(1)
+
+        loss = criterion(output1,output2,labels)
         loss.backward()
 
-        nn.utils.clip_grad_value_(net.parameters(), 0.1)
+        #nn.utils.clip_grad_value_(net.parameters(), 100000)
 
         #optimizer.step()
 
@@ -128,11 +137,10 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
     training_loss[epoch]=training_loss[epoch]/total
     print(f'Training Loss: {training_loss[epoch]}')
 
-    del inputs_1, inputs_2, labels, outputs, loss, total
+    del inputs_1, inputs_2, labels, output1, output2, loss, total
     gc.collect()
     
-
-
+####
 
 
 # No backpropagtion , No need for calculating gradients, => Faster calculation
@@ -145,16 +153,38 @@ with torch.no_grad():
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
-        outputs = net(inputs).squeeze(1)
+        #outputs = net.forward_once(inputs).squeeze(1)
+        output1,output2 = net(inputs,class_image_NC)#.squeeze(1)
+        euclidean_distance_NC = F.pairwise_distance(output1, output2)
+
         
+
+        output1,output2 = net(inputs,class_image_AD)#.squeeze(1)
+        euclidean_distance_AD = F.pairwise_distance(output1, output2)
+        euclidean_distance_MAX = torch.ge(euclidean_distance_AD,euclidean_distance_NC)
+        
+        print("MAX",euclidean_distance_MAX)
+
+        #print(euclidean_distance_NC)
+        #print(euclidean_distance_AD)
+        print("labels",labels)
+
+        correct_tensor=torch.eq(labels,euclidean_distance_MAX)
+
+        print("correct tensor", correct_tensor)
+
+        correct_run = torch.sum(correct_tensor)
+        print("correct_run", correct_run)
         #outputs= torch.round(outputs)
-        #correct += (outputs == labels).sum().item()
+        correct += correct_run
+        print(correct)
 
         total += batch_size
 
         #Testing loss to compare it to training loss
-        loss = criterion(outputs, labels)
-        testing_loss[epoch]=testing_loss[epoch]+loss.detach().item()
+        
+        #loss = criterion(outputs, labels)
+        #testing_loss[epoch]=testing_loss[epoch]+loss.detach().item()
 
     test_accuracy[epoch] = (correct/total)
     testing_loss[epoch]=testing_loss[epoch]/total
@@ -169,7 +199,7 @@ with torch.no_grad():
         #   torch.save(test_accuracy, 'test_accuracy_18.pt') 
         #   torch.save(testing_loss, 'testing_loss_18.pt')
 
-    del inputs_1, inputs_2, labels, outputs, loss, total, correct
+    del inputs, labels, output1, output2, total, correct
     gc.collect()
     
 
