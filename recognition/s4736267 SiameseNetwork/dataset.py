@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import Dataset
 
-
 def mean_std_calculation(loader):
     mean = 0.
     std = 0.
@@ -38,7 +37,6 @@ def image_loader(path: str) -> Image.Image:
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img
-
 
 def train_set(batch_size=32):
 	
