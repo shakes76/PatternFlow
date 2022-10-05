@@ -31,8 +31,8 @@ class Net(nn.Module):
                                   )
         self.lin_layer = nn.Sequential(nn.Linear(9216, 4096),
                                   nn.ReLU(inplace=True),
-                                  nn.Linear(4096, 256))
-                                  #nn.Sigmoid())
+                                  #nn.Linear(4096, 256))
+                                  nn.Sigmoid())
 
         #self.pdist = nn.PairwiseDistance(p=1, keepdim=True)    
         #self.final = nn.Linear(4096, 1)
@@ -55,4 +55,33 @@ class Net(nn.Module):
         #out  = self.final(out)
 
         return out_x, out_y
+
+
+
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.normal_(m.weight, mean=0.0, std=0.01)
+        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
+        
+    if isinstance(m, nn.Conv2d):
+        nn.init.normal_(m.weight, mean=0.0, std=0.2)
+        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
+
+class ContrastiveLoss(torch.nn.Module):
+    """
+    Contrastive loss function.
+    Based on: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
+    """
+
+    def __init__(self, margin=2.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, output1, output2, label):
+        euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
+        loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2) +
+                                      (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
+
+
+        return loss_contrastive
 

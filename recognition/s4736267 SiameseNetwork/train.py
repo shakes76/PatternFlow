@@ -23,46 +23,29 @@ import modules
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = model.Net()
+net = modules.Net()
 net = net.to(device)
 
 #Constants
 epoch_range = 20
 
 batch_size=128
-train_factor=1#00
+train_factor=100#00
 test_factor=1#0
+valid_factor=1
 
 modulo=round(train_factor/10) +1#Print frequency while training
 
 #Importing Custom Dataloader
 import dataset as data
-train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = batch_size*train_factor, VALID_SIZE= 100, TEST_SIZE=batch_size*test_factor)
+train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
 
 
-
-class ContrastiveLoss(torch.nn.Module):
-    """
-    Contrastive loss function.
-    Based on: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
-    """
-
-    def __init__(self, margin=2.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
-
-    def forward(self, output1, output2, label):
-        euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
-        loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2) +
-                                      (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
-
-
-        return loss_contrastive
 
 
 
 #Optimizer
-criterion = ContrastiveLoss()
+criterion = modules.ContrastiveLoss()
 #criterion = nn.BCELoss()
 optimizer = optim.Adam(net.parameters(),lr = 0.0005)
 
@@ -73,26 +56,16 @@ testing_loss= torch.zeros(epoch_range)
 test_accuracy=torch.zeros(epoch_range)
 
 
-#xy,yz = data.mean_std_calculation(valid_loader)
-#print(xy, flush=True)
-#print(yz, flush=True)
+#xy,yz = data.mean_std_calculation(train_loader)
+#print("Mean of train_set",xy, flush=True)
+#print("Std  of train_set",yz, flush=True)
 
+net.apply(modules.init_weights)
 
-def init_weights(m):
-    if isinstance(m, nn.Linear):
-        nn.init.normal_(m.weight, mean=0.0, std=0.01)
-        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
-        
-    if isinstance(m, nn.Conv2d):
-        nn.init.normal_(m.weight, mean=0.0, std=0.2)
-        nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
-    
-net.apply(init_weights)
+#class_image_NC , class_image_AD = data.classification_data()
 
-class_image_NC , class_image_AD = data.classification_data()
-
-class_image_NC = class_image_NC[None, :].to(device) 
-class_image_AD = class_image_AD[None, :].to(device) 
+#class_image_NC = class_image_NC[None, :].to(device) 
+#class_image_AD = class_image_AD[None, :].to(device) 
 
 print("Initialitaion finished", flush=True)
 
