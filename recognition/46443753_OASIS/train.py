@@ -104,7 +104,7 @@ def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generato
     generator_optimizer.apply_gradients(zip(generator_grad, g_model.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(discriminator_grad, d_model.trainable_variables))
 
-    return generator_loss.numpy(), real_loss.numpy(), fake_loss.numpy()
+    return generator_loss, real_loss, fake_loss
 
 
 def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer):
@@ -128,6 +128,10 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
 
             # Get model summary every 100 batches.
             if i % 100 == 0:
+                gen_loss = gen_loss.numpy()
+                disc_real_loss= disc_real_loss.numpy()
+                disc_fake_loss = disc_fake_loss.numpy()
+                
                 gen_losses.append(gen_loss)
                 disc_real_losses.append(disc_real_loss)
                 disc_fake_losses.append(disc_fake_loss)
