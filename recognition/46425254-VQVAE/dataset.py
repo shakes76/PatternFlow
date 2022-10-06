@@ -3,8 +3,7 @@ from torch.utils.data import Dataset
 import torchvision
 from torchvision.transforms import transforms
 import torch.cuda
-import os
-import shutil
+
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -45,7 +44,7 @@ class DataLoader(Dataset):
     #returns the data_loader object
     def __getitem__(self, idx):
         return self.data[idx]
-    
-    
+
+
     
 
