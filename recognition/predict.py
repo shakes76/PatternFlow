@@ -7,8 +7,8 @@ from torch.optim import Adam
 #Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('model', help="Path to model", type=str)
-parser.add_argument('--num_images', '-t', help="Number of images to create", type=int)
 parser.add_argument('--output', '-o', help="Output path to save images to", type=int)
+parser.add_argument('--num_images', '-t', help="Number of images to create", type=int)
 parser.add_argument('--name', '-n', help="Name prefix for images", type=int)
 parser.add_argument('--seed', '-s', help="Random seed. Passing the same random seed yields deterministic images", type=int)
 args = parser.parse_args()
