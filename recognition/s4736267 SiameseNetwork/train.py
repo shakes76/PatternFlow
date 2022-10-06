@@ -27,18 +27,19 @@ net = modules.Net()
 net = net.to(device)
 
 #Constants
-epoch_range = 200
+epoch_range = 20#00
+
 
 batch_size=120
-train_factor=1000#00
-test_factor=1#0
+train_factor=100#00
+test_factor=10#0
 valid_factor=1
 
-modulo=round(train_factor/10) +1#Print frequency while training
+modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
 
 #Importing Custom Dataloader
-import dataset as data
-train_loader, valid_loader, test_loader, clas_dataset =data.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
+import dataset 
+train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
 
 
 
@@ -93,13 +94,13 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         loss = criterion(output1,output2,labels)
         loss.backward()
 
-        #nn.utils.clip_grad_value_(net.parameters(), 100000)
+        nn.utils.clip_grad_value_(net.parameters(), 10)
 
         optimizer.step()
 
         #Training loss
         training_loss[epoch]=training_loss[epoch]+loss#.detach().item()
-        total += batch_size
+        total += torch.numel(labels)
 
         #Update where running
         if i % (modulo) == modulo-1:
@@ -126,49 +127,39 @@ with torch.no_grad():
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
-        slice_number = data[0].to(device) 
+        slice_number = data[2].to(device) 
 
-        print("slice_number", slice_number)
+        clas_image_AD, clas_image_NC = dataset.clas_output(clas_dataset,slice_number,inputs)
 
-        class_image_NC, class_image_AD = modules.clas_output(clas_dataset,slice_number)
+        output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
+        euclidean_distance_AD = F.pairwise_distance(output1, output2)
 
-        #outputs = net.forward_once(inputs).squeeze(1)
-        output1,output2 = net(inputs,class_image_NC)#.squeeze(1)
+        print("euc_AD",euclidean_distance_AD)
+
+        output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
         euclidean_distance_NC = F.pairwise_distance(output1, output2)
 
+        print("euc_NC",euclidean_distance_NC)
+
+        predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
         
+        print("lab",labels)
 
-        output1,output2 = net(inputs,class_image_AD)#.squeeze(1)
-        euclidean_distance_AD = F.pairwise_distance(output1, output2)
-        euclidean_distance_MAX = torch.ge(euclidean_distance_AD,euclidean_distance_NC)
-        
-        print("MAX",euclidean_distance_MAX)
+        print("pred_lab", predicted_labels)
 
-        #print(euclidean_distance_NC)
-        #print(euclidean_distance_AD)
-        print("labels",labels)
+        correct_tensor=torch.eq(labels,predicted_labels)
 
-        correct_tensor=torch.eq(labels,euclidean_distance_MAX)
-
-        print("correct tensor", correct_tensor)
+        print("cor_ten", correct_tensor)
 
         correct_run = torch.sum(correct_tensor)
-        print("correct_run", correct_run)
-        #outputs= torch.round(outputs)
         correct += correct_run
-        print(correct)
+        total += torch.numel(labels)
 
-        total += batch_size
+        print("")
+        print("")
 
-        #Testing loss to compare it to training loss
-        
-        #loss = criterion(outputs, labels)
-        #testing_loss[epoch]=testing_loss[epoch]+loss.detach().item()
-
-    test_accuracy[epoch] = (correct/total)
-    testing_loss[epoch]=testing_loss[epoch]/total
-    print(f'Testing Loss: {testing_loss[epoch]}')
-    print(f'Test Accuracy: {test_accuracy[epoch]}', flush=True)
+    test_accuracy = (correct/total)
+    print(f'Test Accuracy: {test_accuracy}', flush=True)
 
 
     #if epoch % 50 == 49:
@@ -178,7 +169,7 @@ with torch.no_grad():
         #   torch.save(test_accuracy, 'test_accuracy_18.pt') 
         #   torch.save(testing_loss, 'testing_loss_18.pt')
 
-    del inputs, labels, output1, output2, total, correct
+    del inputs, labels,predicted_labels, output1, output2, total, correct, euclidean_distance_AD, euclidean_distance_NC
     gc.collect()
     
 

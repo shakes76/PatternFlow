@@ -102,24 +102,27 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
     length = len(image_paths) 
     number_of_sets = int(length/20)
 
-    #test_image_paths.sort()
-    image_paths_new=[None]*length
+    randompos = range(number_of_sets)
+    randompos = list(randompos)
+    random.shuffle(randompos)
 
+    image_paths_new=[None]*length
+    #print(len(image_paths_new))
     i = 0 
     while  i < number_of_sets:
         placeholder=image_paths[0+i*20:20+i*20]
         placeholder.sort(key=len, reverse=False)
-        image_paths_new[0+i*20:20+i*20]=placeholder
+        j = int(randompos[i])
+        image_paths_new[0+j*20:20+j*20]=placeholder
         i = i+1
 
     image_paths=image_paths_new
 
-    print("DATA SIZE TEST",DATA_SIZE)
     return image_paths[:DATA_SIZE]
 
 
 #TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
-def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):    
+def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC_TEST/test'):    
     
     image_paths = []
 
@@ -145,18 +148,9 @@ def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):
         image_paths_new[0+i*20:20+i*20]=placeholder
         i = i+1
     
-    image_paths=image_paths_new
-
-    image_paths_AD = image_paths[0:20]        #First Set should be AD
-    #print(len(image_paths_AD))
-    image_paths_NC = image_paths[length-20:]  #Last Set should be NC
-        
-    #print("")
-    #print(image_paths_AD)
-    #print("")
-    #print(image_paths_NC)
-
-    return image_paths_AD, image_paths_NC
+    image_paths=image_paths_new[0:20] + image_paths_new[length-20:]
+    
+    return image_paths
 
 
 #######################################################
@@ -197,8 +191,8 @@ class DatasetClas(Dataset):
         return self.size
 
     def __getitem__(self, idx):
-        image_filepath = self.image_paths[0][idx]
-        
+        image_filepath = self.image_paths[idx]
+        #print("DatasetClas image_filepath",image_filepath, " with index", idx)
         image = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
         
         
@@ -211,8 +205,7 @@ class DatasetClas(Dataset):
         
         slice_number = idx%20
 
-
-        return image, label, slice_number
+        return image
 
 
 class DatasetTrain(Dataset):
@@ -261,15 +254,18 @@ class DatasetTrain(Dataset):
         return image_1, image_2, label
 
 #######################################################
-def clas_output(clas_dataset,slice_number):
+def clas_output(clas_dataset,slice_number,input_data):
     i=0
-    
+    clas_image_AD = torch.zeros_like(input_data)
+    clas_image_NC = torch.zeros_like(input_data)
 
-    for i in slice_number:
-        class_image_NC = clas_dataset[slice_number[i]]
-        class_image_AD = clas_dataset[slice_number[i]]
+    for i in range(20):
+        
+        clas_image_AD[i] = clas_dataset[slice_number[i]]
+        clas_image_NC[i] = clas_dataset[(slice_number[i+20]+20)] #Second Set represents NC
 
-    return class_image_NC, class_image_AD
+
+    return clas_image_AD, clas_image_NC
 
 #######################################################
 #                  Create Transformations
@@ -282,7 +278,7 @@ def trans_train():
         transforms.Resize(size=(105,105)),
         #transforms.crop(self,top=30,left=70,height=165,width=140)
         transforms.ToTensor(),
-        transforms.Normalize(mean=0.1143, std=0.2130)
+        #transforms.Normalize(mean=0.1143, std=0.2130)
     ])
 
     return transformation_train
@@ -304,7 +300,7 @@ def trans_test():
         #transforms.Grayscale(num_output_channels=1),
         transforms.Resize(size=(105,105)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=0.1143, std=0.2130)
+        #transforms.Normalize(mean=0.1143, std=0.2130)
     ])
 
     return transformation_test
@@ -315,7 +311,7 @@ def trans_clas():
         #transforms.Grayscale(num_output_channels=1),
         transforms.Resize(size=(105,105)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=0.1143, std=0.2130)
+        #transforms.Normalize(mean=0.1143, std=0.2130)
     ])
 
     return transformation_test
@@ -339,6 +335,7 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     valid_dataset = DatasetTrain(valid_image_paths,transformation_valid) 
     test_dataset = Dataset(test_image_paths,transformation_test)
     clas_dataset = DatasetClas(clas_image_paths,transformation_clas)
+
 
     #Dataloaders
     train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
