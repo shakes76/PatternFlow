@@ -33,18 +33,24 @@ Two command line modules are provided: `train.py` and `predict.py` that can be u
 
 
 1. Create a folder with training images in the local directory (ie. \`PatternFlow/recognition'). There are no requirements on image size or naming. All images within the this folder will resized and used to train the model.
-2. Run the training script: `python train.py some_name path_to_dataset` which will start training. Every epoch a test image will be generated and saved to `./out` and a denoising timestep plot will be save to `./plot`.
+2. Run the training script: `python train.py name path` which will start training. Every epoch a test image will be generated and saved to `./out` and a denoising timestep plot will be save to `./plot`.
    
 3. Tensorboard is also supported and training is saved to `./runs`. You can launch tensorboard using: `tensorboard --logdir ./`
 
-4. Once training has finished, the model will be saved as `some_name.pth` in the local directory. Additionally every epoch an `autosave.pth` file is also created.
+4. Once training has finished, the model will be saved as `name.pth` in the local directory. Additionally every epoch an `autosave.pth` file is also created.
 
-Additional parameters for `train.py`
+Parameters for `train.py`
 
-| Parameter    |          | Default                   | Description |
-| ------------ | -------- | ------------------------- | ----------- |
-| _--path_     | optional | current working directory | Path to folder containing runs |
-| _--subpaths_ | optional | `['.']`       | List of all subpaths |
-| _--output_   | optional | `summary`                 | Possible values: `summary`, `csv` |
+| Parameter                  | Short |          | Default                   | Description |
+| ----------------           | ----- | -------- | ------------------------- | ----------- |
+| _name_                     |       | required |                           | Name of model |
+| _path_                     |       | required |                           | Path to dataset folder |
+| _--timesteps_              |  -t   | optional | 300                       | Number of diffusion timesteps in betas schedule|
+| _--epochs_                 | -e    | optional | 100                       | Number of epochs to train for |
+| _--batch_size_             | -b    | optional | 128                       | Training batch size |
+| _--image_size_             | -i    | optional | 64                        | Image dimension. All images are resized to size x size |
+| _--beta_schedule_          | -s    | optional | linear                    | Beta schedule type. Options: 'linear', 'cosine', 'quadratic'and 'sigmoid' |
+| _--disable_images_         |       | optional |                           | Disables saving images and plots every epoch |
+| _--disable_tensorboard_    |       | optional |                           | Disables tensorboard for training |
 
 #### Using an existing model
