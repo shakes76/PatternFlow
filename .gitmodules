@@ -1,0 +1,3 @@
+[submodule "recognition/s4532810-YOLO-xspinella/yolov5"]
+	path = recognition/s4532810-YOLO-xspinella/yolov5
+	url = https://github.com/ultralytics/yolov5
