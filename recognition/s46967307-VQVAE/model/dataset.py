@@ -1,5 +1,3 @@
-print("Beginning Training")
-
 import tensorflow as tf
 import os
 import cv2
@@ -34,9 +32,9 @@ def load_data():
         raw_data[cat].append(img_array)
 
     data = {}
-    data["test"] = tf.cast(tf.convert_to_tensor(raw_data["test"]), tf.float32) / 255.0
-    data["train"] = tf.cast(tf.convert_to_tensor(raw_data["train"]), tf.float32)
-    data["validate"] = tf.cast(tf.convert_to_tensor(raw_data["validate"]), tf.float32) / 255.0
+    data["test"] = tf.cast(tf.convert_to_tensor(raw_data["test"], dtype=tf.float32), tf.float32) / 255.0
+    data["train"] = tf.cast(tf.convert_to_tensor(raw_data["train"], dtype=tf.float32), tf.float32) / 255.0
+    data["validate"] = tf.cast(tf.convert_to_tensor(raw_data["validate"], dtype=tf.float32), tf.float32) / 255.0
 
     with open('data.pkl', 'wb') as f:
         pickle.dump(data, f)
