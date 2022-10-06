@@ -358,7 +358,7 @@ class Trainer:
         """
         Save model to path
         """
-        torch.save(self.model, path)
+        torch.save(self.model.state_dict(), path)
 
     def load_model(self, path):
         """
@@ -368,5 +368,5 @@ class Trainer:
             self.model.cpu()
             torch.cuda.empty_cache()
         
-        self.model = torch.load(path, map_location='cpu')
+        self.model.load_state_dict(torch.load(path))
         self.model.to(self.device)
