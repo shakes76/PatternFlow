@@ -4,6 +4,28 @@ import numpy as np
 latent_dims = 100
 image_shape = (256,256,1)
 
+class VQ(tf.keras.layers.Layer):
+    def __init__(self, num_embeddings, embeddings, latent_dim, **kwargs):
+        super(VQ, self).__init(**kwargs)
+        self.num_embeddings = num_embeddings
+        self.latent_dim = latent_dim
+        
+        w_init = tf.random_normal_initializer()
+        self.embeddings = tf.Variable(
+                trainable=True,
+                name="embeddings",
+                initial_value=w_init(shape=(self.num_embeddings, self.latent_dim), dtype="float32")
+                )
+
+    def call(self, inputs):
+        # Each result is a vector of distances from associated input and each embedding
+        result = tf.vectorized_map(lambda x:
+                tf.vectorized_map(lambda y:
+                    tf.norm(tf.math.subtract(y, x)),
+                    self.embeddings),
+                inputs)
+        return result
+
 class AE(tf.keras.Model):
     def __init__(self, **kwargs):
         super(AE, self).__init__(**kwargs)
