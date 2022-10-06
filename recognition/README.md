@@ -32,7 +32,7 @@ Two command line modules are provided: `train.py` and `predict.py` that can be u
 ### Train a model
 
 
-1. Create a folder with training images in the local directory (ie. \`PatternFlow/recognition'). There are no requirements on image size or naming. All images within the this folder will resized and used to train the model.
+1. Create a folder with training images in the local directory (eg. `PatternFlow/recognition/images`). There are no requirements on image size or naming. All images within the this folder will resized and used to train the model.
 2. Run the training script: `python train.py name path` which will start training. Every epoch a test image will be generated and saved to `./out` and a denoising timestep plot will be save to `./plot`.
    
 3. Tensorboard is also supported and training is saved to `./runs`. You can launch tensorboard using: `tensorboard --logdir ./`
@@ -53,4 +53,4 @@ Parameters for `train.py`
 | _--disable_images_         |       | optional |                           | Disables saving images and plots every epoch |
 | _--disable_tensorboard_    |       | optional |                           | Disables tensorboard for training |
 
-#### Using an existing model
+### Using an existing model
