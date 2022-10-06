@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.utils as utils
 import torchvision
 
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
 image_dim = (3,256,256)
 learning_rate = 0.0001
@@ -106,7 +106,11 @@ class VQ(nn.Module):
     Quantizes the encoder output.
     
     Parameters:
+        encoder_inputs -> the output tensor from encoding
         
+    Returns:
+        quantized -> the quantized tensor
+        loss -> loss of information after quantizing
     """
     def forward(self, encoder_inputs):
         #currently the encoder_inputs are in Batch Channel Height Width Format
@@ -115,13 +119,77 @@ class VQ(nn.Module):
         encoder_inputs = encoder_inputs.permute(0, 2, 3, 1)
         #reformat memory layout since it is has been transformed
         encoder_inputs = encoder_inputs.contiguous() 
+        shape = encoder_inputs.shape
         
         #flatten the Batch Height and Width into such that the tensor becomes
-        #(B*H*W, Channel)
+        #(N = B*H*W, Channel)
         
         flattened_inputs = encoder_inputs.view(-1, self.embedding_dim)
         
-        #calculate distances for each one of the inputs
+        """
+        calculate distances between each of the flattened inputs and the
+        weights of the of embedded table vectors, creates N*K distances, where 
+        N is B*H*W and K the num_embeddings
+        """
+        
+        all_distances = (torch.sum(flattened_inputs**2, dim=1, keepdim = True)
+                         + torch.sum(self.embedding.weight**2, dim=1)
+                         - 2 * torch.matmul(flattened_inputs, 
+                                            self.embedding.weight.t()))
+        
+        # find the smallest distance from N*K distance combinations
+        # get the index tensor of the smallest distance
+        indexes = torch.argmin(all_distances, dim=1).unsqueeze(1)
+        
+        # create a zeros tensor, with the position at indexes being 1
+        # This creates a "beacon" so that position can be replaced by a 
+        # embedded vector.
+        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, device)
+        
+        encodings.scatter_(1, indexes, 1)
+        
+        # Quantize and reshape to BHWC format
+        
+        quantized_bhwc = torch.matmul(encodings, 
+                                      self.embedding.weight).view(shape)
+        
+        """
+        the loss function is used from the VQVAE paper provided in the 
+        references in readme.The first term of the loss fucntion, the 
+        reconstruction loss, is calculated later.
+        
+        The stop gradients used can be applied using the detach() function, 
+        which removes it from the current graph and turns it into a constant.
+        
+        """
+        first_term = nn.functional.mse_loss(quantized_bhwc.detach(), 
+                                            encoder_inputs)
+        
+        second_term = nn.functional.mse_loss(quantized_bhwc, 
+                                             encoder_inputs.detach())
+        
+        beta = self.commitment_loss
+        
+        
+        loss = first_term + beta * second_term
+        
+        # backpropagate and update gradients back at to the encoder using the 
+        # quantized gradients
+        
+        quantized_bhwc = encoder_inputs + (quantized_bhwc - 
+                                           encoder_inputs).detach()
+        
+        # restructure the VQ output to be Batch Channel Height Width format
+        quantized = quantized_bhwc.permute(0, 3, 1, 2)
+        # reformat memory, just like when it was transformed to bchw format
+        quantized = quantized.continguous()
+        
+        return quantized, loss
+        
+        
+        
+        
+        
         
         
         
