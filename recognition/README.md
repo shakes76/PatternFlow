@@ -1,13 +1,13 @@
 # Diffusion Image Generation
 
-Diffusion based image generation using pytorch.
+Simple diffusion based image generation using pytorch.
 ![](https://hcloudh.com/nextcloud/s/YnMBoAK6atDYztj/download/plot_epoch98.jpeg)
 #### References
 
 Huge thanks to these videos for helping my understanding:
 
 * [Diffusion models from scratch in PyTorch](https://www.youtube.com/watch?v=a4Yfz2FxXiY&t=912s)
-  * This repo was built largely from code in this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) from the video.
+  * This repo was built largely referencing code in this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) from the video. Quite a few changes were made to improve performance.
 * [Diffusion Models | Paper Explanation | Math Explained](https://www.youtube.com/watch?v=HoKDTa5jHvg&t=1338s)
 
 ## Usage
