@@ -8,31 +8,6 @@ import shutil
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-"""
-Whichever path the keras_png_slices_data is at, it will be restructured in
-order for ImageFolder function to work, which sees each data folder as a 
-"class" and since there is only one class, a wrapped folder is needed for each
-dataset.
-
-Parameters:
-    data_path -> path to the contents of the keras_png_slices_data folder
-"""
-def reorganize_data(data_path):
-    training = "train"
-    testing = "test"
-    validation = "validate"
-    
-    training_path = os.path.join(data_path, training)
-    os.mkdir(training_path)
-    
-    testing_path = os.path.join(data_path, testing)
-    os.mkdir(testing_path)
-    valid_path = os.path.join(data_path, validation)
-    os.mkdir(valid_path)
-    
-    
-    
-    
 
 """
 DataLoader class that converts OASIS brain dataset into a meaningful format for 
