@@ -33,5 +33,12 @@ This is a multi-part loss function which specifies terms for defining the loss o
 
 These terms are balanced by parameters \lambda_coord and \lambda_noobj to ensure that confidence scores from grid cells without objects don't overpower the gradient from cells which do contain objects. 
 
-### YOLOv__ netowrk model: (select a yolo pls)
+A high-level overview of the YOLO model architechture is shown below (https://arxiv.org/pdf/2004.10934.pdf).
+![image](https://miro.medium.com/max/720/1*e17LeKXUsSxdNTlSm_Cz8w.png)
+
+The backbone is the pretrained component, while the head is trained to predict the actual bonding boxes and classes on the dataset of interest. As shown above, the head can be single (just dense prediction) or double stage (dense and sparse prediction). The neck, situated between backbone and head, is used to collect feature maps for the dataset (https://medium.com/analytics-vidhya/object-detection-algorithm-yolo-v5-architecture-89e0a35472ef).
+
+
+### YOLOv5 netowork model
+For this implementation, I have chosen to use YOLOv5 because it is written in Pytorch ultralytics, while previous versions were written in the C Darknet library. YOLOv5 is also faster than previous versions, and while there have been newer YOLO releases since v5, YOLOv5 currently has the most support. 
 
