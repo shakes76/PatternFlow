@@ -6,7 +6,7 @@ image_shape = (256,256,1)
 num_embedings = 100
 
 class VQ(tf.keras.layers.Layer):
-    def __init__(self, num_embeddings, embeddings, latent_dim, **kwargs):
+    def __init__(self, num_embeddings, latent_dim, **kwargs):
         super(VQ, self).__init(**kwargs)
         self.num_embeddings = num_embeddings
         self.latent_dim = latent_dim
@@ -68,7 +68,7 @@ class AE(tf.keras.Model):
         # Returns the closest vector in the embedding to the latent
         # space.
         input = tf.keras.layers.Input(shape=latent_dim, name="input")
-        x = VQ(self.num_embeddings, self.embeddings, self.latent_dim)(input)
+        x = VQ(self.num_embeddings, self.latent_dim)(input)
         self.vq = tf.keras.Model(input, x, name="vq")
 
         # ------ DECODER -------
