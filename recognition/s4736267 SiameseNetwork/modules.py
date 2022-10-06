@@ -67,6 +67,7 @@ def init_weights(m):
         nn.init.normal_(m.weight, mean=0.0, std=0.2)
         nn.init.normal_(m.bias.data, mean=0.5, std=0.01)
 
+
 class ContrastiveLoss(torch.nn.Module):
     """
     Contrastive loss function.

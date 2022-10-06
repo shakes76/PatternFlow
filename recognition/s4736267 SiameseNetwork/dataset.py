@@ -92,61 +92,69 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
 
 def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
     
-    test_image_paths = []
-    for data_path in glob.glob(test_data_path + '/*'):
-        test_image_paths.append(glob.glob(data_path + '/*'))
-
-    test_image_paths = list(flatten(test_image_paths))
-    test_image_paths = sorted(test_image_paths)
-
-    length = len(test_image_paths) 
-    number_of_sets = int(length/20)
-
-    test_image_paths.sort()
-
-    i = 0 
-    while  i < number_of_sets:
-        placeholder=test_image_paths[0+i*20:20+i*20]
-        placeholder.sort(key=len, reverse=False)
-        test_image_paths[0+i*20:20+i*20]=placeholder
-        i = i+1
-    
-    return test_image_paths[:DATA_SIZE]
-
-
-#TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
-def classification_data(class_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):    
-    
     image_paths = []
-
-    for data_path in glob.glob(class_data_path + '/*'):
+    for data_path in glob.glob(test_data_path + '/*'):
         image_paths.append(glob.glob(data_path + '/*'))
 
     image_paths = list(flatten(image_paths))
+    image_paths = sorted(image_paths)
+
+    length = len(image_paths) 
+    number_of_sets = int(length/20)
+
+    #test_image_paths.sort()
+    image_paths_new=[None]*length
+
+    i = 0 
+    while  i < number_of_sets:
+        placeholder=image_paths[0+i*20:20+i*20]
+        placeholder.sort(key=len, reverse=False)
+        image_paths_new[0+i*20:20+i*20]=placeholder
+        i = i+1
+
+    image_paths=image_paths_new
+
+    print("DATA SIZE TEST",DATA_SIZE)
+    return image_paths[:DATA_SIZE]
+
+
+#TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
+def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):    
     
+    image_paths = []
+
+    for data_path in glob.glob(clas_data_path + '/*'):
+        image_paths.append(glob.glob(data_path + '/*'))
+
+    image_paths = list(flatten(image_paths))
+    image_paths = sorted(image_paths)
+
     #image_paths.sort(key=lambda item: (-len(item), item))
     #image_paths = sorted(image_paths)
     
     length = len(image_paths) 
     number_of_sets = int(length/20)
 
-    image_paths.sort()
-    
+    #image_paths.sort()
+    image_paths_new=[None]*length
+
     i = 0 
     while  i < number_of_sets:
         placeholder=image_paths[0+i*20:20+i*20]
         placeholder.sort(key=len, reverse=False)
-        image_paths[0+i*20:20+i*20]=placeholder
+        image_paths_new[0+i*20:20+i*20]=placeholder
         i = i+1
-       
+    
+    image_paths=image_paths_new
+
     image_paths_AD = image_paths[0:20]        #First Set should be AD
     #print(len(image_paths_AD))
     image_paths_NC = image_paths[length-20:]  #Last Set should be NC
         
-    print("")
-    print(image_paths_AD)
-    print("")
-    print(image_paths_NC)
+    #print("")
+    #print(image_paths_AD)
+    #print("")
+    #print(image_paths_NC)
 
     return image_paths_AD, image_paths_NC
 
@@ -174,8 +182,38 @@ class Dataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
+
+        slice_number = idx%20    
         
-        return image, label
+        return image, label, slice_number
+
+class DatasetClas(Dataset):
+    def __init__(self, image_paths, transform=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.size = len(image_paths)
+        
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        image_filepath = self.image_paths[0][idx]
+        
+        image = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
+        
+        
+        label = image_filepath.split('/')[-2]
+        label = 0 if label =='AD' else 1
+        
+
+        if self.transform:
+            image = self.transform(image)
+        
+        slice_number = idx%20
+
+
+        return image, label, slice_number
+
 
 class DatasetTrain(Dataset):
     def __init__(self, image_paths, transform=None):
@@ -184,7 +222,7 @@ class DatasetTrain(Dataset):
         self.size = len(image_paths)         
         
     def __len__(self):
-        return len(self.image_paths)
+        return self.size
 
     def __getitem__(self, idx_1):
         #print("path_size",self.size)
@@ -221,6 +259,17 @@ class DatasetTrain(Dataset):
 
         #print("")
         return image_1, image_2, label
+
+#######################################################
+def clas_output(clas_dataset,slice_number):
+    i=0
+    
+
+    for i in slice_number:
+        class_image_NC = clas_dataset[slice_number[i]]
+        class_image_AD = clas_dataset[slice_number[i]]
+
+    return class_image_NC, class_image_AD
 
 #######################################################
 #                  Create Transformations
@@ -260,6 +309,17 @@ def trans_test():
 
     return transformation_test
 
+def trans_clas():
+    transformation_test = transforms.Compose([
+        transforms.ToPILImage(),                                     
+        #transforms.Grayscale(num_output_channels=1),
+        transforms.Resize(size=(105,105)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=0.1143, std=0.2130)
+    ])
+
+    return transformation_test
+
 
 def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
 
@@ -267,21 +327,24 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     
     train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
     test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
+    clas_image_paths = clas_data()
 
     transformation_train = trans_train()
     transformation_valid = trans_valid()
     transformation_test = trans_test()
+    transformation_clas = trans_clas()
     #Dataset
     
     train_dataset = DatasetTrain(train_image_paths,transformation_train)
     valid_dataset = DatasetTrain(valid_image_paths,transformation_valid) 
     test_dataset = Dataset(test_image_paths,transformation_test)
+    clas_dataset = DatasetClas(clas_image_paths,transformation_clas)
 
     #Dataloaders
-    train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
 
-    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
 
-    test_loader = DataLoader(test_dataset, batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
 
-    return train_loader, valid_loader, test_loader
+    return train_loader, valid_loader, test_loader, clas_dataset

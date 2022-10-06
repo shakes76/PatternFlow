@@ -27,10 +27,10 @@ net = modules.Net()
 net = net.to(device)
 
 #Constants
-epoch_range = 20
+epoch_range = 200
 
-batch_size=128
-train_factor=100#00
+batch_size=120
+train_factor=1000#00
 test_factor=1#0
 valid_factor=1
 
@@ -38,7 +38,7 @@ modulo=round(train_factor/10) +1#Print frequency while training
 
 #Importing Custom Dataloader
 import dataset as data
-train_loader, valid_loader, test_loader =data.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
+train_loader, valid_loader, test_loader, clas_dataset =data.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
 
 
 
@@ -95,7 +95,7 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
         #nn.utils.clip_grad_value_(net.parameters(), 100000)
 
-        #optimizer.step()
+        optimizer.step()
 
         #Training loss
         training_loss[epoch]=training_loss[epoch]+loss#.detach().item()
@@ -126,6 +126,12 @@ with torch.no_grad():
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
+        slice_number = data[0].to(device) 
+
+        print("slice_number", slice_number)
+
+        class_image_NC, class_image_AD = modules.clas_output(clas_dataset,slice_number)
+
         #outputs = net.forward_once(inputs).squeeze(1)
         output1,output2 = net(inputs,class_image_NC)#.squeeze(1)
         euclidean_distance_NC = F.pairwise_distance(output1, output2)
