@@ -24,4 +24,5 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         image = Image.open(self.path + self.files[index])
         image = image.resize((self.img_size, self.img_size))
+        image = image.convert('RGB')
         return self.trf(image)  * 2 - 1
