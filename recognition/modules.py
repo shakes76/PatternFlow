@@ -293,13 +293,14 @@ class Trainer:
         plt.close()
 
     @torch.no_grad()
-    def generate_image(self, path):
+    def generate_image(self, path, seed=None):
         """
         Generates new image by completing full reverse denoising of all timesteps.
 
         Saves image to path.
         """
-        img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
+        np.random.seed(seed)
+        img = torch.tensor(np.random.randn((1, 3, self.img_size, self.img_size)), device=self.device)
 
         for i in range(0, self.T)[::-1]:
             t = torch.full((1,), i, device=self.device, dtype=torch.long)
