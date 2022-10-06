@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-latent_dims = 10
-image_shape = (28,28,1)
+latent_dims = 100
+image_shape = (256,256,1)
 
 class AE(tf.keras.Model):
     def __init__(self, **kwargs):
@@ -46,36 +46,35 @@ class AE(tf.keras.Model):
         # upscale the image rather than downscale.
         input = tf.keras.layers.Input(shape=latent_dims, name="input")
         x = tf.keras.layers.Dense(
-            np.prod([max(int(np.floor(el/(2*2*2))),1) for el in image_shape]), 
+            32*32*32,
             activation = 'relu', 
             name = "expand")(input)
         x = tf.keras.layers.Reshape(
-            target_shape = (max(int(np.floor(el/(2*2*2))),1) for el in image_shape), 
+            target_shape = (32,32,32),
             name = "reshape")(x)
-        x = tf.keras.layers.Conv2DTranspose(
-            filters = 128, 
-            kernel_size = 3, 
-            strides = 2, 
-            padding = 'same',
-            activation = 'relu', 
-            name = "reconstruct_1")(x)
-        x = tf.keras.layers.ZeroPadding2D(((0,1),(0,1)))(x)
         x = tf.keras.layers.Conv2DTranspose(
             filters = 64, 
             kernel_size = 3, 
             strides = 2, 
             padding = 'same',
             activation = 'relu', 
+            name = "reconstruct_1")(x)
+        x = tf.keras.layers.Conv2DTranspose(
+            filters = 128, 
+            kernel_size = 3, 
+            strides = 2, 
+            padding = 'same',
+            activation = 'relu', 
             name = "reconstruct_2")(x)
         x = tf.keras.layers.Conv2DTranspose(
-            filters = 32, 
+            filters = 64, 
             kernel_size = 3, 
             strides = 2, 
             padding = 'same',
             name = "to_image", 
             activation = "sigmoid")(x)
         x = tf.keras.layers.Conv2DTranspose(
-            filters = 3,
+            filters = 1,
             kernel_size = 3,
             strides = 1,
             padding = 'same',
