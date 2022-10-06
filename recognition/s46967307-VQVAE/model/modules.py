@@ -71,13 +71,14 @@ class AE(tf.keras.Model):
             kernel_size = 3, 
             strides = 2, 
             padding = 'same',
-            name = "to_image", 
+            name = "reconstruct_3", 
             activation = "sigmoid")(x)
         x = tf.keras.layers.Conv2DTranspose(
             filters = 1,
             kernel_size = 3,
             strides = 1,
             padding = 'same',
+            name = "to_image",
             activation = 'sigmoid')(x)
 
         self.decoder = tf.keras.Model(input, x, name="decoder")
