@@ -18,12 +18,13 @@ class VQ(tf.keras.layers.Layer):
 
     def call(self, inputs):
         # Each result is a vector of distances from associated input and each embedding
-        result = tf.vectorized_map(lambda x:
-                tf.vectorized_map(lambda y:
-                    tf.norm(tf.math.subtract(y, x)),
-                    self.embeddings),
-                inputs)
-        return result
+        results = tf.vectorized_map(lambda y:
+                                   tf.vectorized_map(lambda x: tf.norm(tf.math.subtract(x, y)), self.embeddings),
+                                   inputs)
+        results = tf.math.argmin(results, axis=1)
+        results = tf.gather(self.embeddings, results)
+
+        return results
 
 class AE(tf.keras.Model):
     def __init__(self, **kwargs):
@@ -57,9 +58,9 @@ class AE(tf.keras.Model):
             padding = "same", 
             name = "compression_3")(x)
         x = tf.keras.layers.Flatten(name="flatten")(x)
-        self.latent_space = tf.keras.layers.Dense(latent_dims, name="latent_space")(x)
+        x = tf.keras.layers.Dense(latent_dims, name="latent_space")(x)
 
-        self.encoder = tf.keras.Model(input, self.latent_space, name="encoder")
+        self.encoder = tf.keras.Model(input, x, name="encoder")
 
         # ------ VQ Layer ------
         # Takes output from encoder.

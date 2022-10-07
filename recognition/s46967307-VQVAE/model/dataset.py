@@ -4,39 +4,44 @@ import cv2
 import pickle
 
 def load_data():
-    # Check if data already loaded:
-    if os.path.exists("data.pkl"):
-        print("Found previously loaded data, using that.")
-        with open('data.pkl', 'rb') as f:
-            loaded_dict = pickle.load(f)
-        return loaded_dict
-    print("Couldn't find previously loaded data, loading from file. This may take a minute or two")
-
-    # Expects keras_png_slices_data folder to be in this directory, unzipped
-    DIR = "./keras_png_slices_data/keras_png_slices"
-    CAT = ["test", "train", "validate", "seg_test", "seg_train", "seg_validate"]
-
-    raw_data = {
+    data = {
         "test": [],
         "train": [],
         "validate": [],
-        "seg_test": [],
-        "seg_train": [],
-        "seg_validate": [],
+        #"seg_test": [],
+        #"seg_train": [],
+        #"seg_validate": [],
     }
 
-    for cat in CAT:
-      path = DIR + "_" + cat
-      for img in os.listdir(path):
-        img_array = cv2.imread(os.path.join(path,img), cv2.IMREAD_GRAYSCALE)
-        raw_data[cat].append(img_array)
+    # Check if data already loaded:
+    if os.path.isfile("data.pkl"):
+        print("Found data.pkl, using that")
+        with open('data.pkl', 'rb') as f:
+            loaded_dict = pickle.load(f)
+        data = loaded_dict
+    else :
+        print("Couldn't find data.pkl. Loading from raw file may take a moment")
 
-    data = {}
-    data["test"] = tf.cast(tf.convert_to_tensor(raw_data["test"], dtype=tf.float32), tf.float32) / 255.0
-    data["train"] = tf.cast(tf.convert_to_tensor(raw_data["train"], dtype=tf.float32), tf.float32) / 255.0
-    data["validate"] = tf.cast(tf.convert_to_tensor(raw_data["validate"], dtype=tf.float32), tf.float32) / 255.0
+        # Expects keras_png_slices_data folder to be in this directory, unzipped
+        DIR = "./keras_png_slices_data/keras_png_slices"
+        CAT = ["test", "train", "validate"]
 
-    with open('data.pkl', 'wb') as f:
-        pickle.dump(data, f)
+        for cat in CAT:
+          path = DIR + "_" + cat
+          for img in os.listdir(path):
+            img_array = cv2.imread(os.path.join(path,img), cv2.IMREAD_GRAYSCALE)
+            data[cat].append(img_array)
+
+        # Save the raw data for future use
+        with open('data.pkl', 'wb') as f:
+            pickle.dump(data, f)
+
+    data["test"] = tf.convert_to_tensor(data["test"], dtype=tf.float32)
+    data["train"] = tf.convert_to_tensor(data["train"], dtype=tf.float32)
+    data["validate"] = tf.convert_to_tensor(data["validate"], dtype=tf.float32)
+
+    data["test"] = tf.cast(data["test"], tf.float32) / 255.0
+    data["train"] = tf.cast(data["train"], tf.float32) / 255.0
+    data["validate"] = tf.cast(data["validate"], tf.float32) / 255.0
 
     return data
