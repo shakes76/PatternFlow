@@ -27,10 +27,10 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, latent_space, kernel_size=1, stride = 2, padding = 1),
+            nn.Conv2d(128, latent_space, kernel_size=4, stride = 2, padding = 1),
             # 64 * 128 * 128 -> 256 * 64 * 64
             
-            nn.Tanh(),)
+            nn.Sigmoid(),)
         
     
     def forward(self, x):
@@ -46,15 +46,16 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         
         self.model = nn.Sequential(
-            nn.Conv2d(latent_space, latent_space//2, kernel_size=4, stride = 2, padding = 1),
+            nn.ConvTranspose2d(latent_space, 128, kernel_size=4, stride = 2, padding = 1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, 64, kernel_size= 4, stride = 2, padding = 1),
+            nn.ConvTranspose2d(128, 64, kernel_size= 4, stride = 2, padding = 1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(64, 1, kernel_size = 4, stride = 2, padding = 1)
+            nn.ConvTranspose2d(64, 3, kernel_size = 4, stride = 2, padding = 1),
+            nn.Tanh(),
             )
         
         
@@ -210,11 +211,17 @@ class VQVAE(nn.Module):
     def forward(self, inputs):
         outputs = self.encoder(inputs)
         quantized_outputs, loss = self.VQ(outputs)
+        #print(quantized_outputs.shape)
         decoder_outputs = self.decoder(quantized_outputs)
         
         return decoder_outputs, loss
         
 
+    def get_decoder(self):
+        return self.decoder
+    
+    def get_encoder(self):
+        return self.encoder
         
 
         

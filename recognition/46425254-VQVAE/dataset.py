@@ -35,6 +35,7 @@ class DataLoader(Dataset):
                                         = trans)
         
         self.data = data_loader
+        #self.data = self.data/255.0
         
     def __len__(self):
         return len(self.data)
