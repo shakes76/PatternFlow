@@ -22,6 +22,82 @@ import glob
 #from tqdm import tqdm
 
 import random
+import PIL
+
+#######################################################
+#                  Crop Area
+#######################################################
+#left, top, width, height   # Not WORKING !!!!
+
+def crop_area_pos(loader):
+    for i, data in enumerate(loader, 0):
+        images= data[0]
+        #print(images.shape)
+        
+        if i == 0:
+            new = images[0] 
+        else:
+            new += images[0] 
+
+    treshhold = 1
+    print(new)
+    test=new>treshhold
+    torch.save(test, 'test.txt')
+    print(test)
+
+    print(torch.max(new))
+
+    sum_total = torch.sum(new)
+    sum_total = sum_total
+    print(sum_total)
+
+    sum_total = torch.sum(new*test)
+    sum_total = sum_total
+    print(sum_total)
+
+    top=left=0
+    height=240
+    width=256
+    
+    for i in range(240):
+        if torch.sum(transforms.functional.crop(new,i,0,240-i,256))<sum_total:
+            print(transforms.functional.crop(new,i,0,240-i,256).shape)
+            print("TOP", i)
+            top=i
+            break
+
+
+    for i in range(256):
+        if torch.sum(transforms.functional.crop(new,top,i,240-top,256-i))<sum_total:
+            print(transforms.functional.crop(new,top,i,240-top,256-i).shape)
+            print("LEFT", i)
+            left=i
+            break
+
+       
+    for i in range(240):
+        if torch.sum(transforms.functional.crop(new,0,0,240-i,256))<sum_total:
+            print(transforms.functional.crop(new,0,0,240-i,256).shape)
+            print("Height", 240-i)
+            height=240-i
+            break
+    
+
+    for i in range(256):
+        if torch.sum(transforms.functional.crop(new,0,0,240,256-i))<sum_total:
+            print(transforms.functional.crop(new,0,0,240,256-i).shape)
+            print("Width", 256-i)
+            width=256-i
+
+            break
+
+    print(torch.sum(transforms.functional.crop(new,top,left,height,width))/sum_total)
+    print(transforms.functional.crop(new,top,left,height,width).shape)        
+
+    return 
+
+
+
 
 #######################################################
 #                  Mean and Standard Derivation Calculation
@@ -40,6 +116,10 @@ def mean_std_calculation(loader):
 
     mean /= len(loader.dataset)
     std /= len(loader.dataset)
+
+    print("Mean of train_set",mean, flush=True)
+    print("Std  of train_set",std, flush=True)
+
 
     return mean, std
 
@@ -62,12 +142,30 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
     length = len(image_paths)
     number_of_sets = int(length/20)
 
+
+    image_paths_new=[None]*length
+    image_paths_new2=[None]*length
+
+###BACK Old versions, only shuffles sets
+    #randompos = range(number_of_sets)
+    #randompos = list(randompos)
+    #random.shuffle(randompos)
+    #print(len(image_paths_new))
+#    i = 0 
+#    while  i < number_of_sets:
+#        placeholder=image_paths[0+i*20:20+i*20]
+#        placeholder.sort(key=len, reverse=False)
+#        j = int(randompos[i])
+#        image_paths_new[0+j*20:20+j*20]=placeholder
+#        i = i+1
+
+
+    ###Sort Sets and Shuffle Set with other Sets
+
     randompos = range(number_of_sets)
     randompos = list(randompos)
     random.shuffle(randompos)
-
-    image_paths_new=[None]*length
-    #print(len(image_paths_new))
+    
     i = 0 
     while  i < number_of_sets:
         placeholder=image_paths[0+i*20:20+i*20]
@@ -75,19 +173,35 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
         j = int(randompos[i])
         image_paths_new[0+j*20:20+j*20]=placeholder
         i = i+1
-        #print("i",i," ",j)
-        
-    #print(len(image_paths_new))
-    #print("")
-    #print(len(image_paths))
-    #print("")
-    image_paths = image_paths_new
-    #print(all(v for v in image_paths_new))
-    #print("len image_path", len(image_paths))
 
-    train_image_paths, valid_image_paths = image_paths[:TRAIN_DATA_SIZE],image_paths[TRAIN_DATA_SIZE:(TRAIN_DATA_SIZE+VALID_DATA_SIZE)] 
+    ###Shuffle Slice 1 to different set Slice 1
+    #print("image_paths_new dataset.py",image_paths_new[:TRAIN_DATA_SIZE])
 
-    #print("len train_image_path", len(train_image_paths))
+    for s in range(20):
+        randompos2 = range(number_of_sets)
+        randompos2 = list(randompos2)
+        random.shuffle(randompos2)
+
+    
+        i=0
+        while  i < number_of_sets:
+            placeholder=image_paths_new[s+i*20]
+            j = int(randompos2[i])
+            #print("s:",s,"i:",i,"j:",j," - ", (s+j*20)%length)
+            if image_paths_new2[(s+j*20)%length] != None:
+                print("error: Place already taken train/valid_data() in dataset.py")
+                
+            else:
+                image_paths_new2[(s+j*20)%length]=placeholder
+            i = i+1
+
+
+    #print("image_paths_new2 dataset.py",image_paths_new2[:TRAIN_DATA_SIZE])
+
+
+    train_image_paths = image_paths_new2[:TRAIN_DATA_SIZE]
+    valid_image_paths = image_paths_new2[length-VALID_DATA_SIZE:] 
+    
     return train_image_paths, valid_image_paths
 
 def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
@@ -102,12 +216,14 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
     length = len(image_paths) 
     number_of_sets = int(length/20)
 
+    image_paths_new=[None]*length
+    image_paths_new2=[None]*length
+
+    ###Sort Sets and Shuffle Set with other Sets
     randompos = range(number_of_sets)
     randompos = list(randompos)
     random.shuffle(randompos)
-
-    image_paths_new=[None]*length
-    #print(len(image_paths_new))
+    
     i = 0 
     while  i < number_of_sets:
         placeholder=image_paths[0+i*20:20+i*20]
@@ -116,13 +232,31 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
         image_paths_new[0+j*20:20+j*20]=placeholder
         i = i+1
 
-    image_paths=image_paths_new
+    ###Shuffle Slice 1 to different set Slice 1
 
-    return image_paths[:DATA_SIZE]
+    for s in range(20):
+        randompos2 = range(number_of_sets)
+        randompos2 = list(randompos2)
+        random.shuffle(randompos2)
+
+    
+        i=0
+        while  i < number_of_sets:
+            placeholder=image_paths_new[s+i*20]
+            j = int(randompos2[i])
+            #print("s:",s,"i:",i,"j:",j," - ", (s+j*20)%length)
+            if image_paths_new2[(s+j*20)%length] != None:
+                print("error: Place already taken test_data() in dataset.py")
+                
+            else:
+                image_paths_new2[(s+j*20)%length]=placeholder
+            i = i+1
+
+    return image_paths_new2[:DATA_SIZE]
 
 
 #TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
-def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC_TEST/test'):    
+def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):    
     
     image_paths = []
 
@@ -150,6 +284,8 @@ def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC_TEST/test'):
     
     image_paths=image_paths_new[0:20] + image_paths_new[length-20:]
     
+    #print("clas_data image_paths",image_paths)
+
     return image_paths
 
 
@@ -179,6 +315,10 @@ class Dataset(Dataset):
 
         slice_number = idx%20    
         
+        #print(image_filepath)
+        #print(label)
+        #print(slice_number)
+
         return image, label, slice_number
 
 class DatasetClas(Dataset):
@@ -259,10 +399,10 @@ def clas_output(clas_dataset,slice_number,input_data):
     clas_image_AD = torch.zeros_like(input_data)
     clas_image_NC = torch.zeros_like(input_data)
 
-    for i in range(20):
+    for i in range(input_data.shape[0]):
         
-        clas_image_AD[i] = clas_dataset[slice_number[i]]
-        clas_image_NC[i] = clas_dataset[(slice_number[i+20]+20)] #Second Set represents NC
+        clas_image_AD[i] = clas_dataset[slice_number[i%20]]
+        clas_image_NC[i] = clas_dataset[(slice_number[i%20+20]+20)] #Second Set represents NC
 
 
     return clas_image_AD, clas_image_NC
@@ -270,51 +410,44 @@ def clas_output(clas_dataset,slice_number,input_data):
 #######################################################
 #                  Create Transformations
 #######################################################    
-def trans_train():
-    transformation_train = transforms.Compose([
+
+# From https://medium.com/@sergei740/simple-guide-to-custom-pytorch-transformations-d6bdef5f8ba2
+def crop(image: PIL.Image.Image) -> PIL.Image.Image:
+    left, top, width, height = 40-7, 10, (256-40-40+7+7), (240-10-40)
+    return transforms.functional.crop(image, top=top, left=left, height=height, width=width,)
+
+
+
+def transformation_input():
+    transform_input = transforms.Compose([
+        
         transforms.ToPILImage(),
-        #transforms.RandomCrop((105,105)),                                     
-        #transforms.Grayscale(num_output_channels=1),
-        transforms.Resize(size=(105,105)),
-        #transforms.crop(self,top=30,left=70,height=165,width=140)
-        transforms.ToTensor(),
-        #transforms.Normalize(mean=0.1143, std=0.2130)
-    ])
-
-    return transformation_train
-
-def trans_valid():
-    transformation_valid = transforms.Compose([
-        transforms.ToPILImage(),                                     
-        #transforms.Grayscale(num_output_channels=1),
+        #transforms.Lambda(crop),
         transforms.Resize(size=(105,105)),
         transforms.ToTensor(),
-        #transforms.Normalize(mean=0.000, std=1.000)
     ])
 
-    return transformation_valid
+    return transform_input
 
-def trans_test():
-    transformation_test = transforms.Compose([
-        transforms.ToPILImage(),                                     
-        #transforms.Grayscale(num_output_channels=1),
+def transformation_augmentation():
+    transform_augmentation = transforms.Compose([
+        
+        transforms.ToPILImage(),
+        #transforms.Lambda(crop),
         transforms.Resize(size=(105,105)),
+        #transforms.RandomCrop(105, padding=10,padding_mode='reflect'),
+        #transforms.RandomHorizontalFlip(),
+        #transforms.RandomVerticalFlip(),
         transforms.ToTensor(),
-        #transforms.Normalize(mean=0.1143, std=0.2130)
+        #transforms.Normalize(mean=0.1143, std=0.2130,inplace=True)
     ])
 
-    return transformation_test
+    return transform_augmentation
 
-def trans_clas():
-    transformation_test = transforms.Compose([
-        transforms.ToPILImage(),                                     
-        #transforms.Grayscale(num_output_channels=1),
-        transforms.Resize(size=(105,105)),
-        transforms.ToTensor(),
-        #transforms.Normalize(mean=0.1143, std=0.2130)
-    ])
 
-    return transformation_test
+
+
+
 
 
 def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
@@ -325,16 +458,12 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
     clas_image_paths = clas_data()
 
-    transformation_train = trans_train()
-    transformation_valid = trans_valid()
-    transformation_test = trans_test()
-    transformation_clas = trans_clas()
     #Dataset
     
-    train_dataset = DatasetTrain(train_image_paths,transformation_train)
-    valid_dataset = DatasetTrain(valid_image_paths,transformation_valid) 
-    test_dataset = Dataset(test_image_paths,transformation_test)
-    clas_dataset = DatasetClas(clas_image_paths,transformation_clas)
+    train_dataset = DatasetTrain(train_image_paths,transformation_augmentation())
+    valid_dataset = DatasetTrain(valid_image_paths,transformation_input()) 
+    test_dataset = Dataset(test_image_paths,transformation_input())
+    clas_dataset = DatasetClas(clas_image_paths,transformation_input())
 
 
     #Dataloaders
@@ -345,3 +474,5 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
 
     return train_loader, valid_loader, test_loader, clas_dataset
+
+

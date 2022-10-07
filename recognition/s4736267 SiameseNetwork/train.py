@@ -27,19 +27,19 @@ net = modules.Net()
 net = net.to(device)
 
 #Constants
-epoch_range = 20#00
+epoch_range = 5#00
 
 
 batch_size=120
-train_factor=100#00
-test_factor=10#0
-valid_factor=1
+train_factor=1200#00
+test_factor=20#0
+valid_factor=10
 
 modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
 
 #Importing Custom Dataloader
 import dataset 
-train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
+train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
 
 
 
@@ -57,9 +57,10 @@ testing_loss= torch.zeros(epoch_range)
 test_accuracy=torch.zeros(epoch_range)
 
 
-#xy,yz = data.mean_std_calculation(train_loader)
-#print("Mean of train_set",xy, flush=True)
-#print("Std  of train_set",yz, flush=True)
+#xy,yz = dataset.mean_std_calculation(train_loader)
+#dataset.crop_area_pos(train_loader)   not working !!
+
+
 
 net.apply(modules.init_weights)
 
@@ -94,7 +95,7 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         loss = criterion(output1,output2,labels)
         loss.backward()
 
-        nn.utils.clip_grad_value_(net.parameters(), 10)
+        #nn.utils.clip_grad_value_(net.parameters(), 10)
 
         optimizer.step()
 
@@ -122,6 +123,7 @@ with torch.no_grad():
     correct = 0
     total = 0
 
+
     for i, data in enumerate(test_loader, 0):
 
         inputs= data[0].to(device) 
@@ -129,34 +131,34 @@ with torch.no_grad():
         labels= data[1].to(device).to(torch.float32)
         slice_number = data[2].to(device) 
 
+        #print("slice_number train.py",slice_number)
+
         clas_image_AD, clas_image_NC = dataset.clas_output(clas_dataset,slice_number,inputs)
 
         output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
-        euclidean_distance_AD = F.pairwise_distance(output1, output2)
-
-        print("euc_AD",euclidean_distance_AD)
+        euclidean_distance_AD = F.pairwise_distance(output1, output2)    
 
         output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
         euclidean_distance_NC = F.pairwise_distance(output1, output2)
 
-        print("euc_NC",euclidean_distance_NC)
+        
 
         predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
         
-        print("lab",labels)
-
-        print("pred_lab", predicted_labels)
 
         correct_tensor=torch.eq(labels,predicted_labels)
-
-        print("cor_ten", correct_tensor)
+    
 
         correct_run = torch.sum(correct_tensor)
         correct += correct_run
         total += torch.numel(labels)
 
-        print("")
-        print("")
+        print("euc_NC",euclidean_distance_NC)
+        print("euc_AD",euclidean_distance_AD)
+        print("lab",labels)
+        print("pred_lab", predicted_labels)
+        print("cor_ten", correct_tensor)
+    
 
     test_accuracy = (correct/total)
     print(f'Test Accuracy: {test_accuracy}', flush=True)
