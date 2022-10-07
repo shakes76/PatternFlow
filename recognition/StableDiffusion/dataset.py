@@ -1,8 +1,4 @@
-import torch
-from torch.utils.data import DataLoader, Dataset
-import torchvision
-from PIL import Image
-from tqdm import *
+from imports import *
 import os
 
 """ A custom image loader dataset """
@@ -20,7 +16,7 @@ class ImageLoader(Dataset):
     def __getitem__(self, index):
         transform = torchvision.transforms.ToTensor()
         image = os.path.join(self.img_dir, self.total_imgs[index])
-        image = transform(Image.open(image))
+        image = transform(Image.open(image).convert("L"))
         if self.transform:
             image = self.transform(image)
         return image
