@@ -13,7 +13,6 @@ print(model.decoder.summary())
 # Load the Data.
 data = load_data()
 print("Finished Loading Data")
-print(data["train"])
 
 # Begin model training and validation.
 model.fit((data["train"]),
