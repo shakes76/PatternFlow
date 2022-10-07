@@ -1,0 +1,3 @@
+[submodule "recognition/46616780_YOLO_Hannah_Scholz/yolov5"]
+	path = recognition/46616780_YOLO_Hannah_Scholz/yolov5
+	url = https://github.com/hannahscholz/yolov5.git
