@@ -82,18 +82,22 @@ class DataLoader():
         ### loop thru each directory, and resize each image (resize function saves over original) ###
         i = 0
         for files in files_list:
+            print(f"============= Directory {i} =================")
+            j = 0
             for file in files:
                 path = os.path.join(directory_list[i], file)
                 self.Resize_Image(path)
+                j += 1
             i += 1
 
     def Resize_Image(self, path):
         img = Image.open(path)
-        transform = T.Resize((512, 512))
-
-        # apply the transform on the input image, and save over the old one
-        img = transform(img)
-        img.save(path)
+        check_arr = [np.array(img).shape[0], np.array(img).shape[1]]
+        if not(check_arr == [512, 512]):
+            transform = T.Resize((512, 512))
+            # apply the transform on the input image, and save over the old one
+            img = transform(img)
+            img.save(path)
 
     def Download_Zips(self):
         """
@@ -180,8 +184,8 @@ class DataLoader():
         h = max_down - min_up
         C_x = min_left + (w/2)
         C_y = min_up + (h/2)
-
-        return [C_x, C_y, w, h]
+        # bounding box params are normalised amd returned
+        return [C_x/512, C_y/512, w/512, h/512]
 
     def Draw_Box(self, img_fp: str, box_spec: list):
         """
@@ -227,7 +231,7 @@ def debug():
     # Convert segment mask into bounding box x, y, w, h - isnt x, y supposed to be specified relative to each grid cell? how does this work
     # box = dataloader.Mask_To_Box("{}/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000000_segmentation.png".format(dataloader.train_truth_PNG_ex)) # Define folder path"
     # print(box)
-
+    dataloader.Resize_Image("/root/test/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/misc_tests/img.png")
     # make 4 classes(?): {0:[!m, !s_k], 1:[m, !s_k], 2:[!m, s_k], 3:[m, s_k]}? so one num can be used to specify each case
     #       just have two classes melonoma/sk or !melonoma/sk
     # Combine bounding box data with class data 
