@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.utils as utils
 import torchvision
+import numpy as np
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
@@ -224,6 +226,61 @@ class VQVAE(nn.Module):
         return self.encoder
         
 
+"""
+Abstract for creating a masked convolution for PixelCNN. Based on PixelCNN
+paper in the reference
+
+Parameters:
+    size -> size of the grid
+    current_pos -> the current position the pointer is in
+    mask_type -> the type the mask will be
+    
+Returns:
+    mask_grid -> numpy grid that has "1" x1 to xi (current pos), else "0"
+    
+
+"""
+def conv_mask_abstract( size, current_pos, mask_type):
+    
+    mask_grid = np.zeros((size, size))
+    
+    x, y = current_pos
+    for i in range(size):
+        for j in range(size):
+            if j < x or i < y:
+                mask_grid[i][j] = 1
+
+    if mask_type == "B":
+        mask_grid[y][x] = 1
+    else:
+        mask_grid[y][x] = 0
+        
+    return mask_grid
+    
+                
+class MaskedConv2d(nn.Conv2d):
+    
+    def __init__(self, mask_type, *args, **kwargs):
+        #Inherits 2d convolutional layer and its parameters
+        super(MaskedConv2d, self).__init__(*args, **kwargs)
+        
+        b, c, h, w  = self.weight.shape()
+        centre_h, centre_w = h//2, w//2
+        #setup the mask
+        self.mask = conv_mask_abstract(h, (centre_w, centre_h), mask_type)
+        
+        #register the mask
+        self.register_buffer('mask', torch.from_numpy(self.mask).float())
+        
+    def forward(self, x):
+        #apply mask
+        self.weight.data = self.weight.data * self.mask
+        #use the forward from nn.Conv2d
+        return  super(MaskedConv2d, self).forward(x)
+        
+        
+#class PixelCNN(nn.Module):
+    
         
         
         
