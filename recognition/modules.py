@@ -300,7 +300,7 @@ class Trainer:
         Saves image to path.
         """
         np.random.seed(seed)
-        img = torch.tensor(np.random.randn((1, 3, self.img_size, self.img_size)), device=self.device)
+        img = torch.tensor(np.random.randn(1, 3, self.img_size, self.img_size), device=self.device).float()
 
         for i in range(0, self.T)[::-1]:
             t = torch.full((1,), i, device=self.device, dtype=torch.long)
