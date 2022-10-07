@@ -8,6 +8,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 image_dim = (3,256,256)
 learning_rate = 0.0001
 latent_space = 256
+commitment_loss = 0.25
 
 class Encoder(nn.Module):
     
@@ -50,10 +51,10 @@ class Decoder(nn.Module):
             nn.LeakyReLU(0.1),
             
             nn.Conv2d(128, 64, kernel_size= 4, stride = 2, padding = 1),
-            nn.BatchNormal(64),
+            nn.BatchNorm2d(64),
             nn.LeakyReLU(0.1),
             
-            nn.Conv(64, 1, kernel_size = 4, stride = 2, padding = 1)
+            nn.Conv2d(64, 1, kernel_size = 4, stride = 2, padding = 1)
             )
         
         
@@ -139,9 +140,9 @@ class VQ(nn.Module):
         """
         
         all_distances = (torch.sum(flattened_inputs**2, dim=1, keepdim = True)
-                         + torch.sum(self.embedding.weight**2, dim=1)
+                         + torch.sum(self.embedding_table.weight**2, dim=1)
                          - 2 * torch.matmul(flattened_inputs, 
-                                            self.embedding.weight.t()))
+                                            self.embedding_table.weight.t()))
         
         # find the smallest distance from N*K distance combinations
         # get the index tensor of the smallest distance
@@ -150,14 +151,15 @@ class VQ(nn.Module):
         # create a zeros tensor, with the position at indexes being 1
         # This creates a "beacon" so that position can be replaced by a 
         # embedded vector.
-        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, device)
+        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, 
+                                device = device)
         
         encodings.scatter_(1, indexes, 1)
         
         # Quantize and reshape to BHWC format
         
         quantized_bhwc = torch.matmul(encodings, 
-                                      self.embedding.weight).view(shape)
+                                      self.embedding_table.weight).view(shape)
         
         """
         the loss function is used from equation 3 of the VQVAE paper provided 
@@ -188,7 +190,7 @@ class VQ(nn.Module):
         # restructure the VQ output to be Batch Channel Height Width format
         quantized = quantized_bhwc.permute(0, 3, 1, 2)
         # reformat memory, just like when it was transformed to bchw format
-        quantized = quantized.continguous()
+        quantized = quantized.contiguous()
         
         return quantized, loss
         
@@ -202,13 +204,13 @@ class VQVAE(nn.Module):
         super(VQVAE, self).__init__()
         
         self.encoder = Encoder()
-        self.VQ = VQ()
+        self.VQ = VQ(512, 256, commitment_loss)
         self.decoder = Decoder()
         
     def forward(self, inputs):
-        outputs = Encoder(inputs)
-        quantized_outputs, loss = VQ(outputs)
-        decoder_outputs = Decoder(quantized_outputs)
+        outputs = self.encoder(inputs)
+        quantized_outputs, loss = self.VQ(outputs)
+        decoder_outputs = self.decoder(quantized_outputs)
         
         return decoder_outputs, loss
         
