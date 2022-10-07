@@ -48,7 +48,7 @@ class Block(nn.Module):
         #self.bnorm2 = nn.BatchNorm2d(out_ch)
         self.bnorm1 = nn.GroupNorm(1, out_ch)
         self.bnorm2 = nn.GroupNorm(1, out_ch)
-        self.relu  = nn.GELU()
+        self.relu  = nn.ReLU()
         
     def forward(self, x, t, ):
         # First Conv
@@ -103,7 +103,7 @@ class Unet(nn.Module):
         self.time_mlp = nn.Sequential(
                 SinusoidalPositionEmbeddings(time_emb_dim),
                 nn.Linear(time_emb_dim, time_emb_dim),
-                nn.GELU()
+                nn.ReLU()
             )
         
         # Initial projection
