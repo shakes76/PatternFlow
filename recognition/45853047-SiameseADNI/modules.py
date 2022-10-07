@@ -1,5 +1,8 @@
-
-
+import tensorflow as tf
+import tensorflow_addons as tfa
+import keras.layers as kl
+import keras as k
+from keras.models import Model
 
 
 def subnetwork():
@@ -24,11 +27,36 @@ def distance_layer(im1_feature, im2_feature):
     pass
 
 
-def siamese():
+def siamese(height: int, width: int):
     """ The SNN. Passes image pairs through the subnetwork,
         and computes distance between output vectors. 
+
+    Args:
+        height (int): height of input image
+        width (int): width of input imagee
 
     Returns:
         Model: compiled model
     """
-    pass
+
+    subnetwork = subnetwork()
+
+    image1 = kl.Input(height, width)
+    image2 = kl.Input(height, width)
+
+    feature1 = subnetwork(image1)
+    feature2 = subnetwork(image2)
+
+    distance = distance_layer(feature1, feature2)
+
+    # Classification
+    out = kl.Dense(units = 1, activation='sigmoid')(distance)
+
+    model = Model([image1, image2], out)
+
+    opt = tfa.optimizers.AdamW(learning_rate=0.001, weight_decay= 0.01) # could be .99
+
+    # TODO change loss to contrastive
+    model.compile(loss='binary_crossentropy', metrics=['binary_accuracy'],optimizer=opt)
+
+    return model
