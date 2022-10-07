@@ -66,7 +66,7 @@ model = Unet(image_size)
 optimizer = Adam(model.parameters(), lr=0.001)
 
 #create trainer
-trainer = Trainer(model, img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= not disable_images, tensorboard = not disable_tensorboard, schedule=beta_schedule)
+trainer = Trainer(model, img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= disable_images, tensorboard = disable_tensorboard, schedule=beta_schedule)
 
 #train model
 trainer.fit(dataloader, epochs, optimizer)
