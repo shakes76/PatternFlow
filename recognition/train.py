@@ -12,9 +12,9 @@ parser.add_argument('--timesteps', '-t', help="Number of timesteps in denoising 
 parser.add_argument('--epochs', '-e', help="Number of epochs to train for. Default = 100", type=int)
 parser.add_argument('--batch_size', '-b', help="Training mini-batch size. Default = 128", type=int)
 parser.add_argument('--image_size', '-i', help="Dimensions to resize all images to. eg 255 -> 255x255 Default = 64", type=int)
-parser.add_argument('--disable_images', '-d', help="Images will not be output during training")
-parser.add_argument('--disable_tensorboard', '-x', help="Tensorboard support will be disabled")
 parser.add_argument('--beta_schedule', '-s', help="Schdedule for calculating betas. Choose : linear, cosine, quadratic, sigmoid. Default: linear")
+parser.add_argument('--disable_images', help="Images will not be output during training", action='store_false')
+parser.add_argument('--disable_tensorboard', help="Tensorboard support will be disabled", action='store_false')
 args = parser.parse_args()
 
 #Load values from arguments

@@ -163,7 +163,21 @@ class Trainer:
         print("Using Device: ", self.device)
 
         #Precalculate normal distribution values
-        self.betas = self.beta_schedule(schedule)
+        self.schedule = schedule
+        self.pre_compute()
+
+        #Attach model to device
+        self.model = model.to(self.device)
+
+        #disable flags
+        self.create_images = create_images
+        self.tensorboard = tensorboard
+    
+    def pre_compute(self):
+        """
+        Precompute probabilities
+        """
+        self.betas = self.beta_schedule(self.schedule)
         self.alphas = 1. - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, axis=0)
         self.alphas_cumprod_prev = F.pad(self.alphas_cumprod[:-1], (1, 0), value=1.0)
@@ -171,13 +185,6 @@ class Trainer:
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
         self.posterior_variance = self.betas * (1. - self.alphas_cumprod_prev) / (1. - self.alphas_cumprod)
-
-        #Attach model to device
-        self.model = model.to(self.device)
-
-        self.create_images = create_images
-        self.tensorboard = tensorboard
-
     def beta_schedule(self, type):
         """
         Diffusion noise schedule
@@ -286,13 +293,14 @@ class Trainer:
         plt.close()
 
     @torch.no_grad()
-    def generate_image(self, path):
+    def generate_image(self, path, seed=None):
         """
         Generates new image by completing full reverse denoising of all timesteps.
 
         Saves image to path.
         """
-        img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
+        np.random.seed(seed)
+        img = torch.tensor(np.random.randn((1, 3, self.img_size, self.img_size)), device=self.device)
 
         for i in range(0, self.T)[::-1]:
             t = torch.full((1,), i, device=self.device, dtype=torch.long)
@@ -358,7 +366,15 @@ class Trainer:
         """
         Save model to path
         """
-        torch.save(self.model, path)
+        torch.save({
+            'model_state_dict': self.model.state_dict(),
+            'image_size' : self.img_size,
+            'schedule' : self.schedule,
+            'start' : self.start,
+            'end' : self.end,
+            'create_images' : self.create_images,
+            'tensorboard' : self.tensorboard
+            }, path)
 
     def load_model(self, path):
         """
@@ -367,6 +383,13 @@ class Trainer:
         if 'model' in locals():
             self.model.cpu()
             torch.cuda.empty_cache()
-        
-        self.model = torch.load(path, map_location='cpu')
+        checkpoint = torch.load(path)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.to(self.device)
+        self.img_size = checkpoint['image_size']
+        self.schedule = checkpoint['schedule']
+        self.start = checkpoint['start']
+        self.end = checkpoint['end']
+        self.create_images = checkpoint['create_images']
+        self.tensorboard = checkpoint['tensorboard']
+        self.pre_compute()
