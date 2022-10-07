@@ -1,14 +1,9 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-from tensorflow import keras
 
 # Assumes Directory has a train and test folder
 
 # Seed used for generating the training and validation dataset
 seed = 123
-
 
 def normalisation_data(ds):
     """
@@ -100,17 +95,4 @@ def load_test_data(path, height, width, batch_size):
     return normalisation_data(test_data)
 
 
-val_split = 0.2
-img_height = 256
-img_width = 256
-batch_size = 32
-
-PATH = os.getcwd()
-print(PATH)
-
-train_path = "AD_NC/train"
-test_path = "AD_NC/test"
-train_ds = load_train_data(train_path, img_height, img_width, batch_size, val_split)
-val_ds = load_validation_data(train_path, img_height, img_width, batch_size, val_split)
-test_ds = load_test_data(test_path, img_height, img_width, batch_size)
 
