@@ -12,6 +12,8 @@ latent_space = 256
 class Encoder(nn.Module):
     
     def __init__(self):
+        super(Encoder, self).__init__()
+        
         #3 convolutional layers for a latent space of 64
         self.model = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=4, stride = 2, padding = 1),
@@ -24,7 +26,7 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, latent_space, kernel_size=4, stride = 2, padding = 1),
+            nn.Conv2d(128, latent_space, kernel_size=1, stride = 2, padding = 1),
             # 64 * 128 * 128 -> 256 * 64 * 64
             
             nn.Tanh(),)
@@ -40,8 +42,10 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     
     def __init__(self):
+        super(Decoder, self).__init__()
+        
         self.model = nn.Sequential(
-            nn.Conv2d(latent_space, 128, kernel_size=4, stride = 2, padding = 1),
+            nn.Conv2d(latent_space, latent_space//2, kernel_size=4, stride = 2, padding = 1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
@@ -87,6 +91,8 @@ class VQ(nn.Module):
     """    
     
     def __init__(self, num_embeddings, embedding_dim, commitment_loss):
+        super(VQ, self).__init__()
+    
         self.num_embeddings = num_embeddings
         self.embedding_dim = embedding_dim
         
@@ -154,8 +160,8 @@ class VQ(nn.Module):
                                       self.embedding.weight).view(shape)
         
         """
-        the loss function is used from the VQVAE paper provided in the 
-        references in readme.The first term of the loss fucntion, the 
+        the loss function is used from equation 3 of the VQVAE paper provided 
+        in the references in readme.The first term of the loss fucntion, the 
         reconstruction loss, is calculated later.
         
         The stop gradients used can be applied using the detach() function, 
@@ -186,10 +192,29 @@ class VQ(nn.Module):
         
         return quantized, loss
         
+"""
+Model that compiles the encoder, Vector Quantizer and decoder together.
+Some extra scaffolding added for tensor dimension compatability
+"""
+class VQVAE(nn.Module):
         
+    def __init__(self):
+        super(VQVAE, self).__init__()
         
+        self.encoder = Encoder()
+        self.VQ = VQ()
+        self.decoder = Decoder()
         
+    def forward(self, inputs):
+        outputs = Encoder(inputs)
+        quantized_outputs, loss = VQ(outputs)
+        decoder_outputs = Decoder(quantized_outputs)
         
+        return decoder_outputs, loss
+        
+
+        
+
         
         
         
