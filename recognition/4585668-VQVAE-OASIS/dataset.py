@@ -39,8 +39,6 @@ def get_ttv():
 	test_dset	= to_dset(testing)
 	val_dset	= to_dset(valid)
 
-	print(type(train_dset[0]))
-
 	return (train_dset, test_dset, val_dset)
 
 def preview(dataset, n):
