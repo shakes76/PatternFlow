@@ -4,15 +4,14 @@ import tensorflow as tf
 
 # Seed used for generating the training and validation dataset
 seed = 123
-
 def normalisation_data(ds):
     """
     Standardises input data then rescales it to be between 0 and 1.
     """
     normalisation_layer = tf.keras.layers.Normalization()
     scaling_layer = tf.keras.layers.Rescaling(1. / 255)
-    norm_data = ds.map(lambda x, y: (normalisation_layer(x), y))
-    clean_data = norm_data.map(lambda x, y: (scaling_layer(x), y))
+    norm_data = ds.map(lambda x: (normalisation_layer(x)))
+    clean_data = norm_data.map(lambda x: (scaling_layer(x)))
     return clean_data
 
 
@@ -23,7 +22,7 @@ def load_train_data_no_val(path, height, width, batch_size):
     """
     train_data = tf.keras.utils.image_dataset_from_directory(path,
                                                              color_mode="rgb",
-                                                             labels="inferred",
+                                                             labels=None,
                                                              image_size=(height, width),
                                                              batch_size=batch_size)
 
@@ -37,7 +36,7 @@ def load_val_from_dir(path, height, width, batch_size):
     """
     val_data = tf.keras.utils.image_dataset_from_directory(path,
                                                            color_mode="rgb",
-                                                           labels="inferred",
+                                                           labels=None,
                                                            image_size=(height, width),
                                                            batch_size=batch_size)
 
@@ -57,7 +56,7 @@ def load_train_data(path, height, width, batch_size, val_split):
                                                              subset="training",
                                                              seed=seed,
                                                              color_mode="rgb",
-                                                             labels="inferred",
+                                                             labels=None,
                                                              image_size=(height, width),
                                                              batch_size=batch_size)
 
@@ -75,7 +74,7 @@ def load_validation_data(path, height, width, batch_size, val_split):
                                                                   subset="validation",
                                                                   seed=seed,
                                                                   color_mode="rgb",
-                                                                  labels="inferred",
+                                                                  labels=None,
                                                                   image_size=(height, width),
                                                                   batch_size=batch_size)
 
@@ -88,7 +87,7 @@ def load_test_data(path, height, width, batch_size):
     """
     test_data = tf.keras.utils.image_dataset_from_directory(path,
                                                             color_mode="rgb",
-                                                            labels="inferred",
+                                                            labels=None,
                                                             image_size=(height, width),
                                                             batch_size=batch_size)
 

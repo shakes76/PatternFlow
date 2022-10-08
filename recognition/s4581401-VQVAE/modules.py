@@ -64,56 +64,56 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
         return tf.argmin(distances, axis = 1)
 
 
-
 class VQVAEModel(tf.keras.Model):
     def __init__(self, img_shape, embedding_num, embedding_dim, beta, data_variance, **kwargs):
-
         super(VQVAEModel, self).__init__(**kwargs)
 
-        #Parameters
+        # Parameters
         self._img_shape = img_shape
         self._embedding_num = embedding_num
         self._embedding_dim = embedding_dim
         self._beta = beta
         self._data_variance = data_variance
 
-        #Model components
+        # Model components
         self._encoder = self.create_encoder(self._embedding_dim, self._img_shape)
         self._vq = VectorQuantizerLayer(
-            self._embedding_num, self._embedding_dim , self._beta)
-        self._decoder = self.create_decoder()
+            self._embedding_num, self._embedding_dim, self._beta)
+        self._decoder = self.create_decoder(self._img_shape)
 
-        #Model itself
-        self._vqvae = self.create_vqvae_model()
+        # Model itself
+        # self._vqvae = self.create_vqvae_model()
 
-        #Loss metrics
-        self._total_loss = keras.metrics.Mean(name = "total_loss")
-        self._reconstruction_loss = keras.metrics.Mean(name = "reconstruction_loss")
+        # Loss metrics
+        self._total_loss = keras.metrics.Mean(name="total_loss")
+        self._reconstruction_loss = keras.metrics.Mean(name="reconstruction_loss")
         self._vq_loss = keras.metrics.Mean(name="vq_loss")
+        self._mean_ssim = keras.metrics.Mean(name="mean_ssim")
 
     def get_vq(self):
         return self._vq
 
     def create_encoder(self, embedding_dim, img_shape):
-        #Encoder Implementation from Keras Tutorial
+        # My encoder implementation
         encoder_model = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=img_shape),
             tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2D(embedding_dim, 1, padding="same")
         ], name="encoder")
+
         return encoder_model
 
     def get_encoder(self):
         return self._encoder
 
-    def create_decoder(self):
-        # Decoder implementation from Keras Tutorial
+    def create_decoder(self, img_shape):
+        # My decoder implementation
         decoder_model = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=self.get_encoder().output.shape[1:]),
             tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"),
-            tf.keras.layers.Conv2DTranspose(1, 3, padding="same")
+            tf.keras.layers.Conv2DTranspose(3, 3, padding="same")
         ], name="decoder")
         return decoder_model
 
@@ -125,7 +125,16 @@ class VQVAEModel(tf.keras.Model):
         encoder_layer = self._encoder(initial_layer)
         vq_layer = self._vq(encoder_layer)
         reconstruction_layer = self._decoder(vq_layer)
-        return tf.keras.Model(initial_layer, reconstruction_layer, name = "vqvae")
+        return tf.keras.Model(initial_layer, reconstruction_layer, name="vqvae")
+
+    def call(self, x):
+        x = self._encoder(x)
+        x = self._vq(x)
+        x = self._decoder(x)
+        return x
+
+    def get_vqvae(self):
+        return self._vqvae
 
     @property
     def metrics(self):
@@ -135,38 +144,69 @@ class VQVAEModel(tf.keras.Model):
             self._vq_loss
         ]
 
-    def train_step(self,x):
+    def train_step(self, x):
         """
         The method contains the mathematical logic for one step of training.
         Includes the forward pass, loss calculation, backpropagation, and metric updates.
         """
         with tf.GradientTape() as tape:
-            reconstructed_img = self._vqvae(x)
+            reconstructed_img = self(x)
 
             reconstruction_loss = (
-                tf.reduce_mean((x - reconstructed_img) ** 2) / self._data_variance
+                    tf.reduce_mean((x - reconstructed_img) ** 2) / self._data_variance
             )
-            vq_loss = sum(self._vqvae.losses)
+            vq_loss = sum(self._vq.losses)
             total_loss = reconstruction_loss + vq_loss
+            mean_ssim_loss = tf.reduce_mean(tf.image.ssim(x, reconstructed_img, 1.0))
 
-        #Backpropagation step
-        #Find the gradients and then apply them
-        gradients = tape.gradient(total_loss, self._vqvae.trainable_weights)
-        self.optimizer.apply_gradients(zip(gradients, self._vqvae.trainable_weights))
-        #Track the new losses
+        # Backpropagation step
+        # Find the gradients and then apply them
+        gradients = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
+        # Track the new losses
         self._total_loss.update_state(total_loss)
         self._reconstruction_loss.update_state(reconstruction_loss)
         self._vq_loss.update_state(vq_loss)
+        self._mean_ssim.update_state(mean_ssim_loss)
 
         return {
             "loss": self._total_loss.result(),
             "reconstruction_loss": self._reconstruction_loss.result(),
-            "vq loss": self._vq_loss.result()
+            "vq loss": self._vq_loss.result(),
+            "mean ssim": self._mean_ssim.result()
         }
 
+    def test_step(self, x):
+        """
+        The method contains the mathematical logic for one step of training.
+        Includes the forward pass, loss calculation, backpropagation, and metric updates.
+        """
+        with tf.GradientTape() as tape:
+            reconstructed_img = self(x)
 
+            reconstruction_loss = (
+                    tf.reduce_mean((x - reconstructed_img) ** 2) / self._data_variance
+            )
+            vq_loss = sum(self._vq.losses)
+            total_loss = reconstruction_loss + vq_loss
+            mean_ssim_loss = tf.reduce_mean(tf.image.ssim(x, reconstructed_img, 1.0))
 
+        # Backpropagation step
+        # Find the gradients and then apply them
+        gradients = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
+        # Track the new losses
+        self._total_loss.update_state(total_loss)
+        self._reconstruction_loss.update_state(reconstruction_loss)
+        self._vq_loss.update_state(vq_loss)
+        self._mean_ssim.update_state(mean_ssim_loss)
 
+        return {
+            "loss": self._total_loss.result(),
+            "reconstruction_loss": self._reconstruction_loss.result(),
+            "vq loss": self._vq_loss.result(),
+            "mean ssim": self._mean_ssim.result()
+        }
 
 
 
