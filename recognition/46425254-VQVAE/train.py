@@ -6,6 +6,8 @@ import numpy as np
 
 import modules
 import dataset
+import visualise
+
 
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
@@ -16,7 +18,7 @@ from skimage.metrics import structural_similarity as ssim
 class VQ_Training():
     
     
-    def __init__(self, learning_rate, epochs, path, save = None):
+    def __init__(self, learning_rate, epochs, path, save = None, visualise = False):
         super(VQ_Training).__init__()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.learning_rate = learning_rate
@@ -31,12 +33,11 @@ class VQ_Training():
             torch.optim.Adam(self.model.parameters(), lr = learning_rate)
         
         self.save = save
-
-        
+        self.visualise = visualise
+        if self.visualise == True:
+            self.visualiser = visualise.Visualise(self.model, self.data)
+            
     def train(self):
-        fixed_noise = torch.randn((1, 256, 32, 32)).to(self.device)
-        model = self.model
-        adam = self.optimizer
         epoch = 0
         
         while epoch != epochs:
@@ -44,9 +45,9 @@ class VQ_Training():
             sub_step = 0
             for i, _ in self.training_data:
                 i = i.view(-1, 3, 256, 256).to(self.device)
-                decoder_outputs, VQ_loss = model(i)
+                decoder_outputs, VQ_loss = self.model(i)
                 #reset the optimizer gradients to 0 to avoid resuing prev iteration's 
-                adam.zero_grad()
+                self.optimizer.zero_grad()
                 
                 #calculate reconstruction loss
                 recon_loss = nn.functional.mse_loss(decoder_outputs, i)
@@ -56,7 +57,7 @@ class VQ_Training():
                 
                 #update the gradient 
                 total_loss.backward()
-                adam.step()
+                self.optimizer.step()
                 
                 if sub_step == 0:
                     print(
@@ -64,8 +65,8 @@ class VQ_Training():
                         f"Loss : {total_loss:.4f}"
                     )
                     
-                    self.gen_fake(fixed_noise)
-                    
+                    if self.visualise == True:
+                        self.visualiser.visualise_VQVAE()
         
                 
                 
@@ -76,34 +77,13 @@ class VQ_Training():
                     
         # save anyways if loop finishes by itself
         if self.save != None:
-            torch.save(model.state_dict(), self.save)
+            
+            torch.save(self.model.state_dict(), self.save)
+            
     
-    def gen_fake(self, fixed_noise):
-        
-        fake = self.model.decoder(fixed_noise).view(-1, 3, 256, 256).to(self.device).detach()
-        
-        fake_img_grid = torchvision.utils.make_grid(fake, normalize = True)
-        plt.imshow(fake_img_grid.to("cpu").permute(1,2,0))
-        plt.show()
+
         
         
-    def gen_real(self):
-        # generate an image every epoch
-        real_img = self.data[0][0]
-        _, ax = plt.subplots(1,2)
-        
-        real_img = real_img.view(-1, 3, 256,256).to(self.device).detach()
-        real_grid = torchvision.utils.make_grid(real_img, normalize = True)
-        decoded_img , _ = self.model(real_img)
-        decoded_img = decoded_img.view(-1, 3, 256,256).to(self.device).detach()
-        decoded_grid = \
-            torchvision.utils.make_grid(decoded_img, normalize = True)
-        decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
-        real_grid = real_grid.to("cpu").permute(1,2,0)
-        ax[1].imshow(decoded_grid)
-        ax[0].imshow(real_grid)
-        plt.show()
-        print(ssim(real_grid.numpy(), decoded_grid.numpy(), channel_axis = -1))
         
         
         
