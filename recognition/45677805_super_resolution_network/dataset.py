@@ -43,6 +43,7 @@ def get_test():
 
 """ rerurn img array representation of one image, return img array reprentation """
 def get_img(data):
+    # returns a tuple (data, label),
     imgs = data.take(1)
     # print(type(imgs))
     iterator = iter(imgs)
@@ -65,11 +66,11 @@ def resize_img(img_data, size):
     return resized_img_data
 
 
-""" resize the all the train image data and display the first image"""
+""" resize the input image, return (crop_img, original)"""
 @tf.autograph.experimental.do_not_convert
 def resize_img_flow(data, size):
     data = data.map(
-        lambda x: (resize_img(x, size), get_img(train_data)))
+        lambda x: (resize_img(x, size), x))
 
     # first_img_data = get_img(data)
     # first_img = array_to_img(first_img_data)

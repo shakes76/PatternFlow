@@ -4,7 +4,7 @@ from tensorflow.keras import Model
 
 
 def get_model():
-    height, width = 32, 32
+    height, width = 128, 128
     input_img = Input((height, width, 3))
     lay = Conv2D(64, (9,9), padding = 'same', activation= 'relu')(input_img)
     lay = Conv2D(32, (1,1), padding = 'same', activation= 'relu')(lay)
