@@ -14,7 +14,8 @@ from tqdm import tqdm
 from torch.utils.data import  DataLoader
 
 from dataset import BrainDataset
-
+from modules import Classifier
+from train import train
 
 
 from torch.utils.tensorboard import SummaryWriter
@@ -34,7 +35,7 @@ parser.add_argument('--mlp_dim', type=int, default=512)
 opt = parser.parse_args()
 
 
-image_size = 224
+image_size = 128
 
 train_tfm = transforms.Compose([
     transforms.Resize((image_size, image_size)),
@@ -67,4 +68,16 @@ test_set=BrainDataset(os.path.join(_dataset_dir, "test"), tfm=test_tfm)
 test_loader=DataLoader(test_set, batch_size=batch_size,
                          shuffle=True, pin_memory=True)
 
-print(len(train_set))
+
+
+device="cuda" if torch.cuda.is_available() else "cpu"
+model = Classifier().to(device)
+
+
+
+criterion=nn.CrossEntropyLoss()
+optimizer=torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-5)
+scheduler=torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+    optimizer, T_0=16, T_mult=1)
+
+train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs=100, writer=writer,device=device)
