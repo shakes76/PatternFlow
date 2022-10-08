@@ -6,7 +6,7 @@ import numpy as np
 
 import modules
 import dataset
-import visualise
+import visualise as vis
 
 
 import matplotlib.pyplot as plt
@@ -35,7 +35,7 @@ class VQ_Training():
         self.save = save
         self.visualise = visualise
         if self.visualise == True:
-            self.visualiser = visualise.Visualise(self.model, self.data)
+            self.visualiser = vis.Visualise(self.model, self.data)
             
     def train(self):
         epoch = 0
@@ -66,7 +66,7 @@ class VQ_Training():
                     )
                     
                     if self.visualise == True:
-                        self.visualiser.visualise_VQVAE()
+                        self.visualiser.VQVAE_discrete((0,0))
         
                 
                 
@@ -91,15 +91,15 @@ path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_pn
 
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
 lr = 0.0002
-epochs  = 50
+epochs  = 25
 
-trainer = VQ_Training(lr, epochs, path, save = trained)
+trainer = VQ_Training(lr, epochs, path, save = trained, visualise=True)
 trainer.train()
 
 
 class PixelCNN_Training():
     
-    def __init__(self, lr, epochs, path, save = None):
+    def __init__(self, lr, epochs, model_path, data_path, save = None):
         
         self.lr = lr
         self.epochs = epochs

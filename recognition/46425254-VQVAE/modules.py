@@ -9,7 +9,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
 image_dim = (3,256,256)
 learning_rate = 0.0001
-latent_space = 256
+latent_space = 64
 commitment_loss = 0.25
 
 class Encoder(nn.Module):
@@ -29,8 +29,8 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, latent_space, kernel_size=4, stride = 2, padding = 1),
-            # 64 * 128 * 128 -> 256 * 64 * 64
+            nn.Conv2d(128, latent_space, kernel_size=3, stride = 1, padding = 1),
+            # 64 * 128 * 128 
             
             nn.Sigmoid(),)
         
@@ -56,7 +56,7 @@ class Decoder(nn.Module):
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.1),
             
-            nn.ConvTranspose2d(64, 3, kernel_size = 4, stride = 2, padding = 1),
+            nn.ConvTranspose2d(64, 3, kernel_size = 3, stride = 1, padding = 1),
             nn.Tanh(),
             )
         
@@ -136,17 +136,7 @@ class VQ(nn.Module):
         
         flattened_inputs = encoder_inputs.view(-1, self.embedding_dim)
         
-        
-        indexes = self.argmin_indices(flattened_inputs)
-        
-        
-        # create a zeros tensor, with the position at indexes being 1
-        # This creates a "beacon" so that position can be replaced by a 
-        # embedded vector.
-        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, 
-                                device = device)
-        
-        encodings.scatter_(1, indexes, 1)
+        encodings, _ = self.argmin_indices(flattened_inputs)
         
         # Quantize and reshape to BHWC format
         
@@ -186,8 +176,15 @@ class VQ(nn.Module):
                                             self.embedding_table.weight.t()))
         
         indexes = torch.argmin(dists, dim=1).unsqueeze(1)
+        standalone_indexes = torch.argmin(dists, dim=1)
+        # create a zeros tensor, with the position at indexes being 1
+        # This creates a "beacon" so that position can be replaced by a 
+        # embedded vector.
+        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, 
+                                device = device)
         
-        return indexes
+        encodings.scatter_(1, indexes, 1)
+        return encodings, standalone_indexes
         
     """
     the loss function is used from equation 3 of the VQVAE paper provided 
@@ -221,13 +218,12 @@ class VQVAE(nn.Module):
         super(VQVAE, self).__init__()
         
         self.encoder = Encoder()
-        self.VQ = VQ(512, 256, commitment_loss)
+        self.VQ = VQ(512, latent_space, commitment_loss)
         self.decoder = Decoder()
         
     def forward(self, inputs):
         outputs = self.encoder(inputs)
         quantized_outputs, loss = self.VQ(outputs)
-        #print(quantized_outputs.shape)
         decoder_outputs = self.decoder(quantized_outputs)
         
         return decoder_outputs, loss
@@ -238,6 +234,9 @@ class VQVAE(nn.Module):
     
     def get_encoder(self):
         return self.encoder
+    
+    def get_VQ(self):
+        return self.VQ
         
 
 
