@@ -7,6 +7,8 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
 import torchvision.transforms as T
+import utils
+import pandas as pd
 
 class DataLoader():
     """ 
@@ -63,7 +65,7 @@ class DataLoader():
         self.Delete_Unwanted_Files()
 
         ### resize all images to 512x512 ###
-        self.Resize_Images()
+        #self.Resize_Images()
 
     def Resize_Images(self):
         """
@@ -182,23 +184,10 @@ class DataLoader():
         # redefine as centre_x, centre_y, width, height
         w = max_right - min_left
         h = max_down - min_up
-        C_x = min_left + (w/2)
-        C_y = min_up + (h/2)
+        c_x = min_left + (w/2)
+        c_y = min_up + (h/2)
         # bounding box params are normalised amd returned
-        return [C_x/512, C_y/512, w/512, h/512]
-
-    def Draw_Box(self, img_fp: str, box_spec: list):
-        """
-        Draws the specified box on the given image
-        :param img_fp: filepath to the image
-        :param box_spec: box size and location specification as:
-                            [centre_x, centre_y, width, height]
-        """
-        ### open image with cv2 and save image size ###
-        img = cv2.imread()
-        height, width, _ = img.shape
-
-        ### redefine box location ###
+        return [c_x/512, c_y/512, w/512, h/512]
          
     def Delete_Unwanted_Files(self):
         """
@@ -220,35 +209,92 @@ class DataLoader():
                     path = os.path.join(directory_list[i], file)
                     os.remove(path)
             i += 1
-        
+    
+    def Find_Class_From_CSV(self, img_fp: str, csv_fp: str):
+        """
+        Find the class (0:!melanoma, 1:melanoma) of the given
+        filename, by matching the id from the filename to
+        the id in the row of the csv
+        :param img_fp: filepath of the gnd truth image of interest
+        :param csv_fp: filepath of corresponding csv file for classification
+        """
+        ### Find image id from the fp ###
+        # remove directories from fp string
+        last_slash_idx = img_fp.rfind('/')
+        img_fp = img_fp[last_slash_idx+1:]
+        # extract img id
+        dot_idx = img_fp.rfind('_')
+        img_id = img_fp[0:dot_idx]
+        print(img_id)
+        ### Find the classification from given csv ###
+        # find row corresponding to the img_id 
+        img_df = pd.read_csv(csv_fp)
+        img_arr = img_df.values
+        id_row = np.NaN
+        i = 0
+        for row in img_arr:
+            if row[0] == img_id:
+                id_row = i
+                break
+            i += 1
+        if id_row == np.NaN:
+            raise LookupError("The image ID was not found in CSV file")
+        # return the melanoma classification (0:!melanoma, 1:melanoma)
+        return int(img_arr[id_row][1])
 
-def debug():
-    ### load/save/extract all raw data and gnd truths ###
+    def Create_YOLO_Labels(self):
+        """
+        Creates a corresponding txt file 'label' for each image in 
+        each dataset, and places them in label folder. txt file name 
+        is the same as corresponding file. i.e. if the image is 
+        1234.jpg, the txt label file will be 1234.txt. The format
+        of the txt file will be <class> <c_x> <c_y> <w> <h>
+        """
+        # Define directories to loop thru
+        dataset_list = ["ISIC_data/extract_files/Test", 
+                        "ISIC_data/extract_files/Train", 
+                        "ISIC_data/extract_files/Validate"]
+        curr_dir_list = ["Test", "Train", "validate"]
+        # loop thru directories
+        for dataset in dataset_list:
+            dir_items = os.listdir(dataset)
+            csv_path = ""
+            gnd_truth_dir = ""
+            # find gnd truth dir and csv classification file
+            for item in dir_items:
+                if item.endswith(".csv"):
+                    csv_path = os.path.join(dataset, item)
+                elif item.endswith("_PNG"):
+                    gnd_truth_dir = os.path.join(dataset, item)
+            
+            for gnd_truth in gnd_truth_dir:
+                # classify function not designed to take in gnd truth file
+                pass
+            
+
+def Setup_Data():
+    ### Initialise dataloader - this implicitly deletes unwanted files and downloads/extracts/resizes datasets ###
     dataloader = DataLoader()
 
-    ### convert raw data/gnd truths into format we want ###
-    # resize all images to be the same
-    # Convert segment mask into bounding box x, y, w, h - isnt x, y supposed to be specified relative to each grid cell? how does this work
-    # box = dataloader.Mask_To_Box("{}/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000000_segmentation.png".format(dataloader.train_truth_PNG_ex)) # Define folder path"
-    # print(box)
-    dataloader.Resize_Image("/root/test/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/misc_tests/img.png")
-    # make 4 classes(?): {0:[!m, !s_k], 1:[m, !s_k], 2:[!m, s_k], 3:[m, s_k]}? so one num can be used to specify each case
-    #       just have two classes melonoma/sk or !melonoma/sk
-    # Combine bounding box data with class data 
-    # make separate txt file for each image, containing combined data
+    # Verify that the bounding box code is working for an isolated case:
+    gnd_truth = dataloader.train_truth_PNG_ex + "/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000002_segmentation.png"
+    train_img = dataloader.train_data_ex + "/ISIC-2017_Training_Data/ISIC_0000002.jpg"
+    box = dataloader.Mask_To_Box(gnd_truth)
+    utils.Draw_Box(gnd_truth, box, "misc_tests/box_test_truth.png")
+    utils.Draw_Box(train_img, box, "misc_tests/box_test_img.png")
+
+    # Verify that img class lookup function is working foran isolated case:
+    print(dataloader.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold))
+    ### generate a txt file for each img which specifies bounding box, and class of object ###
+    # note that -> 0:melanoma, 1:!melanoma
+    # dataloader.Create_YOLO_Labels()
+     
     ### move to directories as required by yolov5 ###
-    # use https://medium.com/mlearning-ai/training-yolov5-custom-dataset-with-ease-e4f6272148ad to organise label (txt) files and images
-    ### make yaml file for training specification ###
-    ### train ###
-debug()
+
+    ### convert raw data/gnd truths into format we want ###
+
+Setup_Data()
 
 # TODO: Questions to ask:
-# 1. am I just using yolo to draw box around the lesions? or is it this + classification yes
-# 2. what is the "superpixels"? delete them all
-# 3. what are all the three different downloads for the ground truths - dont use JSON files
-# 4. it would appear that: truth_PNG is the segmentations, and truth_gold is the classification
-#       Would it be correct to say that I only need these two (wtf is the JSON)?
-# 5. am I ok to use this YOLOv5 library? 
-# 6. what is modules.py for (general library?)  yes
 
 #
