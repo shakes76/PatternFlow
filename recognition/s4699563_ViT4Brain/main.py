@@ -41,21 +41,12 @@ train_tfm = transforms.Compose([
     transforms.RandomHorizontalFlip(),
     transforms.RandomVerticalFlip(),
     transforms.RandomRotation(180),
-    # transforms.RandomGrayscale(p=0.2),
-    #   transforms.RandomInvert(p=0.2),
-    # # transforms.RandomPosterize(bits=2),
-    # transforms.RandomSolarize(threshold=192.0, p=0.2),
-    # transforms.RandomEqualize(p=0.2),
     transforms.ToTensor(),
-    # transforms.Normalize(mean=0.00034013,std=(0.00064943))
     transforms.Normalize(mean=(0.2641372), std=(0.5060895))
 ])
 test_tfm = transforms.Compose([
     transforms.Resize((image_size, image_size)),
     transforms.ToTensor(),
-        # transforms.Normalize(mean=(0.5), std=(0.5))
-    # transforms.Normalize(mean=0.522844,std=(0.98886025))
-
     transforms.Normalize(mean=(0.2641372), std=(0.5060895))
 ])
 batch_size = 64
