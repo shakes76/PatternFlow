@@ -29,7 +29,7 @@ class Net(nn.Module):
                                   nn.ReLU(),                                  
                                   nn.Flatten()                                                                   
                                   )
-        self.lin_layer = nn.Sequential(nn.Linear(9216, 9216),
+        self.lin_layer = nn.Sequential(nn.Linear(9216, 4096),
                                   #nn.Sigmoid(),
                                   #nn.Linear(9216, 4096),
                                   nn.Sigmoid())
@@ -61,19 +61,30 @@ class Net_batchnom(nn.Module):
         super().__init__()
         
         self.conv_layer = nn.Sequential(nn.Conv2d(1, 64, kernel_size=10, padding=0), 
+                                  nn.ReLU(), 
+                                  nn.Conv2d(64, 64, kernel_size=7, padding='same'), 
                                   nn.ReLU(),                                                        
                                   nn.MaxPool2d(2),
                                   nn.BatchNorm2d(64),
+
                                   nn.Conv2d(64, 128, kernel_size=7, padding=0), 
-                                  nn.ReLU(),                                  
+                                  nn.ReLU(),
+                                  nn.Conv2d(128, 128, kernel_size=7, padding='same'), 
+                                  nn.ReLU(),                                   
                                   nn.MaxPool2d(2),
                                   nn.BatchNorm2d(128),
+
                                   nn.Conv2d(128, 128, kernel_size=4, padding=0), 
-                                  nn.ReLU(),                                  
+                                  nn.ReLU(),   
+                                  nn.Conv2d(128, 128, kernel_size=4, padding='same'), 
+                                  nn.ReLU(),                               
                                   nn.MaxPool2d(2),
                                   nn.BatchNorm2d(128),
+
                                   nn.Conv2d(128, 256, kernel_size=4, padding=0), 
                                   nn.ReLU(),
+                                  nn.Conv2d(256, 256, kernel_size=4, padding='same'), 
+                                  nn.ReLU(),                                  
                                   nn.BatchNorm2d(256),                                  
                                   nn.Flatten()                                                                   
                                   )
@@ -103,6 +114,34 @@ class Net_batchnom(nn.Module):
         #out  = self.final(out)
 
         return out_x, out_y
+
+
+
+class Net_clas(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        self.pdist = nn.PairwiseDistance(p=1, keepdim=False)
+        #self.pdist = torch.cdist(p=1)    
+        #self.final = nn.Linear(4096, 1)
+
+        self.fc = nn.Sequential(
+            nn.Linear(2*4096, 256),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, 1),
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, img,img_AD,img_NC):
+        out_AD = torch.abs(img-img_AD)
+        out_NC = torch.abs(img-img_NC)
+        output = torch.cat((out_AD, out_NC), 1)
+        output = self.fc(output)
+        output = self.sigmoid(output)
+        
+        return output
+
+
 
 
 class Net_binloss(nn.Module):

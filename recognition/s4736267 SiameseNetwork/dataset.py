@@ -436,10 +436,13 @@ def transformation_augmentation():
         
         transforms.ToPILImage(),
         transforms.Lambda(crop),
+        #transforms.RandomRotation((0,90)),
+        #transforms.RandomResizedCrop(210, scale=(0.7, 1.0), ratio=(0.75, 1.3333333333333333)),
         transforms.Resize(size=(105,105)),
-        #transforms.RandomCrop(105, padding=20,padding_mode='reflect'),
-        #transforms.RandomHorizontalFlip(),
-        #transforms.RandomVerticalFlip(),
+        transforms.RandomCrop(105, padding=30,padding_mode='reflect'),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+
         transforms.ToTensor(),
         transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
     ])
