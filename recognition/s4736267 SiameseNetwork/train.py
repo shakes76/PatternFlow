@@ -21,18 +21,23 @@ import gc
 #Importing CNN Model
 import modules
 
+
+#Scheduler
+from torch.optim.lr_scheduler import StepLR
+
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.Net()
+net = modules.Net_batchnom()
 net = net.to(device)
 
 #Constants
-epoch_range = 5#00
+epoch_range = 5#30#00
 
 
-batch_size=120
-train_factor=1200#00
-test_factor=20#0
+batch_size=20
+train_factor=1000#00
+test_factor=400#0
 valid_factor=10
 
 modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
@@ -48,7 +53,8 @@ train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_siz
 #Optimizer
 criterion = modules.ContrastiveLoss()
 #criterion = nn.BCELoss()
-optimizer = optim.Adam(net.parameters(),lr = 0.0005)
+optimizer = optim.Adam(net.parameters(),lr = 0.01)
+scheduler = StepLR(optimizer, step_size=batch_size, gamma=0.7)
 
 
 #Loss tracking during training
@@ -60,14 +66,10 @@ test_accuracy=torch.zeros(epoch_range)
 #xy,yz = dataset.mean_std_calculation(train_loader)
 #dataset.crop_area_pos(train_loader)   not working !!
 
+#net.apply(modules.init_weights)
 
 
-net.apply(modules.init_weights)
 
-#class_image_NC , class_image_AD = data.classification_data()
-
-#class_image_NC = class_image_NC[None, :].to(device) 
-#class_image_AD = class_image_AD[None, :].to(device) 
 
 print("Initialitaion finished", flush=True)
 
@@ -95,13 +97,15 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         loss = criterion(output1,output2,labels)
         loss.backward()
 
-        #nn.utils.clip_grad_value_(net.parameters(), 10)
+        nn.utils.clip_grad_value_(net.parameters(), 0.1)
 
         optimizer.step()
 
         #Training loss
         training_loss[epoch]=training_loss[epoch]+loss#.detach().item()
         total += torch.numel(labels)
+
+        scheduler.step()
 
         #Update where running
         if i % (modulo) == modulo-1:
@@ -130,35 +134,59 @@ with torch.no_grad():
         
         labels= data[1].to(device).to(torch.float32)
         slice_number = data[2].to(device) 
-
+        #print("labels",labels)
         #print("slice_number train.py",slice_number)
 
         clas_image_AD, clas_image_NC = dataset.clas_output(clas_dataset,slice_number,inputs)
 
         output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
+        print(torch.sum(output1-output2))
         euclidean_distance_AD = F.pairwise_distance(output1, output2)    
 
         output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
         euclidean_distance_NC = F.pairwise_distance(output1, output2)
 
+
+        mode=0
+        if mode == 0:
+
+            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
         
 
-        predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
-        
-
-        correct_tensor=torch.eq(labels,predicted_labels)
+            correct_tensor=torch.eq(labels,predicted_labels)
     
 
-        correct_run = torch.sum(correct_tensor)
-        correct += correct_run
-        total += torch.numel(labels)
+            correct_run = torch.sum(correct_tensor)
+            correct += correct_run
+            total += torch.numel(labels)
 
-        print("euc_NC",euclidean_distance_NC)
-        print("euc_AD",euclidean_distance_AD)
-        print("lab",labels)
-        print("pred_lab", predicted_labels)
-        print("cor_ten", correct_tensor)
-    
+        else:
+            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
+            number_sets=round(torch.numel(labels)/20)
+
+            predicted_labels_patient=torch.zeros(number_sets)
+            labels_patient=torch.zeros(number_sets)
+
+            for j in range(number_sets):
+                
+                predicted_labels_patient[j]= torch.round(torch.sum(predicted_labels[j:j+20])/20)
+                labels_patient[j] = labels[j*20]
+                print("predicted_labels_patient", predicted_labels_patient[j],"--",torch.sum(predicted_labels[j:j+20])/20,"   labels patient",labels_patient[j])
+                
+            correct_tensor=torch.eq(labels_patient,predicted_labels_patient)
+            correct_run = torch.sum(correct_tensor)
+
+            correct += correct_run
+            total += number_sets
+
+            print("correct_run",correct_run)
+            print("")
+
+        #print("euc_NC",euclidean_distance_NC)
+        #print("euc_AD",euclidean_distance_AD)
+        #print("lab",labels)
+        #print("pred_lab", predicted_labels)
+        #print("cor_ten", correct_tensor)    
 
     test_accuracy = (correct/total)
     print(f'Test Accuracy: {test_accuracy}', flush=True)

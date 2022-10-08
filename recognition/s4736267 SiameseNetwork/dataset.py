@@ -25,7 +25,7 @@ import random
 import PIL
 
 #######################################################
-#                  Crop Area
+#                  Crop Area ---- Not WORKING !!!!
 #######################################################
 #left, top, width, height   # Not WORKING !!!!
 
@@ -252,7 +252,7 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
                 image_paths_new2[(s+j*20)%length]=placeholder
             i = i+1
 
-    return image_paths_new2[:DATA_SIZE]
+    return image_paths_new[:DATA_SIZE]
 
 
 #TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
@@ -401,8 +401,8 @@ def clas_output(clas_dataset,slice_number,input_data):
 
     for i in range(input_data.shape[0]):
         
-        clas_image_AD[i] = clas_dataset[slice_number[i%20]]
-        clas_image_NC[i] = clas_dataset[(slice_number[i%20+20]+20)] #Second Set represents NC
+        clas_image_AD[i] = clas_dataset[slice_number[i]]
+        clas_image_NC[i] = clas_dataset[slice_number[i]+20] #Second Set represents NC
 
 
     return clas_image_AD, clas_image_NC
@@ -413,18 +413,20 @@ def clas_output(clas_dataset,slice_number,input_data):
 
 # From https://medium.com/@sergei740/simple-guide-to-custom-pytorch-transformations-d6bdef5f8ba2
 def crop(image: PIL.Image.Image) -> PIL.Image.Image:
-    left, top, width, height = 40-7, 10, (256-40-40+7+7), (240-10-40)
+    #left, top, width, height = 40-7+5-15-10, 10+5-15, (256-40-40+7+7-5-5+30), (240-10-40-5-5+30)
+    left, top, width, height = 25, 5, 210, 210
+    
     return transforms.functional.crop(image, top=top, left=left, height=height, width=width,)
-
 
 
 def transformation_input():
     transform_input = transforms.Compose([
         
         transforms.ToPILImage(),
-        #transforms.Lambda(crop),
+        transforms.Lambda(crop),
         transforms.Resize(size=(105,105)),
         transforms.ToTensor(),
+        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
     ])
 
     return transform_input
@@ -433,19 +435,16 @@ def transformation_augmentation():
     transform_augmentation = transforms.Compose([
         
         transforms.ToPILImage(),
-        #transforms.Lambda(crop),
+        transforms.Lambda(crop),
         transforms.Resize(size=(105,105)),
-        #transforms.RandomCrop(105, padding=10,padding_mode='reflect'),
+        #transforms.RandomCrop(105, padding=20,padding_mode='reflect'),
         #transforms.RandomHorizontalFlip(),
         #transforms.RandomVerticalFlip(),
         transforms.ToTensor(),
-        #transforms.Normalize(mean=0.1143, std=0.2130,inplace=True)
+        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
     ])
 
     return transform_augmentation
-
-
-
 
 
 
@@ -474,5 +473,4 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
 
     return train_loader, valid_loader, test_loader, clas_dataset
-
 
