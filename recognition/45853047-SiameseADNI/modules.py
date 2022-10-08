@@ -8,22 +8,35 @@ import tensorflow_addons as tfa
 
 
 
-def subnetwork():
+def subnetwork(height, width):
     """ The identical subnetwork in the SNN
 
     Returns:
         tf.keras.Model: the subnetwork Model
     """
+    # may need dropout and batch norm
+    # subnet = k.Sequential(layers=[
+    #         kl.Flatten(input_shape=(height, width, 1)),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+    #         kl.Dense(1024, activation='relu',kernel_regularizer='l2')
+    #     ], name='subnet'
+    # )
+
     subnet = k.Sequential(layers=[
+            kl.Conv2D(64, (2, 2), input_shape=(height, width, 1)),
+            kl.MaxPooling2D(),
+            kl.Dropout(0.3),
             kl.Flatten(),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2')
-        ]
+            kl.Dense(512, activation='relu',kernel_regularizer='l2'),
+            kl.Dense(256, activation='relu',kernel_regularizer='l2'),
+        ], name='subnet'
     )
+
+
 
     return subnet
 
@@ -57,10 +70,10 @@ def siamese(height: int, width: int):
         Model: compiled model
     """
 
-    subnet = subnetwork()
+    subnet = subnetwork(height, width)
 
-    image1 = kl.Input(height, width)
-    image2 = kl.Input(height, width)
+    image1 = kl.Input((height, width, 1))
+    image2 = kl.Input((height, width, 1))
 
     feature1 = subnet(image1)
     feature2 = subnet(image2)
@@ -77,7 +90,5 @@ def siamese(height: int, width: int):
 
     # TODO: change loss to contrastive
     model.compile(loss='binary_crossentropy', metrics=['binary_accuracy'],optimizer=opt)
-
-    model.summary()
 
     return model

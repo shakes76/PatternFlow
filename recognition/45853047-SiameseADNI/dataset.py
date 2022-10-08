@@ -1,6 +1,7 @@
 from email.mime import base
 from gettext import translation
 import os
+from re import L
 import tensorflow as tf
 import keras as k
 import numpy as np
@@ -37,6 +38,7 @@ def load_train_data():
     # Create labels array 
     # first num_pairs/2 elements is 0 as pair_compare starts with cn images
     labels = np.concatenate([np.zeros([num_pairs//2]), np.ones([num_pairs//2])])
+    labels = np.expand_dims(labels, -1)
 
     
     base_ds = tf.data.Dataset.from_tensor_slices(pair_base) \
@@ -46,7 +48,7 @@ def load_train_data():
     labels_ds = tf.data.Dataset.from_tensor_slices(labels)
     
     
-    dataset = tf.data.Dataset.zip(((base_ds, pair_ds), labels_ds))
+    dataset = tf.data.Dataset.zip(((base_ds, pair_ds), labels_ds)).shuffle(num_pairs)
     
     train, val = train_val_split(dataset, 0.8)
 
@@ -78,7 +80,7 @@ def get_image(path):
     image = tf.image.decode_jpeg(image, 1)
 
     # Scale imaage
-    image = tf.image.resize(image, [256, 240])  # TODO: may not need this
+    image = tf.image.resize(image, [128, 128])  # TODO: may not need this
 
     # May need to normalise
     return image
