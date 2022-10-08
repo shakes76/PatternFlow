@@ -12,6 +12,7 @@ def main():
     filename = "facebook"
     dataset = Dataset(path, filename)
     dataset.summary(3)
+    print(dataset.get_tensors())
 
 if __name__ == "__main__":
     main()

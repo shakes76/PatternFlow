@@ -16,15 +16,36 @@ Created on Fri Oct 07 12:48:34 2022
 
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 class Dataset:
     """Represents and preprocesses the Facebook dataset"""
     def __init__(self, path, filename='facebook'):
         self.data_numpy = self._load(path, filename)
+        self.data_tensor = self._tensify(self.data_numpy)
 
     def _load(self, path, filename):
         """Loads the partially preprocessed .npz Facebook dataset"""
         return np.load(path+"\\"+filename+'.npz')
+
+    def _tensify(self, data_numpy):
+        """
+        Converts numpy arrays into tensors.
+        """
+        data = data_numpy
+
+        adjacency = data["edges"].T
+        features = tf.transpose(data["features"].T)
+        weights = tf.ones(shape=adjacency.shape[1])
+
+        print("adjacency shape:", adjacency.shape)
+        print("features shape:", features.shape)
+        print("weights shape:", weights.shape)
+
+        return adjacency, features, weights
+
+    def get_tensors(self):
+        return self.data_tensor
 
     def summary(self, n=5):
         """
@@ -42,9 +63,9 @@ class Dataset:
         # Print n example nodes
         print("\nEXAMPLE NODES")
         for i in range(0, n):
-            print("\nNode", i, ":\n")
-            print("\nFeatures:", data["features"][i])
-            print("Target:", data["target"][i])
+            print("\nNode", i,
+                  "\nFeatures:", data["features"][i],
+                  "\nTarget:", data["target"][i])
 
         # Summary of dataset
         print("\nSUMMARY",
