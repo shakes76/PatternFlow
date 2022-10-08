@@ -180,8 +180,7 @@ class VQ(nn.Module):
         # create a zeros tensor, with the position at indexes being 1
         # This creates a "beacon" so that position can be replaced by a 
         # embedded vector.
-        encodings = torch.zeros(indexes.shape[0], self.num_embeddings, 
-                                device = device)
+        encodings = torch.zeros(indexes.shape[0], self.num_embeddings).to(device)
         
         encodings.scatter_(1, indexes, 1)
         return encodings, standalone_indexes
@@ -240,18 +239,18 @@ class VQVAE(nn.Module):
         
 
 
-    
                 
 class MaskedConv2d(nn.Conv2d):
     
     def __init__(self, mask_type, *args, **kwargs):
         # Inherits 2d convolutional layer and its parameters
         super(MaskedConv2d, self).__init__(*args, **kwargs)
+        #print(self.kernel_size)
         self.register_buffer('mask', 
-                             torch.ones(self.out_channels, self.in_channels, 
-                                        self.kernel_size, self.kernel_size).float())
+                             torch.ones((self.out_channels, self.in_channels, 
+                                        self.kernel_size[0], self.kernel_size[1])).float())
         
-        height, width = self.kernel_size, self.kernel_size
+        height, width = self.kernel_size
         # setup the mask, use floor operations to cover area above and left of
         # kernel position
         if mask_type == "A":
@@ -274,24 +273,26 @@ class MaskedConv2d(nn.Conv2d):
         
 class PixelCNN(nn.Module):
     
-    def __init__(self, input_dim, no_filters):
-        
+    def __init__(self):
+        super(PixelCNN, self).__init__()
         self.pixelcnn_model = nn.Sequential(
-            MaskedConv2d("A", in_channels = input_dim, 
-                         out_channels = no_filters, kernel_size = 5, padding = 2),
-            nn.ReLU(0.1),
-            MaskedConv2d("B", in_channels = no_filters, 
-                         out_channels = no_filters, kernel_size = 5, padding = 2),
-            nn.ReLU(0.1),
-            MaskedConv2d("B", in_channels = no_filters, 
-                         out_channels = no_filters, kernel_size = 5, padding = 2),
-            nn.ReLU(0.1),
-            MaskedConv2d("B", in_channels = no_filters, 
-                         out_channels = no_filters, kernel_size = 5, padding = 2),
-            nn.Sigmoid.to(device)
+            MaskedConv2d("A", in_channels = 3, 
+                         out_channels = 64, kernel_size = 5, padding = 2),
+            nn.ReLU(True),
+            MaskedConv2d("B", in_channels = 64, 
+                         out_channels = 64, kernel_size = 5, padding = 2),
+            nn.ReLU(True),
+            MaskedConv2d("B", in_channels = 64, 
+                         out_channels = 64, kernel_size = 5, padding = 2),
+            nn.ReLU(True),
+            MaskedConv2d("B", in_channels = 64, 
+                         out_channels = 64, kernel_size = 5, padding = 2),
+            nn.ReLU(True),
+            nn.Conv2d(64, 3, 1),
+            
             )
         
-    def foward(self, x):
+    def forward(self, x):
         return self.pixelcnn_model(x)
     
     
