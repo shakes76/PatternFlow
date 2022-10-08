@@ -136,20 +136,9 @@ class VQ(nn.Module):
         
         flattened_inputs = encoder_inputs.view(-1, self.embedding_dim)
         
-        """
-        calculate distances between each of the flattened inputs and the
-        weights of the of embedded table vectors, creates N*K distances, where 
-        N is B*H*W and K the num_embeddings
-        """
         
-        all_distances = (torch.sum(flattened_inputs**2, dim=1, keepdim = True)
-                         + torch.sum(self.embedding_table.weight**2, dim=1)
-                         - 2 * torch.matmul(flattened_inputs, 
-                                            self.embedding_table.weight.t()))
+        indexes = self.argmin_indices(flattened_inputs)
         
-        # find the smallest distance from N*K distance combinations
-        # get the index tensor of the smallest distance
-        indexes = torch.argmin(all_distances, dim=1).unsqueeze(1)
         
         # create a zeros tensor, with the position at indexes being 1
         # This creates a "beacon" so that position can be replaced by a 
@@ -164,25 +153,8 @@ class VQ(nn.Module):
         quantized_bhwc = torch.matmul(encodings, 
                                       self.embedding_table.weight).view(shape)
         
-        """
-        the loss function is used from equation 3 of the VQVAE paper provided 
-        in the references in readme.The first term of the loss fucntion, the 
-        reconstruction loss, is calculated later.
         
-        The stop gradients used can be applied using the detach() function, 
-        which removes it from the current graph and turns it into a constant.
-        
-        """
-        first_term = nn.functional.mse_loss(quantized_bhwc.detach(), 
-                                            encoder_inputs)
-        
-        second_term = nn.functional.mse_loss(quantized_bhwc, 
-                                             encoder_inputs.detach())
-        
-        beta = self.commitment_loss
-        
-        
-        loss = first_term + beta * second_term
+        loss = self.loss(quantized_bhwc, encoder_inputs)
         
         # backpropagate and update gradients back at to the encoder using the 
         # quantized gradients
@@ -196,6 +168,48 @@ class VQ(nn.Module):
         quantized = quantized.contiguous()
         
         return quantized, loss
+    
+    
+    """
+    calculate distances between each of the flattened inputs and the
+    weights of the of embedded table vectors, creates N*K distances, where 
+    N is B*H*W and K the num_embeddings
+    """
+    
+    def argmin_indices(self, flat_inputs):
+        # find the smallest distance from N*K distance combinations
+        # get the index tensor of the smallest distance
+        
+        dists =  (torch.sum(flat_inputs**2, dim=1, keepdim = True)
+                         + torch.sum(self.embedding_table.weight**2, dim=1)
+                         - 2 * torch.matmul(flat_inputs, 
+                                            self.embedding_table.weight.t()))
+        
+        indexes = torch.argmin(dists, dim=1).unsqueeze(1)
+        
+        return indexes
+        
+    """
+    the loss function is used from equation 3 of the VQVAE paper provided 
+    in the references in readme.The first term of the loss fucntion, the 
+    reconstruction loss, is calculated later.
+    
+    The stop gradients used can be applied using the detach() function, 
+    which removes it from the current graph and turns it into a constant.
+    
+    """
+    def loss(self, quantized_bhwc, encoder_inputs):
+        first_term = nn.functional.mse_loss(quantized_bhwc.detach(), 
+                                            encoder_inputs)
+        
+        second_term = nn.functional.mse_loss(quantized_bhwc, 
+                                             encoder_inputs.detach())
+        
+        beta = self.commitment_loss
+        
+        
+        return first_term + beta * second_term
+        
         
 """
 Model that compiles the encoder, Vector Quantizer and decoder together.
@@ -232,16 +246,17 @@ class VQVAE(nn.Module):
 class MaskedConv2d(nn.Conv2d):
     
     def __init__(self, mask_type, *args, **kwargs):
-        #Inherits 2d convolutional layer and its parameters
+        # Inherits 2d convolutional layer and its parameters
         super(MaskedConv2d, self).__init__(*args, **kwargs)
         self.register_buffer('mask', 
                              torch.ones(self.out_channels, self.in_channels, 
                                         self.kernel_size, self.kernel_size).float())
         
         height, width = self.kernel_size, self.kernel_size
-        #setup the mask
+        # setup the mask, use floor operations to cover area above and left of
+        # kernel position
         if mask_type == "A":
-            self.mask[:, :, height // 2, width // 2:] = 0
+            self.mask[:, :, height//2, width//2:] = 0
         else:
             # include centre pixel
             self.mask[:, :, height // 2, width // 2 + 1:] = 0
@@ -282,7 +297,7 @@ class PixelCNN(nn.Module):
     
     
         
-        
+
     
         
         

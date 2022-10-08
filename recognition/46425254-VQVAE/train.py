@@ -13,11 +13,11 @@ from skimage.metrics import structural_similarity as ssim
 
 
         
-class Training():
+class VQ_Training():
     
     
     def __init__(self, learning_rate, epochs, path, save = None):
-        super(Training).__init__()
+        super(VQ_Training).__init__()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.learning_rate = learning_rate
         self.epochs = epochs
@@ -113,7 +113,15 @@ trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\train
 lr = 0.0002
 epochs  = 50
 
-trainer = Training(lr, epochs, path, save = trained)
+trainer = VQ_Training(lr, epochs, path, save = trained)
 trainer.train()
 
+
+class PixelCNN_Training():
+    
+    def __init__(self, lr, epochs, path, save = None):
+        
+        self.lr = lr
+        self.epochs = epochs
+        
 trainer.gen_fake(1)
