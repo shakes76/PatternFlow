@@ -18,6 +18,8 @@ class DataLoader():
     def __init__(self):
         """
         """
+        ### Make all required directories ###
+        self.Create_File_Structure()
         ### Define locations and names for zip/download files ###
         # Datasets
         self.train_data = "ISIC_data/zip_files/Train/Train_data.zip"
@@ -217,6 +219,7 @@ class DataLoader():
         the id in the row of the csv
         :param img_fp: filepath of the gnd truth image of interest
         :param csv_fp: filepath of corresponding csv file for classification
+        :return: the classification of the object in this img and the img_id
         """
         ### Find image id from the fp ###
         # remove directories from fp string
@@ -240,23 +243,75 @@ class DataLoader():
         if id_row == np.NaN:
             raise LookupError("The image ID was not found in CSV file")
         # return the melanoma classification (0:!melanoma, 1:melanoma)
-        return int(img_arr[id_row][1])
+        return int(img_arr[id_row][1]), img_id
+    
+    def Create_File_Structure(self):
+        """
+        Creates all directories that are required for functionality of
+        this yolo implementation. should be called at the very
+        start of the initialiser
+        """
+        ### Directories to store all raw data while is is being manipulated into yolo format ###
+        top_dir = "ISIC_data"
+        zip_dir = "ISIC_data/zip_files"
+        extract_files = "ISIC_data/extract_files"
 
-    def Create_YOLO_Labels(self):
+        ### directories which zip file downloads are stored in ###
+        test_zipdir = "ISIC_data/zip_files/Test"
+        train_zipdir = "ISIC_data/zip_files/Train"
+        valid_zipdir = "ISIC_data/zip_files/Validate"
+
+        ### directories which zip files are extracted to ###
+        test_dir = "ISIC_data/extract_files/Test"
+        train_dir = "ISIC_data/extract_files/Train"
+        valid_dir = "ISIC_data/extract_files/Validate"
+
+        ### directories to be used by actual yolo alg ###
+        images_dir = "yolov5_LC/data/images"
+        labels_dir = "yolov5_LC/data/labels"
+        train_images_dir = "yolov5_LC/data/images/training"
+        valid_images_dir = "yolov5_LC/data/images/validation"
+        test_images_dir = "yolov5_LC/data/images/test"
+        train_labels_dir = "yolov5_LC/data/labels/training"
+        valid_labels_dir = "yolov5_LC/data/labels/validation"
+        test_labels_dir = "yolov5_LC/data/labels/testing"
+
+        ### create directories ###
+        dirs = [
+            top_dir, zip_dir, extract_files,
+            test_zipdir, train_zipdir, valid_zipdir,
+            test_dir, train_dir, valid_dir,
+            images_dir, labels_dir, train_images_dir,
+            valid_images_dir, test_images_dir, train_labels_dir,
+            valid_labels_dir, test_labels_dir]
+        for dir in dirs:
+            if not(os.path.exists(dir)):
+                os.mkdir(dir)
+
+    def Create_YOLO_Labels(self, ignore_existing=False):
         """
         Creates a corresponding txt file 'label' for each image in 
         each dataset, and places them in label folder. txt file name 
         is the same as corresponding file. i.e. if the image is 
         1234.jpg, the txt label file will be 1234.txt. The format
         of the txt file will be <class> <c_x> <c_y> <w> <h>
+        :param ignore_existing: set to true if you wish to overwrite
+                                all existing txt files. when false, 
+                                label txt files that already exist will
+                                not be overwritten
         """
         # Define directories to loop thru
         dataset_list = ["ISIC_data/extract_files/Test", 
                         "ISIC_data/extract_files/Train", 
                         "ISIC_data/extract_files/Validate"]
+        yolo_dir_set = ["yolov5_LC/data/labels/testing",
+                        "yolov5_LC/data/labels/training",
+                        "yolov5_LC/data/labels/validation"]
         curr_dir_list = ["Test", "Train", "validate"]
         # loop thru directories
+        i = 0
         for dataset in dataset_list:
+            print(f"Creating labels for {curr_dir_list[i]} set")
             dir_items = os.listdir(dataset)
             csv_path = ""
             gnd_truth_dir = ""
@@ -275,10 +330,15 @@ class DataLoader():
             # so we can extract all the masks:
             gnd_truth_masks = os.listdir(gnd_truth_dir)
             for mask_path in gnd_truth_masks:
+                mask_path = os.path.join(gnd_truth_dir, mask_path)
                 # Find the YOLO label corresponding to this mask
-                self.Get_YOLO_Label(mask_path, csv_path)
+                label, img_id = self.Get_YOLO_Label(mask_path, csv_path)
                 # create txt file and save label to it
-                pass
+                path = f"{yolo_dir_set[i]}/{img_id}.txt"
+                if not(os.path.exists(path)) or ignore_existing:
+                    np.savetxt(path, np.array([label]), fmt='%f')
+            i += 1
+                
     
     def Get_YOLO_Label(self, mask_path: str, csv_path: str):
         """
@@ -288,15 +348,19 @@ class DataLoader():
                             for this image id
         :return: The YOLO-format label for this image id:
                     normalised([class, C_x, C_y, w, h])
+                    and the img id as a string
         """
         ### Find the box specs and class spec ###
         normalised_box_spec = self.Mask_To_Box(mask_path)
         # remember 0:!melanoma, 1:melanoma
-        melanoma_class = self.Find_Class_From_CSV(mask_path, csv_path)
+        melanoma_class, img_id = self.Find_Class_From_CSV(mask_path, csv_path)
 
         ### Concatenate in correct order ###
         normalised_box_spec.insert(0, float(melanoma_class))
-        return normalised_box_spec 
+        return normalised_box_spec, img_id 
+
+
+
 
 def Setup_Data():
     ### Initialise dataloader - this implicitly deletes unwanted files and downloads/extracts/resizes datasets ###
@@ -310,14 +374,15 @@ def Setup_Data():
     # Verify that img class lookup function is working for an isolated case:
     print(dataloader.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold))
     # Verify that label creation function works
-    label = dataloader.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
+    label, img_id = dataloader.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
+    np.savetxt(f"misc_tests/{img_id}.txt", np.array([label]), fmt='%f')
     # Verify that draw function is working
     utils.Draw_Box(gnd_truth, label, "misc_tests/box_test_truth.png")
     utils.Draw_Box(train_img, label, "misc_tests/box_test_img.png")
 
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
-    # dataloader.Create_YOLO_Labels()
+    dataloader.Create_YOLO_Labels()
      
     ### move to directories as required by yolov5 ###
 
