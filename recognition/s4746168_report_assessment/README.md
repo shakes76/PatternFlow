@@ -16,6 +16,15 @@ layer is presented in model.
 U-Net Image Segmentation in keras by Margaret Maynard-Reid 
 [https://929687.smushcdn.com/2633864/wp-content/uploads/2022/02/1_unet_architecture_paper-768x427.png?lossy=1&strip=1&webp=1]
 
-ISIC 2017 dataset will be used to train and implement this model and 
-identify the skin tumour.
+ISIC 2017 dataset will be used to train and will be implemented this 
+model and identify the skin tumour. To access and download the ISIC 2017 
+dataset visit : [https://challenge.isic-archive.com/data/#2017]. 
 
+For this model you need to download all the data files i.e., Normal data 
+files and all Ground Truth data as well. After downloading the data 
+files unzip them and then path of these data files needs to be added in 
+the dataset.py file. **Make sure you specify and locate the correct** 
+**files to correct data variables or else the model might not work** 
+**properly**. I have added location for my data files and hence after 
+downloading ***dataset.py*** it might show error on your computer unless 
+you specify the correct path of the data files.
