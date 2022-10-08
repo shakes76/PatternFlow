@@ -14,8 +14,6 @@ def subnetwork():
     Returns:
         tf.keras.Model: the subnetwork Model
     """
-
-    
     subnet = k.Sequential(layers=[
             kl.Flatten(),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
