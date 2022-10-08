@@ -225,7 +225,7 @@ class DataLoader():
         # extract img id
         dot_idx = img_fp.rfind('_')
         img_id = img_fp[0:dot_idx]
-        print(img_id)
+
         ### Find the classification from given csv ###
         # find row corresponding to the img_id 
         img_df = pd.read_csv(csv_fp)
@@ -266,25 +266,55 @@ class DataLoader():
                     csv_path = os.path.join(dataset, item)
                 elif item.endswith("_PNG"):
                     gnd_truth_dir = os.path.join(dataset, item)
-            
-            for gnd_truth in gnd_truth_dir:
-                # classify function not designed to take in gnd truth file
+            # At this stage we have the path for the classification CSV
+            # and the folder which contains the folder which contains all the
+            # gnd truth mask segmentations. So next we extract this inner folder:
+            inner_folder = os.listdir(gnd_truth_dir)[0]
+            gnd_truth_dir = os.path.join(gnd_truth_dir, inner_folder)
+            # Now we have the actual path to all the gnd truth masks,
+            # so we can extract all the masks:
+            gnd_truth_masks = os.listdir(gnd_truth_dir)
+            for mask_path in gnd_truth_masks:
+                # Find the YOLO label corresponding to this mask
+                self.Get_YOLO_Label(mask_path, csv_path)
+                # create txt file and save label to it
                 pass
-            
+    
+    def Get_YOLO_Label(self, mask_path: str, csv_path: str):
+        """
+        :param mask_path: path to mask segmentation of image to produce
+                            label for
+        :param csv_path: path to csv which contains the melanoma classification
+                            for this image id
+        :return: The YOLO-format label for this image id:
+                    normalised([class, C_x, C_y, w, h])
+        """
+        ### Find the box specs and class spec ###
+        normalised_box_spec = self.Mask_To_Box(mask_path)
+        # remember 0:!melanoma, 1:melanoma
+        melanoma_class = self.Find_Class_From_CSV(mask_path, csv_path)
+
+        ### Concatenate in correct order ###
+        normalised_box_spec.insert(0, float(melanoma_class))
+        return normalised_box_spec 
 
 def Setup_Data():
     ### Initialise dataloader - this implicitly deletes unwanted files and downloads/extracts/resizes datasets ###
     dataloader = DataLoader()
 
-    # Verify that the bounding box code is working for an isolated case:
+    ### Verify helper functions are working ###
     gnd_truth = dataloader.train_truth_PNG_ex + "/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000002_segmentation.png"
     train_img = dataloader.train_data_ex + "/ISIC-2017_Training_Data/ISIC_0000002.jpg"
-    box = dataloader.Mask_To_Box(gnd_truth)
-    utils.Draw_Box(gnd_truth, box, "misc_tests/box_test_truth.png")
-    utils.Draw_Box(train_img, box, "misc_tests/box_test_img.png")
-
-    # Verify that img class lookup function is working foran isolated case:
+    # Verify that the bounding box code is working for an isolated case:
+    print(dataloader.Mask_To_Box(gnd_truth))
+    # Verify that img class lookup function is working for an isolated case:
     print(dataloader.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold))
+    # Verify that label creation function works
+    label = dataloader.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
+    # Verify that draw function is working
+    utils.Draw_Box(gnd_truth, label, "misc_tests/box_test_truth.png")
+    utils.Draw_Box(train_img, label, "misc_tests/box_test_img.png")
+
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
     # dataloader.Create_YOLO_Labels()
