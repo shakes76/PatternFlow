@@ -9,6 +9,7 @@ import cv2
 import torchvision.transforms as T
 import utils
 import pandas as pd
+import shutil
 
 class DataLoader():
     """ 
@@ -271,7 +272,7 @@ class DataLoader():
         labels_dir = "yolov5_LC/data/labels"
         train_images_dir = "yolov5_LC/data/images/training"
         valid_images_dir = "yolov5_LC/data/images/validation"
-        test_images_dir = "yolov5_LC/data/images/test"
+        test_images_dir = "yolov5_LC/data/images/testing"
         train_labels_dir = "yolov5_LC/data/labels/training"
         valid_labels_dir = "yolov5_LC/data/labels/validation"
         test_labels_dir = "yolov5_LC/data/labels/testing"
@@ -307,7 +308,7 @@ class DataLoader():
         yolo_dir_set = ["yolov5_LC/data/labels/testing",
                         "yolov5_LC/data/labels/training",
                         "yolov5_LC/data/labels/validation"]
-        curr_dir_list = ["Test", "Train", "validate"]
+        curr_dir_list = ["test", "train", "validate"]
         # loop thru directories
         i = 0
         for dataset in dataset_list:
@@ -338,8 +339,7 @@ class DataLoader():
                 if not(os.path.exists(path)) or ignore_existing:
                     np.savetxt(path, np.array([label]), fmt='%f')
             i += 1
-                
-    
+                   
     def Get_YOLO_Label(self, mask_path: str, csv_path: str):
         """
         :param mask_path: path to mask segmentation of image to produce
@@ -359,7 +359,35 @@ class DataLoader():
         normalised_box_spec.insert(0, float(melanoma_class))
         return normalised_box_spec, img_id 
 
+    def Copy_Images(self, ignore_existing=False):
+        """
+        Copies the train/Test/Validate images to the required 
+        yolov5 folder.
+        :param ignore_existing: set to true if you wish to overwrite
+                        all existing images. When false, 
+                        images that already exist will
+                        not be overwritten
+        """
+        ### Define directories to loop thru ###
+        source_list = ["ISIC_data/extract_files/Test/Test_data/ISIC-2017_Test_v2_Data", 
+                        "ISIC_data/extract_files/Train/Train_data/ISIC-2017_Training_Data", 
+                        "ISIC_data/extract_files/Validate/Valid_data/ISIC-2017_Validation_Data"]
+        dest_list = ["yolov5_LC/data/images/testing",
+                        "yolov5_LC/data/images/training",
+                        "yolov5_LC/data/images/validation"]
+        curr_dir_list = ["test", "train", "validate"]
 
+        ### loop through sources and copy contents to destinations ###
+        i = 0
+        while i < len(source_list):
+            images = os.listdir(source_list[i])
+            print(f"Copying images from {curr_dir_list[i]} set")
+            for img in images:
+                dest_path = os.path.join(dest_list[i], img)
+                if not(os.path.exists(dest_path)) or ignore_existing:
+                    source_path = os.path.join(source_list[i], img)
+                    shutil.copy(source_path, dest_list[i])
+            i += 1
 
 
 def Setup_Data():
@@ -382,11 +410,11 @@ def Setup_Data():
 
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
-    dataloader.Create_YOLO_Labels()
-     
-    ### move to directories as required by yolov5 ###
+    # UNCOMMENT TO CREATE LABELS
+    # dataloader.Create_YOLO_Labels()   
 
-    ### convert raw data/gnd truths into format we want ###
+    ### Copy images to directories as required by yolov5 ###
+    dataloader.Copy_Images()
 
 Setup_Data()
 
