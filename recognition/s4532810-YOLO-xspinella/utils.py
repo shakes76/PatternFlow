@@ -12,6 +12,18 @@ import torchvision.transforms as T
 Function library for the patternflow YOLO project
 """
 
+def Draw_Box_From_Label(label_fp: str, img_fp: str, out_fp: str):
+    """
+    Draws bounding box on either actual image,
+    or gnd truth segmentation, using the YOLO-format label.
+    :param label_fp: Filepath to the YOLO-format label text file.
+    :param img_fp: Filepath to the img of interest.
+    :param out_fp: output file filepath.
+    """
+    box_spec = list(np.loadtxt(label_fp))
+    Draw_Box(img_fp, box_spec, out_fp)
+
+
 def Draw_Box(img_fp: str, box_spec: list, out_fp: str):
     """
     Draws the specified box on the given image

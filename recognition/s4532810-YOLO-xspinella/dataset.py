@@ -410,11 +410,19 @@ def Setup_Data():
 
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
+
     # UNCOMMENT TO CREATE LABELS
-    # dataloader.Create_YOLO_Labels()   
+    # dataloader.Create_YOLO_Labels() 
+
+    # Verify that box draw function from txt file label works
+    label_fp = "yolov5_LC/data/labels/training/ISIC_0000002.txt"
+    utils.Draw_Box_From_Label(label_fp, train_img, "misc_tests/box_from_label.png")  
 
     ### Copy images to directories as required by yolov5 ###
     dataloader.Copy_Images()
+
+
+    ### create yaml file ###
 
 Setup_Data()
 
