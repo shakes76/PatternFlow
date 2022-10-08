@@ -14,7 +14,8 @@ Created on Fri Oct 07 12:48:34 2022
 @author: Crispian Yeomans
 """
 
-from numpy import load
+import numpy as np
+import matplotlib.pyplot as plt
 
 class Dataset:
     """Represents and preprocesses the Facebook dataset"""
@@ -23,7 +24,7 @@ class Dataset:
 
     def _load(self, path, filename):
         """Loads the partially preprocessed .npz Facebook dataset"""
-        return load(path+"\\"+filename+'.npz')
+        return np.load(path+"\\"+filename+'.npz')
 
     def summary(self, n=5):
         """
@@ -33,19 +34,20 @@ class Dataset:
         """
         data = self.data_numpy
 
-        # Summary data
-        print("\nSUMMARY OF EDGES")
+        # Print n example edges
+        print("\nEXAMPLE EDGES")
         for i in range(0, n):
             print("Edges:", data["edges"][i])
 
-        print("\nSUMMARY OF NODES")
+        # Print n example nodes
+        print("\nEXAMPLE NODES")
         for i in range(0, n):
             print("\nNode", i, ":\n")
             print("\nFeatures:", data["features"][i])
             print("Target:", data["target"][i])
 
         # Summary of dataset
-        print("\nSummary",
+        print("\nSUMMARY",
               "\nNum of Edges:", len(data["edges"]), "/ 2",
               "\nNum of Nodes", len(data["features"][0]),
               "\nNum of Targets:", 4)
