@@ -206,5 +206,3 @@ class VQVAEModel(tf.keras.Model):
             "vq loss": self._vq_loss.result(),
             "mean ssim": self._mean_ssim.result()
         }
-
-

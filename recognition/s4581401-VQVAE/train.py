@@ -46,28 +46,38 @@ with tf.device("/GPU:0"):
 
 
 #Plotting code and results
-plt.plot(history.history['loss'])
+"""
+plt.plot(history.history['loss'] ,label="train")
+plt.plot(history.history['val_loss'] ,label="val")
 plt.title('Training Total Loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
+plt.legend(loc='upper right')
 plt.show()
-
-plt.plot(history.history['reconstruction_loss'])
+"""
+plt.plot(history.history['reconstruction_loss'],label="train")
+plt.plot(history.history['val_reconstruction_loss'],label="val")
 plt.title('Training Reconstruction Loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
+plt.legend(loc='upper right')
 plt.show()
 
-plt.plot(history.history['vq loss'])
+"""
+plt.plot(history.history['vq loss'],label="train")
+plt.plot(history.history['val_vq loss'],label="val")
 plt.title('Vector Quantized Loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
+plt.legend(loc='upper right')
 plt.show()
+"""
 
-plt.plot(history.history['mean ssim'])
+plt.plot(history.history['val_mean ssim'],label="val")
 plt.title('Mean SSIM')
 plt.ylabel('Value')
 plt.xlabel('Epoch')
+plt.legend(loc='lower right')
 plt.show()
 
 # Plot examples of real, codebook and reconstructed using the test dataset.
