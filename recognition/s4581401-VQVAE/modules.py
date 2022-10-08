@@ -63,7 +63,6 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
         distances = pixel_vector_len + embedding_len - 2*subtract_term
         return tf.argmin(distances, axis = 1)
 
-
 class VQVAEModel(tf.keras.Model):
     def __init__(self, img_shape, embedding_num, embedding_dim, beta, data_variance, **kwargs):
         super(VQVAEModel, self).__init__(**kwargs)
@@ -113,7 +112,7 @@ class VQVAEModel(tf.keras.Model):
             tf.keras.layers.InputLayer(input_shape=self.get_encoder().output.shape[1:]),
             tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"),
-            tf.keras.layers.Conv2DTranspose(3, 3, padding="same")
+            tf.keras.layers.Conv2DTranspose(3, 3, activation="relu", padding="same")
         ], name="decoder")
         return decoder_model
 
@@ -157,7 +156,7 @@ class VQVAEModel(tf.keras.Model):
             )
             vq_loss = sum(self._vq.losses)
             total_loss = reconstruction_loss + vq_loss
-            mean_ssim_loss = tf.reduce_mean(tf.image.ssim(x, reconstructed_img, 1.0))
+        #    mean_ssim_loss = tf.reduce_mean(tf.image.ssim(x, reconstructed_img, 1.0))
 
         # Backpropagation step
         # Find the gradients and then apply them
@@ -167,13 +166,13 @@ class VQVAEModel(tf.keras.Model):
         self._total_loss.update_state(total_loss)
         self._reconstruction_loss.update_state(reconstruction_loss)
         self._vq_loss.update_state(vq_loss)
-        self._mean_ssim.update_state(mean_ssim_loss)
+        #   self._mean_ssim.update_state(mean_ssim_loss)
 
         return {
             "loss": self._total_loss.result(),
             "reconstruction_loss": self._reconstruction_loss.result(),
-            "vq loss": self._vq_loss.result(),
-            "mean ssim": self._mean_ssim.result()
+            "vq loss": self._vq_loss.result()  # ,
+            # "mean ssim": self._mean_ssim.result()
         }
 
     def test_step(self, x):
@@ -207,6 +206,5 @@ class VQVAEModel(tf.keras.Model):
             "vq loss": self._vq_loss.result(),
             "mean ssim": self._mean_ssim.result()
         }
-
 
 
