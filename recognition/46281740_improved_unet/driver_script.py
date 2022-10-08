@@ -28,3 +28,16 @@ val_ds = val_ds.map(dp.process_image)
 test_ds = test_ds.map(dp.process_image)
 
 test, seg_test = next(iter(test_ds.batch(len(test_path))))
+
+# create the UNet model and start straining
+model = iu.unet()
+model.summary()
+model.compile(optimizer='adam',
+              loss='binary_crossentropy', metrics=[iu.dice_coefficient_avg])
+
+history = model.fit(train_ds.batch(10),
+                    epochs=8,
+                    validation_data=val_ds.batch(10))
+
+# save the model as .h5 file
+tf.keras.models.save_model(model, './model/mymodel.h5')
