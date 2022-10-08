@@ -73,7 +73,7 @@ def unet():
     c2_down = down_sampling(input=c2, n=64)
 
     '''Conv 3'''
-    c3 = context_module(input=c2_down)
+    c3 = context_module(input=c2_down, n=64)
     c3 = Add()([c2_down, c3])                 # Element-wise sum
     c3_down = down_sampling(input=c3, n=128)
 
@@ -83,7 +83,7 @@ def unet():
     c4_down = down_sampling(input=c4, n=256)
 
     '''Conv 5'''
-    c5 = context_module(input=c4_down)
+    c5 = context_module(input=c4_down, n=256)
     c5 = Add()([c4_down, c5])                 # Element-wise sum
     u4 = UpSampling2D(size=(2, 2))(c5)        # Upsampling module
 
@@ -96,13 +96,13 @@ def unet():
     '''Up 3'''
     u3 = concatenate([u3, c3])                # Concatenation
     u3 = localization_model(input=u3, n=64)
-    s3 = segmentation_module(input=u3, n=4, add=False)
+    s3 = segmentation_module(input=u3, n=2, add=False)
     u2 = UpSampling2D(size=(2, 2))(u3)        # Upsampling module
 
     '''Up 2'''
     u2 = concatenate([u2, c2])                # Concatenation
     u2 = localization_model(input=u2, n=32)
-    s3_2 = segmentation_module(input=u2, n=4, add=True, add_layer=s3)
+    s3_2 = segmentation_module(input=u2, n=2, add=True, add_layer=s3)
     u1 = UpSampling2D(size=(2, 2))(u2)        # Upsampling module
 
     '''Up 1'''
@@ -111,7 +111,7 @@ def unet():
     u1 = Conv2D(32, (1, 1), padding='same')(u1)
     u1 = LeakyReLU(alpha=0.01)(u1)
     # Segmentation module
-    s1 = Conv2D(4, (3, 3), padding='same')(u1)
+    s1 = Conv2D(2, (3, 3), padding='same')(u1)
     s1 = LeakyReLU(alpha=0.01)(s1)
     # Element-wise sum
     s3_2_1 = Add()([s3_2, s1])
@@ -120,3 +120,18 @@ def unet():
     outputs = Conv2D(2, (3, 3), padding='same', activation='softmax')(s3_2_1)
     model = Model(inputs, outputs)
     return model  
+
+def dice_coefficient(y_true, y_pred):
+    intersection = k.sum((y_true * y_pred), axis=[1,2,3])
+    y_true_sum = k.sum(y_true, axis=[1,2,3])
+    y_pred_sum = k.sum(y_pred, axis=[1,2,3])
+    coefficient = (2.0 * intersection) / (y_true_sum + y_pred_sum)
+    return coefficient
+
+def dice_coefficient_avg(y_true, y_pred):
+    coefficient = k.mean(dice_coefficient(y_true, y_pred))
+    return coefficient
+
+def dice_loss(y_true, y_pred):
+    loss = 1.0 - dice_coefficient_avg(y_true, y_pred)
+    return loss

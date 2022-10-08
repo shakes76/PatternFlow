@@ -10,7 +10,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 dataset_path = "D:/Data/Mylecture/COMP3710/lab_report/data/"
 
-seg_test_path = sorted(glob(dataset_path + "ISIC-2017_Test_v2_Part1_GroundTruth/.png"))
+seg_test_path = sorted(glob(dataset_path + "ISIC-2017_Test_v2_Part1_GroundTruth/*.png"))
 seg_train_path = sorted(glob(dataset_path + "ISIC-2017_Training_Part1_GroundTruth/*.png"))
 seg_val_path = sorted(glob(dataset_path + "ISIC-2017_Validation_Part1_GroundTruth/*.png"))
 test_path = sorted(glob(dataset_path + "ISIC-2017_Test_v2_Data/*_???????.jpg"))

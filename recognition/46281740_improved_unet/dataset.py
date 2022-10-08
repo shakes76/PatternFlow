@@ -14,5 +14,5 @@ def process_image(image, seg):
     
     seg = decode_image(seg)
     # tensorflow decode
-    seg = tf.cast(seg == [0.0, 85.0, 170.0, 255.0], tf.float32)
+    seg = tf.cast(seg == [0.0, 255.0], tf.float32)
     return image, seg
