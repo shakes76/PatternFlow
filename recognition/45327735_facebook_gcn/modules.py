@@ -21,6 +21,13 @@ class GNN(tf.keras.Model):
                  dropout_rate=0.2, normalize=True, *args, **kwargs,):
         super(GNN, self).__init__(*args, **kwargs)
 
+        # Default values
+        self.num_classes = num_classes
+        self.hidden_nodes = hidden_nodes
+        self.aggregation_type = aggregation_type
+        self.combination_type = combination_type
+        self.dropout_rate = dropout_rate
+
         # Unpack graph input into edges, features and weights data
         edges, features, weights = graph_input
         self.edges = edges
@@ -34,7 +41,14 @@ class GNN(tf.keras.Model):
         self.weights = self.weights / tf.math.reduce_sum(self.edge_weights)
 
         # Build model architecture
-        self._architecture(hidden_nodes, dropout_rate, aggregation_type, combination_type, normalize, num_classes)
+        self._architecture()
+
+    def _architecture(self):
+        """
+        Defines the architecture of the GNN using default values.
+        """
+        self._architecture(self.hidden_nodes, self.dropout_rate, self.aggregation_type, self.combination_type,
+                           self.normalise, self.num_classes)
 
     def _architecture(self, hidden_nodes, dropout_rate, aggregation_type, combination_type, normalize, num_classes):
         """
@@ -59,6 +73,9 @@ class GNN(tf.keras.Model):
 
         # Create a compute logits layer.
         self.predict_labels = layers.Dense(units=num_classes, name="predict_labels")
+
+    def get_summary(self):
+        self.model.summary()
 
     def call(self, input_node_indices):
         """
