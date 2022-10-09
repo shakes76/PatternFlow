@@ -32,7 +32,7 @@ class adaIN(tf.keras.layers.Layer):
         x,yscale,ybias = input
         mean = tf.math.reduce_mean(x)
         std = tf.math.reduce_std(x)
-        return (yscale*mean) + ybias
+        return (yscale*(x-mean)/std) + ybias
 
 class addNoise(tf.keras.layers.Layer):
     """
