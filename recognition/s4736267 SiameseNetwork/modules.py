@@ -174,20 +174,14 @@ class ResNet18(nn.Module):
                                   nn.MaxPool2d(2)
                                   )
 
-        self.classifier = nn.Sequential(nn.MaxPool2d(4), 
-                                        nn.Flatten(), 
-                                        nn.Linear(512, 1))
+        self.block0_1 = self._make_residual_block_(identity_block, 64, 64,3,1)
+        self.block1_1 = self._make_residual_block_(identity_block, 64, 64,3,1)
 
-        
+        self.block0_2 = self._make_residual_block_(conv_block, 64, 128,3,1)
+        self.block1_2 = self._make_residual_block_(identity_block, 128, 128,3,1)
 
-        self.block0_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
-        self.block1_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
-
-        self.block0_2 = self._make_residual_block_(conv_block, 64, 128,7,3)
-        self.block1_2 = self._make_residual_block_(identity_block, 128, 128,7,3)
-
-        self.block0_3 = self._make_residual_block_(conv_block, 128, 128,5,2)
-        self.block1_3 = self._make_residual_block_(identity_block, 128, 128,5,2)
+        self.block0_3 = self._make_residual_block_(conv_block, 128, 128,3,1)
+        self.block1_3 = self._make_residual_block_(identity_block, 128, 128,3,1)
 
         self.block0_4 = self._make_residual_block_(conv_block, 128, 256,3,1)
         self.block1_4 = self._make_residual_block_(identity_block, 256, 256,3,1)
@@ -263,7 +257,63 @@ class ResNet18(nn.Module):
         return out_x, out_y
 
 
+class ResNet18_3D(nn.Module):
+    def __init__(self, identity_block, conv_block):
+        super().__init__()
+        
+        self.prep = nn.Sequential(nn.Conv2d(20, 64, kernel_size=10, padding=0, stride=2), 
+                                  nn.BatchNorm2d(64), 
+                                  nn.ReLU(inplace=True),
+                                  nn.MaxPool2d(2)
+                                  )
 
+        self.block0_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
+        self.block1_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
+
+        self.block0_2 = self._make_residual_block_(conv_block, 64, 128,7,3)
+        self.block1_2 = self._make_residual_block_(identity_block, 128, 128,7,3)
+
+        self.block0_3 = self._make_residual_block_(conv_block, 128, 128,5,2)
+        self.block1_3 = self._make_residual_block_(identity_block, 128, 128,5,2)
+
+        self.block0_4 = self._make_residual_block_(conv_block, 128, 256,3,1)
+        self.block1_4 = self._make_residual_block_(identity_block, 256, 256,3,1)
+
+        self.lin_layer = nn.Sequential(nn.Linear(7*7*256, 4096),nn.Sigmoid())
+
+    def _make_residual_block_(self, block, c_in, c_out,kernel_size,padding):
+        layers = []
+        layers.append(block(c_in,c_out,kernel_size,padding))
+
+        return nn.Sequential(*layers)  
+
+    def forward_once(self, x):
+        out = self.prep(x)
+        #layer1
+        out = self.block0_1(out) 
+        out = self.block1_1(out) 
+        #layer2
+        out = self.block0_2(out) 
+        out = self.block1_2(out)
+        #layer3
+        out = self.block0_3(out) 
+        out = self.block1_3(out)
+        #layer4
+        out = self.block0_4(out) 
+        out = self.block1_4(out)
+
+        out = out.view(out.size()[0], -1)
+        out = self.lin_layer(out)
+
+        return out
+
+    def forward(self, x,y):
+        out_x = self.forward_once(x)
+        out_y = self.forward_once(y)
+        #out  = torch.abs((out_x-out_y))
+        #out  = self.final(out)
+
+        return out_x, out_y
 
 
 #######################################################

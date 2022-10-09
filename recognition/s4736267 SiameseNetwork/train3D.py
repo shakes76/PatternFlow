@@ -28,7 +28,7 @@ from torch.optim.lr_scheduler import StepLR
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.ResNet18(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
+net = modules.ResNet18_3D(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
 #net.load_state_dict(torch.load('sim_net_ResNet.pt')) #change to .pt
 #net.eval()
 net = net.to(device)
@@ -37,22 +37,19 @@ net = net.to(device)
 #torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 5#00
+epoch_range = 5
 
 
-batch_size=20*3
+batch_size=16
 train_factor=1000
-test_factor=40
+test_factor=400
 valid_factor=10
 
 modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
 
 #Importing Custom Dataloader
 import dataset 
-train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
-
-
-
+train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset3D(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
 
 
 #Optimizer
@@ -85,10 +82,9 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
     for i, data in enumerate(train_loader, 0):
         
-
         inputs_1= data[0].to(device) 
         inputs_2= data[1].to(device) 
-
+        
         labels= data[2].to(device).to(torch.float32)
 
         
@@ -112,13 +108,16 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         scheduler.step()
 
         #Update where running
-        if i % (modulo) == modulo-1:
-            print("-", end ="", flush=True)
+        #if i % (modulo) == modulo-1:
+        print("-", end ="", flush=True)
     
     print("")
 
     training_loss[epoch]=training_loss[epoch]/total
     print(f'Training Loss: {training_loss[epoch]}')
+
+
+
 
     del inputs_1, inputs_2, labels, output1, output2, loss, total
     gc.collect()
@@ -126,7 +125,13 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 ####
 
 
+input_shape=torch.zeros(1,20,210,210)
+
+clas_image_AD, clas_image_NC = dataset.clas_output3D(clas_dataset,input_shape)
+clas_image_AD=clas_image_AD.to(device)
+clas_image_NC=clas_image_NC.to(device)
 # No backpropagtion , No need for calculating gradients, => Faster calculation
+
 with torch.no_grad():
     correct = 0
     total = 0
@@ -137,14 +142,15 @@ with torch.no_grad():
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
-        slice_number = data[2].to(device) 
+        #slice_number = data[2].to(device) 
         #print("labels",labels)
         #print("slice_number train.py",slice_number)
 
-        clas_image_AD, clas_image_NC = dataset.clas_output(clas_dataset,slice_number,inputs)
+        
+
 
         output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
-        print(torch.sum(output1-output2))
+        #print(torch.sum(output1-output2))
         euclidean_distance_AD = F.pairwise_distance(output1, output2)    
 
         output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
@@ -186,11 +192,11 @@ with torch.no_grad():
             print("correct_run",correct_run)
             print("")
 
-        print("euc_NC",euclidean_distance_NC)
-        print("euc_AD",euclidean_distance_AD)
+        #print("euc_NC",euclidean_distance_NC)
+        #print("euc_AD",euclidean_distance_AD)
         print("lab",labels)
         print("pred_lab", predicted_labels)
-        print("cor_ten", correct_tensor)    
+        #print("cor_ten", correct_tensor)    
 
     test_accuracy = (correct/total)
     print(f'Test Accuracy: {test_accuracy}', flush=True)

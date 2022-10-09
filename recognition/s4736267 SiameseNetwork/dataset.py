@@ -177,7 +177,7 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
     ###Shuffle Slice 1 to different set Slice 1
     #print("image_paths_new dataset.py",image_paths_new[:TRAIN_DATA_SIZE])
 
-    for s in range(20):
+    for s in range(0):
         randompos2 = range(number_of_sets)
         randompos2 = list(randompos2)
         random.shuffle(randompos2)
@@ -199,8 +199,8 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
     #print("image_paths_new2 dataset.py",image_paths_new2[:TRAIN_DATA_SIZE])
 
 
-    train_image_paths = image_paths_new2[:TRAIN_DATA_SIZE]
-    valid_image_paths = image_paths_new2[length-VALID_DATA_SIZE:] 
+    train_image_paths = image_paths_new[:TRAIN_DATA_SIZE]
+    valid_image_paths = image_paths_new[length-VALID_DATA_SIZE:] 
     
     return train_image_paths, valid_image_paths
 
@@ -234,7 +234,7 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
 
     ###Shuffle Slice 1 to different set Slice 1
 
-    for s in range(20):
+    for s in range(0):
         randompos2 = range(number_of_sets)
         randompos2 = list(randompos2)
         random.shuffle(randompos2)
@@ -343,8 +343,6 @@ class DatasetClas(Dataset):
         if self.transform:
             image = self.transform(image)
         
-        slice_number = idx%20
-
         return image
 
 
@@ -393,6 +391,109 @@ class DatasetTrain(Dataset):
         #print("")
         return image_1, image_2, label
 
+
+class DatasetTrain3D(Dataset):
+    def __init__(self, image_paths, transform=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.size = int(len(image_paths)/20)    
+        
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        
+        image3D_1=torch.zeros(20,210,210)
+        image3D_2=torch.zeros(20,210,210)
+
+        idx_1=idx
+        idx_2=(idx + random.randint(0,int(self.size)))%self.size
+
+        #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
+        for i in range(20):
+    
+
+            image_filepath_1 = self.image_paths[idx_1+i]
+            image_1 = cv2.imread(image_filepath_1, cv2.IMREAD_GRAYSCALE)
+            
+            image_filepath_2 = self.image_paths[idx_2+i]
+            image_2 = cv2.imread(image_filepath_2, cv2.IMREAD_GRAYSCALE)
+
+            if self.transform:
+                image_1 = self.transform(image_1)
+                image_2 = self.transform(image_2)
+
+            image3D_1[i]=image_1
+            image3D_2[i]=image_2
+
+        label_1 = image_filepath_1.split('/')[-2]
+        label_1 = 0 if label_1=='AD' else 1
+        
+        label_2 = image_filepath_2.split('/')[-2]
+        label_2 = 0 if label_2=='AD' else 1
+
+        if label_1 == label_2:
+            label=1
+        else:
+            label=0
+
+        return image3D_1, image3D_2, label
+
+class Dataset3D(Dataset):
+    def __init__(self, image_paths, transform=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.size = int(len(image_paths)/20)    
+        
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        
+        image3D=torch.zeros(20,210,210)
+
+        for i in range(20):
+    
+            image_filepath = self.image_paths[idx+i]
+            image_1 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
+            
+            if self.transform:
+                image_1 = self.transform(image_1)
+
+            image3D[i]=image_1
+
+        label = image_filepath.split('/')[-2]
+        label = 0 if label=='AD' else 1
+        
+
+        return image3D, label
+
+class DatasetClas3D(Dataset):
+    def __init__(self, image_paths, transform=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.size = int(len(image_paths)/20)    
+        
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        
+        image3D=torch.zeros(20,210,210)
+
+        for i in range(20):
+    
+            image_filepath = self.image_paths[idx+i]
+            image_1 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
+            
+            if self.transform:
+                image_1 = self.transform(image_1)
+
+            image3D[i]=image_1
+
+        return image3D
+
+
 #######################################################
 def clas_output(clas_dataset,slice_number,input_data):
     i=0
@@ -406,6 +507,17 @@ def clas_output(clas_dataset,slice_number,input_data):
 
 
     return clas_image_AD, clas_image_NC
+
+
+def clas_output3D(clas_dataset,input_data):
+
+    clas_Person_AD = clas_dataset[0]
+    clas_Person_NC = clas_dataset[1] #Second Set represents NC
+
+    
+
+    return clas_Person_AD[None, :], clas_Person_NC[None, :]
+
 
 #######################################################
 #                  Create Transformations
@@ -449,7 +561,16 @@ def transformation_augmentation():
 
     return transform_augmentation
 
+def transformation_3D():
+    transform_input = transforms.Compose([
+        
+        transforms.ToPILImage(),
+        transforms.Lambda(crop),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
+    ])
 
+    return transform_input
 
 
 def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
@@ -477,3 +598,28 @@ def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
 
     return train_loader, valid_loader, test_loader, clas_dataset
 
+
+def dataset3D(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
+
+    #Preparation
+    
+    train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
+    test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
+    clas_image_paths = clas_data()
+
+    #Dataset
+    
+    train_dataset = DatasetTrain3D(train_image_paths,transformation_3D())
+    valid_dataset = DatasetTrain3D(valid_image_paths,transformation_3D()) 
+    test_dataset = Dataset3D(test_image_paths,transformation_3D())
+    clas_dataset = DatasetClas3D(clas_image_paths,transformation_3D())
+
+
+    #Dataloaders
+    train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
+
+    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
+
+    test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
+
+    return train_loader, valid_loader, test_loader, clas_dataset
