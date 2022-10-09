@@ -68,7 +68,7 @@ class DataLoader():
         self.Delete_Unwanted_Files()
 
         ### resize all images to 640x640 ###
-        # self.Resize_Images()
+        self.Resize_Images()
 
     def Resize_Images(self):
         """
@@ -81,13 +81,15 @@ class DataLoader():
                             self.test_truth_PNG_ex + "/ISIC-2017_Test_v2_Part1_GroundTruth",
                             self.validation_data_ex + "/ISIC-2017_Validation_Data",
                             self.valid_truth_PNG_ex + "/ISIC-2017_Validation_Part1_GroundTruth"]
+        curr_dir_name = ["Train Data", "Train Masks", "Test Data", "Test Masks",
+                            "Validation Data", "Validation Masks"]
         files_list = []
         for directory in directory_list:
             files_list.append(os.listdir(directory))
         ### loop thru each directory, and resize each image (resize function saves over original) ###
         i = 0
         for files in files_list:
-            print(f"============= Directory {i} =================")
+            print(f"============= Resize {curr_dir_name[i]} =================")
             j = 0
             for file in files:
                 path = os.path.join(directory_list[i], file)
@@ -212,7 +214,22 @@ class DataLoader():
                     path = os.path.join(directory_list[i], file)
                     os.remove(path)
             i += 1
-    
+
+    def Get_Gnd_Truth_Img_ID(self, img_fp: str):
+        """
+        finds the image ID of the given gnd truth img mask.
+        :param img_fp: the img to find the id of
+        :return: the mask image id
+        """   
+        ### Find image id from the fp ###
+        # remove directories from fp string
+        last_slash_idx = img_fp.rfind('/')
+        img_fp = img_fp[last_slash_idx+1:]
+        # extract img id
+        dot_idx = img_fp.rfind('_')
+        img_id = img_fp[0:dot_idx]
+        return img_id
+
     def Find_Class_From_CSV(self, img_fp: str, csv_fp: str):
         """
         Find the class (0:!melanoma, 1:melanoma) of the given
@@ -223,12 +240,7 @@ class DataLoader():
         :return: the classification of the object in this img and the img_id
         """
         ### Find image id from the fp ###
-        # remove directories from fp string
-        last_slash_idx = img_fp.rfind('/')
-        img_fp = img_fp[last_slash_idx+1:]
-        # extract img id
-        dot_idx = img_fp.rfind('_')
-        img_id = img_fp[0:dot_idx]
+        img_id = self.Get_Gnd_Truth_Img_ID(img_fp)
 
         ### Find the classification from given csv ###
         # find row corresponding to the img_id 
@@ -332,11 +344,13 @@ class DataLoader():
             gnd_truth_masks = os.listdir(gnd_truth_dir)
             for mask_path in gnd_truth_masks:
                 mask_path = os.path.join(gnd_truth_dir, mask_path)
-                # Find the YOLO label corresponding to this mask
-                label, img_id = self.Get_YOLO_Label(mask_path, csv_path)
-                # create txt file and save label to it
+                
+                img_id = self.Get_Gnd_Truth_Img_ID(mask_path)
                 path = f"{yolo_dir_set[i]}/{img_id}.txt"
                 if not(os.path.exists(path)) or ignore_existing:
+                    # Find the YOLO label corresponding to this mask
+                    label, img_id = self.Get_YOLO_Label(mask_path, csv_path)
+                    # create txt file and save label to it
                     np.savetxt(path, np.array([label]), fmt='%f')
             i += 1
                    
@@ -402,7 +416,7 @@ class DataLoader():
         configs = ["ISIC_dataset.yaml",
                     "ISIC_test.yaml"]
         destination = "yolov5_LC/data"
-
+        print("Copying .yaml configs")
         for config in configs:
             dest_path = os.path.join(destination, config)
             if not(os.path.exists(dest_path)) or ignore_existing:
@@ -411,16 +425,26 @@ class DataLoader():
 
 
 def Setup_Data():
-    ### Initialise dataloader - this implicitly deletes unwanted files and downloads/extracts/resizes datasets ###
+    """
+    Same as Download_Preprocess_Arrange() function in train.py
+    exists if the user wants to arrange/preprocess all data without
+    executing train.py
+    """
+    ### Initialise dataloader, this implicitly: 
+    #   deletes unwanted files, 
+    #   downloads/extracts/resizes datasets 
+    #   creates directory structure ###
     dataloader = DataLoader()
 
     ### Verify helper functions are working ###
     gnd_truth = dataloader.train_truth_PNG_ex + "/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000002_segmentation.png"
     train_img = dataloader.train_data_ex + "/ISIC-2017_Training_Data/ISIC_0000002.jpg"
     # Verify that the bounding box code is working for an isolated case:
-    print(dataloader.Mask_To_Box(gnd_truth))
+    print(f"Test conversion of mask to box specs: Should return '[0.54296875, 0.56640625, 0.6078125, 0.7828125]'\
+        {dataloader.Mask_To_Box(gnd_truth)}")
     # Verify that img class lookup function is working for an isolated case:
-    print(dataloader.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold))
+    print(f"Test melanoma lookup function. Should return '(1, 'ISIC_0000002')'\n \
+        {dataloader.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold)}")
     # Verify that label creation function works
     label, img_id = dataloader.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
     np.savetxt(f"misc_tests/{img_id}.txt", np.array([label]), fmt='%f')
@@ -430,9 +454,7 @@ def Setup_Data():
 
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
-
-    # UNCOMMENT TO CREATE LABELS
-    # dataloader.Create_YOLO_Labels(ignore_existing=True) 
+    dataloader.Create_YOLO_Labels() 
 
     # Verify that box draw function from txt file label works
     label_fp = "yolov5_LC/data/labels/training/ISIC_0000002.txt"
@@ -444,4 +466,3 @@ def Setup_Data():
     ### copy yaml file into correct YOLOv5 directory ###
     dataloader.Copy_Configs()
 
-Setup_Data()
