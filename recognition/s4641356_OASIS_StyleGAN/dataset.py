@@ -1,7 +1,7 @@
 import os
 from PIL import Image
-from tensorflow import Tensor, convert_to_tensor, reduce_mean
-from numpy import asarray, ndarray, uint8
+import tensorflow as tf
+import numpy as np
 
 class OASIS_loader():
     """
@@ -22,7 +22,7 @@ class OASIS_loader():
         print("Found {} Images".format(self._num_images_availible))
 
 
-    def get_data(self, num_images: int) -> tuple[Tensor, float]:
+    def get_data(self, num_images: int) -> tuple[tf.Tensor, float]:
         """
         Returns a normalized Tensor containing greyscale image pixel intensities.
         Images appear in order they appear in folder, with images being loaded into
@@ -35,18 +35,20 @@ class OASIS_loader():
             ValueError: If the requested number of images is greater than the amount of images in the specified folder
 
         Returns:
-            tuple[Tensor, float]: Normalised data vector, Group mean used to center normalised data
+            tuple[tf.Tensor, float]: Normalised data vector, Group mean used to center normalised data
         """
         if num_images > self._num_images_availible:
             raise ValueError("Requested more images than availible: \n ({} > {})".format(num_images,self.num_images_availible))
 
         #Load in any additional images required to meet desired amount
         while len(self._cache) < num_images:
+            #wrap returned array in an additioal axis and append to list of lists
             self._cache.append(self._load_image(self._filepath + self._image_list[len(self._cache)]))
 
-        return self._normalise(convert_to_tensor(self._cache[:num_images]))
+        data,mean = self._normalise(np.stack(self._cache[0:num_images], axis = 0))
+        return tf.convert_to_tensor(data),mean
 
-    def _load_image(self, filepath: str) -> ndarray:
+    def _load_image(self, filepath: str) -> np.array:
         """
         Load a specified image and convert it into a numpy array.
         As the OASIS images are colourless, we convert them to greyscale
@@ -57,24 +59,22 @@ class OASIS_loader():
             filepath (str): Filepath of image to load
 
         Returns:
-            ndarray: Matrix of greyscale image pixel intensities (0,255)
+            np.array: Matrix of greyscale image pixel intensities (0,255)
         """
         im = Image.open(filepath).convert('L')
-        return asarray(im,dtype=uint8)
+        return np.asarray(im,dtype = np.uint8)
 
             
-    def _normalise(self, image_vector: Tensor) -> tuple[Tensor, float]:
+    def _normalise(self, image_vector: np.array) -> tuple[np.array, float]:
         """
         Normalises and centers vector of greyscale image intensity matrices
 
+        Args:
+            image_vector (np.array): tensor of image data to normalize
         Returns:
-           tuple[Tensor, float]: Normalised data vector, Group mean used to center normalised data
+           tuple[np.array, float]: Normalised data vector, Group mean used to center normalised data
         """
         normed_vector = image_vector/255
-        mean = reduce_mean(normed_vector)
+        mean = np.mean(normed_vector)
         return (normed_vector - mean), mean
 
-        
-
-test = OASIS_loader()
-print(test.get_data(10))
