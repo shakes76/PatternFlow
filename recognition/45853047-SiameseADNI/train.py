@@ -8,7 +8,19 @@ def train():
 
     train, val = load_train_data()
 
-    train = train.batch(16)
-    val = val.batch(16)
+    train = train.batch(32)
+    val = val.batch(32)
 
     model.fit(train, epochs=20, validation_data=val)
+
+    predict(val, model)
+
+
+def predict(ds, model):
+    for pair, label in ds:
+        pred = model.predict(pair)
+        for i in range(len(pred)):
+            print(pred[i], label[i])
+        break 
+
+train()

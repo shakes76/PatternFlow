@@ -1,7 +1,4 @@
-from email.mime import base
-from gettext import translation
 import os
-from re import L
 import tensorflow as tf
 import keras as k
 import numpy as np
@@ -83,7 +80,7 @@ def get_image(path):
     image = tf.image.resize(image, [128, 128])  # TODO: may not need this
 
     # May need to normalise
-    return image
+    return image/255
 
 def train_val_split(dataset, ratio):
     train_num = int(round(len(dataset)*ratio, 1))
@@ -92,5 +89,3 @@ def train_val_split(dataset, ratio):
     val = dataset.skip(train_num)
 
     return train, val
-    
-
