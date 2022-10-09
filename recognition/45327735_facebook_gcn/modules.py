@@ -233,17 +233,17 @@ class GraphConvLayer(layers.Layer):
         Returns: node_embeddings of shape [num_nodes, representation_dim].
         """
 
-        node_repesentations, edges, edge_weights = inputs
+        node_representations, edges, edge_weights = inputs
         # Get node_indices (source) and neighbour_indices (target) from edges.
         node_indices, neighbour_indices = edges[0], edges[1]
-        # neighbour_repesentations shape is [num_edges, representation_dim].
-        neighbour_repesentations = tf.gather(node_repesentations, neighbour_indices)
+        # neighbour_representations shape is [num_edges, representation_dim].
+        neighbour_representations = tf.gather(node_representations, neighbour_indices)
 
         # Prepare the messages of the neighbours.
-        neighbour_messages = self.prepare(neighbour_repesentations, edge_weights)
+        neighbour_messages = self.prepare(neighbour_representations, edge_weights)
         # Aggregate the neighbour messages.
         aggregated_messages = self.aggregate(
-            node_indices, neighbour_messages, node_repesentations
+            node_indices, neighbour_messages, node_representations
         )
         # Update the node embedding with the neighbour messages.
-        return self.update(node_repesentations, aggregated_messages)
+        return self.update(node_representations, aggregated_messages)

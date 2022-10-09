@@ -22,6 +22,7 @@ class Dataset:
     """Represents and preprocesses the Facebook dataset"""
     def __init__(self, path, filename='facebook'):
         self.data_numpy = self._load(path, filename)
+        self.num_classes = len(set(self.data_numpy["target"]))
         self.data_tensor = self._tensify(self.data_numpy)
 
     def _load(self, path, filename):
@@ -34,10 +35,10 @@ class Dataset:
         """
         data = data_numpy
 
-        edges = data["edges"].T
+        edges = tf.transpose(tf.convert_to_tensor(data["edges"]))
         features = tf.transpose(data["features"].T)
         weights = self._normalise_weights(data.get("weights"), edges)
-        targets = data["target"].T
+        targets = tf.convert_to_tensor(data["target"])
 
         print("adjacency shape:", edges.shape)
         print("features shape:", features.shape)
@@ -57,8 +58,8 @@ class Dataset:
         # Force weights to sum to 1.
         return weights / tf.math.reduce_sum(weights)
 
-    def get_tensors(self):
-        return self.data_tensor
+    def get_data(self):
+        return self.get_features(), self.get_edges(), self.get_weights()
 
     def get_edges(self):
         return self.data_tensor[0]
@@ -71,6 +72,9 @@ class Dataset:
 
     def get_targets(self):
         return self.data_tensor[3]
+
+    def get_num_classes(self):
+        return self.num_classes
 
     def summary(self, n=5):
         """
