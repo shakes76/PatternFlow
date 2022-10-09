@@ -389,6 +389,26 @@ class DataLoader():
                     shutil.copy(source_path, dest_list[i])
             i += 1
 
+    def Copy_Configs(self, ignore_existing=False):
+        """
+        Copies the two required .yaml config files
+        from the patternflow to the YOLOv5 git submodule.
+        :param ignore_existing: set to true if you wish to overwrite
+                                all existing images. When false, 
+                                images that already exist will
+                                not be overwritten
+        """
+        source_dir = "config_files"
+        configs = ["ISIC_dataset.yaml",
+                    "ISIC_test.yaml"]
+        destination = "yolov5_LC/data"
+
+        for config in configs:
+            dest_path = os.path.join(destination, config)
+            if not(os.path.exists(dest_path)) or ignore_existing:
+                src_path = os.path.join(source_dir, config)
+                shutil.copy(src_path, destination)
+
 
 def Setup_Data():
     ### Initialise dataloader - this implicitly deletes unwanted files and downloads/extracts/resizes datasets ###
@@ -421,12 +441,7 @@ def Setup_Data():
     ### Copy images to directories as required by yolov5 ###
     dataloader.Copy_Images()
 
-    ### create yaml file ###
-    # you will need to create a yaml file for training to work
+    ### copy yaml file into correct YOLOv5 directory ###
+    dataloader.Copy_Configs()
 
 Setup_Data()
-
-# TODO: Questions to ask:
-# resize from original -> 512x512 -> 640x640 the same as original -> 640x640
-
-#
