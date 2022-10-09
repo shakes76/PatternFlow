@@ -26,6 +26,7 @@ class GNNTrainer():
         self.sample_graph = self.data
         self.model = GNN(self.sample_graph, self.num_classes, hidden_nodes, aggregation_type="sum", dropout_rate=dropout_rate)
         self._compile()
+        self._split()
 
     def _compile(self):
         optimizer = keras.optimizers.Adam(self.learning_rate)
@@ -37,27 +38,16 @@ class GNNTrainer():
 
     def _split(self):
         seed = np.random.randint(1, 10000)
-        data = self.data
+        ids = self.data.get_ids().numpy()
+        targets = self.data.get_targets().numpy()
 
-        edges = data.get_edges()
-        features = data.get_features()
-        weights = data.get_weights()
-        targets = data.get_targets()
+        print("ids", ids.shape, ids)
+        print("targets", targets.shape, targets)
 
         # Split nodes
         (self.x_train, self.x_valid,
-         self.y_train, self.y_valid) = train_test_split(features, targets, test_size=0.33,
+         self.y_train, self.y_valid) = train_test_split(ids, targets, test_size=0.33,
                                                         shuffle=True, random_state=seed)
-
-        #print(data.get_data(), data.get_targets())
-        #print(data.get_data().shape, data.get_targets().shape)
-
-        # Split data
-        #(self.x_train, self.x_valid,
-        # self.y_train, self.y_valid) = train_test_split(data.get_data(), data.get_targets(), test_size=0.33,
-        #                                                shuffle=True, random_state=seed)
-
-        print(self.x_train, self.x_valid, self.y_train, self.y_valid)
 
     def get_summary(self):
         self.model([1, 10, 100])
@@ -66,24 +56,13 @@ class GNNTrainer():
     def train(self, epochs, batch_size):
         # Create an early stopping callback
         #early_stopping = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50, restore_best_weights=True)
-        #
 
         # Fit the model
-        #print(self.data.get_data())
-        print(self.data.get_data()[2])
-        history = self.model.fit(self.data.get_data(), self.data.get_features(), epochs=epochs, batch_size=batch_size,
-                                 validation_split=0.15,
-                                 # shuffle=True,
-                                 # callbacks=[early_stopping],
-                                 )
-
-        # Fit the model
-        #history = self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size,
-            #                      validation_split=0.15,
-            #                     validation_data=(self.x_valid, self.y_valid),
+        history = self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size,
+                                 validation_data=(self.x_valid, self.y_valid),
             #shuffle=True,
             #callbacks=[early_stopping],
-        #)
+        )
 
         return history
 
@@ -91,18 +70,18 @@ class GNNTrainer():
         fig, (acc, loss) = plt.subplots(1, 2, figsize=(15, 5))
 
         # plot Accuracy curve
-        acc.plot(history.history['accuracy'], label='accuracy')
-        acc.plot(history.history['val_accuracy'], label='val_accuracy')
-        acc.xlabel('Epoch')
-        acc.ylabel('Accuracy')
-        acc.legend(loc='lower right')
+        acc.plot(history.history['acc'], label='accuracy')
+        acc.plot(history.history['val_acc'], label='val_accuracy')
+        acc.set_xlabel('Epoch')
+        acc.set_ylabel('Accuracy')
+        acc.legend(["train", "test"], loc="lower right")
 
         # plot Loss curve
         loss.plot(history.history['loss'], label='loss')
         loss.plot(history.history['val_loss'], label='val_loss')
-        loss.xlabel('Epoch')
-        loss.ylabel('Loss')
-        loss.legend(loc='lower right')
+        loss.set_xlabel('Epoch')
+        loss.set_ylabel('Loss')
+        loss.legend(["train", "test"], loc="lower right")
         plt.show()
 
     def save(self):

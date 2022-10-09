@@ -7,15 +7,14 @@ Created on Fri Oct 07 12:48:34 2022
 """
 from dataset import Dataset
 from train import GNNTrainer
-from modules_2 import GNNNodeClassifier
 
 def main():
     path = "C:\\Users\\cyeol\\Documents\\University\\2022\\COMP3710"
     filename = "facebook"
     dataset = Dataset(path, filename)
-    #dataset.summary(3)
+    dataset.summary(3)
 
-    epochs = 1
+    epochs = 3
     batch_size = 256
     hidden_nodes = [32, 32]
 

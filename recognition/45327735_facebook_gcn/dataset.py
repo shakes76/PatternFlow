@@ -70,6 +70,10 @@ class Dataset:
     def get_weights(self):
         return self.data_tensor[2]
 
+    def get_ids(self):
+        # generate a tensor of ids
+        return tf.range(0, self.get_features().shape[0])
+
     def get_targets(self):
         return self.data_tensor[3]
 
