@@ -67,8 +67,8 @@ class DataLoader():
         ### Delete unwanted files ###
         self.Delete_Unwanted_Files()
 
-        ### resize all images to 512x512 ###
-        #self.Resize_Images()
+        ### resize all images to 640x640 ###
+        # self.Resize_Images()
 
     def Resize_Images(self):
         """
@@ -98,8 +98,8 @@ class DataLoader():
     def Resize_Image(self, path):
         img = Image.open(path)
         check_arr = [np.array(img).shape[0], np.array(img).shape[1]]
-        if not(check_arr == [512, 512]):
-            transform = T.Resize((512, 512))
+        if not(check_arr == [640, 640]):
+            transform = T.Resize((640, 640))
             # apply the transform on the input image, and save over the old one
             img = transform(img)
             img.save(path)
@@ -190,7 +190,7 @@ class DataLoader():
         c_x = min_left + (w/2)
         c_y = min_up + (h/2)
         # bounding box params are normalised amd returned
-        return [c_x/512, c_y/512, w/512, h/512]
+        return [c_x/640, c_y/640, w/640, h/640]
          
     def Delete_Unwanted_Files(self):
         """
@@ -412,7 +412,7 @@ def Setup_Data():
     # note that -> 0:melanoma, 1:!melanoma
 
     # UNCOMMENT TO CREATE LABELS
-    # dataloader.Create_YOLO_Labels() 
+    # dataloader.Create_YOLO_Labels(ignore_existing=True) 
 
     # Verify that box draw function from txt file label works
     label_fp = "yolov5_LC/data/labels/training/ISIC_0000002.txt"
@@ -421,11 +421,12 @@ def Setup_Data():
     ### Copy images to directories as required by yolov5 ###
     dataloader.Copy_Images()
 
-
     ### create yaml file ###
+    # you will need to create a yaml file for training to work
 
 Setup_Data()
 
 # TODO: Questions to ask:
+# resize from original -> 512x512 -> 640x640 the same as original -> 640x640
 
 #
