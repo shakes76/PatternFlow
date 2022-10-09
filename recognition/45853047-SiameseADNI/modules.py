@@ -55,6 +55,21 @@ def distance_layer(im1_feature, im2_feature):
     tensor = kb.sum(kb.square(im1_feature - im2_feature), axis=1, keepdims=True)
     return kb.sqrt(kb.maximum(tensor, kb.epsilon())) 
 
+
+def classification_model(subnet):
+    image = kl.Input((128, 128, 1))
+    tensor = subnet(image)
+    tensor = kl.BatchNormalization()(tensor)
+    out = kl.Dense(units = 1, activation='sigmoid')(tensor)
+
+    classifier = Model([image], out)
+
+    opt = tf.optimizers.Adam(learning_rate=0.0001)
+
+    classifier.compile(loss=contrastive_loss, metrics=['accuracy'],optimizer=opt)
+
+    return classifier
+
 def contrastive_loss(y, y_pred):
 
     square = tf.math.square(y_pred)
@@ -78,6 +93,7 @@ def siamese(height: int, width: int):
 
     subnet = subnetwork(height, width)
 
+
     image1 = kl.Input((height, width, 1))
     image2 = kl.Input((height, width, 1))
 
@@ -92,11 +108,8 @@ def siamese(height: int, width: int):
 
     model = Model([image1, image2], out)
 
-    # TODO: may not need decay
-    # opt = tfa.optimizers.AdamW(learning_rate=0.001, weight_decay= 0.01) # could be .99
     opt = tf.optimizers.Adam(learning_rate=0.0001)
 
-    # TODO: change loss to contrastive
     model.compile(loss=contrastive_loss, metrics=['accuracy'],optimizer=opt)
 
     return model

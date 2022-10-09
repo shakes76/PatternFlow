@@ -8,7 +8,7 @@ AD_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\AD'
 CN_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\NC'
 
 
-def load_train_data():
+def load_siamese_data():
     """ Load image data into tf Dataset, in the form of image pairs
     mapped to labels (0 for same, 1 for different)
 
@@ -51,15 +51,32 @@ def load_train_data():
 
     return train, val
 
-def load_test_data():
+def load_classify_data():
     """ Load testing image data, images with labels,
     0 for ad, 1 for cn
 
     Returns:
         dataset: dataset for testing
     """
+    # Get the path to each image and mask
+    ad_paths = [os.path.join(AD_PATH, path) for path in os.listdir(AD_PATH)]
+    cn_paths = [os.path.join(CN_PATH, path) for path in os.listdir(CN_PATH)]
 
-    pass
+    paths = ad_paths + cn_paths
+
+    # 0 for cn, 1 for ad
+    labels = np.concatenate([np.ones([len(ad_paths)]), np.zeros([len(cn_paths)])])
+    labels = np.expand_dims(labels, -1)
+
+    images_ds = tf.data.Dataset.from_tensor_slices(paths)\
+        .map(get_image)
+    labels_ds = tf.data.Dataset.from_tensor_slices(labels)
+
+    dataset = tf.data.Dataset.zip((images_ds, labels_ds)).shuffle(len(paths))
+    
+    train, val = train_val_split(dataset, 0.7)
+
+    return train, val
 
 def get_image(path):
     """ Get tf image from path
