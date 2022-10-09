@@ -8,11 +8,7 @@ from typing import Tuple
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow import keras
-from keras.utils import load_img
-from keras.utils import array_to_img
-from keras.utils import img_to_array
 from keras.utils import image_dataset_from_directory
-from IPython.display import display
 
 
 def download_data() -> str:
@@ -46,7 +42,10 @@ def download_data() -> str:
 
 
 def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
-    """Return train and test datasets from the given data directory
+    """Return normalised train and test datasets from data_path
+    
+    data_path must have two subdirectories: test and train representing the 
+    testing and training data sets.
 
     Args:
         data_path (str): path to the folder containing the images
@@ -58,22 +57,30 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
 
     image_size = (256, 240)
     batch_size = 32
+    
+    train_path = os.path.join(data_path, "train")
+    test_path = os.path.join(data_path, "test")
 
     train_ds = image_dataset_from_directory(
-        data_path,
+        train_path,
         image_size=image_size,
         batch_size=batch_size,
         color_mode="grayscale",
     )
 
     test_ds = image_dataset_from_directory(
-        data_path,
+        test_path,
         image_size=image_size,
         batch_size=batch_size,
         color_mode="grayscale",
     )
 
-    return train_ds, test_ds
+    normalisation_layer = keras.layers.Rescaling(1./255)
+
+    norm_train_ds = train_ds.map(lambda x, y: (normalisation_layer(x), y))
+    norm_test_ds = test_ds.map(lambda x, y: (normalisation_layer(x), y))
+
+    return norm_train_ds, norm_test_ds
 
 
 def preview_data(dataset: tf.data.Dataset) -> None:
@@ -87,6 +94,6 @@ def preview_data(dataset: tf.data.Dataset) -> None:
     for images, labels in dataset.take(1):
         for i in range(9):
             ax = plt.subplot(3, 3, i + 1)
-            plt.imshow(images[i].numpy().astype("uint8"))
+            plt.imshow(images[i].numpy())
             plt.title(labels.numpy()[i])
             plt.axis("off")
