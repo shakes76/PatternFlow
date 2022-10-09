@@ -12,12 +12,13 @@ Created on Fri Oct 07 12:48:34 2022
 from keras import layers
 from keras import Sequential
 import tensorflow as tf
+from dataset import Dataset
 
 class GNN(tf.keras.Model):
     """
     Builds the GNN model using GraphConvLayers and vanilla Feed Forward Networks. Predicts the class of each node.
     """
-    def __init__(self, graph_input, num_classes, hidden_nodes, aggregation_type="sum", combination_type="concat",
+    def __init__(self, sample_graph: Dataset, num_classes, hidden_nodes, aggregation_type="sum", combination_type="concat",
                  dropout_rate=0.2, normalize=True, *args, **kwargs,):
         super(GNN, self).__init__(*args, **kwargs)
 
@@ -28,17 +29,10 @@ class GNN(tf.keras.Model):
         self.combination_type = combination_type
         self.dropout_rate = dropout_rate
 
-        # Unpack graph input into edges, features and weights data
-        edges, features, weights = graph_input
-        self.edges = edges
-        self.features = features
-        self.weights = weights
-
-        # Set an identity matrix of weights if not provided.
-        if self.weights is None:
-            self.weights = tf.ones(shape=edges.shape[1])
-        # Force weights to sum to 1.
-        self.weights = self.weights / tf.math.reduce_sum(self.edge_weights)
+        # The sample graph defines the PROPERTIES of the expected input and is NOT used for training
+        self.edges = sample_graph.get_edges()
+        self.features = sample_graph.get_features()
+        self.weights = sample_graph.get_weights()
 
         # Build model architecture
         self._architecture()

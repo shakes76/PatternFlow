@@ -34,18 +34,43 @@ class Dataset:
         """
         data = data_numpy
 
-        adjacency = data["edges"].T
+        edges = data["edges"].T
         features = tf.transpose(data["features"].T)
-        weights = tf.ones(shape=adjacency.shape[1])
+        weights = self._normalise_weights(data.get("weights"), edges)
+        targets = data["target"].T
 
-        print("adjacency shape:", adjacency.shape)
+        print("adjacency shape:", edges.shape)
         print("features shape:", features.shape)
         print("weights shape:", weights.shape)
+        print("targets shape:", targets.shape)
 
-        return adjacency, features, weights
+        return edges, features, weights, targets
+
+    def _normalise_weights(self, weights, edges):
+        """
+        Normalise weights. If no weights are provided, create an identity matrix of weights.
+        """
+        if weights is None:
+            weights = tf.ones(shape=edges.shape[1])
+        else:
+            weights.T
+        # Force weights to sum to 1.
+        return weights / tf.math.reduce_sum(weights)
 
     def get_tensors(self):
         return self.data_tensor
+
+    def get_edges(self):
+        return self.data_tensor[0]
+
+    def get_features(self):
+        return self.data_tensor[1]
+
+    def get_weights(self):
+        return self.data_tensor[2]
+
+    def get_targets(self):
+        return self.data_tensor[3]
 
     def summary(self, n=5):
         """

@@ -6,6 +6,7 @@ Created on Fri Oct 07 12:48:34 2022
 @author: Crispian Yeomans
 """
 from dataset import Dataset
+from train import GNNTrainer
 
 def main():
     path = "C:\\Users\\cyeol\\Documents\\University\\2022\\COMP3710"
@@ -13,6 +14,12 @@ def main():
     dataset = Dataset(path, filename)
     dataset.summary(3)
     print(dataset.get_tensors())
+
+    epochs = 50
+    batch_size = 256
+    hidden_nodes = [32, 32]
+
+    trainer = GNNTrainer(dataset, epochs, batch_size, hidden_nodes)t
 
 if __name__ == "__main__":
     main()
