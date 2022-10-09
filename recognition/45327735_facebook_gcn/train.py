@@ -10,6 +10,7 @@ Created on Fri Oct 07 12:48:34 2022
 
 from modules import GNN
 from dataset import Dataset
+import keras
 
 class GNNTrainer():
 
@@ -22,4 +23,12 @@ class GNNTrainer():
         # Construct model
         self.graph = data
         self.model = GNN(self.graph, self.num_classes, hidden_nodes, aggregation_type="sum", dropout_rate=dropout_rate)
-        self.model.get_summary()
+        print("GNN output shape:", self.model([1, 10, 100]))
+        self.model.summary()
+
+    def _compile(self):
+        self.model.compile(
+            optimizer=keras.optimizers.Adam(self.learning_rate),
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=[keras.metrics.SparseCategoricalAccuracy(name="acc")],
+        )

@@ -19,7 +19,7 @@ class GNN(tf.keras.Model):
     Builds the GNN model using GraphConvLayers and vanilla Feed Forward Networks. Predicts the class of each node.
     """
     def __init__(self, sample_graph: Dataset, num_classes, hidden_nodes, aggregation_type="sum", combination_type="concat",
-                 dropout_rate=0.2, normalize=True, *args, **kwargs,):
+                 dropout_rate=0.2, normalise=True, *args, **kwargs,):
         super(GNN, self).__init__(*args, **kwargs)
 
         # Default values
@@ -28,16 +28,17 @@ class GNN(tf.keras.Model):
         self.aggregation_type = aggregation_type
         self.combination_type = combination_type
         self.dropout_rate = dropout_rate
+        self.normalise = normalise
 
         # The sample graph defines the PROPERTIES of the expected input and is NOT used for training
         self.edges = sample_graph.get_edges()
         self.features = sample_graph.get_features()
-        self.weights = sample_graph.get_weights()
+        self.edge_weights = sample_graph.get_weights()
 
         # Build model architecture
-        self._architecture()
+        self._default_architecture()
 
-    def _architecture(self):
+    def _default_architecture(self):
         """
         Defines the architecture of the GNN using default values.
         """
@@ -68,15 +69,12 @@ class GNN(tf.keras.Model):
         # Create a compute logits layer.
         self.predict_labels = layers.Dense(units=num_classes, name="predict_labels")
 
-    def get_summary(self):
-        self.model.summary()
-
     def call(self, input_node_indices):
         """
         Constructs the architecture of the model, including residual single-skip connections between GraphConv layers.
         """
         # Preprocess the node_features to produce node representations.
-        x = self.preprocess(self.node_features)
+        x = self.preprocess(self.features)
 
         # Apply graph layers
         for i, conv in enumerate(self.convs):

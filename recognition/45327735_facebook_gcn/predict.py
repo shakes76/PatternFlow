@@ -19,7 +19,7 @@ def main():
     batch_size = 256
     hidden_nodes = [32, 32]
 
-    trainer = GNNTrainer(dataset, epochs, batch_size, hidden_nodes)t
+    trainer = GNNTrainer(dataset, epochs, batch_size, hidden_nodes)
 
 if __name__ == "__main__":
     main()
