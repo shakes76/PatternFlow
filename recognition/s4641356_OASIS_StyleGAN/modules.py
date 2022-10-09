@@ -27,12 +27,13 @@ class adaIN(tf.keras.layers.Layer):
         Preforms the layer's desired operation using trained weights
 
         Args:
-            input (_type_): _description_ TODO [x (nxn),yscale (1x1),ybias (1x1)]
+            input (_type_): _description_ TODO [x (nxn),y (2,)]
         """
-        x,yscale,ybias = input
+        x,y = input
+        yscale,ybias = tf.split(y,2,axis = 1)#axes shifted by 1 to account for batches
         mean = tf.math.reduce_mean(x)
         std = tf.math.reduce_std(x)
-        return (yscale*(x-mean)/std) + ybias
+        return (yscale[1:0]*(x-mean)/std) + ybias[1:0]
 
 class addNoise(tf.keras.layers.Layer):
     """
