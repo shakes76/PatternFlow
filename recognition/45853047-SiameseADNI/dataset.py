@@ -1,4 +1,5 @@
 import os
+from xmlrpc.client import Boolean
 import tensorflow as tf
 import keras as k
 import numpy as np
@@ -6,6 +7,9 @@ import numpy as np
 
 AD_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\AD'
 CN_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\NC'
+
+AD_TEST_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\test\\AD'
+CN_TEST_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\test\\NC'
 
 
 def load_siamese_data():
@@ -48,10 +52,9 @@ def load_siamese_data():
     dataset = tf.data.Dataset.zip(((base_ds, pair_ds), labels_ds)).shuffle(num_pairs)
     
     train, val = train_val_split(dataset, 0.8)
-
     return train, val
 
-def load_classify_data():
+def load_classify_data(testing: bool):
     """ Load testing image data, images with labels,
     0 for ad, 1 for cn
 
@@ -59,8 +62,12 @@ def load_classify_data():
         dataset: dataset for testing
     """
     # Get the path to each image and mask
-    ad_paths = [os.path.join(AD_PATH, path) for path in os.listdir(AD_PATH)]
-    cn_paths = [os.path.join(CN_PATH, path) for path in os.listdir(CN_PATH)]
+    if (testing):
+        ad_paths = [os.path.join(AD_PATH, path) for path in os.listdir(AD_PATH)]
+        cn_paths = [os.path.join(CN_PATH, path) for path in os.listdir(CN_PATH)]
+    else:
+        ad_paths = [os.path.join(AD_TEST_PATH, path) for path in os.listdir(AD_TEST_PATH)]
+        cn_paths = [os.path.join(CN_TEST_PATH, path) for path in os.listdir(CN_TEST_PATH)]
 
     paths = ad_paths + cn_paths
 
@@ -74,9 +81,13 @@ def load_classify_data():
 
     dataset = tf.data.Dataset.zip((images_ds, labels_ds)).shuffle(len(paths))
     
-    train, val = train_val_split(dataset, 0.7)
+    
 
-    return train, val
+    if testing:
+        return dataset
+    else:
+        train, val = train_val_split(dataset, 0.7)
+        return train, val
 
 def get_image(path):
     """ Get tf image from path

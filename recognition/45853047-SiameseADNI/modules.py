@@ -23,25 +23,14 @@ def subnetwork(height, width):
             kl.Dropout(0.3),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dense(1024, activation='relu',kernel_regularizer='l2')
+            kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
+            kl.BatchNormalization(),
+            kl.Dropout(0.3)
         ], name='subnet'
     )
-
-    # subnet = k.Sequential(layers=[
-    #         kl.Conv2D(64, (2, 2), input_shape=(height, width, 1)),
-    #         kl.MaxPooling2D(),
-    #         kl.Dropout(0.3),
-    #         kl.Flatten(),
-    #         kl.Dense(512, activation='relu',kernel_regularizer='l2'),
-    #         kl.Dense(256, activation='relu',kernel_regularizer='l2'),
-    #     ], name='subnet'
-    # )
-
-
-
     return subnet
 
-# TODO: is this euclidean?
+
 def distance_layer(im1_feature, im2_feature):
     """ Layer to compute (euclidean) difference between feature vectors
 

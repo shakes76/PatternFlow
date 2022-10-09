@@ -9,30 +9,42 @@ from dataset import load_classify_data
 
 
 def train():
-    model = siamese(128, 128)
+    # Siamese model
+    siamese = siamese(128, 128)
 
+    # Siamese model data
     siamese_train, siamese_val = load_siamese_data()
-    classify_train, classify_val = load_classify_data()
-
     siamese_train = siamese_train.batch(32)
     siamese_val = siamese_val.batch(32)
 
+    # Classification model data
+    classify_train, classify_val = load_classify_data(testing=False)
     classify_train = classify_train.batch(32)
     classify_val = classify_val.batch(32)
 
-    model.fit(siamese_train, epochs=30, validation_data=siamese_val)
+    # Test Data
+    test = load_classify_data(testing=True)
+    test = test.batch(32)
 
-    predict(siamese_val, model)
+    siamese.fit(siamese_train, epochs=30, validation_data=siamese_val)
 
-    # Build classification model using traing subnet
-    subnet = model.get_layer(name="subnet")
-    classifier = classification_model(subnet)
+    predict(siamese_val, siamese)
+
+    # Build classification model using trained subnet
+    classifier = classification_model(siamese.get_layer(name="subnet"))
 
     classifier.fit(classify_train, epochs=10, validation_data=classify_val)
 
-    predict(classify_val, classifier)
-    
+    # TODO: move this to predict.py
+    # see predictions
+    predict(test, classifier)
 
+    # Evaluate model
+    classifier.evaluate(test)
+
+    
+    
+# TODO: move to predict.py
 def predict(ds, model):
     for pair, label in ds:
         pred = model.predict(pair)
