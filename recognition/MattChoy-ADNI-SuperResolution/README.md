@@ -13,6 +13,7 @@ Difficulty]
 → [How Does it Work?](#how-does-it-work)
 [Inputs, Outputs and Algorithm Performance](#inputs-outputs-and-algorithm-performance)
 [Implementation Details](#implementation-details)
+→ [Dependencies](#dependencies)
 → [Dataset](#dataset)
 → [Data Pre-Processing](#data-pre-processing)
 → [Training, Validation and Testing Splits](#training-validation-and-testing-splits)
@@ -28,8 +29,11 @@ Difficulty]
 - Example inputs, outputs and plots of your algorithm
 
 ## Implementation Details
+### Dependencies
+- Add a list of project dependencies, here, via `conda list`.
+
 ### Dataset 
 - The dataset used for this task was downloaded from BlackBoard - [COMP3710/"Course Help/Resources"/ADNI MRI Dataset](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI)
 ### Data Pre-Processing
-
+- The data was unzipped from the above .zip file, and moved into the project's root folder (PatternFlow/recognition/MattChoy-ADNI-SuperResolution/data/)
 ### Training, Validation and Testing Splits
