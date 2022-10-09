@@ -4,6 +4,13 @@ ADNI Data is from Blackboard
 ADNI DATA has been unzipped
 New folders for cropped images have been created
 New folders for training and validation data copy from original have bee created
+
+Steps:
+1. download ADNI (user)
+2. unzip ADNI (user)
+3. crop ADNI (dataset.py)
+4. create validation & training set (dataset.py)
+5. Import data as tf batch
 """
 
 ########################################################################################################
@@ -112,3 +119,49 @@ for file in train_NC_filenames:
         des = r"AD_NC_cropped\validation\NC\{}".format(file)
         shutil.copy(src, des)  
 
+########################################################################################################
+######################################    Import data function  ########################################
+########################################################################################################
+
+
+def import_data(image_size):
+    # (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
+
+    # why can i not use tf.keras.utils.image_dataset_from-directory
+    BATCH_SIZE = 128
+
+    # https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory
+    data_train = keras.preprocessing.image_dataset_from_directory(
+        "./AD_NC/training",
+        labels="inferred",
+        label_mode="binary",
+        color_mode="grayscale",
+        image_size=(image_size, image_size),
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        seed=123,
+        validation_split=None,
+        smart_resize=True)
+
+    data_validate = keras.preprocessing.image_dataset_from_directory(
+        "./AD_NC/validation",
+        labels="inferred",
+        label_mode="binary",
+        color_mode="grayscale",
+        image_size=(image_size, image_size),
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        seed=123,
+        validation_split=None,
+        smart_resize=True)
+
+    data_test = keras.preprocessing.image_dataset_from_directory(
+        "./AD_NC/test",
+        labels="inferred",
+        label_mode="binary",
+        color_mode="grayscale",
+        image_size=(image_size, image_size),
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        seed=123,
+        smart_resize=True)
