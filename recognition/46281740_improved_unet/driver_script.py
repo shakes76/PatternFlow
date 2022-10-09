@@ -41,3 +41,18 @@ history = model.fit(train_ds.batch(10),
 
 # save the model as .h5 file
 tf.keras.models.save_model(model, './model/mymodel.h5')
+
+# plot the DSC of train and validate dataset
+plt.figure(figsize=(8, 5))
+plt.title("Dice Similarity Coefficient")
+plt.plot(history.history["dice_coefficient_avg"], label="Training DSC")
+plt.plot(history.history["val_dice_coefficient_avg"], label="Validation DSC")
+plt.xlabel("Epoch")
+plt.legend()
+plt.savefig('./image/Dice.png')
+plt.show()
+
+# compute the DSC of each prediction image
+prediction = model.predict(test)
+tf.print("Average DSC for all labels: ", iu.dice_coefficient_avg(seg_test, prediction))
+tf.print("DSC for each label: ", iu.dice_coefficient(seg_test, prediction))
