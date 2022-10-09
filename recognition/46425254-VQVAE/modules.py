@@ -9,7 +9,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
 image_dim = (3,256,256)
 learning_rate = 0.0001
-latent_space = 64
+latent_space = 16
 commitment_loss = 0.25
 
 class Encoder(nn.Module):
@@ -139,7 +139,6 @@ class VQ(nn.Module):
         encodings, _ = self.argmin_indices(flattened_inputs)
         
         # Quantize and reshape to BHWC format
-        
         quantized_bhwc = torch.matmul(encodings, 
                                       self.embedding_table.weight).view(shape)
         
@@ -217,7 +216,7 @@ class VQVAE(nn.Module):
         super(VQVAE, self).__init__()
         
         self.encoder = Encoder()
-        self.VQ = VQ(512, latent_space, commitment_loss)
+        self.VQ = VQ(128, latent_space, commitment_loss)
         self.decoder = Decoder()
         
     def forward(self, inputs):
@@ -247,19 +246,20 @@ class MaskedConv2d(nn.Conv2d):
         super(MaskedConv2d, self).__init__(*args, **kwargs)
         #print(self.kernel_size)
         self.register_buffer('mask', 
-                             torch.ones((self.out_channels, self.in_channels, 
-                                        self.kernel_size[0], self.kernel_size[1])).float())
+                             torch.ones(self.out_channels, self.in_channels, 
+                                        self.kernel_size[0], self.kernel_size[1]).float())
         
         height, width = self.kernel_size
         # setup the mask, use floor operations to cover area above and left of
         # kernel position
         if mask_type == "A":
             self.mask[:, :, height//2, width//2:] = 0
+            self.mask[:, :, height // 2 + 1:, :] = 0
         else:
             # include centre pixel
             self.mask[:, :, height // 2, width // 2 + 1:] = 0
+            self.mask[:, :, height // 2 + 1:, :] = 0
         
-        self.mask[:, :, height // 2 + 1:, :] = 0
         
         #register the mask
         
@@ -276,19 +276,22 @@ class PixelCNN(nn.Module):
     def __init__(self):
         super(PixelCNN, self).__init__()
         self.pixelcnn_model = nn.Sequential(
-            MaskedConv2d("A", in_channels = 3, 
-                         out_channels = 64, kernel_size = 5, padding = 2),
+            
+            MaskedConv2d("A", in_channels = 128, 
+                         out_channels = 256, kernel_size = 7, padding = 3),
             nn.ReLU(True),
-            MaskedConv2d("B", in_channels = 64, 
-                         out_channels = 64, kernel_size = 5, padding = 2),
+            MaskedConv2d("B", in_channels = 256, 
+                         out_channels = 256, kernel_size = 3, padding = 1),
             nn.ReLU(True),
-            MaskedConv2d("B", in_channels = 64, 
-                         out_channels = 64, kernel_size = 5, padding = 2),
+            MaskedConv2d("B", in_channels = 256, 
+                         out_channels = 256, kernel_size = 3, padding = 1),
             nn.ReLU(True),
-            MaskedConv2d("B", in_channels = 64, 
-                         out_channels = 64, kernel_size = 5, padding = 2),
+            MaskedConv2d("B", in_channels = 256, 
+                         out_channels = 256, kernel_size = 3, padding = 1),
             nn.ReLU(True),
-            nn.Conv2d(64, 3, 1),
+            nn.Conv2d(256, 128, 1),
+            
+            nn.Sigmoid(),
             
             )
         

@@ -61,6 +61,7 @@ class Visualise():
         flat_encoded  = encoded.view(-1, VQ.embedding_dim)
         _, lookup_indices = VQ.argmin_indices(flat_encoded)
         lookup_indices = lookup_indices.view(64,64).to(device)
+        print(lookup_indices.shape)
         
         #indices_grid = torchvision.utils.make_grid(lookup_indices, normalize = True)
         

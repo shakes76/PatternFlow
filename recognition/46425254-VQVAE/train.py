@@ -40,7 +40,7 @@ class VQ_Training():
     def train(self):
         epoch = 0
         
-        while epoch != epochs:
+        while epoch != self.epochs:
             
             sub_step = 0
             for i, _ in self.training_data:
@@ -92,9 +92,9 @@ path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_pn
 
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
 lr = 0.0002
-epochs  = 25
+epochs  = 15
 
-#trainer = VQ_Training(lr, epochs, path, save = trained, visualise=False)
+#trainer = VQ_Training(lr, epochs, path, save = trained, visualise=True)
 #trainer.train()
 
 
@@ -108,7 +108,7 @@ class PixelCNN_Training():
         model.load_state_dict(torch.load(model_path))
         model.eval()
         self.model = model
-        
+        self.epochs = epochs
         data = dataset.DataLoader(data_path)
         self.training_data = \
             utils.data.DataLoader(data, batch_size = 16, shuffle = True)
@@ -116,7 +116,7 @@ class PixelCNN_Training():
         
         
         
-        self.loss = nn.CrossEntropyLoss()
+       # self.loss = nn.functional.cross_entropy()
         self.save = save
         
         self.PixelCNN_model = modules.PixelCNN().to(self.device)
@@ -126,7 +126,7 @@ class PixelCNN_Training():
     def train(self):
         epoch = 0
         
-        while epoch != epochs:
+        while epoch != self.epochs:
             
             sub_step = 0
             for i, _ in self.training_data:
@@ -139,12 +139,17 @@ class PixelCNN_Training():
                     encoded = encoder(i)
                     encoded = encoded.permute(0, 2, 3, 1).contiguous()
                     flat_encoded  = encoded.reshape(-1, VQ.embedding_dim)
-                    a, b = VQ.argmin_indices(flat_encoded)
                     
-                    b = b.view(-1, 64,64).float()
-                    b = torch.stack((b,b,b),0)
-                    b = b.permute(1, 0, 2, 3).contiguous()
-                cnn_outputs = self.PixelCNN_model(b)
+                    a, b = VQ.argmin_indices(flat_encoded)
+                   # print(a.shape)
+                    
+                    a = a.view(-1, 128, 64,64).float()
+                    #b = torch.stack((b,b,b),0)
+                    #print(a.shape)
+                    #b = b.permute(1, 0, 2, 3).contiguous()
+                cnn_outputs = self.PixelCNN_model(a)
+                
+                #print(b.shape)
                 #reset the optimizer gradients to 0 to avoid resuing prev iteration's 
                 
                 
@@ -153,16 +158,16 @@ class PixelCNN_Training():
                 
                 
                 #calculate total loss
-                
-                total_loss = self.loss(cnn_outputs, b)
                 self.optimizer.zero_grad()
+                total_loss = nn.functional.cross_entropy(cnn_outputs, a)
+                
                 #update the gradient 
                 total_loss.backward()
                 self.optimizer.step()
                 
                 if sub_step == 0:
                     print(
-                        f"Epoch [{epoch}/{epochs}] \ " 
+                        f"Epoch [{epoch}/{self.epochs}] \ " 
                         f"Loss : {total_loss:.4f}"
                     )
                     
@@ -179,10 +184,51 @@ class PixelCNN_Training():
         # save anyways if loop finishes by itself
         if self.save != None:
             
-            torch.save(self.model.state_dict(), self.save)
+            torch.save(self.PixelCNN_model.state_dict(), self.save)
         
-pixel_cnn_trainer = PixelCNN_Training(lr, epochs, trained, path)
+def gen_image(train_path, model_path):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = modules.VQVAE()
+    state_dict = torch.load(train_path, map_location="cpu")
+    model.load_state_dict(state_dict)
+    model.to(device)
+    
+    cnn = modules.PixelCNN()
+    state_dict = torch.load(model_path, map_location="cpu")
+    cnn.load_state_dict(state_dict)
+    cnn.to(device)
+    
+    prior = torch.zeros((1, 128, 64, 64), device = device)
+    
+    _, _, rows, cols = prior.shape
+    for i in range(rows):
+        for j in range(cols):
+            torch.cuda.empty_cache()
+            probs = cnn(prior)
+
+            prior[:, :, i , j] = probs[:, :, i, j]
+           
+            
+    quantized_bhwc = torch.matmul(prior, 
+                                  model.embedding_table.weight).view(1, 64, 64, 64)
+    
+    quantized = quantized_bhwc.permute(0, 3, 1, 2).continguous()
+    
+    decoded = model.get_decoder(quantized).to(device)
+    
+    decoded = decoded.view(-1, 3, 256,256).to(device).detach()
+    
+    decoded_grid = \
+        torchvision.utils.make_grid(decoded, normalize = True)
+    decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
+    
+    plt.imshow(decoded_grid)
+    plt.show()
+        
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh2.pt"
+pixel_cnn_trainer = PixelCNN_Training(lr, 10, trained, path, save = save_model)
 pixel_cnn_trainer.train()
+#gen_image(trained, save_model)
 
 
  
