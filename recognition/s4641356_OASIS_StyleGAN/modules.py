@@ -89,5 +89,69 @@ class addNoise(tf.keras.layers.Layer):
         x,noise = input
         return x + (self.noise_weight*noise)
 
-class StyleGAN(tf.keras.Model):
-    pass
+class StyleGAN():
+    """
+    Class representing a Generational Adversarial Network based off of StyleGAN-1.
+    Combines a generator and a discriminator model with custom training paridigm.
+    Does not directly subclass keras.Model as this does not allow for unsupervised learning.
+    Instead we indirectly call the relevent functionality
+    """
+
+    def __init__(self, output_res: int = 256, start_res: int = 2, latent_dim: int = 512, filter_count: int = 512) -> None:
+        """
+            Instantiate a new StyleGAN
+
+        Args:
+            output_res (int, optional): side length of output images in pixels. Defaults to 256.
+            start_res (int, optional): side length of constant space to begin generation on. Defaults to 2.
+            latent_dim (int, optional): dimension of latent space. Defaults to 512.
+            filter_count (int, optional): number of filters per convolution layer (will be scaled where appropriate). Defaults to 512
+        """
+        super(StyleGAN, self).__init__()
+
+        self._output_res = output_res
+        self._start_res = start_res
+        self._latent_dim = latent_dim
+        self._filter_count = filter_count
+
+        self._generator = self.get_generator()
+        self._discriminator = self.get_discriminator()
+
+        #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
+        self._gan = tf.keras.Model(self._generator.input, self._discriminator(self._generator.output), name = "StyleGAN")
+        self._gan.summary()
+
+    def get_generator(self) -> tf.keras.Model:
+        pass
+
+    def get_discriminator(self) -> tf.keras.Model:
+        """
+            Creates a discriminator model inline with the StyleGAN framework        
+
+        Returns:
+            tf.keras.Model: uncompiled discriminator model
+        """
+        discriminator_input = tf.keras.layers.Input(shape = (self.output_res,self.output_res,1), name = "Discriminator_Input") #note we expect greyscale images
+        current_res = self._output_res
+        x = discriminator_input
+        #Feature analysis blocks, perform convolution on decreasing image resolution (and hence filter increasingly macroscopic features)
+        while current_res > 4:
+            x = tf.keras.layers.Conv2D(self._filter_count,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
+            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU_1".format(current_res))(x)
+            x = tf.keras.layers.Conv2D(self._filter_count//2,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
+            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU_2".format(current_res))(x)
+            x = tf.keras.layers.AveragePooling2D((2, 2), name = "{0}x{0}_Image_reduction".format(current_res))(x)
+            current_res = current_res//2
+
+        #Flatten and compile features for discrimination
+        x = tf.keras.layers.Conv2D(self._filter_count,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution".format(current_res))(x)
+        x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU".format(current_res))(x)
+        x = tf.keras.layers.Flatten(name = "Flatten")(x)
+        x = tf.keras.layers.Dense(self._filter_count, name = "Discriminator_Dense_Classify")(x)
+        x = tf.keras.layers.LeakyReLU(0.2,name = "Flat_Leaky_ReLU")(x)
+        
+        x = tf.keras.layers.Dense(1, activation = "sigmoid", name = "Discriminate")(x) #Final decision, 1 for real 0 for fake
+
+        return tf.keras.Model(inputs = discriminator_input, outputs = x, name = "Discriminator")
+
+    # TODO def __call__():
