@@ -28,18 +28,18 @@ from torch.optim.lr_scheduler import StepLR
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.Net_batchnom()
+net = modules.ResNet18(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
 net = net.to(device)
 
-torch.save(net.state_dict(), 'sim_net.pt')
+#torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 100#30#00
+epoch_range = 5#30#00
 
 
 batch_size=20*4
-train_factor=1000#00
-test_factor=400#0
+train_factor=1000
+test_factor=40
 valid_factor=10
 
 modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
@@ -92,7 +92,8 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         #zero gradients
         optimizer.zero_grad()
 
-        output1,output2 = net(inputs_1,inputs_2)#.squeeze(1)
+
+        output1,output2 = net(inputs_1,inputs_2)
 
         loss = criterion(output1,output2,labels)
         loss.backward()
@@ -105,7 +106,7 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         training_loss[epoch]=training_loss[epoch]+loss#.detach().item()
         total += torch.numel(labels)
 
-        scheduler.step()
+        #scheduler.step()
 
         #Update where running
         if i % (modulo) == modulo-1:
@@ -129,7 +130,7 @@ with torch.no_grad():
 
 
     for i, data in enumerate(test_loader, 0):
-
+        
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
@@ -203,6 +204,6 @@ with torch.no_grad():
     gc.collect()
     
 
-torch.save(net.state_dict(), 'sim_net.pt')
+torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 print('Finished Training')
 

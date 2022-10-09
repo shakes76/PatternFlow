@@ -115,6 +115,161 @@ class Net_batchnom(nn.Module):
 
         return out_x, out_y
 
+#######################################################
+#                  ResNET
+#######################################################
+
+
+
+def conv_block(in_channels, out_channels, pool=False):
+    layers = [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
+              nn.BatchNorm2d(out_channels), 
+              nn.ReLU(inplace=True)]
+    return nn.Sequential(*layers)
+
+class Residual_Identity_Block(nn.Module):
+    def __init__(self, c_in, c_out,kernel_size, padding):
+        super(Residual_Identity_Block, self).__init__()
+        self.block_prep = nn.Sequential(
+                            nn.BatchNorm2d(c_in),
+                            nn.ReLU())
+        self.branch     = nn.Sequential(
+                            nn.Conv2d(c_in, c_out, kernel_size=kernel_size, stride=1, padding=padding), 
+                            nn.BatchNorm2d(c_out),
+                            nn.ReLU(),
+                            nn.Conv2d(c_out, c_out,kernel_size=kernel_size, stride=1, padding=padding))       
+    def forward(self, x):
+        x = self.block_prep(x)
+        x = self.branch(x)+x
+
+        return x
+
+class Residual_Conv_Block(nn.Module):
+    def __init__(self, c_in, c_out, kernel_size, padding):
+        super(Residual_Conv_Block, self).__init__()
+        self.block_prep = nn.Sequential(
+                            nn.BatchNorm2d(c_in),
+                            nn.ReLU(),                            
+                            )
+        self.branch = nn.Sequential(
+                            nn.Conv2d(c_in, c_out, kernel_size=kernel_size, stride=2, padding=padding), 
+                            nn.BatchNorm2d(c_out),
+                            nn.ReLU(),
+                            nn.Conv2d(c_out, c_out,kernel_size=kernel_size, stride=1, padding=padding))
+        self.conv       = nn.Conv2d(c_in, c_out, kernel_size=1, stride=2, padding=0)
+
+    def forward(self, x):
+        x = self.block_prep(x)
+        x = self.branch(x)+self.conv(x)
+
+        return x
+
+class ResNet18(nn.Module):
+    def __init__(self, identity_block, conv_block):
+        super().__init__()
+        
+        self.prep = nn.Sequential(nn.Conv2d(1, 64, kernel_size=10, padding=0), 
+                                  nn.BatchNorm2d(64), 
+                                  nn.ReLU(inplace=True),
+                                  nn.MaxPool2d(2)
+                                  )
+
+        self.classifier = nn.Sequential(nn.MaxPool2d(4), 
+                                        nn.Flatten(), 
+                                        nn.Linear(512, 1))
+
+        
+
+        self.block0_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
+        self.block1_1 = self._make_residual_block_(identity_block, 64, 64,7,3)
+
+        self.block0_2 = self._make_residual_block_(conv_block, 64, 128,7,3)
+        self.block1_2 = self._make_residual_block_(identity_block, 128, 128,7,3)
+
+        self.block0_3 = self._make_residual_block_(conv_block, 128, 128,5,2)
+        self.block1_3 = self._make_residual_block_(identity_block, 128, 128,5,2)
+
+        self.block0_4 = self._make_residual_block_(conv_block, 128, 256,3,1)
+        self.block1_4 = self._make_residual_block_(identity_block, 256, 256,3,1)
+
+        self.lin_layer = nn.Sequential(nn.Linear(9216, 4096),nn.Sigmoid())
+
+    def _make_residual_block_(self, block, c_in, c_out,kernel_size,padding):
+        layers = []
+        layers.append(block(c_in,c_out,kernel_size,padding))
+
+        return nn.Sequential(*layers)  
+
+
+
+    def forward_once_print(self, x):
+        print("Inital",x.shape)
+        out = self.prep(x)
+        print("Prep",out.shape)
+#layer1
+        out = self.block0_1(out) 
+        print("block0_1",out.shape)
+        out = self.block1_1(out) 
+        print("block1_1",out.shape)
+#layer2
+        out = self.block0_2(out) 
+        print("block0_2",out.shape)
+        out = self.block1_2(out)  
+        print("block1_2",out.shape)  
+#layer1
+        out = self.block0_3(out) 
+        print("block0_3",out.shape)
+        out = self.block1_3(out) 
+        print("block1_3",out.shape)
+#layer2
+        out = self.block0_4(out) 
+        print("block0_4",out.shape)
+        out = self.block1_4(out)
+        print("block1_4",out.shape)
+
+        out = out.view(out.size()[0], -1)  ##=> euqals flatten
+        print("view",out.shape)
+        out = self.lin_layer(out)
+        print("lin_layer=output",out.shape)
+
+        return out
+
+    def forward_once(self, x):
+        out = self.prep(x)
+        #layer1
+        out = self.block0_1(out) 
+        out = self.block1_1(out) 
+        #layer2
+        out = self.block0_2(out) 
+        out = self.block1_2(out)
+        #layer3
+        out = self.block0_3(out) 
+        out = self.block1_3(out)
+        #layer4
+        out = self.block0_4(out) 
+        out = self.block1_4(out)
+
+        out = out.view(out.size()[0], -1)
+        out = self.lin_layer(out)
+
+        return out
+
+    def forward(self, x,y):
+        out_x = self.forward_once(x)
+        out_y = self.forward_once(y)
+        #out  = torch.abs((out_x-out_y))
+        #out  = self.final(out)
+
+        return out_x, out_y
+
+
+
+
+
+#######################################################
+#                  Classifier Net
+#######################################################
+
 
 
 class Net_clas(nn.Module):
@@ -126,21 +281,40 @@ class Net_clas(nn.Module):
         #self.final = nn.Linear(4096, 1)
 
         self.fc = nn.Sequential(
-            nn.Linear(2*4096, 256),
+            nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 1),
+            nn.Linear(4096, 2048),
+            nn.ReLU(inplace=True),
+            nn.Linear(2048, 256),
+            nn.ReLU(inplace=True),            
         )
+
+        self.final = nn.Sequential(
+            nn.Linear(2*256, 256),
+            nn.ReLU(inplace=True), 
+            nn.Linear(256, 1),
+            #nn.sigmoid();
+        )
+
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, img,img_AD,img_NC):
         out_AD = torch.abs(img-img_AD)
         out_NC = torch.abs(img-img_NC)
+        
+        out_AD = self.fc(out_AD)
+        out_NC = self.fc(out_NC)
+
         output = torch.cat((out_AD, out_NC), 1)
-        output = self.fc(output)
+        output = self.final(output)
         output = self.sigmoid(output)
         
         return output
 
+
+#######################################################
+#                  Siamese Newtork for BCEloss
+#######################################################
 
 
 
