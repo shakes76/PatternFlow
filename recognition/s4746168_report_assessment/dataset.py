@@ -1,4 +1,5 @@
 from hashlib import sha1
+from tkinter.tix import IMAGE
 import tensorflow as tf
 import matplotlib
 import tf.keras
@@ -6,6 +7,8 @@ import os
 import numpy as np
 from PIL import Image
 import torch
+
+# DEFINING THE PATHS FOR LOADING DATA
 
 X_train_path = ".../Data_Files/ISIC-2017_Training_Data"
 Y_train_path = ".../Data_Files/ISIC-2017_Training_Part1_GroundTruth"
@@ -41,8 +44,10 @@ Y_train = []
 for f in os.listdir(Y_train_path):
     if f.endswith(".csv") or "superpixels" in f:
         continue
-    y_train = Image.open(os.path.join(Y_train_path, f)).resize((256, 256))
+    y_train = Image.open(os.path.join(Y_train_path, f)).resize((256, 256), Image.NEAREST)
+
     y_train = np.array(y_train)
+    y_train = y_train / 255
     # print(y_train.shape)
     Y_train.append(y_train)
 
@@ -69,8 +74,9 @@ Y_validate = []
 for f in os.listdir(Y_validate_path):
     if f.endswith(".csv") or "superpixels" in f:
         continue
-    y_validate = Image.open(os.path.join(Y_validate_path, f)).resize((256, 256))
+    y_validate = Image.open(os.path.join(Y_validate_path, f)).resize((256, 256), Image.NEAREST)
     y_validate = np.array(y_validate)
+    y_validate = y_validate / 255
     # print(y_train.shape)
     Y_validate.append(y_validate)
 
@@ -98,14 +104,17 @@ Y_test = []
 for f in os.listdir(Y_test_path):
     if f.endswith(".csv") or "superpixels" in f:
         continue
-    y_test = Image.open(os.path.join(Y_test_path, f)).resize((256, 256))
+    y_test = Image.open(os.path.join(Y_test_path, f)).resize((256, 256), Image.NEAREST)
     y_test = np.array(y_test)
-    y_test = y_test / 255.0
-    # print(x_train.shape)
+    y_test = y_test / 255
+    print(x_train.shape)
     Y_test.append(y_test)
 
 np.stack(Y_test)
 print("********* Data loading for Y_testing complete *********")
+
+
+# PRINTING THE SHAPES TO CHECK LOADING IS DONE CORRECTLY
 
 print(X_train.shape)
 # print(X_train)
