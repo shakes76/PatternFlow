@@ -7,7 +7,7 @@ Steps / Key Functions:
 3. Embed Patches (PatchEmbedding)
 4. Create MLP (mlp)
 5. Create Transformer Encoder (transformer_encoder)
-5. Create ViT ()
+5. Create ViT (vit_classifier)
 
 References:
 1) https://keras.io/examples/vision/image_classification_with_vision_transformer/
