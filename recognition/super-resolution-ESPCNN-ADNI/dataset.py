@@ -13,7 +13,7 @@ from keras.utils import image_dataset_from_directory
 
 def download_data() -> str:
     """Download the ADNI-MRI data and return the resulting download path
-    
+
     The folder path returned should have the following folders inside:
         test/
             AD/
@@ -43,13 +43,13 @@ def download_data() -> str:
 
 def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """Return normalised train and test datasets from data_path
-    
-    data_path must have two subdirectories: test and train representing the 
+
+    data_path must have two subdirectories: test and train representing the
     testing and training data sets.
 
     Args:
         data_path (str): path to the folder containing the images
-    
+
     Returns:
         Tuple[tf.data.Dataset, tf.data.Dataset]: Tuple of train and test
         datasets (train, test)
@@ -57,7 +57,7 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
 
     image_size = (256, 240)
     batch_size = 32
-    
+
     train_path = os.path.join(data_path, "train")
     test_path = os.path.join(data_path, "test")
 
@@ -93,7 +93,7 @@ def preview_data(dataset: tf.data.Dataset) -> None:
     plt.figure(figsize=(10, 10))
     for images, labels in dataset.take(1):
         for i in range(9):
-            ax = plt.subplot(3, 3, i + 1)
+            plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy())
             plt.title(labels.numpy()[i])
             plt.axis("off")
