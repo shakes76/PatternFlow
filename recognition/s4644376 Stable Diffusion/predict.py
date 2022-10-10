@@ -150,7 +150,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'illustrate':
         generate_n_image_process(model, int(sys.argv[2]))
     else:
-        print("\nInvalid Command Valid Commands Are:")
+        print("\nInvalid Command! Valid Commands Are:")
         print("\n\tpython predict.py single")
         print("\n\tpython predict.py generate {number_of_images}")
         print("\n\tpython predict.py illustrate {number_of_images}")
