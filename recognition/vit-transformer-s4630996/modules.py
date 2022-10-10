@@ -15,6 +15,11 @@ References:
 
 """
 
+
+from tensorflow import keras
+from tensorflow.keras import layers
+import tensorflow as tf
+
 ##############################  INPUT DATA AUGMENTATION  ###################################
 
 def data_augmentation(mean, variance):
@@ -149,7 +154,7 @@ def vit_classifier():
 #     representation = tf.reduce_mean(encoded_patches, axis=1)
     
     # MLP head
-    features = mlp(x=representation, hidden_units=[64], dropout_rate=0.5)
+    features = mlp(x=representation, hidden_units=[2048], dropout_rate=0.5)
     
     # Classify outputs.
     outputs = layers.Dense(num_classes)(features)
