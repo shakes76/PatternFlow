@@ -5,23 +5,26 @@ The source code for components of the super-resolution model.
 
 import math
 import numpy as np
+
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
+from constants import DOWNSAMPLE_FACTOR, IMG_DOWN_WIDTH, IMG_DOWN_HEIGHT
+
 def get_model(
-    upscale_factor: int = 3,
-    img_width: int = 256,
-    img_height: int = 240,
+    upscale_factor: int = DOWNSAMPLE_FACTOR,
+    img_width: int = IMG_DOWN_WIDTH,
+    img_height: int = IMG_DOWN_HEIGHT,
     channels: int = 1,
 ) -> keras.Model:
     """Return a super-resolution model
 
     Args:
         upscale_factor (int, optional): Multiple to upscale the final output. 
-            Defaults to 3.
-        img_width (int, optional): Input image width. Defaults to 256.
-        img_height (int, optional): Input image height. Defaults to 240.
+            Defaults to 4.
+        img_width (int, optional): Input image width. Defaults to 64.
+        img_height (int, optional): Input image height. Defaults to 60.
         channels (int, optional): Number of colour channels. Defaults to 1.
 
     Returns:
@@ -39,8 +42,8 @@ def get_model(
     next_layer = layers.Conv2D(64, 3, **conv_args)(next_layer)
     next_layer = layers.Conv2D(32, 3, **conv_args)(next_layer)
     next_layer = layers.Conv2D(
-        channels * (upscale_factor ** 2), 
-        3, 
+        channels * (upscale_factor ** 2),
+        3,
         **conv_args
     )(next_layer)
 
