@@ -23,5 +23,19 @@ Each layer of the improved UNet takes a 3x3x3 convolution with input stride 2 to
 <img src="./image/unet.png" width="600"/>
 
 ## 4. Data Splitting
+Here I simply follow the original splitting strategy given in the original dataset.
+## 5. Output and Dice Coefficient
+<img src="./image/prediction_101.png" width="400" height="400"/>
+<img src="./image/prediction_409.png" width="400"/>
+<img src="./image/prediction_484.png" width="400"/>
+<img src="./image/Dice.png" width="400"/>
 
-## 5. Dependencies list
+## 6. Dependencies list
+Python 3.9.12
+Tensorflow 2.6.0
+matplotlib 3.5.1
+
+## 7. References
+[Brain Tumor Segmentation and Radiomics Survival Prediction](https://arxiv.org/abs/1802.10508v1)
+
+[ISIC 2017 Challenge Dataset](https://challenge.isic-archive.com/data/#2017)
