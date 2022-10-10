@@ -88,11 +88,12 @@ def downsample_data(
     dataset: tf.data.Dataset,
     resulting_size: tuple[int, int] = IMG_DOWN_SIZE,
 ) -> Any:
-    """Return dataset with all images downsized by the given factor.
+    """Return dataset with all images downsized to resulting_size
 
     Args:
-        dataset (tf.data.Dataset): dataset containing images to downsize
-        resulting_size tuple[int, int]: The image size to downsample towards
+        dataset (tf.data.Dataset): dataset containing images to downsize.
+        resulting_size tuple[int, int]: The image size to downsample towards.
+            Defaults to (64, 60).
 
     Returns:
         Any: Downsized images in a dataset
@@ -100,6 +101,23 @@ def downsample_data(
     return dataset.map(
         lambda x, y: (tf.image.resize(x, resulting_size, method="bicubic"), y)
     )
+
+
+def downsample_image(
+    image: Any,
+    resulting_size: tuple[int, int] = IMG_DOWN_SIZE,
+) -> Any:
+    """Return image downsized to resulting_size.
+
+    Args:
+        image (Any): image to downsize.
+        resulting_size tuple[int, int]: The image size to downsample towards.
+            Defaults to (64, 60).
+
+    Returns:
+        Any: Downsized image
+    """
+    return tf.image.resize(image, resulting_size, method="bicubic")
 
 
 def preview_data(dataset: tf.data.Dataset) -> None:
