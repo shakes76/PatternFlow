@@ -28,7 +28,8 @@ from torch.optim.lr_scheduler import StepLR
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.ResNet18_3D(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
+net = modules.Net_3D()
+#net = modules.ResNet18_3D(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
 #net.load_state_dict(torch.load('sim_net_ResNet.pt')) #change to .pt
 #net.eval()
 net = net.to(device)
@@ -37,7 +38,7 @@ net = net.to(device)
 #torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 5
+epoch_range = 20
 
 
 batch_size=16
@@ -93,6 +94,8 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
 
         output1,output2 = net(inputs_1,inputs_2)
+
+        print("output dif" ,torch.sum(output1[0]-output2[0]).item()," -- sim:",torch.sum(F.pairwise_distance(output1[0], output2[0])).item()," with label:",labels[0])
 
         loss = criterion(output1,output2,labels)
         loss.backward()

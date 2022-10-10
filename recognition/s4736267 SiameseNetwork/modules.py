@@ -257,6 +257,64 @@ class ResNet18(nn.Module):
         return out_x, out_y
 
 
+class Net_3D(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        self.conv_layer = nn.Sequential(
+                                  #=> 20x210x210
+                                  nn.BatchNorm3d(1),
+                                  nn.MaxPool3d(2),
+                                  nn.ReLU(),
+                                  #=> 10x105x105
+                                  nn.Conv3d(1, 16, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(16),
+                                  nn.LeakyReLU(negative_slope=0.001),   
+                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
+                                  #=> 5x52x52
+                                  nn.Conv3d(16, 32, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(32),
+                                  nn.LeakyReLU(negative_slope=0.001),   
+                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
+                                  #=> 2x26x26
+                                  nn.Conv3d(32, 64, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(64),
+                                  nn.LeakyReLU(negative_slope=0.001),   
+                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
+                                  #=> 1x13x13   
+                                  nn.Conv3d(64, 64, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(64),
+                                  nn.LeakyReLU(negative_slope=0.001),                                                                                        
+                                  #=> 1x13x13
+                                  )
+        self.lin_layer = nn.Sequential(nn.Linear(2*5408, 4096),
+                                  nn.Sigmoid())
+                                  #nn.Linear(4096, 256),
+                                  #nn.Sigmoid())
+
+        #self.pdist = nn.PairwiseDistance(p=1, keepdim=True)    
+        #self.final = nn.Linear(4096, 1)
+
+        #self.final = nn.Sequential(nn.Linear(4096, 1),
+        #                           nn.Sigmoid())
+
+
+    def forward_once(self, x):
+        
+        out = self.conv_layer(x)
+        #print(out.shape)
+        out = out.view(out.size()[0], -1)  ##=> euqals flatten
+        out = self.lin_layer(out)
+        return out
+
+    def forward(self, x,y):
+        out_x = self.forward_once(x)
+        out_y = self.forward_once(y)
+        #out  = torch.abs((out_x-out_y))
+        #out  = self.final(out)
+
+        return out_x, out_y
+
 class ResNet18_3D(nn.Module):
     def __init__(self, identity_block, conv_block):
         super().__init__()

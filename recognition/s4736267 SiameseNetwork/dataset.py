@@ -196,9 +196,6 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
             i = i+1
 
 
-    #print("image_paths_new2 dataset.py",image_paths_new2[:TRAIN_DATA_SIZE])
-
-
     train_image_paths = image_paths_new[:TRAIN_DATA_SIZE]
     valid_image_paths = image_paths_new[length-VALID_DATA_SIZE:] 
     
@@ -413,10 +410,10 @@ class DatasetTrain3D(Dataset):
         for i in range(20):
     
 
-            image_filepath_1 = self.image_paths[idx_1+i]
+            image_filepath_1 = self.image_paths[idx_1*20+i]
             image_1 = cv2.imread(image_filepath_1, cv2.IMREAD_GRAYSCALE)
             
-            image_filepath_2 = self.image_paths[idx_2+i]
+            image_filepath_2 = self.image_paths[idx_2*20+i]
             image_2 = cv2.imread(image_filepath_2, cv2.IMREAD_GRAYSCALE)
 
             if self.transform:
@@ -432,11 +429,17 @@ class DatasetTrain3D(Dataset):
         label_2 = image_filepath_2.split('/')[-2]
         label_2 = 0 if label_2=='AD' else 1
 
+        #print(image_filepath_1)
+        #print(image_filepath_2)
         if label_1 == label_2:
             label=1
         else:
             label=0
 
+        image3D_1 = torch.unsqueeze(image3D_1, dim=0)
+        image3D_2 = torch.unsqueeze(image3D_2, dim=0)
+
+        #print("idx_1:",idx_1,"  --  ",image_filepath_1,"  -- idx_2:",idx,"  --  ",image_filepath_2,"  -- label:",label)
         return image3D_1, image3D_2, label
 
 class Dataset3D(Dataset):
@@ -452,9 +455,11 @@ class Dataset3D(Dataset):
         
         image3D=torch.zeros(20,210,210)
 
+
+
         for i in range(20):
     
-            image_filepath = self.image_paths[idx+i]
+            image_filepath = self.image_paths[idx*20+i]
             image_1 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
             
             if self.transform:
@@ -465,6 +470,10 @@ class Dataset3D(Dataset):
         label = image_filepath.split('/')[-2]
         label = 0 if label=='AD' else 1
         
+
+        image3D = torch.unsqueeze(image3D, dim=0)
+
+        #print("idx:",idx,"  --  ",image_filepath,"  --  label:",label)
 
         return image3D, label
 
@@ -483,13 +492,17 @@ class DatasetClas3D(Dataset):
 
         for i in range(20):
     
-            image_filepath = self.image_paths[idx+i]
+            image_filepath = self.image_paths[idx*20+i]
             image_1 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
             
             if self.transform:
                 image_1 = self.transform(image_1)
 
             image3D[i]=image_1
+
+        image3D = torch.unsqueeze(image3D, dim=0)    
+
+        #print("idx:",idx,"  --  ",image_filepath)
 
         return image3D
 
