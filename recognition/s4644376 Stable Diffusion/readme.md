@@ -180,11 +180,20 @@ loss.backward()
 running_loss += loss.item()
 optimizer.step()
 ```
-This cycle gets repeated for the specified number of epochs, the trained model used 30 epochs.
+This cycle gets repeated for the specified number of epochs, the trained model used 50 epochs.
+
+To train your own model do the following via terminal:
+```console
+python train.py
+```
+which defaults to 50 epochs or
+```console
+python train.py {number_epochs}
+```
 
 Something to note is that during a single epoch, each batch of images is only trained on 1 specific level of noise out 
-of the possible 1000 levels of noise. This means that for the 30 batches conducted only 30 noise levels were conducted, and it is therefore possible to continue training without significant overwriting . The loss during
-training can be visualised below:
+of the possible 1000 levels of noise. This means that training and validation loss can swing widely depending on the images themselves and the amount of
+noise added and can not be reconstructed without seeding.
 
 ![image](images/Training%20Loss%20Across%20Epochs.png)
 
@@ -201,13 +210,26 @@ The overlay of training and validation can be seen below:
 ![image](images/Validation%20&%20Training%20Loss%20Across%20Epochs.png)
 
 ## Visualization & Results
-The stable diffusion model can be ran and utilised in `predict.py` to generate scans, three functions have been provided
+The stable diffusion model can be ran and utilised in `predict.py` to generate images, three functions have been provided
 namely:
 1. Generate Single Image - Generates and displays a single image
-2. Generate Single Image Steps - Generates and displays a single image with the conversion process
-3. Generate N Images - Generates N images and displays them in a canvas style
 
-Below is a single image that has been generated. This took approximately 20 seconds.
+```console
+python predict.py single
+```
+2. Generate N Image Process - Generates and displays n single image with the conversion process. 10 is the recommended number
+
+```console
+python predict.py illustrate {number_of_images}
+```
+3. Generate N Images - Generates N images and displays them in a canvas style. 10 is the recommended number
+
+```console
+python predict.py generate {number_of_images}
+```
+
+Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. This took approximately 20 seconds.
+
 ![image](images/Single%20Example.png)
 
 Below is an example of function 2 showing 10 images and conversion process from noise into a knee scan

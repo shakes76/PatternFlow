@@ -6,6 +6,7 @@ BETAS = torch.linspace(0.0001, 0.02, 1000)
 ALPHAS = 1.0 - BETAS
 ALPHAS_CUMPROD = torch.cumprod(ALPHAS, axis=0)
 
+PATH_TO_DATASET = ''
 
 def get_index(vals, t, x_shape):
     """
@@ -77,7 +78,7 @@ def train_model(model, epochs = 50):
 
 def validate_model(model, validate_loss):
     batchsize = 4
-    data_set = load_data("C:/Users/logan_asqucew/Downloads/AKOA_Analysis/AKOA_Analysis", show=True,
+    data_set = load_data(PATH_TO_DATASET, show=True,
                          batch_size=batchsize, type="validate")
 
     model = model.cuda()
@@ -101,11 +102,10 @@ def validate_model(model, validate_loss):
 
 
 def main():
-    pass
-    # if len(sys.argv) > 1:
-    #     train_model(MainNetwork(), int(sys.argv[1]))
-    # else:
-    #     train_model(MainNetwork())
+    if len(sys.argv) > 1:
+        train_model(MainNetwork(), int(sys.argv[1]))
+    else:
+        train_model(MainNetwork())
 
 
 
