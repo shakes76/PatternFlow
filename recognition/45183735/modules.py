@@ -118,5 +118,73 @@ class G_style:
         return model
 
 
+# as the styleGan does not modify discriminator in any way, so we using the discriminator structure of PGGan
+class Discriminator:
 
+    def __init__(self, input_size):
+        self.input_size = input_size
+        self.d_model = self.generate_discriminator_model()
+
+    def generate_discriminator_model(self):
+        D_model = tf.keras.models.Sequential()
+
+        # 256x256 -> 128x128
+        D_model.add(tf.keras.layers.Conv2D(16, (3, 3), strides=(1, 1), padding='same',
+                                           input_shape=[self.input_size, self.input_size, 1]))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(16, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(32, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.2))
+
+        # 128x128 -> 64x64
+        D_model.add(tf.keras.layers.Conv2D(32, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(64, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.3))
+
+        # 64x64 -> 32x32
+        D_model.add(tf.keras.layers.Conv2D(64, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.4))
+
+        # 32x32 -> 16x16
+        D_model.add(tf.keras.layers.Conv2D(128, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(256, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.4))
+
+        # 16x16 -> 8x8
+        D_model.add(tf.keras.layers.Conv2D(256, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(512, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.4))
+
+        # 8x8 -> 4x4
+        D_model.add(tf.keras.layers.Conv2D(512, (3, 3), strides=(1, 1), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Conv2D(512, (3, 3), strides=(2, 2), padding='same'))
+        D_model.add(tf.keras.layers.LeakyReLU())
+        D_model.add(tf.keras.layers.Dropout(0.4))
+
+        D_model.add(tf.keras.layers.Flatten())
+        D_model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
+
+        return D_model
+
+
+# if __name__ == "__main__":
+#     latent_size = 512
+#     input_size = 256
+#     # g_mapping = G_Mapping(latent_size)
+#     # g_s = G_Synthesis(latent_size, g_mapping, input_size)
+#     # g_style = G_style(latent_size, input_size, g_s)
+#     discriminator = Discriminator(input_size)
+#     discriminator.D_model.summary()
 
