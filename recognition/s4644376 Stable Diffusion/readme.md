@@ -116,7 +116,7 @@ flowchart LR
 start((Input Data)) --> ConvTranspose2d[ConvTranspose2d] --> Cat[Concat];
 startB((Skip Data)) --> Cat[Concat];
 Cat[Concat]-->Relu[ReLU Block];
-startC((Position Data)) --> Relu[ReLU Block]--> Out((Out))
+startC((Position Data)) --> Relu[ConvRelu]--> Out((Out))
 ```
 ### CalculatePositionEncodingBlock
 The calculate position encoding block, as the name implies, handles calculating a position encoding for a given position
