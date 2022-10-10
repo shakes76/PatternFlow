@@ -19,6 +19,10 @@ class Dataset:
         self.image_size = image_size
         # dataset for training
         self.train_ds = self.get_train_ds()
+        # dataset for testing
+        self.test_ds = self.get_test_ds()
+        # dataset for validation
+        self.val_ds = self.get_val_ds()
 
     # get the training dataset from the path
     def get_train_ds(self):
