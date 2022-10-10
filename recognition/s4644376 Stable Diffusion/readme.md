@@ -214,6 +214,7 @@ The stable diffusion model can be ran and utilised in `predict.py` to generate i
 namely:
 1. Generate Single Image - Generates and displays a single image
 
+<<<<<<< HEAD
 ```console
 python predict.py single
 ```
@@ -229,6 +230,7 @@ python predict.py generate {number_of_images}
 ```
 
 Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. This took approximately 20 seconds.
+
 
 ![image](images/Single%20Example.png)
 
