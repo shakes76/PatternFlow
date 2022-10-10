@@ -52,3 +52,24 @@ class ADNI(Dataset):
             else:
                 data.append((img_path, 0))
         return data
+    
+    def get_train_loader(self, height, width, batch_size, iters):
+
+        transformer = transforms.Compose([
+            transforms.Resize((height, width), interpolation=3),
+            transforms.RandomHorizontalFlip(p=0.5),
+            # transforms.RandomRotation(degrees=15),
+            transforms.RandomAffine(degrees=15, translate=(0.2, 0.2), scale=(0.2, 0.2), shear=15),
+            transforms.ToTensor(),
+        ])
+
+        train_AD_set = Preprocessor(self.train_AD, root=self.train_AD_dir, transformer=transformer)
+        train_NC_set = Preprocessor(self.train_NC, root=self.train_NC_dir, transformer=transformer)
+
+        train_set = ConcatDataset([train_AD_set, train_NC_set])
+
+
+        train_loader = DataLoader(train_set, batch_size=batch_size, num_workers=16, shuffle=True,
+                                  pin_memory=True, drop_last=True)
+
+        return train_loader
