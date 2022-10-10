@@ -1,6 +1,6 @@
 from keras.preprocessing.image import ImageDataGenerator
 
-
+# 'from directory' image loader
 class ImageLoader():
 
     def __init__(self, dir, mode='RGB'):

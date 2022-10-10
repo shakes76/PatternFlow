@@ -2,23 +2,21 @@ import numpy as np
 import tensorflow as tf
 from keras import backend, layers
 from keras.initializers import RandomNormal
-from keras.layers import Add, Layer, Dense, Flatten
+from keras.layers import Add, Dense, Flatten, Input, Layer, LeakyReLU
 from keras.models import Model
 
 # Mini Batch Standadization
-# Calculate the average standard deviation of all features and spatial location.
-# Concat after creating a constant feature map with the average standard deviation
-
-
+# average stdd of all features and spatial location.
+# concat after creating a constant feature map with the average stddev
 class MinibatchStdev(Layer):
     
     def __init__(self, **kwargs):
         super(MinibatchStdev, self).__init__(**kwargs)
 
     def call(self, inputs):
-        # Mean accross channels
+        # mean accross channels
         mean = tf.reduce_mean(inputs, axis=0, keepdims=True)
-        # Std accross channels
+        # std accross channels
         stddev = tf.sqrt(tf.reduce_mean(tf.square(inputs - mean), axis=0, keepdims=True) + 1e-8)
         average_stddev = tf.reduce_mean(stddev, keepdims=True)
         shape = tf.shape(inputs)
@@ -34,8 +32,6 @@ class MinibatchStdev(Layer):
 # Weighted Sum
 # Perform Weighted Sum
 # Define alpha as backend.variable to update during training
-
-
 class WeightedSum(Add):
     
     def __init__(self, alpha=0.0, **kwargs):
@@ -57,7 +53,7 @@ class WeightScaling(Layer):
         shape = np.asarray(shape)
         shape = tf.constant(shape, dtype=tf.float32)
         fan_in = tf.math.reduce_prod(shape)
-        self.wscale = gain*tf.math.rsqrt(fan_in)
+        self.wscale = gain/tf.math.sqrt(fan_in)
 
     def call(self, inputs, **kwargs):
         inputs = tf.cast(inputs, tf.float32)
@@ -74,8 +70,7 @@ class Bias(Layer):
 
     def build(self, input_shape):
         b_init = tf.zeros_initializer()
-        self.bias = tf.Variable(initial_value=b_init(
-            shape=(input_shape[-1],), dtype='float32'), trainable=True)
+        self.bias = tf.Variable(initial_value=b_init(shape=(input_shape[-1],), dtype='float32'), trainable=True)
 
     def call(self, inputs, **kwargs):
         return inputs + self.bias
@@ -84,7 +79,7 @@ class Bias(Layer):
         return input_shape
 
 
-def WeightScalingDense(x, filters, gain, activate=None):
+def EqualDense(x, filters, gain, activate=None):
     init = RandomNormal(mean=0., stddev=1.)
     in_filters = backend.int_shape(x)[-1]
     x = layers.Dense(filters, use_bias=False, kernel_initializer=init, dtype='float32')(x)
@@ -97,19 +92,19 @@ def WeightScalingDense(x, filters, gain, activate=None):
     return x
 
 
-def WeightScalingConv(x, filters, gain, activate=None, kernel_size=(3, 3), strides=(1, 1)):
+def EqualConv(x, filters, gain, activate=None, kernel_size=(3, 3), strides=(1, 1)):
     init = RandomNormal(mean=0., stddev=1.)
     in_filters = backend.int_shape(x)[-1]
     x = layers.Conv2D(filters, kernel_size, strides=strides, use_bias=False, padding="same", kernel_initializer=init, dtype='float32')(x)
     x = WeightScaling(shape=(kernel_size[0], kernel_size[1], in_filters), gain=gain)(x)
     x = Bias(input_shape=x.shape)(x)
     if activate == 'LeakyReLU':
-        x = layers.LeakyReLU(0.2)(x)
+        x = LeakyReLU(0.2)(x)
     elif activate == 'tanh':
         x = layers.Activation('tanh')(x)
     return x
 
-
+# adaptive instance normalization
 class AdaIN(layers.Layer):
 
     def __init__(self, **kwargs):
@@ -143,14 +138,16 @@ class AdaIN(layers.Layer):
 class AddNoise(layers.Layer):
     
     def build(self, input_shape):
-        channels = input_shape[0][-1]
-        initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
-        self.b = self.add_weight(shape=[1, 1, 1, channels], initializer=initializer, trainable=True, name="kernel")
-
+        filters = input_shape[0][-1]
+        init = RandomNormal(mean=0., stddev=1.)
+        # without specifying 'name' excption raised when saving weights. bug?
+        self.b = self.add_weight(name='w', shape=[1, 1, 1, filters], initializer=init, trainable=True)
+        self.lrelu = LeakyReLU(0.2)
     def call(self, inputs):
-        x, noise = inputs
-        output = x + self.b * noise
-        return output
+        x, B = inputs
+        out = x + self.b * B
+        out = self.lrelu(out)
+        return out
 
 
 class StyleGAN(Model):
@@ -162,7 +159,7 @@ class StyleGAN(Model):
         gp_weight=10.0,
         drift_weight=0.001,
         sres=4,
-        eres=256,
+        tres=256,
         channels=1
     ):
         super(StyleGAN, self).__init__()
@@ -170,10 +167,10 @@ class StyleGAN(Model):
         self.LDIM = latent_dim
         self.CHANNELS = channels                  # image channels
         self.FILTERS = filters                    # set of filters
-        depth = int(np.log2(eres)-np.log2(sres))
+        depth = int(np.log2(tres)-np.log2(sres))
         self.DEPTH = depth                        # training depth
         self.SRES = sres                          # start resolution
-        self.TRES = eres                          # target resolution
+        self.TRES = tres                          # target resolution
         
         self.gp_weight = gp_weight
         self.drift_weight = drift_weight
@@ -189,73 +186,78 @@ class StyleGAN(Model):
         self.d_optimizer = d_optimizer
         self.g_optimizer = g_optimizer
         
+    # fully connected layers. z->w.
     def mapping(self):
-        z = layers.Input(shape=(self.LDIM))
-        # 8 layers in paper
-        for _ in range(self.DEPTH):
-            w = WeightScalingDense(z, filters=self.LDIM, gain=1., activate='LeakyReLU')
-        w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1))
+        z = Input(shape=(self.LDIM))
+        # 8 layers in paper. use 6 instead.
+        w = EqualDense(z, filters=self.LDIM, gain=1., activate='LeakyReLU')
+        for _ in range(self.DEPTH-1):
+            w = EqualDense(w, filters=self.LDIM, gain=1., activate='LeakyReLU')
+        w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) # (256,7)
         return Model(z, w)
 
     def init_D(self):
-        rgb = layers.Input(shape=(self.SRES, self.SRES, self.CHANNELS))
-        x = WeightScalingConv(rgb, filters=self.FILTERS[0], kernel_size=(1, 1), gain=np.sqrt(2), activate='LeakyReLU')
+        image = Input(shape=(self.SRES, self.SRES, self.CHANNELS))
+        x = EqualConv(image, filters=self.FILTERS[0], kernel_size=(1, 1), gain=np.sqrt(2), activate='LeakyReLU')
         x = MinibatchStdev()(x)
-        x = WeightScalingConv(x, filters=self.FILTERS[0], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
-        x = WeightScalingConv(x, filters=self.FILTERS[0], kernel_size=(4, 4), gain=np.sqrt(2), activate='LeakyReLU', strides=(4, 4))
-        x = WeightScalingDense(Flatten()(x), filters=self.CHANNELS, gain=1.)
-        d_model = Model(rgb, x, name='discriminator')
+        x = EqualConv(x, filters=self.FILTERS[0], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
+        x = EqualConv(x, filters=self.FILTERS[0], kernel_size=(4, 4), gain=np.sqrt(2), activate='LeakyReLU', strides=(4, 4))
+        x = EqualDense(Flatten()(x), filters=self.CHANNELS, gain=1.)
+        d_model = Model(image, x)
         return d_model
 
-    # Fade in upper resolution block
+    # grow discriminator
     def grow_D(self):
-        # for layer in self.discriminator.layers:
-        #    layer.trainable = False
         input_shape = list(self.D.input.shape)
-        # 1. Double the input resolution.
+        
+        # w*2, h*2, c 
         input_shape = (input_shape[1]*2, input_shape[2]*2, input_shape[3])
-        img_input = layers.Input(shape=input_shape)
-        img_input = tf.cast(img_input, tf.float32)
+        image = Input(shape=input_shape)
+        image = tf.cast(image, tf.float32)
 
-        # 2. Add pooling layer
-        #    Reuse the existing “formRGB” block defined as “x1".
-        x1 = layers.AveragePooling2D()(img_input)
+        # downsample
+        x1 = layers.AveragePooling2D()(image)
         for i in [1, 2, 3, 4]:
             x1 = self.D.layers[i](x1)
 
-        # 3.  Define a "fade in" block (x2) with a new "fromRGB" and two 3x3 convolutions.
-        #     Add an AveragePooling2D layer
-        x2 = WeightScalingConv(img_input, filters=self.FILTERS[self.current_depth], kernel_size=(1, 1), gain=np.sqrt(2), activate='LeakyReLU')
-        x2 = WeightScalingConv(x2, filters=self.FILTERS[self.current_depth], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
-        x2 = WeightScalingConv(x2, filters=self.FILTERS[self.current_depth-1], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
-
+        # fade in
+        x2 = EqualConv(image, filters=self.FILTERS[self.current_depth], kernel_size=(1, 1), gain=np.sqrt(2), activate='LeakyReLU')
+        x2 = EqualConv(x2, filters=self.FILTERS[self.current_depth], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
+        x2 = EqualConv(x2, filters=self.FILTERS[self.current_depth-1], kernel_size=(3, 3), gain=np.sqrt(2), activate='LeakyReLU')
         x2 = layers.AveragePooling2D()(x2)
         x = WeightedSum()([x1, x2])
 
-        # Define stabilized(c. state) discriminator
         for i in range(5, len(self.D.layers)):
             x2 = self.D.layers[i](x2)
-        self.DT = Model(img_input, x2, name='discriminator')
+        self.D_ST = Model(image, x2)
 
-        # 5. Add existing discriminator layers.
         for i in range(5, len(self.D.layers)):
             x = self.D.layers[i](x)
-        self.D = Model(img_input, x, name='discriminator')
+        self.D = Model(image, x)
 
     def init_G(self):
-        const = layers.Input(shape=(self.SRES, self.SRES, self.FILTERS[0]))
-        w = layers.Input(shape=(self.LDIM))
+        # initialize generator
+        # base block: 3 inputs, constant, w, noise(B)
+        r = self.SRES
+        f = self.FILTERS[0]
+        const = Input(shape=(r, r, f), name='const')
+        w = Input(shape=(self.LDIM), name='w')
+        B = Input(shape=(r, r, 1), name='B')
         x = const
+        
+        x = AddNoise()([x, B])
         x = AdaIN()([x, w])
-        x = WeightScalingConv(x, filters=self.FILTERS[0], gain=np.sqrt(2), activate='LeakyReLU')
+        x = EqualConv(x, filters=f, gain=np.sqrt(2), activate='LeakyReLU')
+        
+        x = AddNoise()([x, B])
         x = AdaIN()([x, w])
-        x = WeightScalingConv(x, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
-        return Model([const, w], x)
+        x = EqualConv(x, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
+        return Model([const, w, B], x)
 
     # Fade in upper resolution block
     def grow_G(self):
         sqrt2 = np.sqrt(2)
-        
+        res = self.SRES*(2**self.current_depth) 
         end = self.G.layers[-5].output
         end = layers.UpSampling2D((2, 2))(end)
 
@@ -265,29 +267,38 @@ class StyleGAN(Model):
             x1 = self.G.layers[i](x1)
 
         # branch
-        w = layers.Input(shape=(self.LDIM))
-        x2 = WeightScalingConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
+        w = Input(shape=(self.LDIM))
+        B = Input(shape=(res, res, 1))
+        
+        x2 = EqualConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
+        x2 = AddNoise()([x2, B])
         x2 = AdaIN()([x2, w])
-        x2 = WeightScalingConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
+        
+        x2 = EqualConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
+        x2 = AddNoise()([x2, B])
         x2 = AdaIN()([x2, w])
-        x2 = WeightScalingConv(x2, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
+        
+        # to rgb
+        x2 = EqualConv(x2, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
 
-        self.GT = Model(self.G.input+[w], x2)
-        self.G = Model(self.G.input+[w], WeightedSum()([x1, x2]))
+        # stabilize
+        self.G_ST = Model(self.G.input+[w,B], x2)
+        
+        # fade in
+        self.G = Model(self.G.input+[w,B], WeightedSum()([x1, x2]))
 
     def grow(self):
+        self.current_depth += 1
         self.grow_G()
         self.grow_D()
 
-    def transition(self):
-        self.G = self.GT
-        self.D = self.DT
+    def stabilize(self):
+        self.G = self.G_ST
+        self.D = self.D_ST
 
     def gradient_penalty(self, batch_size, real_images, fake_images):
-        """ Calculates the gradient penalty.
-
-        This loss is calculated on an interpolated image
-        and added to the discriminator loss.
+        """
+        gradient penalty on an interpolated image, added to the discriminator loss
         """
         # Get the interpolated image
         alpha = tf.random.uniform(shape=[batch_size, 1, 1, 1], minval=0., maxval=1.)
@@ -296,12 +307,12 @@ class StyleGAN(Model):
 
         with tf.GradientTape() as tape:
             tape.watch(interpolated)
-            # 1. Get the discriminator output for this interpolated image.
+            # discriminator output of this interpolated image
             pred = self.D(interpolated, training=True)
 
-        # 2. Calculate the gradients w.r.t to this interpolated image.
+        # gradients w.r.t to interpolated image
         grads = tape.gradient(pred, [interpolated])[0]
-        # 3. Calculate the norm of the gradients.
+        # norm of the gradient
         norm = tf.sqrt(tf.reduce_sum(tf.square(grads), axis=[1, 2, 3]))
         gp = tf.reduce_mean((norm - 1.0) ** 2)
         return gp
@@ -310,48 +321,53 @@ class StyleGAN(Model):
         real_images = data[0]
         batch_size = tf.shape(real_images)[0]
         const = tf.ones([batch_size, self.SRES, self.SRES, self.FILTERS[0]])
-        
-        # Get the latent vector
-        z = tf.random.normal(shape=(batch_size, self.LDIM))
+
+        # train discriminator
         with tf.GradientTape() as tape:
-            w = self.FC(z)
-            ws = [w[:,i] for i in range(self.current_depth+1)]
-            # Generate fake images from the latent vector
-            fake_images = self.G([const]+ws, training=True)
-            # Get the logits for the fake images
+            
+            # build input for G: [const, w, B, w, B, w , B, ...]
+            z = tf.random.normal(shape=(batch_size, self.LDIM))
+            ws = self.FC(z)
+            inputs = [const]
+            for i in range(self.current_depth+1):
+                w = ws[:,i]
+                B = tf.random.normal((batch_size, self.SRES*(2**i), self.SRES*(2**i), 1))
+                inputs += [w, B]
+            
+            fake_images = self.G(inputs, training=True)
             fake_labels = self.D(fake_images, training=True)
-            # Get the logits for the real images
             real_labels = self.D(real_images, training=True)
 
-            # Calculate the discriminator loss using the fake and real image logits
             d_cost = tf.reduce_mean(fake_labels) - tf.reduce_mean(real_labels)
-
-            # Calculate the gradient penalty
             gp = self.gradient_penalty(batch_size, real_images, fake_images)
-            # Calculate the drift for regularization
+            
+            # drift for regularization
             drift = tf.reduce_mean(tf.square(real_labels))
 
-            # Add the gradient penalty to the original discriminator loss
+            # gradient penalty to dloss
             d_loss = d_cost + self.gp_weight * gp + self.drift_weight * drift
 
-        # Get the gradients w.r.t the discriminator loss
+        # gradients w.r.t dloss
         d_grad = tape.gradient(d_loss, self.D.trainable_weights)
-        # Update the weights of the discriminator using the discriminator optimizer
+        # update discriminator weights
         self.d_optimizer.apply_gradients(zip(d_grad, self.D.trainable_weights))
 
-        # Train the generator
-        # Get the latent vector
-        z = tf.random.normal(shape=(batch_size, self.LDIM))
+        # train generator
         with tf.GradientTape() as tape:
-            w = self.FC(z)
-            ws = [w[:,i] for i in range(self.current_depth+1)]
-            generated_images = self.G([const]+ws, training=True)
+            z = tf.random.normal(shape=(batch_size, self.LDIM))
+            ws = self.FC(z)
+            inputs = [const]
+            for i in range(self.current_depth+1):
+                w = ws[:,i]
+                B = tf.random.normal((batch_size, self.SRES*(2**i), self.SRES*(2**i), 1))
+                inputs += [w, B]
+            generated_images = self.G(inputs, training=True)
             pred_labels = self.D(generated_images, training=True)
-            # Calculate the generator loss
+            # wasserstein distance
             g_loss = -tf.reduce_mean(pred_labels)
-        # Get the gradients w.r.t the generator loss
-        trainable_weights = (self.G.trainable_weights + self.FC.trainable_weights)
+        # gradients w.r.t fully connected layers and generator
+        trainable_weights = (self.FC.trainable_weights + self.G.trainable_weights)
         g_grad = tape.gradient(g_loss, trainable_weights)
-        # Update the weights of the generator using the generator optimizer
+        # update the weights
         self.g_optimizer.apply_gradients(zip(g_grad, trainable_weights))
         return {'d_loss': d_loss, 'g_loss': g_loss}
