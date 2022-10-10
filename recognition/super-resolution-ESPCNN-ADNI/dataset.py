@@ -5,6 +5,7 @@ Contains functions for loading and preprocessing the ADNI-MRI data.
 
 import os
 from typing import Tuple
+from typing import Any
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow import keras
@@ -81,6 +82,24 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     norm_test_ds = test_ds.map(lambda x, y: (normalisation_layer(x), y))
 
     return norm_train_ds, norm_test_ds
+
+
+def downsample_data(
+    dataset: tf.data.Dataset,
+    resulting_size: tuple[int, int] = (64, 60),
+) -> Any:
+    """Return dataset with all images downsized by the given factor.
+
+    Args:
+        dataset (tf.data.Dataset): dataset containing images to downsize
+        factor (int): factor by which to downsize
+
+    Returns:
+        Any: Downsized images in a dataset
+    """
+    return dataset.map(
+        lambda x, y: (tf.image.resize(x, resulting_size, method="bicubic"), y)
+    )
 
 
 def preview_data(dataset: tf.data.Dataset) -> None:
