@@ -17,7 +17,8 @@ import numpy as np
 
 #Garbage collector
 import gc 
-
+gc.collect()
+torch.cuda.empty_cache()
 #Importing CNN Model
 import modules
 
@@ -38,7 +39,7 @@ net = net.to(device)
 #torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 20
+epoch_range = 100
 
 
 batch_size=16
@@ -95,12 +96,11 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
         output1,output2 = net(inputs_1,inputs_2)
 
-        print("output dif" ,torch.sum(output1[0]-output2[0]).item()," -- sim:",torch.sum(F.pairwise_distance(output1[0], output2[0])).item()," with label:",labels[0])
-
+        
         loss = criterion(output1,output2,labels)
         loss.backward()
 
-        nn.utils.clip_grad_value_(net.parameters(), 0.1)
+        #nn.utils.clip_grad_value_(net.parameters(), 0.1)
 
         optimizer.step()
 
@@ -116,9 +116,10 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
     
     print("")
 
+
     training_loss[epoch]=training_loss[epoch]/total
     print(f'Training Loss: {training_loss[epoch]}')
-
+    print("output dif" ,torch.sum(output1[0]-output2[0]).item()," -- sim:",torch.sum(F.pairwise_distance(output1[0], output2[0])).item()," with label:",labels[0].item())
 
 
 
@@ -216,6 +217,6 @@ with torch.no_grad():
     gc.collect()
     
 
-torch.save(net.state_dict(), 'sim_net_ResNet.pt')
+torch.save(net.state_dict(), 'sim_net_3D.pt')
 print('Finished Training')
 

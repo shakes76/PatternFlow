@@ -261,36 +261,36 @@ class Net_3D(nn.Module):
     def __init__(self):
         super().__init__()
         
+#https://myrtle.ai/how-to-train-your-resnet-8-bag-of-tricks/ oder lyer conv, batch, activation, pool
+
         self.conv_layer = nn.Sequential(
-                                  #=> 20x210x210
-                                  nn.BatchNorm3d(1),
-                                  nn.MaxPool3d(2),
-                                  nn.ReLU(),
-                                  #=> 10x105x105
-                                  nn.Conv3d(1, 16, kernel_size=1, padding='same',stride=1), 
+                                  #=> 1x20x210x210
+                                  nn.Conv3d(1, 16, kernel_size=3, padding='same',stride=1), 
                                   nn.BatchNorm3d(16),
-                                  nn.LeakyReLU(negative_slope=0.001),   
-                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
-                                  #=> 5x52x52
-                                  nn.Conv3d(16, 32, kernel_size=1, padding='same',stride=1), 
+                                  nn.MaxPool3d(kernel_size=2,stride=2,padding=0),
+                                  nn.Mish(), 
+                                  #=> 16x10x105x105
+                                  nn.Conv3d(16, 32, kernel_size=3, padding='same',stride=1), 
                                   nn.BatchNorm3d(32),
-                                  nn.LeakyReLU(negative_slope=0.001),   
-                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
-                                  #=> 2x26x26
+                                  nn.MaxPool3d(kernel_size=2,stride=2,padding=0),
+                                  nn.Mish(),  
+                                  #=> 32x5x52x52
+                                  nn.Conv3d(32,32, kernel_size=3, padding='same',stride=1), 
+                                  nn.BatchNorm3d(32),
+                                  nn.MaxPool3d(kernel_size=2,stride=2,padding=0),
+                                  nn.Mish(),  
+                                  #=> 32x2x26x26   
                                   nn.Conv3d(32, 32, kernel_size=1, padding='same',stride=1), 
                                   nn.BatchNorm3d(32),
-                                  nn.LeakyReLU(negative_slope=0.001),   
-                                  nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
-                                  #=> 1x13x13   
-                                  nn.Conv3d(32, 32, kernel_size=1, padding='same',stride=1), 
-                                  nn.BatchNorm3d(32),
-                                  nn.LeakyReLU(negative_slope=0.001),                                                                                        
-                                  #=> 1x13x13
+                                  nn.MaxPool3d(kernel_size=2,stride=2,padding=0),  
+                                  nn.Mish(),                                                                                                                       
+                                  #=> 32x1x13x13
+
                                   )
-        self.lin_layer = nn.Sequential(nn.Linear(5408, 4096),
-                                  nn.Sigmoid())
+        self.lin_layer = nn.Sequential(nn.Linear(13*13*32, 4096),
+                                  #nn.Sigmoid(),
                                   #nn.Linear(4096, 256),
-                                  #nn.Sigmoid())
+                                  nn.Sigmoid())
 
         #self.pdist = nn.PairwiseDistance(p=1, keepdim=True)    
         #self.final = nn.Linear(4096, 1)

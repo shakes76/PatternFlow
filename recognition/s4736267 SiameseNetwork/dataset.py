@@ -388,6 +388,27 @@ class DatasetTrain(Dataset):
         #print("")
         return image_1, image_2, label
 
+class Random_Crop_Resize:
+    def __init__(self,left_off=0,top_off=0,width_off=0,height_off=0):
+        self.left_off = left_off
+        self.top_off = top_off
+        self.width_off = width_off
+        self.height_off = height_off
+    
+    def __call__(self, img: torch.Tensor) -> torch.Tensor:
+        left, top, width, height = 25, 5, 210, 210
+        return transforms.Resize((210,210))(transforms.functional.crop(img, top=top+self.top_off, left=left+self.left_off, height=height-self.height_off-self.top_off, width=width-self.width_off-self.left_off))
+
+class Random_Blackout:
+    def __init__(self,i1,i2,i):
+        self.i1 = i1*i  #Pixel value
+        self.i2 = i2*i  #Pixel value
+        self.i = i      #Size of BlackoutArea
+        
+    def __call__(self, img: torch.Tensor) -> torch.Tensor:
+        return transforms.functional.erase(img, self.i1, self.i1, self.i, self.i, 0)
+
+
 
 class DatasetTrain3D(Dataset):
     def __init__(self, image_paths, transform=None):
@@ -399,14 +420,37 @@ class DatasetTrain3D(Dataset):
 
         transform_train=transformation_3D()
 
+        #RandomCropResize
+        rn = random.randint(0,1)
+        if rn==0:
+            left_off = random.randint(0,20)
+            top_off  = random.randint(0,20)
+
+            width_off = random.randint(0,20)
+            height_off  = random.randint(0,20)
+
+            transform_train.transforms.insert(3,Random_Crop_Resize(left_off=left_off,top_off=top_off,width_off=width_off,height_off=height_off))
+
+        #RandomBlackout
+        rn = random.randint(0,1)
+        if rn==0:
+            i  = 42
+            i1 = random.randint(0,210/i)
+            i2  = random.randint(0,210/i)
+            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
+
+        #RandomHorizontalFlip
         rn = random.randint(0,1)
         if rn==0:
             transform_train.transforms.insert(1,transforms.RandomHorizontalFlip(p=1))
 
+        #RandomVerticalFlip
         rn = random.randint(0,1)
         if rn==0:
             transform_train.transforms.insert(1,transforms.RandomVerticalFlip(p=1))
         
+        
+
         return transform_train
 
 
@@ -423,6 +467,7 @@ class DatasetTrain3D(Dataset):
 
         transform_idx=self.transform_augmentation()
 
+        #print(transform_idx)
         #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
         for i in range(20):
     
@@ -560,6 +605,7 @@ def crop(image: PIL.Image.Image) -> PIL.Image.Image:
     left, top, width, height = 25, 5, 210, 210
     
     return transforms.functional.crop(image, top=top, left=left, height=height, width=width,)
+
 
 
 def transformation_input():
