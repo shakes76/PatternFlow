@@ -6,7 +6,7 @@ BETAS = torch.linspace(0.0001, 0.02, 1000)
 ALPHAS = 1.0 - BETAS
 ALPHAS_CUMPROD = torch.cumprod(ALPHAS, axis=0)
 
-PATH_TO_DATASET = ''
+PATH_TO_DATASET = 'AKOA_Analysis/'
 
 def get_index(vals, t, x_shape):
     """
@@ -32,8 +32,11 @@ def apply_noise(image, iteration):
 
 
 def train_model(model, epochs = 50):
+    """
+    Main Training Loop
+    """
     batchsize = 4
-    data_set = load_data("C:/Users/logan_asqucew/Downloads/AKOA_Analysis/AKOA_Analysis", show=True,
+    data_set = load_data(PATH_TO_DATASET, show=True,
                          batch_size=batchsize)
 
     model = model.cuda()
@@ -77,6 +80,9 @@ def train_model(model, epochs = 50):
 
 
 def validate_model(model, validate_loss):
+    """
+    Calculate Validation Loss
+    """
     batchsize = 4
     data_set = load_data(PATH_TO_DATASET, show=True,
                          batch_size=batchsize, type="validate")

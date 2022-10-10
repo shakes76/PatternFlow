@@ -72,25 +72,25 @@ slice = slice.mul(2).sub(1)
 ```
 
 ## Model
-The implemented model is a modified UNET network which makes heavy use of Convolution Layers and Pooling. A U-NET is
-used due to it's ability to down sample and then re-upscale giving it the ability to predict noise levels with some
+The implemented model is a modified U-NET network which makes heavy use of Convolution Layers and Pooling. A standard U-NET is an encoder & decoder style network that was originally developed to produce segementation mapping via downsampling and upsampling. 
+This makes U-NET a good fit due to it's ability to down sample and then re-upscale giving it the ability to predict noise levels with some
 modification. The structure of the U-NET is as follows:
 ![image](images/UNET_structure.png)
 Reference https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 
-The above U-Net has been slightly modified to include the ability to add Positional Embeddings which let's the U-Net
+The above U-NET has been slightly modified to include the ability to add Positional Embeddings which let's the U-NET
 learn/know the level of noise currently within the image being passed through the network. This is necessary
-as the U-Net by default has no concept of how much noise has been added and without it makes predicting noise
+as the U-NET by default has no concept of how much noise has been added and without it makes predicting noise
 nearly impossible.
 
-In the modified U-Net model used there are four distinct blocks that are used. These are:
+In the modified U-NET model used there are four distinct blocks that are used. These are:
 1. ConvRelu
 2. UpBlock
 3. CalculatePositionEncodingBlock
 4. MainNetwork
 
 ### ConvRelu
-The ConvRelu block is the core block of the modified U-Net. It's forward function takes `InputData` which is the current
+The ConvRelu block is the core block of the modified U-NET. It's forward function takes `InputData` which is the current
 `torch.Tensor` being worked with and `pos` which is the positional data from the `CalculatePositionEncodingBlock`. 
 The forward function is described below in order:
 ```mermaid
@@ -130,8 +130,8 @@ much noise has been applied from [0,100])
 ```mermaid
 flowchart LR
 startB((Position Step)) --> CalculatePositionEncodingBlock[CalculatePositionEncodingBlock];
-CalculatePositionEncodingBlock[CalculatePositionEncodingBlock] --> U-Net;
-starta((Noised Image)) --> U-Net --> Out((Predicted Noise));
+CalculatePositionEncodingBlock[CalculatePositionEncodingBlock] --> U-NET;
+starta((Noised Image)) --> U-NET --> Out((Predicted Noise));
 ```
 
 ## Training
@@ -190,6 +190,8 @@ which defaults to 50 epochs or
 ```console
 python train.py {number_epochs}
 ```
+**NOTE: The file path to the AKOA Dataset MUST be set and can be found at the top of train.py**
+
 
 Something to note is that during a single epoch, each batch of images is only trained on 1 specific level of noise out 
 of the possible 1000 levels of noise. This means that training and validation loss can swing widely depending on the images themselves and the amount of
@@ -214,7 +216,7 @@ The stable diffusion model can be ran and utilised in `predict.py` to generate i
 namely:
 1. Generate Single Image - Generates and displays a single image
 
-<<<<<<< HEAD
+
 ```console
 python predict.py single
 ```
