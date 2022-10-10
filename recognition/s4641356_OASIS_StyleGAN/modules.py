@@ -122,8 +122,40 @@ class StyleGAN():
         self._gan.summary()
 
     def get_generator(self) -> tf.keras.Model:
-        pass
+        generator_latent_input = tf.keras.layers.Input(shape = (self._latent_dim,), name = "Latent_Input")
 
+        
+        #Latent Feature Generation
+        z = generator_latent_input
+        for i in range(8):
+            z = tf.keras.layers.Dense(self._latent_dim, name = "Feature_Gen_Dense_{}".format(i+1))(z)
+
+        w = z
+#TODO refactor such that starting resolution is 4 not 2
+        #Generation blocks for each feature scale
+        curr_res = self._start_res*2
+        x = tf.keras.layers.Input(tensor = tf.zeros(shape = (self._start_res,self._start_res)), name = "Constant_Initial_Image")
+        generator_noise_inputs = [] #keep a hold of input handles for model return
+        while curr_res <= self._output_res:
+            #Each resolution needs an appropriately sized noise inputs
+            layer_noise_inputs = (tf.keras.layers.Input(shape = (curr_res,curr_res), name = "{0}x{0}_Noise_Input_1".format(curr_res)),
+                    tf.keras.layers.Input(shape = (curr_res,curr_res), name = "{0}x{0}_Noise_Input_2".format(curr_res)))
+            generator_noise_inputs += list(layer_noise_inputs)
+
+            #Trained feature scaling based off of latent result for adaIN
+            adaIn_scales = (tf.keras.layers.Dense(2, name = "{0}x{0}_Feature_Scale_1".format(curr_res))(w),
+                    tf.keras.layers.Dense(2, name = "{0}x{0}_Feature_Scale_2".format(curr_res))(w))
+
+
+            x = tf.keras.layers.UpSampling2D(size=(2, 2), mame = "Upsample_to_{0}x{0}".format(curr_res))
+            x = addNoise(name = "{0}x{0}_Noise_1".format(curr_res))(x,generator_noise_inputs[0])
+            x = adaIN(name = "{0}x{0}_adaIN_1".format(curr_res))(x,adaIn_scales[0])
+            x = tf.keras.layers.Conv2D(self._filter_count, kernel_size=3, padding = "same", name = "{0}x{0}_2D_convolution".format(curr_res))
+            x = addNoise(name = "{0}x{0}_Noise_2".format(curr_res))(x,generator_noise_inputs[1])
+            x = adaIN(name = "{0}x{0}_adaIN_2".format(curr_res))(x,adaIn_scales[1])
+        
+        return tf.keras.Model(inputs = ([generator_latent_input] + generator_noise_inputs), outputs = x, name = "Generator")
+    
     def get_discriminator(self) -> tf.keras.Model:
         """
             Creates a discriminator model inline with the StyleGAN framework        
