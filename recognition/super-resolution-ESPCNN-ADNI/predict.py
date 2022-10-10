@@ -3,6 +3,8 @@
 Showing example usage of the trained super-resolution model.
 """
 
+from dataset import downsample_image
+
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
@@ -26,14 +28,19 @@ def display_predictions(
     for images, labels in test_ds.take(1):
         for i in range(num_images):  # For each image show low, high, pred res
             plt.figure()
+
             fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 10))
+            img = images[i]
+            down_img = downsample_image(img[tf.newaxis, ...])
 
-            ax1.imshow(images[i].numpy())
-            ax1.set_label("Low res")
+            for ax in (ax1, ax2, ax3):
+                ax.axis("off")
 
-            ax2.imshow(images[i].numpy())
-            ax2.set_label("High res")
+            ax1.imshow(down_img[0].numpy())
+            ax1.set_title("Low res")
 
-            ax3.imshow(model.predict(images[i]))
-            ax3.set_label("Prediction")
-            plt.axis("off")
+            ax2.imshow(img.numpy())
+            ax2.set_title("High res")
+
+            ax3.imshow(model.predict(down_img)[0])
+            ax3.set_title("Prediction")
