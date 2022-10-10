@@ -1,24 +1,48 @@
-# Stable Diffusion of AKOA Dataset
+# Stable Diffusion of OAI OKOA MRI Knee Scans Dataset
 #### Comp3710 Assignment - Logan De Groot - 46443762
 ## Overview
+The diffusion model implemented is able to generate brand-new knee MRI scans that have never
+been seen before based off pure noise as an input, with that noise being `256x256` randomly
+generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model.
 
+Stable Diffusion works by taking a given dataset (in this case OAI OKOA MRI Knee Scans) and applying a known amount of noise
+to an image from the dataset. The model then takes the newly noised image and attempts to determine how much noise
+has been added to the image. This predicted noise can then be compared to the actual noise
+for training and model improvement. This ideally produces a model that can accurately estimate
+how much noise has been added to a specific image of the dataset.
+
+Once the model has been trained random noise can be generated and inputted which the model just sees
+as image from the dataset with noise applied. The model then generates a guess to how much noise needs to be removed
+from each specific pixel to produce an image similar to the trained dataset. At this point via some math
+as described in the basis [paper](https://arxiv.org/pdf/2006.11239.pdf) the input noise can have the predicted
+noise removed to generate a brand new Knee MRI scan. 
+
+This process can be illustrated with the below figure where going left to right
+is applying noise and the model attempts to figure out how much noise has been applied to go from
+right back to left. Then when generating an image you just start on the right-hand side 
+via a randomly generated set of noise and ask the model to form an image based off previous
+noising examples.
+
+![image](images/diffusion%20example.png)
+Reference https://developer.nvidia.com/blog/improving-diffusion-models-as-an-alternative-to-gans-part-2/
 
 ## File Design
 The project has been split up into 4 distinct files primarily:
 - diffusion_imports.py - wrapper file for all required imports used for code simplicity 
-- diffusion_image_loader.py - primarily handles loading loading data and preprocessing
-- unet_model.py - This is the main file that contains the model used. It is a modified U-NET model
-- main.py - This is the file that runs and enables the use of all other files #TOCHANGE
+- dataset.py - primarily handles loading loading data and preprocessing
+- modules.py - This is the main file that contains a modified U-NET model used
+- train.py - This is the file that runs and enables the use of all other files #TOCHANGE
+- predict.py - This file plots and shows visualisation from the saved model
 
 ## Data Loading
 The OAI AKOA Knee MRI dataset is required for this model. When attempting to train the model,
 a `torch.torch.utils.data.dataset` and `torch.utils.data.dataloader.DataLoader` must be used which can be found within 
-`diffusion_image_loader.py`. For simplicity a convenient wrapper has been provided called `load_data` which when given a
+`dataset.py`. For simplicity a convenient wrapper has been provided called `load_data` which when given a
 path to the OAI AKOA Knee MRI dataset will return a `torch.utils.data.dataloader.DataLoader` to be used for training. To
 instantiate:
 
 ```python
-from diffusion_image_loader import *
+from dataset import *
 dataloader = load_data("PathToDataSet")
 ```
 where various options can be passed such as `batchsize` to control the number of images returned when using the 
@@ -38,7 +62,7 @@ be normalised from [0,1] to [-1,1], this can easily be done by multiply by 2 and
 ensure consistency with the reversing of predicted noise from the unet model.
 
 In total, all of the preprocessing steps can be achieved with the following lines which can be found within the provided
-`diffusion_image_loader.py` and is handled via the use of `load_data(Path)`:
+`dataset.py` and is handled via the use of `load_data(Path)`:
 ```python
 from diffusion_imports import *
 
@@ -51,7 +75,7 @@ slice = slice.mul(2).sub(1)
 The implemented model is a modified UNET network which makes heavy use of Convolution Layers and Pooling. A U-NET is
 used due to it's ability to down sample and then re-upscale giving it the ability to predict noise levels with some
 modification. The structure of the U-NET is as follows:
-![image](UNET_structure.png)
+![image](images/UNET_structure.png)
 Reference https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 
 The above U-Net has been slightly modified to include the ability to add Positional Embeddings which let's the U-Net
@@ -159,13 +183,22 @@ optimizer.step()
 This cycle gets repeated for the specified number of epochs, the trained model used 30 epochs.
 
 Something to note is that during a single epoch, each batch of images is only trained on 1 specific level of noise out 
-of the possible 1000 levels of noise. This means that for the 30 batches conducted, the 18,000 were each tested at 30 
-varying levels of noise, it is therefore possible to continue training without significant overwriting . The loss during
+of the possible 1000 levels of noise. This means that for the 30 batches conducted only 30 noise levels were conducted, and it is therefore possible to continue training without significant overwriting . The loss during
 training can be visualised below:
 
-# PUT IMAGE HERE
+![image](images/Training%20Loss%20Across%20Epochs.png)
 
 ## Validation
+A validation set of 20% was seperated from the original dataset to ensure that the model was not over training or remembering the dataset. 
+After every epoch the validation set was tested and the average loss recorded:
+![image](images/Validation%20Loss%20Across%20Epochs.png)
+
+It is worth noting that loss for the training set varies significantly from epoch to epoch but in general is declining signifiying that the model is
+learning the general features of the AKOA Dataset.
+
+## Validation & Training Overlayed
+The overlay of training and validation can be seen below:
+![image](images/Validation%20&%20Training%20Loss%20Across%20Epochs.png)
 
 ## Visualization & Results
 The stable diffusion model can be ran and utilised in `predict.py` to generate scans, three functions have been provided
@@ -178,10 +211,10 @@ Below is a single image that has been generated. This took approximately 20 seco
 
 
 Below is an example of function 2 showing 10 images and conversion process from noise into a knee scan
-![image](Generated%2010%20Images.png)
+![image](images/Generated%20Images%20Based%20off%20Stable%20Diffusion.png)
 
-Below is 100 images that have been generated. This took approximately 30 minutes.
-![image](99%20Generated%20Images.png)
+Below is 99 images that have been generated. This took approximately 30 minutes.
+![image](images/99%20Generated%20Images.png)
 
 
 ## Dependencies
