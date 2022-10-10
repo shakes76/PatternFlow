@@ -24,7 +24,9 @@ assert len(BATCH_SIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS), \
 class SGCallBack(tf.keras.callbacks.Callback):
 
     def __init__(
-        self, latent_dim=100,
+        self, 
+        latent_dim=100,
+        current_depth=0,
         output_num_img=16,
         output_img_dim=256,
         output_img_folder='',
@@ -34,6 +36,7 @@ class SGCallBack(tf.keras.callbacks.Callback):
     ):
         self.output_num_img = output_num_img
         self.latent_dim = latent_dim
+        self.current_depth = current_depth
         self.z = tf.random.normal((self.output_num_img, self.latent_dim), seed=42)
         self.steps_per_epoch = 0
         self.epochs = 0
@@ -49,6 +52,9 @@ class SGCallBack(tf.keras.callbacks.Callback):
 
     def set_prefix(self, prefix=''):
         self.prefix = prefix
+    
+    def set_currentDepth(self, depth=0):
+        self.current_depth = depth
 
     def set_steps(self, steps_per_epoch, epochs):
         self.steps_per_epoch = steps_per_epoch
@@ -61,8 +67,9 @@ class SGCallBack(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         sgan = self.model
         w = sgan.FC(self.z)
+        ws = [w[:,i] for i in range(self.current_depth+1)]
         const = tf.ones([self.output_num_img, sgan.SRES, sgan.SRES, sgan.FILTERS[0]])
-        samples = sgan.G([const, w])
+        samples = sgan.G([const]+ws)
 
         wh = int(np.sqrt(self.output_num_img))
         out_imgs = Image.new(self.output_img_mode, (self.output_img_dim * wh, self.output_img_dim * wh))
@@ -95,8 +102,8 @@ sgan = StyleGAN(latent_dim=LATENT_VECTOR_DIM, filters=FILTERS, channels=CHANNELS
 # Compile models
 sgan.compile(d_optimizer=adam, g_optimizer=adam)
 
-plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_base_{sgan.SRES}x{sgan.SRES}.png'))
-plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_base_{sgan.SRES}x{sgan.SRES}.png'))
+plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{sgan.SRES}x{sgan.SRES}_g_base.png'))
+plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{sgan.SRES}x{sgan.SRES}_d_base.png'))
 
 cbk = SGCallBack(
     latent_dim=LATENT_VECTOR_DIM,
@@ -111,6 +118,7 @@ st = len(training_images)
 print(f"resolution: {sgan.SRES}x{sgan.SRES}, filters: {FILTERS[0]}")
 
 cbk.set_prefix(f'{sgan.SRES}x{sgan.SRES}_base')
+cbk.set_currentDepth(0)
 cbk.set_steps(steps_per_epoch=st, epochs=EPOCHS[0])
 sgan.fit(training_images, steps_per_epoch=st, epochs=EPOCHS[0], callbacks=[cbk])
 sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))
@@ -130,10 +138,10 @@ for depth in range(1, len(BATCH_SIZE)):
     print(f"res: {res}x{res}, filters: {ch}")
 
     cbk.set_steps(steps_per_epoch=st, epochs=ep)
-
+    cbk.set_currentDepth(depth)
     cbk.set_prefix(f'{res}x{res}_fadein')
-    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_fadein_{res}x{res}.png'))
-    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_fadein_{res}x{res}.png'))
+    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{res}x{res}_g_fadein.png'))
+    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{res}x{res}_d_fadein.png'))
     sgan.compile(adam, adam)
     sgan.fit(training_images, steps_per_epoch=st, epochs=ep, callbacks=[cbk])
     sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))
@@ -141,8 +149,8 @@ for depth in range(1, len(BATCH_SIZE)):
     sgan.transition()
 
     cbk.set_prefix(f'{res}x{res}_trans')
-    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_trans_{res}x{res}.png'))
-    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_trans_{res}x{res}.png'))
+    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{res}x{res}_g_trans.png'))
+    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'{res}x{res}_d_trans.png'))
     sgan.compile(adam, adam)
     sgan.fit(training_images, steps_per_epoch=st, epochs=ep, callbacks=[cbk])
     sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))

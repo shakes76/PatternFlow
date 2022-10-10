@@ -127,7 +127,7 @@ class AdaIN(layers.Layer):
         
         # instance norm
         m, v = tf.nn.moments(x, [1, 2], keepdims=True)
-        x = (x - m) / tf.sqrt(v + 1.0e-8)
+        x = (x-m)/tf.sqrt(v+1.0e-8)
 
         # w -> A
         ys = self.wsys(self.denseys(w))
@@ -244,11 +244,11 @@ class StyleGAN(Model):
 
     def init_G(self):
         const = layers.Input(shape=(self.SRES, self.SRES, self.FILTERS[0]))
-        w = layers.Input(shape=(self.DEPTH+1, self.LDIM))
+        w = layers.Input(shape=(self.LDIM))
         x = const
-        x = AdaIN()([x, w[:, 0]])
+        x = AdaIN()([x, w])
         x = WeightScalingConv(x, filters=self.FILTERS[0], gain=np.sqrt(2), activate='LeakyReLU')
-        x = AdaIN()([x, w[:, 0]])
+        x = AdaIN()([x, w])
         x = WeightScalingConv(x, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
         return Model([const, w], x)
 
@@ -260,26 +260,20 @@ class StyleGAN(Model):
         end = layers.UpSampling2D((2, 2))(end)
 
         # branch
-        # x1 = end
-        # for i in [-4, -3, -2, -1]:
-        #     x1 = self.G.layers[i](x1)
-                
-        x1 = self.G.layers[-4](end) # Conv2d
-        x1 = self.G.layers[-3](x1)  # WeightScalingLayer
-        x1 = self.G.layers[-2](x1)  # Bias
-        x1 = self.G.layers[-1](x1)  # tanh
+        x1 = end
+        for i in [-4, -3, -2, -1]:
+            x1 = self.G.layers[i](x1)
 
         # branch
-        w = self.G.input[1]
+        w = layers.Input(shape=(self.LDIM))
         x2 = WeightScalingConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
-        x2 = AdaIN()([x2, w[:, self.current_depth]])
+        x2 = AdaIN()([x2, w])
         x2 = WeightScalingConv(end, filters=self.FILTERS[self.current_depth], gain=sqrt2, activate='LeakyReLU')
-        x2 = AdaIN()([x2, w[:, self.current_depth]])
+        x2 = AdaIN()([x2, w])
         x2 = WeightScalingConv(x2, filters=self.CHANNELS, kernel_size=(1, 1), gain=1., activate='tanh')
 
-        self.GT = Model(self.G.input, x2)
-        x = WeightedSum()([x1, x2])
-        self.G = Model(self.G.input, x)
+        self.GT = Model(self.G.input+[w], x2)
+        self.G = Model(self.G.input+[w], WeightedSum()([x1, x2]))
 
     def grow(self):
         self.grow_G()
@@ -321,8 +315,9 @@ class StyleGAN(Model):
         z = tf.random.normal(shape=(batch_size, self.LDIM))
         with tf.GradientTape() as tape:
             w = self.FC(z)
+            ws = [w[:,i] for i in range(self.current_depth+1)]
             # Generate fake images from the latent vector
-            fake_images = self.G([const, w], training=True)
+            fake_images = self.G([const]+ws, training=True)
             # Get the logits for the fake images
             fake_labels = self.D(fake_images, training=True)
             # Get the logits for the real images
@@ -349,12 +344,11 @@ class StyleGAN(Model):
         z = tf.random.normal(shape=(batch_size, self.LDIM))
         with tf.GradientTape() as tape:
             w = self.FC(z)
-            # Generate fake images using the generator
-            generated_images = self.G([const, w], training=True)
-            # Get the discriminator logits for fake images
-            gen_img_logits = self.D(generated_images, training=True)
+            ws = [w[:,i] for i in range(self.current_depth+1)]
+            generated_images = self.G([const]+ws, training=True)
+            pred_labels = self.D(generated_images, training=True)
             # Calculate the generator loss
-            g_loss = -tf.reduce_mean(gen_img_logits)
+            g_loss = -tf.reduce_mean(pred_labels)
         # Get the gradients w.r.t the generator loss
         trainable_weights = (self.G.trainable_weights + self.FC.trainable_weights)
         g_grad = tape.gradient(g_loss, trainable_weights)
