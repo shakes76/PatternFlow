@@ -121,3 +121,41 @@ def transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projecti
         encoded_patches = layers.Add()([x5, x3])
         
     return encoded_patches
+
+
+##############################  CREATE VISION TRANSFORMER MODEL  #################################
+
+def vit_classifier():
+    
+    inputs = layers.Input(shape=input_shape)
+    
+    # Augment data.
+    augmented = data_augmentation(mean=mean, variance=variance)(inputs)
+    
+    # Create patches.
+    patches = Patches(patch_size)(augmented)
+    
+    # create patch embeddings
+    embedded_patches = PatchEmbedding(num_patches, projection_dim)(patches)
+
+    # create patch encodings
+    encoded_patches = transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projection_dim)
+
+    # prepare patch encodings for mlp
+    representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
+    representation = layers.Flatten()(representation)
+    representation = layers.Dropout(0.2)(representation)
+    
+#     representation = tf.reduce_mean(encoded_patches, axis=1)
+    
+    # MLP head
+    features = mlp(x=representation, hidden_units=[64], dropout_rate=0.5)
+    
+    # Classify outputs.
+    outputs = layers.Dense(num_classes)(features)
+#     outputs = layers.Dense(num_classes)(representation)
+    
+    # Create the Keras model.
+    model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    return model
