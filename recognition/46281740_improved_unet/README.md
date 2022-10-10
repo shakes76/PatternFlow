@@ -32,7 +32,9 @@ Here I simply follow the original splitting strategy given in the original datas
 
 ## 6. Dependencies list
 Python 3.9.12
+
 Tensorflow 2.6.0
+
 matplotlib 3.5.1
 
 ## 7. References
