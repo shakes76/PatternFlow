@@ -52,3 +52,22 @@ class Patches(layers.Layer):
         patch_dims = patches.shape[-1]
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
         return patches
+
+###################################  EMBED PATCHES  #######################################
+
+class PatchEmbedding(layers.Layer):
+    """ Class to linear project flattened patch into projection_dim and add positional embedding"""
+    def __init__(self, num_patches, projection_dim):
+        super(PatchEmbedding, self).__init__()
+        self.num_patches = num_patches
+        self.projection = layers.Dense(units=projection_dim)
+        self.position_embedding = layers.Embedding(
+            input_dim=num_patches, output_dim=projection_dim
+        )
+
+    def call(self, patch):
+        positions = tf.range(start=0, limit=self.num_patches, delta=1)
+        
+        # add linear project to position embedding
+        embedding = self.projection(patch) + self.position_embedding(positions)
+        return embedding
