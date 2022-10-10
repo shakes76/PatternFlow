@@ -71,3 +71,13 @@ class PatchEmbedding(layers.Layer):
         # add linear project to position embedding
         embedding = self.projection(patch) + self.position_embedding(positions)
         return embedding
+
+###################################  CREATE MLP  #######################################
+
+def mlp(x, hidden_units, dropout_rate):
+    """ Generic function to create zero or more mlp blocks each a dense layer and a dropout layer  """
+    
+    for units in hidden_units:
+        x = layers.Dense(units, activation=tf.keras.activations.tanh)(x)
+        x = layers.Dropout(dropout_rate)(x)
+    return x
