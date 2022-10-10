@@ -1,6 +1,7 @@
 from multiprocessing.sharedctypes import Value
 import tensorflow as tf
 import numpy as np
+import GANutils
 
 class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic layers use keras.layers.Lambda
     """
@@ -101,7 +102,7 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
 
-    def __init__(self, output_res: int = 256, start_res: int = 2, latent_dim: int = 512) -> None:
+    def __init__(self, output_res: int = 256, start_res: int = 2, latent_dim: int = 512, existing_model_filepath: str = None) -> None:
         """
             Instantiate a new StyleGAN
 
@@ -109,10 +110,10 @@ class StyleGAN():
             output_res (int, optional): side length of output images in pixels. Defaults to 256.
             start_res (int, optional): side length of constant space to begin generation on. Defaults to 2.
             latent_dim (int, optional): dimension of latent space. Defaults to 512.
-            filter_count (int, optional): number of filters per convolution layer (will be scaled where appropriate). Defaults to 512
+            existing_model_filepath (str,optional): filepath of existing styleGANModel. If this is not None the other parameters are ignored and existing styleGAN is loaded instead. Defaults to None
         """
         super(StyleGAN, self).__init__()
-
+        #TODO sanitise inputs
         self._output_res = output_res
         self._start_res = start_res
         self._latent_dim = latent_dim
@@ -120,9 +121,15 @@ class StyleGAN():
         self._generator = self.get_generator()
         self._discriminator = self.get_discriminator()
 
+        self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
+
         #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
         self._gan = tf.keras.Model(self._generator.input, self._discriminator(self._generator.output), name = "StyleGAN")
         self._gan.summary()
+
+        self._gan_metrics = None
+
+        self._epochs_trained = 0
 
     def get_generator(self) -> tf.keras.Model:
 
@@ -202,4 +209,81 @@ class StyleGAN():
 
         return tf.keras.Model(inputs = discriminator_input, outputs = x, name = "Discriminator")
 
-    # TODO def __call__():
+    def compile(self, loss: str, optimizer: str, metrics: list[str], **kwargs) -> None:
+        """
+        Compiles GAN with specified training metrics, enables training
+
+        Args:
+            loss (str): keras string name of loss function to use during training (can also directly pass in a function handle)
+            optimizer (str): keras string name of optimizer to use during training
+            metrics (list[str]): list of keras string names for metrics that you wish to track during training
+        """ #TODO hard code some of these
+        self._gan_metrics = metrics
+        self._epochs_trained = 0 #recompiling signifies we want to start a new training paradigm
+        self._generator.compile(loss, optimizer, metrics, **kwargs)
+        self._discriminator.compile(loss, optimizer, metrics, **kwargs)
+        self._gan.compile(loss, optimizer, metrics, **kwargs)
+
+    @property
+    def metrics(self) -> list[tf.keras.metrics.Metric]:
+        """
+        Get model's current training metrics
+
+        Returns:
+            list[tf.keras.metrics.Metric]: list of current training metrics
+        """
+        return self._gan_metrics
+
+    def fit(self, images: np.array, batch_size: int, epochs: int, training_history_location: str, image_sample_count:int = 5, image_sample_output:str = "output/", model_output:str = "model/") -> None:
+        """
+            Fits the model to a given set of training images. The custom GAN training paradigm is as follows: TODO
+        Args:
+            images (np.array): vector of normalized image data to fit GAN to
+            batch_size (int): number of images to pass through model per batch
+            epochs (int): number of epochs (repeat runs of full training set) to train model on
+            training_history_location (str): Directory to save training history
+            image_sample_count (int, optional): Number of image samples to take per epoch ignored if image_sample_output is set to None. Defaults to 5
+            image_sample_output (str, optional): Directory to save sample images after each epoch, or set to None to disable saving. Defaults to "output/".
+            model_output (str, optional): directory to save model information after each epoch, or set to None to disable model saving. Defaults to "model/".
+        """
+        #TODO sanitse inputs
+        num_batches = images.shape[0]//batch_size #required batches per epoch
+        batches = np.split(images[:num_batches*batch_size,:,:,:],num_batches,axis = 0) + [images[num_batches*batch_size:,:,:,:]] #split requires an exact even split, so append remainder manually
+        
+        #Manual Labels to assign to batches when conducting supervised training on discriminator
+        real_labels = tf.ones(shape = (batch_size,))
+        fake_labels = tf.zeros(shape = (batch_size,))
+
+        #start with zeros as the background of OASIS images are black
+        constant_generator_base = tf.zeros(shape = (batch_size,self._start_res,self._start_res,self._latent_dim))
+
+        starting_epoch = self._epochs_trained
+        for e in range(epochs):
+            print(">> epoch {}/{}".format(e+1,epochs))
+            for b in range(num_batches):
+                print(">>>> batch {}/{}".format(b+1,num_batches))
+
+                #train discriminator on real images
+                discrim_loss_real, discrim_acc_real = self._discriminator.train_on_batch(batches[b], real_labels)
+
+                #train discriminator on a batch of fake images from current iteration of the generator
+                fake_images = self._generator(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base])
+                discrim_loss_fake, discrim_acc_fake = self._discriminator.train_on_batch(fake_images, fake_labels)
+
+                #Train generator. Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' (1) from discriminator
+                gan_loss, gan_acc = self._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base], real_labels)
+            
+            self._epochs_trained += 1
+
+            #TODO save model state, save sample images
+
+        #TODO save training history and graph
+
+    def __call__(self, latent_vector: np.array, noise_inputs: list[np.array]) -> np.array:
+        pass
+
+    def save_model():
+        pass
+
+    def load_model():
+        pass

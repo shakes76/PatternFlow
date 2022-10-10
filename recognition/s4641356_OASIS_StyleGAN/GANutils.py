@@ -1,5 +1,6 @@
 from PIL import Image
 import numpy as np
+import tensorflow as tf
 
 
 def denormalise(data: np.array, mean: float) -> np.array:
@@ -38,3 +39,24 @@ def create_image(data: np.array, name: str = None, output_folder: str = "output/
         im.save(output_folder+name+".png")
     return im
 
+def random_generator_inputs(num_images: int,latent_dim: int,noise_start: int,noise_end: int) -> list[np.array]:
+    """_summary_
+
+    Args:
+        num_images (int): _description_
+        latent_dim (int): _description_
+        noise_start (int): _description_
+        noise_end (int): _description_
+
+    Returns:
+        list[np.array]: _description_
+    """
+
+    latent_vectors = tf.random.normal(shape = (num_images,latent_dim))
+    noise_inputs = []
+    curr_res = noise_start
+    while curr_res <= noise_end:
+        noise_inputs + [tf.random.normal(shape =  (num_images,curr_res,curr_res,latent_dim)),
+                tf.random.normal(shape =  (num_images,curr_res,curr_res,latent_dim))]
+        curr_res = curr_res*2
+    return [latent_vectors] + noise_inputs
