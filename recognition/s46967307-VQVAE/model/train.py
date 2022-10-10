@@ -25,14 +25,21 @@ print("Finished Loading Data")
 print("Beginning Model Fitting")
 model.fit((data["train"]),
         (data["train"]),
-        epochs=5,
+        epochs=2,
         shuffle=True,
         batch_size=8)
 print("Finished MOdel Fitting")
 
-# Predict
-print("Saving Predictions")
 predictions = model.predict(data["test"])
+
+import matplotlib.pyplot as plt
+n = 5
+plt.tight_layout()
+fig, axs = plt.subplots(n, 2, figsize=(256,256))
+for i in range(n):
+    axs[i,0].imshow(tf.reshape(data["validate"][i], shape=(256,256)).numpy())
+    axs[i,1].imshow(tf.reshape(predictions[i], shape=(256,256)))
+plt.savefig("out.png")
 
 # Save model.
 print("Saving Model")

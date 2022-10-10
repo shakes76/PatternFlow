@@ -40,7 +40,7 @@ class VQ(tf.keras.layers.Layer):
         # Reshape results back into compressed image
         results = tf.reshape(results, shape=inputs_shape)
 
-        return results
+        return inputs + tf.stop_gradient(results - inputs)
 
 class AE(tf.keras.Model):
     def __init__(self, **kwargs):
