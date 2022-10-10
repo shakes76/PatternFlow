@@ -1,6 +1,11 @@
+
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
-from tensorflow.keras.models import Model
+from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
+from tensorflow.python.keras.models import Model
+# Some machine may need the following import statement to import (without .python.)
+# May because of some version issue ?
+# from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
+# from tensorflow.keras.models import Model
 
 
 def down(x, filters, kernel_size=(3, 3), padding="same", strides=1):
