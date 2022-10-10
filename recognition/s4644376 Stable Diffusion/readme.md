@@ -208,7 +208,7 @@ namely:
 3. Generate N Images - Generates N images and displays them in a canvas style
 
 Below is a single image that has been generated. This took approximately 20 seconds.
-
+![image](images/Single%20Example.png)
 
 Below is an example of function 2 showing 10 images and conversion process from noise into a knee scan
 ![image](images/Generated%20Images%20Based%20off%20Stable%20Diffusion.png)

@@ -1,6 +1,3 @@
-import os.path
-import sys
-
 from diffusion_imports import *
 from train import get_index
 
@@ -65,6 +62,7 @@ def generate_n_image_process(model, number = 10):
 def generate_single(model):
     model = model.cuda()
 
+    plt.figure(figsize=(5,5))
     plt.axis("off")
     plt.title("Generated Images Based off Stable Diffusion")
 
@@ -75,6 +73,7 @@ def generate_single(model):
             img = de_noise(img, torch.tensor([i]).cuda(), model)
 
     plt.imshow(img[0].permute(1, 2, 0).detach().cpu())
+    plt.savefig('Single Example')
     plt.show()
 
 
