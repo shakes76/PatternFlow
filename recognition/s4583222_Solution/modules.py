@@ -8,16 +8,19 @@
 # Description: My model
 
 #Images are 3x256x256
+from tkinter import S
 import torch
 from torch import nn
 from tqdm import tqdm
 import torch.nn.functional as F
 
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
 #-------The Forward Process----------#
 # Noising the image
 
 class Diffusion:
-    def __init__(self, timesteps = 1000, start_beta = 0.0001, end_beta = 0.02, img_size = 256, device = "cuda"):
+    def __init__(self, timesteps = 1000, start_beta = 0.0001, end_beta = 0.02, img_size = 256, device = DEVICE):
         self.timesteps = timesteps
         self.start_beta = start_beta
         self.end_beta = end_beta
@@ -25,7 +28,7 @@ class Diffusion:
         self.device = device
 
         self.beta = self.linear_beta().to(device)
-        self.alpha = 1. - self.end_beta #alpha is 1 - beta 
+        self.alpha = 1. - self.beta #alpha is 1 - beta 
         self.alpha_hat = torch.cumprod(self.alpha, dim=0) #alpha hat is the cumulative product of alpha
 
     def linear_beta(self):
@@ -36,7 +39,7 @@ class Diffusion:
         sqrt_one_minus_alpha_hat_term = torch.sqrt(1. - self.alpha_hat[t])[:, None, None, None]
         epsilon = torch.randn_like(x)
         x_t = sqrt_alpha_hat_term * x + sqrt_one_minus_alpha_hat_term * epsilon
-        return x_t
+        return x_t, epsilon
 
     def sample_the_timestep(self, n):
         return torch.randint(low = 1, high=self.timesteps, size = (n,))
@@ -106,16 +109,14 @@ class self_attenuation(nn.Module):
 
 class embedded_layer(nn.Module):
     def __init__(self, out_chan, time_emb = 256):
-        self.embedded = nn.Sequential(
-            nn.SiLU,
-            nn.Linear(time_emb, out_chan)
-        )
+        super().__init__()
+        self.embedded = nn.Sequential(nn.SiLU(), nn.Linear(time_emb, out_chan))
     def forward(self, x, t):
         emb = self.embedded(t)[:,:,None,None].repeat(1,1,x.shape[-2], x.shape[-1])
         return x + emb
 
 class UNETModel(nn.Module):
-    def __init__(self, in_chan = 3, out_chan = 3, time_dimension = 256, device = "cuda"):
+    def __init__(self, in_chan = 3, out_chan = 3, time_dimension = 256, device = "cpu"):
         super().__init__()
         self.device = device
         self.time_dimension = time_dimension
@@ -151,19 +152,19 @@ class UNETModel(nn.Module):
 
         self.bottle_neck = double_conv(256, 512)
 
-        self.fifth_level = double_conv(512, 256) 
+        self.fifth_level = double_conv(512 + 256, 256) 
         self.fifth_level_embedded = embedded_layer(256)
         self.fifth_level_atten = self_attenuation(256, 32)
 
-        self.sixth_level = double_conv(256, 128)
+        self.sixth_level = double_conv(256 + 128, 128)
         self.sixth_level_embedded = embedded_layer(128)
         self.sixth_level_atten = self_attenuation(128, 64)
 
-        self.seventh_level = double_conv(128, 64)
+        self.seventh_level = double_conv(128 + 64, 64)
         self.seventh_level_embedded = embedded_layer(64)
         self.seventh_level_atten = self_attenuation(64, 128)
 
-        self.eigth_level = double_conv(64, 32)
+        self.eigth_level = double_conv(64 + 32, 32)
         self.eigth_level_embedded = embedded_layer(32)
         self.eigth_level_atten = self_attenuation(32, 256)
 
@@ -179,54 +180,54 @@ class UNETModel(nn.Module):
     def forward(self, x, t):
         t = t.unsqueeze(-1).type(torch.float)
         t = self.position_encoding(t, self.time_dimension)
-
         x1 = self.first_level(x)
         x1_skip = x1
         
         x2 = self.pool(x1)
         x2 = self.second_level(x2)
         x2 = self.second_level_embedded(x2, t)
-        x2 = self.second_level_atten(x2)
+        #x2 = self.second_level_atten(x2)
         x2_skip = x2
 
         x3 = self.pool(x2)
         x3 = self.third_level(x3)
         x3 = self.third_level_embedded(x3, t)
-        x3 = self.third_level_atten(x3)
+        #x3 = self.third_level_atten(x3)
         x3_skip = x3
 
         x4 = self.pool(x3)
         x4 = self.fourth_level(x4)
         x4 = self.fourth_level_embedded(x4, t)
-        x4 = self.fourth_level_atten(x4)
+        #x4 = self.fourth_level_atten(x4)
         x4_skip = x4
 
         x_bottle = self.pool(x4)
         x_bottle = self.bottle_neck(x_bottle)
 
         x5 = self.scale_up(x_bottle)
-        x5 = torch.cat([x4_skip, x5], dim = 1)
-        x5 = self.fifth_level(x5) 
+        #x5 = self.fifth_scale_up(x_bottle)
+        x5 = torch.cat([x4_skip, x5], dim=1)
+        x5 = self.fifth_level(x5)
         x5 = self.fifth_level_embedded(x5, t)
-        x5 = self.fifth_level_atten(x5)
+        #x5 = self.fifth_level_atten(x5)
 
         x6 = self.scale_up(x5)
         x6 = torch.cat([x3_skip, x6], dim = 1)
         x6 = self.sixth_level(x6) 
         x6 = self.sixth_level_embedded(x6, t)
-        x6 = self.sixth_level_atten(x6)
+        #x6 = self.sixth_level_atten(x6)
         
         x7 = self.scale_up(x6)
         x7 = torch.cat([x2_skip, x7], dim = 1)
         x7 = self.seventh_level(x7) 
         x7 = self.seventh_level_embedded(x7, t)
-        x7 = self.seventh_level_atten(x7)
+        #x7 = self.seventh_level_atten(x7)
 
         x8 = self.scale_up(x7)
         x8 = torch.cat([x1_skip, x8], dim = 1)
         x8 = self.eigth_level(x8) 
         x8 = self.eigth_level_embedded(x8, t)
-        x8 = self.eigth_level_atten(x8)
+        #x8 = self.eigth_level_atten(x8)
 
         output_x = self.last_conv(x8)
         
