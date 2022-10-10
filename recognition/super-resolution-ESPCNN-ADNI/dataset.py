@@ -11,6 +11,18 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
 
+IMG_ORIG_WIDTH = 256
+IMG_ORIG_HEIGHT = 240
+IMG_ORIG_SIZE = (IMG_ORIG_WIDTH, IMG_ORIG_HEIGHT)
+
+DOWNSAMPLE_FACTOR = 4
+
+IMG_DOWN_WIDTH = IMG_ORIG_WIDTH // DOWNSAMPLE_FACTOR
+IMG_DOWN_HEIGHT = IMG_ORIG_HEIGHT // DOWNSAMPLE_FACTOR
+IMG_DOWN_SIZE = (IMG_DOWN_WIDTH, IMG_DOWN_HEIGHT)
+
+BATCH_SIZE = 32
+
 
 def download_data() -> str:
     """Download the ADNI-MRI data and return the resulting download path
@@ -55,28 +67,24 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
         Tuple[tf.data.Dataset, tf.data.Dataset]: Tuple of train and test
         datasets (train, test)
     """
-
-    image_size = (256, 240)
-    batch_size = 32
-
     train_path = os.path.join(data_path, "train")
     test_path = os.path.join(data_path, "test")
 
     train_ds = image_dataset_from_directory(
         train_path,
-        image_size=image_size,
-        batch_size=batch_size,
+        image_size=IMG_ORIG_SIZE,
+        batch_size=BATCH_SIZE,
         color_mode="grayscale",
     )
 
     test_ds = image_dataset_from_directory(
         test_path,
-        image_size=image_size,
-        batch_size=batch_size,
+        image_size=IMG_ORIG_SIZE,
+        batch_size=BATCH_SIZE,
         color_mode="grayscale",
     )
 
-    normalisation_layer = keras.layers.Rescaling(1./255)
+    normalisation_layer = keras.layers.Rescaling(1./255)  # Normalise
 
     norm_train_ds = train_ds.map(lambda x, y: (normalisation_layer(x), y))
     norm_test_ds = test_ds.map(lambda x, y: (normalisation_layer(x), y))
@@ -86,13 +94,13 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
 
 def downsample_data(
     dataset: tf.data.Dataset,
-    resulting_size: tuple[int, int] = (64, 60),
+    resulting_size: tuple[int, int] = IMG_DOWN_SIZE,
 ) -> Any:
     """Return dataset with all images downsized by the given factor.
 
     Args:
         dataset (tf.data.Dataset): dataset containing images to downsize
-        factor (int): factor by which to downsize
+        resulting_size tuple[int, int]: The image size to downsample towards
 
     Returns:
         Any: Downsized images in a dataset
@@ -103,7 +111,7 @@ def downsample_data(
 
 
 def preview_data(dataset: tf.data.Dataset) -> None:
-    """Construct a matplotlib figure to preview some given dataset
+    """Construct a matplotlib figure to preview some given image dataset
 
     Args:
         dataset (tf.data.Dataset): Dataset to preview
