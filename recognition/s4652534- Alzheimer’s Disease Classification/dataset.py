@@ -27,3 +27,28 @@ class Preprocessor(Dataset):
         img = Image.open(osp.join(self.root, fname)).convert('RGB')
         img = self.transformer(img)
         return img, label, index
+
+
+class ADNI(Dataset):
+    def __init__(self, dataset_dir):
+        super(ADNI, self).__init__()
+        self.dataset_dir = dataset_dir
+        self.train_AD_dir = osp.join(osp.join(self.dataset_dir, 'train'), 'AD')
+        self.train_NC_dir = osp.join(osp.join(self.dataset_dir, 'train'), 'NC')
+        self.test_AD_dir = osp.join(osp.join(self.dataset_dir, 'test'), 'AD')
+        self.test_NC_dir = osp.join(osp.join(self.dataset_dir, 'test'), 'NC')
+
+        self.train_AD = self.process_dir(dir_path=self.train_AD_dir, label='AD')
+        self.train_NC = self.process_dir(dir_path=self.train_NC_dir, label='NC')
+        self.test_AD = self.process_dir(dir_path=self.test_AD_dir, label='AD')
+        self.test_NC = self.process_dir(dir_path=self.test_NC_dir, label='NC')
+
+    def process_dir(self, dir_path, label):
+        img_paths = glob.glob(osp.join(dir_path, "*.jpeg"))
+        data = []
+        for img_path in img_paths:
+            if label == "AD":
+                data.append((img_path, 1))
+            else:
+                data.append((img_path, 0))
+        return data
