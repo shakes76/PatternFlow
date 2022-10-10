@@ -13,6 +13,7 @@ from config import *
 # suppress tensorflow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+# OOM
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
@@ -69,7 +70,7 @@ class SGCallBack(tf.keras.callbacks.Callback):
             img = tf.keras.preprocessing.image.array_to_img(samples[i])
             img = img.resize((self.output_img_dim, self.output_img_dim))
             out_imgs.paste(img, (i % wh * self.output_img_dim, i // wh * self.output_img_dim))
-        path = self.output_img_folder + f'/{self.prefix}_{epoch+1:02d}.png'
+        path = os.path.join(self.output_img_folder, f'{self.prefix}_{epoch+1:02d}.png')
         out_imgs.save(path)
         print(f'\n{self.output_num_img} progress images saved: {path}')
 
@@ -94,9 +95,8 @@ sgan = StyleGAN(latent_dim=LATENT_VECTOR_DIM, filters=FILTERS, channels=CHANNELS
 # Compile models
 sgan.compile(d_optimizer=adam, g_optimizer=adam)
 
-# Draw models
-# keras.utils.plot_model(pgan.generator, to_file=OUTPUT_MODEL_FOLDER + f'/generator_{pgan.n_depth}.png', show_shapes=True)
-# keras.utils.plot_model(pgan.discriminator, to_file=OUTPUT_MODEL_FOLDER + f'/discriminator_{pgan.n_depth}.png', show_shapes=True)
+plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_base_{sgan.SRES}x{sgan.SRES}.png'))
+plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_base_{sgan.SRES}x{sgan.SRES}.png'))
 
 cbk = SGCallBack(
     latent_dim=LATENT_VECTOR_DIM,
@@ -113,7 +113,7 @@ print(f"resolution: {sgan.SRES}x{sgan.SRES}, filters: {FILTERS[0]}")
 cbk.set_prefix(f'{sgan.SRES}x{sgan.SRES}_base')
 cbk.set_steps(steps_per_epoch=st, epochs=EPOCHS[0])
 sgan.fit(training_images, steps_per_epoch=st, epochs=EPOCHS[0], callbacks=[cbk])
-sgan.save_weights(OUTPUT_CKPTS_FOLDER + f"/stylegan_{cbk.prefix}.ckpt")
+sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))
 
 for depth in range(1, len(BATCH_SIZE)):
     
@@ -132,17 +132,17 @@ for depth in range(1, len(BATCH_SIZE)):
     cbk.set_steps(steps_per_epoch=st, epochs=ep)
 
     cbk.set_prefix(f'{res}x{res}_fadein')
-    plot_model(sgan.G, to_file=OUTPUT_MODEL_FOLDER + f'/g_fadein_{res}x{res}.png')
-    plot_model(sgan.D, to_file=OUTPUT_MODEL_FOLDER + f'/d_fadein_{res}x{res}.png')
+    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_fadein_{res}x{res}.png'))
+    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_fadein_{res}x{res}.png'))
     sgan.compile(adam, adam)
     sgan.fit(training_images, steps_per_epoch=st, epochs=ep, callbacks=[cbk])
-    sgan.save_weights(OUTPUT_CKPTS_FOLDER + f"/stylegan_{cbk.prefix}.ckpt")
+    sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))
 
     sgan.transition()
 
     cbk.set_prefix(f'{res}x{res}_trans')
-    plot_model(sgan.G, to_file=OUTPUT_MODEL_FOLDER + f'/g_trans_{res}x{res}.png')
-    plot_model(sgan.D, to_file=OUTPUT_MODEL_FOLDER + f'/d_trans_{res}x{res}.png')
+    plot_model(sgan.G, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'g_trans_{res}x{res}.png'))
+    plot_model(sgan.D, to_file=os.path.join(OUTPUT_MODEL_FOLDER, f'd_trans_{res}x{res}.png'))
     sgan.compile(adam, adam)
     sgan.fit(training_images, steps_per_epoch=st, epochs=ep, callbacks=[cbk])
-    sgan.save_weights(OUTPUT_CKPTS_FOLDER + f"/stylegan_{cbk.prefix}.ckpt")
+    sgan.save_weights(os.path.join(OUTPUT_CKPTS_FOLDER, f'stylegan_{cbk.prefix}.ckpt'))

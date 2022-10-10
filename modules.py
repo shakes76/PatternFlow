@@ -47,11 +47,9 @@ class WeightedSum(Add):
         output = ((1.0 - self.alpha) * inputs[0] + (self.alpha * inputs[1]))
         return output
 
-# Scale by the number of input parameters to be similar dynamic range
-# For details, refer to https://prateekvishnu.medium.com/xavier-and-he-normal-he-et-al-initialization-8e3d7a087528
+# normalize weight by given shape
+# https://prateekvishnu.medium.com/xavier-and-he-normal-he-et-al-initialization-8e3d7a087528
 # stddev = sqrt(2 / fan_in)
-
-
 class WeightScaling(Layer):
     
     def __init__(self, shape, gain=np.sqrt(2), **kwargs):
