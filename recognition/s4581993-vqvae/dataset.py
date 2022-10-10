@@ -1,12 +1,19 @@
 import os
 import sys
 import zipfile
+
 import requests
+import tensorflow as tf
 
 dataset_location = "https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download"
 dataset_directory = "dataset/"
 dataset_zip_name = "keras_png_slices_data.zip"
 dataset_folder_name = "keras_png_slices_data/"
+dataset_train_folder = "keras_png_slices_train"
+dataset_test_folder = "keras_png_slices_test"
+dataset_val_folder = "keras_png_slices_validate"
+
+batch_size = 32
 
 # Download the dataset, if it hasn't already been downloaded
 def download_dataset():
@@ -50,3 +57,40 @@ def unzip_dataset():
         print("Dataset extracted.\n")
     else:
         print("Dataset already extracted.\n")
+
+# Load the dataset
+def load_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
+    print("Loading training data...")
+    train_data = tf.keras.preprocessing.image_dataset_from_directory(
+        dataset_directory + dataset_folder_name + dataset_train_folder,
+        labels=None,
+        batch_size=batch_size,
+    )
+    print("Loading testing data...")
+    test_data = tf.keras.preprocessing.image_dataset_from_directory(
+        dataset_directory + dataset_folder_name + dataset_test_folder,
+        labels=None,
+        batch_size=batch_size,
+    )
+    print("Loading validation data...")
+    val_data = tf.keras.preprocessing.image_dataset_from_directory(
+        dataset_directory + dataset_folder_name + dataset_val_folder,
+        labels=None,
+        batch_size=batch_size,
+    )
+    return (train_data, test_data, val_data)
+
+# Preprocess the data
+def preprocess_data(
+    train_data: tf.data.Dataset,
+    test_data: tf.data.Dataset,
+    val_data: tf.data.Dataset
+):
+    pass
+
+# Load and preprocess the dataset
+def get_dataset() -> tf.data.Dataset:
+    download_dataset()
+    unzip_dataset()
+    train_data, test_data, val_data = load_dataset()
+    preprocess_data(train_data, test_data, val_data)
