@@ -30,7 +30,6 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
 
     def __init__(
         self,
-        latent_dim=100,
         output_num_img=16,
         output_img_res=256,
         output_img_folder='',
@@ -55,7 +54,7 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
 
         # build inputs for G
         const = tf.ones([self.output_num_img, sgan.SRES, sgan.SRES, sgan.FILTERS[0]])
-        z = tf.random.normal((self.output_num_img, sgan.LDIM))
+        z = tf.random.normal((self.output_num_img, sgan.LDIM), seed=3710)
         ws = sgan.FC(z)
         inputs = [const]
         for i in range(sgan.current_depth+1):
