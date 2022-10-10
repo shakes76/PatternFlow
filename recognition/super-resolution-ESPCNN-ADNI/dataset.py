@@ -6,22 +6,14 @@ Contains functions for loading and preprocessing the ADNI-MRI data.
 import os
 from typing import Tuple
 from typing import Any
-import tensorflow as tf
+
 import matplotlib.pyplot as plt
+
+import tensorflow as tf
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
 
-IMG_ORIG_WIDTH = 256
-IMG_ORIG_HEIGHT = 240
-IMG_ORIG_SIZE = (IMG_ORIG_WIDTH, IMG_ORIG_HEIGHT)
-
-DOWNSAMPLE_FACTOR = 4
-
-IMG_DOWN_WIDTH = IMG_ORIG_WIDTH // DOWNSAMPLE_FACTOR
-IMG_DOWN_HEIGHT = IMG_ORIG_HEIGHT // DOWNSAMPLE_FACTOR
-IMG_DOWN_SIZE = (IMG_DOWN_WIDTH, IMG_DOWN_HEIGHT)
-
-BATCH_SIZE = 32
+from constants import IMG_ORIG_SIZE, IMG_DOWN_SIZE, BATCH_SIZE
 
 
 def download_data() -> str:
