@@ -2,6 +2,7 @@ print("Beginning Training")
 from modules import AE
 from dataset import load_data
 import tensorflow as tf
+print(tf.config.list_physical_devices())
 
 # Clear graph
 tf.keras.backend.clear_session()
@@ -26,8 +27,12 @@ model.fit((data["train"]),
         (data["train"]),
         epochs=5,
         shuffle=True,
-        batch_size=32)
+        batch_size=8)
 print("Finished MOdel Fitting")
+
+# Predict
+print("Saving Predictions")
+predictions = model.predict(data["test"])
 
 # Save model.
 print("Saving Model")

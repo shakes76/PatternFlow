@@ -4,6 +4,7 @@ import numpy as np
 latent_dims = 100
 image_shape = (256,256,1)
 num_embeddings = 100
+beta = 0.5
 
 class VQ(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
@@ -17,12 +18,27 @@ class VQ(tf.keras.layers.Layer):
                 )
 
     def call(self, inputs):
+        inputs_shape = tf.shape(inputs)
+        inputs_flat = tf.reshape(inputs, shape=(-1, latent_dims))
+
         # Each result is a vector of distances from associated input and each embedding
-        results = tf.vectorized_map(lambda y:
-                                   tf.vectorized_map(lambda x: tf.norm(tf.math.subtract(x, y)), self.embeddings),
-                                   inputs)
+        results = tf.vectorized_map(
+                lambda y:
+                    tf.vectorized_map(
+                        lambda x: 
+                            tf.norm(tf.math.subtract(x, y)), 
+                        self.embeddings),
+                inputs_flat)
+
         results = tf.math.argmin(results, axis=1)
         results = tf.gather(self.embeddings, results)
+
+        codebook_loss = tf.reduce_sum(tf.square(tf.stop_gradient(results) - inputs_flat))
+        commitment_loss = tf.reduce_sum(tf.square(results - tf.stop_gradient(inputs_flat))) * beta
+        self.add_loss(commitment_loss + codebook_loss)
+
+        # Reshape results back into compressed image
+        results = tf.reshape(results, shape=inputs_shape)
 
         return results
 
@@ -57,8 +73,13 @@ class AE(tf.keras.Model):
             activation='relu',
             padding = "same", 
             name = "compression_3")(x)
-        x = tf.keras.layers.Flatten(name="flatten")(x)
-        x = tf.keras.layers.Dense(latent_dims, name="latent_space")(x)
+        x = tf.keras.layers.Conv2D(
+            filters = latent_dims, 
+            kernel_size=3, 
+            strides=1, 
+            activation='relu',
+            padding = "same", 
+            name = "to_latent")(x)
 
         self.encoder = tf.keras.Model(input, x, name="encoder")
 
@@ -66,7 +87,7 @@ class AE(tf.keras.Model):
         # Takes output from encoder.
         # Returns the closest vector in the embedding to the latent
         # space.
-        input = tf.keras.layers.Input(shape=latent_dims, name="input")
+        input = tf.keras.layers.Input(shape=(32,32,latent_dims), name="input")
         x = VQ()(input)
         self.vq = tf.keras.Model(input, x, name="vq")
 
@@ -74,30 +95,23 @@ class AE(tf.keras.Model):
         # Takes output from VQ layer. 
         # Structure is identical to encoder but with Conv2DTranspose
         # to upscale the image rather than downscale.
-        input = tf.keras.layers.Input(shape=latent_dims, name="input")
-        x = tf.keras.layers.Dense(
-            32*32*32,
-            activation = 'relu', 
-            name = "expand")(input)
-        x = tf.keras.layers.Reshape(
-            target_shape = (32,32,32),
-            name = "reshape")(x)
-        x = tf.keras.layers.Conv2DTranspose(
-            filters = 64, 
-            kernel_size = 3, 
-            strides = 2, 
-            padding = 'same',
-            activation = 'relu', 
-            name = "reconstruct_1")(x)
+        input = tf.keras.layers.Input(shape=(32,32,latent_dims), name="input")
         x = tf.keras.layers.Conv2DTranspose(
             filters = 128, 
             kernel_size = 3, 
             strides = 2, 
             padding = 'same',
             activation = 'relu', 
-            name = "reconstruct_2")(x)
+            name = "reconstruct_1")(input)
         x = tf.keras.layers.Conv2DTranspose(
             filters = 64, 
+            kernel_size = 3, 
+            strides = 2, 
+            padding = 'same',
+            activation = 'relu', 
+            name = "reconstruct_2")(x)
+        x = tf.keras.layers.Conv2DTranspose(
+            filters = 32, 
             kernel_size = 3, 
             strides = 2, 
             padding = 'same',
@@ -117,19 +131,25 @@ class AE(tf.keras.Model):
         x, _ = train_data
         with tf.GradientTape() as tape:
             out = self.call(x)
-            # MSE loss is taken on original image and encoded(decoded) image
-            loss = tf.keras.losses.mean_squared_error(x, tf.reshape(out, shape=tf.shape(x)))
-        
-        gradients = tape.gradient(loss, self.trainable_weights)
 
-        self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
+            rc_loss = tf.keras.losses.mean_squared_error(x, tf.reshape(out, shape=tf.shape(x)))
+            vq_loss = sum(self.vq.losses)
+
+            loss = rc_loss + vq_loss
+        
+        gradients = tape.gradient(loss, self.trainable_variables)
+
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         return { "loss": loss }
 
     def test_step(self, test_data):
         x, _ = test_data
         out = self.call(x)
-        loss = tf.keras.losses.mean_squared_error(x, tf.reshape(out, shape=tf.shape(y)))
+        rc_loss = tf.keras.losses.mean_squared_error(x, tf.reshape(out, shape=tf.shape(x)))
+        vq_loss = sum(self.vq.losses)
+
+        loss = rc_loss + vq_loss
 
         return { "loss": loss }
 
