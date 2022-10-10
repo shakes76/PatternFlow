@@ -15,3 +15,16 @@ References:
 
 """
 
+##############################  INPUT DATA AUGMENTATION  ###################################
+
+def data_augmentation(mean, variance):
+    """ data augmentation for input data based on calculated mean and variance of training data """
+
+    data_augmentation = keras.Sequential(
+        [
+            layers.Normalization(mean=mean, variance=variance),
+        ],
+        name="data_augmentation",
+    )
+
+    return data_augmentation
