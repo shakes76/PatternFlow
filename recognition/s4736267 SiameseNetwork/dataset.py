@@ -394,7 +394,22 @@ class DatasetTrain3D(Dataset):
         self.image_paths = image_paths
         self.transform = transform
         self.size = int(len(image_paths)/20)    
+    
+    def transform_augmentation(self):
+
+        transform_train=transformation_3D()
+
+        rn = random.randint(0,1)
+        if rn==0:
+            transform_train.transforms.insert(1,transforms.RandomHorizontalFlip(p=1))
+
+        rn = random.randint(0,1)
+        if rn==0:
+            transform_train.transforms.insert(1,transforms.RandomVerticalFlip(p=1))
         
+        return transform_train
+
+
     def __len__(self):
         return self.size
 
@@ -405,6 +420,8 @@ class DatasetTrain3D(Dataset):
 
         idx_1=idx
         idx_2=(idx + random.randint(0,int(self.size)))%self.size
+
+        transform_idx=self.transform_augmentation()
 
         #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
         for i in range(20):
@@ -417,8 +434,8 @@ class DatasetTrain3D(Dataset):
             image_2 = cv2.imread(image_filepath_2, cv2.IMREAD_GRAYSCALE)
 
             if self.transform:
-                image_1 = self.transform(image_1)
-                image_2 = self.transform(image_2)
+                image_1 = transform_idx(image_1)
+                image_2 = transform_idx(image_2)
 
             image3D_1[i]=image_1
             image3D_2[i]=image_2
@@ -439,8 +456,9 @@ class DatasetTrain3D(Dataset):
         image3D_1 = torch.unsqueeze(image3D_1, dim=0)
         image3D_2 = torch.unsqueeze(image3D_2, dim=0)
 
+        del transform_idx
         #print("idx_1:",idx_1,"  --  ",image_filepath_1,"  -- idx_2:",idx,"  --  ",image_filepath_2,"  -- label:",label)
-        return image3D_1, image3D_2, label
+        return image3D_1, image3D_2, label, label_1
 
 class Dataset3D(Dataset):
     def __init__(self, image_paths, transform=None):

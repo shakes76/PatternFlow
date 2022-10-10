@@ -277,17 +277,17 @@ class Net_3D(nn.Module):
                                   nn.LeakyReLU(negative_slope=0.001),   
                                   nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
                                   #=> 2x26x26
-                                  nn.Conv3d(32, 64, kernel_size=1, padding='same',stride=1), 
-                                  nn.BatchNorm3d(64),
+                                  nn.Conv3d(32, 32, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(32),
                                   nn.LeakyReLU(negative_slope=0.001),   
                                   nn.AvgPool3d(kernel_size=2,stride=2,padding=0),
                                   #=> 1x13x13   
-                                  nn.Conv3d(64, 64, kernel_size=1, padding='same',stride=1), 
-                                  nn.BatchNorm3d(64),
+                                  nn.Conv3d(32, 32, kernel_size=1, padding='same',stride=1), 
+                                  nn.BatchNorm3d(32),
                                   nn.LeakyReLU(negative_slope=0.001),                                                                                        
                                   #=> 1x13x13
                                   )
-        self.lin_layer = nn.Sequential(nn.Linear(2*5408, 4096),
+        self.lin_layer = nn.Sequential(nn.Linear(5408, 4096),
                                   nn.Sigmoid())
                                   #nn.Linear(4096, 256),
                                   #nn.Sigmoid())
@@ -377,6 +377,39 @@ class ResNet18_3D(nn.Module):
 #######################################################
 #                  Classifier Net
 #######################################################
+class Net_clas3D(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        self.final = nn.Sequential(
+
+            nn.BatchNorm1d(2*4096),
+            nn.LeakyReLU(negative_slope=0.001),
+
+            nn.Linear(2*4096, 2*2048),
+            nn.BatchNorm1d(2*2048),
+            nn.LeakyReLU(negative_slope=0.001),
+
+            nn.Linear(2*2048, 1024),
+            nn.BatchNorm1d(1024),
+            nn.LeakyReLU(negative_slope=0.001),
+
+            nn.Dropout(p=0.5),
+            nn.Linear(1024, 1),
+            #nn.sigmoid();
+        )
+
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, img,img_AD,img_NC):
+        out_AD = torch.abs(img-img_AD)
+        out_NC = torch.abs(img-img_NC)
+        
+        output = torch.cat((out_AD, out_NC), 1)
+        output = self.final(output)
+        output = self.sigmoid(output)
+        
+        return output
 
 
 
