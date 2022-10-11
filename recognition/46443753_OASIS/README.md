@@ -17,6 +17,15 @@ Selected example:
 
 ## StyleGAN Architecture & Description
 
+Based on the paper by T Karras et al.[1], the main improvement of StyleGAN from traditional GAN models comes from the introduction of the mapping network. In the essense, StyleGAN is a continuation of the progressive GAN model. In which the discriminator model remains similar to the progressive GAN model, where it continues to downsample the input data to output a boolean value for determining the realistic of the input. Whilst the generator also exhibit the "progressiveness", as indicated in the continue upsampling of data in the synthesis network as shown in figure 2. Through introducing the mapping network, it removes the need to directly feed in the latent space to the generator, and we can have instead a constant as the initial input to the synthesis network. In this way, the mapping network will help to disentangle latent space vector, and maps into a cloud of intermediate latent vector w to have more control of the . From here, we can see from the figure, after some affine transform A of the latent vector w, we can apply it to the adaptive instance normalisation (AdaIN) layer in the model to gain much more control of the various "styles" of the generated image. In addition, a along with the AdaIN layer, before feeding any output to the AdaIN layer, some uncorrelated gaussian noise B scaled by a learnt per-feature scalling factor was added to the convolution output. This way, it will allow finer control in the stochastic details of the generated image. Hence, we can see that the generator model will take three inputs, namely the latent space Z, a constant vector for the synthesis network g and the randomly generated noise inputs.
+
+<p align="center">
+  <img src="examples/stylegan.png" alt="stylegan" />
+ </br>
+ <em>Figure 2: StyleGAN Architecture</em></p>
+
+Moreover, based on the discussed architecture, due to computation limits, some slight modification was made to parameters of the architecture, which differes to the ones mentioned in the paper. This includes a filter size of 128 for the fully connected layers in the mapping network, a channel size of 128 in the constant input vector as compared to 512, and a latent dimension of 256. A detailed model summary for the generator and discriminator was provided in the Appendix. 
+
 ## Model Dependencies & Preprocessing
 
 Library dependencies are as follow:
@@ -127,3 +136,22 @@ Using the trained model ,we can generate some samples of the brain MRI images gi
 
 1. [StyleGAN Paper](https://arxiv.org/pdf/1812.04948.pdf)
 2. [OASIS Brain](https://www.oasis-brains.org/)
+3. [StyleGAN Overview](https://www.analyticsvidhya.com/blog/2021/05/stylegan-explained-in-less-than-five-minutes/)
+
+## Appendix
+
+A. Generator model summary
+
+<p align="center">
+     <img src="./examples/g_model.png" alt="Generator model"/>
+<br/>
+    <em align="center"> Figure 6: Generator model</em></p>
+</p>
+
+B. Discriminator model
+
+<p align="center">
+     <img src="./examples/d_model.png" alt="discriminator model"/>
+<br/>
+    <em align="center"> Figure 7: Discriminator model</em></p>
+</p>
