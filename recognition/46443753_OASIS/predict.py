@@ -48,6 +48,7 @@ def main():
     x_fake = gen_model(generator_inputs, training=False)
     for i in range(3 * 3):
         pyplot.subplot(3, 3, 1 + i)
+        pyplot.axis('off')
         pyplot.imshow(x_fake[i], cmap="gray")
     pyplot.show()
 
