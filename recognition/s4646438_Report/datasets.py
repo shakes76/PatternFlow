@@ -45,7 +45,28 @@ scale = lambda img : img / 255
 train_ds = train_ds.map(scale)
 valid_ds = validation_ds.map(scale)
 
-for batch in train_ds.take(1):
-    for img in batch:
-        display(array_to_img(img))
-        print(np.max(img))
+def input_downsample(input_image, initial_image_size, up_sample_factor=4):
+  '''
+  Downsample the images by a factor of up_sample_factor to generate low quality
+  input images for the CNN
+  '''
+  input_image = input_process(input_image)
+  output_size = initial_image_size // up_sample_factor
+  return tf.image.resize(input_image, [output_size, output_size], method='area')
+
+def input_process(input_image):
+  '''
+  Convert the images into the YUV colour space to make processing simpler for
+  the GPU. Returns the greyscale channel of the YUV.
+  '''
+  input_image = tf.image.rgb_to_yuv(input_image)
+  #split image into 3 subtensors along axis 3
+  y, u, v = tf.split(input_image, 3, axis=3)
+  #only return the y channel of the yuv (the greyscale)
+  return y
+
+
+train_ds = train_ds.map(lambda x: (input_downsample(x, image_size[0]), input_process(x)))
+train_ds = train_ds.prefetch(buffer_size=32)
+
+validation_ds = validation_ds.map(lambda x: (input_downsample(x, image_size[0]), input_process(x)))
