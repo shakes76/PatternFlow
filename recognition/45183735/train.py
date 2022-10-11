@@ -76,6 +76,8 @@ class Train:
         return g_loss, d_loss
 
     def train(self, epochs):
+        all_g_loss = []
+        all_d_loss = []
         for epoch in range(epochs):
             m = 0
             # store the loss of generator and discriminator
@@ -92,6 +94,8 @@ class Train:
                       d_loss.numpy())
                 m = m + 1
 
+            all_g_loss.append(tf.reduce_mean(loss_g))
+            all_d_loss.append(tf.reduce_mean(loss_d))
             # save the loss for each epoch
             self.save_loss(epoch + 1, loss_g, loss_d, len(self.dataset))
             # save the images for each epoch
@@ -102,7 +106,7 @@ class Train:
                 self.ckpt.save(file_prefix=self.ckpt_prefix)
 
         # save the final images and loss after the final epoch
-
+        self.save_total_loss(all_g_loss, all_d_loss, epochs)
         self.save_images(self.g_model.model, epochs, self.seed)
 
     def save_loss(self, epoch, gen_loss1, disc_loss1, batch):
@@ -129,16 +133,35 @@ class Train:
         plt.savefig("image_at_epoch_{:04d}.png".format(epoch))
         plt.close()
 
+    def save_total_loss(self, all_g_loss, all_d_loss, total_epoch):
+        epoch_index = np.linspace(1, total_epoch + 1, total_epoch)
+        plt.plot(epoch_index, all_g_loss, "r", epoch_index, all_d_loss, "g")
+        plt.title('Loss during training')
+        label = ["gen_loss", "disc_total_loss"]
+        plt.legend(label)
+        plt.xlabel('epoch')
+        plt.xlim(1, total_epoch + 1)
+        plt.ylabel('Loss')
+        plt.savefig("Loss_Training.png")
+        plt.close()
+
 
 if __name__ == "__main__":
     latent_size = 512
     input_size = 256
     batch_size = 8
+    # mapping network for generator
     g_mapping = modules.G_Mapping(latent_size)
+    # synthesis network for generator
     g_s = modules.G_Synthesis(latent_size, g_mapping, input_size)
+    # generator model
     g_style = modules.G_style(latent_size, input_size, g_s)
+    # discriminator model
     discriminator = modules.Discriminator(input_size)
+    # dataset
     dataset = dataset.Dataset("./keras_png_slices_data", batch_size, input_size)
+    # train model
     train = Train(dataset.train_ds, g_style, discriminator, input_size, batch_size)
 
-    train.train(100)
+    # train the model for 50 epochs
+    train.train(50)
