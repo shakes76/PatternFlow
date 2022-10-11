@@ -15,21 +15,25 @@ import matplotlib.pyplot as plt
 import keras
 import numpy as np
 
-class GNNTrainer():
+def loadClassifier(dataset, path):
+    classifier = GNNClassifier(dataset, load_path=path)
+    return classifier
 
-    def __init__(self, data: Dataset, hidden_nodes, learning_rate=0.01, dropout_rate=0.2):
-        self.learning_rate = learning_rate
+class GNNClassifier():
+
+    def __init__(self, data: Dataset, hidden_nodes=[32, 32], learning_rate=0.01, dropout_rate=0.2, load_path=None):
         self.num_classes = data.get_num_classes()
         self.data = data
 
-        # Construct model
-        self.sample_graph = self.data
-        self.model = GNN(self.sample_graph, self.num_classes, hidden_nodes, aggregation_type="sum", dropout_rate=dropout_rate)
-        self._compile()
-        self._split()
+        if load_path: # load old model
+            self.model = self.load_model(load_path)
+        else: # construct new model
+            self.sample_graph = self.data
+            self.model = GNN(self.sample_graph, self.num_classes, hidden_nodes, aggregation_type="sum", dropout_rate=dropout_rate)
+            self._compile(learning_rate)
 
-    def _compile(self):
-        optimizer = keras.optimizers.Adam(self.learning_rate)
+    def _compile(self, learning_rate):
+        optimizer = keras.optimizers.Adam(learning_rate)
         loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         metrics = [keras.metrics.SparseCategoricalAccuracy(name="acc")]
 
@@ -54,6 +58,9 @@ class GNNTrainer():
         self.model.summary()
 
     def train(self, epochs, batch_size):
+        # Split data
+        self._split()
+
         # Create an early stopping callback
         #early_stopping = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50, restore_best_weights=True)
 
@@ -84,8 +91,34 @@ class GNNTrainer():
         loss.legend(["train", "test"], loc="lower right")
         plt.show()
 
-    def save(self):
-        pass
+    # def predict_and_report(self, test_data, test_labels, model, report_on=True):
+    #     """Feed test_images into the given model. Compare predictions with test_labels.
+    #
+    #     Returns predicted_labels."""
+    #
+    #     predictions = model.predict(test_images)  # outputs probability array
+    #     predicted_labels = predictions_to_labels(predictions)  # process predictions
+    #     correct = predicted_labels == test_labels
+    #     total_test = len(test_images)
+    #
+    #     if (report_on):
+    #         print("Total Testing", total_test)
+    #         # print("Gnd Truth:", test_labels)
+    #         print("Predictions", predicted_labels)
+    #         print("Which Correct:", correct)
+    #         print("Total Correct:", np.sum(correct))
+    #         print("Accuracy:", np.sum(correct) / total_test)
+    #
+    #     return predicted_labels
 
-    def load(self):
-        pass
+    def save(self, path='\\'):
+        print("SAVING . . . ")
+        self.model.save(path)
+        print("SUCCESS!")
+        return self.model
+
+    def load_model(self, path):
+        print("LOADING . . . ")
+        model = keras.models.load_model(path)
+        print("SUCCESS!")
+        return model
