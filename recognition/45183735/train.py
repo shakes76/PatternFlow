@@ -90,7 +90,7 @@ class Train:
                 loss_d.append(d_loss)
                 # calculate the precentage of progress
                 progress = (len(image_batch) * m / (len(self.dataset) * len(image_batch))) * 100
-                print("epoch:", epoch, ", percentage:", progress, "%", "gen_loss:", g_loss.numpy(), "disc_loss:",
+                print("epoch:", epoch + 1, ", percentage:", progress, "%", "gen_loss:", g_loss.numpy(), "disc_loss:",
                       d_loss.numpy())
                 m = m + 1
 
