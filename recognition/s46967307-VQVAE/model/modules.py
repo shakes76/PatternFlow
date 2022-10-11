@@ -17,11 +17,7 @@ class VQ(tf.keras.layers.Layer):
                 initial_value=w_init(shape=(num_embeddings, latent_dims), dtype="float32")
                 )
 
-    def call(self, inputs):
-        inputs_shape = tf.shape(inputs)
-        inputs_flat = tf.reshape(inputs, shape=(-1, latent_dims))
-
-        # Each result is a vector of distances from associated input and each embedding
+    def get_indices(self, inputs_flat):
         results = tf.vectorized_map(
                 lambda y:
                     tf.vectorized_map(
@@ -37,6 +33,15 @@ class VQ(tf.keras.layers.Layer):
         commitment_loss = tf.reduce_mean(tf.square(results - tf.stop_gradient(inputs_flat))) * beta
         self.add_loss(commitment_loss + codebook_loss)
 
+        return results
+
+
+    def call(self, inputs):
+        inputs_shape = tf.shape(inputs)
+        inputs_flat = tf.reshape(inputs, shape=(-1, latent_dims))
+        
+        results = self.get_indices(inputs_flat)
+        
         # Reshape results back into compressed image
         results = tf.reshape(results, shape=inputs_shape)
 
@@ -88,7 +93,7 @@ class AE(tf.keras.Model):
         # Returns the closest vector in the embedding to the latent
         # space.
         input = tf.keras.layers.Input(shape=(32,32,latent_dims), batch_size=None, name="input")
-        x = VQ()(input)
+        x = VQ(name="vq")(input)
         self.vq = tf.keras.Model(input, x, name="vq")
 
         # ------ DECODER -------
