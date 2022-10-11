@@ -4,7 +4,7 @@ modules.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains the source code of the components of your model. Each component must be implementated as a class or a function
+Contains all the source code of the components of the VQ-VAE model as well as a function to build and get the full model
 
 """
 
@@ -54,7 +54,6 @@ class VectorQuantizer(layers.Layer):
         Calls the VectorQuantizer to quantise the input vector x???
 
             Parameters:
-                self
                 x (Tensorflow Tensor): An input vector to be quantised
 
             Returns:
@@ -92,7 +91,6 @@ class VectorQuantizer(layers.Layer):
         Gets the indices of the codebook vectors???
 
             Parameters:
-                self
                 flattened_inputs (Tensorflow Tensor): purpose???
 
             Returns:
