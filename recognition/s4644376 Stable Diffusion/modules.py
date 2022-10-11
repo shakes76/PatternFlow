@@ -1,8 +1,15 @@
 from diffusion_imports import *
 from dataset import *
 
+
 class ConvReLU(nn.Module):
-    def __init__(self, num_in, num_out, dimension = 32):
+    """
+    Core block of modified Unet, handles conv batch conv batch relu
+    """
+    def __init__(self, num_in, num_out, dimension=32):
+        """
+        init ConvRelu with number of nodes in and out
+        """
         super().__init__()
         self.conv1 = nn.Conv2d(num_in, num_out, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(num_out)
@@ -13,23 +20,21 @@ class ConvReLU(nn.Module):
         self.pos_encoding = nn.Linear(dimension, num_out)
 
     def forward(self, input_data, pos) -> torch.Tensor:
-        #calculate block 1
-
+        # calculate block 1
         out = self.conv1(input_data)
         out = self.bn1(out)
         out = self.relu(out)
 
-        #Calcaulte positon
+        # Calcaulte positon
         pos = self.pos_encoding(pos)
         pos = self.relu(pos)
 
         # add two dimensions to tensor for addition
-        pos = pos[(..., ) + (None, ) * 2]
-
+        pos = pos[(...,) + (None,) * 2]
 
         out = out + pos
 
-        #calculate block 2
+        # calculate block 2
         out = self.conv2(out)
         out = self.bn2(out)
         out = self.relu(out)
@@ -38,6 +43,9 @@ class ConvReLU(nn.Module):
 
 
 class UpBlock(nn.Module):
+    """
+    Handles up scaling with convTranspose followed by ConvRelu
+    """
 
     def __init__(self, num_in, num_out):
         super().__init__()
@@ -45,13 +53,11 @@ class UpBlock(nn.Module):
         self.block = ConvReLU(num_out + num_out, num_out)
 
     def forward(self, x, skip, pos):
-
-
         out = self.up(x)
         out = torch.cat([out, skip], axis=1)
 
-
         return self.block.forward(out, pos)
+
 
 class CalculatePositionEncodingBlock(nn.Module):
     """
@@ -63,6 +69,7 @@ class CalculatePositionEncodingBlock(nn.Module):
     https://huggingface.co/blog/annotated-diffusion
     and extended to work seamlessly with the unet built
     """
+
     def __init__(self, dimension):
         super().__init__()
         self.dimension = dimension
@@ -79,9 +86,10 @@ class CalculatePositionEncodingBlock(nn.Module):
         return self.relu(embeddings)
 
 
-
 class MainNetwork(nn.Module):
-
+    """
+    Forms main U-NET network with positional encodings
+    """
     def __init__(self):
         super().__init__()
 
@@ -102,10 +110,10 @@ class MainNetwork(nn.Module):
 
         self.pool = nn.MaxPool2d((2, 2))
 
-        #make tensor 4
+        # make tensor 4
         self.final_conv = nn.Conv2d(64, 1, 1)
 
-        #make positional block
+        # make positional block
         self.pos_block = CalculatePositionEncodingBlock(self.time_dimensions)
 
     def forward(self, x, position):
@@ -140,9 +148,3 @@ class MainNetwork(nn.Module):
         out = self.final_conv.forward(out)
 
         return out
-
-
-
-
-
-

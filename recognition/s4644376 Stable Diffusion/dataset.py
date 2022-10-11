@@ -2,6 +2,10 @@ from diffusion_imports import *
 
 
 class ImageLoader(Dataset):
+    """
+    Image Loader class that opens and returns a image
+    """
+
     def __init__(self, path, image_set):
         self.main_dir_slice = path
         self.image_set = image_set
@@ -10,6 +14,16 @@ class ImageLoader(Dataset):
         return len(self.image_set)
 
     def __getitem__(self, idx):
+        """
+        Does preprocessing on image and returns it
+        Parameters
+        ----------
+        idx - image number
+
+        Returns
+        -------
+        Tensor Representation of Image
+        """
         trans = transforms.ToTensor()
 
         img_slice = os.path.join(self.main_dir_slice, self.image_set[idx])
@@ -22,17 +36,35 @@ class ImageLoader(Dataset):
 
 
 def load_data(path, type="train", batch_size=32, show=False):
+    """
+    Creates a dataloader for training and validation respectively
+
+    Parameters
+    ----------
+    path: path to folder
+    type: str specifiying train or validate
+    batch_size: batch size
+    show: shows a single image if true
+
+    Returns
+    -------
+    Dataloader with corresponding images for training or validation
+    """
+
+    # must sort to guarantee consistent training/validation sets
     total_imgs_slice = os.listdir(path)
     total_imgs_slice.sort()
 
     train = []
     validate = []
+    # seperate every 1 in 5 images to validate else training
     for index, image in enumerate(total_imgs_slice):
         if index % 5 == 0:
             validate.append(image)
         else:
             train.append(image)
 
+    # form correct loader
     if type == "train":
         loader = ImageLoader(path, train)
     else:

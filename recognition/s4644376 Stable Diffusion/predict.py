@@ -31,6 +31,9 @@ def de_noise(img, timestep, model):
 
 
 def generate_n_image_process(model, number = 10):
+    """
+    Generate n images while showing the diffusion process every 100 noise steps
+    """
     model = model.cuda()
 
     plt.figure(figsize=(15,15))
@@ -60,6 +63,9 @@ def generate_n_image_process(model, number = 10):
 
 
 def generate_single(model):
+    """
+    Generate a single image with the given model
+    """
     model = model.cuda()
 
     plt.figure(figsize=(5,5))
@@ -78,6 +84,9 @@ def generate_single(model):
 
 
 def generate_n_images(model, number = 10):
+    """
+    Uses plt to generate n images and lay them in a checkerboard layout
+    """
     model = model.cuda()
 
     plt.figure(figsize=(15,15))
@@ -104,10 +113,13 @@ def generate_n_images(model, number = 10):
     plt.show()
 
 def generate_graphs():
+    """
+    Generates the graphs used in readme file. Requires csvs formed by train.py
+    """
     data_x = []
     data_y = []
     data_y_2 = []
-    with open('Loss Data2.csv', newline='') as csvfile:
+    with open('Loss Data.csv', newline='') as csvfile:
         csvs = csv.reader(csvfile, delimiter=',', quotechar='|')
         counter = 1
         for row in csvs:
@@ -116,7 +128,7 @@ def generate_graphs():
                 data_x.append(counter)
                 counter += 1
 
-    with open('Validate Data2.csv', newline='') as a:
+    with open('Validate Data.csv', newline='') as a:
         f = csv.reader(a, delimiter=',', quotechar='|')
 
         for row in f:
