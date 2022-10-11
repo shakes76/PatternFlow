@@ -50,6 +50,7 @@ def train_model(model, epochs = 50):
         running_loss = 0
         model.train(True)
 
+        # train model on each image with random amounts of noise
         for index, data in enumerate(tqdm(data_set)):
             pos = torch.randint(0, 1000, [batchsize]).long()
 
@@ -70,11 +71,11 @@ def train_model(model, epochs = 50):
 
     torch.save(model, "Rerun2")
 
-    f = open('Loss Data2.csv', 'w')
+    f = open('Loss Data.csv', 'w')
     writer = csv.writer(f)
     writer.writerows(loss_set)
 
-    z = open('Validate Data2.csv', 'w')
+    z = open('Validate Data.csv', 'w')
     writer = csv.writer(z)
     writer.writerows(validate_loss)
 
@@ -92,6 +93,8 @@ def validate_model(model, validate_loss):
     criterion = F.l1_loss
 
     running_loss = 0
+
+    # loop through and calculate loss for each image with random noise
     for index, data in enumerate(tqdm(data_set)):
         pos = torch.randint(0, 1000, [batchsize]).long()
 

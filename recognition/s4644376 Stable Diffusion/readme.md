@@ -93,6 +93,8 @@ In the modified U-NET model used there are four distinct blocks that are used. T
 The ConvRelu block is the core block of the modified U-NET. It's forward function takes `InputData` which is the current
 `torch.Tensor` being worked with and `pos` which is the positional data from the `CalculatePositionEncodingBlock`. 
 The forward function is described below in order:
+
+**Please refresh if "unable to show code block appears"**
 ```mermaid
 flowchart LR
 start((Input Data)) --> ConA[Conv2d] --> BatchA[BatchNorm2d];
@@ -114,7 +116,7 @@ flowchart LR
 start((Input Data)) --> ConvTranspose2d[ConvTranspose2d] --> Cat[Concat];
 startB((Skip Data)) --> Cat[Concat];
 Cat[Concat]-->Relu[ReLU Block];
-startC((Position Data)) --> Relu[ReLU Block]--> Out((Out))
+startC((Position Data)) --> Relu[ConvRelu]--> Out((Out))
 ```
 ### CalculatePositionEncodingBlock
 The calculate position encoding block, as the name implies, handles calculating a position encoding for a given position
@@ -231,7 +233,7 @@ python predict.py illustrate {number_of_images}
 python predict.py generate {number_of_images}
 ```
 
-Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. This took approximately 20 seconds.
+Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. This took approximately 20 seconds on a RTX3060.
 
 
 ![image](images/Single%20Example.png)
@@ -239,7 +241,7 @@ Please allow significant time to generate images depending on hardware. Below is
 Below is an example of function 2 showing 10 images and conversion process from noise into a knee scan
 ![image](images/Generated%20Images%20Based%20off%20Stable%20Diffusion.png)
 
-Below is 99 images that have been generated. This took approximately 30 minutes.
+Below is 99 images that have been generated. This took approximately 30 minutes on an RTX3060.
 ![image](images/99%20Generated%20Images.png)
 
 
