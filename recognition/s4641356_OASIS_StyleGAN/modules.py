@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import GANutils
+import csv
 
 class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic layers use keras.layers.Lambda
     """
@@ -117,29 +118,36 @@ class StyleGAN():
         if existing_model_folder:
             self.load_model(existing_model_folder)
         else:
-            #initialise new styleGAN
-            self._output_res = output_res
-            self._start_res = start_res
-            self._latent_dim = latent_dim
+            generator = self.get_generator()
+            discriminator = self.get_discriminator()
+            self._make_model(output_res, start_res, latent_dim, 0, generator, discriminator)
+            
 
-            self._generator = self.get_generator()
-            self._discriminator = self.get_discriminator()
+    def _make_model(self, output_res: int, start_res: int, latent_dim: int, trained_epochs: int, generator: tf.keras.Model, discriminator: tf.keras.Model) -> None: #TODO docstring
+        #initialise new styleGAN
+        self._output_res = output_res
+        self._start_res = start_res
+        self._latent_dim = latent_dim
 
-            self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
+        self._generator = generator
+        self._generator_base = tf.zeros(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
 
-            #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
-            self._gan = tf.keras.Model(self._generator.input, self._discriminator(self._generator.output), name = "StyleGAN")
-            self._gan.summary()
+        self._discriminator = discriminator
+        self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
+        
+        #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
+        self._gan = tf.keras.Model(self._generator.input, self._discriminator(self._generator.output), name = "StyleGAN")
+        self._gan.summary()
 
-            #configure components for training
-            loss='binary_crossentropy'
-            optimizer = 'adam'
-            metrics=['accuracy']
-            self._generator.compile(loss, optimizer, metrics)
-            self._discriminator.compile(loss, optimizer, metrics)
-            self._gan.compile(loss, optimizer, metrics)
+        #configure components for training
+        loss='binary_crossentropy'
+        optimizer = 'adam'
+        metrics=['accuracy']
+        self._generator.compile(loss, optimizer, metrics)
+        self._discriminator.compile(loss, optimizer, metrics)
+        self._gan.compile(loss, optimizer, metrics)
 
-            self._epochs_trained = 0
+        self._epochs_trained = trained_epochs
 
 
     def get_generator(self) -> tf.keras.Model:
@@ -152,7 +160,6 @@ class StyleGAN():
         
         generator_latent_input = tf.keras.layers.Input(shape = (self._latent_dim,), name = "Latent_Input")
 
-        
         #Latent Feature Generation
         z = generator_latent_input
         for i in range(8):
@@ -203,9 +210,10 @@ class StyleGAN():
             tf.keras.Model: uncompiled discriminator model
         """
         discriminator_input = tf.keras.layers.Input(shape = (self._output_res,self._output_res,1), name = "Discriminator_Input") #note we expect greyscale images
+        
+        #Feature analysis blocks, perform convolution on decreasing image resolution (and hence filter increasingly macroscopic features)
         current_res = self._output_res
         x = discriminator_input
-        #Feature analysis blocks, perform convolution on decreasing image resolution (and hence filter increasingly macroscopic features)
         while current_res > 4:
             x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
             x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU_1".format(current_res))(x)
@@ -224,18 +232,43 @@ class StyleGAN():
         x = tf.keras.layers.Dense(1, activation = "sigmoid", name = "Discriminate")(x) #Final decision, 1 for real 0 for fake
 
         return tf.keras.Model(inputs = discriminator_input, outputs = x, name = "Discriminator")
-
-
-
-
-    
             
 
     def __call__(self, latent_vector: np.array, noise_inputs: list[np.array]) -> np.array:
-        pass
+        """
+        Allows the StyleGAN to be used as a functional, takes in a latent vector and an appropriate set of noise matrices, and returns the (normalized) image data of a generated image
 
-    def save_model(self, folder: str) -> None:
-        pass
+        Args:
+            latent_vector (np.array): _description_ TODO
+            noise_inputs (list[np.array]): _description_ TODO
 
-    def load_model():
-        pass#TODO
+        Returns:
+            np.array: _description_ TODO
+        """
+        return self._generator([latent_vector] + noise_inputs + [np.repeat(self._generator_base, latent_vector.shape[0], axis = 0)])
+
+    def save_model(self, folder: str) -> None: #TODO docstring
+        #save model parameters
+        with open(folder + 'param.csv', mode = 'w') as f:
+            csv.writer(f).writerow([self._output_res,
+                    self._start_res,
+                    self._latent_dim,
+                    self._epochs_trained
+                    ]) 
+
+        #save model architecture and assotated weights
+        self._discriminator.save(folder + "discriminator") #TODO double check the weights are prorperly being saved in discrim and gen
+        self._generator.save(folder + "generator")
+
+    def load_model(self, folder :str) -> None: #TODO docstring
+        #Load model Parameters
+        params = None
+        with open(folder + 'param.csv', mode = 'r') as f:
+            params = next(csv.reader(f)) #param csv should be a single row
+
+        #load model architecture and assotiated weights
+        discriminator = tf.keras.models.load_model(folder + "discriminator")
+        generator = tf.keras.models.load_model(folder + "generator")
+
+        self._make_model(params[0],params[1],params[2],params[3],generator,discriminator)
+        
