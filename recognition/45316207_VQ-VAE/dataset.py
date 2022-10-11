@@ -84,10 +84,18 @@ def load_dataset(max_images=None):
     # Get the dataset variance
     data_variance = np.var(train_data / 255.0)
 
-    # Debug dataset loading
-    print('train_data_scaled shape:', train_data_scaled.shape)
-    print('test_data_scaled shape:', test_data_scaled.shape)
-    print('validate_data_scaled shape:', validate_data_scaled.shape)
+    # Debug dataset loading    
+    print(f"###train_data ({type(train_data)}): {np.shape(train_data)}###")
+    print(f"###test_data ({type(test_data)}): {np.shape(test_data)}###")
+    print(f"###train_data_scaled ({type(train_data_scaled)}): {np.shape(train_data_scaled)}###")
+    print(f"###test_data_scaled ({type(test_data_scaled)}): {np.shape(test_data_scaled)}###")
+    print(f"###data_variance ({type(data_variance)}): {data_variance}###")
+    print('')
+
+    print(f"###validate_data ({type(validate_data)}): {np.shape(validate_data)}###")
+    print(f"###validate_data_scaled ({type(validate_data_scaled)}): {np.shape(validate_data_scaled)}###")
+
+    print('')
     print('')
 
     return (train_data_scaled, test_data_scaled, validate_data_scaled, data_variance)

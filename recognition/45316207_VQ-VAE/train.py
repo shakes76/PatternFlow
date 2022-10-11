@@ -107,7 +107,7 @@ if __name__ == "__main__":
     #                                   LOAD DATA                                  #
     # ---------------------------------------------------------------------------- #
     # Import data loader from dataset.py
-    # (train_data, test_data, validate_data) = dataset.load_dataset()
+    (a, b, c, d) = dataset.load_dataset()
 
     # ------------------------------------ NEW ----------------------------------- #
     # Load and preprocess the MNIST dataset
@@ -119,6 +119,12 @@ if __name__ == "__main__":
     x_test_scaled = (x_test / 255.0) - 0.5
 
     data_variance = np.var(x_train / 255.0)
+
+    print(f"###x_train ({type(x_train)}): {np.shape(x_train)}###")
+    print(f"###x_test ({type(x_test)}): {np.shape(x_test)}###")
+    print(f"###x_train_scaled ({type(x_train_scaled)}): {np.shape(x_train_scaled)}###")
+    print(f"###x_test_scaled ({type(x_test_scaled)}): {np.shape(x_test_scaled)}###")
+    print(f"###data_variance ({type(data_variance)}): {data_variance}###")
     # ------------------------------------ NEW ----------------------------------- #
 
 
