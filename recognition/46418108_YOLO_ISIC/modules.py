@@ -121,4 +121,18 @@ class YOLO():
         model.add(Dense(1470))
         model.add(Reshape(target_shape=(7,7,30)))
         model.summary()
+
         return model
+
+    def loss_function(self):
+      pass
+    
+
+    def compileModel(self):
+      pass
+
+    def modelPredict(self, data):
+      self._model.predict(data)
+
+    def run(self, train_data, validation_data, epochs):
+      self._model.fit(train_data, validation_data=validation_data, epochs=epochs)
