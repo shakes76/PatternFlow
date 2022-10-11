@@ -7,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
 import torchvision.transforms as T
-import utils1
+import utils_lib
 import pandas as pd
 import shutil
 
@@ -270,11 +270,11 @@ class DataLoader():
             for mask_path in gnd_truth_masks:
                 mask_path = os.path.join(gnd_truth_dir, mask_path)
                 
-                img_id = utils1.Get_Gnd_Truth_Img_ID(mask_path)
+                img_id = utils_lib.Get_Gnd_Truth_Img_ID(mask_path)
                 path = f"{yolo_dir_set[i]}/{img_id}.txt"
                 if not(os.path.exists(path)) or ignore_existing:
                     # Find the YOLO label corresponding to this mask
-                    label, img_id = utils1.Get_YOLO_Label(mask_path, csv_path)
+                    label, img_id = utils_lib.Get_YOLO_Label(mask_path, csv_path)
                     # create txt file and save label to it
                     np.savetxt(path, np.array([label]), fmt='%f')
             i += 1
@@ -347,16 +347,16 @@ def Setup_Data():
     train_img = dataloader.train_data_ex + "/ISIC-2017_Training_Data/ISIC_0000002.jpg"
     # Verify that the bounding box code is working for an isolated case:
     print(f"Test conversion of mask to box specs: Should return '[0.54296875, 0.56640625, 0.6078125, 0.7828125]'\
-        {utils1.Mask_To_Box(gnd_truth)}")
+        {utils_lib.Mask_To_Box(gnd_truth)}")
     # Verify that img class lookup function is working for an isolated case:
     print(f"Test melanoma lookup function. Should return '(1, 'ISIC_0000002')'\n \
-        {utils1.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold)}")
+        {utils_lib.Find_Class_From_CSV(gnd_truth, dataloader.train_truth_gold)}")
     # Verify that label creation function works
-    label, img_id = utils1.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
+    label, img_id = utils_lib.Get_YOLO_Label(gnd_truth, dataloader.train_truth_gold)
     np.savetxt(f"misc_tests/{img_id}.txt", np.array([label]), fmt='%f')
     # Verify that draw function is working
-    utils1.Draw_Box(gnd_truth, label, "misc_tests/box_test_truth.png")
-    utils1.Draw_Box(train_img, label, "misc_tests/box_test_img.png")
+    utils_lib.Draw_Box(gnd_truth, label, "misc_tests/box_test_truth.png")
+    utils_lib.Draw_Box(train_img, label, "misc_tests/box_test_img.png")
 
     ### generate a txt file for each img which specifies bounding box, and class of object ###
     # note that -> 0:melanoma, 1:!melanoma
@@ -364,7 +364,7 @@ def Setup_Data():
 
     # Verify that box draw function from txt file label works
     label_fp = "yolov5_LC/data/labels/training/ISIC_0000002.txt"
-    utils1.Draw_Box_From_Label(label_fp, train_img, "misc_tests/box_from_label.png")  
+    utils_lib.Draw_Box_From_Label(label_fp, train_img, "misc_tests/box_from_label.png")  
 
     ### Copy images to directories as required by yolov5 ###
     dataloader.Copy_Images()

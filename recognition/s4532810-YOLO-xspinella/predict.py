@@ -1,6 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
-import utils1
+import utils_lib
 from PIL import Image
 """
 File used to show example usage of the trained model
@@ -50,7 +50,7 @@ class Predictor():
         results.render()
         pred_img = results.ims[0]
         # Retrieve labelled img
-        utils1.Draw_Box_From_Label(label_fp, img_fp, out_fp)
+        utils_lib.Draw_Box_From_Label(label_fp, img_fp, out_fp)
         label_img = Image.open(out_fp)
         # Arrange subplot for comparison
         fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -64,6 +64,7 @@ class Predictor():
 
         fig.set_size_inches(14, 7)
         plt.savefig(out_fp, bbox_inches='tight')
+        # TODO: calculate IOU
         return results
 
 
