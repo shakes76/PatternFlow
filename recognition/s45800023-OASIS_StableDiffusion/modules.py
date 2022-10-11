@@ -9,6 +9,7 @@ with main scripts.
 """
 
 import torch
+import torch.nn as nn
 import torchvision
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
@@ -123,8 +124,46 @@ class Encoder(torch.nn.Module):
     of an auto-encoder to encode the image into the latent space 
     before performing diffusion.
     """
-    def __init(self, input_channels=3):
+    def __init(self, 
+               input_channels=1,
+               base_channel_size=32,
+               latent_dim = 100,
+               activation : object = nn.LeakyReLU()):
         super().__init__()
+        c_d = base_channel_size
+        self.net = nn.Sequential(
+            # Block 1
+            nn.Conv2d(input_channels, c_d, kernal_size=3, padding=1, stride=2),
+            nn.BatchNorm2d(128*128*32),
+            activation(),
+            
+            # Block 2
+            nn.Conv2d(c_d,2*c_d, kernal_size=3, padding=1, stride=2),
+            nn.BatchNorm2d(64*64*64),
+            activation(),
+            
+            # Block 3
+            nn.Conv2d(2*c_d,2*c_d, kernal_size=3, padding=1, stride=2),
+            nn.BatchNorm2d(32*32*64),
+            activation(),
+            
+            # Block 4
+            nn.Conv2d(2*c_d,2*c_d, kernal_size=3, padding=1, stride=2),
+            nn.BatchNorm2d(16*16*64),
+            activation(),
+            
+            # Block 5
+            nn.Conv2d(2*c_d,2*c_d, kernal_size=3, padding=1, stride=2),
+            nn.BatchNorm2d(8*8*64),
+            activation(),
+            
+            # Bottleneck
+            nn.Flatten(),
+            nn.Linear(8*8*64, 100)
+            )
+    def forward(self, x):
+        return self.net(x)
+    
         
 class Decoder(torch.nn.Module):
     """
