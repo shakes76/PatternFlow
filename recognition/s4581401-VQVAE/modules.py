@@ -220,63 +220,62 @@ class PixelConvLayer(tf.keras.layers.Layer):
         self._convolution = tf.keras.layers.Conv2D(**kwargs)
 
     def build(self, img_shape):
-        #Initialise the kernel variables
+        # Initialise the kernel variables
         self._convolution.build(input_shape=img_shape)
         self._conv_kernel_shape = self._convolution.kernel.get_shape()
         self.mask = np.zeros(shape=self._conv_kernel_shape)
-        #I couldn't get this working myself, used reference.
+        # I couldn't get this working myself, used reference.
         self.mask[: self._conv_kernel_shape[0] // 2, ...] = 1.0
         self.mask[self._conv_kernel_shape[0] // 2, : self._conv_kernel_shape[1] // 2, ...] = 1.0
 
-        #Mask type B referes to the mask that allows connections to predicted colours in the current pixel images
-        #Mask type A applied to the first convolutional layer, restricting connections to colors in current pixels that have
-        #already been predicted.
-        if self.mask_type == "B":
+        # Mask type B referes to the mask that allows connections to predicted colours in the current pixel images
+        # Mask type A applied to the first convolutional layer, restricting connections to colors in current pixels that have
+        # already been predicted.
+        if self._mask_type == "B":
             self.mask[self._conv_kernel_shape[0] // 2, self._conv_kernel_shape[1] // 2, ...] = 1.0
 
     def call(self, x):
-        self.convolution.kernel.assign(self.convolution.kernel * self.mask)
-        return self.convolution(x)
+        self._convolution.kernel.assign(self._convolution.kernel * self.mask)
+        return self._convolution(x)
 
 
 # Represents a single residual block within the model
 class ResidualBlock(tf.keras.layers.Layer):
-    def __init(self, filters, **kwargs):
+    def __init__(self, input_filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
 
-        self._conv_layer_1 = tf.keras.layers.Conv2D(filters, kernel_size=1, activation="relu")
+        self._conv_layer_1 = tf.keras.layers.Conv2D(input_filters, kernel_size=1, activation="relu")
         self._pixel_conv_layer_2 = PixelConvLayer(mask_type="B",
-                                                  filters=filters // 2,
+                                                  filters=input_filters // 2,
                                                   kernel_size=3,
                                                   padding="same",
                                                   activation="relu"
                                                   )
-        self._conv_layer_3 = tf.keras.layers.Conv2D(filters, kernel_size=1, activation="relu")
+        self._conv_layer_3 = tf.keras.layers.Conv2D(input_filters, kernel_size=1, activation="relu")
 
     def call(self, input_arg):
         x = self._conv_layer_1(input_arg)
         x = self._pixel_conv_layer_2(x)
-        x = self._conv_layer_2(x)
+        x = self._conv_layer_3(x)
         return tf.keras.layers.add([input_arg, x])
 
-#PixelCNN Model Class
+
 class PixelCNNModel(tf.keras.Model):
-    def __init__(self, input_shape, embedding_num, filters, num_res_layer, num_pixel_layer, **kwargs):
+    def __init__(self, input_shape, embedding_num, input_filters, num_res_layer, num_pixel_layer, **kwargs):
         super(PixelCNNModel, self).__init__(**kwargs)
         self._input_shape = input_shape
         self._embedding_num = embedding_num
-        self._filters = filters
+        self._filters = input_filters
         self._num_res_layer = num_res_layer
         self._num_pixel_layer = num_pixel_layer
 
         input_layer = tf.keras.Input(shape=self._input_shape, dtype=tf.int32)
-        one_hot_input = tf.keras.layers.CategoryEncoding(num_tokens=self._embedding_num, output_mode="one_hot")(
-            input_layer)
+        one_hot_input = tf.one_hot(input_layer, self._embedding_num)
         x = PixelConvLayer(mask_type="A", filters=self._filters, kernel_size=7, activation="relu", padding="same")(
             one_hot_input)
 
         for _ in range(self._num_res_layer):
-            x = ResidualBlock(filters=self._filters)(x)
+            x = ResidualBlock(self._filters)(x)
 
         for _ in range(self._num_pixel_layer):
             x = PixelConvLayer(mask_type="A", filters=self._filters, kernel_size=1, strides=1, activation="relu",
@@ -284,13 +283,14 @@ class PixelCNNModel(tf.keras.Model):
 
         final_output = tf.keras.layers.Conv2D(filters=self._embedding_num, kernel_size=1, strides=1, padding="valid")(x)
 
-        self._pixel_cnn_model = tf.keras.Mopdel(input_layer, final_output, name="pixel_cnn")
+        self._pixel_cnn_model = tf.keras.Model(input_layer, final_output, name="pixel_cnn")
         self._total_loss = tf.keras.metrics.Mean(name="total_loss")
 
     def call(self, x):
         return self._pixel_cnn_model(x)
 
     def train_step(self, x):
+        # https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit
         with tf.GradientTape() as tape:
             predicted_output = self(x)
             total_loss = self.compiled_loss(x, predicted_output)

@@ -130,3 +130,40 @@ with tf.device("/GPU:0"):
         index = index + 1
 
 print(np.mean(total_ssim_values))
+
+# Running the code for PixelCNN.
+#Writing a wrapper function
+def codebook_wrapper_fn(encoder, embeddings):
+    """
+    Returns a mapper function handle that can be passed to the dataset.map function.
+    This function encodes the images into codebook indices
+    """
+
+    def mapper(x):
+        encoded_outputs = encoder(x)  # Change this to predict?
+
+        flat_enc_outputs = tf.reshape(
+            encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
+
+        codebook_indices = embeddings.get_closest_index(flat_enc_outputs)
+
+        codebook_indices = tf.reshape(
+            codebook_indices, tf.shape(encoded_outputs)[:-1])
+
+        return codebook_indices
+
+    return mapper
+#Load in the data
+test_ds = load_test_data(test_path, img_height, img_width, batch_size)
+#Write a wrapper function for the codebook indices for training
+codebook_mapper = codebook_wrapper_fn(
+        vqvae_model.get_encoder(),
+        vqvae_model.get_vq())
+codebook_dataset = test_ds.map(codebook_mapper)
+pixelcnn_input_shape = vqvae_model.get_encoder().output.shape[1:3]
+#Make and compile the model
+pixelcnn_model = PixelCNNModel(pixelcnn_input_shape, vqvae_model._embedding_num, 128, 3, 3)
+pixelcnn_model.compile(optimizer=keras.optimizers.Adam(),
+                       loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                       metrics=["accuracy"],
+)
