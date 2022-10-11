@@ -16,6 +16,8 @@ from dataset import (
 from modules import (
     discriminator_model,
     generator_model,
+    generator_optimizer,
+    discriminator_optimizer,
 )
 
 def get_inputs(n, img_shape, latent_dim, n_style_block=7):
@@ -79,6 +81,19 @@ def plot_model_performance(epoch, g_model, d_model, dataset, latent_dim, n_sampl
     pyplot.savefig(filename)
     pyplot.close()
 
+def plot_model_loss(epoch, gen_losses, disc_real_losses, disc_fake_losses):
+    pyplot.plot(gen_losses)
+    pyplot.plot(disc_real_losses)
+    pyplot.plot(disc_fake_losses)
+
+    pyplot.legend(["gen_loss", "disc_real_loss", "disc_fake_loss"])
+    pyplot.show()
+
+    # save plot to file
+    filename = './images/Model_Loss.png' % (epoch+1)
+    pyplot.savefig(filename)
+    pyplot.close()
+
 @tf.function
 def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generator_optimizer, discriminator_optimizer):
     """
@@ -87,7 +102,7 @@ def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generato
     generator_inputs = get_inputs(batch_size, real_samples[0].shape,  latent_dim)
 
     with tf.GradientTape() as generator_tape, tf.GradientTape() as discriminator_tape:
-        fake_samples = g_model(generator_inputs, training = True)
+        fake_samples = g_model(generator_inputs, training = False)
         real_pred = d_model(real_samples, training = True)
         fake_pred = d_model(fake_samples, training = True)
 
@@ -111,8 +126,8 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
     """
     StyleGAN Training
     """
-    bat_per_epo = 10000 #int(data.shape[0] / epochs)
-    half_batch = 12 #int(epochs / 2)
+    bat_per_epo = 13000
+    batch_size = 12 #
     checkpoint = create_checkpoint(gen_optimizer, disc_optimizer, g_model, d_model)
 
     gen_losses, disc_real_losses, disc_fake_losses = [], [], []
@@ -120,11 +135,11 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
         start_time = time.time()
         for i in range(bat_per_epo):
             # Get randomly selected 'real' samples
-            X_real, _ = generate_real_samples(data, half_batch)
+            X_real, _ = generate_real_samples(data, batch_size)
 
             # Train model according to given half batch size
             gen_loss, disc_real_loss, disc_fake_loss = \
-                train_batch(X_real, half_batch, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
+                train_batch(X_real, batch_size, latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
 
             # Get model summary every 100 batches.
             if i % 100 == 0:
@@ -149,6 +164,12 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
         # Save checkpoint every 10 epochs.
         if epoch % 10 == 0:
             checkpoint.save(file_prefix=os.path.join('./model/model_checkpoints', "ckpt"))
+            np.save("g_losses", gen_losses)
+            np.save("d_real_losses", disc_real_losses)
+            np.save("d_fake_losses", disc_fake_losses)
+
+            plot_model_loss(epoch, gen_losses, disc_real_losses, disc_fake_losses)
+
 
     return gen_losses, disc_real_losses, disc_fake_losses
 
@@ -160,18 +181,22 @@ def main():
 
     # Either load from the given directory or from the npy file
     images = np.load("./oasis_data_grayscale.npy")
-    epochs = 100
+    epochs = 120
     latent_dim = 256
 
     g_model = generator_model(latent_dim = latent_dim)
     d_model = discriminator_model()
-    gen_optimizer = Adam(learning_rate=2e-7, beta_1=0.5, beta_2=0.99)
-    disc_optimizer = Adam(learning_rate=1.5e-7, beta_1=0.5, beta_2=0.99)
+
+    # get generator optimizer, can pass in argument to specify the learning rate, beta_1 and beta_2
+    gen_optimizer = generator_optimizer()
+    disc_optimizer = discriminator_optimizer()
     gen_losses, disc_real_losses, disc_fake_losses= train(images, epochs , latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
 
     np.save("g_losses", gen_losses)
     np.save("d_real_losses", disc_real_losses)
     np.save('d_fake_losses',disc_fake_losses)
+
+    plot_model_loss(epochs, gen_losses, disc_real_losses, disc_real_losses)
 
 if __name__ == '__main__':
     main()
