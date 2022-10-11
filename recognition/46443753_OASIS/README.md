@@ -4,13 +4,13 @@ Author: Danny Wang
 
 ## OASIS Brian Dataset Overview
 
-The OASIS Brain Dataset consists of a total 11328 brain MRI images, with a size of 256 by 256 pixels.
+The OASIS Brain Dataset consists of a total 11328 brain MRI images (combining train, test and validation samples), with a size of 256 by 256 pixels each.
 
 Selected example:
 
-```
-![img](examples/case_441_slice_0.nii.png)
-```
+<p align="center">
+  <img src="examples/case_441_slice_0.nii.png" />
+</p>
 
 ## Problem Decription
 
@@ -30,7 +30,7 @@ Library dependencies are as follow:
 | Numpy       | 1.19.2  |
 ```
 
-In this generative project, the OASIS dataset was utilised as the training set, and randomly generated gaussian normal noise was utilised as test input for the StyleGAN model. The training images was loaded in as grayscale values normalised to 0 and 1.
+In this generative project, the OASIS dataset was utilised as the training set, and randomly generated gaussian normal noise was utilised as test input for the StyleGAN model. The training images was loaded in as grayscale values, and was normalised to 0 and 1 for training.
 
 ## Model Performance
 
@@ -38,6 +38,5 @@ In this generative project, the OASIS dataset was utilised as the training set, 
 
 ## References:
 
-1. [StyleGAN Paper][[1812.04948.pdf (arxiv.org)](https://arxiv.org/pdf/1812.04948.pdf)]
-
-2. [OASIS Brain][[OASIS Brains - Open Access Series of Imaging Studies (oasis-brains.org)](https://www.oasis-brains.org/)]
+1. [StyleGAN Paper](https://arxiv.org/pdf/1812.04948.pdf)
+2. [OASIS Brain](https://www.oasis-brains.org/)
