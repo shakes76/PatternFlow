@@ -4,9 +4,11 @@ VQVAE components for COMP3710 VQVAE project
 Inspired by https://keras.io/examples/generative/vq_vae/
 """
 
-import	tensorflow				as		tf
-from	tensorflow.keras		import	Input,	Model
-from	tensorflow.keras.layers	import	Conv2D,	Conv2DTranspose, Layer
+import	tensorflow					as		tf
+from	tensorflow.keras			import	Input,	Model
+from	tensorflow.keras.layers		import	Conv2D,	Conv2DTranspose, Layer
+from	tensorflow.keras.metrics	import	Mean
+from	tensorflow.keras.models		import	Model
 
 FLATTEN			= -1
 ENC_IN_SHAPE	= (28, 28, 1)
@@ -99,7 +101,7 @@ def build(lat_dim, embeds, beta):
 	return	- the assembled VQVAE
 	"""
 
-	vq			= VectorQuantizer(embeds, lat_dim, beta)#, name="vector_quantizer")
+	vq			= VectorQuantizer(embeds, lat_dim, beta)
 	enc			= encoder(lat_dim)
 	dec			= decoder(lat_dim)
 	ins			= Input(shape = ENC_IN_SHAPE)
@@ -108,3 +110,49 @@ def build(lat_dim, embeds, beta):
 	reconstruct	= dec(qtised)
 
 	return Model(ins, reconstruct)
+
+class VQVAETrainer(Model):
+	"""Wrapper class for vqvae training functionality"""
+	def __init__(self, train_vnce, lat_dim, n_embeds, beta, **kwargs):
+		super().__init__(**kwargs)
+		self.train_vnce	= train_vnce
+		self.lat_dim	= lat_dim
+		self.n_embeds	= n_embeds
+		self.vqvae		= build(self.lat_dim, self.n_embeds, beta)
+		self.tot_loss	= Mean()#name="total_loss")
+		self.recon_loss	= Mean()#name="recon_loss")
+		self.vq_loss	= Mean()#name="vq_loss")
+
+	@property
+	def metrics(self):
+		"""Total loss, reconstruction loss, vector quantisation loss"""
+		return self.tot_loss, self.recon_loss, self.vq_loss
+
+	def train_step(self, x):
+		"""Individual VQVAE training step"""
+		with tf.GradientTape() as tape:
+			recons = self.vqvae(x)
+
+			# Losses
+			recon_loss = (
+				tf.reduce_mean((x - recons) ** 2) / self.train_vnce
+			)
+			total_loss = recon_loss + sum(self.vqvae.losses)
+
+		# Backpropagation
+		grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
+		self.optimizer.apply_gradients(zip(grads, self.vqvae.trainable_variables))
+
+		self.tot_loss.update_state(total_loss)
+		self.recon_loss.update_state(recon_loss)
+		self.vq_loss.update_state(sum(self.vqvae.losses))
+
+		# Results
+		return self.tot_loss.result(), self.recon_loss.result(), self.vq_loss.result()
+		"""
+		return {
+			"loss": self.tot_loss.result(),
+			"recon_loss": self.recon_loss.result(),
+			"vqvae_loss": self.vq_loss.result(),
+		}
+		"""
