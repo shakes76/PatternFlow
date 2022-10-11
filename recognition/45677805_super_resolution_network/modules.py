@@ -2,7 +2,7 @@
 from tensorflow.keras.layers import Conv2D, Input
 from tensorflow.keras import Model
 
-
+"""build SRCNN model"""
 def get_model():
     height, width = 128, 128
     input_img = Input((height, width, 3))

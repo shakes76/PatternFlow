@@ -3,24 +3,22 @@ import tensorflow as tf
 from dataset import *
 import matplotlib.pyplot as plt
 
+"""load the trained model from the path"""
 def loadModel_from_path(has_model):
     model = get_model()
     if(has_model):
-        model.load_weights("G:/Australia/academic/UQ/2022 s2/comp 3710/A3/s4567780 Problem 5  super-resolution network/PatternFlow/recognition/45677805_super_resolution_network/model/modeH5_148epochs.h5")
+        model.load_weights("G:/Australia/academic/UQ/2022 s2/comp 3710/A3/s4567780 Problem 5  super-resolution network/PatternFlow/recognition/45677805_super_resolution_network/model/modeH5_265.h5")
     return model
 
 
-# compare the result of original,resized and model predicted
+"""output the model result image and comparing with original, reconstructed by tensorflow bicubic interpolation"""
 def predict_comparion(test_ds, model):
-    """ 改进版 解决了图片不是同一张问题"""
+
+    """presenting in .ipynb format"""
     print("original----------")
     test_one_img_data = get_img(test_ds)
-    # print("test_one_img_data: ", test_one_img_data.shape) # test_one_img_data:  (128, 128, 3)
     test_img_one = array_to_img(test_one_img_data) 
     display(test_img_one)
-
-    # plt.imshow(test_img_one)
-    # plt.show()
 
     print("resized----------")
     resized_img_array = resize_img(test_one_img_data, 32)
@@ -37,33 +35,32 @@ def predict_comparion(test_ds, model):
     display(predict_img_one)
 
 
-    # plt method 
+    """presenting in .py file""" 
     fig = plt.figure(figsize=(128,128))
 
-    # fig.tight_layout(h_pad=15)
-    # ax1 = fig.add_subplot(311)
-    # # ax1.axis('off')
-    # ax2 = fig.add_subplot(312)
-    # # ax2.axis('off')
-    # ax3 = fig.add_subplot(313)
-    # # ax3.axis('off')
-    # ax1.set_title("original img")
-    # ax2.set_title("resized 128->32->128 by bicubic method ")
-    # ax3.set_title("restore by srcnn model")
+    small_img_data = tf.image.resize(test_one_img_data, [32, 32], method='bicubic')
+    small_img = array_to_img(small_img_data) 
     
-    # ax1.imshow(test_img_one)
-    # ax2.imshow(resized_test_one_img)
-    # ax3.imshow(predict_img_one)
+    img_list = [test_img_one, small_img, resized_test_one_img, predict_img_one]
 
-    img_list = [test_img_one, resized_test_one_img, predict_img_one]
-
-    for i in range(1,4):
-        fig.add_subplot(3, 1, i)
+    # plot in one frame
+    for i in range(1,5):
+        fig.add_subplot(5,1, i)
         img = img_list[i-1]
         
         plt.imshow(img)
-    # plt.savefig("PatternFlow/recognition/45677805_super_resolution_network/predict_result/epoch_148.png")    
     plt.show()
+    """ for saving the picture"""
+    # plt.savefig("PatternFlow/recognition/45677805_super_resolution_network/predict_result/epoch_265.png")    
+    # plt.savefig("PatternFlow/recognition/45677805_super_resolution_network/predict_result/result_comparison.png")
+
+    """for saving the resized small image"""
+    # fig1 = plt.figure(figsize=(128,128))
+    # ax1 = fig1.add_subplot(111)
+    # ax1.imshow(small_img)  
+    # plt.savefig("PatternFlow/recognition/45677805_super_resolution_network/predict_result/small.png")
+    # plt.show()
+
     
 def predict():
     model = loadModel_from_path(True)
@@ -71,16 +68,3 @@ def predict():
     predict_comparion(test_data, model)
 
 predict()
-# fig = plt.figure(figsize=(128,128))
-# fig.tight_layout(h_pad=15)
-# ax1 = fig.add_subplot(311)
-# # ax1.axis('off')
-# ax2 = fig.add_subplot(312)
-# # ax2.axis('off')
-# ax3 = fig.add_subplot(313)
-# # ax3.axis('off')
-# ax1.set_title("original img")
-# ax2.set_title("resized 128->32->128 by bicubic method ")
-# ax3.set_title("restore by srcnn model")
-
-# plt.show()
