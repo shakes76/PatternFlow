@@ -14,7 +14,7 @@ Details:
 Goals:
 
 * “Reasonably clear image”
-* [Structured Similarity (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity) of over 0.6
+* [Structured Similarity (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity) index of over 0.6
 
 ---
 

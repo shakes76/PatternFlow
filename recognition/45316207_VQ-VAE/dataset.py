@@ -37,13 +37,6 @@ Loads the OASIS dataset of brain MRI images
 def load_dataset(max_images=None):
     print("Loading dataset...")
 
-    # # Download the dataset and unzip
-    # if not os.path.exists("/content/keras_png_slices_data/"):
-    #     print("Not yet downloaded")
-    #     os.system("wget https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download")
-    #     os.system("unzip /content/download")
-    #     os.system("mkdir /content/out/")
-
     # File paths
     images_path = "keras_png_slices_data/"
     test_path = images_path + "keras_png_slices_validate/"
@@ -59,14 +52,12 @@ def load_dataset(max_images=None):
 
     # Load all the images into numpy arrays
     for i in range(0, len(dataset_paths)):
-        print(dataset_paths[i])
-
-        # Get all PNG files in the dataset_path directory
+        # Get all the png files in this dataset_path directory
         images_list = glob.glob(os.path.join(dataset_paths[i], "*.png"))
 
-        images_collected = 0
+        images_collected = 0 
         for img_filename in images_list:
-            # Break if we hit out image limit
+            # Stop loading in images if we hit out max image limit
             if max_images and images_collected >= max_images:
                 break
 
@@ -100,4 +91,5 @@ def load_dataset(max_images=None):
 
 
 if __name__ == "__main__":
+    # Run a test
     load_dataset(max_images=1000)

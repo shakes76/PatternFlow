@@ -32,5 +32,5 @@ import dataset
 # ---------------------------------------------------------------------------- #
 #                                 FINAL RESULTS                                #
 # ---------------------------------------------------------------------------- #
-# Visualise the final results
+# Visualise the final results and calculate the structural similarity index (SSIM)
 
