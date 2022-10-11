@@ -1,10 +1,6 @@
 import pathlib
 import tensorflow as tf
 
-import os
-import math
-import numpy as np
-
 import matplotlib.pyplot as plt
 
 CROP_SIZE = 300
