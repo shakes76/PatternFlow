@@ -61,14 +61,14 @@ To make a prediction, run this code:
 
 ### Visualise the loss for each training epoch
 
-![Loss for each training epoch](./readme_png/Loss_output_epoch.PNG)
+![Loss for each training epoch](./readme_png/Loss_output_epoch.png)
 
 ### Visualise the loss for entire training step
 
-![entire loss for each epoch](./readme_png/Loss_Training_output.PNG)
+![entire loss for each epoch](./readme_png/Loss_Training_output.png)
 
 ### Prediction output
-![Prediction using trained model](./readme_png/Prediction.PNG)
+![Prediction using trained model](./readme_png/Prediction.png)
 
 ## Reference
 [1] TensorFlow. 2022. Deep Convolutional Generative Adversarial Network  |  TensorFlow Core. [online] Available at: <https://www.tensorflow.org/tutorials/generative/dcgan> [Accessed 11 October 2022].
