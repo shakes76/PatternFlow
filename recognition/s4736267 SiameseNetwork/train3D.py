@@ -29,8 +29,10 @@ from torch.optim.lr_scheduler import StepLR
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.Net_3D()
+#net = modules.Net_batchnom()
+#net = modules.Net_3D()
 #net = modules.ResNet18_3D(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
+net = modules.ResNet18_R3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
 #net.load_state_dict(torch.load('sim_net_ResNet.pt')) #change to .pt
 #net.eval()
 net = net.to(device)
@@ -39,10 +41,10 @@ net = net.to(device)
 #torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 100
+epoch_range = 50
 
 
-batch_size=16
+batch_size=8
 train_factor=1000
 test_factor=400
 valid_factor=10
@@ -57,7 +59,7 @@ train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset3D(batch_s
 #Optimizer
 criterion = modules.ContrastiveLoss()
 #criterion = nn.BCELoss()
-optimizer = optim.Adam(net.parameters(),lr = 0.01)
+optimizer = optim.Adam(net.parameters(),lr = 0.001)
 scheduler = StepLR(optimizer, step_size=50, gamma=0.95)
 
 
@@ -89,14 +91,12 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         
         labels= data[2].to(device).to(torch.float32)
 
-        
         #zero gradients
         optimizer.zero_grad()
 
 
         output1,output2 = net(inputs_1,inputs_2)
 
-        
         loss = criterion(output1,output2,labels)
         loss.backward()
 
@@ -161,43 +161,22 @@ with torch.no_grad():
         euclidean_distance_NC = F.pairwise_distance(output1, output2)
 
 
-        mode=0
-        if mode == 0:
+   
 
-            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
+        predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
         
 
-            correct_tensor=torch.eq(labels,predicted_labels)
+        correct_tensor=torch.eq(labels,predicted_labels)
     
 
-            correct_run = torch.sum(correct_tensor)
-            correct += correct_run
-            total += torch.numel(labels)
+        correct_run = torch.sum(correct_tensor)
+        correct += correct_run
+        total += torch.numel(labels)
 
-        else:
-            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
-            number_sets=round(torch.numel(labels)/20)
 
-            predicted_labels_patient=torch.zeros(number_sets)
-            labels_patient=torch.zeros(number_sets)
 
-            for j in range(number_sets):
-                
-                predicted_labels_patient[j]= torch.round(torch.sum(predicted_labels[j:j+20])/20)
-                labels_patient[j] = labels[j*20]
-                print("predicted_labels_patient", predicted_labels_patient[j],"--",torch.sum(predicted_labels[j:j+20])/20,"   labels patient",labels_patient[j])
-                
-            correct_tensor=torch.eq(labels_patient,predicted_labels_patient)
-            correct_run = torch.sum(correct_tensor)
-
-            correct += correct_run
-            total += number_sets
-
-            print("correct_run",correct_run)
-            print("")
-
-        #print("euc_NC",euclidean_distance_NC)
-        #print("euc_AD",euclidean_distance_AD)
+        print("euc_NC",euclidean_distance_NC)
+        print("euc_AD",euclidean_distance_AD)
         print("lab",labels)
         print("pred_lab", predicted_labels)
         #print("cor_ten", correct_tensor)    
@@ -217,6 +196,6 @@ with torch.no_grad():
     gc.collect()
     
 
-torch.save(net.state_dict(), 'sim_net_3D.pt')
+torch.save(net.state_dict(), 'sim_net_3D_R3D_conv.pt')
 print('Finished Training')
 

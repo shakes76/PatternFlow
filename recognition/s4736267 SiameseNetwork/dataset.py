@@ -434,10 +434,32 @@ class DatasetTrain3D(Dataset):
         #RandomBlackout
         rn = random.randint(0,1)
         if rn==0:
-            i  = 42
+            i  = 70
             i1 = random.randint(0,210/i)
             i2  = random.randint(0,210/i)
             transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
+
+        rn = random.randint(0,1)
+        if rn==0:
+            i  = 70
+            i1 = random.randint(0,210/i)
+            i2  = random.randint(0,210/i)
+            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
+
+        rn = random.randint(0,1)
+        if rn==0:
+            i  = 70
+            i1 = random.randint(0,210/i)
+            i2  = random.randint(0,210/i)
+            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
+
+        rn = random.randint(0,1)
+        if rn==0:
+            i  = 70
+            i1 = random.randint(0,210/i)
+            i2  = random.randint(0,210/i)
+            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))    
+
 
         #RandomHorizontalFlip
         rn = random.randint(0,1)
@@ -469,6 +491,7 @@ class DatasetTrain3D(Dataset):
 
         #print(transform_idx)
         #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
+        j=0
         for i in range(20):
     
 
@@ -482,14 +505,16 @@ class DatasetTrain3D(Dataset):
                 image_1 = transform_idx(image_1)
                 image_2 = transform_idx(image_2)
 
-            image3D_1[i]=image_1
-            image3D_2[i]=image_2
+            image3D_1[j]=image_1
+            image3D_2[j]=image_2
+            j=j+1
 
         label_1 = image_filepath_1.split('/')[-2]
         label_1 = 0 if label_1=='AD' else 1
         
         label_2 = image_filepath_2.split('/')[-2]
         label_2 = 0 if label_2=='AD' else 1
+
 
         #print(image_filepath_1)
         #print(image_filepath_2)
@@ -519,7 +544,7 @@ class Dataset3D(Dataset):
         image3D=torch.zeros(20,210,210)
 
 
-
+        j=0
         for i in range(20):
     
             image_filepath = self.image_paths[idx*20+i]
@@ -528,7 +553,9 @@ class Dataset3D(Dataset):
             if self.transform:
                 image_1 = self.transform(image_1)
 
-            image3D[i]=image_1
+            image3D[j]=image_1
+
+            j=j+1
 
         label = image_filepath.split('/')[-2]
         label = 0 if label=='AD' else 1
@@ -553,6 +580,7 @@ class DatasetClas3D(Dataset):
         
         image3D=torch.zeros(20,210,210)
 
+        j=0
         for i in range(20):
     
             image_filepath = self.image_paths[idx*20+i]
@@ -561,7 +589,9 @@ class DatasetClas3D(Dataset):
             if self.transform:
                 image_1 = self.transform(image_1)
 
-            image3D[i]=image_1
+            image3D[j]=image_1
+
+            j=j+1
 
         image3D = torch.unsqueeze(image3D, dim=0)    
 
@@ -644,6 +674,7 @@ def transformation_3D():
         transforms.ToPILImage(),
         transforms.Lambda(crop),
         transforms.ToTensor(),
+        #transforms.Resize(size=(105,105)),
         transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
     ])
 
