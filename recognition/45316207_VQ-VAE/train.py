@@ -109,7 +109,6 @@ if __name__ == "__main__":
     # Import data loader from dataset.py
     # (train_data, test_data, validate_data) = dataset.load_dataset()
 
-
     # ------------------------------------ NEW ----------------------------------- #
     # Load and preprocess the MNIST dataset
     (x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
@@ -131,7 +130,6 @@ if __name__ == "__main__":
     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
 
 
-
     # ---------------------------------------------------------------------------- #
     #                                 RUN TRAINING                                 #
     # ---------------------------------------------------------------------------- #
@@ -147,7 +145,8 @@ if __name__ == "__main__":
     trained_vqvae_model = vqvae_trainer.vqvae
 
     # Save the model to file as a tensorflow SavedModel
-    trained_vqvae_model.save('./vqvae_saved_model')
+    trained_vqvae_model.save("./vqvae_saved_model")
+
 
     # ---------------------------------------------------------------------------- #
     #                                 FINAL RESULTS                                #
@@ -155,7 +154,8 @@ if __name__ == "__main__":
     # Visualise the final results and calculate the structural similarity index (SSIM)
 
     # ------------------------------------ NEW ----------------------------------- #
-    idx = np.random.choice(len(x_test_scaled), 10)
+    EXAMPLES_TO_SHOW = 10
+    idx = np.random.choice(len(x_test_scaled), EXAMPLES_TO_SHOW)
     test_images = x_test_scaled[idx]
     reconstructions_test = trained_vqvae_model.predict(test_images)
 
