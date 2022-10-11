@@ -21,7 +21,36 @@ from modules import vit_classifier
 from dataset import import_data
 
 
+##############################  HYPERPARAMETERS  ###################################
 
+# data
+BATCH_SIZE = 128
+image_size = 196  # We'll resize input images to this size
+num_classes = 2
+input_shape = (image_size, image_size, 1)
+
+# patches
+patch_size = 14  
+num_patches = (image_size // patch_size) ** 2
+
+# transformer-econder
+projection_dim = 768
+num_heads = 12
+transformer_units = [projection_dim * 2,projection_dim] 
+num_encoder_layers = 12
+
+# mlp head
+mlp_head_units = [3072]  # Size of the dense layers of the final classifier
+
+# model
+learning_rate = 0.001
+weight_decay = 0.0001
+num_epochs = 200
+dropouts = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
+
+
+
+##############################  TRAINING SCRIPT  ###################################
 # Run Experiment --> Instantiate model, Select optimzer, compile, checkpoint, train and evaluate
 
 # instantiate model
