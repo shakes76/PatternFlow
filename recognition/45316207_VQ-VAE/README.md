@@ -21,7 +21,7 @@ Goals:
 ## TODO
 
 - [x] Data importing
-- [ ] Model class
+- [x] Model class
 - [ ] Model basic training function
 - [ ] Live training performance data logging
 - [ ] Final results visualisation and SSIM
