@@ -103,7 +103,7 @@ class StyleGAN():
     """
     METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
 
-    def __init__(self, output_res: int = 256, start_res: int = 2, latent_dim: int = 512, existing_model_filepath: str = None) -> None:
+    def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_filepath: str = None) -> None:
         """
             Instantiate a new StyleGAN
 
@@ -148,9 +148,9 @@ class StyleGAN():
 
 #TODO refactor such that starting resolution is 4 not 2
         #Generation blocks for each feature scale
-        curr_res = self._start_res*2
+        curr_res = self._start_res
         #using tensor = to give a constant doesn't allow for dynamic batch size (you must specify the length of that dimenstion without using a Lambda layer). This will be fixed inside the StyleGan train 
-        constant_input = tf.keras.layers.Input(shape = (self._start_res,self._start_res,self._latent_dim), name = "Constant_Initial_Image") 
+        constant_input = tf.keras.layers.Input(shape = (self._start_res//2,self._start_res//2,self._latent_dim), name = "Constant_Initial_Image") 
         x = constant_input
         generator_noise_inputs = [] #keep a hold of input handles for model return
         while curr_res <= self._output_res:
@@ -256,7 +256,7 @@ class StyleGAN():
         fake_labels = tf.zeros(shape = (batch_size,))
 
         #start with zeros as the background of OASIS images are black
-        constant_generator_base = tf.zeros(shape = (batch_size,self._start_res,self._start_res,self._latent_dim))
+        constant_generator_base = tf.zeros(shape = (batch_size,self._start_res//2,self._start_res//2,self._latent_dim))
         
         #Conduct training
         for e in range(epochs):
@@ -269,11 +269,11 @@ class StyleGAN():
                 dfl, dfa = self._discriminator.train_on_batch(batches[b], real_labels)
 
                 #train discriminator on a batch of fake images from current iteration of the generator
-                fake_images = self._generator(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base])
+                fake_images = self._generator(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res,self._output_res) + [constant_generator_base])
                 drl, dra = self._discriminator.train_on_batch(fake_images, fake_labels)
 
                 #Train generator. Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' (1) from discriminator
-                gl, ga = self._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base], real_labels)
+                gl, ga = self._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res,self._output_res) + [constant_generator_base], real_labels)
 
                 metrics_to_store = [dfl,dfa,drl,dra,gl,ga]
                 for m in range(len(StyleGAN.METRICS)):
@@ -283,7 +283,7 @@ class StyleGAN():
             GANutils.save_training_history(epoch_metrics,training_history_location)
             
             if image_sample_output:
-                samples = self(GANutils.random_generator_inputs(image_sample_count,self._latent_dim,self._start_res*2,self._output_res)) #makes use of __call__ defined below
+                samples = self(GANutils.random_generator_inputs(image_sample_count,self._latent_dim,self._start_res,self._output_res)) #makes use of __call__ defined below
                 sample_directory = image_sample_output + "epoch_{}".format(self._epochs_trained)
                 GANutils.make_fresh_folder(sample_directory)
                 for s,sample in enumerate(samples):
@@ -296,7 +296,7 @@ class StyleGAN():
     def __call__(self, latent_vector: np.array, noise_inputs: list[np.array]) -> np.array:
         pass
 
-    def save_model():
+    def save_model(self, folder: str) -> None:
         pass
 
     def load_model():
