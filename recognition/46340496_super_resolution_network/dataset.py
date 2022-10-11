@@ -1,5 +1,6 @@
 import pathlib
 import tensorflow as tf
+import os
 
 import matplotlib.pyplot as plt
 
@@ -45,11 +46,15 @@ def creating_train_datasets():
     return train_ds, valid_ds
 
 def creating_test_dataset():
-    test_ds = tf.keras.utils.image_dataset_from_directory(
-        import_test_data(),
-        batch_size=BATCH_SIZE,
-        seed=1337,
-        label_mode=None,
+
+    test_path = import_test_data()
+
+    test_ds = sorted(
+        [
+            os.path.join(test_path, fname)
+            for fname in os.listdir(test_path)
+            if fname.endswith(".jpeg")
+        ]
     )
     return test_ds
 
