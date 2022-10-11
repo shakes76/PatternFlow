@@ -237,4 +237,16 @@ class VQVAE(Model):
         return self._decoder
 
 
+""" PixelCNN """
 
+
+class PixelConvLayer(layers.Layer):
+    pass
+
+
+class ResidualBlock(layers.Layer):
+    pass
+
+
+class PixelCNN(Model):
+    pass
