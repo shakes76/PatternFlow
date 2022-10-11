@@ -7,7 +7,8 @@ import torchvision
 import torch
 from torch import nn
 import torch.nn.functional as F
-
+from dataset import ADNI
+from modules import resnet18, resnet34, resnet50
 
 
 class AverageMeter(object):
@@ -101,4 +102,64 @@ if __name__ == '__main__':
     margin = 0.3
     lamda = 1.0
     num_epochs = 200
+
+    dataset = ADNI("C:\\Users\\admin\\Desktop\\AD_NC")
+    train_loader = dataset.get_train_loader(height, width, batch_size)
+    test_loader = dataset.get_test_loader(height, width, batch_size)
+
+    model = resnet50(num_features=num_features, num_classes=num_classes)
+
+    params = [{"params": [value]} for _, value in model.named_parameters() if value.requires_grad]
+    optimizer = torch.optim.Adam(params, lr=learning_rate, weight_decay=weight_decay)
+    criterion_triplet = TripletLoss(margin=margin)
+
+    train_loss = []
+    test_acc = []
+
+    best_acc = -1
+
+    for epoch in range(num_epochs):
+
+        losses = AverageMeter()
+        model.train()
+
+        for step, inputs in enumerate(train_loader):
+            imgs, labels, indexes = parse_data(inputs)
+
+            emds, probs = model(imgs)
+
+            loss_triplet = criterion_triplet(emds, labels)
+            loss_cla = F.cross_entropy(probs, labels)
+            loss = loss_cla+lamda*loss_triplet
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            losses.update(loss.item())
+
+        train_loss.append(losses.avg)
+
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for step, inputs in enumerate(test_loader):
+                imgs, labels, indexes = parse_data(inputs)
+                emds, probs = model(imgs)
+                _, predicted = torch.max(probs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            acc = correct // total
+            test_acc.append(acc)
+            if best_acc <= acc:
+                best_acc = acc
+                torch.save(model.state_dict(), "res50_best_model.pkl")
+
+        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        print("Loss {:.3f})".format(losses.avg))
+        print("test acc {:.3f}, best acc {:.3f})".format(acc, best_acc))
+
+
+
 
