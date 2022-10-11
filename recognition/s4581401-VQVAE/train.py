@@ -4,13 +4,57 @@ import numpy as np
 from tensorflow import keras
 from dataset import *
 from modules import *
+import tensorflow_probability as tfp
+
+
+def generate_priors(pixelcnn_model):
+    """
+    Generates and returns the priors using the given PixelCNN model.
+    """
+
+    # Create an empty array of priors.
+    batch = 1
+    priors = np.zeros(shape=(batch,) + (None, 64, 64)[1:])
+    batch, rows, cols = priors.shape
+
+    # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+    for row in range(rows):
+        for col in range(cols):
+            logits = pixelcnn_model.predict(priors)
+            sampler = tfp.distributions.Categorical(logits)
+            probs = sampler.sample()
+            priors[:, row, col] = probs[:, row, col]
+
+    return priors
+
+#Writing a wrapper function
+def codebook_wrapper_fn(encoder, embeddings):
+    """
+    Returns a mapper function handle that can be passed to the dataset.map function.
+    This function encodes the images into codebook indices
+    """
+
+    def mapper(x):
+        encoded_outputs = encoder(x)  # Change this to predict?
+
+        flat_enc_outputs = tf.reshape(
+            encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
+
+        codebook_indices = embeddings.get_closest_index(flat_enc_outputs)
+
+        codebook_indices = tf.reshape(
+            codebook_indices, tf.shape(encoded_outputs)[:-1])
+
+        return codebook_indices
+
+    return mapper
 
 val_split = 0.2
 img_height = 256
 img_width = 256
 batch_size = 32
 latent_dim = 32
-embedding_num = 256
+embedding_num = 128
 
 
 PATH = os.getcwd()
@@ -132,27 +176,6 @@ with tf.device("/GPU:0"):
 print(np.mean(total_ssim_values))
 
 # Running the code for PixelCNN.
-#Writing a wrapper function
-def codebook_wrapper_fn(encoder, embeddings):
-    """
-    Returns a mapper function handle that can be passed to the dataset.map function.
-    This function encodes the images into codebook indices
-    """
-
-    def mapper(x):
-        encoded_outputs = encoder(x)  # Change this to predict?
-
-        flat_enc_outputs = tf.reshape(
-            encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
-
-        codebook_indices = embeddings.get_closest_index(flat_enc_outputs)
-
-        codebook_indices = tf.reshape(
-            codebook_indices, tf.shape(encoded_outputs)[:-1])
-
-        return codebook_indices
-
-    return mapper
 #Load in the data
 test_ds = load_test_data(test_path, img_height, img_width, batch_size)
 #Write a wrapper function for the codebook indices for training
@@ -167,3 +190,37 @@ pixelcnn_model.compile(optimizer=keras.optimizers.Adam(),
                        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                        metrics=["accuracy"],
 )
+pixelcnn_model = PixelCNNModel(pixelcnn_input_shape, vqvae_model._embedding_num, 128, 3, 3)
+pixelcnn_model.compile(optimizer=keras.optimizers.Adam(1e-3),
+                       loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                       metrics=["accuracy"],
+)
+with tf.device("/GPU:0"):
+  pixelcnn_model.fit(codebook_dataset, batch_size=32,epochs=10)
+
+#Generating Samples
+priors = generate_priors(pixelcnn_model)
+
+priors_one_hot = tf.one_hot(priors.astype("int32"), vqvae_model._embedding_num).numpy()
+
+quantized = tf.matmul(
+    priors_one_hot.astype("float32"),
+    vqvae_model.get_vq()._embedding,
+    transpose_b=True)
+
+quantized = tf.reshape(quantized, (-1, *(vqvae_model.get_encoder().output.shape[1:])))
+
+# pass back into the decoder
+decoder = vqvae_model.get_decoder()
+generated_samples = decoder.predict(quantized)
+
+plt.subplot(1, 2, 1)
+plt.imshow(priors[0])
+plt.title("Generated codebook sample")
+plt.axis("off")
+
+plt.subplot(1, 2, 2)
+plt.imshow(generated_samples.squeeze(), cmap="gray")
+plt.title("Decoded sample")
+plt.axis("off")
+plt.show()

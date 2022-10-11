@@ -273,12 +273,12 @@ class PixelCNNModel(tf.keras.Model):
         one_hot_input = tf.one_hot(input_layer, self._embedding_num)
         x = PixelConvLayer(mask_type="A", filters=self._filters, kernel_size=7, activation="relu", padding="same")(
             one_hot_input)
-
+        # x = PixelConvLayer(mask_type = "A", filters = self._filters, kernel_size = 7, activation = "relu", padding = "same")(input_layer)
         for _ in range(self._num_res_layer):
             x = ResidualBlock(self._filters)(x)
 
         for _ in range(self._num_pixel_layer):
-            x = PixelConvLayer(mask_type="A", filters=self._filters, kernel_size=1, strides=1, activation="relu",
+            x = PixelConvLayer(mask_type="B", filters=self._filters, kernel_size=1, strides=1, activation="relu",
                                padding="valid")(x)
 
         final_output = tf.keras.layers.Conv2D(filters=self._embedding_num, kernel_size=1, strides=1, padding="valid")(x)
