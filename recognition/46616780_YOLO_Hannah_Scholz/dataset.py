@@ -26,9 +26,7 @@ def load_images(image_path):
             else:
                 img = img.resize((round(width * (IMAGE_SIZE / height)), IMAGE_SIZE))
 
-
             generate_bounding_box(img)
-
 
 
 def generate_bounding_box(image):
@@ -36,13 +34,19 @@ def generate_bounding_box(image):
 
 
 def clean_up_directory(image_directory):
+    print(image_directory)
     for filename in os.listdir(image_directory):
         if filename.endswith(".png"):
             os.remove(image_directory + filename)
-    load_images(image_directory)
+    # load_images(image_directory)
 
 
-def main(args):
+def main():
     # Do this for all three directories
     clean_up_directory(VALIDATION_DATA_PATH)
+    clean_up_directory(TESTING_DATA_PATH)
+    clean_up_directory(TRAINING_DATA_PATH)
 
+
+if __name__ == '__main__':
+    main()
