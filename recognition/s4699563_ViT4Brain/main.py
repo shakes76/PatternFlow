@@ -16,13 +16,13 @@ from torch.utils.data import  DataLoader
 from dataset import BrainDataset
 from modules import Classifier
 from train import train
+from predict import predict
 
 
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
 torch.manual_seed(42)
-train_dir = './datasets/AD_NC/train/AD'
 
 
 parser = argparse.ArgumentParser()
@@ -82,4 +82,5 @@ optimizer=torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-5)
 scheduler=torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
     optimizer, T_0=16, T_mult=1)
 
-train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs=100, writer=writer,device=device)
+train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs=opt.epochs, writer=writer,device=device)
+predict(model,test_loader,device=device)
