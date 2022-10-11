@@ -49,13 +49,13 @@ class ResNet(nn.Module):
         return emb, prob
 
 
-def resnet18(**kwargs):
-    return ResNet(18, **kwargs)
+def resnet18(num_features, num_classes):
+    return ResNet(18, num_features=num_features, num_classes=num_classes)
 
 
-def resnet34(**kwargs):
-    return ResNet(34, **kwargs)
+def resnet34(num_features, num_classes):
+    return ResNet(34, num_features=num_features, num_classes=num_classes)
 
 
-def resnet50(**kwargs):
-    return ResNet(50, **kwargs)
+def resnet50(num_features, num_classes):
+    return ResNet(50, num_features=num_features, num_classes=num_classes)
