@@ -136,7 +136,6 @@ if __name__ == '__main__':
     try:
         model = torch.load(os.path.join(pathlib.Path(__file__).parent.resolve(), "Stable Diffusion Model OAI OKOA"))
     except Exception as e:
-        print(e)
         path = input("Failed to load default model, specify model path: ")
         try:
             model = torch.load(path)

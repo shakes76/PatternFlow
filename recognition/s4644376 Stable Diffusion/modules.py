@@ -45,11 +45,8 @@ class UpBlock(nn.Module):
         self.block = ConvReLU(num_out + num_out, num_out)
 
     def forward(self, x, skip, pos):
-
-
         out = self.up(x)
         out = torch.cat([out, skip], axis=1)
-
 
         return self.block.forward(out, pos)
 

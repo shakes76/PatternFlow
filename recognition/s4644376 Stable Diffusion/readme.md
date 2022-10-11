@@ -244,6 +244,8 @@ Below is 99 images that have been generated. This took approximately 30 minutes.
 
 
 ## Dependencies
+To read the above flow charts in an IDE, mermaid must be installed on the IDE. This is a vscode extension, pycharm plugin etc. Please ensure this is installed.
+
 The following dependencies are required to run the included model and training. All of these packages can be achieved via 
 `<package installer> install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch`:
 
