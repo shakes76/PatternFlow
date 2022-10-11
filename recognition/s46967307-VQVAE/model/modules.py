@@ -1,16 +1,16 @@
 import tensorflow as tf
 import numpy as np
 
-latent_dims = 100
+latent_dims = 8
 image_shape = (256,256,1)
-num_embeddings = 100
-beta = 0.5
+num_embeddings = 32
+beta = 2.0
 
 class VQ(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(VQ, self).__init__(**kwargs)
         
-        w_init = tf.random_normal_initializer()
+        w_init = tf.random_uniform_initializer()
         self.embeddings = tf.Variable(
                 trainable=True,
                 name="embeddings",
@@ -31,10 +31,10 @@ class VQ(tf.keras.layers.Layer):
                 inputs_flat)
 
         results = tf.math.argmin(results, axis=1)
-        results = tf.gather(self.embeddings, results)
+        results = tf.matmul(tf.one_hot(results, num_embeddings), self.embeddings)
 
-        codebook_loss = tf.reduce_sum(tf.square(tf.stop_gradient(results) - inputs_flat))
-        commitment_loss = tf.reduce_sum(tf.square(results - tf.stop_gradient(inputs_flat))) * beta
+        codebook_loss = tf.reduce_mean(tf.square(tf.stop_gradient(results) - inputs_flat))
+        commitment_loss = tf.reduce_mean(tf.square(results - tf.stop_gradient(inputs_flat))) * beta
         self.add_loss(commitment_loss + codebook_loss)
 
         # Reshape results back into compressed image
@@ -51,7 +51,7 @@ class AE(tf.keras.Model):
         # layers which each halve the size of the image.
         # The remaining image is flattened and shrunk into a 
         # latent space.
-        input = tf.keras.layers.Input(shape=image_shape, name="input")
+        input = tf.keras.layers.Input(shape=image_shape, batch_size=None, name="input")
         x = tf.keras.layers.Conv2D(
             filters = 32, 
             kernel_size = 3, 
@@ -87,7 +87,7 @@ class AE(tf.keras.Model):
         # Takes output from encoder.
         # Returns the closest vector in the embedding to the latent
         # space.
-        input = tf.keras.layers.Input(shape=(32,32,latent_dims), name="input")
+        input = tf.keras.layers.Input(shape=(32,32,latent_dims), batch_size=None, name="input")
         x = VQ()(input)
         self.vq = tf.keras.Model(input, x, name="vq")
 
@@ -95,7 +95,7 @@ class AE(tf.keras.Model):
         # Takes output from VQ layer. 
         # Structure is identical to encoder but with Conv2DTranspose
         # to upscale the image rather than downscale.
-        input = tf.keras.layers.Input(shape=(32,32,latent_dims), name="input")
+        input = tf.keras.layers.Input(shape=(32,32,latent_dims), batch_size=None, name="input")
         x = tf.keras.layers.Conv2DTranspose(
             filters = 128, 
             kernel_size = 3, 
