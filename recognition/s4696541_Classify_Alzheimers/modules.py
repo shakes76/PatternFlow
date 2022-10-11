@@ -2,21 +2,18 @@
 Contains source code of components of alzheimers classification model.
 """
 import tensorflow as tf
-from tensorflow import keras
+import tensorflow.keras as keras
 from tensorflow.keras import layers
 import numpy as np
 
-class AlzheimerModel(tf.keras.Model):
-    def __init__(self, patch_size, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes):
+from dataset import IMAGE_DIM
+
+class AlzheimerModel(keras.Model):
+    def __init__(self, num_patches, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes):
         """Initialise the model"""
         super().__init__()
 
-        #REMOVE
-        self.patches = Patches(patch_size)
-
-        num_patches = (patch_size // patch_size) ** 2
-
-        #Make Patches and apply positional encoding
+        #Apply projection and positional encoding
         self.pos_encoder = PositionalEncoder(num_patches, d_model)
         #Nx Transformer Encoders
         self.encoders = [TransformerEncoder(num_heads, d_model, d_mlp, dropout_rate) for _ in range(num_layers)]
@@ -27,14 +24,12 @@ class AlzheimerModel(tf.keras.Model):
     
     def call(self, x):
         """Use the model with .fit"""
-        x = self.patches(x)
-
         x = self.pos_encoder(x)
 
         for encoder in self.encoders:
             x = encoder(x)
         
-        head_mlp = self.mlp(x[:, 0, :]) #Should be shape (BATCH_SIZE, PATCH_SIZE, 0)?
+        head_mlp = self.mlp(x[:, 0, :])
         
         output = self.classification(head_mlp)
 
@@ -115,23 +110,3 @@ class MultiLayerPerceptron(layers.Layer):
         result = self.add([x, mlp])
 
         return result
-
-#REMOVE TO DATASET
-class Patches(layers.Layer):
-    def __init__(self, patch_size):
-        super().__init__()
-        self.patch_size = patch_size
-
-    def call(self, images):
-        batch_size = tf.shape(images)[0]
-        patches = tf.image.extract_patches(
-            images=images,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        patch_dims = patches.shape[-1]
-        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
-
-        return patches
