@@ -22,19 +22,20 @@ from PIL import Image
 import os
 
 
-"""
-Loads the OASIS dataset of brain MRI images
-
-    Parameters:
-        (optional) max_images (int): The maximum number of images of the dataset to be used (default=None)
-
-    Returns:
-        train_data_scaled (ndarray): Numpy array of scaled image data for training (9,664 images max)
-        test_dat_scaleda (ndarray): Numpy array of scaled image data testing (1,120 images max)
-        validate_dat_scaled (ndarray): Numpy array of scaled image data validation (544 images max)
-
-"""
 def load_dataset(max_images=None):
+    """
+    Loads the OASIS dataset of brain MRI images
+
+        Parameters:
+            (optional) max_images (int): The maximum number of images of the dataset to be used (default=None)
+
+        Returns:
+            train_data_scaled (ndarray): Numpy array of scaled image data for training (9,664 images max)
+            test_dat_scaleda (ndarray): Numpy array of scaled image data testing (1,120 images max)
+            validate_data_scaled (ndarray): Numpy array of scaled image data validation (544 images max)
+            data_variance (int): Variance of the test dataset
+    """
+
     print("Loading dataset...")
 
     # File paths
@@ -84,13 +85,16 @@ def load_dataset(max_images=None):
     test_data_scaled = (test_data / 255.0) - 0.5
     validate_data_scaled = (validate_data / 255.0) - 0.5
 
+    # Get the dataset variance
+    data_variance = np.var(train_data / 255.0)
+
     # Debug dataset loading
     print('train_data_scaled shape:', train_data_scaled.shape)
     print('test_data_scaled shape:', test_data_scaled.shape)
     print('validate_data_scaled shape:', validate_data_scaled.shape)
     print('')
 
-    return (train_data_scaled, test_data_scaled, validate_data_scaled)
+    return (train_data_scaled, test_data_scaled, validate_data_scaled, data_variance)
 
 
 if __name__ == "__main__":
