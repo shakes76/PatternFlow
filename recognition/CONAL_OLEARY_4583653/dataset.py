@@ -37,16 +37,11 @@ def getDatasets():
     """
       Gets the OASIS Datasets
     """
-    seg_train = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_seg_train")
-    seg_test = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_seg_test")
-    seg_val = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_seg_validate")
     slice_train = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_train/")
+        "/content/data/keras_png_slices_data/keras_png_slices_train/")
     slice_test = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_test/")
+        "/content/data/keras_png_slices_data/keras_png_slices_test/")
     slice_val = getImages(
-        "/Users/Patrick/Downloads/keras_png_slices_data/keras_png_slices_val/")
-    return [seg_train, seg_test, seg_val, slice_train, slice_test, slice_val]
+        "/content/data/keras_png_slices_data/keras_png_slices_val/")
+    return [slice_train, slice_test, slice_val]
+
