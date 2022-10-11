@@ -29,9 +29,9 @@ Loads the OASIS dataset of brain MRI images
         (optional) max_images (int): The maximum number of images of the dataset to be used (default=None)
 
     Returns:
-        train_data (ndarray): Numpy array of grayscale images for training (9,664 images max)
-        test_data (ndarray): Numpy array of grayscale images for testing (1,120 images max)
-        validate_data (ndarray): Numpy array of grayscale images for validation (544 images max)
+        train_data_scaled (ndarray): Numpy array of scaled image data for training (9,664 images max)
+        test_dat_scaleda (ndarray): Numpy array of scaled image data testing (1,120 images max)
+        validate_dat_scaled (ndarray): Numpy array of scaled image data validation (544 images max)
 
 """
 def load_dataset(max_images=None):
@@ -71,23 +71,26 @@ def load_dataset(max_images=None):
             images_collected = images_collected + 1
 
     # Convert the datasets into numpy arrays
-    test_data = np.array(test_data)
     train_data = np.array(train_data)
+    test_data = np.array(test_data)
     validate_data = np.array(validate_data)
 
-    # # Conversion stunt to the existing variable names
-    # train_images = train_data
-    # test_images = test_data
+    # Preprocess the data
+    train_data = np.expand_dims(train_data, -1)
+    test_data = np.expand_dims(test_data, -1)
+    validate_data = np.expand_dims(validate_data, -1)
+    # Scale the data into values between -0.5 and 0.5 (range of 1 centred about 0)
+    train_data_scaled = (train_data / 255.0) - 0.5
+    test_data_scaled = (test_data / 255.0) - 0.5
+    validate_data_scaled = (validate_data / 255.0) - 0.5
 
     # Debug dataset loading
-    print('train_data shape:', train_data.shape)
-    print('test_data shape:', test_data.shape)
-    print('validate_data shape:', validate_data.shape)
+    print('train_data_scaled shape:', train_data_scaled.shape)
+    print('test_data_scaled shape:', test_data_scaled.shape)
+    print('validate_data_scaled shape:', validate_data_scaled.shape)
     print('')
-    # print('train_images shape:', train_images.shape)
-    # print('test_images shape:', test_images.shape)
 
-    return (train_data, test_data, validate_data)
+    return (train_data_scaled, test_data_scaled, validate_data_scaled)
 
 
 if __name__ == "__main__":
