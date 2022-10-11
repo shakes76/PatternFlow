@@ -6,6 +6,15 @@ from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import backend as K
 from tensorflow.keras import Model
+from tensorflow.keras.optimizers import Adam
+
+def generator_optimizer(learning_rate=2e-7, beta_1=0.5, beta_2=0.99):
+    gen_optimizer = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
+    return gen_optimizer
+
+def discriminator_optimizer(learning_rate=1.5e-7, beta_1=0.5, beta_2=0.99):
+    disc_optimizer = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
+    return disc_optimizer
 
 def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)):
     """ Inputshape = [img_size, img_size, channel] """
@@ -22,7 +31,7 @@ def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)
         LeakyReLU(alpha=0.2),
 
         # Downsample the input to 32 * 32
-        Conv2D(4*filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(2*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
@@ -32,7 +41,7 @@ def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)
         LeakyReLU(alpha=0.2),
 
         # Down sample the input to 8 * 8
-        Conv2D(8*filter_size, kernel_size=kernel_size, padding='same'),
+        Conv2D(4*filter_size, kernel_size=kernel_size, padding='same'),
         AveragePooling2D(),
         LeakyReLU(alpha=0.2),
 
@@ -55,6 +64,7 @@ def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)
     ])
     return discriminator_model
 
+
 def AdaIN(input, epsilon=1e-8):
     x, scale, bias = input
     mean = K.mean(x, axis=[1, 2], keepdims=True)
@@ -65,6 +75,7 @@ def AdaIN(input, epsilon=1e-8):
     scale = tf.reshape(scale, (-1, 1, 1, norm.shape[-1])) + 1.0
     return scale * norm + bias
 
+
 def generator_block(x, noise, scale, bias, num_filters):
     noise = Dense(num_filters)(noise)
     x = Conv2D(filters=num_filters, kernel_size=3,
@@ -72,6 +83,7 @@ def generator_block(x, noise, scale, bias, num_filters):
     x = add([x, noise])
     x = Lambda(AdaIN)([x, scale, bias])
     return x
+
 
 def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filters):
     # Synthesis network
@@ -109,8 +121,9 @@ def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filte
         x = LeakyReLU(0.2)(x)
     return x
 
-def generator_model(latent_dim=100, num_filters=64, image_shape=(256, 256, 1)):
-    # upsample from  4*4  to 256*256
+
+def generator_model(latent_dim=100, num_filters=128, image_shape=(256, 256, 1)):
+    # 7 Blcoks to upsample from  4*4  to 256*256
     num_blocks = 7
     initial_size = 4
 
