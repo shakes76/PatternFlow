@@ -6,6 +6,58 @@ from dataset import *
 from modules import *
 import tensorflow_probability as tfp
 
+def reconstucted_image(test_ds, vqvae_model):
+    # Plot examples of real, codebook and reconstructed using the test dataset.
+    for images in test_ds.take(1):
+        reconstructed_image = vqvae_model.predict(images)
+
+        # Getting the codebook images. Need to first get the codebook index
+        encoder_output = vqvae_model.get_encoder().predict(images)
+        # Once we encode the image, flatten and find closest codebook index.
+        flattened_output = encoder_output.reshape(-1, encoder_output.shape[-1])
+        codebook_index = vqvae_model.get_vq().get_closest_index(flattened_output)
+
+        # Images become (channel x 64 x 64)
+        codebook_index = tf.reshape(codebook_index, encoder_output.shape[:-1])
+        for i in range(9):
+            input_image = tf.reshape(images[i], (1, 256, 256, 3))
+
+            reconstructed_image_single = tf.reshape(reconstructed_image[i], (1, 256, 256, 3))
+            print("SSIM = ", tf.image.ssim(input_image, reconstructed_image_single, max_val=1.0))
+            # print(np.min(input_image), np.max(input_image))
+            #  print(np.min(reconstructed_image_single), np.max(reconstructed_image_single))
+            # print(np.min(codebook_index[i]), np.max(codebook_index[i]))
+            plt.subplot(1, 3, 1)
+            plt.imshow(tf.squeeze(input_image), cmap="gray")
+            plt.title("Input Image")
+            plt.axis("off")
+
+            print(codebook_index[i].shape)
+            plt.subplot(1, 3, 2)
+            plt.imshow(codebook_index[i])
+            plt.title("Codebook Image")
+            plt.axis("off")
+            plt.subplot(1, 3, 3)
+
+            plt.imshow(tf.squeeze(reconstructed_image[i]), cmap="gray")
+            plt.title("Reconstructed Image")
+            plt.axis("off")
+            plt.show()
+
+def test_mean_ssim(test_ds, vqvae_model):
+    with tf.device("/GPU:0"):
+        index = 0
+        for image in test_ds:
+            if index == 0:
+                predicted_batch = vqvae_model.predict_on_batch(image)
+                total_ssim_values = (tf.image.ssim(predicted_batch, image, max_val=1.0)).numpy()
+            else:
+                predicted_batch = vqvae_model.predict_on_batch(image)
+                temp_ssim = (tf.image.ssim(predicted_batch, image, max_val=1.0)).numpy()
+                total_ssim_values = np.append(total_ssim_values, temp_ssim)
+            index = index + 1
+    return np.mean(total_ssim_values)
+
 
 def generate_priors(pixelcnn_model):
     """
@@ -124,56 +176,10 @@ plt.xlabel('Epoch')
 plt.legend(loc='lower right')
 plt.show()
 
-# Plot examples of real, codebook and reconstructed using the test dataset.
-for images in train_ds.take(1):
-    reconstructed_image = vqvae_model.predict(images)
-
-    # Getting the codebook images. Need to first get the codebook index
-    encoder_output = vqvae_model.get_encoder().predict(images)
-    # Once we encode the image, flatten and find closest codebook index.
-    flattened_output = encoder_output.reshape(-1, encoder_output.shape[-1])
-    codebook_index = vqvae_model.get_vq().get_closest_index(flattened_output)
-
-    # Images become (channel x 64 x 64)
-    codebook_index = tf.reshape(codebook_index, encoder_output.shape[:-1])
-    for i in range(9):
-        input_image = tf.reshape(images[i], (1, 256, 256, 3))
-
-        reconstructed_image_single = tf.reshape(reconstructed_image[i], (1, 256, 256, 3))
-        print(tf.image.ssim(input_image, reconstructed_image_single, max_val=1.0))
-        # print(np.min(input_image), np.max(input_image))
-        #  print(np.min(reconstructed_image_single), np.max(reconstructed_image_single))
-        # print(np.min(codebook_index[i]), np.max(codebook_index[i]))
-        plt.subplot(1, 3, 1)
-        plt.imshow(tf.squeeze(input_image), cmap="gray")
-        plt.title("Input Image")
-        plt.axis("off")
-
-        plt.subplot(1, 3, 2)
-        plt.imshow(codebook_index[i])
-        plt.title("Codebook Image")
-        plt.axis("off")
-
-        plt.subplot(1, 3, 3)
-        plt.imshow(tf.squeeze(reconstructed_image_single), cmap="gray")
-        plt.title("Reconstructed Image")
-        plt.axis("off")
-        plt.show()
-
+reconstucted_image(test_ds, vqvae_model)
 # Find the average SSIM of Test Data
-with tf.device("/GPU:0"):
-    index = 0
-    for image in test_ds:
-        if index == 0:
-            predicted_batch = vqvae_model.predict_on_batch(image)
-            total_ssim_values = (tf.image.ssim(predicted_batch, image, max_val=1.0)).numpy()
-        else:
-            predicted_batch = vqvae_model.predict_on_batch(image)
-            temp_ssim = (tf.image.ssim(predicted_batch, image, max_val=1.0)).numpy()
-            total_ssim_values = np.append(total_ssim_values, temp_ssim)
-        index = index + 1
-
-print(np.mean(total_ssim_values))
+mean_ssim = test_mean_ssim(test_ds, vqvae_model)
+print(mean_ssim)
 
 # Running the code for PixelCNN.
 #Load in the data
