@@ -74,3 +74,8 @@ class TripletLoss(nn.Module):
 
         return loss
 
+
+
+def parse_data(inputs):
+    imgs, labels, indexes = inputs
+    return imgs.cuda(), labels.cuda(), indexes.cuda()
