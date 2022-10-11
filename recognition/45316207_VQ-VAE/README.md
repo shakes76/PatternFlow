@@ -24,4 +24,11 @@ Goals:
 
 ---
 
-Documentation .... (WIP)
+## Documentation (WIP)
+
+### Setup
+
+1. Install the conda envirinoment...
+2. Download the OASIS dataset from [this link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download)
+3. Activate the conda environment
+4. Run train.py

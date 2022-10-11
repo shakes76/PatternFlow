@@ -8,29 +8,33 @@ Contains the data loader for loading and preprocessing your data
 
 """
 
-from IPython import display
+# from IPython import display
 
 import glob
 import imageio
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import PIL
-import tensorflow as tf
-import tensorflow_probability as tfp
-import time
+# import tensorflow as tf
+# import tensorflow_probability as tfp
+# import time
 import os
 
 
 """
 Loads the OASIS dataset of brain MRI images
 
+    Parameters:
+        (optional) max_images (int): The maximum number of images of the dataset to be used (default=None)
+
     Returns:
-            train_data (ndarray): Numpy array of grayscale images for training (9,664 images max)
-            test_data (ndarray): Numpy array of grayscale images for testing (1,120 images max)
-            validate_data (ndarray): Numpy array of grayscale images for validation (544 images max)
+        train_data (ndarray): Numpy array of grayscale images for training (9,664 images max)
+        test_data (ndarray): Numpy array of grayscale images for testing (1,120 images max)
+        validate_data (ndarray): Numpy array of grayscale images for validation (544 images max)
 
 """
-def load_dataset():
+def load_dataset(max_images=None):
+    print("Loading dataset...")
 
     # Download the dataset and unzip
     if not os.path.exists("/content/keras_png_slices_data/"):
@@ -52,9 +56,8 @@ def load_dataset():
     validate_data = []
     datasets = [test_data, train_data, validate_data]
 
-    MAX_IMAGES = 1000 # Limits the number of images of the dataset used (comment out to remove limit)
-
-    for i in range(0, dataset_paths):
+    # Load all the images into numpy arrays
+    for i in range(0, len(dataset_paths)):
         # Get all PNG files in the dataset_path directory
         images_list = glob.glob(os.path.join(dataset_paths[i], "*.png"))
 
@@ -94,3 +97,6 @@ def load_dataset():
 
     return (train_data, test_data, validate_data)
 
+
+if __name__ == "__main__":
+    load_dataset(max_images=1000)
