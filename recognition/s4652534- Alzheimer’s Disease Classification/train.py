@@ -89,3 +89,16 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(0)
     cudnn.deterministic = True
     cudnn.benchmark = True
+
+    height = 224
+    width = 224
+    num_features = 128
+    num_classes = 2
+    num_instances = 512
+    batch_size = num_instances * num_classes
+    learning_rate = 1e-6
+    weight_decay = 1e-4
+    margin = 0.3
+    lamda = 1.0
+    num_epochs = 200
+
