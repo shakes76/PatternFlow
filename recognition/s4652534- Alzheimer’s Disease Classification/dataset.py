@@ -86,7 +86,7 @@ class ADNI(Dataset):
 
         test_set = ConcatDataset([test_AD_set, test_NC_set])
 
-        test_loader = DataLoader(test_set, batch_size=batch_size, num_workers=16, shuffle=False, pin_memory=True)
+        test_loader = DataLoader(test_set, batch_size=batch_size, num_workers=16, shuffle=False, pin_memory=True, drop_last=False)
 
         return test_loader
 
