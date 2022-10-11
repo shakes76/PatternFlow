@@ -53,7 +53,7 @@ class ADNI(Dataset):
                 data.append((img_path, 0))
         return data
     
-    def get_train_loader(self, height, width, batch_size, iters):
+    def get_train_loader(self, height, width, batch_size):
 
         transformer = transforms.Compose([
             transforms.Resize((height, width), interpolation=3),
