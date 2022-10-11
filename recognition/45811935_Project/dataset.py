@@ -11,9 +11,9 @@ IMG_DIMENSION = 256
 BATCH_SIZE = 32
 
 
-def load_image_data(path, img_dim, batch_size):
+def load_preprocess_image_data(path, img_dim, batch_size, shift):
     """
-    Load image data (in our case, the ADNI dataset).
+    Load and preprocess image data (in our case, the ADNI dataset).
 
     Args:
         path: absolute path to image data (unzipped).
@@ -24,9 +24,11 @@ def load_image_data(path, img_dim, batch_size):
         A tf.data.Dataset of the image files.
 
     """
-    return image_dataset_from_directory(path,
+    img_data = image_dataset_from_directory(path,
                                         label_mode=None,
                                         image_size=(img_dim, img_dim),
                                         color_mode="rgb",
                                         batch_size=batch_size,
                                         shuffle=True)
+
+    return img_data.map(lambda x: (x / 255.0) - shift)
