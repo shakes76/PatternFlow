@@ -1,9 +1,32 @@
 # Object Detection with YOLO in the ISIC Dataset
 ## Dependencies:
-[To be updated]
+### YOLOv5 Dependencies
+This YOLOv5 implementation contains quite a few dependencies, however, once the YOLOv5 submodule is added, the installation process is quite simple. Firstly, the submodule must be added by executing the following command in the s4532810-YOLO-xspinella directory.
+
+```linux
+git submodule update --init
+```
+After this, all the dependencies required by YOLOv5 can be installed with the following commands:
+
+```linux
+cd yolov5_LC
+pip install -r requirements.txt
+```
+
+### PatternFlow-sxpinella Dependencies
+For data downloading/preprocessing/arranging, the following additional dependencies are required:
+
+```linux
+pip install gdown zipfile36 
+```
+albumentations?
 
 ## Problem definition:
-[to be updated]
+### A Word on the ISIC dataset.
+ISIC is an organisation that aims to "Support efforts to reduce melanoma-related deaths and unnecessary biopsies by improving the accuracy and efficiency of melanoma early detection." The organisation aims to do this by engaging computer science communities to improve diagnostic accuracy, with the aid of AI techniques. ISIC 2017 will be used in this project - it contains 2000 training images, 150 validation images, and 600 test images. Each of these images contains a lesion which is classified as either: [melanoma, seborrheic_keratosis], [!melanoma, seborrheic_keratosis], [melanoma, !seborrheic_keratosis], or [!melanoma, !seborrheic_keratosis]  (https://www.isic-archive.com/#!/topWithHeader/tightContentTop/about/aboutIsicGoals).
+
+### Project Scope
+This implementation defines the object detection problem as the detection of skin lesions, and classification of melanomas, i.e. the classification of seborrheic keratosis is out of scope.
 
 ## YOLO:
 This section will detail What the algorthm is, what problem it solves, and how it works.
@@ -12,9 +35,6 @@ The YOLO model family consists of multiple different versions of an object detec
 
 ### YOLO Applications
 YOLO models excel in realtime object detection, thanks to their but fast performance. These models are also very lightweight, which not only means that they can be implemented on video feeds at relatively high frame rate, they can also be deployed on native hardware easier than other models, because they do not require as much computing power. This project aims to use a YOLO model to detect and classify lesions within the ISIC dataset. (https://blog.roboflow.com/a-thorough-breakdown-of-yolov4/)
-
-### A Word on the ISIC dataset.
-ISIC is an organisation that aims to "Support efforts to reduce melanoma-related deaths and unnecessary biopsies by improving the accuracy and efficiency of melanoma early detection." The organisation aims to do this by engaging computer science communities to improve diagnostic accuracy, with the aid of AI techniques. (https://www.isic-archive.com/#!/topWithHeader/tightContentTop/about/aboutIsicGoals)
 
 ### How YOLO Works
 The YOLO model is so successful because it frames object detection as a single regression problem; mapping image pixels to bounding box coordinates and class probabilities. The system works by splitting the input into an S x S grid (S is a hyperparameter). If the centre of an object falls inside box 2 x 2, then this box is responsible for detecting said object. When implemented, each grid cell will predict B bounding boxes, where B is also a hyperparameter. Each computed bounding box is comprised of 5 values:
@@ -93,3 +113,36 @@ A loss based on the confidence score. Smaller value means more accurate confiden
 ### Class Loss
 This loss is a measure of how well the model classifies objects. However, it should be noted that this loss metric is only penalises classification
 error if an object is present in the current grid cell of interest, i.e. if the model predicts the class of a box, but the centre does not fall in the same grid cell as the ground truth box, it is not penalised/rewarded for this prediction.
+
+## Dataloader Functionality
+This library is designed such that any user can pull it, add the dependencies (shown in above section), then simply execute the following:
+
+```linux
+python3 train.py
+```
+and select mode 0 from the options to download/arrange/preprocess the data completely - that is, after running the dataloader (mode 0), the ISIC dataset is completely ready for training.
+
+### File arrangement
+The Create_File_Structure method in Dataloader checks which directories don't exist, and creates them all. This includes directories inside of yolov5_LC which weren't pushed from my machine due to git ignore. After image preprocessing, Copy_Images and Copy_Configs are used to copy the yolo-compatible dataset, labels, and .yaml training/testing config files to the correct directories within the yolov5_LC directory.
+
+### Downloads
+The ISIC dataset, and all its gnround truth and classification files are downloaded and placed in the correct directories with Download_Zips and Extract_Zips. Unwanted superpixel images are removed by Delete_Unwanted_Files.
+
+### Preprocessing
+The dataset is preprocessed in 4 different ways:
+- Resize to 640x640 with torchvision.transforms.resize (implemented in the Resize_Images Dataloader member)
+- Ground truth segmentations are converted to box specification (Cx, Cy, w, h) with the utils_lib function Mask_To_Box
+- Classification csvs are converted into class labels (0 for not melanoma, 1 for melanoma) with the Find_Class_From_CSv utils_lib function
+- YOLOv5-format txt file labels are created for each image in the dataset with Dataloader member Create_YOLO_Labels
+
+## Problems Faced
+- box loss decreasing, but obj loss and class loss increase
+- mAP0.5:0.95 not as high as it should be for yolov5m (is about right for yolov5s, but small model still has loss increase issue)
+- reporting on IOU values
+- reporting on classification accuracy (overall/ignore bad box)
+
+### Proposed solutions
+- more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
+- research modifications to hyperparameters - probably not a good idea as they have realistically already been optimised
+- Population Based Bandits (PB2)?
+
