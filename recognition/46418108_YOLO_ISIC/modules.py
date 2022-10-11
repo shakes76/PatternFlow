@@ -117,6 +117,8 @@ class YOLO():
 
         # Output layer
         model.add(Flatten())
-
+        model.add(Dense(4096))
+        model.add(Dense(1470))
+        model.add(Reshape(target_shape=(7,7,30)))
         model.summary()
         return model
