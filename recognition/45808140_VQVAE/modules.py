@@ -47,18 +47,58 @@ class VQ(layers.Layer):
         encode_ind = tf.argmin(dists, axis=1)
         return encode_ind
         
-def get_encoder(latent_dim=16):
-    encode_in = keras.Input(shape=(28, 28, 1))
-    x = layers.Conv2D(32, 3, activation='relu', strides=2, padding='same')(encode_in)
-    x = layers.Conv2D(64, 3, activation='relu', strides=2, padding='same')(x)
-    encode_out = layers.Conv2D(latent_dim, 1, activation='relu', padding='same')(x)
-    
-    return keras.Model(encode_in, encode_out, name='encoder')
+class Encoder():
 
-def get_decoder(latent_dim=16):
-    latent_in = keras.Input(shape=get_encoder(latent_dim).output.shape[1:])
-    x = layers.Conv2DTranspose(64, 3, activation='relu', strides=2, padding='same')(latent_in)
-    x = layers.Conv2DTranspose(32, 3, activation='relu', strides=2, padding='same')(x)
-    decoder_outputs = layers.Conv2DTranspose(1, 3, padding='same')(x)
+    def __init__(self, latent_dim=16):
+        self.encoder = keras.Sequential()
+        self.encoder.add(keras.Input(shape=(28,28,1)))
+        self.encoder.add(layers.Conv2D(32, 3, activation='relu', strides=2, padding='same'))
+        self.encoder.add(layers.Conv2D(64, 3, activation='relu', strides=2, padding='same'))
+        self.encoder.add(layers.Conv2D(latent_dim, 1, activation='relu', padding='same'))
+
+    def get_encoder(self):
+        return self.encoder
+
+class Decoder():
+
+    def __init__(self, latent_dim=16):
+        self.decoder = keras.Sequential()
+        self.decoder.add(keras.Input(shape=Encoder(latent_dim).get_encoder().output_shape[1:]))
+        self.decoder.add(layers.Conv2DTranspose(64, 3, activation='relu', strides=2, padding='same'))
+        self.decoder.add(layers.Conv2DTranspose(32, 3, activation='relu', strides=2, padding='same'))
+        self.decoder.add(layers.Conv2DTranspose(1, 3, activation='relu', padding='same'))
+
+    def get_decoder(self):
+        return self.decoder
+
+
+
+class VQVAE():
     
-    return keras.Model(latent_in, decoder_outputs, name='decoder')
+    def __init__(self, latent_dim=16, no_embeddings=64):
+    
+        self.vq = VQ(no_embeddings, latent_dim)
+        self.encoder = get_encoder(latent_dim)
+        self.decoder = get_decoder(latent_dim)
+    
+        self.inputs = keras.Input(shape=(28,28,1))
+        encode_out = self.encoder(self.inputs)
+        self.vq_latent_vecs = self.vq(encode_out)
+        self.res = self.decoder(self.vq_latent_vecs)
+    
+        self.model = keras.Model(self.inputs, self.res, name='vqvae')
+        
+    def get_input_shape(self):
+        return self.inputs
+        
+    def get_encoder(self):
+        return self.encoder
+    
+    def get_decoder(self):
+        return self.decoder
+    
+    def get_res(self):
+        return self.res
+        
+    def get_model(self):
+        return self.model
