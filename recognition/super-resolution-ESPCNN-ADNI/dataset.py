@@ -134,3 +134,16 @@ def preview_data(dataset: tf.data.Dataset) -> None:
             plt.imshow(images[i].numpy())
             plt.title(labels.numpy()[i])
             plt.axis("off")
+
+
+def get_image_from_dataset(dataset: tf.data.Dataset) -> Any:
+    """Return an image from the dataset
+
+    Args:
+        dataset (tf.data.Dataset): Dataset containing images
+
+    Returns:
+        Any: Image
+    """
+    for images, _ in dataset.take(1):
+        return images[0]
