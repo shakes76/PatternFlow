@@ -11,6 +11,7 @@ from tensorflow import keras
 from keras import layers
 
 from constants import DOWNSAMPLE_FACTOR, IMG_DOWN_WIDTH, IMG_DOWN_HEIGHT
+from predict import display_prediction
 
 def get_model(
     upscale_factor: int = DOWNSAMPLE_FACTOR,
@@ -55,9 +56,15 @@ def get_model(
 class ESPCNCallback(keras.callbacks.Callback):
     """Callback methods for the ESPCN model"""
 
-    def __init__(self):
-        """Initialise callback class and attributes"""
+    def __init__(self, test_image):
+        """Initialise callback class and attributes
+
+        Args:
+            test_image: a full-res image to be used for outputting prediction
+                results.
+        """
         super(ESPCNCallback, self).__init__()
+        self.test_image = test_image
         self.psnr = np.array([])
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -66,7 +73,9 @@ class ESPCNCallback(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         """On epoch end, print PSNR value"""
-        print(f"Mean PSNR for epoch: {np.mean(self.psnr):2f}")
+        print(f"\nMean PSNR for epoch: {np.mean(self.psnr):2f}")
+        if epoch % 2 == 0:
+            display_prediction(self.test_image, self.model, f"Epoch {epoch}")
 
     def on_test_batch_end(self, batch, logs=None):
         """On batch end, append the next psnr value"""
