@@ -11,9 +11,10 @@ Contains the source code for training, validating, testing and saving your model
 
 import dataset
 import modules
+import utils
 from tensorflow import keras
 import tensorflow as tf
-import numpy as np # TODO: Remove this later once wqe swap to the OASIS data
+import numpy as np # TODO: Remove this later once we swap to the OASIS data
 
 
 class VQVAETrainer(keras.models.Model):
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     reconstructions_test = trained_vqvae_model.predict(test_images)
 
     for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-        show_subplot(test_image, reconstructed_image)
+        utils.show_subplot(test_image, reconstructed_image)
     # ------------------------------------ NEW ----------------------------------- #
 
 
