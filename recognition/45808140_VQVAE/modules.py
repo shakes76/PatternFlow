@@ -47,3 +47,18 @@ class VQ(layers.Layer):
         encode_ind = tf.argmin(dists, axis=1)
         return encode_ind
         
+def get_encoder(latent_dim=16):
+    encode_in = keras.Input(shape=(28, 28, 1))
+    x = layers.Conv2D(32, 3, activation='relu', strides=2, padding='same')(encode_in)
+    x = layers.Conv2D(64, 3, activation='relu', strides=2, padding='same')(x)
+    encode_out = layers.Conv2D(latent_dim, 1, activation='relu', padding='same')(x)
+    
+    return keras.Model(encode_in, encode_out, name='encoder')
+
+def get_decoder(latent_dim=16):
+    latent_in = keras.Input(shape=get_encoder(latent_dim).output.shape[1:])
+    x = layers.Conv2DTranspose(64, 3, activation='relu', strides=2, padding='same')(latent_in)
+    x = layers.Conv2DTranspose(32, 3, activation='relu', strides=2, padding='same')(x)
+    decoder_outputs = layers.Conv2DTranspose(1, 3, padding='same')(x)
+    
+    return keras.Model(latent_in, decoder_outputs, name='decoder')
