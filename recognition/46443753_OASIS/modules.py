@@ -157,15 +157,12 @@ def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filte
     return x
 
 
-def generator_model(latent_dim=100, num_filters=128, image_shape=(256, 256, 1)):
+def generator_model(latent_dim=100, num_filters=128, image_shape=(256, 256, 1), num_blocks=7, initial_size=4):
     """
     Define StyleGan generator model with given latent dim, num_filters and image shape. 
     """
-    # 7 Blcoks to upsample from  4*4  to 256*256
-    num_blocks = 7
-    initial_size = 4
-
     # create z layer
+    # 7 Blcoks to upsample from  4*4  to 256*256
     z = Input(shape=[num_blocks, latent_dim])
 
     # create w Mapping network

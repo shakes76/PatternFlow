@@ -31,7 +31,41 @@ Library dependencies are as follow:
 
 In this generative project, the OASIS dataset was utilised as the training set, and randomly generated gaussian normal noise was utilised as test input for the StyleGAN model. The training images was loaded in as grayscale values [0, 255], and was normalised to [0, 1] for training.
 
+Whilst there are many factors that may impact on the performance of an generative adversarial network, for reproducibility purposes, the basic model parameters used to train this model includes:
+
+| Parameter                                  | Value |
+| ------------------------------------------ | :----: |
+| Epochs                                     |  120  |
+| Batch Size                                 |   12   |
+| Generator Adam optimizer learning rate    |  2e-7  |
+| Discriminator Adam optimizer learning rate | 1.5e-7 |
+| Optimizer beta 1                           |  0.5  |
+| Optimizer beta 2                           |  0.99  |
+| Image Size                                 |  256  |
+| Latent Dimension                           |  256  |
+
 ## Usage
+
+In this folder, there are 4 main python scripts. 
+
+- train.py: the driver script that is required to be run for training and saving model.
+- dataset.py: containing the data loader and preprocessing function.
+- modules.py: contains the generator and discrimnator's model components.
+- predict.py: shows an exmaple usage of the trained model by generating specified numbers of samples from the saved model.
+
+Ensure the dependencies are met to ensure the successful running of the train.py script. The following global parameters are required to be confirmed prior of running the script.
+
+train.py:
+
+- `PIC_DIR:` List of directories to the stored data.
+- `EPOCHS` : Number of epochs to train the model, default to 120 epochs.
+- `LATENT_DIM `: Latent dimension value, default to 256.
+
+predict.py:
+
+- `NUM_SAMPLES`: Number of samples to be generated, default to 9.
+- `PLOT_SHAPE`: Shape of the output plot, default to 3 by 3.
+- `CHECKPOINT_DIRECTORY`: Directory to the saved model checkpoint.
 
 ## Model Performance
 
@@ -59,13 +93,13 @@ The following figures illustrates the results during training:
 
 
 <p align="center">
-     <img src="./examples/generated_plot_e120.png" alt="Epoch 120" width="400" 
-     height="300"/>
+     <img src="./examples/generated_plot_e120.png" alt="Epoch 120" width="450" 
+     height="350"/>
     <p align="center">Epoch 120</p>
 </p>
 
 <p align="center">
-    <em>Fig 3: Trianing progress <em/>
+    <em>Fig 3: Trianing progress </em>
 </p>
 
 After training for 120 epochs with batch size of 12 and 13000 iterations in each epoch, the training loss for the generator and discriminator are given below.

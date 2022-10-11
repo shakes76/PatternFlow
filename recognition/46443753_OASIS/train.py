@@ -24,6 +24,8 @@ PIC_DIR = ["./keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/
     "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate/"]
 EPOCHS = 120
 LATENT_DIM = 256
+NUM_BLOCKS = 7
+INITIAL_SIZE = 4
 
 def get_inputs(n, img_shape, latent_dim, n_style_block=7):
     """
@@ -187,7 +189,7 @@ def main():
     images = load_images(PIC_DIR)
     # images = np.load("./oasis_data_grayscale.npy")
 
-    g_model = generator_model(latent_dim = LATENT_DIM)
+    g_model = generator_model(latent_dim = LATENT_DIM, num_blocks=NUM_BLOCKS, initial_size=INITIAL_SIZE)
     d_model = discriminator_model()
 
     # get generator optimizer, can pass in argument to specify the learning rate, beta_1 and beta_2

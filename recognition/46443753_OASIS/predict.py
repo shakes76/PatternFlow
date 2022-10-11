@@ -17,6 +17,7 @@ LATENT_DIM = 256
 CHECKPOINT_DIRECTORY = "./model_checkpoints"
 IMG_SHAPE = (256, 256)
 NUM_SAMPLES = 9
+PLOT_SHAPE = (3, 3)
 
 
 def load_checkpoint(latent_dim, checkpoint_directory):
@@ -46,8 +47,8 @@ def main():
 
     # Generate fake images from the trained model
     x_fake = gen_model(generator_inputs, training=False)
-    for i in range(3 * 3):
-        pyplot.subplot(3, 3, 1 + i)
+    for i in range(PLOT_SHAPE[0] * PLOT_SHAPE[1]):
+        pyplot.subplot(PLOT_SHAPE[0], PLOT_SHAPE[1], 1 + i)
         pyplot.axis('off')
         pyplot.imshow(x_fake[i], cmap="gray")
     pyplot.show()
