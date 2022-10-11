@@ -12,13 +12,9 @@ Contains the data loader for loading and preprocessing your data
 
 import glob
 import imageio
-# import matplotlib.pyplot as plt
 import numpy as np
 import PIL
 from PIL import Image
-# import tensorflow as tf
-# import tensorflow_probability as tfp
-# import time
 import os
 
 

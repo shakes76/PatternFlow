@@ -135,15 +135,19 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     #                                 RUN TRAINING                                 #
     # ---------------------------------------------------------------------------- #
+    print("Training model...")
     # Run training, plotting losses and metrics throughout
-    vqvae_trainer.fit(x_train_scaled, epochs=30, batch_size=128)
+    vqvae_trainer.fit(x_train_scaled, epochs=1, batch_size=128)
 
 
     # ---------------------------------------------------------------------------- #
     #                                SAVE THE MODEL                                #
     # ---------------------------------------------------------------------------- #
-    # ...
+    # Get the trained model
+    trained_vqvae_model = vqvae_trainer.vqvae
 
+    # Save the model to file as a tensorflow SavedModel
+    trained_vqvae_model.save('./vqvae_saved_model')
 
     # ---------------------------------------------------------------------------- #
     #                                 FINAL RESULTS                                #
@@ -151,7 +155,6 @@ if __name__ == "__main__":
     # Visualise the final results and calculate the structural similarity index (SSIM)
 
     # ------------------------------------ NEW ----------------------------------- #
-    trained_vqvae_model = vqvae_trainer.vqvae
     idx = np.random.choice(len(x_test_scaled), 10)
     test_images = x_test_scaled[idx]
     reconstructions_test = trained_vqvae_model.predict(test_images)

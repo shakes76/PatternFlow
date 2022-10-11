@@ -9,7 +9,7 @@ Contains extra utility functions to help with this like results visualisation an
 """
 
 
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 
 def show_subplot(original, reconstructed):
