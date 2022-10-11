@@ -101,6 +101,7 @@ class StyleGAN():
     Does not directly subclass keras.Model as this does not allow for unsupervised learning.
     Instead we indirectly call the relevent functionality
     """
+    METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
 
     def __init__(self, output_res: int = 256, start_res: int = 2, latent_dim: int = 512, existing_model_filepath: str = None) -> None:
         """
@@ -234,17 +235,17 @@ class StyleGAN():
         """
         return self._gan_metrics
 
-    def fit(self, images: np.array, batch_size: int, epochs: int, training_history_location: str, image_sample_count:int = 5, image_sample_output:str = "output/", model_output:str = "model/") -> None:
+    def fit(self, images: np.array, batch_size: int, epochs: int, training_history_location: str, image_sample_count:int = 5, image_sample_output:str = "output/", model_output:str = "model") -> None:
         """
             Fits the model to a given set of training images. The custom GAN training paradigm is as follows: TODO
         Args:
             images (np.array): vector of normalized image data to fit GAN to
             batch_size (int): number of images to pass through model per batch
             epochs (int): number of epochs (repeat runs of full training set) to train model on
-            training_history_location (str): Directory to save training history
+            training_history_location (str): filepath of csv (no file extension) to save training history
             image_sample_count (int, optional): Number of image samples to take per epoch ignored if image_sample_output is set to None. Defaults to 5
-            image_sample_output (str, optional): Directory to save sample images after each epoch, or set to None to disable saving. Defaults to "output/".
-            model_output (str, optional): directory to save model information after each epoch, or set to None to disable model saving. Defaults to "model/".
+            image_sample_output (str, optional): Directory to save sample images after each epoch, or set to None to disable saving. Defaults to "output/". TODO Go back to all folder args and rework to not require trailing /
+            model_output (str, optional): directory save model information after each epoch (NO TRAILING SLASH), or set to None to disable model saving. Defaults to "model". 
         """
         #TODO sanitse inputs
         num_batches = images.shape[0]//batch_size #required batches per epoch
@@ -256,28 +257,41 @@ class StyleGAN():
 
         #start with zeros as the background of OASIS images are black
         constant_generator_base = tf.zeros(shape = (batch_size,self._start_res,self._start_res,self._latent_dim))
-
-        starting_epoch = self._epochs_trained
+        
+        #Conduct training
         for e in range(epochs):
             print(">> epoch {}/{}".format(e+1,epochs))
+            epoch_metrics = {metric: [] for metric in StyleGAN.METRICS}
             for b in range(num_batches):
                 print(">>>> batch {}/{}".format(b+1,num_batches))
 
                 #train discriminator on real images
-                discrim_loss_real, discrim_acc_real = self._discriminator.train_on_batch(batches[b], real_labels)
+                dfl, dfa = self._discriminator.train_on_batch(batches[b], real_labels)
 
                 #train discriminator on a batch of fake images from current iteration of the generator
                 fake_images = self._generator(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base])
-                discrim_loss_fake, discrim_acc_fake = self._discriminator.train_on_batch(fake_images, fake_labels)
+                drl, dra = self._discriminator.train_on_batch(fake_images, fake_labels)
 
                 #Train generator. Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' (1) from discriminator
-                gan_loss, gan_acc = self._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base], real_labels)
-            
+                gl, ga = self._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,self._latent_dim,self._start_res*2,self._output_res) + [constant_generator_base], real_labels)
+
+                metrics_to_store = [dfl,dfa,drl,dra,gl,ga]
+                for m in range(len(StyleGAN.METRICS)):
+                    epoch_metrics[StyleGAN.METRICS[m]].append(metrics_to_store[m])
+
             self._epochs_trained += 1
+            GANutils.save_training_history(epoch_metrics,training_history_location)
+            
+            if image_sample_output:
+                samples = self(GANutils.random_generator_inputs(image_sample_count,self._latent_dim,self._start_res*2,self._output_res)) #makes use of __call__ defined below
+                sample_directory = image_sample_output + "epoch_{}".format(self._epochs_trained)
+                GANutils.make_fresh_folder(sample_directory)
+                for s,sample in enumerate(samples):
+                    GANutils.create_image(GANutils.denormalise(sample), sample_directory+"/{}".format(s+1))
 
-            #TODO save model state, save sample images
-
-        #TODO save training history and graph
+            if model_output:
+                self.save_model(model_output)
+            
 
     def __call__(self, latent_vector: np.array, noise_inputs: list[np.array]) -> np.array:
         pass
