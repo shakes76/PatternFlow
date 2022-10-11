@@ -15,6 +15,7 @@ import imageio
 # import matplotlib.pyplot as plt
 import numpy as np
 import PIL
+from PIL import Image
 # import tensorflow as tf
 # import tensorflow_probability as tfp
 # import time
@@ -36,15 +37,15 @@ Loads the OASIS dataset of brain MRI images
 def load_dataset(max_images=None):
     print("Loading dataset...")
 
-    # Download the dataset and unzip
-    if not os.path.exists("/content/keras_png_slices_data/"):
-        print("Not yet downloaded")
-        os.system("wget https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download")
-        os.system("unzip /content/download")
-        os.system("mkdir /content/out/")
+    # # Download the dataset and unzip
+    # if not os.path.exists("/content/keras_png_slices_data/"):
+    #     print("Not yet downloaded")
+    #     os.system("wget https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download")
+    #     os.system("unzip /content/download")
+    #     os.system("mkdir /content/out/")
 
     # File paths
-    images_path = "/content/keras_png_slices_data/"
+    images_path = "keras_png_slices_data/"
     test_path = images_path + "keras_png_slices_validate/"
     train_path = images_path + "keras_png_slices_train/"
     validate_path = images_path + "keras_png_slices_test/"
@@ -58,19 +59,19 @@ def load_dataset(max_images=None):
 
     # Load all the images into numpy arrays
     for i in range(0, len(dataset_paths)):
+        print(dataset_paths[i])
+
         # Get all PNG files in the dataset_path directory
         images_list = glob.glob(os.path.join(dataset_paths[i], "*.png"))
 
         images_collected = 0
         for img_filename in images_list:
             # Break if we hit out image limit
-            if MAX_IMAGES and images_collected > MAX_IMAGES:
+            if max_images and images_collected >= max_images:
                 break
 
-            # Get the image path
-            img_path = os.path.join(dataset_paths[i], img_filename)    
             # Open the image
-            img = PIL.Image.open(img_path)
+            img = PIL.Image.open(images_list[i])
             # Convert image to numpy array
             data = np.asarray(img)
             datasets[i].append(data)
