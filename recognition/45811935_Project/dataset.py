@@ -2,6 +2,7 @@
     Load and pre-process all data.
 
     Author: Adrian Rahul Kamal Rajkamal
+    Student Number: 45811935
 """
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
