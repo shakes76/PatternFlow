@@ -1,7 +1,7 @@
 # %%
 """Import libraries required for PyTorch"""
 import torch # Import PyTorch
-import torchvision as tv # Import PyTorch Vision
+import torchvision # Import PyTorch Vision
 
 # %%
 class DataManager():
@@ -16,11 +16,11 @@ class DataManager():
             size_batch (int): DataLoader batch size
             shuffle (bool): Shuffle the data (true/false)
         """
-        transform_normalize = tv.transforms.Compose(
+        transform_normalize = torchvision.transforms.Compose(
             [
-                # tv.transforms.Resize((size_image, size_image)),
-                tv.transforms.ToTensor(),
-                tv.transforms.Normalize(
+                # torchvision.transforms.Resize((size_image, size_image)),
+                torchvision.transforms.ToTensor(),
+                torchvision.transforms.Normalize(
                     [0.5 for i in range(channels_image)], 
                     [0.5 for i in range(channels_image)]
                 )
@@ -29,13 +29,13 @@ class DataManager():
         imagefolder = self.init_imagefolder(root, transform_normalize) # Initialize dataset
         self.dataloader = self.init_dataloader(imagefolder, size_batch, shuffle) # Initialize dataloader
         
-    def init_imagefolder(self, root, transform) -> tv.datasets.ImageFolder:
+    def init_imagefolder(self, root, transform) -> torchvision.datasets.ImageFolder:
         """Returns a PyTorch Vision dataset for the DataManager
 
         Returns:
             imagefolder (ImageFolder): PyTorch Vision ImageFolder
         """
-        imagefolder = tv.datasets.ImageFolder(
+        imagefolder = torchvision.datasets.ImageFolder(
             root=root, 
             transform=transform
             ) # Dataset loader
