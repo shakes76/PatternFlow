@@ -67,6 +67,7 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
         image_size=IMG_ORIG_SIZE,
         batch_size=BATCH_SIZE,
         color_mode="grayscale",
+        label_mode=None,
     )
 
     test_ds = image_dataset_from_directory(
@@ -74,12 +75,14 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
         image_size=IMG_ORIG_SIZE,
         batch_size=BATCH_SIZE,
         color_mode="grayscale",
+        label_mode=None,
     )
 
     normalisation_layer = keras.layers.Rescaling(1./255)  # Normalise
 
-    norm_train_ds = train_ds.map(lambda x, y: (normalisation_layer(x), y))
-    norm_test_ds = test_ds.map(lambda x, y: (normalisation_layer(x), y))
+    # Normalise each image and insert its target
+    norm_train_ds = train_ds.map(lambda x: (normalisation_layer(x), normalisation_layer(x)))
+    norm_test_ds = test_ds.map(lambda x: (normalisation_layer(x), normalisation_layer(x)))
 
     return norm_train_ds, norm_test_ds
 
@@ -120,19 +123,21 @@ def downsample_image(
     return tf.image.resize(image, resulting_size, method="bicubic")
 
 
-def preview_data(dataset: tf.data.Dataset) -> None:
+def preview_data(dataset: tf.data.Dataset, title: str | None = None) -> None:
     """Construct a matplotlib figure to preview some given image dataset
 
     Args:
         dataset (tf.data.Dataset): Dataset to preview
+        title (str | None): Optional title of the plot
     """
     # Preview images (https://www.tensorflow.org/tutorials/load_data/images)
     plt.figure(figsize=(10, 10))
     for images, labels in dataset.take(1):
+        if title:
+            plt.suptitle(title)
         for i in range(9):
             plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy())
-            plt.title(labels.numpy()[i])
             plt.axis("off")
 
 

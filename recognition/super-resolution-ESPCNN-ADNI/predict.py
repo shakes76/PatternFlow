@@ -44,11 +44,9 @@ def display_prediction(
         model (keras.Model): Model to predict this image's super-sampling
         title (str | None): Optional title for the plot
     """
-    plt.figure()
-    if title:
-        plt.title(title)
-
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 10))
+    if title:
+        fig.suptitle(title)
     down_img = downsample_image(test_image[tf.newaxis, ...])
 
     for ax in (ax1, ax2, ax3):
