@@ -24,7 +24,8 @@ class Preprocessor(Dataset):
 
     def _get_single_item(self, index):
         fname, label = self.dataset[index]
-        img = Image.open(osp.join(self.root, fname)).convert('RGB')
+        # img = Image.open(osp.join(self.root, fname)).convert('RGB')
+        img = Image.open(fname).convert('RGB')
         img = self.transformer(img)
         return img, label, index
 

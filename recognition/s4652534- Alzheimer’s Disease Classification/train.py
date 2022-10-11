@@ -95,7 +95,7 @@ if __name__ == '__main__':
     width = 224
     num_features = 128
     num_classes = 2
-    num_instances = 512
+    num_instances = 256
     batch_size = num_instances * num_classes
     learning_rate = 1e-6
     weight_decay = 1e-4
@@ -103,11 +103,12 @@ if __name__ == '__main__':
     lamda = 1.0
     num_epochs = 200
 
-    dataset = ADNI("C:\\Users\\admin\\Desktop\\AD_NC")
+    dataset = ADNI("./AD_NC")
     train_loader = dataset.get_train_loader(height, width, batch_size)
     test_loader = dataset.get_test_loader(height, width, batch_size)
 
-    model = resnet50(num_features=num_features, num_classes=num_classes)
+    model = resnet34(num_features=num_features, num_classes=num_classes)
+    model.cuda()
 
     params = [{"params": [value]} for _, value in model.named_parameters() if value.requires_grad]
     optimizer = torch.optim.Adam(params, lr=learning_rate, weight_decay=weight_decay)
@@ -119,6 +120,8 @@ if __name__ == '__main__':
     best_acc = -1
 
     for epoch in range(num_epochs):
+
+        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
 
         losses = AverageMeter()
         model.train()
@@ -139,6 +142,7 @@ if __name__ == '__main__':
             losses.update(loss.item())
 
         train_loss.append(losses.avg)
+        print("Loss {:.3f})".format(losses.avg))
 
         model.eval()
         correct = 0
@@ -150,14 +154,12 @@ if __name__ == '__main__':
                 _, predicted = torch.max(probs, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-            acc = correct // total
+            acc = correct / total
             test_acc.append(acc)
             if best_acc <= acc:
                 best_acc = acc
-                torch.save(model.state_dict(), "res50_best_model.pkl")
+                torch.save(model.state_dict(), "res34_best_model.pkl")
 
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        print("Loss {:.3f})".format(losses.avg))
         print("test acc {:.3f}, best acc {:.3f})".format(acc, best_acc))
 
 
