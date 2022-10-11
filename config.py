@@ -13,9 +13,7 @@ BATCH_SIZE = (16, 16, 16, 16, 16, 8, 4)                      # batch size of eac
 FILTERS = (256, 256, 256, 256, 128, 64, 32)                  # number of filters of each resolution
 EPOCHS = (25, 25, 25, 25, 25, 40, 50)                        # training epochs of each resolution
 
-# INPUT_IMAGE_FOLDER = path.join('D:', sep, 'images', 'keras_png_slices_data')  # training data folder
-# INPUT_IMAGE_FOLDER = path.join('D:', sep, 'images', 'AKOA_Analysis')  # training data folder
-INPUT_IMAGE_FOLDER = path.join('D:', sep, 'minibatch')
+INPUT_IMAGE_FOLDER = path.join('D:', sep, 'images', 'keras_png_slices_data')  # training data folder
 
 # checkpoints settings
 N_SAMPLES = 9                                                  # number of output images
@@ -29,8 +27,5 @@ OUTPUT_IMAGE_FOLDER = path.join(OUTPUT_ROOT, 'images')         # output image fo
 OUTPUT_MODEL_FOLDER = path.join(OUTPUT_ROOT, 'models')         # output model plot folder
 OUTPUT_CKPTS_FOLDER = path.join(OUTPUT_ROOT, 'ckpts')          # check points folder
 
-########################
-# mini batch for testing
-# BATCH_SIZE = (3, 3)
-# FILTERS = [256, 128]
-# EPOCHS = (1, 1)
+# epsilon
+EPS = 1.e-8
