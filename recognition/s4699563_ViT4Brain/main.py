@@ -26,12 +26,14 @@ train_dir = './datasets/AD_NC/train/AD'
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dim', type=int, default=12)
+parser.add_argument('--batch_size', type=int, default=128,help='batch size')
+parser.add_argument('--dim', type=int, default=12,help='neural network dimension')
 parser.add_argument('--lr', type=float, default=1e-4,
-                    help='learning rate')  # [0.001, 0.0005, 0.0001]
-parser.add_argument('--depth', type=int, default=8)
-parser.add_argument('--heads', type=int, default=12)
-parser.add_argument('--mlp_dim', type=int, default=512)
+                    help='learning rate of the optimizer')  # [0.001, 0.0005, 0.0001]
+parser.add_argument('--depth', type=int, default=8, help='depth of the network')
+parser.add_argument('--heads', type=int, default=12,help='number of heads in the multihead attention')
+parser.add_argument('--epochs', type=int, default=200,help='number of epochs to train')
+parser.add_argument('--mlp_dim', type=int, default=512,help='dimension of the mlp on top of the attention block')
 opt = parser.parse_args()
 
 
