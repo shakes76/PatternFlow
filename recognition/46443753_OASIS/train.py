@@ -1,12 +1,10 @@
 import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import BinaryCrossentropy
 import time
-from IPython import display
 from tensorflow import random, train
-from numpy.random import randn, rand, randint
+from numpy.random import rand, randint
 import os
 
 from dataset import (
@@ -19,6 +17,13 @@ from modules import (
     generator_optimizer,
     discriminator_optimizer,
 )
+
+# Define Constants
+PIC_DIR = ["./keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/", 
+    "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_train/", 
+    "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate/"]
+EPOCHS = 120
+LATENT_DIM = 256
 
 def get_inputs(n, img_shape, latent_dim, n_style_block=7):
     """
@@ -42,7 +47,6 @@ def generate_real_samples(dataset, n_samples):
     """
     # choose random instances
     ix = randint(0, dataset.shape[0], n_samples)
-    # retrieve selected images
     X = dataset[ix]
     # generate 'real' class labels (1)
     y = tf.ones((n_samples, 1))
@@ -70,18 +74,19 @@ def plot_model_performance(epoch, g_model, d_model, dataset, latent_dim, n_sampl
 
     # save plot
     for i in range(3 * 3):
-        # define subplot
         pyplot.subplot(3, 3, 1 + i)
-        # turn off axis
         pyplot.axis('off')
-        # plot raw pixel data
         pyplot.imshow(x_fake[i], cmap="gray")
+        
     # save plot to file
     filename = './images/generated_plot_e%03d.png' % (epoch+1)
     pyplot.savefig(filename)
     pyplot.close()
 
 def plot_model_loss(epoch, gen_losses, disc_real_losses, disc_fake_losses):
+    """
+    Plot model loss given the generator and discriminator's loss.
+    """
     pyplot.plot(gen_losses)
     pyplot.plot(disc_real_losses)
     pyplot.plot(disc_fake_losses)
@@ -97,8 +102,9 @@ def plot_model_loss(epoch, gen_losses, disc_real_losses, disc_fake_losses):
 @tf.function
 def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generator_optimizer, discriminator_optimizer):
     """
-    Train model by given batch_size, update the discriminator and generator's weights with learnt gradient. 
+    Train model using given batch_size, update the discriminator and generator's weights with learnt gradient. 
     """
+    # Get random inputs for generator
     generator_inputs = get_inputs(batch_size, real_samples[0].shape,  latent_dim)
 
     with tf.GradientTape() as generator_tape, tf.GradientTape() as discriminator_tape:
@@ -112,6 +118,7 @@ def train_batch(real_samples, batch_size, latent_dim, g_model, d_model, generato
         fake_loss = BinaryCrossentropy(label_smoothing=0.2)(tf.zeros_like(fake_pred), fake_pred)
         discriminator_loss = real_loss + fake_loss 
 
+    # Calculate gradient
     generator_grad = generator_tape.gradient(generator_loss, g_model.trainable_variables)
     discriminator_grad = discriminator_tape.gradient(discriminator_loss, d_model.trainable_variables)
 
@@ -126,6 +133,7 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
     """
     StyleGAN Training
     """
+    # define the number of batch runs per epoch, and the batch size
     bat_per_epo = 13000
     batch_size = 12 #
     checkpoint = create_checkpoint(gen_optimizer, disc_optimizer, g_model, d_model)
@@ -174,29 +182,23 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
     return gen_losses, disc_real_losses, disc_fake_losses
 
 def main():
-    PIC_DIR = ["./keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/", 
-            "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_train/", 
-            "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate/"]
-    # images = load_images(PIC_DIR)
-
     # Either load from the given directory or from the npy file
-    images = np.load("./oasis_data_grayscale.npy")
-    epochs = 120
-    latent_dim = 256
+    images = load_images(PIC_DIR)
+    # images = np.load("./oasis_data_grayscale.npy")
 
-    g_model = generator_model(latent_dim = latent_dim)
+    g_model = generator_model(latent_dim = LATENT_DIM)
     d_model = discriminator_model()
 
     # get generator optimizer, can pass in argument to specify the learning rate, beta_1 and beta_2
     gen_optimizer = generator_optimizer()
     disc_optimizer = discriminator_optimizer()
-    gen_losses, disc_real_losses, disc_fake_losses= train(images, epochs , latent_dim, g_model, d_model, gen_optimizer, disc_optimizer)
+    gen_losses, disc_real_losses, disc_fake_losses= train(images, EPOCHS , LATENT_DIM, g_model, d_model, gen_optimizer, disc_optimizer)
 
+    # save and plot model loss
     np.save("g_losses", gen_losses)
     np.save("d_real_losses", disc_real_losses)
     np.save('d_fake_losses',disc_fake_losses)
-
-    plot_model_loss(epochs, gen_losses, disc_real_losses, disc_real_losses)
+    plot_model_loss(EPOCHS, gen_losses, disc_real_losses, disc_real_losses)
 
 if __name__ == '__main__':
     main()

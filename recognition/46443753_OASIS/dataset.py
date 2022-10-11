@@ -17,5 +17,3 @@ def load_images(directories):
             images.append(img_to_array(img) / 255)
 
     return np.array(images)
-
-# images = load_images(PIC_DIR)

@@ -1,25 +1,38 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, \
+from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Conv2D, \
     LeakyReLU, Dropout, AveragePooling2D, UpSampling2D, add, Lambda, Activation
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import backend as K
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
 
+
 def generator_optimizer(learning_rate=2e-7, beta_1=0.5, beta_2=0.99):
-    gen_optimizer = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
+    """
+    Define generator's Adam optimizer with default learning rate 2e-7. 
+    """
+    gen_optimizer = Adam(learning_rate=learning_rate,
+                         beta_1=beta_1, beta_2=beta_2)
     return gen_optimizer
 
+
 def discriminator_optimizer(learning_rate=1.5e-7, beta_1=0.5, beta_2=0.99):
-    disc_optimizer = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
+    """
+    Define discriminator's Adam optimizer with default learning rate 1.5e-7
+    """
+    disc_optimizer = Adam(learning_rate=learning_rate,
+                          beta_1=beta_1, beta_2=beta_2)
     return disc_optimizer
 
+
 def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)):
-    """ Inputshape = [img_size, img_size, channel] """
+    """ 
+    Define discriminator model with defualt filter size of 64 and input shape
+    = [img_size, img_size, channel] = (256, 256, 1)
+    """
     discriminator_model = Sequential([
-        # Downsample the input to 128 * 128
+        # Downsample the input from 256*256 to 128 * 128
         Conv2D(filter_size, kernel_size=kernel_size,
                padding='same', input_shape=input_shape),
         AveragePooling2D(),
@@ -54,7 +67,7 @@ def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)
         Conv2D(8*filter_size, kernel_size=kernel_size, padding='same'),
         LeakyReLU(alpha=0.2),
 
-        # Flattent the input to a 1d array for classication 4*4*512 = 8192
+        # flatten the input to a 1d array for classication 4*4*512 = 8192
         Flatten(),
         Dense(4*filter_size),
         Dropout(0.4),
@@ -66,17 +79,32 @@ def discriminator_model(filter_size=64, kernel_size=3, input_shape=(256, 256, 1)
 
 
 def AdaIN(input, epsilon=1e-8):
+    """
+    Define custom AdaIN (adaptive instance normalisation) layer according to
+    the reference paper. 
+    "A Style-Based Generator Architecture for Generative Adversarial Networks"
+
+    This is defined as:
+    AdaIn(x_i, y) = scale * (norm_x) + bias
+    """
     x, scale, bias = input
+    # calculate norm of input
     mean = K.mean(x, axis=[1, 2], keepdims=True)
+    # add epsilon to avoid division by 0
     std = K.std(x, axis=[1, 2], keepdims=True) + epsilon
     norm = (x - mean) / std
 
-    bias = tf.reshape(bias, (-1, 1, 1, norm.shape[-1]))
     scale = tf.reshape(scale, (-1, 1, 1, norm.shape[-1])) + 1.0
+    bias = tf.reshape(bias, (-1, 1, 1, norm.shape[-1]))
     return scale * norm + bias
 
 
 def generator_block(x, noise, scale, bias, num_filters):
+    """
+    Define single generator block according to the reference paper with a 
+    convolution layer added with some noise, and feeds to an AdaIN layer. 
+
+    """
     noise = Dense(num_filters)(noise)
     x = Conv2D(filters=num_filters, kernel_size=3,
                strides=1, padding='same')(x)
@@ -86,7 +114,11 @@ def generator_block(x, noise, scale, bias, num_filters):
 
 
 def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filters):
-    # Synthesis network
+    """
+    Define the synthesis network given some noise and latent space w. 
+    Given the number of blocks, the network will grow from the initial 4*4 size
+    untill the target resolution (7 blocks -> 256*256).
+    """
     # Initialise synthesis network
     w = w_mapping_network(z[:, 0])
 
@@ -96,8 +128,9 @@ def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filte
 
     # Noise B
     noise = Dense(num_filters)(noise_[:, :const.shape[1], :const.shape[2], :])
-    x = Activation("linear")(const)
 
+    # Apply noise and adaIN layer in first block
+    x = Activation("linear")(const)
     x = add([x, noise])
     x = Lambda(AdaIN)([x, scale, bias])
 
@@ -113,16 +146,21 @@ def synthesis_network(w_mapping_network, noise_, num_blocks, const, z, num_filte
         scale = Dense(num_filters)(w)
         bias = Dense(num_filters)(w)
 
+        # Add two generator blocks in each upsampling of the model
         noise = Dense(num_filters)(noise_[:, :x.shape[1], :x.shape[2], :])
         x = generator_block(x, noise, scale, bias, num_filters)
 
         noise = Dense(num_filters)(noise_[:, :x.shape[1], :x.shape[2], :])
         x = generator_block(x, noise, scale, bias, num_filters)
         x = LeakyReLU(0.2)(x)
+
     return x
 
 
 def generator_model(latent_dim=100, num_filters=128, image_shape=(256, 256, 1)):
+    """
+    Define StyleGan generator model with given latent dim, num_filters and image shape. 
+    """
     # 7 Blcoks to upsample from  4*4  to 256*256
     num_blocks = 7
     initial_size = 4
