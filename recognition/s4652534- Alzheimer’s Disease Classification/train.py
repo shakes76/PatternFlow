@@ -75,7 +75,17 @@ class TripletLoss(nn.Module):
         return loss
 
 
-
 def parse_data(inputs):
     imgs, labels, indexes = inputs
     return imgs.cuda(), labels.cuda(), indexes.cuda()
+
+
+if __name__ == '__main__':
+
+    random.seed(0)
+    np.random.seed(0)
+    torch.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
+    torch.cuda.manual_seed(0)
+    cudnn.deterministic = True
+    cudnn.benchmark = True
