@@ -48,3 +48,14 @@ class ResNet(nn.Module):
         prob = self.fc2(self.relu(self.fc1_bn(self.fc1(emb))))
         return emb, prob
 
+
+def resnet18(**kwargs):
+    return ResNet(18, **kwargs)
+
+
+def resnet34(**kwargs):
+    return ResNet(34, **kwargs)
+
+
+def resnet50(**kwargs):
+    return ResNet(50, **kwargs)
