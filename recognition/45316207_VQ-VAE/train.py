@@ -104,35 +104,31 @@ class VQVAETrainer(keras.models.Model):
 
 if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
+    #                                HYPERPARAMETERS                               #
+    # ---------------------------------------------------------------------------- #
+    NUM_TRAINING_EXAMPLES = 2000
+
+    TRAINING_EPOCHS = 10
+    BATCH_SIZE = 128
+
+    NUM_LATENT_DIMS = 16
+    NUM_EMBEDDINGS = 128
+
+    EXAMPLES_TO_SHOW = 10
+
+
+    # ---------------------------------------------------------------------------- #
     #                                   LOAD DATA                                  #
     # ---------------------------------------------------------------------------- #
     # Import data loader from dataset.py
-    (a, b, c, d) = dataset.load_dataset()
-
-    # ------------------------------------ NEW ----------------------------------- #
-    # Load and preprocess the MNIST dataset
-    (x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
-
-    x_train = np.expand_dims(x_train, -1)
-    x_test = np.expand_dims(x_test, -1)
-    x_train_scaled = (x_train / 255.0) - 0.5
-    x_test_scaled = (x_test / 255.0) - 0.5
-
-    data_variance = np.var(x_train / 255.0)
-
-    print(f"###x_train ({type(x_train)}): {np.shape(x_train)}###")
-    print(f"###x_test ({type(x_test)}): {np.shape(x_test)}###")
-    print(f"###x_train_scaled ({type(x_train_scaled)}): {np.shape(x_train_scaled)}###")
-    print(f"###x_test_scaled ({type(x_test_scaled)}): {np.shape(x_test_scaled)}###")
-    print(f"###data_variance ({type(data_variance)}): {data_variance}###")
-    # ------------------------------------ NEW ----------------------------------- #
+    (train_data, test_data, validate_data, data_variance) = dataset.load_dataset(max_images=NUM_TRAINING_EXAMPLES)
 
 
     # ---------------------------------------------------------------------------- #
     #                                  BUILD MODEL                                 #
     # ---------------------------------------------------------------------------- #
     # Create the model (wrapped in the training class to handle performance metrics logging)
-    vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
+    vqvae_trainer = VQVAETrainer(data_variance, latent_dim=NUM_LATENT_DIMS, num_embeddings=NUM_EMBEDDINGS)
     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
 
 
@@ -141,7 +137,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     print("Training model...")
     # Run training, plotting losses and metrics throughout
-    vqvae_trainer.fit(x_train_scaled, epochs=1, batch_size=128)
+    vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE)
 
 
     # ---------------------------------------------------------------------------- #
@@ -160,9 +156,8 @@ if __name__ == "__main__":
     # Visualise the final results and calculate the structural similarity index (SSIM)
 
     # ------------------------------------ NEW ----------------------------------- #
-    EXAMPLES_TO_SHOW = 10
-    idx = np.random.choice(len(x_test_scaled), EXAMPLES_TO_SHOW)
-    test_images = x_test_scaled[idx]
+    idx = np.random.choice(len(test_data), EXAMPLES_TO_SHOW)
+    test_images = test_data[idx]
     reconstructions_test = trained_vqvae_model.predict(test_images)
 
     for test_image, reconstructed_image in zip(test_images, reconstructions_test):

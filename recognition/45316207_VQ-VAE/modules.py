@@ -16,6 +16,9 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 
 
+INPUT_IMAGE_WIDTH = 256 # was 28
+
+
 class VectorQuantizer(layers.Layer):
     """
     A Custom Vector Quantising Layer
@@ -122,7 +125,7 @@ def get_encoder(latent_dim=16):
             encoder (Keras Model): The encoder module for the VQ-VAE
     """
 
-    encoder_inputs = keras.Input(shape=(28, 28, 1))
+    encoder_inputs = keras.Input(shape=(INPUT_IMAGE_WIDTH, INPUT_IMAGE_WIDTH, 1))
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
         encoder_inputs
     )
@@ -168,7 +171,7 @@ def get_vqvae(latent_dim=16, num_embeddings=64):
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = get_encoder(latent_dim)
     decoder = get_decoder(latent_dim)
-    inputs = keras.Input(shape=(28, 28, 1))
+    inputs = keras.Input(shape=(INPUT_IMAGE_WIDTH, INPUT_IMAGE_WIDTH, 1))
     encoder_outputs = encoder(inputs)
     quantized_latents = vq_layer(encoder_outputs)
     reconstructions = decoder(quantized_latents)
