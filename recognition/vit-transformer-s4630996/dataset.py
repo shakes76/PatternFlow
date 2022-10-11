@@ -124,11 +124,10 @@ for file in train_NC_filenames:
 ########################################################################################################
 
 
-def import_data(image_size):
+def import_data(image_size, BATCH_SIZE):
     # (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
     # why can i not use tf.keras.utils.image_dataset_from-directory
-    BATCH_SIZE = 128
 
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory
     data_train = keras.preprocessing.image_dataset_from_directory(
