@@ -1,4 +1,10 @@
 # Object Detection with YOLO in the ISIC Dataset
+## Dependencies:
+[To be updated]
+
+## Problem definition:
+[to be updated]
+
 ## YOLO:
 This section will detail What the algorthm is, what problem it solves, and how it works.
 ### Description of YOLO
@@ -23,6 +29,7 @@ C: The confidence score, which is both a measure of how confident the model is t
 ![image](https://user-images.githubusercontent.com/32262943/193551577-41be3605-3038-4d9a-999f-c1fe5cabb0bb.png)
 
 The loss function evaluated during training is as follows:
+
 ![image](https://user-images.githubusercontent.com/32262943/193552858-933318ae-473a-4766-8f8c-243e365df288.png)
 
 This is a multi-part loss function which specifies terms for defining the loss of 
@@ -38,7 +45,51 @@ A high-level overview of the YOLO model architechture is shown below (https://ar
 
 The backbone is the pretrained component, while the head is trained to predict the actual bonding boxes and classes on the dataset of interest. As shown above, the head can be single (just dense prediction) or double stage (dense and sparse prediction). The neck, situated between backbone and head, is used to collect feature maps for the dataset (https://medium.com/analytics-vidhya/object-detection-algorithm-yolo-v5-architecture-89e0a35472ef).
 
-
-### YOLOv5 netowork model
+### YOLOv5 network model
 For this implementation, I have chosen to use YOLOv5 because it is written in Pytorch ultralytics, while previous versions were written in the C Darknet library. YOLOv5 is also faster than previous versions, and while there have been newer YOLO releases since v5, YOLOv5 currently has the most support. 
 
+## Metrics of Interest
+In the discussion of results, there are a few metrics which will be referred to. The following sections will explain their meanings.
+
+### Intersection Over Union (IOU)
+This metric is used to measure how closely the bounding box prediction matches the bounding box ground truth. It is defined as:
+
+![image](https://user-images.githubusercontent.com/32262943/194858311-10f53308-65e9-49ce-a47c-228579b3f27e.png)
+
+Which could also be interpretted as:
+
+IOU = overlap area/[(pred area + gnd truth area) - overlap area]
+
+(https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)
+
+In object detection, an IOU threshold is used to define whether a bounding box prediction is either a False Positive (FP), or True Positive (TP) i.e. if the IOU for a box predicition is above the threshold, the box prediction is considered a TP, and vice versa. A False Negative (FN) is when no box is predicted, but it should have been, and a True Negative (TN) is when no box is predicted, and the ground truth also specifies no box (i.e. no object to detect). (https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+
+### Precision
+Precision is a measure of how accurate box predictions are, and uses the IOU threshold to specifiy TPs, TNs, FPs, FNs. It is defined as:
+
+![image](https://user-images.githubusercontent.com/32262943/194860335-b9d6bb78-213d-4ad8-86c6-df8f293540dd.png)
+
+From this formula, we can see that Precision could also be defined as "the percentage of box predictions which were correct." One should note that this metric doesn't account for FNs. (https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+
+### Recall
+Recall Also uses the IOU threshold, and is a measure of how many objects were detected successfully. It can be defined as below:
+
+![image](https://user-images.githubusercontent.com/32262943/194861794-10382fab-5037-409f-87a6-68f9f55bd07c.png)
+
+This formula shows that while recall measures the percentage of objects which were detected successfully, it does not account for FPs. (https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+
+### Precision-Recall relationship
+The relationship between precision and recall is often a trade-off, and the favourable metric often depends on the use case. In the case of melanoma detection, we would rather detect too many objects (FPs) than not detect enough objects (FNs), because a surplus of FNs could result in an increase of missed melanoma diagnoses. Thus, for this project application, we would favour recall over precision, and would accept the trade-off of increased FPs.  
+
+### mAP
+AP or Average Precision is the area under the Precision-Recall curve, and is used across most object detection models as a measure of how well the model draws boundary boxes. In the result plots, both mAP0.5 and mAP0.5:0.95 are reported. The numbers simply refer to IOU threshold -> mAP0.5 is just the AP at IOU-T=0.5, while mAP0.5:0.95 is the average of all the AP values for IOU-T values between 0.5 and 0.95, with a step size of 0.05 (https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173)
+
+### Box Loss
+A regression loss bosed on the calculatd IOU -> the bounding box term of the loss function. Smaller value implies better boxes.
+
+### Object Loss
+A loss based on the confidence score. Smaller value means more accurate confidence scores, which implies that the model is better at predicting when there is an object in the image, and where it is. A smaller value also indicates that, during deployment, users of the model can more accurately judge whether they should trust the model prediction. 
+
+### Class Loss
+This loss is a measure of how well the model classifies objects. However, it should be noted that this loss metric is only penalises classification
+error if an object is present in the current grid cell of interest, i.e. if the model predicts the class of a box, but the centre does not fall in the same grid cell as the ground truth box, it is not penalised/rewarded for this prediction.
