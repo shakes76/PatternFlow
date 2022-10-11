@@ -15,11 +15,11 @@ import numpy as np
 
 class VQ(layers.Layer):
     """
-        Define custom Vector-Quantisation (VQ) Layer for VQ-VAE.
+        Defines custom Vector-Quantisation (VQ) Layer for VQ-VAE.
     """
 
-    def __init__(self, num_encoded, latent_dim, beta=0.25, layer_name="vq"):
-        super().__init__(layer_name=layer_name)
+    def __init__(self, num_encoded, latent_dim, beta=0.25, name="vq"):
+        super().__init__(name=name)
 
         self._latent_dim = latent_dim
         self._num_encoded = num_encoded
@@ -65,7 +65,7 @@ class VQ(layers.Layer):
         """
         # Flatten input and store original dimensions for reshaping later
         original_shape = tf.shape(inputs)
-        flattened_input = tf.reshape(inputs, [-1, self._encoded_dim])
+        flattened_input = tf.reshape(inputs, [-1, self._latent_dim])
 
         # Perform quantization (i.e. compression)
         encoded_indices = self.get_codebook_indices(flattened_input)
@@ -93,12 +93,12 @@ class Encoder(Model):
     """
         Defines Encoder for VQ-VAE.
     """
-    def __init__(self, img_size=28, latent_dim=16, name="encoder"):
+    def __init__(self, latent_dim=16, name="encoder"):
         super(Encoder, self).__init__(name=name)
         self._latent_dim = latent_dim
-        self._img_size = img_size
+        # self._img_size = img_size
 
-        self.input1 = layers.InputLayer(input_shape=self._img_size)
+        # self.input1 = layers.InputLayer(input_shape=self._img_size)
         self.conv1 = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")
         self.conv2 = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")
         self.conv3 = layers.Conv2D(self._latent_dim, 1, padding="same")
@@ -112,7 +112,7 @@ class Encoder(Model):
 
             Returns: outputs of this layer
         """
-        inputs = self.input1(inputs)
+        # inputs = self.input1(inputs)
         hidden = self.conv1(inputs)
         hidden = self.conv2(hidden)
         return self.conv3(hidden)
@@ -122,9 +122,9 @@ class Decoder(Model):
     """
         Defines Decoder for VQ-VAE.
     """
-    def __init__(self, input_dim=16, name="decoder"):
+    def __init__(self, name="decoder"):
         super(Decoder, self).__init__(name=name)
-        self.input1 = layers.InputLayer(input_shape=input_dim)
+        # self.input1 = layers.InputLayer(input_shape=input_dim)
         self.conv_t1 = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")
         self.conv_t2 = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")
         self.conv_t3 = layers.Conv2DTranspose(1, 3, padding="same")
@@ -138,7 +138,7 @@ class Decoder(Model):
 
             Returns: outputs of this layer
         """
-        inputs = self.input1(inputs)
+        # inputs = self.input1(inputs)
         hidden = self.conv_t1(inputs)
         hidden = self.conv_t2(hidden)
         return self.conv_t3(hidden)
@@ -157,9 +157,9 @@ class VQVAE(Model):
         self._latent_dim = latent_dim
         self._beta = beta
 
-        self._encoder = Encoder(self._img_size, self._latent_dim)
+        self._encoder = Encoder(self._latent_dim)
         self._vq = VQ(self._num_encoded, self._latent_dim, self._beta)
-        self._decoder = Decoder(self._encoder.output.shape[1:])
+        self._decoder = Decoder()
 
         self._total_loss = tf.keras.metrics.Mean(name="total_loss")
         self._vq_loss = tf.keras.metrics.Mean(name="vq_loss")
@@ -235,3 +235,6 @@ class VQVAE(Model):
     def get_decoder(self):
         """ Returns decoder """
         return self._decoder
+
+
+
