@@ -134,8 +134,9 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
     StyleGAN Training
     """
     # define the number of batch runs per epoch, and the batch size
+    # depending on the batch_size the bat per epoch could be adjusted.
     bat_per_epo = 13000
-    batch_size = 12 #
+    batch_size = 12 
     checkpoint = create_checkpoint(gen_optimizer, disc_optimizer, g_model, d_model)
 
     gen_losses, disc_real_losses, disc_fake_losses = [], [], []
