@@ -8,7 +8,6 @@ Date Created: 11 Oct 2022
 """
 import os
 import numpy as np
-import sklearn
 from keras.utils import img_to_array, load_img
 from sklearn.model_selection import train_test_split
 
@@ -39,8 +38,8 @@ class DataLoader():
         X_train, X_val, y_train, y_val = train_test_split(X_train,
                 y_train, test_size=0.2)
 
-        print("Finished laoding data.")
-        
+        print("Finished loading data.")
+
         return X_train, X_test, X_val, y_train, y_test, y_val
     
     def read_data(self, path):
