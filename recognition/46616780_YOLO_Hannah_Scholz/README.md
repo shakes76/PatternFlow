@@ -38,6 +38,7 @@ Two classes: with and without melanoma
 
 ### Data preprocessing:
 Justify your training, validation and testing splits of the data.
+Image dimensions --> 640x640 as this is what dimension YOLOv5 was designed for.
 
 ### Results:
 

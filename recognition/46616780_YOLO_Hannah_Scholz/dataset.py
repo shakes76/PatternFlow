@@ -3,7 +3,10 @@ import os
 from os import listdir
 from PIL import Image
 
-IMAGE_SIZE = 256
+IMAGE_SIZE = 640
+VALIDATION_DATA_PATH = "Datasets/Validation/validation_data"
+TESTING_DATA_PATH = "Datasets/Testing/testing_data/"
+TRAINING_DATA_PATH = "Datasets/Training/training_data/"
 
 
 def load_images(image_path):
@@ -17,30 +20,29 @@ def load_images(image_path):
             width, height = img.size
 
             # Change the shape of the images so all the images are the same size
-            # And all the mask sizes too 256x256
+            # And all the mask sizes = 640x640
             if width > height:
                 img = img.resize((IMAGE_SIZE, round(height * (IMAGE_SIZE / width))))
             else:
-                img = img.resize((round(height * (IMAGE_SIZE / width)), IMAGE_SIZE))
+                img = img.resize((round(width * (IMAGE_SIZE / height)), IMAGE_SIZE))
 
 
-            bounding_box(img)
+            generate_bounding_box(img)
 
 
 
-def bounding_box(image):
+def generate_bounding_box(image):
     print(image.size)
 
 
-training_data_path = "Datasets/Training/training_data/"
-for filename in os.listdir(training_data_path):
-    if filename.endswith(".png"):
-        os.remove(training_data_path + filename)
-load_images(training_data_path)
+def clean_up_directory(image_directory):
+    for filename in os.listdir(image_directory):
+        if filename.endswith(".png"):
+            os.remove(image_directory + filename)
+    load_images(image_directory)
 
 
-testing_data_path = "Datasets/Testing/testing_data/"
-for filename in os.listdir(testing_data_path):
-    if filename.endswith(".png"):
-        os.remove(testing_data_path + filename)
-load_images(testing_data_path)
+def main(args):
+    # Do this for all three directories
+    clean_up_directory(VALIDATION_DATA_PATH)
+
