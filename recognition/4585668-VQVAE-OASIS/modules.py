@@ -5,17 +5,28 @@ Inspired by https://keras.io/examples/generative/vq_vae/
 """
 
 import	tensorflow					as		tf
+from	numpy						import	zeros
 from	tensorflow.keras			import	Input,	Model
-from	tensorflow.keras.layers		import	Conv2D,	Conv2DTranspose, Layer
+from	tensorflow.keras.layers		import	add,	Conv2D, Conv2DTranspose, Layer
 from	tensorflow.keras.metrics	import	Mean
 from	tensorflow.keras.models		import	Model
 
-FLATTEN			= -1
-ENC_IN_SHAPE	= (28, 28, 1)
-STRIDES			= 2
-KERN_SIZE		= 3
-N_FIRST			= 1
-CONV_W_FACTOR	= 32
+FLATTEN				= -1
+ENC_IN_SHAPE		= (80, 80, 1)
+STRIDES				= 2
+PCNN_STRIDES		= 1
+KERN_SIZE			= 3
+CONV1_KERN_SIZE		= 1
+N_FIRST				= 1
+CONV_W_FACTOR		= 32
+FILTER_FACTOR		= 2
+KERN_FACTOR			= 2
+NO_FILTERS			= 128
+PCNN_IN_KERN_SIZE	= 7
+PCNN_OUT_KERN_SIZE	= 1
+PCNN_MID_KERN_SIZE	= 1
+KERN_INIT			= 1.0
+RESIDUAL_BLOCKS		= 2
 
 class VectorQuantizer(Layer):
 	"""
@@ -68,9 +79,9 @@ def encoder(lat_dim):
 	"""
 
 	enc_in	= Input(shape = ENC_IN_SHAPE)
-	x		= Conv2D(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(enc_in)
-	x		= Conv2D(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(x)
-	enc_out	= Conv2D(lat_dim, 1, padding = "same")(x)
+	convos	= Conv2D(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(enc_in)
+	convos	= Conv2D(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	enc_out	= Conv2D(lat_dim, 1, padding = "same")(convos)
 
 	return Model(enc_in, enc_out)
 
@@ -84,13 +95,13 @@ def decoder(lat_dim):
 	"""
 
 	lat_in	= Input(shape = encoder(lat_dim).output.shape[N_FIRST:])
-	x		= Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
-	x		= Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(x)
-	dec_out	= Conv2DTranspose(1, KERN_SIZE, padding = "same")(x)
+	convos	= Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
+	convos	= Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	dec_out	= Conv2DTranspose(1, KERN_SIZE, padding = "same")(convos)
 
 	return Model(lat_in, dec_out)
 
-def build(lat_dim, embeds, beta):
+def build_vae(lat_dim, embeds, beta):
 	"""
 	Sandwich together the encoder + VQ + decoder
 
@@ -111,17 +122,17 @@ def build(lat_dim, embeds, beta):
 
 	return Model(ins, reconstruct)
 
-class VQVAETrainer(Model):
+class Trainer(Model):
 	"""Wrapper class for vqvae training functionality"""
 	def __init__(self, train_vnce, lat_dim, n_embeds, beta, **kwargs):
 		super().__init__(**kwargs)
 		self.train_vnce	= train_vnce
 		self.lat_dim	= lat_dim
 		self.n_embeds	= n_embeds
-		self.vqvae		= build(self.lat_dim, self.n_embeds, beta)
-		self.tot_loss	= Mean()#name="total_loss")
-		self.recon_loss	= Mean()#name="recon_loss")
-		self.vq_loss	= Mean()#name="vq_loss")
+		self.vqvae		= build_vae(self.lat_dim, self.n_embeds, beta)
+		self.tot_loss	= Mean()
+		self.recon_loss	= Mean()
+		self.vq_loss	= Mean()
 
 	@property
 	def metrics(self):
@@ -149,10 +160,83 @@ class VQVAETrainer(Model):
 
 		# Results
 		return self.tot_loss.result(), self.recon_loss.result(), self.vq_loss.result()
-		"""
-		return {
-			"loss": self.tot_loss.result(),
-			"recon_loss": self.recon_loss.result(),
-			"vqvae_loss": self.vq_loss.result(),
-		}
-		"""
+
+class PixelConvolution(Layer):
+	"""Pixel convolutional layer for pixel cnn"""
+	def __init__(self, mask, **kwargs):
+		super().__init__()
+		self.mask = mask
+		self.conv = Conv2D(**kwargs)
+
+	def build(self, input_shape):
+		"""Construct the convolutional kernel"""
+		self.conv.build(input_shape)
+		kern_shape	= self.conv.kernel.get_shape()
+		self.mask	= zeros(shape = kern_shape)
+		self.mask[: kern_shape[0] // KERN_FACTOR, ...] =KERN_INIT
+		self.mask[kern_shape[0] // KERN_FACTOR, : kern_shape[1] // KERN_FACTOR, ...] = KERN_INIT
+		if self.mask == "B":
+			self.mask[kernel_shape[0] // KERN_FACTOR, kern_shape[1] // KERN_FACTOR, ...] = KERN_INIT
+
+	def call(self, inputs):
+		"""Forward computational handler"""
+		self.conv.kernel.assign(self.conv.kernel * self.mask)
+		return self.conv(inputs)
+
+class ResidualBlock(Layer):
+	"""Resnet block based on PixelConvolution layers"""
+	def __init__(self, filters, **kwargs):
+		super(ResidualBlock, self).__init__(**kwargs)
+		self.conv1 = Conv2D(
+			filters = filters, kernel_size = CONV1_KERN_SIZE, activation="relu"
+		)
+		self.pixel_conv = PixelConvolution(
+			mask		= "B",
+			filters		= filters // FILTER_FACTOR,
+			kernel_size	= KERN_SIZE,
+			activation	= "relu",
+			padding		= "same",
+		)
+		self.conv2 = Conv2D(filters = filters, kernel_size = CONV1_KERN_SIZE, activation = "relu")
+
+	def call(self, inputs):
+		"""Forward computation handler"""
+		layer	= self.conv1(inputs)
+		layer	= self.pixel_conv(layer)
+		layer	= self.conv2(layer)
+
+		return add([inputs, layer])
+
+def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, trainer):
+	"""Construct the Pixel CNN
+
+	in_shape		- shape of PCNN inputs
+	no_resid_blocks	- the number of residual blocks within the PCNN
+	no_pcnn_layers	- the number of layers within the PCNN
+	trainer			- the training wrapper class for the VQVAE
+
+	return			- the assembled Pixel CNN
+	"""
+
+	pcnn_ins	= Input(shape = in_shape, dtype = tf.int32)
+	onehot		= tf.one_hot(pcnn_ins, trainer.n_embeds)
+	layer		= PixelConvolution(mask = "A", filters = NO_FILTERS, kernel_size = PCNN_IN_KERN_SIZE, activation = "relu", padding = "same")(onehot)
+
+	for _ in range(no_resid_blocks):
+		layer = ResidualBlock(filters = NO_FILTERS)(layer)
+
+	for _ in range(no_pcnn_layers):
+		layer = PixelConvolution(
+			mask		= "B",
+			filters		= NO_FILTERS,
+			kernel_size	= PCNN_MID_KERN_SIZE,
+			strides		= PCNN_STRIDES,
+			activation	= "relu",
+			padding		= "valid",
+		)(layer)
+
+	out		= Conv2D(filters = trainer.n_embeds, kernel_size = PCNN_OUT_KERN_SIZE, strides = PCNN_STRIDES, padding = "valid")(layer)
+	pcnn	= Model(pcnn_ins, out)
+	pcnn.summary()
+
+	return pcnn
