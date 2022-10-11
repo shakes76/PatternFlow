@@ -73,3 +73,21 @@ class ADNI(Dataset):
                                   pin_memory=True, drop_last=True)
 
         return train_loader
+
+    def get_test_loader(self, height, width, batch_size):
+
+        transformer = transforms.Compose([
+            transforms.Resize((height, width), interpolation=3),
+            transforms.ToTensor(),
+        ])
+
+        test_AD_set = Preprocessor(self.test_AD, root=self.test_AD_dir, transformer=transformer)
+        test_NC_set = Preprocessor(self.test_NC, root=self.test_NC_dir, transformer=transformer)
+
+        test_set = ConcatDataset([test_AD_set, test_NC_set])
+
+        test_loader = DataLoader(test_set, batch_size=batch_size, num_workers=16, shuffle=False, pin_memory=True)
+
+        return test_loader
+
+    
