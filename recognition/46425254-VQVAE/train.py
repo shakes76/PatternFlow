@@ -8,7 +8,7 @@ import modules
 import dataset
 import visualise as vis
 
-
+import CNNcopy
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
 
@@ -97,6 +97,7 @@ epochs  = 15
 #trainer = VQ_Training(lr, epochs, path, save = trained, visualise=True)
 #trainer.train()
 
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh2.pt"
 
 class PixelCNN_Training():
     
@@ -109,9 +110,9 @@ class PixelCNN_Training():
         model.eval()
         self.model = model
         self.epochs = epochs
-        data = dataset.DataLoader(data_path)
+        self.data = dataset.DataLoader(data_path)
         self.training_data = \
-            utils.data.DataLoader(data, batch_size = 16, shuffle = True)
+            utils.data.DataLoader(self.data, batch_size = 16, shuffle = True)
         
         
         
@@ -121,11 +122,13 @@ class PixelCNN_Training():
         
         self.PixelCNN_model = modules.PixelCNN().to(self.device)
         self.optimizer = \
-            torch.optim.Adam(self.PixelCNN_model.parameters(), lr = 0.0001)
+            torch.optim.Adam(self.PixelCNN_model.parameters(), lr = lr)
             
     def train(self):
         epoch = 0
-        
+        training_loss_arr = []
+        loss = 0.0
+        total_epochs = np.linspace(0, self.epochs, self.epochs)
         while epoch != self.epochs:
             
             sub_step = 0
@@ -141,27 +144,26 @@ class PixelCNN_Training():
                     flat_encoded  = encoded.reshape(-1, VQ.embedding_dim)
                     
                     a, b = VQ.argmin_indices(flat_encoded)
-                   # print(a.shape)
-                    
-                    a = a.view(-1, 128, 64,64).float()
+                    #print(b.shape)
+                    #a = a.view(-1, 128, 64,64).float()
+                    #a = a.argmax(1)
                     #b = torch.stack((b,b,b),0)
                     #print(a.shape)
+                    b = b.view(-1, 64, 64)
+                    c = nn.functional.one_hot(b, num_classes = 128).float()
+                    c = c.permute(0, 3, 1, 2)
                     #b = b.permute(1, 0, 2, 3).contiguous()
-                cnn_outputs = self.PixelCNN_model(a)
+                cnn_outputs = self.PixelCNN_model(c)
+                #plt.imshow(cnn_outputs.argmax(1)[0].cpu().detach().numpy())
                 
                 #print(b.shape)
                 #reset the optimizer gradients to 0 to avoid resuing prev iteration's 
-                
-                
-                
+                #plt.show()               
                 #calculate reconstruction loss
-                
-                
                 #calculate total loss
                 self.optimizer.zero_grad()
-                total_loss = nn.functional.cross_entropy(cnn_outputs, a)
+                total_loss = nn.functional.cross_entropy(cnn_outputs, b)
                 
-                #update the gradient 
                 total_loss.backward()
                 self.optimizer.step()
                 
@@ -171,12 +173,18 @@ class PixelCNN_Training():
                         f"Loss : {total_loss:.4f}"
                     )
                     
-                   # if self.visualise == True:
-                   #     self.visualiser.VQVAE_discrete((0,0))
-        
-                
-                
+                    training_loss_arr.append(total_loss.item())
+                  #  if self.save != None:
+                        
+                 #       torch.save(self.PixelCNN_model.state_dict(), self.save)
+                    
+                   # gen_image(trained, save_model)
+                    
+                    #if self.visualise == True:
+                     #   self.visualiser.VQVAE_discrete((0,0))
                 sub_step += 1
+                
+                
             epoch += 1
         #save if user interrupts
          
@@ -185,6 +193,9 @@ class PixelCNN_Training():
         if self.save != None:
             
             torch.save(self.PixelCNN_model.state_dict(), self.save)
+
+        plt.plot(np.arange(0, self.epochs12), training_loss_arr)
+        plt.show()
         
 def gen_image(train_path, model_path):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -192,41 +203,60 @@ def gen_image(train_path, model_path):
     state_dict = torch.load(train_path, map_location="cpu")
     model.load_state_dict(state_dict)
     model.to(device)
+    model.eval()
     
     cnn = modules.PixelCNN()
     state_dict = torch.load(model_path, map_location="cpu")
     cnn.load_state_dict(state_dict)
     cnn.to(device)
+    cnn.eval()
     
     prior = torch.zeros((1, 128, 64, 64), device = device)
     
-    _, _, rows, cols = prior.shape
-    for i in range(rows):
-        for j in range(cols):
-            torch.cuda.empty_cache()
-            probs = cnn(prior)
-
-            prior[:, :, i , j] = probs[:, :, i, j]
-           
+    _, channels, rows, cols = prior.shape
+    with torch.no_grad():
+        for i in range(rows):
+            for j in range(cols):
+                # argmax removes things that is not predicted
+                out = cnn(prior).argmax(1)
+                
+                #argmax(1)
+                #convert it back into 1 hot format
+                #print(torch.multinomial(probs, 1))
+                probs = nn.functional.one_hot(out, num_classes = 128
+                                              ).permute(0, 3, 1, 2).contiguous()
+                
+                prior[:, :, i , j] = probs[:, :, i, j]
+                
             
+    
+    #prior = prior.argmax(1)
+    #plt.imshow(prior[0].to("cpu"))
+    #plt.show()
+    #prior = nn.functional.one_hot(prior, num_classes= 128)
+    #prior = prior.permute(0, 3, 1, 2)
+    prior = prior.view(1,128,-1)
+    
+    prior = prior.permute(0,2,1).float()
     quantized_bhwc = torch.matmul(prior, 
-                                  model.embedding_table.weight).view(1, 64, 64, 64)
+                                  model.get_VQ().embedding_table.weight)
+    quantized_bhwc = quantized_bhwc.view(1, 64, 64 ,16)
+    quantized = quantized_bhwc.permute(0, 3, 1, 2).contiguous()
     
-    quantized = quantized_bhwc.permute(0, 3, 1, 2).continguous()
-    
-    decoded = model.get_decoder(quantized).to(device)
+    decoded = model.get_decoder()(quantized).to(device)
     
     decoded = decoded.view(-1, 3, 256,256).to(device).detach()
     
     decoded_grid = \
         torchvision.utils.make_grid(decoded, normalize = True)
+    #print(decoded_grid.shape)
     decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
     
     plt.imshow(decoded_grid)
     plt.show()
         
 save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh2.pt"
-pixel_cnn_trainer = PixelCNN_Training(lr, 10, trained, path, save = save_model)
+pixel_cnn_trainer = PixelCNN_Training(0.0005, 4, trained, path, save = save_model)
 pixel_cnn_trainer.train()
 #gen_image(trained, save_model)
 

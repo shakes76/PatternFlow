@@ -291,7 +291,7 @@ class PixelCNN(nn.Module):
             nn.ReLU(True),
             nn.Conv2d(256, 128, 1),
             
-            nn.Sigmoid(),
+            #nn.Sigmoid(),
             
             )
         
