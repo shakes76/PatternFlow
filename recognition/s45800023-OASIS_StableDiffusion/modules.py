@@ -103,6 +103,19 @@ class OASIS_Loader(Dataset):
             sample = self.transform(sample)    
             
         return sample
+    
+class Hyperparameters():
+    """
+    Class to initialize hyperparameters for use in training
+    """
+    def __init__(self):
+        self.epochs = 10
+        self.loss = torch.nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam()
+        self.batch_size = 128
+        self.lr = 0.99
+        
+        
   
 class Encoder(torch.nn.Module):
     """
@@ -121,7 +134,7 @@ class Decoder(torch.nn.Module):
     def __init__(self):
         super().__init__()
     
-class UNet():
+class UNet(torch.nn.Module):
     """
     U-Net class for diffusion model. The U-Net takes noisy encoded images 
     (noise introduced by diffusion model) and reconstructs the image. 
