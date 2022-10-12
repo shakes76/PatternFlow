@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import GANutils
 import csv
 
 class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic layers use keras.layers.Lambda
@@ -49,7 +48,7 @@ class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic laye
         mean = tf.math.reduce_mean(tf.math.reduce_mean(x,axis=1),axis=1)[:,tf.newaxis,tf.newaxis,:] 
         std = tf.math.reduce_std(tf.math.reduce_std(x,axis=1),axis=1)[:,tf.newaxis,tf.newaxis,:]
 
-        return (yscale[1:0]*(x-mean)/std) + ybias[1:0]
+        return (yscale*(x-mean)/std) + ybias
 
 class addNoise(tf.keras.layers.Layer):
     """
@@ -115,24 +114,28 @@ class StyleGAN():
         """
         super(StyleGAN, self).__init__()
         #TODO sanitise inputs
-        if existing_model_folder:
+        if existing_model_folder is not None:
             self.load_model(existing_model_folder)
         else:
-            generator = self.get_generator()
-            discriminator = self.get_discriminator()
-            self._make_model(output_res, start_res, latent_dim, 0, generator, discriminator)
+            self._make_model(output_res, start_res, latent_dim, 0, None, None)
             
 
     def _make_model(self, output_res: int, start_res: int, latent_dim: int, trained_epochs: int, generator: tf.keras.Model, discriminator: tf.keras.Model) -> None: #TODO docstring
-        #initialise new styleGAN
+        #initialise parameters
         self._output_res = output_res
         self._start_res = start_res
         self._latent_dim = latent_dim
 
+        #initialise generator
         self._generator = generator
+        if generator is None:
+            self._generator = self.get_generator()
         self._generator_base = tf.zeros(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
 
+        #initialise discriminator
         self._discriminator = discriminator
+        if discriminator is None:
+            self._discriminator = self.get_discriminator()
         self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
         
         #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
@@ -143,9 +146,9 @@ class StyleGAN():
         loss='binary_crossentropy'
         optimizer = 'adam'
         metrics=['accuracy']
-        self._generator.compile(loss, optimizer, metrics)
-        self._discriminator.compile(loss, optimizer, metrics)
-        self._gan.compile(loss, optimizer, metrics)
+        self._generator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
+        self._discriminator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
+        self._gan.compile(loss = loss, optimizer = optimizer, metrics = metrics)
 
         self._epochs_trained = trained_epochs
 
@@ -234,22 +237,21 @@ class StyleGAN():
         return tf.keras.Model(inputs = discriminator_input, outputs = x, name = "Discriminator")
             
 
-    def __call__(self, latent_vector: np.array, noise_inputs: list[np.array]) -> np.array:
+    def __call__(self, inputs: list[np.array]) -> np.array:
         """
         Allows the StyleGAN to be used as a functional, takes in a latent vector and an appropriate set of noise matrices, and returns the (normalized) image data of a generated image
 
         Args:
-            latent_vector (np.array): _description_ TODO
-            noise_inputs (list[np.array]): _description_ TODO
+            inputs (list[np.array]): _description_ TODO
 
         Returns:
             np.array: _description_ TODO
         """
-        return self._generator([latent_vector] + noise_inputs + [np.repeat(self._generator_base, latent_vector.shape[0], axis = 0)])
+        return self._generator(inputs + [np.repeat(self._generator_base, inputs[0].shape[0], axis = 0)])
 
     def save_model(self, folder: str) -> None: #TODO docstring
         #save model parameters
-        with open(folder + 'param.csv', mode = 'w') as f:
+        with open(folder + 'param.csv', mode = 'w', newline='') as f:
             csv.writer(f).writerow([self._output_res,
                     self._start_res,
                     self._latent_dim,
@@ -271,4 +273,5 @@ class StyleGAN():
         generator = tf.keras.models.load_model(folder + "generator")
 
         self._make_model(params[0],params[1],params[2],params[3],generator,discriminator)
+        print("Successfully found and loaded StyleGAN located in \"{}\"".format(folder))
         
