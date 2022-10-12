@@ -62,7 +62,7 @@ class OASIS_loader():
             np.array: Matrix of greyscale image pixel intensities (0,255)
         """
         im = Image.open(filepath).convert('L')
-        return np.asarray(im,dtype = np.uint8)
+        return np.asarray(im,dtype = np.uint8)[:,:,np.newaxis] #convolutional layers require a channel dimension
 
             
     def _normalise(self, image_vector: np.array) -> tuple[np.array, float]:
