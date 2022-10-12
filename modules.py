@@ -1,3 +1,4 @@
+from unicodedata import name
 import numpy as np
 import tensorflow as tf
 from keras.layers import Activation, AveragePooling2D, Flatten, Input, UpSampling2D
@@ -93,9 +94,9 @@ class StyleGAN(Model):
         r = SRES
         f = FILTERS[0]
         
-        const = Input(shape=(r, r, f), name='const')
-        w = Input(shape=(LDIM), name='w')
-        B = Input(shape=(r, r, 1), name='B')
+        const = Input(shape=(r, r, f), name='Constant')
+        w = Input(shape=(LDIM), name='w(0)')
+        B = Input(shape=(r, r, 1), name='B(0)')
         x = const
         
         x = AddNoise()([x, B])
@@ -112,8 +113,9 @@ class StyleGAN(Model):
 
     # Fade in upper resolution block
     def grow_G(self):
-        f = FILTERS[self.current_depth]
-        res = SRES*(2**self.current_depth) 
+        d = self.current_depth
+        f = FILTERS[d]
+        res = SRES*(2**d) 
         
         # extract, expand end of torgb
         end = self.G.layers[-5].output
@@ -125,8 +127,8 @@ class StyleGAN(Model):
             x1 = self.G.layers[i](x1)
 
         # branch
-        w = Input(shape=(LDIM))
-        B = Input(shape=(res, res, 1))
+        w = Input(shape=(LDIM), name=f'w({d})')
+        B = Input(shape=(res, res, 1), name=f'B({d})')
         
         x2 = EqualConv(end, filters=f)
         x2 = LeakyReLU(0.2)(x2)
@@ -140,7 +142,7 @@ class StyleGAN(Model):
         
         # to rgb
         x2 = EqualConv(x2, filters=CHANNELS, kernel=(1, 1), gain=1.)
-        x2 = Activation('tanh')(x2)
+        x2 = Activation('tanh', name=f'tanh_{d}')(x2)
 
         # stabilize
         self.G_ST = Model(self.G.input+[w,B], x2)
