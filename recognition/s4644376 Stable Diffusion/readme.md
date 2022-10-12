@@ -112,7 +112,7 @@ startB((Position Data)) --> Linear --> reluB[Relu] --> Add((+));
 
 Add((+)) --> ConC[Conv2d] --> BatchB[BatchNorm2d] --> ReluC[Relu] --> Out((Out));
 ```
-This block is responsible for every level of the Network (i.e. the conv,relu,conv,relu when downsampling and upsaling) and `MainNetwork` handling
+This block is responsible for every level of the Network (i.e. the conv,relu,conv,relu when downsampling and upsampling) and `MainNetwork` handling
 the `MaxPool` and `UpBlock` handling the up-convs (see below details).
 
 ### UpBlock
@@ -130,7 +130,7 @@ startC((Position Data)) --> Relu[ConvRelu]--> Out((Out))
 ### CalculatePositionEncodingBlock
 The calculate position encoding block, as the name implies, handles calculating a position encoding for a given position
 from `[0,1000]` describing the level of noise in the image that has been applied. The code for this block has been
-adapted from `https://huggingface.co/blog/annotated-diffusion` and calculates the position encoding via Sin and Cosine
+adapted from https://huggingface.co/blog/annotated-diffusion and calculates the position encoding via Sin and Cosine
 concatenation. This is then passed through a `torch.nn.modules.linear.Linear` followed by 
 `torch.nn.modules.activation.ReLU` before being returned.
 
@@ -201,7 +201,7 @@ which defaults to 50 epochs or
 ```console
 python train.py {number_epochs}
 ```
-**NOTE: The file path to the AKOA Dataset MUST be set and can be found at the top of train.py**
+**NOTE: The file path to the AKOA Dataset MUST be set and can be found at the top of train.py. It will otherwise default to same directory as the repo**
 
 
 Something to note is that during a single epoch, each batch of images is only trained on 1 specific level of noise out 
