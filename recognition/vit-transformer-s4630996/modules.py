@@ -60,22 +60,48 @@ class Patches(layers.Layer):
 
 ###################################  EMBED PATCHES  #######################################
 
+###################################  EMBED PATCHES  #######################################
+
 class PatchEmbedding(layers.Layer):
-    """ Class to linear project flattened patch into projection_dim and add positional embedding"""
+    """ Class to linear project flattened patch into projection_dim and add positional embedding and class token"""
     def __init__(self, num_patches, projection_dim):
         super(PatchEmbedding, self).__init__()
-        self.num_patches = num_patches
-        self.projection = layers.Dense(units=projection_dim)
-        self.position_embedding = layers.Embedding(
-            input_dim=num_patches, output_dim=projection_dim
-        )
-
-    def call(self, patch):
-        positions = tf.range(start=0, limit=self.num_patches, delta=1)
         
-        # add linear project to position embedding
-        embedding = self.projection(patch) + self.position_embedding(positions)
+        # linear projection onto projection dims
+        self.projection = layers.Dense(units=projection_dim)
+        
+        # position embedding
+        self.position_embedding = layers.Embedding(input_dim=num_patches, output_dim=projection_dim)
+        
+        # weight initializer for class token
+        class_weights_init = tf.random_normal_initializer()
+        
+        # initialize class token with initial values from weight initializer
+        class_token = class_weights_init(shape=(1, projection_dim), dtype="float32")
+        self.class_token = tf.Variable(initial_value=class_token, trainable=True)
+        
+    def call(self, patch):
+        # reshape class token to take into account batch size and projection dims
+        class_token = tf.tile(input=self.class_token, multiples=[BATCH_SIZE, 1])
+        class_token = tf.reshape(class_token, (BATCH_SIZE, 1, projection_dim))
+        
+        # create linear positions (one for each patch) and add one for class token
+        positions = tf.range(start=0, limit=self.num_patches+1, delta=1)
+
+        # create position embedding
+        position_embedding = self.position_embedding(positions)
+        
+        # project patch into projection dims
+        patch_embedding = self.projection(patch)
+        
+        # prepend class token
+        patch_embedding = tf.concat([class_token, patch_embedding], axis=1)
+        
+        # embedding is patch embedding plus position embedding
+        embedding = patch_embedding + position_embedding
+        
         return embedding
+
 
 ###################################  CREATE MLP  #######################################
 
