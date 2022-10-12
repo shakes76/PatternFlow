@@ -34,7 +34,7 @@ noising examples.
 Reference https://developer.nvidia.com/blog/improving-diffusion-models-as-an-alternative-to-gans-part-2/
 
 ## File Design
-The project has been split up into 4 distinct files primarily:
+The project has been split up into 5 distinct files primarily:
 - diffusion_imports.py - wrapper file for all required imports used for code simplicity 
 - dataset.py - primarily handles loading data and preprocessing
 - modules.py - This is the main file that contains a modified U-NET model used
