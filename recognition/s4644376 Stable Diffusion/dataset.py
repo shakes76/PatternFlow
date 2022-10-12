@@ -57,7 +57,7 @@ def load_data(path, type="train", batch_size=32, show=False):
 
     train = []
     validate = []
-    # seperate every 1 in 5 images to validate else training
+    # separate every 1 in 5 images to validate else training
     for index, image in enumerate(total_imgs_slice):
         if index % 5 == 0:
             validate.append(image)
@@ -72,6 +72,7 @@ def load_data(path, type="train", batch_size=32, show=False):
 
     data = DataLoader(loader, batch_size=batch_size, shuffle=True, drop_last=True)
 
+    # show a reference image if needed, used for testing during development
     if show:
 
         fig = plt.figure(figsize=(10, 7))

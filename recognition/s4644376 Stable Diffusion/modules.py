@@ -25,7 +25,7 @@ class ConvReLU(nn.Module):
         out = self.bn1(out)
         out = self.relu(out)
 
-        # Calcaulte positon
+        # Calculate position
         pos = self.pos_encoding(pos)
         pos = self.relu(pos)
 
@@ -94,6 +94,7 @@ class MainNetwork(nn.Module):
         super().__init__()
 
         self.time_dimensions = 32
+
         # encodes
         self.block1 = ConvReLU(1, 64)
         self.block2 = ConvReLU(64, 128)
@@ -119,6 +120,7 @@ class MainNetwork(nn.Module):
     def forward(self, x, position):
         pos = self.pos_block(position)
 
+        # handle down sampling
         out = self.block1(x, pos)
         copy_crop_one = out.clone()
         out = self.pool(out)
@@ -135,8 +137,10 @@ class MainNetwork(nn.Module):
         copy_crop_four = out.clone()
         out = self.pool(out)
 
+        # skip connnection at bottom of unet
         out = self.skip_block(out, pos)
 
+        # handle up sampling
         out = self.block5(out, copy_crop_four, pos)
 
         out = self.block6(out, copy_crop_three, pos)

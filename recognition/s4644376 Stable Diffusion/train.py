@@ -39,13 +39,14 @@ def train_model(model, epochs = 50):
     data_set = load_data(PATH_TO_DATASET, show=True,
                          batch_size=batchsize)
 
+    # model paramters
     model = model.cuda()
-
     optimizer = Adam(model.parameters(), lr=0.001)
     criterion = F.l1_loss
     loss_set = []
     validate_loss = []
 
+    # train per epoch
     for epoch in range(epochs):
         running_loss = 0
         model.train(True)
@@ -60,6 +61,7 @@ def train_model(model, epochs = 50):
 
             predicted_noise = model(data_noisy.cuda(), pos.cuda()).cuda()
 
+            # back propagate and update model
             loss = criterion(predicted_noise, noise).cuda()
             loss.backward()
             running_loss += loss.item()
@@ -71,10 +73,12 @@ def train_model(model, epochs = 50):
 
     torch.save(model, "Rerun2")
 
+    # Save Data for training
     f = open('Loss Data.csv', 'w')
     writer = csv.writer(f)
     writer.writerows(loss_set)
 
+    # Save Data for validate
     z = open('Validate Data.csv', 'w')
     writer = csv.writer(z)
     writer.writerows(validate_loss)
@@ -91,7 +95,6 @@ def validate_model(model, validate_loss):
     model = model.cuda()
 
     criterion = F.l1_loss
-
     running_loss = 0
 
     # loop through and calculate loss for each image with random noise
