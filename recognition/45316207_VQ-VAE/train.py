@@ -14,8 +14,12 @@ import modules
 import utils
 from tensorflow import keras
 import tensorflow as tf
-import numpy as np # TODO: Remove this later once we swap to the OASIS data
+import numpy as np
 import matplotlib.pyplot as plt
+import glob
+import imageio
+import time
+
 
 class VQVAETrainer(keras.models.Model):
     """
@@ -102,21 +106,74 @@ class VQVAETrainer(keras.models.Model):
         }
 
 
+class ProgressImagesCallback(keras.callbacks.Callback):
+    """
+    A custom callback for saving training progeress images
+    """
+
+    def __init__(self, train_data):
+        self.train_data = train_data
+
+    def save_progress_image(self, epoch):
+        """
+        Saves progress images as we go throughout training
+
+            Parameters:
+                epoch (int): The current training epoch
+        """
+
+        num_examples_to_generate = 16
+
+        idx = np.random.choice(len(self.train_data), num_examples_to_generate)
+        test_images = self.train_data[idx]
+        reconstructions_test = self.model.vqvae.predict(test_images)
+
+        fig = plt.figure(figsize=(16, 16))
+        for i in range(reconstructions_test.shape[0]):
+            plt.subplot(4, 4, i + 1)
+            plt.imshow(reconstructions_test[i, :, :, 0], cmap='gray')
+            # plt.imshow(reconstructions_test[i, :, :, 0])
+            plt.axis('off')
+
+        plt.savefig('out/image_at_epoch_{:04d}.png'.format(epoch+1))
+        plt.close()
+
+    def create_gif(self):
+        """
+        Show an animated gif of the progress throughout training
+        """
+
+        anim_file = 'vqvae_training_progression.gif'
+
+        with imageio.get_writer(anim_file, mode='I') as writer:
+            filenames = glob.glob('out/image*.png')
+            filenames = sorted(filenames)
+            for filename in filenames:
+                image = imageio.imread(filename)
+                writer.append_data(image)
+                image = imageio.imread(filename)
+                writer.append_data(image)
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.save_progress_image(epoch)
+
+    def on_train_end(self, logs=None):
+        self.create_gif()
+
+
 if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     #                                HYPERPARAMETERS                               #
     # ---------------------------------------------------------------------------- #
-    NUM_TRAINING_EXAMPLES = 2000
-    # NUM_TRAINING_EXAMPLES = None # was 2000
+    NUM_TRAINING_EXAMPLES = None # was 2000
 
-    TRAINING_EPOCHS = 5
+    TRAINING_EPOCHS = 10
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
     NUM_EMBEDDINGS = 128
 
-    EXAMPLES_TO_SHOW = 1
-
+    EXAMPLES_TO_SHOW = 5
 
     # ---------------------------------------------------------------------------- #
     #                                   LOAD DATA                                  #
@@ -138,7 +195,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     print("Training model...")
     # Run training, plotting losses and metrics throughout
-    history = vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE)
+    history = vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE, callbacks=[ProgressImagesCallback(train_data)])
 
 
     # ---------------------------------------------------------------------------- #
@@ -148,7 +205,7 @@ if __name__ == "__main__":
     trained_vqvae_model = vqvae_trainer.vqvae
 
     # Save the model to file as a tensorflow SavedModel
-    trained_vqvae_model.save("./vqvae_saved_model")
+    trained_vqvae_model.save("vqvae_saved_model")
 
 
     # ---------------------------------------------------------------------------- #
@@ -180,12 +237,12 @@ if __name__ == "__main__":
     plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='VQ VAE Loss', marker='o')
     plt.title('Training Losses', fontsize=14)
     plt.xlabel('Training Epoch', fontsize=14)
-    plt.set_xticks(range(1, TRAINING_EPOCHS+1))
+    plt.xticks(range(1, TRAINING_EPOCHS+1))
     plt.ylabel('Loss', fontsize=14)
     plt.legend()
     plt.grid(True)
     plt.savefig('training_loss_curves.png')
-    plt.show()
+    # plt.show()
 
     # Plot log losses
     plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Log Total Loss', marker='o')
@@ -193,10 +250,10 @@ if __name__ == "__main__":
     plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='Log VQ VAE Loss', marker='o')
     plt.title('Training Log Losses', fontsize=14)
     plt.xlabel('Training Epoch', fontsize=14)
-    plt.set_xticks(range(1, TRAINING_EPOCHS+1))
+    plt.xticks(range(1, TRAINING_EPOCHS+1))
     plt.ylabel('Log Loss', fontsize=14)
-    plt.set_yscale('log')
+    plt.yscale('log')
     plt.legend()
     plt.grid(True)
     plt.savefig('training_logloss_curves.png')
-    plt.show()
+    # plt.show()

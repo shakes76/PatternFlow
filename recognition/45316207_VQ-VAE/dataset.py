@@ -10,10 +10,8 @@ Contains the data loader for loading and preprocessing your data
 
 
 import glob
-import imageio
 import numpy as np
 import PIL
-from PIL import Image
 import os
 
 
