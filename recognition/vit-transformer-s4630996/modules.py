@@ -130,23 +130,23 @@ def transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projecti
     for _ in range(num_encoder_layers):
         
         # normalization lyaer
-        x1 = layers.LayerNormalization(epsilon=1e-6)(embedded_patches)
+        x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
         
         # multi-head self-attention layer
         # https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention
         x2 = layers.MultiHeadAttention(num_heads=num_heads, 
                                        key_dim=projection_dim, 
-                                       dropout=mha_dropout)(x1, x1, x1)
+                                       dropout=mha_dropout)(x1, x1)
         
         # residual connection
-        x3 = layers.Add()([x2, embedded_patches])
+        x3 = layers.Add()([x2, encoded_patches])
         
         # normalization layer
         x4 = layers.LayerNormalization(epsilon=1e-6)(x3)
         
         # MLP.
         hidden_units = [projection_dim * 2, projection_dim]
-        x5 = mlp(x4, hidden_units=transformer_units, dropout_rate=mlp_dropout)
+        x5 = mlp(x4, hidden_units=hidden_units, dropout_rate=mlp_dropout)
         
         # residual connection
         encoded_patches = layers.Add()([x5, x3])
