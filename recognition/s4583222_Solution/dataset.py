@@ -33,7 +33,7 @@ class BrainDataset(Dataset):
 
     def __getitem__(self, index):
         image_path = os.path.join(self.image_directory, self.images[index]) #Masks have same name as images
-        image = np.array(Image.open(image_path).convert("L"))
+        image = np.array(Image.open(image_path).convert("RGB"))
 
         if self.transform is not None:
             image = self.transform(image)

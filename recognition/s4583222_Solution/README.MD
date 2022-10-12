@@ -1,27 +1,37 @@
 # **Stable Diffusion on OASIS Brain Dataset**
 **COMP3710 Report by Thomas Jellett (45832220)**
 
-## **Stable Diffusion**
-Diffusion Models generative models. They can be used to generate new data, similar to the data it was trained on. Diffusion is the process of detroying the training data through successive iterations of Gaussian noise. The Diffusion model then learns how to recover the data by reversing the noise. We can then generate images by passing randomly sampled noise (O'Connor, 2022). 
-## **File Structure**
-The code was written in python and has been split up into 4 files. Each file serves a different use.
+## **Stable Diffusion:**
+Diffusion Models are a generative model. They can be used to generate new data, similar to the data it was trained on. Diffusion is the process of detroying the training data through successive iterations of Gaussian noise. The Diffusion model then learns how to recover the data by reversing the noise. We can then generate images by passing randomly sampled noise (O'Connor, 2022). 
+
+There are two main processes in diffusion, the ***Forward Diffusion Process*** and the ***Reverse Diffusion Process***. The math for both processes is very complex and long so I recommend either checking out the *Denoising Diffusion Probabilistic Models* [*Denoising Diffusion Probabilistic Models*](https://arxiv.org/pdf/2006.11239.pdf) paper or this [*Repository*](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/) as both give an indepth explaination on the derivation of the maths. But to summarize, 
+- **Forward Diffusion Process** is when noise is gradually added to the image until you get pure noise. And,
+- **Reverse Diffusion Process** is the learned process where a neural network is trained to denoise the image from pure noise to an actual image.
+
+![Dog_diffusion](https://miro.medium.com/max/828/0*v12mDJwIKWn-_y8L.png)
+Reference:  https://towardsdatascience.com/stable-diffusion-best-open-source-version-of-dall-e-2-ebcdf1cb64bc
+
+## **File Structure:**
+The code was written in python and has been split up into 4 files. Each file serves a different purpose.
 
 - **modules.py**: Contains the code for the UNET Model and Diffusion process.
 - **dataset.py**: Contains the functions and classes used to load and preprocess the image data.
 - **train.py**:  Contains the code for training, testing and saving the model.
 - **predict.py**: The predict file loads up a previously trained model and generates results.
 
-## **Data Loading**
+## **Loading Training Data:**
 
-## **UNET Model**
+## **UNET Model:**
 
-## **Diffusion**
+## **Diffusion:**
 
-## **Training**
+## **Training:**
 
-## **Predict/Results**
+## **Issues:**
 
-## **Dependencies**
+## **Predict/Results:**
+
+## **Dependencies:**
 The following packages were installed on conda and were used to run the code.
 - _libgcc_mutex             0.1                        main
 - _openmp_mutex             5.1                       1_gnu
@@ -154,7 +164,10 @@ The following packages were installed on conda and were used to run the code.
 - zlib                      1.2.12               h5eee18b_3
 - zstd                      1.5.2                ha4553b6_0
 
-## **References**
+## **References:**
+
+(Nir Barazida, 2022) Towards Data Science (2022) Stable Diffusion: Best Open Source Version of DALL·E 2. Available at: https://towardsdatascience.com/stable-diffusion-best-open-source-version-of-dall-e-2-ebcdf1cb64bc
+
 (O'Connor, 2022) Assembly AI (2022). Introduction to Diffusion Models for Machine Learning. Available at: https://www.assemblyai.com/blog/diffusion-models-for-machine-learning-introduction/.
 
 ‌
