@@ -148,7 +148,7 @@ class StyleGAN():
         metrics=['accuracy']
         self._generator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
         self._discriminator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
-        self._gan.compile(loss = loss, optimizer = optimizer, metrics = metrics)
+        self._gan.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001), metrics = metrics)
 
         self._epochs_trained = trained_epochs
 
@@ -195,13 +195,13 @@ class StyleGAN():
             x = tf.keras.layers.UpSampling2D(size=(2, 2), name = "Upsample_to_{0}x{0}".format(curr_res))(x)
             x = addNoise(name = "{0}x{0}_Noise_1".format(curr_res))([x,layer_noise_inputs[0]])
             x = adaIN(name = "{0}x{0}_adaIN_1".format(curr_res))([x,concat_adaIn_scales[0]])
-            x = tf.keras.layers.Conv2D(self._latent_dim, kernel_size=3, padding = "same", name = "{0}x{0}_2D_convolution".format(curr_res))(x)
+            x = tf.keras.layers.Conv2DTranspose(self._latent_dim, kernel_size=3, padding = "same", name = "{0}x{0}_2D_deconvolution".format(curr_res))(x)
             x = addNoise(name = "{0}x{0}_Noise_2".format(curr_res))([x,layer_noise_inputs[1]])
             x = adaIN(name = "{0}x{0}_adaIN_2".format(curr_res))([x,concat_adaIn_scales[1]])
 
             curr_res = curr_res*2
         
-        output_image = tf.keras.layers.Conv2D(1, kernel_size=3, padding = "same", name = "Final_Image".format(curr_res))(x)
+        output_image = tf.keras.layers.Conv2DTranspose(1, kernel_size=3, padding = "same", name = "Final_Image".format(curr_res))(x)
 
         return tf.keras.Model(inputs = ([generator_latent_input] + generator_noise_inputs + [constant_input]), outputs = output_image, name = "Generator")
     
@@ -213,16 +213,17 @@ class StyleGAN():
             tf.keras.Model: uncompiled discriminator model
         """
         discriminator_input = tf.keras.layers.Input(shape = (self._output_res,self._output_res,1), name = "Discriminator_Input") #note we expect greyscale images
-        
         #Feature analysis blocks, perform convolution on decreasing image resolution (and hence filter increasingly macroscopic features)
         current_res = self._output_res
         x = discriminator_input
         while current_res > 4:
+            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
-            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU_1".format(current_res))(x)
+            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_1".format(current_res))(x)
+            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_2".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
-            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU_2".format(current_res))(x)
-            x = tf.keras.layers.AveragePooling2D((2, 2), name = "{0}x{0}_Image_reduction".format(current_res))(x)
+            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_2".format(current_res))(x)
+            x = tf.keras.layers.AveragePooling2D((2, 2), name = "{0}x{0}_image_reduction".format(current_res))(x)
             current_res = current_res//2
 
         #Flatten and compile features for discrimination
