@@ -5,8 +5,7 @@ import csv
 class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic layers use keras.layers.Lambda
     """
     Custom Keras Neural Netork layer to conduct adaptive instance normalization
-    As specified by StyleGAN. this is deterministic as the learnt scale and bias come from
-    an externally trained dense layer.
+    As specified by StyleGAN.
     """
     def __init__(self, **kwargs) -> None:
         """
@@ -20,15 +19,17 @@ class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic laye
         To allow weights to be allocated lazily. Validates the applied tensor shape
 
         Raises:
-            ValueError: If the second input tensor is not exactly two values, or if the two inputs have differing channel depths
+            ValueError: If the second input tensor does not posess the correct number of scaling values (one per channel)
 
         Args:
             input (np.array): Shape of input passed to layer
         """
-        if not (input_shape[1][1] == 2):
-            raise ValueError("Second input must be of shape (,2,), recieved {}".format(input_shape[1]))
-        if not (input_shape[0][3] == input_shape[1][2]):
-            raise ValueError("Inputs must have same number of channels (trailing dimension), recieved Input1: {}, Input 2: {}".format(input_shape[0],input_shape[1]))
+        if not (input_shape[0][3] == input_shape[1][1]):
+            raise ValueError("Scale tensor must have exactly one value per channel of image input, recieved Image: {}, Scales: {}".format(input_shape[0],input_shape[1]))
+
+        #Each layer posesses a learnt bias
+        self._y_bias = self.add_weight(shape = (input_shape[0][0],1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "channel_adaIN_scales")
+
 
     def call(self, input: list[tf.Tensor,tf.Tensor]) -> tf.Tensor:
         """
@@ -36,19 +37,18 @@ class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic laye
 
         Args:
             input (list[tf.Tensor,tf.Tensor]): list of tensors, the first is the working image layer, 
-                    the second is a (,2) tensor containing the corespondingfeature scale and bias
+                    the second is a tensor containing the coresponding scales for each channel
 
         Returns:
             tf.Tensor: image layer scaled and biased (same dimensions as first input tensor)
         """
 
-        x,y = input
-        yscale,ybias = tf.split(y,2,axis = 1)#axes shifted by 1 to account for batches
-        yscale,ybias = yscale[:,:,tf.newaxis,:],ybias[:,:,tf.newaxis,:]#x will be 4 dimensional, channel last, we conduct fun axis antics to leverage broadcasting
+        x,yscale = input
+        yscale = yscale[:,tf.newaxis,tf.newaxis,:] #x will be 4 dimensional, channel last, we conduct fun axis antics to leverage broadcasting
         mean = tf.math.reduce_mean(tf.math.reduce_mean(x,axis=1),axis=1)[:,tf.newaxis,tf.newaxis,:] 
         std = tf.math.reduce_std(tf.math.reduce_std(x,axis=1),axis=1)[:,tf.newaxis,tf.newaxis,:]
 
-        return (yscale*(x-mean)/std) + ybias
+        return (yscale*(x-mean)/std) + self._y_bias
 
 class addNoise(tf.keras.layers.Layer):
     """
@@ -75,8 +75,8 @@ class addNoise(tf.keras.layers.Layer):
         if not (input_shape[0] == input_shape[1]):
             raise ValueError("Inputs must be of same shape, recieved the following: Input 1: {}, Input 2: {}".format(input_shape[0],input_shape[1]))
 
-        #This layer has a single weight to train, the scaling of the noise
-        self.noise_weight = self.add_weight(shape = [1], initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "noise_weight") #inherited from Layer
+        #This layer's weights are the scaling of the noise per channel
+        self.noise_weight = self.add_weight(shape = (input_shape[0][0],1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "noise_weight") #inherited from Layer
 
     def call(self, input: list[tf.Tensor,tf.Tensor]) -> tf.Tensor:
         """
@@ -183,21 +183,13 @@ class StyleGAN():
             layer_noise_inputs = (tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_1".format(curr_res)),
                     tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_2".format(curr_res)))
             generator_noise_inputs += list(layer_noise_inputs)
-
-            #Trained feature scaling based off of latent result for adaIN TODO perhaps do simple split
-            adaIn_scales = []
-            for i in range(self._latent_dim):
-                adaIn_scales.append((tf.keras.layers.Dense(2, name = "{0}x{0}_Channel_{1}_Feature_Scale_1".format(curr_res,i+1))(w),
-                    tf.keras.layers.Dense(2, name = "{0}x{0}_Channel_{1}_Feature_Scale_2".format(curr_res,i+1))(w)))
-            concat_adaIn_scales = (tf.keras.layers.Concatenate(axis = 2, name = "{0}x{0}_Feature_Scales_1".format(curr_res,i+1))([channel[0][:,:,tf.newaxis] for channel in adaIn_scales]),
-                    tf.keras.layers.Concatenate(axis = 2, name = "{0}x{0}_Feature_Scales_2".format(curr_res,i+1))([channel[1][:,:,tf.newaxis] for channel in adaIn_scales]))
-
+  
             x = tf.keras.layers.UpSampling2D(size=(2, 2), name = "Upsample_to_{0}x{0}".format(curr_res))(x)
             x = addNoise(name = "{0}x{0}_Noise_1".format(curr_res))([x,layer_noise_inputs[0]])
-            x = adaIN(name = "{0}x{0}_adaIN_1".format(curr_res))([x,concat_adaIn_scales[0]])
+            x = adaIN(name = "{0}x{0}_adaIN_1".format(curr_res))([x,w])
             x = tf.keras.layers.Conv2DTranspose(self._latent_dim, kernel_size=3, padding = "same", name = "{0}x{0}_2D_deconvolution".format(curr_res))(x)
             x = addNoise(name = "{0}x{0}_Noise_2".format(curr_res))([x,layer_noise_inputs[1]])
-            x = adaIN(name = "{0}x{0}_adaIN_2".format(curr_res))([x,concat_adaIn_scales[1]])
+            x = adaIN(name = "{0}x{0}_adaIN_2".format(curr_res))([x,w])
 
             curr_res = curr_res*2
         
