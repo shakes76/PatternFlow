@@ -3,6 +3,7 @@ from xmlrpc.client import Boolean
 import tensorflow as tf
 import keras as k
 import numpy as np
+import random
 
 
 AD_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\AD'
@@ -34,6 +35,10 @@ def load_siamese_data():
     pair_ad = ad_paths[0:(num_pairs//2)]
     pair_cn = cn_paths[1::4][0:num_pairs]  # every 4th path starting at 1
 
+    # Shuffle path lists
+    random.shuffle(pair_ad)
+    random.shuffle(pair_cn)
+
     pair_compare = pair_cn + pair_ad
 
     # Create labels array 
@@ -62,7 +67,7 @@ def load_classify_data(testing: bool):
         dataset: dataset for testing
     """
     # Get the path to each image and mask
-    if (testing):
+    if (not testing):
         ad_paths = [os.path.join(AD_PATH, path) for path in os.listdir(AD_PATH)]
         cn_paths = [os.path.join(CN_PATH, path) for path in os.listdir(CN_PATH)]
     else:
