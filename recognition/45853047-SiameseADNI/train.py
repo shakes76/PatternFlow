@@ -1,55 +1,83 @@
-from json import load
-
-
 from modules import siamese
 from modules import classification_model
+from modules import contrastive_loss
 from dataset import load_siamese_data
 from dataset import load_classify_data
+from tensorflow.keras.models import load_model
+import matplotlib.pyplot as plt
 
+SNN_PATH = 'C:\\git\\PatternFlowSeimese\\recognition\\45853047-SiameseADNI\\FullyConnectedSNN.h5'
+CLASSIFIER_PATH = 'C:\\git\\PatternFlowSeimese\\recognition\\45853047-SiameseADNI\\FullyConnectedClassifier.h5'
 
 
 def train():
-    # Siamese model
-    siamese = siamese(128, 128)
+    # Train and Save the SNN
+    siamese_fit = trainSNN()
 
+    # Train and Save classification
+    classifier_fit = trainClassifier()
+
+
+    classifier = load_model(CLASSIFIER_PATH)
+
+    # Evaluate
+    classify_test = load_classify_data(testing=True).batch(32)
+    classifier.evaluate(classify_test)
+
+
+    # Plot Accuracy, Val Accuracy and Loss-----------
+    plot_data(siamese_fit, [0, 50])
+    plot_data(classifier_fit, [0, 1])
+    plt.show()
+
+
+def trainSNN():
     # Siamese model data
     siamese_train, siamese_val = load_siamese_data()
     siamese_train = siamese_train.batch(32)
     siamese_val = siamese_val.batch(32)
 
+    # Siamese model
+    model = siamese(128, 128)
+
+    # Train
+    siamese_fit = model.fit(siamese_train, epochs=30, validation_data=siamese_val)
+    model.save(SNN_PATH)
+
+    return siamese_fit
+
+
+def trainClassifier():
     # Classification model data
     classify_train, classify_val = load_classify_data(testing=False)
     classify_train = classify_train.batch(32)
     classify_val = classify_val.batch(32)
 
-    # Test Data
-    test = load_classify_data(testing=True)
-    test = test.batch(32)
+    # Get the trained subnet
+    siamese_model = load_model(SNN_PATH, custom_objects={ 'contrastive_loss': contrastive_loss })
+    classifier = classification_model(siamese_model.get_layer(name="subnet"))
 
-    siamese.fit(siamese_train, epochs=30, validation_data=siamese_val)
+    # train
+    classifier_fit = classifier.fit(classify_train, epochs=20, validation_data=classify_val)
+    classifier.save(CLASSIFIER_PATH)
 
-    predict(siamese_val, siamese)
+    return classifier_fit
 
-    # Build classification model using trained subnet
-    classifier = classification_model(siamese.get_layer(name="subnet"))
 
-    classifier.fit(classify_train, epochs=10, validation_data=classify_val)
+def plot_data(fit, lim):
+    plt.figure()
+    plt.plot(fit.history['accuracy'], label='accuracy')
+    plt.plot(fit.history['val_accuracy'], label = 'val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.ylim([0, 1])
+    plt.legend(loc='lower right')
 
-    # TODO: move this to predict.py
-    # see predictions
-    predict(test, classifier)
-
-    # Evaluate model
-    classifier.evaluate(test)
-
-    
-    
-# TODO: move to predict.py
-def predict(ds, model):
-    for pair, label in ds:
-        pred = model.predict(pair)
-        for i in range(len(pred)):
-            print(pred[i], label[i])
-        break 
+    plt.figure()
+    plt.plot(fit.history['loss'], label='loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.ylim(lim)
+    plt.legend(loc='lower right')
 
 train()
