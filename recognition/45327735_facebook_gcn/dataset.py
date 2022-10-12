@@ -20,16 +20,12 @@ import tensorflow as tf
 
 class Dataset:
     """Represents and preprocesses the Facebook dataset"""
-    def __init__(self, path, filename='facebook', test_size=0.33):
+    def __init__(self, path, test_size=0.33):
         self.seed = np.random.randint(1, 10000)
-        self.data_numpy = self._load(path, filename)
+        self.data_numpy = np.load(path)
         self.num_classes = len(set(self.data_numpy["target"]))
         self.data_tensor = self._tensify(self.data_numpy)
         self.split = self._split(test_size)
-
-    def _load(self, path, filename):
-        """Loads the partially preprocessed .npz Facebook dataset"""
-        return np.load(path+"\\"+filename+'.npz')
 
     def _tensify(self, data_numpy):
         """

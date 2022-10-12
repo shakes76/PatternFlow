@@ -11,8 +11,9 @@ Created on Fri Oct 07 12:48:34 2022
 from modules import GNN
 from dataset import Dataset
 import matplotlib.pyplot as plt
-import keras
+import tensorflow as tf
 import numpy as np
+import keras
 
 def loadClassifier(dataset, path):
     classifier = GNNClassifier(dataset, load_path=path)
@@ -34,9 +35,9 @@ class GNNClassifier():
         self.model(self.data.get_training_split()[0]) # test model
 
     def _compile(self, learning_rate):
-        optimizer = keras.optimizers.Adam(learning_rate)
-        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        metrics = [keras.metrics.SparseCategoricalAccuracy(name="acc")]
+        optimizer = tf.keras.optimizers.Adam(learning_rate)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metrics = [tf.keras.metrics.SparseCategoricalAccuracy(name="acc")]
 
         # Compile the model.
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
@@ -47,7 +48,7 @@ class GNNClassifier():
         The predicted label is the index of the max value of the given row."""
         labels = []
         for prediction in predictions:
-            labels.append([np.argmax(prediction)])
+            labels.append(np.argmax(prediction))
         return labels
 
     def get_summary(self):
@@ -96,13 +97,13 @@ class GNNClassifier():
 
         return self.model.predict(dataset[0])
 
-    def predict_and_report(self, dataset=None, report_on=True):
+    def predict_and_report(self, test_set=None, report_on=True):
         """Feed node indices into the given model. Compare predictions with known labels. Print report.
 
         Returns predicted labels."""
         # test on pre-selected evaluation set
-        if (dataset):
-            test_input, test_labels = dataset
+        if test_set:
+            test_input, test_labels = test_set
         else:
             test_input = self.data.get_valid_split()[0]
             test_labels = self.data.get_valid_split()[1]
