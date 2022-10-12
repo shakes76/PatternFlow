@@ -124,14 +124,18 @@ for file in train_NC_filenames:
 ########################################################################################################
 
 
-def import_data(IMAGE_SIZE, BATCH_SIZE):
+def import_data(IMAGE_SIZE, BATCH_SIZE, paths):
     # (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
     # why can i not use tf.keras.utils.image_dataset_from-directory
 
+    path_train = paths['training']
+    path_validate = paths['validation']
+    path_test = paths['test']
+
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory
     data_train = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC_cropped/training",
+        path_train,
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
@@ -143,7 +147,7 @@ def import_data(IMAGE_SIZE, BATCH_SIZE):
         smart_resize=True)
 
     data_validate = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC_cropped/validation",
+        path_validate,
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
@@ -155,7 +159,7 @@ def import_data(IMAGE_SIZE, BATCH_SIZE):
         smart_resize=True)
 
     data_test = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC_cropped/test",
+        path_test,
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
