@@ -48,3 +48,7 @@ From paper as iterations increases, the output image will become more clear. Due
 ## Pre-processing
 download the dataset from bb course help page and unzipp file, normalized the data after load the data
 ![loss and accuracy metric plot](plot.png)
+
+Reference:
+http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html
+https://keras.io/examples/vision/super_resolution_sub_pixel/
