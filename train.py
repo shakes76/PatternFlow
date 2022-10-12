@@ -87,7 +87,7 @@ for depth in range(1, len(BSIZE)):
     loss_history.append(hist_stab)
     model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
-print('training completed.')
+print('Training completed.')
 
 # save loss logs
 D_loss = []
@@ -96,5 +96,10 @@ for hist in loss_history:
     D_loss += hist.history['d_loss'] 
     G_loss += hist.history['g_loss']
 
-array(D_loss).tofile(os.path.join(LOG_DIR, 'dloss.csv'), sep=',')
-array(G_loss).tofile(os.path.join(LOG_DIR, 'gloss.csv'), sep=',')
+D_log_dir = os.path.join(LOG_DIR, 'dloss.csv')
+G_log_dir = os.path.join(LOG_DIR, 'gloss.csv')
+array(D_loss).tofile(D_log_dir, sep=',')
+array(G_loss).tofile(G_log_dir, sep=',')
+
+print(f'{D_log_dir} saved.')
+print(f'{G_log_dir} saved.')
