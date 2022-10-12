@@ -124,7 +124,7 @@ for file in train_NC_filenames:
 ########################################################################################################
 
 
-def import_data(image_size, BATCH_SIZE):
+def import_data(IMAGE_SIZE, BATCH_SIZE):
     # (x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
 
     # why can i not use tf.keras.utils.image_dataset_from-directory
@@ -135,7 +135,7 @@ def import_data(image_size, BATCH_SIZE):
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
-        image_size=(image_size, image_size),
+        IMAGE_SIZE=(IMAGE_SIZE, IMAGE_SIZE),
         batch_size=BATCH_SIZE,
         shuffle=True,
         seed=123,
@@ -147,7 +147,7 @@ def import_data(image_size, BATCH_SIZE):
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
-        image_size=(image_size, image_size),
+        IMAGE_SIZE=(IMAGE_SIZE, IMAGE_SIZE),
         batch_size=BATCH_SIZE,
         shuffle=True,
         seed=123,
@@ -159,7 +159,7 @@ def import_data(image_size, BATCH_SIZE):
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
-        image_size=(image_size, image_size),
+        IMAGE_SIZE=(IMAGE_SIZE, IMAGE_SIZE),
         batch_size=BATCH_SIZE,
         shuffle=True,
         seed=123,

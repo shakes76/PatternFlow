@@ -27,34 +27,33 @@ def main():
 
     # data
     BATCH_SIZE = 128
-    image_size = 196  # We'll resize input images to this size
-    num_classes = 2
-    input_shape = (image_size, image_size, 1)
+    IMAGE_SIZE = 196  # We'll resize input images to this size
+    NUM_CLASS = 2
+    INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 1)
 
     # patches
-    patch_size = 14  
-    num_patches = (image_size // patch_size) ** 2
+    PATCH_SIZE = 14  
+    NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 
     # transformer-econder
-    projection_dim = 768
-    num_heads = 12
-    transformer_units = [projection_dim * 2,projection_dim] 
-    num_encoder_layers = 12
+    PROJECTION_DIM = 768
+    NUM_HEADS = 12
+    NUM_ENCODER_LAYERS = 12
 
     # mlp head
-    mlp_head_units = [3072]  # Size of the dense layers of the final classifier
+    MLP_HEAD_UNITS = [3072]  # Size of the dense layers of the final classifier
 
     # model
-    learning_rate = 0.001
-    weight_decay = 0.0001
-    num_epochs = 200
-    dropouts = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
+    LEARNING_RATE = 0.001
+    WEIGHT_DECAY = 0.0001
+    NUM_EPOCHS = 200
+    DROPOUTS = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
 
 
 
     ##############################   IMPORT DATA  ###################################
 
-    data_train, data_validate, data_test = import_data(image_size, BATCH_SIZE)
+    data_train, data_validate, data_test = import_data(IMAGE_SIZE, BATCH_SIZE)
 
     ##############################  TRAINING SCRIPT  ###################################
     # Run Experiment --> Instantiate model, Select optimzer, compile, checkpoint, train and evaluate
@@ -65,9 +64,9 @@ def main():
 
     # select optimzer
     optimizer = tfa.optimizers.AdamW(
-        learning_rate=learning_rate, weight_decay=weight_decay
+        LEARNING_RATE=LEARNING_RATE, WEIGHT_DECAY=WEIGHT_DECAY
     )
-    #     optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
+    #     optimizer = tf.optimizers.Adam(LEARNING_RATE=LEARNING_RATE)
 
 
     # compile
@@ -92,7 +91,7 @@ def main():
     history = vit_classifier.fit(
         x=data_train,
         batch_size=BATCH_SIZE,
-        epochs=num_epochs,
+        epochs=NUM_EPOCHS,
         validation_data=data_validate,
         callbacks=[checkpoint_callback],
     )

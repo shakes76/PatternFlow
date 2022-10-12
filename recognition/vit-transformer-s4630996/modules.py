@@ -39,18 +39,18 @@ def data_augmentation(mean, variance):
 
 class Patches(layers.Layer):
     """ Class to create patches from input images"""
-    def __init__(self, patch_size):
+    def __init__(self, PATCH_SIZE):
         """ Constructor calling Layers first"""
         super(Patches, self).__init__()
-        self.patch_size = patch_size
+        self.PATCH_SIZE = PATCH_SIZE
 
     def call(self, images):
         """ Allows Patches class to act like a method with images as input """
         batch_size = tf.shape(images)[0]
         patches = tf.image.extract_patches(
             images=images,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
+            sizes=[1, self.PATCH_SIZE, self.PATCH_SIZE, 1],
+            strides=[1, self.PATCH_SIZE, self.PATCH_SIZE, 1],
             rates=[1, 1, 1, 1],
             padding="SAME",
         )
@@ -63,30 +63,30 @@ class Patches(layers.Layer):
 ###################################  EMBED PATCHES  #######################################
 
 class PatchEmbedding(layers.Layer):
-    """ Class to linear project flattened patch into projection_dim and add positional embedding and class token"""
-    def __init__(self, num_patches, projection_dim):
+    """ Class to linear project flattened patch into PROJECTION_DIM and add positional embedding and class token"""
+    def __init__(self, NUM_PATCHES, PROJECTION_DIM):
         super(PatchEmbedding, self).__init__()
         
         # linear projection onto projection dims
-        self.projection = layers.Dense(units=projection_dim)
+        self.projection = layers.Dense(units=PROJECTION_DIM)
         
         # position embedding
-        self.position_embedding = layers.Embedding(input_dim=num_patches, output_dim=projection_dim)
+        self.position_embedding = layers.Embedding(input_dim=NUM_PATCHES, output_dim=PROJECTION_DIM)
         
         # weight initializer for class token
         class_weights_init = tf.random_normal_initializer()
         
         # initialize class token with initial values from weight initializer
-        class_token = class_weights_init(shape=(1, projection_dim), dtype="float32")
+        class_token = class_weights_init(shape=(1, PROJECTION_DIM), dtype="float32")
         self.class_token = tf.Variable(initial_value=class_token, trainable=True)
         
     def call(self, patch):
         # reshape class token to take into account batch size and projection dims
         class_token = tf.tile(input=self.class_token, multiples=[BATCH_SIZE, 1])
-        class_token = tf.reshape(class_token, (BATCH_SIZE, 1, projection_dim))
+        class_token = tf.reshape(class_token, (BATCH_SIZE, 1, PROJECTION_DIM))
         
         # create linear positions (one for each patch) and add one for class token
-        positions = tf.range(start=0, limit=self.num_patches+1, delta=1)
+        positions = tf.range(start=0, limit=self.NUM_PATCHES+1, delta=1)
 
         # create position embedding
         position_embedding = self.position_embedding(positions)
@@ -116,26 +116,26 @@ def mlp(x, hidden_units, dropout_rate):
 
 ##############################  CREATE TRANSFORMER ENCODER  ##################################
 
-def transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projection_dim):
+def transformer_encoder(embedded_patches, NUM_ENCODER_LAYERS, DROPOUTS, PROJECTION_DIM):
     """ Create transformer encoder block """
     
-    # extract dropouts
-    mha_dropout = dropouts["mha"]
-    mlp_dropout = dropouts["encoder_mlp"]
+    # extract DROPOUTS
+    mha_dropout = DROPOUTS["mha"]
+    mlp_dropout = DROPOUTS["encoder_mlp"]
     
     # so that multiple encoder layers can be generated from embeddedings
     encoded_patches = embedded_patches
     
     # create one or more layers
-    for _ in range(num_encoder_layers):
+    for _ in range(NUM_ENCODER_LAYERS):
         
         # normalization lyaer
         x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
         
         # multi-head self-attention layer
         # https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention
-        x2 = layers.MultiHeadAttention(num_heads=num_heads, 
-                                       key_dim=projection_dim, 
+        x2 = layers.MultiHeadAttention(NUM_HEADS=NUM_HEADS, 
+                                       key_dim=PROJECTION_DIM, 
                                        dropout=mha_dropout)(x1, x1)
         
         # residual connection
@@ -145,7 +145,7 @@ def transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projecti
         x4 = layers.LayerNormalization(epsilon=1e-6)(x3)
         
         # MLP.
-        hidden_units = [projection_dim * 2, projection_dim]
+        hidden_units = [PROJECTION_DIM * 2, PROJECTION_DIM]
         x5 = mlp(x4, hidden_units=hidden_units, dropout_rate=mlp_dropout)
         
         # residual connection
@@ -158,19 +158,19 @@ def transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projecti
 
 def vit_classifier():
     
-    inputs = layers.Input(shape=input_shape)
+    inputs = layers.Input(shape=INPUT_SHAPE)
     
     # Augment data.
     augmented = data_augmentation(mean=mean, variance=variance)(inputs)
     
     # Create patches.
-    patches = Patches(patch_size)(augmented)
+    patches = Patches(PATCH_SIZE)(augmented)
     
     # create patch embeddings
-    embedded_patches = PatchEmbedding(num_patches, projection_dim)(patches)
+    embedded_patches = PatchEmbedding(NUM_PATCHES, PROJECTION_DIM)(patches)
 
     # create patch encodings
-    encoded_patches = transformer_encoder(embedded_patches, num_encoder_layers, dropouts, projection_dim)
+    encoded_patches = transformer_encoder(embedded_patches, NUM_ENCODER_LAYERS, DROPOUTS, PROJECTION_DIM)
 
     # prepare patch encodings for mlp
     representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
@@ -183,8 +183,8 @@ def vit_classifier():
     features = mlp(x=representation, hidden_units=[2048], dropout_rate=0.5)
     
     # Classify outputs.
-    outputs = layers.Dense(num_classes)(features)
-#     outputs = layers.Dense(num_classes)(representation)
+    outputs = layers.Dense(NUM_CLASSes)(features)
+#     outputs = layers.Dense(NUM_CLASSes)(representation)
     
     # Create the Keras model.
     model = keras.Model(inputs=inputs, outputs=outputs)
