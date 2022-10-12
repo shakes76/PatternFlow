@@ -2,7 +2,7 @@
 # By Thomas Jellett (s4583222)
 # HARD DIFFICULTY
 # Create a generative model of the OASIS brain using stable diffusion that
-# has a “reasonably clear image.”
+# has a â€œreasonably clear image.â€
 
 # File: dataset.py
 # Description: Used to get the OASIS brain dataset
@@ -16,7 +16,7 @@ import numpy as np
 
 from torch.utils.data import DataLoader
 
-training_images = 's4583222_Solution/Images/Train'
+training_images = '/home/Student/s4583222/COMP3710/Images/Train'
 # Train_image_path = 's4583222_Solution/keras_png_slices_train/'
 # Validate_image_path = 's4583222_Solution/keras_png_slices_validate/'
 # Test_image_path = 's4583222_Solution/keras_png_slices_test/'
@@ -33,7 +33,7 @@ class BrainDataset(Dataset):
 
     def __getitem__(self, index):
         image_path = os.path.join(self.image_directory, self.images[index]) #Masks have same name as images
-        image = np.array(Image.open(image_path).convert("RGB"))
+        image = np.array(Image.open(image_path).convert("L"))
 
         if self.transform is not None:
             image = self.transform(image)
