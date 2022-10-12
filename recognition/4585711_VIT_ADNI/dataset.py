@@ -35,16 +35,20 @@ def get_normalisation(preprocessing, train_ds, test_ds):
     except OSError:
         print("Mean and variance not calculated. Calculating now...")
         ds = train_ds.concatenate(test_ds)
-        ds, _ = ds.get_single_element()
+        ds = ds.map(lambda input,tag : input)
+        ds = ds.map(lambda item : preprocessing(item))
         normalise = layers.Normalization(axis=None)
-        normalise.adapt(preprocessing(ds))
+        normalise.adapt(ds)
 
         mean = normalise.adapt_mean.numpy()
         var = normalise.adapt_variance.numpy()
         with open("normalisation.txt", "w") as f:
             f.write(str(mean) + " " + str(var))
 
-    return layers.Normalization(axis=None, mean=mean, variance=var)(preprocessing)
+    return keras.Sequential([
+        preprocessing,
+        layers.Normalization(axis=None, mean=mean, variance=var)
+    ])
 
 def get_data_preprocessing(batch_size=32, image_size=(256, 256), cropped_image_size=(256, 256), cropped_pos=(0, 0)):
     train_ds, test_ds = get_data(batch_size, image_size)
@@ -53,8 +57,7 @@ def get_data_preprocessing(batch_size=32, image_size=(256, 256), cropped_image_s
     (cropped_pos[1], image_size[1] - (cropped_pos[1] + cropped_image_size[1])))
 
     preprocessing = keras.Sequential([
-        layers.Input(shape=(image_size[0], image_size[1], 1)),
-        layers.Cropping2D(cropping=cropping),
+        layers.Cropping2D(input_shape=(image_size[0], image_size[1], 1), cropping=cropping),
         layers.Rescaling(scale=1./255)
     ])
 
