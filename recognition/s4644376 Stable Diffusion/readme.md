@@ -2,11 +2,11 @@
 #### Comp3710 Assignment - Logan De Groot - 46443762
 ## Overview
 The diffusion model implemented is able to generate brand-new knee MRI scans that have never
-been seen before based off pure noise as an input, with that noise being `256x256` randomly
+been seen before based off pure noise as an input, with that noise being a `256x256` randomly
 generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model which is described
 extensively in this [paper](https://arxiv.org/pdf/2112.10752.pdf) with the model architecture below. Some modifications
-were made to this model primarily that the conditioning module and cross attention module were deemed unnecessary due to
-the unneeded word text inputs and were not required to meet the specification.
+were made to this model, primarily that the conditioning module and cross attention module were deemed unnecessary due to
+the unneeded word text inputs and were not required to meet the specification to generate reasonably clear images.
 
 ![image](images/Stable%20Diffusion%20Model)
 
@@ -19,7 +19,7 @@ for training and model improvement. This ideally produces a model that can accur
 how much noise has been added to a specific image of the dataset.
 
 Once the model has been trained random noise can be generated and inputted which the model just sees
-as image from the dataset with noise applied. The model then generates a guess to how much noise needs to be removed
+as an image from the trained dataset with noise applied. The model then generates a guess to how much noise needs to be removed
 from each specific pixel to produce an image similar to the trained dataset. At this point via some math
 as described in the basis [paper](https://arxiv.org/pdf/2006.11239.pdf) the input noise can have the predicted
 noise removed to generate a brand-new Knee MRI scan. 
@@ -38,23 +38,21 @@ The project has been split up into 4 distinct files primarily:
 - diffusion_imports.py - wrapper file for all required imports used for code simplicity 
 - dataset.py - primarily handles loading data and preprocessing
 - modules.py - This is the main file that contains a modified U-NET model used
-- train.py - This is the file that runs and enables the use of all other files #TOCHANGE
+- train.py - This is the file that creates a brand new model and trains it
 - predict.py - This file plots and shows visualisation from the saved model
 
 ## Data Loading
 The OAI AKOA Knee MRI dataset is required for this model. When attempting to train the model,
 a `torch.torch.utils.data.dataset` and `torch.utils.data.dataloader.DataLoader` must be used which can be found within 
 `dataset.py`. For simplicity a convenient wrapper has been provided called `load_data` which when given a
-path to the OAI AKOA Knee MRI dataset will return a `torch.utils.data.dataloader.DataLoader` to be used for training. To
-instantiate:
+path to the OAI AKOA Knee MRI dataset will return a `torch.utils.data.dataloader.DataLoader` to be used for training. You can specify the `type` of data wanted to be loaded with either `"train"` (default) or `"validate"`. To instantiate:
 
 ```python
 from dataset import *
-dataloader = load_data("PathToDataSet")
+dataloader = load_data("PathToDataSet", type = "train", batch_size = 8, show = false)
 ```
-where various options can be passed such as `batchsize` to control the number of images returned when using the 
-dataloader (default 16), `workers` to control multiprocessing capabilities for loading images (default 12)
-and `show` to produce a single image upon instantiation to confirm correct data and see a sample image (default false).
+Various options can be passed such as `batch_size` to control the number of images returned when using the 
+dataloader (default 16) and `show` to produce a single image upon instantiation to confirm correct data and see a sample image (default false).
 
 ## Preprocessing
 Upon commencement of training preprocessing of the dataset is required. Thankfully only two significant steps are taken when transforming the data into a usable version.
