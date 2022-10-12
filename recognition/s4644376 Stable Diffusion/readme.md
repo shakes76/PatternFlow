@@ -3,7 +3,9 @@
 ## Overview
 The diffusion model implemented is able to generate brand-new knee MRI scans that have never
 been seen before based off pure noise as an input, with that noise being `256x256` randomly
-generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model.
+generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model (see below) with out the conditioning module and crossattention as this was unnecessary.
+
+![image](images/Stable%20Diffusion%20Model.png)
 
 Stable Diffusion works by taking a given dataset (in this case OAI OKOA MRI Knee Scans) and applying a known amount of noise
 to an image from the dataset. The model then takes the newly noised image and attempts to determine how much noise
