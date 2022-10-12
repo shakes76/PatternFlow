@@ -7,6 +7,7 @@ import tensorflow_probability as tfp
 class VQ(layers.Layer):
     
     def __init__(self, no_embeddings, embed_dim, beta=0.25):
+        super().__init__(name='VQ_layer')
         self.embed_dim = embed_dim
         self.no_embeddings = no_embeddings
         
@@ -45,13 +46,13 @@ class VQ(layers.Layer):
                  tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * sim)
         
         encode_ind = tf.argmin(dists, axis=1)
-        return encode_ind
-        
+        return encode_ind   
+
 class Encoder():
 
-    def __init__(self, latent_dim=16):
-        self.encoder = keras.Sequential()
-        self.encoder.add(keras.Input(shape=(28,28,1)))
+    def __init__(self, latent_dim=16, input_x=256):
+        self.encoder = keras.Sequential(name='encoder')
+        self.encoder.add(keras.Input(shape=(input_x, input_x, 1)))
         self.encoder.add(layers.Conv2D(32, 3, activation='relu', strides=2, padding='same'))
         self.encoder.add(layers.Conv2D(64, 3, activation='relu', strides=2, padding='same'))
         self.encoder.add(layers.Conv2D(latent_dim, 1, activation='relu', padding='same'))
@@ -62,8 +63,8 @@ class Encoder():
 class Decoder():
 
     def __init__(self, latent_dim=16):
-        self.decoder = keras.Sequential()
-        self.decoder.add(keras.Input(shape=Encoder(latent_dim).get_encoder().output_shape[1:]))
+        self.decoder = keras.Sequential(name='decoder')
+        self.decoder.add(keras.Input(shape=Encoder(latent_dim).get_encoder().output.shape[1:]))
         self.decoder.add(layers.Conv2DTranspose(64, 3, activation='relu', strides=2, padding='same'))
         self.decoder.add(layers.Conv2DTranspose(32, 3, activation='relu', strides=2, padding='same'))
         self.decoder.add(layers.Conv2DTranspose(1, 3, activation='relu', padding='same'))
