@@ -41,10 +41,12 @@ def VQVAE(TRAINDATA):
         self.numembedding=numembedding
         self.embeddingdim=embeddingdim
         self.layer0=nn.Conv2d(3,32,kernel=3,stride=1,padding='same')
+        self.layer2=nn.BatchNorm2d(32)
         self.layer1=nn.Conv2d(3,64,kernel=3,stride=1,padding='same')
         self.layer2=nn.BatchNorm2d(64)
-        self.layer3=nn.Conv2d(3,64,kernel=3,stride=1,padding='same')
-        self.layer4=nn.Conv2d(3,32,kernel=3,stride=1,padding='same')
+        self.layer3=nn.Conv2d(64,32,kernel=3,stride=1,padding='same')
+        self.layer2=nn.BatchNorm2d(32)
+        self.layer4=nn.Conv2d(32,3,kernel=3,stride=1,padding='same')
         
         
         
