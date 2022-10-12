@@ -10,6 +10,8 @@ Created on Fri Oct 07 12:48:34 2022
 
 from modules import GNN
 from dataset import Dataset
+import umap, umap.plot
+from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
@@ -88,6 +90,15 @@ class GNNClassifier():
         loss.set_xlabel('Epoch')
         loss.set_ylabel('Loss')
         loss.legend(["train", "test"], loc="lower right")
+        plt.show()
+
+    def plot_umap(self):
+        embeddings = self.model.get_node_embedding()
+        targets = self.data.get_targets()
+        mapper = umap.UMAP().fit(embeddings)
+
+        umap.plot.points(mapper, labels=targets)
+        umap.plot.connectivity(mapper, show_points=True)
         plt.show()
 
     def predict(self, dataset):

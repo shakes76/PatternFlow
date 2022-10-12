@@ -29,6 +29,7 @@ class GNN(tf.keras.Model):
         self.combination_type = combination_type
         self.dropout_rate = dropout_rate
         self.normalise = normalise
+        self.node_embeddings = None
 
         # The sample graph defines the PROPERTIES of the expected input and is NOT used for training
         self.edges = sample_graph.get_edges()
@@ -69,9 +70,21 @@ class GNN(tf.keras.Model):
         # Create a compute logits layer.
         self.predict_labels = layers.Dense(units=num_classes, name="predict_labels")
 
+    def _predict_labels_for_indices(self, indices):
+        """Returns network's predictions for the given node indices"""
+        # Fetch node embeddings for the input indices
+        node_embeddings = tf.gather(self.node_embeddings, indices)
+
+        return self.predict_labels(node_embeddings)
+
+    def get_node_embedding(self):
+        return self.node_embeddings
+
     def call(self, input_node_indices):
         """
-        Constructs the architecture of the model, including residual single-skip connections between GraphConv layers.
+        Trains the network on the given graph, and outputs predictions for the nodes corresponding to the given indices.
+
+        It also builds the model architecture, including residual single-skip connections between GraphConv layers.
         """
         # Preprocess the node_features to produce node representations.
         x = self.preprocess(self.features)
@@ -84,13 +97,14 @@ class GNN(tf.keras.Model):
             x = applied_layer + x
 
         # Postprocess final node embedding
-        x = self.postprocess(x)
-
-        # Fetch node embeddings for the input node_indices
-        node_embeddings = tf.gather(x, input_node_indices)
+        self.node_embeddings = self.postprocess(x)
 
         # Predict labels
-        return self.predict_labels(node_embeddings)
+        return self._predict_labels_for_indices(input_node_indices)
+
+
+
+
 
 
 """
