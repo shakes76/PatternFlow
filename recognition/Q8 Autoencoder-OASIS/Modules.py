@@ -58,6 +58,13 @@ def VQVAE(TRAINDATA):
          dist[:,i]=torch.linalg.vector_norm(x.float(),embedding.weight[i,:]*torch.ones(x.shape[0],x.shape[1].float()))
         indexes=torch.argmin(dist,dim=1)
         quant=embedding.weight[indexes,:]
+        loss1 = F.mse_loss(quant.detach(), x)
+        loss2 =commitcost* F.mse_loss(quant, x.detach())
+        Loss=loss1+
+        quantized = x + (quant - x).detach()
+        return Loss, quant.permute(0, 3, 1, 2).contiguous()
+
+
    #def sampling(self,mu,logvariance):
       
 
