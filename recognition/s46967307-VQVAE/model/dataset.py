@@ -36,9 +36,9 @@ def load_data():
         with open('data.pkl', 'wb') as f:
             pickle.dump(data, f)
 
-    data["test"] = tf.convert_to_tensor(data["test"], dtype=tf.float32)
-    data["train"] = tf.convert_to_tensor(data["train"], dtype=tf.float32)
-    data["validate"] = tf.convert_to_tensor(data["validate"], dtype=tf.float32)
+    data["test"] = data["test"]
+    data["train"] = data["train"]
+    data["validate"] = data["validate"]
 
     data["test"] = tf.cast(data["test"], tf.float32) / 255.0
     data["train"] = tf.cast(data["train"], tf.float32) / 255.0

@@ -6,6 +6,152 @@ image_shape = (256,256,1)
 num_embeddings = 32
 beta = 2.0
 
+class GAN(tf.keras.Model):
+    def __init__(self, vq, **kwargs):
+        super(GAN, self).__init__(**kwargs)
+
+        self.vq = vq
+
+        # Define generator model, should map random 32x32x1 noise to 32x32x1 indexes into
+        # the vqvae's embeddings in range [0..=embeddings]
+        input = tf.keras.layers.Input(shape=(32, 32, 1), batch_size=None, name="input")
+        x = tf.keras.layers.Conv2D(
+            filters = 32, 
+            kernel_size = 3, 
+            strides = 1, 
+            activation = 'relu',
+            padding = "same", 
+            name = "noise1")(input)
+        x = tf.keras.layers.Conv2D(
+            filters = 64, 
+            kernel_size=3, 
+            strides=1, 
+            activation='relu',
+            padding = "same", 
+            name = "noise2")(x)
+        x = tf.keras.layers.Conv2D(
+            filters = 128, 
+            kernel_size=3, 
+            strides=1, 
+            activation='relu',
+            padding = "same", 
+            name = "noise3")(x)
+        x = tf.keras.layers.Conv2D(
+            filters = 1, 
+            kernel_size=6, 
+            strides=1, 
+            activation=tf.keras.layers.ReLU(max_value=num_embeddings),
+            padding = "same", 
+            name = "to_latent")(x)
+        #x = tf.keras.layers.Lambda(
+        #    lambda y: tf.math.round(y)
+        #)(x)
+        
+        self.generator = tf.keras.Model(input, x, name="encoder")
+
+        # Define the discriminator model, should take a 256x256x1 image, do some shrinking
+        # convolution, and then dense layer to a single logit output from 0 to 1
+        input = tf.keras.layers.Input(shape=image_shape, batch_size=None, name="input")
+        x = tf.keras.layers.Conv2D(
+            filters = 32, 
+            kernel_size = 3, 
+            strides = 1, 
+            activation = 'relu',
+            padding = "same", 
+            name = "conv1")(input)
+        x = tf.keras.layers.Conv2D(
+            filters = 64, 
+            kernel_size=3, 
+            strides=1, 
+            activation='relu',
+            padding = "same", 
+            name = "conv2")(x)
+        x = tf.keras.layers.Conv2D(
+            filters = 128, 
+            kernel_size=3, 
+            strides=1, 
+            activation='relu',
+            padding = "same", 
+            name = "conv3")(x)
+        x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.Dense(64, activation='relu')(x)
+        x = tf.keras.layers.Dense(1, activation='softmax')(x)
+
+        self.discriminator = tf.keras.Model(input, x, name="discriminator")
+
+    def train_step(self, train_data):
+        # x is images of real brains (256,256,1)
+        x, _ = train_data
+
+        # y is random noise of size (len(x), 32, 32, 1)
+        y = tf.random.uniform((tf.shape(x)[0], 32, 32, 1))
+
+        with tf.GradientTape(persistent=True) as tape:
+            # Generate Images
+            g = tf.cast(tf.math.round(self.generator(y)), dtype=tf.int64) # Generated images
+            g = tf.reshape(g, shape=(8,32,32))
+            g = tf.gather(self.vq.get_layer(name="vq").variables[0], g)
+            g = self.vq.decoder(g)
+            
+            # Discriminate
+            rd = self.discriminator(x) # Discriminator real inputs
+            fd = self.discriminator(g) # Discriminator fake inputs
+            
+            dl = tf.reduce_mean(tf.keras.losses.BinaryCrossentropy(
+                logits=rd, 
+                labels=tf.ones_like(rd))
+            ) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=fd, 
+                labels=tf.zeros_like(fd))
+            )
+            
+            gl = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=fd,
+                labels=tf.ones_like(fd)
+            ))
+
+        g_grad = tape.gradient(gl, self.generator.trainable_variables)
+        d_grad = tape.gradient(dl, self.discriminator.trainable_variables)
+
+        self.optimizer.apply_gradients(zip(g_grad, self.generator.trainable_variables))
+        self.optimizer.apply_gradients(zip(d_grad, self.discriminator.trainable_variables))
+
+        del tape
+
+        return { "discriminator_loss": dl, "generator_loss": gl }
+
+    def test_step(self, test_data):
+        # x is images of real brains (256,256,1)
+        x, _ = test_data 
+
+        # y is random noise of size (len(x), 32, 32, 1)
+        y = tf.random.uniform((tf.shape(x)[0], 32, 32, 1))
+
+        # Generate images
+        g = tf.cast(tf.math.round(self.generator(y)), dtype=tf.int64) # Generated images
+        g = tf.reshape(g, shape=(8,32,32))
+        g = tf.gather(self.vq.get_layer(name="vq").variables[0], g)
+        g = self.vq.decoder(g)
+
+        # Discriminate
+        rd = self.discriminator(x) # Discriminator real inputs
+        fd = self.discriminator(g) # Discriminator fake inputs
+        
+        dl = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            logits=rd, 
+            labels=tf.ones_like(rd))
+        ) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            logits=fd, 
+            labels=tf.zeros_like(fd))
+        )
+        
+        gl = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            logits=fd,
+            labels=tf.ones_like(fd)
+        ))
+
+        return { "discriminator_loss": dl, "generator_loss": gl }
+
 class VQ(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(VQ, self).__init__(**kwargs)
@@ -16,7 +162,7 @@ class VQ(tf.keras.layers.Layer):
                 name="embeddings",
                 initial_value=w_init(shape=(num_embeddings, latent_dims), dtype="float32")
                 )
-
+    
     def get_indices(self, inputs_flat):
         results = tf.vectorized_map(
                 lambda y:
