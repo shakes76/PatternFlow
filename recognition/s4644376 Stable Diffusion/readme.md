@@ -3,7 +3,14 @@
 ## Overview
 The diffusion model implemented is able to generate brand-new knee MRI scans that have never
 been seen before based off pure noise as an input, with that noise being `256x256` randomly
-generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model.
+generated tensor with values between `[0,1]`. The model implemented is a stable diffusion model which is described
+extensively in this [paper](https://arxiv.org/pdf/2112.10752.pdf) with the model architecture below. Some modifications
+were made to this model primarily that the conditioning module and cross attention module were deemed unnecessary due to
+the unneeded word text inputs and were not required to meet the specification.
+
+![image](images/Stable%20Diffusion%20Model)
+
+Reference https://arxiv.org/pdf/2112.10752.pdf
 
 Stable Diffusion works by taking a given dataset (in this case OAI OKOA MRI Knee Scans) and applying a known amount of noise
 to an image from the dataset. The model then takes the newly noised image and attempts to determine how much noise
@@ -15,7 +22,7 @@ Once the model has been trained random noise can be generated and inputted which
 as image from the dataset with noise applied. The model then generates a guess to how much noise needs to be removed
 from each specific pixel to produce an image similar to the trained dataset. At this point via some math
 as described in the basis [paper](https://arxiv.org/pdf/2006.11239.pdf) the input noise can have the predicted
-noise removed to generate a brand new Knee MRI scan. 
+noise removed to generate a brand-new Knee MRI scan. 
 
 This process can be illustrated with the below figure where going left to right
 is applying noise and the model attempts to figure out how much noise has been applied to go from
@@ -29,7 +36,7 @@ Reference https://developer.nvidia.com/blog/improving-diffusion-models-as-an-alt
 ## File Design
 The project has been split up into 4 distinct files primarily:
 - diffusion_imports.py - wrapper file for all required imports used for code simplicity 
-- dataset.py - primarily handles loading loading data and preprocessing
+- dataset.py - primarily handles loading data and preprocessing
 - modules.py - This is the main file that contains a modified U-NET model used
 - train.py - This is the file that runs and enables the use of all other files #TOCHANGE
 - predict.py - This file plots and shows visualisation from the saved model
@@ -50,18 +57,22 @@ dataloader (default 16), `workers` to control multiprocessing capabilities for l
 and `show` to produce a single image upon instantiation to confirm correct data and see a sample image (default false).
 
 ## Preprocessing
-Upon commencement of training preprocessing of the dataset is required. Thankfully only two significant steps are taking when transforming the data into a usuable version.
+Upon commencement of training preprocessing of the dataset is required. Thankfully only two significant steps are taken when transforming the data into a usable version.
+
+For reference the input images into the model are:
+
+![image](images/input%20image.png)
 
 The first step is to load the data in via `Pillow` which by default produces a `Pil Image` in RGB format. This is then converted to grayscale via `.convert("L)` and resized to 256x256. 
 As the images are grayscale it makes sense to do this conversion as it reduces the future tensor dimension from `(3,h,w)` to `(1,h,w)` reducing training time 
 and complexity without loss of information. The resize to 256,256 is to ensure all images have a consistent size reducing the chance of error and irregularities in training.
 
 From here the second step is to convert the `Pil Image` to a `torch.Tensor` which can be done by `torchvision.transforms.transforms.ToTensor`. 
-This has the added affect of scaling all data to be within the bounds of [0,1] instead of [0,255]. Finally the data must 
+This has the added affect of scaling all data to be within the bounds of [0,1] instead of [0,255]. Finally, the data must 
 be normalised from [0,1] to [-1,1], this can easily be done by multiply by 2 and subtracting 1. This has to be done to 
 ensure consistency with the reversing of predicted noise from the unet model.
 
-In total, all of the preprocessing steps can be achieved with the following lines which can be found within the provided
+In total, all the preprocessing steps can be achieved with the following lines which can be found within the provided
 `dataset.py` and is handled via the use of `load_data(Path)`:
 ```python
 from diffusion_imports import *
@@ -73,12 +84,12 @@ slice = slice.mul(2).sub(1)
 
 ## Model
 The implemented model is a modified U-NET network which makes heavy use of Convolution Layers and Pooling. A standard U-NET is an encoder & decoder style network that was originally developed to produce segementation mapping via downsampling and upsampling. 
-This makes U-NET a good fit due to it's ability to down sample and then re-upscale giving it the ability to predict noise levels with some
+This makes U-NET a good fit due to its ability to down sample and then re-upscale giving it the ability to predict noise levels with some
 modification. The structure of the U-NET is as follows:
 ![image](images/UNET_structure.png)
 Reference https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 
-The above U-NET has been slightly modified to include the ability to add Positional Embeddings which let's the U-NET
+The above U-NET has been slightly modified to include the ability to add Positional Embeddings which lets the U-NET
 learn/know the level of noise currently within the image being passed through the network. This is necessary
 as the U-NET by default has no concept of how much noise has been added and without it makes predicting noise
 nearly impossible.
@@ -103,12 +114,12 @@ startB((Position Data)) --> Linear --> reluB[Relu] --> Add((+));
 
 Add((+)) --> ConC[Conv2d] --> BatchB[BatchNorm2d] --> ReluC[Relu] --> Out((Out));
 ```
-This block is responsible for every level of the Network (i.e the conv,relu,conv,relu when downsampling and upsaling) and `MainNetwork` handling
+This block is responsible for every level of the Network (i.e. the conv,relu,conv,relu when downsampling and upsaling) and `MainNetwork` handling
 the `MaxPool` and `UpBlock` handling the up-convs (see below details).
 
 ### UpBlock
 The UpBlock is an extension of `ConvRelu` that implements an additional `torch.nn.modules.conv.ConvTranspose2d` with
-`kernal_size=(2,2)` and `stride=(2,2)` and handles the upscaling within the U-NET. It also concatenates the the skip
+`kernal_size=(2,2)` and `stride=(2,2)` and handles the upscaling within the U-NET. It also concatenates the skip
 layers as depicted in the above U-NET design. The forward function is depicted below and takes input data 
 (the current tensor), position data (current position embedding) and skip (skip layer info from previous downsamples):
 ```mermaid
@@ -127,7 +138,7 @@ concatenation. This is then passed through a `torch.nn.modules.linear.Linear` fo
 
 ### MainNetwork
 The main network is where all of the above blocks are put together to form the modified U-NET. The modified U-NET
-follows a very similar design to above. It starts with a input image with noise applied, a position step (measure of how 
+follows a very similar design to above. It starts with an input image with noise applied, a position step (measure of how 
 much noise has been applied from [0,100])
 ```mermaid
 flowchart LR
@@ -143,7 +154,7 @@ The training pipeline has been written and can be found in `train.py`. It consis
 3. Training Loop and Process
 
 The optimizer chosen for the model was Adam (`torch.optim.adam.Adam`) which was originally proposed by the 
-[paper](https://arxiv.org/pdf/2006.11239.pdf) due to it's ability to generalise to multiple problems and noisy datasets.
+[paper](https://arxiv.org/pdf/2006.11239.pdf) due to its ability to generalise to multiple problems and noisy datasets.
 
 The Loss function selected was `l1_loss` (`torch.nn.functional`) as it calculates the absolute mean error between two 
 tensors (image and noise) which is useful when trying to predict the average amount of noise in an image and provided
@@ -174,7 +185,7 @@ data_noisy, noise = apply_noise(data, pos)
 optimizer.zero_grad()
 predicted_noise = model(data_noisy.cuda(), pos.cuda()).cuda()
 ```
-This predicted noise is then passed to the above mentioned loss function with the actual noise which then calculates
+This predicted noise is then passed to the above-mentioned loss function with the actual noise which then calculates
 the loss and improves the network:
 ```python
 loss = criterion(predicted_noise, noise).cuda()
@@ -210,11 +221,12 @@ It is worth noting that loss for the training set varies significantly from epoc
 learning the general features of the AKOA Dataset.
 
 ## Validation & Training Overlayed
-The overlay of training and validation can be seen below:
+The overlay of training and validation can be seen below.
+
 ![image](images/Validation%20&%20Training%20Loss%20Across%20Epochs.png)
 
 ## Visualization & Results
-The stable diffusion model can be ran and utilised in `predict.py` to generate images, three functions have been provided
+The stable diffusion model can be run and utilised in `predict.py` to generate images, three functions have been provided
 namely:
 1. Generate Single Image - Generates and displays a single image
 
@@ -233,8 +245,9 @@ python predict.py illustrate {number_of_images}
 python predict.py generate {number_of_images}
 ```
 
-Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. This took approximately 20 seconds on a RTX3060.
-
+Please allow significant time to generate images depending on hardware. Below is a single image that has been generated. 
+This utilises matplotlib's automatic colouring to distinguish between areas more easily then compared to a black and 
+white version. This took approximately 20 seconds on a RTX3060.
 
 ![image](images/Single%20Example.png)
 
