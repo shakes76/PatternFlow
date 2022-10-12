@@ -130,3 +130,5 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+recognition/XUE4645768/README.md
+recognition/ISICs_UNet/README.md
