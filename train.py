@@ -90,11 +90,11 @@ for depth in range(1, len(BSIZE)):
 print('training completed.')
 
 # save loss logs
-G_loss = []
 D_loss = []
+G_loss = []
 for hist in loss_history:
-    G_loss += hist.history['d_loss'] 
-    D_loss += hist.history['g_loss']
+    D_loss += hist.history['d_loss'] 
+    G_loss += hist.history['g_loss']
 
-array(G_loss).tofile(os.path.join(LOG_DIR, 'dloss.csv'), sep=',')
-array(D_loss).tofile(os.path.join(LOG_DIR, 'gloss.csv'), sep=',')
+array(D_loss).tofile(os.path.join(LOG_DIR, 'dloss.csv'), sep=',')
+array(G_loss).tofile(os.path.join(LOG_DIR, 'gloss.csv'), sep=',')
