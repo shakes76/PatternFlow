@@ -41,8 +41,8 @@ def get_model(
 
     inputs = keras.Input(shape=(img_width, img_height, channels))
     next_layer = layers.Conv2D(64, 5, **conv_args)(inputs)
-    next_layer = layers.Conv2D(64, 3, **conv_args)(next_layer)
-    next_layer = layers.Conv2D(32, 3, **conv_args)(next_layer)
+    next_layer = layers.Conv2D(128, 3, **conv_args)(next_layer)
+    next_layer = layers.Conv2D(128, 3, **conv_args)(next_layer)
     next_layer = layers.Conv2D(
         channels * (upscale_factor ** 2),
         3,
