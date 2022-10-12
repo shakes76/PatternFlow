@@ -9,7 +9,7 @@ from config import *
 from modules import StyleGAN
 
 # create model, load initial weights
-sgan = StyleGAN(latent_dim=LATENT_VECTOR_DIM, filters=FILTERS, channels=CHANNELS)
+sgan = StyleGAN(latent_dim=LDIM, filters=FILTERS, channels=CHANNELS)
 sgan.load_weights(os.path.join(CKPTS_DIR, f'stylegan_{SRES}x{SRES}_base.ckpt'))
 
 depth = int(np.log2(TRES/SRES))
