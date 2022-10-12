@@ -5,10 +5,29 @@ The source code for traiing, validating, testing, and saving the model.
 
 from constants import CHECKPOINT_FILEPATH
 from modules import get_model, ESPCNCallback
-from dataset import downsample_data, get_image_from_dataset, preview_data
+from dataset import download_data, get_datasets, downsample_data, \
+    get_image_from_dataset, preview_data
 
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
+
+
+def run_model(epochs: int = 30) -> keras.Model:
+    """Download data and return a trained model
+
+    Args:
+        epochs (int, optional): Number of epochs to train for. Defaults to 30.
+
+    Returns:
+        keras.Model: The trained model
+    """
+    data_dir = download_data()
+    print(f"Data downloaded to {data_dir}")
+
+    train_ds, test_ds = get_datasets(data_dir)
+    return train_model(train_ds, test_ds, 25, epochs)
+
 
 def train_model(
     train_ds: tf.data.Dataset,
@@ -32,10 +51,8 @@ def train_model(
     down_train_ds = downsample_data(train_ds)
     down_test_ds = downsample_data(test_ds)
 
-    preview_data(train_ds, "High res training dataset")
-    preview_data(test_ds, "High res testing dataset")
-    preview_data(down_train_ds, "Low res training dataset")
-    preview_data(down_test_ds, "Low res testing dataset")
+    preview_data(down_train_ds, "Training dataset: downsampled image vs target")
+    preview_data(down_test_ds, "Testing dataset: downsampled image vs target")
 
     early_stopping_callback = keras.callbacks.EarlyStopping(
         monitor="loss",
@@ -72,12 +89,22 @@ def train_model(
         loss=loss_fn,
     )
 
-    model.fit(
+    history = model.fit(
         down_train_ds,
         epochs=epochs,
         callbacks=callbacks,
         validation_data=down_test_ds,
         verbose=1,
     )
+
+    # Plot loss
+    plt.figure(figsize=(15, 10))
+    plt.plot(history.history["loss"], label="Loss")
+    plt.plot(history.history["val_loss"], "--", label="Validation Loss")
+    plt.title("Training loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.show()
 
     return model

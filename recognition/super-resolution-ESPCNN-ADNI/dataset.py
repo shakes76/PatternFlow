@@ -131,13 +131,17 @@ def preview_data(dataset: tf.data.Dataset, title: str | None = None) -> None:
         title (str | None): Optional title of the plot
     """
     # Preview images (https://www.tensorflow.org/tutorials/load_data/images)
-    plt.figure(figsize=(10, 10))
-    for images, labels in dataset.take(1):
+    plt.figure(figsize=(10, 20))
+    for images, targets in dataset.take(1):
         if title:
             plt.suptitle(title)
-        for i in range(9):
-            plt.subplot(3, 3, i + 1)
+        for i in range(0, 8, 2):
+            plt.subplot(4, 2, i + 1)
             plt.imshow(images[i].numpy())
+            plt.axis("off")
+
+            plt.subplot(4, 2, i + 2)
+            plt.imshow(targets[i].numpy())
             plt.axis("off")
 
 

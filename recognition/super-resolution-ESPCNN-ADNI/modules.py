@@ -5,6 +5,7 @@ The source code for components of the super-resolution model.
 
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 from tensorflow import keras
@@ -66,17 +67,29 @@ class ESPCNCallback(keras.callbacks.Callback):
         super(ESPCNCallback, self).__init__()
         self.test_image = test_image
         self.psnr = np.array([])
+        self.psnrs = []  # Record of each epoch's psnr value
 
     def on_epoch_begin(self, epoch, logs=None):
         """On epoch begin, initialise array to store psnr values."""
         self.psnr = np.array([])
 
     def on_epoch_end(self, epoch, logs=None):
-        """On epoch end, print PSNR value"""
-        print(f"\nMean PSNR for epoch: {np.mean(self.psnr):2f}")
-        if epoch % 2 == 0:
+        """On epoch end, record PSNR value"""
+        psnr = np.mean(self.psnr)
+        self.psnrs.append(psnr)
+        print(f"\nMean PSNR for epoch: {psnr:2f}")
+        if epoch % 5 == 0:
             display_prediction(self.test_image, self.model, f"Epoch {epoch}")
 
     def on_test_batch_end(self, batch, logs=None):
         """On batch end, append the next psnr value"""
         self.psnr = np.append(self.psnr, 10 * math.log10(1 / logs["loss"]))
+
+    def on_train_end(self, logs=None):
+        """On end of training (.fit), display the psnr record"""
+        plt.figure(figsize=(15, 10))
+        plt.plot(self.psnrs)
+        plt.title("PSNR per epoch")
+        plt.xlabel("Epoch")
+        plt.ylabel("mean PSNR")
+        plt.show()
