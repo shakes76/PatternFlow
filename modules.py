@@ -1,4 +1,3 @@
-from unicodedata import name
 import numpy as np
 import tensorflow as tf
 from keras.layers import Activation, AveragePooling2D, Flatten, Input, UpSampling2D
@@ -38,7 +37,8 @@ class StyleGAN(Model):
         for _ in range(self.DEPTH-1):
             w = EqualDense(w, filters=LDIM)
             w = LeakyReLU(0.2)(w)
-        w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) # (256,7)
+        # replicate (256,7)
+        w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) 
         return Model(z, w)
 
     def init_D(self):
@@ -51,8 +51,7 @@ class StyleGAN(Model):
         x = EqualConv(x, filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
         x = LeakyReLU(0.2)(x)
         x = EqualDense(Flatten()(x), filters=CHANNELS)
-        d_model = Model(image, x)
-        return d_model
+        return Model(image, x)
 
     # grow discriminator
     def grow_D(self):

@@ -87,7 +87,7 @@ for depth in range(1, len(BSIZE)):
     loss_history.append(hist_stab)
     model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
-print('Training completed.')
+print('\nTraining completed.')
 
 # save loss logs
 D_loss = []
