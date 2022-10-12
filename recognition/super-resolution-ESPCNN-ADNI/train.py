@@ -3,7 +3,7 @@
 The source code for traiing, validating, testing, and saving the model.
 """
 
-from constants import CHECKPOINT_FILEPATH
+from constants import CHECKPOINT_FILEPATH, BATCH_SIZE
 from modules import get_model, ESPCNCallback
 from dataset import download_data, get_datasets, downsample_data, \
     get_image_from_dataset, preview_data
@@ -65,19 +65,19 @@ def train_model(
         patience=10
     )
 
+    checkpoint_filename = CHECKPOINT_FILEPATH + "-{epoch:04d}.ckpt"
+
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        filepath=CHECKPOINT_FILEPATH,
+        filepath=checkpoint_filename,
         save_weights_only=True,
-        monitor="loss",
-        mode="min",
-        save_best_only=True,
+        verbose=1,
     )
 
     model = get_model()
     model.summary()
 
     if checkpoint:
-        model.load_weights(checkpoint)
+        model = model.load_weights(checkpoint)
         print(f"Loaded checkpoint weights from {checkpoint} into model")
 
     test_image = get_image_from_dataset(test_ds)
@@ -98,6 +98,7 @@ def train_model(
     history = model.fit(
         down_train_ds,
         epochs=epochs,
+        batch_size=BATCH_SIZE,
         callbacks=callbacks,
         validation_data=down_test_ds,
         verbose=1,
