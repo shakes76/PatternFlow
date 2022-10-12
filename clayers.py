@@ -4,10 +4,10 @@ import numpy as np
 import tensorflow as tf
 from keras import backend
 from keras.initializers import RandomNormal
-from keras.layers import Activation, Add, Conv2D, Dense, Layer, LeakyReLU
+from keras.layers import Add, Conv2D, Dense, Layer, LeakyReLU
 from PIL import Image
 
-from config import EPS
+from config import *
 
 
 # normalize weight by given shape
@@ -41,6 +41,7 @@ class Bias(Layer):
         return inputs + self.bias
 
 
+# normalized dense layer
 def EqualDense(x, filters, gain=1.):
     init = RandomNormal(stddev=1.)
     in_filters = backend.int_shape(x)[-1]
@@ -50,6 +51,7 @@ def EqualDense(x, filters, gain=1.):
     return x
 
 
+# normalized conv layer
 def EqualConv(x, filters, gain=2., kernel=(3, 3), strides=(1, 1)):
     init = RandomNormal(mean=0., stddev=1.)
     in_filters = backend.int_shape(x)[-1]
@@ -67,10 +69,10 @@ class AdaIN(Layer):
 
     def build(self, input_shapes):
         filters = input_shapes[0][-1]
-        self.denseys = Dense(filters)
-        self.denseyb = Dense(filters)
-        self.wsys = HeNormal(shape=(filters))
-        self.wsyb = HeNormal(shape=(filters))
+        self.dense_ys = Dense(filters)
+        self.dense_yb = Dense(filters)
+        self.henorm_ys = HeNormal(shape=(filters))
+        self.henorm_yb = HeNormal(shape=(filters))
 
     def call(self, inputs):
         x, w = inputs
@@ -80,8 +82,8 @@ class AdaIN(Layer):
         x = (x - m) / tf.sqrt(v + EPS)
 
         # w -> A
-        ys = self.wsys(self.denseys(w))
-        yb = self.wsyb(self.denseyb(w))
+        ys = self.henorm_ys(self.dense_ys(w))
+        yb = self.henorm_yb(self.dense_yb(w))
 
         # reshape for calculation
         ys = tf.reshape(ys, (-1, 1, 1, x.shape[-1]))
@@ -136,44 +138,49 @@ class MinibatchStdev(Layer):
 # alpha update during training
 class WeightedSum(Add):
 
-    def __init__(self, alpha=0.0, **kwargs):
+    def __init__(self, **kwargs):
         super(WeightedSum, self).__init__(**kwargs)
-        self.alpha = backend.variable(alpha, name='alpha')
-
+        self._alpha = 0.
+        
+    def set_alpha(self, alpha):
+        self._alpha = alpha
+        
     def call(self, inputs):
         a, b = inputs
-        weighted_sum = (1.0 - self.alpha) * a + self.alpha * b
-        return weighted_sum
+        wsum = (1. - self._alpha) * a + self._alpha * b
+        return wsum
 
 
 # callback to update alpha during training
 class FadeInCallBack(tf.keras.callbacks.Callback):
 
     def __init__(self):
-        # total iters = epochs * steps_per_epoch
-        self.iters_per_epoch = 0
-        self.epochs = 0
-        self.iters = 0
-        self.current_epoch = 0
+        self.iters_per_epoch = 0 # number of iterations of each epoch
+        self.epochs = 0          # total number of epochs
+        self.iters = 0           # total number of iterations (iters per epoch * total epochs)
+        self.current_epoch = 0   # current epoch
 
     def set_iters(self, epochs, iters_per_epoch):
         self.epochs = epochs
         self.steps_per_epoch = iters_per_epoch
+        # total iters = epochs * steps_per_epoch
         self.iters = epochs * iters_per_epoch
 
     def on_epoch_begin(self, epoch, logs=None):
         self.current_epoch = epoch
+    
+    def set_alpha(self, alpha):
+        self.alpha = alpha
 
     def on_batch_begin(self, current_iter, logs=None):
         # update alpha for fade-in layers
-        # for each resolution:
-        #     alpha = ((current epoch - 1) * steps per epoch + current iteration) / (total iterations)
+        # alpha = current iteration / total iterations
         alpha = ((self.current_epoch * self.steps_per_epoch) + current_iter + 1) / float(self.iters)
 
-        # update alpha for G and D
+        # update alpha for both G and D
         for layer in self.model.G.layers + self.model.D.layers:
             if isinstance(layer, WeightedSum):
-                backend.set_value(layer.alpha, alpha)
+                layer.set_alpha(alpha)
 
 
 # callback for generating images after each epoch
@@ -181,33 +188,34 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
 
     def __init__(
         self,
-        output_num_img=16,
-        output_img_res=256,
-        output_img_folder='',
-        output_ckpts_folder='',
-        is_rgb=True,
+        output_num_img = NSAMPLES,        # number of output images
+        output_img_res = 256,             # output image resolution/size
+        output_img_folder = IMAGE_DIR,    # output image folder
+        output_ckpts_folder = CKPTS_DIR,  # checkpoints foler
+        is_rgb = CHANNELS > 1,            # is output image rgb?
+        seed = 3710                       # seed for z
     ):
-        self.output_num_img = output_num_img              # number of output images
-        self.output_img_dim = output_img_res              # output image resolution/size
-        self.output_img_mode = 'RGB' if is_rgb else 'L'   # output image mode. color or black white?
-        self.output_img_folder = output_img_folder        # output image folder
-        self.output_ckpts_folder = output_ckpts_folder    # checkpoints foler
+        self.output_num_img = output_num_img          
+        self.output_img_dim = output_img_res          
+        self.output_img_mode = 'RGB' if is_rgb else 'L'
+        self.output_img_folder = output_img_folder     
+        self.output_ckpts_folder = output_ckpts_folder 
+        self.seed = seed                               
 
     def set_prefix(self, prefix):
         self.prefix = prefix
 
     def on_epoch_end(self, epoch, logs=None):
         sgan = self.model
-        seed = 3710
         
         # build inputs for G. constant, z, w, noise(B)
-        const = tf.ones([self.output_num_img, sgan.SRES, sgan.SRES, sgan.FILTERS[0]])
-        z = tf.random.normal((self.output_num_img, sgan.LDIM), seed=seed)
+        const = tf.ones([self.output_num_img, SRES, SRES, FILTERS[0]])
+        z = tf.random.normal((self.output_num_img, LDIM), seed=self.seed)
         ws = sgan.FC(z)
         inputs = [const]
         for i in range(sgan.current_depth+1):
             w = ws[:, i]
-            B = tf.random.normal((self.output_num_img, sgan.SRES*(2**i), sgan.SRES*(2**i), 1))
+            B = tf.random.normal((self.output_num_img, SRES*(2**i), SRES*(2**i), 1))
             inputs += [w, B]
 
         # generate

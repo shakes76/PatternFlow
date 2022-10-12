@@ -14,4 +14,8 @@ class ImageLoader():
         return img
 
     def load(self, n, res):
-        return self.gen.flow_from_directory(batch_size=n, directory=self.dir, target_size=res, color_mode=self.mode, class_mode='binary')
+        return self.gen.flow_from_directory(batch_size=n, 
+                                            directory=self.dir, 
+                                            target_size=res, 
+                                            color_mode=self.mode, 
+                                            class_mode='binary')
