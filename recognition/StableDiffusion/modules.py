@@ -1,5 +1,6 @@
 from imports import *
 from dataset import ImageLoader
+import math
 
 """
 Defines a (linear) beta schedule
@@ -79,7 +80,7 @@ Taken from original paper,
 also as described in the author's blog post:
 https://huggingface.co/blog/annotated-diffusion
 """
-class SinusoidalPositionEmbeddings(nn.Module):
+class PositionEmbeddings(nn.Module):
     def __init__(self, dim):
         super().__init__()
         self.dim = dim
@@ -97,26 +98,21 @@ class SinusoidalPositionEmbeddings(nn.Module):
 Building block of the UNet Model
 """
 class Block(nn.Module):
-    def __init__(self, in_c, out_c, time_emb, up=False):
+    def __init__(self, in_c, out_c, up=False, time_emb=32):
         super().__init__()
         # define layers
         self.time_mlp =  nn.Linear(time_emb, out_c)
-        if up:
-            self.conv1     = nn.Conv2d(2*in_c, out_c, kernel_size=3, padding=1)
-            self.transform = nn.ConvTranspose2d(out_c, out_c, kernel_size=4, stride=2, padding=1)
-        else:
-            self.conv1     = nn.Conv2d(in_c, out_c, kernel_size=3, padding=1)
-            self.transform = nn.Conv2d(out_c, out_c, kernel_size=4, stride=2, padding=1)
-        self.conv2 = nn.Conv2d(out_c, out_c, kernel_size=3, padding=1)
+        self.conv1  = nn.Conv2d(in_c, out_c, kernel_size=3, padding=1)
+        self.conv2  = nn.Conv2d(out_c, out_c, kernel_size=3, padding=1)
         self.bnorm1 = nn.BatchNorm2d(out_c)
         self.bnorm2 = nn.BatchNorm2d(out_c)
-        self.relu  = nn.ReLU()
+        self.relu   = nn.ReLU()
 
     def forward(self, x, t):
         # conv x
         x = self.conv1(x)
-        x = self.relu(x)
         x = self.bnorm1(x)
+        x = self.relu(x)
         # time embedding
         time_emb = self.time_mlp(t)
         time_emb = self.relu(time_emb)
@@ -126,77 +122,83 @@ class Block(nn.Module):
         x = x + time_emb
         # final conv
         x = self.conv2(x)
-        x = self.relu(x)
         x = self.bnorm2(x)
-        # return up/down batch_sample
-        return self.transform(x)
-
-"""
-The contractive path of the UNet
-"""
-class Encoder(nn.Module):
-    def __init__(self, time_dim=32, down_channels=(64, 128, 256, 512, 1024)) -> None:
-        super().__init__()
-        self.downs = nn.ModuleList([Block(down_channels[i], down_channels[i+1], \
-                                    time_dim) for i in range(len(down_channels)-1)])
-
-    def forward(self, x, t):
-        residuals = []
-        for down in self.downs:
-            x = down(x, t)
-            residuals.append(x)
-        return x, residuals
-
-"""
-The expansive path of the UNet
-"""
-class Decoder(nn.Module):
-    def __init__(self, time_dim=32, up_channels=(1024, 512, 256, 128, 64)) -> None:
-        super().__init__()
-        self.ups = nn.ModuleList([Block(up_channels[i], up_channels[i+1], \
-                                        time_dim, up=True) for i in range(len(up_channels)-1)])
-
-    def forward(self, x, t, residuals):
-        for up in self.ups:
-            x = torch.cat((x, residuals.pop()), dim=1)
-            x = up(x,t)
+        x = self.relu(x)
         return x
 
 """
-The UNet model
+Building block of the encoder network
+"""
+class EncoderBlock(nn.Module):
+    def __init__(self, in_c, out_c, up=False, time_emb=32):
+        super().__init__()
+        # define layers
+        self.conv = Block(in_c, out_c)
+        self.pool = nn.MaxPool2d(2)
+
+    def forward(self, x, t):
+        x = self.conv(x, t)
+        skip = x.clone()
+        x = self.pool(x)
+        return x, skip
+
+"""
+Building block of the decoder network
+"""
+class DecoderBlock(nn.Module):
+    def __init__(self, num_in, num_out):
+        super().__init__()
+        self.up    = nn.ConvTranspose2d(num_in, num_out, kernel_size=2, stride=2, padding=0)
+        self.block = Block(num_out + num_out, num_out)
+
+    def forward(self, x, t, skip):
+        x = self.up(x)
+        x = torch.cat([x, skip], axis=1)
+        x = self.block.forward(x, t)
+        return x
+
+"""
+The final UNet network
 """
 class UNet(nn.Module):
-    def __init__(self, dim_mults=(1, 2, 4, 8), out_c=1) -> None:
+    def __init__(self):
         super().__init__()
 
         # useful information
-        self.dim_mults = dim_mults
-        self.channels = out_c
-        down_channels = (64, 128, 256, 512, 1024)
-        up_channels = (1024, 512, 256, 128, 64)
+        down_channels = (1, 64, 128, 256, 512)
+        up_channels =   (1024, 512, 256, 128, 64)
 
         # time embedding
         time_dim = 32
         self.time_mlp = nn.Sequential(
-            SinusoidalPositionEmbeddings(time_dim),
+            PositionEmbeddings(time_dim),
             nn.Linear(time_dim, time_dim),
             nn.ReLU(),
         )
 
-        # initial projection
-        self.init_conv = nn.Conv2d(out_c, down_channels[0], kernel_size=3, padding=1)        
-        # encoder
-        self.encoder = Encoder(time_dim, down_channels)
-        # decoder
-        self.decoder = Decoder(time_dim, up_channels)
-        # final layer
-        self.out = nn.Conv2d(up_channels[-1], 1, out_c)
+        self.downs = nn.ModuleList([EncoderBlock(down_channels[i], down_channels[i+1]) for i in range(len(down_channels)-1)])
+        self.ups   = nn.ModuleList([DecoderBlock(up_channels[i], up_channels[i+1]) for i in range(len(up_channels)-1)])
+        
+        self.bottle_neck = Block(down_channels[-1], up_channels[1])
+
+        self.out = nn.Conv2d(up_channels[-1], 1, kernel_size=1, padding=0)
 
     def forward(self, x, t):
         t = self.time_mlp(t)
-        x = self.init_conv(x)
-        x, residuals = self.encoder(x, t)
-        x = self.decoder(x, t, residuals)
+
+        # Encoder
+        residuals = []
+        for down in self.downs:
+            x, skip = down(x, t)
+            residuals.append(skip)
+
+        # Bottle neck
+        x = self.bottle_neck(x, t)
+
+        # Decoder
+        for up in self.ups:
+            x = up(x,t,residuals.pop())
+
         return self.out(x)
 
 """
