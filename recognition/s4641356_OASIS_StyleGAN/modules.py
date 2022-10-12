@@ -28,7 +28,7 @@ class adaIN(tf.keras.layers.Layer): #Note to future self, for deterministic laye
             raise ValueError("Scale tensor must have exactly one value per channel of image input, recieved Image: {}, Scales: {}".format(input_shape[0],input_shape[1]))
 
         #Each layer posesses a learnt bias
-        self._y_bias = self.add_weight(shape = (input_shape[0][0],1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "channel_adaIN_scales")
+        self._y_bias = self.add_weight(shape = (1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "channel_adaIN_scales")
 
 
     def call(self, input: list[tf.Tensor,tf.Tensor]) -> tf.Tensor:
@@ -76,7 +76,7 @@ class addNoise(tf.keras.layers.Layer):
             raise ValueError("Inputs must be of same shape, recieved the following: Input 1: {}, Input 2: {}".format(input_shape[0],input_shape[1]))
 
         #This layer's weights are the scaling of the noise per channel
-        self.noise_weight = self.add_weight(shape = (input_shape[0][0],1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "noise_weight") #inherited from Layer
+        self.noise_weight = self.add_weight(shape = (1,1,input_shape[0][3]), initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0), name = "noise_weight") #inherited from Layer
 
     def call(self, input: list[tf.Tensor,tf.Tensor]) -> tf.Tensor:
         """
