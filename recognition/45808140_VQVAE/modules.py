@@ -71,8 +71,6 @@ class Decoder():
     def get_decoder(self):
         return self.decoder
 
-
-
 class VQVAE():
     
     def __init__(self, latent_dim=16, no_embeddings=64):
