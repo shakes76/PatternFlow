@@ -1,3 +1,6 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from modules import AE, GAN
@@ -28,3 +31,5 @@ gan.fit(data["train"],
         epochs=2,
         shuffle=True,
         batch_size=8)
+
+gan.save("gan.ckpt")
