@@ -24,15 +24,15 @@ Goals:
 - [x] Model class
 - [x] Model basic training function
 - [x] Live training performance data logging
-- [ ] Output image results visualisation
-- [ ] Implement saving of output images to file (ideally get images that show the progress throughout training too - can adapt from my lab2 plotting function)
-- [ ] Training metrics over time plot
+- [x] Output image results visualisation
+- [x] Implement saving of output images to file
+- [ ] Save images during training to show the progress
+- [x] Training metrics over time plot
 - [ ] SSIM performance calculation
 - [ ] Port my code over to the hpc for speedy slurm training
 - [ ] Do a big training run to push the standrard of output generations
 - [ ] Tune hyperparameters until results meet the standard
 - [ ] Report writeup, etc.
-
 
 ---
 

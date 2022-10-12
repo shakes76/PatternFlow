@@ -15,7 +15,7 @@ import utils
 from tensorflow import keras
 import tensorflow as tf
 import numpy as np # TODO: Remove this later once we swap to the OASIS data
-
+import matplotlib.pyplot as plt
 
 class VQVAETrainer(keras.models.Model):
     """
@@ -28,10 +28,10 @@ class VQVAETrainer(keras.models.Model):
             vqvae (Keras Model): The custom VQ-VAE model
             total_loss_tracker (Keras Metric): A tracker for the total loss performance of the model during training???
             reconstruction_loss_tracker (Keras Metric): A tracker for the reconstruction loss performance of the model during training???
-            vq_loss_tracker (Keras Metric): A tracker for the VQ loss performance of the model during training???
+            vqvae_loss_tracker (Keras Metric): A tracker for the VQ loss performance of the model during training???
 
         Methods:
-            metrics(): Returns a list of metrics for the total_loss, reconstruction_loss, and vq_loss of the model
+            metrics(): Returns a list of metrics for the total_loss, reconstruction_loss, and vqvae_loss of the model
             train_step(x): Trains the model for a single step using the given training sample/samples x???
     """
 
@@ -47,21 +47,21 @@ class VQVAETrainer(keras.models.Model):
         self.reconstruction_loss_tracker = keras.metrics.Mean(
             name="reconstruction_loss"
         )
-        self.vq_loss_tracker = keras.metrics.Mean(name="vq_loss")
+        self.vqvae_loss_tracker = keras.metrics.Mean(name="vqvae_loss")
 
     @property
     def metrics(self):
         """
-        Gets a list of metrics for current total_loss, reconstruction_loss, and vq_loss of the model
+        Gets a list of metrics for current total_loss, reconstruction_loss, and vqvae_loss of the model
         
             Returns:
-                A list of metrics for total_loss, reconstruction_loss, and vq_loss
+                A list of metrics for total_loss, reconstruction_loss, and vqvae_loss
         """
 
         return [
             self.total_loss_tracker,
             self.reconstruction_loss_tracker,
-            self.vq_loss_tracker,
+            self.vqvae_loss_tracker,
         ]
 
     def train_step(self, x):
@@ -92,13 +92,13 @@ class VQVAETrainer(keras.models.Model):
         # Loss tracking.
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
-        self.vq_loss_tracker.update_state(sum(self.vqvae.losses))
+        self.vqvae_loss_tracker.update_state(sum(self.vqvae.losses))
 
         # Log results.
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "vqvae_loss": self.vq_loss_tracker.result(),
+            "vqvae_loss": self.vqvae_loss_tracker.result(),
         }
 
 
@@ -107,14 +107,15 @@ if __name__ == "__main__":
     #                                HYPERPARAMETERS                               #
     # ---------------------------------------------------------------------------- #
     NUM_TRAINING_EXAMPLES = 2000
+    # NUM_TRAINING_EXAMPLES = None # was 2000
 
-    TRAINING_EPOCHS = 10
+    TRAINING_EPOCHS = 5
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
     NUM_EMBEDDINGS = 128
 
-    EXAMPLES_TO_SHOW = 10
+    EXAMPLES_TO_SHOW = 1
 
 
     # ---------------------------------------------------------------------------- #
@@ -137,7 +138,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     print("Training model...")
     # Run training, plotting losses and metrics throughout
-    vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE)
+    history = vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE)
 
 
     # ---------------------------------------------------------------------------- #
@@ -153,15 +154,49 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     #                                 FINAL RESULTS                                #
     # ---------------------------------------------------------------------------- #
-    # Visualise the final results and calculate the structural similarity index (SSIM)
-
-    # ------------------------------------ NEW ----------------------------------- #
+    # Visualise output generations from the finished model
     idx = np.random.choice(len(test_data), EXAMPLES_TO_SHOW)
     test_images = test_data[idx]
     reconstructions_test = trained_vqvae_model.predict(test_images)
 
     for test_image, reconstructed_image in zip(test_images, reconstructions_test):
         utils.show_subplot(test_image, reconstructed_image)
-    # ------------------------------------ NEW ----------------------------------- #
 
+    # Visualise the model training curves
+    print(f"### {vqvae_trainer.metrics_names} ###")
+    print(f"### {history.history.keys()} ###")
+    print("")
 
+    print(f"### {type(vqvae_trainer)} ###")
+    print(f"### {type(vqvae_trainer.metrics)} ###")
+    print(f"### {vqvae_trainer.metrics} ###")
+    print(f"### {type(vqvae_trainer.metrics[0])} ###")
+    print(f"### {vqvae_trainer.metrics[0]} ###")
+    print(f"### {vqvae_trainer.metrics[0].result()} ###")
+
+    # Plot losses
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Total Loss', marker='o')
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["reconstruction_loss"], label='Reconstruction Loss', marker='o')
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='VQ VAE Loss', marker='o')
+    plt.title('Training Losses', fontsize=14)
+    plt.xlabel('Training Epoch', fontsize=14)
+    plt.set_xticks(range(1, TRAINING_EPOCHS+1))
+    plt.ylabel('Loss', fontsize=14)
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('training_loss_curves.png')
+    plt.show()
+
+    # Plot log losses
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Log Total Loss', marker='o')
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["reconstruction_loss"], label='Log Reconstruction Loss', marker='o')
+    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='Log VQ VAE Loss', marker='o')
+    plt.title('Training Log Losses', fontsize=14)
+    plt.xlabel('Training Epoch', fontsize=14)
+    plt.set_xticks(range(1, TRAINING_EPOCHS+1))
+    plt.ylabel('Log Loss', fontsize=14)
+    plt.set_yscale('log')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('training_logloss_curves.png')
+    plt.show()

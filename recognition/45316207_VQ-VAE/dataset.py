@@ -8,7 +8,6 @@ Contains the data loader for loading and preprocessing your data
 
 """
 
-# from IPython import display
 
 import glob
 import imageio
