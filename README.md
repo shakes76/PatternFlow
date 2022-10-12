@@ -1,5 +1,5 @@
 # StyleGAN Implementation
-This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022 :+1:. The chosen task is the "generative model of one of the OASIS brain, ADNI brain or the OAI AKOA knee data set using a variant of StyleGAN".
+:wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022 :+1:. The chosen task is the "generative model of one of the OASIS brain, ADNI brain or the OAI AKOA knee data set using a variant of StyleGAN".
 
 ## Development Environment
  - Python version: 3.8.13
@@ -20,5 +20,3 @@ This implementation consists of 6 python files,
  - `modules.py` the StyleGAN model implementation, uses components defined in clayers.py.
  - `predict.py` includes functions that load the trained model and generate images.
  - `train.py`   includes training procedures and necessary callback definitions.
-
-
