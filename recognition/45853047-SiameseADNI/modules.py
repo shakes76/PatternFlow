@@ -1,7 +1,6 @@
 from keras.models import Model
-
-import keras as k
 import tensorflow as tf
+import tensorflow.keras as k
 import keras.layers as kl
 import keras.backend as kb
 import tensorflow_addons as tfa
@@ -20,14 +19,17 @@ def subnetwork(height, width):
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.Dropout(0.3),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
-            kl.BatchNormalization(),
-            kl.Dropout(0.3)
         ], name='subnet'
     )
+
+    # subnet = k.Sequential(layers=[
+    #     k.applications.resnet50.ResNet50(input_shape=(height, width, 1), weights=None),
+    #     kl.Dense(1024, activation='relu'),
+    #     kl.Dense(1024, activation='relu')
+    #     ], name='subnet')
     return subnet
 
 
@@ -55,15 +57,14 @@ def classification_model(subnet):
 
     opt = tf.optimizers.Adam(learning_rate=0.0001)
 
-    classifier.compile(loss=contrastive_loss, metrics=['accuracy'],optimizer=opt)
+    classifier.compile(loss='binary_crossentropy', metrics=['accuracy'],optimizer=opt)
 
     return classifier
 
 def contrastive_loss(y, y_pred):
     square = tf.math.square(y_pred)
     margin = tf.math.square(tf.math.maximum(1 - (y_pred), 0))
-    return tf.math.reduce_mean((1 - y) * square + (y) * margin
-    )
+    return tf.math.reduce_mean((1 - y) * square + (y) * margin)
 
 
 
