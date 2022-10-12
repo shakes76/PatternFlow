@@ -7,6 +7,7 @@ from constants import CHECKPOINT_FILEPATH
 from modules import get_model, ESPCNCallback
 from dataset import download_data, get_datasets, downsample_data, \
     get_image_from_dataset, preview_data
+from predict import display_predictions
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -26,7 +27,12 @@ def run_model(epochs: int = 30) -> keras.Model:
     print(f"Data downloaded to {data_dir}")
 
     train_ds, test_ds = get_datasets(data_dir)
-    return train_model(train_ds, test_ds, 25, epochs)
+    model = train_model(train_ds, test_ds, epochs)
+
+    print("Displaying prediction images using the model...")
+    display_predictions(test_ds, model)
+
+    return model
 
 
 def train_model(
