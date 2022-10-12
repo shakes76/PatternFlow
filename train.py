@@ -47,10 +47,10 @@ for depth in range(1, len(BSIZE)):
     # grow model
     sgan.grow()                                            
 
-    bs = BSIZE[depth]                             # batch size
+    bs = BSIZE[depth]                                  # batch size
     ep = EPOCHS[depth]                                 # epochs
     ch = FILTERS[depth]                                # filters
-    rs = SRES * (2 ** depth)                               # resolution
+    rs = SRES * (2 ** depth)                           # resolution
     training_images = image_loader.load(bs, (rs, rs))  # load images
     iters = len(training_images)                       # iterations
 
@@ -65,7 +65,7 @@ for depth in range(1, len(BSIZE)):
     fade_in_cbk.set_iters(ep, iters)
     sgan.compile(adam, adam)
     # additional callback to compute alpha
-    sgan.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk, fade_in_cbk])
+    sgan.fit(training_images, steps_per_epoch=iters, epochs=int(ep*.7), callbacks=[sampling_cbk, fade_in_cbk])
     sgan.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
     # transition from fade in models to complete high resolution models
@@ -78,5 +78,5 @@ for depth in range(1, len(BSIZE)):
     # stabilize training
     sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
     sgan.compile(adam, adam)
-    sgan.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
+    sgan.fit(training_images, steps_per_epoch=iters, epochs=int(ep*.3), callbacks=[sampling_cbk])
     sgan.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
