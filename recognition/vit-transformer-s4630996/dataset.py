@@ -131,7 +131,7 @@ def import_data(IMAGE_SIZE, BATCH_SIZE):
 
     # https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory
     data_train = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC/training",
+        "./AD_NC_cropped/training",
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
@@ -143,7 +143,7 @@ def import_data(IMAGE_SIZE, BATCH_SIZE):
         smart_resize=True)
 
     data_validate = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC/validation",
+        "./AD_NC_cropped/validation",
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
@@ -155,7 +155,7 @@ def import_data(IMAGE_SIZE, BATCH_SIZE):
         smart_resize=True)
 
     data_test = keras.preprocessing.image_dataset_from_directory(
-        "./AD_NC/test",
+        "./AD_NC_cropped/test",
         labels="inferred",
         label_mode="binary",
         color_mode="grayscale",
