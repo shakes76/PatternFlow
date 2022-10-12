@@ -41,16 +41,16 @@ def VQVAE(TRAINDATA):
         self.numembedding=numembedding
         self.embeddingdim=embeddingdim
         self.layer0=nn.Conv2d(3,32,kernel=3,stride=1,padding='same')
-        self.layer2=nn.BatchNorm2d(32)
-        self.layer1=nn.Conv2d(3,64,kernel=3,stride=1,padding='same')
-        self.layer2=nn.BatchNorm2d(64)
-        self.layer3=nn.Conv2d(64,32,kernel=3,stride=1,padding='same')
-        self.layer2=nn.BatchNorm2d(32)
-        self.layer4=nn.Conv2d(32,3,kernel=3,stride=1,padding='same')
+        self.layer1=nn.BatchNorm2d(32)
+        self.layer2=nn.Conv2d(3,embeddingdim,kernel=3,stride=1,padding='same')
+        self.layer3=nn.BatchNorm2d(64)
+        self.layer4=nn.Conv2d(64,32,kernel=3,stride=1,padding='same')
+        self.layer5=nn.BatchNorm2d(32)
+        self.layer6=nn.Conv2d(32,3,kernel=3,stride=1,padding='same')
         
         
         
-   def VAVAE(x,numembedding,embeddingdim,commitcost):
+   def VQVAE(x,numembedding,embeddingdim,commitcost):
         x = x.permute(0, 2, 3, 1).contiguous()
         embedding=nn.Embedding(numembedding,embeddingdim)
         embedding.weight.data.uniform_(-1/numembedding, 1/numembedding)
@@ -76,21 +76,30 @@ def VQVAE(TRAINDATA):
    def forward(self, x,numembedding,embeddingdim,commitcost):
         
         
-        x=torch.nn.functional.relu(self.layer(x))
-        x=x.reshape((len(x),10,5,5))
         x=torch.nn.functional.relu(self.layer0(x))
-        x=x.reshape((len(x),90))
+        x=self.layer1(x)
+        x=torch.nn.functional.relu(self.layer2(x))
+        x=self.layer3(x)
         Loss,z=VAE(x,self.numembedding,self.embeddingdim,commitcost)
+        x=torch.nn.functional.relu(self.layer4(z))
+        x=self.layer5(x)
+        x=torch.nn.functional.relu(self.layer6(x))
+
+
+        #x=x.reshape((len(x),10,5,5))
+        #x=torch.nn.functional.relu(self.layer0(x))
+        #x=x.reshape((len(x),90))
+        #Loss,z=VQVAE(x,self.numembedding,self.embeddingdim,commitcost)
         #logvariance=self.layer2(x)
         
         #z=self.sampling(mu,logvariance)
-        x=torch.nn.functional.relu(self.layer3(z))
-        x=torch.sigmoid(self.layer5(torch.nn.functional.relu(self.layer4(x))))#x=self.relu0(x)
+        #x=torch.nn.functional.relu(self.layer3(z))
+        #x=torch.sigmoid(self.layer5(torch.nn.functional.relu(self.layer4(x))))#x=self.relu0(x)
         
         
         
         return x,Loss
- model = indeed(numChannels=1,classes=10)
+ model = indeed(numembedding=10,embeddingdim=64)
  model.to(device)
  EPOCHS=12
 
