@@ -154,7 +154,7 @@ class GraphConvLayer(layers.Layer):
         else:
             self.update_fn = create_ffn(hidden_units, dropout_rate)
 
-    def prepare(self, node_repesentations, weights=None):
+    def prepare(self, node_representations, weights=None):
         """
         Produces an "outgoing message" for each node.
 
@@ -163,8 +163,8 @@ class GraphConvLayer(layers.Layer):
 
         Messages will be aggregated by neighbouring nodes.
         """
-        # node_repesentations shape is [num_edges, embedding_dim].
-        messages = self.ffn_prepare(node_repesentations)
+        # node_representations shape is [num_edges, embedding_dim].
+        messages = self.ffn_prepare(node_representations)
         if weights is not None:
             messages = messages * tf.expand_dims(weights, -1) # applies constant weights (if any)
         return messages

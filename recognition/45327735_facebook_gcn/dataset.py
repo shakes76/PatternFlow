@@ -15,15 +15,17 @@ Created on Fri Oct 07 12:48:34 2022
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 class Dataset:
     """Represents and preprocesses the Facebook dataset"""
-    def __init__(self, path, filename='facebook'):
+    def __init__(self, path, filename='facebook', test_size=0.33):
+        self.seed = np.random.randint(1, 10000)
         self.data_numpy = self._load(path, filename)
         self.num_classes = len(set(self.data_numpy["target"]))
         self.data_tensor = self._tensify(self.data_numpy)
+        self.split = self._split(test_size)
 
     def _load(self, path, filename):
         """Loads the partially preprocessed .npz Facebook dataset"""
@@ -40,11 +42,6 @@ class Dataset:
         weights = self._normalise_weights(data.get("weights"), edges)
         targets = tf.convert_to_tensor(data["target"])
 
-        print("adjacency shape:", edges.shape)
-        print("features shape:", features.shape)
-        print("weights shape:", weights.shape)
-        print("targets shape:", targets.shape)
-
         return edges, features, weights, targets
 
     def _normalise_weights(self, weights, edges):
@@ -57,6 +54,22 @@ class Dataset:
             weights.T
         # Force weights to sum to 1.
         return weights / tf.math.reduce_sum(weights)
+
+    def _split(self, test_size):
+        ids = self.get_ids().numpy()
+        targets = self.get_targets().numpy()
+
+        # Split nodes
+        train_x, labels_x, train_y, labels_y = train_test_split(ids, targets, test_size=test_size, shuffle=True, random_state=self.seed)
+
+        return (tf.convert_to_tensor(train_x), tf.convert_to_tensor(labels_x),
+               tf.convert_to_tensor(train_y), tf.convert_to_tensor(labels_y))
+
+    def get_training_split(self):
+        return self.split[0], self.split[2]
+
+    def get_valid_split(self):
+        return self.split[1], self.split[3]
 
     def get_data(self):
         return self.get_features(), self.get_edges(), self.get_weights()
