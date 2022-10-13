@@ -14,7 +14,7 @@ All three training image sets were black and white, preprocessed, provided by th
 
 ## Code Structure
 This implementation consists of 6 python files,
- - `clayers.py` includes customized layers, including classes and functions of layers operations.
+ - `clayers.py` customized layers, including classes and functions of layers operations, also callbacks.
  - `config.py`  the config file.
  - `dataset.py` includes a class that loads the training dataset.
  - `modules.py` the StyleGAN model implementation, uses components defined in clayers.py.
