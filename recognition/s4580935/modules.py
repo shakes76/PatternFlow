@@ -34,3 +34,25 @@ class VectorQuantizer(layers.Layer):
             name="embeddings_vqvae",
         )
     
+    def call(self, given):
+        # Calculate the shape of the given input
+        input_shape = tf.shape(given)
+        # flatten the given input keeping dimensionality intact.
+        flattened = tf.reshape(given, [-1, self.embedding_dim])
+
+        # Quantization.
+        encoding_indices = self.get_code_indices(flattened)
+        encodings = tf.one_hot(encoding_indices, self.num_embeddings)
+        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
+
+        # Reshape the quantized values back to the original input shape
+        quantized = tf.reshape(quantized, input_shape)
+
+        # Calculate vector quantization loss and add that to the layer. 
+        commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - given) ** 2)
+        codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(given)) ** 2)
+        self.add_loss(self.beta * commitment_loss + codebook_loss)
+
+        # Straight-through estimator.
+        quantized = given + tf.stop_gradient(quantized - given)
+        return quantized
