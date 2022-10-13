@@ -344,6 +344,7 @@ class PixelCNN(Model):
         self._num_filters = num_filters
         self._kernel_size = kernel_size
         self._activation = activation
+        self._total_loss = tf.keras.metrics.Mean(name="total_loss")
 
         self._pixel_A = PixelConv(kernel_mask_type="A", filters=self._num_filters,
                                   kernel_size=self._kernel_size, activation=self._activation)
@@ -372,6 +373,29 @@ class PixelCNN(Model):
         for i in range(self._num_pixel_B):
             hidden = self._pixel_Bs[i](hidden)
         return self._conv(hidden)
+
+    def train_step(self, data):
+        """
+            Performs one iteration of training and return loss values.
+
+            Args:
+                data: input data
+
+            Returns: loss values
+
+        """
+        with tf.GradientTape() as tape:
+            # Calculate loss value
+            loss_val = self.compiled_loss(data, self(data))
+
+        # Perform backpropagation
+        grads = tape.gradient(loss_val, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+
+        self._total_loss.update_state(loss_val)
+        return {
+            "loss": self._total_loss.result()
+        }
 
 
 # pixel_cnn = PixelCNN()
