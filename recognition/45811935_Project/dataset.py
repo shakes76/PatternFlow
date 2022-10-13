@@ -1,10 +1,9 @@
 """
-    Load and pre-process all data.
+    Loads and preprocesses all data.
 
     Author: Adrian Rahul Kamal Rajkamal
     Student Number: 45811935
 """
-import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 FILE_PATH = "./ADNI_AD_NC_2D/"
