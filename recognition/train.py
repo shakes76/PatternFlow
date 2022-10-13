@@ -59,17 +59,12 @@ else:
 ds = Dataset(path, img_size=image_size)
 dataloader = DataLoader(ds, batch_size=batch_size, shuffle=True, drop_last=True)
 
-#create model
-model = Unet(image_size)
-
-#Create optimizer
-optimizer = Adam(model.parameters(), lr=1e-4)
 
 #create trainer
-trainer = Trainer(model, img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= disable_images, tensorboard = disable_tensorboard, schedule=beta_schedule)
+trainer = Trainer(img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= disable_images, tensorboard = disable_tensorboard, schedule=beta_schedule)
 
 #train model
-trainer.fit(dataloader, epochs, optimizer)
+trainer.fit(dataloader, epochs)
 
 #Save model
 trainer.save_model(name + ".pth")

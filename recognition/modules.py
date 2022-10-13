@@ -9,6 +9,7 @@ import matplotlib.image as mpimg
 import os
 import glob
 from torch.utils.tensorboard import SummaryWriter
+from torch.optim import Adam
 
 
 def show_tensor_image(image):
@@ -154,7 +155,7 @@ class Trainer:
     """
     Class to train Unet Diffusion model
     """
-    def __init__(self, model, img_size, timesteps=1000, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
+    def __init__(self, img_size, timesteps=1000, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
@@ -167,7 +168,9 @@ class Trainer:
         self.pre_compute()
 
         #Attach model to device
-        self.model = model.to(self.device)
+        self.model = Unet(self.img_size).to(self.device)
+
+        self.optimizer = Adam(self.model.parameters(), lr=1e-4)
 
         #disable flags
         self.create_images = create_images
@@ -309,7 +312,7 @@ class Trainer:
         
         mpimg.imsave(path, np.clip((img.detach().cpu().numpy()[0].T + 1) * 0.5, 0.0, 1.0))
     
-    def fit(self, dataloader, epochs, optimizer):
+    def fit(self, dataloader, epochs):
         """
         Trains model for epochs using dataloader and optimizer 
         """
@@ -341,13 +344,13 @@ class Trainer:
         #Train
         for epoch in range(epochs):
             for step, batch in enumerate(dataloader):
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
                 #create random timestep in possible timesteps
                 t = torch.randint(0, self.T, (batch_size,), device=self.device).long()
 
                 loss = self.predict(batch, t)
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 if step == 0:
                     print(f"Epoch {epoch} Loss: {loss.item()}")
@@ -384,13 +387,15 @@ class Trainer:
         if 'model' in locals():
             self.model.cpu()
             torch.cuda.empty_cache()
-        checkpoint = torch.load(path)
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        self.model.to(self.device)
+        checkpoint = torch.load(path, map_location=torch.device("cpu"))
         self.img_size = checkpoint['image_size']
+        self.model = Unet(self.img_size)
         self.schedule = checkpoint['schedule']
         self.start = checkpoint['start']
         self.end = checkpoint['end']
+        self.pre_compute()
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.to(self.device)
+        self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         self.create_images = checkpoint['create_images']
         self.tensorboard = checkpoint['tensorboard']
-        self.pre_compute()
