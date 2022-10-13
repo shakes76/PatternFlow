@@ -28,3 +28,12 @@ the dataset.py file. **Make sure you specify and locate the correct**
 **properly**. I have added location for my data files and hence after 
 downloading ***dataset.py*** it might show error on your computer unless 
 you specify the correct path of the data files.
+
+The ***modules.py*** present in the directory consist of full architecture of 
+UNET. Each component in this file is implemented as a function. For the 
+UNET architecture, I have created **4 separate functions**, one which consists 
+of _all convolutional layers_. _Down Sampling block_ which each time 
+implements the **down sampling of the data**, an _up sampling block_ 
+reponsible for **upsampling of the data** and the last _build unet model_ 
+function which **calls each of the other functions** and builds the whole 
+architecture of the UNET model and **returns the model**.
