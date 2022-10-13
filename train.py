@@ -21,7 +21,7 @@ print(f'Latent vector dimension: {LDIM}')
 
 image_loader = ImageLoader(INPUT_IMAGE_FOLDER, 'grayscale')
 
-adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.0, beta_2=0.99, epsilon=EPS)
+adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.0, beta_2=0.99, epsilon=1.e-8)
 
 model = StyleGAN()
 model.compile(d_optimizer=adam, g_optimizer=adam)

@@ -80,7 +80,7 @@ class AdaIN(Layer):
 
         # instance normalization
         m, v = tf.nn.moments(x, [1, 2], keepdims=True)
-        x = (x - m) / tf.sqrt(v + EPS)
+        x = (x - m) / tf.sqrt(v + 1.e-8)
 
         # w -> A (use henorm on fully connected layer for affine trans)
         ys = self.henorm_ys(self.dense_ys(w))
@@ -119,7 +119,7 @@ class MinibatchStd(Layer):
         # mean accross channels
         mean = tf.reduce_mean(inputs, axis=0, keepdims=True)
         # std accross channels
-        stddev = tf.sqrt(tf.reduce_mean(tf.square(inputs - mean), axis=0, keepdims=True) + EPS)
+        stddev = tf.sqrt(tf.reduce_mean(tf.square(inputs - mean), axis=0, keepdims=True) + 1.e-8)
         average_stddev = tf.reduce_mean(stddev, keepdims=True)
         shape = tf.shape(inputs)
         minibatch_stddev = tf.tile(average_stddev, (shape[0], shape[1], shape[2], 1))

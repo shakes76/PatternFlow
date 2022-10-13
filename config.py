@@ -3,7 +3,6 @@
 import os
 
 # model params
-EPS = 1.e-8                                   # epsilon
 CHANNELS = 1                                  # 1:graysale 3:rgb
 LDIM = 128                                    # laten vector dimemsion
 SRES = 4                                      # starting resolution
