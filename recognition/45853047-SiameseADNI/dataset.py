@@ -5,12 +5,13 @@ import keras as k
 import numpy as np
 import random
 
+GLOBAL_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\'
 
-AD_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\AD'
-CN_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\train\\NC'
+AD_PATH = GLOBAL_PATH + 'AD_NC\\train\\AD'
+CN_PATH = GLOBAL_PATH + 'AD_NC\\train\\NC'
 
-AD_TEST_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\test\\AD'
-CN_TEST_PATH = 'C:\\Users\\Wom\\Desktop\\COMP3710\\ADNI_AD_NC_2D\\AD_NC\\test\\NC'
+AD_TEST_PATH = GLOBAL_PATH + 'AD_NC\\test\\AD'
+CN_TEST_PATH = GLOBAL_PATH + 'AD_NC\\test\\NC'
 
 
 def load_siamese_data():
