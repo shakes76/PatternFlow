@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, Conv2DTranspose
 from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
@@ -56,3 +58,27 @@ class VectorQuantizer(layers.Layer):
         # Straight-through estimator.
         quantized = given + tf.stop_gradient(quantized - given)
         return quantized
+
+    def get_code_indices(self, flattened_inputs):
+        # Calculate L2-normalized distance between the inputs and the codes.
+        similarity = tf.matmul(flattened_inputs, self.embeddings)
+        distances = (
+            tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True)
+            + tf.reduce_sum(self.embeddings ** 2, axis=0)
+            - 2 * similarity
+        )
+        # Derive the indices for minimum distances.
+        encoding_indices = tf.argmin(distances, axis=1)
+        return encoding_indices
+
+def encoder(latent_dim):
+    """
+    Create the Structure for a typical CNN encoder
+    """
+    encoder = Sequential(name="encoder")
+    encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(256, 256, 1)))
+    encoder.add(Conv2D(64, 3, activation="relu", strides=2, padding="same"))
+    encoder.add(Conv2D(128, 3, activation="relu", strides=2, padding="same"))
+    encoder.add(Conv2D(256, 3, activation="relu", strides=2, padding="same"))
+    encoder.add(Conv2D(latent_dim, 1, padding="same"))
+    return encoder
