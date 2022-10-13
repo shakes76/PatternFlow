@@ -141,3 +141,4 @@ recognition/brain
 .DS_Store
 *.pth
 
+recognition/inference
