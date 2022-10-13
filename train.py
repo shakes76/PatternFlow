@@ -13,9 +13,9 @@ from modules import StyleGAN
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # config check up
-assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES)), \
-    f"BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), \
-        and their size must equal log2(TRES)+1."
+assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES) + 1), \
+    f"BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), " \
+        "and their size must equal log2(TRES)+1."
 
 
 print(f'Latent vector dimension: {LDIM}')
