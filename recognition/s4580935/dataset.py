@@ -12,6 +12,11 @@ import glob
 def FetchData(path):
     images = sorted(glob.glob(path))
     return images
+#Convert the array to the format I want
+def squeeze(array):
+    Array = np.asarray(array)
+    Array = np.squeeze(Array)
+    return Array
 
 def ImageExtract(images):
     """
@@ -33,8 +38,7 @@ def ImageExtract(images):
         image = np.squeeze(image)
         Array.append([image])
         #Convert to appropriate np array
-        Array = np.asarray(Array)
-        Array = np.squeeze(Array)
+        Array2 = squeeze(Array)
     return Array
 
 def combine(train, test):
@@ -46,7 +50,6 @@ def combine(train, test):
     Oasis = np.concatenate([train, test], axis=0)
     Oasis = np.expand_dims(Oasis, -1).astype("float32") / 255
     return Oasis
-
 
 def main():
     train_images = FetchData('D:\\University\\2022 Sem 2\\COMP3710\\Project Report\\BranchFOlder\\keras_png_slices_data\\keras_png_slices_data\\keras_png_slices_train\\*')
