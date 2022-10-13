@@ -6,7 +6,7 @@
 """
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers, Model
+from keras import layers, Model, Input
 
 import numpy as np
 
@@ -96,21 +96,20 @@ class Encoder(Model):
     def __init__(self, latent_dim=16, name="encoder"):
         super(Encoder, self).__init__(name=name)
         self._latent_dim = latent_dim
-        # self._img_size = img_size
 
-        # self.input1 = layers.InputLayer(input_shape=self._img_size)
+        # self.input1 = Input(input_shape=self._img_size)
         self.conv1 = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")
         self.conv2 = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")
         self.conv3 = layers.Conv2D(self._latent_dim, 1, padding="same")
 
     def call(self, inputs):
         """
-            Forward computation of this layer.
+            Forward computation of this block.
 
             Args:
-                inputs: inputs of this layer
+                inputs: inputs of this block
 
-            Returns: outputs of this layer
+            Returns: outputs of this block
         """
         # inputs = self.input1(inputs)
         hidden = self.conv1(inputs)
@@ -122,8 +121,8 @@ class Decoder(Model):
     """
         Defines Decoder for VQ-VAE.
     """
-    def __init__(self, name="decoder"):
-        super(Decoder, self).__init__(name=name)
+    def __init__(self, name="decoder", **kwargs):
+        super(Decoder, self).__init__(name=name, **kwargs)
         # self.input1 = layers.InputLayer(input_shape=input_dim)
         self.conv_t1 = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")
         self.conv_t2 = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")
@@ -131,12 +130,12 @@ class Decoder(Model):
 
     def call(self, inputs):
         """
-            Forward computation of this layer.
+            Forward computation of this block.
 
             Args:
-                inputs: inputs of this layer
+                inputs: inputs of this block
 
-            Returns: outputs of this layer
+            Returns: outputs of this block
         """
         # inputs = self.input1(inputs)
         hidden = self.conv_t1(inputs)
@@ -167,12 +166,12 @@ class VQVAE(Model):
 
     def call(self, inputs):
         """
-            Forward computation of this layer.
+            Forward computation of this model.
 
             Args:
-                inputs: inputs of this layer
+                inputs: inputs of this model
 
-            Returns: outputs of this layer
+            Returns: outputs of this model
         """
         encoded = self._encoder(inputs)
         quantised = self._vq(encoded)
@@ -237,14 +236,65 @@ class VQVAE(Model):
         return self._decoder
 
 
+# vqvae = VQVAE(.3)
+# vqvae.build((None, 28, 28, 1))
+# vqvae.summary()
+
 """ PixelCNN """
 
 
-class PixelConvLayer(layers.Layer):
-    pass
+class PixelConv(layers.Layer):
+    """
+        Represents a custom Conv layer with masking of certain sections of filters for
+        autoregressive learning.
+    """
+    def __init__(self, kernel_mask_type, name="pixel_conv", **kwargs):
+        super(PixelConv, self).__init__(name=name)
+        self._main_conv = layers.Conv2D(**kwargs)
+
+        # Either "A" or "B" - see self.build() for further details
+        self._kernel_mask_type = kernel_mask_type
+
+    def build(self, input_shape):
+        """
+            Define layer variables, etc.
+
+            Args:
+                input_shape: Shape of layer's input
+        """
+        self._main_conv.build(input_shape)
+        kernel_shape = self._main_conv.kernel.get_shape()
+
+        # Creates a way to 'mask out' unseen bits to achieve autoregressive behaviour. In any
+        # image, there are 3 dimensions. Height, length, and #channels (i.e. R, G, B). There are
+        # two types of masks, namely, type "A" and "B".
+
+        # Mask "A" zeroes out all pixels above and left of the pixel in the middle of the mask.
+        # Mask "B" is similar to Mask "A", but does not zero out the middle pixel itself.
+        self._kernel_mask = np.zeros(shape=kernel_shape)
+        self._kernel_mask[: kernel_shape[0] // 2, ...] = 1.0
+        self._kernel_mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self._kernel_mask_type == "B":
+            self._kernel_mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        """
+            Forward computation of this layer.
+
+            Args:
+                inputs: inputs of this layer
+
+            Returns: outputs of this layer
+
+        """
+        self._main_conv.kernel.assign(self._main_conv.kernel * self._kernel_mask)
+        return self._main_conv(inputs)
 
 
-class ResidualBlock(layers.Layer):
+class PixelResidualBlock(layers.Layer):
+    """
+        Defines a typical residual block, but using the PixelConv layer.
+    """
     pass
 
 
