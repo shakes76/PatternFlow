@@ -11,6 +11,7 @@ from config import *
 
 
 # normalize weight by given shape
+# HeNorm:
 # https://prateekvishnu.medium.com/xavier-and-he-normal-he-et-al-initialization-8e3d7a087528
 # stddev = sqrt(2 / fan_in)
 class HeNormal(Layer):
@@ -42,20 +43,20 @@ class Bias(Layer):
 
 
 # normalized dense layer
-def EqualDense(x, filters, gain=1.):
+def EqualDense(x, out_filters, gain=1.):
     init = RandomNormal(stddev=1.)
     in_filters = backend.int_shape(x)[-1]
-    x = Dense(filters, use_bias=False, kernel_initializer=init, dtype='float32')(x)
+    x = Dense(out_filters, use_bias=False, kernel_initializer=init, dtype='float32')(x)
     x = HeNormal(shape=(in_filters), gain=gain)(x)
     x = Bias(input_shape=x.shape)(x)
     return x
 
 
 # normalized conv layer
-def EqualConv(x, filters, gain=2., kernel=(3, 3), strides=(1, 1)):
+def EqualConv(x, out_filters, gain=2., kernel=(3, 3), strides=(1, 1)):
     init = RandomNormal(mean=0., stddev=1.)
     in_filters = backend.int_shape(x)[-1]
-    x = Conv2D(filters, kernel, strides=strides, use_bias=False, padding="same", kernel_initializer=init, dtype='float32')(x)
+    x = Conv2D(out_filters, kernel, strides=strides, use_bias=False, padding="same", kernel_initializer=init, dtype='float32')(x)
     x = HeNormal(shape=(in_filters), gain=gain)(x)
     x = Bias(input_shape=x.shape)(x)
     return x
@@ -81,7 +82,7 @@ class AdaIN(Layer):
         m, v = tf.nn.moments(x, [1, 2], keepdims=True)
         x = (x - m) / tf.sqrt(v + EPS)
 
-        # w -> A
+        # w -> A (use henorm on fully connected layer for affine trans)
         ys = self.henorm_ys(self.dense_ys(w))
         yb = self.henorm_yb(self.dense_yb(w))
 
@@ -100,12 +101,10 @@ class AddNoise(Layer):
         filters = input_shape[0][-1]
         # without specifying 'name' excption raised when saving weights. bug?
         self.b = self.add_weight(shape=[1, 1, 1, filters], initializer=init, trainable=True, name='w')
-        self.lrelu = LeakyReLU(0.2)
 
     def call(self, inputs):
         x, B = inputs
-        x = x + self.b * B
-        return self.lrelu(x)
+        return x + self.b * B
 
 
 # Mini Batch Standadization

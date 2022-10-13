@@ -52,4 +52,4 @@ plt.imshow(combined_image, cmap='gray')
 # save
 path = os.path.join(IMAGE_DIR, 'generated.png')
 combined_image.save(path)
-print(f'\n{n} images saved: {path}')
+print(f'\n{n} images saved in {path}')
