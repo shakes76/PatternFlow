@@ -82,3 +82,16 @@ def encoder(latent_dim):
     encoder.add(Conv2D(256, 3, activation="relu", strides=2, padding="same"))
     encoder.add(Conv2D(latent_dim, 1, padding="same"))
     return encoder
+
+def decoder():
+    """
+    Create the Structure for the decoder based on the inverse of the encoder created above
+    """
+    decoder = Sequential(name="decoder")
+    decoder.add(Conv2DTranspose(256, 3, activation="relu", strides=2, padding="same"))
+    decoder.add(Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same"))
+    decoder.add(Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
+    decoder.add(Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
+    decoder.add(Conv2DTranspose(1, 3, padding="same"))
+    return decoder
+
