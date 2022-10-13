@@ -18,20 +18,12 @@ PATCH_SIZE = 16
 NUM_PATCHES = (IMAGE_DIM//PATCH_SIZE) ** 2
 
 def training_dataset() -> tf.data.Dataset:
-    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, validation_split=0.2, subset="training", seed=SEED, image_size=IMAGE_SIZE)
-    dataset = dataset.map(lambda x,y: (make_patch(x), y), num_parallel_calls=tf.data.AUTOTUNE)
-    dataset = dataset.prefetch(tf.data.AUTOTUNE)
-    return dataset
-
-def validation_dataset() -> tf.data.Dataset:
-    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, validation_split=0.2, subset="validation", seed=SEED, image_size=IMAGE_SIZE)
-    dataset = dataset.map(lambda x,y: (make_patch(x), y), num_parallel_calls=tf.data.AUTOTUNE)
+    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE)
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
 
 def testing_dataset() -> tf.data.Dataset:
     dataset = keras.preprocessing.image_dataset_from_directory(TEST_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE)
-    dataset = dataset.map(lambda x,y: (make_patch(x), y), num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
 
@@ -45,7 +37,7 @@ def make_patch(image):
         padding="VALID",
     )
     patch_dims = patches.shape[-1]
-    patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+    patches = tf.reshape(patches, [batch_size, NUM_PATCHES, patch_dims])
 
     return patches
 

@@ -6,24 +6,38 @@ import tensorflow.keras as keras
 from tensorflow.keras import layers
 import numpy as np
 
-from dataset import IMAGE_DIM
+from dataset import IMAGE_DIM, make_patch
 
 class AlzheimerModel(keras.Model):
     def __init__(self, num_patches, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes):
         """Initialise the model"""
         super().__init__()
 
+        #Data augmentation
+        self.augmentation = keras.Sequential([
+            layers.Rescaling(1 / 255.0),
+            layers.RandomRotation(0.2),
+            layers.RandomFlip()
+        ])
+
         #Apply projection and positional encoding
         self.pos_encoder = PositionalEncoder(num_patches, d_model)
+
         #Nx Transformer Encoders
         self.encoders = [TransformerEncoder(num_heads, d_model, d_mlp, dropout_rate) for _ in range(num_layers)]
+
         #MLP Head
         self.mlp = MultiLayerPerceptron(head_layers, d_model, dropout_rate)
+
         #OUTPUT
         self.classification = layers.Dense(num_classes, activation="softmax")
     
     def call(self, x):
         """Use the model with .fit"""
+        x = self.augmentation(x)
+
+        x = make_patch(x)
+
         x = self.pos_encoder(x)
 
         for encoder in self.encoders:
@@ -39,18 +53,20 @@ class PositionalEncoder(layers.Layer):
     def __init__(self, num_patches, d_model) -> None:
         super().__init__()
         self.num_patches = num_patches
+        self.d_model = d_model
 
         self.projection = layers.Dense(d_model)
-        #Mask zero used to allow for learnable class embedding
-        self.pos_embedding = layers.Embedding(num_patches, d_model, mask_zero=True)
-
-    def compute_mask(self, *args, **kwargs):
-        #Required because embedding layer uses a mask
-        return self.pos_embedding.compute_mask(*args, **kwargs)
-
+        self.cls_token = self.add_weight("cls_token", shape=(1, 1, d_model))
+        self.pos_embedding = layers.Embedding(num_patches+1, d_model)
+    
     def call(self, x):
-        positions = tf.range(0, self.num_patches)
-        encoded = self.projection(x) + self.pos_embedding(positions)
+        positions = tf.tile([tf.range(0, self.num_patches+1)], [tf.shape(x)[0], 1])
+        pos_emb = self.pos_embedding(positions)
+
+        linear_map = self.projection(x)
+        cls_token = tf.tile(self.cls_token, [tf.shape(x)[0], 1, 1]) #[BATCH_SIZE, 1, self.d_model]
+        class_embedded = tf.concat([cls_token, linear_map], 1)
+        encoded = class_embedded + pos_emb
         return encoded
 
 class TransformerEncoder(layers.Layer):
@@ -97,7 +113,7 @@ class MultiLayerPerceptron(layers.Layer):
 
         self.layer_normalisation = layers.LayerNormalization()
         self.mlp = keras.Sequential([
-            layers.Dense(d_mlp, activation="relu"),
+            layers.Dense(d_mlp, activation="gelu"),
             layers.Dense(d_model),
             layers.Dropout(dropout_rate)
         ])

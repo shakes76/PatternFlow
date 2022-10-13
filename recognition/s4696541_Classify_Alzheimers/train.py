@@ -18,10 +18,10 @@ if __name__ == "__main__":
         num_patches=NUM_PATCHES, 
         num_layers=12,
         num_heads=12,
-        d_model=64,
-        d_mlp=3000,
-        head_layers=1000,
-        dropout_rate=0.15,
+        d_model=768,
+        d_mlp=3072,
+        head_layers=3072,
+        dropout_rate=0.2,
         num_classes=2
     )
 
@@ -32,9 +32,9 @@ if __name__ == "__main__":
     )
 
     train_ds = training_dataset()
-    validate_ds = validation_dataset()
+    test_ds = testing_dataset()
 
-    history = az_model.fit(train_ds, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=validate_ds)
+    history = az_model.fit(train_ds, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=test_ds)
 
     az_model.save("az_model")
 
