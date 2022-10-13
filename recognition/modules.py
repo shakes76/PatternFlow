@@ -297,14 +297,13 @@ class Trainer:
         plt.close()
 
     @torch.no_grad()
-    def generate_image(self, path, seed=None):
+    def generate_image(self, path):
         """
         Generates new image by completing full reverse denoising of all timesteps.
 
         Saves image to path.
         """
-        np.random.seed(seed)
-        img = torch.tensor(np.random.randn(1, 3, self.img_size, self.img_size), device=self.device).float()
+        img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
 
         for i in range(0, self.T)[::-1]:
             t = torch.full((1,), i, device=self.device, dtype=torch.long)
@@ -389,11 +388,11 @@ class Trainer:
             torch.cuda.empty_cache()
         checkpoint = torch.load(path, map_location=torch.device("cpu"))
         self.img_size = checkpoint['image_size']
-        self.model = Unet(self.img_size)
         self.schedule = checkpoint['schedule']
         self.start = checkpoint['start']
         self.end = checkpoint['end']
         self.pre_compute()
+        self.model = Unet(self.img_size)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.to(self.device)
         self.optimizer = Adam(self.model.parameters(), lr=1e-4)
