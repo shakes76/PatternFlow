@@ -13,9 +13,7 @@ from config import *
 # https://arxiv.org/abs/1812.04948
 class StyleGAN(Model):
 
-    def __init__(
-        self
-    ):
+    def __init__(self):
         super(StyleGAN, self).__init__()
         self.DEPTH = int(np.log2(TRES) - np.log2(SRES))  # training depth
         self.current_depth = 0                           # current training depth
@@ -110,7 +108,7 @@ class StyleGAN(Model):
         
         return Model([const, w, B], x)
 
-    # Fade in upper resolution block
+    # grow generator (fade in)
     def grow_G(self):
         d = self.current_depth
         f = FILTERS[d]
@@ -149,15 +147,6 @@ class StyleGAN(Model):
         # fade in
         self.G = Model(self.G.input+[w,B], WeightedSum()([x1, x2]))
 
-    def grow(self):
-        self.current_depth += 1
-        self.grow_G()
-        self.grow_D()
-
-    def stabilize(self):
-        self.G = self.G_ST
-        self.D = self.D_ST
-
     # gradient constraint, to enforece unit norm gradient.
     # E[(grad(f(x))-1)^2]
     def gradient_penalty(self, batch_size, real_images, fake_images):
@@ -177,7 +166,17 @@ class StyleGAN(Model):
         gp = tf.reduce_mean((norm - 1.0) ** 2)
         
         return gp
+    
+    def grow(self):
+        self.current_depth += 1
+        self.grow_G()
+        self.grow_D()
 
+    def stabilize(self):
+        self.G = self.G_ST
+        self.D = self.D_ST
+
+    # customized train step
     def train_step(self, data):
         real_images = data[0]
         batch_size = tf.shape(real_images)[0]
