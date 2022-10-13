@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from dataset import *
 import PIL
 
 # building the model
-def get_model(upscale_factor=3, channels=1):
+def get_model(upscale_factor=4, channels=1):
     conv_args = {
         "activation": "relu",
         "kernel_initializer": "Orthogonal",

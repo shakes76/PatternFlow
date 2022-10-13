@@ -7,7 +7,6 @@ from dataset import *
 class ESPCNCallback(tf.keras.callbacks.Callback):
 
     test_ds = creating_test_dataset()
-    # print("print_ds", test_ds)
 
     def __init__(self):
         super(ESPCNCallback, self).__init__()
@@ -46,6 +45,24 @@ def model_checkpoint():
     callbacks = [ESPCNCallback(), early_stopping_callback, model_checkpoint_callback]
     loss_fn = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-    return callbacks, loss_fn, optimizer
 
-callbacks, loss_fn, optimizer = model_checkpoint()
+    return model, callbacks, loss_fn, optimizer, checkpoint_filepath
+
+def training():
+
+    model, callbacks, loss_fn, optimizer, checkpoint_filepath = model_checkpoint()
+
+    epochs = 5
+    train_ds, valid_ds = mapping_target()
+    
+    model.compile(
+        optimizer=optimizer, loss=loss_fn,
+    )
+
+    model.fit(
+        train_ds, epochs=epochs, callbacks=callbacks, validation_data=valid_ds, verbose=2
+    )
+
+    model.load_weights(checkpoint_filepath)
+
+sup = training()
