@@ -21,7 +21,7 @@ def predict():
         for i in range(len(pred)):
 
             # Print prediction
-            if pred[i] > 0.5:
+            if pred[i] < 0.5:
                 print("Predicition: AD")
             else:
                 print("Predicition: CN")
