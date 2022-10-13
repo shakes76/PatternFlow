@@ -1,3 +1,5 @@
+import argparse
+
 import dataset
 import modules
 import tensorflow as tf
@@ -146,6 +148,15 @@ class Train:
         plt.close()
 
 
+# add args for the training
+def arg_parse():
+    arg = argparse.ArgumentParser("args")
+    arg.add_argument('-e', '--epochs', default=50, type=int, help='Number of epochs for the training.')
+
+    args = arg.parse_args()
+    return args
+
+
 if __name__ == "__main__":
     latent_size = 512
     input_size = 256
@@ -163,5 +174,7 @@ if __name__ == "__main__":
     # train model
     train = Train(dataset.train_ds, g_style, discriminator, input_size, batch_size)
 
-    # train the model for 50 epochs
-    train.train(50)
+    args = arg_parse()
+    # train the model (default 50 epochs)
+    epochs = args.epochs
+    train.train(epochs)
