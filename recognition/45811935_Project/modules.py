@@ -5,9 +5,7 @@
     Student Number: 45811935
 """
 import tensorflow as tf
-from tensorflow import keras
-from keras import layers, Model, Input
-
+from keras import layers, Model
 import numpy as np
 
 """ VQ-VAE """
@@ -125,7 +123,6 @@ class Decoder(Model):
 
     def __init__(self, name="decoder", **kwargs):
         super(Decoder, self).__init__(name=name, **kwargs)
-        # self.input1 = layers.InputLayer(input_shape=input_dim)
         self.conv_t1 = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")
         self.conv_t2 = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")
         self.conv_t3 = layers.Conv2DTranspose(1, 3, padding="same")
@@ -139,7 +136,6 @@ class Decoder(Model):
 
             Returns: outputs of this block
         """
-        # inputs = self.input1(inputs)
         hidden = self.conv_t1(inputs)
         hidden = self.conv_t2(hidden)
         return self.conv_t3(hidden)
@@ -238,10 +234,6 @@ class VQVAE(Model):
         """ Returns decoder """
         return self._decoder
 
-
-# vqvae = VQVAE(.3)
-# vqvae.build((None, 28, 28, 1))
-# vqvae.summary()
 
 """ PixelCNN """
 
@@ -396,8 +388,3 @@ class PixelCNN(Model):
         return {
             "loss": self._total_loss.result()
         }
-
-
-# pixel_cnn = PixelCNN()
-# pixel_cnn.build((None, 7, 7))
-# pixel_cnn.summary()
