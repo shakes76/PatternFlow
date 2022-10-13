@@ -58,6 +58,8 @@ class OASIS_loader():
 
         self._pointer = 0 #Keep a track of how many images we have already used to allow batching
 
+        # self._normalisation_mean = 0
+
     def get_data(self, num_images: int) -> tf.Tensor:
         """
         Returns a normalized Tensor containing greyscale image pixel intensities of the next availible images.

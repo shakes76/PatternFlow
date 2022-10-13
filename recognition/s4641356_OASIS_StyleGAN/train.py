@@ -40,6 +40,7 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
             batch = data_loader.get_data(batch_size)
 
             #train discriminator on real images
+            style_GAN._discriminator.trainable = True
             dfl, dfa = style_GAN._discriminator.train_on_batch(batch, real_labels)
 
             #train discriminator on a batch of fake images from current iteration of the generator
@@ -47,6 +48,7 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
             drl, dra = style_GAN._discriminator.train_on_batch(fake_images, fake_labels)
 
             #Train generator. Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' (1) from discriminator
+            style_GAN._discriminator.trainable = False
             gl, ga = style_GAN._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,style_GAN._latent_dim,style_GAN._start_res,style_GAN._output_res) + [batch_generator_base], real_labels)
 
             metrics_to_store = [dfl,dfa,drl,dra,gl,ga]

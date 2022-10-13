@@ -101,8 +101,8 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
     METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
-    GEN_LEARN_RATE = 0.0001
-    DISCRIM_LEARN_RATE = 0.00025
+    GEN_LEARN_RATE = 2e-7
+    DISCRIM_LEARN_RATE = 3e-8
 
 
     def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_folder: str = None) -> None:
@@ -133,7 +133,7 @@ class StyleGAN():
         self._generator = generator
         if generator is None:
             self._generator = self.get_generator()
-        self._generator_base = tf.zeros(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
+        self._generator_base = tf.ones(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
 
         #initialise discriminator
         self._discriminator = discriminator
@@ -177,13 +177,15 @@ class StyleGAN():
 
         #Generation blocks for each feature scale
         curr_res = self._start_res
-
+        
         #using 'tensor =' to give a constant doesn't allow for dynamic batch size (you must specify the length of that dimenstion unless you hack something using a Lambda layer). This will be fixed inside the StyleGan train 
         constant_input = tf.keras.layers.Input(shape = (self._start_res//2,self._start_res//2,self._latent_dim), name = "Constant_Initial_Image") 
        
         x = constant_input
         generator_noise_inputs = [] #keep a hold of input handles for model return
         while curr_res <= self._output_res:
+            filter_num = self._output_res//(curr_res//4)
+
             #Each resolution needs an appropriately sized noise inputs
             layer_noise_inputs = (tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_1".format(curr_res)),
                     tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_2".format(curr_res)))
@@ -198,7 +200,7 @@ class StyleGAN():
 
             curr_res = curr_res*2
         
-        output_image = tf.keras.layers.Conv2DTranspose(1, kernel_size=3, padding = "same", name = "Final_Image".format(curr_res))(x)
+        output_image = tf.keras.layers.Conv2DTranspose(1, kernel_size=3, padding = "same", activation = "tanh",name = "Final_Image".format(curr_res))(x)
 
         return tf.keras.Model(inputs = ([generator_latent_input] + generator_noise_inputs + [constant_input]), outputs = output_image, name = "Generator")
     
