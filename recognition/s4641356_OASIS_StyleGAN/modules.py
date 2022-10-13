@@ -101,6 +101,9 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
     METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
+    GEN_LEARN_RATE = 0.0001
+    DISCRIM_LEARN_RATE = 0.00025
+
 
     def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_folder: str = None) -> None:
         """
@@ -146,9 +149,10 @@ class StyleGAN():
         loss='binary_crossentropy'
         # optimizer = 'adam'
         metrics=['accuracy']
-        self._generator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001), metrics = metrics)
-        self._discriminator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.00025), metrics = metrics)
-        self._gan.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001), metrics = metrics)
+        self._generator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.GEN_LEARN_RATE), metrics = metrics)
+        self._gan.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.GEN_LEARN_RATE), metrics = metrics)
+        self._discriminator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.DISCRIM_LEARN_RATE), metrics = metrics)
+       
 
         self._epochs_trained = trained_epochs
 
@@ -166,7 +170,8 @@ class StyleGAN():
         #Latent Feature Generation
         z = generator_latent_input
         for i in range(8):
-            z = tf.keras.layers.Dense(self._latent_dim, name = "Feature_Gen_Dense_{}".format(i+1))(z)
+            z = tf.keras.layers.Dense(self._latent_dim, name = "feature_gen_dense_{}".format(i+1))(z)
+            z = tf.keras.layers.LeakyReLU(0.2, name = "feature_gen_leakyrelu_{}".format(i+1))(z)
 
         w = z
 
@@ -209,21 +214,23 @@ class StyleGAN():
         current_res = self._output_res
         x = discriminator_input
         while current_res > 4:
-            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
-            x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
+            # x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
+            x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
+            x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
             x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_1".format(current_res))(x)
-            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_2".format(current_res))(x)
-            x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
-            x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_2".format(current_res))(x)
-            x = tf.keras.layers.AveragePooling2D((2, 2), name = "{0}x{0}_image_reduction".format(current_res))(x)
+            # x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_2".format(current_res))(x)
+            
+            # x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_2".format(current_res))(x)
+            x = tf.keras.layers.MaxPooling2D((2, 2), name = "{0}x{0}_image_reduction".format(current_res))(x)
             current_res = current_res//2
 
         #Flatten and compile features for discrimination
-        x = tf.keras.layers.Conv2D(self._latent_dim,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution".format(current_res))(x)
+        x = tf.keras.layers.Conv2D(self._latent_dim ,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
+        x = tf.keras.layers.Conv2D(self._latent_dim ,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
         x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_Leaky_ReLU".format(current_res))(x)
         x = tf.keras.layers.Flatten(name = "Flatten")(x)
-        x = tf.keras.layers.Dense(self._latent_dim, name = "Discriminator_Dense_Classify")(x)
-        x = tf.keras.layers.LeakyReLU(0.2,name = "Flat_Leaky_ReLU")(x)
+        # x = tf.keras.layers.Dense(self._latent_dim, name = "Discriminator_Dense_Classify")(x)
+        # x = tf.keras.layers.LeakyReLU(0.2,name = "Flat_Leaky_ReLU")(x)
         
         x = tf.keras.layers.Dense(1, activation = "sigmoid", name = "Discriminate")(x) #Final decision, 1 for real 0 for fake
 
