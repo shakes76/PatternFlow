@@ -144,10 +144,10 @@ class StyleGAN():
 
         #configure components for training
         loss='binary_crossentropy'
-        optimizer = 'adam'
+        # optimizer = 'adam'
         metrics=['accuracy']
-        self._generator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
-        self._discriminator.compile(loss = loss, optimizer = optimizer, metrics = metrics)
+        self._generator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001), metrics = metrics)
+        self._discriminator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.00025), metrics = metrics)
         self._gan.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001), metrics = metrics)
 
         self._epochs_trained = trained_epochs

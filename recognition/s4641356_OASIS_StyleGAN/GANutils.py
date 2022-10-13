@@ -36,8 +36,10 @@ def create_image(data: np.array, filename: str = None) -> Image:
 
     Returns:
         Image: Generated image
-    """
-    im = Image.fromarray(data[:,:,0],'L').convert("RGBA") #Passed data will have extreneous channel dimension
+    """#TODO constants
+    im = Image.new('L', (256,256), 0) 
+    im.paste(Image.fromarray(data[:,:,0],'L').resize((256-35,256-35)),(35//2,35//2))#Passed data will have extreneous channel dimension, we "decompress" back to original image size by upsampling then adding back the black image padding.
+    im = im.convert("RGBA")
     if filename is not None:
         im.save(filename+".png")
     return im
@@ -78,7 +80,7 @@ def make_fresh_folder(folder_path: str) -> None:
     os.makedirs(folder_path)
 
 def save_training_history(history: dict[list[float]], filename: str) -> None: #TODO docsttinfs
-     with open(filename + ".csv", mode = 'a') as f:
+     with open(filename + ".csv", mode = 'a', newline='') as f:
         csv.writer(f).writerows(zip(*history.values())) #we pass in the arbitrary length set of *args (various history compoents)
 
 def load_training_history(csv_location: str) -> dict[list[float]]:

@@ -2,11 +2,20 @@ import os
 from PIL import Image
 import tensorflow as tf
 import numpy as np
+import GANutils
 
 class OASIS_loader():
     """
     Data loader and preprocessor for local OASIS dataset
     """
+
+    CACHE = "cache/"
+    MEAN_CACHE = "mean_cache.npy"
+
+    IMAGE_RES = 256
+    COMPRESSED_RES = 32
+    CROP_PIXELS = 35 #number of blackspace pixels to crop off per side
+
     def __init__(self, filepath: str = "images/") -> None:
         """
         Instantiates a new OASIS data loader and preprocessor for images stored
@@ -15,38 +24,86 @@ class OASIS_loader():
         Args:
             filepath (str, optional): Directory of folder containing OASIS images. Defaults to "images/".
         """
+        
         self._filepath = filepath
         self._image_list = os.listdir(self._filepath)
         self._num_images_availible = len(self._image_list)
-        self._cache = []
+        
         print("Found {} Images".format(self._num_images_availible))
 
+        #check for prexisting processed data
+        if os.path.exists(OASIS_loader.CACHE) and os.path.exists(OASIS_loader.MEAN_CACHE) and (len(os.listdir(OASIS_loader.CACHE)) == self._num_images_availible):
+            print("Found existing cache, shall use this")
+            self._normalisation_mean = np.load(OASIS_loader.MEAN_CACHE)[0]
 
-    def get_data(self, num_images: int) -> tuple[tf.Tensor, float]:
+        else:
+            print("Normalising...".format(self._num_images_availible))
+
+            #Temporarily load all images to calculate shared mean and normalise.
+            image_vector = np.stack([self._load_image(self._filepath + image_name) for image_name in self._image_list], axis = 0)
+            image_vector, self._normalisation_mean = self._normalise(image_vector)
+            image_vector = np.split(image_vector, self._num_images_availible, axis = 0)
+            print("Normalisation Complete, Caching:")
+
+            #Save data to disk for future load to prevent clogging program memory
+            GANutils.make_fresh_folder(OASIS_loader.CACHE)
+            for i in range(self._num_images_availible):
+                np.save(OASIS_loader.CACHE + str(i) + ".npy", image_vector[i])
+                print("{}/{}".format(i,self._num_images_availible))
+            
+            #cache mean to prevent needing to recalculate in future
+            np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
+
+            print("Data is prepped and ready to go!")
+
+        self._pointer = 0 #Keep a track of how many images we have already used to allow batching
+
+    def get_data(self, num_images: int) -> tf.Tensor:
         """
-        Returns a normalized Tensor containing greyscale image pixel intensities.
-        Images appear in order they appear in folder, with images being loaded into
-        memory for future repeat usage.
+        Returns a normalized Tensor containing greyscale image pixel intensities of the next availible images.
+        Images are sampled in the order they appear in the folder, cyclicly.
 
         Args:
             num_images (int): size of data vector to return
 
         Raises:
-            ValueError: If the requested number of images is greater than the amount of images in the specified folder
+            ValueError: If the requested number of images is greater than the amount of images availible
 
         Returns:
-            tuple[tf.Tensor, float]: Normalised data vector, Group mean used to center normalised data
+            tf.Tensor: Normalised data vector.
         """
         if num_images > self._num_images_availible:
             raise ValueError("Requested more images than availible: \n ({} > {})".format(num_images,self.num_images_availible))
 
-        #Load in any additional images required to meet desired amount
-        while len(self._cache) < num_images:
-            #wrap returned array in an additioal axis and append to list of lists
-            self._cache.append(self._load_image(self._filepath + self._image_list[len(self._cache)]))
+        data = []
+        for i in range(num_images):
+            data.append(np.load(OASIS_loader.CACHE + str(self._pointer) + ".npy"))
+            self._pointer += 1
 
-        data,mean = self._normalise(np.stack(self._cache[0:num_images], axis = 0))
-        return tf.convert_to_tensor(data),mean
+            #Cycle back to first image to allow multiple epochs
+            if self._pointer >= self._num_images_availible:
+                self._pointer = 0
+            
+        return tf.convert_to_tensor(np.concatenate(data, axis = 0))
+
+
+    def get_mean(self) -> float:
+        """
+        Returns the mean used to normalise data, which can be used to denormalise generated samples
+
+        Returns:
+            float: Group mean used to center normalised data
+        """
+        return self._normalisation_mean
+
+    def get_num_images_availible(self) -> int:
+        """
+        Returns number of availible images
+
+        Returns:
+            int: number of images availible to load
+        """
+        return self._num_images_availible
 
     def _load_image(self, filepath: str) -> np.array:
         """
@@ -61,7 +118,7 @@ class OASIS_loader():
         Returns:
             np.array: Matrix of greyscale image pixel intensities (0,255)
         """
-        im = Image.open(filepath).convert('L')
+        im = Image.open(filepath).convert('L').resize((OASIS_loader.COMPRESSED_RES,OASIS_loader.COMPRESSED_RES), box = (OASIS_loader.CROP_PIXELS,OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS))# we heavily compress the image to ruin the NN on a local machine. This is feasible by the simplicity of image.
         return np.asarray(im,dtype = np.uint8)[:,:,np.newaxis] #convolutional layers require a channel dimension
 
             
