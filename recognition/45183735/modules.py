@@ -178,13 +178,3 @@ class Discriminator:
 
         return D_model
 
-
-# if __name__ == "__main__":
-#     latent_size = 512
-#     input_size = 256
-#     # g_mapping = G_Mapping(latent_size)
-#     # g_s = G_Synthesis(latent_size, g_mapping, input_size)
-#     # g_style = G_style(latent_size, input_size, g_s)
-#     discriminator = Discriminator(input_size)
-#     discriminator.D_model.summary()
-
