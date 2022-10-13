@@ -141,11 +141,17 @@ class WeightedSum(Add):
     def __init__(self, alpha=0., **kwargs):
         super(WeightedSum, self).__init__(**kwargs)
         self.alpha = backend.variable(alpha)
-        
-    def call(self, inputs):
+    
+    # original method (below) simply adds two inputs, 
+    # but we need a weighted sum of two inputs.
+    # def _merge_function(self, inputs):
+    #     output = inputs[0]
+    #         for i in range(1, len(inputs)):
+    #             output += inputs[i]
+    #     return output
+    def _merge_function(self, inputs):
         a, b = inputs
-        wsum = (1. - self.alpha) * a + self.alpha * b
-        return wsum
+        return (1. - self.alpha) * a + self.alpha * b
 
 
 # callback to update alpha during training
