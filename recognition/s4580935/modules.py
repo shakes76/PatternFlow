@@ -1,3 +1,4 @@
+from pickletools import optimize
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -150,3 +151,9 @@ class VQVAE(keras.models.Sequential):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
+
+def train(model, data, num_epochs):
+    model.compile(optimizer=keras.optimizers.Adam())
+    model.get_layer("encoder").summary()
+    model.get_layer("decoder").summary()
+    model.fit(data, epochs=num_epochs, batch_size=128, validation_split=0.2)
