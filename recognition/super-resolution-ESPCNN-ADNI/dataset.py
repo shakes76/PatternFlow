@@ -13,7 +13,7 @@ import tensorflow as tf
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
 
-from constants import IMG_ORIG_SIZE, IMG_DOWN_SIZE, BATCH_SIZE
+from constants import IMG_ORIG_SIZE, IMG_DOWN_SIZE, BATCH_SIZE, RESIZE_METHOD
 
 
 def download_data() -> str:
@@ -50,14 +50,27 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """Return normalised train and test datasets from data_path
 
     data_path must have two subdirectories: test and train representing the
-    testing and training data sets.
+    testing and training data sets (shown below).
+        test/
+            AD/
+                _images_.jpeg
+            NC/
+                _images_.jpeg
+        train/
+            AD/
+                _images_.jpeg
+            NC/
+                _images_.jpeg
+
+    The shapes of the datasets will be ((64, 60, 1), (256, 240, 1)), i.e.
+    downsampled images mapped to full-res target images.
 
     Args:
         data_path (str): path to the folder containing the images
 
     Returns:
-        Tuple[tf.data.Dataset, tf.data.Dataset]: Tuple of train and test
-        datasets (train, test)
+        List[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]: Tuple of
+        train, valid, and test datasets (train, valid, test)
     """
     train_path = os.path.join(data_path, "train")
     test_path = os.path.join(data_path, "test")
@@ -80,30 +93,17 @@ def get_datasets(data_path: str) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
 
     normalisation_layer = keras.layers.Rescaling(1./255)  # Normalise
 
-    # Normalise each image and insert its target
-    norm_train_ds = train_ds.map(lambda x: (normalisation_layer(x), normalisation_layer(x)))
-    norm_test_ds = test_ds.map(lambda x: (normalisation_layer(x), normalisation_layer(x)))
+    normalised_sets = []
 
-    return norm_train_ds, norm_test_ds
+    # Normalise and downsample each image and insert its target
+    for dataset in [train_ds, test_ds]:
+        normalised_sets.append(dataset.map(lambda x: (
+            tf.image.resize(normalisation_layer(x), IMG_DOWN_SIZE, 
+                            method=RESIZE_METHOD),
+            normalisation_layer(x)
+        )))
 
-
-def downsample_data(
-    dataset: tf.data.Dataset,
-    resulting_size: tuple[int, int] = IMG_DOWN_SIZE,
-) -> Any:
-    """Return dataset with all images downsized to resulting_size
-
-    Args:
-        dataset (tf.data.Dataset): dataset containing images to downsize.
-        resulting_size tuple[int, int]: The image size to downsample towards.
-            Defaults to (64, 60).
-
-    Returns:
-        Any: Downsized images in a dataset
-    """
-    return dataset.map(
-        lambda x, y: (tf.image.resize(x, resulting_size, method="bicubic"), y)
-    )
+    return tuple(normalised_sets)
 
 
 def downsample_image(
@@ -120,7 +120,7 @@ def downsample_image(
     Returns:
         Any: Downsized image
     """
-    return tf.image.resize(image, resulting_size, method="bicubic")
+    return tf.image.resize(image, resulting_size, method=RESIZE_METHOD)
 
 
 def preview_data(dataset: tf.data.Dataset, title: str | None = None) -> None:
@@ -145,8 +145,8 @@ def preview_data(dataset: tf.data.Dataset, title: str | None = None) -> None:
             plt.axis("off")
 
 
-def get_image_from_dataset(dataset: tf.data.Dataset) -> Any:
-    """Return an image from the dataset
+def get_tuple_from_dataset(dataset: tf.data.Dataset) -> Tuple[Any, Any]:
+    """Return the first (image, target) from a dataset
 
     Args:
         dataset (tf.data.Dataset): Dataset containing images
@@ -154,5 +154,5 @@ def get_image_from_dataset(dataset: tf.data.Dataset) -> Any:
     Returns:
         Any: Image
     """
-    for images, _ in dataset.take(1):
-        return images[0]
+    for images, targets in dataset.take(1):
+        return images[0], targets[0]
