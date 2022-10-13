@@ -138,12 +138,9 @@ class MinibatchStdev(Layer):
 # alpha update during training
 class WeightedSum(Add):
 
-    def __init__(self, **kwargs):
+    def __init__(self, alpha=0., **kwargs):
         super(WeightedSum, self).__init__(**kwargs)
-        self._alpha = 0.
-        
-    def set_alpha(self, alpha):
-        self._alpha = alpha
+        self.alpha = backend.variable(alpha)
         
     def call(self, inputs):
         a, b = inputs
@@ -180,7 +177,7 @@ class FadeInCallBack(tf.keras.callbacks.Callback):
         # update alpha for both G and D
         for layer in self.model.G.layers + self.model.D.layers:
             if isinstance(layer, WeightedSum):
-                layer.set_alpha(alpha)
+                backend.set_value(layer.alpha, alpha)
 
 
 # callback for generating images after each epoch

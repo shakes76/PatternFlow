@@ -13,7 +13,7 @@ TRES = 256                                    # target resolution
 # training params
 BSIZE = (32, 32, 32, 32, 16, 8, 4)            # batch size of each resolution
 FILTERS = (256, 256, 256, 256, 128, 64, 32)   # number of filters of each resolution
-EPOCHS = (20, 20, 20, 20, 30, 30, 30)         # training epochs of each resolution
+EPOCHS = (25, 25, 25, 25, 25, 35, 35)         # training epochs of each resolution
 INPUT_IMAGE_FOLDER = 'keras_png_slices_data'  # training image folder
 
 # output params
