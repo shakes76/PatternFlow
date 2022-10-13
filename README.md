@@ -1,3 +1,10 @@
+<!-- math font size -->
+<style>
+    .katex {
+        font-size: 1em !important;
+    }
+</style>
+
 # StyleGAN Implementation
 :wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022 :+1:. 
 
@@ -51,3 +58,38 @@ Training can be run by simply nevigating to the project folder and executing `py
 
 ### After training
 Two csv files, dloss.csv and gloss.csv, of log of training loss will be generated in `LOG_DIR`, from which plots can be generated.
+
+## The Model
+My model is built based on Progressive Growing GAN, where each resolution is trained before a higher resolution block fades in (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L152)). Most of architecture follows the [<ins>StyleGAN paper</ins>](https://arxiv.org/abs/1812.04948) but with small variations.
+
+### Overall Structure
+The structure of the model is given below.
+
+<p align="center">
+    <img src="asset/StyleGAN_Structure.jpg" width="400">
+</p>
+
+A few points to note,
+ - Dimension of latent vector z is 512.
+ - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
+ - latent vector is passed through fully connected layers to generate w (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L30) and [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L196)).
+ - Number of fully connected layer is 8, w and z have the same dimension.
+ - Input of 'Synthesis network' is constant (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L186)).
+ - A noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L130)).
+ - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
+ - Starting resolution is 4, target resolution is 1024.
+
+### Model Variations
+Original model aims to generate photo realistic images of resolution 1024 x 1024 x 3. The dimension of image in my training datasets is considerably smaller (256 x 256 x 1 appox) so my model is simplified accordingly to avoid unnecessary complication which saves training time.
+|                             | My Model                                   | Original Model
+| -------------               | -------------                              |------------- 
+| Dimension of latent vector  | 128                                        | 512
+| Image channel               | 1                                          | 3
+| Target resolution           | 256 x 256                                  | 1024 x 1024
+| Number of filters           | 256, ..., 32                               | 512, ..., 32
+| Number of FC layers         | depth of model ($log_{2}256 - log_{2}4=6$) |8
+| Upsampling Mmethod          | Upsample2D                                 | Bilinear
+
+
+## Reference
+* A Style-Based Generator Architecture for Generative Adversarial Networks, 2018. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
