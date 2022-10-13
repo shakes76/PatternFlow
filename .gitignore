@@ -129,3 +129,5 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+PatternFlow.code-workspace
+recognition/45321199-task#2-gcn/facebook.npz
