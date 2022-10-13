@@ -29,7 +29,7 @@ def model_checkpoint():
     # early stopping
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=10)
 
-    checkpoint_filepath = r"C:\Users\galla\OneDrive\University\Year 3\Semester 2\COMP3710\Report"
+    checkpoint_filepath = r"C:\Users\galla\OneDrive\University\Year 3\Semester 2\COMP3710\Repor\tmp\checkpoint"
 
     model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath = checkpoint_filepath,
@@ -54,13 +54,34 @@ def training():
 
     epochs = 5
     train_ds, valid_ds = mapping_target()
-    
+
+    # for batch in valid_ds.take(1):
+    #     for img in batch[0]:
+    #         print("valid", img)
+    #         img_plot = plt.imshow(img)
+    #         plt.show()
+    #     for img in batch[1]:
+    #         print("valid", img)
+    #         img_plot = plt.imshow(img)
+    #         plt.show()
+
+    # # Visualise input and target
+    # for batch in train_ds.take(1):
+    #     for img in batch[0]:
+    #         print(img)
+    #         img_plot = plt.imshow(img)
+    #         plt.show()
+    #     for img in batch[1]:
+    #         print(img)
+    #         img_plot = plt.imshow(img)
+    #         plt.show()
+        
     model.compile(
         optimizer=optimizer, loss=loss_fn,
     )
 
     model.fit(
-        train_ds, epochs=epochs, callbacks=callbacks, validation_data=valid_ds, verbose=2
+        train_ds, epochs=epochs, callbacks=callbacks, validation_data=valid_ds, verbose=1
     )
 
     model.load_weights(checkpoint_filepath)

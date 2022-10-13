@@ -35,7 +35,7 @@ def creating_train_datasets():
         color_mode="grayscale",
     )
 
-    print("initial tarin_ds", train_ds)
+    # print("initial tarin_ds", train_ds)
 
     valid_ds = tf.keras.utils.image_dataset_from_directory(
         import_train_data(),
@@ -87,7 +87,7 @@ test_ds = creating_test_dataset()
 #     for img in batch:
         
 #         plt.imshow(img.numpy())
-#         # plt.show()
+#         plt.show()
 
 # # converting images from RGB to YUV from the low-resolution images
 # def process_input(input, input_size):
@@ -107,7 +107,7 @@ def mapping_target():
 
     train_ds, valid_ds = mapping()
 
-    print("train_ds", train_ds)
+    # print("train_ds", train_ds)
 
     train_ds = train_ds.map(
         lambda x: (tf.image.resize(x, [64, 60]), x)
@@ -123,9 +123,12 @@ def mapping_target():
 
     return train_ds, valid_ds
 
-# Visualise input and target
+# train_ds, valid_ds = mapping_target()
+# # Visualise input and target
 # for batch in train_ds.take(1):
 #     for img in batch[0]:
 #         img_plot = plt.imshow(img)
+#         plt.show()
 #     for img in batch[1]:
 #         img_plot = plt.imshow(img)
+#         plt.show()
