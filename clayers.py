@@ -111,10 +111,10 @@ class AddNoise(Layer):
 # Mini Batch Standadization
 # average stdd of all features and spatial location.
 # concat after creating a constant feature map with the average stddev
-class MinibatchStdev(Layer):
+class MinibatchStd(Layer):
 
     def __init__(self, **kwargs):
-        super(MinibatchStdev, self).__init__(**kwargs)
+        super(MinibatchStd, self).__init__(**kwargs)
 
     def call(self, inputs):
         # mean accross channels

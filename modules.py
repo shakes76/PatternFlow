@@ -45,7 +45,7 @@ class StyleGAN(Model):
         image = Input(shape=(SRES, SRES, CHANNELS))
         x = EqualConv(image, filters=FILTERS[0], kernel=(1, 1))
         x = LeakyReLU(0.2)(x)
-        x = MinibatchStdev()(x)
+        x = MinibatchStd()(x)
         x = EqualConv(x, filters=FILTERS[0])
         x = LeakyReLU(0.2)(x)
         x = EqualConv(x, filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
