@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 dataset_url = "https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI/download"
 
-def import_dataset(batch_size=8, image_dim:int=500, downsample_factor=4):
+def import_dataset(batch_size, initial_image_shape, target_width, downsample_factor):
     '''
     Import the dataset.
     :param batch_size: batchsize to load the tf dataset with
@@ -27,7 +27,7 @@ def import_dataset(batch_size=8, image_dim:int=500, downsample_factor=4):
     train = image_dataset_from_directory(
         train_path,
         batch_size=batch_size,
-        image_size=(image_dim, image_dim),
+        image_size=initial_image_shape,
         validation_split=0.2,
         subset="training",
         seed=1337,
@@ -38,7 +38,7 @@ def import_dataset(batch_size=8, image_dim:int=500, downsample_factor=4):
     validation = image_dataset_from_directory(
         train_path,
         batch_size=batch_size,
-        image_size=(image_dim, image_dim),
+        image_size=initial_image_shape,
         validation_split=0.2,
         subset="validation",
         seed=1337,
@@ -49,15 +49,19 @@ def import_dataset(batch_size=8, image_dim:int=500, downsample_factor=4):
     train = scale_images(train)
     validation = scale_images(validation)
 
+    #pad images to 256x256
+    train = train.map(lambda image :tf.image.pad_to_bounding_box(image, 0, 0, target_width, target_width))
+    validation = validation.map(lambda image :tf.image.pad_to_bounding_box(image, 0, 0, target_width, target_width))
+
     # change train and validation datasets to YUV format and produce (input, output) tuple of (downscaled, original) images
-    train = train.map(lambda x: (input_downsample(x, image_dim, downsample_factor), input_process(x)))
+    train = train.map(lambda x: (input_downsample(x, target_width, downsample_factor), input_process(x)))
     train = train.prefetch(buffer_size=32)
 
-    validation = validation.map(lambda x: (input_downsample(x, image_dim, downsample_factor), input_process(x)))
+    validation = validation.map(lambda x: (input_downsample(x, target_width, downsample_factor), input_process(x)))
 
     # only look in the AD directory for images (test)
     image_path = os.path.join(test_path, "AD")
-    test = collect_test_images()
+    test = collect_test_images(image_path)
     
     return train, validation, test
 
@@ -68,14 +72,15 @@ def scale_images(image_set):
     scale = lambda img : img / 255
     return image_set.map(scale)
 
-def input_downsample(input_image, initial_image_size, downsample_factor=4):
+
+def input_downsample(input_image, target_width, downsample_factor=4):
   '''
   Downsample the images by a factor of up_sample_factor to generate low quality
   input images for the CNN
   '''
   input_image = input_process(input_image)
-  output_size = initial_image_size // downsample_factor
-  return tf.image.resize(input_image, [output_size, output_size], method='area')
+  output_size = [target_width // downsample_factor, target_width // downsample_factor]
+  return tf.image.resize(input_image, output_size, method='area')
 
 def input_process(input_image):
   '''
@@ -88,10 +93,9 @@ def input_process(input_image):
   #only return the y channel of the yuv (the greyscale)
   return y
 
-def collect_test_images():
+def collect_test_images(image_path):
     '''
     Returns all paths to test images
     '''
     return [os.path.join(image_path, file) for file in os.listdir(image_path) if file.endswith('.jpeg')]
-
 
