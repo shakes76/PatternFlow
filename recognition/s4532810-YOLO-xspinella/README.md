@@ -142,6 +142,7 @@ The dataset is preprocessed in 4 different ways:
 - reporting on classification accuracy (overall/ignore bad box)
 
 ### Proposed solutions
+- custom function for reporting IOU and classification? 
 - more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
 - research modifications to hyperparameters - probably not a good idea as they have realistically already been optimised
 - Population Based Bandits (PB2)?

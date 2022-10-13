@@ -1,5 +1,6 @@
-train: ../data/images/training/
-val: ../data/images/testing/
+train:  ../data/images/training/
+val:    ../data/images/validation/
+test:   ../data/images/testing/
 
 # number of classes
 nc: 2

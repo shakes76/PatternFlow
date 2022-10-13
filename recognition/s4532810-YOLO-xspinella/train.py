@@ -81,7 +81,7 @@ def test():
     """
     ### Test on test set ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
-    os.system(f"python3 yolov5_LC/val.py --weights {weights_path} --data yolov5_LC/data/ISIC_test.yaml --img 640")
+    os.system(f"python3 yolov5_LC/val.py --weights {weights_path} --data yolov5_LC/data/ISIC_test.yaml --img 640 --task test")
 
 if __name__ == "__main__":
     mode = int(input("Please enter desired mode (0 : download/preprocess/setup data/directories, 1 : train and test, 2 : train, 3 : test): "))

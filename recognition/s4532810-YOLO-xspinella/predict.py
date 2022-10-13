@@ -1,7 +1,21 @@
+from curses import flash
+import sys
+sys.path.append("yolov5_LC")
+import os
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[0]  # YOLOv5 root directory
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))  # add ROOT to PATH
+ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+
 import torch
 import matplotlib.pyplot as plt
 import utils_lib
 from PIL import Image
+import numpy as np
+
 """
 File used to show example usage of the trained model
 """
@@ -36,17 +50,16 @@ class Predictor():
         results = model(img_fp)
         return results
 
-    def Visualise_Prediction(self, img_fp: str, label_fp: str, model, out_fp: str):
+    def Visualise_Prediction(self, img_fp: str, label_fp: str, results, out_fp: str):
         """
         Runs the model on the given image, and saves a figure
         which compares the prediction to the actual label.
         :param img_fp: filepath to the image of interest
         :param label_fp: filepath to corressponding img label
-        :param model: model to use to evaluate image
+        :param results: The prediction data.
         :param out_fp: filepath to save the output image as.
         """
         # Retrieve prediction image
-        results = self.Predict_Img(img_fp, model)
         results.render()
         pred_img = results.ims[0]
         # Retrieve labelled img
@@ -64,8 +77,7 @@ class Predictor():
 
         fig.set_size_inches(14, 7)
         plt.savefig(out_fp, bbox_inches='tight')
-        # TODO: calculate IOU
-        return results
+        
 
 
 def Predictor_Example_Use():
@@ -77,15 +89,24 @@ def Predictor_Example_Use():
     model = predictor.Load_Model("yolov5_LC/runs/train/exp2/weights/best.pt")
 
     # Predict
-    img_fp = "yolov5_LC/data/images/training/ISIC_0000002.jpg"
-    label_fp = "yolov5_LC/data/labels/training/ISIC_0000002.txt"
+    img_fp = "yolov5_LC/data/images/testing/ISIC_0012086.jpg"
+    label_fp = "yolov5_LC/data/labels/testing/ISIC_0012086.txt"
     out_fp = "misc_tests/prediction_comparison.png"
+    results = predictor.Predict_Img(img_fp, model)
 
     # Visualise
-    results = predictor.Visualise_Prediction(img_fp, label_fp, model, out_fp)
+    predictor.Visualise_Prediction(img_fp, label_fp, results, out_fp)
 
+    # Calculate IOU
+    iou = utils_lib.Compute_IOU(label_fp, results)
+    print(f"IOU: {iou}")
+
+    # Calculate classification accuracies
+    correct = utils_lib.Evaluate_Prediction(label_fp, results)
+    print(f"correct prediction? {correct}")
     # Quantify results
-    print(results.pandas().xyxy[0])
+    # print(results.pandas().xyxy[0].values.tolist()[0][:4])
+  
 
 if __name__ == "__main__":
     Predictor_Example_Use()

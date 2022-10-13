@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import cv2
 import torchvision.transforms as T
 import pandas as pd
+import torch
+from yolov5_LC.utils_2.metrics import box_iou, bbox_iou
 
 """
 Function library for the patternflow YOLO project
@@ -127,7 +129,7 @@ def Find_Class_From_CSV(img_fp: str, csv_fp: str):
     # return the melanoma classification (0:!melanoma, 1:melanoma)
     return int(img_arr[id_row][1]), img_id
 
-def Get_Gnd_Truth_Img_ID(img_fp: str):
+def Get_Gnd_Truth_Img_ID(truth_img_fp: str):
     """
     finds the image ID of the given gnd truth img mask.
     :param img_fp: the img to find the id of
@@ -135,9 +137,115 @@ def Get_Gnd_Truth_Img_ID(img_fp: str):
     """   
     ### Find image id from the fp ###
     # remove directories from fp string
+    last_slash_idx = truth_img_fp.rfind('/')
+    truth_img_fp = truth_img_fp[last_slash_idx+1:]
+    # extract img id
+    dot_idx = truth_img_fp.rfind('_')
+    img_id = truth_img_fp[0:dot_idx]
+    return img_id
+
+def Get_Img_ID(img_fp: str):
+    """
+    finds the image ID of the given image filepath.
+    :param img_fp: the img to find the id of
+    :return: the image id
+    """   
+    ### Find image id from the fp ###
+    # remove directories from fp string
     last_slash_idx = img_fp.rfind('/')
     img_fp = img_fp[last_slash_idx+1:]
     # extract img id
-    dot_idx = img_fp.rfind('_')
+    dot_idx = img_fp.rfind('.')
     img_id = img_fp[0:dot_idx]
     return img_id
+
+def Get_Box_From_Label(label_fp: str):
+    """
+    Extract the box dimensions from the given label
+    :param label_fp: filepath to the label of interest
+    :return: The box spec in Cx, Cy, w, h format
+    """
+    class_id, c_x, c_y, w, h = list(np.loadtxt(label_fp))
+    return [c_x, c_y, w, h]
+
+def Convert_Box_Format(box_spec: list):
+    """
+    Converts the box_spec in [Cx, Cy, w, h] format to
+    [x1, y1, x2, y2] format
+    :param box_spec: box spec in [Cx, Cy, w, h] format 
+    :return: box spec in [x1, y1, x2, y2] format
+    """
+    Cx, Cy, w, h = box_spec
+    w_, h_ = w/2, h/2
+    b_x1, b_x2, b_y1, b_y2 = Cx - w_, Cx + w_, Cy - h_, Cy + h_
+    return [b_x1, b_y1, b_x2, b_y2]
+
+def Revert_Box_Format(box_spec: list):
+    """
+    Converts the box_spec in [x1, y1, x2, y2] format to
+    [Cx, Cy, w, h] format
+    :param box_spec: box spec in [x1, y1, x2, y2] format 
+    :return: box spec in [Cx, Cy, w, h] format
+    """
+    x1, y1, x2, y2 = box_spec
+    w, h = x2 - x1, y2 - y1
+    Cx, Cy = w/2, h/2 
+    return [Cx, Cy, w, h]
+
+def Compute_IOU(label_fp: str, results):
+    """
+    Computes the Intersection over union of the predicted box
+    in comparison to the label box.
+    :param img_fp: filepath to the image of interest
+    :param label_fp: filepath to the corresponding label.
+    :param results: the results as returned by the model for this img.
+    :return: The IOU for the predicted box
+    """
+    ### Retrieve label and prediction box specs in x1, y1, x2, y2 format ###
+    label_box = Get_Box_From_Label(label_fp)
+    label_box = Convert_Box_Format(label_box)
+    pred_box = results.pandas().xyxy[0].values.tolist()[0][:4]
+    # normalise:
+    pred_box = (np.array(pred_box)/640).tolist() 
+
+    ### Find IOU ###
+    iou = bbox_iou(torch.FloatTensor([pred_box]), 
+                    torch.FloatTensor([label_box]), xywh=False)
+    return iou.item()
+
+def Evaluate_Prediction(label_fp: str, results):
+    """
+    Evaluates the correctness of the classification made
+    by the model - only considers images when
+    the model actually detects an object successfully:
+    i.e. IOU >= 0.5, and the model doesn't predict more than 1 object
+    (all unaugmented images only contain one lesion)
+    :param label_fp: the label for the image of interest
+    :param results: the results as returned by the model for this img.
+    :return: 0 if incorrect, 1 if correct, -1 if no object detected.
+    """
+    ### Check if valid detection ###
+    if not (len(results.pandas().xyxy[0].index) == 1):
+        return -1   # all (unaugmented) images contain only one lesion
+                    # So if the model predicts more than one object, 
+                    # we do not consider the classification,
+                    # if the length is 0, then no prediction was made,
+                    # so we also disregard this
+    if Compute_IOU(label_fp, results) < 0.5:
+        return -1   # Invalid IOU
+
+    ### Check predicted vs actual class ### 
+    pred_class = results.pandas().xyxy[0].values.tolist()[0][5]
+    label_class = list(np.loadtxt(label_fp))[0]
+    if not (pred_class == label_class):
+        return 0    # incorrect prediciton
+
+    return 1        # If this is reached, the predicition is correct
+
+def Compute_Class_Accuracy(label_fp: str, results): #putn in train?
+    """
+    Computes the classification accuracy -- only considers images when
+    the model actually detects an object:
+    class_acc = num_correct_classificatiobs/num_detected_objects
+    """
+    pass
