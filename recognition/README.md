@@ -63,7 +63,7 @@ Parameters for `predict.py`
 | _--name_                   | -n    | optional | predict                   | Name prefix to use for generated images |
 | _--num_images_             | -i    | optional | 1.                        | Number of images to create |
 
-Some pretrained models are supplied: [AKOA Knee](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth), 
+Some pretrained models are supplied in the examples section below. 
 
 ## Algorithm Description
 ![](https://hcloudh.com/nextcloud/s/Li4kreD8FnoSxKj/download/process.png)
@@ -83,7 +83,7 @@ Once the U-Net has been trained, denoising can be performed on a random point in
 Here are some demos of training on different datasets
 
 ### AKOA Knee 
-Using the AKOA Knee dataset. Image size 128x128, 1000 Timesteps
+Using the AKOA Knee dataset. Image size 128x128, 1000 Timesteps. Download the pretrained model [here](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
 #### Training
 Epoch 0
 ![](https://hcloudh.com/nextcloud/s/LdiWLFwsMtqGCPy/download/plot_epoch0.jpeg)
