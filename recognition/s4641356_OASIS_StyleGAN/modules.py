@@ -101,7 +101,7 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
     METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
-    GEN_LEARN_RATE = 2e-7
+    GEN_LEARN_RATE = 2.5e-7
     DISCRIM_LEARN_RATE = 3e-8
 
 
@@ -216,7 +216,7 @@ class StyleGAN():
         current_res = self._output_res
         x = discriminator_input
         while current_res > 4:
-            # x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
+            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
             x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_1".format(current_res))(x)
@@ -274,6 +274,6 @@ class StyleGAN():
         discriminator = tf.keras.models.load_model(folder + "discriminator")
         generator = tf.keras.models.load_model(folder + "generator")
 
-        self._make_model(params[0],params[1],params[2],params[3],generator,discriminator)
+        self._make_model(int(params[0]),int(params[1]),int(params[2]),int(params[3]),generator,discriminator)
         print("Successfully found and loaded StyleGAN located in \"{}\"".format(folder))
         
