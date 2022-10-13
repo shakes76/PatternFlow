@@ -200,7 +200,7 @@ class StyleGAN(Model):
             real_labels = self.D(real_images, training=True)
 
             # Wasserstein Loss: D(x) - D(G(z))
-            d_cost = tf.reduce_mean(fake_labels) - tf.reduce_mean(real_labels)
+            d_lost = tf.reduce_mean(fake_labels) - tf.reduce_mean(real_labels)
             gp = self.gradient_penalty(batch_size, real_images, fake_images)
             
             # drift for regularization
@@ -208,10 +208,10 @@ class StyleGAN(Model):
             # gradient penalty to dloss
       
             # lambda=10, drift weight = 0.001
-            d_loss = d_cost + 10 * gp + .001 * drift
+            d_penulized_loss = d_lost + 10 * gp + .001 * drift
 
         # gradients w.r.t dloss
-        d_grad = tape.gradient(d_loss, self.D.trainable_weights)
+        d_grad = tape.gradient(d_penulized_loss, self.D.trainable_weights)
         # update discriminator weights
         self.d_optimizer.apply_gradients(zip(d_grad, self.D.trainable_weights))
 
