@@ -13,7 +13,6 @@ def subnetwork(height, width):
     Returns:
         tf.keras.Model: the subnetwork Model
     """
-    # may need dropout and batch norm
     subnet = k.Sequential(layers=[
             kl.Flatten(input_shape=(height, width, 1)),
             kl.Dense(1024, activation='relu',kernel_regularizer='l2'),
@@ -25,11 +24,6 @@ def subnetwork(height, width):
         ], name='subnet'
     )
 
-    # subnet = k.Sequential(layers=[
-    #     k.applications.resnet50.ResNet50(input_shape=(height, width, 1), weights=None),
-    #     kl.Dense(1024, activation='relu'),
-    #     kl.Dense(1024, activation='relu')
-    #     ], name='subnet')
     return subnet
 
 
@@ -48,6 +42,14 @@ def distance_layer(im1_feature, im2_feature):
 
 
 def classification_model(subnet):
+    """ Build the classification Model
+
+    Args:
+        subnet (layer): the sequential layer trained in the SNN
+
+    Returns:
+        model: compiled model
+    """
     image = kl.Input((128, 128, 1))
     tensor = subnet(image)
     tensor = kl.BatchNormalization()(tensor)
