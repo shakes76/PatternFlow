@@ -18,11 +18,18 @@ class DataSet:
         self.training_filenames = None
         self.training_truth_filenames = None
         self.download_dataset()
+        self.image_width = 256
+        self.image_height = 256
 
     def download_dataset(self):
         """
-        impotant information here..
+        This sets up the datasets we need for training, testing or validating. We need both the dataset and the truth
+        sets so that we know what it should be after processing.
+
         :return:
+
+        bool: True if all data sets and their respective truth data sets are the same size, false otherwise.
+
         """
 
         # get all the image paths for the different sets - training testing and validation. Then sort these in order so
