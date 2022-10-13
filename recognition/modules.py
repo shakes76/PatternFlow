@@ -373,6 +373,7 @@ class Trainer:
             'model_state_dict': self.model.state_dict(),
             'image_size' : self.img_size,
             'schedule' : self.schedule,
+            'timesteps' : self.timesteps,
             'start' : self.start,
             'end' : self.end,
             'create_images' : self.create_images,
@@ -389,6 +390,7 @@ class Trainer:
         checkpoint = torch.load(path, map_location=torch.device("cpu"))
         self.img_size = checkpoint['image_size']
         self.schedule = checkpoint['schedule']
+        self.timesteps = checkpoint['timesteps']
         self.start = checkpoint['start']
         self.end = checkpoint['end']
         self.pre_compute()

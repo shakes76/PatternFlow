@@ -28,7 +28,7 @@ else:
     name = "predict"
 
 #Create trainer, pass in temp parameters
-trainer = Trainer(img_size=64, timesteps=300, start=0.0001, end=0.02)
+trainer = Trainer(img_size=64, timesteps=1000, start=0.0001, end=0.02)
 
 #load model
 trainer.load_model(model)
