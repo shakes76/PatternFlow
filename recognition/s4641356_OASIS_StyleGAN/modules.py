@@ -180,22 +180,22 @@ class StyleGAN():
         generator_noise_inputs = [] #keep a hold of input handles for model return
         while curr_res <= self._output_res:
             #Each resolution needs an appropriately sized noise inputs
-            #layer_noise_inputs = (tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_1".format(curr_res)),
-            #        tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_2".format(curr_res)))
-            #generator_noise_inputs += list(layer_noise_inputs)
+            layer_noise_inputs = (tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_1".format(curr_res)),
+                    tf.keras.layers.Input(shape = (curr_res,curr_res,self._latent_dim), name = "{0}x{0}_Noise_Input_2".format(curr_res)))
+            generator_noise_inputs += list(layer_noise_inputs)
   
             x = tf.keras.layers.UpSampling2D(size=(2, 2), name = "Upsample_to_{0}x{0}".format(curr_res))(x)
-            #x = addNoise(name = "{0}x{0}_Noise_1".format(curr_res))([x,layer_noise_inputs[0]])
+            x = addNoise(name = "{0}x{0}_Noise_1".format(curr_res))([x,layer_noise_inputs[0]])
             x = adaIN(name = "{0}x{0}_adaIN_1".format(curr_res))([x,w])
             x = tf.keras.layers.Conv2DTranspose(self._latent_dim, kernel_size=3, padding = "same", name = "{0}x{0}_2D_deconvolution".format(curr_res))(x)
-            #x = addNoise(name = "{0}x{0}_Noise_2".format(curr_res))([x,layer_noise_inputs[1]])
+            x = addNoise(name = "{0}x{0}_Noise_2".format(curr_res))([x,layer_noise_inputs[1]])
             x = adaIN(name = "{0}x{0}_adaIN_2".format(curr_res))([x,w])
 
             curr_res = curr_res*2
         
         output_image = tf.keras.layers.Conv2DTranspose(1, kernel_size=3, padding = "same", name = "Final_Image".format(curr_res))(x)
 
-        return tf.keras.Model(inputs = ([generator_latent_input] + [constant_input]), outputs = output_image, name = "Generator")
+        return tf.keras.Model(inputs = ([generator_latent_input] + generator_noise_inputs + [constant_input]), outputs = output_image, name = "Generator")
     
     def get_discriminator(self) -> tf.keras.Model:
         """
@@ -265,6 +265,6 @@ class StyleGAN():
         discriminator = tf.keras.models.load_model(folder + "discriminator")
         generator = tf.keras.models.load_model(folder + "generator")
 
-        self._make_model(int(params[0]),int(params[1]),int(params[2]),int(params[3]),generator,discriminator)
+        self._make_model(params[0],params[1],params[2],params[3],generator,discriminator)
         print("Successfully found and loaded StyleGAN located in \"{}\"".format(folder))
         
