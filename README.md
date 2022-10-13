@@ -53,7 +53,7 @@ Training can be run by simply nevigating to the project folder and executing `py
 Two csv files, dloss.csv and gloss.csv, of log of training loss will be generated in `LOG_DIR`, from which plots can be generated.
 
 ## The Model
-My model is built based on Progressive Growing GAN, where each resolution is trained before a higher resolution block fades in (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L152)). Most of architecture follows the [<ins>StyleGAN paper</ins>](https://arxiv.org/abs/1812.04948) but with small variations.
+My model is built based on [<ins>Progressive Growing GAN</ins>](https://arxiv.org/abs/1710.10196), where each resolution is trained before a higher resolution block fades in (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L152)). Most of architecture follows the [<ins>StyleGAN</ins>](https://arxiv.org/abs/1812.04948) paper but with small variations.
 
 ### Overall Structure
 The structure of the model is given below.
@@ -85,4 +85,5 @@ Original model aims to generate photo realistic images of resolution 1024 x 1024
 
 
 ## Reference
-* A Style-Based Generator Architecture for Generative Adversarial Networks, 2018. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
+* Progressive Growing of GANs for Improved Quality, Stability, and Variation, 2018. [<ins>https://arxiv.org/abs/1710.10196</ins>](https://arxiv.org/abs/1710.10196)
+* A Style-Based Generator Architecture for Generative Adversarial Networks, 2019. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
