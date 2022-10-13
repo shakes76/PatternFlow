@@ -115,8 +115,7 @@ def load_data(csv, path_image, path_image_gt):
 
 
 def load_dataset(data_reshape = False):
-    """ Load the dataset, if the data need to reshape(data_reshape = True) or if there is no 
-        reshaped file, then reshape the dataset
+    """ Load the dataset, if the data need to reshape(data_reshape = True) then reshape the dataset
 
     Args:
         data_reshape (bool, optional): reshape the data if True. Defaults to False.
@@ -125,17 +124,17 @@ def load_dataset(data_reshape = False):
         numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray:
             return the image and its mask image for all training and testing data 
     """
-    if data_reshape or not os.path.exists('./data/data_Reshaped'): 
+    if data_reshape: 
         reshape_data()
 
-    train_csv = pd.read_csv('./data/data_ISIC/ISIC-2017_Training_Data/ISIC-2017_Training_Data_metadata.csv')
-    test_csv = pd.read_csv('./data/data_ISIC/ISIC-2017_Test_v2_Data/ISIC-2017_Test_v2_Data_metadata.csv')
+    train_csv = pd.read_csv('/Users/davedai/Desktop/MySolution/data/data_ISIC/ISIC-2017_Training_Data/ISIC-2017_Training_Data_metadata.csv')
+    test_csv = pd.read_csv('/Users/davedai/Desktop/MySolution/data/data_ISIC/ISIC-2017_Test_v2_Data/ISIC-2017_Test_v2_Data_metadata.csv')
 
-    path_train = './data/data_Reshaped/Train/'
-    path_train_gt = './data/data_Reshaped/Train_GT/'
+    path_train = '/Users/davedai/Desktop/MySolution/data/data_Reshaped256/Train/'
+    path_train_gt = '/Users/davedai/Desktop/MySolution/data/data_Reshaped256/Train_GT/'
 
-    path_test = './data/data_Reshaped/Test/'
-    path_test_gt = './data/data_Reshaped/Test_GT/'
+    path_test = '/Users/davedai/Desktop/MySolution/data/data_Reshaped256/Test/'
+    path_test_gt = '/Users/davedai/Desktop/MySolution/data/data_Reshaped256/Test_GT/'
 
     train_x, train_y = load_data(train_csv, path_train, path_train_gt)
     test_x, test_y = load_data(test_csv, path_test, path_test_gt)

@@ -1,20 +1,37 @@
 
-import tensorflow as tf
-from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
-from tensorflow.python.keras.models import Model
-# Some machine may need the following import statement to import (without .python.)
-# May because of some version issue ?
-# from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
-# from tensorflow.keras.models import Model
+# Some machine may need the following import statement to import (with .python.)
+# May because of some version issue, however in most of the machine, (with .python.) will have a wrong result
+# from tensorflow.python.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
+# from tensorflow.python.keras.models import Model
 
+import tensorflow as tf
+from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
+from tensorflow.keras.models import Model
+from keras import backend as k
+
+
+def DSC (y_true, y_pred):
+
+    y_true_f = k.flatten(y_true)
+    y_pred_f = k.flatten(y_pred) 
+    
+    intersection1 = k.sum(y_true_f*y_pred_f)
+    coeff = (2.0 * intersection1) / (k.sum(k.square(y_true_f)) + k.sum(k.square(y_pred_f)))
+    return coeff
+
+def DSC_loss (y_true, y_pred):
+
+    return 1 - DSC(y_true, y_pred)
 
 def down(x, filters, kernel_size=(3, 3), padding="same", strides=1):
+
     c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(x)
     c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(c)
     p = MaxPool2D((2, 2), (2, 2))(c)
     return c, p
 
 def up(x, skip, filters, kernel_size=(3, 3), padding="same", strides=1):
+
     us = UpSampling2D((2, 2))(x)
     concat = Concatenate()([us, skip])
     c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(concat)
@@ -22,9 +39,9 @@ def up(x, skip, filters, kernel_size=(3, 3), padding="same", strides=1):
     return c
 
 def UNet():
+
     f = 16
-    
-    inputs=Input((512,512,3))
+    inputs=Input((256,256,3))
     p0 = inputs
     c1, p1 = down(p0, f) 
     c2, p2 = down(p1, f*2) 
@@ -42,7 +59,3 @@ def UNet():
     outputs = Conv2D(3, (1, 1), padding="same", activation="sigmoid")(u4)
     model = Model(inputs, outputs)
     return model
-
-model = UNet()
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-model.summary()
