@@ -80,4 +80,21 @@ A U-Net neural network is then trained to predict the noise in an image for a gi
 Once the U-Net has been trained, denoising can be performed on a random point in latent space (usually an image consisting of pure gaussian noise) using the U-Net by repeatedly subtracting the predicted noise over the entire reverse timestep range. This results in a new image that is perceptually similar to those in the training dataset.
 
 ## Examples
-Here are some demos of this code working on different datasets
+Here are some demos of training on different datasets
+
+### AKOA Knee 
+Using the AKOA Knee dataset. Image size 128x128, 1000 Timesteps
+#### Training
+Epoch 0
+![](https://hcloudh.com/nextcloud/s/LdiWLFwsMtqGCPy/download/plot_epoch0.jpeg)
+Epoch 10
+![](https://hcloudh.com/nextcloud/s/Ho8apXrybbamXrS/download/plot_epoch10.jpeg)
+Epoch 20
+![](https://hcloudh.com/nextcloud/s/L6SfgoKzpWdCWam/download/plot_epoch20.jpeg)
+Epoch 99
+![](https://hcloudh.com/nextcloud/s/CZraXEaTGactfaz/download/plot_epoch99.jpeg)
+
+#### Some Examples After Training
+![](https://hcloudh.com/nextcloud/s/LEpJzmtMFHY2CyS/download/predict0.jpeg)![](https://hcloudh.com/nextcloud/s/EJCRb3wj43D75qN/download/predict1.jpeg)![](https://hcloudh.com/nextcloud/s/NT7RY7b7sLeXGSF/download/predict2.jpeg)![](https://hcloudh.com/nextcloud/s/KtfFcEYSjnyxiwz/download/predict3.jpeg)![](https://hcloudh.com/nextcloud/s/MzTR56qysE3N5pT/download/predict4.jpeg)![](https://hcloudh.com/nextcloud/s/WtKYfsEdo8nYq5q/download/predict5.jpeg)![](https://hcloudh.com/nextcloud/s/kTsjDgQSdfAibFY/download/predict6.jpeg)
+
+
