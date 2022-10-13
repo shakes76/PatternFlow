@@ -1,4 +1,13 @@
+# TODO:
+- problems section
+  - what are the problems
+  - show results, plots, images, etc
+  - what was done to try solve this - include results, plots, images, etc
+- reproducability of results?
+- proper formatting?
+- albumentations - ?
 # Object Detection with YOLO in the ISIC Dataset
+Please note that module.py is empty because the model itself is inside of the yolov5_LC git submodule
 ## Dependencies:
 ### YOLOv5 Dependencies
 This YOLOv5 implementation contains quite a few dependencies, however, once the YOLOv5 submodule is added, the installation process is quite simple. Firstly, the submodule must be added by executing the following command in the s4532810-YOLO-xspinella directory.
@@ -13,13 +22,31 @@ cd yolov5_LC
 pip install -r requirements.txt
 ```
 
-### PatternFlow-sxpinella Dependencies
+### PatternFlow-xspinella Dependencies
 For data downloading/preprocessing/arranging, the following additional dependencies are required:
 
 ```linux
 pip install gdown zipfile36 
 ```
-albumentations?
+
+## Usage
+### Setup
+Once the dependencies are installed, execute the following command in the s4532810-YOLO-xspinella directory:
+
+```linux
+python3 train.py
+```
+and select mode 0 from the options to download/arrange/preprocess the data completely. 
+
+### Training and Evaluation
+The model can be trained by executing 
+```linux
+python3 train.py
+```
+again, and selecting mode 2, or mode 1 can be selected to train and test the model in one step. However, it is reccomended to train (mode 2), then test (mode 3) separately, so that you can see the training results.  
+
+### Inference
+In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets).
 
 ## Problem definition:
 ### A Word on the ISIC dataset.
@@ -134,6 +161,7 @@ The dataset is preprocessed in 4 different ways:
 - Ground truth segmentations are converted to box specification (Cx, Cy, w, h) with the utils_lib function Mask_To_Box
 - Classification csvs are converted into class labels (0 for not melanoma, 1 for melanoma) with the Find_Class_From_CSv utils_lib function
 - YOLOv5-format txt file labels are created for each image in the dataset with Dataloader member Create_YOLO_Labels
+- The Training/Validation/Test split is as per the ISIC 2017 dataset.
 
 ## Problems Faced
 - box loss decreasing, but obj loss and class loss increase
