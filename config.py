@@ -2,7 +2,6 @@
 
 import os
 
-
 # model params
 EPS = 1.e-8                                   # epsilon
 CHANNELS = 1                                  # 1:graysale 3:rgb
@@ -22,4 +21,4 @@ OUT_ROOT = 'output'                           # output root folder
 IMAGE_DIR = os.path.join(OUT_ROOT, 'images')  # output image folder
 MODEL_DIR = os.path.join(OUT_ROOT, 'models')  # output model plot folder
 CKPTS_DIR = os.path.join(OUT_ROOT, 'ckpts')   # check points folder
-LOG_DIR = os.path.join(OUT_ROOT, 'log')       # check points folder
+LOG_DIR = os.path.join(OUT_ROOT, 'log')       # loss history csv folder

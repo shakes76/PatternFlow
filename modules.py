@@ -30,10 +30,10 @@ class StyleGAN(Model):
     def mapping(self):
         z = Input(shape=(LDIM))
         # 8 layers in paper. use 6 instead.
-        w = EqualDense(z, filters=LDIM)
+        w = EqualDense(z, out_filters=LDIM)
         w = LeakyReLU(0.2)(w)
         for _ in range(self.DEPTH-1):
-            w = EqualDense(w, filters=LDIM)
+            w = EqualDense(w, out_filters=LDIM)
             w = LeakyReLU(0.2)(w)
         # replicate (256,7)
         w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) 
@@ -41,14 +41,14 @@ class StyleGAN(Model):
 
     def init_D(self):
         image = Input(shape=(SRES, SRES, CHANNELS))
-        x = EqualConv(image, filters=FILTERS[0], kernel=(1, 1))
+        x = EqualConv(image, out_filters=FILTERS[0], kernel=(1, 1))
         x = LeakyReLU(0.2)(x)
         x = MinibatchStd()(x)
-        x = EqualConv(x, filters=FILTERS[0])
+        x = EqualConv(x, out_filters=FILTERS[0])
         x = LeakyReLU(0.2)(x)
-        x = EqualConv(x, filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
+        x = EqualConv(x, out_filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
         x = LeakyReLU(0.2)(x)
-        x = EqualDense(Flatten()(x), filters=CHANNELS)
+        x = EqualDense(Flatten()(x), out_filters=CHANNELS)
         return Model(image, x)
 
     # grow discriminator
@@ -67,11 +67,11 @@ class StyleGAN(Model):
 
         f = FILTERS[self.current_depth]
         
-        x2 = EqualConv(image, filters=f, kernel=(1, 1))
+        x2 = EqualConv(image, out_filters=f, kernel=(1, 1))
         x2 = LeakyReLU(0.2)(x2)
-        x2 = EqualConv(x2, filters=f)
+        x2 = EqualConv(x2, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
-        x2 = EqualConv(x2, filters=FILTERS[self.current_depth-1])
+        x2 = EqualConv(x2, out_filters=FILTERS[self.current_depth-1])
         x2 = LeakyReLU(0.2)(x2)
         x2 = AveragePooling2D()(x2)
         x = WeightedSum()([x1, x2])
@@ -97,13 +97,15 @@ class StyleGAN(Model):
         x = const
         
         x = AddNoise()([x, B])
+        x = LeakyReLU(0.2)(x)
         x = AdaIN()([x, w])
-        x = EqualConv(x, filters=f)
+        x = EqualConv(x, out_filters=f)
         x = LeakyReLU(0.2)(x)
         
         x = AddNoise()([x, B])
+        x = LeakyReLU(0.2)(x)
         x = AdaIN()([x, w])
-        x = EqualConv(x, filters=CHANNELS, kernel=(1, 1), gain=1.)
+        x = EqualConv(x, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
         x = Activation('tanh')(x)
         
         return Model([const, w, B], x)
@@ -127,18 +129,20 @@ class StyleGAN(Model):
         w = Input(shape=(LDIM), name=f'w({d})')
         B = Input(shape=(res, res, 1), name=f'B({d})')
         
-        x2 = EqualConv(end, filters=f)
+        x2 = EqualConv(end, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
         x2 = AddNoise()([x2, B])
+        x2 = LeakyReLU(0.2)(x2)
         x2 = AdaIN()([x2, w])
         
-        x2 = EqualConv(end, filters=f)
+        x2 = EqualConv(end, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
         x2 = AddNoise()([x2, B])
+        x2 = LeakyReLU(0.2)(x2)
         x2 = AdaIN()([x2, w])
         
         # to rgb
-        x2 = EqualConv(x2, filters=CHANNELS, kernel=(1, 1), gain=1.)
+        x2 = EqualConv(x2, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
         x2 = Activation('tanh', name=f'tanh_{d}')(x2)
 
         # stabilize
@@ -151,9 +155,8 @@ class StyleGAN(Model):
     # E[(grad(f(x))-1)^2]
     def gradient_penalty(self, batch_size, real_images, fake_images):
         # interpolated image
-        alpha = tf.random.uniform(shape=[batch_size, 1, 1, 1], minval=0., maxval=1.)
-        diff = fake_images - real_images
-        interpolated = real_images + alpha * diff
+        w = tf.random.uniform(shape=[batch_size, 1, 1, 1], minval=0., maxval=1.)
+        interpolated = (1 - w) * real_images + w * fake_images
 
         with tf.GradientTape() as tape:
             tape.watch(interpolated)
@@ -182,10 +185,13 @@ class StyleGAN(Model):
         batch_size = tf.shape(real_images)[0]
         const = tf.ones([batch_size, SRES, SRES, FILTERS[0]])
 
+        
+        fake_labels = -tf.ones(batch_size)
+        real_labels = tf.ones(batch_size)
         # train discriminator
         with tf.GradientTape() as tape:
             
-            # build input for G: [const, w, B, w, B, w , B, ...]
+            # build input for G: [const, w, B, w, B, w, B, ...]
             z = tf.random.normal(shape=(batch_size, LDIM))
             ws = self.FC(z)
             inputs = [const]
@@ -194,24 +200,29 @@ class StyleGAN(Model):
                 B = tf.random.normal((batch_size, SRES*(2**i), SRES*(2**i), 1))
                 inputs += [w, B]
             
+            # generate fake images
             fake_images = self.G(inputs, training=True)
-            fake_labels = self.D(fake_images, training=True)
-            real_labels = self.D(real_images, training=True)
-
-            # Wasserstein Loss: D(x) - D(G(z))
-            d_lost = tf.reduce_mean(fake_labels) - tf.reduce_mean(real_labels)
-            gp = self.gradient_penalty(batch_size, real_images, fake_images)
             
-            # drift for regularization
-            drift = tf.reduce_mean(tf.square(real_labels))
-            # gradient penalty to dloss
-      
+            # fake loss
+            pred_fake_labels = self.D(fake_images, training=True)
+            fake_loss = -tf.reduce_mean(fake_labels * pred_fake_labels)
+            
+            # real loss
+            pred_real_labels = self.D(real_images, training=True)
+            real_loss = -tf.reduce_mean(real_labels * pred_real_labels)
+            
+            # gradient penalty, lambda 10
+            penulty = 10 * self.gradient_penalty(batch_size, real_images, fake_images)
+            
+            # drift for regularization, drift weight 0.001
+            pred = tf.concat([pred_fake_labels, pred_real_labels], axis=0)
+            drift = .001 * tf.reduce_mean(pred ** 2)
+            
+            # discriminator loss = real loss + fake loss + penulty + drift
             # lambda=10, drift weight = 0.001
-            d_penulized_loss = d_lost + 10 * gp + .001 * drift
+            d_lost = fake_loss + real_loss + penulty + drift
 
-        # gradients w.r.t dloss
-        d_grad = tape.gradient(d_penulized_loss, self.D.trainable_weights)
-        # update discriminator weights
+        d_grad = tape.gradient(d_lost, self.D.trainable_weights)
         self.d_optimizer.apply_gradients(zip(d_grad, self.D.trainable_weights))
 
         # train generator
@@ -223,15 +234,16 @@ class StyleGAN(Model):
                 w = ws[:,i]
                 B = tf.random.normal((batch_size, SRES*(2**i), SRES*(2**i), 1))
                 inputs += [w, B]
-            generated_images = self.G(inputs, training=True)
-            pred_labels = self.D(generated_images, training=True)
+                
+            fake_images = self.G(inputs, training=True)
+            pred_fake_labels = self.D(fake_images, training=True)
             
             # D(G(z))
-            g_loss = -tf.reduce_mean(pred_labels)
-        # gradients w.r.t fully connected layers and generator
-        trainable_weights = (self.FC.trainable_weights + self.G.trainable_weights)
+            g_loss = -tf.reduce_mean(real_labels * pred_fake_labels)
+            
+        # grad w.r.t fc layers and generator
+        trainable_weights = self.FC.trainable_weights + self.G.trainable_weights
         g_grad = tape.gradient(g_loss, trainable_weights)
-        # update the weights
         self.g_optimizer.apply_gradients(zip(g_grad, trainable_weights))
         
-        return {'d_loss': d_penulized_loss, 'g_loss': g_loss}
+        return {'d_loss': d_lost, 'g_loss': g_loss}

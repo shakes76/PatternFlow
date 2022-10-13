@@ -9,12 +9,13 @@ from config import *
 from modules import StyleGAN
 
 
+n = 25       # number of samples
+res = 256    # output resolution
+depth = int(np.log2(TRES/SRES))
 
 # create model, load initial weights
 sgan = StyleGAN()
 sgan.load_weights(os.path.join(CKPTS_DIR, f'stylegan_{SRES}x{SRES}_base.ckpt'))
-
-depth = int(np.log2(TRES/SRES))
 
 # grow model, load weights
 for n_depth in range(depth):
@@ -22,10 +23,7 @@ for n_depth in range(depth):
     sgan.stabilize()
 sgan.load_weights(os.path.join(CKPTS_DIR, f'stylegan_{TRES}x{TRES}_stabilize.ckpt'))
 
-# number of samples
-n = 25
-# output resolution
-res = 256
+print('Model loaded.')
 
 # build inputs
 const = tf.ones([n, SRES, SRES, FILTERS[0]])
@@ -37,8 +35,10 @@ for i in range(depth+1):
     B = tf.random.normal((n, SRES*(2**i), SRES*(2**i), 1))
     inputs += [w, B]
 
+# generate
 samples = sgan.G(inputs)
 
+# plot/save
 w = h = int(np.sqrt(n))
 combined_image = Image.new('L', (res * w, res * h))
 for i in range(n):
@@ -49,7 +49,6 @@ plt.xticks([])
 plt.yticks([])
 plt.imshow(combined_image, cmap='gray')
 
-# save
 path = os.path.join(IMAGE_DIR, 'generated.png')
 combined_image.save(path)
 print(f'\n{n} images saved in {path}')

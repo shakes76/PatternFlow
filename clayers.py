@@ -28,7 +28,7 @@ class HeNormal(Layer):
         inputs = tf.cast(inputs, tf.float32)
         return inputs * self.scale
 
-
+# manually handling bias to equalize weights
 class Bias(Layer):
 
     def __init__(self, **kwargs):
@@ -62,7 +62,7 @@ def EqualConv(x, out_filters, gain=2., kernel=(3, 3), strides=(1, 1)):
     return x
 
 
-# adaptive instance normalization
+# adaptive instance normalization (StyleGAN)
 class AdaIN(Layer):
 
     def __init__(self, **kwargs):
@@ -133,7 +133,7 @@ class MinibatchStd(Layer):
         return tuple(input_shape)
 
 
-# Weighted Sum
+# Weighted Sum (Progresive growing GAN)
 # alpha update during training
 class WeightedSum(Add):
 
