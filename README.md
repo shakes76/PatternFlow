@@ -7,7 +7,7 @@
  - IDE: VSCode 1.71.2
 
 ## Training Dataset
-All three training images were black and white, preprocessed, provided by the lecturer, downloaded from UQ BlackBoard, detailed below：
+All three training image sets were black and white, preprocessed, provided by the lecturer, downloaded from UQ BlackBoard, detailed below：
  - OASIS brain, 11328 images, resolution 256 x 256.
  - ANDI brain (NC), 11120 images, resolution 256 x 240.
  - OAI AKOA knee, 18680 images, resolution 260 x 228.
