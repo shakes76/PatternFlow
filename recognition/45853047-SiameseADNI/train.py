@@ -6,24 +6,16 @@ from dataset import load_classify_data
 from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 
-SNN_PATH = 'C:\\git\\PatternFlowSeimese\\recognition\\45853047-SiameseADNI\\FullyConnectedSNN.h5'
-CLASSIFIER_PATH = 'C:\\git\\PatternFlowSeimese\\recognition\\45853047-SiameseADNI\\FullyConnectedClassifier.h5'
+SNN_PATH = 'recognition\\45853047-SiameseADNI\\models\\SNN.h5'
+CLASSIFIER_PATH = 'recognition\\45853047-SiameseADNI\\models\\Classifier.h5'
 
 
 def train():
     # Train and Save the SNN
     siamese_fit = trainSNN()
 
-
     # Train and Save classification
     classifier_fit = trainClassifier()
-
-
-    # Evaluate
-    classifier = load_model(CLASSIFIER_PATH)
-    classify_test = load_classify_data(testing=True)
-    classifier.evaluate(classify_test)
- 
 
     # Plot Accuracy, Val Accuracy and Loss-----------
     plot_data(siamese_fit, [0, 50])
@@ -54,7 +46,7 @@ def trainClassifier():
     classifier = classification_model(siamese_model.get_layer(name="subnet"))
 
     # train
-    classifier_fit = classifier.fit(classify_train, epochs=20, validation_data=classify_val)
+    classifier_fit = classifier.fit(classify_train, epochs=10, validation_data=classify_val)
     classifier.save(CLASSIFIER_PATH)
 
     return classifier_fit
