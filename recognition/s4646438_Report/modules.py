@@ -4,11 +4,14 @@
 
 import tensorflow as tf
 import numpy as np
+import math
 
 from tensorflow import keras
 from tensorflow.keras import layers, models, callbacks
+from tensorflow.keras.preprocessing.image import array_to_img
 
 from predict import Visualiser
+from dataset import input_process
 
 
 
@@ -19,10 +22,10 @@ class Model(object):
     Initialises the model using the layers provided in the keras implementation (REFERENCE 1)
     '''
     self._model = models.Sequential()
-    self._model.add(layers.Conv2D(64, 5, input_shape=(None, None, 1), activation='relu', kernel_initializer='Orthogonal', padding='same'))
-    self._model.add(layers.Conv2D(64, 3, activation='relu', kernel_initializer='Orthogonal', padding='same'))
-    self._model.add(layers.Conv2D(32, 3, activation='relu', kernel_initializer='Orthogonal', padding='same'))
-    self._model.add(layers.Conv2D(up_sample_factor **2, 3, activation='relu', kernel_initializer='Orthogonal', padding='same'))
+    self._model.add(layers.Conv2D(64, 4, input_shape=(None, None, 1), activation='relu', kernel_initializer='Orthogonal', padding='same'))
+    self._model.add(layers.Conv2D(64, 2, activation='relu', kernel_initializer='Orthogonal', padding='same'))
+    self._model.add(layers.Conv2D(32, 2, activation='relu', kernel_initializer='Orthogonal', padding='same'))
+    self._model.add(layers.Conv2D(up_sample_factor **2, 2, activation='relu', kernel_initializer='Orthogonal', padding='same'))
     self._model.add(layers.Lambda(lambda x: tf.nn.depth_to_space(x, up_sample_factor)))
     
 
@@ -41,7 +44,7 @@ class Model(object):
     loss = loss_fn = keras.losses.MeanSquaredError()
     self._model.compile(optimizer=optimizer, loss=loss)
 
-  def fit(self, training_dataset, epochs, validation_dataset, checkpoint_loc='model/checkpoint', start_epoch=0):
+  def fit(self, training_dataset, epochs, validation_dataset, test_image, checkpoint_loc='model/checkpoint', start_epoch=0):
     '''
     Fit the model to the dataset (train the model) with given number of epochs.
     Use validation_dataset to validate the model at each epoch.
@@ -53,6 +56,7 @@ class Model(object):
     :param training_dataset: the dataset to train on (this is a tensorflow dataset)
     :param epochs: number of epochs to train with
     :param start_epoch: (default 0) epoch to begin training on
+    :param test_image: image to test across epochs to visually view training progress
     :param checkpoint_loc: (default 'checkpoint') file path for best checkpoint weights to be saved at
     :return: history object which can then be used to plot training statistics
     '''
@@ -65,10 +69,10 @@ class Model(object):
                                             monitor='loss',
                                             save_best_only=True,
                                             save_weights_only=True)
-    #TODO: implement function to load a single image path
-    psnr = PSNR_Callback(None)
+    
+    psnr = PSNR_Callback(test_image)
     model_callbacks = [early_stopping, checkpoints, psnr]
-    return self._model.fit(training_dataset, validation_data=validation_dataset, initial_epoch=start_epoch, verbose=1, callbacks=model_callbacks)
+    return self._model.fit(training_dataset, epochs=epochs, validation_data=validation_dataset, initial_epoch=start_epoch, verbose=1, callbacks=model_callbacks)
 
 
   def load_weights(self):
@@ -78,11 +82,20 @@ class Model(object):
 
     pass
 
+
+
   def predict(self, input_image):
     '''
-    'Predict' the outout image (up-sample the input image)
+    'Predict' the output image (up-sample the input image)
+    :param input_image: scaled down version of the image array of shape(1, x, x, 1)
+    :return: upscaled image according to the trained model - PIL image object (x, x, 1)
     '''
-    pass  
+    pred = self._model.predict(input_image)
+    #remove the extra axis to turn into a PIL image
+    pred = np.squeeze(pred, axis=0)
+    return array_to_img(pred)
+
+
 
 
 class PSNR_Callback(callbacks.Callback):
@@ -90,7 +103,7 @@ class PSNR_Callback(callbacks.Callback):
   Class which manages the computation of the mean peak signal to noise ratio of 
   images produced by a model in each epoch. This will be calculated after every epoch.
   '''
-  def __init__(self, test_image=None, print_prediction_interval=15):
+  def __init__(self, test_image=None, print_prediction_interval=1):
     '''
     initialise the PSNR callback.
     :param test_image: image used to visually inspect training progress every few epochs
@@ -100,7 +113,7 @@ class PSNR_Callback(callbacks.Callback):
     super(PSNR_Callback, self).__init__()
     self._test_image = test_image
     self._pred_interval = print_prediction_interval
-    self._visialiser = Visualiser()
+    self._visualiser = Visualiser()
   
   def on_epoch_begin(self, epoch, logs=None):
     '''
@@ -114,10 +127,12 @@ class PSNR_Callback(callbacks.Callback):
     'metrics' to be monitored during training. Output image with zoomed component every
     print_prediction_interval epochs.
     '''
-    print(f"Mean PSNR of epoch {epoch} is {np.mean(self._epoch_psnr)}.2f")
-    if self._test_image != None and epoch % self._pred_interval:
-      prediction = self._model.predict(self._test_image)
-      self._visualiser.plot_results()
+    mean = np.mean(self._epoch_psnr)
+    print(f"\nMean PSNR of epoch {epoch} is {mean:.10f}")
+    logs['psnr'] = mean
+    #if epoch % self._pred_interval == 0:
+      #prediction = self.model.predict(self._test_image)
+      #self._visualiser.plot_results(prediction, f"epoch {epoch}", "-image projection")
 
 
   def on_test_batch_end(self, batch, logs=None):
