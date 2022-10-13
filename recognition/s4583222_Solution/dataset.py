@@ -17,9 +17,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 training_images = '/home/Student/s4583222/COMP3710/Images/Train'
-# Train_image_path = 's4583222_Solution/keras_png_slices_train/'
-# Validate_image_path = 's4583222_Solution/keras_png_slices_validate/'
-# Test_image_path = 's4583222_Solution/keras_png_slices_test/'
+IMG_SIZE = 64
 
 #Class for Brain Dataset. We do not care about the masked images
 class BrainDataset(Dataset):
@@ -33,23 +31,22 @@ class BrainDataset(Dataset):
 
     def __getitem__(self, index):
         image_path = os.path.join(self.image_directory, self.images[index]) #Masks have same name as images
-        image = np.array(Image.open(image_path).convert("RGB"))
+        # image = np.array(Image.open(image_path).convert("RGB"))
+        image = Image.open(image_path).convert("RGB")
 
         if self.transform is not None:
             image = self.transform(image)
-            # augmentations = self.transform(image=image)
-            # image = augmentations["image"]
 
         return image
 
 def get_data_loaders(training_images, batch, workers, pin_mem):
     transforms = torchvision.transforms.Compose([
+        torchvision.transforms.Resize((IMG_SIZE,IMG_SIZE)),
+        torchvision.transforms.RandomHorizontalFlip(),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5))
+        torchvision.transforms.Lambda(lambda t: (t * 2) - 1)
     ])
     training_dataset = BrainDataset(image_directory=training_images, transform=transforms)
     training_loader = DataLoader(training_dataset, batch_size=batch, num_workers=workers, pin_memory=pin_mem)
     return training_loader
 
-# training_loader = get_data_loaders(training_images, 1, 2, True)
-# print(len(training_loader))
