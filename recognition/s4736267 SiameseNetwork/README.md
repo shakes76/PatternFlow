@@ -27,7 +27,7 @@ The main idea of a Siamese Neural Network (SNN) , sometimes also refered as twin
 The main strcuture constist of two identicall sub nets, which are processing each of the two input data samples. The outputs of these subnets can be refered as a complex feature mapping or fingerprint of the input sample, are then compared regarding similarity.
 
 <p align="center">
-    <img src="Picture/OverviewSNN.png" width="900" >
+    <img src=Picture/OverviewSNN.png width="900" >
 </p>
 <p align="center">
     <em> Figure 1: Overview of SNN approach [Image Source](https://en.wikipedia.org/wiki/Animal)  </em>
@@ -45,7 +45,7 @@ One application are for SNNs lies in the field of face recognition. For example,
 The main layer stack of the first implementation is based on the  [Siamese Neural Networks for One-shot Image Recognition](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf) implementation.
 
 <p align="center">
-    <img src="Picture/OverviewSNN.png" width="600" >
+    <img src=Picture/OverviewSNN.png width="600" >
 </p>
 <p align="center">
     <em> Figure 2: Starting point for SNN layer stack [source](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf)  </em>
@@ -63,7 +63,7 @@ class ContrastiveLoss(torch.nn.Module):
 		self.margin = margin
 	def forward(self, output1, output2, label):
 		euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
-		loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2) 			+ (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
+		loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2)+(label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
 		return loss_contrastive
 ```
 To use this, the SNN outputs the feature vectors instead of the calculated L1 norm.  With this custom loss function the training time and impact could be increased.
@@ -91,7 +91,7 @@ The following hints are important if implementing a dataset for the ADNI dataset
 The next step was implementing a ResNet approach for the siamese branch. The residual and identiy blocks are build up from two convolutional layers with an skip connection. The convoltuional blocks use a convolutional layer with stride=2 to downsample the input image, while possible increasing the number of output channels. (=> [ResNet](https://arxiv.org/abs/1512.03385)). 
 
 <p align="center">
-    <img src="Picture/resnet.png" width="900" >
+    <img src=Picture/resnet.png width="900" >
 </p>
 <p align="center">
     <em> Figure 3: ResNet  </em>
@@ -112,7 +112,7 @@ torch.unsqueeze(image3D, dim=0)
 3D convultional layers are used to keep the information about the corelation of the different slices.
 
 <p align="center">
-    <img src="Picture/3Dslices.png" width="300" >
+    <img src=Picture/3Dslices.png width="300" >
 </p>
 <p align="center">
     <em> Figure 4: 3D data trough stacking slices  </em>
@@ -128,7 +128,7 @@ The same randomized crop and resize augmentation is applied to the two input sam
 Furthermore a randomized blackout augmentation was introduced which is applied indivudaly on all 20 slices across the two input sampes.
 
 <p align="center">
-    <img src="Picture/augmentation.png" width="900" >
+    <img src=Picture/augmentation.png width="900" >
 </p>
 <p align="center">
     <em> Figure 5: 3D-Augmentation shown on single slice </em>
@@ -149,7 +149,7 @@ The previously used ResNet approach was adapted to work with the 3D input data. 
 The final implementation of the 3D ResNet uses an input size of 210x210. The images only have to be cropped to the relevant area. For all brain scans the size of 210x210 is sufficent. Due to the preperation layer of the ResNet branch, the input does not have to be resized.
 
 <p align="center">
-    <img src="Picture/resnet3D.png" width="900" >
+    <img src=Picture/resnet3D.png width="900" >
 </p>
 <p align="center">
     <em> Figure 1: ResNet 3D  </em>
