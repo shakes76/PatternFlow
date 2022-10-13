@@ -44,7 +44,7 @@ class Predictor():
         results = model(img_fp)
         return results
 
-    def Visualise_Prediction(self, img_fp: str, label_fp: str, results, out_fp: str):
+    def Visualise_Comparison(self, img_fp: str, label_fp: str, results, out_fp: str):
         """
         Runs the model on the given image, and saves a figure
         which compares the prediction to the actual label.
@@ -71,6 +71,24 @@ class Predictor():
 
         fig.set_size_inches(14, 7)
         plt.savefig(out_fp, bbox_inches='tight')
+
+    def Visualise_Prediction(self, img_fp: str, results, out_fp: str):
+        """
+        Runs the model on the given image, and saves a figure
+        which visualises the detection.
+        :param img_fp: filepath to the image of interest
+        :param results: The prediction data.
+        :param out_fp: filepath to save the output image as.
+        """
+        # Retrieve prediction image
+        results.render()
+        pred_img = results.ims[0]
+        # plot using imshow
+        plt.imshow(pred_img)
+        plt.title("Predicted Label")
+        plt.axis('off')
+
+        plt.savefig(out_fp, bbox_inches='tight')
         
 
 
@@ -78,18 +96,29 @@ def Predictor_Example_Use():
     """
     Function used to show example use of the Predictor class
     """    
+    ### Inference on Deployment ###
     # Load model
     predictor = Predictor()
     model = predictor.Load_Model("yolov5_LC/runs/train/exp2/weights/best.pt")
-
-    # Predict
+    # Define image to perform detection on
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015184.jpg"
-    label_fp = "yolov5_LC/data/labels/testing/ISIC_0015184.txt"
+    out_fp = "misc_tests/prediction_visual.png"
+    # Perform detection
+    results = predictor.Predict_Img(img_fp, model)
+    # Visualise the detection
+    predictor.Visualise_Prediction(img_fp, results, out_fp)
+    # Display box specs (x1, y1, x2, y2), and classification
+    print(results.pandas().xyxy[0].values.tolist()[0][:4])
+
+    ### Labelled Set Comparisons
+    # Run the model to retrieve results
+    img_fp = "yolov5_LC/data/images/testing/ISIC_0012086.jpg"
+    label_fp = "yolov5_LC/data/labels/testing/ISIC_0012086.txt"
     out_fp = "misc_tests/prediction_comparison.png"
     results = predictor.Predict_Img(img_fp, model)
 
-    # Visualise
-    predictor.Visualise_Prediction(img_fp, label_fp, results, out_fp)
+    # Visualise comparison between labelled and predicted
+    predictor.Visualise_Comparison(img_fp, label_fp, results, out_fp)
 
     # Calculate IOU
     iou = utils_lib.Compute_IOU(label_fp, results)
@@ -98,9 +127,6 @@ def Predictor_Example_Use():
     # Calculate classification accuracies
     correct = utils_lib.Evaluate_Prediction(label_fp, results)
     print(f"correct prediction? {correct}")
-    # Quantify results
-    # print(results.pandas().xyxy[0].values.tolist()[0][:4])
-  
 
 if __name__ == "__main__":
     Predictor_Example_Use()
