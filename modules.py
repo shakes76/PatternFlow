@@ -196,7 +196,7 @@ class StyleGAN(Model):
             ws = self.FC(z)
             inputs = [const]
             for i in range(self.current_depth+1):
-                w = ws[:,i]
+                w = ws[:, i]
                 B = tf.random.normal((batch_size, SRES*(2**i), SRES*(2**i), 1))
                 inputs += [w, B]
             

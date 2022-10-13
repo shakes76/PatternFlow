@@ -1,7 +1,7 @@
 import os
 
 from keras.utils.vis_utils import plot_model
-from numpy import array, concatenate
+from numpy import array, concatenate, log2
 from tensorflow import keras
 
 from clayers import FadeInCallBack, SamplingCallBack
@@ -13,8 +13,9 @@ from modules import StyleGAN
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # config check up
-assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS), \
-    f"BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)})."
+assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES)), \
+    f"BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), \
+        and their size must equal log2(TRES)+1."
 
 
 print(f'Latent vector dimension: {LDIM}')

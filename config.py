@@ -6,7 +6,7 @@ import os
 CHANNELS = 1                                  # 1:graysale 3:rgb
 LDIM = 128                                    # laten vector dimemsion
 SRES = 4                                      # starting resolution
-TRES = 128                                    # target resolution
+TRES = 256                                    # target resolution
 
 # training params
 BSIZE = (32, 32, 32, 32, 16, 8, 4)            # batch size of each resolution
