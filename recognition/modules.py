@@ -9,6 +9,7 @@ import matplotlib.image as mpimg
 import os
 import glob
 from torch.utils.tensorboard import SummaryWriter
+from torch.optim import Adam
 
 
 def show_tensor_image(image):
@@ -44,10 +45,10 @@ class Block(nn.Module):
             self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
             self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 1)
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
-        #self.bnorm1 = nn.BatchNorm2d(out_ch)
-        #self.bnorm2 = nn.BatchNorm2d(out_ch)
         self.bnorm1 = nn.GroupNorm(1, out_ch)
         self.bnorm2 = nn.GroupNorm(1, out_ch)
+        #self.bnorm1 = nn.BatchNorm2d(out_ch)
+        #self.bnorm2 = nn.BatchNorm2d(out_ch)
         self.relu  = nn.ReLU()
         
     def forward(self, x, t, ):
@@ -97,7 +98,7 @@ class Unet(nn.Module):
         down_channels = (im_size, im_size * 2, im_size * 4, im_size * 8)#(64, 128, 256, 512, 1024)
         up_channels = (im_size * 8, im_size * 4, im_size * 2, im_size)#(1024, 512, 256, 128, 64)
         out_dim = 1 
-        time_emb_dim = int(im_size/2)
+        time_emb_dim = int(im_size * 4)
 
         # Time embedding
         self.time_mlp = nn.Sequential(
@@ -154,7 +155,7 @@ class Trainer:
     """
     Class to train Unet Diffusion model
     """
-    def __init__(self, model, img_size, timesteps=300, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
+    def __init__(self, img_size, timesteps=1000, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
         self.img_size = img_size
         self.T = timesteps
         self.start = start
@@ -167,7 +168,9 @@ class Trainer:
         self.pre_compute()
 
         #Attach model to device
-        self.model = model.to(self.device)
+        self.model = Unet(self.img_size).to(self.device)
+
+        self.optimizer = Adam(self.model.parameters(), lr=1e-4)
 
         #disable flags
         self.create_images = create_images
@@ -185,6 +188,7 @@ class Trainer:
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
         self.posterior_variance = self.betas * (1. - self.alphas_cumprod_prev) / (1. - self.alphas_cumprod)
+
     def beta_schedule(self, type):
         """
         Diffusion noise schedule
@@ -198,7 +202,7 @@ class Trainer:
             alphas_cumprod = torch.cos(((x / self.T) + s) / (1 + s) * torch.pi * 0.5) ** 2
             alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
             betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
-            return torch.clip(betas, 0.0001, 0.9999)
+            return betas
         elif type == 'quadratic':
             return torch.linspace(self.start**0.5, self.end**0.5, self.T) ** 2
         elif type == 'sigmoid':
@@ -308,7 +312,7 @@ class Trainer:
         
         mpimg.imsave(path, np.clip((img.detach().cpu().numpy()[0].T + 1) * 0.5, 0.0, 1.0))
     
-    def fit(self, dataloader, epochs, optimizer):
+    def fit(self, dataloader, epochs):
         """
         Trains model for epochs using dataloader and optimizer 
         """
@@ -340,13 +344,13 @@ class Trainer:
         #Train
         for epoch in range(epochs):
             for step, batch in enumerate(dataloader):
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
                 #create random timestep in possible timesteps
                 t = torch.randint(0, self.T, (batch_size,), device=self.device).long()
 
                 loss = self.predict(batch, t)
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 if step == 0:
                     print(f"Epoch {epoch} Loss: {loss.item()}")
@@ -383,13 +387,15 @@ class Trainer:
         if 'model' in locals():
             self.model.cpu()
             torch.cuda.empty_cache()
-        checkpoint = torch.load(path)
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        self.model.to(self.device)
+        checkpoint = torch.load(path, map_location=torch.device("cpu"))
         self.img_size = checkpoint['image_size']
+        self.model = Unet(self.img_size)
         self.schedule = checkpoint['schedule']
         self.start = checkpoint['start']
         self.end = checkpoint['end']
+        self.pre_compute()
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.to(self.device)
+        self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         self.create_images = checkpoint['create_images']
         self.tensorboard = checkpoint['tensorboard']
-        self.pre_compute()

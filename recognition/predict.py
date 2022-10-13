@@ -32,15 +32,12 @@ if args.seed:
 else:
     seed = None
 
-#create model
-model = Unet(64)
-
 #Create trainer, pass in temp parameters
-trainer = Trainer(model, img_size=64, timesteps=300, start=0.0001, end=0.02)
+trainer = Trainer(img_size=64, timesteps=300, start=0.0001, end=0.02)
 
 #load model
 trainer.load_model(model)
 
 #create images
 for i in range(num_images):
-    trainer.generate_image(out + name + "{}.jpeg".format(i), seed=seed)
+    trainer.generate_image(output + name + "{}.jpeg".format(i), seed=seed)
