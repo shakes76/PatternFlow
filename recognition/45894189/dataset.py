@@ -1,5 +1,5 @@
-import tensorflow
 import os
+import tensorflow
 from tensorflow import keras
 
 def load_data(file_path = "recognition\\45894189\keras_png_slices"):
