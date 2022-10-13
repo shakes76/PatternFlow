@@ -144,7 +144,7 @@ class WeightedSum(Add):
         
     def call(self, inputs):
         a, b = inputs
-        wsum = (1. - self._alpha) * a + self._alpha * b
+        wsum = (1. - self.alpha) * a + self.alpha * b
         return wsum
 
 
