@@ -63,4 +63,15 @@ Parameters for `predict.py`
 | _--name_                   | -     | optional | predict                   | Name prefix to use for generated images |
 | _--seed_                   | -s    | optional | None                      | Passing in an integer seed will yield reproducable images|
 
-## Theory
+## Algorithm Description
+Diffusion image generation is described in these papers, [1](https://arxiv.org/pdf/2006.11239.pdf) [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
+
+![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}q(\mathbf{x}_t|\mathbf{x}_{t-1}):=\mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t}\mathbf{x}_{t-1},&space;\beta_t&space;\mathbf{I}))
+
+This is called the forward diffusion process. The reverse diffusion process is the opposite in that given an image at a certain timestep $\mathbf{x}_t$, the denoised image is given by:
+
+![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}p_\theta=(\mathbf{x}_{t-1}|\mathbf{x}_t):=\mathcal{N}(\mathbf{x}_{t-1};\mathbf{\mu}(\mathbf{x}_t,t),&space;\mathbf{\Sigma}_\theta(\mathbf{x}_t,t)))
+
+A U-Net neural network is then trained to predict the noise in an image for a given timestep. To do this, the timestep $t$ is positionally encoded using sinusoidal embeddings between the layers in the U-Net blocks. Training is performed by passing in large numbers of images from a dataset with noise added using the forward diffusion process. The U-Net is passed the noisy image and timestep as the input and the isolated noise as the target.
+
+Once the U-Net has been trained, denoising can be performed on a random point in latent space (usually an image consisting of pure gaussian noise) using the U-Net by repeatedly subtracting the predicted noise over the entire reverse timestep range. This results in a new image that is perceptually similar to those in the training dataset.
