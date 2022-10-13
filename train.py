@@ -69,7 +69,7 @@ for depth in range(1, len(BSIZE)):
     fade_in_cbk.set_iters(ep, iters)
     model.compile(adam, adam)
     # additional callback to compute alpha
-    hist_fade = model.fit(training_images, steps_per_epoch=iters, epochs=int((ep*.7)+1), callbacks=[sampling_cbk, fade_in_cbk])
+    hist_fade = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk, fade_in_cbk])
     loss_history.append(hist_fade)
     model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
@@ -83,7 +83,7 @@ for depth in range(1, len(BSIZE)):
     # stabilize training
     sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
     model.compile(adam, adam)
-    hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=int((ep*.3)+1), callbacks=[sampling_cbk])
+    hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
     loss_history.append(hist_stab)
     model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
