@@ -22,3 +22,14 @@ class ContextModule(Layer):
     x = self.convA(inputs)
     x = self.convB(x)
     return self.dropout(x)
+
+class LocalizationModule(Layer):
+  def __init__(self, filters):
+    super(LocalizationModule, self).__init__()
+    self.convA = Conv2D(filters = filters,
+                        kernel_size = (3,3))
+    self.convB = Conv2D(filters = filters,
+                        kernel_size = (1,1))
+  def call(self, inputs):
+    x = self.convA(inputs)
+    return self.convB(x)
