@@ -235,4 +235,4 @@ class StyleGAN(Model):
         # update the weights
         self.g_optimizer.apply_gradients(zip(g_grad, trainable_weights))
         
-        return {'d_loss': d_loss, 'g_loss': g_loss}
+        return {'d_loss': d_penulized_loss, 'g_loss': g_loss}
