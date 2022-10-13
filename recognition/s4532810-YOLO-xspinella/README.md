@@ -6,6 +6,7 @@
 - reproducability of results?
 - proper formatting?
 - albumentations - ?
+- which branch to pull request 
 # Object Detection with YOLO in the ISIC Dataset
 Please note that module.py is empty because the model itself is inside of the yolov5_LC git submodule
 ## Dependencies:
