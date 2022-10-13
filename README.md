@@ -23,7 +23,7 @@ This implementation consists of 6 python files,
  - `predict.py` includes functions that load the trained model and generate images.
  - `train.py`   includes training procedures and necessary callback definitions.
 
-## How to traing?
+## How to train?
 ### Before training
 A few parameters have to be specified in `config.py`.
 
