@@ -57,7 +57,7 @@ def load_siamese_data():
     dataset = tf.data.Dataset.zip(((base_ds, pair_ds), labels_ds)).shuffle(num_pairs)
     
     train, val = train_val_split(dataset, 0.8)
-    return train, val
+    return train.batch(32) , val.batch(32)
 
 def load_classify_data(testing: bool):
     """ Load testing image data, images with labels,
@@ -89,10 +89,10 @@ def load_classify_data(testing: bool):
     
 
     if testing:
-        return dataset
+        return dataset.batch(32)
     else:
         train, val = train_val_split(dataset, 0.7)
-        return train, val
+        return train.batch(32) , val.batch(32)
 
 def get_image(path):
     """ Get tf image from path

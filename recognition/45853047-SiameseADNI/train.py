@@ -14,16 +14,16 @@ def train():
     # Train and Save the SNN
     siamese_fit = trainSNN()
 
+
     # Train and Save classification
     classifier_fit = trainClassifier()
 
 
-    classifier = load_model(CLASSIFIER_PATH)
-
     # Evaluate
-    classify_test = load_classify_data(testing=True).batch(32)
+    classifier = load_model(CLASSIFIER_PATH)
+    classify_test = load_classify_data(testing=True)
     classifier.evaluate(classify_test)
-
+ 
 
     # Plot Accuracy, Val Accuracy and Loss-----------
     plot_data(siamese_fit, [0, 50])
@@ -34,8 +34,6 @@ def train():
 def trainSNN():
     # Siamese model data
     siamese_train, siamese_val = load_siamese_data()
-    siamese_train = siamese_train.batch(32)
-    siamese_val = siamese_val.batch(32)
 
     # Siamese model
     model = siamese(128, 128)
@@ -50,8 +48,6 @@ def trainSNN():
 def trainClassifier():
     # Classification model data
     classify_train, classify_val = load_classify_data(testing=False)
-    classify_train = classify_train.batch(32)
-    classify_val = classify_val.batch(32)
 
     # Get the trained subnet
     siamese_model = load_model(SNN_PATH, custom_objects={ 'contrastive_loss': contrastive_loss })
