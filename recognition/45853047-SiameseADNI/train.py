@@ -11,6 +11,10 @@ CLASSIFIER_PATH = 'recognition\\45853047-SiameseADNI\\models\\Classifier.h5'
 
 
 def train():
+    """ 
+    Train both models and plot results
+    """
+
     # Train and Save the SNN
     siamese_fit = trainSNN()
 
@@ -24,6 +28,12 @@ def train():
 
 
 def trainSNN():
+    """ Train the SNN
+
+    Returns:
+        history: training history of the model
+    """
+
     # Siamese model data
     siamese_train, siamese_val = load_siamese_data()
 
@@ -38,6 +48,11 @@ def trainSNN():
 
 
 def trainClassifier():
+    """ Train the classifier
+
+    Returns:
+        history: training history of the model
+    """
     # Classification model data
     classify_train, classify_val = load_classify_data(testing=False)
 
@@ -53,6 +68,12 @@ def trainClassifier():
 
 
 def plot_data(fit, lim):
+    """ Plot the accuracy/val accuracy and loss of a training history model
+
+    Args:
+        fit (history): training history
+        lim (list): 2 element list for the ylim of loss plot
+    """
     plt.figure()
     plt.plot(fit.history['accuracy'], label='accuracy')
     plt.plot(fit.history['val_accuracy'], label = 'val_accuracy')

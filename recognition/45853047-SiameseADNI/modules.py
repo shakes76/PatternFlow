@@ -63,6 +63,9 @@ def classification_model(subnet):
     return classifier
 
 def contrastive_loss(y, y_pred):
+    """
+    Sourced from [Siameses Network with a contrastive loss](https://keras.io/examples/vision/siamese_contrastive/)
+    """
     square = tf.math.square(y_pred)
     margin = tf.math.square(tf.math.maximum(1 - (y_pred), 0))
     return tf.math.reduce_mean((1 - y) * square + (y) * margin)

@@ -5,6 +5,9 @@ import tensorflow as tf
 CLASSIFIER_PATH = 'recognition\\45853047-SiameseADNI\\models\Classifier.h5'
 
 def predict():
+    """ 
+    Use the classification model to make predictions
+    """
     # Evaluate
     classifier = load_model(CLASSIFIER_PATH)
     classify_test_data = load_classify_data(testing=True)
