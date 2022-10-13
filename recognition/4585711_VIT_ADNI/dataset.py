@@ -5,7 +5,7 @@ from keras import layers
 
 from os.path import exists
 
-from utils import *
+DATA_DIR = "/data/s4585711/vit/"
 
 def get_data(batch_size, image_size):
     if not exists(DATA_DIR + "AD_NC"):
@@ -63,7 +63,7 @@ def get_data_preprocessing(batch_size=32, image_size=(256, 256), cropped_image_s
 
     preprocessing = get_normalisation(preprocessing, train_ds, test_ds)
 
-    return train_ds, test_ds, preprocessing
+    return train_ds.map(lambda x,y : (preprocessing(x), y)), test_ds.map(lambda x,y : (preprocessing(x), y)), preprocessing
 
 if __name__ == "__main__":
     train_ds, test_ds, preprocessing = get_data_preprocessing(image_size=(240, 256), cropped_image_size=(192, 160), cropped_pos=(20, 36))
