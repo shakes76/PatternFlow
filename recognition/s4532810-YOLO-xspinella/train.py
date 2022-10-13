@@ -3,6 +3,7 @@ import sys
 from dataset import DataLoader
 import numpy as np
 import utils_lib
+from predict import Predictor
 
 """
 File in which the YOLOv5 training is executed for the ISIC dataset.
@@ -81,7 +82,60 @@ def test():
     """
     ### Test on test set ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
+    # Find P, R, mAP of dataset:
     os.system(f"python3 yolov5_LC/val.py --weights {weights_path} --data yolov5_LC/data/ISIC_test.yaml --img 640 --task test")
+    # compute IOU, classification accuracy:
+    test_dir_fp = "yolov5_LC/data/images/testing"
+    test_labels_dir = "yolov5_LC/data/labels/testing"
+    avg_iou, tot_boxes, class_acc, tot_classes = Compute_Mean_IOU_acc(\
+                                test_dir_fp, test_labels_dir,weights_path)
+    print(f"Average IOU: {avg_iou}, Valid Boxes: {tot_boxes}\n\
+    Classification Accuracy: {class_acc}, Valid Classifications: {tot_classes}")
+
+def Compute_Mean_IOU_acc(dataset_fp: str, labels_fp: str, 
+                        weights_path: str):
+    """
+    Finds the model's average IOU and classification accuracy of the 
+    detections in the given dataset.
+    :param dataset_fp: Filepath to the directory containing images to
+                        run IOU analysis on.
+    :param labels_fp: Filepath to the directory containing corresponding
+                        labels
+    :param weights_path: path to the model to evaluate
+    :return: avg IOU, classification accuracy
+    """
+    # Instantiate and load trained model
+    predictor = Predictor()
+    model = predictor.Load_Model(weights_path)
+    
+    ### iterate through dataset and find iou/acc ###
+    images = os.listdir(dataset_fp)
+    box_preds = 0
+    total_iou = 0
+
+    total_class_preds = 0
+    total_correct_preds = 0
+    for image in images:
+        # Find corresponding label
+        img_fp = os.path.join(dataset_fp, image)
+        img_id = utils_lib.Get_Img_ID(img_fp)
+        label_fp = os.path.join(labels_fp, f"{img_id}.txt")
+        # run model on image
+        results = predictor.Predict_Img(img_fp, model)
+        # add to iou total
+        iou = utils_lib.Compute_IOU(label_fp, results)
+        if iou >= 0: # if valid iou
+            box_preds += 1
+            total_iou += iou
+        # update class prediction info
+        class_pred = utils_lib.Evaluate_Prediction(label_fp, results)
+        if class_pred >= 0: # if valid/above iou threshold
+            total_class_preds += 1
+            total_correct_preds += class_pred
+    avg_iou = total_iou/box_preds
+    class_acc = total_correct_preds/total_class_preds
+    return [avg_iou, box_preds, class_acc, total_class_preds]
+        
 
 if __name__ == "__main__":
     mode = int(input("Please enter desired mode (0 : download/preprocess/setup data/directories, 1 : train and test, 2 : train, 3 : test): "))

@@ -4,12 +4,6 @@ sys.path.append("yolov5_LC")
 import os
 from pathlib import Path
 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # YOLOv5 root directory
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))  # add ROOT to PATH
-ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
-
 import torch
 import matplotlib.pyplot as plt
 import utils_lib
@@ -89,8 +83,8 @@ def Predictor_Example_Use():
     model = predictor.Load_Model("yolov5_LC/runs/train/exp2/weights/best.pt")
 
     # Predict
-    img_fp = "yolov5_LC/data/images/testing/ISIC_0012086.jpg"
-    label_fp = "yolov5_LC/data/labels/testing/ISIC_0012086.txt"
+    img_fp = "yolov5_LC/data/images/testing/ISIC_0015184.jpg"
+    label_fp = "yolov5_LC/data/labels/testing/ISIC_0015184.txt"
     out_fp = "misc_tests/prediction_comparison.png"
     results = predictor.Predict_Img(img_fp, model)
 

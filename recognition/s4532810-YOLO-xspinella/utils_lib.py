@@ -204,14 +204,29 @@ def Compute_IOU(label_fp: str, results):
     ### Retrieve label and prediction box specs in x1, y1, x2, y2 format ###
     label_box = Get_Box_From_Label(label_fp)
     label_box = Convert_Box_Format(label_box)
-    pred_box = results.pandas().xyxy[0].values.tolist()[0][:4]
-    # normalise:
-    pred_box = (np.array(pred_box)/640).tolist() 
 
-    ### Find IOU ###
-    iou = bbox_iou(torch.FloatTensor([pred_box]), 
-                    torch.FloatTensor([label_box]), xywh=False)
-    return iou.item()
+    ### verify there is actually a box ###
+    num_detects = len(results.pandas().xyxy[0].index)
+    if num_detects < 1:
+        return -1   
+    
+    ### iterate through all boxes, calc iou ###
+    iou_tot = 0
+    i = 0
+    while i < num_detects:
+        pred_box = results.pandas().xyxy[0].values.tolist()[i][:4]
+        # normalise:
+        pred_box = (np.array(pred_box)/640).tolist() 
+
+        ### Find IOU ###
+        iou = bbox_iou(torch.FloatTensor([pred_box]), 
+                        torch.FloatTensor([label_box]), xywh=False)
+        iou_tot += iou.item()
+        i += 1
+
+    ### calc overall iou ###
+    avg_iou = iou_tot/num_detects
+    return avg_iou
 
 def Evaluate_Prediction(label_fp: str, results):
     """
