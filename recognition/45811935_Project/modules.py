@@ -93,6 +93,7 @@ class Encoder(Model):
     """
         Defines Encoder for VQ-VAE.
     """
+
     def __init__(self, latent_dim=16, name="encoder"):
         super(Encoder, self).__init__(name=name)
         self._latent_dim = latent_dim
@@ -121,6 +122,7 @@ class Decoder(Model):
     """
         Defines Decoder for VQ-VAE.
     """
+
     def __init__(self, name="decoder", **kwargs):
         super(Decoder, self).__init__(name=name, **kwargs)
         # self.input1 = layers.InputLayer(input_shape=input_dim)
@@ -147,6 +149,7 @@ class VQVAE(Model):
     """
         Defines main VQ-VAE architecture.
     """
+
     def __init__(self, tr_var, img_size=28, num_encoded=64, latent_dim=16,
                  beta=0.25, name="vq_vae"):
         super(VQVAE, self).__init__(name=name)
@@ -248,6 +251,7 @@ class PixelConv(layers.Layer):
         Represents a custom Conv layer with masking of certain sections of filters for
         autoregressive learning.
     """
+
     def __init__(self, kernel_mask_type, name="pixel_conv", **kwargs):
         super(PixelConv, self).__init__(name=name)
         self._main_conv = layers.Conv2D(**kwargs)
@@ -265,16 +269,16 @@ class PixelConv(layers.Layer):
         self._main_conv.build(input_shape)
         kernel_shape = self._main_conv.kernel.get_shape()
 
-        # Creates a way to 'mask out' unseen bits to achieve autoregressive behaviour. In any
-        # image, there are 3 dimensions. Height, length, and #channels (i.e. R, G, B). There are
+        # Creates a way to 'mask out' unseen bits to achieve autoregressive behaviour. There are
         # two types of masks, namely, type "A" and "B".
 
         # Mask "A" zeroes out all pixels above and left of the pixel in the middle of the mask.
         # Mask "B" is similar to Mask "A", but does not zero out the middle pixel itself.
         self._kernel_mask = np.zeros(shape=kernel_shape)
-        self._kernel_mask[: kernel_shape[0] // 2, ...] = 1.0
-        self._kernel_mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        self._kernel_mask[:kernel_shape[0] // 2, ...] = 1.0
+        self._kernel_mask[kernel_shape[0] // 2, :kernel_shape[1] // 2, ...] = 1.0
         if self._kernel_mask_type == "B":
+            # Include the middle pixel as well
             self._kernel_mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
 
     def call(self, inputs):
@@ -295,8 +299,81 @@ class PixelResidualBlock(layers.Layer):
     """
         Defines a typical residual block, but using the PixelConv layer.
     """
-    pass
+
+    def __init__(self, num_filters, name="pixel_res_block"):
+        super(PixelResidualBlock, self).__init__(name=name)
+        self._num_filters = num_filters
+
+        self._conv1 = layers.Conv2D(filters=self._num_filters, kernel_size=1, activation="relu",
+                                    padding="same")
+        self._pixel_conv = PixelConv(filters=self._num_filters // 2,
+                                     kernel_size=3, activation="relu",
+                                     padding="same", kernel_mask_type="B")
+        self._conv2 = layers.Conv2D(filters=self._num_filters, kernel_size=1, activation="relu",
+                                    padding="same")
+
+    def call(self, inputs):
+        """
+            Forward computation of this layer.
+
+            Args:
+                inputs: inputs of this layer
+
+            Returns: outputs of this layer
+
+        """
+        hidden = self._conv1(inputs)
+        hidden = self._pixel_conv(hidden)
+        hidden = self._conv2(hidden)
+
+        # Residual connection
+        return inputs + hidden
 
 
 class PixelCNN(Model):
-    pass
+    """
+        Defines the main PixelCNN generative model.
+    """
+
+    def __init__(self, num_res=2, num_pixel_B=2, num_encoded=128, num_filters=128,
+                 kernel_size=7, activation="relu", name="pixel_cnn"):
+        super(PixelCNN, self).__init__(name=name)
+        self._num_res = num_res
+        self._num_pixel_B = num_pixel_B
+        self._num_encoded = num_encoded
+        self._num_filters = num_filters
+        self._kernel_size = kernel_size
+        self._activation = activation
+
+        self._pixel_A = PixelConv(kernel_mask_type="A", filters=self._num_filters,
+                                  kernel_size=self._kernel_size, activation=self._activation)
+        self._pixel_resids = [PixelResidualBlock(num_filters=self._num_filters)
+                              for _ in range(self._num_res)]
+        self._pixel_Bs = [PixelConv(kernel_mask_type="B", filters=self._num_filters, kernel_size=1,
+                                    activation=self._activation)
+                          for _ in range(self._num_pixel_B)]
+        self._conv = layers.Conv2D(filters=self._num_encoded, kernel_size=1, activation="sigmoid")
+
+    def call(self, inputs):
+        """
+            Forward computation of this model.
+
+            Args:
+                inputs: inputs of this model
+
+            Returns: outputs of this model
+
+        """
+        inputs = tf.cast(inputs, dtype=tf.int32)
+        inputs = tf.one_hot(inputs, self._num_encoded)
+        hidden = self._pixel_A(inputs)
+        for i in range(self._num_res):
+            hidden = self._pixel_resids[i](hidden)
+        for i in range(self._num_pixel_B):
+            hidden = self._pixel_Bs[i](hidden)
+        return self._conv(hidden)
+
+
+# pixel_cnn = PixelCNN()
+# pixel_cnn.build((None, 7, 7))
+# pixel_cnn.summary()
