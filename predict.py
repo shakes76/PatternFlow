@@ -8,8 +8,10 @@ from PIL import Image
 from config import *
 from modules import StyleGAN
 
+
+
 # create model, load initial weights
-sgan = StyleGAN(latent_dim=LDIM, filters=FILTERS, channels=CHANNELS)
+sgan = StyleGAN()
 sgan.load_weights(os.path.join(CKPTS_DIR, f'stylegan_{SRES}x{SRES}_base.ckpt'))
 
 depth = int(np.log2(TRES/SRES))
@@ -26,8 +28,8 @@ n = 25
 res = 256
 
 # build inputs
-const = tf.ones([n, SRES, SRES, sgan.FILTERS[0]])
-z = tf.random.normal((n, sgan.LDIM))
+const = tf.ones([n, SRES, SRES, FILTERS[0]])
+z = tf.random.normal((n, LDIM))
 ws = sgan.FC(z)
 inputs = [const]
 for i in range(depth+1):
@@ -46,6 +48,8 @@ plt.figure(figsize=(30, 30))
 plt.xticks([])
 plt.yticks([])
 plt.imshow(combined_image, cmap='gray')
+
+# save
 path = os.path.join(IMAGE_DIR, 'generated.png')
 combined_image.save(path)
 print(f'\n{n} images saved: {path}')
