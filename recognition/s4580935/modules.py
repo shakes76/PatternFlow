@@ -72,7 +72,7 @@ class VectorQuantizer(layers.Layer):
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
 
-def encoder(latent_dim):
+def new_encoder(latent_dim):
     """
     Create the Structure for a typical CNN encoder
     """
@@ -84,7 +84,7 @@ def encoder(latent_dim):
     encoder.add(Conv2D(latent_dim, 1, padding="same"))
     return encoder
 
-def decoder():
+def new_decoder():
     """
     Create the Structure for the decoder based on the inverse of the encoder created above
     """
@@ -104,8 +104,8 @@ class VQVAE(keras.models.Sequential):
         self.num_embeddings = num_embeddings
         #Create model sequence
         self.vqvae = VectorQuantizer(self.num_embeddings, self.latent_dim, name="vQuantiser")
-        encoder = encoder(latent_dim, name="encoder")
-        decoder = decoder(name="decoder")
+        encoder = new_encoder(latent_dim, name="encoder")
+        decoder = new_decoder(name="decoder")
         #Construct the components for the model
         self.add(encoder)
         self.add(self.vqvae)
