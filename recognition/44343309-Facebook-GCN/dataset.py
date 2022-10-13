@@ -1,8 +1,21 @@
 import numpy as np
+import scipy.sparse as sp
+from keras.utils import np_utils
+from sklearn.preprocessing import LabelBinarizer, normalize
 
-def loadData():
-  return np.load("C:/users/Remy/Downloads/facebook.npz")
+def loadData(data):
+    dataset = np.load(data)
+    edges = dataset["edges"]
+    features = dataset["features"]
+    target = dataset["target"]
 
+    return edges, features, target
+
+def normaliseAdjacency(adjacency):
+    adjacency += sp.eye(adjacency.shape[0])
+    degree = np.array(adjacency.sum(1))
+    d_hat = sp.diags(np.power(degree, -0.5).flatten())
+    return d_hat.dot(adjacency).dot(d_hat).tocoo()
 class dataLoadAndProcess:
   def __init__(self):
     self.data = loadData()
@@ -32,6 +45,9 @@ class dataLoadAndProcess:
     testLabels = self.target[numTrain:numTrain + numTestValid]
     validaLabels = self.target[numTrain + numTestValid:numTrain + 2 * numTestValid]
     print(len(trainLabels))
+
+
+  
 
   def getData(self):
     return self.dataset
