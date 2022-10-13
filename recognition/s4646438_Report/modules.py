@@ -10,11 +10,6 @@ from tensorflow import keras
 from tensorflow.keras import layers, models, callbacks
 from tensorflow.keras.preprocessing.image import array_to_img
 
-from predict import Visualiser
-from dataset import input_process
-
-
-
 class Model(object):
 
   def __init__(self, up_sample_factor):
@@ -44,7 +39,7 @@ class Model(object):
     loss = loss_fn = keras.losses.MeanSquaredError()
     self._model.compile(optimizer=optimizer, loss=loss)
 
-  def fit(self, training_dataset, epochs, validation_dataset, test_image, checkpoint_loc='model/checkpoint', start_epoch=0):
+  def fit(self, training_dataset, epochs, validation_dataset, checkpoint_loc='model/checkpoint', start_epoch=0):
     '''
     Fit the model to the dataset (train the model) with given number of epochs.
     Use validation_dataset to validate the model at each epoch.
@@ -56,7 +51,6 @@ class Model(object):
     :param training_dataset: the dataset to train on (this is a tensorflow dataset)
     :param epochs: number of epochs to train with
     :param start_epoch: (default 0) epoch to begin training on
-    :param test_image: image to test across epochs to visually view training progress
     :param checkpoint_loc: (default 'checkpoint') file path for best checkpoint weights to be saved at
     :return: history object which can then be used to plot training statistics
     '''
@@ -70,7 +64,7 @@ class Model(object):
                                             save_best_only=True,
                                             save_weights_only=True)
     
-    psnr = PSNR_Callback(test_image)
+    psnr = PSNR_Callback()
     model_callbacks = [early_stopping, checkpoints, psnr]
     return self._model.fit(training_dataset, epochs=epochs, validation_data=validation_dataset, initial_epoch=start_epoch, verbose=1, callbacks=model_callbacks)
 
@@ -103,17 +97,11 @@ class PSNR_Callback(callbacks.Callback):
   Class which manages the computation of the mean peak signal to noise ratio of 
   images produced by a model in each epoch. This will be calculated after every epoch.
   '''
-  def __init__(self, test_image=None, print_prediction_interval=1):
+  def __init__(self):
     '''
     initialise the PSNR callback.
-    :param test_image: image used to visually inspect training progress every few epochs
-    :param print_prediction_interval: (default 15) interval for current super 
-    resolution prediction output with test_image. 1 means every epoch
     '''
     super(PSNR_Callback, self).__init__()
-    self._test_image = test_image
-    self._pred_interval = print_prediction_interval
-    self._visualiser = Visualiser()
   
   def on_epoch_begin(self, epoch, logs=None):
     '''
@@ -130,10 +118,6 @@ class PSNR_Callback(callbacks.Callback):
     mean = np.mean(self._epoch_psnr)
     print(f"\nMean PSNR of epoch {epoch} is {mean:.10f}")
     logs['psnr'] = mean
-    #if epoch % self._pred_interval == 0:
-      #prediction = self.model.predict(self._test_image)
-      #self._visualiser.plot_results(prediction, f"epoch {epoch}", "-image projection")
-
 
   def on_test_batch_end(self, batch, logs=None):
     '''
