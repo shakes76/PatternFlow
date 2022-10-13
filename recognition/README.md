@@ -43,9 +43,9 @@ Parameters for `train.py`
 | ----------------           | ----- | -------- | ------------------------- | ----------- |
 | _name_                     |       | required |                           | Name of model |
 | _path_                     |       | required |                           | Path to dataset folder |
-| _--timesteps_              |  -t   | optional | 300                       | Number of diffusion timesteps in betas schedule|
+| _--timesteps_              |  -t   | optional | 1000                      | Number of diffusion timesteps in betas schedule|
 | _--epochs_                 | -e    | optional | 100                       | Number of epochs to train for |
-| _--batch_size_             | -b    | optional | 128                       | Training batch size |
+| _--batch_size_             | -b    | optional | 64                        | Training batch size |
 | _--image_size_             | -i    | optional | 64                        | Image dimension. All images are resized to size x size |
 | _--beta_schedule_          | -s    | optional | linear                    | Beta schedule type. Options: 'linear', 'cosine', 'quadratic'and 'sigmoid' |
 | _--disable_images_         |       | optional |                           | Disables saving images and plots every epoch |
@@ -61,7 +61,6 @@ Parameters for `predict.py`
 | _model_                    |       | required |                           | Path to model file |
 | _--output_                 |  -o   | optional | ./                        | Output path to save images|
 | _--name_                   | -     | optional | predict                   | Name prefix to use for generated images |
-| _--seed_                   | -s    | optional | None                      | Passing in an integer seed will yield reproducable images|
 
 ## Algorithm Description
 Diffusion image generation is described in these papers, [1](https://arxiv.org/pdf/2006.11239.pdf) [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
