@@ -1,10 +1,3 @@
-<!-- math font size -->
-<style>
-    .katex {
-        font-size: 1em !important;
-    }
-</style>
-
 # StyleGAN Implementation
 :wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022 :+1:. 
 
@@ -87,7 +80,7 @@ Original model aims to generate photo realistic images of resolution 1024 x 1024
 | Image channel               | 1                                          | 3
 | Target resolution           | 256 x 256                                  | 1024 x 1024
 | Number of filters           | 256, ..., 32                               | 512, ..., 32
-| Number of FC layers         | depth of model ($log_{2}256 - log_{2}4=6$) |8
+| Number of FC layers         | depth of model (6)                         | 8
 | Upsampling Mmethod          | Upsample2D                                 | Bilinear
 
 
