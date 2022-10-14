@@ -14,29 +14,24 @@ def main():
     #dataset.summary(3)
     test_input = dataset.get_valid_split()
 
-    #trainer = loadClassifier(dataset, "C:\\Users\\cyeol\\Downloads\\test1")
-    #trainer.get_summary()
-    #trainer.predict_and_report()
-    #trainer.plot_tsne()
-
-    epochs = 2
+    epochs = 1
     batch_size = 256
     hidden_nodes = [32, 32]
+    save_path = "C:\\Users\\cyeol\\Downloads\\test1"
 
-    trainer = GNNClassifier(dataset, hidden_nodes)
+    print("CONSTRUCT A CLASSIFIER . . . ")
+    trainer = GNNClassifier(dataset, epochs=epochs, batch_size=batch_size, hidden_nodes=hidden_nodes, save_path=save_path)
+    trainer.get_summary()
+    trainer.predict_and_report()
+    trainer.plot_curves()
     trainer.plot_umap()
-    #trainer.get_summary()
-    #history = trainer.train(epochs, batch_size)
-    #trainer.plot_curves(history)
 
-    #trainer.save("C:\\Users\\cyeol\\Downloads\\test1")
-    #trainer.plot_tsne()
-    """new_trainer = loadClassifier(dataset, "C:\\Users\\cyeol\\Downloads\\test1")
-    new_trainer.get_summary()
-    new_trainer.save("C:\\Users\\cyeol\\Downloads\\test2")
-    another_trainer = loadClassifier(dataset, "C:\\Users\\cyeol\\Downloads\\test2")
-    another_trainer.predict(dataset.get_valid_split())
-    another_trainer.train(epochs, batch_size)"""
+    print("LOAD A SAVED CLASSIFIER . . . ")
+    trainer = loadClassifier(dataset, "C:\\Users\\cyeol\\Downloads\\test1")
+    trainer.predict_and_report()
+    trainer.get_summary()
+    trainer.plot_curves()
+    trainer.plot_umap()
 
 if __name__ == "__main__":
     main()

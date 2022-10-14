@@ -77,9 +77,6 @@ class GNN(tf.keras.Model):
 
         return self.predict_labels(node_embeddings)
 
-    def get_node_embedding(self):
-        return self.node_embeddings
-
     def call(self, input_node_indices):
         """
         Trains the network on the given graph, and outputs predictions for the nodes corresponding to the given indices.
@@ -101,11 +98,6 @@ class GNN(tf.keras.Model):
 
         # Predict labels
         return self._predict_labels_for_indices(input_node_indices)
-
-
-
-
-
 
 """
 The following GraphConvLayer and create_ffn source code is from Keras. Comments by me.
