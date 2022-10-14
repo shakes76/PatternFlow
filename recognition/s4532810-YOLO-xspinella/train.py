@@ -71,7 +71,13 @@ def train():
     """
     ### Run training ###
     num_epochs = input("Please enter desired number of epochs (~350 is good): ")
-    os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml --weights yolov5m.pt")
+    yolo_model = input("Please enter desired model: n/s/m/l/x")
+    if yolo_model not in ['n', 's', 'm', 'l', 'x']:
+        print("Invalid model")
+        return 0
+        
+    os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml \
+        --weights yolov5{yolo_model}.pt")
 
 def test():
     """
