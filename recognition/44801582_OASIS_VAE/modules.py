@@ -6,19 +6,21 @@ import torch
 import torch.nn as nn
 
 
-class VQVAE(nn.Module):
-    def __init__(self, latent, device):
-        super(VQVAE, self).__init__()
+# class VQVAE(nn.Module):
+#     def __init__(self, latent, device):
+#         super(VQVAE, self).__init__()
+#
+#         self.device = device
+#         self.encoder = Encoder(latent)
+#         self.decoder = Decoder(latent)
+#
+#     def forward(self, x):
+#         x = x.to(self.device)
+#         z = self.encoder(x)
+#         return self.decoder(z)
 
-        self.device = device
-        self.encoder = Encoder(latent)
-        self.decoder = Decoder(latent)
-
-    def forward(self, x):
-        x = x.to(self.device)
-        z = self.encoder(x)
-        return self.decoder(z)
-
+def get_pad(output, stride):
+    return (output * (stride - 1) - stride)/2
 
 # class Encoder(nn.Module):
 #     def __init__(self, latent):
@@ -34,11 +36,11 @@ class VQVAE(nn.Module):
 #         return z
 def get_encoder(latent_dim=16):
     model = nn.Sequential(
-        nn.LazyConv2d(32, 3, stride=2, padding="same"),
+        nn.LazyConv2d(32, 3, stride=2, padding=1),
         nn.ReLU(),
-        nn.LazyConvTranspose2d(64, 3, stride=2, padding="same"),
+        nn.LazyConv2d(64, 3, stride=2, padding=1),
         nn.ReLU(),
-        nn.LazyConvTranspose2d(latent_dim, 1, padding="same")
+        nn.LazyConv2d(latent_dim, 1, padding=1)
     )
 
     return model
@@ -107,5 +109,16 @@ def get_decoder(latent_dim=16):
     return model
 
 
+def get_vqvae(latent_dim=16, num_embeddings=64):
+    model = nn.Sequential(
+        get_encoder(latent_dim),
+        VQ(num_embeddings, latent_dim),
+        get_decoder(latent_dim)
+    )
+
+    return model
+
+
+
 if __name__ == "__main__":
-    pass
+    model = get_vqvae()
