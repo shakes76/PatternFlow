@@ -135,7 +135,7 @@ class StyleGAN(Model):
         x2 = LeakyReLU(0.2)(x2)
         x2 = AdaIN()([x2, w])
         
-        x2 = EqualConv(end, out_filters=f)
+        x2 = EqualConv(x2, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
         x2 = AddNoise()([x2, B])
         x2 = LeakyReLU(0.2)(x2)
