@@ -216,7 +216,8 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
         self.output_img_mode = 'RGB' if is_rgb else 'L'
         self.output_img_folder = output_img_folder     
         self.output_ckpts_folder = output_ckpts_folder 
-        self.seed = seed                               
+        self.seed = seed                  
+        self.ws = None             
 
     def set_prefix(self, prefix):
         self.prefix = prefix
@@ -226,13 +227,15 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
         
         # build inputs for G. constant, z, w, noise(B)
         const = tf.ones([self.output_num_img, SRES, SRES, FILTERS[0]])
-        z = tf.random.normal((self.output_num_img, LDIM), seed=self.seed)
-        ws = sgan.FC(z)
+        if self.ws == None:
+            z = tf.random.normal((self.output_num_img, LDIM), seed=self.seed)
+            self.ws = sgan.FC(z)
+        
         inputs = [const]
         for i in range(sgan.current_depth+1):
-            n_w = ws[:, i]
+            w = self.ws[:, i]
             B = tf.random.normal((self.output_num_img, SRES*(2**i), SRES*(2**i), 1))
-            inputs += [n_w, B]
+            inputs += [w, B]
 
         # generate
         samples = sgan.G(inputs)

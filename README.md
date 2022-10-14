@@ -66,17 +66,16 @@ The structure of the model is given below.
 </p>
 
 A few points to note,
- - Dimension of latent vector z is 512.
- - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
  - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L30) and [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L196)).
- - Number of fully connected layers is 8, w and z have the same dimension.
+ - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
+ - number of fully connected layers is 8, w and z have the same dimension.
  - Input of 'Synthesis network' is constant (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L186)).
- - A noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L130)).
+ - a noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L130)).
  - AdaIN (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/645897586b76a0b96dc23ec2ddb7ac442f33d445/clayers.py#L66)) takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
- - Starting resolution is 4, target resolution is 1024.
+ - model is trained progressively.
 
 ### Model Variations
-Original model aims to generate photo realistic images of resolution 1024 x 1024 x 3. The dimension of image in my training datasets is considerably smaller (256 x 256 x 1 appox) so my model is simplified accordingly to avoid unnecessary complication which saves training time.
+Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
 |                             | My Model                                   | Original Model
 | -------------               | -------------                              |------------- 
 | Dimension of latent vector  | 128                                        | 512
@@ -84,8 +83,10 @@ Original model aims to generate photo realistic images of resolution 1024 x 1024
 | Target resolution           | 256 x 256                                  | 1024 x 1024
 | Number of filters           | 256, ..., 32                               | 512, ..., 32
 | Number of FC layers         | depth of model (6)                         | 8
-| Upsampling Mmethod          | Upsample2D                                 | Bilinear
+| Upsampling method          | Upsample2D                                 | Bilinear
 
+## Result
+This is the result.
 
 ## Reference
 * Progressive Growing of GANs for Improved Quality, Stability, and Variation, 2018. [<ins>https://arxiv.org/abs/1710.10196</ins>](https://arxiv.org/abs/1710.10196)
