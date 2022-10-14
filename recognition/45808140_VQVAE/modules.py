@@ -10,14 +10,11 @@ class VQ(layers.Layer):
         super().__init__(name='VQ_layer')
         self.embed_dim = embed_dim
         self.no_embeddings = no_embeddings
-        
         self.beta = beta
         
         w_init = tf.random_uniform_initializer()
-        self.embeddings = tf.Variable(
-            initial_value=w_init(
-                shape=(self.embed_dim, self.no_embeddings), dtype='float32'),
-            trainable=True, name='embedding_vq',)
+        embed_shape = (self.embed_dim, self.no_embeddings)
+        self.embeddings = tf.Variable(initial_value=w_init(embed_shape, dtype=tf.float32))
         
     def call(self, x):
         
@@ -42,11 +39,11 @@ class VQ(layers.Layer):
         
         sim = tf.matmul(flattened_inputs, self.embeddings)
         
-        dists = (tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True) + 
-                 tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * sim)
+        dists = (tf.reduce_sum(flattened_inputs ** 2, axis=1, keepdims=True) 
+                + tf.reduce_sum(self.embeddings ** 2, axis=0) 
+                - 2 * sim)
         
-        encode_ind = tf.argmin(dists, axis=1)
-        return encode_ind   
+        return tf.argmin(dists, axis=1)
 
 class Encoder():
 
@@ -101,3 +98,43 @@ class VQVAE():
         
     def get_model(self):
         return self.model
+
+class PixelCNNLayers(layers.Layer):
+    
+    def __init__(self, mask_type, **kwargs):
+        super(PixelCNNLayers, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+        
+    def build(self, input_shape):
+        self.conv.build(input_shape)
+        
+        kernel_shape = self.conv.kernel.get_shape()
+        
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        
+        if self.mask_type == 'B':
+            self.mask[kernel_shapel[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+            
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        
+        return self.conv(inputs)
+
+class ResidBlock(layers.Layer):
+    
+    def __init__(self, filters, **kwargs):
+        super(ResidBlock, self).__init__(**kwargs)
+        self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation='relu')
+        
+        self.pixel_conv = PixelCNNLayers(mask_type='B', filters=filters//2, kernel_size=3, 
+                                         activation="relu", padding='same')
+        self.conv2 = layers.Conv2D(filters=filters, kernel_size=1, activation='relu')
+        
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return layers.add([inputs, x])
