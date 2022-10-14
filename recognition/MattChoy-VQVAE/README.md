@@ -1,11 +1,6 @@
 # ADNI SuperResolution Task
 By Matthew Choy
-
-> Task 5: Implement a brain MRI super-resolution network (see [Efficient Sub-Pixel CNN](https://keras.io/examples/vision/super_resolution_sub_pixel/) [7] and a [Keras imple-
-mentation](https://keras.io/examples/vision/super_resolution_sub_pixel/)) by training on the ADNI brain dataset (see Appendix for link). Create down-sampled data
-(approximately by factor of 4) using either [PyTorch](https://pytorch.org/vision/stable/generated/torchvision.transforms.functional.resize.html#torchvision.transforms.functional.resize) or [TensorFlow](https://www.tensorflow.org/api_docs/python/tf/image/resize) implementations. Network should
-be trained to up-scale from 4x down-sampled input and produce a “reasonably clear image". [Normal
-Difficulty]
+> Creation of a generative model of the ADNI dataset using the VQVAE model ([paper](arxiv.org/abs/1711.00937))
 
 ## Table of Contents
 [Table of Contents](#table-of-contents)
@@ -32,7 +27,7 @@ Difficulty]
 ### Dependencies
 - Add a list of project dependencies, here, via `conda list`.
 
-### Dataset 
+### Dataset
 - The dataset used for this task was downloaded from BlackBoard - [COMP3710/"Course Help/Resources"/ADNI MRI Dataset](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI)
 ### Data Pre-Processing
 - The data was unzipped from the above .zip file, and moved into the project's root folder (PatternFlow/recognition/MattChoy-ADNI-SuperResolution/data/)
