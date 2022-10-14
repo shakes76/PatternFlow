@@ -1,15 +1,13 @@
 """
-Dataset processing for the ADNI dataset. Downloaded from COMP3710 course site.
-After downloading the .zip file, unzip it and delete unncessary folders.
-The folder structure should be as follows:
-    ./PatternFlow/recognition/MattChoy-VQVAE/data/ADNI/test/AD
-    ./PatternFlow/recognition/MattChoy-VQVAE/data/ADNI/test/NC
-    ./PatternFlow/recognition/MattChoy-VQVAE/data/ADNI/train/AD
-    ./PatternFlow/recognition/MattChoy-VQVAE/data/ADNI/train/NC
-In the test/ and train/ folders, the folder "AD" contains Alzheimer's class, and
-                                 the folder "NC" contains Cognitive Normal samples.
+Setup:
+1. Obtain a Personal Access Token from GitHub (requires GitHub Account)
+    -> Navigate to https://github.com/settings/tokens to get a PAT
+2. Clone ADNI dataset repo
+    git clone https://{personal-access-token}@github.com/MattPChoy/ADNI-dataset.git data
 """
+
 import tensorflow as tf
+from constants import batch_size
 
 import os
 import math
@@ -23,22 +21,6 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 from IPython.display import display
-
-from util import check_adni_dataset, get_test_train_split
-
-"""
-Hyperparameters
-"""
-batch_size = 8
-image_size = (256, 240) # Raw image size from dataset.
-dataset_seed = 13
-
-"""
-Now load from the ./data directory
-"""
-dataset_fp = os.path.join(os.getcwd(), "data", "ADNI")
-check_adni_dataset(dataset_fp)
-get_test_train_split(dataset_fp)
 
 train_ds = image_dataset_from_directory(
     os.path.join(dataset_fp, "train"),
@@ -56,7 +38,6 @@ test_ds = image_dataset_from_directory(
     label_mode = None
 )
 
-# Perform scaling of the dataset - from [0, 255] to [0, 1]
 def scaling(input_image):
     input_image = input_image / 255.0
     return input_image
