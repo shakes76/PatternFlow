@@ -22,7 +22,9 @@ class ConvReluBlock(nn.Module):
         self.conv2 = nn.Conv2d(dim_out, dim_out, kernel_size=3)
         self.relu = nn.ReLU()
 
-    def forward(self, x):
+        self.positional_encoding = nn.Linear(32, dim_out)
+
+    def forward(self, x, position):
         """
         Method to run an input tensor forward through the block
         and returns the resulting output tensor
@@ -33,8 +35,18 @@ class ConvReluBlock(nn.Module):
         Returns:
             Tensor: output tensor
         """
+        # Block 1
         x = self.conv1(x)
         x = self.relu(x)
+
+        # Position Encoding
+        position = self.positional_encoding(position)
+        position = self.relu(position)
+
+        position = position[(...,) + (None,) * 2]
+        x = x + position
+
+        # Block 2
         x = self.conv2(x)
         x = self.relu(x)
         return x
@@ -60,7 +72,7 @@ class EncoderBlock(nn.Module):
         self.encoder_block5 = ConvReluBlock(512, dim_out)
         self.pool = nn.MaxPool2d(2)
 
-    def forward(self, x):
+    def forward(self, x, position):
         """
         Method to run an input tensor forward through the encoder
         and returns the resulting outputs from each encoder layer
@@ -73,23 +85,23 @@ class EncoderBlock(nn.Module):
         """
         encoder_blocks = [] # list of encoder blocks output
         # BLOCK 1 followed by max pooling
-        x = self.encoder_block1(x) 
+        x = self.encoder_block1(x, position) 
         encoder_blocks.append(x)
         x = self.pool(x)
         # BLOCK 2 followed by max pooling
-        x = self.encoder_block2(x)
+        x = self.encoder_block2(x, position)
         encoder_blocks.append(x)
         x = self.pool(x)
         # BLOCK 3 followed by max pooling
-        x = self.encoder_block3(x)
+        x = self.encoder_block3(x, position)
         encoder_blocks.append(x)
         x = self.pool(x)
         # BLOCK 4 followed by max pooling
-        x = self.encoder_block4(x)
+        x = self.encoder_block4(x, position)
         encoder_blocks.append(x)
         x = self.pool(x)
         # BLOCK 5 followed by max pooling
-        x = self.encoder_block5(x)
+        x = self.encoder_block5(x, position)
         encoder_blocks.append(x)
         x = self.pool(x)
         return encoder_blocks
@@ -118,7 +130,7 @@ class DecoderBlock(nn.Module):
         self.decoder_block4 = ConvReluBlock(128, dim_out)
 
 
-    def forward(self, x, encoder_blocks):
+    def forward(self, x, encoder_blocks, position):
         """
         Method to run an input tensor forward through the decoder
         and returns the output from all decoder layers
@@ -134,22 +146,22 @@ class DecoderBlock(nn.Module):
         x = self.upConv1(x)
         encoder_feature = self.crop(encoder_blocks[0], x)
         x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block1(x)
+        x = self.decoder_block1(x, position)
         # BLOCK 2 including upConv and decoder block
         x = self.upConv2(x)
         encoder_feature = self.crop(encoder_blocks[1], x)
         x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block2(x)
+        x = self.decoder_block2(x, position)
         # BLOCK 3 including upConv and decoder block
         x = self.upConv3(x)
         encoder_feature = self.crop(encoder_blocks[2], x)
         x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block3(x)
+        x = self.decoder_block3(x, position)
         # BLOCK 4 including upConv and decoder block
         x = self.upConv4(x)
         encoder_feature = self.crop(encoder_blocks[3], x)
         x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block4(x)
+        x = self.decoder_block4(x, position)
         return x
 
     def crop(self, encoder_blocks, x):
@@ -165,7 +177,6 @@ class DecoderBlock(nn.Module):
         """
         _, _, H, W, = x.shape
         encoder_blocks = torchvision.transforms.CenterCrop([H, W])(encoder_blocks)
-        print(type(encoder_blocks))
         return encoder_blocks
 
 #Transformer Architecture 
@@ -176,7 +187,7 @@ class PositionalEmbeddingTransformerBlock(nn.Module):
         self.dim_in = dim_in
 
     # delete if it doesn't work
-    def forward(self, timePos):
+    def forward2(self, timePos):
         freq = 1.0 / (
             10000 
             ** (torch.arange(self.dim_in, device=timePos.device).float() / self.dim_in)
@@ -187,9 +198,30 @@ class PositionalEmbeddingTransformerBlock(nn.Module):
         return positional_encoding
     
     # delete if it doesn't work
-    def forward2(self, timePos):
+    def forward(self, timePos):
         embeddings = math.log(10000) / ((self.dim_in // 2) - 1)
         embeddings = torch.exp(torch.arange(self.dim_in // 2, device=timePos.device) * -embeddings)
         embeddings = timePos[:, None] * embeddings[None, :]
         embeddings = torch.cat((embeddings.sin(), embeddings.cos()), dim=-1)
         return embeddings
+
+class UNet(nn.Module):
+    def __init__(self, dim_in_encoder=3, dim_out_encoder=1024, dim_in_decoder=1024, dim_out_decoder=64):
+        super(UNet, self).__init__()
+        self.unet_encoder = EncoderBlock(dim_in_encoder, dim_out_encoder)
+        self.unet_decoder = DecoderBlock(dim_in_decoder, dim_out_decoder)
+        self.unet_head = nn.Conv2d(dim_out_decoder, 1, kernel_size=1)
+        self.position_block = PositionalEmbeddingTransformerBlock(32)
+
+    def forward(self, x, position):
+        position = self.position_block(position)
+        encoder_blocks = self.unet_encoder(x, position)
+        out = self.unet_decoder(encoder_blocks[::-1][0], encoder_blocks[::-1][1:], position)
+        out = self.unet_head(out)
+        return out
+
+# unet = UNet()
+# x = torch.randn(4, 3, 256, 256)
+# print(len(x))
+# print("unet features")
+# print(unet(x, torch.Tensor([1, 1, 64, 128])).shape)
