@@ -10,10 +10,13 @@ Huge thanks to these videos for helping my understanding:
   * This repo was built largely referencing code in this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) from the video. Quite a few changes were made to improve performance.
 * [Diffusion Models | Paper Explanation | Math Explained](https://www.youtube.com/watch?v=HoKDTa5jHvg&t=1338s)
 
+## Contents
+* `train.py` - Command line utility that trains a new diffusion model on a dataset.
+* `dataset.py` - Wraps a directory of image files in a PyTorch dataloader. Images can be any size or format that can be opened by PIL. All images are resized to a given dimension, converted to RGB and normalised to a range of -1 to 1.
+* `modules.py` - Contains a Trainer class to handle training of the model. Contains the U-Net model and required components.
+* `predict.py` - Command line utility to predictsnew images from an existing `.pth` model
+
 ## Usage
-
-Two command line modules are provided: `train.py` and `predict.py` that can be used to train models and predict new images from existing models respectively. A pre-trained model that was trained on a portion of the [OAI Knee](https://nda.nih.gov/oai/) dataset is also supplied.
-
 ### Prerequisites
 
 * A system (preferably linux) with either [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
@@ -80,10 +83,9 @@ A U-Net neural network is then trained to predict the noise in an image for a gi
 Once the U-Net has been trained, denoising can be performed on a random point in latent space (usually an image consisting of pure gaussian noise) using the U-Net by repeatedly subtracting the predicted noise over the entire reverse timestep range. This results in a new image that is perceptually similar to those in the training dataset.
 
 ## Examples
-Here are some demos of training on different datasets
 
 ### AKOA Knee 
-Using the AKOA Knee dataset. Image size 128x128, 1000 Timesteps. Download the pretrained model [here](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
+Using part of the [AKOA Knee dataset](https://nda.nih.gov/oai/). Image size 128x128, 1000 Timesteps 100 epochs. Download the pretrained [model](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
 #### Training
 Epoch 0
 ![](https://hcloudh.com/nextcloud/s/LdiWLFwsMtqGCPy/download/plot_epoch0.jpeg)
