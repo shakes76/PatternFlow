@@ -138,3 +138,23 @@ class ResidBlock(layers.Layer):
         x = self.pixel_conv(x)
         x = self.conv2(x)
         return layers.add([inputs, x])
+
+class PixelCNN():
+    
+    def __init__(self, input_shape, vq_trainer, no_resid=2, no_pixel_layers=2):
+        pixel_inputs = keras.Input(shape=input_shape, dtype=tf.int32)
+        one = tf.one_hot(pixel_inputs, vq_trainer.no_embeddings)
+        
+        x = PixelCNNLayers(mask_type='A', filters=128, kernel_size=7, activation='relu', padding='same')(one)
+        
+        for _ in range(no_resid):
+            x = ResidBlock(filters=128)(x)
+        for _ in range(no_pixel_layers):
+            x = PixelCNNLayers(mask_type='B', filters=128, kernel_size=1, strides=1, 
+                               activation='relu', padding='valid')(x)
+            
+        out = layers.Conv2D(filters=vq_trainer.no_embeddings, kernel_size=1, strides=1, padding='valid')(x)
+        self.pixel_cnn = keras.Model(pixel_inputs, out, name='pixelCNN')
+        
+    def get_model(self):
+        return self.pixel_cnn
