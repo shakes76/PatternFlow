@@ -86,7 +86,7 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 | Target resolution           | 256 x 256                                  | 1024 x 1024
 | Number of filters           | 256, ..., 32                               | 512, ..., 32
 | Number of FC layers         | depth of model (6)                         | 8
-| Upsampling method          | Upsample2D                                 | Bilinear
+| Upsampling method           | Upsample2D                                 | Bilinear
 
 </p>
 
@@ -94,5 +94,5 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 This is the result.
 
 ## Reference
-* Progressive Growing of GANs for Improved Quality, Stability, and Variation, 2018. [<ins>https://arxiv.org/abs/1710.10196</ins>](https://arxiv.org/abs/1710.10196)
-* A Style-Based Generator Architecture for Generative Adversarial Networks, 2019. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
+* Progressive Growing of GANs, 2018. [<ins>https://arxiv.org/abs/1710.10196</ins>](https://arxiv.org/abs/1710.10196)
+* A Style-Based GANs, 2019. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
