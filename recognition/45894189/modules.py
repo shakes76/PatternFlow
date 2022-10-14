@@ -51,6 +51,66 @@ def WNetwork(latent_dim=256):
         w = layers.LeakyReLU(0.2)(z)
     return tf.keras.Model(z, w)
 
+def generator_block(input_tensor, n_filters, image_size):
+    noise = layers.Input(shape=(image_size, image_size, 1))
+    w = layers.Input(shape=256)
+    x = input_tensor
+
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Conv2D(n_filters, kernel_size=3)
+
+    x = Noise([x, noise])
+    x = layers.LeakyReLU(alpha=0.2)(x)
+    x = AdaIN()([x, w])
+
+    x = layers.Conv2D(n_filters, kernel_size=3)(x)
+    x = Noise([x, noise])
+    x = layers.LeakyReLU(alpha=0.2)(x)
+    x = AdaIN()([x, w])
+    return x
+
+def generator():
+    current_size = 4
+    n_filters = 256
+    input = layers.Input(shape=(current_size, current_size, n_filters))
+    noise = layers.Input(shape=(current_size, current_size, 1))
+
+    w = layers.Input(shape=n_filters)
+    x = input
+
+    x = Noise([x, noise])
+    x = layers.LeakyReLU(alpha=0.2)(x)
+    x = AdaIN()([x, w])
+
+    x = layers.Conv2D(256, kernel_size=3)(x)
+    x = Noise([x, noise])
+    x = layers.LeakyReLU(alpha=0.2)(x)
+    x = AdaIN()([x, w])
+
+    while current_size < 256:
+        x = generator_block(x, n_filters, current_size)
+        current_size = 2 * current_size
+        n_filters = n_filters // 2
+
+    x = layers.Conv2D(3, kernel_size=4, padding="valid", activation="tanh")(x)
+    return tf.keras.Model(inputs=[input], outputs=x)
+
+
+
+def discriminator_block(input_tensor, n_filters, image_size):
+    """
+    Main block for discriminator containing two convolutional layers with LeakyReLU activation. the second layer doubles the number
+    of filters. The block is ended with a downsampling of the image that halves it's size
+    """
+    x = layers.Conv2D(n_filters, kernel_size=3, padding="valid", input_shape=(image_size, image_size, n_filters))(input_tensor)
+    x = layers.LeakyReLU(alpha=0.2)(x)
+
+    x = layers.Conv2D(2*n_filters, kernel_size=3, padding="valid", input_shape=(image_size, image_size, n_filters))(x)
+    x = layers.LeakyReLU(alpha=0.2)(x)
+
+    x = layers.Resizing(image_size // 2, image_size // 2)(x)
+    return x
+
 def discriminator():
     """
     Discriminator model, takes in 256x256x1 images and calssifies them as real or fake. Built with initial input and convolution layer,
@@ -73,15 +133,3 @@ def discriminator():
     x = layers.Flatten()(x)
     x = layers.Dense(1, activation="linear")
     return tf.keras.Model(inputs=[input], outputs=x)
-
-def discriminator_block(input_tensor, n_filters, image_size):
-    """
-    Main block for discriminator containing two convolutional layers with LeakyReLU activation. the second layer doubles the number
-    of filters. The block is ended with a downsampling of the image that halves it's size
-    """
-    x = layers.Conv2D(n_filters, kernel_size=3, padding="valid", input_shape=(image_size, image_size, n_filters))(input_tensor)
-    x = layers.LeakyReLU(alpha=0.2)(x)
-    x = layers.Conv2D(2*n_filters, kernel_size=3, padding="valid", input_shape=(image_size, image_size, n_filters))(x)
-    x = layers.LeakyReLU(alpha=0.2)(x)
-    x = layers.Resizing(image_size // 2, image_size // 2)(x)
-    return x
