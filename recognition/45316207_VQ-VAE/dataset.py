@@ -36,9 +36,9 @@ def load_dataset(max_images=None, verbose=False):
 
     # File paths
     images_path = "keras_png_slices_data/"
-    test_path = images_path + "keras_png_slices_validate/"
+    test_path = images_path + "keras_png_slices_test/"
     train_path = images_path + "keras_png_slices_train/"
-    validate_path = images_path + "keras_png_slices_test/"
+    validate_path = images_path + "keras_png_slices_validate/"
     dataset_paths = [test_path, train_path, validate_path]
 
     # Set up the lists we will load our data into
@@ -100,7 +100,7 @@ def load_dataset(max_images=None, verbose=False):
         print('')
         print('')
 
-    return (train_data_scaled, test_data_scaled, validate_data_scaled, data_variance)
+    return (train_data_scaled, validate_data_scaled, test_data_scaled, data_variance)
 
 
 if __name__ == "__main__":

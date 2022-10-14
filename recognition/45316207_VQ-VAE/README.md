@@ -2,11 +2,14 @@
 
 ## COMP3710 Pattern Flow Report
 
-Alex Nicholson (45316207)
+by Alex Nicholson (45316207)
 
 ---
-## Planning
 
+## Project Overview
+
+* **Description of the algorithm and the problem that it solves (approximately a paragraph)**
+* **How it works (approximately a paragraph)**
 
 Details:
 
@@ -17,13 +20,6 @@ Goals:
 
 * “Reasonably clear image”
 * [Structured Similarity (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity) index of over 0.6
-
----
-
-## Project Overview
-
-* **Description of the algorithm and the problem that it solves (approximately a paragraph)**
-* **How it works (approximately a paragraph)**
 
 ---
 
@@ -40,11 +36,21 @@ Goals:
 
 ## Methods
 
-**Describe any specific pre-processing you have used with references if any. Justify your training, validation and testing splits of the data.**
+**Describe any specific pre-processing you have used with references if any.**
+
+**Justify your training, validation and testing splits of the data.**
+The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up X%, Y%, and Z% respectively. This is in line with good standard practice for dataset partitioning...
+
+Train: 9664
+Validate: 1120
+
+Test: 544
 
 ---
 
-## Example Generations
+## Results
+
+### Example Generations
 
 Below are some examples of the generations made by the VQ VQE model after 10 epochs of training over the full OASIS training dataset. These generations were produced by putting real MRI image examples from the test set into the model and then getting the reconstructed output from the model.
 
@@ -53,12 +59,12 @@ Below are some examples of the generations made by the VQ VQE model after 10 epo
 | ![alt text](./out/original_vs_reconstructed_0002.png)      | ![alt text](./out/original_vs_reconstructed_0003.png)       |
 | ![alt text](./out/original_vs_reconstructed_0004.png)      | ![alt text](./out/original_vs_reconstructed_0005.png)       |
 
-## Generation Quality Over Time
+### Generation Quality Over Time
 
 Below is an animation of the progression of the quality of the model's generations over the course of training.
 ![alt text](./vqvae_training_progression.gif)
 
-## Training Metrics
+### Training Metrics
 
 The various loss metrics of the model were recorded throughout training to track its performance over time, these include:
 

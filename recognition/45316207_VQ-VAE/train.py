@@ -182,7 +182,7 @@ if __name__ == "__main__":
     #                                   LOAD DATA                                  #
     # ---------------------------------------------------------------------------- #
     # Import data loader from dataset.py
-    (train_data, test_data, validate_data, data_variance) = dataset.load_dataset(max_images=NUM_TRAINING_EXAMPLES, verbose=True)
+    (train_data, validate_data, test_data, data_variance) = dataset.load_dataset(max_images=NUM_TRAINING_EXAMPLES, verbose=True)
 
 
     # ---------------------------------------------------------------------------- #
@@ -214,10 +214,9 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     #                                 FINAL RESULTS                                #
     # ---------------------------------------------------------------------------- #
-    # Visualise output generations from the finished model
-    utils.show_reconstruction_examples(trained_vqvae_model, test_data, EXAMPLES_TO_SHOW)
-    
     # Visualise the model training curves
     utils.plot_training_metrics(history)
     utils.plot_ssim_history(vqvae_trainer.ssim_history)
     
+    # Visualise output generations from the finished model
+    # utils.show_reconstruction_examples(trained_vqvae_model, validate_data, EXAMPLES_TO_SHOW)
