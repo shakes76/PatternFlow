@@ -29,9 +29,9 @@ def main():
     model = StyleGAN()
     model.compile(d_optimizer=adam, g_optimizer=adam)
 
-    plot_model(model.FC, to_file=os.path.join(MODEL_DIR, 'fc.png'))
-    plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'))
-    plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'))
+    plot_model(model.FC, to_file=os.path.join(MODEL_DIR, 'fc.png'), rankdir='LR')
+    plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'), rankdir='LR')
+    plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'), rankdir='LR')
 
     # callbacks
     sampling_cbk = SamplingCallBack()
@@ -65,8 +65,8 @@ def main():
         print(f'-- resolution: {rs}x{rs}, filters: {ch} --')
 
         # save model plot
-        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_fadein.png'))
-        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_fadein.png'))
+        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_fadein.png'), rankdir='LR')
+        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_fadein.png'), rankdir='LR')
 
         # fade in training
         sampling_cbk.set_prefix(f'{rs}x{rs}_fadein')
@@ -81,8 +81,8 @@ def main():
         model.stabilize()
 
         # save model plots
-        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_stabilize.png'))
-        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_stabilize.png'))
+        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')
+        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_stabilize.png'), rankdir='LR')
 
         # stabilize training
         sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')

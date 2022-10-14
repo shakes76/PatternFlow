@@ -117,7 +117,7 @@ def fc(depth):
         w = EqualDense(w, out_filters=LDIM)
         w = LeakyReLU(0.2)(w)
     # replicate (256,7)
-    w = tf.tile(tf.expand_dims(w, 1), (1, depth, 1)) 
+    w = tf.tile(tf.expand_dims(w, 1), (1, depth + 1, 1)) 
     return Model(z, w)
 
 
