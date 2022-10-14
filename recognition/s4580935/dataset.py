@@ -48,7 +48,7 @@ def combine(train, test):
     Return combined constructed array
     """
     Oasis = np.concatenate([train, test], axis=0)
-    Oasis = np.expand_dims(Oasis, -1).astype("float32") / 255
+    Oasis = np.expand_dims(Oasis, -1).astype("float32")
     return Oasis
 
 def main():

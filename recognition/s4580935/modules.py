@@ -76,25 +76,25 @@ def new_encoder(latent_dim):
     """
     Create the Structure for a typical CNN encoder
     """
-    encoder = Sequential(name="encoder")
-    encoder.add(Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(256, 256, 1)))
-    encoder.add(Conv2D(64, 3, activation="relu", strides=2, padding="same"))
-    encoder.add(Conv2D(128, 3, activation="relu", strides=2, padding="same"))
-    encoder.add(Conv2D(256, 3, activation="relu", strides=2, padding="same"))
-    encoder.add(Conv2D(latent_dim, 1, padding="same"))
-    return encoder
+    encoder_input = keras.Input(shape=(256, 256, 1))
+    encoder = (layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"))(encoder_input)
+    encoder = (layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"))(encoder)
+    #encoder = (layers.Conv2D(128, 3, activation="relu", strides=2, padding="same"))(encoder)
+    #encoder = (layers.Conv2D(256, 3, activation="relu", strides=2, padding="same"))(encoder)
+    encoder_output = (layers.Conv2D(latent_dim, 1, padding="same"))(encoder)
+    return keras.Model(encoder_input, encoder_output, name="encoder")
 
-def new_decoder():
+def new_decoder(latent_dim):
     """
     Create the Structure for the decoder based on the inverse of the encoder created above
     """
-    decoder = Sequential(name="decoder")
-    decoder.add(Conv2DTranspose(256, 3, activation="relu", strides=2, padding="same"))
-    decoder.add(Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same"))
-    decoder.add(Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
-    decoder.add(Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
-    decoder.add(Conv2DTranspose(1, 3, padding="same"))
-    return decoder
+    latent_inputs = keras.Input(shape=new_encoder(latent_dim).output.shape[1:])
+    #decoder = (layers.Conv2DTranspose(256, 3, activation="relu", strides=2, padding="same"))(latent_inputs)
+    #decoder = (layers.Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same"))(decoder)
+    decoder = (layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))(latent_inputs)
+    decoder = (layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))(decoder)
+    decoder_output = (layers.Conv2DTranspose(1, 3,padding="same"))(decoder)
+    return keras.Model(latent_inputs, decoder_output, name="decoder")
 
 class VQVAE(keras.models.Sequential):
     def __init__(self, train_variance, latent_dim=256, num_embeddings=256, **kwargs):
@@ -152,8 +152,3 @@ class VQVAE(keras.models.Sequential):
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
 
-def train(model, data, num_epochs):
-    model.compile(optimizer=keras.optimizers.Adam())
-    model.get_layer("encoder").summary()
-    model.get_layer("decoder").summary()
-    model.fit(data, epochs=num_epochs, batch_size=128, validation_split=0.2)
