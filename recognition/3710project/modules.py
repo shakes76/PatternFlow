@@ -11,7 +11,15 @@ from keras import backend as k
 
 
 def DSC (y_true, y_pred):
+    """Dice similarity coefficient function, this should achieve 0.8 on the test set when testing
 
+    Args:
+        y_true (numpy.ndarray): true mask of the data
+        y_pred (numpy.ndarray): predict mask of the data
+
+    Returns:
+        int: return dice similarity coefficient value between two image
+    """
     y_true_f = k.flatten(y_true)
     y_pred_f = k.flatten(y_pred) 
     
@@ -20,7 +28,17 @@ def DSC (y_true, y_pred):
     return coeff
 
 def DSC_loss (y_true, y_pred):
+    """ Loss function of dice similarity coefficient, 
+        in other word this is for the not matching part
 
+    Args:
+        y_true (numpy.ndarray): true mask of the data
+        y_pred (numpy.ndarray): predict mask of the data
+
+    Returns:
+        int: return the loss value of dice similarity coefficient, 
+             which is (1 - dice similarity coefficient)
+    """
     return 1 - DSC(y_true, y_pred)
 
 def down(x, filters, kernel_size=(3, 3), padding="same", strides=1):
