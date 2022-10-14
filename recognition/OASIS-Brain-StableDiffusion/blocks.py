@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torchvision
 import math
 
 
@@ -91,6 +92,80 @@ class EncoderBlock(nn.Module):
         x = self.encoder_block5(x)
         encoder_blocks.append(x)
         x = self.pool(x)
+        return encoder_blocks
+
+class DecoderBlock(nn.Module):
+    """
+    Decoder block consisting of 4 up convolution blocks each
+    followed by a ConvReluBlock
+    """
+    def __init__(self, dim_in=1024, dim_out=64):
+        """
+        Decoder Block class constructor to initialize the object
+
+        Args:
+            dim_in (int, optional): number of channels in the input image. Defaults to 1024.
+            dim_out (int, optional): number of channels produced by the convolution. Defaults to 64.
+        """
+        super(DecoderBlock, self).__init__()
+        self.upConv1 = nn.ConvTranspose2d(dim_in, 512, 2, 2)
+        self.upConv2 = nn.ConvTranspose2d(512, 256, 2, 2)
+        self.upConv3 = nn.ConvTranspose2d(256, 128, 2, 2)
+        self.upConv4 = nn.ConvTranspose2d(128, dim_out, 2, 2)
+        self.decoder_block1 = ConvReluBlock(dim_in, 512)
+        self.decoder_block2 = ConvReluBlock(512, 256)
+        self.decoder_block3 = ConvReluBlock(256, 128)
+        self.decoder_block4 = ConvReluBlock(128, dim_out)
+
+
+    def forward(self, x, encoder_blocks):
+        """
+        Method to run an input tensor forward through the decoder
+        and returns the output from all decoder layers
+
+        Args:
+            x (Tensor): input tensor
+            encoder_blocks (List): list of output tensors from each layer of the encoder
+
+        Returns:
+            Tensor: output tensor
+        """
+        # BLOCK 1 including upConv and decoder block
+        x = self.upConv1(x)
+        encoder_feature = self.crop(encoder_blocks[0], x)
+        x = torch.cat([x, encoder_feature], dim=1)
+        x = self.decoder_block1(x)
+        # BLOCK 2 including upConv and decoder block
+        x = self.upConv2(x)
+        encoder_feature = self.crop(encoder_blocks[1], x)
+        x = torch.cat([x, encoder_feature], dim=1)
+        x = self.decoder_block2(x)
+        # BLOCK 3 including upConv and decoder block
+        x = self.upConv3(x)
+        encoder_feature = self.crop(encoder_blocks[2], x)
+        x = torch.cat([x, encoder_feature], dim=1)
+        x = self.decoder_block3(x)
+        # BLOCK 4 including upConv and decoder block
+        x = self.upConv4(x)
+        encoder_feature = self.crop(encoder_blocks[3], x)
+        x = torch.cat([x, encoder_feature], dim=1)
+        x = self.decoder_block4(x)
+        return x
+
+    def crop(self, encoder_blocks, x):
+        """
+        crops the given tensor around the encoded features
+
+        Args:
+            encoder_blocks (List): list of output tensors from each layer of the encoder
+            x (Tensor): input tensor to crop
+
+        Returns:
+            Tensor: cropped output tensor
+        """
+        _, _, H, W, = x.shape
+        encoder_blocks = torchvision.transforms.CenterCrop([H, W])(encoder_blocks)
+        print(type(encoder_blocks))
         return encoder_blocks
 
 #Transformer Architecture 
