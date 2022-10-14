@@ -130,3 +130,6 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+
+# Data
+./recognition/s4582280-UNET/Data
