@@ -96,20 +96,30 @@ def new_decoder(latent_dim):
     decoder_output = (layers.Conv2DTranspose(1, 3,padding="same"))(decoder)
     return keras.Model(latent_inputs, decoder_output, name="decoder")
 
-class VQVAE(keras.models.Sequential):
-    def __init__(self, train_variance, latent_dim=256, num_embeddings=256, **kwargs):
+def get_vqvae(latent_dim=32, num_embeddings=128):
+    vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+    encoder = new_encoder(latent_dim)
+    decoder = new_decoder(latent_dim)
+    inputs = keras.Input(shape=(256, 256, 1))
+    encoder_outputs = encoder(inputs)
+    quantized_latents = vq_layer(encoder_outputs)
+    reconstructions = decoder(quantized_latents)
+    return keras.Model(inputs, reconstructions, name="vq_vae")
+
+class VQVAE(keras.models.Model):
+    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, **kwargs):
         super(VQVAE, self).__init__(**kwargs)
         self.train_variance = train_variance
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
         #Create model sequence
-        self.vqvae = VectorQuantizer(self.num_embeddings, self.latent_dim, name="vQuantiser")
-        encoder = new_encoder(latent_dim, name="encoder")
-        decoder = new_decoder(name="decoder")
+        self.vqvae = get_vqvae(self.latent_dim, self.num_embeddings)
+        #encoder = new_encoder(latent_dim)
+        #decoder = new_decoder()
         #Construct the components for the model
-        self.add(encoder)
-        self.add(self.vqvae)
-        self.add(decoder)
+        #self.add(encoder)
+        #self.add(self.vqvae)
+        #self.add(decoder)
         #Initialise loss components
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = keras.metrics.Mean(
@@ -151,4 +161,5 @@ class VQVAE(keras.models.Sequential):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
+
 
