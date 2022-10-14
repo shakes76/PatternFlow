@@ -3,10 +3,10 @@
   - what are the problems
   - show results, plots, images, etc
   - what was done to try solve this - include results, plots, images, etc
-- reproducability of results?
+- reproducability of results? - batch size on different machine
 - proper formatting?
 - albumentations - ?
-- which branch to pull request 
+- which branch to pull request - topic-recognition
 # Object Detection with YOLO in the ISIC Dataset
 Please note that module.py is empty because the model itself is inside of the yolov5_LC git submodule
 ## Dependencies:
@@ -44,7 +44,16 @@ The model can be trained by executing
 ```linux
 python3 train.py
 ```
-again, and selecting mode 2, or mode 1 can be selected to train and test the model in one step. However, it is reccomended to train (mode 2), then test (mode 3) separately, so that you can see the training results.  
+again, and selecting mode 2, or mode 1 can be selected to train and test the model in one step. However, it is reccomended to train (mode 2), then test (mode 3) separately, so that you can see the training results. 
+If mode 2 or 1 is selected, the program will ask for the yolo model size, and requires the user to enter in one of the following characters:
+n - YOLOv5n -> 'nano'
+s - YOLOv5s -> 'small'
+m - YOLOv5m -> 'medium'
+l - YOLOv5l -> 'large'
+x - YOLOv5x -> 'extra large'
+The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better.
+See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints
+It is reccomended to use the medium size model, as this is the model investigated in this report.
 
 ### Inference
 In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets).
@@ -165,14 +174,30 @@ The dataset is preprocessed in 4 different ways:
 - The Training/Validation/Test split is as per the ISIC 2017 dataset.
 
 ## Problems Faced
-- box loss decreasing, but obj loss and class loss increase
-- mAP0.5:0.95 not as high as it should be for yolov5m (is about right for yolov5s, but small model still has loss increase issue)
-- reporting on IOU values
-- reporting on classification accuracy (overall/ignore bad box)
+Once all the data was preprocessed and setup as per YOLOv5 training specifications, the model was trained on YOLOv5m for 450 epochs, but stopped early at ~250 epochs, as it had stopped improving. The training data can be seen below:
+![image](https://user-images.githubusercontent.com/32262943/195742748-9b17c73f-b8ff-4faa-8fd5-644e411be1f5.png)
+
+Straight away, this raises a few issues:
+- While the validation box loss decreases, the validation objectness loss begins to increase at the end, and 
+- The validation classification loss seems to be very noisey, but has an increasing trend for seemingly the entire training session.
+
+After conducting some research into the matter, it appears that this is generally due to a lack of data - documentation mentions that the dataset should have at least 10000 labelled objects per class (https://docs.ultralytics.com/tutorials/training-tips-best-results/), however, as shown by the below graph, the ISIC dataset has considerably less than this:
+![image](https://user-images.githubusercontent.com/32262943/195752043-48c03638-40e1-49af-8c71-6a682955353f.png)
+
+After running the model on train.py's test mode (3), the following results were produced:
+
+[INSERT mAP, avg IOU, classification loss here]
+
+
+- mAP0.5:0.95 not as high as it should be for yolov5m -> should be 45.2, but is ___
+- The average IOU is not at the satisfactory level of 0.8
+- [SOMETHING ABOUT CLASSIFICATION]
+
+[WHAT DOES THIS MEAN/WHAT CAUSED IT]
 
 ### Proposed solutions
-- custom function for reporting IOU and classification? 
 - more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
 - research modifications to hyperparameters - probably not a good idea as they have realistically already been optimised
+- weight initialisment
 - Population Based Bandits (PB2)?
 
