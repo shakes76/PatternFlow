@@ -3,21 +3,21 @@
 import os
 
 # model params
-CHANNELS = 1                                  # 1:graysale 3:rgb
-LDIM = 128                                    # laten vector dimemsion
-SRES = 4                                      # starting resolution
-TRES = 256                                    # target resolution
+CHANNELS = 1                                          # 1:graysale 3:rgb
+LDIM = 128                                            # laten vector dimemsion
+SRES = 4                                              # starting resolution
+TRES = 256                                            # target resolution
 
 # training params
-BSIZE = (32, 32, 32, 32, 16, 8, 4)            # batch size of each resolution
-FILTERS = (256, 256, 256, 256, 128, 64, 32)   # number of filters of each resolution
-EPOCHS = (25, 25, 25, 25, 30, 35, 40)         # training epochs of each resolution
-INPUT_IMAGE_FOLDER = 'TrainingImages'         # training image folder
+BSIZE = (32, 32, 32, 32, 16, 16, 8)                    # batch size of each resolution
+FILTERS = (256, 256, 256, 256, 128, 64, 32)           # number of filters of each resolution
+EPOCHS = (30, 20, 20, 20, 20, 20, 20)                 # training epochs of each resolution
+TRAINING_IMAGE_DIR = 'your training Images directory' # training image folder
 
 # output params
-NSAMPLES = 25                                 # number of output images
-OUT_ROOT = 'output'                           # output root folder
-IMAGE_DIR = os.path.join(OUT_ROOT, 'images')  # output image folder
-MODEL_DIR = os.path.join(OUT_ROOT, 'models')  # output model plot folder
-CKPTS_DIR = os.path.join(OUT_ROOT, 'ckpts')   # check points folder
-LOG_DIR = os.path.join(OUT_ROOT, 'log')       # loss history csv folder
+NSAMPLES = 25                                         # number of output images
+OUT_ROOT = 'your output root folder'                  # output root folder
+IMAGE_DIR = os.path.join(OUT_ROOT, 'images')          # output image folder
+MODEL_DIR = os.path.join(OUT_ROOT, 'models')          # output model plot folder
+CKPTS_DIR = os.path.join(OUT_ROOT, 'ckpts')           # check points folder
+LOG_DIR = os.path.join(OUT_ROOT, 'log')               # loss history csv folder
