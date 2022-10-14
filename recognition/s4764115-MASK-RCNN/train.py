@@ -1,27 +1,28 @@
 ##Training the model
 
-import tensorflow as tf
-from keras import layers, models
+import os
+import sys
 import numpy as np
-from modules import backbone
-#import modules
-import dataset
 
-NUMOFTRAINDATAS=4000
-NUMOFTESTDATAS=1000
-BATCHLEN=5
-BATCHPEREPOCH=NUMOFTRAINDATAS/BATCHLEN
-PROPOSALCOUNT=20
-ROISIZE=[5,5]
-MASKROISIZE=[14,14]
-CLASSDICT={0:'lesion'}
+from mrcnn.config import Config
+from mrcnn.model import MaskRCNN
+from dataset import train
 
-backboneNN = backbone()
-backboneNN.summary()
+# configuration for the model
+class LesionConfig(Config):
+	NAME = 'lesion_cfg_coco'
+	NUM_CLASSES = 1 + 1
+	STEPS_PER_EPOCH = 100
+config = LesionConfig()
+config.display() 
 
-backboneNN.compile(optimizer=tf.keras.optimizers.Adam(lr=0.0005), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True))
+ROOT_DIR = os.path.abspath('./')
+# Import Mask RCNN
+sys.path.append(ROOT_DIR)
+DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, 'logs')
+COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, '/Users/wotah_man/Documents/Github/mask_rcnn_coco.h5')
 
-backboneNN.fit(dataset.x_train, 
-               dataset.y_train, epochs=20, batch_size=768,validation_data=(dataset.x_val, dataset.y_val))
-
-#modules.train_rpn(rpnmodell=modules.RPN,fmmodel=modules.fmmodel,batchlen=5,epochs=20,numofdatas=NUMOFTRAINDATAS) 
+# define and train the model
+model = MaskRCNN(mode='training', model_dir=DEFAULT_LOGS_DIR, config=config)
+model.load_weights(COCO_WEIGHTS_PATH, by_name=True, exclude=['mrcnn_class_logits', 'mrcnn_bbox_fc',  'mrcnn_bbox', 'mrcnn_mask'])
+model.train(train, train, learning_rate=config.LEARNING_RATE, epochs=25, layers='heads')
