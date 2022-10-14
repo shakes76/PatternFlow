@@ -39,7 +39,7 @@ def download_dataset():
                     dl += len(data)
                     f.write(data)
                     done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)))
+                    sys.stdout.write("\r[8%sD%s]" % ('=' * done, ' ' * (50-done)))
                     sys.stdout.write(" %d%%" % int(dl / total_length * 100))
                     sys.stdout.flush()
             print()
@@ -61,36 +61,47 @@ def unzip_dataset():
 # Load the dataset
 def load_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
     print("Loading training data...")
-    train_data = tf.keras.preprocessing.image_dataset_from_directory(
+    train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_train_folder,
         labels=None,
         batch_size=batch_size,
     )
     print("Loading testing data...")
-    test_data = tf.keras.preprocessing.image_dataset_from_directory(
+    test_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_test_folder,
         labels=None,
         batch_size=batch_size,
     )
     print("Loading validation data...")
-    val_data = tf.keras.preprocessing.image_dataset_from_directory(
+    val_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_val_folder,
         labels=None,
         batch_size=batch_size,
     )
-    return (train_data, test_data, val_data)
+    return (train_ds, test_ds, val_ds)
 
 # Preprocess the data
 def preprocess_data(
-    train_data: tf.data.Dataset,
-    test_data: tf.data.Dataset,
-    val_data: tf.data.Dataset
-):
-    pass
+    train_ds: tf.data.Dataset,
+    test_ds: tf.data.Dataset,
+    val_ds: tf.data.Dataset
+) -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
+    # Normalize the data around 0.0
+    normalization_layer = tf.keras.layers.Rescaling(1./255)
+    train_ds = train_ds.map(lambda x: (normalization_layer(x) - 0.5))
+    test_ds = test_ds.map(lambda x: (normalization_layer(x) - 0.5))
+    val_ds = val_ds.map(lambda x: (normalization_layer(x) - 0.5))
+
+    return (train_ds, test_ds, val_ds)
 
 # Load and preprocess the dataset
-def get_dataset() -> tf.data.Dataset:
+def get_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
     download_dataset()
     unzip_dataset()
-    train_data, test_data, val_data = load_dataset()
-    preprocess_data(train_data, test_data, val_data)
+    train_ds, test_ds, val_ds = load_dataset()
+    train_ds, test_ds, val_ds = preprocess_data(train_ds, test_ds, val_ds)
+
+    return (train_ds, test_ds, val_ds)
+
+if __name__ == "__main__":
+    get_dataset()
