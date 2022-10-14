@@ -19,6 +19,7 @@ class PixelConvLayer(tf.keras.layers.Layer):
         self.mask = np.zeros(shape=kernel_shape)
         self.mask[:kernel_shape[0] // 2, ...] = 1.0 # Sets points above center to 1
         self.mask[kernel_shape[0] // 2, :kernel_shape[1] // 2, ...] = 1.0 # Sets points left of center to 0
+        self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 0.0 # Just in case, set the middle to 0
 
         # Pixelcnn uses 3 channels on mask B, but we only have grayscale data
         # Only change is to include centre pixel in mask
@@ -34,35 +35,35 @@ def get_pixel_cnn(kernel_size, input_shape):
     onehot = tf.one_hot(inputs, num_embeddings)
     x = PixelConvLayer(
         mask_type="A",
-        filters=32,
+        filters=128,
         kernel_size=kernel_size,
         activation="relu",
         padding="same")(onehot)
     
     for _ in range(2):
         y = tf.keras.layers.Conv2D(
-            filters=32,
+            filters=128,
             kernel_size=1,
             activation="relu"
         )(x)
         y = PixelConvLayer(
             mask_type="B",
-            filters=16,
+            filters=64,
             kernel_size=3,
             activation="relu",
             padding="same"
         )(y)
         y = tf.keras.layers.Conv2D(
-            filters=32,
+            filters=128,
             kernel_size=1,
             activation="relu"
         )(y)
         x = tf.keras.layers.Add()([x,y])
 
-    for _ in range(8):
+    for _ in range(2):
         x = PixelConvLayer(
             mask_type="B",
-            filters=32,
+            filters=128,
             kernel_size=1,
             strides=1,
             activation="relu",
@@ -80,18 +81,36 @@ def get_pixel_cnn(kernel_size, input_shape):
     
     return tf.keras.Model(inputs, x)
 
-def get_indices(embeddings, inputs_flat):
-    results = tf.vectorized_map(
-        lambda y:
-        tf.vectorized_map(
+def get_indices(embeddings, inputs_flat, quantize=True, splits=1):
+    @tf.function
+    def outer(y):
+        return tf.vectorized_map(
             lambda x:
-            tf.norm(tf.math.subtract(x, y)),
-            embeddings),
-        inputs_flat)
+            inner(x, y),
+            embeddings)
+    
+    @tf.function
+    def inner(x, y):
+        return tf.norm(tf.math.subtract(x, y))
+
+    split_inputs_flat = tf.split(inputs_flat, splits, axis=0)
+
+    results = None
+    for batch in split_inputs_flat:
+        batch_results = tf.vectorized_map(
+            lambda y:
+            outer(y),
+            batch)
+        
+        if results is None:
+            results = batch_results
+        else:
+            results = tf.concat([results, batch_results], axis=1)
 
     results = tf.math.argmin(results, axis=1)
-    results = tf.matmul(tf.one_hot(
-        results, num_embeddings), embeddings)
+    if quantize:
+        results = tf.matmul(tf.one_hot(
+            results, num_embeddings), embeddings)
 
     return results
 class VQ(tf.keras.layers.Layer):

@@ -1,6 +1,5 @@
 import tensorflow as tf
 import os
-import cv2
 import pickle
 
 def load_data():
