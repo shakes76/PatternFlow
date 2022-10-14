@@ -34,6 +34,45 @@ class Encoder(nn.Module):
         return z
 
 
+class VQ(nn.Module):
+    def __init__(self, num_embeddings, embedding_dim, beta=0.25):
+        super().__init__()
+        self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
+        self.beta = beta
+
+        self.embeddings = torch.rand(size=(embedding_dim, num_embeddings), dtype=torch.float32)
+
+    def forward(self, x):
+        input_shape = torch.Size(x)
+        flattened = torch.reshape(x, [-1, self.embedding_dim])
+
+        encoding_indices = self.get_code_indices(flattened)
+        encodings = nn.functional.one_hot(encoding_indices, self.num_embeddings)
+        quantized = torch.matmul(encodings, torch.transpose(self.embeddings))
+
+        quantized = torch.reshape(quantized, input_shape)
+
+        commitment_loss = torch.mean((quantized.detach() - x) ** 2)
+        codebook_loss = torch.mean((quantized.detach() - x.detach()) ** 2)  # quantized may need another detach here
+        self.loss += (self.beta * commitment_loss + codebook_loss)
+
+        quantized = x + (quantized - x).detach()
+        return quantized
+
+    def get_code_indices(self, flattened_inputs):
+        similarity = torch.matmul(flattened_inputs, self.embeddings)
+        distances = (
+            torch.sum(flattened_inputs ** 2, dim=1, keepdim=True)
+            + torch.sum(self.embeddings ** 2, dim=0)
+            - 2 * similarity
+        )
+
+        # Derive the indices for minimum distances.
+        encoding_indices = torch.argmin(distances, dim=1)
+        return encoding_indices
+
+
 class Decoder(nn.Module):
     def __init__(self, latent):
         super(Decoder, self).__init__()
