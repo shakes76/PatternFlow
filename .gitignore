@@ -132,4 +132,4 @@ dmypy.json
 mypy.ini
 
 # Data
-./recognition/s4582280-UNET/Data
+/recognition/s4582280-UNET/Data
