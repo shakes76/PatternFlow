@@ -27,9 +27,9 @@ adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.0, beta_2=0.99, epsil
 model = StyleGAN()
 model.compile(d_optimizer=adam, g_optimizer=adam)
 
-plot_model(model.FC, to_file=os.path.join(MODEL_DIR, 'fc.png'))
-plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'))
-plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'))
+plot_model(model.FC, show_shapes=True, to_file=os.path.join(MODEL_DIR, 'fc.png'))
+plot_model(model.G, show_shapes=True, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'))
+plot_model(model.D, show_shapes=True, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'))
 
 # callbacks
 sampling_cbk = SamplingCallBack()
@@ -79,8 +79,8 @@ for depth in range(1, len(BSIZE)):
     model.stabilize()
 
     # save model plots
-    plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_stabilize.png'))
-    plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_stabilize.png'))
+    plot_model(model.G, show_shapes=True, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_stabilize.png'))
+    plot_model(model.D, show_shapes=True, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_stabilize.png'))
 
     # stabilize training
     sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
