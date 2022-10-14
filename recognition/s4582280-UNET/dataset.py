@@ -1,4 +1,4 @@
-#dataset.py
+#dataset.py, contains all relevant functions for loading and processing data
 
 # Imports
 import numpy as np
@@ -59,6 +59,8 @@ def load_isic(size=1):
     # Declare routes to data to download
     training_data_route = r".\Data\ISIC-2017_Training_Data"
     testing_data_route= r".\Data\ISIC-2017_Test_v2_Data"
+    training_truth_route = r".\Data\ISIC-2017_Training_Part1_GroundTruth"
+    testing_truth_route = r".\Data\ISIC-2017_Test_v2_Part1_GroundTruth"
 
     # Load training data from route
     tr_data = read_dir(training_data_route, size)
@@ -67,12 +69,22 @@ def load_isic(size=1):
     # Load testing data from route
     te_data = read_dir(testing_data_route, size)
     print("Testing: ", te_data.shape)
-    return tr_data, te_data
+
+    # Load training truth data from route
+    trt_data = read_dir(training_truth_route, size)
+    print("Training Truth: ", tr_data.shape)
+
+    # Load testing truth data from route
+    tet_data = read_dir(testing_truth_route, size)
+    print("Testing Truth: ", te_data.shape)
+    return tr_data, te_data, trt_data, tet_data
     
 # Test loading data and displaying
-tr, te = load_isic(size=0.1)
+"""
+tr, te = load_isic(size=0.05)
 
 plt.imshow(tr[0])
 plt.show()
 plt.imshow(te[0])
 plt.show()
+"""
