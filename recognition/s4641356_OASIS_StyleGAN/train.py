@@ -82,3 +82,31 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
         if model_output is not None:
             GANutils.make_fresh_folder(model_output)
             style_GAN.save_model(model_output)
+
+
+def train(model: str = "model/", image_source: str = "images/", epochs: int = 10) -> None:
+    #TODO Docstring
+
+    #Constant training parameters (Configured for training locally, using RTX2070)
+    BATCH_SIZE = 16
+    TRAINING_HISTORY_FILE = "history.csv"
+    IMAGE_SAMPLE_COUNT = 5
+    IMAGE_SAMPLE_FOLDER = "output/"
+    COMPRESSION_SIZE = 64
+    
+    IMAGE_SIZE = 256
+    GENERATOR_INIT_SIZE = 4
+    LATENT_DIM = 512
+
+    data_loader = dataset.OASIS_loader(image_source, COMPRESSION_SIZE)
+    style_GAN = modules.StyleGAN(COMPRESSION_SIZE,GENERATOR_INIT_SIZE,LATENT_DIM, model) #constants provided to generate a new StyleGAN with the same parameters as the pretrained model if model = None
+
+    #If the user has requested a new model, store it at the default out (otherwise we update the model in specified folder)
+    if model == None:
+        model = "model/"
+
+    fit(style_GAN, data_loader, batch_size = BATCH_SIZE, epochs = epochs, training_history_location = TRAINING_HISTORY_FILE, image_sample_count = IMAGE_SAMPLE_COUNT, image_sample_output = IMAGE_SAMPLE_FOLDER, model_output = model)
+
+    #Will show plot and also save to disk. Note that by design the history is appended to, so previous runs of the same model (that is the complete training history) will be plotted
+    GANutils.plot_training(GANutils.load_training_history(TRAINING_HISTORY_FILE) ,"training_loss.png", style_GAN._epochs_trained)
+

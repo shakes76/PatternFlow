@@ -104,8 +104,8 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
     METRICS = ["discrim_loss_real", "discrim_loss_fake","gen_loss"] #GAN training metrics 
-    GEN_LEARN_RATE = 0.001
-    DISCRIM_LEARN_RATE = 0.001
+    GEN_LEARN_RATE = 0.0001
+    DISCRIM_LEARN_RATE = 0.000025
 
 
     def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_folder: str = None) -> None:

@@ -10,19 +10,20 @@ class OASIS_loader():
     """
 
     CACHE = "cache/"
-    MEAN_CACHE = "mean_cache.npy"
 
     IMAGE_RES = 256
-    COMPRESSED_RES = 32
     CROP_PIXELS = 35 #number of blackspace pixels to crop off per side
 
-    def __init__(self, filepath: str = "images/") -> None:
+    def __init__(self, filepath: str = "images/" , resolution = 256) -> None:
         """
         Instantiates a new OASIS data loader and preprocessor for images stored
         at the provided directory
 
         Args:
             filepath (str, optional): Directory of folder containing OASIS images. Defaults to "images/".
+            resolution (int, optional): side length of images to be returned (images will be resized before normalisation and caching). 
+                                        WARNING, this will be ignored if a cache is found, and instead the resolution of the images inside the found cache will be used.
+                                        Defaults to 256.
         """
         
         self._filepath = filepath
@@ -32,16 +33,15 @@ class OASIS_loader():
         print("Found {} Images".format(self._num_images_availible))
 
         #check for prexisting processed data
-        if os.path.exists(OASIS_loader.CACHE) and os.path.exists(OASIS_loader.MEAN_CACHE) and (len(os.listdir(OASIS_loader.CACHE)) == self._num_images_availible):
+        if os.path.exists(OASIS_loader.CACHE) and (len(os.listdir(OASIS_loader.CACHE)) == self._num_images_availible):
             print("Found existing cache, shall use this")
-            self._normalisation_mean = np.load(OASIS_loader.MEAN_CACHE)[0]
 
         else:
             print("Normalising...".format(self._num_images_availible))
 
             #Temporarily load all images to calculate shared mean and normalise.
-            image_vector = np.stack([self._load_image(self._filepath + image_name) for image_name in self._image_list], axis = 0)
-            image_vector, self._normalisation_mean = self._normalise(image_vector)
+            image_vector = np.stack([self._load_image(self._filepath + image_name, resolution) for image_name in self._image_list], axis = 0)
+            image_vector = self._normalise(image_vector)
             image_vector = np.split(image_vector, self._num_images_availible, axis = 0)
             print("Normalisation Complete, Caching:")
 
@@ -51,14 +51,14 @@ class OASIS_loader():
                 np.save(OASIS_loader.CACHE + str(i) + ".npy", image_vector[i])
                 print("{}/{}".format(i,self._num_images_availible))
             
-            #cache mean to prevent needing to recalculate in future
-            np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
+            # #cache mean to prevent needing to recalculate in future
+            # np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
 
             print("Data is prepped and ready to go!")
 
         self._pointer = 0 #Keep a track of how many images we have already used to allow batching
 
-        self._normalisation_mean = 0 #TODO disable centering
+        # self._normalisation_mean = 0 #TODO disable centering
 
     def get_data(self, num_images: int) -> tf.Tensor:
         """
@@ -89,14 +89,14 @@ class OASIS_loader():
         return tf.convert_to_tensor(np.concatenate(data, axis = 0))
 
 
-    def get_mean(self) -> float:
-        """
-        Returns the mean used to normalise data, which can be used to denormalise generated samples
+    # def get_mean(self) -> float:
+    #     """
+    #     Returns the mean used to normalise data, which can be used to denormalise generated samples
 
-        Returns:
-            float: Group mean used to center normalised data
-        """
-        return self._normalisation_mean
+    #     Returns:
+    #         float: Group mean used to center normalised data
+    #     """
+    #     return self._normalisation_mean
 
     def get_num_images_availible(self) -> int:
         """
@@ -107,7 +107,7 @@ class OASIS_loader():
         """
         return self._num_images_availible
 
-    def _load_image(self, filepath: str) -> np.array:
+    def _load_image(self, filepath: str, resolution: int = 256) -> np.array:
         """
         Load a specified image and convert it into a numpy array.
         As the OASIS images are colourless, we convert them to greyscale
@@ -116,24 +116,26 @@ class OASIS_loader():
 
         Args:
             filepath (str): Filepath of image to load
+            resolution (int, Optional): 
 
         Returns:
             np.array: Matrix of greyscale image pixel intensities (0,255)
         """
-        im = Image.open(filepath).convert('L').resize((OASIS_loader.COMPRESSED_RES,OASIS_loader.COMPRESSED_RES), box = (OASIS_loader.CROP_PIXELS,OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS))# we heavily compress the image to ruin the NN on a local machine. This is feasible by the simplicity of image.
+        im = Image.open(filepath).convert('L').resize((resolution,resolution), box = (OASIS_loader.CROP_PIXELS,OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS,OASIS_loader.IMAGE_RES-OASIS_loader.CROP_PIXELS))# we heavily compress the image to ruin the NN on a local machine. This is feasible by the simplicity of image.
         return np.asarray(im,dtype = np.uint8)[:,:,np.newaxis] #convolutional layers require a channel dimension
 
             
-    def _normalise(self, image_vector: np.array) -> tuple[np.array, float]:
+    def _normalise(self, image_vector: np.array) -> np.array:
         """
         Normalises and centers vector of greyscale image intensity matrices
 
         Args:
             image_vector (np.array): tensor of image data to normalize
         Returns:
-           tuple[np.array, float]: Normalised data vector, Group mean used to center normalised data
+           np.array: Normalised data vector
         """
-        normed_vector = image_vector/255
-        mean = np.mean(normed_vector)
-        return (normed_vector - mean), mean
+        # normed_vector = image_vector/255
+        # mean = np.mean(normed_vector)
+        # return (normed_vector - mean), mean
+        return image_vector/255
 
