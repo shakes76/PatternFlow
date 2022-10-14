@@ -11,25 +11,28 @@ from modules import AlzheimerModel
 tf.get_logger().setLevel('INFO')
 assert len(tf.config.list_physical_devices("GPU")) >= 1, "No GPUs found"
 
-EPOCHS = 20
+EPOCHS = 25
 
 if __name__ == "__main__":
     az_model = AlzheimerModel(
         num_patches=NUM_PATCHES, 
-        num_layers=12,
-        num_heads=12,
-        d_model=768,
-        d_mlp=3072,
-        head_layers=3072,
-        dropout_rate=0.2,
+        num_layers=6,
+        num_heads=6,
+        d_model=D_MODEL,
+        d_mlp=3000,
+        head_layers=300,
+        dropout_rate=0.35,
         num_classes=2
     )
 
     az_model.compile(
         loss=keras.losses.SparseCategoricalCrossentropy(),
-        optimizer=keras.optimizers.Adam(),
+        optimizer=keras.optimizers.Adam(0.0003),
         metrics=['accuracy']
     )
+
+    az_model.build((1, IMAGE_DIM, IMAGE_DIM, 3))
+    print(az_model.summary())
 
     train_ds = training_dataset()
     test_ds = testing_dataset()

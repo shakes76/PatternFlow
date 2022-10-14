@@ -2,8 +2,8 @@
 Contains source code of components of alzheimers classification model.
 """
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras import layers
+import keras
+from keras import layers
 import numpy as np
 
 from dataset import IMAGE_DIM, make_patch
@@ -12,6 +12,8 @@ class AlzheimerModel(keras.Model):
     def __init__(self, num_patches, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes):
         """Initialise the model"""
         super().__init__()
+
+        self.b_norm = layers.BatchNormalization()
 
         #Data augmentation
         self.augmentation = keras.Sequential([
@@ -25,27 +27,29 @@ class AlzheimerModel(keras.Model):
 
         #Nx Transformer Encoders
         self.encoders = [TransformerEncoder(num_heads, d_model, d_mlp, dropout_rate) for _ in range(num_layers)]
-
+        
         #MLP Head
         self.mlp = MultiLayerPerceptron(head_layers, d_model, dropout_rate)
 
         #OUTPUT
         self.classification = layers.Dense(num_classes, activation="softmax")
     
-    def call(self, x):
+    def call(self, x, training=True):
         """Use the model with .fit"""
-        x = self.augmentation(x)
+        x = self.augmentation(x, training=training)
 
         x = make_patch(x)
 
-        x = self.pos_encoder(x)
+        x = self.pos_encoder(x, training=training)
+
+        x = self.b_norm(x, training=training)
 
         for encoder in self.encoders:
-            x = encoder(x)
+            x = encoder(x, training=training)
         
-        head_mlp = self.mlp(x[:, 0, :])
+        x = self.mlp(x[:, 0, :], training=training)
         
-        output = self.classification(head_mlp)
+        output = self.classification(x, training=training)
 
         return output
 
@@ -56,12 +60,12 @@ class PositionalEncoder(layers.Layer):
         self.d_model = d_model
 
         self.projection = layers.Dense(d_model)
-        self.cls_token = self.add_weight("cls_token", shape=(1, 1, d_model))
+        self.cls_token = tf.Variable(initial_value=tf.random.normal([1, 1, d_model]))
         self.pos_embedding = layers.Embedding(num_patches+1, d_model)
     
-    def call(self, x):
+    def call(self, x, training=True):
         positions = tf.tile([tf.range(0, self.num_patches+1)], [tf.shape(x)[0], 1])
-        pos_emb = self.pos_embedding(positions)
+        pos_emb = self.pos_embedding(positions, training=training)
 
         linear_map = self.projection(x)
         cls_token = tf.tile(self.cls_token, [tf.shape(x)[0], 1, 1]) #[BATCH_SIZE, 1, self.d_model]
@@ -82,10 +86,10 @@ class TransformerEncoder(layers.Layer):
         self.self_attention = SelfAttention(heads, d_model, dropout_rate)
         self.multi_layer_perceptron = MultiLayerPerceptron(d_mlp, d_model, dropout_rate)
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Apply the transformer encoder on data inputs"""
-        self_attention = self.self_attention(x)
-        result = self.multi_layer_perceptron(self_attention)
+        self_attention = self.self_attention(x, training=training)
+        result = self.multi_layer_perceptron(self_attention, training=training)
         return result
         
 class SelfAttention(layers.Layer):
@@ -97,10 +101,10 @@ class SelfAttention(layers.Layer):
         self.mha = layers.MultiHeadAttention(num_heads=heads, key_dim=d_model, dropout=dropout_rate)
         self.add = layers.Add()
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Apply self attention on data inputs"""
-        x_norm = self.layer_normalisation(x)
-        self_attention = self.mha(query=x_norm, value=x_norm, key=x_norm)
+        x_norm = self.layer_normalisation(x, training=training)
+        self_attention = self.mha(query=x_norm, value=x_norm, key=x_norm, training=training)
 
         result = self.add([x, self_attention])
 
@@ -114,15 +118,16 @@ class MultiLayerPerceptron(layers.Layer):
         self.layer_normalisation = layers.LayerNormalization()
         self.mlp = keras.Sequential([
             layers.Dense(d_mlp, activation="gelu"),
+            layers.Dropout(dropout_rate),
             layers.Dense(d_model),
             layers.Dropout(dropout_rate)
         ])
         self.add = layers.Add()
 
-    def call(self, x):
+    def call(self, x, training=True):
         """Apply MLP to data inputs"""
-        x_norm = self.layer_normalisation(x)
-        mlp = self.mlp(x_norm)
+        x_norm = self.layer_normalisation(x, training=training)
+        mlp = self.mlp(x_norm, training=training)
         result = self.add([x, mlp])
 
         return result
