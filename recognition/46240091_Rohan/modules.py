@@ -22,3 +22,11 @@ def encoder(latent_dim=16):
     e = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(e)
     output = layers.Conv2D(latent_dim, 1, padding="same")(e)
     return keras.Model(input_layer, output, name="encoder")
+
+
+def decoder(latent_dim=16):
+    latent_inputs = keras.Input(shape=encoder().output.shape[1:])
+    d = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(latent_inputs)
+    d = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(d)
+    output = layers.Conv2DTranspose(1, 3, padding="same")(d)
+    return keras.Model(latent_inputs, output, name="decoder")
