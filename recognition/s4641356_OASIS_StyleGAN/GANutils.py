@@ -23,7 +23,7 @@ def denormalise(data: np.array) -> np.array:
     Returns:
         np.array: denormalized data
     """
-    # data = np.array(data) #cast to numpy array from any array like (Allows Tensor Compatibility)
+    data = np.array(data) #cast to numpy array from any array like (Allows Tensor Compatibility)
     # decentered = data + mean
     # return (decentered * 255).astype(np.uint8)
     return (data*255).astype(np.uint8)
@@ -89,7 +89,7 @@ def make_fresh_folder(folder_path: str) -> None:
     os.makedirs(folder_path)
 
 def save_training_history(history: dict[list[float]], filename: str) -> None: #TODO docsttinfs
-     with open(filename + ".csv", mode = 'a', newline='') as f:
+     with open(filename, mode = 'a', newline='') as f:
         csv.writer(f).writerows(zip(*history.values())) #we pass in the arbitrary length set of *args (various history compoents)
 
 def load_training_history(csv_location: str) -> dict[list[float]]:
@@ -115,7 +115,7 @@ def plot_training(history: dict[list[float]], output_file: str, epochs_covered: 
         start,end = epoch_range
         history = {metric: history[metric][start*batch_size:end*batch_size] for metric in history} #troublesome conversions as we store per batch not just epoch
     
-    
+    print(history)
     #plot losses
     plt.figure(figsize=(14, 10), dpi=80)
     for metric in StyleGAN.METRICS:

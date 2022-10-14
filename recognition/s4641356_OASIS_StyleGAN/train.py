@@ -76,7 +76,7 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
             sample_directory = image_sample_output + "epoch_{}".format(style_GAN._epochs_trained)
             GANutils.make_fresh_folder(sample_directory)
             for s,sample in enumerate(samples):
-                GANutils.create_image(GANutils.denormalise(sample,data_loader.get_mean()), sample_directory+"/{}".format(s+1))
+                GANutils.create_image(GANutils.denormalise(sample), sample_directory+"/{}".format(s+1))
 
         #Save model if appropriate
         if model_output is not None:
@@ -108,5 +108,5 @@ def train(model: str = "model/", image_source: str = "images/", epochs: int = 10
     fit(style_GAN, data_loader, batch_size = BATCH_SIZE, epochs = epochs, training_history_location = TRAINING_HISTORY_FILE, image_sample_count = IMAGE_SAMPLE_COUNT, image_sample_output = IMAGE_SAMPLE_FOLDER, model_output = model)
 
     #Will show plot and also save to disk. Note that by design the history is appended to, so previous runs of the same model (that is the complete training history) will be plotted
-    GANutils.plot_training(GANutils.load_training_history(TRAINING_HISTORY_FILE) ,"training_loss.png", style_GAN._epochs_trained)
+    #GANutils.plot_training(GANutils.load_training_history(TRAINING_HISTORY_FILE) ,"training_loss.png", style_GAN._epochs_trained) TODO fix plotting
 
