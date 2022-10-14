@@ -206,8 +206,8 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
         self,
         output_num_img = NSAMPLES,        # number of output images
         output_img_res = 256,             # output image resolution/size
-        output_img_folder = IMAGE_DIR,    # output image folder
-        output_ckpts_folder = CKPTS_DIR,  # checkpoints foler
+        output_img_folder = '',           # output image folder
+        output_ckpts_folder = '',         # checkpoints foler
         is_rgb = CHANNELS > 1,            # is output image rgb?
         seed = 3710                       # seed for z
     ):

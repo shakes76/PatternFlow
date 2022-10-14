@@ -1,4 +1,5 @@
 import os
+import time
 
 from keras.utils.vis_utils import plot_model
 from numpy import array, log2
@@ -16,9 +17,30 @@ def main():
 
     # config check up
     assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES) + 1), \
-        f"BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), " \
-            "and their size must equal log2(TRES)+1."
+        f'BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), ' \
+        'and their size must equal log2(TRES)+1.'
 
+    # output folder must not exist
+    assert not os.path.exists(OUT_ROOT), \
+        f'Folder \'{OUT_ROOT}\' already exists. Specify another folder for \'OUT_ROOT\' in config.py'
+
+    # create folders
+    os.mkdir(OUT_ROOT)
+    time.sleep(2)
+    assert os.path.exists(OUT_ROOT), \
+        f'training folder {OUT_ROOT} was not created successfully.'
+    print(f'Root folder {OUT_ROOT} created.')
+    subfolders = {
+        'images': os.path.join(OUT_ROOT, 'images'),   # output image folder
+        'models': os.path.join(OUT_ROOT, 'models'),   # output model plot folder
+        'ckpts': os.path.join(OUT_ROOT, 'ckpts'),     # check points folder
+        'log': os.path.join(OUT_ROOT, 'log')          # loss history csv folder
+    }
+    for _, subfolder in subfolders.items():
+        os.mkdir(subfolder)
+        time.sleep(2)
+        assert os.path.exists(subfolder), f'sub-folder {subfolder} was not created.'
+        print(f'Sub-folder {subfolder} created.')
 
     print(f'Latent vector dimension: {LDIM}')
 
@@ -29,12 +51,12 @@ def main():
     model = StyleGAN()
     model.compile(d_optimizer=adam, g_optimizer=adam)
 
-    plot_model(model.FC, to_file=os.path.join(MODEL_DIR, 'fc.png'), rankdir='LR')
-    plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'), rankdir='LR')
-    plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'), rankdir='LR')
+    plot_model(model.FC, to_file=os.path.join(subfolders['models'], 'fc.png'), rankdir='LR')
+    plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{SRES}x{SRES}_g_base.png'), rankdir='LR')
+    plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{SRES}x{SRES}_d_base.png'), rankdir='LR')
 
     # callbacks
-    sampling_cbk = SamplingCallBack()
+    sampling_cbk = SamplingCallBack(output_img_folder=subfolders['images'], output_ckpts_folder=CKPTS_DIR)
     fade_in_cbk = FadeInCallBack()
 
     # train initial models
@@ -47,13 +69,13 @@ def main():
 
     hist_init = model.fit(training_images, steps_per_epoch=iters, epochs=EPOCHS[0], callbacks=[sampling_cbk])
     loss_history.append(hist_init)
-    model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
+    model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
     # grow and train models
     for depth in range(1, len(BSIZE)):
 
         # grow model
-        model.grow()                                            
+        model.grow()
 
         bs = BSIZE[depth]                                  # batch size
         ep = EPOCHS[depth]                                 # epochs
@@ -65,8 +87,8 @@ def main():
         print(f'-- resolution: {rs}x{rs}, filters: {ch} --')
 
         # save model plot
-        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_fadein.png'), rankdir='LR')
-        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_fadein.png'), rankdir='LR')
+        plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_g_fadein.png'), rankdir='LR')
+        plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_d_fadein.png'), rankdir='LR')
 
         # fade in training
         sampling_cbk.set_prefix(f'{rs}x{rs}_fadein')
@@ -75,21 +97,21 @@ def main():
         # additional callback to compute alpha
         hist_fade = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk, fade_in_cbk])
         loss_history.append(hist_fade)
-        model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
+        model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
         # transition from fade in models to complete high resolution models
         model.stabilize()
 
         # save model plots
-        plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')
-        plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_stabilize.png'), rankdir='LR')
+        plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')
+        plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_d_stabilize.png'), rankdir='LR')
 
         # stabilize training
         sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
         model.compile(adam, adam)
         hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
         loss_history.append(hist_stab)
-        model.save_weights(os.path.join(CKPTS_DIR, f'stylegan_{sampling_cbk.prefix}.ckpt'))
+        model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
     print('\nTraining completed.')
 
@@ -97,16 +119,17 @@ def main():
     D_loss = []
     G_loss = []
     for hist in loss_history:
-        D_loss += hist.history['d_loss'] 
+        D_loss += hist.history['d_loss']
         G_loss += hist.history['g_loss']
 
-    D_log_dir = os.path.join(LOG_DIR, 'dloss.csv')
-    G_log_dir = os.path.join(LOG_DIR, 'gloss.csv')
-    array(D_loss).tofile(D_log_dir, sep=',')
-    array(G_loss).tofile(G_log_dir, sep=',')
+    D_log_csv = os.path.join(subfolders['log'], 'dloss.csv')
+    G_log_csv = os.path.join(subfolders['log'], 'gloss.csv')
+    array(D_loss).tofile(D_log_csv, sep=',')
+    array(G_loss).tofile(G_log_csv, sep=',')
 
-    print(f'{D_log_dir} saved.')
-    print(f'{G_log_dir} saved.')
-    
+    print(f'{D_log_csv} saved.')
+    print(f'{G_log_csv} saved.')
+
+
 if __name__ == "__main__":
     main()
