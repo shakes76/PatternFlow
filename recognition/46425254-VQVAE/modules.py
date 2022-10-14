@@ -245,21 +245,20 @@ class MaskedConv2d(nn.Conv2d):
         # Inherits 2d convolutional layer and its parameters
         super(MaskedConv2d, self).__init__(*args, **kwargs)
         #print(self.kernel_size)
-        self.register_buffer('mask', 
-                             torch.ones(self.out_channels, self.in_channels, 
-                                        self.kernel_size[0], self.kernel_size[1]).float())
         
-        height, width = self.kernel_size
+        self.register_buffer('mask', self.weight.data.clone())
+        
+        _, depth, height, width = self.weight.size()
+        self.mask.fill_(1)
         # setup the mask, use floor operations to cover area above and left of
         # kernel position
         if mask_type == "A":
             self.mask[:, :, height//2, width//2:] = 0
-            self.mask[:, :, height // 2 + 1:, :] = 0
+            self.mask[:, :, height // 2 + 1:] = 0
         else:
             # include centre pixel
             self.mask[:, :, height // 2, width // 2 + 1:] = 0
-            self.mask[:, :, height // 2 + 1:, :] = 0
-        
+            self.mask[:, :, height // 2 + 1:,:] = 0
         
         #register the mask
         
@@ -268,7 +267,7 @@ class MaskedConv2d(nn.Conv2d):
         #apply mask
         self.weight.data = self.weight.data * self.mask
         #use the forward from nn.Conv2d
-        return  super().forward(x)
+        return super().forward(x)
         
         
 class PixelCNN(nn.Module):
@@ -279,16 +278,16 @@ class PixelCNN(nn.Module):
             
             MaskedConv2d("A", in_channels = 128, 
                          out_channels = 256, kernel_size = 7, padding = 3),
-            nn.ReLU(True),
+            nn.ReLU(),
             MaskedConv2d("B", in_channels = 256, 
                          out_channels = 256, kernel_size = 3, padding = 1),
-            nn.ReLU(True),
+            nn.ReLU(),
             MaskedConv2d("B", in_channels = 256, 
                          out_channels = 256, kernel_size = 3, padding = 1),
-            nn.ReLU(True),
+            nn.ReLU(),
             MaskedConv2d("B", in_channels = 256, 
                          out_channels = 256, kernel_size = 3, padding = 1),
-            nn.ReLU(True),
+            nn.ReLU(),
             nn.Conv2d(256, 128, 1),
             
             #nn.Sigmoid(),

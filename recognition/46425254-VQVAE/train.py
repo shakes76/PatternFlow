@@ -88,16 +88,16 @@ class VQ_Training():
         
         
         
-path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\train"
+data_path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\train"
+data_path2 = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\test"
 
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
 lr = 0.0002
 epochs  = 15
 
-#trainer = VQ_Training(lr, epochs, path, save = trained, visualise=True)
+#trainer = VQ_Training(lr, epochs, data_path, save = trained, visualise=True)
 #trainer.train()
 
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh2.pt"
 
 class PixelCNN_Training():
     
@@ -114,9 +114,6 @@ class PixelCNN_Training():
         self.training_data = \
             utils.data.DataLoader(self.data, batch_size = 16, shuffle = True)
         
-        
-        
-        
        # self.loss = nn.functional.cross_entropy()
         self.save = save
         
@@ -127,17 +124,17 @@ class PixelCNN_Training():
     def train(self):
         epoch = 0
         training_loss_arr = []
-        loss = 0.0
-        total_epochs = np.linspace(0, self.epochs, self.epochs)
+
         while epoch != self.epochs:
             
             sub_step = 0
             for i, _ in self.training_data:
                 i = i.view(-1, 3, 256, 256)
                 
-                encoder = self.model.get_encoder().to(self.device)
-                VQ = self.model.get_VQ().to(self.device)
                 with torch.no_grad():
+                    encoder = self.model.get_encoder().to(self.device)
+                    VQ = self.model.get_VQ().to(self.device)
+                    decoder = self.model.get_decoder().to(self.device)
                     i = i.to(self.device)
                     encoded = encoder(i)
                     encoded = encoded.permute(0, 2, 3, 1).contiguous()
@@ -145,24 +142,20 @@ class PixelCNN_Training():
                     
                     a, b = VQ.argmin_indices(flat_encoded)
                     #print(b.shape)
-                    #a = a.view(-1, 128, 64,64).float()
+                   # a = a.view(-1, 128, 64,64).float()
                     #a = a.argmax(1)
                     #b = torch.stack((b,b,b),0)
                     #print(a.shape)
                     b = b.view(-1, 64, 64)
                     c = nn.functional.one_hot(b, num_classes = 128).float()
                     c = c.permute(0, 3, 1, 2)
+                    #print(c.shape)
                     #b = b.permute(1, 0, 2, 3).contiguous()
-                cnn_outputs = self.PixelCNN_model(c)
-                #plt.imshow(cnn_outputs.argmax(1)[0].cpu().detach().numpy())
-                
-                #print(b.shape)
-                #reset the optimizer gradients to 0 to avoid resuing prev iteration's 
-                #plt.show()               
-                #calculate reconstruction loss
-                #calculate total loss
+                prior = self.PixelCNN_model(c)
+               
                 self.optimizer.zero_grad()
-                total_loss = nn.functional.cross_entropy(cnn_outputs, b)
+       
+                total_loss = nn.functional.cross_entropy(prior, b)
                 
                 total_loss.backward()
                 self.optimizer.step()
@@ -174,11 +167,10 @@ class PixelCNN_Training():
                     )
                     
                     training_loss_arr.append(total_loss.item())
-                  #  if self.save != None:
+                    if self.save != None:
                         
-                 #       torch.save(self.PixelCNN_model.state_dict(), self.save)
-                    
-                   # gen_image(trained, save_model)
+                        torch.save(self.PixelCNN_model.state_dict(), self.save)
+                    gen_image(trained, save_model)
                     
                     #if self.visualise == True:
                      #   self.visualiser.VQVAE_discrete((0,0))
@@ -194,7 +186,7 @@ class PixelCNN_Training():
             
             torch.save(self.PixelCNN_model.state_dict(), self.save)
 
-        plt.plot(np.arange(0, self.epochs12), training_loss_arr)
+        plt.plot(np.arange(0, self.epochs), training_loss_arr)
         plt.show()
         
 def gen_image(train_path, model_path):
@@ -210,7 +202,7 @@ def gen_image(train_path, model_path):
     cnn.load_state_dict(state_dict)
     cnn.to(device)
     cnn.eval()
-    
+ 
     prior = torch.zeros((1, 128, 64, 64), device = device)
     
     _, channels, rows, cols = prior.shape
@@ -219,22 +211,18 @@ def gen_image(train_path, model_path):
             for j in range(cols):
                 # argmax removes things that is not predicted
                 out = cnn(prior).argmax(1)
-                
-                #argmax(1)
-                #convert it back into 1 hot format
-                #print(torch.multinomial(probs, 1))
+              
                 probs = nn.functional.one_hot(out, num_classes = 128
                                               ).permute(0, 3, 1, 2).contiguous()
                 
                 prior[:, :, i , j] = probs[:, :, i, j]
-                
+          
             
-    
-    #prior = prior.argmax(1)
-    #plt.imshow(prior[0].to("cpu"))
-    #plt.show()
-    #prior = nn.functional.one_hot(prior, num_classes= 128)
-    #prior = prior.permute(0, 3, 1, 2)
+    prior = prior.argmax(1)
+    plt.imshow(prior.view(64,64).to("cpu"))
+    plt.show()
+    prior = nn.functional.one_hot(prior, num_classes= 128)
+    prior = prior.permute(0, 3, 1, 2).contiguous()
     prior = prior.view(1,128,-1)
     
     prior = prior.permute(0,2,1).float()
@@ -255,8 +243,8 @@ def gen_image(train_path, model_path):
     plt.imshow(decoded_grid)
     plt.show()
         
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh2.pt"
-pixel_cnn_trainer = PixelCNN_Training(0.0005, 4, trained, path, save = save_model)
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model.pt"
+pixel_cnn_trainer = PixelCNN_Training(0.0005, 20, trained,data_path, save = save_model)
 pixel_cnn_trainer.train()
 #gen_image(trained, save_model)
 
