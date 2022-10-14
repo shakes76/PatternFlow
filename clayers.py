@@ -113,7 +113,7 @@ def fc(depth):
     # 8 layers in paper. use 6 (sgan.depth+1) instead.
     w = EqualDense(z, out_filters=LDIM)
     w = LeakyReLU(0.2)(w)
-    for _ in range(depth):
+    for _ in range(depth - 1):
         w = EqualDense(w, out_filters=LDIM)
         w = LeakyReLU(0.2)(w)
     # replicate (256,7)
