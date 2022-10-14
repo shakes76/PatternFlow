@@ -31,14 +31,14 @@ A few parameters have to be specified in `config.py`.
 | -------------       | -------------                                               |------------- 
 | CHANNELS            | Number of channels of training images (grascale or RGB).    |1
 | LDIM                | Dimension of latent vectors.                                |128
-| SRES                | Starting training resolution, 4 or 8 suggested.             |4
-| TRES                | Target training resolution, must be the power of 2.         |256
+| SRES                | Starting resolution, 4 or 8 suggested.                      |4
+| TRES                | Target resolution, must be the power of 2.                  |256
 | BSIZE               | Batch size of each resolution training.                     |(32, 32, 32, 32, 16, 8, 4)
 | FILTERS             | Number of filters of each resolution during training.       |(256, 256, 256, 256, 128, 64, 32)
 | EPOCHS              | Number of epochs to train for each resolution.              |(25, 25, 25, 25, 30, 35, 40)
-| INPUT_IMAGE_FOLDER  | Folder of training images.                                  |D:\images\ADNI_AD_NC_2D
+| INPUT_IMAGE_FOLDER  | Folder of training images.                                  |D:\ADNI_AD_NC_2D
 | NSAMPLES            | Number of images to generate for inspection during training.|25
-| OUT_ROOT            | Root folder that contains training outputs.                 |C:\output
+| OUT_ROOT            | Root folder that contains training outputs.                 |D:\output
 
 > **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
  - **ckpts** for saving checkpoints
