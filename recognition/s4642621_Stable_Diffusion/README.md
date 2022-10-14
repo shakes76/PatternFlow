@@ -1,6 +1,10 @@
 # Stable Diffusion on the ADNI dataset
 
-## Design Layout
+## ADNI Dataset Information
+The dataset used throughout the use of our stable diffusion implementation is teh ADNI MRI Dataset (2D slices) for Alzheimer’s disease. Specifically, the portion of the dataset used consists of two classes of MRI image: Alzheimer’s disease (AD) and Cognitive Normal (CN).
+
+
+## Project File Structure
 
 `imports.py` contains the basic imports requried throughout our implementation.
 
@@ -34,9 +38,18 @@ It is important to note that our implementation does not include "conditioning",
 
 Hence, our implementation is more aligned with the "original" latent diffusion paper https://arxiv.org/abs/2006.11239 (which likewise does not implement "conditioning" or "crossattention"), as reference in the Stable Diffusion paper.
 
+Overall, our model hence consists of a regular UNet with positional embedding taken into consideration. Our model works in the latent space, with our input/output being recieved/given to the UNet via a simple diffusion process (as per the original paper/diagram above).
+
 ## Training
 
-Throughout training, we implemented F1 loss via `torch.nn.functional.l1_loss`.
+Throughout training, we implemented L1 loss via `torch.nn.functional.l1_loss`. Our loss function allows the neural network to learn/predict the added noise in each step of the diffusion process. This simple process was achieved through the following code snippet.
+
+```python
+x_batch_sample, noise = forward_diffusion(x_0, t)
+noise_prediction = model(x_batch_sample, t)
+return F.l1_loss(noise, noise_prediction)
+```
+
 Shown below is the generated loss curve, training for 50 epochs total.
 
 ![Training Loss graph](images/loss_curve.png)

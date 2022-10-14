@@ -13,6 +13,7 @@ def beta_schedule(timesteps):
     return torch.linspace(beta_start, beta_end, timesteps)
 
 # Define useful CONSTANTS
+# all as defined per the original paper
 TIMESTEPS = 1000
 BETAS = beta_schedule(TIMESTEPS)
 ALPHAS = 1. - BETAS
@@ -35,7 +36,7 @@ def extract(a, t, x_shape):
     return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(t.device)
 
 """
-Simulates forward diffusion
+Simulates one step of the forward diffusion process
 
 Taken from the original paper, also as described in the author's blog post:
 https://huggingface.co/blog/annotated-diffusion
@@ -85,7 +86,7 @@ class Block(nn.Module):
         self.relu   = nn.ReLU()
 
     def forward(self, x, t):
-        # conv x
+        # convolution
         x = self.conv1(x)
         x = self.bnorm1(x)
         x = self.relu(x)
@@ -114,6 +115,7 @@ class EncoderBlock(nn.Module):
 
     def forward(self, x, t):
         x = self.conv(x, t)
+        # keep track of the skip connection
         skip = x.clone()
         x = self.pool(x)
         return x, skip
@@ -129,8 +131,9 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x, t, skip):
         x = self.up(x)
+        # concatenate the skip connection after the upsample
         x = torch.cat([x, skip], axis=1)
-        x = self.block.forward(x, t)
+        x = self.block(x, t)
         return x
 
 """
@@ -140,7 +143,7 @@ class UNet(nn.Module):
     def __init__(self):
         super().__init__()
 
-        # useful information
+        # the down/up channels used
         down_channels = (1, 64, 128, 256, 512)
         up_channels =   (1024, 512, 256, 128, 64)
 

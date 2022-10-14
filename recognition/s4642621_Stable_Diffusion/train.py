@@ -9,25 +9,25 @@ Train the model, and regularly save and plot the respective losses
 """
 def train(trainloader, valloader):
     model = UNet()
+    # set our model to use a GPU whenever possible
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f'Device: {device}')
     model.to(device)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     epochs = 51
 
+    # keep track of training and validation losses
     loss_vals = []
     val_vals  = []
 
     for epoch in range(epochs):
         model.train(True)
         running_loss = 0.0
-
         for index, batch in tqdm(enumerate(trainloader), total=len(trainloader)):
             batch = batch.to(device)
             optimizer.zero_grad()
 
-            # sample t uniformally for every image in the batch
+            # sample t uniformally
             t = torch.randint(0, TIMESTEPS, (1,), device=device).long()
 
             loss = get_loss(model, batch, t)
@@ -40,8 +40,8 @@ def train(trainloader, valloader):
         loss_vals.append(running_loss / len(trainloader))
         val_vals.append(validate(model, valloader))
 
-        # save model and update loss figure every 5 epochs
-        if (epoch+1) % 10 == 0:
+        # save model and update loss figure every 10 epochs
+        if epoch % 10 == 0:
             torch.save(model, "DiffusionModel" + str(epoch))
 
             # create loss graph

@@ -5,9 +5,11 @@ from modules import *
 import matplotlib.animation as animation
 plt.style.use('ggplot')
 
-
 """
 Return a slightly less denoised copy of a given image via our UNet network
+
+Taken from original paper, as provided in the author's blog post:
+https://huggingface.co/blog/annotated-diffusion
 """
 @torch.no_grad()
 def reverse_diffusion_step(model, x, t, t_index):
@@ -15,7 +17,7 @@ def reverse_diffusion_step(model, x, t, t_index):
     sqrt_one_minus_alphas_cumprod_t = extract(SQRT_ONE_MINUS_ALPHAS_CUML_PRODUCT, t, x.shape)
     sqrt_recip_alphas_t = extract(SQRT_RECIP_ALPHAS, t, x.shape)
     
-    # use model to predict the mean
+    # use our model to predict the mean
     model_mean = sqrt_recip_alphas_t * (x - betas_t * model(x, t) / sqrt_one_minus_alphas_cumprod_t)
 
     if t_index == 0:
@@ -96,9 +98,10 @@ def reverse_diffusion(model, plot, shape=(1, 1, 256, 256)):
 if __name__ == "__main__":
     model = torch.load("DiffusionModel")  # replace "DiffusionModel" with the path to the trained model
     """
-    Predict options include:
+    Predict options (i.e. the "plot" argument of the below line) include:
     -> 'plot_diffusion_process'
     -> 'image_grid'
     -> 'image_gif'
+    Examples of each option are shown in README.md
     """
     reverse_diffusion(model, plot="image_gif")
