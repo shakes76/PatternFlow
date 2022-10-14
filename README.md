@@ -26,6 +26,11 @@ This implementation consists of 6 python files,
 ## How to train?
 ### Before training
 A few parameters have to be specified in `config.py`.
+> **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
+ - **ckpts** for saving checkpoints
+ - **images** for saving progressive images
+ - **log** for saving los loss files
+ - **models** for saving model plots
 
 | Variable            | Description                                                 | Example
 | -------------       | -------------                                               |------------- 
@@ -38,13 +43,10 @@ A few parameters have to be specified in `config.py`.
 | EPOCHS              | Number of epochs to train for each resolution.              |(25, 25, 25, 25, 30, 35, 40)
 | INPUT_IMAGE_FOLDER  | Folder of training images.                                  |D:\images\ADNI_AD_NC_2D
 | NSAMPLES            | Number of images to generate for inspection during training.|25
-| IMAGE_DIR           | Directory of generated images during training.              |C:\output
-| MODEL_DIR           | Directory of plotted models during training.                |C:\output\images
-| CKPTS_DIR           | Directory of to save checkpoints.                           |C:\output\models
-| LOG_DIR             | Directory to save output loss logs.                         |C:\output\logs
+| OUT_ROOT            | Root folder that contains training outputs.                 |C:\output
 
 ### Start training
-Training can be run by simply nevigating to the project folder and executing `python train.py`.
+Training can be run by simply nevigating to the project root folder and executing **`python train.py`**.
 
 ### During training
 `NSAMPLES` sample images will be generated after each epoch under the folder `IMAGE_DIR` as configured in `config.py`. 4 model plots, fade-in discrimator, stabilized discriminator, fade-in generator, stabilized generator will be generated in `MODEL_DIR` for each resolution training. Weights will be saved in `CKPTS_DIR` after each resolution training.
@@ -65,8 +67,8 @@ The structure of the model is given below.
 A few points to note,
  - Dimension of latent vector z is 512.
  - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
- - latent vector is passed through fully connected layers to generate w (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L30) and [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L196)).
- - Number of fully connected layer is 8, w and z have the same dimension.
+ - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L30) and [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L196)).
+ - Number of fully connected layers is 8, w and z have the same dimension.
  - Input of 'Synthesis network' is constant (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L186)).
  - A noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L130)).
  - AdaIN (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/645897586b76a0b96dc23ec2ddb7ac442f33d445/clayers.py#L66)) takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
