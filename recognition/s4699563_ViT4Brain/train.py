@@ -4,6 +4,7 @@ import torch.nn as nn
 from tqdm import tqdm
 
 def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, writer,device):
+    best_acc=0
     for epoch in range(epochs):
 
         # ---------- Training ----------
@@ -56,3 +57,91 @@ def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, wr
         train_acc=sum(train_accs) / len(train_accs)
         writer.add_scalar('Loss/train', train_loss, epoch)
         writer.add_scalar('Accuracy/train',train_acc, epoch)
+
+
+        model.eval()
+
+        # These are used to record information in validation.
+        valid_loss=[]
+        valid_accs=[]
+
+        # Iterate the validation set by batches.
+        for batch in tqdm(val_loader):
+
+            # A batch consists of image data and corresponding labels.
+            imgs, labels=batch
+            # print(imgs.shape)
+            # imgs = imgs.half()
+
+            # We don't need gradient in validation.
+            # Using torch.no_grad() accelerates the forward process.
+            with torch.no_grad():
+                logits=model(imgs.to(device))
+
+            # We can still compute the loss (but not the gradient).
+            loss=criterion(logits, labels.to(device))
+
+            # Compute the accuracy for current batch.
+            acc=(logits.argmax(dim=-1) == labels.to(device)).float().mean()
+
+            # Record the loss and accuracy.
+            valid_loss.append(loss.item())
+            valid_accs.append(acc)
+            # break
+
+        # The average loss and accuracy for entire validation set is the average of the recorded values.
+        valid_loss=sum(valid_loss) / len(valid_loss)
+        valid_acc=sum(valid_accs) / len(valid_accs)
+        writer.add_scalar('Loss/val', valid_loss, epoch)
+        writer.add_scalar('Accuracy/val',valid_acc, epoch)
+
+        # Print the information.
+        print(
+            f"[ Valid | {epoch + 1:03d}/{epoch:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
+
+        # save models
+        if valid_acc > best_acc:
+            print(
+                f"Best model found at epoch {epoch}, saving model, pretrained_model.ckpt")
+            # only save best to prevent output memory exceed error
+            torch.save(model.state_dict(), "pretrained_model.ckpt")
+            best_acc=valid_acc
+
+
+def test(model, test_loader,device):
+    """Predict the labels of the test data.
+    Args:
+        model: The model to be used for prediction.
+        test_loader: The test data loader.
+    Returns:
+        The predicted labels.
+    """
+    test_accs=[]
+    # Iterate the testset by batches.
+    for batch in tqdm(test_loader):
+
+        # A batch consists of image data and corresponding labels.
+        imgs, labels=batch
+        # print(imgs.shape)
+        # imgs = imgs.half()
+
+        # We don't need gradient in validation.
+        # Using torch.no_grad() accelerates the forward process.
+        with torch.no_grad():
+            logits=model(imgs.to(device))
+
+        # We can still compute the loss (but not the gradient).
+
+        # Compute the accuracy for current batch.
+        acc=(logits.argmax(dim=-1) == labels.to(device)).float().mean()
+
+        # Record the loss and accuracy.
+        test_accs.append(acc)
+        # break
+
+    # The average loss and accuracy for entire validation set is the average of the recorded values.
+    valid_acc=sum(test_accs) / len(test_accs)
+
+    # Print the information.
+    print(
+        f"[ Test ] acc = {valid_acc:.5f}")

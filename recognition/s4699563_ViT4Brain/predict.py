@@ -1,40 +1,24 @@
 import torch
+import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
-def predict(model, test_loader,device):
-    """Predict the labels of the test data.
+
+def predict(model, test_loader, device):
+    """Predict the labels for the test set.
+
     Args:
-        model: The model to be used for prediction.
-        test_loader: The test data loader.
+        model (nn.Module): The model to be evaluated.
+        test_loader (DataLoader): The test set dataloader.
+        device (str): The device to be used for training.
+
     Returns:
-        The predicted labels.
+        list: The predicted labels for the test set.
     """
-    valid_accs=[]
-    # Iterate the testset by batches.
+    model.eval()
+    predictions = []
     for batch in tqdm(test_loader):
-
-        # A batch consists of image data and corresponding labels.
-        imgs, labels=batch
-        # print(imgs.shape)
-        # imgs = imgs.half()
-
-        # We don't need gradient in validation.
-        # Using torch.no_grad() accelerates the forward process.
+        images, labels = batch
         with torch.no_grad():
-            logits=model(imgs.to(device))
-
-        # We can still compute the loss (but not the gradient).
-
-        # Compute the accuracy for current batch.
-        acc=(logits.argmax(dim=-1) == labels.to(device)).float().mean()
-
-        # Record the loss and accuracy.
-        valid_accs.append(acc)
-        # break
-
-    # The average loss and accuracy for entire validation set is the average of the recorded values.
-    valid_acc=sum(valid_accs) / len(valid_accs)
-
-    # Print the information.
-    print(
-        f"[ Test ] acc = {valid_acc:.5f}")
+            logits = model(images.to(device))
+        predictions.append(logits.argmax(dim=-1).cpu().numpy())
+    print("pred:",predictions,"\nlabels:",labels)

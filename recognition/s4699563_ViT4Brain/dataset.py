@@ -31,6 +31,8 @@ class BrainDataset(Dataset):
                 self.NC_files[8880:]
         elif split == 'test':
             self.files = self.AD_files+self.NC_files
+        elif split == 'pred':
+            self.files = self.AD_files[:5]+self.NC_files[:5]
         if files != None:
             self.files = files
         # print(f"One {path} sample",self.files[0])

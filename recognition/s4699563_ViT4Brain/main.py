@@ -15,7 +15,7 @@ from torch.utils.data import  DataLoader
 
 from dataset import BrainDataset
 from modules import Classifier
-from train import train
+from train import train,test
 from predict import predict
 
 
@@ -34,6 +34,7 @@ parser.add_argument('--depth', type=int, default=8, help='depth of the network')
 parser.add_argument('--heads', type=int, default=12,help='number of heads in the multihead attention')
 parser.add_argument('--epochs', type=int, default=200,help='number of epochs to train')
 parser.add_argument('--mlp_dim', type=int, default=512,help='dimension of the mlp on top of the attention block')
+parser.add_argument('--mode', type=str, default='train',help='dropout rate')
 opt = parser.parse_args()
 
 
@@ -56,31 +57,40 @@ batch_size = 64
 _dataset_dir = "./datasets/AD_NC/"
 
 
-train_set = BrainDataset(os.path.join(
-    _dataset_dir, "train"), tfm=train_tfm, split='train')
-train_loader = DataLoader(
-    train_set, batch_size=batch_size, shuffle=True, pin_memory=True)
 
-val_set = BrainDataset(os.path.join(
-    _dataset_dir, "train"), tfm=test_tfm, split='val')
-val_loader = DataLoader(
-    val_set, batch_size=batch_size, shuffle=True, pin_memory=True)
-
-test_set=BrainDataset(os.path.join(_dataset_dir, "test"), tfm=test_tfm)
-test_loader=DataLoader(test_set, batch_size=batch_size,
-                         shuffle=True, pin_memory=True)
 
 
 
 device="cuda" if torch.cuda.is_available() else "cpu"
-model = Classifier().to(device)
 
 
+if opt.mode == 'train':
+    model = Classifier().to(device)
 
-criterion=nn.CrossEntropyLoss()
-optimizer=torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-5)
-scheduler=torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    optimizer, T_0=16, T_mult=1)
+    criterion=nn.CrossEntropyLoss()
+    optimizer=torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-5)
+    scheduler=torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=16, T_mult=1)
 
-train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs=opt.epochs, writer=writer,device=device)
-predict(model,test_loader,device=device)
+    train_set = BrainDataset(os.path.join(
+    _dataset_dir, "train"), tfm=train_tfm, split='train')
+    train_loader = DataLoader(
+        train_set, batch_size=batch_size, shuffle=True, pin_memory=True)
+
+    val_set = BrainDataset(os.path.join(
+        _dataset_dir, "train"), tfm=test_tfm, split='val')
+    val_loader = DataLoader(
+        val_set, batch_size=batch_size, shuffle=True, pin_memory=True)
+
+    test_set=BrainDataset(os.path.join(_dataset_dir, "test"), tfm=test_tfm)
+    test_loader=DataLoader(test_set, batch_size=batch_size,
+                            shuffle=True, pin_memory=True)
+    train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs=opt.epochs, writer=writer,device=device)
+    test(model,test_loader,device=device)
+elif opt.mode=='pred':
+    model = Classifier().to(device)
+    model.load_state_dict(torch.load('./pretrained_model.ckpt'))
+    pred_set=BrainDataset(os.path.join(_dataset_dir, "test"), tfm=test_tfm,split='pred')
+    pred_loader=DataLoader(pred_set, batch_size=batch_size,
+                         shuffle=True, pin_memory=True)
+    predict(model,pred_loader,device=device)
