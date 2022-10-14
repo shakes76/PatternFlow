@@ -62,7 +62,7 @@ My model is built based on [<ins>Progressive Growing GAN</ins>](https://arxiv.or
 The structure of the model is given below.
 
 <p align="center">
-    <img src="asset/StyleGAN_Structure.jpg" width="400">
+    <kbd><img src="asset/StyleGAN_Structure.jpg" width="450"></dbd>
 </p>
 
 A few points to note,
