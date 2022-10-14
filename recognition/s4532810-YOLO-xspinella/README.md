@@ -182,16 +182,22 @@ Straight away, this raises a few issues:
 - The validation classification loss seems to be very noisey, but has an increasing trend for seemingly the entire training session.
 
 After conducting some research into the matter, it appears that this is generally due to a lack of data - documentation mentions that the dataset should have at least 10000 labelled objects per class (https://docs.ultralytics.com/tutorials/training-tips-best-results/), however, as shown by the below graph, the ISIC dataset has considerably less than this:
+
 ![image](https://user-images.githubusercontent.com/32262943/195752043-48c03638-40e1-49af-8c71-6a682955353f.png)
 
 After running the model on train.py's test mode (3), the following results were produced:
 
-[INSERT mAP, avg IOU, classification loss here]
+![image](https://user-images.githubusercontent.com/32262943/195755190-5a6ba9bc-a8b8-40b1-b3ce-6e011a89e1e4.png)
+![image](https://user-images.githubusercontent.com/32262943/195755278-2115333b-0154-44f7-a6a2-c74af10f7ab2.png)
 
-
-- mAP0.5:0.95 not as high as it should be for yolov5m -> should be 45.2, but is ___
+This reveals the following problems:
+- mAP0.5:0.95 not as high as it should be for yolov5m -> should be 45.2, but is 38.9
 - The average IOU is not at the satisfactory level of 0.8
-- [SOMETHING ABOUT CLASSIFICATION]
+
+An interesting observation here is that the classification accuracy is above the acceptable value of 0.8, even though the classification loss during training is very noisey and increasing. One possible reason for this is the way I have defined the computation of classification accuracy. if any of the following cases ocurr when an image is passed to the model:
+- The model does not detect an object in the image (no box drawn).
+- The model detects more than one object in the image.
+This image is no longer considered in the classification calculation, since these ocurrences are the fault of the model's box detection, thus the classification accuracy should not be penalised. As 
 
 [WHAT DOES THIS MEAN/WHAT CAUSED IT]
 
