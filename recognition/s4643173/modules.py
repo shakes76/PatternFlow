@@ -9,9 +9,9 @@ class Embedding(nn.Module):
         self.embedding = nn.Embedding(K, D)
         self.embedding.weight.data.uniform_(-1./K, 1./K)
 
-    def forward(self, z_e_x):
+    def forward(self, x):
         # Reshape inputs from BCHW to BHWC
-        x = z_e_x.permute(0, 2, 3, 1).contiguous()
+        x = x.permute(0, 2, 3, 1).contiguous()
         x_shape = x.shape
 
         flat_x = x.view(-1, self.embedding.weight.size(0))
@@ -37,3 +37,18 @@ class Embedding(nn.Module):
         quantized = x + (quantized - x).detach()
 
         return vq_loss + 1.0 * commit_loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices.squeeze()
+
+class ResBlock(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.ReLU(True),
+            nn.Conv2d(channels, channels, 3, 1, 1),
+            nn.BatchNorm2d(channels),
+            nn.ReLU(True),
+            nn.Conv2d(channels, channels, 1),
+            nn.BatchNorm2d(channels)
+        )
+
+    def forward(self, x):
+        return x + self.net(x)
