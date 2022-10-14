@@ -43,7 +43,7 @@ def Draw_Box(img_fp: str, box_spec: list, out_fp: str):
     colour = colours[class_id] 
 
     ### redefine box location in cv2 format, un-normalise co-ords ###
-    # This box format appears to be: [mid of left edge, mid of top edge, width, height]
+    # This box format appears to be: [left edge, top edge, width, height]
     box = [int((c_x - 0.5*w)* width), int((c_y - 0.5*h) * height), int(w*width), int(h*height)]
     cv2.rectangle(img, box, color=colour)   # bounding box
     cv2.rectangle(img, (box[0], box[1] - 20), (box[0] + box[2], box[1]), colour, -1)    # label box 

@@ -75,7 +75,6 @@ def train():
     if yolo_model not in ['n', 's', 'm', 'l', 'x']:
         print("Invalid model")
         return 0
-        
     os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml \
         --weights yolov5{yolo_model}.pt")
 
