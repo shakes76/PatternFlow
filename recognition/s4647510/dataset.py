@@ -10,7 +10,7 @@ def preprocess(img):
     return img
 
 def load_data():
-    batch_size = 32
+    batch_size = 8
     img_path = "images"
 
     data_train = []
