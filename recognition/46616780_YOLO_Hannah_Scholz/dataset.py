@@ -7,6 +7,8 @@ from PIL import Image as im
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 
+import csv
+
 import cv2
 
 IMAGE_SIZE = 640
@@ -18,6 +20,10 @@ TRAINING_DATA_PATH = "Datasets/Training/training_data/"
 VALIDATION_MASK_PATH = "Datasets/Validation/validation_mask/"
 TESTING_MASK_PATH = "Datasets/Testing/testing_mask/"
 TRAINING_MASK_PATH = "Datasets/Training/training_mask/"
+
+VALIDATION_MASK_CSV_FILE = "Datasets/Validation/validation_mask.csv"
+TESTING_MASK_CSV_FILE = "Datasets/Testing/testing_mask.csv"
+TRAINING_MASK_CSV_FILE = "Datasets/Training/training_mask.csv"
 
 
 def load_resize_images(image_path):
@@ -36,7 +42,7 @@ def load_resize_images(image_path):
 
 
 
-def save_bounding_box_images(image_path):
+def save_bounding_box_images(image_path, csv_path):
     file_names = listdir(image_path)
 
     for filename in file_names:
@@ -52,8 +58,23 @@ def save_bounding_box_images(image_path):
             # Determine the one hot encoding as either melanoma or not
             # using first column of .csv file validation_mask.csv
             # And save as a txt file
-
             bounding_box_info = generate_bounding_box(img)
+
+            # open the csv file
+            file = open(csv_path)
+            csvreader = csv.reader(file)
+
+            header = []
+            header = next(csvreader)
+            print(header)
+
+            # check that the name of the image is same and name the text file by this name
+            # get second column
+
+
+            # make sure when putting data in YOLO folder that follow specific order
+
+
 
             # Bounding box width:
             bounding_width = bounding_box_info[2] * 640
@@ -131,9 +152,9 @@ def main():
     load_resize_images(TESTING_MASK_PATH)
     load_resize_images(TRAINING_DATA_PATH)
 
-    save_bounding_box_images(VALIDATION_MASK_PATH)
-    save_bounding_box_images(TESTING_MASK_PATH)
-    save_bounding_box_images(TRAINING_DATA_PATH)
+    save_bounding_box_images(VALIDATION_MASK_PATH, VALIDATION_MASK_CSV_PATH)
+    save_bounding_box_images(TESTING_MASK_PATH, TESTING_MASK_CSV_PATH)
+    save_bounding_box_images(TRAINING_DATA_PATH, TRAINING_MASK_CSV_PATH)
 
 
 
