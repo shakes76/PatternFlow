@@ -1,6 +1,5 @@
 # config file
 
-import os
 
 # model params
 CHANNELS = 1                                          # 1:graysale 3:rgb
