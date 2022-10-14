@@ -77,7 +77,7 @@ A few points to note,
 ### Model Variations
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
 
-<center>
+<p align="center">
 
 |                             | My Model                                   | Original Model
 | -------------               | -------------                              |------------- 
@@ -88,7 +88,7 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 | Number of FC layers         | depth of model (6)                         | 8
 | Upsampling method          | Upsample2D                                 | Bilinear
 
-</center>
+</p>
 
 ## Result
 This is the result.
