@@ -52,3 +52,35 @@ class ResBlock(nn.Module):
 
     def forward(self, x):
         return x + self.net(x)
+
+
+class Encoder(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, 4, 2, 1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(True),
+            nn.Conv2d(out_channels, out_channels // 2, 4, 2, 1),
+            ResBlock(out_channels),
+            ResBlock(out_channels),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class Decoder(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        self.net = nn.Sequential(
+            ResBlock(in_channels // 2),
+            ResBlock(in_channels // 2),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(in_channels // 2, in_channels, 4, 2, 1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(in_channels, out_channels, 4, 2, 1),
+            nn.Tanh()
+        )
+
+    def forward(self, x):
+        return self.net(x)
