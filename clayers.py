@@ -108,7 +108,7 @@ class AddNoise(Layer):
         return x + self.b * B
 
 # z-> w FC
-def mapping(depth=8):
+def fc(depth):
     z = Input(shape=(LDIM), name='z')
     # 8 layers in paper. use 6 (sgan.depth+1) instead.
     w = EqualDense(z, out_filters=LDIM)

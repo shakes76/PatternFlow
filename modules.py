@@ -17,7 +17,7 @@ class StyleGAN(Model):
         super(StyleGAN, self).__init__()
         self.DEPTH = int(np.log2(TRES) - np.log2(SRES))  # training depth
         self.current_depth = 0                           # current training depth
-        self.FC = custom_layers.mapping()                # FC net
+        self.FC = custom_layers.fc(self.DEPTH)      # FC net
         self.G = self.init_G()                           # generator
         self.D = self.init_D()                           # discriminator
     
@@ -26,18 +26,6 @@ class StyleGAN(Model):
         self.d_optimizer = d_optimizer
         self.g_optimizer = g_optimizer
         
-    # fully connected layers. z->w.
-    def mapping(self):
-        z = Input(shape=(LDIM))
-        # 8 layers in paper. use 6 instead.
-        w = custom_layers.EqualDense(z, out_filters=LDIM)
-        w = LeakyReLU(0.2)(w)
-        for _ in range(self.DEPTH-1):
-            w = custom_layers.EqualDense(w, out_filters=LDIM)
-            w = LeakyReLU(0.2)(w)
-        # replicate (256,7)
-        w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) 
-        return Model(z, w)
 
     def init_D(self):
         image = Input(shape=(SRES, SRES, CHANNELS))
