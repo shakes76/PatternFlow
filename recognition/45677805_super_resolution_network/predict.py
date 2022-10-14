@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 def loadModel_from_path(has_model):
     model = get_model()
     if(has_model):
-        model.load_weights("G:/Australia/academic/UQ/2022 s2/comp 3710/A3/s4567780 Problem 5  super-resolution network/PatternFlow/recognition/45677805_super_resolution_network/model/modeH5_265.h5")
+        model.load_weights("model\modeH5_265.h5")
     return model
 
 
