@@ -26,11 +26,6 @@ This implementation consists of 6 python files,
 ## How to train?
 ### Before training
 A few parameters have to be specified in `config.py`.
-> **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
- - **ckpts** for saving checkpoints
- - **images** for saving progressive images
- - **log** for saving los loss files
- - **models** for saving model plots
 
 | Variable            | Description                                                 | Example
 | -------------       | -------------                                               |------------- 
@@ -44,6 +39,12 @@ A few parameters have to be specified in `config.py`.
 | INPUT_IMAGE_FOLDER  | Folder of training images.                                  |D:\images\ADNI_AD_NC_2D
 | NSAMPLES            | Number of images to generate for inspection during training.|25
 | OUT_ROOT            | Root folder that contains training outputs.                 |C:\output
+
+> **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
+ - **ckpts** for saving checkpoints
+ - **images** for saving progressive images
+ - **log** for saving los loss files
+ - **models** for saving model plots
 
 ### Start training
 Training can be run by simply nevigating to the project root folder and executing **`python train.py`**.

@@ -56,7 +56,10 @@ def main():
     plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{SRES}x{SRES}_d_base.png'), rankdir='LR')
 
     # callbacks
-    sampling_cbk = SamplingCallBack(output_img_folder=subfolders['images'], output_ckpts_folder=CKPTS_DIR)
+    sampling_cbk = SamplingCallBack(
+        output_img_res=(260, 228),
+        output_img_folder=subfolders['images'], 
+        output_ckpts_folder=subfolders['ckpts'])
     fade_in_cbk = FadeInCallBack()
 
     # train initial models

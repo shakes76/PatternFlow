@@ -205,14 +205,14 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
     def __init__(
         self,
         output_num_img = NSAMPLES,        # number of output images
-        output_img_res = 256,             # output image resolution/size
+        output_img_res = (256, 256),             # output image resolution/size
         output_img_folder = '',           # output image folder
         output_ckpts_folder = '',         # checkpoints foler
         is_rgb = CHANNELS > 1,            # is output image rgb?
         seed = 3710                       # seed for z
     ):
         self.output_num_img = output_num_img          
-        self.output_img_dim = output_img_res          
+        self.output_img_res = output_img_res          
         self.output_img_mode = 'RGB' if is_rgb else 'L'
         self.output_img_folder = output_img_folder     
         self.output_ckpts_folder = output_ckpts_folder 
@@ -230,20 +230,21 @@ class SamplingCallBack(tf.keras.callbacks.Callback):
         ws = sgan.FC(z)
         inputs = [const]
         for i in range(sgan.current_depth+1):
-            w = ws[:, i]
+            n_w = ws[:, i]
             B = tf.random.normal((self.output_num_img, SRES*(2**i), SRES*(2**i), 1))
-            inputs += [w, B]
+            inputs += [n_w, B]
 
         # generate
         samples = sgan.G(inputs)
 
         # save
-        w = h = int(np.sqrt(self.output_num_img))
-        combined_image = Image.new(self.output_img_mode, (self.output_img_dim * w, self.output_img_dim * h))
+        w, h = self.output_img_res
+        n_w = n_h = int(np.sqrt(self.output_num_img))
+        combined_image = Image.new(self.output_img_mode, (w * n_w, h * n_h))
         for i in range(self.output_num_img):
             image = tf.keras.preprocessing.image.array_to_img(samples[i])
-            image = image.resize((self.output_img_dim, self.output_img_dim))
-            combined_image.paste(image, (i % w * self.output_img_dim, i // h * self.output_img_dim))
+            image = image.resize(self.output_img_res)
+            combined_image.paste(image, (i % n_w * w, i // n_h * h))
         path = os.path.join(self.output_img_folder, f'{self.prefix}_{epoch+1:02d}.png')
         combined_image.save(path)
         print(f'\n{self.output_num_img} progress images saved: {path}')
