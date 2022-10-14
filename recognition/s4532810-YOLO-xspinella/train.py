@@ -83,7 +83,8 @@ def test():
     Runs the trained YOLOv5 model on the test dataset, and saves results to
     runs/val/exp_
     I've already run training and reccommend the weights at this path:
-            yolov5_LC/runs/train/exp2/weights/best.pt    
+            yolov5_LC/runs/train/exp2/weights/best.pt  
+            /home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp1/v5m_exp1_train/weights/best.pt  
     """
     ### Test on test set ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
