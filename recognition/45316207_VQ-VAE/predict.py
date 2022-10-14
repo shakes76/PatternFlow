@@ -4,7 +4,7 @@ predict.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Shows example usage of your trained model. Print out any results and / or provide visualisations where applicable
+Shows example usage of the trained model with visualisations of it's output results
 
 """
 

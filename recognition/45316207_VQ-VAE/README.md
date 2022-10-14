@@ -1,8 +1,7 @@
-# Synthetic Brain MRI Image Generation with VQ-VAE
+# Synthetic Brain MRI Image Generation with VQ-VAE (COMP3710)
 
-## COMP3710 Pattern Flow Report
 
-by Alex Nicholson (45316207)
+by Alex Nicholson, 45316207
 
 ---
 
@@ -23,14 +22,31 @@ Goals:
 
 ---
 
-## Setup
+## Usage Guide
 
-**List any dependencies required, including versions and address reproduciblility of results, if applicable.**
+### Installation
 
-1. Install the conda envirinoment...
-2. Download the OASIS dataset from [this link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download)
-3. Activate the conda environment
-4. Run train.py
+1. Install Anaconda
+2. Create a clean conda environment and activate it
+3. Install all of the required packages (see dependancy list below)
+4. Download the OASIS dataset from [this link](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download)
+
+### Usage
+
+* Run `python train.py` to train the model
+* Run `python predict.py` to test out the trained model
+
+### Dependancies
+
+The following dependancies were used in the project:
+
+* tensorflow (version 2.9.2)
+* tensorflow_probability (version 0.17.0)
+* numpy (version 1.23.3)
+* matplotlib (version 3.5.1)
+* PIL / pillow (version 9.1.0)
+* imageio (version 2.22.1)
+* skimage (version 0.19.3)
 
 ---
 
@@ -39,12 +55,7 @@ Goals:
 **Describe any specific pre-processing you have used with references if any.**
 
 **Justify your training, validation and testing splits of the data.**
-The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up X%, Y%, and Z% respectively. This is in line with good standard practice for dataset partitioning...
-
-Train: 9664
-Validate: 1120
-
-Test: 544
+The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up 85%, 10%, and 5% respectively (total 11,328 images in dataset). This is in line with good standard practice for dataset partitioning...
 
 ---
 
@@ -83,18 +94,4 @@ In addition to statistical losses, a more real world metric to track the quality
 
 ---
 
-## TODO
-
-- [x] Data importing
-- [x] Model class
-- [x] Model basic training function
-- [x] Live training performance data logging
-- [x] Output image results visualisation
-- [x] Implement saving of output images to file
-- [ ] Save images during training to show the progress
-- [x] Training metrics over time plot
-- [x] SSIM performance calculation
-- [ ] Port my code over to the hpc for speedy slurm training
-- [x] Do a big training run to push the standrard of output generations
-- [x] Tune hyperparameters until results meet the standard
-- [ ] Report writeup, etc.
+<center>Made with ❤️</center>

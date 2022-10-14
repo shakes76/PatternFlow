@@ -4,7 +4,7 @@ utils.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains extra utility functions to help with this like results visualisation and saved model loading
+Contains extra utility functions to help with things like plotting visualisations and ssim calculation
 
 """
 

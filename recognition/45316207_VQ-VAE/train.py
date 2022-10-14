@@ -4,7 +4,7 @@ train.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains the source code for training, validating, testing and saving your model. The model should be imported from “modules.py” and the data loader should be imported from “dataset.py”. Make sure to plot the losses and metrics during training.
+Contains the source code for training, validating, testing and saving your model. The model is imported from “modules.py” and the data loader is imported from “dataset.py”. Losses and metrics are plotted throughout training.
 
 """
 

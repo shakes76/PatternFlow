@@ -4,7 +4,7 @@ dataset.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains the data loader for loading and preprocessing your data
+Contains the data loader for loading and preprocessing the OASIS data
 
 """
 

@@ -4,7 +4,7 @@ modules.py
 Alex Nicholson (45316207)
 11/10/2022
 
-Contains all the source code of the components of the VQ-VAE model as well as a function to build and get the full model
+Contains all the source code of the components of the VQ-VAE model as well as a function to build and return the full model
 
 """
 
@@ -14,9 +14,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_probability as tfp
-
-
-INPUT_IMAGE_WIDTH = 256 # was 28
 
 
 class VectorQuantizer(layers.Layer):
@@ -63,8 +60,7 @@ class VectorQuantizer(layers.Layer):
                 quantized (Tensorflow Tensor): The quantised version of the input vector???
         """
 
-        # Calculate the input shape of the inputs and
-        # then flatten the inputs keeping `embedding_dim` intact.
+        # Calculate the input shape of the inputs and then flatten the inputs keeping `embedding_dim` intact.
         input_shape = tf.shape(x)
         flattened = tf.reshape(x, [-1, self.embedding_dim])
 
@@ -76,10 +72,7 @@ class VectorQuantizer(layers.Layer):
         # Reshape the quantized values back to the original input shape
         quantized = tf.reshape(quantized, input_shape)
 
-        # Calculate vector quantization loss and add that to the layer. You can learn more
-        # about adding losses to different layers here:
-        # https://keras.io/guides/making_new_layers_and_models_via_subclassing/. Check
-        # the original paper to get a handle on the formulation of the loss function.
+        # Calculate vector quantization loss and add that to the layer
         commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
         self.add_loss(self.beta * commitment_loss + codebook_loss)
@@ -125,7 +118,7 @@ def get_encoder(latent_dim=16):
             encoder (Keras Model): The encoder module for the VQ-VAE
     """
 
-    encoder_inputs = keras.Input(shape=(INPUT_IMAGE_WIDTH, INPUT_IMAGE_WIDTH, 1))
+    encoder_inputs = keras.Input(shape=(256, 256, 1))
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
         encoder_inputs
     )
@@ -171,7 +164,7 @@ def get_vqvae(latent_dim=16, num_embeddings=64):
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = get_encoder(latent_dim)
     decoder = get_decoder(latent_dim)
-    inputs = keras.Input(shape=(INPUT_IMAGE_WIDTH, INPUT_IMAGE_WIDTH, 1))
+    inputs = keras.Input(shape=(256, 256, 1))
     encoder_outputs = encoder(inputs)
     quantized_latents = vq_layer(encoder_outputs)
     reconstructions = decoder(quantized_latents)
