@@ -30,14 +30,34 @@ class PixelConvLayer(tf.keras.layers.Layer):
         return self.conv(inputs)
 
 def get_pixel_cnn(kernel_size, input_shape):
-    inputs = tf.keras.Input(shape=input_shape, dtype=tf.float64)
-    #onehot = tf.one_hot(inputs, num_embeddings)
+    inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
+    onehot = tf.one_hot(inputs, num_embeddings)
     x = PixelConvLayer(
         mask_type="A",
-        filters=128,
+        filters=32,
         kernel_size=kernel_size,
         activation="relu",
-        padding="same")(inputs)
+        padding="same")(onehot)
+    
+    for _ in range(2):
+        y = tf.keras.layers.Conv2D(
+            filters=32,
+            kernel_size=1,
+            activation="relu"
+        )(x)
+        y = PixelConvLayer(
+            mask_type="B",
+            filters=16,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        )(y)
+        y = tf.keras.layers.Conv2D(
+            filters=32,
+            kernel_size=1,
+            activation="relu"
+        )(y)
+        x = tf.keras.layers.Add()([x,y])
 
     for _ in range(8):
         x = PixelConvLayer(
@@ -48,14 +68,15 @@ def get_pixel_cnn(kernel_size, input_shape):
             activation="relu",
             padding="valid")(x)
         
-        x = tf.keras.layers.BatchNormalization()(x)
+        #x = tf.keras.layers.BatchNormalization()(x)
 
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(
-        filters=1,
+        filters=num_embeddings,
         kernel_size=1,
         strides=1,
-        padding="valid")(x)
+        padding="valid",
+        activation="relu")(x)
     
     return tf.keras.Model(inputs, x)
 
