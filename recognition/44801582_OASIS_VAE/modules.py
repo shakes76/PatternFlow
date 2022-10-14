@@ -20,18 +20,28 @@ class VQVAE(nn.Module):
         return self.decoder(z)
 
 
-class Encoder(nn.Module):
-    def __init__(self, latent):
-        super(Encoder, self).__init__()
+# class Encoder(nn.Module):
+#     def __init__(self, latent):
+#         super(Encoder, self).__init__()
+#
+#         self.encoder = nn.Sequential(
+#         )
+#
+#     def forward(self, x):
+#         z = self.encoder(x)
+#         # Not a finished implementation, need to implement re-parametrisation
+#
+#         return z
+def get_encoder(latent_dim=16):
+    model = nn.Sequential(
+        nn.LazyConv2d(32, 3, stride=2, padding="same"),
+        nn.ReLU(),
+        nn.LazyConvTranspose2d(64, 3, stride=2, padding="same"),
+        nn.ReLU(),
+        nn.LazyConvTranspose2d(latent_dim, 1, padding="same")
+    )
 
-        self.encoder = nn.Sequential(
-        )
-
-    def forward(self, x):
-        z = self.encoder(x)
-        # Not a finished implementation, need to implement re-parametrisation
-
-        return z
+    return model
 
 
 class VQ(nn.Module):
@@ -73,14 +83,29 @@ class VQ(nn.Module):
         return encoding_indices
 
 
-class Decoder(nn.Module):
-    def __init__(self, latent):
-        super(Decoder, self).__init__()
+# class Decoder(nn.Module):
+#     def __init__(self, latent):
+#         super(Decoder, self).__init__()
+#
+#         self.decoder = nn.Sequential(
+#         )
+#
+#     def forward(self, z):
+#         x = self.decoder(z)
+#         x = torch.sigmoid(x)
+#         return x
 
-        self.decoder = nn.Sequential(
-        )
+def get_decoder(latent_dim=16):
+    model = nn.Sequential(
+        nn.LazyConvTranspose2d(64, 3, stride=2, padding="same"),
+        nn.ReLU(),
+        nn.LazyConvTranspose2d(32, 3, stride=2, padding="same"),
+        nn.ReLU(),
+        nn.LazyConvTranspose2d(1, 3, stride=2, padding="same")
+    )
 
-    def forward(self, z):
-        x = self.decoder(z)
-        x = torch.sigmoid(x)
-        return x
+    return model
+
+
+if __name__ == "__main__":
+    pass
