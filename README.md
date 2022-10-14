@@ -88,6 +88,8 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 | Number of FC layers         | depth of model (6)                         | 8
 | Upsampling method          | Upsample2D                                 | Bilinear
 
+</center>
+
 ## Result
 This is the result.
 
