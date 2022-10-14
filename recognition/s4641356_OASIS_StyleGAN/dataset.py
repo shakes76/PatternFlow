@@ -58,7 +58,7 @@ class OASIS_loader():
 
         self._pointer = 0 #Keep a track of how many images we have already used to allow batching
 
-        # self._normalisation_mean = 0
+        self._normalisation_mean = 0 #TODO disable centering
 
     def get_data(self, num_images: int) -> tf.Tensor:
         """
