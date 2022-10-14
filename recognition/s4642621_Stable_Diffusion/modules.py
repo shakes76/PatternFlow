@@ -1,6 +1,4 @@
 from imports import *
-from dataset import ImageLoader
-import math
 
 """
 Defines a (linear) beta schedule
@@ -50,28 +48,6 @@ def forward_diffusion(x_0, t, device="cuda", noise=None):
     sqrt_one_minus_alphas_cumprod_t = extract(SQRT_ONE_MINUS_ALPHAS_CUML_PRODUCT, t, x_0.shape)
 
     return sqrt_alphas_cumprod_t * x_0.to(device) + sqrt_one_minus_alphas_cumprod_t * noise.to(device), noise
-
-"""
-Load in image(s) and transform data via custom ImageLoader, and create our DataLoader
-"""
-def load_dataset(batch_size=8, image_resize=256, ad_train_path="ADNI_DATA/AD_NC/train/AD", nc_train_path="ADNI_DATA/AD_NC/train/NC"):
-    # transform image from [1,255] to [0,1], and scale linearly into [-1,1]
-    transform = Compose([
-                    ToPILImage(),
-                    Grayscale(),  # ensure images only have one channel
-                    Resize(image_resize),  # ensure all images have same size
-                    CenterCrop(image_resize),
-                    ToTensor(),
-                    Lambda(lambda t: (t * 2) - 1),  # scale linearly into [-1,1]
-                ])
-    # Load data, with the above transform applied
-    train_ad_imgs = ImageLoader(ad_train_path,
-                                transform=transform)
-    train_nc_imgs = ImageLoader(nc_train_path,
-                                transform=transform)
-    # combine ad and nc train datasets, to increase total number of images for training
-    total_imgs = torch.utils.data.ConcatDataset([train_ad_imgs, train_nc_imgs])
-    return DataLoader(total_imgs, batch_size=batch_size, shuffle=False, num_workers=1)
 
 """
 Sinusoidal position embeddings
@@ -179,7 +155,7 @@ class UNet(nn.Module):
         self.downs = nn.ModuleList([EncoderBlock(down_channels[i], down_channels[i+1]) for i in range(len(down_channels)-1)])
         self.ups   = nn.ModuleList([DecoderBlock(up_channels[i], up_channels[i+1]) for i in range(len(up_channels)-1)])
         
-        self.bottle_neck = Block(down_channels[-1], up_channels[1])
+        self.bottle_neck = Block(down_channels[-1], up_channels[0])
 
         self.out = nn.Conv2d(up_channels[-1], 1, kernel_size=1, padding=0)
 
