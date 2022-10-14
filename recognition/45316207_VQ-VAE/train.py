@@ -51,6 +51,7 @@ class VQVAETrainer(keras.models.Model):
             name="reconstruction_loss"
         )
         self.vqvae_loss_tracker = keras.metrics.Mean(name="vqvae_loss")
+        self.ssim_history = []
 
     @property
     def metrics(self):
@@ -130,7 +131,6 @@ class ProgressImagesCallback(keras.callbacks.Callback):
         for i in range(reconstructions_test.shape[0]):
             plt.subplot(4, 4, i + 1)
             plt.imshow(reconstructions_test[i, :, :, 0], cmap='gray')
-            # plt.imshow(reconstructions_test[i, :, :, 0])
             plt.axis('off')
 
         plt.savefig('out/image_at_epoch_{:04d}.png'.format(epoch+1))
@@ -154,6 +154,10 @@ class ProgressImagesCallback(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         self.save_progress_image(epoch)
+        
+        similarity = utils.get_model_ssim(self.model.vqvae, test_data)
+        self.model.ssim_history.append(similarity)
+        print(f"ssim: {similarity}")
 
     def on_train_end(self, logs=None):
         self.create_gif()
@@ -165,7 +169,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     NUM_TRAINING_EXAMPLES = None
 
-    TRAINING_EPOCHS = 20
+    TRAINING_EPOCHS = 10
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
@@ -173,11 +177,12 @@ if __name__ == "__main__":
 
     EXAMPLES_TO_SHOW = 10
 
+
     # ---------------------------------------------------------------------------- #
     #                                   LOAD DATA                                  #
     # ---------------------------------------------------------------------------- #
     # Import data loader from dataset.py
-    (train_data, test_data, validate_data, data_variance) = dataset.load_dataset(max_images=NUM_TRAINING_EXAMPLES)
+    (train_data, test_data, validate_data, data_variance) = dataset.load_dataset(max_images=NUM_TRAINING_EXAMPLES, verbose=True)
 
 
     # ---------------------------------------------------------------------------- #
@@ -210,42 +215,9 @@ if __name__ == "__main__":
     #                                 FINAL RESULTS                                #
     # ---------------------------------------------------------------------------- #
     # Visualise output generations from the finished model
-    utils.show_subplot(trained_vqvae_model, test_data, EXAMPLES_TO_SHOW)
+    utils.show_reconstruction_examples(trained_vqvae_model, test_data, EXAMPLES_TO_SHOW)
     
-
     # Visualise the model training curves
-    print(f"### {vqvae_trainer.metrics_names} ###")
-    print(f"### {history.history.keys()} ###")
-    print("")
-
-    print(f"### {type(vqvae_trainer)} ###")
-    print(f"### {type(vqvae_trainer.metrics)} ###")
-    print(f"### {vqvae_trainer.metrics} ###")
-    print(f"### {type(vqvae_trainer.metrics[0])} ###")
-    print(f"### {vqvae_trainer.metrics[0]} ###")
-    print(f"### {vqvae_trainer.metrics[0].result()} ###")
-
-    # Plot losses
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Total Loss', marker='o')
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["reconstruction_loss"], label='Reconstruction Loss', marker='o')
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='VQ VAE Loss', marker='o')
-    plt.title('Training Losses', fontsize=14)
-    plt.xlabel('Training Epoch', fontsize=14)
-    plt.xticks(range(1, TRAINING_EPOCHS+1))
-    plt.ylabel('Loss', fontsize=14)
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('training_loss_curves.png')
-
-    # Plot log losses
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Log Total Loss', marker='o')
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["reconstruction_loss"], label='Log Reconstruction Loss', marker='o')
-    plt.plot(range(1, TRAINING_EPOCHS+1), history.history["vqvae_loss"], label='Log VQ VAE Loss', marker='o')
-    plt.title('Training Log Losses', fontsize=14)
-    plt.xlabel('Training Epoch', fontsize=14)
-    plt.xticks(range(1, TRAINING_EPOCHS+1))
-    plt.ylabel('Log Loss', fontsize=14)
-    plt.yscale('log')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('training_logloss_curves.png')
+    utils.plot_training_metrics(history)
+    utils.plot_ssim_history(vqvae_trainer.ssim_history)
+    

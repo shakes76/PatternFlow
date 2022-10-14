@@ -17,12 +17,13 @@ import os
 import matplotlib.pyplot as plt
 
 
-def load_dataset(max_images=None):
+def load_dataset(max_images=None, verbose=False):
     """
     Loads the OASIS dataset of brain MRI images
 
         Parameters:
             (optional) max_images (int): The maximum number of images of the dataset to be used (default=None)
+            (optional) verbose (bool): Whether a description of the dataset should be printed after it has loaded
 
         Returns:
             train_data_scaled (ndarray): Numpy array of scaled image data for training (9,664 images max)
@@ -62,9 +63,6 @@ def load_dataset(max_images=None):
             # Convert image to numpy array
             data = np.asarray(img)
             datasets[i].append(data)
-            # print(img_filename)
-            # plt.figure()
-            # plt.imshow(data, cmap='gray')
 
             # Close the image (not strictly necessary)
             del img
@@ -87,19 +85,20 @@ def load_dataset(max_images=None):
     # Get the dataset variance
     data_variance = np.var(train_data / 255.0)
 
-    # Debug dataset loading    
-    print(f"###train_data ({type(train_data)}): {np.shape(train_data)}###")
-    print(f"###test_data ({type(test_data)}): {np.shape(test_data)}###")
-    print(f"###train_data_scaled ({type(train_data_scaled)}): {np.shape(train_data_scaled)}###")
-    print(f"###test_data_scaled ({type(test_data_scaled)}): {np.shape(test_data_scaled)}###")
-    print(f"###data_variance ({type(data_variance)}): {data_variance}###")
-    print('')
+    if verbose == True:
+        # Debug dataset loading    
+        print(f"###train_data ({type(train_data)}): {np.shape(train_data)}###")
+        print(f"###test_data ({type(test_data)}): {np.shape(test_data)}###")
+        print(f"###train_data_scaled ({type(train_data_scaled)}): {np.shape(train_data_scaled)}###")
+        print(f"###test_data_scaled ({type(test_data_scaled)}): {np.shape(test_data_scaled)}###")
+        print(f"###data_variance ({type(data_variance)}): {data_variance}###")
+        print('')
 
-    print(f"###validate_data ({type(validate_data)}): {np.shape(validate_data)}###")
-    print(f"###validate_data_scaled ({type(validate_data_scaled)}): {np.shape(validate_data_scaled)}###")
+        print(f"###validate_data ({type(validate_data)}): {np.shape(validate_data)}###")
+        print(f"###validate_data_scaled ({type(validate_data_scaled)}): {np.shape(validate_data_scaled)}###")
 
-    print('')
-    print('')
+        print('')
+        print('')
 
     return (train_data_scaled, test_data_scaled, validate_data_scaled, data_variance)
 
