@@ -1,6 +1,3 @@
-# config file
-
-
 # model params
 CHANNELS = 1                                          # 1:graysale 3:rgb
 LDIM = 128                                            # laten vector dimemsion
