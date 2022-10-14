@@ -31,6 +31,7 @@ class ConvReluBlock(nn.Module):
 
         Args:
             x (Tensor): input tensor
+            position (Tensor): position tensor result of positional encoding
 
         Returns:
             Tensor: output tensor
@@ -79,6 +80,7 @@ class EncoderBlock(nn.Module):
 
         Args:
             x (Tensor): input tensor
+            position (Tensor): position tensor result of positional encoding
 
         Returns:
             List: list of output tensors from each layer 
@@ -138,6 +140,7 @@ class DecoderBlock(nn.Module):
         Args:
             x (Tensor): input tensor
             encoder_blocks (List): list of output tensors from each layer of the encoder
+            position (Tensor): position tensor result of positional encoding
 
         Returns:
             Tensor: output tensor
@@ -166,7 +169,7 @@ class DecoderBlock(nn.Module):
 
     def crop(self, encoder_blocks, x):
         """
-        crops the given tensor around the encoded features
+        Crops the given tensor around the encoded features
 
         Args:
             encoder_blocks (List): list of output tensors from each layer of the encoder
@@ -206,7 +209,20 @@ class PositionalEmbeddingTransformerBlock(nn.Module):
         return embeddings
 
 class UNet(nn.Module):
+    """
+    Unet model consisting of a decoding block and an encoding block
+    followed by a resulting convolution layer with out dimension 1
+    """
     def __init__(self, dim_in_encoder=3, dim_out_encoder=1024, dim_in_decoder=1024, dim_out_decoder=64):
+        """
+        Unet class constructor to initialize the object
+
+        Args:
+            dim_in_encoder (int, optional): number of channels in the input image. Defaults to 3.
+            dim_out_encoder (int, optional): number of channels produced by the convolution. Defaults to 1024.
+            dim_in_decoder (int, optional): number of channels in the input image. Defaults to 1024.
+            dim_out_decoder (int, optional): number of channels produced by the convolution. Defaults to 64.
+        """
         super(UNet, self).__init__()
         self.unet_encoder = EncoderBlock(dim_in_encoder, dim_out_encoder)
         self.unet_decoder = DecoderBlock(dim_in_decoder, dim_out_decoder)
@@ -214,6 +230,17 @@ class UNet(nn.Module):
         self.position_block = PositionalEmbeddingTransformerBlock(32)
 
     def forward(self, x, position):
+        """
+        Method to run an input tensor forward through the unet
+        and returns the output from all Unet layers
+
+        Args:
+            x (Tensor): input tensor
+            position (Tensor): position tensor result of positional encoding
+
+        Returns:
+            Tensor: output tensor
+        """
         position = self.position_block(position)
         encoder_blocks = self.unet_encoder(x, position)
         out = self.unet_decoder(encoder_blocks[::-1][0], encoder_blocks[::-1][1:], position)
