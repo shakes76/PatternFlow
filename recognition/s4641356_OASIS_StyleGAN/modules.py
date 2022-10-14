@@ -103,9 +103,9 @@ class StyleGAN():
     Does not directly subclass keras.Model as this does not allow for unsupervised learning.
     Instead we indirectly call the relevent functionality
     """
-    METRICS = ["discrim_loss_real", "discrim_acc_real","discrim_loss_fake", "discrim_acc_fake","gan_loss","gan_acc"] #GAN training metrics 
-    GEN_LEARN_RATE = 2.5e-7
-    DISCRIM_LEARN_RATE = 3e-8
+    METRICS = ["discrim_loss_real", "discrim_loss_fake","gen_loss"] #GAN training metrics 
+    GEN_LEARN_RATE = 0.001
+    DISCRIM_LEARN_RATE = 0.001
 
 
     def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_folder: str = None) -> None:
@@ -136,26 +136,21 @@ class StyleGAN():
         self._generator = generator
         if generator is None:
             self._generator = self.get_generator()
-        self._generator_base = tf.ones(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
+        self._generator_base = tf.zeros(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
 
         #initialise discriminator
         self._discriminator = discriminator
         if discriminator is None:
             self._discriminator = self.get_discriminator()
-        self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
+        # self._discriminator.trainable = False #enables custom unsupervised training paradigm leveraging keras training efficiency, we just call train on _gan which trains on the output (discrim(gen)) while only actually training the generator
         
         #internal keras model allowing compilation and the assotiated performance benefits during training, takes a latent vector in and returns the discrimination of the generator's output
         self._gan = tf.keras.Model(self._generator.input, self._discriminator(self._generator.output), name = "StyleGAN")
         self._gan.summary()
 
-        #configure components for training
-        loss='binary_crossentropy'
-        # optimizer = 'adam'
-        metrics=['accuracy']
-        self._generator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.GEN_LEARN_RATE), metrics = metrics)
-        self._gan.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.GEN_LEARN_RATE), metrics = metrics)
-        self._discriminator.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=StyleGAN.DISCRIM_LEARN_RATE), metrics = metrics)
-       
+        #Optimisers used for training. The loss is softmax implemented manually in train.py
+        self._discriminator_optimiser = tf.keras.optimizers.Adam(StyleGAN.DISCRIM_LEARN_RATE)
+        self._generator_optimiser = tf.keras.optimizers.Adam(StyleGAN.GEN_LEARN_RATE)
 
         self._epochs_trained = trained_epochs
 
@@ -178,7 +173,7 @@ class StyleGAN():
 
         w = z
         adaIN_scales = tf.keras.layers.Dense(self._latent_dim, name = "adain_scales")(w)
-        adaIN_biases = tf.keras.layers.Dense(self._latent_dim, name = "adain_biases")(w)
+        adaIN_biases = tf.keras.layers.Dense(self._latent_dim, name = "adain_biases")(w)#TODO Note did this on the remove tanh commit
 
         #Generation blocks for each feature scale
         curr_res = self._start_res
@@ -221,7 +216,7 @@ class StyleGAN():
         current_res = self._output_res
         x = discriminator_input
         while current_res > 4:
-            x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
+            # x = tf.keras.layers.Dropout(0.2, name ="{0}x{0}_drop_1".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_1".format(current_res))(x)
             x = tf.keras.layers.Conv2D(self._latent_dim*4//current_res,kernel_size=3,padding = "same", name = "{0}x{0}_2D_convolution_2".format(current_res))(x)
             x = tf.keras.layers.LeakyReLU(0.2,name = "{0}x{0}_leaky_reLU_1".format(current_res))(x)
@@ -239,7 +234,7 @@ class StyleGAN():
         # x = tf.keras.layers.Dense(self._latent_dim, name = "Discriminator_Dense_Classify")(x)
         # x = tf.keras.layers.LeakyReLU(0.2,name = "Flat_Leaky_ReLU")(x)
         
-        x = tf.keras.layers.Dense(1, activation = "sigmoid", name = "Discriminate")(x) #Final decision, 1 for real 0 for fake
+        x = tf.keras.layers.Dense(1, name = "Discriminate")(x) #Final decision, 1 for real 0 for fake
 
         return tf.keras.Model(inputs = discriminator_input, outputs = x, name = "Discriminator")
             

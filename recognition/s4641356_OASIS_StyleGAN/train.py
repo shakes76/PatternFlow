@@ -24,8 +24,8 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
     num_batches = data_loader.get_num_images_availible()//batch_size #required batches per epoch (we use just under the full set if there is a remainder, this prevents duplicates per epoch)
     
     #Manual Labels to assign to batches when conducting supervised training on discriminator
-    real_labels = tf.ones(shape = (batch_size,))
-    fake_labels = tf.zeros(shape = (batch_size,))
+    # real_labels = tf.ones(shape = (batch_size,))
+    # fake_labels = tf.zeros(shape = (batch_size,)) Classification more like not classification ha gottem
 
     #start with zeros as the background of OASIS images are black
     batch_generator_base = np.repeat(style_GAN._generator_base, batch_size, axis = 0)
@@ -37,25 +37,35 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
         for b in range(num_batches):
             print(">>>> batch {}/{}: ".format(b+1,num_batches), end ="")
 
-            batch = data_loader.get_data(batch_size)
-
             #train discriminator on real images
-            style_GAN._discriminator.trainable = True
-            dfl, dfa = style_GAN._discriminator.train_on_batch(batch, real_labels)
+            # style_GAN._discriminator.trainable = True
+            with tf.GradientTape() as tape:
+                batch = data_loader.get_data(batch_size)
+                real_logits = style_GAN._discriminator(batch)
+                discrim_real_loss = tf.math.softplus(-real_logits) #softmax is a curve that restricts to positive. The discriminator returns a single value indicating how "real" it thinks it is. So we try to maximise the distance between real and fake.
+                #The more negative a value of real_logits, the closer softmax is to 0 (similar to exponential), this means close to 0 loss.
+            style_GAN._discriminator_optimiser.apply_gradients(zip(tape.gradient(discrim_real_loss, style_GAN._discriminator.trainable_variables), style_GAN._discriminator.trainable_variables))  
 
-            #train discriminator on a batch of fake images from current iteration of the generator
-            fake_images = style_GAN._generator(GANutils.random_generator_inputs(batch_size,style_GAN._latent_dim,style_GAN._start_res,style_GAN._output_res) + [batch_generator_base])
-            drl, dra = style_GAN._discriminator.train_on_batch(fake_images, fake_labels)
+            #train discriminator on fake images
+            with tf.GradientTape() as tape:
+                fakes = style_GAN._generator(GANutils.random_generator_inputs(batch_size,style_GAN._latent_dim,style_GAN._start_res,style_GAN._output_res) + [batch_generator_base])
+                fake_logits = style_GAN._discriminator(fakes)
+                discrim_fake_loss = tf.math.softplus(fake_logits) #Should be returning a very low "realness score" so our loss is directly the softmax sum of output
+            style_GAN._discriminator_optimiser.apply_gradients(zip(tape.gradient(discrim_fake_loss, style_GAN._discriminator.trainable_variables), style_GAN._discriminator.trainable_variables))
+            # style_GAN._discriminator.trainable = False
 
-            #Train generator. Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' (1) from discriminator
-            style_GAN._discriminator.trainable = False
-            gl, ga = style_GAN._gan.train_on_batch(GANutils.random_generator_inputs(batch_size,style_GAN._latent_dim,style_GAN._start_res,style_GAN._output_res) + [batch_generator_base], real_labels)
+            #Train generator. 
+            with tf.GradientTape() as tape:
+                gen_logits = style_GAN._gan(GANutils.random_generator_inputs(batch_size,style_GAN._latent_dim,style_GAN._start_res,style_GAN._output_res) + [batch_generator_base])
+                gen_loss =  tf.math.softplus(-gen_logits) #Indirect training of discriminator weights are disabled, so we train the generator weights to make something that outputs 'real' from discriminator #TODO does this flag actually matter at all anymore?
+             
+            style_GAN._generator_optimiser.apply_gradients(zip(tape.gradient(gen_loss, style_GAN._generator.trainable_variables), style_GAN._generator.trainable_variables))
 
-            metrics_to_store = [dfl,dfa,drl,dra,gl,ga]
+            #compute the average loss per batch
+            metrics_to_store = list(map(lambda x: tf.math.reduce_mean(x).numpy(),[discrim_real_loss, discrim_fake_loss, gen_loss]))
             for m in range(len(modules.StyleGAN.METRICS)):
                 epoch_metrics[modules.StyleGAN.METRICS[m]].append(metrics_to_store[m])
-
-            print(metrics_to_store)
+            print("{0}: {3}, {1}: {4}, {2}: {5}".format(*(modules.StyleGAN.METRICS + metrics_to_store)))
 
         style_GAN._epochs_trained += 1
         GANutils.save_training_history(epoch_metrics,training_history_location)
