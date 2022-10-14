@@ -1,7 +1,7 @@
-# Diffusion Image Generation
+# Simple Diffusion Image Generation
 
 Simple diffusion based image generation using pytorch.
-![](https://hcloudh.com/nextcloud/s/YnMBoAK6atDYztj/download/plot_epoch98.jpeg)
+![](https://hcloudh.com/nextcloud/s/TpPW8Z3EzCc3mP6/download/plot_epoch94.jpeg)
 #### References
 
 Huge thanks to these videos for helping my understanding:
@@ -58,11 +58,15 @@ Parameters for `train.py`
 Parameters for `predict.py`
 | Parameter                  | Short |          | Default                   | Description |
 | ----------------           | ----- | -------- | ------------------------- | ----------- |
-| _model_                    |       | required |                           | Path to model file |
+| _model_                    |       | required |                           | Path to `.pth` model file |
 | _--output_                 |  -o   | optional | ./                        | Output path to save images|
-| _--name_                   | -     | optional | predict                   | Name prefix to use for generated images |
+| _--name_                   | -n    | optional | predict                   | Name prefix to use for generated images |
+| _--num_images_             | -i    | optional | 1.                        | Number of images to create |
+
+Some pretrained models are supplied in the examples section below. 
 
 ## Algorithm Description
+![](https://hcloudh.com/nextcloud/s/Li4kreD8FnoSxKj/download/process.png)
 Diffusion image generation is described in these papers, [1](https://arxiv.org/pdf/2006.11239.pdf) [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
 
 ![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}q(\mathbf{x}_t|\mathbf{x}_{t-1}):=\mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t}\mathbf{x}_{t-1},&space;\beta_t&space;\mathbf{I}))
@@ -71,6 +75,26 @@ This is called the forward diffusion process. The reverse diffusion process is t
 
 ![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}p_\theta=(\mathbf{x}_{t-1}|\mathbf{x}_t):=\mathcal{N}(\mathbf{x}_{t-1};\mathbf{\mu}(\mathbf{x}_t,t),&space;\mathbf{\Sigma}_\theta(\mathbf{x}_t,t)))
 
-A U-Net neural network is then trained to predict the noise in an image for a given timestep. To do this, the timestep $t$ is positionally encoded using sinusoidal embeddings between the layers in the U-Net blocks. Training is performed by passing in large numbers of images from a dataset with noise added using the forward diffusion process. The U-Net is passed the noisy image and timestep as the input and the isolated noise as the target.
+A U-Net neural network is then trained to predict the noise in an image for a given timestep. To do this, the timestep $t$ is positionally encoded using sinusoidal embeddings between the convolutional layers in the U-Net blocks. Training is performed by passing in large numbers of images from a dataset with noise added using the forward diffusion process. The U-Net is passed the noisy image and timestep as the input and the isolated noise as the target.
 
 Once the U-Net has been trained, denoising can be performed on a random point in latent space (usually an image consisting of pure gaussian noise) using the U-Net by repeatedly subtracting the predicted noise over the entire reverse timestep range. This results in a new image that is perceptually similar to those in the training dataset.
+
+## Examples
+Here are some demos of training on different datasets
+
+### AKOA Knee 
+Using the AKOA Knee dataset. Image size 128x128, 1000 Timesteps. Download the pretrained model [here](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
+#### Training
+Epoch 0
+![](https://hcloudh.com/nextcloud/s/LdiWLFwsMtqGCPy/download/plot_epoch0.jpeg)
+Epoch 10
+![](https://hcloudh.com/nextcloud/s/Ho8apXrybbamXrS/download/plot_epoch10.jpeg)
+Epoch 20
+![](https://hcloudh.com/nextcloud/s/L6SfgoKzpWdCWam/download/plot_epoch20.jpeg)
+Epoch 99
+![](https://hcloudh.com/nextcloud/s/CZraXEaTGactfaz/download/plot_epoch99.jpeg)
+
+#### Some Examples After Training
+![](https://hcloudh.com/nextcloud/s/LEpJzmtMFHY2CyS/download/predict0.jpeg)![](https://hcloudh.com/nextcloud/s/EJCRb3wj43D75qN/download/predict1.jpeg)![](https://hcloudh.com/nextcloud/s/NT7RY7b7sLeXGSF/download/predict2.jpeg)![](https://hcloudh.com/nextcloud/s/KtfFcEYSjnyxiwz/download/predict3.jpeg)![](https://hcloudh.com/nextcloud/s/MzTR56qysE3N5pT/download/predict4.jpeg)![](https://hcloudh.com/nextcloud/s/WtKYfsEdo8nYq5q/download/predict5.jpeg)![](https://hcloudh.com/nextcloud/s/kTsjDgQSdfAibFY/download/predict6.jpeg)
+
+
