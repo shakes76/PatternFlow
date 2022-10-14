@@ -22,6 +22,12 @@ torch.cuda.empty_cache()
 #Importing CNN Model
 import modules
 
+#save image
+from torchvision.utils import save_image
+
+#plot
+import matplotlib.pyplot as plt
+import numpy as np
 
 #Scheduler
 from torch.optim.lr_scheduler import StepLR
@@ -33,7 +39,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #net = modules.Net_3D()
 #net = modules.ResNet18_3D(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
 net = modules.ResNet18_R3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
-#net.load_state_dict(torch.load('sim_net_ResNet.pt')) #change to .pt
+#net.load_state_dict(torch.load('sim_net_3D_R3D_hab8.pt')) #change to .pt
 #net.eval()
 net = net.to(device)
 
@@ -41,7 +47,7 @@ net = net.to(device)
 #torch.save(net.state_dict(), 'sim_net_ResNet.pt')
 
 #Constants
-epoch_range = 50
+epoch_range = 20
 
 
 batch_size=8
@@ -110,16 +116,18 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
         scheduler.step()
 
+        #print("LOSS:",loss.item(), flush=True)
         #Update where running
         #if i % (modulo) == modulo-1:
-        print("-", end ="", flush=True)
-    
+        #print("-", end ="", flush=True)
+        #print("sim:",torch.sum(F.pairwise_distance(output1[0], output2[0],p=1.0)).item()/512," with label:",labels[0].item() ,"   loss:",criterion(output1[0],output2[0],labels[0]).item(), flush=True)
+        
     print("")
 
 
     training_loss[epoch]=training_loss[epoch]/total
     print(f'Training Loss: {training_loss[epoch]}')
-    print("output dif" ,torch.sum(output1[0]-output2[0]).item()," -- sim:",torch.sum(F.pairwise_distance(output1[0], output2[0])).item()," with label:",labels[0].item())
+    
 
 
 
@@ -129,12 +137,48 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 ####
 
 
-input_shape=torch.zeros(1,20,210,210)
+input_shape=torch.zeros(10,1,20,210,210)
 
 clas_image_AD, clas_image_NC = dataset.clas_output3D(clas_dataset,input_shape)
+
 clas_image_AD=clas_image_AD.to(device)
 clas_image_NC=clas_image_NC.to(device)
 # No backpropagtion , No need for calculating gradients, => Faster calculation
+
+outputAD,outputNC = net(clas_image_AD,clas_image_NC)
+
+feature_AD=torch.sum(outputAD, dim=0)/10
+feature_NC=torch.sum(outputNC, dim=0)/10
+
+if 1==1:
+    plt.figure(0)
+
+    for i in range(10):
+        plt.plot(outputAD[i].cpu().detach().numpy(), label='{}'.format(i))
+        #plt.plot(outputNC[i].cpu().detach().numpy(), label='NC')
+
+    plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('PlotAD.png',bbox_inches='tight')
+
+    plt.figure(1)
+    for i in range(10):
+        plt.plot(outputNC[i].cpu().detach().numpy(), label='{}'.format(i))
+        #plt.plot(outputNC[i].cpu().detach().numpy(), label='NC')
+
+
+    plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='black',linewidth='4')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('PlotNC.png',bbox_inches='tight')
+
+    plt.figure(2)
+    plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
+    plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='red',linewidth='1')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('Plot.png',bbox_inches='tight')
+
+
+
 
 with torch.no_grad():
     correct = 0
@@ -142,7 +186,6 @@ with torch.no_grad():
 
 
     for i, data in enumerate(test_loader, 0):
-        
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
@@ -153,15 +196,16 @@ with torch.no_grad():
         
 
 
-        output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
+        output1= net.forward_once(inputs)#.squeeze(1)
+        
+        #print(output1.shape)
         #print(torch.sum(output1-output2))
-        euclidean_distance_AD = F.pairwise_distance(output1, output2)    
+        euclidean_distance_AD = F.pairwise_distance(output1, feature_AD)    
 
+        #print(euclidean_distance_AD.shape)
         output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
-        euclidean_distance_NC = F.pairwise_distance(output1, output2)
+        euclidean_distance_NC = F.pairwise_distance(output1, feature_NC)
 
-
-   
 
         predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
         
@@ -196,6 +240,6 @@ with torch.no_grad():
     gc.collect()
     
 
-torch.save(net.state_dict(), 'sim_net_3D_R3D_conv.pt')
+torch.save(net.state_dict(), 'sim_net_3D_loss.pt')
 print('Finished Training')
 

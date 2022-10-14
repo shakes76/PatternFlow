@@ -24,6 +24,8 @@ import glob
 import random
 import PIL
 
+from torchvision.utils import save_image
+
 #######################################################
 #                  Crop Area ---- Not WORKING !!!!
 #######################################################
@@ -279,7 +281,7 @@ def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):
         image_paths_new[0+i*20:20+i*20]=placeholder
         i = i+1
     
-    image_paths=image_paths_new[0:20] + image_paths_new[length-20:]
+    image_paths=image_paths_new[0:20*10] + image_paths_new[length-20*10:]
     
     #print("clas_data image_paths",image_paths)
 
@@ -401,12 +403,12 @@ class Random_Crop_Resize:
 
 class Random_Blackout:
     def __init__(self,i1,i2,i):
-        self.i1 = i1*i  #Pixel value
-        self.i2 = i2*i  #Pixel value
+        self.i1 = i1  #Pixel value
+        self.i2 = i2  #Pixel value
         self.i = i      #Size of BlackoutArea
         
     def __call__(self, img: torch.Tensor) -> torch.Tensor:
-        return transforms.functional.erase(img, self.i1, self.i1, self.i, self.i, 0)
+        return transforms.functional.erase(img, self.i1, self.i2, self.i, self.i, 0)
 
 
 
@@ -423,43 +425,13 @@ class DatasetTrain3D(Dataset):
         #RandomCropResize
         rn = random.randint(0,1)
         if rn==0:
-            left_off = random.randint(0,20)
-            top_off  = random.randint(0,20)
+            left_off = random.randint(0,40)
+            top_off  = random.randint(0,40)
 
-            width_off = random.randint(0,20)
-            height_off  = random.randint(0,20)
+            width_off = random.randint(0,40)
+            height_off  = random.randint(0,40)
 
             transform_train.transforms.insert(3,Random_Crop_Resize(left_off=left_off,top_off=top_off,width_off=width_off,height_off=height_off))
-
-        #RandomBlackout
-        rn = random.randint(0,1)
-        if rn==0:
-            i  = 70
-            i1 = random.randint(0,210/i)
-            i2  = random.randint(0,210/i)
-            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
-
-        rn = random.randint(0,1)
-        if rn==0:
-            i  = 70
-            i1 = random.randint(0,210/i)
-            i2  = random.randint(0,210/i)
-            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
-
-        rn = random.randint(0,1)
-        if rn==0:
-            i  = 70
-            i1 = random.randint(0,210/i)
-            i2  = random.randint(0,210/i)
-            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))
-
-        rn = random.randint(0,1)
-        if rn==0:
-            i  = 70
-            i1 = random.randint(0,210/i)
-            i2  = random.randint(0,210/i)
-            transform_train.transforms.insert(3,Random_Blackout(i1=i1,i2=i2,i=i))    
-
 
         #RandomHorizontalFlip
         rn = random.randint(0,1)
@@ -487,23 +459,50 @@ class DatasetTrain3D(Dataset):
         idx_1=idx
         idx_2=(idx + random.randint(0,int(self.size)))%self.size
 
-        transform_idx=self.transform_augmentation()
-
+        transform_idx_1=self.transform_augmentation()
+        transform_idx_2=self.transform_augmentation()
         #print(transform_idx)
         #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
         j=0
         for i in range(20):
-    
-
+            
             image_filepath_1 = self.image_paths[idx_1*20+i]
             image_1 = cv2.imread(image_filepath_1, cv2.IMREAD_GRAYSCALE)
             
             image_filepath_2 = self.image_paths[idx_2*20+i]
             image_2 = cv2.imread(image_filepath_2, cv2.IMREAD_GRAYSCALE)
 
+            #toTen=transforms.ToTensor()
+            #save_image(toTen(image_1), 'orignal.png')
+
             if self.transform:
-                image_1 = transform_idx(image_1)
-                image_2 = transform_idx(image_2)
+                image_1 = transform_idx_1(image_1)
+                image_2 = transform_idx_2(image_2)
+
+            #save_image(image_1, 'basic_augmentation.png')
+
+            i  = 25
+            for j in range(10):
+                rn = random.randint(0,1)
+                if rn==0:
+                    
+                    i1 = random.randint(0,210-i)
+                    i2  = random.randint(0,210-i)
+                
+                    transform_blackout=Random_Blackout(i1=i1,i2=i2,i=i)
+                    image_1=transform_blackout(image_1)
+            
+                rn = random.randint(0,1)
+                if rn==0:
+                    
+                    i1 = random.randint(0,210-i)
+                    i2 = random.randint(0,210-i)
+                
+                    transform_blackout=Random_Blackout(i1=i1,i2=i2,i=i)
+                    image_2=transform_blackout(image_2)
+            
+            #save_image(image_1, 'augmented.png')
+        
 
             image3D_1[j]=image_1
             image3D_2[j]=image_2
@@ -526,7 +525,7 @@ class DatasetTrain3D(Dataset):
         image3D_1 = torch.unsqueeze(image3D_1, dim=0)
         image3D_2 = torch.unsqueeze(image3D_2, dim=0)
 
-        del transform_idx
+        del transform_idx_1,transform_idx_2
         #print("idx_1:",idx_1,"  --  ",image_filepath_1,"  -- idx_2:",idx,"  --  ",image_filepath_2,"  -- label:",label)
         return image3D_1, image3D_2, label, label_1
 
@@ -617,12 +616,19 @@ def clas_output(clas_dataset,slice_number,input_data):
 
 def clas_output3D(clas_dataset,input_data):
 
-    clas_Person_AD = clas_dataset[0]
-    clas_Person_NC = clas_dataset[1] #Second Set represents NC
+    clas_Person_AD = torch.zeros_like(input_data)
+    clas_Person_NC = torch.zeros_like(input_data)
 
     
 
-    return clas_Person_AD[None, :], clas_Person_NC[None, :]
+    for i in range(input_data.shape[0]):
+        clas_Person_AD[i] = clas_dataset[i]
+        clas_Person_NC[i] = clas_dataset[i+10] #Second Set represents NC
+
+    #return torch.unsqueeze(clas_Person_AD/10, dim=1),torch.unsqueeze(clas_Person_NC/10, dim=1)    
+    return clas_Person_AD, clas_Person_NC
+
+    #return clas_Person_AD[None, :], clas_Person_NC[None, :]
 
 
 #######################################################
@@ -675,7 +681,7 @@ def transformation_3D():
         transforms.Lambda(crop),
         transforms.ToTensor(),
         #transforms.Resize(size=(105,105)),
-        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
+        #transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
     ])
 
     return transform_input
