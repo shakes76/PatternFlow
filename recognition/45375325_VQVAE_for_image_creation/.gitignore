@@ -142,3 +142,6 @@ cython_debug/
 /data
 /data.zip
 
+# mac things
+/.DS_Store
+
