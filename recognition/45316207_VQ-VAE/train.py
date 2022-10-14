@@ -17,8 +17,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
-import imageio
-import time
+import imageio.v2 as imageio
 
 
 class VQVAETrainer(keras.models.Model):
@@ -123,7 +122,6 @@ class ProgressImagesCallback(keras.callbacks.Callback):
         """
 
         num_examples_to_generate = 16
-
         idx = np.random.choice(len(self.train_data), num_examples_to_generate)
         test_images = self.train_data[idx]
         reconstructions_test = self.model.vqvae.predict(test_images)
@@ -165,15 +163,15 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------- #
     #                                HYPERPARAMETERS                               #
     # ---------------------------------------------------------------------------- #
-    NUM_TRAINING_EXAMPLES = None # was 2000
+    NUM_TRAINING_EXAMPLES = None
 
-    TRAINING_EPOCHS = 10
+    TRAINING_EPOCHS = 20
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
     NUM_EMBEDDINGS = 128
 
-    EXAMPLES_TO_SHOW = 5
+    EXAMPLES_TO_SHOW = 10
 
     # ---------------------------------------------------------------------------- #
     #                                   LOAD DATA                                  #
@@ -212,12 +210,8 @@ if __name__ == "__main__":
     #                                 FINAL RESULTS                                #
     # ---------------------------------------------------------------------------- #
     # Visualise output generations from the finished model
-    idx = np.random.choice(len(test_data), EXAMPLES_TO_SHOW)
-    test_images = test_data[idx]
-    reconstructions_test = trained_vqvae_model.predict(test_images)
-
-    for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-        utils.show_subplot(test_image, reconstructed_image)
+    utils.show_subplot(trained_vqvae_model, test_data, EXAMPLES_TO_SHOW)
+    
 
     # Visualise the model training curves
     print(f"### {vqvae_trainer.metrics_names} ###")
@@ -242,7 +236,6 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid(True)
     plt.savefig('training_loss_curves.png')
-    # plt.show()
 
     # Plot log losses
     plt.plot(range(1, TRAINING_EPOCHS+1), history.history["loss"], label='Log Total Loss', marker='o')
@@ -256,4 +249,3 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid(True)
     plt.savefig('training_logloss_curves.png')
-    # plt.show()

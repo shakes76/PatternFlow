@@ -14,6 +14,8 @@ import numpy as np
 import PIL
 import os
 
+import matplotlib.pyplot as plt
+
 
 def load_dataset(max_images=None):
     """
@@ -56,10 +58,14 @@ def load_dataset(max_images=None):
                 break
 
             # Open the image
-            img = PIL.Image.open(images_list[i])
+            img = PIL.Image.open(img_filename)
             # Convert image to numpy array
             data = np.asarray(img)
             datasets[i].append(data)
+            # print(img_filename)
+            # plt.figure()
+            # plt.imshow(data, cmap='gray')
+
             # Close the image (not strictly necessary)
             del img
             images_collected = images_collected + 1
