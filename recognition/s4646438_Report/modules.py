@@ -69,12 +69,11 @@ class Model(object):
     return self._model.fit(training_dataset, epochs=epochs, validation_data=validation_dataset, initial_epoch=start_epoch, verbose=1, callbacks=model_callbacks)
 
 
-  def load_weights(self):
+  def load_weights(self, checkpoint_loc):
     '''
     Load the (best) weights from training into the model.
     '''
-
-    pass
+    self._model.load_weights(checkpoint_loc)
 
 
 
