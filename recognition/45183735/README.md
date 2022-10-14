@@ -43,6 +43,12 @@ Run this code to train the model:
 
 ```python train.py```
 
+or if you want to choose the number of epochs, run this code:
+
+```python train.py -e EPOCHS```
+
+Note: Replace EPOCHS to the number you choose.
+
 The training step will generate an image and a plot of loss for each epoch. During the training, it will print the progress of the training.
 
 
