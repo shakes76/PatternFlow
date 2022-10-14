@@ -10,6 +10,12 @@ import json
 
 from mrcnn import model as modellib, utils
 from PIL import Image, ImageDraw
+from mrcnn.config import Config
+from mrcnn.model import load_image_gt
+from mrcnn.model import mold_image
+from numpy import mean
+from numpy import expand_dims
+from mrcnn.utils import compute_ap
 
 # Classes
 class path:
@@ -117,45 +123,42 @@ class CocoLikeDataset(utils.Dataset):
         
         return mask, class_ids
 
+# configuration for the model
+class LesionConfig(Config):
+	NAME = 'lesion_cfg_coco'
+	NUM_CLASSES = 1 + 1
+	STEPS_PER_EPOCH = 100
 
-# Functions
-def normalize(dataset):
-    '''normalize the image data to 0~1 float'''
-    for img, lbl in dataset:
-        x = tf.math.divide(img, 255.0)
-        y = lbl
-    return x, y
+# define the prediction configuration
+class PredictionConfig(Config):
+	# define the name of the configuration
+	NAME = 'cfg_coco_lesion'
+	# number of classes (background + Blue Marbles + Non Blue marbles)
+	NUM_CLASSES = 1 + 1
+	# Set batch size to 1 since we'll be running inference on
+            # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
+	GPU_COUNT = 1
+	IMAGES_PER_GPU = 1
+	USE_MINI_MASK = False
 
-def backbone():
-    '''
-    the backbone model
-    (in this case it would be a classifier from my previous assignment)
-    note that we only need the features from this, not the final class
-    '''
-
-    img_size = 512
-    num_channels = 1
-
-    input = tf.keras.Input(shape=(img_size, img_size, num_channels))
-    x = tf.keras.layers.Conv2D(32, (3, 3), activation='LeakyReLU', padding='same')(input)
-    x = tf.keras.layers.Conv2D(32, (3, 3), activation='LeakyReLU', padding='same')(x)
-    x = tf.keras.layers.MaxPooling2D((2, 2))(x)
-    x = tf.keras.layers.Conv2D(64, (3, 3), activation='LeakyReLU', padding='same')(x)
-    x = tf.keras.layers.Conv2D(64, (3, 3), activation='LeakyReLU', padding='same')(x)
-    x = tf.keras.layers.MaxPooling2D((2, 2))(x)
-    x = tf.keras.layers.Conv2D(128, (3, 3), activation='LeakyReLU', padding='same')(x)
-    featuremap = tf.keras.layers.Conv2D(128, (3, 3), activation='LeakyReLU', padding='same')(x)
-    x = tf.keras.layers.MaxPooling2D((2, 2))(featuremap)
-
-    x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dense(2048, activation='LeakyReLU')(x)
-    x = tf.keras.layers.Dense(1024, activation='LeakyReLU')(x)
-    x = tf.keras.layers.Dense(512, activation='LeakyReLU')(x)
-    x = tf.keras.layers.Dense(256, activation='LeakyReLU')(x)
-    x = tf.keras.layers.Dense(64, activation='LeakyReLU')(x)
-    output = tf.keras.layers.Dense(32, activation='LeakyReLU')(x)
-
-    backbone = tf.keras.models.Model(input, output, name='backbone')
-
-    return backbone
-
+# calculate the mAP for a model on a given dataset
+def evaluate_model(dataset, model, cfg):
+	APs = list()
+	for image_id in dataset.image_ids:
+		# load image, bounding boxes and masks for the image id
+		image, image_meta, gt_class_id, gt_bbox, gt_mask = load_image_gt(dataset, cfg, image_id)
+		# convert pixel values (e.g. center)
+		scaled_image = mold_image(image, cfg)
+		# convert image into one sample
+		sample = expand_dims(scaled_image, 0)
+		# make prediction
+		yhat = model.detect(sample, verbose=0)
+		# extract results for first sample
+		r = yhat[0]
+		# calculate statistics, including AP
+		AP, _, _, _ = compute_ap(gt_bbox, gt_class_id, gt_mask, r["rois"], r["class_ids"], r["scores"], r['masks'])
+		# store
+		APs.append(AP)
+	# calculate the mean AP across all images
+	mAP = mean(APs)
+	return mAP
