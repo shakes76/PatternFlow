@@ -4,7 +4,8 @@ import numpy as np
 import tensorflow as tf
 from keras import backend
 from keras.initializers import RandomNormal
-from keras.layers import Add, Conv2D, Dense, Layer, LeakyReLU
+from keras.layers import Add, Conv2D, Dense, Input, Layer, LeakyReLU
+from keras.models import Model
 from PIL import Image
 
 from config import *
@@ -105,6 +106,19 @@ class AddNoise(Layer):
     def call(self, inputs):
         x, B = inputs
         return x + self.b * B
+
+# z-> w FC
+def mapping(depth=8):
+    z = Input(shape=(LDIM), name='z')
+    # 8 layers in paper. use 6 (sgan.depth+1) instead.
+    w = EqualDense(z, out_filters=LDIM)
+    w = LeakyReLU(0.2)(w)
+    for _ in range(depth):
+        w = EqualDense(w, out_filters=LDIM)
+        w = LeakyReLU(0.2)(w)
+    # replicate (256,7)
+    w = tf.tile(tf.expand_dims(w, 1), (1, depth, 1)) 
+    return Model(z, w)
 
 
 # Mini Batch Standadization

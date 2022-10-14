@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from keras.layers import Activation, AveragePooling2D, Flatten, Input, UpSampling2D
+from keras.layers import Activation, AveragePooling2D, Flatten, Input, LeakyReLU, UpSampling2D
 from keras.models import Model
 
-from clayers import *
+import clayers as custom_layers
 from config import *
 
 
@@ -17,7 +17,7 @@ class StyleGAN(Model):
         super(StyleGAN, self).__init__()
         self.DEPTH = int(np.log2(TRES) - np.log2(SRES))  # training depth
         self.current_depth = 0                           # current training depth
-        self.FC = self.mapping()                         # FC net
+        self.FC = custom_layers.mapping()                # FC net
         self.G = self.init_G()                           # generator
         self.D = self.init_D()                           # discriminator
     
@@ -30,10 +30,10 @@ class StyleGAN(Model):
     def mapping(self):
         z = Input(shape=(LDIM))
         # 8 layers in paper. use 6 instead.
-        w = EqualDense(z, out_filters=LDIM)
+        w = custom_layers.EqualDense(z, out_filters=LDIM)
         w = LeakyReLU(0.2)(w)
         for _ in range(self.DEPTH-1):
-            w = EqualDense(w, out_filters=LDIM)
+            w = custom_layers.EqualDense(w, out_filters=LDIM)
             w = LeakyReLU(0.2)(w)
         # replicate (256,7)
         w = tf.tile(tf.expand_dims(w, 1), (1, self.DEPTH+1, 1)) 
@@ -41,14 +41,14 @@ class StyleGAN(Model):
 
     def init_D(self):
         image = Input(shape=(SRES, SRES, CHANNELS))
-        x = EqualConv(image, out_filters=FILTERS[0], kernel=(1, 1))
+        x = custom_layers.EqualConv(image, out_filters=FILTERS[0], kernel=(1, 1))
         x = LeakyReLU(0.2)(x)
-        x = MinibatchStd()(x)
-        x = EqualConv(x, out_filters=FILTERS[0])
+        x = custom_layers.MinibatchStd()(x)
+        x = custom_layers.EqualConv(x, out_filters=FILTERS[0])
         x = LeakyReLU(0.2)(x)
-        x = EqualConv(x, out_filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
+        x = custom_layers.EqualConv(x, out_filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
         x = LeakyReLU(0.2)(x)
-        x = EqualDense(Flatten()(x), out_filters=CHANNELS)
+        x = custom_layers.EqualDense(Flatten()(x), out_filters=CHANNELS)
         return Model(image, x)
 
     # grow discriminator
@@ -67,14 +67,14 @@ class StyleGAN(Model):
 
         f = FILTERS[self.current_depth]
         
-        x2 = EqualConv(image, out_filters=f, kernel=(1, 1))
+        x2 = custom_layers.EqualConv(image, out_filters=f, kernel=(1, 1))
         x2 = LeakyReLU(0.2)(x2)
-        x2 = EqualConv(x2, out_filters=f)
+        x2 = custom_layers.EqualConv(x2, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
-        x2 = EqualConv(x2, out_filters=FILTERS[self.current_depth-1])
+        x2 = custom_layers.EqualConv(x2, out_filters=FILTERS[self.current_depth-1])
         x2 = LeakyReLU(0.2)(x2)
         x2 = AveragePooling2D()(x2)
-        x = WeightedSum()([x1, x2])
+        x = custom_layers.WeightedSum()([x1, x2])
 
         for i in range(5, len(self.D.layers)):
             x2 = self.D.layers[i](x2)
@@ -96,17 +96,17 @@ class StyleGAN(Model):
         B = Input(shape=(r, r, 1), name='B(0)')
         x = const
         
-        x = AddNoise()([x, B])
+        x = custom_layers.AddNoise()([x, B])
         x = LeakyReLU(0.2)(x)
-        x = AdaIN()([x, w])
-        x = EqualConv(x, out_filters=f)
+        x = custom_layers.AdaIN()([x, w])
+        x = custom_layers.EqualConv(x, out_filters=f)
         x = LeakyReLU(0.2)(x)
         
-        x = AddNoise()([x, B])
+        x = custom_layers.AddNoise()([x, B])
         x = LeakyReLU(0.2)(x)
-        x = AdaIN()([x, w])
-        x = EqualConv(x, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
-        x = Activation('tanh')(x)
+        x = custom_layers.AdaIN()([x, w])
+        x = custom_layers.EqualConv(x, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
+        x = Activation('tanh', name='tanh_0')(x)
         
         return Model([const, w, B], x)
 
@@ -129,27 +129,27 @@ class StyleGAN(Model):
         w = Input(shape=(LDIM), name=f'w({d})')
         B = Input(shape=(res, res, 1), name=f'B({d})')
         
-        x2 = EqualConv(end, out_filters=f)
+        x2 = custom_layers.EqualConv(end, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
-        x2 = AddNoise()([x2, B])
+        x2 = custom_layers.AddNoise()([x2, B])
         x2 = LeakyReLU(0.2)(x2)
-        x2 = AdaIN()([x2, w])
+        x2 = custom_layers.AdaIN()([x2, w])
         
-        x2 = EqualConv(x2, out_filters=f)
+        x2 = custom_layers.EqualConv(x2, out_filters=f)
         x2 = LeakyReLU(0.2)(x2)
-        x2 = AddNoise()([x2, B])
+        x2 = custom_layers.AddNoise()([x2, B])
         x2 = LeakyReLU(0.2)(x2)
-        x2 = AdaIN()([x2, w])
+        x2 = custom_layers.AdaIN()([x2, w])
         
         # to rgb
-        x2 = EqualConv(x2, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
+        x2 = custom_layers.EqualConv(x2, out_filters=CHANNELS, kernel=(1, 1), gain=1.)
         x2 = Activation('tanh', name=f'tanh_{d}')(x2)
 
         # stabilize
         self.G_ST = Model(self.G.input+[w,B], x2)
         
         # fade in
-        self.G = Model(self.G.input+[w,B], WeightedSum()([x1, x2]))
+        self.G = Model(self.G.input+[w,B], custom_layers.WeightedSum()([x1, x2]))
 
     # gradient constraint, to enforece unit norm gradient.
     # E[(grad(f(x))-1)^2]
@@ -185,9 +185,9 @@ class StyleGAN(Model):
         batch_size = tf.shape(real_images)[0]
         const = tf.ones([batch_size, SRES, SRES, FILTERS[0]])
 
-        
         fake_labels = -tf.ones(batch_size)
         real_labels = tf.ones(batch_size)
+        
         # train discriminator
         with tf.GradientTape() as tape:
             

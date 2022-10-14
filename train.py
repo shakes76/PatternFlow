@@ -1,7 +1,7 @@
 import os
 
 from keras.utils.vis_utils import plot_model
-from numpy import array, concatenate, log2
+from numpy import array, log2
 from tensorflow import keras
 
 from clayers import FadeInCallBack, SamplingCallBack
@@ -27,6 +27,7 @@ adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.0, beta_2=0.99, epsil
 model = StyleGAN()
 model.compile(d_optimizer=adam, g_optimizer=adam)
 
+plot_model(model.FC, to_file=os.path.join(MODEL_DIR, 'fc.png'))
 plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_g_base.png'))
 plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{SRES}x{SRES}_d_base.png'))
 
@@ -61,7 +62,7 @@ for depth in range(1, len(BSIZE)):
 
     print(f'-- resolution: {rs}x{rs}, filters: {ch} --')
 
-    # save model plots
+    # save model plot
     plot_model(model.G, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_g_fadein.png'))
     plot_model(model.D, to_file=os.path.join(MODEL_DIR, f'{rs}x{rs}_d_fadein.png'))
 
