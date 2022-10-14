@@ -1,11 +1,3 @@
-# COMP3710 Pattern Recognition Lab Assignment
-# By Thomas Jellett (s4583222)
-# HARD DIFFICULTY
-# Create a generative model of the OASIS brain using stable diffusion that
-# has a â€œreasonably clear image.â€
-
-# File: dataset.py
-# Description: Used to get the OASIS brain dataset
 
 import os
 import torch
@@ -17,7 +9,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 training_images = '/home/Student/s4583222/COMP3710/Images/Train'
-IMG_SIZE = 64
+IMG_SIZE = 256
 
 #Class for Brain Dataset. We do not care about the masked images
 class BrainDataset(Dataset):
@@ -47,6 +39,5 @@ def get_data_loaders(training_images, batch, workers, pin_mem):
         torchvision.transforms.Lambda(lambda t: (t * 2) - 1)
     ])
     training_dataset = BrainDataset(image_directory=training_images, transform=transforms)
-    training_loader = DataLoader(training_dataset, batch_size=batch, num_workers=workers, pin_memory=pin_mem)
+    training_loader = DataLoader(training_dataset, batch_size=batch, num_workers=workers, pin_memory=pin_mem, drop_last=True)
     return training_loader
-

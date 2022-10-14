@@ -27,13 +27,13 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 128 #If we drop this to 1, then len(training_loader) = 11,328
 NUM_EPOCHS = 1000
 NUM_WORKERS = 0
-IMG_HEIGHT = 64 #Actual is 256
-IMG_WIDTH = 64 #Actual is 256
+IMG_HEIGHT = 256 #Actual is 256
+IMG_WIDTH = 256 #Actual is 256
 PIN_MEMORY = False
 LOAD_MODEL = False
 TRAINING_DIR = '/home/Student/s4583222/COMP3710/Images/Train'
 
-NOISE_STEP = 300
+NOISE_STEP = 600
 
 BETA = torch.linspace(0.0001, 0.02, NOISE_STEP)
 ALPHA = 1. - BETA
@@ -49,20 +49,21 @@ def index_list(vals, t, x_shape):
     return out
 
 def forward_diffusion_to_image(image, t, device =DEVICE):
-    print(image.shape)
+    # print(image.shape)
     sqrt_alpha_hat = index_list(torch.sqrt(ALPHA_HAT), t, image.shape)
-    print(sqrt_alpha_hat.shape)
+    # sqrt_alpha_hat = sqrt_alpha_hat[:, :, :, None]
+    # print(sqrt_alpha_hat.shape)
     sqrt_one_minus_alpha_hat = index_list(torch.sqrt(1. - ALPHA_HAT), t, image.shape)
-    print(sqrt_one_minus_alpha_hat.shape)
+    # print(sqrt_one_minus_alpha_hat.shape)
     epsilon = torch.randn_like(image)
-    print(epsilon.shape)
+    # print(epsilon.shape)
 
     # print(f"Epoch: {(sqrt_alpha_hat * image).shape[0]} | iteration: {(sqrt_one_minus_alpha_hat * epsilon).shape[0]}")       
     x_1 = sqrt_alpha_hat.to(device) * image.to(device)
     x_2 = sqrt_one_minus_alpha_hat.to(device) * epsilon.to(device)
     return sqrt_alpha_hat.to(device) * image.to(device) + sqrt_one_minus_alpha_hat.to(device) * epsilon.to(device), epsilon.to(device)
 
-def show_image(image, epoch, i):
+def show_image(image, epoch, i, disc = "Blank"):
     reverse_transforms = transforms.Compose([
         transforms.Lambda(lambda t: (t + 1) / 2),
         transforms.Lambda(lambda t: t.permute(1, 2, 0)), # CHW to HWC
@@ -74,11 +75,12 @@ def show_image(image, epoch, i):
     if len(image.shape) == 4:
         image = image[0, :, :, :] 
     plt.imshow(reverse_transforms(image))
-    plt.savefig(f"{epoch}_{i}")
+    plt.savefig(f"{epoch}_{i}_{disc}")
+
 
 def model_loss(model, image, t):
     noisy_image, actual_noise = forward_diffusion_to_image(image, t)
-    show_image(noisy_image, 0, 0)
+    #show_image(noisy_image.detach().cpu(), 0, 0)
     predicted_noise = model(noisy_image, t)
     loss = F.l1_loss(actual_noise, predicted_noise)
     return loss
@@ -113,10 +115,10 @@ def sample_image(epoch, i, model):
     stepsize = int(NOISE_STEP/num_images)
     for ind in range(0, NOISE_STEP)[::-1]:
         t = torch.full((1,), ind, device=DEVICE, dtype=torch.long)
-        image = sample_image_at_timestep(noise, t, model)
+        noise = sample_image_at_timestep(noise, t, model)
         # if ind % stepsize == 0:
         #     plt.subplot(1, num_images, int(ind/stepsize)+1)
-        show_image(image.detach().cpu(), epoch, i)
+    show_image(noise.detach().cpu(), epoch, i, f"{ind}_backward")
     
     return
 #--------------Predict stuff-------------------------#
@@ -133,27 +135,27 @@ def training():
     
     #Training Loop
     for epoch in range(NUM_EPOCHS):
-        for i, images in enumerate(tqdm(training_loader)):
-            if i < 85:            
-                optimizer.zero_grad()
-            
-                time = torch.randint(0, NOISE_STEP, (BATCH_SIZE,), device=DEVICE).long()
-                loss = model_loss(model, images, time)
-                vloss.append(loss.item())            
-            
-                loss.backward()
-                optimizer.step()
+        for i, images in enumerate(tqdm(training_loader)):          
+            optimizer.zero_grad()
+        
+            time = torch.randint(0, NOISE_STEP, (BATCH_SIZE,), device=DEVICE).long()
+            loss = model_loss(model, images, time)
+            vloss.append(loss.item())            
+        
+            loss.backward()
+            optimizer.step()
 
-                #Save the model every 10 iterations in each epoch
-                if epoch % 1 == 0 and i % 10 == 0:
-                    print(f"Epoch: {epoch} | iteration: {i} | Loss: {loss.item()}")
-                    torch.save(model.state_dict(), "Model.pt")
-                    # plot_v = torch.tensor(vloss, device='cpu')
-                    # plt.title('Stable Diffusion Loss')
-                    # plt.plot(plot_v, color = 'blue')
-                    # plt.savefig('loss_plot')
-                if epoch % 1 == 0 and i == 0:
-                    sample_image(epoch, i, model)
+            #Save the model every 10 iterations in each epoch
+            if epoch % 1 == 0 and i % 10 == 0:
+                torch.save(model.state_dict(), "Model.pt")
+                plot_v = torch.tensor(vloss, device='cpu')
+                plt.title('Stable Diffusion Loss')
+                plt.plot(plot_v, color = 'blue')
+                plt.savefig('loss_plot')
 
+            if epoch % 5 == 0 and i == 0:
+                sample_image(epoch, i, model)
+                print(f"Epoch: {epoch} | iteration: {i} | Loss: {loss.item()}")
+                
 if __name__ == '__main__':
     training()
