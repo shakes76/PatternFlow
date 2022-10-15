@@ -22,7 +22,9 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
     #TODO clean up the mass amount of encapsulation violation
     #TODO sanitse inputs
     num_batches = data_loader.get_num_images_availible()//batch_size #required batches per epoch (we use just under the full set if there is a remainder, this prevents duplicates per epoch)
-    
+    style_GAN.track_mean(data_loader.get_mean())
+
+
     #Manual Labels to assign to batches when conducting supervised training on discriminator
     # real_labels = tf.ones(shape = (batch_size,))
     # fake_labels = tf.zeros(shape = (batch_size,)) Classification more like not classification ha gottem
@@ -76,7 +78,7 @@ def fit(style_GAN: modules.StyleGAN, data_loader: dataset.OASIS_loader, batch_si
             sample_directory = image_sample_output + "epoch_{}".format(style_GAN._epochs_trained)
             GANutils.make_fresh_folder(sample_directory)
             for s,sample in enumerate(samples):
-                GANutils.create_image(GANutils.denormalise(sample), sample_directory+"/{}".format(s+1))
+                GANutils.create_image(GANutils.denormalise(sample, style_GAN.get_mean()), sample_directory+"/{}".format(s+1))
 
         #Save model if appropriate
         if model_output is not None:
@@ -88,11 +90,11 @@ def train(model: str = "model/", image_source: str = "images/", epochs: int = 10
     #TODO Docstring
 
     #Constant training parameters (Configured for training locally, using RTX2070)
-    BATCH_SIZE = 16
+    BATCH_SIZE = 64
     TRAINING_HISTORY_FILE = "history.csv"
     IMAGE_SAMPLE_COUNT = 5
     IMAGE_SAMPLE_FOLDER = "output/"
-    COMPRESSION_SIZE = 64
+    COMPRESSION_SIZE = 32
     
     IMAGE_SIZE = 256
     GENERATOR_INIT_SIZE = 4

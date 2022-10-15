@@ -11,7 +11,7 @@ import csv
 from modules import StyleGAN
 
 
-def denormalise(data: np.array) -> np.array:
+def denormalise(data: np.array , denormalisation_mean: float) -> np.array:
     """
     Take output of GAN and undo data preprocessing procedure to return
     a matrix of integer greyscale image pixel intensities suitable to
@@ -19,14 +19,15 @@ def denormalise(data: np.array) -> np.array:
 
     Args:
         data (np.array): normalised data
+        denormalisation_mean (float): mean used to center original data
 
     Returns:
         np.array: denormalized data
     """
     data = np.array(data) #cast to numpy array from any array like (Allows Tensor Compatibility)
-    # decentered = data + mean
-    # return (decentered * 255).astype(np.uint8)
-    return (data*255).astype(np.uint8)
+    decentered = data + denormalisation_mean
+    return (decentered * 255).astype(np.uint8)
+    # return (data*255).astype(np.uint8)
 
 
 def create_image(data: np.array, filename: str = None) -> Image:

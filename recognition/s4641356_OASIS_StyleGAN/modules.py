@@ -104,8 +104,8 @@ class StyleGAN():
     Instead we indirectly call the relevent functionality
     """
     METRICS = ["discrim_loss_real", "discrim_loss_fake","gen_loss"] #GAN training metrics 
-    GEN_LEARN_RATE = 0.0001
-    DISCRIM_LEARN_RATE = 0.000025
+    GEN_LEARN_RATE =  0.00025
+    DISCRIM_LEARN_RATE = 0.0002
 
 
     def __init__(self, output_res: int = 256, start_res: int = 4, latent_dim: int = 512, existing_model_folder: str = None) -> None:
@@ -136,7 +136,7 @@ class StyleGAN():
         self._generator = generator
         if generator is None:
             self._generator = self.get_generator()
-        self._generator_base = tf.zeros(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #start with zeros as the background of OASIS images are black, will need repeated for batches
+        self._generator_base = tf.ones(shape = (1,self._start_res//2,self._start_res//2,self._latent_dim)) #TODO the ones fixed shit?? start with zeros as the background of OASIS images are black, will need repeated for batches
 
         #initialise discriminator
         self._discriminator = discriminator
@@ -276,4 +276,11 @@ class StyleGAN():
 
         self._make_model(int(params[0]),int(params[1]),int(params[2]),int(params[3]),generator,discriminator)
         print("Successfully found and loaded StyleGAN located in \"{}\"".format(folder))
+
+    def track_mean(self, mean: float) -> None:
+        #TODO docstring
+        self._mean = mean
+
+    def get_mean(self) -> float:#TODO docstring
+        return self._mean
         

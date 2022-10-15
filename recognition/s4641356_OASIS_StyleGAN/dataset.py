@@ -10,6 +10,7 @@ class OASIS_loader():
     """
 
     CACHE = "cache/"
+    MEAN_CACHE = "cache_mean.npy"
 
     IMAGE_RES = 256
     CROP_PIXELS = 35 #number of blackspace pixels to crop off per side
@@ -31,17 +32,18 @@ class OASIS_loader():
         self._num_images_availible = len(self._image_list)
         
         print("Found {} Images".format(self._num_images_availible))
-
+        self._normalisation_mean = None
         #check for prexisting processed data
-        if os.path.exists(OASIS_loader.CACHE) and (len(os.listdir(OASIS_loader.CACHE)) == self._num_images_availible):
+        if os.path.exists(OASIS_loader.CACHE) and os.path.exists(OASIS_loader.MEAN_CACHE) and (len(os.listdir(OASIS_loader.CACHE)) == self._num_images_availible):
             print("Found existing cache, shall use this")
+            self._normalisation_mean = np.load(OASIS_loader.MEAN_CACHE)
 
         else:
             print("Normalising...".format(self._num_images_availible))
 
             #Temporarily load all images to calculate shared mean and normalise.
             image_vector = np.stack([self._load_image(self._filepath + image_name, resolution) for image_name in self._image_list], axis = 0)
-            image_vector = self._normalise(image_vector)
+            image_vector, self._normalisation_mean = self._normalise(image_vector)
             image_vector = np.split(image_vector, self._num_images_availible, axis = 0)
             print("Normalisation Complete, Caching:")
 
@@ -51,8 +53,8 @@ class OASIS_loader():
                 np.save(OASIS_loader.CACHE + str(i) + ".npy", image_vector[i])
                 print("{}/{}".format(i,self._num_images_availible))
             
-            # #cache mean to prevent needing to recalculate in future
-            # np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
+            #cache mean to prevent needing to recalculate in future
+            np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
 
             print("Data is prepped and ready to go!")
 
@@ -89,14 +91,14 @@ class OASIS_loader():
         return tf.convert_to_tensor(np.concatenate(data, axis = 0))
 
 
-    # def get_mean(self) -> float:
-    #     """
-    #     Returns the mean used to normalise data, which can be used to denormalise generated samples
+    def get_mean(self) -> float:
+        """
+        Returns the mean used to normalise data, which can be used to denormalise generated samples
 
-    #     Returns:
-    #         float: Group mean used to center normalised data
-    #     """
-    #     return self._normalisation_mean
+        Returns:
+            float: Group mean used to center normalised data
+        """
+        return self._normalisation_mean
 
     def get_num_images_availible(self) -> int:
         """
@@ -132,10 +134,10 @@ class OASIS_loader():
         Args:
             image_vector (np.array): tensor of image data to normalize
         Returns:
-           np.array: Normalised data vector
+           np.array: Normalised data vector TODO fix type hunts and dostring
         """
-        # normed_vector = image_vector/255
-        # mean = np.mean(normed_vector)
-        # return (normed_vector - mean), mean
-        return image_vector/255
+        normed_vector = image_vector/255
+        mean = np.mean(normed_vector)
+        return (normed_vector - mean), mean
+        # return image_vector/255
 
