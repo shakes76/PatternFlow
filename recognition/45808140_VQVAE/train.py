@@ -45,7 +45,7 @@ def get_codebooks(vq, embeds):
 
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 
-def vq_train(img_shape, train_var):
+def vq_train(train_data, train_var, img_shape):
     VQVAE = VQVAE_model(img_shape, train_var, 16, 128)
     VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
     print(VQVAE.get_model().summary())
@@ -76,7 +76,14 @@ def pcnn_train(VQVAE, train_data):
     )
 
     with tf.device('/GPU:0'):
-        pcnn.fit(codebook_data, batch_size=batch_size, epochs=pcnn_epoch)
+        history = pcnn.fit(codebook_data, batch_size=batch_size, epochs=pcnn_epoch)
+
+    plt1 = plt.figure()
+    plt1.plot(history.history['loss'], label='loss')
+    plt1.show()
+    plt1.savefig('pcnn_result_graph.png')
+
+    pcnn.save_weights('pcnn_weights')
 
     return PCNN
 

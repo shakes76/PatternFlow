@@ -28,17 +28,20 @@ class VQ(layers.Layer):
         
         comm_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
         codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
+        
         self.add_loss(self.beta * comm_loss + codebook_loss)
         
         return x + tf.stop_gradient(quantized - x)
     
     def get_code_indices(self, flattened_in):
+        
         sim = tf.matmul(flattened_in, self.embeddings)
+        
         dists = (tf.reduce_sum(flattened_in ** 2, axis=1, keepdims=True) 
                  + tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * sim)
         
         encode_ind = tf.argmin(dists, axis=1)
-        return encode_ind  
+        return encode_ind 
 
 class Encoder():
 
@@ -47,11 +50,11 @@ class Encoder():
         self.encoder.add(keras.Input(shape=(input_x, input_x, 1)))
         self.encoder.add(layers.Conv2D(32, 3, activation='relu', strides=2, padding='same'))
         self.encoder.add(layers.Conv2D(64, 3, activation='relu', strides=2, padding='same'))
-        self.encoder.add(layers.Conv2D(latent_dim, 1, activation='relu', padding='same'))
+        self.encoder.add(layers.Conv2D(latent_dim, 1, padding='same'))
 
     def get_encoder(self):
         return self.encoder
-
+    
 class Decoder():
 
     def __init__(self, latent_dim=16):
@@ -124,7 +127,7 @@ class VQVAE_model(keras.Model):
     @property
     def metrics(self):
         return [self.total_loss, self.vq_loss, self.recons_loss]
-
+        
 class PixelCNNLayers(layers.Layer):
     
     def __init__(self, mask_type, **kwargs):

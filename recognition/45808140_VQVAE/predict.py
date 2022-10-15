@@ -1,12 +1,17 @@
 from dataset import *
 from modules import *
+from train import *
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow_probability as tfp
 
-(train_data, test_data, train_variance) = load_data('AD_NC')
+root_path = 'AD_NC'
+img_shape = 256
+vq_epoch = 5
+pcnn_epoch = 3
+batch_size = 32
 
 def show_reconstructed(original, reconstructed, codebook_indices):
     fig = plt.figure()
@@ -43,17 +48,6 @@ def VQVAE_result(vqvae, dataset):
 
     for test_image, reconstructed_image, codebook in zip(test_images, recons, codebook_ind):
         show_reconstructed(test_image, reconstructed_image, codebook)
-
-def get_codebooks(vq, embeds):
-    def mapper(x):
-        encoded_outputs = vq.get_encoder()(x)
-        flat_enc_outputs = tf.reshape(encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
-
-        code_ind = vq.get_vq().get_code_indices(flat_enc_outputs)
-        code_ind = tf.reshape(code_ind, tf.shape(encoded_outputs)[:-1])
-        return code_ind
-    
-    return mapper
 
 def generate_PixelCNN(vq, pcnn, n):
     encoded_outputs = vq.get_encoder().predict(train_data)
@@ -99,3 +93,8 @@ def generate_PixelCNN(vq, pcnn, n):
         ax2.axis("off")
         fig.show()
         fig.savefig('generated.png')
+
+(train_data, test_data, train_var) = load_data(root_path, batch_size)
+
+vqvae_trained = vq_train(train_data=train_data, train_var=train_var, img_shape=img_shape)
+pcnn_trained = pcnn_train(vqvae_trained, train_data)
