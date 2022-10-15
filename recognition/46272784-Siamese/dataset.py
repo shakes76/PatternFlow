@@ -14,7 +14,7 @@ def transform_images(img):
     return img
 
 def loadFile(dir):
-    print('--Begin data loading')
+    print('>> Begin data loading')
     train_AD_dir = os.path.join(dir, 'train/AD')
     train_NC_dir = os.path.join(dir, 'train/NC')
     test_AD_dir = os.path.join(dir, 'test/AD')
@@ -23,41 +23,71 @@ def loadFile(dir):
     print('-Directory of the Training files of class NC is: {}'.format(train_NC_dir))
     print('-Directory of the Testing files of class AD is: {}'.format(test_AD_dir))
     print('-Directory of the Testing files of class NC is: {}'.format(test_NC_dir))
-    print('-Loading Training Data of class AD...')
+    print('\n> 1/6 Loading Training Data of class AD...')
     train_AD_ds = utils.image_dataset_from_directory(train_AD_dir, 
                                                      labels=None,
                                                      label_mode=None,
+                                                     validation_split=0.2,
+                                                     subset="training",
+                                                     seed=1,
                                                      image_size=(256, 240),
                                                      shuffle=True,
                                                      batch_size=8)
-    print('-Loading Training Data of class NC...')
+    print('\n> 2/6 Loading Validation Data of class NC...')
     train_NC_ds = utils.image_dataset_from_directory(train_NC_dir, 
                                                      labels=None,
                                                      label_mode=None,
+                                                     validation_split=0.2,
+                                                     subset="training",
+                                                     seed=1,
                                                      image_size=(256, 240),
                                                      shuffle=True,
                                                      batch_size=8)
-    print('-Loading Testing Data of class AD...')
+    print('\n> 3/6 Loading Validation Data of class NC...')
+    valid_AD_ds = utils.image_dataset_from_directory(train_AD_dir, 
+                                                     labels=None,
+                                                     label_mode=None,
+                                                     validation_split=0.2,
+                                                     subset="validation",
+                                                     seed=1,
+                                                     image_size=(256, 240),
+                                                     shuffle=True,
+                                                     batch_size=8)
+    print('\n> 4/6 Loading Validation Data of class NC...')
+    valid_NC_ds = utils.image_dataset_from_directory(train_NC_dir, 
+                                                     labels=None,
+                                                     label_mode=None,
+                                                     validation_split=0.2,
+                                                     subset="validation",
+                                                     seed=1,
+                                                     image_size=(256, 240),
+                                                     shuffle=True,
+                                                     batch_size=8)
+    print('\n> 5/6 Loading Testing Data of class AD...')
     test_AD_ds = utils.image_dataset_from_directory(test_AD_dir, 
                                                     labels=None,
                                                     label_mode=None,
                                                     image_size=(256, 240),
                                                     shuffle=True,
                                                     batch_size=8)
-    print('-Loading Testing Data of class NC...')
+    print('\n> 6/6 Loading Testing Data of class NC...')
     test_NC_ds = utils.image_dataset_from_directory(test_NC_dir, 
                                                     labels=None,
                                                     label_mode=None,
                                                     image_size=(256, 240),
                                                     shuffle=True,
                                                     batch_size=8)
-    print('-Mapping datasets to greyscale...')
+    print('\n> Mapping datasets to greyscale...')
     train_AD_ds = train_AD_ds.map(transform_images)
-    test_AD_ds = test_AD_ds.map(transform_images)
     train_NC_ds = train_NC_ds.map(transform_images)
+    
+    valid_AD_ds = valid_AD_ds.map(transform_images)
+    valid_NC_ds = valid_NC_ds.map(transform_images)
+    
+    test_AD_ds = test_AD_ds.map(transform_images)
     test_NC_ds = test_NC_ds.map(transform_images)
-    print('--Data loading complete')
-    return train_AD_ds, train_NC_ds, test_AD_ds, test_NC_ds
+    print('\n>> Data loading complete')
+    return train_AD_ds, train_NC_ds, valid_AD_ds, valid_NC_ds,test_AD_ds, test_NC_ds
     
 def plotExample(ds):
     print(ds)
@@ -70,6 +100,6 @@ def plotExample(ds):
         break
 
 # Code for testing the functions
-ta, tn, va, vn = loadFile('F:/AI/COMP3710/data/AD_NC/')
+ta, tn, va, vn, ta, tn = loadFile('F:/AI/COMP3710/data/AD_NC/')
 plotExample(ta)
 
