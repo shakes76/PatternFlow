@@ -30,6 +30,7 @@ class Predictor():
         the loaded model
         :param weight_path: the path to the desired YOLOv5 weights
         """
+        # model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path, device=torch.device('cpu'))  # local model
         model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path)  # local model
         return model
     

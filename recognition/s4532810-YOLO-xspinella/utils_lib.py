@@ -282,8 +282,8 @@ def Bar_Preds(pred_types: list, out_fp: str):
     :param out_fp: output file path
     """
     num_TP, num_TN, num_FP, num_FN = pred_types
-    tot_p = num_TP + num_FP
-    tot_n = num_FN + num_TN
+    tot_p = num_TP + num_FN
+    tot_n = num_FP + num_TN
     bar_list = [num_TP, num_TN, num_FP, num_FN, tot_p, tot_n]
 
     sections = ['TP', 'TN', 'FP', 'FN', 'Tot_P', 'Tot_N']

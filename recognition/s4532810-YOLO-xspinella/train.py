@@ -84,7 +84,7 @@ def test():
     Runs the trained YOLOv5 model on the test dataset, and saves results to
     runs/val/exp_
     I've already run training and reccommend the weights at this path:
-            y0lov5_LC/runs/train/exp7/weights/best.pt
+            
     """
     ### Specify path to trained weights ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
