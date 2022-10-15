@@ -1,4 +1,4 @@
-# **Stable Diffusion on OASIS Brain Dataset**
+# **Stable Diffusion on the OASIS Brain Dataset**
 **COMP3710 Report by Thomas Jellett (45832220)**
 
 ## **Stable Diffusion:**
@@ -8,8 +8,8 @@ There are two main processes in diffusion, the ***Forward Diffusion Process*** a
 - **Forward Diffusion Process** is when noise is gradually added to the image until you get pure noise. And,
 - **Reverse Diffusion Process** is the learned process where a neural network is trained to denoise the image from pure noise to an actual image.
 
-![Dog_diffusion](https://miro.medium.com/max/828/0*v12mDJwIKWn-_y8L.png)
-Reference:  https://towardsdatascience.com/stable-diffusion-best-open-source-version-of-dall-e-2-ebcdf1cb64bc
+![Generated_brain](../Git%20images/455_0_0_backward.png)
+
 
 ## **File Structure:**
 The code was written in python and has been split up into 4 files. Each file serves a different purpose.
@@ -20,7 +20,7 @@ The code was written in python and has been split up into 4 files. Each file ser
 - **predict.py**: The predict file loads up a previously trained model and generates results.
 
 ## **Loading Training Data:**
-
+To load the Oasis Brain 
 ## **UNET Model:**
 
 ## **Diffusion:**
