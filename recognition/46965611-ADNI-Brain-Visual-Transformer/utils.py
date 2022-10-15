@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from dataset import DataLoader
-from modules import Patch_Layer
+from modules import PatchLayer
 from train import IMAGE_SIZE, PATCH_SIZE
 
 def plot_image(dataset):
@@ -35,7 +35,7 @@ def plot_patches(dataset):
         tf.convert_to_tensor([image]), size=(IMAGE_SIZE, IMAGE_SIZE)
     )
 
-    patches = Patch_Layer(patch_size=16)(resized_image)
+    patches = PatchLayer(patch_size=PATCH_SIZE)(resized_image)
     print(f"Image size: {IMAGE_SIZE} X {IMAGE_SIZE}")
     print(f"Patch size: {PATCH_SIZE} X {PATCH_SIZE}")
     print(f"Patches per image: {patches.shape[1]}")
