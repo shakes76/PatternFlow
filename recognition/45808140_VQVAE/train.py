@@ -43,9 +43,7 @@ def get_codebooks(vq, embeds):
     
     return mapper
 
-(train_data, test_data, train_var) = load_data(root_path, batch_size)
-
-def vq_train(train_data, train_var, img_shape):
+def vq_train(train_data, test_data, train_var, img_shape):
     VQVAE = VQVAE_model(img_shape, train_var, 16, 128)
     VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
     print(VQVAE.get_model().summary())
@@ -53,13 +51,15 @@ def vq_train(train_data, train_var, img_shape):
     with tf.device('/GPU:0'):
         history = VQVAE.fit(train_data, epochs=vq_epoch, batch_size=batch_size, callbacks=[ssim(test_data)])
 
-    plt1 = plt.figure()
-    plt1.plot(history.history['loss'], label='loss')
-    plt1.plot(history.history['vq_loss'], label = 'vq_loss')
-    plt1.plot(history.history['reconstruction_loss'], label = 'reconstruction_loss')
-    plt1.plot(history.history['ssim'], label = 'similarity')
-    plt1.show()
-    plt1.savefig('vq_result_graph.png')
+    plt.plot(history.history['loss'], label='loss')
+    plt.plot(history.history['vq_loss'], label = 'vq_loss')
+    plt.plot(history.history['reconstruction_loss'], label = 'reconstruction_loss')
+    plt.plot(history.history['avg_ssim'], label = 'similarity')
+    plt.legend(loc='upper right')
+    plt.ylim([0,5])
+    plt.xlabel('Epoch')
+    plt.show()
+    plt.savefig('vq_result_graph.png')
 
     VQVAE.save_weights('vq_weights')
     return VQVAE
@@ -78,10 +78,9 @@ def pcnn_train(VQVAE, train_data):
     with tf.device('/GPU:0'):
         history = pcnn.fit(codebook_data, batch_size=batch_size, epochs=pcnn_epoch)
 
-    plt1 = plt.figure()
-    plt1.plot(history.history['loss'], label='loss')
-    plt1.show()
-    plt1.savefig('pcnn_result_graph.png')
+    plt.plot(history.history['loss'], label='loss')
+    plt.show()
+    plt.savefig('pcnn_result_graph.png')
 
     pcnn.save_weights('pcnn_weights')
 
