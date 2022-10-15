@@ -77,15 +77,14 @@ def train():
         return 0
         
     os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml \
-        --weights yolov5{yolo_model}.pt")
+        --weights yolov5{yolo_model}.pt --hyp yolov5_LC/data/hyps/hyp.VOC.yaml")
 
 def test():
     """
     Runs the trained YOLOv5 model on the test dataset, and saves results to
     runs/val/exp_
     I've already run training and reccommend the weights at this path:
-            yolov5_LC/runs/train/exp2/weights/best.pt  
-            /home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp1/v5m_exp1_train/weights/best.pt  
+            y0lov5_LC/runs/train/exp7/weights/best.pt
     """
     ### Test on test set ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
