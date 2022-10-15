@@ -32,27 +32,27 @@ def load_data():
         data_validate.append(os.path.join(validate_path, filename))
     
     train = []
-    for i in range(batch_size):
-        img = random.sample(data_train)
+    imgs = random.sample(data_train, batch_size)
+    for img in imgs:
         img = Image.open(img)
         img = preprocess(img)
         train.append(img)
     train = np.array(train).astype('float32')
 
     test = []
-    for i in range(batch_size):
-        img = random.sample(data_test)
+    imgs = random.sample(data_test, batch_size)
+    for img in imgs:
         img = Image.open(img)
         img = preprocess(img)
         test.append(img)
     test = np.array(test).astype('float32')
 
     validate = []
-    for i in range(batch_size):
-        img = random.sample(data_validate)
+    imgs = random.sample(data_validate, batch_size)
+    for img in imgs:
         img = Image.open(img)
         img = preprocess(img)
-        test.append(img)
+        validate.append(img)
     validate = np.array(validate).astype('float32')
     
     data_variance = np.var(train / 255.0)
