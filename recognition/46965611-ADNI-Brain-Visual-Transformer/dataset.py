@@ -6,47 +6,34 @@ Data loader for loading and preprocessing data.
 Author: Joshua Wang (Student No. 46965611)
 Date Created: 11 Oct 2022
 """
-import os
-import numpy as np
-from keras.utils import img_to_array, load_img
-from sklearn.model_selection import train_test_split
+import tensorflow as tf
 
 class DataLoader():
-    def __init__(self, directory="C:/AD_NC"):
+    def __init__(self, directory, image_size=128, batch_size=32):
         self.directory = directory
+        self.image_size = image_size
+        self.batch_size = batch_size
 
     def load_data(self):
         """
-        Loads the dataset that will be used and shuffles the data.
+        Loads the dataset that will be used into Tensorflow datasets.
         """
-        print("Loading data...")
+        train_data = tf.keras.preprocessing.image_dataset_from_directory(
+            self.directory + "/train", labels='inferred',
+            image_size=[self.image_size, self.image_size],
+            shuffle=True, batch_size=self.batch_size
+        )
 
-        # Read data from folders in directory
-        test_AD = self.read_data(self.directory + "/test/AD")
-        test_NC = self.read_data(self.directory + "/test/NC")
-        train_AD = self.read_data(self.directory + "/train/AD")
-        train_NC = self.read_data(self.directory + "/test/NC")
+        test_data = tf.keras.preprocessing.image_dataset_from_directory(
+            self.directory + "/test", labels='inferred',
+            image_size=[self.image_size, self.image_size],
+            shuffle=True, batch_size=self.batch_size
+        )
 
-        # Join datasets together
-        X = np.array(test_AD + test_NC + train_AD + train_NC)
-        y = np.concatenate((np.ones(len(test_AD)), np.zeros(len(test_NC)),
-                np.ones(len(train_AD)), np.zeros(len(train_NC))))
+        # Take half of the 9000 images from the test set as validation data
+        validation_data = test_data.take(4500)
 
-        # Shuffle dataset and get training, testing and validation sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y,
-                test_size=0.2, shuffle=True)
-        X_train, X_val, y_train, y_val = train_test_split(X_train,
-                y_train, test_size=0.2)
+        # Use remaining 4500 images as test set
+        test_data = test_data.skip(4500).take(4500)
 
-        print("Finished loading data.")
-
-        return X_train, X_test, X_val, y_train, y_test, y_val
-    
-    def read_data(self, path):
-        """
-        Reads images from a given path into arrays.
-        """
-        set = []
-        for id in os.listdir(path):
-            set.append(img_to_array(load_img(path + "/" + id)))
-        return set
+        return train_data, validation_data, test_data
