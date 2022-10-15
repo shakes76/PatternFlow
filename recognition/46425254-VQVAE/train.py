@@ -8,7 +8,6 @@ import modules
 import dataset
 import visualise as vis
 
-import CNNcopy
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
 
@@ -27,12 +26,12 @@ class VQ_Training():
         self.data = dataset.DataLoader(train_path)
         self.data2 = dataset.DataLoader(test_path)
         self.training_data = \
-            utils.data.DataLoader(self.data, batch_size = 15, shuffle = True)
+            utils.data.DataLoader(self.data, batch_size = 16, shuffle = True)
         
         self.testing_data = \
             utils.data.DataLoader(self.data, batch_size = 1, shuffle = True)
         
-        self.model = modules.VQVAE().to(self.device)
+        self.model = modules.VQVAE(256,64,0.25).to(self.device)
         
         self.optimizer = \
             torch.optim.Adam(self.model.parameters(), lr = learning_rate)
@@ -100,17 +99,18 @@ class VQ_Training():
         for i, _ in self.testing_data:
             i = i.view(-1, 3, 256, 256).to(self.device).detach()
             real_grid = torchvision.utils.make_grid(i, normalize = True)
-            decoded_img , _ = self.model(i)
-            decoded_img = decoded_img.view(-1, 3, 256,256).to(self.device).detach()
-            decoded_grid = \
-                torchvision.utils.make_grid(decoded_img, normalize = True)
-            decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
-            real_grid = real_grid.to("cpu").permute(1,2,0)
-            val =\
-                ssim(real_grid.numpy(), decoded_grid.numpy(), channel_axis = -1)
-            if max_ssim < val:
-                max_ssim = val
-        ssim_list.append(val)
+            with torch.no_grad():
+                decoded_img , _ = self.model(i)
+                decoded_img = decoded_img.view(-1, 3, 256,256).to(self.device).detach()
+                decoded_grid = \
+                    torchvision.utils.make_grid(decoded_img, normalize = True)
+                decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
+                real_grid = real_grid.to("cpu").permute(1,2,0)
+                val =\
+                    ssim(real_grid.numpy(), decoded_grid.numpy(), channel_axis = -1)
+                if max_ssim < val:
+                    max_ssim = val
+                ssim_list.append(val)
         print("The Average SSIM for the test data is " + (str) (np.average(ssim_list)))
         print("The maximum SSIM is " + (str) (np.amax(ssim_list)))
         
@@ -119,33 +119,37 @@ data_path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\ker
 data_path2 = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\test"
 
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
-#lr = 0.0002
-#epochs  = 15
+lr = 0.0002
+epochs  = 15
 
 #trainer = VQ_Training(lr, epochs, data_path, data_path2, 
-                    #  save = trained, visualise=True)
+                  #    save = trained, visualise=True)
 #trainer.train()
 #trainer.test()
 class PixelCNN_Training():
     
-    def __init__(self, lr, epochs, model_path, data_path, save = None):
+    def __init__(self, lr, epochs, model_path, data_path, num_embeddings, 
+                 latent_dim,save = None):
+        
+        self.num_embeddings = num_embeddings
+        self.latent_dim = latent_dim
+        
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.lr = lr
         self.epochs = epochs
         self.model_path = model_path
-        model = modules.VQVAE()
+        model = modules.VQVAE(num_embeddings,latent_dim,0.25)
         model.load_state_dict(torch.load(model_path))
         model.eval()
         self.model = model
         self.epochs = epochs
         self.data = dataset.DataLoader(data_path)
         self.training_data = \
-            utils.data.DataLoader(self.data, batch_size = 16, shuffle = True)
+            utils.data.DataLoader(self.data, batch_size = 32, shuffle = True)
         
-       # self.loss = nn.functional.cross_entropy()
         self.save = save
         
-        self.PixelCNN_model = modules.PixelCNN().to(self.device)
+        self.PixelCNN_model = modules.PixelCNN(num_embeddings).to(self.device)
         self.optimizer = \
             torch.optim.Adam(self.PixelCNN_model.parameters(), lr = lr)
             
@@ -153,7 +157,7 @@ class PixelCNN_Training():
         epoch = 0
         training_loss_arr = []
 
-        while epoch != self.epochs+1:
+        while epoch != self.epochs:
             
             sub_step = 0
             for i, _ in self.training_data:
@@ -162,7 +166,6 @@ class PixelCNN_Training():
                 with torch.no_grad():
                     encoder = self.model.get_encoder().to(self.device)
                     VQ = self.model.get_VQ().to(self.device)
-                    decoder = self.model.get_decoder().to(self.device)
                     i = i.to(self.device)
                     encoded = encoder(i)
                     encoded = encoded.permute(0, 2, 3, 1).contiguous()
@@ -171,7 +174,7 @@ class PixelCNN_Training():
                     a, b = VQ.argmin_indices(flat_encoded)
               
                     b = b.view(-1, 64, 64)
-                    c = nn.functional.one_hot(b, num_classes = 128).float()
+                    c = nn.functional.one_hot(b, num_classes = self.num_embeddings).float()
                     c = c.permute(0, 3, 1, 2)
                     #b = b.permute(1, 0, 2, 3).contiguous()
                 prior = self.PixelCNN_model(c)
@@ -191,10 +194,10 @@ class PixelCNN_Training():
                     training_loss_arr.append(total_loss.item())
                     if self.save != None:
                         torch.save(self.PixelCNN_model.state_dict(), self.save)
-                    gen_image(self.model_path, self.save)
+                    gen_image(self.model_path, self.save, self.num_embeddings, 
+                              self.latent_dim)
                     
-                    #if self.visualise == True:
-                     #   self.visualiser.VQVAE_discrete((0,0))
+
                 sub_step += 1
                 
                 
@@ -210,21 +213,21 @@ class PixelCNN_Training():
         plt.plot(np.arange(0, self.epochs), training_loss_arr)
         plt.show()
         
-def gen_image(train_path, model_path):
+def gen_image(train_path, model_path, num_embeddings, latent_dim):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = modules.VQVAE()
+    model = modules.VQVAE(num_embeddings,latent_dim,0.25)
     state_dict = torch.load(train_path, map_location="cpu")
     model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
     
-    cnn = modules.PixelCNN()
+    cnn = modules.PixelCNN(num_embeddings)
     state_dict = torch.load(model_path, map_location="cpu")
     cnn.load_state_dict(state_dict)
     cnn.to(device)
     cnn.eval()
  
-    prior = torch.zeros((1, 128, 64, 64), device = device)
+    prior = torch.zeros((1, num_embeddings, 64, 64), device = device)
     
     _, channels, rows, cols = prior.shape
     
@@ -232,33 +235,25 @@ def gen_image(train_path, model_path):
     with torch.no_grad():
         for i in range(rows):
             for j in range(cols):
-                # argmax removes things that is not predicted
                 out = cnn(prior.float())
-                #print(out.shape)
-                #.argmax(1)
+
                 out = out.permute(0,2,3,1).contiguous()
-                #probs = nn.functional.one_hot(out, num_classes = 128).permute(0, 3, 1, 2).contiguous()
                 distribution = torch.distributions.categorical.Categorical(logits = out)
                 sampled = distribution.sample()
-                #print(sampled.shape)
-                sampled = nn.functional.one_hot(sampled, num_classes = 128
+                sampled = nn.functional.one_hot(sampled, num_classes = num_embeddings
                                                 ).permute(0, 3, 1, 2).contiguous()
-                #print(sampled.shape)
                 prior[:, :, i , j] = sampled[:, :, i, j]
-          
-    #prior = prior.argmax(1)
-    #prior = nn.functional.one_hot(prior, num_classes= 128)
+
     _, ax = plt.subplots(1,2)
     ax[0].imshow(prior.argmax(1).view(64,64).to("cpu"))
     ax[0].title.set_text("Latent Generation")
- #   prior = nn.functional.one_hot(prior, num_classes= 128)
- #   prior = prior.permute(0, 3, 1, 2).contiguous()
-    prior = prior.view(1,128,-1)
+
+    prior = prior.view(1,num_embeddings,-1)
     prior = prior.permute(0,2,1).float()
     quantized_bhwc = torch.matmul(prior, 
                                   model.get_VQ().embedding_table.weight)
     
-    quantized_bhwc = quantized_bhwc.view(1, 64, 64 ,16)
+    quantized_bhwc = quantized_bhwc.view(1, latent_dim, 64 ,64)
     quantized = quantized_bhwc.permute(0, 3, 1, 2).contiguous()
     
     decoded = model.get_decoder()(quantized).to(device)
@@ -267,7 +262,6 @@ def gen_image(train_path, model_path):
     
     decoded_grid = \
         torchvision.utils.make_grid(decoded, normalize = True)
-    #print(decoded_grid.shape)
     decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
     
     ax[1].imshow(decoded_grid)
@@ -275,7 +269,9 @@ def gen_image(train_path, model_path):
     plt.show()
         
 save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model.pt"
-pixel_cnn_trainer = PixelCNN_Training(0.0005, 300, trained,data_path, save = save_model)
+pixel_cnn_trainer = PixelCNN_Training(0.0003, 300, 
+                                      trained,data_path, save = save_model, 
+                                      num_embeddings = 256, latent_dim = 64)
 pixel_cnn_trainer.train()
 
 

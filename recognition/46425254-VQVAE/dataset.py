@@ -29,8 +29,8 @@ class DataLoader(Dataset):
     """
     def __init__(self, data_path):
         #Normalise
-        trans = transforms.Compose([transforms.ToTensor(), 
-                                    transforms.Normalize((0.5,), (0.5,))])
+        trans = transforms.Compose([transforms.ToTensor(),
+                                   transforms.Normalize((0.5,), (0.5,))])
         data_loader = torchvision.datasets.ImageFolder(root = data_path, transform 
                                         = trans)
         

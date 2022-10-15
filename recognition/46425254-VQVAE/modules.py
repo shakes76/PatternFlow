@@ -8,15 +8,16 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
 image_dim = (3,256,256)
-learning_rate = 0.0001
-latent_space = 16
-commitment_loss = 0.25
+#learning_rate = 0.0001
+#latent_space = 256
+#num_embeddings = 256
+#commitment_loss = 0.25
 
 class Encoder(nn.Module):
     
-    def __init__(self):
+    def __init__(self, latent_space):
         super(Encoder, self).__init__()
-        
+        self.latent_space = latent_space
         #3 convolutional layers for a latent space of 64
         self.model = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=4, stride = 2, padding = 1),
@@ -29,7 +30,7 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, latent_space, kernel_size=3, stride = 1, padding = 1),
+            nn.Conv2d(128, self.latent_space, kernel_size=3, stride = 1, padding = 1),
             # 64 * 128 * 128 
             
             nn.Sigmoid(),)
@@ -44,11 +45,12 @@ class Encoder(nn.Module):
     
 class Decoder(nn.Module):
     
-    def __init__(self):
+    def __init__(self, latent_space):
         super(Decoder, self).__init__()
-        
+        self.latent_space = latent_space
         self.model = nn.Sequential(
-            nn.ConvTranspose2d(latent_space, 128, kernel_size=4, stride = 2, padding = 1),
+            nn.ConvTranspose2d(self.latent_space, 
+                               128, kernel_size=4, stride = 2, padding = 1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1),
             
@@ -212,12 +214,15 @@ Some extra scaffolding added for tensor dimension compatability
 """
 class VQVAE(nn.Module):
         
-    def __init__(self):
+    def __init__(self, num_embeddings, latent_space, commitment_loss):
         super(VQVAE, self).__init__()
-        
-        self.encoder = Encoder()
-        self.VQ = VQ(128, latent_space, commitment_loss)
-        self.decoder = Decoder()
+        self.num_embeddings = num_embeddings
+        self.latent_space = latent_space
+        self.commitment_loss = commitment_loss
+        self.encoder = Encoder(self.latent_space)
+        self.VQ = VQ(self.num_embeddings, self.latent_space, 
+                     self.commitment_loss)
+        self.decoder = Decoder(self.latent_space)
         
     def forward(self, inputs):
         outputs = self.encoder(inputs)
@@ -246,10 +251,10 @@ class MaskedConv2d(nn.Conv2d):
         super(MaskedConv2d, self).__init__(*args, **kwargs)
         #print(self.kernel_size)
         
-        self.register_buffer('mask', self.weight.data.clone())
+        self.register_buffer('mask', torch.ones(self.out_channels, self.in_channels, 
+                                        self.kernel_size[0], self.kernel_size[1]).float())
         
-        _, depth, height, width = self.weight.size()
-        self.mask.fill_(1)
+        height, width = self.kernel_size
         # setup the mask, use floor operations to cover area above and left of
         # kernel position
         if mask_type == "A":
@@ -272,11 +277,12 @@ class MaskedConv2d(nn.Conv2d):
         
 class PixelCNN(nn.Module):
     
-    def __init__(self):
+    def __init__(self, num_embeddings):
         super(PixelCNN, self).__init__()
+        self.num_embeddings = num_embeddings
         self.pixelcnn_model = nn.Sequential(
-            
-            MaskedConv2d("A", in_channels = 128, 
+
+            MaskedConv2d("A", in_channels = 256, 
                          out_channels = 256, kernel_size = 7, padding = 3),
             nn.ReLU(),
             MaskedConv2d("B", in_channels = 256, 
@@ -286,12 +292,10 @@ class PixelCNN(nn.Module):
                          out_channels = 256, kernel_size = 3, padding = 1),
             nn.ReLU(),
             MaskedConv2d("B", in_channels = 256, 
-                         out_channels = 256, kernel_size = 3, padding = 1),
+                         out_channels = num_embeddings, kernel_size = 3, padding = 1),
             nn.ReLU(),
-            nn.Conv2d(256, 128, 1),
-            
-            #nn.Sigmoid(),
-            
+            nn.Conv2d(256, 256, 1),
+                        
             )
         
     def forward(self, x):
