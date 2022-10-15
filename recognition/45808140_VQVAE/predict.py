@@ -9,21 +9,23 @@ import tensorflow_probability as tfp
 (train_data, test_data, train_variance) = load_data('AD_NC')
 
 def show_reconstructed(original, reconstructed, codebook_indices):
-    plt.subplot(1, 3, 1)
-    plt.imshow(original.numpy().squeeze())
-    plt.title("Original")
-    plt.axis("off")
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 3, 1)
+    ax1.imshow(original.numpy().squeeze())
+    ax1.title.set_text("Original")
+    ax1.axis("off")
     
-    plt.subplot(1, 3, 2)
-    plt.imshow(codebook_indices)
-    plt.title("Code")
-    plt.axis("off")
+    ax2 = fig.add_subplot(1, 3, 2)
+    ax2.imshow(codebook_indices)
+    ax2.title.set_text("Code")
+    ax2.axis("off")
     
-    plt.subplot(1, 3, 3)
-    plt.imshow(reconstructed.squeeze())
-    plt.title("Reconstructed")
-    plt.axis("off")
-    plt.show()
+    ax3 = fig.add_subplot(1, 3, 3)
+    ax3.imshow(reconstructed.squeeze())
+    ax3.title.set_text("Reconstructed")
+    ax3.axis("off")
+    fig.show()
+    fig.savefig('VQVAE_recons.png')
 
 def VQVAE_result(vqvae, dataset):
     test_images = None
@@ -60,7 +62,7 @@ def generate_PixelCNN(vq, pcnn, n):
 
     codebook_data = train_data.map(codebook_indices)
 
-    inputs = keras.Input(shape=pcnn.input_shape[1:])
+    inputs = keras.Input(shape=vq.get_encoder().output.shape[1:3])
     outputs = pcnn(inputs, training=False)
     dist = tfp.layers.DistributionLambda(tfp.distributions.Categorical)
 
@@ -73,7 +75,7 @@ def generate_PixelCNN(vq, pcnn, n):
 
     for row in range(rows):
         for col in range(cols):
-            probs = sampler.predict(priors)
+            probs = sampler.predict(priors, verbose=0)
             priors[:, row, col] = probs[:, row, col]
 
     embeddings = vq.get_vq().embeddings
@@ -84,14 +86,16 @@ def generate_PixelCNN(vq, pcnn, n):
 
     gen_samps = vq.get_decoder().predict(quant)
 
-    for i in range(n):
-        plt.subplot(1, 2, 1)
-        plt.imshow(priors[i])
-        plt.title("Generated codebook sample")
-        plt.axis("off")
+    for i in range(n):       
+        fig = plt.figure()
+        ax1 = fig.add_subplot(1, 2, 1)
+        ax1.imshow(priors[i])
+        ax1.title.set_text("Generated codebook sample")
+        ax1.axis("off")
 
-        plt.subplot(1, 2, 2)
-        plt.imshow(gen_samps[i].squeeze(), cmap="gray")
-        plt.title("Decoded sample")
-        plt.axis("off")
-        plt.show()
+        ax2 = fig.add_subplot(1, 2, 2)
+        ax2.imshow(gen_samps[i].squeeze(), cmap="gray")
+        ax2.title.set_text("Decoded sample")
+        ax2.axis("off")
+        fig.show()
+        fig.savefig('generated.png')
