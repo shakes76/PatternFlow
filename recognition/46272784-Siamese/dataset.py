@@ -99,7 +99,11 @@ def plotExample(ds):
         plt.show()
         break
 
-# Code for testing the functions
-ta, tn, va, vn, ta, tn = loadFile('F:/AI/COMP3710/data/AD_NC/')
-plotExample(ta)
+def main():
+    # Code for testing the functions
+    ta, tn, va, vn, ta, tn = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    plotExample(ta)
+
+if __name__ == "__main__":
+    main()
 
