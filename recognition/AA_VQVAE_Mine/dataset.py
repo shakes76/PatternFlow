@@ -8,6 +8,9 @@ import tensorflow as tf
 
 import os
 
+image_height = 240
+image_width = 256
+b_size = 32
 
 im_root = path = os.path.join(os.getcwd(), "recognition\AA_VQVAE_Mine\DataSets\AD_NC")
 
@@ -15,10 +18,10 @@ im_root = path = os.path.join(os.getcwd(), "recognition\AA_VQVAE_Mine\DataSets\A
 training_set = tf.keras.utils.image_dataset_from_directory(
                         os.path.join(im_root,"train"),
                         labels='inferred',
-                        label_mode='categorical',
+                        label_mode='int',
                         color_mode='grayscale',
-                        batch_size=None,
-                        image_size=(256, 256),
+                        image_size=(image_width, image_height),
+                        batch_size = b_size,
                         shuffle=True,
                         seed=46,
                         validation_split=0.3,
@@ -30,10 +33,10 @@ training_set = tf.keras.utils.image_dataset_from_directory(
 validation_set = tf.keras.utils.image_dataset_from_directory(
                         os.path.join(im_root,"train"),
                         labels='inferred',
-                        label_mode='categorical',
+                        label_mode='int',
                         color_mode='grayscale',
-                        batch_size=None,
-                        image_size=(256, 256),
+                        image_size=(image_width, image_height),
+                        batch_size = b_size,
                         shuffle=True,
                         seed=46,
                         validation_split=0.3,
@@ -45,10 +48,10 @@ validation_set = tf.keras.utils.image_dataset_from_directory(
 test_set = tf.keras.utils.image_dataset_from_directory(
                     os.path.join(im_root,"test"),
                     labels='inferred',
-                    label_mode='categorical',
+                    label_mode='int',
                     color_mode='grayscale',
-                    batch_size=None,
-                    image_size=(256, 256),
+                    image_size=(image_width, image_height),
+                    batch_size = b_size,
                     shuffle=True,
                     seed=46,
                     interpolation='bilinear',
@@ -75,8 +78,8 @@ plt.figure(figsize=(10, 10))
 for images, labels in training_set.take(1):
     for i in range(9):
         ax = plt.subplot(3, 3, i + 1)
-        plt.imshow(images[i].numpy().astype("uint8"))
-        #plt.title(class_names[label_list[i]])
+        plt.imshow(images[i].numpy().astype("uint8"),cmap='gray')
+        plt.title(class_names[labels[i]])
         plt.axis("off")
 
 plt.show()
