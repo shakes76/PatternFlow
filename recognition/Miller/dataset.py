@@ -70,8 +70,8 @@ def load_labels (path):
     # Create an numpy array to hold all the array turned images
     labels = np.array(image_list, dtype=np.uint8)
     
-    pyplot.imshow(labels[2])
-    pyplot.show()
+    #pyplot.imshow(labels[2])
+    #pyplot.show()
 
     return labels
 

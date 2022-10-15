@@ -4,7 +4,6 @@ should be imported from “modules.py” and the data loader should be imported 
 sure to plot the losses and metrics during training
 """
 
-from ast import Mod
 import dataset as data
 import modules as mod
 from matplotlib import pyplot
@@ -17,8 +16,8 @@ from matplotlib import pyplot
 train_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_train")
 
 # Check training image
-pyplot.imshow(train_X[2])
-pyplot.show()
+#pyplot.imshow(train_X[2])
+#pyplot.show()
 
 # Pre process training data set
 train_X = data.process_training(train_X)
@@ -27,8 +26,8 @@ train_X = data.process_training(train_X)
 validate_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_validate")
 
 # Check a validation image
-pyplot.imshow(validate_X[2])
-pyplot.show()
+#pyplot.imshow(validate_X[2])
+#pyplot.show()
 
 # Pre process validation data set
 validate_X = data.process_training(validate_X)
@@ -37,8 +36,8 @@ validate_X = data.process_training(validate_X)
 test_X = data.load_training ("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras_png_slices_data/keras_png_slices_test")
 
 # Check a test image
-pyplot.imshow(test_X[2])
-pyplot.show()
+#pyplot.imshow(test_X[2])
+#pyplot.show()
 
 # Pre process test data set
 test_X = data.process_training(test_X)
@@ -59,6 +58,7 @@ test_Y = data.load_labels("C:/Users/dapmi/OneDrive/Desktop/Data/oa-sis.tar/keras
 # Pre process test labels data
 test_Y = data.process_labels(test_Y)
 
+"""
 # Check a training label image
 pyplot.imshow(train_Y[2,:,:,3])
 pyplot.show()
@@ -68,7 +68,12 @@ pyplot.show()
 # Check a test label image
 pyplot.imshow(test_Y[2,:,:,3])
 pyplot.show()
+"""
 
 """ MODEL AND TRAIN VQ-VAE """
 # Create a instance of the VQ-VAE model
-#model = mod.vqvae_model()
+latent_dimensions = 16
+embeddings_number = 64
+model = mod.vqvae_model (latent_dimensions, embeddings_number)
+
+model.summary()
