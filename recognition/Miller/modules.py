@@ -3,4 +3,9 @@
 implementated as a class or a function
 """
 
-# Structure of VQ-VAR Archecture
+import tensorflow as tf
+
+"""Create Structure of VQ-VAR Model, set training paramters, train the model"""
+
+# Create a model instance and sets training paramters 
+def VQvaeModel():
