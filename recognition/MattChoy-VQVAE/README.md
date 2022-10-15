@@ -2,6 +2,9 @@
 By Matthew Choy
 > Creation of a generative model of the ADNI dataset using the VQVAE model ([paper](arxiv.org/abs/1711.00937))
 
+# Files of Interest
+The following files to look at:
+
 ## Table of Contents
 [Table of Contents](#table-of-contents)
 → [Algorithm Description](#description-of-algorithm)
@@ -12,9 +15,11 @@ By Matthew Choy
 → [Dataset](#dataset)
 → [Data Pre-Processing](#data-pre-processing)
 → [Training, Validation and Testing Splits](#training-validation-and-testing-splits)
+
 ### Description of Algorithm
 - What is this algorithm that is implemented, and what problem does it solve?
 - Approximately a paragrahm
+- Screenshots and conceptual explanation from the research paper.
 
 ### How does it work?
 - Approximately a paragraph
