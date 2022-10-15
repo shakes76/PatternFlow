@@ -32,7 +32,7 @@ To understand Mask R-CNN, let's first discus architecture of Faster R-CNN that w
  - Stage 1: The first stage consists of two networks, backbone (ResNet, VGG, Inception, etc..) and region proposal network. These networks run once per image to give a set of region proposals. Region proposals are regions in the feature map which contain the object.
  - Stage 2: In the second stage, the network predicts bounding boxes and object class for each of the proposed region obtained in stage1. Each proposed region can be of different size whereas fully connected layers in the networks always require fixed size vector to make predictions. Size of these proposed regions is fixed by using either RoI pool (which is very similar to MaxPooling) or RoIAlign method.
 
- ![how mask r-cnn works](/s4764115-MASK-RCNN/documentation/how_maskrcnn_works.png)
+ ![how mask r-cnn works](/documentation/how_maskrcnn_works.png)
 
 Faster R-CNN predicts object class and bounding boxes. Mask R-CNN is an extension of Faster R-CNN with additional branch for predicting segmentation masks on each Region of Interest (RoI).
 
@@ -42,12 +42,13 @@ The dataset used in the model is based on the ISIC 2017 dataset, containing:
  - 200 annotated images for training and validation, with coco-like labels
  - 14 images for testing
 
-Pre-annotation is done by hand using the tool provided in [Makesense.ai](https://www.makesense.ai/).
-*(Doing the pre-annotation is really a pain in the ass tbh)*
+Annotation is done by hand using the tool provided in [Makesense.ai](https://www.makesense.ai/).
+
+*(Doing the annotation is really a pain in the ass tbh)*
 
 Here's a picture showing the pre-annotated image:
 
-![pre-annotated image](/s4764115-MASK-RCNN/documentation/Figure_1.png)
+![pre-annotated image](/documentation/Figure_1.png)
 
 
 ## Files
@@ -89,8 +90,8 @@ Epoch 10/10
 
 And the test result looks like this:
 
-![test image](/s4764115-MASK-RCNN/documentation/output1.png)
+![test image](/documentation/output1.png)
 
-![test result](/s4764115-MASK-RCNN/documentation/output.png)
+![test result](/documentation/output.png)
 
 You can see from the image that the lesion is successfully picked out by the model.
