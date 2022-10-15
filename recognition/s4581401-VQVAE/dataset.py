@@ -1,9 +1,23 @@
 import tensorflow as tf
 
-# Assumes Directory has a train and test folder
+# Assumes Directory has a train and test folder. However, functions are written
+# to load the data in if there is a defined validation folder already.
 
 # Seed used for generating the training and validation dataset
 seed = 123
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+from tensorflow import keras
+
+# Assumes Directory has a train and test folder. However, functions are written
+# to load the data in if there is a defined validation folder already.
+
+# Seed used for generating the training and validation dataset
+seed = 123
+
+
 def normalisation_data(ds):
     """
     Standardises input data then rescales it to be between 0 and 1.
@@ -85,13 +99,12 @@ def load_test_data(path, height, width, batch_size):
     """
     Takes in a directory path, img height, width and batch size and returns normalised test data.
     """
-    test_data = tf.keras.utils.image_dataset_from_directory(path,
+    test_data = tf.keras.utils.image_dataset_from_directory(path, validation_split=0.1,
+                                                            subset="training",
+                                                            seed=seed,
                                                             color_mode="rgb",
                                                             labels=None,
                                                             image_size=(height, width),
                                                             batch_size=batch_size)
 
     return normalisation_data(test_data)
-
-
-

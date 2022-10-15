@@ -67,6 +67,7 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
         distances = pixel_vector_len + embedding_len - 2*subtract_term
         return tf.argmin(distances, axis = 1)
 
+
 class VQVAEModel(tf.keras.Model):
     def __init__(self, img_shape, embedding_num, embedding_dim, beta, data_variance, **kwargs):
         super(VQVAEModel, self).__init__(**kwargs)
@@ -102,6 +103,7 @@ class VQVAEModel(tf.keras.Model):
             tf.keras.layers.InputLayer(input_shape=img_shape),
             tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"),
+            tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2D(embedding_dim, 1, padding="same")
         ], name="encoder")
 
@@ -114,6 +116,7 @@ class VQVAEModel(tf.keras.Model):
         # My decoder implementation
         decoder_model = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=self.get_encoder().output.shape[1:]),
+            tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"),
             tf.keras.layers.Conv2DTranspose(3, 3, activation="relu", padding="same")
@@ -213,6 +216,7 @@ class VQVAEModel(tf.keras.Model):
 
 
 # Adapted from https://keras.io/examples/generative/pixelcnn/
+# Adapted from https://keras.io/examples/generative/pixelcnn/
 class PixelConvLayer(tf.keras.layers.Layer):
     def __init__(self, mask_type, **kwargs):
         super(PixelConvLayer, self).__init__()
@@ -291,6 +295,18 @@ class PixelCNNModel(tf.keras.Model):
 
     def train_step(self, x):
         # https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit
+        with tf.GradientTape() as tape:
+            predicted_output = self(x)
+            total_loss = self.compiled_loss(x, predicted_output)
+
+        gradients = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
+        self._total_loss.update_state(total_loss)
+        return {
+            "loss": self._total_loss.result()
+        }
+
+    def test_step(self, x):
         with tf.GradientTape() as tape:
             predicted_output = self(x)
             total_loss = self.compiled_loss(x, predicted_output)

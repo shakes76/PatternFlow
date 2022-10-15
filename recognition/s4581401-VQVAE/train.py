@@ -101,85 +101,71 @@ def codebook_wrapper_fn(encoder, embeddings):
 
     return mapper
 
+def find_data_var(train_ds):
+    # Find the mean of the data
+    data_mean = 0
+    number_data = 0
+    for batch in train_ds:
+        number_data += len(batch)
+        data_mean += tf.reduce_sum(batch)
+
+    data_mean = data_mean / (number_data * img_height * img_width * 3)
+
+    data_var = 0
+    # Find the variance of the data
+    for batch in train_ds:
+        data_var += tf.reduce_sum((batch - data_mean) ** 2)
+
+    data_var = data_var / ((number_data * img_height * img_width * 3) - 1)
+    return data_var
+
+def training_plots(history):
+    plt.plot(history.history['reconstruction_loss'], label="train")
+    plt.plot(history.history['val_reconstruction_loss'], label="val")
+    plt.title('Training Reconstruction Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper right')
+    plt.show()
+
+    plt.plot(history.history['val_mean ssim'], label="val")
+    plt.title('Mean SSIM')
+    plt.ylabel('Value')
+    plt.xlabel('Epoch')
+    plt.legend(loc='lower right')
+    plt.show()
+
+
 val_split = 0.2
 img_height = 256
 img_width = 256
 batch_size = 32
-latent_dim = 32
-embedding_num = 128
+latent_dim = 128#16
+num_embeddings= 32 #512
+train_path = "AD_NC/train"
+#train_path = "keras_png_slices_data/keras_png_slices_train"
+test_path = "AD_NC/test"
+#test_path = "keras_png_slices_data/keras_png_slices_test"
 
-
-PATH = os.getcwd()
-print(PATH)
-
-train_path = PATH + "/ADNI_AD_NC_2D/AD_NC/train"
-test_path = PATH + "/ADNI_AD_NC_2D/AD_NC/test"
 train_ds = load_train_data(train_path, img_height, img_width, batch_size, val_split)
 val_ds = load_validation_data(train_path, img_height, img_width, batch_size, val_split)
 test_ds = load_test_data(test_path, img_height, img_width, batch_size)
-
-#Find the mean of the data
-data_mean = 0
-number_data = 0
-for batch in train_ds:
-    number_data += len(batch)
-    data_mean += tf.reduce_sum(batch)
-
-data_mean = data_mean / (number_data * img_height * img_width * 3)
-
-data_var = 0
-#Find the variance of the data
-for batch in train_ds:
-    data_var += tf.reduce_sum((batch - data_mean)**2)
-
-data_var = data_var / ((number_data * img_height * img_width * 3) - 1)
-
+data_var = find_data_var(train_ds)
 vqvae_model = VQVAEModel(img_shape = (256, 256, 3), embedding_num = 256, embedding_dim= latent_dim, beta = 0.25, data_variance=0.05)
 vqvae_model.compile(optimizer=keras.optimizers.Adam())
 device = "/GPU:0" if len(tf.config.list_physical_devices('GPU')) else '/CPU:0'
 with tf.device("/GPU:0"):
   history = vqvae_model.fit(train_ds, epochs = 10, validation_data = val_ds, batch_size = batch_size)
 
-
 #Plotting code and results
-"""
-plt.plot(history.history['loss'] ,label="train")
-plt.plot(history.history['val_loss'] ,label="val")
-plt.title('Training Total Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(loc='upper right')
-plt.show()
-"""
-plt.plot(history.history['reconstruction_loss'],label="train")
-plt.plot(history.history['val_reconstruction_loss'],label="val")
-plt.title('Training Reconstruction Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(loc='upper right')
-plt.show()
-
-"""
-plt.plot(history.history['vq loss'],label="train")
-plt.plot(history.history['val_vq loss'],label="val")
-plt.title('Vector Quantized Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(loc='upper right')
-plt.show()
-"""
-
-plt.plot(history.history['val_mean ssim'],label="val")
-plt.title('Mean SSIM')
-plt.ylabel('Value')
-plt.xlabel('Epoch')
-plt.legend(loc='lower right')
-plt.show()
+training_plots(history)
 
 reconstucted_image(test_ds, vqvae_model)
 # Find the average SSIM of Test Data
 mean_ssim = test_mean_ssim(test_ds, vqvae_model)
 print(mean_ssim)
+
+
 
 # Running the code for PixelCNN.
 #Load in the data
