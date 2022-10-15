@@ -20,14 +20,24 @@ vqvae_trainer = modules.VQVAETrainer(data_variance, latent_dim=16, num_embedding
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
 vqvae_trainer.fit(train, epochs=3000, batch_size=8)
 
+# Plot learning
+plt.plot(vqvae_trainer.history.history['reconstruction_loss'], label='reconstruction_loss')
+plt.plot(vqvae_trainer.history.history['vqvae_loss'], label = 'vqvae_loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(loc='lower right')
+plt.savefig(os.path.join(figure_path, "training_plot"))
+
 # Reconstructions
 trained_vqvae_model = vqvae_trainer.vqvae
 idx = np.random.choice(len(test), 10)
 test_images = test[idx]
 reconstructions_test = trained_vqvae_model.predict(test_images)
 
+i = 0
 for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-    filename = figure_path + test_images + "_reconstruction.png"
+    filename = os.path.join(figure_path, "reconstruction_" + str(i) + ".png")
+    i += 1
     modules.save_subplot(test_image, reconstructed_image, filename)
 
 encoder = vqvae_trainer.vqvae.get_layer("encoder")
@@ -48,5 +58,5 @@ for i in range(len(test_images)):
     plt.imshow(codebook_indices[i])
     plt.title("Code")
     plt.axis("off")
-    filename = figure_path + test_images + "_codebook.png"
+    filename = os.path.join(figure_path, "codebook_" + str(i) + ".png")
     plt.savefig(filename)
