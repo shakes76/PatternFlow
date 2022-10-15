@@ -97,6 +97,7 @@ def new_decoder(latent_dim):
     return keras.Model(latent_inputs, decoder_output, name="decoder")
 
 def get_vqvae(latent_dim=32, num_embeddings=128):
+    #build my vqvae structure
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = new_encoder(latent_dim)
     decoder = new_decoder(latent_dim)

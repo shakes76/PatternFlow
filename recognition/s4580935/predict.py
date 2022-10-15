@@ -13,6 +13,13 @@ import modules
 import dataset
 
 
+"""
+Some of the content for the pixelcnn should probably be in this file however i left it in train.py
+because i didnt want to have to work out how to make sure things all connected with the different models
+
+"""
+
+
 def calculate_ssim(original_images, reconstructed_images):
     """
     Calculate and print the average structured similarity between original and reconstructed images
