@@ -38,7 +38,7 @@ Faster R-CNN predicts object class and bounding boxes. Mask R-CNN is an extensio
 
 
 ## The Dataset
-The dataset used in the model is based on the ISIC 2017 dataset, containing:
+The dataset used in the model is based on the [ISIC 2017 dataset](https://challenge.isic-archive.com/data/#2017), containing:
  - 200 annotated images for training and validation, with coco-like labels
  - 14 images for testing
 
