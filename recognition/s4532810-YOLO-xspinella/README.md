@@ -264,7 +264,7 @@ Another observation that was missed in trial 1 is the distribution of classes (m
 
 Figure 8:
 
-![image](https://user-images.githubusercontent.com/32262943/195985335-5421880a-90bc-45fa-b432-787edb273cea.png)
+![image](https://user-images.githubusercontent.com/32262943/195989858-e9062c51-cb30-43a5-b6d3-d588e33876e0.png)
 
 Figure 9:
 
@@ -285,11 +285,42 @@ Furthermore, YOLOv5 is integrated with the albumentations library, which means t
 
 After these modifications, there are more different augmentations, occurring more often, at higher magnitudes - with the aim of making a more robust YOLO model, which has much more data to train on. The training results are shown below:
 
+Figure 10:
+
 ![image](https://user-images.githubusercontent.com/32262943/195987560-146e0a9f-ba0f-4671-900e-6d4d1f1bf56a.png)
 
+The following observations can be made:
+- The box loss is approximately the same as the previous trial.
+- The object loss has a similar minimum, but doesn't overfit like the previous trial, it plateaus.
+- There is a huge improvement in the classification loss, the noise is greatly reduced (even the training loss looks better), and it doesn't overfit at all, unlike the previous trial.
+- The mAP plots also have reduced noise.
 
+These observations imply that the increased augmentations have resulted in more stable training, with significantly reduced overfitting in the classification and object loss metrics. The test results are shown below:
 
+Figure 11:
 
+![image](https://user-images.githubusercontent.com/32262943/195988195-e656b631-377a-4b22-aff3-5d2179419de3.png)
+
+Figure 12:
+
+![image](https://user-images.githubusercontent.com/32262943/195988209-666a1d8d-eb99-4525-9b62-74c14ca4d508.png)
+
+From these results we observe that:
+- The mAP has increased significantly, now above the specified yolov5m performance (45.2) with a value of 46.6.
+- The IOU has reached an acceptable level of 0.81, however, there is a decrease in valid object detections.
+- The classification accuracy has increased to ~0.87, with an increase in the number of valid classifications.
+
+At this point, it can definitely be said that the augmentations have improved the performance, however, we must also check the distributions of valid and invalid classifications:
+
+Figure 13:
+
+![image](https://user-images.githubusercontent.com/32262943/195990029-fa531bcf-ed15-495c-a377-f1aafd1fc57b.png)
+
+Figure 14:
+
+![image](https://user-images.githubusercontent.com/32262943/195988544-c5f47511-4257-4756-840b-275fb0c7cc5a.png)
+
+From this, we can see that the problem clearly has not been solved. Even though the average IOU and classification accuracy has improved, we can see that this is directly correlated with a reduction in valid positive bounding boxes (~29% invalid), and increase in valid negative boxes (~15% invalid), so it would appear that, instead of learning how to classify positive cases better, the model has just taken advantage of the distribution. This is further supported by the precision and recall in regardsto detection of positive melanoma cases
 
 
 - more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
