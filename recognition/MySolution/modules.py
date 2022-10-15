@@ -7,10 +7,12 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 import dataset
+import train
 
 
 def main():
-    dataset.handle_dataset()
+    sorted_data = dataset.handle_dataset()
+    train.handle_training(sorted_data)
     print("ok!")
 
 
