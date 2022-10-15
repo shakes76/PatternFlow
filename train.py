@@ -12,29 +12,35 @@ from modules import StyleGAN
 
 
 def main():
+    
+    print('Starting training...')
+    
+    print(f'Training image folder: {TRAINING_IMAGE_DIR}')
+    
     # suppress tensorflow logging
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     # config check up
     assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES) + 1), \
-        f'BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS)}), ' \
+        f'BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS[0])}), ' \
         'and their size must equal log2(TRES)+1.'
 
     # output folder must not exist
     assert not os.path.exists(OUT_ROOT), \
         f'Folder \'{OUT_ROOT}\' already exists. Specify another folder for \'OUT_ROOT\' in config.py'
 
+    print(f'Creating output folders: {OUT_ROOT}')
     # create folders
     os.mkdir(OUT_ROOT)
     time.sleep(2)
     assert os.path.exists(OUT_ROOT), \
-        f'training folder {OUT_ROOT} was not created successfully.'
+        f'Output folder {OUT_ROOT} was not created successfully.'
     print(f'Root folder {OUT_ROOT} created.')
     subfolders = {
-        'images': os.path.join(OUT_ROOT, 'images'),   # output image folder
-        'models': os.path.join(OUT_ROOT, 'models'),   # output model plot folder
         'ckpts': os.path.join(OUT_ROOT, 'ckpts'),     # check points folder
-        'log': os.path.join(OUT_ROOT, 'log')          # loss history csv folder
+        'images': os.path.join(OUT_ROOT, 'images'),   # output image folder
+        'log': os.path.join(OUT_ROOT, 'log'),         # loss history csv folder
+        'models': os.path.join(OUT_ROOT, 'models'),   # output model plot folder
     }
     for _, subfolder in subfolders.items():
         os.mkdir(subfolder)
@@ -81,7 +87,7 @@ def main():
         model.grow()
 
         bs = BSIZE[depth]                                  # batch size
-        ep = EPOCHS[depth]                                 # epochs
+        ep = EPOCHS[depth][0]                              # epochs
         ch = FILTERS[depth]                                # filters
         rs = SRES * (2 ** depth)                           # resolution
         training_images = image_loader.load(bs, (rs, rs))  # load images
@@ -104,6 +110,7 @@ def main():
 
         # transition from fade in models to complete high resolution models
         model.stabilize()
+        ep = EPOCHS[depth][1]
 
         # save model plots
         plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')

@@ -36,7 +36,8 @@ class StyleGAN(Model):
         x = LeakyReLU(0.2)(x)
         x = custom_layers.EqualConv(x, out_filters=FILTERS[0], kernel=(4, 4), strides=(4, 4))
         x = LeakyReLU(0.2)(x)
-        x = custom_layers.EqualDense(Flatten()(x), out_filters=CHANNELS)
+        x = Flatten()(x)
+        x = custom_layers.EqualDense(x, out_filters=CHANNELS)
         return Model(image, x)
 
     # grow discriminator
@@ -172,9 +173,6 @@ class StyleGAN(Model):
         real_images = data[0]
         batch_size = tf.shape(real_images)[0]
         const = tf.ones([batch_size, SRES, SRES, FILTERS[0]])
-
-        fake_labels = -tf.ones(batch_size)
-        real_labels = tf.ones(batch_size)
         
         # train discriminator
         with tf.GradientTape() as tape:
@@ -191,26 +189,21 @@ class StyleGAN(Model):
             # generate fake images
             fake_images = self.G(inputs, training=True)
             
-            # fake loss
-            pred_fake_labels = self.D(fake_images, training=True)
-            fake_loss = -tf.reduce_mean(fake_labels * pred_fake_labels)
-            
-            # real loss
-            pred_real_labels = self.D(real_images, training=True)
-            real_loss = -tf.reduce_mean(real_labels * pred_real_labels)
-            
+            fake_pred = self.D(fake_images, training=True)
+            real_pred = self.D(real_images, training=True)
+            d_loss = tf.reduce_mean(fake_pred) - tf.reduce_mean(real_pred)
+
             # gradient penalty, lambda 10
             penulty = 10 * self.gradient_penalty(batch_size, real_images, fake_images)
             
             # drift for regularization, drift weight 0.001
-            pred = tf.concat([pred_fake_labels, pred_real_labels], axis=0)
-            drift = .001 * tf.reduce_mean(pred ** 2)
+            drift = .001 * tf.reduce_mean(tf.square(real_pred))
             
-            # discriminator loss = real loss + fake loss + penulty + drift
+            # discriminator loss = original discriminator loss + penulty + drift
             # lambda=10, drift weight = 0.001
-            d_lost = fake_loss + real_loss + penulty + drift
+            d_loss = d_loss + penulty + drift
 
-        d_grad = tape.gradient(d_lost, self.D.trainable_weights)
+        d_grad = tape.gradient(d_loss, self.D.trainable_weights)
         self.d_optimizer.apply_gradients(zip(d_grad, self.D.trainable_weights))
 
         # train generator
@@ -224,14 +217,14 @@ class StyleGAN(Model):
                 inputs += [w, B]
                 
             fake_images = self.G(inputs, training=True)
-            pred_fake_labels = self.D(fake_images, training=True)
+            fake_pred = self.D(fake_images, training=True)
             
-            # D(G(z))
-            g_loss = -tf.reduce_mean(real_labels * pred_fake_labels)
+            # generator loss
+            g_loss = -tf.reduce_mean(fake_pred)
             
         # grad w.r.t fc layers and generator
         trainable_weights = self.FC.trainable_weights + self.G.trainable_weights
         g_grad = tape.gradient(g_loss, trainable_weights)
         self.g_optimizer.apply_gradients(zip(g_grad, trainable_weights))
         
-        return {'d_loss': d_lost, 'g_loss': g_loss}
+        return {'d_loss': d_loss, 'g_loss': g_loss}
