@@ -23,6 +23,12 @@ cd yolov5_LC
 pip install -r requirements.txt
 ```
 
+Finally, the albumentations library, which is used to increase the augmentations, can be installed:
+
+```linux
+pip install -U albumentations
+```
+
 ### PatternFlow-xspinella Dependencies
 For data downloading/preprocessing/arranging, the following additional dependencies are required:
 
@@ -174,7 +180,7 @@ The dataset is preprocessed in 4 different ways:
 - The Training/Validation/Test split is as per the ISIC 2017 dataset.
 
 ## Model Optimisation
-### Problems Faced
+### Trial 1
 Once all the data was preprocessed and setup as per YOLOv5 training specifications, the model was trained on YOLOv5m for 450 epochs, but stopped early at ~250 epochs, as it had stopped improving. The training data can be seen below:
 
 Figure 1:
@@ -210,9 +216,11 @@ An interesting observation here is that the classification accuracy is above the
 - The model detects more than one object in the image.
 This image is no longer considered in the classification calculation, since these ocurrences are the fault of the model's box detection, thus the classification accuracy should not be penalised. However, as shown in Figure 4, there were only 465 valid classifications considered (out of a possible 600 test images), so it is possible that the abnormal classification loss was caused by multiple object-detections on the single-object image dataset. This would be problematic for the classification loss because in this case, at least one of the detections is likely to have a poor IOU. This hypothesis is supported by the poor mAP0.5:0.95 and average IOU values, which indicate that the box detection could be improved (see "Metrics of Interest" section).
 
+This seems to indicate that improving the bounding box detection will improve the classification loss, average IOU, and mAP. 
+
 Another reason for this behaviour could be because the default training process has an IOU threshold of 0.2, which means that the model is sometimes attempting to perform classification when only a fraction of the object is inside the bounding box.
 
-### Solution 1
+### Trial 2
 The first stage of improvement will be specifying a different hyperparameter file, which should hopefully give improvement over all metrics/losses. By default, augmentations and hyperparameters are specified in yolov5_LC/data/hyps/hyp.scratch-low.yaml. This is a low-augmentation configuration designed for training the COCO dataset from scratch. It is possible that ample improvement could be achieved by simply changing this to the yolov5_LC/data/hyps/hyp.VOC.yaml hyperparameter file. This file is designed for training with a pretrained net, on the VOC dataset, which is more suitable since the VOC dataset is closer in size to the ISIC dataset, and we are using a pretrained net for this project. This is achieved by changing the train execution command in train.py from:
 
 ```python
@@ -224,14 +232,63 @@ To:
 os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml --weights yolov5{yolo_model}.pt --hyp yolov5_LC/data/hyps/hyp.VOC.yaml")
 ```
 
-### Solution 2
-Findings in the previous section seem to indicate that improving the bounding box detection will improve the classification loss, average IOU, and mAP. 
-The first stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough.YOLOv5 already implements data augmentation by default, however, the albumentations library can be used specify even more augmentations, which should improve the performance of the model for the ISIC dataset.
-
-
-The documentation also mentions that turning down the gain for individual loss terms can also assist reduction of overfitment - so in this case, we will reduce the classification loss gain.
-
 Increasing the IOU threshold when training has also been considered, however, it will be left at 0.2 for now, because the low threshold may promote more robust classification.
+
+The model was trained for 350 epochs, but triggered early stoppage at 227 epochs (early stoppage is triggered when there is no improvement for 100 epochs). The training data is shown below:
+
+Figure 5:
+
+![image](https://user-images.githubusercontent.com/32262943/195963353-6d2942ee-6bd5-4780-8c8e-aca04f9ffffc.png)
+
+The following observations can be drawn from this:
+- The box loss improved significantly -> unlike the first trial, there is no spike in loss towards the end, and the final loss value has approximately halved that of the first trial.
+- The object loss begins to overfits at ~75 epochs, which is earlier than the first trial, however, it does seem to achieve a slightly better loss value than the first trial.
+- The classification loss is still very noisey, however it does appear to be an improvement over the first trial -> it no longer increases for the entire training period (begins to overfit at ~75 epochs), and is of a much lower value.
+
+The model is run on the test dataset:
+
+Figure 6:
+
+![image](https://user-images.githubusercontent.com/32262943/195964807-c18c8b92-756a-43f8-bbe8-0f2f28daed96.png)
+
+Figure 7:
+
+![image](https://user-images.githubusercontent.com/32262943/195964841-88fe390f-0138-4e01-9f9f-4f77ea920920.png)
+
+The following observations can be drawn from this:
+- An increase in mAP0.5-0.95 is evident, which indicates improved bounding boxes, however, this value is still below the yolov5m listed value of 45.2.
+- The improved mAP is shown in a marginal increase of average IOU (0.76 compared to 0.75), and a significant increase in valid classification boxes (484 compared to 465). An increase in valid classifications implies that the model is predicting more accurate bounding boxes (more boxes passing the IOU threshold), and not prediciting more than one box when it shouldn't. There was a slight increase (of 5) in lesions that were missed by the model, however, this is outweighed by the improvements in IOU and valid classifications.
+- A significant decrease in classification accuracy (0.83 compared to 0.87) is observed, however this is still above the acceptable accuracy, and might be because the extra valid classifications observed in this trial are closer to the 0.5 IOU threshold. 
+
+Another observation that was missed in trial 1 is the distribution of classes (melanoma cases) in the test set. As shown in Figure 6, there are 483 negative cases and only 117 positive cases, and the P, R, and mAP for positive cases is considerably lower. Thus, it is possible that the classification accuracy is only at an acceptable level because the model is guessing that all lesions are negative -> this would yield high accuracy if there aren't many valid positive lesions presented to the classifier. We can check this by graphing TP, TN, FP, FN predictions for the 484 valid classifications, and the 116 invalid detections:
+
+Figure 8:
+
+![image](https://user-images.githubusercontent.com/32262943/195985335-5421880a-90bc-45fa-b432-787edb273cea.png)
+
+Figure 9:
+
+![image](https://user-images.githubusercontent.com/32262943/195985351-1a69c317-a135-4f14-810f-ceb1a49806b3.png)
+
+Here we can see that my hypothesis was quite accurate; the classification accuracy is skewed by the fact that there are many more negative melanoma cases in the dataset. In fact, if we calculate the precision and recall (from Figure 8) in regards to detection of positive melanoma cases:
+
+P = TP/(TP+FP) = 50/50+43 = 0.538 -> "~54% of positive predictions are correct"
+
+R = TP/TP+FN = 50/50+37 = 0.575   -> "~58% of positive cases are diagnosed successfully"
+
+We can see that neither of these are particularly impressive, and certainly wouldn't be accepted in practice. This shows how much the classification accuracy has been skewed by the distribution of the training set. Furthermore, from Figures 8 and 9, we can see that ~24% of positive cases were unable to be detected/were incorrectly detected/had a very low IOU, while 18% of negative cases suffered this case. This makes sense because, due to the significantly larger number of negative cases in all datasets, the model would have much better detection of negative cases.
+
+### Trial 3
+This stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough, especially for the positive cases. YOLOv5 already implements data augmentation by default, however, the hyperparemeter file used in trial 2 has some options to increase augmentations. In order to take advantage of augmentation settings that have been somewhat optimised by the yolov5 developers, we will combine the high-augmentation parameter settings from the COCO config file, with the other hyperparameter settings from the VOC hyperparameter file config (used in prev. trail). Some of the augmentation options were set to zero or very low, thus, the probabilities and magnitudes of augmentations such as rotation, translation, shear, perspective, and up/down flip ocurring were all increased.
+
+Furthermore, YOLOv5 is integrated with the albumentations library, which means that once the albumentations dependency is installed, the albumentations class in the utils_2 folder can be modified to produce even more augmentations. This class was modified to introduce extra augmentations such as; blur, median blur, and to grey. 
+
+After these modifications, there are more different augmentations, occurring more often, at higher magnitudes - with the aim of making a more robust YOLO model, which has much more data to train on. The training results are shown below:
+
+![image](https://user-images.githubusercontent.com/32262943/195987560-146e0a9f-ba0f-4671-900e-6d4d1f1bf56a.png)
+
+
+
 
 
 
