@@ -276,11 +276,21 @@ We can see that neither of these are particularly impressive, and certainly woul
 ### Trial 3
 This stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough, especially for the positive cases. YOLOv5 already implements data augmentation by default, however, the hyperparemeter file used in trial 2 has some options to increase augmentations. In order to take advantage of augmentation settings that have been somewhat optimised by the yolov5 developers, we will combine the high-augmentation parameter settings from the COCO config file, with the other hyperparameter settings from the VOC hyperparameter file config (used in prev. trail). Some of the augmentation options were set to zero or very low, thus, the probabilities and magnitudes of augmentations such as rotation, translation, shear, perspective, and up/down flip ocurring were all increased.
 
-Furthermore, YOLOv5 is integrated with the albumentations library, which means that once the albumentations dependency is installed, the albumentations class in the utils_2 folder can be modified to produce even more augmentations. This class was modified to introduce extra augmentations such as; blur, median blur, and to grey. 
+Furthermore, YOLOv5 is integrated with the albumentations library, which means that once the albumentations dependency is installed, the albumentations class in the utils_2 folder can be modified to produce even more augmentations. This class was modified to introduce extra augmentations such as; blur, median blur, and to grey. An example of what the augmented training set looks like is shown below:
+
+Figure 10:
+
+![image](https://user-images.githubusercontent.com/32262943/195993514-e28e4c9a-8945-4efb-aa47-f38479bca4c9.png)
+
+A great example of the mosaic and perspective augmentation can be seen in row 2, col 2, and row 1, col 2 shows a good combination of scaling, perspective, mosaic, blur, and translation. The translation and perspective should have a noticeable affect on the training since majority of the objects in the unaugmented images are in the centre of the image, as shown by this distribution plot:
+
+Figure 11:
+
+![image](https://user-images.githubusercontent.com/32262943/195993736-1690c390-37bc-497f-b28d-e90c84700a04.png)
 
 After these modifications, there are more different augmentations, occurring more often, at higher magnitudes - with the aim of making a more robust YOLO model, which has much more data to train on. The training results are shown below:
 
-Figure 10:
+Figure 12:
 
 ![image](https://user-images.githubusercontent.com/32262943/195987560-146e0a9f-ba0f-4671-900e-6d4d1f1bf56a.png)
 
@@ -292,11 +302,11 @@ The following observations can be made:
 
 These observations imply that the increased augmentations have resulted in more stable training, with significantly reduced overfitting in the classification and object loss metrics. The test results are shown below:
 
-Figure 11:
+Figure 13:
 
 ![image](https://user-images.githubusercontent.com/32262943/195988195-e656b631-377a-4b22-aff3-5d2179419de3.png)
 
-Figure 12:
+Figure 14:
 
 ![image](https://user-images.githubusercontent.com/32262943/195988209-666a1d8d-eb99-4525-9b62-74c14ca4d508.png)
 
@@ -307,11 +317,11 @@ From these results we observe that:
 
 At this point, it can definitely be said that the augmentations have improved the performance, however, we must also check the distributions of valid and invalid classifications:
 
-Figure 13:
+Figure 15:
 
 ![image](https://user-images.githubusercontent.com/32262943/195990029-fa531bcf-ed15-495c-a377-f1aafd1fc57b.png)
 
-Figure 14:
+Figure 16:
 
 ![image](https://user-images.githubusercontent.com/32262943/195988544-c5f47511-4257-4756-840b-275fb0c7cc5a.png)
 
