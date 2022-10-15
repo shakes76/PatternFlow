@@ -1,15 +1,16 @@
-def VQVAE(TRAINDATA):
+def VQVAE1(TRAINDATA):
 
  from torch.utils.data import DataLoader
  import numpy as np
  import torch
  import torch.nn as nn
+ import torch.nn.functional as F
  from torch.utils.data.sampler import SubsetRandomSampler
  from torch import flatten
  from torch.nn import ReLU
 
  device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
- num_workers = 0
+ num_workers =8
    #train_data=torch.Tensor(x_tr)
    #x_train=train_data.reshape(len(train_data), -1).float()
    #y_train=torch.Tensor(y_tr)
@@ -18,7 +19,7 @@ def VQVAE(TRAINDATA):
 #test_data=torch.tensor(x_test)#Y=(data[:,3])
 #y_test=torch.tensor(y_test)
 #test_data=np.concatenate((x_test,y_test),axis=1)
- batch_size = 100
+ batch_size = 50
  num_train = len(TRAINDATA)
  indices = list(range(num_train))
 
@@ -34,38 +35,48 @@ def VQVAE(TRAINDATA):
 #dataloader = DataLoader(DatasetWrapper(x), batch_size=batch_size, shuffle=False)
 
  class indeed(nn.Module):
-   def __init__(self, numembedding, embeddingdim):
+   def __init__(self, numembedding, embeddingdim,commitcost):
         # call the parent constructor
         super(indeed, self).__init__()
         # initialize first set of CONV => RELU => POOL layers
         self.numembedding=numembedding
         self.embeddingdim=embeddingdim
-        self.layer0=nn.Conv2d(3,32,kernel=3,stride=1,padding='same')
-        self.layer1=nn.BatchNorm2d(32)
-        self.layer2=nn.Conv2d(3,embeddingdim,kernel=3,stride=1,padding='same')
-        self.layer3=nn.BatchNorm2d(64)
-        self.layer4=nn.Conv2d(64,32,kernel=3,stride=1,padding='same')
-        self.layer5=nn.BatchNorm2d(32)
-        self.layer6=nn.Conv2d(32,3,kernel=3,stride=1,padding='same')
+        self.commitcost=commitcost
+        self.layer0=nn.Conv2d(3,10,kernel_size=3,stride=1,padding='same')
+        self.layer1=nn.BatchNorm2d(10)
+        self.layer2=nn.Conv2d(10,embeddingdim,kernel_size=3,stride=1,padding='same')
+        self.layer3=nn.BatchNorm2d(embeddingdim)
+        self.layer4=nn.Conv2d(embeddingdim,10,kernel_size=3,stride=1,padding='same')
+        self.layer5=nn.BatchNorm2d(10)
+        self.layer6=nn.Conv2d(10,3,kernel_size=3,stride=1,padding='same')
         
         
         
-   def VQVAE(x,numembedding,embeddingdim,commitcost):
+   def VQVAE(self,x,numembedding,embeddingdim,commitcost):
         x = x.permute(0, 2, 3, 1).contiguous()
         embedding=nn.Embedding(numembedding,embeddingdim)
-        embedding.weight.data.uniform_(-1/numembedding, 1/numembedding)
+        embedding.weight.data.uniform_(-2/numembedding, 2/numembedding)
+        embedding.to(device)
         #rearrange x?
-        flat_input = x.view(-1, embeddingdim)
-        dist=torch.tensor(np.empty((x.shape[0],embedding.weight.shape[0])))
-        for i in range(0,numembedding):
-         dist[:,i]=torch.linalg.vector_norm(x.float(),embedding.weight[i,:]*torch.ones(x.shape[0],x.shape[1].float()))**2
-        indexes=torch.argmin(dist,dim=1)
-        quant=embedding.weight[indexes,:]
-        loss1 = F.mse_loss(quant.detach(), x)
-        loss2 =commitcost* F.mse_loss(quant, x.detach())
-        Loss=loss1+loss2
+        flat_x = x.reshape(-1, embeddingdim)
+        dist=(torch.sum(flat_x**2,dim=1,keepdim=True)+torch.sum(embedding.weight**2,dim=1)-2*torch.matmul(flat_x,embedding.weight.t())).to(device)
+        
+        #dist=torch.tensor(np.empty((flat_x.shape[0],embedding.weight.shape[0])))
+        #for i in range(0,numembedding):
+         #print(flat_x.is_cuda)
+         #print(embedding.weight.is_cuda)
+         #dist[:,i]=(torch.linalg.vector_norm(flat_x.float()-embedding.weight[i,:]*torch.ones(flat_x.shape[0],flat_x.shape[1]).float().to(device),ord=2,dim=1).to(device))**2
+        indexes=torch.argmin(dist,dim=1).unsqueeze(1)
+        coded = torch.zeros(indexes.shape[0], self.numembedding, device=x.device)
+        coded.scatter_(1,indexes, 1)
+        quant=torch.mm(coded, embedding.weight).reshape(x.shape)
+
+        #quant=embedding.weight[indexes,:].reshape(x.shape)
+        loss = F.mse_loss(quant.detach(), x)+commitcost* F.mse_loss(quant, x.detach())
+        
+        
         quant = x + (quant - x).detach()
-        return Loss, quant.permute(0, 3, 1, 2).contiguous()
+        return loss, quant.permute(0, 3, 1, 2).contiguous()
 
 
    #def sampling(self,mu,logvariance):
@@ -73,35 +84,25 @@ def VQVAE(TRAINDATA):
 
    
         #self.fc2 = nn.Linear(in_features=100, out_features=10)
-   def forward(self, x,numembedding,embeddingdim,commitcost):
+   def forward(self, x):
         
         
         x=torch.nn.functional.relu(self.layer0(x))
         x=self.layer1(x)
         x=torch.nn.functional.relu(self.layer2(x))
         x=self.layer3(x)
-        Loss,z=VAE(x,self.numembedding,self.embeddingdim,commitcost)
+        #print(self.numembedding)
+        #print(self.embeddingdim)
+        #print(self.commitcost)
+        #x.self.numembedding,self.embeddingdim,self.commitcost
+        Loss,z=self.VQVAE(x,self.numembedding,self.embeddingdim,self.commitcost)
         x=torch.nn.functional.relu(self.layer4(z))
         x=self.layer5(x)
-        x=torch.nn.functional.relu(self.layer6(x))
-
-
-        #x=x.reshape((len(x),10,5,5))
-        #x=torch.nn.functional.relu(self.layer0(x))
-        #x=x.reshape((len(x),90))
-        #Loss,z=VQVAE(x,self.numembedding,self.embeddingdim,commitcost)
-        #logvariance=self.layer2(x)
-        
-        #z=self.sampling(mu,logvariance)
-        #x=torch.nn.functional.relu(self.layer3(z))
-        #x=torch.sigmoid(self.layer5(torch.nn.functional.relu(self.layer4(x))))#x=self.relu0(x)
-        
-        
-        
+        x=torch.nn.functional.sigmoid(self.layer6(x))
         return x,Loss
- model = indeed(numembedding=10,embeddingdim=64)
+ model = indeed(numembedding=30,embeddingdim=25,commitcost=0.3)
  model.to(device)
- EPOCHS=12
+ EPOCHS=30
 
  opt = torch.optim.Adam(model.parameters(), lr=0.0001,weight_decay=0.0005)
  lossFn1 = nn.BCELoss(reduction='mean')
@@ -113,7 +114,7 @@ def VQVAE(TRAINDATA):
   acc=0  
   model.train()
     
-  totalTrainLoss = 0
+  totalbinaryentropyloss = 0
  
   i=0   # loop over the training set
   for x in train_loader:
