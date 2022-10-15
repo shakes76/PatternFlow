@@ -180,16 +180,19 @@ class PixelConvLayer(layers.Layer):
 
     def build(self, input_shape):
         self.conv.build(input_shape)
-        
         kernel_shape = self.conv.kernel.get_shape()
+        #set mask value of rows above to 1
         part1 = tf.ones((kernel_shape[0] // 2, kernel_shape[1], kernel_shape[2], kernel_shape[3]))        
+        #set mask value of row below to 0
         part3 = tf.zeros((kernel_shape[0] // 2, kernel_shape[1], kernel_shape[2], kernel_shape[3]))
 
         if self.mask_type == "A":
+            #set mask value of cells in the same row but before the central pixel to 1
             c1 = tf.ones((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c2 = tf.zeros((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c1,c2], axis = 1)
         else:
+            #set mask value of cells in the same row but before the central pixel, plus the central pixel to 1, if mask type is B
             c3 = tf.ones((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c4 = tf.zeros((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c3,c4], axis = 1)
@@ -221,47 +224,6 @@ class ResidualBlock(keras.layers.Layer):
 
     def call(self, inputs):
         x = self.conv1(inputs)
-        x = self.norm1(x)
         x = self.pixel_conv(x)
-        x = self.norm2(x)
         x = self.conv2(x)
-        x = self.norm3(x)
         return keras.layers.add([inputs, x])
-
-class PixelCNN(tf.keras.Model):
-    def __init__(self, num_residual_blocks, num_pixelcnn_layers, num_embeddings, **kwargs):
-        super().__init__(**kwargs)
-        self.num_residual_blocks = num_residual_blocks
-        self.num_pixelcnn_layers = num_pixelcnn_layers 
-        self.layer1 = PixelConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", strides = 1,
-                       padding="same")
-        self.norm1 = keras.layers.BatchNormalization()
-
-        self.layer_blocks = []
-        
-        for i in range(num_residual_blocks):
-            self.layer_blocks.append(ResidualBlock(filters=128))
-        
-        self.pixel_layers = []
-        self.norm_layers = []
-        for i in range(num_pixelcnn_layers):
-            self.pixel_layers.append(PixelConvLayer(mask_type="B",filters=128,kernel_size=1,strides=1,
-                               activation="relu",padding="valid"))
-            self.norm_layers.append(keras.layers.BatchNormalization())
-
-            
-        self.outputs = keras.layers.Conv2D(filters=num_embeddings, 
-                                  kernel_size=1, strides=1, padding="valid")
-        
-    def call(self, x):
-        x = self.layer1(x)
-        x = self.norm1(x)
-        for i in range(self.num_residual_blocks):
-            x = self.layer_blocks[i](x)
-        
-        for i in range(self.num_pixelcnn_layers):
-            x = self.pixel_layers[i](x)
-            x = self.norm_layers[i](x)
-           
-        x = self.outputs(x)
-        return x

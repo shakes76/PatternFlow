@@ -1,6 +1,7 @@
 import random
 from PIL import Image
 import numpy as np
+import tensorflow as tf
 import os
 
 def preprocess(img):
@@ -10,7 +11,6 @@ def preprocess(img):
     return img
 
 def load_data():
-    batch_size = 8
     img_path = "images/"
 
     data_train = []
@@ -29,24 +29,21 @@ def load_data():
         data_validate.append(os.path.join(validate_path, filename))
     
     train = []
-    imgs = random.sample(data_train, batch_size)
-    for img in imgs:
+    for img in data_train:
         img = Image.open(img)
         img = preprocess(img)
         train.append(img)
     train = np.array(train).astype('float32')
 
     test = []
-    imgs = random.sample(data_test, batch_size)
-    for img in imgs:
+    for img in data_test:
         img = Image.open(img)
         img = preprocess(img)
         test.append(img)
     test = np.array(test).astype('float32')
 
     validate = []
-    imgs = random.sample(data_validate, batch_size)
-    for img in imgs:
+    for img in data_validate:
         img = Image.open(img)
         img = preprocess(img)
         validate.append(img)

@@ -18,7 +18,7 @@ data_variance = np.var(train)
 # Train VQVAE
 vqvae_trainer = modules.VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(train, epochs=1000, batch_size=32)
+vqvae_trainer.fit(train, epochs=200, batch_size=8, steps_per_epoch=len(train)/8)
 
 # Plot learning
 plt.plot(vqvae_trainer.history.history['reconstruction_loss'], label='reconstruction_loss')
@@ -62,60 +62,112 @@ for i in range(len(test_images)):
     filename = os.path.join(figure_path, "codebook_" + str(i) + ".png")
     plt.savefig(filename)
 
-
-# Generate the codebook indices.
-encoded_outputs = encoder.predict(train)
-flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-codebook_indices_train = quantizer.get_code_indices(flat_enc_outputs)
-
-encoded_outputs = encoder.predict(validate)
-flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-codebook_indices_validate = quantizer.get_code_indices(flat_enc_outputs)
-
 # PixelCNN
 num_residual_blocks = 7
 num_pixelcnn_layers = 2
 pixelcnn_input_shape = encoded_outputs.shape[1:-1]
 
-pixel_cnn = modules.PixelCNN(num_residual_blocks, num_pixelcnn_layers, num_embeddings=256)
-pixel_cnn.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0003),loss = tf.losses.CategoricalCrossentropy(from_logits = True), metrics=['accuracy'])
-pixel_cnn.fit(x = codebook_indices_train, epochs = 600, validation_data = codebook_indices_validate, batch_size = 8, 
-                    validation_steps = 1, validation_batch_size = 8, steps_per_epoch = 1)
+pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
+ohe = tf.one_hot(pixelcnn_inputs, vqvae_trainer.num_embeddings)
+x = modules.PixelConvLayer(
+    mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
+)(ohe)
 
-#get the output shape of the encoder
-train_gen_1 = dataset.train_codebook_generator(train, vqvae_trainer, batch_size = 1)
-data = next(train_gen_1)
-out = pixel_cnn.predict(data[0])
+for _ in range(num_residual_blocks):
+    x = modules.ResidualBlock(filters=128)(x)
 
-# Create an empty array of priors to generate images.
-batch = 5
-shape = ((batch,) + out.shape[1:])
-priors = tf.zeros(shape = shape)
-batch, rows, cols, embedding_count = priors.shape
-# Iterate over the priors pixel by pixel.
+for _ in range(num_pixelcnn_layers):
+    x = modules.PixelConvLayer(
+        mask_type="B",
+        filters=128,
+        kernel_size=1,
+        strides=1,
+        activation="relu",
+        padding="valid",
+    )(x)
+
+out = keras.layers.Conv2D(
+    filters=vqvae_trainer.num_embeddings, kernel_size=1, strides=1, padding="valid"
+)(x)
+pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
+
+encoded_outputs = encoder.predict(train)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+pixel_cnn.compile(
+    optimizer=keras.optimizers.Adam(3e-4),
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+pixel_cnn.fit(
+    x=codebook_indices,
+    y=codebook_indices,
+    batch_size=32,
+    epochs=1000,
+    validation_split=0.1,
+)
+
+# Create a mini sampler model.
+inputs = layers.Input(shape=pixel_cnn.input_shape[1:])
+outputs = pixel_cnn(inputs, training=False)
+categorical_layer = tfp.layers.DistributionLambda(tfp.distributions.Categorical)
+outputs = categorical_layer(outputs)
+sampler = keras.Model(inputs, outputs)
+
+# Create an empty array of priors.
+batch = 10
+priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+batch, rows, cols = priors.shape
+
+# Iterate over the priors because generation has to be done sequentially pixel by pixel.
 for row in range(rows):
     for col in range(cols):
-            # Feed the whole array and retrieving the pixel value probabilities for the next
-            # pixel.
-            x = pixel_cnn(priors, training=False)
-            dist = tfp.distributions.Categorical(logits=x)
-            sampled = dist.sample()
-            sampled = tf.one_hot(sampled,256)
-            priors = sampled
+        # Feed the whole array and retrieving the pixel value probabilities for the next
+        # pixel.
+        probs = sampler.predict(priors)
+        # Use the probabilities to pick pixel values and append the values to the priors.
+        priors[:, row, col] = probs[:, row, col]
+
 print(f"Prior shape: {priors.shape}")
 
-#map the one-hot encodings to actual values
-embedding_dim = vqvae_trainer.vq_layer.embedding_dim
-pretrained_embeddings = vqvae_trainer.vq_layer.embeddings
-pixels = tf.constant(priors, dtype = "float32")
+# Perform an embedding lookup.
+pretrained_embeddings = quantizer.embeddings
+priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
+quantized = tf.matmul(
+    priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+)
+quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
 
-quantized = tf.matmul(pixels, pretrained_embeddings, transpose_b=True)
-
-# Generate images.
-decoder = vqvae_trainer.decoder
+# Generate novel images.
+decoder = vqvae_trainer.vqvae.get_layer("decoder")
 generated_samples = decoder.predict(quantized)
-figs =  ['fig1.png','fig2.png','fig3.png','fig4.png','fig5.png']
+
+# Plot Decoded samples
 for i in range(batch):
-    plt.imshow(generated_samples[i])
+    plt.subplot(1, 2, 1)
+    plt.imshow(priors[i])
+    plt.title("Code")
     plt.axis("off")
-    plt.savefig(os.path.join(figure_path, "generated_" + str(i) + ".png"))
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated_samples[i].squeeze() + 0.5)
+    plt.title("Generated Sample")
+    plt.axis("off")
+    filename = os.path.join(figure_path, "decoded_" + str(i) + ".png")
+    plt.savefig(filename)
+
+# Plot learning
+plt.plot(pixel_cnn.history.history['loss'], label='loss')
+plt.plot(pixel_cnn.history.history['val_loss'], label = 'val_loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(loc='lower right')
+plt.savefig(os.path.join(figure_path, "cnn_plot"))
+
+# Check SSIM
+for i in range(len(generated_samples)):
+    img1 = train[i]
+    img2 = generated_samples[i]
+    print(tf.image.ssim(img1, img2, 1, filter_size=11, filter_sigma=1.5, k1=0.01, k2=0.03))
