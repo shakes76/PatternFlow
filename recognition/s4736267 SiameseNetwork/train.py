@@ -1,212 +1,297 @@
 
 #Defining CNN
 
+#######################################################
+#                  Packages
+#######################################################
+
+#Torch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-#Solver
+from torchvision.utils import save_image
 import torch.optim as optim
-
-#
 import torchvision
 import torchvision.transforms as transforms
+from torch.optim.lr_scheduler import StepLR
+#Math
 import math
+#Plot
 import matplotlib.pyplot as plt
 import numpy as np
-
 #Garbage collector
 import gc 
 
-#Importing CNN Model
+#######################################################
+#                  Importing custom files
+#######################################################
+
 import modules
+import dataset 
+
+#######################################################
+#                  Defining constants
+#######################################################
+
+epoch_range = 5
+batch_size=4
+train_factor=1000               #Number of Persons
+test_factor=400
+valid_factor=200
+
+FILE="weights_only.pth"         #File location of saved pretrained net
+
+#(0=disabled)
+load_pretrained_model=0
+scheduler_active=1
+gradient_clipping=0             #Gradient clippling         
+plot_feature_vectors=1          #Ploting feature vectors
+plot_loss = 1                   #Ploting training and validation loss
 
 
-#Scheduler
-from torch.optim.lr_scheduler import StepLR
+#######################################################
+# Loading Net and defining optimizer, scheduler and weight initialisation
+#######################################################
 
+#Garbage collection
+gc.collect()
+torch.cuda.empty_cache()
 
+#Importing CNN Model
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = modules.ResNet18(modules.Residual_Identity_Block,modules.Residual_Conv_Block)
-#net.load_state_dict(torch.load('sim_net_ResNet.pt')) #change to .pt
-#net.eval()
-net = net.to(device)
-
-
-#torch.save(net.state_dict(), 'sim_net_ResNet.pt')
-
-#Constants
-epoch_range = 5#00
-
-
-batch_size=20*3
-train_factor=1000
-test_factor=40
-valid_factor=10
-
-modulo=round(train_factor*20/(batch_size*10))+1 #Print frequency while training
-
-#Importing Custom Dataloader
-import dataset 
-train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
-
-
-
-
+if load_pretrained_model==0: 
+    net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
+    net = net.to(device)
+else:
+    
+    net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
+    net.load_state_dict(torch.load(FILE))
+    net.eval()
 
 #Optimizer
 criterion = modules.ContrastiveLoss()
-#criterion = nn.BCELoss()
-optimizer = optim.Adam(net.parameters(),lr = 0.01)
+optimizer = optim.Adam(net.parameters(),lr = 0.001, weight_decay=1e-3)
+
+#Learning rate scheduler
 scheduler = StepLR(optimizer, step_size=50, gamma=0.95)
 
 
-#Loss tracking during training
-training_loss= torch.zeros(epoch_range)
-testing_loss= torch.zeros(epoch_range)
-test_accuracy=torch.zeros(epoch_range)
 
+#Weight initialisation
+#net.apply(modules.init_weights)
 
+#Loading Dataloaders
+train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset3D(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
+
+#Mean and deviation calculation
 #xy,yz = dataset.mean_std_calculation(train_loader)
 #dataset.crop_area_pos(train_loader)   not working !!
 
-#net.apply(modules.init_weights)
+
+#######################################################
+#                  Loading clasification image
+#######################################################
+
+##Classification Input Data
+input_shape=torch.zeros(10,1,20,210,210)
+clas_image_AD, clas_image_NC = dataset.clas_output3D(clas_dataset,input_shape)
+clas_image_AD=clas_image_AD.to(device)
+clas_image_NC=clas_image_NC.to(device)
 
 
 print("Initialitaion finished", flush=True)
+
+#######################################################
+#                  Training and validation
+#######################################################
+
+#Loss tracking during training
+training_loss= torch.zeros(epoch_range)
+validation_loss= torch.zeros(epoch_range)
+validation_accuracy=torch.zeros(epoch_range)
+
+
 
 for epoch in range(epoch_range):  # loop over the dataset multiple times
     
     print(f'EPOCH NUMBER: {epoch} =', end ="", flush=True) 
 
-
+    #TRAINING
+    net.train()
     total = 0
+    loss_run = 0
 
     for i, data in enumerate(train_loader, 0):
         
-
+        #Data Transfer
         inputs_1= data[0].to(device) 
         inputs_2= data[1].to(device) 
-
+        
         labels= data[2].to(device).to(torch.float32)
 
-        
-        #zero gradients
+        #Zero gradients
         optimizer.zero_grad()
 
-
+        #Loss calculation
         output1,output2 = net(inputs_1,inputs_2)
 
         loss = criterion(output1,output2,labels)
         loss.backward()
 
-        nn.utils.clip_grad_value_(net.parameters(), 0.1)
+        #Gradient Clipping
+        if gradient_clipping>0:
+            nn.utils.clip_grad_value_(net.parameters(), gradient_clipping)
 
+        #Optimisation Step
         optimizer.step()
 
         #Training loss
-        training_loss[epoch]=training_loss[epoch]+loss#.detach().item()
+        loss_run +=loss.detach().item()
         total += torch.numel(labels)
 
-        scheduler.step()
+        #Learning rate scheduler
+        if scheduler_active==1:
+            scheduler.step()
 
-        #Update where running
-        if i % (modulo) == modulo-1:
-            print("-", end ="", flush=True)
-    
+        print("-",end ="",flush=True)
+
+    training_loss[epoch]=loss_run/total
     print("")
-
-    training_loss[epoch]=training_loss[epoch]/total
-    print(f'Training Loss: {training_loss[epoch]}')
-
-    del inputs_1, inputs_2, labels, output1, output2, loss, total
+    print("->Training Loss   :",training_loss[epoch].item())
     gc.collect()
     
-####
+    #Validation
+    net.eval()
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        
+        for i, data in enumerate(valid_loader, 0):
+
+            #Data Transfer
+            inputs_1= data[0].to(device) 
+            inputs_2= data[1].to(device) 
+        
+            labels= data[2].to(device).to(torch.float32)
+
+            #Loss calculation
+            output1,output2 = net(inputs_1,inputs_2)
+
+            loss = criterion(output1,output2,labels)
+        
+            #Training loss
+            loss_run +=loss.detach().item()
+            total += torch.numel(labels)
+
+    validation_loss[epoch]=loss_run/total
+    print("->Validation Loss:",validation_loss[epoch].item(), flush=True)
+    print("")
+    gc.collect()
+
+###################################################
+#                  Saving net parameters
+###################################################
 
 
-# No backpropagtion , No need for calculating gradients, => Faster calculation
+torch.save(net.state_dict(), FILE)
+print('=> ---- Finished Training ---- ')
+
+###################################################
+#          Calculation of classification vector
+###################################################
+
+outputAD,outputNC = net(clas_image_AD,clas_image_NC)
+#feature_AD=torch.sum(outputAD, dim=0)/10
+#feature_NC=torch.sum(outputNC, dim=0)/10
+feature_AD=torch.mean(outputAD,dim=0)
+feature_NC=torch.mean(outputNC,dim=0)
+
+print("diff",torch.sum(clas_image_AD-clas_image_NC))
+print("diff_feautre",torch.sum(feature_AD-feature_NC))
+#######################################################
+#                  Testing
+#######################################################
+
 with torch.no_grad():
     correct = 0
     total = 0
 
 
     for i, data in enumerate(test_loader, 0):
-        
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
-        slice_number = data[2].to(device) 
-        #print("labels",labels)
-        #print("slice_number train.py",slice_number)
 
-        clas_image_AD, clas_image_NC = dataset.clas_output(clas_dataset,slice_number,inputs)
-
-        output1,output2 = net(inputs,clas_image_AD)#.squeeze(1)
-        print(torch.sum(output1-output2))
-        euclidean_distance_AD = F.pairwise_distance(output1, output2)    
-
-        output1,output2 = net(inputs,clas_image_NC)#.squeeze(1)
-        euclidean_distance_NC = F.pairwise_distance(output1, output2)
-
-
-        mode=0
-        if mode == 0:
-
-            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
+        output1= net.forward_once(inputs)
         
+        euclidean_distance_AD = F.pairwise_distance(output1, feature_AD)    
+        euclidean_distance_NC = F.pairwise_distance(output1, feature_NC)
 
-            correct_tensor=torch.eq(labels,predicted_labels)
+        predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
+        
+        correct_tensor=torch.eq(labels,predicted_labels)
     
+        correct_run = torch.sum(correct_tensor)
+        correct += correct_run
+        total += torch.numel(labels)
 
-            correct_run = torch.sum(correct_tensor)
-            correct += correct_run
-            total += torch.numel(labels)
+    test_accuracy=correct/total
+    print("")
+    print("   ->Test Accuracy  :",test_accuracy.item(), flush=True)
 
-        else:
-            predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
-            number_sets=round(torch.numel(labels)/20)
-
-            predicted_labels_patient=torch.zeros(number_sets)
-            labels_patient=torch.zeros(number_sets)
-
-            for j in range(number_sets):
-                
-                predicted_labels_patient[j]= torch.round(torch.sum(predicted_labels[j:j+20])/20)
-                labels_patient[j] = labels[j*20]
-                print("predicted_labels_patient", predicted_labels_patient[j],"--",torch.sum(predicted_labels[j:j+20])/20,"   labels patient",labels_patient[j])
-                
-            correct_tensor=torch.eq(labels_patient,predicted_labels_patient)
-            correct_run = torch.sum(correct_tensor)
-
-            correct += correct_run
-            total += number_sets
-
-            print("correct_run",correct_run)
-            print("")
-
-        print("euc_NC",euclidean_distance_NC)
-        print("euc_AD",euclidean_distance_AD)
-        print("lab",labels)
-        print("pred_lab", predicted_labels)
-        print("cor_ten", correct_tensor)    
-
-    test_accuracy = (correct/total)
-    print(f'Test Accuracy: {test_accuracy}', flush=True)
-
-
-    #if epoch % 50 == 49:
-    #    torch.save(net.state_dict(), 'checkpoint_9.pth')
-          
-        #   torch.save(training_loss, 'training_loss_18.pt')
-        #   torch.save(test_accuracy, 'test_accuracy_18.pt') 
-        #   torch.save(testing_loss, 'testing_loss_18.pt')
-
-    del inputs, labels,predicted_labels, output1, output2, total, correct, euclidean_distance_AD, euclidean_distance_NC
     gc.collect()
-    
 
-torch.save(net.state_dict(), 'sim_net_ResNet.pt')
-print('Finished Training')
+print('=> ---- Finished Testing ---- ')
 
+#######################################################
+# Plotting feature vectors of classification reference
+#######################################################
+
+if plot_feature_vectors==1:
+
+    plt.figure(0)
+
+    for i in range(10):
+        plt.plot(outputAD[i].cpu().detach().numpy(), label='{}'.format(i))
+        #plt.plot(outputNC[i].cpu().detach().numpy(), label='NC')
+
+    plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('PlotAD.png',bbox_inches='tight')
+
+    plt.figure(1)
+    for i in range(10):
+        plt.plot(outputNC[i].cpu().detach().numpy(), label='{}'.format(i))
+        #plt.plot(outputNC[i].cpu().detach().numpy(), label='NC')
+
+
+    plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='black',linewidth='4')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('PlotNC.png',bbox_inches='tight')
+
+    plt.figure(2)
+    plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
+    plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='red',linewidth='1')
+    plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
+    plt.savefig('Plot.png',bbox_inches='tight')
+    print('=> ---- Finished Plotting feature vectors ---- ')    
+
+#######################################################
+#       Plotting training and validation loss 
+#######################################################
+
+
+if plot_loss==1:
+    plt.figure(3)
+    plt.plot(training_loss.detach().numpy(), label='Training_loss')
+    plt.plot(validation_loss.detach().numpy(), label='Validation_loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(loc='lower center', bbox_to_anchor=(0.3, -0.3),ncol=2)
+    plt.twinx()
+
+    plt.savefig('Plot_Loss.png',bbox_inches='tight')
+
+    print('=> ---- Finished Plotting loss ---- ') 

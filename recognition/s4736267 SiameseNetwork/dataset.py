@@ -1,6 +1,3 @@
-#%matplotlib inline
-#%config InlineBackend.figure_format = 'retina'
-
 import matplotlib.pyplot as plt
 from pandas.core.common import flatten
 import copy
@@ -14,92 +11,14 @@ import torch.nn.functional as F
 from torchvision import transforms, models
 from torch.utils.data import Dataset, DataLoader
 
-#import albumentations as A
-#from albumentations.pytorch import ToTensorV2
 import cv2
 
 import glob
-#from tqdm import tqdm
 
 import random
 import PIL
 
 from torchvision.utils import save_image
-
-#######################################################
-#                  Crop Area ---- Not WORKING !!!!
-#######################################################
-#left, top, width, height   # Not WORKING !!!!
-
-def crop_area_pos(loader):
-    for i, data in enumerate(loader, 0):
-        images= data[0]
-        #print(images.shape)
-        
-        if i == 0:
-            new = images[0] 
-        else:
-            new += images[0] 
-
-    treshhold = 1
-    print(new)
-    test=new>treshhold
-    torch.save(test, 'test.txt')
-    print(test)
-
-    print(torch.max(new))
-
-    sum_total = torch.sum(new)
-    sum_total = sum_total
-    print(sum_total)
-
-    sum_total = torch.sum(new*test)
-    sum_total = sum_total
-    print(sum_total)
-
-    top=left=0
-    height=240
-    width=256
-    
-    for i in range(240):
-        if torch.sum(transforms.functional.crop(new,i,0,240-i,256))<sum_total:
-            print(transforms.functional.crop(new,i,0,240-i,256).shape)
-            print("TOP", i)
-            top=i
-            break
-
-
-    for i in range(256):
-        if torch.sum(transforms.functional.crop(new,top,i,240-top,256-i))<sum_total:
-            print(transforms.functional.crop(new,top,i,240-top,256-i).shape)
-            print("LEFT", i)
-            left=i
-            break
-
-       
-    for i in range(240):
-        if torch.sum(transforms.functional.crop(new,0,0,240-i,256))<sum_total:
-            print(transforms.functional.crop(new,0,0,240-i,256).shape)
-            print("Height", 240-i)
-            height=240-i
-            break
-    
-
-    for i in range(256):
-        if torch.sum(transforms.functional.crop(new,0,0,240,256-i))<sum_total:
-            print(transforms.functional.crop(new,0,0,240,256-i).shape)
-            print("Width", 256-i)
-            width=256-i
-
-            break
-
-    print(torch.sum(transforms.functional.crop(new,top,left,height,width))/sum_total)
-    print(transforms.functional.crop(new,top,left,height,width).shape)        
-
-    return 
-
-
-
 
 #######################################################
 #                  Mean and Standard Derivation Calculation
@@ -148,22 +67,6 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
     image_paths_new=[None]*length
     image_paths_new2=[None]*length
 
-###BACK Old versions, only shuffles sets
-    #randompos = range(number_of_sets)
-    #randompos = list(randompos)
-    #random.shuffle(randompos)
-    #print(len(image_paths_new))
-#    i = 0 
-#    while  i < number_of_sets:
-#        placeholder=image_paths[0+i*20:20+i*20]
-#        placeholder.sort(key=len, reverse=False)
-#        j = int(randompos[i])
-#        image_paths_new[0+j*20:20+j*20]=placeholder
-#        i = i+1
-
-
-    ###Sort Sets and Shuffle Set with other Sets
-
     randompos = range(number_of_sets)
     randompos = list(randompos)
     random.shuffle(randompos)
@@ -177,7 +80,6 @@ def train_valid_data(train_data_path = 'ADNI_AD_NC_2D/AD_NC/train',TRAIN_DATA_SI
         i = i+1
 
     ###Shuffle Slice 1 to different set Slice 1
-    #print("image_paths_new dataset.py",image_paths_new[:TRAIN_DATA_SIZE])
 
     for s in range(0):
         randompos2 = range(number_of_sets)
@@ -254,7 +156,6 @@ def test_data(test_data_path = 'ADNI_AD_NC_2D/AD_NC/test',DATA_SIZE = 20):
     return image_paths_new[:DATA_SIZE]
 
 
-#TODO give back images from filepaths / custom dataset or something  Maybe just use the first twenty entries of data loader ?
 def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):    
     
     image_paths = []
@@ -264,14 +165,10 @@ def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):
 
     image_paths = list(flatten(image_paths))
     image_paths = sorted(image_paths)
-
-    #image_paths.sort(key=lambda item: (-len(item), item))
-    #image_paths = sorted(image_paths)
     
     length = len(image_paths) 
     number_of_sets = int(length/20)
 
-    #image_paths.sort()
     image_paths_new=[None]*length
 
     i = 0 
@@ -282,135 +179,12 @@ def clas_data(clas_data_path = 'ADNI_AD_NC_2D/AD_NC/test'):
         i = i+1
     
     image_paths=image_paths_new[0:20*10] + image_paths_new[length-20*10:]
-    
-    #print("clas_data image_paths",image_paths)
-
     return image_paths
 
 
 #######################################################
 #               Define Dataset Class
 #######################################################
-
-class Dataset(Dataset):
-    def __init__(self, image_paths, transform=None):
-        self.image_paths = image_paths
-        self.transform = transform
-        
-    def __len__(self):
-        return len(self.image_paths)
-
-    def __getitem__(self, idx):
-        image_filepath = self.image_paths[idx]
-        image = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
-        
-        
-        label = image_filepath.split('/')[-2]
-        label = 0 if label =='AD' else 1
-        
-
-        if self.transform:
-            image = self.transform(image)
-
-        slice_number = idx%20    
-        
-        #print(image_filepath)
-        #print(label)
-        #print(slice_number)
-
-        return image, label, slice_number
-
-class DatasetClas(Dataset):
-    def __init__(self, image_paths, transform=None):
-        self.image_paths = image_paths
-        self.transform = transform
-        self.size = len(image_paths)
-        
-    def __len__(self):
-        return self.size
-
-    def __getitem__(self, idx):
-        image_filepath = self.image_paths[idx]
-        #print("DatasetClas image_filepath",image_filepath, " with index", idx)
-        image = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
-        
-        
-        label = image_filepath.split('/')[-2]
-        label = 0 if label =='AD' else 1
-        
-
-        if self.transform:
-            image = self.transform(image)
-        
-        return image
-
-
-class DatasetTrain(Dataset):
-    def __init__(self, image_paths, transform=None):
-        self.image_paths = image_paths
-        self.transform = transform
-        self.size = len(image_paths)         
-        
-    def __len__(self):
-        return self.size
-
-    def __getitem__(self, idx_1):
-        #print("path_size",self.size)
-        image_filepath = self.image_paths[idx_1]
-        #print(image_filepath, "-", idx_1)
-        image_1 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
-        
-        label_1 = image_filepath.split('/')[-2]
-        label_1 = 0 if label_1=='AD' else 1
-        
-        idx_help = idx_1 + random.randint(0,int(self.size/20))*20
-
-        idx_2 = (idx_help) % self.size   #Assumption Slice index _ ist only important on number
-
-        #print("idx_1",idx_1,"  idx_2",idx_2,"  idx_help",idx_help)
-
-        image_filepath = self.image_paths[idx_2]
-        #print(image_filepath, "-", idx_2)
-        image_2 = cv2.imread(image_filepath, cv2.IMREAD_GRAYSCALE)
-        
-        label_2 = image_filepath.split('/')[-2]
-        label_2 = 0 if label_2=='AD' else 1
-
-        if label_1 == label_2:
-            label=1
-        else:
-            label=0
-
-        if self.transform:
-            image_1 = self.transform(image_1)
-            image_2 = self.transform(image_2)
-        
-        #print("Label:", label)
-
-        #print("")
-        return image_1, image_2, label
-
-class Random_Crop_Resize:
-    def __init__(self,left_off=0,top_off=0,width_off=0,height_off=0):
-        self.left_off = left_off
-        self.top_off = top_off
-        self.width_off = width_off
-        self.height_off = height_off
-    
-    def __call__(self, img: torch.Tensor) -> torch.Tensor:
-        left, top, width, height = 25, 5, 210, 210
-        return transforms.Resize((210,210))(transforms.functional.crop(img, top=top+self.top_off, left=left+self.left_off, height=height-self.height_off-self.top_off, width=width-self.width_off-self.left_off))
-
-class Random_Blackout:
-    def __init__(self,i1,i2,i):
-        self.i1 = i1  #Pixel value
-        self.i2 = i2  #Pixel value
-        self.i = i      #Size of BlackoutArea
-        
-    def __call__(self, img: torch.Tensor) -> torch.Tensor:
-        return transforms.functional.erase(img, self.i1, self.i2, self.i, self.i, 0)
-
-
 
 class DatasetTrain3D(Dataset):
     def __init__(self, image_paths, transform=None):
@@ -461,8 +235,7 @@ class DatasetTrain3D(Dataset):
 
         transform_idx_1=self.transform_augmentation()
         transform_idx_2=self.transform_augmentation()
-        #print(transform_idx)
-        #print("idx:",idx,"idx_1:",idx_1,"  idx_2:",idx_2)
+
         j=0
         for i in range(20):
             
@@ -482,7 +255,7 @@ class DatasetTrain3D(Dataset):
             #save_image(image_1, 'basic_augmentation.png')
 
             i  = 25
-            for j in range(10):
+            for j in range(20):
                 rn = random.randint(0,1)
                 if rn==0:
                     
@@ -515,8 +288,6 @@ class DatasetTrain3D(Dataset):
         label_2 = 0 if label_2=='AD' else 1
 
 
-        #print(image_filepath_1)
-        #print(image_filepath_2)
         if label_1 == label_2:
             label=1
         else:
@@ -526,7 +297,6 @@ class DatasetTrain3D(Dataset):
         image3D_2 = torch.unsqueeze(image3D_2, dim=0)
 
         del transform_idx_1,transform_idx_2
-        #print("idx_1:",idx_1,"  --  ",image_filepath_1,"  -- idx_2:",idx,"  --  ",image_filepath_2,"  -- label:",label)
         return image3D_1, image3D_2, label, label_1
 
 class Dataset3D(Dataset):
@@ -594,25 +364,12 @@ class DatasetClas3D(Dataset):
 
         image3D = torch.unsqueeze(image3D, dim=0)    
 
-        #print("idx:",idx,"  --  ",image_filepath)
-
         return image3D
 
 
 #######################################################
-def clas_output(clas_dataset,slice_number,input_data):
-    i=0
-    clas_image_AD = torch.zeros_like(input_data)
-    clas_image_NC = torch.zeros_like(input_data)
-
-    for i in range(input_data.shape[0]):
-        
-        clas_image_AD[i] = clas_dataset[slice_number[i]]
-        clas_image_NC[i] = clas_dataset[slice_number[i]+20] #Second Set represents NC
-
-
-    return clas_image_AD, clas_image_NC
-
+#                  Return Classification Source
+#######################################################  
 
 def clas_output3D(clas_dataset,input_data):
 
@@ -625,10 +382,7 @@ def clas_output3D(clas_dataset,input_data):
         clas_Person_AD[i] = clas_dataset[i]
         clas_Person_NC[i] = clas_dataset[i+10] #Second Set represents NC
 
-    #return torch.unsqueeze(clas_Person_AD/10, dim=1),torch.unsqueeze(clas_Person_NC/10, dim=1)    
     return clas_Person_AD, clas_Person_NC
-
-    #return clas_Person_AD[None, :], clas_Person_NC[None, :]
 
 
 #######################################################
@@ -642,37 +396,26 @@ def crop(image: PIL.Image.Image) -> PIL.Image.Image:
     
     return transforms.functional.crop(image, top=top, left=left, height=height, width=width,)
 
+class Random_Crop_Resize:
+    def __init__(self,left_off=0,top_off=0,width_off=0,height_off=0):
+        self.left_off = left_off
+        self.top_off = top_off
+        self.width_off = width_off
+        self.height_off = height_off
+    
+    def __call__(self, img: torch.Tensor) -> torch.Tensor:
+        left, top, width, height = 25, 5, 210, 210
+        return transforms.Resize((210,210))(transforms.functional.crop(img, top=top+self.top_off, left=left+self.left_off, height=height-self.height_off-self.top_off, width=width-self.width_off-self.left_off))
 
-
-def transformation_input():
-    transform_input = transforms.Compose([
+class Random_Blackout:
+    def __init__(self,i1,i2,i):
+        self.i1 = i1  #Pixel value
+        self.i2 = i2  #Pixel value
+        self.i = i      #Size of BlackoutArea
         
-        transforms.ToPILImage(),
-        transforms.Lambda(crop),
-        transforms.Resize(size=(105,105)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
-    ])
+    def __call__(self, img: torch.Tensor) -> torch.Tensor:
+        return transforms.functional.erase(img, self.i1, self.i2, self.i, self.i, 0)
 
-    return transform_input
-
-def transformation_augmentation():
-    transform_augmentation = transforms.Compose([
-        
-        transforms.ToPILImage(),
-        transforms.Lambda(crop),
-        #transforms.RandomRotation((0,90)),
-        #transforms.RandomResizedCrop(210, scale=(0.7, 1.0), ratio=(0.75, 1.3333333333333333)),
-        transforms.Resize(size=(105,105)),
-        transforms.RandomCrop(105, padding=30,padding_mode='reflect'),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-
-        transforms.ToTensor(),
-        transforms.Normalize(mean=0.1963, std=0.2540,inplace=True),
-    ])
-
-    return transform_augmentation
 
 def transformation_3D():
     transform_input = transforms.Compose([
@@ -686,31 +429,9 @@ def transformation_3D():
 
     return transform_input
 
-
-def dataset(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
-
-    #Preparation
-    
-    train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
-    test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
-    clas_image_paths = clas_data()
-
-    #Dataset
-    
-    train_dataset = DatasetTrain(train_image_paths,transformation_augmentation())
-    valid_dataset = DatasetTrain(valid_image_paths,transformation_input()) 
-    test_dataset = Dataset(test_image_paths,transformation_input())
-    clas_dataset = DatasetClas(clas_image_paths,transformation_input())
-
-
-    #Dataloaders
-    train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
-
-    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
-
-    test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
-
-    return train_loader, valid_loader, test_loader, clas_dataset
+#######################################################
+#                  Create Dataloader
+####################################################### 
 
 
 def dataset3D(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
