@@ -2,6 +2,7 @@ from dataset import *
 from modules import *
 from train import *
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
@@ -12,8 +13,12 @@ img_shape = 256
 vq_epoch = 5
 pcnn_epoch = 3
 batch_size = 32
+result_path = 'results'
 
-def show_reconstructed(original, reconstructed, codebook_indices):
+if not os.path.isdir(result_path):
+    os.mkdir(result_path)
+
+def show_reconstructed(original, reconstructed, codebook_indices, n):
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 3, 1)
     ax1.imshow(original.numpy().squeeze())
@@ -29,8 +34,8 @@ def show_reconstructed(original, reconstructed, codebook_indices):
     ax3.imshow(reconstructed.squeeze())
     ax3.title.set_text("Reconstructed")
     ax3.axis("off")
+    fig.savefig('{}/VQVAE_recons_{}.png'.format(result_path, n))
     fig.show()
-    fig.savefig('VQVAE_recons.png')
 
 def VQVAE_result(vqvae, dataset):
     test_images = None
@@ -46,8 +51,13 @@ def VQVAE_result(vqvae, dataset):
     codebook_ind = vq.get_code_indices(flat_enc_outputs)
     codebook_ind = codebook_ind.numpy().reshape(encoded_outputs.shape[:-1])
 
+    count = 0
     for test_image, reconstructed_image, codebook in zip(test_images, recons, codebook_ind):
-        show_reconstructed(test_image, reconstructed_image, codebook)
+        show_reconstructed(test_image, reconstructed_image, codebook, count)
+        count += 1
+
+        if count == 5:
+            break
 
 def generate_PixelCNN(vq, pcnn, n):
     encoded_outputs = vq.get_encoder().predict(train_data)
@@ -91,11 +101,12 @@ def generate_PixelCNN(vq, pcnn, n):
         ax2.imshow(gen_samps[i].squeeze(), cmap="gray")
         ax2.title.set_text("Decoded sample")
         ax2.axis("off")
+        fig.savefig('{}/generated_{}.png'.format(result_path, i))
         fig.show()
-        fig.savefig('generated.png')
 
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 
-vqvae_trained = vq_train(train_data=train_data, train_var=train_var, img_shape=img_shape)
+vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, 
+    img_shape=img_shape, embed_num=64)
 
 pcnn_trained = pcnn_train(vqvae_trained, train_data)

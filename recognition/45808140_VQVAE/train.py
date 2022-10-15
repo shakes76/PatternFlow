@@ -9,8 +9,8 @@ import tensorflow_probability as tfp
 
 root_path = 'AD_NC'
 img_shape = 256
-vq_epoch = 5
-pcnn_epoch = 3
+vq_epoch = 10
+pcnn_epoch = 5
 batch_size = 32
 
 no_resid = 2
@@ -43,8 +43,8 @@ def get_codebooks(vq, embeds):
     
     return mapper
 
-def vq_train(train_data, test_data, train_var, img_shape):
-    VQVAE = VQVAE_model(img_shape, train_var, 16, 128)
+def vq_train(train_data, test_data, train_var, img_shape, embed_num, result_path, vq_epoch=vq_epoch):
+    VQVAE = VQVAE_model(img_shape, train_var, 16, embed_num)
     VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
     print(VQVAE.get_model().summary())
 
@@ -56,15 +56,14 @@ def vq_train(train_data, test_data, train_var, img_shape):
     plt.plot(history.history['reconstruction_loss'], label = 'reconstruction_loss')
     plt.plot(history.history['avg_ssim'], label = 'similarity')
     plt.legend(loc='upper right')
-    plt.ylim([0,5])
+    plt.ylim([0,1])
     plt.xlabel('Epoch')
-    plt.show()
-    plt.savefig('vq_result_graph.png')
+    plt.savefig('{}/vq_result_graph.png'.format(result_path))
 
-    VQVAE.save_weights('vq_weights')
+    VQVAE.save_weights('{}/vq_weights'.format(result_path))
     return VQVAE
 
-def pcnn_train(VQVAE, train_data):
+def pcnn_train(VQVAE, train_data, result_path, pcnn_epoch=pcnn_epoch):
     codebook_mapper = get_codebooks(VQVAE, VQVAE.no_embeddings)
     codebook_data = train_data.map(codebook_mapper)
 
@@ -79,12 +78,12 @@ def pcnn_train(VQVAE, train_data):
         history = pcnn.fit(codebook_data, batch_size=batch_size, epochs=pcnn_epoch)
 
     plt.plot(history.history['loss'], label='loss')
-    plt.show()
-    plt.savefig('pcnn_result_graph.png')
+    plt.xlabel('Epoch')
+    plt.savefig('{}/pcnn_result_graph.png'.format(result_path))
 
-    pcnn.save_weights('pcnn_weights')
+    pcnn.save_weights('{}/pcnn_weights'.format(result_path))
 
-    return PCNN
+    return pcnn
 
 
     
