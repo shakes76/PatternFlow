@@ -4,7 +4,7 @@ import numpy as np
 import datetime
 import skimage
 
-from mrcnn.model import load_image_gt
+from mrcnn.model import MaskRCNN, load_image_gt
 from mrcnn.model import mold_image
 from mrcnn.utils import compute_ap
 from mrcnn.config import Config
@@ -12,7 +12,6 @@ from mrcnn.visualize import display_instances, display_top_masks
 from numpy import expand_dims
 from numpy import mean
 from matplotlib.patches import Rectangle
-from train import Trained_model
 from dataset import train
 from matplotlib import pyplot as plt
 from modules import PredictionConfig, evaluate_model
@@ -20,8 +19,8 @@ from modules import PredictionConfig, evaluate_model
 
 # evaluate model on training dataset
 cfg = PredictionConfig()
-model = Trained_model(mode='inference', model_dir='logs', config=cfg)
-model.load_weights('logs/mask_rcnn_marble_cfg_coco_0003.h5', by_name=True, exclude=['mrcnn_class_logits', 'mrcnn_bbox_fc', 'mrcnn_bbox', 'mrcnn_mask'])
+model = MaskRCNN(mode='inference', model_dir='logs', config=cfg)
+model.load_weights('logs/lesion_cfg_coco_0005.h5', by_name=True)
 train_mAP = evaluate_model(train, model, cfg)
 print("Train mAP: %.3f" % train_mAP)
 

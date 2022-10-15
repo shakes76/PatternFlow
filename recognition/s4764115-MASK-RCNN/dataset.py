@@ -5,7 +5,7 @@ import keras
 import matplotlib.pyplot as plt
 import numpy as np
 
-from modules import img_path, CocoLikeDataset
+from modules import CocoLikeDataset
 from mrcnn.visualize import display_instances, display_top_masks
 from mrcnn.utils import extract_bboxes
 
