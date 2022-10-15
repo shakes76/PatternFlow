@@ -16,19 +16,16 @@ def load_data():
     data_train = []
     train_path = os.path.join(img_path, "train/")
     for filename in os.listdir(train_path):
-        image_id = filename[5:]
         data_train.append(os.path.join(train_path, filename))
 
     data_test = []
     test_path = os.path.join(img_path, "test/")
     for filename in os.listdir(test_path):
-        image_id = filename[5:]
         data_test.append(os.path.join(test_path, filename))
         
     data_validate = []
     validate_path = os.path.join(img_path, "validate/")
     for filename in os.listdir(validate_path):
-        image_id = filename[5:]
         data_validate.append(os.path.join(validate_path, filename))
     
     train = []
@@ -54,7 +51,5 @@ def load_data():
         img = preprocess(img)
         validate.append(img)
     validate = np.array(validate).astype('float32')
-    
-    data_variance = np.var(train / 255.0)
-    
+        
     return (train, test, validate)
