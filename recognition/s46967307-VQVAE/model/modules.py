@@ -1,9 +1,13 @@
 import tensorflow as tf
 import numpy as np
 
+# Hyperparams
 latent_dims = 8
 image_shape = (256, 256, 1)
-num_embeddings = 32
+num_embeddings = 64
+encoder_depth = 6
+encoded_image_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(latent_dims))
+pixelcnn_input_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(1))
 beta = 2.0
 
 class PixelConvLayer(tf.keras.layers.Layer):
@@ -32,6 +36,7 @@ class PixelConvLayer(tf.keras.layers.Layer):
 
 def get_pixel_cnn(kernel_size, input_shape):
     inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
+    inputs = tf.keras.layers.Dropout(0.1)(inputs)
     onehot = tf.one_hot(inputs, num_embeddings)
     x = PixelConvLayer(
         mask_type="A",
@@ -40,12 +45,13 @@ def get_pixel_cnn(kernel_size, input_shape):
         activation="relu",
         padding="same")(onehot)
     
-    for _ in range(2):
+    for _ in range(6):
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
             activation="relu"
         )(x)
+        y = tf.keras.layers.BatchNormalization()(y)
         y = PixelConvLayer(
             mask_type="B",
             filters=64,
@@ -53,11 +59,14 @@ def get_pixel_cnn(kernel_size, input_shape):
             activation="relu",
             padding="same"
         )(y)
+        y = tf.keras.layers.BatchNormalization()(y)
+        # y = tf.keras.layers.Dropout(0.1)(y)
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
             activation="relu"
         )(y)
+        y = tf.keras.layers.BatchNormalization()(y)
         x = tf.keras.layers.Add()([x,y])
 
     for _ in range(2):
@@ -68,8 +77,7 @@ def get_pixel_cnn(kernel_size, input_shape):
             strides=1,
             activation="relu",
             padding="valid")(x)
-        
-        #x = tf.keras.layers.BatchNormalization()(x)
+        # x = tf.keras.layers.Dropout(0.1)(x)
 
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(
@@ -152,27 +160,15 @@ class AE(tf.keras.Model):
         # The remaining image is flattened and shrunk into a
         # latent space.
         input = tf.keras.layers.Input(shape=image_shape, batch_size=None, name="input")
-        x = tf.keras.layers.Conv2D(
-            filters = 32, 
-            kernel_size = 3, 
-            strides = 2, 
-            activation = 'relu',
-            padding = "same", 
-            name = "compression_1")(input)
-        x = tf.keras.layers.Conv2D(
-            filters = 64, 
-            kernel_size=3,
-            strides=2,
-            activation='relu',
-            padding = "same", 
-            name = "compression_2")(x)
-        x = tf.keras.layers.Conv2D(
-            filters = 128, 
-            kernel_size=3,
-            strides=2,
-            activation='relu',
-            padding = "same", 
-            name = "compression_3")(x)
+        x = input
+        for n in range(encoder_depth):
+            x = tf.keras.layers.Conv2D(
+                filters = 64, 
+                kernel_size = 3, 
+                strides = 2, 
+                activation = 'relu',
+                padding = "same", 
+                name = f"compression_{n}")(x)
         x = tf.keras.layers.Conv2D(
             filters = latent_dims, 
             kernel_size=3,
@@ -187,7 +183,7 @@ class AE(tf.keras.Model):
         # Takes output from encoder.
         # Returns the closest vector in the embedding to the latent
         # space.
-        input = tf.keras.layers.Input(shape=(32,32,latent_dims), batch_size=None, name="input")
+        input = tf.keras.layers.Input(shape=encoded_image_shape, batch_size=None, name="input")
         x = VQ(name="vq")(input)
         self.vq = tf.keras.Model(input, x, name="vq")
 
@@ -195,28 +191,16 @@ class AE(tf.keras.Model):
         # Takes output from VQ layer.
         # Structure is identical to encoder but with Conv2DTranspose
         # to upscale the image rather than downscale.
-        input = tf.keras.layers.Input(shape=(32,32,latent_dims), batch_size=None, name="input")
-        x = tf.keras.layers.Conv2DTranspose(
-            filters = 128, 
-            kernel_size = 3, 
-            strides = 2, 
-            padding = 'same',
-            activation = 'relu', 
-            name = "reconstruct_1")(input)
-        x = tf.keras.layers.Conv2DTranspose(
-            filters = 64, 
-            kernel_size = 3, 
-            strides = 2, 
-            padding = 'same',
-            activation = 'relu', 
-            name = "reconstruct_2")(x)
-        x = tf.keras.layers.Conv2DTranspose(
-            filters = 32, 
-            kernel_size = 3, 
-            strides = 2, 
-            padding = 'same',
-            name = "reconstruct_3", 
-            activation = "sigmoid")(x)
+        input = tf.keras.layers.Input(shape=encoded_image_shape, batch_size=None, name="input")
+        x = input
+        for n in range(encoder_depth):
+            x = tf.keras.layers.Conv2DTranspose(
+                filters = 64, 
+                kernel_size = 3, 
+                strides = 2, 
+                padding = 'same',
+                activation = 'relu', 
+                name = f"reconstruct_{n}")(x)
         x = tf.keras.layers.Conv2DTranspose(
             filters = 1,
             kernel_size = 3,
@@ -224,7 +208,6 @@ class AE(tf.keras.Model):
             padding = 'same',
             name = "to_image",
             activation = 'sigmoid')(x)
-
         self.decoder = tf.keras.Model(input, x, name="decoder")
 
     def train_step(self, train_data):

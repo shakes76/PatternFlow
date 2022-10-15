@@ -1,7 +1,9 @@
-print("Beginning Training")
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from modules import AE
 from dataset import load_data
 import tensorflow as tf
+print("Beginning Training")
 #print(tf.config.list_physical_devices())
 
 # Clear graph
@@ -20,10 +22,6 @@ print(model.decoder.summary())
 print("Loading data")
 data = load_data()
 print("Finished Loading Data")
-# Data has lengths:
-# Train - 544
-# Test - 9664
-# Validate - 1120
 
 # Begin model training and validation.
 print("Beginning Model Fitting")
