@@ -8,7 +8,9 @@ There are two main processes in diffusion, the ***Forward Diffusion Process*** a
 - **Forward Diffusion Process** is when noise is gradually added to the image until you get pure noise. And,
 - **Reverse Diffusion Process** is the learned process where a neural network is trained to denoise the image from pure noise to an actual image.
 
-![Generated_brain](https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/455_0_0_backward.png?raw=true)
+<p align = "center">
+<img width = "128" height = "128" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/455_0_0_backward_smaller.png?raw=true>
+</p>
 
 
 ## **File Structure:**
