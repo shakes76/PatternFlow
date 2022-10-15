@@ -175,12 +175,12 @@ class VQ(nn.Module):
                                             self.embedding_table.weight.t()))
         
         indexes = torch.argmin(dists, dim=1).unsqueeze(1)
+        
         standalone_indexes = torch.argmin(dists, dim=1)
         # create a zeros tensor, with the position at indexes being 1
         # This creates a "beacon" so that position can be replaced by a 
         # embedded vector.
         encodings = torch.zeros(indexes.shape[0], self.num_embeddings).to(device)
-        
         encodings.scatter_(1, indexes, 1)
         return encodings, standalone_indexes
         

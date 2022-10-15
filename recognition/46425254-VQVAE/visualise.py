@@ -44,7 +44,6 @@ class Visualise():
         ax[1].imshow(decoded_grid)
         ax[0].imshow(real_grid)
         plt.show()
-        print(ssim(real_grid.numpy(), decoded_grid.numpy(), channel_axis = -1))
         
     def VQVAE_discrete(self, coords):
         #generate the discrete format of the image
@@ -61,7 +60,6 @@ class Visualise():
         flat_encoded  = encoded.view(-1, VQ.embedding_dim)
         _, lookup_indices = VQ.argmin_indices(flat_encoded)
         lookup_indices = lookup_indices.view(64,64).to(device)
-        print(lookup_indices.shape)
         
         #indices_grid = torchvision.utils.make_grid(lookup_indices, normalize = True)
         
