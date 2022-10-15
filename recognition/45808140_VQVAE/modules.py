@@ -116,7 +116,7 @@ class PixelCNNLayers(layers.Layer):
         self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
         
         if self.mask_type == 'B':
-            self.mask[kernel_shapel[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
             
     def call(self, inputs):
         self.conv.kernel.assign(self.conv.kernel * self.mask)
@@ -139,9 +139,10 @@ class ResidBlock(layers.Layer):
         x = self.conv2(x)
         return layers.add([inputs, x])
 
-class PixelCNN():
+class PixelCNN(keras.Model):
     
     def __init__(self, input_shape, vq_trainer, no_resid=2, no_pixel_layers=2):
+        super(PixelCNN, self).__init__(name='PixelCNN')
         pixel_inputs = keras.Input(shape=input_shape, dtype=tf.int32)
         one = tf.one_hot(pixel_inputs, vq_trainer.no_embeddings)
         
@@ -156,5 +157,22 @@ class PixelCNN():
         out = layers.Conv2D(filters=vq_trainer.no_embeddings, kernel_size=1, strides=1, padding='valid')(x)
         self.pixel_cnn = keras.Model(pixel_inputs, out, name='pixelCNN')
         
+        self.total_loss = keras.metrics.Mean(name='total_loss')
+        
     def get_model(self):
         return self.pixel_cnn
+    
+    def call(self, x):
+        return self.pixel_cnn(x)
+    
+    def train_step(self, x):
+        with tf.GradientTape() as tape:
+            predictions = self(x)
+            
+            loss = self.compiled_loss(x, predictions)
+            
+        grads = tape.gradient(loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        
+        self.total_loss.update_state(loss)
+        return {'loss': self.total_loss.result()}
