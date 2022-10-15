@@ -58,28 +58,28 @@ class UNETModel(nn.Module):
         super().__init__()
         self.device = device
         time_dimension = 32
-        #Network 128 256 512 1024 2048
+        #Network 64 128 256 512 1024
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.time_embedding = PositionEmbedding(time_dimension)
 
-        self.first_level = Block(in_chan, 128, time_dimension)
-        self.second_level = Block(128, 256, time_dimension)
-        self.third_level = Block(256, 512, time_dimension)
-        self.fourth_level = Block(512, 1024, time_dimension)
+        self.first_level = Block(in_chan, 64, time_dimension)
+        self.second_level = Block(64, 128, time_dimension)
+        self.third_level = Block(128, 256, time_dimension)
+        self.fourth_level = Block(256, 512, time_dimension)
 
-        self.bottle_neck = Block(1024, 2048, time_dimension)
+        self.bottle_neck = Block(512, 1024, time_dimension)
 
-        self.fifth_level_up = nn.ConvTranspose2d(2048, 1024, kernel_size=2, stride=2)       
-        self.fifth_level = Block(2048, 1024, time_dimension)
-        self.sixth_level_up = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
-        self.sixth_level = Block(1024, 512, time_dimension)
-        self.seventh_level_up = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
-        self.seventh_level = Block(512, 256, time_dimension)
-        self.eigth_level_up = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
-        self.eigth_level = Block(256, 128, time_dimension)
+        self.fifth_level_up = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)       
+        self.fifth_level = Block(1024, 512, time_dimension)
+        self.sixth_level_up = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
+        self.sixth_level = Block(512, 256, time_dimension)
+        self.seventh_level_up = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
+        self.seventh_level = Block(256, 128, time_dimension)
+        self.eigth_level_up = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
+        self.eigth_level = Block(128, 64, time_dimension)
 
-        self.last_conv = nn.Conv2d(128, out_chan, kernel_size=1)
+        self.last_conv = nn.Conv2d(64, out_chan, kernel_size=1)
 
     def forward(self, x, t):
         t = self.time_embedding(t)

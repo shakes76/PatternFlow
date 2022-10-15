@@ -1,4 +1,3 @@
-
 import os
 import torch
 import torchvision
@@ -9,7 +8,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 training_images = '/home/Student/s4583222/COMP3710/Images/Train'
-IMG_SIZE = 256
+IMG_SIZE = 128
 
 #Class for Brain Dataset. We do not care about the masked images
 class BrainDataset(Dataset):
