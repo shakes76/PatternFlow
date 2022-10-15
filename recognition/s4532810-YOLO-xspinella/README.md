@@ -1,14 +1,5 @@
-# TODO:
-- problems section
-  - what are the problems
-  - show results, plots, images, etc
-  - what was done to try solve this - include results, plots, images, etc
-- reproducability of results? - batch size on different machine
-- proper formatting?
-- albumentations - ?
-- which branch to pull request - topic-recognition
 # Object Detection with YOLO in the ISIC Dataset
-Please note that module.py is empty because the model itself is inside of the yolov5_LC git submodule
+Please note that module.py is empty because the model itself is inside of the yolov5_LC git submodule.
 ## Dependencies:
 ### YOLOv5 Dependencies
 This YOLOv5 implementation contains quite a few dependencies, however, once the YOLOv5 submodule is added, the installation process is quite simple. Firstly, the submodule must be added by executing the following command in the s4532810-YOLO-xspinella directory.
@@ -43,10 +34,11 @@ Once the dependencies are installed, execute the following command in the s45328
 ```linux
 python3 train.py
 ```
-and select mode 0 from the options to download/arrange/preprocess the data completely. 
+and select mode 0 from the options to download/arrange/preprocess the data completely. This will also print some outputs and save some images to misc_tests in order to validate correct function of the repo. 
 
 ### Training and Evaluation
 The model can be trained by executing 
+
 ```linux
 python3 train.py
 ```
@@ -57,12 +49,15 @@ s - YOLOv5s -> 'small'
 m - YOLOv5m -> 'medium'
 l - YOLOv5l -> 'large'
 x - YOLOv5x -> 'extra large'
-The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better.
-See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints
-It is reccomended to use the medium size model, as this is the model investigated in this report.
+The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better. See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints. It is reccomended to use the medium size model, as this is the model investigated in this report.
 
 ### Inference
-In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets).
+In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets). To run this function simply enter the following command in terminal:
+
+```linux
+python3 predict.py
+```
+This will save any outputs to the pred_out folder.
 
 ## Problem definition:
 ### A Word on the ISIC dataset.
@@ -264,7 +259,7 @@ Another observation that was missed in trial 1 is the distribution of classes (m
 
 Figure 8:
 
-![image](https://user-images.githubusercontent.com/32262943/195985335-5421880a-90bc-45fa-b432-787edb273cea.png)
+![image](https://user-images.githubusercontent.com/32262943/195989858-e9062c51-cb30-43a5-b6d3-d588e33876e0.png)
 
 Figure 9:
 
@@ -285,15 +280,86 @@ Furthermore, YOLOv5 is integrated with the albumentations library, which means t
 
 After these modifications, there are more different augmentations, occurring more often, at higher magnitudes - with the aim of making a more robust YOLO model, which has much more data to train on. The training results are shown below:
 
+Figure 10:
+
 ![image](https://user-images.githubusercontent.com/32262943/195987560-146e0a9f-ba0f-4671-900e-6d4d1f1bf56a.png)
 
+The following observations can be made:
+- The box loss is approximately the same as the previous trial.
+- The object loss has a similar minimum, but doesn't overfit like the previous trial, it plateaus.
+- There is a huge improvement in the classification loss, the noise is greatly reduced (even the training loss looks better), and it doesn't overfit at all, unlike the previous trial.
+- The mAP plots also have reduced noise.
 
+These observations imply that the increased augmentations have resulted in more stable training, with significantly reduced overfitting in the classification and object loss metrics. The test results are shown below:
 
+Figure 11:
 
+![image](https://user-images.githubusercontent.com/32262943/195988195-e656b631-377a-4b22-aff3-5d2179419de3.png)
 
+Figure 12:
 
-- more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
-- research modifications to hyperparameters - probably not a good idea as they have realistically already been optimised
-- weight initialisment
-- Population Based Bandits (PB2)?
+![image](https://user-images.githubusercontent.com/32262943/195988209-666a1d8d-eb99-4525-9b62-74c14ca4d508.png)
+
+From these results we observe that:
+- The mAP has increased significantly, now above the specified yolov5m performance (45.2) with a value of 46.6.
+- The IOU has reached an acceptable level of 0.81, however, there is a decrease in valid object detections.
+- The classification accuracy has increased to ~0.87, with an increase in the number of valid classifications.
+
+At this point, it can definitely be said that the augmentations have improved the performance, however, we must also check the distributions of valid and invalid classifications:
+
+Figure 13:
+
+![image](https://user-images.githubusercontent.com/32262943/195990029-fa531bcf-ed15-495c-a377-f1aafd1fc57b.png)
+
+Figure 14:
+
+![image](https://user-images.githubusercontent.com/32262943/195988544-c5f47511-4257-4756-840b-275fb0c7cc5a.png)
+
+From this, we can see that the problem clearly has not been solved. Even though the average IOU and classification accuracy has improved, we can see that this is directly correlated with a reduction in valid positive bounding boxes (~29% invalid), and increase in valid negative boxes (~15% invalid), so it would appear that, instead of learning how to classify positive cases better, the model has just taken advantage of the distribution. This can be further investigated by computing the precision and recall in regards to detection of positive melanoma cases:
+
+P = TP/(TP+FP) = 39/39+21 -> "~65% of positive predictions are correct"
+
+R = TP/(TP+FN) = 39/39+44   -> "~46% of positive cases are diagnosed successfully"
+
+while there is a significant increase in precision, there is also a significant decrease in recall. In the case of medical diagnosis, recall is usually more important, because it shows how many positive cases were missed.
+
+## Conclusion
+### Summary
+Clearly, despite the third trial achieving the targetted benchmarks (45.2 mAP05:0.95, 0.8 IOU, 0.8 classification accuracy), this model is far from successful, with the final trial only successfully diagnosing 46% of positive melanoma cases in the ISIC 2017 dataset. Furthermore, this metric doesn't consider the cases which were missed due to poor bounding box detection, so it is actually much less than the computed recall metric reports.
+
+It is hypothesised that this is mostly a dataset issue. More specifically, the distribution of positive and negative cases is not favourable, (as shown in Figure 2), with 1600 negative cases, but only 400 positive cases in the training set, and similar distributions in the validation and test sets. This is supported by the significant improvements in classification/object loss and mAP, which resulted from an increase in augmentation frequency, magnitude, and variety. It is also supported by documentation which states that the dataset should have at least 10000 labelled objects per class (https://docs.ultralytics.com/tutorials/training-tips-best-results/).
+
+### Recommendations
+With augmentation applied, the model was able to detect and classify negative melanoma cases quite well, and as such the recommendations for future work could involve one or more of the following:
+- Combine the positive data with positive data from some of the other ISIC datasets, this way, the model will benefit from increased negative cases, and a more favourable distribution.
+- Decrease augmentation for negative cases and increase augmentation for positive cases. This will have the same affect as the above suggestion, albeit with less impact.
+- Remove some of the positive data to make the distribution closer to even, then increase augmentations to make up for the decrease in dataset size.
+
+Some other alterations that could be investigated are as follows:
+- tune the IOU threshold for training - it is possible that the relatively low threshold of 0.2 is causing unstable learning.
+- tune the gain of object, box, and classification loss - this can be used to tune which loss terms are more important to the model. Possibly an increase in box loss gain could improve all three losses as it may result in improved bounding boxes.
+- A hyperparameter tuning algorithm, such as Population Based Training (PBT) or Population Based Bandits (PB2) could be used to optimise hyperparameters for this specific case, however, it is recommended that this particular option is not implemented until the model is closer to acceptable performance.
+
+### Reproducability of Results
+Assuming the use of the same ISIC 2017 dataset, these results should be reproducable, as long as usage instructions are followed, with the correct yolov5 size model (m) used, and the correct number of epochs. The exception to this is if a different machine is used, it may not be able to achieve the same batch size (my machine used a batch size of 21, using yolov5 auto size functionality). If the batch size is too small, this will produce unfavourable batch normalisation results.
+
+Deployment of the trained model on new data is not adviseable, due to the size of the training dataset (as discussed previously), and the unimpressive Recall and Precision results.
+
+## Some Example Outputs of the Third Model:
+Labels-batch0:
+
+![image](https://user-images.githubusercontent.com/32262943/195992119-dabe9995-f5b4-47d0-879d-25412772d66e.png)
+
+Predictions-batch0:
+
+![image](https://user-images.githubusercontent.com/32262943/195992148-19c27dc4-a2cd-42b6-87e9-761fa3d6722e.png)
+
+Labels-batch1:
+
+![image](https://user-images.githubusercontent.com/32262943/195992178-e49bff1f-4923-4bb3-9aa9-df34691c8bc5.png)
+
+Predictions-batch1:
+
+![image](https://user-images.githubusercontent.com/32262943/195992198-b0cb0487-d347-49c6-867e-3b03233a4616.png)
+
 
