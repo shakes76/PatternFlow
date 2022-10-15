@@ -11,7 +11,7 @@ def preprocess(img):
 
 def load_data():
     batch_size = 8
-    img_path = "/content/drive/MyDrive/COMP3710 Lab Report/images"
+    img_path = "images/"
 
     data_train = []
     train_path = os.path.join(img_path, "train/")
@@ -33,7 +33,7 @@ def load_data():
     
     train = []
     for i in range(batch_size):
-        img = random.choice(data_train)
+        img = random.sample(data_train)
         img = Image.open(img)
         img = preprocess(img)
         train.append(img)
@@ -41,7 +41,7 @@ def load_data():
 
     test = []
     for i in range(batch_size):
-        img = random.choice(data_test)
+        img = random.sample(data_test)
         img = Image.open(img)
         img = preprocess(img)
         test.append(img)
@@ -49,7 +49,7 @@ def load_data():
 
     validate = []
     for i in range(batch_size):
-        img = random.choice(data_validate)
+        img = random.sample(data_validate)
         img = Image.open(img)
         img = preprocess(img)
         test.append(img)
