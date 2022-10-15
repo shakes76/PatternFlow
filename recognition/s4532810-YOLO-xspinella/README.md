@@ -34,10 +34,11 @@ Once the dependencies are installed, execute the following command in the s45328
 ```linux
 python3 train.py
 ```
-and select mode 0 from the options to download/arrange/preprocess the data completely. 
+and select mode 0 from the options to download/arrange/preprocess the data completely. This will also print some outputs and save some images to misc_tests in order to validate correct function of the repo. 
 
 ### Training and Evaluation
 The model can be trained by executing 
+
 ```linux
 python3 train.py
 ```
@@ -48,12 +49,15 @@ s - YOLOv5s -> 'small'
 m - YOLOv5m -> 'medium'
 l - YOLOv5l -> 'large'
 x - YOLOv5x -> 'extra large'
-The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better.
-See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints
-It is reccomended to use the medium size model, as this is the model investigated in this report.
+The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better. See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints. It is reccomended to use the medium size model, as this is the model investigated in this report.
 
 ### Inference
-In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets).
+In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets). To run this function simply enter the following command in terminal:
+
+```linux
+python3 predict.py
+```
+This will save any outputs to the pred_out folder.
 
 ## Problem definition:
 ### A Word on the ISIC dataset.
