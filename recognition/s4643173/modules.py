@@ -84,3 +84,15 @@ class Decoder(nn.Module):
 
     def forward(self, x):
         return self.net(x)
+
+class VQVAE(nn.Module):
+    def __init__(self, in_channels, out_channels, K):
+        super().__init__()
+        self.encoder = Encoder(in_channels, out_channels)
+        self.codebook = Embedding(K, out_channels)
+        self.decoder = Decoder(in_channels, out_channels)
+
+    def forward(self, x):
+        loss, quantized, _, _ = self.codebook(self.encoder(x))
+        x_recon = self.decoder(quantized)
+        return loss, x_recon
