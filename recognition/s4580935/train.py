@@ -11,6 +11,7 @@ import tensorflow as tf
 
 import modules
 import dataset
+import predict
 
 def main():
     #Get data file path locations
@@ -48,3 +49,48 @@ def main():
     plt.xlabel("Epoch")
     plt.ylabel("Reconstruction Loss")
     plt.plot(history.history['reconstruction_loss'])
+
+    trained_vqvae_model = modules.model.vqvae
+    idx = np.random.choice(len(test), len(test))
+    test_images = test[idx]
+    reconstructions_test = trained_vqvae_model.predict(test_images)
+    simArray = []
+    for test_image, recon_img in zip(test_images, reconstructions_test):
+        simArray.append(predict.calculate_ssim(test_image, recon_img))
+    #Determine the Average ssim over the dataset (test set)
+    print(predict.average_ssim(simArray)) 
+    trained_vqvae_model = model.vqvae
+    idx = np.random.choice(len(test), 15)
+    print(idx)
+    test_images = test[idx]
+    reconstructions_test = trained_vqvae_model.predict(test_images)
+
+    #Show samples of the origional image along with the reconstructed image
+    for test_image, reconstructed_image in zip(test_images, reconstructions_test):
+        show_subplot(test_image, reconstructed_image)
+        sim = calculate_ssim(test_image, reconstructed_image)
+        print(sim)
+
+    encoder = model.vqvae.get_layer("encoder")
+    quantizer = model.vqvae.get_layer("vector_quantizer")
+
+    encoded_outputs = encoder.predict(test_images)
+    flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+    codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+    for i in range(len(test_images)):
+        plt.subplot(1, 2, 1)
+        plt.imshow(test_images[i].squeeze() + 0.5)
+        plt.title("Original")
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(codebook_indices[i])
+        plt.title("Code")
+        plt.axis("off")
+        plt.show()
+
+
+if __name__ == "__main__":
+    main()
