@@ -1,4 +1,4 @@
-def VQVAE1(TRAINDATA):
+def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
 
  from torch.utils.data import DataLoader
  import numpy as np
@@ -42,13 +42,13 @@ def VQVAE1(TRAINDATA):
         self.numembedding=numembedding
         self.embeddingdim=embeddingdim
         self.commitcost=commitcost
-        self.layer0=nn.Conv2d(3,10,kernel_size=3,stride=1,padding='same')
-        self.layer1=nn.BatchNorm2d(10)
-        self.layer2=nn.Conv2d(10,embeddingdim,kernel_size=3,stride=1,padding='same')
+        self.layer0=nn.Conv2d(3,embeddingdim/2,kernel_size=3,stride=1,padding='same')
+        self.layer1=nn.BatchNorm2d(embeddingdim/2)
+        self.layer2=nn.Conv2d(embeddingdim/2,embeddingdim,kernel_size=3,stride=1,padding='same')
         self.layer3=nn.BatchNorm2d(embeddingdim)
-        self.layer4=nn.Conv2d(embeddingdim,10,kernel_size=3,stride=1,padding='same')
-        self.layer5=nn.BatchNorm2d(10)
-        self.layer6=nn.Conv2d(10,3,kernel_size=3,stride=1,padding='same')
+        self.layer4=nn.Conv2d(embeddingdim,embeddingdim/2,kernel_size=3,stride=1,padding='same')
+        self.layer5=nn.BatchNorm2d(embeddingdim/2)
+        self.layer6=nn.Conv2d(embeddingdim/2,3,kernel_size=3,stride=1,padding='same')
         
         
         
@@ -100,11 +100,11 @@ def VQVAE1(TRAINDATA):
         x=self.layer5(x)
         x=torch.nn.functional.sigmoid(self.layer6(x))
         return x,Loss
- model = indeed(numembedding=30,embeddingdim=25,commitcost=0.3)
+ model = indeed(numembedding=noembeddings,embeddingdim=dimlatent,commitcost=commitcost)
  model.to(device)
  EPOCHS=30
 
- opt = torch.optim.Adam(model.parameters(), lr=0.0001,weight_decay=0.0005)
+ opt = torch.optim.Adam(model.parameters(), lr=learningrate,weight_decay=0.0005)
  lossFn1 = nn.BCELoss(reduction='mean')
 
 
