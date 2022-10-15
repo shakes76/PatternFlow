@@ -214,6 +214,11 @@ class DataLoader():
         valid_labels_dir = "yolov5_LC/data/labels/validation"
         test_labels_dir = "yolov5_LC/data/labels/testing"
 
+        ### Output/testing directories ###
+        miscell = "misc_tests"
+        pred_out = "pred_out"
+        test_out = "test_out"
+
         ### create directories ###
         dirs = [
             top_dir, zip_dir, extract_files,
@@ -221,7 +226,8 @@ class DataLoader():
             test_dir, train_dir, valid_dir,
             images_dir, labels_dir, train_images_dir,
             valid_images_dir, test_images_dir, train_labels_dir,
-            valid_labels_dir, test_labels_dir]
+            valid_labels_dir, test_labels_dir, miscell, 
+            pred_out, test_out]
         for dir in dirs:
             if not(os.path.exists(dir)):
                 os.mkdir(dir)

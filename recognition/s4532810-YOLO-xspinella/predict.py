@@ -30,6 +30,7 @@ class Predictor():
         the loaded model
         :param weight_path: the path to the desired YOLOv5 weights
         """
+        # UNCOMMENT TOP LINE FOR CPU INFERENCE
         # model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path, device=torch.device('cpu'))  # local model
         model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path)  # local model
         return model
@@ -103,7 +104,7 @@ def Predictor_Example_Use():
     model = predictor.Load_Model("/home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp2/v5m_exp2_train/weights/best.pt")
     # Define image to perform detection on
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015184.jpg"
-    out_fp = "misc_tests/prediction_visual.png"
+    out_fp = "pred_out/prediction_visual.png"
     # Perform detection
     results = predictor.Predict_Img(img_fp, model)
     # Visualise the detection
@@ -115,7 +116,7 @@ def Predictor_Example_Use():
     # Run the model to retrieve results
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015270.jpg"
     label_fp = "yolov5_LC/data/labels/testing/ISIC_0015270.txt"
-    out_fp = "misc_tests/prediction_comparison.png"
+    out_fp = "pred_out/prediction_comparison.png"
     results = predictor.Predict_Img(img_fp, model)
 
     # Visualise comparison between labelled and predicted
