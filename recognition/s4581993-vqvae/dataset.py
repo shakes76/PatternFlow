@@ -86,7 +86,7 @@ def preprocess_data(
     test_ds: tf.data.Dataset,
     val_ds: tf.data.Dataset
 ) -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
-    # Normalize the data around 0.0
+    # Scale the data to a range of [-0.5, 0.5]
     normalization_layer = tf.keras.layers.Rescaling(1./255)
     train_ds = train_ds.map(lambda x: (normalization_layer(x) - 0.5))
     test_ds = test_ds.map(lambda x: (normalization_layer(x) - 0.5))
