@@ -5,39 +5,18 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 from modules import *
 
-class VQVAE_train(keras.models.Model):
-    
-    def __init__(self, train_var, latent_dim=32, no_embeddings=128):
-        super(VQVAE_train, self).__init__()
-        self.train_var = train_var
-        self.latent_dim = latent_dim
-        self.no_embeddings = no_embeddings
+class ssim(keras.callbacks.Callback):
+    def __init__(self, validation):
+        super(ssim, self).__init__()
+        self.val = validation
         
-        self.vqvae = VQVAE(self.latent_dim, self.no_embeddings).get_model()
+    def on_epoch_end(self, epoch, logs):
+        total_count = 0.0
+        total_ssim = 0.0
         
-        self.total_loss = keras.metrics.Mean(name='total_loss')
-        self.recons_loss = keras.metrics.Mean(name='reconstruction_loss')
-        self.vq_loss = keras.metrics.Mean(name='vq_loss')
-        
-    @property
-    def metrics(self):
-        return [self.total_loss, self.vq_loss, self.recons_loss]
-    
-    def train_step(self, x):
-        
-        with tf.GradientTape() as tape:
-            recons = self.vqvae(x)
+        for batch in self.val:
+            recon = self.model.predict(batch, verbose=0)
+            total_ssim += tf.math.reduce_sum(tf.image.ssim(batch, recon, max_val=1.0))
+            total_count += batch.shape[0]
             
-            recons_loss = (tf.reduce_mean((x - recons) ** 2) / self.train_var)
-            total_loss = recons_loss + sum(self.vqvae.losses)
-            
-        grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self.vqvae.trainable_variables))
-        
-        self.total_loss.update_state(total_loss)
-        self.vq_loss.update_state(sum(self.vqvae.losses))
-        self.recons_loss.update_state(recons_loss)
-        
-        return {'loss': self.total_loss.result(), 
-                'reconstruction_loss': self.recons_loss.result(), 
-                'vq_loss': self.vq_loss.result()} 
+        logs['avg_ssim'] = (total_ssim / total_count).numpy()
