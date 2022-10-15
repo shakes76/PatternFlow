@@ -8,10 +8,14 @@ Date Created: 11 Oct 2022
 """
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
+from tensorflow.keras import layers
 
-class Patch_Layer(Layer):
+class PatchLayer(Layer):
+	"""
+	Layer for transforming input images into patches.
+	"""
 	def __init__(self, patch_size):
-		super(Patch_Layer, self).__init__()
+		super(PatchLayer, self).__init__()
 		self.patch_size = patch_size
 
 	def call(self, images):
@@ -26,3 +30,20 @@ class Patch_Layer(Layer):
 		patch_dims = patches.shape[-1]
 		patches = tf.reshape(patches, [batch_size, -1, patch_dims])
 		return patches
+
+class FlattenAndEmbedPatch(Layer):
+	"""
+	Layer for projecting patches into a vector. Also adds a learnable
+	position embedding to the projected vector.
+	"""
+	def __init__(self, num_patches, projection_dim):
+		self.num_patches = num_patches
+		self.projection_dim = projection_dim
+		self.projection = layers.Dense(units=projection_dim)
+		self.position_embedding = layers.Embedding(
+			input_dim=self.num_patches, output_dim=projection_dim
+		)
+	
+	def call(self, patch):
+		positions = tf.range(0, self.num_patches)
+		return self.projection(patch) + self.position_embedding(positions)
