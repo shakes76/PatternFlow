@@ -71,4 +71,4 @@ pyplot.show()
 
 """ MODEL AND TRAIN VQ-VAE """
 # Create a instance of the VQ-VAE model
-model = mod.VQvaeModel()
+#model = mod.vqvae_model()
