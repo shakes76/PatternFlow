@@ -173,8 +173,12 @@ The dataset is preprocessed in 4 different ways:
 - YOLOv5-format txt file labels are created for each image in the dataset with Dataloader member Create_YOLO_Labels
 - The Training/Validation/Test split is as per the ISIC 2017 dataset.
 
-## Problems Faced
+## Model Optimisation
+### Problems Faced
 Once all the data was preprocessed and setup as per YOLOv5 training specifications, the model was trained on YOLOv5m for 450 epochs, but stopped early at ~250 epochs, as it had stopped improving. The training data can be seen below:
+
+Figure 1:
+
 ![image](https://user-images.githubusercontent.com/32262943/195742748-9b17c73f-b8ff-4faa-8fd5-644e411be1f5.png)
 
 Straight away, this raises a few issues:
@@ -182,20 +186,55 @@ Straight away, this raises a few issues:
 - The validation classification loss seems to be very noisey, but has an increasing trend for seemingly the entire training session.
 
 After conducting some research into the matter, it appears that this is generally due to a lack of data - documentation mentions that the dataset should have at least 10000 labelled objects per class (https://docs.ultralytics.com/tutorials/training-tips-best-results/), however, as shown by the below graph, the ISIC dataset has considerably less than this:
+
+Figure 2:
+
 ![image](https://user-images.githubusercontent.com/32262943/195752043-48c03638-40e1-49af-8c71-6a682955353f.png)
 
 After running the model on train.py's test mode (3), the following results were produced:
 
-[INSERT mAP, avg IOU, classification loss here]
+Figure 3:
 
+![image](https://user-images.githubusercontent.com/32262943/195755190-5a6ba9bc-a8b8-40b1-b3ce-6e011a89e1e4.png)
 
-- mAP0.5:0.95 not as high as it should be for yolov5m -> should be 45.2, but is ___
+Figure 4:
+
+![image](https://user-images.githubusercontent.com/32262943/195755278-2115333b-0154-44f7-a6a2-c74af10f7ab2.png)
+
+This reveals the following problems:
+- mAP0.5:0.95 not as high as it should be for yolov5m -> should be 45.2, but is 38.9
 - The average IOU is not at the satisfactory level of 0.8
-- [SOMETHING ABOUT CLASSIFICATION]
 
-[WHAT DOES THIS MEAN/WHAT CAUSED IT]
+An interesting observation here is that the classification accuracy is above the acceptable value of 0.8, even though the classification loss during training is very noisey and increasing. One possible reason for this is the way I have defined the computation of classification accuracy. if any of the following cases ocurr when an image is passed to the model:
+- The model does not detect an object in the image (no box drawn).
+- The model detects more than one object in the image.
+This image is no longer considered in the classification calculation, since these ocurrences are the fault of the model's box detection, thus the classification accuracy should not be penalised. However, as shown in Figure 4, there were only 465 valid classifications considered (out of a possible 600 test images), so it is possible that the abnormal classification loss was caused by multiple object-detections on the single-object image dataset. This would be problematic for the classification loss because in this case, at least one of the detections is likely to have a poor IOU. This hypothesis is supported by the poor mAP0.5:0.95 and average IOU values, which indicate that the box detection could be improved (see "Metrics of Interest" section).
 
-### Proposed solutions
+Another reason for this behaviour could be because the default training process has an IOU threshold of 0.2, which means that the model is sometimes attempting to perform classification when only a fraction of the object is inside the bounding box.
+
+### Solution 1
+The first stage of improvement will be specifying a different hyperparameter file, which should hopefully give improvement over all metrics/losses. By default, augmentations and hyperparameters are specified in yolov5_LC/data/hyps/hyp.scratch-low.yaml. This is a low-augmentation configuration designed for training the COCO dataset from scratch. It is possible that ample improvement could be achieved by simply changing this to the yolov5_LC/data/hyps/hyp.VOC.yaml hyperparameter file. This file is designed for training with a pretrained net, on the VOC dataset, which is more suitable since the VOC dataset is closer in size to the ISIC dataset, and we are using a pretrained net for this project. This is achieved by changing the train execution command in train.py from:
+
+```python
+os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml --weights yolov5{yolo_model}.pt")
+```
+To:
+
+```python
+os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml --weights yolov5{yolo_model}.pt --hyp yolov5_LC/data/hyps/hyp.VOC.yaml")
+```
+
+### Solution 2
+Findings in the previous section seem to indicate that improving the bounding box detection will improve the classification loss, average IOU, and mAP. 
+The first stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough.YOLOv5 already implements data augmentation by default, however, the albumentations library can be used specify even more augmentations, which should improve the performance of the model for the ISIC dataset.
+
+
+The documentation also mentions that turning down the gain for individual loss terms can also assist reduction of overfitment - so in this case, we will reduce the classification loss gain.
+
+Increasing the IOU threshold when training has also been considered, however, it will be left at 0.2 for now, because the low threshold may promote more robust classification.
+
+
+
 - more augmentation with albumentation lib - reference jocher saying that the set should have >10000 images
 - research modifications to hyperparameters - probably not a good idea as they have realistically already been optimised
 - weight initialisment

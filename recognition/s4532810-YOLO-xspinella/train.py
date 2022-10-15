@@ -71,32 +71,38 @@ def train():
     """
     ### Run training ###
     num_epochs = input("Please enter desired number of epochs (~350 is good): ")
-    yolo_model = input("Please enter desired model: n/s/m/l/x")
+    yolo_model = input("Please enter desired model (n/s/m/l/x): ")
     if yolo_model not in ['n', 's', 'm', 'l', 'x']:
         print("Invalid model")
         return 0
     os.system(f"python3 yolov5_LC/train.py --img 640 --batch -1 --epochs {num_epochs} --data ISIC_dataset.yaml \
-        --weights yolov5{yolo_model}.pt")
+        --weights yolov5{yolo_model}.pt --hyp yolov5_LC/data/hyps/hyp.ISIC_2.yaml")
 
 def test():
     """
     Runs the trained YOLOv5 model on the test dataset, and saves results to
     runs/val/exp_
     I've already run training and reccommend the weights at this path:
-            yolov5_LC/runs/train/exp2/weights/best.pt  
-            /home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp1/v5m_exp1_train/weights/best.pt  
+            y0lov5_LC/runs/train/exp7/weights/best.pt
     """
-    ### Test on test set ###
+    ### Specify path to trained weights ###
     weights_path = input("Please paste the path to the YOLO weights to use. See train.py->test() for reccomended path: ")
-    # Find P, R, mAP of dataset:
+
+    ### Test on test set ###
+    # compute P, R, mAP
     os.system(f"python3 yolov5_LC/val.py --weights {weights_path} --data yolov5_LC/data/ISIC_test.yaml --img 640 --task test")
     # compute IOU, classification accuracy:
     test_dir_fp = "yolov5_LC/data/images/testing"
     test_labels_dir = "yolov5_LC/data/labels/testing"
-    avg_iou, tot_boxes, class_acc, tot_classes = Compute_Mean_IOU_acc(\
+    valid_bar_fp = "test_out/valid_bar"
+    invalid_bar_fp = "test_out/invalid_bar"
+    avg_iou, tot_boxes, class_acc, tot_classes, pred_types, invalid_types = Compute_Mean_IOU_acc(\
                                 test_dir_fp, test_labels_dir,weights_path)
     print(f"Average IOU: {avg_iou}, Valid Boxes: {tot_boxes}\n\
-    Classification Accuracy: {class_acc}, Valid Classifications: {tot_classes}")
+            Classification Accuracy: {class_acc}, Valid Classifications: {tot_classes}")
+    # Plot data distributions
+    utils_lib.Bar_Preds(pred_types, valid_bar_fp)
+    utils_lib.Bar_Invalids(invalid_types, invalid_bar_fp)
 
 def Compute_Mean_IOU_acc(dataset_fp: str, labels_fp: str, 
                         weights_path: str):
@@ -116,11 +122,22 @@ def Compute_Mean_IOU_acc(dataset_fp: str, labels_fp: str,
     
     ### iterate through dataset and find iou/acc ###
     images = os.listdir(dataset_fp)
+    # box prediction data tracking
     box_preds = 0
     total_iou = 0
-
+    # classification prediction data tracking
     total_class_preds = 0
     total_correct_preds = 0
+    # valid prediction type data tracking
+    num_TP = 0
+    num_TN = 0
+    num_FP = 0
+    num_FN = 0
+    # invalid detection data tracking
+    P_badbox = 0
+    N_badbox = 0
+    P_failT = 0
+    N_failT = 0
     for image in images:
         # Find corresponding label
         img_fp = os.path.join(dataset_fp, image)
@@ -134,13 +151,31 @@ def Compute_Mean_IOU_acc(dataset_fp: str, labels_fp: str,
             box_preds += 1
             total_iou += iou
         # update class prediction info
-        class_pred = utils_lib.Evaluate_Prediction(label_fp, results)
+        class_pred, pred_type = utils_lib.Evaluate_Prediction(label_fp, results)
+        if pred_type == 'TP':
+            num_TP += 1
+        elif pred_type == 'TN':
+            num_TN += 1
+        elif pred_type == 'FP':
+            num_FP += 1
+        elif pred_type == 'FN':
+            num_FN += 1
+        elif pred_type == 'P_badbox':
+            P_badbox += 1
+        elif pred_type == 'N_badbox':
+            N_badbox += 1
+        elif pred_type == 'P_failT':
+            P_failT += 1
+        elif pred_type == 'N_failT':
+            PN_failT += 1
         if class_pred >= 0: # if valid/above iou threshold
             total_class_preds += 1
             total_correct_preds += class_pred
     avg_iou = total_iou/box_preds
     class_acc = total_correct_preds/total_class_preds
-    return [avg_iou, box_preds, class_acc, total_class_preds]
+    pred_types = [num_TP, num_TN, num_FP, num_FN]
+    invalid_types = [P_badbox, N_badbox, P_failT, N_failT]
+    return [avg_iou, box_preds, class_acc, total_class_preds, pred_types, invalid_types]
         
 
 if __name__ == "__main__":

@@ -237,30 +237,82 @@ def Evaluate_Prediction(label_fp: str, results):
     (all unaugmented images only contain one lesion)
     :param label_fp: the label for the image of interest
     :param results: the results as returned by the model for this img.
-    :return: 0 if incorrect, 1 if correct, -1 if no object detected.
+    :return: 0 if incorrect, 1 if correct, -1 if no object detected
+            second return term is -1  or cwhether the prediction was
+            TN, TP, FP, FN or I:invalid
     """
+    ### find actual class ###
+    label_class = list(np.loadtxt(label_fp))[0]
+
     ### Check if valid detection ###
     if not (len(results.pandas().xyxy[0].index) == 1):
-        return -1   # all (unaugmented) images contain only one lesion
-                    # So if the model predicts more than one object, 
-                    # we do not consider the classification,
-                    # if the length is 0, then no prediction was made,
-                    # so we also disregard this
-    if Compute_IOU(label_fp, results) < 0.5:
-        return -1   # Invalid IOU
+        # all (unaugmented) images contain only one lesion
+        # So if the model predicts more than one object, 
+        # we do not consider the classification,
+        # if the length is 0, then no prediction was made,
+        # so we also disregard this
+        if label_class:
+            return -1, 'P_badbox'    # positive label
+        else:
+            return -1, 'N_badbox'    # negative label
+    if Compute_IOU(label_fp, results) < 0.5:    # Invalid IOU
+        if label_class:
+            return -1, 'P_failT' 
+        else:
+            return -1, 'N_failT'   
 
     ### Check predicted vs actual class ### 
     pred_class = results.pandas().xyxy[0].values.tolist()[0][5]
-    label_class = list(np.loadtxt(label_fp))[0]
-    if not (pred_class == label_class):
-        return 0    # incorrect prediciton
+    if not (pred_class == label_class):     # incorrect prediciton
+        if pred_class:
+            return 0, 'FP'  # False Positive
+        else:
+            return 0, 'FN'  # False Negative
 
-    return 1        # If this is reached, the predicition is correct
+    if pred_class:    
+        return 1, 'TP'      # True Positive
+    else:
+        return 1, 'TN'      # True Negative 
 
-def Compute_Class_Accuracy(label_fp: str, results): #putn in train?
+def Bar_Preds(pred_types: list, out_fp: str):
     """
-    Computes the classification accuracy -- only considers images when
-    the model actually detects an object:
-    class_acc = num_correct_classificatiobs/num_detected_objects
+    Plots a bar graph of TP, TN, FP, FN, Tot_P, Tot_N.
+    :param pred_types: list in format:
+                [num_TP, num_TN, num_FP, num_FN]
+    :param out_fp: output file path
     """
-    pass
+    num_TP, num_TN, num_FP, num_FN = pred_types
+    tot_p = num_TP + num_FP
+    tot_n = num_FN + num_TN
+    bar_list = [num_TP, num_TN, num_FP, num_FN, tot_p, tot_n]
+
+    sections = ['TP', 'TN', 'FP', 'FN', 'Tot_P', 'Tot_N']
+
+    plt.bar(sections, bar_list)
+    plt.xlabel("Valid Prediciton Type")
+    plt.ylabel("Number of Predictions")
+    plt.title("Analysis of Valid Predictions")
+    plt.savefig(out_fp)
+
+def Bar_Invalids(invalid_types: list, out_fp: str):
+    """
+    Plots a bar graph which summarises invalid 
+    predictions (multiple boxes/no boxes) and (pos/neg)
+    :param invalid_types: list in format:
+                ['P_badbox', 'N_badbox', 'P_failT', 'N_failT']
+    :param out_fp: output file path
+    """
+    P_badbox, N_badbox, P_failT, N_failT = invalid_types
+    tot_p = P_badbox + P_failT
+    tot_n = N_badbox + N_failT
+    bar_list = [P_badbox, N_badbox, P_failT, N_failT, tot_p, tot_n]
+
+    sections = ['pos_badbox', 'neg_badbox', 'pos_failT',\
+         'neg_failT', 'Tot_P', 'Tot_N']
+
+    plt.bar(sections, bar_list)
+    plt.xlabel("Invalid Detection Type")
+    plt.ylabel("Number of Detections")
+    plt.title("Analysis of Invalid Box Detections")
+    plt.savefig(out_fp)
+    
