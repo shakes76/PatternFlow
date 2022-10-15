@@ -26,7 +26,6 @@ class StyleGAN(Model):
         self.d_optimizer = d_optimizer
         self.g_optimizer = g_optimizer
         
-
     def init_D(self):
         image = Input(shape=(SRES, SRES, CHANNELS))
         x = custom_layers.EqualConv(image, out_filters=FILTERS[0], kernel=(1, 1))
