@@ -10,5 +10,7 @@ def load_data(file_path = "recognition\\45894189\keras_png_slices"):
     """
     file_path = os.path.join(os.getcwd(), file_path)
     image_data = keras.preprocessing.image_dataset_from_directory(file_path, label_mode=None, color_mode="grayscale")
+
+    # scale values from [0, 255] to [0, 1]
     image_data = image_data.map(lambda x: x / 255.0)
     return image_data
