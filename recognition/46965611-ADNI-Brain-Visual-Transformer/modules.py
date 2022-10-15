@@ -47,3 +47,18 @@ class FlattenAndEmbedPatch(Layer):
 	def call(self, patch):
 		positions = tf.range(0, self.num_patches)
 		return self.projection(patch) + self.position_embedding(positions)
+
+class MLP(Layer):
+	"""
+	Multi-layer perceptron to be used in the transformer encoder.
+	"""
+	def __init__(self, previous_layer, hidden_units, dropout_rate):
+		self.x = previous_layer
+		self.hidden_units = hidden_units
+		self.dropout = dropout_rate
+
+	def call(self):
+		for units in self.hidden_units:
+			x = layers.Dense(units, activation=tf.nn.gelu)(x)
+			x = layers.Dropout(self.dropout)(x)
+		return x
