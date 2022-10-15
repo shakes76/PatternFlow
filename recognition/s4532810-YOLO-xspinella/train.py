@@ -168,7 +168,7 @@ def Compute_Mean_IOU_acc(dataset_fp: str, labels_fp: str,
         elif pred_type == 'P_failT':
             P_failT += 1
         elif pred_type == 'N_failT':
-            PN_failT += 1
+            N_failT += 1
         if class_pred >= 0: # if valid/above iou threshold
             total_class_preds += 1
             total_correct_preds += class_pred

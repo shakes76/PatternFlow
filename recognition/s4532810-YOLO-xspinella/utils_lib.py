@@ -288,9 +288,14 @@ def Bar_Preds(pred_types: list, out_fp: str):
 
     sections = ['TP', 'TN', 'FP', 'FN', 'Tot_P', 'Tot_N']
 
-    plt.bar(sections, bar_list)
-    plt.xlabel("Valid Prediciton Type")
-    plt.ylabel("Number of Predictions")
+    fig, ax = plt.subplots()
+    ax.clear()
+    bars = ax.bar(sections, bar_list)
+
+    ax.bar_label(bars)
+    ax.set_xlabel("Valid Prediciton Type")
+    ax.set_ylabel("Number of Predictions")
+
     plt.title("Analysis of Valid Predictions")
     plt.savefig(out_fp)
 
@@ -307,12 +312,16 @@ def Bar_Invalids(invalid_types: list, out_fp: str):
     tot_n = N_badbox + N_failT
     bar_list = [P_badbox, N_badbox, P_failT, N_failT, tot_p, tot_n]
 
-    sections = ['pos_badbox', 'neg_badbox', 'pos_failT',\
-         'neg_failT', 'Tot_P', 'Tot_N']
+    sections = ['P_badbox', 'N_badbox', 'P_failT',\
+         'N_failT', 'Tot_P', 'Tot_N']
 
-    plt.bar(sections, bar_list)
-    plt.xlabel("Invalid Detection Type")
-    plt.ylabel("Number of Detections")
+    fig, ax = plt.subplots()
+    ax.clear()
+    bars = ax.bar(sections, bar_list)
+
+    ax.bar_label(bars)
+    ax.set_xlabel("Invalid Detection Type")
+    ax.set_ylabel("Number of Detections")
+
     plt.title("Analysis of Invalid Box Detections")
     plt.savefig(out_fp)
-    

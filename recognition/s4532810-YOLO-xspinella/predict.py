@@ -99,7 +99,7 @@ def Predictor_Example_Use():
     ### Inference on Deployment ###
     # Load model
     predictor = Predictor()
-    model = predictor.Load_Model("yolov5_LC/runs/train/exp2/weights/best.pt")
+    model = predictor.Load_Model("/home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp2/v5m_exp2_train/weights/best.pt")
     # Define image to perform detection on
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015184.jpg"
     out_fp = "misc_tests/prediction_visual.png"
@@ -112,8 +112,8 @@ def Predictor_Example_Use():
 
     ### Labelled Set Comparisons
     # Run the model to retrieve results
-    img_fp = "yolov5_LC/data/images/testing/ISIC_0012086.jpg"
-    label_fp = "yolov5_LC/data/labels/testing/ISIC_0012086.txt"
+    img_fp = "yolov5_LC/data/images/testing/ISIC_0015270.jpg"
+    label_fp = "yolov5_LC/data/labels/testing/ISIC_0015270.txt"
     out_fp = "misc_tests/prediction_comparison.png"
     results = predictor.Predict_Img(img_fp, model)
 
@@ -125,8 +125,8 @@ def Predictor_Example_Use():
     print(f"IOU: {iou}")
 
     # Calculate classification accuracies
-    correct = utils_lib.Evaluate_Prediction(label_fp, results)
-    print(f"correct prediction? {correct}")
+    correct, type = utils_lib.Evaluate_Prediction(label_fp, results)
+    print(f"correct prediction? {correct, type}")
 
 if __name__ == "__main__":
     Predictor_Example_Use()
