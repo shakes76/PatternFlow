@@ -17,7 +17,7 @@ data = load_data()
 
 def visualize_autoencoder(n):
     predictions = model.predict(tf.reshape(data["test"][0:30], shape=(-1,*image_shape[0:2])))
-    encoded = get_indices(model.vq.variables[0], tf.reshape(model.encoder.predict(data["test"]), shape=(-1,latent_dims)), quantize=False)
+    encoded = get_indices(model.vq.variables[0], tf.reshape(model.encoder.predict(data["test"]), shape=(-1,latent_dims)), quantize=False, splits=32)
     encoded = tf.reshape(encoded, shape=(-1, *pixelcnn_input_shape[0:2]))
     plt.tight_layout()
     fig, axs = plt.subplots(n, 3, figsize=image_shape[0:2])
@@ -38,10 +38,10 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
     else:
         pixelcnn = get_pixel_cnn(kernel_size=max(pixelcnn_input_shape[0], pixelcnn_input_shape[1]), input_shape=pixelcnn_input_shape[0:2])
 
-    encoded = tf.reshape(model.encoder.predict(
-        data["train"][0:len(data["train"])]), shape=(-1, latent_dims))
+    pred = model.encoder.predict(data["train"])
+    encoded = tf.reshape(pred, shape=(-1, latent_dims))
     indices = get_indices(
-        model.vq.variables[0], encoded, quantize=False, splits=8)
+        model.vq.variables[0], encoded, quantize=False, splits=16)
     indices = tf.reshape(indices, shape=(-1, *pixelcnn_input_shape[0:2]))
     zeros = tf.zeros_like(indices)
 
@@ -54,8 +54,8 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
         x=tf.concat([indices], axis=0),
         y=tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                   num_embeddings), dtype=tf.float64),
-        batch_size=128,
-        epochs=30,
+        batch_size=64,
+        epochs=100,
         validation_split=0.1)
 else:
     pixelcnn = tf.keras.models.load_model("pixelcnn.ckpt")
@@ -67,7 +67,7 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
 
 print(pixelcnn.summary())
 
-n = 4
+n = 2
 generated = data["train"][:n]
 generated = tf.zeros_like(generated)
 generated = tf.random.uniform(shape=tf.shape(generated), maxval=31)
@@ -77,7 +77,7 @@ generated = tf.reshape(generated, shape=(-1, latent_dims))
 generated = get_indices(model.vq.variables[0], generated, quantize=False)
 generated = tf.reshape(generated, shape=(-1, *pixelcnn_input_shape[0:2]))
 generated = generated.numpy()
-for _ in range(10):
+for _ in range(1):
     for row in range(pixelcnn_input_shape[0]):
         print("Row: ", row)
         for col in range(pixelcnn_input_shape[1]):
