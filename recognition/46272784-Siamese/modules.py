@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow_datasets as tfds
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 import matplotlib.pyplot as plt
 
 def getLabel(x, y):
@@ -24,6 +24,36 @@ def generatePairs(ds):
     pairs = tf.data.Dataset.zip((ds, ds))
     # assigning label
     return pairs.map(getLabel)
+
+def makeCNN():
+    inputs = layers.Input(shape=(256, 240, 1))
+    
+    net = layers.Conv2D(64, kernel_size=(4, 4), strides=(2,2), padding='same')(inputs)
+    net = layers.BatchNormalization()(net)
+    net = layers.LeakyReLU(0.2)(net)
+    
+    net = layers.Conv2D(128, kernel_size=(4, 4), strides=(2,2), padding='same')(net)
+    net = layers.BatchNormalization()(net)
+    net = layers.LeakyReLU(0.2)(net)
+    
+    net = layers.Conv2D(128, kernel_size=(4, 4), strides=(2,2), padding='same')(net)
+    net = layers.BatchNormalization()(net)
+    net = layers.LeakyReLU(0.2)(net)
+    
+    dense = layers.Flatten()(net)
+    dense = layers.BatchNormalization()(dense)
+    out = layers.Dense(32, activation="tanh")(dense)
+    
+    
+    return Model(inputs=inputs, outputs=out, name='CNN')
+
+def makeSiamese(cnn):
+    input_1 = layers.Input((256, 240, 1))
+    input_2 = layers.Input((256, 240, 1))
+    
+    tower_1 = cnn(input_1)
+    tower_2 = cnn(input_2)
+    # TODO Finish Siamese
 
 
 def main():
