@@ -110,6 +110,14 @@ def mlp(x, hidden_units, dropout_rate):
     """ Generic function to create zero or more mlp blocks each a dense layer and a dropout layer  """
     
     for units in hidden_units:
+        x = layers.Dense(units, activation=tf.nn.gelu)(x)
+        x = layers.Dropout(dropout_rate)(x)
+    return x
+
+
+def mlp_head(x, hidden_units, dropout_rate):
+    """ Generic function to create zero or more mlp blocks each a dense layer and a dropout layer  """
+    for units in hidden_units:
         x = layers.Dense(units, activation=tf.keras.activations.tanh)(x)
         x = layers.Dropout(dropout_rate)(x)
     return x
