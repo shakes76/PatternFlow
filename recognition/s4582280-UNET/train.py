@@ -21,6 +21,4 @@ def display(display_list):
         plt.axis("off")
     plt.show()
     
-sample_batch = next(iter(t))
-random_index = np.random.choice(sample_batch[0].shape[0])
-display([t[0], tr[1]])
+display([t[0], tr[0]])

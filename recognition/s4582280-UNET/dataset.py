@@ -22,7 +22,7 @@ def read_dir(path, split):
 
     # Reducing the size of the images so they don't nuke my ram,
     # (I only have 8GB sorry!)
-    dim = (256, 256)
+    dim = (128, 128)
 
     # Load list of data to check
     X_image_train = []
