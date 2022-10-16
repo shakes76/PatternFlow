@@ -64,9 +64,9 @@ class VQVAE(tf.keras.Model):
         # Build decoder
         decoder_in = Input(shape=self.encoder.output.shape[1:])
         x = Conv2DTranspose(64, 3, strides=2, activation='leakyrelu', padding='same')(encoder_in)
-        x = Conv2D(64, 3, strides=2, activation='leakyrelu', padding='same')(x)
-        x = Conv2D(32, 3, strides=2, activation='leakyrelu', padding='same')(x)
-        decoder_out = Conv2D(1, 3, padding='same')(x)
+        x = Conv2DTranspose(64, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        x = Conv2DTranspose(32, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        decoder_out = Conv2DTranspose(1, 3, padding='same')(x)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
         # Add VQ layer
