@@ -168,3 +168,48 @@ class VQVAETrainer(keras.models.Model):
         return {"loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result()}
 
+class PixelConvLayer(layers.Layer):
+    """
+    Pixel convolution layer to be used in the PixelCNN that will be used
+    to to generate codebooks based on generated distributions. These codebooks
+    will then be fed into the trained decoder with the goal of generating
+    brain like images that aren not real.
+    """
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        # Build the conv2d layer to initialize kernel variables
+        self.conv.build(input_shape)
+        # Use the initialized kernel to create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+class ResidualBlock(keras.layers.Layer):
+    """
+    A residual block of the PixelCNN that uses an instance of the 
+    in conjunction with 2 2D convolutional layers to generate codebook
+    samples for the decoder.These codebooks will then be fed into the trained 
+    decoder with the goal of generating brain like images that aren not real.
+    """
+    def __init__(self, filters, **kwargs):
+        super(ResidualBlock, self).__init__(**kwargs)
+        self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.pixel_conv = PixelConvLayer(mask_type="B", filters=filters // 2, kernel_size=3, activation="relu", padding="same")
+        self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_conv(x)
+        x = self.conv2(x)
+        return keras.layers.add([inputs, x])
