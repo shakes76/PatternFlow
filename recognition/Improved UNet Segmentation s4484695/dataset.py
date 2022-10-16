@@ -17,7 +17,7 @@ from torchvision.io import read_image
 # Ensure to specify transforms for DataSet or otherwise will default to no transforms applied.
 # Complete Paths should be provided for labels and images folder.
 class ISIC2017DataSet(Dataset):
-    def __init__(self, imgs_path, labels_path, transform=None):
+    def __init__(self, imgs_path, labels_path, transform=None, labelTransform=None):
         self.LabelsPath = labels_path
         self.ImagesPath = imgs_path
         # os.listdir does not gaurantee order.
@@ -26,6 +26,7 @@ class ISIC2017DataSet(Dataset):
         self.LabelsSize = len(self.LabelNames)
         self.ImagesSize = len(self.imageNames)
         self.transform = transform
+        self.labelTransform = labelTransform
 
     def __len__(self):
         if self.ImagesSize != self.LabelsSize:
@@ -44,29 +45,34 @@ class ISIC2017DataSet(Dataset):
 
         if self.transform:
             image = self.transform(image)
+        if self.labelTransform:
+            label = self.labelTransform(label)
         
         return image, label
     
-def ISIC_Transform_Train():
+def ISIC_transform_img():
         
     transformTrain = transforms.Compose([
-         
+         transforms.Resize((512, 512)),
     ])
 
     return transformTrain
 
-def ISIC_Transform_Test():
+def ISIC_transform_label():
         
     transformTest = transforms.Compose([
-        
+        transforms.Resize((512, 512)),
     ])
 
     return transformTest
 
-def ISIC_Transform_Valid():
-        
-    transformValid = transforms.Compose([
-         
+def ISIC_transform_discovery():
+
+    transformDiscovery = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ToTensor(),
+        transforms.Resize((512, 512))
+        #transforms.Normalize((0,0,0),(1,1,1))
     ])
 
-    return transformValid
+    return transformDiscovery

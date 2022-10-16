@@ -1,6 +1,7 @@
 import dataset
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 import torch
 import torch.nn as nn
@@ -12,29 +13,81 @@ import time
 # Hyper-parameters
 num_epochs = 35
 learning_rate = 0.1
-batchSize = 4
+batchSize = 8
 
-validDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels", dataset.ISIC_Transform_Valid())
+def init():
+    validDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=True)
+    trainDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    trainDataloader = DataLoader(trainDataSet, batch_size=batchSize, shuffle=True)
+    testDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    testDataloader = DataLoader(testDataSet, batch_size=batchSize, shuffle=True)
 
-train_dataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=False)
+    # Device configuration
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if not torch.cuda.is_available():
+        print("Warning CUDA not Found. Using CPU")
 
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-if not torch.cuda.is_available():
-    print("Warning CUDA not Found. Using CPU")
+    dataLoaders = dict()
+    dataLoaders["valid"] = validDataloader
+    dataLoaders["train"] = trainDataloader
+    dataLoaders["test"] = testDataloader
 
-# Display image and label.
-train_features, train_labels = next(iter(train_dataloader))
-print(f"Feature batch shape: {train_features.size()}")
-print(f"Labels batch shape: {train_labels.size()}")
+    dataSets = dict()
+    dataSets["valid"] = validDataSet
+    dataSets["train"] = trainDataSet
+    dataSets["test"] = testDataSet
 
-_, axs = plt.subplots(batchSize, 2)
-for row in range(batchSize):
-    img = train_features[row]
-    img = img.permute(1,2,0).numpy()
-    label = train_labels[row]
-    label = label.permute(1,2,0).numpy()
-    axs[row][0].imshow(img)
-    axs[row][1].imshow(label, cmap="gray")
+    return dataSets, dataLoaders
 
-plt.show()
+def display_test(dataLoader):
+    # Display image and label.
+    train_features, train_labels = next(iter(dataLoader))
+    print(f"Feature batch shape: {train_features.size()}")
+    print(f"Labels batch shape: {train_labels.size()}")
+
+    _, axs = plt.subplots(batchSize, 2)
+    for row in range(batchSize):
+        img = train_features[row]
+        img = img.permute(1,2,0).numpy()
+        label = train_labels[row]
+        label = label.permute(1,2,0).numpy()
+        axs[row][0].imshow(img)
+        axs[row][1].imshow(label, cmap="gray")
+
+    plt.show()
+
+def calculate_mean_std():
+    psum    = torch.tensor([0.0, 0.0, 0.0])
+    psum_sq = torch.tensor([0.0, 0.0, 0.0])
+    height = 2016
+    width = 3024
+
+    discoveryDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels", dataset.ISIC_transform_discovery(), dataset.ISIC_transform_label())
+    discoveryDataloader = DataLoader(discoveryDataSet, batch_size=batchSize, shuffle=True) 
+
+    display_test(discoveryDataloader)
+
+    for inputs, _ in tqdm(discoveryDataloader):
+        psum    += inputs.sum(axis        = [0, 2, 3])
+        psum_sq += (inputs ** 2).sum(axis = [0, 2, 3])
+    
+    # pixel count
+    count = discoveryDataSet.ImagesSize * height * width
+
+    # mean and std
+    total_mean = psum / count
+    total_var  = (psum_sq / count) - (total_mean ** 2)
+    total_std  = torch.sqrt(total_var)
+
+    # output
+    print('mean: '  + str(total_mean))
+    print('std:  '  + str(total_std))
+
+
+def main():
+    dataSets, dataLoaders = init()
+    #display_test(dataLoaders["valid"])
+    calculate_mean_std()
+
+main()
