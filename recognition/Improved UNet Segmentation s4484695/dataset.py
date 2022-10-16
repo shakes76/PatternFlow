@@ -53,7 +53,22 @@ class ISIC2017DataSet(Dataset):
 def ISIC_transform_img():
         
     transformTrain = transforms.Compose([
-         transforms.Resize((512, 512)),
+        transforms.ToPILImage(),
+        transforms.ToTensor(),
+        transforms.Resize((512, 512)),
+        transforms.Normalize((0.0304, 0.0254, 0.0235), (0.1471, 0.1247, 0.1169)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(128)
+    ])
+
+    return transformTrain
+
+def ISIC_transform_test():
+    
+    transformTrain = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ToTensor(),
+        transforms.Resize((512, 512))
     ])
 
     return transformTrain
@@ -61,7 +76,9 @@ def ISIC_transform_img():
 def ISIC_transform_label():
         
     transformTest = transforms.Compose([
-        transforms.Resize((512, 512)),
+        transforms.ToPILImage(),
+        transforms.ToTensor(),
+        transforms.Resize((512, 512))
     ])
 
     return transformTest
