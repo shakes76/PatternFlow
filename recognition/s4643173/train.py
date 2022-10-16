@@ -20,16 +20,19 @@ D = 256
 K = 512
 
 def train(dataloader, model, optimiser):
+    recon_losses = 0.0
     for real_images, _ in dataloader:
-        real_images = real_images.to(device=DEVICE)
+        real_images = real_images.to(DEVICE)
 
         optimiser.zero_grad()
         vq_loss, recon_image = model(real_images)
 
         recon_error = F.mse_loss(recon_image, real_images)
+        recon_losses += recon_error
         loss = recon_error + vq_loss
         loss.backward()
         optimiser.step()
+    return (recon_losses / len(dataloader)).item()
 
 def fit():
     train_loader, test_loader = get_data(BATCH_SIZE_TRAIN, BATCH_SIZE_TEST)
@@ -46,11 +49,13 @@ def fit():
     plt.show()
 
     best_ssim = 0
+    recon_losses = []
     for epoch in range(NUM_EPOCHS):
-        train(train_loader, model, optimiser)
+        loss = train(train_loader, model, optimiser)
 
         with torch.no_grad():
             _, recontructed = model(fixed_images.to(DEVICE))
+
         recontructed = recontructed.cpu()
         ssim = SSIM(fixed_images, reconstruction)
         if ssim > best_ssim:
@@ -60,5 +65,10 @@ def fit():
             plt.imshow(np.transpose(grid, (1, 2, 0)))
             plt.savefig('Reconstructed.png')
             plt.show()
+
+        recon_losses.append(loss)
+
+    plt.plot(range(1, NUM_EPOCHS + 1), recon_losses)
+    plt.savefig('Loss.png')
 
 fit()
