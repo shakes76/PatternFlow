@@ -31,7 +31,7 @@ class GNN(tf.keras.Model):
         self.normalise = normalise
         self.node_embeddings = None
 
-        # The sample graph defines the PROPERTIES of the expected input and is NOT used for training
+        # The graph that will be used for training and predicting
         self.edges = sample_graph.get_edges()
         self.features = sample_graph.get_features()
         self.edge_weights = sample_graph.get_weights()
@@ -93,7 +93,7 @@ class GNN(tf.keras.Model):
             # Skip connection
             x = applied_layer + x
 
-        # Postprocess final node embedding
+        # Postprocess final node representation
         self.node_embeddings = self.postprocess(x)
 
         # Predict labels

@@ -25,7 +25,7 @@ class Dataset:
         self.data_numpy = np.load(path)
         self.num_classes = len(set(self.data_numpy["target"]))
         self.data_tensor = self._tensify(self.data_numpy)
-        self.split = self._split(test_size)
+        self.split = self._split(test_size) # split is immutable
 
     def _tensify(self, data_numpy):
         """
@@ -52,6 +52,14 @@ class Dataset:
         return weights / tf.math.reduce_sum(weights)
 
     def _split(self, test_size):
+        """
+        Creates a training and validation split for the dataset. Returns a tensor.
+
+        The data being split are node ids and targets. Node ids will be given to the model and the model will train and
+        predict targets for the given ids.
+
+        :params test_size: proportion of data to be used in the test set
+        """
         ids = self.get_ids().numpy()
         targets = self.get_targets().numpy()
 
@@ -62,31 +70,40 @@ class Dataset:
                tf.convert_to_tensor(train_y), tf.convert_to_tensor(labels_y))
 
     def get_training_split(self):
+        """Get predetermined training split. Returns tensors (ids, labels)."""
         return self.split[0], self.split[2]
 
     def get_valid_split(self):
+        """Get predetermined validation split. Returns tensors (ids, labels)."""
         return self.split[1], self.split[3]
 
     def get_data(self):
+        """Returns tensors (features, edges, edge_weights)."""
         return self.get_features(), self.get_edges(), self.get_weights()
 
     def get_edges(self):
+        """Returns tensor of all edges."""
         return self.data_tensor[0]
 
     def get_features(self):
+        """Returns tensor of features for each node."""
         return self.data_tensor[1]
 
     def get_weights(self):
+        """Returns tensor of all edge weights."""
         return self.data_tensor[2]
 
     def get_ids(self):
+        """Returns tensor of all node ids."""
         # generate a tensor of ids
         return tf.range(0, self.get_features().shape[0])
 
     def get_targets(self):
+        """Returns tensor of labels (i.e. targets)."""
         return self.data_tensor[3]
 
     def get_num_classes(self):
+        """Returns number of classes of labels (i.e. 4)."""
         return self.num_classes
 
     def summary(self, n=5):

@@ -9,11 +9,13 @@ from dataset import Dataset
 from train import GNNClassifier, loadClassifier
 
 def main():
+    # Create dataset
     path = "C:\\Users\\cyeol\\Documents\\University\\2022\\COMP3710\\facebook.npz"
     dataset = Dataset(path)
     #dataset.summary(3)
     test_input = dataset.get_valid_split()
 
+    # Initialise
     epochs = 1
     batch_size = 256
     hidden_nodes = [32, 32]
