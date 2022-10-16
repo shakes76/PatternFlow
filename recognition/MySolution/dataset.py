@@ -1,34 +1,115 @@
-import pandas as pd
-import numpy as np
 import networkx as nx
-from matplotlib import pyplot as plt
-from scipy import sparse
+import matplotlib.pyplot as plt
+import os
+import pandas as pd
+import json
+import numpy as np
+import chardet
+import stellargraph as sg
+import tensorflow as tf
+import scipy as sp
+from tensorflow import keras
+from keras import layers
 
 
-def transform_features_to_sparse(table):
+def get_file():
     """
-    Transforms a given table of 2 rows and n columns to a sparse matrix.
-    Take the table and add a new row called 'weight'. Convert the table
-    to a list and then to a sparse matrix with scipy import
+    The get_file() function gets the facebook dataset from the provided
+    website and extracted.
+
+    Returns: the data directory as data_dir
+    """
+
+    zip_file = keras.utils.get_file(
+        fname="Facebook_Data",
+        origin="https://snap.stanford.edu/data/facebook_large.zip",
+        extract=True,
+    )
+    return os.path.join(os.path.dirname(zip_file), "facebook_large")
+
+
+def get_edges(data_dir):
+    """
+    The get_edges() function takes a data directory and read the csv file
+    within.
 
     Args:
-        table: The table to convert to a sparse matrix
+        data_dir: the path to the edge file
 
-    Returns: the converted sparse matrix
+    Returns: The data read with panda.
+    """
+    edges = pd.read_csv(
+        os.path.join(data_dir, "musae_facebook_edges.csv"),
+        header=None,
+        sep=",",
+        names=["target", "source"],
+        skiprows=1,
+    )
+    print("Edges shape:", edges.shape)
+    return edges
+
+
+def get_features(data_dir):
+    """
+    The get_features() function takes a data directory and read the json
+    file within.
+
+    Args:
+        data_dir: the path to the features file
+
+    Returns: The data read with json_load
 
     """
-    table["weight"] = 1
-    table = table.values.tolist()
-    index_1 = [row[0] for row in table]
-    index_2 = [row[1] for row in table]
-    values = [row[2] for row in table]
-    count_1, count_2 = max(index_1) + 1, max(index_2) + 1
-    sp_m = sparse.csr_matrix(sparse.coo_matrix((
-        values, (index_1, index_2)),
-        shape=(count_1, count_2),
-        dtype=np.float32)
+    feature_path = os.path.join(data_dir, "musae_facebook_features.json")
+    with open(feature_path) as json_data:
+        features = json.load(json_data)
+    return features
+
+
+def get_feature_matrix(features):
+    max_feature = np.max(
+        [v for v_list in features.values() for v in v_list]
     )
-    return sp_m
+    features_matrix = np.zeros(
+        shape=(len(list(features.keys())),
+               max_feature + 1)
+    )
+    i = 0
+    for k, vs in features.items():
+        for v in vs:
+            features_matrix[i, v] = 1
+        i += 1
+    return features_matrix
+
+
+def get_node_features(features, feature_matrix):
+    return pd.DataFrame(
+        feature_matrix,
+        index=features.keys(),
+    )
+
+
+def get_target(data_dir, features):
+    """
+    The get_target() function takes a data directory and read the csv file
+    within.
+
+    Args:
+        features: the features of the dataset
+        data_dir: the path to the target file
+
+    Returns: The data read with panda.
+    """
+    target = pd.read_csv(
+        os.path.join(data_dir, "musae_facebook_target.csv"),
+        header=None,
+        sep=",",
+        names=["id", "facebook_id", "page_name", "page_type"],
+        skiprows=1,
+    )
+    print("Target shape:", target.shape)
+    target.index = target.id.astype(str)
+    return target.loc[features.keys(), :]
 
 
 def generate_graph(edges, target):
@@ -36,79 +117,26 @@ def generate_graph(edges, target):
     target_values = sorted(target["id"].unique())
     class_idx = {name: ID for ID, name in enumerate(class_values)}
     target_idx = {name: idx for idx, name in enumerate(target_values)}
-
     target["id"] = target["id"].apply(lambda name: target_idx[name])
     edges["source"] = edges["source"].apply(lambda name: target_idx[name])
     edges["target"] = edges["target"].apply(lambda name: target_idx[name])
     target["page_type"] = target["page_type"].apply(lambda value: class_idx[value])
-
     plt.figure(figsize=(10, 10))
-    color = target["page_type"].tolist()
-    facebook_graph = nx.from_pandas_edgelist(edges.sample(n=5000))
+    facebook_graph = nx.from_pandas_edgelist(edges.sample(n=1500))
     subjects = list(target[target["id"].isin(list(facebook_graph.nodes))]["page_type"])
     nx.draw_spring(facebook_graph, node_size=15, node_color=subjects)
     plt.show()
 
 
-def normalize_adjacency(raw_edges, targets):
-    """
-    Normalise the adjacency of nodes and return teh features transformed.
-    Take the table of edges and reverse the edges before stacking both
-    tables together. This ensures that every edge is included.
-    Then use the networkx import to find the node angles to be used to
-    find the do product of the edges
-
-    Args:
-        targets: The table of targets
-        raw_edges: The table of edges
-
-    Returns: the transformed edges
-
-    """
-    raw_edges_t = pd.DataFrame()
-    raw_edges_t["id_1"] = raw_edges["id_2"]
-    raw_edges_t["id_2"] = raw_edges["id_1"]
-    raw_edges = pd.concat([raw_edges, raw_edges_t])
-    edges = raw_edges.values.tolist()
-    # generate_graph(raw_edges, targets)
-    graph = nx.from_edgelist(edges)
-    size = range(len(graph.nodes()))
-    degrees = [1.0 / graph.degree(node) for node in graph.nodes()]
-    transformed_edges = transform_features_to_sparse(raw_edges)
-    degrees = sparse.csr_matrix(sparse.coo_matrix(
-        (degrees, (size, size)),
-        shape=transformed_edges.shape,
-        dtype=np.float32)
-    )
-    transformed_edges = transformed_edges.dot(degrees)
-    return transformed_edges
-
-
-def class_classifier(given_class):
-    if given_class == "politician":
-        numeric_class = 0
-    elif given_class == "company":
-        numeric_class = 1
-    elif given_class == "government":
-        numeric_class = 2
-    elif given_class == "tvshow":
-        numeric_class = 3
-    else:
-        raise Exception("unknown class")
-    return numeric_class
-
-
-def handle_dataset():
-    target_location = "C:/Users/Sam Wang/Desktop/COMP3710_Report/musae_facebook_target.csv"
-    features_location = "C:/Users/Sam Wang/Desktop/COMP3710_Report/musae_facebook_features.csv"
-    edges_location = "C:/Users/Sam Wang/Desktop/COMP3710_Report/musae_facebook_edges.csv"
-    targets = pd.read_csv(target_location)
-    features = pd.read_csv(features_location)
-    edges = pd.read_csv(edges_location)
-    target = targets["page_type"].values.tolist()
-    classes = np.array([class_classifier(t) for t in target])
-    processed_edges = normalize_adjacency(edges, targets)
-    processed_features = transform_features_to_sparse(features)
-    processed_features_tilde = processed_edges.dot(processed_features)
-    return
+def handle_dataset(visualise=False):
+    data_dir = get_file()
+    edges = get_edges(data_dir)
+    features = get_features(data_dir)
+    feature_matrix = get_feature_matrix(features)
+    node_features = get_node_features(features, feature_matrix)
+    target = get_target(data_dir, features)
+    graph = sg.StellarGraph(node_features, edges.astype(str))
+    print(graph.info())
+    if visualise:
+        generate_graph(edges, target)
 

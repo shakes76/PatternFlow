@@ -11,7 +11,7 @@ import train
 
 
 def main():
-    sorted_data = dataset.handle_dataset()
+    dataset.handle_dataset()
     # train.handle_training(sorted_data)
     print("ok!")
 
