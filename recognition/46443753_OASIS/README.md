@@ -17,7 +17,11 @@ Selected example:
 
 ## StyleGAN Architecture & Description
 
-Based on the paper by T Karras et al.[1], the main improvement of StyleGAN from traditional GAN models comes from the introduction of the mapping network. In the essense, StyleGAN is a continuation of the progressive GAN model. In which the discriminator model remains similar to the progressive GAN model, where it continues to downsample the input data to output a boolean value for determining the realistic of the input. Whilst the generator also exhibit the "progressiveness", as indicated in the continue upsampling of data in the synthesis network as shown in figure 2. Through introducing the mapping network, it removes the need to directly feed in the latent space to the generator, and we can have instead a constant as the initial input to the synthesis network. In this way, the mapping network will help to disentangle latent space vector, and maps into a cloud of intermediate latent vector w to have more control of the . From here, we can see from the figure, after some affine transform A of the latent vector w, we can apply it to the adaptive instance normalisation (AdaIN) layer in the model to gain much more control of the various "styles" of the generated image. In addition, a along with the AdaIN layer, before feeding any output to the AdaIN layer, some uncorrelated gaussian noise B scaled by a learnt per-feature scalling factor was added to the convolution output. This way, it will allow finer control in the stochastic details of the generated image. Hence, we can see that the generator model will take three inputs, namely the latent space Z, a constant vector for the synthesis network g and the randomly generated noise inputs.
+Based on the paper by T Karras et al.[1], the main improvement of StyleGAN from traditional GAN models comes from the introduction of the mapping network. In the essense, StyleGAN is a continuation of the progressive GAN model. In which the discriminator model remains similar to the progressive GAN model, where it continues to downsample the input data to output a boolean value for determining the realistic of the input. 
+
+Whilst the generator also exhibit the "progressiveness", as indicated in the continue upsampling of data in the synthesis network as shown in figure 2. Through introducing the mapping network, it removes the need to directly feed in the latent space to the generator, and we can instead have a constant as the initial input to the synthesis network. In this way, the mapping network will help to disentangle the latent space vector, and maps into a cloud of intermediate latent vector w to have more control of the image style.
+
+From here, we can see from the figure, after some affine transform A of the latent vector w, we can apply it to the adaptive instance normalisation (AdaIN) layer in the model to gain much more control of the various "styles" of the generated image. In addition, before feeding any output from the convolutions to the AdaIN layer, some uncorrelated gaussian noise B scaled by a learnt per-feature scalling factor was added to the convolution output. This way, it will allow finer control in the stochastic details of the generated image. Hence, we can see that the generator model will take three inputs, namely the latent space Z, a constant vector for the synthesis network g and the randomly generated noise inputs.
 
 <p align="center">
   <img src="examples/stylgan.png" alt="stylegan" />
@@ -120,7 +124,7 @@ After training for 120 epochs with batch size of 14 and 13000 iterations in each
 
 Using the trained model ,we can generate some samples of the brain MRI images given some randomly generated inputs. In which, it is clear that whilst the result doesn't provide the same level of details as the orginal OASIS dataset image. The general shape and clarity of the image could be seen, and potentially interpreted as a brian MRI. Thus, it is believed that with more training and parameter tuning, the generated output could be greatly improved.
 
-<p align="center">
+<p align="center"
 <table class="image-grid">
     <tr>
         <td>
@@ -131,9 +135,10 @@ Using the trained model ,we can generate some samples of the brain MRI images gi
         </td>
     </tr>
 </table>
-</p>
+
 <p align="center">
-    <em align="center"> Figure 5: Generated Samples</em></p>
+    <em align="center"> Figure 5: Generated Samples</em>
+</p>
 
 ---
 
