@@ -19,7 +19,7 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
 #test_data=torch.tensor(x_test)#Y=(data[:,3])
 #y_test=torch.tensor(y_test)
 #test_data=np.concatenate((x_test,y_test),axis=1)
- batch_size = 50
+ batch_size = 25
  num_train = len(TRAINDATA)
  indices = list(range(num_train))
 
@@ -42,13 +42,14 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
         self.numembedding=numembedding
         self.embeddingdim=embeddingdim
         self.commitcost=commitcost
-        self.layer0=nn.Conv2d(3,embeddingdim/2,kernel_size=3,stride=1,padding='same')
-        self.layer1=nn.BatchNorm2d(embeddingdim/2)
-        self.layer2=nn.Conv2d(embeddingdim/2,embeddingdim,kernel_size=3,stride=1,padding='same')
-        self.layer3=nn.BatchNorm2d(embeddingdim)
-        self.layer4=nn.Conv2d(embeddingdim,embeddingdim/2,kernel_size=3,stride=1,padding='same')
-        self.layer5=nn.BatchNorm2d(embeddingdim/2)
-        self.layer6=nn.Conv2d(embeddingdim/2,3,kernel_size=3,stride=1,padding='same')
+        print(self.embeddingdim/2)
+        self.layer0=nn.Conv2d(3,int(np.round(self.embeddingdim/2)),kernel_size=3,stride=1,padding='same')
+        self.layer1=nn.BatchNorm2d(int(np.round(self.embeddingdim/2)))
+        self.layer2=nn.Conv2d(int(np.round(self.embeddingdim/2)),int(self.embeddingdim),kernel_size=3,stride=1,padding='same')
+        self.layer3=nn.BatchNorm2d(int(self.embeddingdim))
+        self.layer4=nn.Conv2d(int(self.embeddingdim),int(np.round(self.embeddingdim/2)),kernel_size=3,stride=1,padding='same')
+        self.layer5=nn.BatchNorm2d(int(np.round(self.embeddingdim/2)))
+        self.layer6=nn.Conv2d(int(np.round(self.embeddingdim/2)),3,kernel_size=3,stride=1,padding='same')
         
         
         
@@ -109,12 +110,14 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
 
 
  E=np.empty((EPOCHS))
+ E1=np.empty((EPOCHS))
  for e in range(0, EPOCHS):
   print(e)
   acc=0  
   model.train()
     
   totalbinaryentropyloss = 0
+  totalnonreconloss=0
  
   i=0   # loop over the training set
   for x in train_loader:
@@ -141,7 +144,9 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
    
    
  #ACC[e]=acc/i
-  E[e]=totalnonreconloss/(len(TRAINDATA*256*256*dimlatent))+totalbinaryentropyloss/(len(TRAINDATA)*256*256*3)
+  E1[e]=totalbinaryentropyloss/(len(TRAINDATA)*256*256*3)
+  E[e]=totalnonreconloss/(len(TRAINDATA)*256*256*dimlatent)+totalbinaryentropyloss/(len(TRAINDATA)*256*256*3)
+  
  import matplotlib.pyplot as plt
  from matplotlib.pyplot import figure
 
@@ -152,10 +157,16 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
 #axis[0].set_xlabel('Epoch No')
 #axis[1].set_ylabel('Accuracy')
  plt.plot(ep,E)
- plt.title(f'Average Loss(with Binary Crossentropy reconstruction loss component) Loss Versus Epoch No for {dimlatent} Dimension Latent Space,{noembeddings} Embeddings, Learning Rate of {learningrate} and {commitcost} Commitment Cost')
+ plt.title(f'Average Loss(with Binary Cross-Entropy Reconstruction Loss component) Loss Versus Epoch No for {dimlatent} Dimension Latent Space, {noembeddings} Embeddings, Learning Rate of {learningrate} and {commitcost} Commitment Cost')
+ plt.xlabel('Epoch No')
+ plt.ylabel('Average  Loss') 
+ plt.show()
+ plt.plot(ep,E1)
+ plt.title(f'Average Binary Cross-Entropy Reconstruction Loss Versus Epoch No for {dimlatent} Dimension Latent Space, {noembeddings} Embeddings, Learning Rate of {learningrate} and {commitcost} Commitment Cost')
  plt.xlabel('Epoch No')
  plt.ylabel('Average Binary Cross-Entropy Loss') 
  plt.show()
+ 
    #correct = np.array(out.cpu())==np.array(y_val.reshape((10000)))
    
 
