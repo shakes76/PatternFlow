@@ -10,8 +10,6 @@ import os
 from PIL import Image
 import cv2
 
-device = torch.device("cpu")
-
 class ISICDataset(Dataset):
     """
     PyTorch dataloader for the ISIC data set.
@@ -56,7 +54,7 @@ class ISICDataset(Dataset):
             
         """Load image"""
         image_path = self.get_image_path(image_id)
-        image = cv2.imread(image_path)
+        image = cv2.imread(image_path) / 255.0
         image = np.swapaxes(image, 0, 2)
         
         """Load ground truth segmentation"""
@@ -69,17 +67,9 @@ class ISICDataset(Dataset):
         x, y, w, h = cv2.boundingRect(mask[0, ...])
         
         targets = {
-            "labels": torch.tensor([label], dtype=torch.int64, device=self.device), 
-            "masks": torch.from_numpy(mask).to(self.device), 
-            "boxes": torch.tensor([[x, y, x + w, y + h]], dtype=torch.float32, device=self.device)
+            "labels": torch.tensor([label], dtype=torch.int64), 
+            "masks": torch.from_numpy(mask), 
+            "boxes": torch.tensor([[x, y, x + w, y + h]], dtype=torch.float32)
             }
-        return torch.from_numpy(image).to(self.device).double(), targets
+        return torch.from_numpy(image).double(), targets
         
-    
-train_data = ISICDataset(
-    image_folder_path="./data/ISIC-2017_Training_Data", 
-    mask_folder_path="./data/ISIC-2017_Training_Part1_GroundTruth", 
-    diagnoses_path="./data/ISIC-2017_Training_Part3_GroundTruth.csv",
-    device=device,
-    )
-    
