@@ -1,4 +1,6 @@
+from ast import Load
 from curses import flash
+from imp import load_module
 import sys
 sys.path.append("yolov5_LC")
 import os
@@ -17,33 +19,40 @@ File used to show example usage of the trained model
 class Predictor():
     """
     Class with functionality for operational usage of the trained
-    YOLOv5 model
+    YOLOv5 model.
     """
-    def __init__(self):
+    def __init__(self, weight_path: str, cpu=False):
         """
-        Initialiser for the Predictor class
+        Initialiser for the Predictor class - sets weight path
+        and cpu usage flag. Also loads the model for this instance.
+        :param weight_path: filepath to the yolov5 weight file to use.
+        :param cpu: Loads on gpu if false, cpu if true.
         """
+        self.weight_path = weight_path
+        self.cpu = cpu
+        self.model = self.Load_Model()
 
-    def Load_Model(self, weight_path: str):
+    def Load_Model(self):
         """
         Loads the weights at the specified path, and returns
-        the loaded model
-        :param weight_path: the path to the desired YOLOv5 weights
+        the loaded model. Uses the cpu to choose load device
         """
-        # UNCOMMENT TOP LINE FOR CPU INFERENCE
-        # model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path, device=torch.device('cpu'))  # local model
-        model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight_path)  # local model
+        if self.cpu:
+            # Load to GPU
+            model = torch.hub.load('ultralytics/yolov5', 'custom', path=self.weight_path, device=torch.device('cpu'))
+        else:
+            # Load to GPU
+            model = torch.hub.load('ultralytics/yolov5', 'custom', path=self.weight_path)
         return model
     
-    def Predict_Img(self, img_fp: str, model):
+    def Predict_Img(self, img_fp: str):
         """
         Uses the given model to predict bounding boxes/classification
         of the given image.
         :param img_fp: filepath to the image of interest
-        :param model: model to use to evaluate image
         :return: the yolov5-formatted results
         """
-        results = model(img_fp)
+        results = self.model(img_fp)
         return results
 
     def Visualise_Comparison(self, img_fp: str, label_fp: str, results, out_fp: str):
@@ -92,32 +101,31 @@ class Predictor():
 
         plt.savefig(out_fp, bbox_inches='tight')
         
-
-
 def Predictor_Example_Use():
     """
     Function used to show example use of the Predictor class
     """    
     ### Inference on Deployment ###
-    # Load model
-    predictor = Predictor()
-    model = predictor.Load_Model("/home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp2/v5m_exp2_train/weights/best.pt")
+    # Load model - change filepath as desired
+    weight_path = "/home/medicalrobotics/PatternFlow_LC/recognition/s4532810-YOLO-xspinella/v5m_exp2/v5m_exp2_train/weights/best.pt"
+    predictor = Predictor(weight_path, cpu=False)
+
     # Define image to perform detection on
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015184.jpg"
     out_fp = "pred_out/prediction_visual.png"
     # Perform detection
-    results = predictor.Predict_Img(img_fp, model)
+    results = predictor.Predict_Img(img_fp)
     # Visualise the detection
     predictor.Visualise_Prediction(img_fp, results, out_fp)
     # Display box specs (x1, y1, x2, y2), and classification
     print(results.pandas().xyxy[0].values.tolist()[0][:4])
 
-    ### Labelled Set Comparisons
+    ### Labelled Set Comparisons ###
     # Run the model to retrieve results
     img_fp = "yolov5_LC/data/images/testing/ISIC_0015270.jpg"
     label_fp = "yolov5_LC/data/labels/testing/ISIC_0015270.txt"
     out_fp = "pred_out/prediction_comparison.png"
-    results = predictor.Predict_Img(img_fp, model)
+    results = predictor.Predict_Img(img_fp)
 
     # Visualise comparison between labelled and predicted
     predictor.Visualise_Comparison(img_fp, label_fp, results, out_fp)

@@ -13,11 +13,14 @@ import shutil
 
 class DataLoader():
     """ 
-    class used to load all relevant data and preprocess/arrange as
+    Class used to load all relevant data and preprocess/arrange as
     required
     """
     def __init__(self):
         """
+        Creates required file structure, defines filepaths, downloades ISIC 2017
+        datasets/ground truths/classification files, extracts zip files into
+        required directories, deletes unnecessary files, and resizes all images.
         """
         ### Make all required directories ###
         self.Create_File_Structure()
@@ -26,9 +29,9 @@ class DataLoader():
         self.train_data = "ISIC_data/zip_files/Train/Train_data.zip"
         self.test_data = "ISIC_data/zip_files/Test/Test_data.zip"
         self.validation_data = "ISIC_data/zip_files/Validate/Valid_data.zip"
-        # Ground Truths - unsure why there is 3 for each dataset?
-        self.train_truth_PNG = "ISIC_data/zip_files/Train/Train_Truth_PNG.zip"
-        self.train_truth_gold = "ISIC_data/extract_files/Train/Train_Truth_gold.csv"
+        # Ground Truths
+        self.train_truth_PNG = "ISIC_data/zip_files/Train/Train_Truth_PNG.zip"          # segmentation masks
+        self.train_truth_gold = "ISIC_data/extract_files/Train/Train_Truth_gold.csv"    # classifications
         self.test_truth_PNG = "ISIC_data/zip_files/Test/Test_Truth_PNG.zip"
         self.test_truth_gold = "ISIC_data/extract_files/Test/Test_Truth_gold.csv"
         self.valid_truth_PNG = "ISIC_data/zip_files/Validate/Valid_Truth_PNG.zip"
@@ -51,12 +54,11 @@ class DataLoader():
         self.Download_Zips()
 
         ### Define locations for extracted files ###     
-        # TODO: Figure out how the test/train/validation sets need to be structured in the file
         # Datasets
         self.train_data_ex = "ISIC_data/extract_files/Train/Train_data"
         self.test_data_ex = "ISIC_data/extract_files/Test/Test_data"
         self.validation_data_ex = "ISIC_data/extract_files/Validate/Valid_data"
-        # Ground Truths - note that 'gold' gnd truth is a csv file so no need to extract - unsure why there is 3 for each dataset?
+        # Ground Truths - note that classifications are csv files so no need to extract
         self.train_truth_PNG_ex = "ISIC_data/extract_files/Train/Train_Truth_PNG"
         self.test_truth_PNG_ex = "ISIC_data/extract_files/Test/Test_Truth_PNG"
         self.valid_truth_PNG_ex = "ISIC_data/extract_files/Validate/Valid_Truth_PNG"
@@ -64,7 +66,7 @@ class DataLoader():
         ### Extract all zip files into required directories ###
         self.Extract_Zips()
 
-        ### Delete unwanted files ###
+        ### Delete unwanted files in the datasets ###
         self.Delete_Unwanted_Files()
 
         ### resize all images to 640x640 ###
@@ -83,9 +85,12 @@ class DataLoader():
                             self.valid_truth_PNG_ex + "/ISIC-2017_Validation_Part1_GroundTruth"]
         curr_dir_name = ["Train Data", "Train Masks", "Test Data", "Test Masks",
                             "Validation Data", "Validation Masks"]
+        
+        ### Create a list of lists -> each nested lists contains the files in one directory ###
         files_list = []
         for directory in directory_list:
             files_list.append(os.listdir(directory))
+
         ### loop thru each directory, and resize each image (resize function saves over original) ###
         i = 0
         for files in files_list:
@@ -98,8 +103,16 @@ class DataLoader():
             i += 1
 
     def Resize_Image(self, path):
+        """
+        Resizes the inputted image to 640x640 - a standard
+        yolov5 size.
+        :param path: path to the image to resize
+        """
+        ### Open image and retrieve the size ###
         img = Image.open(path)
         check_arr = [np.array(img).shape[0], np.array(img).shape[1]]
+        
+        ### If image is not required size, resize
         if not(check_arr == [640, 640]):
             transform = T.Resize((640, 640))
             # apply the transform on the input image, and save over the old one
@@ -109,7 +122,7 @@ class DataLoader():
     def Download_Zips(self):
         """
         Downloads the zip files into allocated folders, 
-        if they don't already exist
+        if they don't already exist.
         """
         # Download datasets:
         if not(os.path.exists(self.train_data)):
@@ -148,12 +161,15 @@ class DataLoader():
         Extracts all Zip files into the directories specified in constructor,
         if they aren't already extracted.
         """
+        ### Define zip source files and extraction destination ###
         zip_list = [self.train_data, self.test_data, self.validation_data,
                     self.train_truth_PNG, self.test_truth_PNG,
                     self.valid_truth_PNG]
         location_list = [self.train_data_ex, self.test_data_ex, self.validation_data_ex,
                         self.train_truth_PNG_ex, self.test_truth_PNG_ex,
                         self.valid_truth_PNG_ex]
+        
+        ### Loop through zip files and extract to specified directories ###
         i = 0
         while i < len(zip_list):
             if not(os.path.exists(location_list[i])):
@@ -174,6 +190,7 @@ class DataLoader():
         files_list = []
         for directory in directory_list:
             files_list.append(os.listdir(directory))
+
         ### loop thru each directory, and delete files ending with superpixels.png ###
         i = 0
         for files in files_list:
@@ -244,7 +261,7 @@ class DataLoader():
                                 label txt files that already exist will
                                 not be overwritten
         """
-        # Define directories to loop thru
+        ### Define directories to loop thru ###
         dataset_list = ["ISIC_data/extract_files/Test", 
                         "ISIC_data/extract_files/Train", 
                         "ISIC_data/extract_files/Validate"]
@@ -252,7 +269,8 @@ class DataLoader():
                         "yolov5_LC/data/labels/training",
                         "yolov5_LC/data/labels/validation"]
         curr_dir_list = ["test", "train", "validate"]
-        # loop thru directories
+
+        ### loop thru directories ###
         i = 0
         for dataset in dataset_list:
             print(f"Creating labels for {curr_dir_list[i]} set")
@@ -275,7 +293,7 @@ class DataLoader():
             gnd_truth_masks = os.listdir(gnd_truth_dir)
             for mask_path in gnd_truth_masks:
                 mask_path = os.path.join(gnd_truth_dir, mask_path)
-                
+                # Check if this label already exists
                 img_id = utils_lib.Get_Gnd_Truth_Img_ID(mask_path)
                 path = f"{yolo_dir_set[i]}/{img_id}.txt"
                 if not(os.path.exists(path)) or ignore_existing:
@@ -352,7 +370,7 @@ def Setup_Data():
     gnd_truth = dataloader.train_truth_PNG_ex + "/ISIC-2017_Training_Part1_GroundTruth/ISIC_0000002_segmentation.png"
     train_img = dataloader.train_data_ex + "/ISIC-2017_Training_Data/ISIC_0000002.jpg"
     # Verify that the bounding box code is working for an isolated case:
-    print(f"Test conversion of mask to box specs: Should return '[0.54296875, 0.56640625, 0.6078125, 0.7828125]'\
+    print(f"Test conversion of mask to box specs: Should return '[0.54296875, 0.56640625, 0.6078125, 0.7828125]'\n\
         {utils_lib.Mask_To_Box(gnd_truth)}")
     # Verify that img class lookup function is working for an isolated case:
     print(f"Test melanoma lookup function. Should return '(1, 'ISIC_0000002')'\n \
@@ -378,4 +396,6 @@ def Setup_Data():
     ### copy yaml file into correct YOLOv5 directory ###
     dataloader.Copy_Configs()
 
-# Setup_Data()
+if __name__ == "__main__":
+    Setup_Data()
+

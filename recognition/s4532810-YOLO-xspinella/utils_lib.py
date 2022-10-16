@@ -2,10 +2,9 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
-import torchvision.transforms as T
 import pandas as pd
 import torch
-from yolov5_LC.utils_2.metrics import box_iou, bbox_iou
+from yolov5_LC.utils_2.metrics import bbox_iou
 
 """
 Function library for the patternflow YOLO project
@@ -13,8 +12,7 @@ Function library for the patternflow YOLO project
 
 def Draw_Box_From_Label(label_fp: str, img_fp: str, out_fp: str):
     """
-    Draws bounding box on either actual image,
-    or gnd truth segmentation, using the YOLO-format label.
+    Draws bounding box on given image, using the YOLO-format label.
     :param label_fp: Filepath to the YOLO-format label text file.
     :param img_fp: Filepath to the img of interest.
     :param out_fp: output file filepath.
@@ -24,7 +22,7 @@ def Draw_Box_From_Label(label_fp: str, img_fp: str, out_fp: str):
 
 def Draw_Box(img_fp: str, box_spec: list, out_fp: str):
     """
-    Draws the specified box on the given image
+    Draws the specified box on the given image.
     :param img_fp: filepath to the image
     :param box_spec: box size/location/class specification as:
                         [class, centre_x, centre_y, width, height]
@@ -43,8 +41,9 @@ def Draw_Box(img_fp: str, box_spec: list, out_fp: str):
     colour = colours[class_id] 
 
     ### redefine box location in cv2 format, un-normalise co-ords ###
-    # This box format appears to be: [mid of left edge, mid of top edge, width, height]
+    # Convert to cv2 box specification format
     box = [int((c_x - 0.5*w)* width), int((c_y - 0.5*h) * height), int(w*width), int(h*height)]
+    # Draw/annotate
     cv2.rectangle(img, box, color=colour)   # bounding box
     cv2.rectangle(img, (box[0], box[1] - 20), (box[0] + box[2], box[1]), colour, -1)    # label box 
     cv2.putText(img, class_list[class_id], (box[0], box[1] - 5), cv2.FONT_HERSHEY_DUPLEX, .5, (255,255,255))
@@ -62,22 +61,22 @@ def Get_YOLO_Label(mask_path: str, csv_path: str):
     """
     ### Find the box specs and class spec ###
     normalised_box_spec = Mask_To_Box(mask_path)
-    # remember 0:!melanoma, 1:melanoma
+    # remember {0:!melanoma, 1:melanoma}
     melanoma_class, img_id = Find_Class_From_CSV(mask_path, csv_path)
 
-    ### Concatenate in correct order ###
+    ### Concatenate in correct order, return ###
     normalised_box_spec.insert(0, float(melanoma_class))
     return normalised_box_spec, img_id 
 
-def Mask_To_Box(img_fp: str):
+def Mask_To_Box(mask_fp: str):
     """
     Converts given segment mask into bounding box specification:
     x, y, w, h
-    :param img: filepath to segment mask of one of the lesions
+    :param mask_fp: filepath to segment mask of one of the lesions
     :return: Bounding box definition as [centre_x, centre_y, width, height]
     """
     # Open image and convert to array
-    img = Image.open(img_fp)
+    img = Image.open(mask_fp)
     img_arr = np.array(img)
 
     # define vars for pointing out the bounds of the box
@@ -85,10 +84,10 @@ def Mask_To_Box(img_fp: str):
     max_right = -np.inf
     min_up = np.inf
     max_down = -np.inf
-    # found the bounds of the box:
+    # find the bounds of the box by searching for white pixels:
     for i in range(0, len(img_arr)):        # Rows
         for j in range(0, len(img_arr[0])): # Cols
-            if img_arr[i][j] > 0:
+            if img_arr[i][j] > 0:   # if its not black, its white
                 min_left = min(min_left, j)
                 max_right = max(max_right, j)
                 min_up = min(min_up, i)
@@ -101,17 +100,17 @@ def Mask_To_Box(img_fp: str):
     # bounding box params are normalised amd returned
     return [c_x/640, c_y/640, w/640, h/640]
 
-def Find_Class_From_CSV(img_fp: str, csv_fp: str):
+def Find_Class_From_CSV(mask_fp: str, csv_fp: str):
     """
     Find the class (0:!melanoma, 1:melanoma) of the given
     filename, by matching the id from the filename to
     the id in the row of the csv
-    :param img_fp: filepath of the gnd truth image of interest
+    :param mask_fp: filepath of the gnd truth image of interest
     :param csv_fp: filepath of corresponding csv file for classification
     :return: the classification of the object in this img and the img_id
     """
     ### Find image id from the fp ###
-    img_id = Get_Gnd_Truth_Img_ID(img_fp)
+    img_id = Get_Gnd_Truth_Img_ID(mask_fp)
 
     ### Find the classification from given csv ###
     # find row corresponding to the img_id 
@@ -131,7 +130,7 @@ def Find_Class_From_CSV(img_fp: str, csv_fp: str):
 
 def Get_Gnd_Truth_Img_ID(truth_img_fp: str):
     """
-    finds the image ID of the given gnd truth img mask.
+    Finds the image ID of the given gnd truth img mask.
     :param img_fp: the img to find the id of
     :return: the mask image id
     """   
@@ -146,7 +145,7 @@ def Get_Gnd_Truth_Img_ID(truth_img_fp: str):
 
 def Get_Img_ID(img_fp: str):
     """
-    finds the image ID of the given image filepath.
+    finds the image ID of the given data image filepath.
     :param img_fp: the img to find the id of
     :return: the image id
     """   
@@ -178,7 +177,7 @@ def Convert_Box_Format(box_spec: list):
     Cx, Cy, w, h = box_spec
     w_, h_ = w/2, h/2
     b_x1, b_x2, b_y1, b_y2 = Cx - w_, Cx + w_, Cy - h_, Cy + h_
-    return [b_x1, b_y1, b_x2, b_y2]
+    return [b_x1, b_y1, b_x2, b_y2] # [(bottom left), (top right)]
 
 def Revert_Box_Format(box_spec: list):
     """
@@ -190,7 +189,7 @@ def Revert_Box_Format(box_spec: list):
     x1, y1, x2, y2 = box_spec
     w, h = x2 - x1, y2 - y1
     Cx, Cy = w/2, h/2 
-    return [Cx, Cy, w, h]
+    return [Cx, Cy, w, h] 
 
 def Compute_IOU(label_fp: str, results):
     """
@@ -241,25 +240,28 @@ def Evaluate_Prediction(label_fp: str, results):
             second return term is -1  or cwhether the prediction was
             TN, TP, FP, FN or I:invalid
     """
-    ### find actual class ###
+    ### Find actual class ###
     label_class = list(np.loadtxt(label_fp))[0]
 
-    ### Check if valid detection ###
+    ### Check that there is 1 box ###
     if not (len(results.pandas().xyxy[0].index) == 1):
         # all (unaugmented) images contain only one lesion
         # So if the model predicts more than one object, 
-        # we do not consider the classification,
+        # we do not consider the classification (class acc 
+        # shouldn't be penalised by poor detection),
         # if the length is 0, then no prediction was made,
         # so we also disregard this
         if label_class:
-            return -1, 'P_badbox'    # positive label
+            return -1, 'P_badbox'   # positive label, wrong num boxes
         else:
-            return -1, 'N_badbox'    # negative label
-    if Compute_IOU(label_fp, results) < 0.5:    # Invalid IOU
+            return -1, 'N_badbox'   # negative label, wrong num boxes
+
+    ### Check box is of acceptable IOU ###
+    if Compute_IOU(label_fp, results) < 0.5: 
         if label_class:
-            return -1, 'P_failT' 
+            return -1, 'P_failT'    # positive label, bad IOU
         else:
-            return -1, 'N_failT'   
+            return -1, 'N_failT'    # negative label, bad IOU
 
     ### Check predicted vs actual class ### 
     pred_class = results.pandas().xyxy[0].values.tolist()[0][5]
@@ -269,7 +271,7 @@ def Evaluate_Prediction(label_fp: str, results):
         else:
             return 0, 'FN'  # False Negative
 
-    if pred_class:    
+    if pred_class:                          # correct prediction
         return 1, 'TP'      # True Positive
     else:
         return 1, 'TN'      # True Negative 
@@ -281,16 +283,18 @@ def Bar_Preds(pred_types: list, out_fp: str):
                 [num_TP, num_TN, num_FP, num_FN]
     :param out_fp: output file path
     """
+    ### Build bars ###
     num_TP, num_TN, num_FP, num_FN = pred_types
     tot_p = num_TP + num_FN
     tot_n = num_FP + num_TN
     bar_list = [num_TP, num_TN, num_FP, num_FN, tot_p, tot_n]
 
+    ### Configure visual of bar graph ###
     sections = ['TP', 'TN', 'FP', 'FN', 'Tot_P', 'Tot_N']
 
     fig, ax = plt.subplots()
     ax.clear()
-    bars = ax.bar(sections, bar_list)
+    bars = ax.bar(sections, bar_list)   # display bar height
 
     ax.bar_label(bars)
     ax.set_xlabel("Valid Prediciton Type")
@@ -307,17 +311,19 @@ def Bar_Invalids(invalid_types: list, out_fp: str):
                 ['P_badbox', 'N_badbox', 'P_failT', 'N_failT']
     :param out_fp: output file path
     """
+    ### Build bars ###
     P_badbox, N_badbox, P_failT, N_failT = invalid_types
     tot_p = P_badbox + P_failT
     tot_n = N_badbox + N_failT
     bar_list = [P_badbox, N_badbox, P_failT, N_failT, tot_p, tot_n]
 
+    ### Configure visual of bar graph ###
     sections = ['P_badbox', 'N_badbox', 'P_failT',\
          'N_failT', 'Tot_P', 'Tot_N']
 
     fig, ax = plt.subplots()
     ax.clear()
-    bars = ax.bar(sections, bar_list)
+    bars = ax.bar(sections, bar_list)   # display bar height
 
     ax.bar_label(bars)
     ax.set_xlabel("Invalid Detection Type")
