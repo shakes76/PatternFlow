@@ -120,4 +120,10 @@ as shown below.
 <img src="images/image_gif.gif" width="50%">
 </p>
 
+We can now attach a random sample from the ADNI dataset, as shown below. From this, we can conclude that our model reproduces (visually) very similar images to that of the ADNI dataset. Hence, our model seems to function appropriately, and achieves its initial goal in reproducing such images.
+
+<p align="center">
+<img src="images/random_adni_image.jpeg" width="50%">
+</p>
+
 
