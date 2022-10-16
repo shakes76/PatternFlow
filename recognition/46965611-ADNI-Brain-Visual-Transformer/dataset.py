@@ -19,13 +19,13 @@ class DataLoader():
         Loads the dataset that will be used into Tensorflow datasets.
         """
         train_data = tf.keras.preprocessing.image_dataset_from_directory(
-            self.directory + "/train", labels='inferred',
+            self.directory + "/train", labels='inferred', label_mode='int',
             image_size=[self.image_size, self.image_size],
             shuffle=True, batch_size=self.batch_size
         )
 
         test_data = tf.keras.preprocessing.image_dataset_from_directory(
-            self.directory + "/test", labels='inferred',
+            self.directory + "/test", labels='inferred', label_mode='int', 
             image_size=[self.image_size, self.image_size],
             shuffle=True, batch_size=self.batch_size
         )
