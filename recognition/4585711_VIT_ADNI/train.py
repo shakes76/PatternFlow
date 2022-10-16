@@ -1,23 +1,28 @@
 import tensorflow as tf
 
 from dataset import get_data_preprocessing
-from modules import get_model
-from utils import *
+from modules import build_ViT
+from utils import Params, configure_gpus
 
 if __name__ == "__main__":
-    cropped_image_size = (192, 160)
-    epochs = 5
+    configure_gpus()
+
+    p = Params()
 
     train_ds, test_ds, preprocessing = get_data_preprocessing(
-        image_size=(240, 256), cropped_image_size=cropped_image_size, cropped_pos=(20, 36))
-    model = get_model(max(cropped_image_size))
+        image_size=p.image_size(), cropped_image_size=p.cropped_image_size(), cropped_pos=p.cropped_pos(),
+        data_dir=p.data_dir())
+    model = build_ViT(
+        preprocessing=preprocessing, image_size=p.image_size(), transformer_layers=p.transformer_layers(),
+        patch_size=p.patch_size(), hidden_size=p.hidden_size(), num_heads=p.num_heads(), mlp_dim=p.mlp_dim(),
+        num_classes=p.num_classes(), dropout=p.dropout(), emb_dropout=p.emb_dropout())
 
     model.compile(optimizer='adam',
               loss="categorical_crossentropy",
               metrics=['accuracy'])
 
     model.fit(x=train_ds,
-          epochs=epochs,
+          epochs=p.epochs(),
           validation_data=test_ds)
 
-    model.save_weights(DATA_DIR + "checkpoints/my_checkpoint")
+    model.save_weights(p.data_dir() + "checkpoints/my_checkpoint")

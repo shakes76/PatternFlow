@@ -3,6 +3,7 @@ try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
+import tensorflow as tf
 
 class Params():
     def __init__(self, file="config.yaml"):
@@ -22,3 +23,17 @@ class Params():
     def num_classes(self): return self.yaml["num_classes"]
     def dropout(self): return self.yaml["dropout"]
     def emb_dropout(self): return self.yaml["emb_dropout"]
+    def epochs(self): return self.yaml["epochs"]
+
+def configure_gpus():
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+                logical_gpus = tf.config.list_logical_devices('GPU')
+                print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            print(e)
