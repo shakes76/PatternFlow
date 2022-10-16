@@ -61,7 +61,7 @@ class ContrastiveLoss(torch.nn.Module):
 		super(ContrastiveLoss, self).__init__()
 		self.margin = margin
 	def forward(self, output1, output2, label):
-		euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
+		euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True ,p=1.0)
 		loss_contrastive = torch.mean((1-label) * torch.pow(euclidean_distance, 2)
 		                 + (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
 		return loss_contrastive
@@ -176,13 +176,30 @@ Averaging the slices itself across the patients, does not provide a improvement.
 
 A more promising approach is to look at the average of the output feature vector of the SNN.
 
+### Triplet Loss
+A further improement is the introduction of triplet loss. With the help of triplet loss, the network can rank the similarity between the input instead of only labelling similar or different. The main difference to the contrastive loss is that it operates on three inputs.
+* Anchor: Random sampe 
+* Positive: Same class as anchor
+* Negative: Different class
 
+The euqation for the loss is defined as L=max(d(a,p)−d(a,n)+margin,0).
+
+Minimizing the loss, the distance between the anchor and the positive sample d(a,p) is pushed to 0, while the distance bewteen the anchor and the negative sample d(a,n) converges to d(a,p)+margin.
+
+<p align="center">
+    <img src=Picture/tripletloss.PNG width="600" >
+</p>
+<p align="center">
+    <em> Figure 8: Visualisation of driplet loss  </em>
+</p>
+
+After training, the recieved feature vector of the anchor should be more similar compared with the positve sample than the negative sample. 
 
 ### Outlook:
 Further improvements for the SNN implementation would be
-* The introduction of mining strategies and a dripless loss: This provides the SNN with a positive (same class) and negative (different) class which should increase the accuracy of the SNN drastically.
-* Reusing the additional classification network: An additional improvement could be made by tuning the SNN while training the classification Net.
-Another approach would be to implement true 3D augmentation.
+* Reusing the additional classification network
+* Tuning the SNN while training the classification Net
+* Implement of true 3D augmentation (not slice based)
 
 ## Executing Code
 
