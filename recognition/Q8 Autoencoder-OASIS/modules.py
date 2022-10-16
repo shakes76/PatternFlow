@@ -134,13 +134,14 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
         # add the loss to the total training loss so far and
         # calculate the number of correct predictions
         totalbinaryentropyloss += len(x)*Loss2*256*256*3
+        totalnonreconloss+=len(x)*Loss1*256*256*dimlatent
         #m=nn.Softmax(dim=1)
         #acc=acc+np.sum(np.array(torch.argmax(m(pred.cpu()),dim=1))==torch.argmax(x[:,3072:3082],dim=1).detach().numpy())/len(x)
 
    
    
  #ACC[e]=acc/i
-  E[e]=totalbinaryentropyloss/(len(TRAINDATA)*256*256*3)
+  E[e]=totalnonreconloss/(len(TRAINDATA*256*256*dimlatent))+totalbinaryentropyloss/(len(TRAINDATA)*256*256*3)
  import matplotlib.pyplot as plt
  from matplotlib.pyplot import figure
 
@@ -151,9 +152,9 @@ def VQVAE1(TRAINDATA,dimlatent,noembeddings,learningrate,commitcost):
 #axis[0].set_xlabel('Epoch No')
 #axis[1].set_ylabel('Accuracy')
  plt.plot(ep,E)
- plt.title('Average Binary Cross-Entropy Loss Versus Epoch No')
+ plt.title(f'Average Loss(with Binary Crossentropy reconstruction loss component) Loss Versus Epoch No for {dimlatent} Dimension Latent Space,{noembeddings} Embeddings, Learning Rate of {learningrate} and {commitcost} Commitment Cost')
  plt.xlabel('Epoch No')
- plt.ylabel('Average Binary Cross-Entropy Loss')
+ plt.ylabel('Average Binary Cross-Entropy Loss') 
  plt.show()
    #correct = np.array(out.cpu())==np.array(y_val.reshape((10000)))
    
