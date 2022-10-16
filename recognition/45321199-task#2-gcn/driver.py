@@ -10,7 +10,7 @@ from dataset import DataLoader
 
 def main():
     data_loader = DataLoader()
-    data_loader.parse_data()
+    data_loader.load_data()
     
 
 if __name__ == "__main__":
