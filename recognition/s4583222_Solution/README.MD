@@ -153,7 +153,7 @@ The loss is appended to a list ```vloss```, this list is then plotted every 10 i
 <p align = "center">
 <img width = "640" height = "480" src =https://github.com/s4583222/PatternFlow/blob/master/recognition/s4583222_Solution/Git%20images/loss_plot.png?raw=true>
 </p>
-(note: the x-axis is the all the iterations performed. Epoch = iteration/number of iterations in a batch, i.e. 205 = 36285/177)
+(note: the x-axis is all the iterations performed. Epoch = iteration/number of iterations in a batch, i.e. 205 = 36285/177)
 
 It can be observed from the plot that the loss rapidly optimizes itself within 5-10 epochs, after that it just fine tunes itself.
 This can also be seen from the ```.out``` log below.
