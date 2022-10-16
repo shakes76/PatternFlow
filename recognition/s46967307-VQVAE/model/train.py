@@ -12,7 +12,7 @@ print("Beginning Training")
 # Initialize the Model, Print a summary.
 print("Loading Model")
 model = AE()
-model.compile(optimizer='adam')
+model.compile(optimizer=tf.keras.optimizers.Adam())
 print("Finished Loading Model")
 print(model.encoder.summary())
 print(model.vq.summary())
@@ -25,10 +25,10 @@ print("Finished Loading Data")
 
 # Begin model training and validation.
 print("Beginning Model Fitting")
-model.fit((data["train"]),
-        (data["train"]),
+training_data = (tf.concat([data["train"], data["validate"]], axis=0))
+model.fit(training_data,
+        training_data,
         epochs=2,
-        shuffle=True,
         batch_size=8)
 print("Finished Model Fitting")
 

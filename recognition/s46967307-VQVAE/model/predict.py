@@ -27,7 +27,19 @@ def visualize_autoencoder(n):
         axs[i,1].imshow(tf.reshape(tf.image.resize(tf.reshape(encoded[i], shape=pixelcnn_input_shape), image_shape[0:2], antialias=False, method=tf.image.ResizeMethod.NEAREST_NEIGHBOR), shape=image_shape[0:2]))
     plt.show()
 
-# visualize_autoencoder(6)
+visualize_autoencoder(6)
+
+def calculate_ssim():
+    test_data = tf.reshape(data["test"], shape=(-1,*image_shape[0:2]))
+
+    results = model.predict(test_data)
+
+    ssim = tf.image.ssim(tf.expand_dims(test_data, axis=-1), results, max_val=1.0)
+
+    return (tf.reduce_mean(ssim).numpy(), tf.math.reduce_sum(tf.cast(tf.math.greater(ssim,0.6), dtype=tf.float64)).numpy() / len(data["test"]))
+
+mean, pct = calculate_ssim()
+print("Average SSIM:", mean, " Percent >0.6:", pct)
 
 pixelcnn = None
 improve_existing = False
@@ -38,22 +50,30 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
     else:
         pixelcnn = get_pixel_cnn(kernel_size=max(pixelcnn_input_shape[0], pixelcnn_input_shape[1]), input_shape=pixelcnn_input_shape[0:2])
 
-    pred = model.encoder.predict(data["train"])
+    dataset = tf.data.Dataset.from_tensor_slices(data["train"][0:4*1024])
+    dataset = dataset.batch(32)
+    pred = None
+    for batch in dataset:
+        if pred is None:
+            pred = model.encoder.predict(batch)
+        else:
+            pred = tf.concat([pred, model.encoder.predict(batch)], axis=0)
+    
     encoded = tf.reshape(pred, shape=(-1, latent_dims))
-    indices = get_indices(
-        model.vq.variables[0], encoded, quantize=False, splits=16)
+    indices = get_indices(model.vq.variables[0], encoded, quantize=False, splits=64)
     indices = tf.reshape(indices, shape=(-1, *pixelcnn_input_shape[0:2]))
-    zeros = tf.zeros_like(indices)
+    # zeros = tf.zeros_like(indices)
+    # zeros = tf.random.uniform(shape=tf.shape(zeros), maxval=32, dtype=tf.int64)
 
     if not improve_existing:
         pixelcnn.compile(
             optimizer=tf.keras.optimizers.Adam(3e-4),
-            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
             metrics=["accuracy"])
     pixelcnn.fit(
         x=tf.concat([indices], axis=0),
-        y=tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
-                  num_embeddings), dtype=tf.float64),
+        y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
+                  num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
         batch_size=64,
         epochs=100,
         validation_split=0.1)
@@ -63,14 +83,13 @@ else:
 if not os.path.exists("pixelcnn.ckpt") or improve_existing:
     pixelcnn.predict(tf.random.uniform(shape=(1, *pixelcnn_input_shape[0:2]),
                      dtype=tf.int64, maxval=num_embeddings))
-    #pixelcnn.save("pixelcnn.ckpt")
+    #pixelcnn.save("pixelcnn.ckpt") # TODO Dont forget to uncomment once done testing
 
 print(pixelcnn.summary())
 
 n = 2
 generated = data["train"][:n]
-generated = tf.zeros_like(generated)
-generated = tf.random.uniform(shape=tf.shape(generated), maxval=31)
+generated = tf.concat([tf.zeros_like(generated[0:n//2]), tf.random.uniform(shape=tf.shape(generated[n//2:n]), maxval=31)], axis=0)
 generated = tf.reshape(generated, shape=(n, *image_shape))
 generated = model.encoder.predict(generated)
 generated = tf.reshape(generated, shape=(-1, latent_dims))
@@ -82,6 +101,8 @@ for _ in range(1):
         print("Row: ", row)
         for col in range(pixelcnn_input_shape[1]):
             probabilities = pixelcnn.predict(generated)[:, row, col]
+            # probabilities = tf.square(probabilities)
+            # probabilities = tf.square(probabilities)
             # probabilities = tf.square(probabilities)
             # probabilities = tf.square(probabilities)
             print(probabilities)
