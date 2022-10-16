@@ -112,4 +112,4 @@ for i in range(steps):
 w1234 = tf.concat(w1234, axis=0)
 inputs = gen_inputs(model, ldim, sres, tres, w=w1234)
 images = model.G(inputs)
-plot_save(images, cols=10, size=output_res, save_path=r'D:\AKOA\bilin_trans.png')
+plot_save(images, cols=10, size=output_res, save_path=r'D:\AKOA\bilinear_interpolation.png')
