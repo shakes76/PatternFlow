@@ -1,7 +1,7 @@
 from matplotlib.cbook import flatten
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, Conv2D, Conv2DTranspose, Flatten, Reshape
+from tensorflow.keras.layers import Input, Dense, Conv2D, Conv2DTranspose, Flatten, Reshape
 
 
 class VectorQuantizer(tf.layers.Layer):
@@ -48,3 +48,35 @@ class VectorQuantizer(tf.layers.Layer):
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
 
+class VQVAE(tf.keras.Model):
+    def __init__(self, latent_dim=32, num_embeddings=64, input_shape=(256, 256, 3)):
+        super().__init__()
+        self.latent_dim = latent_dim
+        
+        # Build encoder
+        encoder_in = Input(shape=input_shape)
+        x = Conv2D(32, 3, strides=2, activation='leakyrelu', padding='same')(encoder_in)
+        x = Conv2D(64, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        x = Conv2D(64, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        encoder_out = Conv2D(latent_dim, 1, padding='same')(x)
+        self.encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
+
+        # Build decoder
+        decoder_in = Input(shape=self.encoder.output.shape[1:])
+        x = Conv2DTranspose(64, 3, strides=2, activation='leakyrelu', padding='same')(encoder_in)
+        x = Conv2D(64, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        x = Conv2D(32, 3, strides=2, activation='leakyrelu', padding='same')(x)
+        decoder_out = Conv2D(1, 3, padding='same')(x)
+        self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
+
+        # Add VQ layer
+        self.vq_layer = VectorQuantizer(num_embeddings=num_embeddings, embedding_dim=latent_dim, name='vq')
+        
+
+    def call(self, x, training=False):
+        x = self.encoder(x)
+        quantized = self.vq_layer(x)
+        return self.decoder(quantized)
+        
+
+        
