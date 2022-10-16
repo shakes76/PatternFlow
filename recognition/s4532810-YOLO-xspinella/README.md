@@ -34,7 +34,10 @@ Once the dependencies are installed, execute the following command in the s45328
 ```linux
 python3 train.py
 ```
-and select mode 0 from the options to download/arrange/preprocess the data completely. This will also print some outputs and save some images to misc_tests in order to validate correct function of the repo. 
+and select mode 0 from the options to download/arrange/preprocess the data completely. This will also print some outputs and save some images to misc_tests in order to validate correct function of the repo. You can also run the dataloader using:
+```linux
+python3 dataset.py
+```
 
 ### Training and Evaluation
 The model can be trained by executing 
@@ -50,6 +53,10 @@ m - YOLOv5m -> 'medium'
 l - YOLOv5l -> 'large'
 x - YOLOv5x -> 'extra large'
 The yolov5 github specifies the quantitative differences between the models, but basically, as the model gets larger, it will become slower, but perform better. See this link for specifications: https://github.com/ultralytics/yolov5#pretrained-checkpoints. It is reccomended to use the medium size model, as this is the model investigated in this report.
+
+After training is completed, the yolov5 library outputs results to yolov5_LC/runs/train/exp_. This includes a matrix of graphs that report losses and other metrics such as mAP, as well as some examples of the trained model's implementation on the training and validation set, and some reports on data distribution.
+
+After testing is completed, distribution bar graphs will be saved to the test_out directory, and information regarding test set P, R, mAP, average IOU and classification will be printed to terminal. There will also be additional distribution information, as well as implementation examples on the test set outputted to the yolov5_LC/runs/val/exp_ directory.
 
 ### Inference
 In order to deploy the trained model, predict.py is available. predict.py contains the Predictor class, and a Predictor_Example_Use() function, which shows the user how to load the model, and produce and visualise object detection/classification on a single image. It also shows the user how to visualise comparisons between predicted and labelled object detection/classification and how to use utils_lib to compute IOU and find if the classification is correct (if the user wishes to run comparisons on labelled sets). To run this function simply enter the following command in terminal:
@@ -72,7 +79,7 @@ This section will detail What the algorthm is, what problem it solves, and how i
 The YOLO model family consists of multiple different versions of an object detection model. Object detection models aim to search for object classes within given images. Once found, these objects are indicated by a bounding box, and classified with a label. YOLO stands for You Only Look Once, because each frame (or image) is only passed through the model once. The result of this is that YOLO models are smalller and faster  than other object detection implementations, which traditionally passed the image through once for defining bounding boxes, and then again to classify the box classes. (https://blog.roboflow.com/a-thorough-breakdown-of-yolov4/)
 
 ### YOLO Applications
-YOLO models excel in realtime object detection, thanks to their but fast performance. These models are also very lightweight, which not only means that they can be implemented on video feeds at relatively high frame rate, they can also be deployed on native hardware easier than other models, because they do not require as much computing power. This project aims to use a YOLO model to detect and classify lesions within the ISIC dataset. (https://blog.roboflow.com/a-thorough-breakdown-of-yolov4/)
+YOLO models excel in realtime object detection, thanks to their fast performance. These models are also very lightweight, which not only means that they can be implemented on video feeds at relatively high frame rates, they can also be deployed on native hardware easier than other models, because they do not require as much computing power. This project aims to use a YOLO model to detect and classify lesions within the ISIC dataset. (https://blog.roboflow.com/a-thorough-breakdown-of-yolov4/)
 
 ### How YOLO Works
 The YOLO model is so successful because it frames object detection as a single regression problem; mapping image pixels to bounding box coordinates and class probabilities. The system works by splitting the input into an S x S grid (S is a hyperparameter). If the centre of an object falls inside box 2 x 2, then this box is responsible for detecting said object. When implemented, each grid cell will predict B bounding boxes, where B is also a hyperparameter. Each computed bounding box is comprised of 5 values:
@@ -84,7 +91,7 @@ x, y: The x/y-coordinate of the bounding box centre, relative to the bounds of t
 w, h: The width and height of the bounding box, relative to the whole image.
 
 C: The confidence score, which is both a measure of how confident the model is that this bounding box contains an object, and how accurate it thinks the predicted box is. If trained perfectly, this value should be equal to the Intersection Over Union (IOU) between the predicted box, and the ground truth, if there is one in the grid cell of interest. If there is no ground truth in the grid cell, this value should be 0. When implemented, the contained object confidence value is multipled by the IOU box accuracy value:  
-![image](https://user-images.githubusercontent.com/32262943/193551577-41be3605-3038-4d9a-999f-c1fe5cabb0bb.png)
+<img src="https://user-images.githubusercontent.com/32262943/193551577-41be3605-3038-4d9a-999f-c1fe5cabb0bb.png" alt="drawing" width="600"/>
 
 The loss function evaluated during training is as follows:
 
@@ -96,7 +103,7 @@ This is a multi-part loss function which specifies terms for defining the loss o
 - Confidence predictions for boxes that contain objects, and boxes that dont contain objects (third and fourth terms, respectively)
 - Classification predictions for the objects inside the boxes (the last term).
 
-These terms are balanced by parameters \lambda_coord and \lambda_noobj to ensure that confidence scores from grid cells without objects don't overpower the gradient from cells which do contain objects. 
+These terms are balanced by $\lambda$ parameters to ensure that confidence scores from grid cells without objects don't overpower the gradient from cells which do contain objects. 
 
 A high-level overview of the YOLO model architechture is shown below (https://arxiv.org/pdf/2004.10934.pdf).
 ![image](https://miro.medium.com/max/720/1*e17LeKXUsSxdNTlSm_Cz8w.png)
@@ -104,7 +111,7 @@ A high-level overview of the YOLO model architechture is shown below (https://ar
 The backbone is the pretrained component, while the head is trained to predict the actual bonding boxes and classes on the dataset of interest. As shown above, the head can be single (just dense prediction) or double stage (dense and sparse prediction). The neck, situated between backbone and head, is used to collect feature maps for the dataset (https://medium.com/analytics-vidhya/object-detection-algorithm-yolo-v5-architecture-89e0a35472ef).
 
 ### YOLOv5 network model
-For this implementation, I have chosen to use YOLOv5 because it is written in Pytorch ultralytics, while previous versions were written in the C Darknet library. YOLOv5 is also faster than previous versions, and while there have been newer YOLO releases since v5, YOLOv5 currently has the most support. 
+For this implementation, I have chosen to use YOLOv5 because it is written in Pytorch ultralytics, while previous versions were written in the C Darknet library. This makes implementation simpler, and also means that there is more support, as Pytorch is a much more commonly used ML library.
 
 ## Metrics of Interest
 In the discussion of results, there are a few metrics which will be referred to. The following sections will explain their meanings.
@@ -164,7 +171,7 @@ and select mode 0 from the options to download/arrange/preprocess the data compl
 The Create_File_Structure method in Dataloader checks which directories don't exist, and creates them all. This includes directories inside of yolov5_LC which weren't pushed from my machine due to git ignore. After image preprocessing, Copy_Images and Copy_Configs are used to copy the yolo-compatible dataset, labels, and .yaml training/testing config files to the correct directories within the yolov5_LC directory.
 
 ### Downloads
-The ISIC dataset, and all its gnround truth and classification files are downloaded and placed in the correct directories with Download_Zips and Extract_Zips. Unwanted superpixel images are removed by Delete_Unwanted_Files.
+The ISIC dataset, and all its ground truth and classification files are downloaded and placed in the correct directories with Download_Zips and Extract_Zips. Unwanted superpixel images are removed by Delete_Unwanted_Files.
 
 ### Preprocessing
 The dataset is preprocessed in 4 different ways:
@@ -274,7 +281,7 @@ R = TP/TP+FN = 50/50+37 = 0.575   -> "~58% of positive cases are diagnosed succe
 We can see that neither of these are particularly impressive, and certainly wouldn't be accepted in practice. This shows how much the classification accuracy has been skewed by the distribution of the training set. Furthermore, from Figures 8 and 9, we can see that ~24% of positive cases were unable to be detected/were incorrectly detected/had a very low IOU, while 18% of negative cases suffered this case. This makes sense because, due to the significantly larger number of negative cases in all datasets, the model would have much better detection of negative cases.
 
 ### Trial 3
-This stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough, especially for the positive cases. YOLOv5 already implements data augmentation by default, however, the hyperparemeter file used in trial 2 has some options to increase augmentations. In order to take advantage of augmentation settings that have been somewhat optimised by the yolov5 developers, we will combine the high-augmentation parameter settings from the COCO config file, with the other hyperparameter settings from the VOC hyperparameter file config (used in prev. trail). Some of the augmentation options were set to zero or very low, thus, the probabilities and magnitudes of augmentations such as rotation, translation, shear, perspective, and up/down flip ocurring were all increased.
+This stage of improvement is based on YOLOv5 documentation found at (https://docs.ultralytics.com/tutorials/training-tips-best-results/) -> as mentioned in the previous section, the dataset doesn't seem to be big enough, especially for the positive cases. YOLOv5 already implements data augmentation by default, however, the hyperparemeter file used in trial 2 has some options to increase augmentations. In order to take advantage of augmentation settings that have been somewhat optimised by the yolov5 developers, we will combine the high-augmentation parameter settings from the COCO config file, with the other hyperparameter settings from the VOC hyperparameter file config (used in prev. trial). Some of the augmentation options were set to zero or very low, thus, the probabilities and magnitudes of augmentations such as rotation, translation, shear, perspective, and up/down flip ocurring were all increased. The new config file is located at yolov5_LC/data/hyps/hyp.ISIC_2.yaml -> the train() function in train.py has been updated accordingly.
 
 Furthermore, YOLOv5 is integrated with the albumentations library, which means that once the albumentations dependency is installed, the albumentations class in the utils_2 folder can be modified to produce even more augmentations. This class was modified to introduce extra augmentations such as; blur, median blur, and to grey. An example of what the augmented training set looks like is shown below:
 
@@ -348,7 +355,7 @@ With augmentation applied, the model was able to detect and classify negative me
 Some other alterations that could be investigated are as follows:
 - tune the IOU threshold for training - it is possible that the relatively low threshold of 0.2 is causing unstable learning.
 - tune the gain of object, box, and classification loss - this can be used to tune which loss terms are more important to the model. Possibly an increase in box loss gain could improve all three losses as it may result in improved bounding boxes.
-- A hyperparameter tuning algorithm, such as Population Based Training (PBT) or Population Based Bandits (PB2) could be used to optimise hyperparameters for this specific case, however, it is recommended that this particular option is not implemented until the model is closer to acceptable performance.
+- A hyperparameter tuning algorithm, such as Population Based Training (PBT) or Population Based Bandits (PB2) could be used to optimise hyperparameters for this specific case, however, it is recommended that this particular option is not implemented until the model is closer to acceptable performance, as it is a very time-consuming computation.
 
 ### Reproducability of Results
 Assuming the use of the same ISIC 2017 dataset, these results should be reproducable, as long as usage instructions are followed, with the correct yolov5 size model (m) used, and the correct number of epochs. The exception to this is if a different machine is used, it may not be able to achieve the same batch size (my machine used a batch size of 21, using yolov5 auto size functionality). If the batch size is too small, this will produce unfavourable batch normalisation results.
