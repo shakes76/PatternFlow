@@ -6,8 +6,30 @@ from dataset import loadFile
 
 import random
 import numpy as np
+import tensorflow_datasets as tfds
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 
+def getLabel(x, y):
+    if x[1] == y[1]:
+        # Same label
+        return x[0], y[0], 1.0
+    # Different Label
+    return x[0], y[0], 0.0
+
+def generatePairs(ds):
+    pairs = tf.data.Dataset.zip((ds, ds))
+    return pairs.map(getLabel)
+
+
+def main():
+    # Code for testing the functions
+    t, v = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    generatePairs(t)
+
+if __name__ == "__main__":
+    main()
+        
+    
