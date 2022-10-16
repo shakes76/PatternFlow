@@ -19,14 +19,14 @@ def load_model(ckpts, sres, tres):
         model.stabilize()
     model.load_weights(os.path.join(ckpts))
     print('Model loaded.')
-    return model
+    return model.FC, model.G
 
 
-def gen_inputs(model, latent_vec_dim, sres, tres, n=1, w=None):
+def gen_inputs(fc, latent_vec_dim, sres, tres, n=1, w=None):
     depth = int(np.log2(tres/sres))
     if w is None:
         z = tf.random.normal((n, latent_vec_dim))
-        ws = model.FC(z)
+        ws = fc(z)
     else:
         ws = w
     const = tf.ones([n, sres, sres, cfg.FILTERS[0]])
@@ -69,31 +69,30 @@ def plot_save(images, cols=None, plot=True, size=(256, 256), mode='L', save_path
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 
-sres = cfg.SRES
-tres = cfg.TRES
-ldim = cfg.LDIM
-output_res = (260, 228)          # output resolution
-ckpts = r'D:\AKOA\AKOA256.ckpt'  # path of checkpoints
+sres = cfg.SRES           # starting resolution of the model
+tres = cfg.TRES           # target resolution of the model
+ldim = cfg.LDIM           # latent vector dimention of the model
+output_res = (256, 256)   # output resolution of generated images
+ckpt = r'path of ckpts'   # path of checkpoint files
 
 
 # build model
-model = load_model(ckpts, sres, tres)
+FC, Synthesis = load_model(ckpt, sres, tres)
 
 
 # plot 100 random images
 n = 100
-inputs = gen_inputs(model, ldim, sres, tres, n=n)
-images = model.G(inputs)
-plot_save(images, cols=5, size=output_res, save_path=r'D:\AKOA\generated.png')
+inputs = gen_inputs(FC, ldim, sres, tres, n=n)
+images = Synthesis(inputs)
+plot_save(images, cols=5, size=output_res, save_path=r'D:\generated.png')
 
 
 # bilinear interpolation
-w1 = model.FC(tf.random.normal((1, ldim)))
-w2 = model.FC(tf.random.normal((1, ldim)))
-w3 = model.FC(tf.random.normal((1, ldim)))
-w4 = model.FC(tf.random.normal((1, ldim)))
+w1 = FC(tf.random.normal((1, ldim)))
+w2 = FC(tf.random.normal((1, ldim)))
+w3 = FC(tf.random.normal((1, ldim)))
+w4 = FC(tf.random.normal((1, ldim)))
 steps = 10
-#  inputs = gen_inputs(model, ldim, sres, tres, w=tf.concat([w1, w2], axis=0))
 w12 = []
 for i in range(steps):
     alpha = (i + 1.) / steps
@@ -110,6 +109,6 @@ for i in range(steps):
         alpha = (j + 1.) / steps
         w1234.append((1 - alpha) * w12[i] + alpha * w34[i])
 w1234 = tf.concat(w1234, axis=0)
-inputs = gen_inputs(model, ldim, sres, tres, w=w1234)
-images = model.G(inputs)
-plot_save(images, cols=10, size=output_res, save_path=r'D:\AKOA\bilinear_interpolation.png')
+inputs = gen_inputs(FC, ldim, sres, tres, w=w1234)
+images = Synthesis(inputs)
+plot_save(images, cols=10, size=output_res, save_path=r'D:\bilinear_interpolation.png')
