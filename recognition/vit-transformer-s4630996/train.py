@@ -23,40 +23,11 @@ from modules import vit_classifier
 from dataset import import_data
 from config import *
 
-
-##############################  HYPERPARAMETERS  ###################################
-
-# data
-BATCH_SIZE = 128
-IMAGE_SIZE = 200  # We'll resize input images to this size
-NUM_CLASS = 2
-INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 1)
-
-# patches
-PATCH_SIZE = 10  
-NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
-
-# transformer-econder
-PROJECTION_DIM = 64
-NUM_HEADS = 4
-NUM_ENCODER_LAYERS = 4
-
-# mlp head
-MLP_HEAD_UNITS = [256]  # Size of the dense layers of the final classifier
-
-# model
-LEARNING_RATE = 0.001
-WEIGHT_DECAY = 0.0001
-NUM_EPOCHS = 50
-DROPOUTS = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
-
-
-
 ##############################   IMPORT DATA  ###################################
 
-path_training = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\training"
-path_validation = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\validation"
-path_test = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\test"
+path_training = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\training"
+path_validation = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\validation"
+path_test = r"C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\test"
 
 paths = {"training": path_training, "validation": path_validation, "test": path_test} 
 
@@ -71,7 +42,7 @@ print(vit_classifier.summary())
 
 # select optimzer
 optimizer = tfa.optimizers.AdamW(
-    LEARNING_RATE=LEARNING_RATE, WEIGHT_DECAY=WEIGHT_DECAY
+    learning_rate=LEARNING_RATE, weight_decay=WEIGHT_DECAY
 )
 #     optimizer = tf.optimizers.Adam(LEARNING_RATE=LEARNING_RATE)
 
@@ -86,7 +57,7 @@ vit_classifier.compile(
 )
 
 # create checkpoint callback
-checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint\\"
+checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint2\\"
 checkpoint_callback = keras.callbacks.ModelCheckpoint(
     checkpoint_filepath,
     monitor="val_loss",
