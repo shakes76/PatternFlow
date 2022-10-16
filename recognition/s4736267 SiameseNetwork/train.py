@@ -33,8 +33,8 @@ import dataset
 #                  Defining constants
 #######################################################
 
-epoch_range = 5
-batch_size=4
+epoch_range = 100
+batch_size=16
 train_factor=1000               #Number of Persons
 test_factor=400
 valid_factor=200
@@ -70,8 +70,8 @@ else:
     net.eval()
 
 #Optimizer
-criterion = modules.ContrastiveLoss()
-optimizer = optim.Adam(net.parameters(),lr = 0.001, weight_decay=1e-3)
+criterion = modules.TripletLoss()
+optimizer = optim.Adam(net.parameters(),lr = 0.005, weight_decay=1e-3)
 
 #Learning rate scheduler
 scheduler = StepLR(optimizer, step_size=50, gamma=0.95)
@@ -126,17 +126,17 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
         
         #Data Transfer
         inputs_1= data[0].to(device) 
-        inputs_2= data[1].to(device) 
+        inputs_2= data[1].to(device) #positive
+        inputs_3= data[2].to(device) #negative 
         
-        labels= data[2].to(device).to(torch.float32)
-
+        
         #Zero gradients
         optimizer.zero_grad()
 
         #Loss calculation
-        output1,output2 = net(inputs_1,inputs_2)
+        output_1,output_2,output_3 = net(inputs_1,inputs_2,inputs_3)
 
-        loss = criterion(output1,output2,labels)
+        loss = criterion(output_1,output_2,output_3)
         loss.backward()
 
         #Gradient Clipping
@@ -148,7 +148,7 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
         #Training loss
         loss_run +=loss.detach().item()
-        total += torch.numel(labels)
+        total += inputs_1.size(dim=0)
 
         #Learning rate scheduler
         if scheduler_active==1:
@@ -172,18 +172,22 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
             #Data Transfer
             inputs_1= data[0].to(device) 
-            inputs_2= data[1].to(device) 
+            inputs_2= data[1].to(device) #positive
+            inputs_3= data[2].to(device) #negative 
         
-            labels= data[2].to(device).to(torch.float32)
+        
+            #Zero gradients
+            optimizer.zero_grad()
 
             #Loss calculation
-            output1,output2 = net(inputs_1,inputs_2)
+            output_1,output_2,output_3 = net(inputs_1,inputs_2,inputs_3)
 
-            loss = criterion(output1,output2,labels)
-        
+            loss = criterion(output_1,output_2,output_3)
+
+    
             #Training loss
             loss_run +=loss.detach().item()
-            total += torch.numel(labels)
+            total += inputs_1.size(dim=0)
 
     validation_loss[epoch]=loss_run/total
     print("->Validation Loss:",validation_loss[epoch].item(), flush=True)
@@ -194,7 +198,8 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 #                  Saving net parameters
 ###################################################
 
-
+torch.save(training_loss, "training_loss.pth")
+torch.save(validation_loss, "validation_loss.pth")
 torch.save(net.state_dict(), FILE)
 print('=> ---- Finished Training ---- ')
 
@@ -202,7 +207,8 @@ print('=> ---- Finished Training ---- ')
 #          Calculation of classification vector
 ###################################################
 
-outputAD,outputNC = net(clas_image_AD,clas_image_NC)
+outputAD = net.forward_once(clas_image_AD)
+outputNC = net.forward_once(clas_image_NC)
 #feature_AD=torch.sum(outputAD, dim=0)/10
 #feature_NC=torch.sum(outputNC, dim=0)/10
 feature_AD=torch.mean(outputAD,dim=0)

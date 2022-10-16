@@ -83,8 +83,8 @@ class ResNet_3D(nn.Module):
                                             #nn.ReLU(),
                                             #nn.Linear(4096,1024),
                                             #nn.ReLU(),
-                                            nn.Linear(512,128),
-                                            nn.Sigmoid())
+                                            nn.Linear(512,128))#,
+                                            #nn.Sigmoid())
         
         self.final = nn.Sequential(nn.Linear(512, 1),
                                    nn.Sigmoid())
@@ -171,13 +171,14 @@ class ResNet_3D(nn.Module):
 
         return out
 
-    def forward(self, x,y):
+    def forward(self, x,y,z):
         out_x = self.forward_once(x)
         out_y = self.forward_once(y)
+        out_z = self.forward_once(z)
         #out  = torch.abs((out_x-out_y))
         #out  = self.final(out).squeeze(1) 
 
-        return out_x, out_y
+        return out_x, out_y, out_z
 
 
 
@@ -239,7 +240,19 @@ def init_weights(m):
 #######################################################
 #                  Loss Function
 #######################################################
+class TripletLoss(torch.nn.Module):
 
+    def __init__(self, margin=50.0):
+        super(TripletLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, output_1, output_2, output_3):
+        distance_AP = F.pairwise_distance(output_1, output_2, keepdim = True,p=1)
+        distance_AN = F.pairwise_distance(output_1, output_3, keepdim = True,p=1)
+        #print(distance_AP[0].item(),distance_AN[0].item())
+        loss_triplet = torch.mean(torch.clamp(distance_AP-distance_AN+self.margin,min=0))
+
+        return loss_triplet
 
 class ContrastiveLoss(torch.nn.Module):
     """

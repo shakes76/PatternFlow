@@ -229,12 +229,34 @@ class DatasetTrain3D(Dataset):
         
         image3D_1=torch.zeros(20,210,210)
         image3D_2=torch.zeros(20,210,210)
+        image3D_3=torch.zeros(20,210,210)
 
         idx_1=idx
         idx_2=(idx + random.randint(0,int(self.size)))%self.size
+        idx_3=(idx + random.randint(0,int(self.size)))%self.size
+
+
+        label_1 = self.image_paths[idx_1*20].split('/')[-2]
+        label_1 = 0 if label_1=='AD' else 1
+        
+        label_2 = self.image_paths[idx_2*20].split('/')[-2]
+        label_2 = 0 if label_2=='AD' else 1
+
+        label_3 = self.image_paths[idx_3*20].split('/')[-2]
+        label_3 = 0 if label_3=='AD' else 1
+
+
+        while label_2 == label_3:
+            idx_3=(idx + random.randint(0,int(self.size)))%self.size
+            label_3 = self.image_paths[idx_3*20].split('/')[-2]
+            label_3 = 0 if label_3=='AD' else 1    
+            #print("new idx3",idx_3)
+
+        #print(label_1,label_2,label_3)
 
         transform_idx_1=self.transform_augmentation()
         transform_idx_2=self.transform_augmentation()
+        transform_idx_3=self.transform_augmentation()
 
         j=0
         for i in range(20):
@@ -245,17 +267,22 @@ class DatasetTrain3D(Dataset):
             image_filepath_2 = self.image_paths[idx_2*20+i]
             image_2 = cv2.imread(image_filepath_2, cv2.IMREAD_GRAYSCALE)
 
+            image_filepath_3 = self.image_paths[idx_3*20+i]
+            image_3 = cv2.imread(image_filepath_3, cv2.IMREAD_GRAYSCALE)
+
+
             #toTen=transforms.ToTensor()
             #save_image(toTen(image_1), 'orignal.png')
 
             if self.transform:
                 image_1 = transform_idx_1(image_1)
                 image_2 = transform_idx_2(image_2)
+                image_3 = transform_idx_2(image_3)
 
             #save_image(image_1, 'basic_augmentation.png')
 
             i  = 25
-            for j in range(20):
+            for j in range(10):
                 rn = random.randint(0,1)
                 if rn==0:
                     
@@ -273,31 +300,40 @@ class DatasetTrain3D(Dataset):
                 
                     transform_blackout=Random_Blackout(i1=i1,i2=i2,i=i)
                     image_2=transform_blackout(image_2)
+
+                rn = random.randint(0,1)
+                if rn==0:
+                    
+                    i1 = random.randint(0,210-i)
+                    i2 = random.randint(0,210-i)
+                
+                    transform_blackout=Random_Blackout(i1=i1,i2=i2,i=i)
+                    image_3=transform_blackout(image_3)
             
             #save_image(image_1, 'augmented.png')
         
 
             image3D_1[j]=image_1
             image3D_2[j]=image_2
+            image3D_3[j]=image_3
             j=j+1
 
-        label_1 = image_filepath_1.split('/')[-2]
-        label_1 = 0 if label_1=='AD' else 1
-        
-        label_2 = image_filepath_2.split('/')[-2]
-        label_2 = 0 if label_2=='AD' else 1
-
-
-        if label_1 == label_2:
-            label=1
+        if label_1==label_2:
+            image3D_positive=image3D_2
+            image3D_negative=image3D_3
+            #print("two positive")
         else:
-            label=0
+            image3D_positive=image3D_3
+            image3D_negative=image3D_2
+            #print("three positive")
 
         image3D_1 = torch.unsqueeze(image3D_1, dim=0)
-        image3D_2 = torch.unsqueeze(image3D_2, dim=0)
+        image3D_positive = torch.unsqueeze(image3D_positive, dim=0)
+        image3D_negative = torch.unsqueeze(image3D_negative, dim=0)
 
-        del transform_idx_1,transform_idx_2
-        return image3D_1, image3D_2, label, label_1
+        del transform_idx_1,transform_idx_2,transform_idx_3
+
+        return image3D_1, image3D_positive, image3D_negative
 
 class Dataset3D(Dataset):
     def __init__(self, image_paths, transform=None):
