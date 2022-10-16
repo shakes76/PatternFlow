@@ -133,3 +133,4 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+*.pickle
