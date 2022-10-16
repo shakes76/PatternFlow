@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow import keras
 import os
 import shutil
@@ -74,23 +75,53 @@ def setup_folders():
 
 
 def get_train_data():
+    AUTOTUNE = tf.data.AUTOTUNE
     train_data = keras.utils.image_dataset_from_directory(
         directory='train-split/',
         labels='inferred',
-        label_mode='categorical',
+        label_mode='int',
         batch_size=32,
         image_size=(256, 240))
+
+    class_names = train_data.class_names
+    print(class_names)
+
+    train_data = train_data.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+
 
     return train_data
 
 
 def get_valid_data():
+    AUTOTUNE = tf.data.AUTOTUNE
     valid_data = keras.utils.image_dataset_from_directory(
         directory='valid-split/',
         labels='inferred',
-        label_mode='categorical',
+        label_mode='int',
         batch_size=32,
         image_size=(256, 240))
 
+    valid_data = valid_data.cache().prefetch(buffer_size=AUTOTUNE)
     return valid_data
+
+
+def get_test_data():
+    AUTOTUNE = tf.data.AUTOTUNE
+    test_data = keras.utils.image_dataset_from_directory(
+        directory='test/',
+        labels='inferred',
+        label_mode='int',
+        batch_size=32,
+        image_size=(256, 240))
+
+    test_data = test_data.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+    return test_data
+
+if __name__ == '__main__':
+    setup_folders()
+    validationData = get_valid_data()
+
+    for data, labels in validationData.take(1):
+        print(data.shape)
+        print(labels.shape)
 
