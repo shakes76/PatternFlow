@@ -1,7 +1,3 @@
-import tensorflow as tf
-
-from keras import Sequential
-
 from vit_tensorflow.vit import ViT
 
 def get_model(image_size, patch_size=32, dim=1024, depth=6, heads=16, mlp_dim=2048, dropout=0.1, emp_dropout=0.1):

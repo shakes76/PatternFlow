@@ -3,9 +3,9 @@ import keras
 from keras.utils import image_dataset_from_directory
 from keras import layers
 
-from os.path import exists
+from utils import *
 
-DATA_DIR = "/data/s4585711/vit/"
+from os.path import exists
 
 def get_data(batch_size, image_size):
     if not exists(DATA_DIR + "AD_NC"):
