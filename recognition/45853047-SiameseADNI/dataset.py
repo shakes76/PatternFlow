@@ -110,7 +110,7 @@ def get_image(path):
     # Convert to jpeg
     image = tf.image.decode_jpeg(image, 1)
 
-    # Scale imaage
+    # Scale image
     image = tf.image.resize(image, [128, 128])  # TODO: may not need this
 
     # May need to normalise

@@ -12,25 +12,15 @@ def predict():
     classifier = load_model(CLASSIFIER_PATH)
     classify_test_data = load_classify_data(testing=True)
 
-    # Evalutae the classifier
+    # Evaluate the classifier
     classifier.evaluate(classify_test_data)
 
     # Show predictions for one batch (32 predictions)
     for pair, label in classify_test_data:
         pred = classifier.predict(pair)
         for i in range(len(pred)):
-
-            # Print prediction
-            if pred[i] < 0.5:
-                print("Predicition: AD")
-            else:
-                print("Predicition: CN")
-            
-            # Print Actual
-            if (label[i] == 1):
-                print("Actual: AD")
-            else:
-                print("Actual: CN")
+            print("Prediction: ", pred[i].eval())
+            print("Actual: ", label[i])
         break 
 
 predict()

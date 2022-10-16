@@ -78,7 +78,7 @@ def siamese(height: int, width: int):
 
     Args:
         height (int): height of input image
-        width (int): width of input imagee
+        width (int): width of input image
 
     Returns:
         Model: compiled model
