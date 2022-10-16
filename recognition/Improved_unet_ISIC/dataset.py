@@ -38,4 +38,16 @@ def get_data(path, is_y=False):
         output = element
         break
 
+    # to get a 3D dataset with normalization
+    # stack same image for 16 times to get a 3D data
+    output = output[..., tf.newaxis]
+    output = tf.concat([output] * 16, 3)
+    output = tf.divide(output, 255)
+    if is_y:
+        output = tf.cast(output, tf.int32)
+        output = tf.one_hot(output, 2, axis=4)
+        output = tf.squeeze(output)
+        output = tf.cast(output, tf.float32)
 
+    print(file + ': loading finished')
+    return output
