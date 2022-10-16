@@ -19,6 +19,7 @@ References:
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
+from config import *
 
 ##############################  INPUT DATA AUGMENTATION  ###################################
 

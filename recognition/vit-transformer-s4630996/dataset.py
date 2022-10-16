@@ -19,7 +19,7 @@ Steps:
 
 from os import listdir
 from PIL import Image
-
+from config import *
 
 # get a list of files to crop
 uncropped_files_train_AD = listdir(r"AD_NC\train\AD")
