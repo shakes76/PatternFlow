@@ -17,7 +17,7 @@ train, test, validate = dataset.load_data()
 # Train VQVAE
 vqvae_trainer = modules.VQVAETrainer(latent_dim=256, num_embeddings=256)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(train, epochs=100, batch_size=8, steps_per_epoch=len(train)/8)
+vqvae_trainer.fit(train, epochs=30, batch_size=8, steps_per_epoch=len(train)/8)
 
 # Plot learning
 plt.plot(vqvae_trainer.history.history['reconstruction_loss'], label='reconstruction_loss')
@@ -98,8 +98,7 @@ codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
 pixel_cnn.compile(
-    #optimizer=keras.optimizers.Adam(3e-4),
-    optimizer=keras.optimizers.Adam(3e-5),
+    optimizer=keras.optimizers.Adam(0.0003),
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=["accuracy"],
 )
