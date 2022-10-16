@@ -30,4 +30,16 @@ def model_train():
     )
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
-    pass
+
+    # compile the model
+    Improved_unet.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'], run_eagerly=True)
+
+    # model training
+    Improved_unet.fit(x_train, y_train,
+                      batch_size=100,
+                      epochs=300,
+                      shuffle=True,
+                      validation_data=(x_validation, y_validation),
+                      steps_per_epoch=11
+                      )
+    return Improved_unet
