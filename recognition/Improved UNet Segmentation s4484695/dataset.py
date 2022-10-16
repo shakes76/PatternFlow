@@ -39,7 +39,7 @@ class ISIC2017DataSet(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.ImagesPath, self.imageNames[idx])
         image = read_image(img_path)
-        label_path = os.path.join(self.LabelsPath, self.imageNames[idx] + "_segmentation")
+        label_path = os.path.join(self.LabelsPath, self.imageNames[idx].removesuffix(".jpg") + "_segmentation.png")
         label = read_image(label_path)
 
         if self.transform:
@@ -47,29 +47,26 @@ class ISIC2017DataSet(Dataset):
         
         return image, label
     
-    def ISIC_Transform_Train(self):
+def ISIC_Transform_Train():
         
-        transformTrain = transforms.Compose([
-            transforms.ToTensor(),
-            
-        ])
+    transformTrain = transforms.Compose([
+         
+    ])
 
-        return transformTrain
+    return transformTrain
 
-    def ISIC_Transform_Test(self):
+def ISIC_Transform_Test():
         
-        transformTest = transforms.Compose([
-            transforms.ToTensor(),
-            
-        ])
-
-        return transformTest
-
-    def ISIC_Transform_Valid(self):
+    transformTest = transforms.Compose([
         
-        transformValid = transforms.Compose([
-            transforms.ToTensor(),
-            
-        ])
+    ])
 
-        return transformValid
+    return transformTest
+
+def ISIC_Transform_Valid():
+        
+    transformValid = transforms.Compose([
+         
+    ])
+
+    return transformValid
