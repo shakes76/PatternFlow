@@ -1,1 +1,2 @@
-Readme
+# Detect and classify lesions in the ISIC 2017 dataset using Mask-RCNN
+We train a [Mask-RCNN model]() on the [ISIC 2017 dataset](https://challenge.isic-archive.com/data/#2017) to detect skin lesions and classify them as melanoma or seborrheic keratosis (or neither). We use a model pretrained on the COCO dataset provided in PyTorch (see [here](https://pytorch.org/vision/main/models/mask_rcnn.html)), with a ResNet-50-FPN backbone. The model was trained on a NVIDIA GeForce RTX 2060.

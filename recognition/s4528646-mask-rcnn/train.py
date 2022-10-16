@@ -7,7 +7,6 @@ from tqdm import tqdm
 MODE = "debug"
 torch.cuda.empty_cache()
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-# device = torch.device("cpu")
 model = get_model()
 model = model.to(device)
 if MODE == "debug":
@@ -31,8 +30,11 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
     it = 0
     all_losses = []
     for images, targets in tqdm(dataloader):
+        # load tensors into GPU
         images = [image.to(device) for image in images]
         targets = [{k: v.to(device) for k, v in target.items()} for target in targets]
+        
+        # perform backprop
         optimizer.zero_grad()
         losses = model(images, targets)
         losses = sum(loss for loss in losses.values())
@@ -41,6 +43,7 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
         optimizer.step()
         
         it += 1
+        # plot the loss every 10th iteration
         if it % 10 == 0:
             plt.plot(list(range(len(all_losses))), all_losses)
             plt.xlabel("Iteration")
