@@ -195,7 +195,7 @@ class DataLoader():
         i = 0
         for files in files_list:
             for file in files:
-                if file.endswith("superpixels.png"):
+                if file.endswith("superpixels.png") or file.endswith(".csv"):
                     path = os.path.join(directory_list[i], file)
                     os.remove(path)
             i += 1
