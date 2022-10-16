@@ -3,11 +3,6 @@ import scipy.sparse as sp
 from keras.utils import np_utils
 from sklearn.preprocessing import LabelBinarizer, normalize
 
-import numpy as np 
-import scipy.sparse as sp
-from keras.utils import np_utils
-from sklearn.preprocessing import LabelBinarizer, normalize
-
 def loadData(data):
     dataset = np.load(data)
     edges = dataset["edges"]
