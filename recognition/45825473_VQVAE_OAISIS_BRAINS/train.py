@@ -15,9 +15,11 @@ def train_vqvae(train_images):
   return vqvae_trainer
 
 def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images):
+
   num_residual_blocks = 6 #This was increased as a part of 
   num_pixelcnn_layers = 6
-  pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+  
+  pixelcnn_input_shape = encoder.output.shape[1:-1]
   pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
   ohe = tf.one_hot(pixelcnn_inputs, vqvae_trainer.num_embeddings)
   x = PixelConvLayer(
@@ -32,7 +34,7 @@ def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images
       filters=vqvae_trainer.num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
   pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
 
-  encoded_outputs = encoder.predict(train_images) #Using entire training set here
+  encoded_outputs = encoder.predict(train_images)
   flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
   codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
   codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
@@ -70,7 +72,6 @@ def main():
   train_images, test_images, validate_images = get_image_slices()
   vqvae_trainer = train_vqvae(train_images)
   trained_vqvae_model = vqvae_trainer.vqvae
-  print(vqvae_trainer.history['val_loss'])  
 
   encoder = vqvae_trainer.vqvae.get_layer("encoder")
   quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
@@ -83,9 +84,9 @@ def main():
   pixel_cnn, sampler = construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images)
   priors = generate_probabilities_for_samples(pixel_cnn, sampler)
 
-  ##TODO : Add saving the VQVAETrainer,  here. 
+  ##TODO : Add saving the VQVAETrainer here. 
   ##TODO : ADD LOSS FUNCTION DETERMINATION/SAVING
-  ##TODO : SSIM Calculations
+  ##TODO : Add SSIM calculations
   return vqvae_trainer, quantizer, priors, encoded_outputs
 
 vqvae_trainer, quantizer, priors, encoded_outputs = main()
