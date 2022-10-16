@@ -1,0 +1,13 @@
+data_dir: /data/s4585711/vit/
+image_size: [240,256]
+cropped_image_size: [192,160]
+cropped_pos: [20,36]
+batch_size: 32
+transformer_layers: 6
+patch_size: 32
+hidden_size: 64
+num_heads: 4
+mlp_dim: 128
+num_classes: 2
+dropout: 0.1
+emb_dropout: 0.2
