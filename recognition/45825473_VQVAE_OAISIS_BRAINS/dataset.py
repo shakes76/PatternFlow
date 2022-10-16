@@ -1,11 +1,8 @@
 from google.colab import drive
-import numpy as np
 import tensorflow as tf
 from os import listdir
 from os.path import isfile, join
-from PIL import Image
 import zipfile
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -16,7 +13,6 @@ def get_image_slices():
         zipped_images = zipfile.ZipFile('/content/gdrive/MyDrive/Colab Notebooks/OASISProcessed.zip')
     else:
         zipped_images = zipfile.ZipFile('./OASISProcessed.zip')
-    images = []
     zipped_images.extractall()
 
     parent_dir = "./keras_png_slices_data"
@@ -45,7 +41,7 @@ def get_image_slices():
     # This original approach to was deprecated as it needed to be expanded 
     # in order to downsize the image from 256x256 to 128x128 - I was running out of memory allocating 
     # space for tensors in the latent space for all 9664 training images the original images were 256x256 in size.
-    
+
     # train_images = [np.array(Image.open(join(train_path, f))) for f in listdir(train_path) if isfile(join(train_path, f))]
     # test_images = [np.array(Image.open(join(test_path, f))) for f in listdir(test_path) if isfile(join(test_path, f))]
     # validate_images = [np.array(Image.open(join(val_path, f))) for f in listdir(val_path) if isfile(join(val_path, f))]
