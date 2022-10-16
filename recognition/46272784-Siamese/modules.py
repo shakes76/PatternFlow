@@ -20,14 +20,17 @@ def getLabel(x, y):
     return x[0], y[0], 0.0
 
 def generatePairs(ds):
+    # zip the dataset with itself
     pairs = tf.data.Dataset.zip((ds, ds))
+    # assigning label
     return pairs.map(getLabel)
 
 
 def main():
     # Code for testing the functions
     t, v = loadFile('F:/AI/COMP3710/data/AD_NC/')
-    generatePairs(t)
+    d = generatePairs(t)
+    print(len(d)*8)
 
 if __name__ == "__main__":
     main()
