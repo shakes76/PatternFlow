@@ -4,9 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from modules import *
 from dataset import *
+from torchmetrics import StructuralSimilarityIndexMeasure
 
+# Seed the random number generator for reproducibility of the results
 torch.manual_seed(3710)
 
+SSIM = StructuralSimilarityIndexMeasure()
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 NUM_EPOCHS = 20
 BATCH_SIZE_TRAIN = 32
@@ -31,23 +34,31 @@ def train(dataloader, model, optimiser):
 def fit():
     train_loader, test_loader = get_data(BATCH_SIZE_TRAIN, BATCH_SIZE_TEST)
 
-    model = VQVA(NUM_CHANNELS, D, K).to(DEVICE)
+    model = VQVAE(NUM_CHANNELS, D, K).to(DEVICE)
     optimiser = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
     fixed_images, _ = next(iter(test_loader))
     fixed_grid = make_grid(fixed_images, nrow=8, normalize=True)
-    plt.figure(figsize=(12, 12))
     plt.axis('off')
+    plt.figure(figsize=(12, 12))
     plt.imshow(np.transpose(fixed_grid, (1, 2, 0)))
+    plt.savefig('Test.png')
     plt.show()
 
+    best_ssim = 0
     for epoch in range(NUM_EPOCHS):
         train(train_loader, model, optimiser)
 
-        reconstruction = generate_samples(fixed_images, model).cpu()
-        print('SSIM:', ssim(fixed_images, reconstruction))
-        grid = make_grid(reconstruction, nrow=8, normalize=True)
-        plt.figure(figsize=(12, 12))
-        plt.axis('off')
-        plt.imshow(np.transpose(grid, (1, 2, 0)))
-        plt.show()
+        with torch.no_grad():
+            _, recontructed = model(fixed_images.to(DEVICE))
+        recontructed = recontructed.cpu()
+        ssim = SSIM(fixed_images, reconstruction)
+        if ssim > best_ssim:
+            grid = make_grid(reconstruction, nrow=8, normalize=True)
+            plt.axis('off')
+            plt.figure(figsize=(12, 12))
+            plt.imshow(np.transpose(grid, (1, 2, 0)))
+            plt.savefig('Reconstructed.png')
+            plt.show()
+
+fit()

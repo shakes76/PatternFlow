@@ -2,19 +2,23 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Seed the random number generator for reproducibility of the results
+torch.manual_seed(3710)
+
 class Embedding(nn.Module):
     def __init__(self, K, D):
         super().__init__()
         self.K = K
         self.embedding = nn.Embedding(K, D)
-        self.embedding.weight.data.uniform_(-1./K, 1./K)
+        self.embedding.weight.data.uniform_(-1.0/K, 1.0/K)
+        self.commitment_cost = 1.0
 
     def forward(self, x):
         # Reshape inputs from BCHW to BHWC
         x = x.permute(0, 2, 3, 1).contiguous()
         x_shape = x.shape
 
-        flat_x = x.view(-1, self.embedding.weight.size(0))
+        flat_x = x.view(-1, self.embedding.weight.size(1))
 
         # Calculate distances to find the closest codebook vectors
         distances = (torch.sum(flat_x**2, dim=1, keepdim=True) 
@@ -22,7 +26,7 @@ class Embedding(nn.Module):
                     - 2 * torch.matmul(flat_x, self.embedding.weight.t()))
         
         # We get the indices from argmin
-        encoding_indices = torch.argmin(distances, dim=1)
+        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
         encodings = torch.zeros(encoding_indices.shape[0], self.K, device='cuda')
         encodings.scatter_(1, encoding_indices, 1)
 
@@ -36,7 +40,7 @@ class Embedding(nn.Module):
         
         quantized = x + (quantized - x).detach()
 
-        return vq_loss + 1.0 * commit_loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices.squeeze()
+        return vq_loss + self.commitment_cost * commit_loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices.squeeze()
 
 class ResBlock(nn.Module):
     def __init__(self, channels):
@@ -76,7 +80,7 @@ class Decoder(nn.Module):
             ResBlock(in_channels // 2),
             nn.ReLU(True),
             nn.ConvTranspose2d(in_channels // 2, in_channels, 4, 2, 1),
-            nn.BatchNorm2d(dim),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(True),
             nn.ConvTranspose2d(in_channels, out_channels, 4, 2, 1),
             nn.Tanh()

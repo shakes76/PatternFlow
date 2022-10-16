@@ -1,6 +1,9 @@
 from torchvision import transforms, datasets
 import torch 
 
+# Seed the random number generator for reproducibility of the results
+torch.manual_seed(3710)
+
 TRAIN_DATA_PATH = "D:\keras_png_slices_data\keras_png_slices_data\keras_png_slices_train"
 TEST_DATA_PATH = "D:\keras_png_slices_data\keras_png_slices_data\keras_png_slices_test"
 
