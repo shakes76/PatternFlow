@@ -20,11 +20,11 @@ Selected example:
 Based on the paper by T Karras et al.[1], the main improvement of StyleGAN from traditional GAN models comes from the introduction of the mapping network. In the essense, StyleGAN is a continuation of the progressive GAN model. In which the discriminator model remains similar to the progressive GAN model, where it continues to downsample the input data to output a boolean value for determining the realistic of the input. Whilst the generator also exhibit the "progressiveness", as indicated in the continue upsampling of data in the synthesis network as shown in figure 2. Through introducing the mapping network, it removes the need to directly feed in the latent space to the generator, and we can have instead a constant as the initial input to the synthesis network. In this way, the mapping network will help to disentangle latent space vector, and maps into a cloud of intermediate latent vector w to have more control of the . From here, we can see from the figure, after some affine transform A of the latent vector w, we can apply it to the adaptive instance normalisation (AdaIN) layer in the model to gain much more control of the various "styles" of the generated image. In addition, a along with the AdaIN layer, before feeding any output to the AdaIN layer, some uncorrelated gaussian noise B scaled by a learnt per-feature scalling factor was added to the convolution output. This way, it will allow finer control in the stochastic details of the generated image. Hence, we can see that the generator model will take three inputs, namely the latent space Z, a constant vector for the synthesis network g and the randomly generated noise inputs.
 
 <p align="center">
-  <img src="examples/stylegan.png" alt="stylegan" />
+  <img src="examples/stylgan.png" alt="stylegan" />
  </br>
  <em>Figure 2: StyleGAN Architecture</em></p>
 
-Moreover, based on the discussed architecture, due to computation limits, some slight modification was made to parameters of the architecture, which differes to the ones mentioned in the paper. This includes a filter size of 128 for the fully connected layers in the mapping network, a channel size of 128 in the constant input vector as compared to 512, and a latent dimension of 256. A detailed model summary for the generator and discriminator was provided in the Appendix. 
+Moreover, based on the discussed architecture, due to computation limits, some slight modification was made to parameters of the architecture, which differes to the ones mentioned in the paper. This includes a filter size of 256 for the fully connected layers in the mapping network, a channel size of 128 in the constant input vector as compared to 512, and a latent dimension of 128. A detailed model summary for the generator and discriminator was provided in the Appendix.
 
 ## Model Dependencies & Preprocessing
 
@@ -51,11 +51,11 @@ Whilst there are many factors that may impact on the performance of an generativ
 | Optimizer beta 1                           |  0.5  |
 | Optimizer beta 2                           |  0.99  |
 | Image Size                                 |  256  |
-| Latent Dimension                           |  256  |
+| Latent Dimension                           |  128  |
 
 ## Usage
 
-In this folder, there are 4 main python scripts. 
+In this folder, there are 4 main python scripts.
 
 - train.py: the driver script that is required to be run for training and saving model.
 - dataset.py: containing the data loader and preprocessing function.
@@ -68,7 +68,7 @@ train.py:
 
 - `PIC_DIR:` List of directories to the stored data.
 - `EPOCHS` : Number of epochs to train the model, default to 120 epochs.
-- `LATENT_DIM `: Latent dimension value, default to 256.
+- `LATENT_DIM `: Latent dimension value, default to 128.
 
 predict.py:
 
@@ -99,8 +99,6 @@ The following figures illustrates the results during training:
     </tr>
 </table>
 
-
-
 <p align="center">
      <img src="./examples/generated_plot_e120.png" alt="Epoch 120" width="450" 
      height="350"/>
@@ -111,7 +109,7 @@ The following figures illustrates the results during training:
     <em>Fig 3: Trianing progress </em>
 </p>
 
-After training for 120 epochs with batch size of 12 and 13000 iterations in each epoch, the training loss for the generator and discriminator are given below.
+After training for 120 epochs with batch size of 14 and 13000 iterations in each epoch, the training loss for the generator and discriminator are given below.
 
 <p align="center">
      <img src="./examples/model_loss.png" alt="Model Loss" width="400" 
@@ -120,15 +118,20 @@ After training for 120 epochs with batch size of 12 and 13000 iterations in each
     <em align="center"> Figure 4: Training Loss</em></p>
 </p>
 
-Using the trained model ,we can generate some samples of the brain MRI images given some randomly generated inputs. In which, it is clear that whilst the result doesn't provide the same level of details as the orginal OASIS dataset image. The general shape and clarity of the image could be seen, and potentially interpreted as a brian MRI. Thus, it is believed that with more training and parameter tuning, the generated output could be greatly improved. 
+Using the trained model ,we can generate some samples of the brain MRI images given some randomly generated inputs. In which, it is clear that whilst the result doesn't provide the same level of details as the orginal OASIS dataset image. The general shape and clarity of the image could be seen, and potentially interpreted as a brian MRI. Thus, it is believed that with more training and parameter tuning, the generated output could be greatly improved.
 
+<table class="image-grid">
+    <tr>
+        <td>
+            <img src="./examples/Sample_output.png" alt="Sample Output" width="400"/>
+        </td>
+        <td>
+            <img src="./examples/Sample_output2.png" alt="Sample Output" width="400"/>
+        </td>
+    </tr>
+</table>
 <p align="center">
-     <img src="./examples/sample_output.png" alt="Sample Output" width="400" 
-     height="300"/>
-<br/>
     <em align="center"> Figure 5: Generated Samples</em></p>
-</p>
-
 
 ---
 

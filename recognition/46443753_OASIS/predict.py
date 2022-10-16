@@ -13,7 +13,7 @@ from train import (
 )
 
 # Define constants
-LATENT_DIM = 256
+LATENT_DIM = 128
 CHECKPOINT_DIRECTORY = "./model_checkpoints"
 IMG_SHAPE = (256, 256)
 NUM_SAMPLES = 9

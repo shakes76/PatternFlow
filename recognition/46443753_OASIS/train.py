@@ -23,7 +23,7 @@ PIC_DIR = ["./keras_png_slices_data/keras_png_slices_data/keras_png_slices_test/
     "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_train/", 
     "./keras_png_slices_data/keras_png_slices_data/keras_png_slices_validate/"]
 EPOCHS = 120
-LATENT_DIM = 256
+LATENT_DIM = 128
 NUM_BLOCKS = 7
 INITIAL_SIZE = 4
 
@@ -138,7 +138,7 @@ def train(data, epochs, latent_dim, g_model, d_model, gen_optimizer, disc_optimi
     # define the number of batch runs per epoch, and the batch size
     # depending on the batch_size the bat per epoch could be adjusted.
     bat_per_epo = 13000
-    batch_size = 12 
+    batch_size = 14 
     checkpoint = create_checkpoint(gen_optimizer, disc_optimizer, g_model, d_model)
 
     gen_losses, disc_real_losses, disc_fake_losses = [], [], []
