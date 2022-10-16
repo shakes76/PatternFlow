@@ -9,8 +9,9 @@ import tensorflow_probability as tfp
 
 root_path = 'AD_NC'
 img_shape = 256
-vq_epoch = 10
-pcnn_epoch = 5
+vq_epoch = 20
+pcnn_epoch = 10
+num_embeds = 128
 batch_size = 32
 
 no_resid = 2
@@ -43,8 +44,14 @@ def get_codebooks(vq, embeds):
     
     return mapper
 
-def vq_train(train_data, test_data, train_var, img_shape, embed_num, result_path, vq_epoch=vq_epoch):
-    VQVAE = VQVAE_model(img_shape, train_var, 16, embed_num)
+def vq_train(train_data, test_data, train_var, result_path, vqvae_trained=None, img_shape=img_shape, 
+    embed_num=num_embeds,vq_epoch=vq_epoch):
+
+    if vqvae_trained is None:
+        VQVAE = VQVAE_model(img_shape, train_var, 16, embed_num)
+    else:
+        VQVAE = vqvae_trained
+        
     VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
     print(VQVAE.get_model().summary())
 
@@ -63,11 +70,15 @@ def vq_train(train_data, test_data, train_var, img_shape, embed_num, result_path
     VQVAE.save_weights('{}/vq_weights'.format(result_path))
     return VQVAE
 
-def pcnn_train(VQVAE, train_data, result_path, pcnn_epoch=pcnn_epoch):
+def pcnn_train(VQVAE, train_data, result_path, pcnn_trained=None, pcnn_epoch=pcnn_epoch):
     codebook_mapper = get_codebooks(VQVAE, VQVAE.no_embeddings)
     codebook_data = train_data.map(codebook_mapper)
 
-    pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
+    if pcnn_trained is None:
+        pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
+    else:
+        pcnn = pcnn_trained
+
     print(pcnn.get_model().summary())
     pcnn.compile(
         optimizer=keras.optimizers.Adam(3e-4),

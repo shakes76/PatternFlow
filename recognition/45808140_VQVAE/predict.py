@@ -13,6 +13,7 @@ img_shape = 256
 vq_epoch = 5
 pcnn_epoch = 3
 batch_size = 32
+num_embeds = 64
 result_path = 'results'
 
 if not os.path.isdir(result_path):
@@ -107,6 +108,9 @@ def generate_PixelCNN(vq, pcnn, n):
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, 
-    img_shape=img_shape, embed_num=64)
+    vqvae_trained = None, img_shape=img_shape, embed_num=64, 
+    result_path=result_path, vq_epoch=vq_epoch)
 
-pcnn_trained = pcnn_train(vqvae_trained, train_data)
+pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None,
+    pcnn_epoch=pcnn_epoch)
+
