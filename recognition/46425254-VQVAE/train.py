@@ -12,26 +12,30 @@ import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
 
 
-
+NUM_EMBEDDINGS = 64
+LATENT_DIM = 16
         
 class VQ_Training():
     
     
-    def __init__(self, learning_rate, epochs, train_path, test_path, 
-                 save = None, visualise = False):
+    def __init__(self, learning_rate, epochs, train_path, test_path, num_embeddings,
+                 latent_dim, save = None, visualise = False):
         super(VQ_Training).__init__()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.learning_rate = learning_rate
         self.epochs = epochs
         self.data = dataset.DataLoader(train_path)
         self.data2 = dataset.DataLoader(test_path)
+        self.num_embeddings = num_embeddings
+        self.latent_dim = latent_dim
+        
         self.training_data = \
             utils.data.DataLoader(self.data, batch_size = 16, shuffle = True)
         
         self.testing_data = \
             utils.data.DataLoader(self.data, batch_size = 1, shuffle = True)
         
-        self.model = modules.VQVAE(256,64,0.25).to(self.device)
+        self.model = modules.VQVAE(self.num_embeddings,self.latent_dim,0.25).to(self.device)
         
         self.optimizer = \
             torch.optim.Adam(self.model.parameters(), lr = learning_rate)
@@ -80,6 +84,9 @@ class VQ_Training():
                 sub_step += 1
             epoch += 1
         plt.plot(np.arange(0, self.epochs), loss)
+        plt.title("Training Loss vs Number of Epochs")
+        plt.xlabel("Number of Epochs")
+        plt.ylabel("Training Loss")
         plt.show()
         
                     
@@ -119,21 +126,21 @@ data_path = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\ker
 data_path2 = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\test"
 
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
-lr = 0.0002
+lr = 0.001
 epochs  = 15
 
-#trainer = VQ_Training(lr, epochs, data_path, data_path2, 
-                  #    save = trained, visualise=True)
+#trainer = VQ_Training(lr, epochs, data_path, data_path2, NUM_EMBEDDINGS, LATENT_DIM,
+  #                    save = trained, visualise=True)
 #trainer.train()
 #trainer.test()
 class PixelCNN_Training():
     
     def __init__(self, lr, epochs, model_path, data_path, num_embeddings, 
-                 latent_dim,save = None):
+                 latent_dim, save = None):
         
         self.num_embeddings = num_embeddings
         self.latent_dim = latent_dim
-        
+
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.lr = lr
         self.epochs = epochs
@@ -148,8 +155,17 @@ class PixelCNN_Training():
             utils.data.DataLoader(self.data, batch_size = 32, shuffle = True)
         
         self.save = save
+        if save != None:
+            cnn = modules.PixelCNN(num_embeddings)
+            state_dict = torch.load(save, map_location="cpu")
+            cnn.load_state_dict(state_dict)
+            cnn.to(self.device)
+            cnn.eval()
+            self.PixelCNN_model = cnn
+        else:
+            self.PixelCNN_model = \
+                modules.PixelCNN(self.num_embeddings).to(self.device)
         
-        self.PixelCNN_model = modules.PixelCNN(num_embeddings).to(self.device)
         self.optimizer = \
             torch.optim.Adam(self.PixelCNN_model.parameters(), lr = lr)
             
@@ -253,7 +269,7 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
     quantized_bhwc = torch.matmul(prior, 
                                   model.get_VQ().embedding_table.weight)
     
-    quantized_bhwc = quantized_bhwc.view(1, latent_dim, 64 ,64)
+    quantized_bhwc = quantized_bhwc.view(1, 64, 64, latent_dim)
     quantized = quantized_bhwc.permute(0, 3, 1, 2).contiguous()
     
     decoded = model.get_decoder()(quantized).to(device)
@@ -268,10 +284,11 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
     ax[1].title.set_text("Decoded Generation")
     plt.show()
         
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model.pt"
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model2.pt"
 pixel_cnn_trainer = PixelCNN_Training(0.0003, 300, 
-                                      trained,data_path, save = save_model, 
-                                      num_embeddings = 256, latent_dim = 64)
+                                      trained,data_path, num_embeddings = 64, 
+                                      latent_dim = 16, save = save_model) 
+                                      
 pixel_cnn_trainer.train()
 
 

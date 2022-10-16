@@ -20,17 +20,19 @@ class Encoder(nn.Module):
         self.latent_space = latent_space
         #3 convolutional layers for a latent space of 64
         self.model = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4, stride = 2, padding = 1),
+            nn.Conv2d(3, self.latent_space, kernel_size=4, stride = 2, padding = 1),
             # 3 * 256 * 256 -> 64 * 128 * 128
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(self.latent_space),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(64, 128, kernel_size=4, stride = 2, padding = 1),
+            nn.Conv2d(self.latent_space, self.latent_space*2, 
+                      kernel_size=4, stride = 2, padding = 1),
             # 64 * 128 * 128 -> 128 * 64 * 64
-            nn.BatchNorm2d(128),
+            nn.BatchNorm2d(self.latent_space*2),
             nn.LeakyReLU(0.1),
             
-            nn.Conv2d(128, self.latent_space, kernel_size=3, stride = 1, padding = 1),
+            nn.Conv2d(self.latent_space*2, self.latent_space, 
+                      kernel_size=3, stride = 1, padding = 1),
             # 64 * 128 * 128 
             
             nn.Sigmoid(),)
@@ -49,16 +51,17 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.latent_space = latent_space
         self.model = nn.Sequential(
-            nn.ConvTranspose2d(self.latent_space, 
-                               128, kernel_size=4, stride = 2, padding = 1),
-            nn.BatchNorm2d(128),
+            nn.ConvTranspose2d(self.latent_space, self.latent_space*2, 
+                               kernel_size=4, stride = 2, padding = 1),
+            nn.BatchNorm2d(self.latent_space*2),
             nn.LeakyReLU(0.1),
             
-            nn.ConvTranspose2d(128, 64, kernel_size= 4, stride = 2, padding = 1),
-            nn.BatchNorm2d(64),
+            nn.ConvTranspose2d(self.latent_space*2, self.latent_space, 
+                               kernel_size= 4, stride = 2, padding = 1),
+            nn.BatchNorm2d(self.latent_space),
             nn.LeakyReLU(0.1),
             
-            nn.ConvTranspose2d(64, 3, kernel_size = 3, stride = 1, padding = 1),
+            nn.ConvTranspose2d(self.latent_space, 3, kernel_size = 3, stride = 1, padding = 1),
             nn.Tanh(),
             )
         
@@ -282,28 +285,24 @@ class PixelCNN(nn.Module):
         self.num_embeddings = num_embeddings
         self.pixelcnn_model = nn.Sequential(
 
-            MaskedConv2d("A", in_channels = 256, 
-                         out_channels = 256, kernel_size = 7, padding = 3),
+            MaskedConv2d("A", in_channels = 64, 
+                         out_channels = 128, kernel_size = 7, padding = 3),
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 256, 
-                         out_channels = 256, kernel_size = 3, padding = 1),
+            MaskedConv2d("B", in_channels = 128, 
+                         out_channels = 128, kernel_size = 3, padding = 1),
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 256, 
-                         out_channels = 256, kernel_size = 3, padding = 1),
+            MaskedConv2d("B", in_channels = 128, 
+                         out_channels = 128, kernel_size = 3, padding = 1),
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 256, 
-                         out_channels = num_embeddings, kernel_size = 3, padding = 1),
+            MaskedConv2d("B", in_channels = 128, 
+                         out_channels = 128, kernel_size = 3, padding = 1),
             nn.ReLU(),
-            nn.Conv2d(256, 256, 1),
+            nn.Conv2d(128, num_embeddings, 1),
                         
             )
         
     def forward(self, x):
         return self.pixelcnn_model(x)
-    
-    
-        
-
     
         
         
