@@ -16,98 +16,98 @@ References:
 """
 
 
-def main():
-    from tensorflow import keras
-    import tensorflow_addons as tfa
-    from modules import vit_classifier
-    from dataset import import_data
+# def main():
+from tensorflow import keras
+import tensorflow_addons as tfa
+from modules import vit_classifier
+from dataset import import_data
 
 
-    ##############################  HYPERPARAMETERS  ###################################
+##############################  HYPERPARAMETERS  ###################################
 
-    # data
-    BATCH_SIZE = 128
-    IMAGE_SIZE = 200  # We'll resize input images to this size
-    NUM_CLASS = 2
-    INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 1)
+# data
+BATCH_SIZE = 128
+IMAGE_SIZE = 200  # We'll resize input images to this size
+NUM_CLASS = 2
+INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 1)
 
-    # patches
-    PATCH_SIZE = 10  
-    NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
+# patches
+PATCH_SIZE = 10  
+NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 
-    # transformer-econder
-    PROJECTION_DIM = 64
-    NUM_HEADS = 4
-    NUM_ENCODER_LAYERS = 4
+# transformer-econder
+PROJECTION_DIM = 64
+NUM_HEADS = 4
+NUM_ENCODER_LAYERS = 4
 
-    # mlp head
-    MLP_HEAD_UNITS = [256]  # Size of the dense layers of the final classifier
+# mlp head
+MLP_HEAD_UNITS = [256]  # Size of the dense layers of the final classifier
 
-    # model
-    LEARNING_RATE = 0.001
-    WEIGHT_DECAY = 0.0001
-    NUM_EPOCHS = 50
-    DROPOUTS = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
-
-
-
-    ##############################   IMPORT DATA  ###################################
-
-    path_training = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\training"
-    path_validation = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\validation"
-    path_test = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\test"
-
-    paths = {"training": path_training, "validation": path_validation, "test": path_test} 
-
-    data_train, data_validate, data_test = import_data(IMAGE_SIZE, BATCH_SIZE, paths)
-
-    ##############################  TRAINING SCRIPT  ###################################
-    # Run Experiment --> Instantiate model, Select optimzer, compile, checkpoint, train and evaluate
-
-    # instantiate model
-    vit_classifier = vit_classifier()
-    print(vit_classifier.summary())
-
-    # select optimzer
-    optimizer = tfa.optimizers.AdamW(
-        LEARNING_RATE=LEARNING_RATE, WEIGHT_DECAY=WEIGHT_DECAY
-    )
-    #     optimizer = tf.optimizers.Adam(LEARNING_RATE=LEARNING_RATE)
+# model
+LEARNING_RATE = 0.001
+WEIGHT_DECAY = 0.0001
+NUM_EPOCHS = 50
+DROPOUTS = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
 
 
-    # compile
-    vit_classifier.compile(
-        optimizer=optimizer,
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=[
-            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
-        ],
-    )
 
-    # create checkpoint callback
-    checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint\\"
-    checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        checkpoint_filepath,
-        monitor="val_loss",
-        save_best_only=True,
-        save_weights_only=True,
-    )
+##############################   IMPORT DATA  ###################################
 
-    # train the model
-    history = vit_classifier.fit(
-        x=data_train,
-        batch_size=BATCH_SIZE,
-        epochs=NUM_EPOCHS,
-        validation_data=data_validate,
-        callbacks=[checkpoint_callback],
-    )
+path_training = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\training"
+path_validation = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\validation"
+path_test = "C:\Users\lovet\Documents\COMP3710\Report\AD_NC_cropped\test"
+
+paths = {"training": path_training, "validation": path_validation, "test": path_test} 
+
+data_train, data_validate, data_test = import_data(IMAGE_SIZE, BATCH_SIZE, paths)
+
+##############################  TRAINING SCRIPT  ###################################
+# Run Experiment --> Instantiate model, Select optimzer, compile, checkpoint, train and evaluate
+
+# instantiate model
+vit_classifier = vit_classifier()
+print(vit_classifier.summary())
+
+# select optimzer
+optimizer = tfa.optimizers.AdamW(
+    LEARNING_RATE=LEARNING_RATE, WEIGHT_DECAY=WEIGHT_DECAY
+)
+#     optimizer = tf.optimizers.Adam(LEARNING_RATE=LEARNING_RATE)
 
 
-    # evaluate the model 
-    vit_classifier.load_weights(checkpoint_filepath)
-    _, accuracy, = vit_classifier.evaluate(x=data_test)
-    print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+# compile
+vit_classifier.compile(
+    optimizer=optimizer,
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=[
+        keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
+    ],
+)
+
+# create checkpoint callback
+checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint\\"
+checkpoint_callback = keras.callbacks.ModelCheckpoint(
+    checkpoint_filepath,
+    monitor="val_loss",
+    save_best_only=True,
+    save_weights_only=True,
+)
+
+# train the model
+history = vit_classifier.fit(
+    x=data_train,
+    batch_size=BATCH_SIZE,
+    epochs=NUM_EPOCHS,
+    validation_data=data_validate,
+    callbacks=[checkpoint_callback],
+)
 
 
-if __name__ == "__main__":
-    main()
+# evaluate the model 
+vit_classifier.load_weights(checkpoint_filepath)
+_, accuracy, = vit_classifier.evaluate(x=data_test)
+print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+
+
+# if __name__ == "__main__":
+#     main()
