@@ -48,8 +48,6 @@ class ISICDataset(Dataset):
         seborrheic_keratosis = self.diagonoses_df.iloc[idx]["seborrheic_keratosis"]
         if melanoma:
             label = 1
-        elif seborrheic_keratosis:
-            label = 2
         else:
             label = 0
             
@@ -72,5 +70,5 @@ class ISICDataset(Dataset):
             "masks": torch.from_numpy(mask), 
             "boxes": get_bounding_box(mask)
             }
-        return torch.from_numpy(image).double(), targets
+        return torch.from_numpy(image).float(), targets
         

@@ -5,7 +5,6 @@ import torch
 from tqdm import tqdm
 
 MODE = "debug"
-torch.cuda.empty_cache()
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 model = get_model()
 model = model.to(device)
@@ -18,10 +17,10 @@ train_data = ISICDataset(
     diagnoses_path="./data/ISIC-2017_Training_Part3_GroundTruth.csv",
     device=device,
     )
-train_data = torch.utils.data.Subset(train_data, range(50))
+# train_data = torch.utils.data.Subset(train_data, range(200))
 train_dataloader = torch.utils.data.DataLoader(
     train_data, 
-    batch_size=1, 
+    batch_size=2, 
     shuffle=True, 
     collate_fn=lambda x:list(zip(*x))
     )
@@ -39,6 +38,8 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
         losses = model(images, targets)
         losses = sum(loss for loss in losses.values())
         all_losses.append(losses.item())
+        print()
+        print("Loss", losses.item())
         losses.backward()
         optimizer.step()
         
@@ -55,12 +56,11 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
 def train_model(model, dataloader, n_epochs):
     model.to(device)
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.0005, weight_decay=0.0005, momentum=0.9)
+    optimizer = torch.optim.SGD(params, lr=0.0005, weight_decay=0.0001, momentum=0.9)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
     model.train()
-    model.double()
     epoch_losses = {}
     for epoch in tqdm(range(n_epochs)):
         all_losses = single_epoch(model, optimizer, dataloader, device, epoch)
@@ -71,4 +71,4 @@ def train_model(model, dataloader, n_epochs):
         
             
 epoch_losses = train_model(model, train_dataloader, 10)
-torch.save(model.state_dict(), "Mask_RCNN_ISIC.torch")
+torch.save(model.state_dict(), "Mask_RCNN_ISIC.pt")
