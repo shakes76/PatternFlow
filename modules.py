@@ -17,7 +17,7 @@ class StyleGAN(Model):
         super(StyleGAN, self).__init__()
         self.DEPTH = int(np.log2(TRES) - np.log2(SRES))  # training depth
         self.current_depth = 0                           # current training depth
-        self.FC = custom_layers.fc(self.DEPTH)      # FC net
+        self.FC = custom_layers.fc(self.DEPTH)           # FC net
         self.G = self.init_G()                           # generator
         self.D = self.init_D()                           # discriminator
     

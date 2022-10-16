@@ -9,7 +9,7 @@ import config as cfg
 from modules import StyleGAN
 
 
-def load_model(ckpts_dir, sres, tres):
+def load_model(ckpts, sres, tres):
     depth = int(np.log2(tres/sres))
     # create model, load initial weights
     model = StyleGAN()
@@ -17,7 +17,7 @@ def load_model(ckpts_dir, sres, tres):
     for _ in range(depth):
         model.grow()
         model.stabilize()
-    model.load_weights(os.path.join(ckpts_dir, f'stylegan_{tres}x{tres}_stabilize.ckpt'))
+    model.load_weights(os.path.join(ckpts))
     print('Model loaded.')
     return model
 
@@ -65,39 +65,51 @@ def plot_save(images, cols=None, plot=True, size=(256, 256), mode='L', save_path
         print(f'\n{n} images saved in {save_path}')
 
 
-output_res = (260, 228)         # output resolution
+# suppress optimizer warning when loading checkpoints.
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
+
 sres = cfg.SRES
 tres = cfg.TRES
 ldim = cfg.LDIM
+output_res = (260, 228)          # output resolution
+ckpts = r'D:\AKOA\AKOA256.ckpt'  # path of checkpoints
 
-ckpts_dre = r'D:\AKOA\ckpts'    # folder of checkpoints
 
-model = load_model(ckpts_dre, sres, tres)
+# build model
+model = load_model(ckpts, sres, tres)
 
-# plot random images
-n = 25
+
+# plot 100 random images
+n = 100
 inputs = gen_inputs(model, ldim, sres, tres, n=n)
 images = model.G(inputs)
-plot_save(images, cols=5, size=output_res, save_path=r'D:\AKOA\images\generated.png')
+plot_save(images, cols=5, size=output_res, save_path=r'D:\AKOA\generated.png')
 
 
-# interpolation
+# bilinear interpolation
 w1 = model.FC(tf.random.normal((1, ldim)))
-inputs = gen_inputs(model, ldim, sres, tres, w=w1)
-images = model.G(inputs)
-plot_save(images, size=output_res)
-
 w2 = model.FC(tf.random.normal((1, ldim)))
-inputs = gen_inputs(model, ldim, sres, tres, w=w2)
-images = model.G(inputs)
-plot_save(images, size=output_res)
-
-l = []
-steps = 64
+w3 = model.FC(tf.random.normal((1, ldim)))
+w4 = model.FC(tf.random.normal((1, ldim)))
+steps = 10
+#  inputs = gen_inputs(model, ldim, sres, tres, w=tf.concat([w1, w2], axis=0))
+w12 = []
 for i in range(steps):
     alpha = (i + 1.) / steps
-    l.append((1 - alpha) * w1 + alpha * w2)
-w4 = tf.concat(l, axis=0)
-inputs = gen_inputs(model, ldim, sres, tres, w=w4)
+    w12.append((1 - alpha) * w1 + alpha * w2)
+
+w34 = []
+for i in range(steps):
+    alpha = (i + 1.) / steps
+    w34.append((1 - alpha) * w3 + alpha * w4)
+
+w1234 = []
+for i in range(steps):
+    for j in range(steps):
+        alpha = (j + 1.) / steps
+        w1234.append((1 - alpha) * w12[i] + alpha * w34[i])
+w1234 = tf.concat(w1234, axis=0)
+inputs = gen_inputs(model, ldim, sres, tres, w=w1234)
 images = model.G(inputs)
-plot_save(images, cols=8, size=output_res)
+plot_save(images, cols=10, size=output_res, save_path=r'D:\AKOA\bilin_trans.png')
