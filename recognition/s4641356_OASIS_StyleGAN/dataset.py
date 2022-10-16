@@ -54,13 +54,12 @@ class OASIS_loader():
                 print("{}/{}".format(i,self._num_images_availible))
             
             #cache mean to prevent needing to recalculate in future
-            np.save(OASIS_loader.MEAN_CACHE,np.array([self._normalisation_mean]))
+            np.save(OASIS_loader.MEAN_CACHE,np.array(self._normalisation_mean))
 
             print("Data is prepped and ready to go!")
 
         self._pointer = 0 #Keep a track of how many images we have already used to allow batching
 
-        # self._normalisation_mean = 0 #TODO disable centering
 
     def get_data(self, num_images: int) -> tf.Tensor:
         """

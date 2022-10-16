@@ -55,7 +55,7 @@ def create_image(data: np.array, filename: str = None) -> Image:
     return im
 
 def random_generator_inputs(num_images: int,latent_dim: int,noise_start: int,noise_end: int) -> list[np.array]:
-    """_summary_ TODO
+    """_summary_ #TODO dp tomg
 
     Args:
         num_images (int): _description_
@@ -89,12 +89,30 @@ def make_fresh_folder(folder_path: str) -> None:
         shutil.rmtree(folder_path)
     os.makedirs(folder_path)
 
-def save_training_history(history: dict[list[float]], filename: str) -> None: #TODO docsttinfs
-     with open(filename, mode = 'a', newline='') as f:
+def save_training_history(history: dict[list[float]], filename: str) -> None: 
+    """
+    Appends training history to a specified csv file. Creates a new file if the specified file does not exist.
+    Collumns of output file represent the tracked history of each passed metric. Each row of the file is a given batch
+
+    Args:
+        history (dict[list[float]]): Training history. Each key-value pair should represent a metric name paired with the list of ordered values representing the values of the metric per batch of training. 
+        filename (str): path to csv file in which history will be appended #TODO formatting examples
+    """
+    #TODO docsttinfs
+     
+    with open(filename, mode = 'a', newline='') as f:
         csv.writer(f).writerows(zip(*history.values())) #we pass in the arbitrary length set of *args (various history compoents)
 
 def load_training_history(csv_location: str) -> dict[list[float]]:
-    #TODO doctring
+    """
+    Loads training history from specified csv file.
+
+    Args:
+        csv_location (str): Path to csv file from which to load training history. Precondition: Specified file should have the correct number of collumns (len(StyleGAN.METRICS)) #TODO capitalisation
+
+    Returns:
+        dict[list[float]]: Training history. Each key-value represents a metric name paired with the list of ordered values representing the values of the metric per batch of training. 
+    """
     history = {metric: [] for metric in StyleGAN.METRICS}
     with open(csv_location, mode= 'r', newline= '') as f:
         reader = csv.DictReader(f, fieldnames= StyleGAN.METRICS)
@@ -106,27 +124,37 @@ def load_training_history(csv_location: str) -> dict[list[float]]:
 
 
 def plot_training(history: dict[list[float]], output_file: str, epochs_covered: int, epoch_range: tuple[int,int] = None) -> None:
-    #TODO docstring
+    """
+    Generate a plot of the each training metric against epoch. The three lines will be presented on a single figure for comparison.
+
+    Args:
+        history (dict[list[float]]): Training history. Each key-value pair should represent a metric name paired with the list of ordered values representing the values of the metric per batch of training.
+        output_file (str): Path to which to save the generated figure. If the specified file already exists it will be overwritten.
+        epochs_covered (int): The number of epochs that were trained on to produce the supplied history.
+        epoch_range (tuple[int,int], optional): Set of epochs to plot between. Set to None to plot entire training history. Defaults to None.
+    """
     
     history_length = len(history[StyleGAN.METRICS[0]])
-    batch_size = history_length//epochs_covered
+    batch_size = history_length//epochs_covered #history is stored on disk per batch, not epoch
     
     #truncate to specified range if required
     if epoch_range is not None:
         start,end = epoch_range
-        history = {metric: history[metric][start*batch_size:end*batch_size] for metric in history} #troublesome conversions as we store per batch not just epoch
+        history = {metric: history[metric][start*batch_size:end*batch_size] for metric in history} 
     
-    print(history)
+    #Values are loaded as string, so cast to float:
+    history = {metric: list(map(float,history[metric])) for metric in history}
+
     #plot losses
-    plt.figure(figsize=(14, 10), dpi=80)
-    for metric in StyleGAN.METRICS:
+    plt.figure(figsize=(14, 10), dpi=80)#TODO check commented lines
+    for metric in StyleGAN.METRICS:#TODO scale y axis
         plt.plot(history[metric])
     plt.title("StyleGAN Training Losses")
     plt.xlabel("Epoch")
     plt.xticks(np.linspace(0,history_length,10), labels = list(map(int,np.linspace(0, epochs_covered, 10)))) #Manually scale x-axis to epochs instead of batches
     plt.ylabel("Loss")
-    plt.yticks(np.round(np.linspace(*plt.ylim(), 15), 4)) #restrict y tick count without explicitly reading data's max
-    plt.gca().yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f')) #round ytick values to not be disgusting
+    # plt.yticks(np.round(np.linspace(*plt.ylim(), 15), 4)) #restrict y tick count without explicitly reading data's max
+    # plt.gca().yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.4f')) #round ytick values to not be disgusting
     plt.legend(StyleGAN.METRICS)
     plt.savefig(output_file)
     
