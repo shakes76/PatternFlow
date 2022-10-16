@@ -128,15 +128,32 @@ def generate_graph(edges, target):
     plt.show()
 
 
-def handle_dataset(visualise=False):
-    data_dir = get_file()
-    edges = get_edges(data_dir)
-    features = get_features(data_dir)
-    feature_matrix = get_feature_matrix(features)
-    node_features = get_node_features(features, feature_matrix)
-    target = get_target(data_dir, features)
-    graph = sg.StellarGraph(node_features, edges.astype(str))
-    print(graph.info())
-    if visualise:
-        generate_graph(edges, target)
+class Dataset:
+    def __init__(self, visualise=False):
+        data_dir = get_file()
+        self.edges = get_edges(data_dir)
+        self.features = get_features(data_dir)
+        self.feature_matrix = get_feature_matrix(self.features)
+        self.node_features = get_node_features(self.features, self.feature_matrix)
+        self.target = get_target(data_dir, self.features)
+        self.graph = sg.StellarGraph(self.node_features, self.edges.astype(str))
+        if visualise:
+            generate_graph(self.edges, self.target)
 
+    def get_edges(self):
+        return self.edges
+
+    def get_features(self):
+        return self.features
+
+    def get_feature_matrix(self):
+        return self.feature_matrix
+
+    def get_node_features(self):
+        return self.node_features
+
+    def get_target(self):
+        return self.target
+
+    def get_graph(self):
+        return self.graph
