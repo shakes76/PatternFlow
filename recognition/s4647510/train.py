@@ -13,12 +13,11 @@ figure_path = "figures/"
 
 # Load data
 train, test, validate = dataset.load_data()
-data_variance = np.var(train)
 
 # Train VQVAE
-vqvae_trainer = modules.VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
+vqvae_trainer = modules.VQVAETrainer(latent_dim=256, num_embeddings=256)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(train, epochs=200, batch_size=8, steps_per_epoch=len(train)/8)
+vqvae_trainer.fit(train, epochs=100, batch_size=8, steps_per_epoch=len(train)/8)
 
 # Plot learning
 plt.plot(vqvae_trainer.history.history['reconstruction_loss'], label='reconstruction_loss')
@@ -85,9 +84,11 @@ for _ in range(num_pixelcnn_layers):
         activation="relu",
         padding="valid",
     )(x)
+    x = layers.BatchNormalization()(x)
+
 
 out = keras.layers.Conv2D(
-    filters=vqvae_trainer.num_embeddings, kernel_size=1, strides=1, padding="valid"
+    filters=256, kernel_size=1, strides=1, padding="valid"
 )(x)
 pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
 
@@ -97,7 +98,8 @@ codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
 codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
 pixel_cnn.compile(
-    optimizer=keras.optimizers.Adam(3e-4),
+    #optimizer=keras.optimizers.Adam(3e-4),
+    optimizer=keras.optimizers.Adam(3e-5),
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=["accuracy"],
 )
@@ -106,7 +108,8 @@ pixel_cnn.fit(
     y=codebook_indices,
     batch_size=32,
     epochs=1000,
-    validation_split=0.1,
+
+    validation_split=0.25,
 )
 
 # Create a mini sampler model.
@@ -117,7 +120,7 @@ outputs = categorical_layer(outputs)
 sampler = keras.Model(inputs, outputs)
 
 # Create an empty array of priors.
-batch = 10
+batch = 100
 priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
 batch, rows, cols = priors.shape
 
@@ -159,6 +162,7 @@ for i in range(batch):
     plt.savefig(filename)
 
 # Plot learning
+plt.figure()
 plt.plot(pixel_cnn.history.history['loss'], label='loss')
 plt.plot(pixel_cnn.history.history['val_loss'], label = 'val_loss')
 plt.xlabel('Epoch')

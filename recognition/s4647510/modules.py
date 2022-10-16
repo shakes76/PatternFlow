@@ -78,15 +78,13 @@ def get_encoder(latent_dim=256):
 
 def get_decoder(latent_dim=256):
     latent_inputs = keras.Input(shape=get_encoder(latent_dim).output.shape[1:])
-    x = layers.Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same")(
-        latent_inputs
-    )
+    x = layers.Conv2DTranspose(256, 3, activation="relu", strides=2, padding="same")(latent_inputs)
+    x = layers.Conv2DTranspose(128, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
-    x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
     decoder_outputs = layers.Conv2DTranspose(1, 3, padding="same")(x)
     return keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-def get_vqvae(latent_dim=16, num_embeddings=64):
+def get_vqvae(latent_dim=256, num_embeddings=256):
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = get_encoder(latent_dim)
     decoder = get_decoder(latent_dim)
@@ -97,9 +95,8 @@ def get_vqvae(latent_dim=16, num_embeddings=64):
     return keras.Model(inputs, reconstructions, name="vq_vae")
 
 class VQVAETrainer(keras.models.Model):
-    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, **kwargs):
+    def __init__(self, latent_dim=256, num_embeddings=256, **kwargs):
         super(VQVAETrainer, self).__init__(**kwargs)
-        self.train_variance = train_variance
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
 
@@ -125,9 +122,7 @@ class VQVAETrainer(keras.models.Model):
             reconstructions = self.vqvae(x)
 
             # Calculate the losses.
-            reconstruction_loss = (
-                tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance
-            )
+            reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2))
             total_loss = reconstruction_loss + sum(self.vqvae.losses)
 
         # Backpropagation.
@@ -180,19 +175,16 @@ class PixelConvLayer(layers.Layer):
 
     def build(self, input_shape):
         self.conv.build(input_shape)
+        
         kernel_shape = self.conv.kernel.get_shape()
-        #set mask value of rows above to 1
         part1 = tf.ones((kernel_shape[0] // 2, kernel_shape[1], kernel_shape[2], kernel_shape[3]))        
-        #set mask value of row below to 0
         part3 = tf.zeros((kernel_shape[0] // 2, kernel_shape[1], kernel_shape[2], kernel_shape[3]))
 
         if self.mask_type == "A":
-            #set mask value of cells in the same row but before the central pixel to 1
             c1 = tf.ones((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c2 = tf.zeros((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c1,c2], axis = 1)
         else:
-            #set mask value of cells in the same row but before the central pixel, plus the central pixel to 1, if mask type is B
             c3 = tf.ones((1, kernel_shape[1] - kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             c4 = tf.zeros((1, kernel_shape[1] // 2, kernel_shape[2], kernel_shape[3]))
             part2 = tf.concat([c3,c4], axis = 1)
@@ -203,9 +195,6 @@ class PixelConvLayer(layers.Layer):
         self.conv.kernel.assign(self.conv.kernel * self.mask)
         return self.conv(inputs)
 
-
-# Next, we build our residual block layer.
-# This is just a normal residual block, but based on the PixelConvLayer.
 class ResidualBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
@@ -222,8 +211,12 @@ class ResidualBlock(keras.layers.Layer):
         self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
         self.norm3 = keras.layers.BatchNormalization()
 
+
     def call(self, inputs):
         x = self.conv1(inputs)
+        x = self.norm1(x)
         x = self.pixel_conv(x)
+        x = self.norm2(x)
         x = self.conv2(x)
+        x = self.norm3(x)
         return keras.layers.add([inputs, x])
