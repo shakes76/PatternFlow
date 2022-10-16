@@ -120,6 +120,7 @@ After training for 120 epochs with batch size of 14 and 13000 iterations in each
 
 Using the trained model ,we can generate some samples of the brain MRI images given some randomly generated inputs. In which, it is clear that whilst the result doesn't provide the same level of details as the orginal OASIS dataset image. The general shape and clarity of the image could be seen, and potentially interpreted as a brian MRI. Thus, it is believed that with more training and parameter tuning, the generated output could be greatly improved.
 
+<p align="center">
 <table class="image-grid">
     <tr>
         <td>
@@ -130,6 +131,7 @@ Using the trained model ,we can generate some samples of the brain MRI images gi
         </td>
     </tr>
 </table>
+</p>
 <p align="center">
     <em align="center"> Figure 5: Generated Samples</em></p>
 
