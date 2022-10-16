@@ -173,15 +173,8 @@ def vit_classifier():
     # create patch encodings
     encoded_patches = transformer_encoder(embedded_patches, NUM_ENCODER_LAYERS, DROPOUTS, PROJECTION_DIM)
 
-    # prepare patch encodings for mlp
-    representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
-    representation = layers.Flatten()(representation)
-    representation = layers.Dropout(0.2)(representation)
-    
-#     representation = tf.reduce_mean(encoded_patches, axis=1)
-    
     # MLP head
-    features = mlp_head(x=representation, hidden_units=MLP_HEAD_UNITS, dropout_rate=0.5)
+    features = mlp_head(x=encoded_patches[:,0], hidden_units=MLP_HEAD_UNITS, dropout_rate=0.5)
     
     # Classify outputs.
     outputs = layers.Dense(NUM_CLASS)(features)
