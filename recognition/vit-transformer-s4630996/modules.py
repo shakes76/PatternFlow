@@ -20,6 +20,8 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
 
+from config import *
+
 ##############################  INPUT DATA AUGMENTATION  ###################################
 
 def data_augmentation(mean, variance):
@@ -66,39 +68,30 @@ class PatchEmbedding(layers.Layer):
     """ Class to linear project flattened patch into PROJECTION_DIM and add positional embedding and class token"""
     def __init__(self, NUM_PATCHES, PROJECTION_DIM):
         super(PatchEmbedding, self).__init__()
-        
-        # linear projection onto projection dims
+        self.num_patches = NUM_PATCHES
         self.projection = layers.Dense(units=PROJECTION_DIM)
-        
-        # position embedding
-        self.position_embedding = layers.Embedding(input_dim=NUM_PATCHES, output_dim=PROJECTION_DIM)
-        
-        # weight initializer for class token
-        class_weights_init = tf.random_normal_initializer()
-        
-        # initialize class token with initial values from weight initializer
-        class_token = class_weights_init(shape=(1, PROJECTION_DIM), dtype="float32")
-        self.class_token = tf.Variable(initial_value=class_token, trainable=True)
-        
+        self.position_embedding = layers.Embedding(
+            input_dim=NUM_PATCHES, 
+            output_dim=PROJECTION_DIM)
+        w_init = tf.random_normal_initializer()
+        class_token = w_init(shape=(1, PROJECTION_DIM), dtype="float32")
+        self.class_token = tf.Variable(
+            initial_value=class_token,
+            trainable=True)
     def call(self, patch):
-        # reshape class token to take into account batch size and projection dims
-        class_token = tf.tile(input=self.class_token, multiples=[BATCH_SIZE, 1])
-        class_token = tf.reshape(class_token, (BATCH_SIZE, 1, PROJECTION_DIM))
+        # reshape class token to take into account batch sizes
+        batch = tf.shape(patch)[0]
+        class_token = tf.tile(input=self.class_token, multiples=[batch, 1])
+        class_token = tf.reshape(class_token, (batch, 1, PROJECTION_DIM))
         
-        # create linear positions (one for each patch) and add one for class token
-        positions = tf.range(start=0, limit=self.NUM_PATCHES+1, delta=1)
-
-        # create position embedding
-        position_embedding = self.position_embedding(positions)
+        positions = tf.range(start=0, limit=self.num_patches+1, delta=1)
+        # add linear project to position embedding
         
-        # project patch into projection dims
+        # create patch embeddings
         patch_embedding = self.projection(patch)
-        
-        # prepend class token
         patch_embedding = tf.concat([class_token, patch_embedding], axis=1)
         
-        # embedding is patch embedding plus position embedding
-        embedding = patch_embedding + position_embedding
+        embedding = patch_embedding + self.position_embedding(positions)
         
         return embedding
 
@@ -108,6 +101,13 @@ class PatchEmbedding(layers.Layer):
 def mlp(x, hidden_units, dropout_rate):
     """ Generic function to create zero or more mlp blocks each a dense layer and a dropout layer  """
     
+    for units in hidden_units:
+        x = layers.Dense(units, activation=tf.nn.gelu)(x)
+        x = layers.Dropout(dropout_rate)(x)
+    return x
+
+def mlp_head(x, hidden_units, dropout_rate):
+    """ Generic function to create zero or more mlp blocks each a dense layer and a dropout layer  """
     for units in hidden_units:
         x = layers.Dense(units, activation=tf.keras.activations.tanh)(x)
         x = layers.Dropout(dropout_rate)(x)
@@ -134,7 +134,7 @@ def transformer_encoder(embedded_patches, NUM_ENCODER_LAYERS, DROPOUTS, PROJECTI
         
         # multi-head self-attention layer
         # https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention
-        x2 = layers.MultiHeadAttention(NUM_HEADS=NUM_HEADS, 
+        x2 = layers.MultiHeadAttention(num_heads=NUM_HEADS, 
                                        key_dim=PROJECTION_DIM, 
                                        dropout=mha_dropout)(x1, x1)
         
@@ -161,7 +161,7 @@ def vit_classifier():
     inputs = layers.Input(shape=INPUT_SHAPE)
     
     # Augment data.
-    augmented = data_augmentation(mean=mean, variance=variance)(inputs)
+    augmented = data_augmentation(mean=MU, variance=VARIANCE)(inputs)
     
     # Create patches.
     patches = Patches(PATCH_SIZE)(augmented)
@@ -180,11 +180,11 @@ def vit_classifier():
 #     representation = tf.reduce_mean(encoded_patches, axis=1)
     
     # MLP head
-    features = mlp(x=representation, hidden_units=[2048], dropout_rate=0.5)
+    features = mlp_head(x=representation, hidden_units=MLP_HEAD_UNITS, dropout_rate=0.5)
     
     # Classify outputs.
-    outputs = layers.Dense(NUM_CLASSes)(features)
-#     outputs = layers.Dense(NUM_CLASSes)(representation)
+    outputs = layers.Dense(NUM_CLASS)(features)
+#     outputs = layers.Dense(NUM_CLASS)(representation)
     
     # Create the Keras model.
     model = keras.Model(inputs=inputs, outputs=outputs)
