@@ -83,10 +83,10 @@ The following figures illustrates the results during training:
 <table class="image-grid">
     <tr>
         <td>
-            <img src="./examples/generated_plot_e040.png" alt="Epoch 40"/>
+            <img src="./examples/040.png" alt="Epoch 40"/>
         </td>
         <td>
-            <img src="./examples/generated_plot_e080.png" alt="Epoch 80"/>
+            <img src="./examples/080.png" alt="Epoch 80"/>
         </td>
     </tr>
    <tr>
@@ -100,7 +100,7 @@ The following figures illustrates the results during training:
 </table>
 
 <p align="center">
-     <img src="./examples/generated_plot_e120.png" alt="Epoch 120" width="450" 
+     <img src="./examples/120.png" alt="Epoch 120" width="450" 
      height="350"/>
     <p align="center">Epoch 120</p>
 </p>
@@ -123,7 +123,7 @@ Using the trained model ,we can generate some samples of the brain MRI images gi
 <table class="image-grid">
     <tr>
         <td>
-            <img src="./examples/Sample_output.png" alt="Sample Output" width="400"/>
+            <img src="./examples/output.png" alt="Sample Output" width="400"/>
         </td>
         <td>
             <img src="./examples/Sample_output2.png" alt="Sample Output" width="400"/>
@@ -146,7 +146,7 @@ Using the trained model ,we can generate some samples of the brain MRI images gi
 A. Generator model summary
 
 <p align="center">
-     <img src="./examples/g_model.png" alt="Generator model"/>
+     <img src="./examples/gen_model.png" alt="Generator model"/>
 <br/>
     <em align="center"> Figure 6: Generator model</em></p>
 </p>
