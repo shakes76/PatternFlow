@@ -466,3 +466,6 @@ The following packages were installed on conda and were used to run the code.
 DeepFindr, Diffusion Models from scratch in PyTorch
 (DeepFindr, 2022) Diffusion Models from scratch in PyTorch.
 Available at: https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing#scrollTo=HhIgGq3za0yh
+
+(Rogge, 2022) Niels Rogge and Kashif Rasul. Hugging Face (2022) The Annotated Diffusion Model
+Available at: https://huggingface.co/blog/annotated-diffusion 
