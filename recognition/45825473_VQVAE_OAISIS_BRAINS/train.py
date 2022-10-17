@@ -15,8 +15,8 @@ def train_vqvae(train_images):
   return vqvae_trainer
 
 def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images):
-
-  num_residual_blocks = 6 #This was increased as a part of 
+  #This was increased as a part of 
+  num_residual_blocks = 6 
   num_pixelcnn_layers = 6
   
   pixelcnn_input_shape = encoder.output.shape[1:-1]
@@ -84,9 +84,11 @@ def main():
   pixel_cnn, sampler = construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images)
   priors = generate_probabilities_for_samples(pixel_cnn, sampler)
 
+  train_vqvae.save('VQVAE_Trainer')
+  trained_vqvae_model.save("VQVAE_Model")
   ##TODO : Add saving the VQVAETrainer here. 
   ##TODO : ADD LOSS FUNCTION DETERMINATION/SAVING
   ##TODO : Add SSIM calculations
-  return vqvae_trainer, quantizer, priors, encoded_outputs
+  return vqvae_trainer, quantizer, priors, encoded_outputs, pixel_cnn, sampler
 
 vqvae_trainer, quantizer, priors, encoded_outputs = main()
