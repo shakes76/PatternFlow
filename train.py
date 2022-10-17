@@ -106,7 +106,6 @@ def main():
         # additional callback to compute alpha
         hist_fade = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk, fade_in_cbk])
         loss_history.append(hist_fade)
-        model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
         model.stabilize()
         
@@ -114,7 +113,6 @@ def main():
         # can lead to over train (model collapse)
         if STAB:
             # transition from fade in models to complete high resolution models
-            
             ep = EPOCHS[depth][1]
 
             # save model plots
@@ -126,7 +124,8 @@ def main():
             model.compile(adam, adam)
             hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
             loss_history.append(hist_stab)
-            model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
+            
+        model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
     print('\nTraining completed.')
 
