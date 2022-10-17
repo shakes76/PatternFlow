@@ -30,3 +30,17 @@ class GNNLayer(Module):
       # apply activation function over the top
       output = F.relu(output)
     return output
+
+class Net(torch.nn.Module):
+  # simple 2 layer GCN
+  def __init__(self, features, hidden_layers, outputs):
+    super(Net, self).__init__()
+    self.first_conv = GNNLayer(features, hidden_layers)
+    self.second_conv = GNNLayer(hidden_layers, outputs)
+  
+  def forward(self, input, adj):
+    input = F.relu(self.first_conv(input, adj))
+    # x = F.dropout(x, self.dropout, training=self.training)
+    input = self.second_conv(input, adj)
+    return F.softmax(input)
+
