@@ -92,6 +92,31 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 
 ## Result
 This is the result.
+<p align="center">
+    <table border='0'>
+        <tr>
+            <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
+            <td><img src="asset/OASIS_samples.png" width="250", height="250"></td>
+            <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
+        </tr>
+        <tr align='center'>
+            <td>ADNI</td>
+            <td>OASIS</td>
+            <td>ADNI</td>
+        </tr>
+    </table>
+</p>
+
+Loss plot.
+<p align="center">
+    <img src="asset/loss_plot.png" width="550">
+</p>
+
+Bilinear interpolation.
+<p align="center">
+    <kbd><img src="asset/bilinear_interpolation.png" width="800"></dbd>
+</p>
+
 
 ## Reference
 * Progressive Growing of GANs, 2018. [<ins>https://arxiv.org/abs/1710.10196</ins>](https://arxiv.org/abs/1710.10196)
