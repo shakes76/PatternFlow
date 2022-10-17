@@ -56,7 +56,7 @@ def resblock(x, filters):
     x = ReLU()(x)
     x = Conv2D(filters, 1, strides=1, padding='same')(x)
     out = Add()([x, skip])
-    return ReLU(out)
+    return ReLU()(out)
 
 class VQVAE(tf.keras.Model):
     def __init__(self, latent_dim=32, num_embeddings=64, input_shape=(256, 256, 1)):
