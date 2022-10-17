@@ -8,13 +8,6 @@ Original file is located at
 
 """
 
-import zipfile
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
-
-path = '/content/drive/MyDrive/comp3710/dataset/keras_png_slices_data.zip'
-
 def get_zipped_dataset(path):
   """
   Reading zipped dataset from the path.
