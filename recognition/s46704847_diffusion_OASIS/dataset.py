@@ -42,7 +42,27 @@ def normalize(dataset):
   train_images = train_images[:,:,:,np.newaxis]
   return train_images
 
-train_images = normalize(get_zipped_dataset(path))
+def set_train_batch(dataset, batch_size):
+  """
+  Splitting the whole dataset into batch dataset.
+  Parameters:
+    dataset (np.array): the initial dataset.
+    batch_size (int): the size of the batch.
+  Returns:
+    (tf.Tensor): the batch of dataset.
+  """
+  length = len(dataset)
+  return  tf.data.Dataset.from_tensor_slices(dataset).shuffle(length)\
+                                                      .batch(batch_size)
 
-train_images.shape
-
+def get_train_dataset(path, batch_size):
+  """
+  Create the batch dataset from the given path of the images.
+  Parameters:
+    path (str): the path of the dataset.
+    batch_size (int): the size of the batch.
+  Returns:
+    (tf.Tensor): the batch of dataset.
+  """
+  data = normalize(get_zipped_dataset(path))
+  return set_train_batch(data, batch_size)
