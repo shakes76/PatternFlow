@@ -12,9 +12,8 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 def get_transform(train):
     transforms = []
-    transforms.append(T.ToTensor())
-    if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
+    transforms.append(T.PILToTensor())
+    transforms.append(T.ConvertImageDtype(torch.float))
     return T.Compose(transforms)
 
 class ISICDataset(Dataset):
@@ -66,6 +65,8 @@ class ISICDataset(Dataset):
         # Mask consists of two classes (including the background)
         mask_path = self.get_mask_path(image_id)
         mask = Image.open(mask_path)
+        # if self.transform is not None:
+        #    mask = self.transform(mask)
 
         mask = np.array(mask)
         obj_ids = np.unique(mask)
@@ -79,6 +80,10 @@ class ISICDataset(Dataset):
             xmax = np.max(pos[1])
             ymin = np.min(pos[0])
             ymax = np.max(pos[0])
+            assert xmin < xmax
+            assert ymin < ymax
+            assert xmin >= 0
+            assert ymin >= 0
             boxes.append([xmin, ymin, xmax, ymax])
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -94,7 +99,7 @@ class ISICDataset(Dataset):
         targets["labels"] = labels
         targets["masks"] = masks
         targets["area"] = area
-        targets["iscrows"] = iscrowd
+        targets["iscrowd"] = iscrowd
         
         if self.transform is not None:
             image = self.transform(image)
@@ -109,3 +114,11 @@ train_data = ISICDataset(
     device=device,
     transform=get_transform(True),
     )
+
+image, target = train_data[0]
+fig, ax = plt.subplots()
+image = np.array(image.detach().cpu())
+ax.imshow(image.transpose((1,2,0)))
+bbox = target["boxes"][0]
+rect = Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=1, edgecolor='r', facecolor='none')
+ax.add_patch(rect)

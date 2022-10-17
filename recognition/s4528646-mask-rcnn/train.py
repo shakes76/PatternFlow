@@ -2,6 +2,7 @@ from dataset import ISICDataset, get_transform
 from modules import get_model
 import matplotlib.pyplot as plt
 import torch
+import torch.nn as nn
 from tqdm import tqdm
 import pickle
 import gc
@@ -23,12 +24,13 @@ train_data = ISICDataset(
     device=device,
     transform=get_transform(True),
     )
-train_data = torch.utils.data.Subset(train_data, range(250))
+# train_data = torch.utils.data.Subset(train_data, range(250))
 train_dataloader = torch.utils.data.DataLoader(
     train_data, 
     batch_size=2, 
     shuffle=True, 
-    collate_fn=lambda x:tuple(zip(*x))
+    collate_fn=lambda x:tuple(zip(*x)),
+    # num_workers=4
     )
 
 def single_epoch(model, optimizer, dataloader, device, epoch):
@@ -51,6 +53,7 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
         mask_loss.append(losses["loss_mask"].item())
         total_losses.append(total_loss)
         total_loss.backward()
+        # nn.utils.clip_grad_value_(model.parameters(), clip_value=1.0)
         optimizer.step()
         it += 1
         if it % 10 == 0:
