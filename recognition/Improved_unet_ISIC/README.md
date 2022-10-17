@@ -88,4 +88,5 @@ is in red and green.
 ! [result](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/Improved_unet_ISIC/result.png)
 A dice similarity coefficient is calculated by formula and get the result of higher than 85% which achieve 
 the target.
+Complete train and predict process can be viewed in `colab process.ipynb`
 
