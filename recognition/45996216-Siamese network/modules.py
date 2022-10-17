@@ -14,30 +14,18 @@ import numpy as np
 
 
 def SiameseNetwork():
-    # kernel siz
-    kernel_size_1 = (8, 8)
-    kernel_size_2 = (6, 6)
-    kernel_size_3 = (4, 4)
-
-    # pool size
-    pool_size_1 = (6, 6)
-    pool_size_2 = (4, 4)
-
-    # strides
-    strides = 1
-
     # define the structure of the layers
     seq_conv_model = [
         # tf.keras.layers.Reshape( input_shape=(240,256,1) , target_shape=(120,128,1)),
         # convolutional layer
-        tf.keras.layers.Conv2D(32, kernel_size=kernel_size_1, strides=strides, activation='relu'),
+        tf.keras.layers.Conv2D(32, kernel_size=(8, 8), strides=1, activation='relu'),
         # pool layer
-        tf.keras.layers.MaxPooling2D(pool_size=pool_size_1, strides=strides),
+        tf.keras.layers.MaxPooling2D(pool_size=(6, 6), strides=1),
 
-        tf.keras.layers.Conv2D(64, kernel_size=kernel_size_2, strides=strides, activation='relu'),
-        tf.keras.layers.MaxPooling2D(pool_size=pool_size_2, strides=strides),
+        tf.keras.layers.Conv2D(64, kernel_size=(6, 6), strides=1, activation='relu'),
+        tf.keras.layers.MaxPooling2D(pool_size=(4, 4), strides=1),
 
-        tf.keras.layers.Conv2D(128, kernel_size=kernel_size_3, strides=strides, activation='relu'),
+        tf.keras.layers.Conv2D(128, kernel_size=(4, 4), strides=1, activation='relu'),
 
         # flat the image
         tf.keras.layers.Flatten(),
