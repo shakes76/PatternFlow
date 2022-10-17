@@ -9,8 +9,6 @@ from matplotlib.patches import Rectangle
 
 import csv
 
-import cv2
-
 IMAGE_SIZE = 640
 
 VALIDATION_DATA_PATH = "Datasets/Validation/validation_data/"
@@ -21,9 +19,9 @@ VALIDATION_MASK_PATH = "Datasets/Validation/validation_mask/"
 TESTING_MASK_PATH = "Datasets/Testing/testing_mask/"
 TRAINING_MASK_PATH = "Datasets/Training/training_mask/"
 
-VALIDATION_MASK_CSV_FILE = "Datasets/Validation/validation_mask.csv"
-TESTING_MASK_CSV_FILE = "Datasets/Testing/testing_mask.csv"
-TRAINING_MASK_CSV_FILE = "Datasets/Training/training_mask.csv"
+VALIDATION_MASK_CSV_PATH = "Datasets/Validation/validation_mask.csv"
+TESTING_MASK_CSV_PATH = "Datasets/Testing/testing_mask.csv"
+TRAINING_MASK_CSV_PATH = "Datasets/Training/training_mask.csv"
 
 
 def load_resize_images(image_path):
@@ -37,9 +35,8 @@ def load_resize_images(image_path):
             # Change the shape of the images so all the images have a maximum axis
             # of 640 and keep the aspect ratio
             img = img.resize((IMAGE_SIZE, IMAGE_SIZE))
-            # Save image in the same
+            # Save image
             img.save(image_path + filename)
-
 
 
 def save_bounding_box_images(image_path, csv_path):
@@ -51,44 +48,42 @@ def save_bounding_box_images(image_path, csv_path):
 
         with im.open(image_path + filename) as img:
             # Create figure and axes
-            plt.imshow(img)
-            ax = plt.gca()
+            # plt.imshow(img)
+            # ax = plt.gca()
 
-            # Save this as the last three coordinates
-            # Determine the one hot encoding as either melanoma or not
-            # using first column of .csv file validation_mask.csv
-            # And save as a txt file
             bounding_box_info = generate_bounding_box(img)
 
             # open the csv file
+            name = filename.replace('_segmentation.png', '')
             file = open(csv_path)
             csvreader = csv.reader(file)
 
-            header = []
-            header = next(csvreader)
-            print(header)
-
-            # check that the name of the image is same and name the text file by this name
-            # get second column
-
+            # One hot encoding for melanoma or not using the first column of the .csv file
+            for row in csvreader:
+                # print(name)
+                # print(row[0])
+                # check that the name of the image is same and name the text file by this name
+                if row[0] == name:
+                    # get second column
+                    fileNew = open(name + '.txt', 'w')
+                    fileNew.write(
+                        f'{row[1]} {bounding_box_info[0]} {bounding_box_info[1]} {bounding_box_info[2]} {bounding_box_info[3]}')
 
             # make sure when putting data in YOLO folder that follow specific order
 
-
-
-            # Bounding box width:
-            bounding_width = bounding_box_info[2] * 640
-            bounding_height = bounding_box_info[3] * 640
-            x_min = bounding_box_info[4]
-            y_min = bounding_box_info[6]
-
-            # Create a Rectangle patch
-            rect = Rectangle((x_min, y_min), bounding_width, bounding_height, linewidth=1, edgecolor='r', facecolor='none')
-
-            # Add the patch to the Axes
-            ax.add_patch(rect)
-
-            plt.show()
+            # # Bounding box width:
+            # bounding_width = bounding_box_info[2] * 640
+            # bounding_height = bounding_box_info[3] * 640
+            # x_min = bounding_box_info[4]
+            # y_min = bounding_box_info[6]
+            #
+            # # Create a Rectangle patch
+            # rect = Rectangle((x_min, y_min), bounding_width, bounding_height, linewidth=1, edgecolor='r', facecolor='none')
+            #
+            # # Add the patch to the Axes
+            # ax.add_patch(rect)
+            #
+            # plt.show()
 
 
 def generate_bounding_box(image):
@@ -144,18 +139,17 @@ def main():
     # clean_up_directory(TRAINING_DATA_PATH)
 
     # Resize all images
-    load_resize_images(VALIDATION_DATA_PATH)
-    load_resize_images(TESTING_DATA_PATH)
-    load_resize_images(TRAINING_DATA_PATH)
+    # load_resize_images(VALIDATION_DATA_PATH)
+    # load_resize_images(TESTING_DATA_PATH)
+    # load_resize_images(TRAINING_DATA_PATH)
 
-    load_resize_images(VALIDATION_MASK_PATH)
-    load_resize_images(TESTING_MASK_PATH)
-    load_resize_images(TRAINING_DATA_PATH)
+    # load_resize_images(VALIDATION_MASK_PATH)
+    # load_resize_images(TESTING_MASK_PATH)
+    # load_resize_images(TRAINING_MASK_PATH)
 
-    save_bounding_box_images(VALIDATION_MASK_PATH, VALIDATION_MASK_CSV_PATH)
-    save_bounding_box_images(TESTING_MASK_PATH, TESTING_MASK_CSV_PATH)
-    save_bounding_box_images(TRAINING_DATA_PATH, TRAINING_MASK_CSV_PATH)
-
+    # save_bounding_box_images(VALIDATION_MASK_PATH, VALIDATION_MASK_CSV_PATH)
+    # save_bounding_box_images(TESTING_MASK_PATH, TESTING_MASK_CSV_PATH)
+    save_bounding_box_images(TRAINING_MASK_PATH, TRAINING_MASK_CSV_PATH)
 
 
 if __name__ == '__main__':
