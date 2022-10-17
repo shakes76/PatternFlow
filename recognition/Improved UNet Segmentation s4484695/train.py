@@ -7,14 +7,16 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 import time
 
 # Hyper-parameters
 num_epochs = 35
-learning_rate = 0.1
+learning_rate = 5 * 10**-4
 batchSize = 8
+learning_rate_decay = 0.985
 
 def init():
     validDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
@@ -43,11 +45,51 @@ def init():
 
 def main():
     dataSets, dataLoaders, device = init()
-    #display_test(dataLoaders["valid"])
-    #calculate_mean_std()
     model = modules.Improved2DUnet()
     model = model.to(device)
-    print_model_info(model)
+
+    # Code for Diagnostics/Visualization
+    #display_test(dataLoaders["valid"])
+    #calculate_mean_std()
+    #print_model_info(model)
+
+    # Define optimization parameters and loss according to Improved Unet Paper.
+    criterion = dice_loss
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=10**-5)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=learning_rate_decay)
+    totalStep = len(dataLoaders["train"])
+
+    model.train()
+    print("Training Commenced:")
+    start = time.time()
+    for epoch in range(num_epochs):
+        for batchStep, (images, labels) in enumerate(dataLoaders["train"]):
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if batchStep % batchSize == 0:
+                print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.5f}"
+                    .format(epoch+1, num_epochs, batchStep+1, totalStep, loss.item()))
+            
+        scheduler.step()
+    end = time.time()
+    elapsed = end - start
+    print("Training Took " + elapsed/60 + " Minutes")
+
+def dice_loss():
+
+    pass
+
+def dice_coefficient():
+
+    pass
 
 def print_model_info(model):
     print("Model No. of Parameters:", sum([param.nelement() for param in model.parameters()]))
