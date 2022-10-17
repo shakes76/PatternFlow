@@ -85,7 +85,7 @@ Once the U-Net has been trained, denoising can be performed on a random point in
 ## Examples
 
 ### AKOA Knee 
-Using part of the [AKOA Knee dataset](https://nda.nih.gov/oai/). Image size 128x128, 1000 Timesteps 100 epochs. Download the pretrained [model](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
+Using part of the [AKOA Knee dataset](https://nda.nih.gov/oai/) consisting of 18,681 MRI images. Image size 128x128, batch size 64, 1000 Timesteps, 100 epochs. Download the pretrained [model](https://hcloudh.com/nextcloud/s/zQ4FzxGJd2aXzA8/download/AKOA2.pth).
 #### Training
 Epoch 0
 ![](https://hcloudh.com/nextcloud/s/LdiWLFwsMtqGCPy/download/plot_epoch0.jpeg)
@@ -99,4 +99,34 @@ Epoch 99
 #### Some Examples After Training
 ![](https://hcloudh.com/nextcloud/s/LEpJzmtMFHY2CyS/download/predict0.jpeg)![](https://hcloudh.com/nextcloud/s/EJCRb3wj43D75qN/download/predict1.jpeg)![](https://hcloudh.com/nextcloud/s/NT7RY7b7sLeXGSF/download/predict2.jpeg)![](https://hcloudh.com/nextcloud/s/KtfFcEYSjnyxiwz/download/predict3.jpeg)![](https://hcloudh.com/nextcloud/s/MzTR56qysE3N5pT/download/predict4.jpeg)![](https://hcloudh.com/nextcloud/s/WtKYfsEdo8nYq5q/download/predict5.jpeg)![](https://hcloudh.com/nextcloud/s/kTsjDgQSdfAibFY/download/predict6.jpeg)
 
+### OASIS Brain
+Using the [OASIS Brain](https://www.oasis-brains.org/) with 11,329 images. Image size 128x128, 1000 Timesteps, batch size 32, 100 epochs. Notice the artifacts due to the small batch size. Download the pre-trained [model](https://hcloudh.com/nextcloud/s/PpmLt5xTZLQHXHE/download/brain.pth).
+#### Training
+Epoch 0
+![](https://hcloudh.com/nextcloud/s/rq2TPtAp3Aibj5x/download/plot_epoch0.jpeg)
+Epoch 10
+![](https://hcloudh.com/nextcloud/s/r3LLCparqbo77Xw/download/plot_epoch10.jpeg)
+Epoch 20
+![](https://hcloudh.com/nextcloud/s/PGaqHXzowryKtkB/download/plot_epoch20.jpeg)
+Epoch 99
+![](https://hcloudh.com/nextcloud/s/rNaFJptFKMTnz4X/download/plot_epoch99.jpeg)
 
+#### Examples after training
+![](https://hcloudh.com/nextcloud/s/QDdoBxFGF5RNLXg/download/predict2.jpeg)![](https://hcloudh.com/nextcloud/s/qZiA5zPDAxSAXgx/download/predict3.jpeg)![](https://hcloudh.com/nextcloud/s/84ftrCnnXJmgjGp/download/predict4.jpeg)![](https://hcloudh.com/nextcloud/s/EEodLTB24xiw6x2/download/predict6.jpeg)![](https://hcloudh.com/nextcloud/s/WjWceaEJ5BsbtJb/download/predict7.jpeg)![](https://hcloudh.com/nextcloud/s/4dkMk97t4KgFRRs/download/predict8.jpeg)![](https://hcloudh.com/nextcloud/s/S67ByeBPYtbq52G/download/predict9.jpeg)
+
+### CelebA Dataset
+Just for fun, the model was also trained on the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) Aligned and Cropped dataset consisting of around 200,000 images. Image size 128x128, batch size 64, 1000 Timesteps, 100 epochs. Download the pre-trained [model]. The network does well with the faces but struggles in generating the backgrounds.
+
+(https://hcloudh.com/nextcloud/s/wfy8tnaSNXzJqLb/download/celebA.pth).
+#### Training 
+Epoch 0
+![](https://hcloudh.com/nextcloud/s/z3z6qcX2bz3dZGy/download/plot_epoch0.jpeg)
+Epoch 10
+![](https://hcloudh.com/nextcloud/s/weKD2Abeg57KD2w/download/plot_epoch10.jpeg)
+Epoch 20
+![](https://hcloudh.com/nextcloud/s/jSW944KfLSXXX9s/download/plot_epoch20.jpeg)
+Epoch 99
+![](https://hcloudh.com/nextcloud/s/toiR4mKsXemxaxM/download/plot_epoch99.jpeg)
+#### Examples after training
+![](https://hcloudh.com/nextcloud/s/xiEtPoB73REYZZk/download/predict5.jpeg)![](https://hcloudh.com/nextcloud/s/ggdw7wtLEEEWyoa/download/predict6.jpeg)![](https://hcloudh.com/nextcloud/s/jXaebSRSTpjC9Yq/download/predict7.jpeg)![](https://hcloudh.com/nextcloud/s/AiLLPETBajJbKzd/download/predict9.jpeg)
+![](https://hcloudh.com/nextcloud/s/DYZCgkToCCMAg6o/download/predict11.jpeg)![](https://hcloudh.com/nextcloud/s/XC3a8EdwFtYF8gd/download/predict13.jpeg)![](https://hcloudh.com/nextcloud/s/BZa4PCZTPATniTs/download/predict12.jpeg)
