@@ -30,10 +30,24 @@ class DataLoader():
             shuffle=True, batch_size=self.batch_size
         )
 
+        # Augment data
+        normalize = tf.keras.layers.Normalization()
+        flip = tf.keras.layers.RandomFlip('horizontal')
+        rotate = tf.keras.layers.RandomRotation(0.02)
+        zoom = tf.keras.layers.RandomZoom(0.1, 0.1)
+
+        train_data = train_data.map(
+            lambda x, y: (rotate(flip(zoom(normalize(x)))), y)
+        )
+
+        test_data = test_data.map(
+            lambda x, y: (rotate(flip(zoom(normalize(x)))), y)
+        )
+
         # Take half of the 9000 images from the test set as validation data
-        validation_data = test_data.take(4500)
+        validation_data = test_data.take(9000//self.batch_size)
 
         # Use remaining 4500 images as test set
-        test_data = test_data.skip(4500).take(4500)
+        test_data = test_data.skip(9000//self.batch_size)
 
         return train_data, validation_data, test_data
