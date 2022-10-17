@@ -84,11 +84,8 @@ def main():
   pixel_cnn, sampler = construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images)
   priors = generate_probabilities_for_samples(pixel_cnn, sampler)
 
-  train_vqvae.save('VQVAE_Trainer')
+  #Save the trained decoder model after finishing all training.
   trained_vqvae_model.save("VQVAE_Model")
-  ##TODO : Add saving the VQVAETrainer here. 
-  ##TODO : ADD LOSS FUNCTION DETERMINATION/SAVING
-  ##TODO : Add SSIM calculations
   return vqvae_trainer, quantizer, priors, encoded_outputs, pixel_cnn, sampler
 
 vqvae_trainer, quantizer, priors, encoded_outputs = main()
