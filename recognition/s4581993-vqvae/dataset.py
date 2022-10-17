@@ -3,6 +3,7 @@ import sys
 import zipfile
 
 import requests
+import numpy as np
 import tensorflow as tf
 
 dataset_location = "https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA/download"
@@ -13,7 +14,7 @@ dataset_train_folder = "keras_png_slices_train"
 dataset_test_folder = "keras_png_slices_test"
 dataset_val_folder = "keras_png_slices_validate"
 
-batch_size = 32
+image_size = (64, 64)
 
 # Download the dataset, if it hasn't already been downloaded
 def download_dataset():
@@ -64,42 +65,42 @@ def load_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_train_folder,
         labels=None,
-        batch_size=batch_size,
+        image_size=image_size,
     )
     print("Loading testing data...")
     test_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_test_folder,
         labels=None,
-        batch_size=batch_size,
+        image_size=image_size,
     )
     print("Loading validation data...")
     val_ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + dataset_val_folder,
         labels=None,
-        batch_size=batch_size,
+        image_size=image_size,
     )
     return (train_ds, test_ds, val_ds)
 
-# Preprocess the data
-def preprocess_data(
-    train_ds: tf.data.Dataset,
-    test_ds: tf.data.Dataset,
-    val_ds: tf.data.Dataset
-) -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
-    # Scale the data to a range of [-0.5, 0.5]
-    normalization_layer = tf.keras.layers.Rescaling(1./255)
-    train_ds = train_ds.map(lambda x: (normalization_layer(x) - 0.5))
-    test_ds = test_ds.map(lambda x: (normalization_layer(x) - 0.5))
-    val_ds = val_ds.map(lambda x: (normalization_layer(x) - 0.5))
+# Scale the given image to a range of [-0.5, 0.5] and change it to 1 colour channel
+def _scale_image(image: tf.Tensor) -> tf.Tensor:
+    image = image / 255 - 0.5
+    image = tf.image.rgb_to_grayscale(image)
+    return image
 
-    return (train_ds, test_ds, val_ds)
+# Preprocess the data
+def preprocess_data(dataset: tf.data.Dataset) -> np.array:
+    return np.asarray(list(dataset.unbatch().map(_scale_image)))
 
 # Load and preprocess the dataset
-def get_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
+def get_dataset() -> (np.array, np.array, np.array):
     download_dataset()
     unzip_dataset()
+
     train_ds, test_ds, val_ds = load_dataset()
-    train_ds, test_ds, val_ds = preprocess_data(train_ds, test_ds, val_ds)
+
+    train_ds = preprocess_data(train_ds)
+    test_ds = preprocess_data(test_ds)
+    val_ds = preprocess_data(val_ds)
 
     return (train_ds, test_ds, val_ds)
 
