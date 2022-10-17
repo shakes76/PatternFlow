@@ -13,15 +13,10 @@ def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outp
   # Print the test image and their reconstruction
   trained_vqvae_model = vqvae_trainer.vqvae
   reconstructions_test = trained_vqvae_model.predict(test_images)
-
-  # Print the test image and their associated coded image
   encoder = vqvae_trainer.vqvae.get_layer("encoder")
   quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
-  # flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-  # codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
-  # codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
-  #TODO predict model
+  #Generate samples from image
   pretrained_embeddings = quantizer.embeddings
   priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
   quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
