@@ -127,7 +127,7 @@ The [ADNI MRI dataset](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI) i
 
 # References
 
-The following were used for both learning about SNN's, but also to get a better understanding of how to apply an SNN to the particular problem. 
+The following were used for learning about SNN's, but also to get a better understanding of how to apply an SNN to the particular problem. 
 1. [Keras.io Siamese Network](https://keras.io/examples/vision/siamese_network/)  
 1. [Image similarity estimation using a Siamese Network with a contrastive loss](https://keras.io/examples/vision/siamese_contrastive/)
 1. [Siamese Neural Networks for One-shot Image Recognition](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf)  
