@@ -9,11 +9,14 @@ Reference: https://medium.com/@vedantjumle/image-generation-with-diffusion-
             models-using-keras-and-tensorflow-9f60aae72ac
 """
 
+__author__ = "Zhao Wang, 46704847"
+__email__ = "s4670484@student.uq.edu.au"
+
 """Generate beta, alpha and forward noise"""
 
 timesteps = 300
 
-# create  beta 
+# create beta 
 beta = np.linspace(0.0001, 0.02, timesteps)
 
 # calculate alpha
@@ -33,7 +36,6 @@ def set_seed(seed):
   """
   np.random.seed(seed)
 
-# this function will add noise to the input as per the given timestamp
 def forward_noise(seed, x_0, t):
   """
   Adding noise to the imput image to timestamp t.
@@ -67,3 +69,5 @@ def generate_timestamp(seed, num):
   set_seed(seed)
   return tf.random.uniform(shape=[num], minval=0, maxval=timesteps, 
                                                                 dtype=tf.int32)
+
+

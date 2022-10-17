@@ -8,6 +8,10 @@ Original file is located at
 
 """
 
+__author__ = "Zhao Wang, 46704847"
+__email__ = "s4670484@student.uq.edu.au"
+
+
 def get_zipped_dataset(path):
   """
   Reading zipped dataset from the path.
