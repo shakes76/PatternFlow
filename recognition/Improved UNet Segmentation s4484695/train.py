@@ -45,43 +45,84 @@ def init():
 
 def main():
     dataSets, dataLoaders, device = init()
-    model = modules.Improved2DUnet()
-    model = model.to(device)
 
-    # Code for Diagnostics/Visualization
+    # Code for Diagnostics/Visualization & Discovery
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
     #print_model_info(model)
 
+    model = modules.Improved2DUnet()
+    model = model.to(device)
+
+    train(dataLoaders, model, device)
+    validate(dataLoaders, model, device)
+
+def train(dataLoaders, model, device):
     # Define optimization parameters and loss according to Improved Unet Paper.
     criterion = dice_loss
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=10**-5)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=learning_rate_decay)
     totalStep = len(dataLoaders["train"])
 
+    losses_training = list()
+    dice_similarities_training = list()
+
     model.train()
-    print("Training Commenced:")
+    print("Training and Validation Commenced:")
     start = time.time()
     for epoch in range(num_epochs):
         for batchStep, (images, labels) in enumerate(dataLoaders["train"]):
             images = images.to(device)
             labels = labels.to(device)
 
-            outputs = model(images)
+            outputs, seg_layers = model(images)
             loss = criterion(outputs, labels)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            if batchStep % batchSize == 0:
-                print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.5f}"
-                    .format(epoch+1, num_epochs, batchStep+1, totalStep, loss.item()))
+            if batchStep % 10 == 0:
+                losses_training.append(loss.item())
+                dice_similarities_training.append(dice_coefficient())
+                print ("Epoch [{}/{}], Step [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}"
+                    .format(epoch+1, num_epochs, batchStep+1, totalStep, losses_training[-1], dice_similarities_training[-1]))
             
         scheduler.step()
     end = time.time()
     elapsed = end - start
     print("Training Took " + elapsed/60 + " Minutes")
+
+def validate(dataLoaders, model, device):
+    losses_validation = list()
+    dice_similarities_validation = list()
+
+    print("> Validation")
+    start = time.time()
+    model.eval()
+    with torch.no_grad():
+        for images, labels in dataLoaders["valid"]:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs, seg_layers = model(images)
+            losses_validation.append(dice_loss(outputs, labels))
+            dice_similarities_validation.append(dice_coefficient(outputs, labels))
+
+        print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_validation) ,get_average(dice_similarities_validation)))
+    end = time.time()
+    elapsed = end - start
+    print("Validation took " + elapsed/60 + " mins in total") 
+
+
+# Variable numList must be a list of number types only
+def get_average(numList):
+    size = len(numList)
+    count = 0
+    for num in numList:
+        count += num
+    
+    return count / size
 
 def dice_loss():
 
