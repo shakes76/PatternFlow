@@ -2,10 +2,10 @@ import tensorflow as tf
 import numpy as np
 
 # Hyperparams
-latent_dims = 32
+latent_dims = 128
 image_shape = (256, 256, 1)
 num_embeddings = 256
-encoder_depth = 6 # 6
+encoder_depth = 5 # 6
 encoded_image_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(latent_dims))
 pixelcnn_input_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(1))
 beta = 4.0 # 2.0
@@ -43,8 +43,8 @@ class PixelConvLayer(tf.keras.layers.Layer):
 def get_pixel_cnn(kernel_size, input_shape):
     inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(inputs, num_embeddings)
-    onehot = tf.keras.layers.Dropout(0.4)(onehot)
-    onehot = tf.keras.layers.BatchNormalization()(onehot)
+    onehot = tf.keras.layers.Dropout(0.2)(onehot)
+    # onehot = tf.keras.layers.BatchNormalization()(onehot)
     x1 = PixelConvLayer(
         mask_type="A",
         stack='V',
@@ -66,7 +66,7 @@ def get_pixel_cnn(kernel_size, input_shape):
             filters=128,
             kernel_size=1,
         )(x)
-        y = tf.keras.layers.BatchNormalization()(y)
+        # y = tf.keras.layers.BatchNormalization()(y)
         y1 = PixelConvLayer(
             mask_type="B",
             stack='H',
@@ -82,13 +82,13 @@ def get_pixel_cnn(kernel_size, input_shape):
             padding="same"
         )(y)
         y = tf.keras.layers.Add()([y1,y2])
-        y = tf.keras.layers.Dropout(0.2)(y)
-        y = tf.keras.layers.BatchNormalization()(y)
+        # y = tf.keras.layers.Dropout(0.2)(y)
+        # y = tf.keras.layers.BatchNormalization()(y)
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
         )(y)
-        y = tf.keras.layers.BatchNormalization()(y)
+        # y = tf.keras.layers.BatchNormalization()(y)
         x = tf.keras.layers.Add()([x,y])
 
     for _ in range(2):
@@ -107,7 +107,7 @@ def get_pixel_cnn(kernel_size, input_shape):
             strides=1,
             padding="valid")(x)
         x = tf.keras.layers.Add()([x1,x2])
-        x = tf.keras.layers.BatchNormalization()(x)
+        # x = tf.keras.layers.BatchNormalization()(x)
 
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(

@@ -59,7 +59,7 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
             loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=["accuracy"])
     
-    for i in range(1):
+    for i in range(2):
         dataset = tf.data.Dataset.from_tensor_slices(tf.concat([data["train"], data["validate"]], axis=0)[(i)*3*1024:(i+1)*3*1024])
         dataset = dataset.batch(32)
         pred = None
@@ -78,7 +78,7 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
             y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                     num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
             batch_size=64,
-            epochs=100,
+            epochs=60,
             validation_split=0.1)
 else:
     pixelcnn = tf.keras.models.load_model("pixelcnn.ckpt")
