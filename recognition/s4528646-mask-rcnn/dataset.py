@@ -1,15 +1,21 @@
 import torch
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import pandas as pd
 import numpy as np
 import os
-import cv2
+from PIL import Image
+import torchvision.transforms as T
 
-def get_bounding_box(mask):
-    """Compute a bounding box based on a single class mask image."""
-    x, y, w, h = cv2.boundingRect(mask[0, ...])
-    return torch.tensor([[x, y, x + w, y + h]], dtype=torch.float32)
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+def get_transform(train):
+    transforms = []
+    transforms.append(T.ToTensor())
+    if train:
+        transforms.append(T.RandomHorizontalFlip(0.5))
+    return T.Compose(transforms)
 
 class ISICDataset(Dataset):
     """
@@ -19,9 +25,10 @@ class ISICDataset(Dataset):
         image_folder_path (str): path to a directory containing skin lesion images
         mask_folder_path (str): path to a directory containing mask images
     """
-    def __init__(self, image_folder_path, mask_folder_path, diagnoses_path, device):
+    def __init__(self, image_folder_path, mask_folder_path, diagnoses_path, device, transform=None):
         self.diagonoses_df = pd.read_csv(diagnoses_path)
         self.mask_folder_path = mask_folder_path
+        self.transform = transform
         self.image_folder_path = image_folder_path
         self.device = device
         
@@ -44,9 +51,8 @@ class ISICDataset(Dataset):
             bounding box: Tensor[1, 4] bounding box generated from mask
         """
         image_id = self.diagonoses_df.iloc[idx]["image_id"]
-        melanoma = self.diagonoses_df.iloc[idx]["melanoma"]
-        seborrheic_keratosis = self.diagonoses_df.iloc[idx]["seborrheic_keratosis"]
-        if melanoma:
+        is_melanoma = self.diagonoses_df.iloc[idx]["melanoma"]
+        if is_melanoma:
             label = 1
         else:
             label = 0
@@ -54,21 +60,52 @@ class ISICDataset(Dataset):
         # Load image
         # Network expects dim 2 in dim 0
         image_path = self.get_image_path(image_id)
-        image = cv2.imread(image_path) / 255.0
-        image = np.swapaxes(image, 0, 2)
+        image = Image.open(image_path).convert("RGB")
         
         # Load mask image
         # Mask consists of two classes (including the background)
         mask_path = self.get_mask_path(image_id)
-        mask = cv2.imread(mask_path)
-        mask = (mask > 0).astype(np.uint8)[..., 0]
-        mask = np.expand_dims(mask, axis=0)
+        mask = Image.open(mask_path)
+
+        mask = np.array(mask)
+        obj_ids = np.unique(mask)
+        obj_ids = obj_ids[1:]
+        masks = mask == obj_ids[:, None, None]
+        num_objs = len(obj_ids)
+        boxes = []
+        for i in range(num_objs):
+            pos = np.where(masks[i])
+            xmin = np.min(pos[1])
+            xmax = np.max(pos[1])
+            ymin = np.min(pos[0])
+            ymax = np.max(pos[0])
+            boxes.append([xmin, ymin, xmax, ymax])
+
+        boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        labels = torch.ones((1,), dtype=torch.int64)
+        labels[0] = label
+        masks = torch.as_tensor(masks, dtype=torch.uint8)
+        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        iscrowd = torch.zeros((1,), dtype=torch.int64)
         
         
-        targets = {
-            "labels": torch.tensor([label], dtype=torch.int64), 
-            "masks": torch.from_numpy(mask), 
-            "boxes": get_bounding_box(mask)
-            }
-        return torch.from_numpy(image).float(), targets
+        targets = {}
+        targets["boxes"] = boxes
+        targets["labels"] = labels
+        targets["masks"] = masks
+        targets["area"] = area
+        targets["iscrows"] = iscrowd
         
+        if self.transform is not None:
+            image = self.transform(image)
+        
+        return image, targets
+
+
+train_data = ISICDataset(
+    image_folder_path="./data/ISIC-2017_Training_Data", 
+    mask_folder_path="./data/ISIC-2017_Training_Part1_GroundTruth", 
+    diagnoses_path="./data/ISIC-2017_Training_Part3_GroundTruth.csv",
+    device=device,
+    transform=get_transform(True),
+    )
