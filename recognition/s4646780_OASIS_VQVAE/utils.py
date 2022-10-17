@@ -1,5 +1,6 @@
 import torch
 from pytorch_msssim import ssim
+import torch.nn as nn
 
 
 def mean_ssim_vqvae(test_dataset, test_loader, vqvae_model):
@@ -17,3 +18,9 @@ def mean_ssim_vqvae(test_dataset, test_loader, vqvae_model):
             _, prediction, _ = vqvae_model(data)
             total_ssim += ssim(prediction, data, data_range=255)
     return (total_ssim / len(test_dataset)).item()
+
+
+def initialise_weights(model):
+    for m in model.modules():
+        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
+            nn.init.normal_(m.weight.data, 0.0, 0.02)
