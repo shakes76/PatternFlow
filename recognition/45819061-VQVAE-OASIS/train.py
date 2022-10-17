@@ -1,10 +1,10 @@
 import tensorflow as tf
 import numpy as np
-from dataset import get_data
+from dataset import BATCH_SIZE, get_data
 from modules import VQVAE
 
 
-class VQVAETrainer (tf.kears.models.Model):
+class VQVAETrainer (tf.keras.models.Model):
     def __init__(self, train_variance, latent_dim=32, num_embeddings=128):
         super(VQVAETrainer, self).__init__()
         self.train_variance = train_variance
@@ -43,3 +43,11 @@ class VQVAETrainer (tf.kears.models.Model):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result()
         }
+
+
+x_train, x_test, x_validate, mean, variance = get_data()
+
+vqvae_trainer = VQVAETrainer(variance, 32, 128)
+vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
+vqvae_trainer.fit(x_train, epochs=5, batch_size=BATCH_SIZE, use_multiprocessing=True, validation_data=x_validate)
+vqvae_trainer.evaluate(x_test)
