@@ -109,7 +109,6 @@ def get_pixel_cnn(kernel_size, input_shape):
         x = tf.keras.layers.Add()([x1,x2])
         # x = tf.keras.layers.BatchNormalization()(x)
 
-
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(
         filters=num_embeddings,
