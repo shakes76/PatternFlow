@@ -129,6 +129,9 @@ vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=t
                          vqvae_trained = None, img_shape=img_shape, embed_num=64, 
                          result_path=result_path, vq_epoch=vq_epoch)
 
+VQVAE_result(vqvae_trained, test_data)
+
 pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, 
                           pcnn_epoch=pcnn_epoch)
 
+generate_PixelCNN(vqvae_trained, pcnn_trained, 10)
