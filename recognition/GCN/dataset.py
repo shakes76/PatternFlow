@@ -28,10 +28,13 @@ def rownormalise(inp):
    
   summed_rows = np.array(inp.sum(1))
   # print("rowsum", rowsum)
+  print("before inv")
   row_inverse = (np.reciprocal(summed_rows)).flatten()
   #np.power(rowsum, -1).flatten()
   #
   # print("inverse", r_inv)
+  print("after inv")
+
   row_inverse[np.isinf(row_inverse)] = 0.
   inverted_matrix = sp.diags(row_inverse)
   
@@ -63,6 +66,7 @@ def preprocess():
   print(len(features_df))
 
   # print("Total number of self-loops: ", len(list(nx.selfloop_edges(G))))
+  print("before nodes!!")
   G.add_nodes_from(features, name=np.arange(1, G.number_of_nodes()))
 
   # print(edges)
@@ -72,10 +76,7 @@ def preprocess():
   # print(edges[0])
   edges = [tuple(e) for e in edges]
   self_loops = [tuple((n, n)) for n in range(G.number_of_nodes())]
-
-  # print(edges[0])
-  # print(self_loops)
-
+  print("before edges!!")
   G_.add_edges_from(self_loops)
 
   A = nx.to_numpy_array(G)
@@ -84,10 +85,12 @@ def preprocess():
   A_copy = A
 
   np.fill_diagonal(A, 1)
+  print("added loops!!")
   diags = np.diag(A) + np.diag(A_copy)
   np.fill_diagonal(A_copy, diags)
 
   # print(A_copy.shape)
+  print("before dot!")
   AX = np.dot(A_copy,X)
   # deg_mat = G_.degree()
   # print(G.degree[0])
@@ -116,13 +119,21 @@ def preprocess():
   # D_inv_AX = np.dot(D_inverse, AX)
 
   # normalised_adjacency = D_inv_AX
+  print("here!")
+    
 
   features = torch.FloatTensor(rownormalise(data['features']))
+  print("before adj!")
   adj = torch.from_numpy(rownormalise(A_copy))
+  
+  idx_train = np.arange(int(0.5*len(data)))
+  print("train", idx_train)
 
-  idx_train = range(140)
-  idx_val = range(200, 500)
-  idx_test = range(500, 1500)
+  idx_val = np.arange(int(0.5*len(data)), int(0.5*len(data)) + int(0.25*len(data)))
+  print("val", idx_val)
+  idx_test = np.arange(int(0.5*len(data)) + int(0.25*len(data)), len(data))
+  
+  # print("test", idx_test)
   idx_train = torch.LongTensor(idx_train)
   idx_val = torch.LongTensor(idx_val)
   idx_test = torch.LongTensor(idx_test)
@@ -132,7 +143,7 @@ def preprocess():
   # print("featured", type(features[0]))
   # print("edges", type(edges[0][0]))
   # print("self loops", type(self_loops[0][0]))
-  print(adj)
+  # print(adj)
   # pyg_graph = from_networkx(G_)
   # degrees = np.matrix([val for (node, val) in G_.degree()])[:,0:100]
   # print(degrees.shape)
@@ -146,3 +157,4 @@ def preprocess():
   # deg_mat = tf.constant(deg_mat)
   # tf.cast(deg_mat, tf.float32)
   return adj, features, labels, idx_train, idx_val, idx_test
+
