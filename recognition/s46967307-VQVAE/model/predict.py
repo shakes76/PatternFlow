@@ -1,4 +1,5 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
@@ -6,13 +7,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
-from modules import AE, get_pixel_cnn, latent_dims, num_embeddings, get_indices, pixelcnn_input_shape, image_shape, encoded_image_shape
+from modules import AE, get_pixel_cnn, latent_dims, num_embeddings, get_indices, pixelcnn_input_shape, image_shape, encoded_image_shape, ssim_loss
 from dataset import load_data
 
 tf.config.experimental.set_memory_growth(
     tf.config.list_physical_devices('GPU')[0], True)
 
-model: AE = tf.keras.models.load_model("model.ckpt")
+model: AE = tf.keras.models.load_model("model.ckpt", compile=False)
 print(model.summary())
 
 data = load_data()
@@ -21,15 +22,15 @@ def visualize_autoencoder(n):
     predictions = model.predict(tf.reshape(data["test"][0:30], shape=(-1,*image_shape[0:2])))
     encoded = get_indices(model.vq.variables[0], tf.reshape(model.encoder.predict(data["test"]), shape=(-1,latent_dims)), quantize=False, splits=32)
     encoded = tf.reshape(encoded, shape=(-1, *pixelcnn_input_shape[0:2]))
-    # plt.tight_layout()
-    # fig, axs = plt.subplots(n, 3, figsize=image_shape[0:2])
-    # for i in range(n):
-    #     axs[i,0].imshow(tf.reshape(data["test"][i], shape=image_shape[0:2]))
-    #     axs[i,2].imshow(predictions[i])
-    #     axs[i,1].imshow(tf.reshape(tf.image.resize(tf.reshape(encoded[i], shape=pixelcnn_input_shape), image_shape[0:2], antialias=False, method=tf.image.ResizeMethod.NEAREST_NEIGHBOR), shape=image_shape[0:2]))
-    # plt.show()
+    plt.tight_layout()
+    fig, axs = plt.subplots(n, 3, figsize=image_shape[0:2])
+    for i in range(n):
+        axs[i,0].imshow(tf.reshape(data["test"][i], shape=image_shape[0:2]))
+        axs[i,2].imshow(predictions[i])
+        axs[i,1].imshow(tf.reshape(encoded[i], shape=pixelcnn_input_shape))
+    plt.show()
 
-visualize_autoencoder(6)
+visualize_autoencoder(2)
 
 def calculate_ssim():
     test_data = tf.reshape(data["test"], shape=(-1,*image_shape[0:2]))
@@ -89,26 +90,18 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
 
 print(pixelcnn.summary())
 
-n = 6
-generated = data["train"][:n]
-generated = tf.concat([tf.zeros_like(generated[0:n//2]), tf.random.uniform(shape=tf.shape(generated[n//2:n]), maxval=31)], axis=0)
-generated = tf.reshape(generated, shape=(n, *image_shape))
-generated = model.encoder.predict(generated)
-generated = tf.reshape(generated, shape=(-1, latent_dims))
-generated = get_indices(model.vq.variables[0], generated, quantize=False)
-generated = tf.reshape(generated, shape=(-1, *pixelcnn_input_shape[0:2]))
+n = 4
+generated = tf.concat([tf.zeros(shape=(n//2,*pixelcnn_input_shape[0:2])),
+    tf.random.uniform(shape=(n//2,*pixelcnn_input_shape[0:2]), maxval=256)], axis=0)
+generated = tf.reshape(generated, shape=(n, *pixelcnn_input_shape[0:2]))
 generated = generated.numpy()
-for _ in range(6):
+for _ in range(1):
     for row in range(pixelcnn_input_shape[0]):
         print("Row: ", row)
         for col in range(pixelcnn_input_shape[1]):
             probabilities = pixelcnn.predict(generated)[:, row, col]
-            # probabilities = tf.square(probabilities)
-            # probabilities = tf.square(probabilities)
-            # probabilities = tf.square(probabilities)
-            # probabilities = tf.square(probabilities)
             print(probabilities)
-            probabilities = tf.math.log(probabilities)
+            # probabilities = tf.math.log(probabilities)
 
             generated[:, row, col] = tf.reshape(
                 tf.random.categorical(probabilities, 1), shape=(n,))

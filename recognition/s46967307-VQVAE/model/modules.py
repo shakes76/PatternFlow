@@ -2,13 +2,16 @@ import tensorflow as tf
 import numpy as np
 
 # Hyperparams
-latent_dims = 16
+latent_dims = 32
 image_shape = (256, 256, 1)
 num_embeddings = 256
-encoder_depth = 5
+encoder_depth = 6 # 6
 encoded_image_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(latent_dims))
 pixelcnn_input_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(1))
-beta = 2.0
+beta = 4.0 # 2.0
+
+def ssim_loss(x, y):
+        return tf.reduce_mean(tf.image.ssim(x,y,1.0))
 
 class PixelConvLayer(tf.keras.layers.Layer):
     def __init__(self, mask_type, stack = 'VH', **kwargs):
@@ -40,39 +43,35 @@ class PixelConvLayer(tf.keras.layers.Layer):
 def get_pixel_cnn(kernel_size, input_shape):
     inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(inputs, num_embeddings)
-    # onehot = tf.keras.layers.Dropout(0.3)(onehot)
-    # onehot = tf.keras.layers.BatchNormalization()(onehot)
+    onehot = tf.keras.layers.Dropout(0.3)(onehot)
+    onehot = tf.keras.layers.BatchNormalization()(onehot)
     x1 = PixelConvLayer(
         mask_type="A",
         stack='V',
         filters=128,
         kernel_size=kernel_size,
-        activation="relu",
         padding="same")(onehot)
     x2 = PixelConvLayer(
         mask_type="A",
         stack='H',
         filters=128,
         kernel_size=kernel_size,
-        activation="relu",
         padding="same")(onehot)
     x = tf.keras.layers.Add()([x1, x2])
     # x = tf.keras.layers.BatchNormalization()(x)
     # x = tf.keras.layers.Dropout(0.3)(x)
     
-    for _ in range(2):
+    for _ in range(1):
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
-            activation="relu"
         )(x)
-        # y = tf.keras.layers.BatchNormalization()(y)
+        # y = tf.kerasu.layers.BatchNormalization()(y)
         y1 = PixelConvLayer(
             mask_type="B",
             stack='H',
             filters=64,
             kernel_size=3,
-            activation="relu",
             padding="same"
         )(y)
         y2 = PixelConvLayer(
@@ -80,16 +79,14 @@ def get_pixel_cnn(kernel_size, input_shape):
             stack='V',
             filters=64,
             kernel_size=3,
-            activation="relu",
             padding="same"
         )(y)
         y = tf.keras.layers.Add()([y1,y2])
-        # y = tf.keras.layers.Dropout(0.5)(y)
-        # y = tf.keras.layers.BatchNormalization()(y)
+        y = tf.keras.layers.Dropout(0.5)(y)
+        y = tf.keras.layers.BatchNormalization()(y)
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
-            activation="relu"
         )(y)
         # y = tf.keras.layers.BatchNormalization()(y)
         x = tf.keras.layers.Add()([x,y])
@@ -98,18 +95,16 @@ def get_pixel_cnn(kernel_size, input_shape):
         x1 = PixelConvLayer(
             mask_type="B",
             stack='V',
-            filters=128,
+            filters=256,
             kernel_size=1,
             strides=1,
-            activation="relu",
             padding="valid")(x)
         x2 = PixelConvLayer(
             mask_type="B",
             stack='H',
-            filters=128,
+            filters=256,
             kernel_size=1,
             strides=1,
-            activation="relu",
             padding="valid")(x)
         x = tf.keras.layers.Add()([x1,x2])
         # x = tf.keras.layers.BatchNormalization()(x)
@@ -200,6 +195,8 @@ class AE(tf.keras.Model):
         # latent space.
         input = tf.keras.layers.Input(shape=image_shape, batch_size=None, name="input")
         x = input
+        # x = tf.keras.layers.RandomTranslation(0.3,0.3,fill_mode='constant')(x)
+        # x = tf.keras.layers.RandomRotation(0.6, fill_mode='constant')(x)
         for n in range(encoder_depth):
             x = tf.keras.layers.Conv2D(
                 filters = min(128,64*int(pow(2,n))), 
@@ -210,7 +207,7 @@ class AE(tf.keras.Model):
                 name = f"compression_{n}")(x)
         x = tf.keras.layers.Conv2D(
             filters = latent_dims, 
-            kernel_size=3,
+            kernel_size=1,
             strides=1,
             activation='relu',
             padding = "same", 
@@ -233,6 +230,8 @@ class AE(tf.keras.Model):
         input = tf.keras.layers.Input(shape=encoded_image_shape, batch_size=None, name="input")
         x = input
         for n in range(encoder_depth):
+            # x = tf.keras.layers.Dropout(0.25)(x)
+            # x = tf.keras.layers.BatchNormalization()(x)
             x = tf.keras.layers.Conv2DTranspose(
                 filters = min(128,64*int(pow(2,n))), 
                 kernel_size = 3, 
@@ -242,7 +241,7 @@ class AE(tf.keras.Model):
                 name = f"reconstruct_{n}")(x)
         x = tf.keras.layers.Conv2DTranspose(
             filters = 1,
-            kernel_size = 3,
+            kernel_size = 1,
             strides = 1,
             padding = 'same',
             name = "to_image",
