@@ -5,6 +5,7 @@ import numpy as np
 from modules import *
 from dataset import *
 from torchmetrics import StructuralSimilarityIndexMeasure
+from torchvision.utils import save_image
 
 # Seed the random number generator for reproducibility of the results
 torch.manual_seed(3710)
@@ -41,12 +42,13 @@ def fit():
     optimiser = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
     fixed_images, _ = next(iter(test_loader))
-    fixed_grid = make_grid(fixed_images, nrow=8, normalize=True)
-    plt.axis('off')
-    plt.figure(figsize=(12, 12))
-    plt.imshow(np.transpose(fixed_grid, (1, 2, 0)))
-    plt.savefig('Test.png')
-    plt.show()
+    save_image(fixed_images, fp='Test.png', nrow=8, normalize=True)
+    #fixed_grid = make_grid(fixed_images, nrow=8, normalize=True)
+    #plt.axis('off')
+    #plt.figure(figsize=(12, 12))
+    #plt.imshow(np.transpose(fixed_grid, (1, 2, 0)))
+    #plt.savefig('Test.png')
+    #plt.show()
 
     best_ssim = 0
     recon_losses = []
@@ -57,14 +59,15 @@ def fit():
             _, recontructed = model(fixed_images.to(DEVICE))
 
         recontructed = recontructed.cpu()
-        ssim = SSIM(fixed_images, reconstruction)
+        ssim = SSIM(fixed_images, recontructed)
         if ssim > best_ssim:
-            grid = make_grid(reconstruction, nrow=8, normalize=True)
-            plt.axis('off')
-            plt.figure(figsize=(12, 12))
-            plt.imshow(np.transpose(grid, (1, 2, 0)))
-            plt.savefig('Reconstructed.png')
-            plt.show()
+            #grid = make_grid(recontructed, nrow=8, normalize=True)
+            save_image(recontructed, fp='Reconstructed.png', nrow=8, normalize=True)
+            #plt.axis('off')
+            #plt.figure(figsize=(12, 12))
+            #plt.imshow(np.transpose(grid, (1, 2, 0)))
+            #plt.savefig('Reconstructed.png')
+            #plt.show()
 
         recon_losses.append(loss)
 

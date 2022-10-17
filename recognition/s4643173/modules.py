@@ -16,14 +16,13 @@ class Embedding(nn.Module):
     def forward(self, x):
         # Reshape inputs from BCHW to BHWC
         x = x.permute(0, 2, 3, 1).contiguous()
-        x_shape = x.shape
 
-        flat_x = x.view(-1, self.embedding.weight.size(1))
+        flattened = x.view(-1, self.embedding.weight.size(1))
 
         # Calculate distances to find the closest codebook vectors
-        distances = (torch.sum(flat_x**2, dim=1, keepdim=True) 
+        distances = (torch.sum(flattened**2, dim=1, keepdim=True) 
                     + torch.sum(self.embedding.weight**2, dim=1)
-                    - 2 * torch.matmul(flat_x, self.embedding.weight.t()))
+                    - 2 * torch.matmul(flattened, self.embedding.weight.t()))
         
         # We get the indices from argmin
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
@@ -31,7 +30,7 @@ class Embedding(nn.Module):
         encodings.scatter_(1, encoding_indices, 1)
 
         # Quantize the vector by multiplying the encodings with the embeddings
-        quantized = torch.matmul(encodings, self.embedding.weight).view(x_shape)
+        quantized = torch.matmul(encodings, self.embedding.weight).view(x.shape)
 
         # Calculate the loss. Note that the paper has log likelihood as the
         # loss but minimising the mean squared error is equivalent.
@@ -75,12 +74,13 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, in_channels, out_channels):
+        super().__init__()
         self.net = nn.Sequential(
             ResBlock(in_channels),
             ResBlock(in_channels),
             nn.ReLU(True),
             nn.ConvTranspose2d(in_channels, in_channels, 4, 2, 1),
-            nn.BatchNorm2d(out_channels),
+            nn.BatchNorm2d(in_channels),
             nn.ReLU(True),
             nn.ConvTranspose2d(in_channels, out_channels, 4, 2, 1),
             nn.Tanh()
@@ -94,7 +94,7 @@ class VQVAE(nn.Module):
         super().__init__()
         self.encoder = Encoder(in_channels, out_channels)
         self.codebook = Embedding(K, out_channels)
-        self.decoder = Decoder(in_channels, out_channels)
+        self.decoder = Decoder(out_channels, in_channels)
 
     def forward(self, x):
         loss, quantized, _, _ = self.codebook(self.encoder(x))
