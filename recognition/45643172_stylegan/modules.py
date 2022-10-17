@@ -211,3 +211,25 @@ class Discriminator:
             for i in range(idx, -1, -1):
                 x = self.d_blocks[i](x)
         return keras.Model([input_image, alpha], x, name=f"discriminator_{res}_x_{res}")
+
+class StyleGAN(tf.keras.Model):
+    def __init__(self, z_dim=512, target_res=64, start_res=4):
+        super(StyleGAN, self).__init__()
+        self.z_dim = z_dim
+
+        self.target_res_log2 = log2(target_res)
+        self.start_res_log2 = log2(start_res)
+        self.current_res_log2 = self.target_res_log2
+        self.num_stages = self.target_res_log2 - self.start_res_log2 + 1
+
+        self.alpha = tf.Variable(1.0, dtype=tf.float32, trainable=False, name="alpha")
+
+        self.mapping = Mapping(num_stages=self.num_stages)
+        self.d_builder = Discriminator(self.start_res_log2, self.target_res_log2)
+        self.g_builder = Generator(self.start_res_log2, self.target_res_log2)
+        self.g_input_shape = self.g_builder.input_shape
+
+        self.phase = None
+        self.train_step_counter = tf.Variable(0, dtype=tf.int32, trainable=False)
+
+        self.loss_weights = {"gradient_penalty": 10, "drift": 0.001}
