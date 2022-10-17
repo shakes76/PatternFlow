@@ -35,8 +35,6 @@ def creating_train_datasets():
         color_mode="grayscale",
     )
 
-    # print("initial tarin_ds", train_ds)
-
     valid_ds = tf.keras.utils.image_dataset_from_directory(
         import_train_data(),
         batch_size=BATCH_SIZE,
@@ -52,14 +50,13 @@ def creating_train_datasets():
 
 def creating_test_dataset():
 
-    test_path = import_test_data()
-
-    test_ds = sorted(
-        [
-            os.path.join(test_path, fname)
-            for fname in os.listdir(test_path)
-            if fname.endswith(".jpeg")
-        ]
+    test_ds  = tf.keras.utils.image_dataset_from_directory(
+        import_test_data(),
+        batch_size=BATCH_SIZE,
+        image_size=(HEIGHT, WIDTH),
+        seed=1337,
+        label_mode=None,
+        color_mode="grayscale",
     )
     return test_ds
 
@@ -67,7 +64,6 @@ def creating_test_dataset():
 def scaling(input_image):
     input_image = input_image / 255.0
     return input_image
-
 
 # Scale from (0, 255) to (0, 1)
 def mapping():
@@ -78,48 +74,19 @@ def mapping():
 
     return train_ds, valid_ds
 
-# train_ds, valid_ds = mapping()
 test_ds = creating_test_dataset()
-
-
-# #Visualising images
-# for batch in train_ds.take(1):
-#     for img in batch:
-        
-#         plt.imshow(img.numpy())
-#         plt.show()
-
-# # converting images from RGB to YUV from the low-resolution images
-# def process_input(input, input_size):
-#     input = tf.image.rgb_to_yuv(input)
-#     last_dimension_axis = len(input.shape) - 1
-#     y, u, v = tf.split(input, 3, axis=last_dimension_axis)
-#     return tf.image.resize(y, [input_size, input_size], method="area")
-
-# # converting images from RBG to YUB from the high-resolution images
-# def process_target(input):
-#     input = tf.image.rgb_to_yuv(input)
-#     last_dimension_axis = len(input.shape) - 1
-#     y, u, v = tf.split(input, 3, axis=last_dimension_axis)
-#     return y
 
 def mapping_target():
 
     train_ds, valid_ds = mapping()
 
-    # print("train_ds", train_ds)
-
     train_ds = train_ds.map(
-        lambda x: (tf.image.resize(x, [64, 60]), x)
-        )
-
-    train_ds = train_ds.prefetch(buffer_size=32)
+        lambda x: (tf.image.resize(x, (64, 60)), x)
+    )
 
     valid_ds = valid_ds.map(
-        lambda x: (tf.image.resize(x, [64, 60]), x)
-        )
-
-    valid_ds = valid_ds.prefetch(buffer_size=32)
+        lambda x: (tf.image.resize(x, (64, 60)), x)
+    )
 
     return train_ds, valid_ds
 
