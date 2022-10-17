@@ -82,3 +82,8 @@ pyplot.xlabel('Epoch')
 pyplot.legend(['Training', 'Validation'])
 pyplot.show()
 
+"""
+Save the trained GCN model
+"""
+model.save('4_layers_GCN_Model.h5')
+

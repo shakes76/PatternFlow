@@ -65,6 +65,13 @@ class GraphConvolution(layers.Layer):
             output = self.activation_function(output)
         return output
 
+    def get_config(self):
+        """
+        Override the "get_config()"
+        """
+        config = super().get_config()
+        return config
+
 
 def GCN(features_matrix):
     """
