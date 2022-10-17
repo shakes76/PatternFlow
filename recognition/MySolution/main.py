@@ -1,8 +1,12 @@
 import train
+import dataset
+import modules
 
 
 def main():
-    train.handle_training()
+    data = dataset.Dataset()
+    module = modules.Modules(data)
+    train.handle_training(module)
     print("ok!")
 
 

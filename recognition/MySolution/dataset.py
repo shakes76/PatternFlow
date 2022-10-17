@@ -112,7 +112,7 @@ def get_target(data_dir, features):
     return target.loc[features.keys(), :]
 
 
-def generate_graph(edges, target):
+def generate_graph(edges, target, samples):
     class_values = sorted(target["page_type"].unique())
     target_values = sorted(target["id"].unique())
     class_idx = {name: ID for ID, name in enumerate(class_values)}
@@ -122,14 +122,14 @@ def generate_graph(edges, target):
     edges["target"] = edges["target"].apply(lambda name: target_idx[name])
     target["page_type"] = target["page_type"].apply(lambda value: class_idx[value])
     plt.figure(figsize=(10, 10))
-    facebook_graph = nx.from_pandas_edgelist(edges.sample(n=1500))
+    facebook_graph = nx.from_pandas_edgelist(edges.sample(n=samples))
     subjects = list(target[target["id"].isin(list(facebook_graph.nodes))]["page_type"])
-    nx.draw_spring(facebook_graph, node_size=15, node_color=subjects)
+    nx.draw_spring(facebook_graph, node_size=10, node_color=subjects)
     plt.show()
 
 
 class Dataset:
-    def __init__(self, visualise=False):
+    def __init__(self):
         data_dir = get_file()
         self.edges = get_edges(data_dir)
         self.features = get_features(data_dir)
@@ -137,8 +137,9 @@ class Dataset:
         self.node_features = get_node_features(self.features, self.feature_matrix)
         self.target = get_target(data_dir, self.features)
         self.graph = sg.StellarGraph(self.node_features, self.edges.astype(str))
-        if visualise:
-            generate_graph(self.edges, self.target)
+
+    def get_visualised_graph(self, samples=1500):
+        generate_graph(self.edges, self.target, samples)
 
     def get_edges(self):
         return self.edges
