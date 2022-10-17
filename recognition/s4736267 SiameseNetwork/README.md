@@ -152,12 +152,12 @@ The final implementation of the 3D ResNet uses an input size of 210x210. The ima
     <img src=Picture/resnet3D.PNG width="600" >
 </p>
 <p align="center">
-    <em> Figure 6: ResNet 3D  </em>
+    <em> Figure 6:  3D ResNet   </em>
 </p>
 
 For the convolutional residual blocks 3 and 4, a stride with (2,1,1) is used, to decrease the number in the third dimension but not in the other two.
 
-Tuning the batch size, and introducing a training step scheduler and gradient clipping, could increase the accuracy of the SNN. Nevertheless, these steps helped to reduce the training time to achieve the previous accuracy. 
+Tuning the batch size, and introducing a training step scheduler and gradient clipping, could increase the accuracy of the SNN. In this iteration step, these steps helped to reduce the training time to achieve the previous accuracy. 
 
 Adding a deeper structure by using more residual blocks for the ResNet approach, didn't increase the accuracy. It only led to a drastic increase in training time and model size.
 
@@ -195,6 +195,20 @@ Minimizing the loss, the distance between the anchor and the positive sample d(a
 
 After training, the recieved feature vector of the anchor should be more similar compared with the positve sample than the negative sample. 
 
+###Adapting 3D ResNet approach
+
+The previous introduced 3D ResNet, was modified which resulted in the final implementation.
+
+<p align="center">
+    <img src=Picture/resnet3D_final.PNG width="600" >
+</p>
+<p align="center">
+    <em> Figure 8: Adapted 3D ResNet  </em>
+</p>
+
+The major change was the introduction of two additonal linear linear layers at the end of the branch structure and the removal of the previous used adaptive average pooling function. Furthermore the number of identiy blocks was reduced, so that all four stages contain 4 residual blocks. 
+Especially due to the introduction of the average poling layer, the runtime of the SNN increased dramatically.
+
 ### Outlook:
 Further improvements for the SNN implementation would be
 * Reusing the additional classification network
@@ -203,13 +217,25 @@ Further improvements for the SNN implementation would be
 
 ## Executing Code
 
-The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py. Important constants are defined in the top section of the file. 
-Predict.py loads the pre-trained model and reruns the testing on the test set. 
-For both files, plotted images are stored in the root folder. 
+The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py. 
+* Important constants are defined in the top section of the file 
+* Predict.py loads the pre-trained model and reruns the testing on the test set 
+* Plotted images are stored in the root folder 
 
 ## Results
 The results are based on the last implementation of the SNN. 
-Summarising the main problems I faced during the implementation:
+
+<p align="center">
+    <img src=Picture/training_loss.PNG width="600" >
+</p>
+<p align="center">
+    <em> Figure 9: Loss during training epoch of training and validation set  </em>
+</p>
+
+The final accuracy could be improved but didnt peak the required 80%.
+> Test Accuracy  : 0.5311720967292786
+
+Summarising the main problems facing during the implementation:
 * Different Dataset structures between training/validation and testing
 * Labeling of Dataset
 * Same output for all inputs

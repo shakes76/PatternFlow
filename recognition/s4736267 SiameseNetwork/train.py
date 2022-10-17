@@ -33,11 +33,11 @@ import dataset
 #                  Defining constants
 #######################################################
 
-epoch_range = 100
+epoch_range = 200
 batch_size=16
 train_factor=1000               #Number of Persons
 test_factor=400
-valid_factor=200
+valid_factor=400
 
 FILE="weights_only.pth"         #File location of saved pretrained net
 
@@ -45,7 +45,7 @@ FILE="weights_only.pth"         #File location of saved pretrained net
 load_pretrained_model=0
 scheduler_active=1
 gradient_clipping=0             #Gradient clippling         
-plot_feature_vectors=1          #Ploting feature vectors
+plot_feature_vectors=0          #Ploting feature vectors
 plot_loss = 1                   #Ploting training and validation loss
 
 
@@ -70,8 +70,9 @@ else:
     net.eval()
 
 #Optimizer
-criterion = modules.TripletLoss()
-optimizer = optim.Adam(net.parameters(),lr = 0.005, weight_decay=1e-3)
+#criterion = modules.TripletLoss()
+criterion = torch.nn.TripletMarginLoss(margin=128.0)
+optimizer = optim.Adam(net.parameters(),lr = 0.0001, weight_decay=1e-3)
 
 #Learning rate scheduler
 scheduler = StepLR(optimizer, step_size=50, gamma=0.95)
@@ -209,13 +210,11 @@ print('=> ---- Finished Training ---- ')
 
 outputAD = net.forward_once(clas_image_AD)
 outputNC = net.forward_once(clas_image_NC)
-#feature_AD=torch.sum(outputAD, dim=0)/10
-#feature_NC=torch.sum(outputNC, dim=0)/10
 feature_AD=torch.mean(outputAD,dim=0)
 feature_NC=torch.mean(outputNC,dim=0)
 
-print("diff",torch.sum(clas_image_AD-clas_image_NC))
-print("diff_feautre",torch.sum(feature_AD-feature_NC))
+#print("diff",torch.sum(clas_image_AD-clas_image_NC))
+#print("diff_feautre",torch.sum(feature_AD-feature_NC))
 #######################################################
 #                  Testing
 #######################################################

@@ -67,23 +67,27 @@ class ResNet_3D(nn.Module):
         self.block0_2 = self._make_residual_block_(conv_block,     64, 128 ,3,1,(2,2,2))
         self.block1_2 = self._make_residual_block_(identity_block, 128, 128 ,3,1,(0,0,0))
 
-        self.block0_3 = self._make_residual_block_(conv_block,     128, 256 ,3,1,(2,1,1))
+        self.block0_3 = self._make_residual_block_(conv_block,     128, 256 ,3,1,(2,2,2))
         self.block1_3 = self._make_residual_block_(identity_block, 256, 256 ,3,1,(0,0,0))
 
         self.block0_4 = self._make_residual_block_(conv_block,     256, 512 ,3,1,(2,1,1))
         self.block1_4 = self._make_residual_block_(identity_block, 512, 512 ,3,1,(0,0,0))
 
         self.lin_layer = nn.Sequential(     
-
-                                            nn.AdaptiveAvgPool2d((1,1)),
-                                            nn.Dropout(p=0.5),
+                                            nn.AvgPool3d((1,5,5),stride=2),
+                                            #nn.AdaptiveAvgPool2d((1,1)),
+                                            nn.Dropout(p=0.1),
                                             nn.ReLU(),
                                             nn.Flatten(),
-                                            #nn.Linear(512, 512),
-                                            #nn.ReLU(),
-                                            #nn.Linear(4096,1024),
-                                            #nn.ReLU(),
-                                            nn.Linear(512,128))#,
+                                            nn.Linear(12800, 4096),
+                                            nn.ReLU(),
+                                            nn.Linear(4096,1028),
+                                            nn.ReLU(),
+                                            nn.Linear(1028,128))
+                                            
+
+                                            #nn.ReLU()
+                                            #,
                                             #nn.Sigmoid())
         
         self.final = nn.Sequential(nn.Linear(512, 1),
@@ -128,7 +132,7 @@ class ResNet_3D(nn.Module):
         print("block1_4",out.shape)
 
         #final
-        out = torch.squeeze(out, 2)
+        #out = torch.squeeze(out, 2)
         print("squeeze",out.shape)
 
         out = self.lin_layer(out)
@@ -143,6 +147,7 @@ class ResNet_3D(nn.Module):
         out = self.block0_1(out) 
         out = self.block1_1(out)
         out = self.block1_1(out) 
+        out = self.block1_1(out)
 
         #layer2
         out = self.block0_2(out) 
@@ -150,14 +155,12 @@ class ResNet_3D(nn.Module):
         out = self.block1_2(out)
         out = self.block1_2(out)
 
-
         #layer3
         out = self.block0_3(out) 
         out = self.block1_3(out)
         out = self.block1_3(out)
         out = self.block1_3(out)
-        out = self.block1_3(out)
-        out = self.block1_3(out)
+
 
         #layer4
         out = self.block0_4(out) 
@@ -166,7 +169,7 @@ class ResNet_3D(nn.Module):
         out = self.block1_4(out)
 
         #final
-        out = torch.squeeze(out, 2)
+        #out = torch.squeeze(out, 2)
         out = self.lin_layer(out)
 
         return out
@@ -179,6 +182,10 @@ class ResNet_3D(nn.Module):
         #out  = self.final(out).squeeze(1) 
 
         return out_x, out_y, out_z
+
+
+
+
 
 
 
@@ -242,13 +249,13 @@ def init_weights(m):
 #######################################################
 class TripletLoss(torch.nn.Module):
 
-    def __init__(self, margin=50.0):
+    def __init__(self, margin=10.0):
         super(TripletLoss, self).__init__()
         self.margin = margin
 
     def forward(self, output_1, output_2, output_3):
-        distance_AP = F.pairwise_distance(output_1, output_2, keepdim = True,p=1)
-        distance_AN = F.pairwise_distance(output_1, output_3, keepdim = True,p=1)
+        distance_AP = F.pairwise_distance(output_1, output_2, keepdim = True)
+        distance_AN = F.pairwise_distance(output_1, output_3, keepdim = True)
         #print(distance_AP[0].item(),distance_AN[0].item())
         loss_triplet = torch.mean(torch.clamp(distance_AP-distance_AN+self.margin,min=0))
 
