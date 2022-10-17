@@ -9,7 +9,7 @@ import modules
 from modules import VQVAETrainer
 
 # Get the datasets
-train_ds = get_test_dataset()
+train_ds = get_train_dataset()
 data_variance = np.var(train_ds)
 
 # Train the VQ-VAE model
