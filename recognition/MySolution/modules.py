@@ -14,16 +14,6 @@ from keras.callbacks import EarlyStopping
 import dataset
 
 
-def get_training_data(target, train_size=200):
-    train_data, test_data = train_test_split(target, train_size=train_size)
-    val_data, test_data = train_test_split(test_data, train_size=train_size)
-    target_encoding = LabelBinarizer()
-    train_targets = target_encoding.fit_transform(train_data["page_type"])
-    val_targets = target_encoding.fit_transform(val_data["page_type"])
-    test_targets = target_encoding.fit_transform(test_data["page_type"])
-    return train_data, val_data, test_data, train_targets, val_targets, test_targets
-
-
 def get_node_indices(graph, ids):
     node_ids = np.asarray(ids)
     flat_node_ids = node_ids.reshape(-1)
@@ -34,16 +24,26 @@ def get_node_indices(graph, ids):
 
 class Modules:
     def __init__(self, data):
+        self.target_encoding = None
         self.test_gen = None
         self.val_gen = None
         self.gcn_model = None
         self.generator = None
         self.model = None
         self.train_gen = None
-        data_group = get_training_data(data.get_target())
+        data_group = self.get_training_data(data.get_target())
         self.build_model(data)
         self.data_group = data_group
 
+    def get_training_data(self, target, train_size=200):
+        train_data, test_data = train_test_split(target, train_size=train_size)
+        val_data, test_data = train_test_split(test_data, train_size=train_size)
+        self.target_encoding = LabelBinarizer()
+        train_targets = self.target_encoding.fit_transform(train_data["page_type"])
+        val_targets = self.target_encoding.fit_transform(val_data["page_type"])
+        test_targets = self.target_encoding.fit_transform(test_data["page_type"])
+        return train_data, val_data, test_data, train_targets, val_targets, test_targets
+    
     def build_model(self, data):
         self.generator = FullBatchNodeGenerator(data.get_graph())
         corrupted_generator = CorruptedGenerator(self.generator)
@@ -94,3 +94,9 @@ class Modules:
 
     def get_gen(self):
         return self.train_gen, self.test_gen, self.val_gen
+
+    def get_target_encoding(self):
+        return self.target_encoding
+
+    def get_generator(self):
+        return self.generator

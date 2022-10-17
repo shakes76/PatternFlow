@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import keras.losses
 import tensorflow as tf
+import dataset
 
 
 def plot_loss_epoch(history):
@@ -33,8 +34,8 @@ def plot_all(history):
     plt.show()
 
 
-def handle_training(module, new_model=False):
-    if new_model:
+def handle_training(data, module, new_model=False):
+    if not new_model:
         train_gen = module.get_train_gen()
         model = module.get_model()
         history_log = keras.callbacks.CSVLogger(
@@ -57,15 +58,28 @@ def handle_training(module, new_model=False):
         train_gen, test_gen, val_gen = module.get_gen()
         pretrained_history = new_model.fit(
             train_gen,
-            epochs=2,
+            epochs=200,
             verbose=2,
             validation_data=module.val_gen,
             callbacks=[prediction],
         )
         plot_all(pretrained_history)
         new_model.save("finalised_model")
-    saved_model = keras.models.load_model("finalised_model")
-    
+        all_nodes = data.get_node_features().index
+        all_gen = module.get_generator().flow(all_nodes)
+        try_predict = new_model.predict(all_gen)
+        node_predictions = module.get_target_encoding().inverse_transform(
+            try_predict.squeeze()
+        )
+        df = pd.DataFrame({
+            "Predicted": node_predictions,
+            "True": data.get_target()["page_type"]
+        })
+        print(df)
+
+
+
+
 
 
 
