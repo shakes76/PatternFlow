@@ -1,0 +1,9 @@
+train: ../data/images/training/
+test: ../data/images/testing/
+val: ../data/images/validation/
+
+# number of classes
+nc: 2
+
+# class names
+names: ['melanoma', 'healthy']
