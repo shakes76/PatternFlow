@@ -108,20 +108,25 @@ def main():
         loss_history.append(hist_fade)
         model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
-        # transition from fade in models to complete high resolution models
         model.stabilize()
-        ep = EPOCHS[depth][1]
+        
+        # whether to stabilize-train, this should be specific to training image
+        # can lead to over train (model collapse)
+        if STAB:
+            # transition from fade in models to complete high resolution models
+            
+            ep = EPOCHS[depth][1]
 
-        # save model plots
-        plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')
-        plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_d_stabilize.png'), rankdir='LR')
+            # save model plots
+            plot_model(model.G, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_g_stabilize.png'), rankdir='LR')
+            plot_model(model.D, to_file=os.path.join(subfolders['models'], f'{rs}x{rs}_d_stabilize.png'), rankdir='LR')
 
-        # stabilize training
-        sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
-        model.compile(adam, adam)
-        hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
-        loss_history.append(hist_stab)
-        model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
+            # stabilize training
+            sampling_cbk.set_prefix(f'{rs}x{rs}_stabilize')
+            model.compile(adam, adam)
+            hist_stab = model.fit(training_images, steps_per_epoch=iters, epochs=ep, callbacks=[sampling_cbk])
+            loss_history.append(hist_stab)
+            model.save_weights(os.path.join(subfolders['ckpts'], f'stylegan_{sampling_cbk.prefix}.ckpt'))
 
     print('\nTraining completed.')
 

@@ -187,9 +187,9 @@ class StyleGAN(Model):
             
             # generate fake images
             fake_images = self.G(inputs, training=True)
-            
             fake_pred = self.D(fake_images, training=True)
             real_pred = self.D(real_images, training=True)
+            # wasserstein
             d_loss = tf.reduce_mean(fake_pred) - tf.reduce_mean(real_pred)
 
             # gradient penalty, lambda 10
@@ -218,7 +218,7 @@ class StyleGAN(Model):
             fake_images = self.G(inputs, training=True)
             fake_pred = self.D(fake_images, training=True)
             
-            # generator loss
+            # wasserstein
             g_loss = -tf.reduce_mean(fake_pred)
             
         # grad w.r.t fc layers and generator

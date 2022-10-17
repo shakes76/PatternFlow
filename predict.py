@@ -84,7 +84,7 @@ FC, Synthesis = load_model(ckpt, sres, tres)
 n = 100
 inputs = gen_inputs(FC, ldim, sres, tres, n=n)
 images = Synthesis(inputs)
-plot_save(images, cols=5, size=output_res, save_path=r'D:\generated.png')
+plot_save(images, size=output_res, save_path=r'D:\generated.png')
 
 
 # bilinear interpolation
