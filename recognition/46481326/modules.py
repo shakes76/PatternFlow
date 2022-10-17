@@ -7,24 +7,18 @@ import math # Import Python Math Module
 
 # %%
 class Hyperparameters():
-    def get_rate_learn(self): # Rate of learn of the optimizer
-        return 2e-4
-    def get_size_batch(self): # Size of batches for the PyTorch Dataloader(s)
-        return 128
-    def get_size_image(self): 
-        return 64
-    def get_channels_image(self): # Number of input channels (from the image)
-        return 1
-    def get_len_e(self):
-        return 20 # Length of the embedding space
-    def get_size_e(self): # Size of the embedding space
-        return 100
-    def get_loss_terminal(self):
-        return 20 # Loss at which the embedding space terminates.
-    def get_num_epoch(self): # Number of training epoch(s)
-        return 20
-    def get_fn_loss(self): # Defines the loss function to be Binary Cross Entropy (BCE)
-        return nn.BCELoss()
+    def __init__(self):
+        self.rate_learn = 1e-3 # Rate of learn of the optimizer
+        self.get_size_batch = 256 # Size of batches for the PyTorch Dataloader(s)
+        self.size_image = 64
+        self.channels_image = 1 # Number of input channels (from the image)
+        self.channels_out = 32
+        self.channels_out_res = 2
+        self.len_e = 512 # Length of the embedding space
+        self.size_e = 64 # Size of the embedding space
+        self.loss_terminal = 0.25 # Loss at which the embedding space terminates.
+        self.num_epoch = 15000 # Number of training epoch(s)
+        self.fn_loss = nn.MSELoss() # Defines the loss function to be Binary Cross Entropy (BCE)
     
 # %%
 class VQ(nn.Module):
@@ -145,3 +139,21 @@ class Decoder(nn.Module):
         x = self.relu(self.deconv1(x))
         x = self.deconv2(x)
         return x
+    
+# %%
+class VQVAE(nn.Module):
+    def __init__(self, channels_image, channels_out, channels_out_res, num_res, len_e, size_e, loss_threshold, decay=0):
+        super(VQVAE, self).__init__()
+        self.encoder = Encoder(channels_image, channels_out, channels_out_res, num_res)
+        self.preconv = nn.Conv2d(channels_out, size_e, kernel_size=1, stride=1)
+        if (decay > 0):
+            pass # May need to change this
+        else:
+            self.vq = VQ(len_e, size_e, loss_threshold)
+        self.decoder = Decoder(size_e, channels_out, channels_out_res, num_res, channels_image)
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.preconv(x)
+        loss, quantized, perplexity, encodings = self.vq(x)
+        x_recon = self.decoder(quantized)
+        return loss, x_recon, perplexity
