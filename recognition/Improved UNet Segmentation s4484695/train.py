@@ -84,7 +84,7 @@ def train(dataLoaders, model, device):
 
             if batchStep % 10 == 0:
                 losses_training.append(loss.item())
-                dice_similarities_training.append(dice_coefficient())
+                dice_similarities_training.append(dice_coefficient(seg_layers, labels))
                 print ("Epoch [{}/{}], Step [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}"
                     .format(epoch+1, num_epochs, batchStep+1, totalStep, losses_training[-1], dice_similarities_training[-1]))
             
@@ -106,8 +106,8 @@ def validate(dataLoaders, model, device):
             labels = labels.to(device)
 
             outputs, seg_layers = model(images)
-            losses_validation.append(dice_loss(outputs, labels))
-            dice_similarities_validation.append(dice_coefficient(outputs, labels))
+            losses_validation.append(dice_loss(seg_layers, labels))
+            dice_similarities_validation.append(dice_coefficient(seg_layers, labels))
 
         print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_validation) ,get_average(dice_similarities_validation)))
     end = time.time()
@@ -124,13 +124,31 @@ def get_average(numList):
     
     return count / size
 
-def dice_loss():
+def dice_loss(outputs, labels):
+    return 1 - dice_coefficient(outputs, labels)
 
-    pass
-
-def dice_coefficient():
-
-    pass
+def dice_coefficient(outputs, labels, epsilon=10**-8):
+    K = outputs.shape[1]
+    if K == 1:
+        labels_1_hot = torch.eye(K + 1)[labels.squeeze(1)]
+        labels_1_hot = labels_1_hot.permute(0, 3, 1, 2).float()
+        labels_1_hot_f = labels_1_hot[:, 0:1, :, :]
+        labels_1_hot_s = labels_1_hot[:, 1:2, :, :]
+        labels_1_hot = torch.cat([labels_1_hot_s, labels_1_hot_f], dim=1)
+        prob = torch.sigmoid(outputs)
+        min_prob = 1 - prob
+        probs = torch.cat([prob, min_prob], dim=1)
+    else:
+        labels_1_hot = torch.eye(K)[labels.squeeze(1)]
+        labels_1_hot = labels_1_hot.permute(0, 3, 1, 2).float()
+        probs = nn.Softmax(outputs, dim=1)
+    
+    labels_1_hot = labels_1_hot.type(outputs.type())
+    dims = (0,) + tuple(range(2, labels.ndimension()))
+    intersection = torch.sum(probs * labels_1_hot, dims)
+    denom = torch.sum(probs + labels_1_hot, dims)
+    dice_coefficient = (2. * intersection / (denom + epsilon)).mean()
+    return dice_coefficient
 
 def print_model_info(model):
     print("Model No. of Parameters:", sum([param.nelement() for param in model.parameters()]))

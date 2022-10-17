@@ -58,7 +58,7 @@ def ISIC_transform_img():
         transforms.Resize((512, 512)),
         transforms.Normalize((0.0304, 0.0254, 0.0235), (0.1471, 0.1247, 0.1169)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(128)
+        transforms.RandomCrop(485)
     ])
 
     return transformTrain
