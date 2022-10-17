@@ -37,3 +37,24 @@ implements the **down sampling of the data**, an _up sampling block_
 reponsible for **upsampling of the data** and the last _build unet model_ 
 function which **calls each of the other functions** and builds the whole 
 architecture of the UNET model and **returns the model**.
+
+The **training.py** is file where all the model related process are 
+implemented. The file imports a bunch of other python files created such 
+as *_dataset.py & modules.py_* for compling and training the model with 
+our *_pre processed images & UNet architecture as well_*. Model is being 
+called here in the starting. I have **used** two other functions for 
+**calculating dice coefficient** that is essential for all the loss and 
+metrics. You can refer to : 
+[https://github.com/keras-team/keras/issues/3611] for the references of 
+the code with **dice coefficient**. While compiling the model I have 
+used Adam optimizer. I have fitted the model and then saved it to use 
+later. This file contains the source code for training, validating, 
+testing and saving your model.
+
+Dice coefficient are important in evaluating the semantic segmentation 
+models. The Dice coefficient is very similar to the IoU. They are 
+positively correlated, meaning if one says model A is better than model 
+B at segmenting an image, then the other will say the same. In dice 
+coefficient we count the similar pixels (taking intersection, present in 
+both the images) in the both images we are comparing and multiple it by 
+2. And divide it by the total pixels in both the images.
