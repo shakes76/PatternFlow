@@ -1,13 +1,16 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-from dataset import create_train_test_loaders
+from dataset import create_train_test_loaders_vqvae, create_train_test_loaders_dcgan
 from modules import VQVAE
 
 
 def train_VQVAE():
+    """
+    Function to train the VQVAE model with the OASIS dataset.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_loader, test_loader = create_train_test_loaders()
+    train_loader, test_loader = create_train_test_loaders_vqvae()
     LEARNING_RATE = 1e-3
     NUM_EMBEDDINGS = 512  # number of embeddings for codebook
     EMBEDDING_DIM = 64  # embedding dimension
@@ -37,3 +40,9 @@ def train_VQVAE():
             print('%d iterations' % (i + 1))
             print('recon_error: %.3f' % np.mean(train_res_recon_error[-100:]))
             print()
+
+    return model, train_res_recon_error
+
+
+def train_DCGAN(model):
+    pass

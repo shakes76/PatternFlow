@@ -15,19 +15,19 @@ class VQVAE(nn.Module):
     """
     def __init__(self,  embeddings_num, embedding_dim, commitment_cost):
         super(VQVAE, self).__init__()
-        self._encoder = Encoder(1, 16)
+        self.encoder = Encoder(1, 16)
         # this is to ensure that the output from the decoder matches the input to the VQ module i.e. converts the
         # encoder output to the embedding dimensions.
-        self._pre_vq_conv = nn.Conv2d(in_channels=8,
+        self.pre_vq_conv = nn.Conv2d(in_channels=8,
                                       out_channels=embedding_dim,kernel_size=1,stride=1)
-        self._vq_vae = VectorQuantiser(embeddings_num, embedding_dim, commitment_cost)
-        self._decoder = Decoder(embedding_dim, 8)
+        self.vq_vae = VectorQuantiser(embeddings_num, embedding_dim, commitment_cost)
+        self.decoder = Decoder(embedding_dim, 8)
 
 
     def forward(self, x):
-        x = self._encoder(x)
-        x = self._pre_vq_conv(x)
-        loss, quantized, perplexity, d = self._vq_vae(x)
-        x_recon = self._decoder(quantized)
+        x = self.encoder(x)
+        x = self.pre_vq_conv(x)
+        loss, quantized, perplexity, d = self.vq_vae(x)
+        x_recon = self.decoder(quantized)
 
         return loss, x_recon, perplexity
