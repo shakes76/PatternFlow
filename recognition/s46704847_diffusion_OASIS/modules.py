@@ -27,47 +27,63 @@ sqrt_alpha_bar = np.sqrt(alpha_bar)
 one_minus_sqrt_alpha_bar = np.sqrt(1-alpha_bar)
 
 def set_seed(seed):
-  """
-  Setting random state seed
-  Parameters:
-    seed (int): random seed
-  Returns:
-    None
-  """
-  np.random.seed(seed)
+    """
+    Setting random state seed
+    Parameters:
+        seed (int): random seed
+    Returns:
+        None
+    """
+    np.random.seed(seed)
 
 def forward_noise(seed, x_0, t):
-  """
-  Adding noise to the imput image to timestamp t.
-  Parameters:
-    seed (int): the ramdom seed
-    x_0 (np.array): the input image
-    t (int): the timestamp
-  Returns:
-    noisy_image (np.array): the image added noise
-    noise (np.array): the noise
-  """
-  set_seed(seed)
-  noise = np.random.normal(size=x_0.shape)
-  reshaped_sqrt_alpha_bar_t = np.reshape(
-                                      np.take(sqrt_alpha_bar, t), (-1, 1, 1, 1))
-  reshaped_one_minus_sqrt_alpha_bar_t = np.reshape(np.take(
-                                    one_minus_sqrt_alpha_bar, t), (-1, 1, 1, 1))
-  noisy_image = reshaped_sqrt_alpha_bar_t  * x_0 + \
-                                    reshaped_one_minus_sqrt_alpha_bar_t  * noise
-  return noisy_image, noise
+    """
+    Adding noise to the imput image to timestamp t.
+    Parameters:
+        seed (int): the ramdom seed
+        x_0 (np.array): the input image
+        t (int): the timestamp
+    Returns:
+        noisy_image (np.array): the image added noise
+        noise (np.array): the noise
+    """
+    set_seed(seed)
+    noise = np.random.normal(size=x_0.shape)
+    reshaped_sqrt_alpha_bar_t = np.reshape(
+                                np.take(sqrt_alpha_bar, t), (-1, 1, 1, 1))
+    reshaped_one_minus_sqrt_alpha_bar_t = np.reshape(np.take(
+                                one_minus_sqrt_alpha_bar, t), (-1, 1, 1, 1))
+    noisy_image = reshaped_sqrt_alpha_bar_t  * x_0 + \
+                                reshaped_one_minus_sqrt_alpha_bar_t  * noise
+    return noisy_image, noise
 
 def generate_timestamp(seed, num):
-  """
-  Generating a random timestamp series.
-  Parameters:
-    seed (int): the random seed
-    num (int): the number of timestamps
-  Returns
-    (tr.Tensor): a list of random timestamps
-  """
-  set_seed(seed)
-  return tf.random.uniform(shape=[num], minval=0, maxval=timesteps, 
-                                                                dtype=tf.int32)
+    """
+    Generating a random timestamp series.
+    Parameters:
+        seed (int): the random seed
+        num (int): the number of timestamps
+    Returns
+        (tr.Tensor): a list of random timestamps
+    """
+    set_seed(seed)
+    return tf.random.uniform(shape=[num], minval=0, maxval=timesteps, 
+                                                            dtype=tf.int32)
 
-
+# Visualize the forward noise process
+def show_forward_noise(train_images):
+    step = timesteps // 10
+    plan = [i*step for i in range(9)]
+    fig, axes = plt.subplots(3, 3, figsize=(9,9))
+    axes[0,0].imshow(train_images[0,:,:,0], cmap="gray")
+    axes[0,0].set_title("Original")
+    axes[0,0].axis('off')
+    for i in range(3):
+        for j in range (3):
+            if i + j > 0:
+                time_stamp = plan[i*3+j]
+                noise_img, noise = forward_noise(0, train_images[0], time_stamp)
+                axes[i,j].imshow(noise_img[0,:,:,0], cmap="gray")
+                axes[i,j].set_title(f"Timestamp {time_stamp}")
+                axes[i,j].axis('off')
+    plt.show()
