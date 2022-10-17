@@ -43,7 +43,7 @@ class PixelConvLayer(tf.keras.layers.Layer):
 def get_pixel_cnn(kernel_size, input_shape):
     inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(inputs, num_embeddings)
-    onehot = tf.keras.layers.Dropout(0.3)(onehot)
+    onehot = tf.keras.layers.Dropout(0.4)(onehot)
     onehot = tf.keras.layers.BatchNormalization()(onehot)
     x1 = PixelConvLayer(
         mask_type="A",
@@ -61,12 +61,12 @@ def get_pixel_cnn(kernel_size, input_shape):
     # x = tf.keras.layers.BatchNormalization()(x)
     # x = tf.keras.layers.Dropout(0.3)(x)
     
-    for _ in range(1):
+    for _ in range(2):
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
         )(x)
-        # y = tf.kerasu.layers.BatchNormalization()(y)
+        y = tf.keras.layers.BatchNormalization()(y)
         y1 = PixelConvLayer(
             mask_type="B",
             stack='H',
@@ -82,13 +82,13 @@ def get_pixel_cnn(kernel_size, input_shape):
             padding="same"
         )(y)
         y = tf.keras.layers.Add()([y1,y2])
-        y = tf.keras.layers.Dropout(0.5)(y)
+        y = tf.keras.layers.Dropout(0.2)(y)
         y = tf.keras.layers.BatchNormalization()(y)
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
         )(y)
-        # y = tf.keras.layers.BatchNormalization()(y)
+        y = tf.keras.layers.BatchNormalization()(y)
         x = tf.keras.layers.Add()([x,y])
 
     for _ in range(2):
@@ -107,7 +107,7 @@ def get_pixel_cnn(kernel_size, input_shape):
             strides=1,
             padding="valid")(x)
         x = tf.keras.layers.Add()([x1,x2])
-        # x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.BatchNormalization()(x)
 
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(
@@ -145,9 +145,9 @@ def get_indices(embeddings, inputs_flat, quantize=True, splits=1):
         if results is None:
             results = batch_results
         else:
-            results = tf.concat([results, batch_results], axis=1)
+            results = tf.concat([results, batch_results], axis=0)
 
-    results = tf.math.argmin(results, axis=1)
+    results = tf.math.argmin(results, axis=-1)
     if quantize:
         results = tf.matmul(tf.one_hot(
             results, num_embeddings), embeddings)

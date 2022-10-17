@@ -30,7 +30,7 @@ def visualize_autoencoder(n):
         axs[i,1].imshow(tf.reshape(encoded[i], shape=pixelcnn_input_shape))
     plt.show()
 
-visualize_autoencoder(2)
+visualize_autoencoder(6)
 
 def calculate_ssim():
     test_data = tf.reshape(data["test"], shape=(-1,*image_shape[0:2]))
@@ -59,8 +59,8 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
             loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=["accuracy"])
     
-    for i in range(2):
-        dataset = tf.data.Dataset.from_tensor_slices(data["train"][(i)*4*1024:(i+1)*4*1024])
+    for i in range(1):
+        dataset = tf.data.Dataset.from_tensor_slices(tf.concat([data["train"], data["validate"]], axis=0)[(i)*3*1024:(i+1)*3*1024])
         dataset = dataset.batch(32)
         pred = None
         for batch in dataset:
@@ -72,29 +72,13 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
         encoded = tf.reshape(pred, shape=(-1, latent_dims))
         indices = get_indices(model.vq.variables[0], encoded, quantize=False, splits=64)
         indices = tf.reshape(indices, shape=(-1, *pixelcnn_input_shape[0:2]))
-        # zeros = tf.zeros_like(indices)
-        # zeros = tf.random.uniform(shape=tf.shape(zeros), maxval=32, dtype=tf.int64)
 
         pixelcnn.fit(
             x=tf.concat([indices], axis=0),
             y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                     num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
             batch_size=64,
-            epochs=500,
-            validation_split=0.1)
-        pixelcnn.fit(
-            x=indices+tf.random.uniform(shape=tf.shape(indices), maxval=num_embeddings//4, dtype=tf.int64),
-            y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
-                    num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
-            batch_size=64,
-            epochs=500,
-            validation_split=0.1)
-        pixelcnn.fit(
-            x=indices*0,
-            y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
-                    num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
-            batch_size=64,
-            epochs=200,
+            epochs=100,
             validation_split=0.1)
 else:
     pixelcnn = tf.keras.models.load_model("pixelcnn.ckpt")
@@ -102,13 +86,11 @@ else:
 if not os.path.exists("pixelcnn.ckpt") or improve_existing:
     pixelcnn.predict(tf.random.uniform(shape=(1, *pixelcnn_input_shape[0:2]),
                      dtype=tf.int64, maxval=num_embeddings))
-    #pixelcnn.save("pixelcnn.ckpt") # TODO Dont forget to uncomment once done testing
 
 print(pixelcnn.summary())
 
-n = 4
-generated = tf.concat([tf.zeros(shape=(n//2,*pixelcnn_input_shape[0:2])),
-    tf.random.uniform(shape=(n//2,*pixelcnn_input_shape[0:2]), maxval=256)], axis=0)
+n = 8
+generated = tf.zeros(shape=(n,*pixelcnn_input_shape[0:2]))
 generated = tf.reshape(generated, shape=(n, *pixelcnn_input_shape[0:2]))
 generated = generated.numpy()
 for _ in range(1):
@@ -117,7 +99,6 @@ for _ in range(1):
         for col in range(pixelcnn_input_shape[1]):
             probabilities = pixelcnn.predict(generated)[:, row, col]
             print(probabilities)
-            # probabilities = tf.math.log(probabilities)
 
             generated[:, row, col] = tf.reshape(
                 tf.random.categorical(probabilities, 1), shape=(n,))
