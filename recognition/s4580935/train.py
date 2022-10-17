@@ -117,8 +117,8 @@ def main():
 
     #Show samples of the origional image along with the reconstructed image
     for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-        show_subplot(test_image, reconstructed_image)
-        sim = calculate_ssim(test_image, reconstructed_image)
+        predict.show_subplot(test_image, reconstructed_image)
+        sim = predict.calculate_ssim(test_image, reconstructed_image)
         print(sim)
 
     encoder = model.vqvae.get_layer("encoder")
@@ -141,7 +141,10 @@ def main():
         plt.axis("off")
         plt.show()
 
-
+    num_residual_blocks = 2
+    num_pixelcnn_layers = 2
+    pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+    print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")   
 
     #Add code to access the pixelCNN model
     pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
