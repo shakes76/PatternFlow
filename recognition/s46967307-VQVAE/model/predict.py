@@ -3,6 +3,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
 import numpy as np
+import matplotlib
+matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
 from modules import AE, get_pixel_cnn, latent_dims, num_embeddings, get_indices, pixelcnn_input_shape, image_shape, encoded_image_shape
 from dataset import load_data
@@ -19,13 +21,13 @@ def visualize_autoencoder(n):
     predictions = model.predict(tf.reshape(data["test"][0:30], shape=(-1,*image_shape[0:2])))
     encoded = get_indices(model.vq.variables[0], tf.reshape(model.encoder.predict(data["test"]), shape=(-1,latent_dims)), quantize=False, splits=32)
     encoded = tf.reshape(encoded, shape=(-1, *pixelcnn_input_shape[0:2]))
-    plt.tight_layout()
-    fig, axs = plt.subplots(n, 3, figsize=image_shape[0:2])
-    for i in range(n):
-        axs[i,0].imshow(tf.reshape(data["test"][i], shape=image_shape[0:2]))
-        axs[i,2].imshow(predictions[i])
-        axs[i,1].imshow(tf.reshape(tf.image.resize(tf.reshape(encoded[i], shape=pixelcnn_input_shape), image_shape[0:2], antialias=False, method=tf.image.ResizeMethod.NEAREST_NEIGHBOR), shape=image_shape[0:2]))
-    plt.show()
+    # plt.tight_layout()
+    # fig, axs = plt.subplots(n, 3, figsize=image_shape[0:2])
+    # for i in range(n):
+    #     axs[i,0].imshow(tf.reshape(data["test"][i], shape=image_shape[0:2]))
+    #     axs[i,2].imshow(predictions[i])
+    #     axs[i,1].imshow(tf.reshape(tf.image.resize(tf.reshape(encoded[i], shape=pixelcnn_input_shape), image_shape[0:2], antialias=False, method=tf.image.ResizeMethod.NEAREST_NEIGHBOR), shape=image_shape[0:2]))
+    # plt.show()
 
 visualize_autoencoder(6)
 
@@ -68,14 +70,14 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
     if not improve_existing:
         pixelcnn.compile(
             optimizer=tf.keras.optimizers.Adam(3e-4),
-            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
+            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=["accuracy"])
     pixelcnn.fit(
         x=tf.concat([indices], axis=0),
         y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                   num_embeddings), dtype=tf.float64), shape=(-1,*pixelcnn_input_shape[0:2],num_embeddings)),
         batch_size=64,
-        epochs=100,
+        epochs=500,
         validation_split=0.1)
 else:
     pixelcnn = tf.keras.models.load_model("pixelcnn.ckpt")
@@ -87,7 +89,7 @@ if not os.path.exists("pixelcnn.ckpt") or improve_existing:
 
 print(pixelcnn.summary())
 
-n = 2
+n = 6
 generated = data["train"][:n]
 generated = tf.concat([tf.zeros_like(generated[0:n//2]), tf.random.uniform(shape=tf.shape(generated[n//2:n]), maxval=31)], axis=0)
 generated = tf.reshape(generated, shape=(n, *image_shape))
@@ -96,7 +98,7 @@ generated = tf.reshape(generated, shape=(-1, latent_dims))
 generated = get_indices(model.vq.variables[0], generated, quantize=False)
 generated = tf.reshape(generated, shape=(-1, *pixelcnn_input_shape[0:2]))
 generated = generated.numpy()
-for _ in range(1):
+for _ in range(6):
     for row in range(pixelcnn_input_shape[0]):
         print("Row: ", row)
         for col in range(pixelcnn_input_shape[1]):
@@ -111,6 +113,7 @@ for _ in range(1):
             generated[:, row, col] = tf.reshape(
                 tf.random.categorical(probabilities, 1), shape=(n,))
 
+plt.close()
 plt.tight_layout()
 fig, axs = plt.subplots(n, 2, figsize=image_shape[0:2])
 for i in range(n):
