@@ -8,17 +8,17 @@ COMP3710, The University of Queensland, October 2022
 This algorithm is a super-resolution convolutional neural network. It takes as 
 input a downscaled or small image and produces an upscaled image. 
 
-This differs from prior algorithms as earlier super-sampling algorithms by 
-taking as input a low-resolution image instead of inputting an image that has 
-been reshaped to the final resolution. This allows for greater performance and 
-speed.
+This differs from earlier algorithms as often these take images that have been
+reshaped to the final size. This leads to increased computational requirements
+for no larger benefit. Taking the low-resolution image as input greatly improves
+the computational performance.
 
 ### Problem That it Solves
 Super-resolution imaging has applications in many areas of imaging, including 
 medical imaging and facial recognition [^1]. The proposed algorithm is used to 
 upscale MRI images, which could have benefits in medical fields to lower the 
-required resolution of MRI scans, allowing for more patients to access MRI 
-scans.
+required resolution of MRI scans, allowing for more patients to access the 
+technology.
 
 ### How it Works
 Figure 1 outlines the structure of the algorithm/model used. My implementation 
@@ -38,6 +38,14 @@ with the target of each image being the same image in its original resolution.
 The model will then output an image that has been resized back to the original 
 resolution.
 
+The model used has the following structure:
+1. Input of shape [64, 60, 1] (1/4 size ADNI-MRI images)
+2. Convolutional layer with 64 filters and a kernel size of 5
+3. Convolutional layer with 128 filters and a kernel size of 3
+4. Another convolutional layer with 128 filters and a kernel size of 3
+5. Convolutional layer with 16 filters and a kernel size of 3
+6. Output `depth_to_space` layer that maps to the final [256, 240, 1] shape
+
 ## Example Usage
 ### Dependencies
 This model was created using:
@@ -52,8 +60,9 @@ Final testing was done over 200 epochs which took about 75 minutes on a RTX
 3060 graphics card.
 
 ### Inputs
-The image datasets used for training and testing are retrieved from blackboard 
-and downloaded locally [^2]. Figures 2 and 3 give examples from these datasets:
+The image datasets used for training and testing are automatically retrieved 
+from blackboard and downloaded locally [^2]. Figures 2 and 3 give examples from
+these datasets:
 
 ![Figure 2: Training dataset](./figures/training-images.png)
 
@@ -67,9 +76,8 @@ _Figure 3_: Testing dataset (downscaled vs original)
 To train the model, `run_model()` in `train.py` must be executed. The only 
 input to this function is the number of epochs to train for.
 
-While training, the model will save checkpoints every epoch which can be 
-further trained using `train_model()`, however this function requires the 
-databases to be input. See `run_model()` on how to retrieve databases.
+This function will download the data, load it into datasets, perform training,
+and plot some example predictions and results.
 
 ## Data
 ### Preprocessing
@@ -78,11 +86,7 @@ teaching team to allow for easy data loading.
 
 ### Data splits
 The data given from the course is pre-split into training and testing. I kept 
-these provided splits, using the training data as validation during each epoch. 
-
-I didn't create a validation set because it is not so easy to perform 
-validation with the super-resolution model and the outputs for loss, psnr 
-already give a good idea of the performance of the model. 
+these provided splits, using the training data as validation during each epoch.
 
 ## Results
 To track the accuracy of the model, PSNR is used to compare the output image 
@@ -123,3 +127,6 @@ _Computer Vision and Pattern Recognition (CVPR)_, 2016, pp. 1874-1883, doi:
 10.1109/CVPR.2016.207.
 
 [^2]: https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI
+
+_Model is based on_: 
+https://keras.io/examples/vision/super_resolution_sub_pixel/
