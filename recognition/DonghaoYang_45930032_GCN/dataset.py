@@ -63,8 +63,5 @@ def load_facebook_page_data(path='./facebook.npz'):
                                                                             shuffle=False)
     validation_target, test_target = model_selection.train_test_split(validation_test_target, train_size=0.5,
                                                                       shuffle=False)
-    return adjacency_matrix, features_matrix, targets, train_target, validation_target, test_target, train_data_mask,\
+    return adjacency_matrix, features_matrix, targets, train_target, validation_target, test_target, train_data_mask, \
            validation_data_mask, test_data_mask
-
-
-load_facebook_page_data('./facebook.npz')

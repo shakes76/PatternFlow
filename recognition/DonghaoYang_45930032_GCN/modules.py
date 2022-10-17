@@ -10,6 +10,8 @@ from keras import initializers
 from keras import regularizers
 from keras import constraints
 from keras import Model
+from keras import Input
+from keras import backend
 
 
 class GraphConvolution(layers.Layer):
@@ -64,36 +66,29 @@ class GraphConvolution(layers.Layer):
         """
         features, edges = inputs
         output = tf.matmul(features, self.weight)
-        output = tf.matmul(edges, output)
+        output = backend.dot(edges, output)
         if self.use_bias:
             output = tf.nn.bias_add(output, self.bias)
-        if self.activation is not None:
-            output = self.activation(output)
+        if self.activation_function is not None:
+            output = self.activation_function(output)
         return output
 
 
-class GCN(Model):
-    def __init__(self):
-        """
-        This class initialises a gcn model
-        """
-        super(GCN, self).__init__()
-        self.gcn_layer1 = GraphConvolution(output_dimension=64,
-                                           activation_function=activations.relu)
-        self.gcn_layer2 = GraphConvolution(output_dimension=32,
-                                           activation_function=activations.relu)
-        self.gcn_layer3 = GraphConvolution(output_dimension=16,
-                                           activation_function=activations.relu)
-        self.gcn_layer4 = GraphConvolution(output_dimension=4,
-                                           activation_function=activations.softmax)
-
-    def call(self, inputs, training=False, mask=None):
-        features, edges = inputs
-        new_feature = self.gcn_layer1(inputs)
-        new_feature = layers.Dropout(0.2)(new_feature)
-        new_feature = self.gcn_layer2([new_feature, edges])
-        new_feature = layers.Dropout(0.2)(new_feature)
-        new_feature = self.gcn_layer3([new_feature, edges])
-        new_feature = layers.Dropout(0.2)(new_feature)
-        output = self.gcn_layer4([new_feature, edges])
-        return output
+def GCN(features_matrix):
+    """
+    This function define a multi layers GCN
+    """
+    features_number, nodes_number = features_matrix.shape[1], features_matrix.shape[0]
+    # define input
+    input_feature = Input((features_number,))
+    input_nodes = Input((nodes_number,))
+    # layer1
+    gcn_layer1 = GraphConvolution(32, activation_function=activations.relu)([input_feature, input_nodes])
+    dropout_layer1 = layers.Dropout(0.5)(gcn_layer1)
+    # layer2
+    gcn_layer2 = GraphConvolution(8, activation_function=activations.relu)([dropout_layer1, input_nodes])
+    dropout_layer2 = layers.Dropout(0.5)(gcn_layer2)
+    # layer3
+    gcn_layer3 = GraphConvolution(4, activation_function=activations.softmax)([dropout_layer2, input_nodes])
+    model = Model(inputs=[input_feature, input_nodes], outputs=gcn_layer3)
+    return model
