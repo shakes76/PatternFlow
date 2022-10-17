@@ -55,7 +55,7 @@ def upsampling_module(residual_block, concat_block, filters, kernel_size=3, size
     upsampling_cnct = Concatenate()([concat_block, upsampling_conv])
     return upsampling_cnct
 
-def localization_module(residual_block):
+def localization_module(residual_block, filters, kernel_size=3):
     """
     Creates a localization module that concatenates the features from the upsampled features of the
     input to the features of the corresponding context module in the same level of the network.
@@ -69,7 +69,9 @@ def localization_module(residual_block):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    localization_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(residual_block)
+    localization_conv = Conv2D(filters=filters, kernel_size=1, padding='same')(localization_conv)
+    return localization_conv
 
 def segmentation_module(residual_block):
     """
