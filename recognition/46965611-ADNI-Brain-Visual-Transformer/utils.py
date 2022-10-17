@@ -8,10 +8,10 @@ Date Created: 15 Oct 2022
 """
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import numpy as np
 from dataset import DataLoader
 from modules import PatchLayer
-from train import IMAGE_SIZE, PATCH_SIZE
+from train import IMAGE_SIZE, NUM_PATCHES, PATCH_SIZE, PROJECTION_DIM
+
 
 def plot_image(dataset):
     """
@@ -35,19 +35,24 @@ def plot_patches(dataset):
         tf.convert_to_tensor([image]), size=(IMAGE_SIZE, IMAGE_SIZE)
     )
 
-    patches = PatchLayer(patch_size=PATCH_SIZE)(resized_image)
-    print(f"Image size: {IMAGE_SIZE} X {IMAGE_SIZE}")
-    print(f"Patch size: {PATCH_SIZE} X {PATCH_SIZE}")
-    print(f"Patches per image: {patches.shape[1]}")
-    print(f"Elements per patch: {patches.shape[-1]}")
+    (token, patch) = PatchLayer(IMAGE_SIZE, PATCH_SIZE, NUM_PATCHES, PROJECTION_DIM)(resized_image/255.0)
+    (token, patch) = (token[0], patch[0])
+    n = patch.shape[0]
+    shifted_images = ["ORIGINAL", "LEFT-UP", "LEFT-DOWN", "RIGHT-UP", "RIGHT-DOWN"]
 
-    n = int(np.sqrt(patches.shape[1]))
-    plt.figure(figsize=(5, 5))
-    for i, patch in enumerate(patches[0]):
-        ax = plt.subplot(n, n, i+1)
-        patch_img = tf.reshape(patch, (PATCH_SIZE, PATCH_SIZE, 3))
-        plt.imshow(patch_img.numpy().astype("uint8"))
-        plt.axis("off")
+    for index, name in enumerate(shifted_images):
+        count = 1
+        plt.figure(figsize=(5, 5))
+        plt.suptitle(name)
+
+        for row in range(n):
+            for col in range(n):
+                plt.subplot(n, n, count)
+                count = count + 1
+                image= tf.reshape(patch[row][col], (PATCH_SIZE, PATCH_SIZE, 3 * 5))
+                plt.imshow(image[..., 3 * index : 3 * index + 3])
+                plt.axis('off')
+
     plt.show()
 
 if __name__ == '__main__':
