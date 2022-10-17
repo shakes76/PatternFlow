@@ -12,6 +12,19 @@ Reference: https://medium.com/@vedantjumle/image-generation-with-diffusion-
 __author__ = "Zhao Wang, 46704847"
 __email__ = "s4670484@student.uq.edu.au"
 
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras import Model, Sequential
+from tensorflow.keras.layers import Layer, LayerNormalization
+import tensorflow.keras.layers as nn
+from tensorflow import keras, einsum
+import tensorflow_addons as tfa
+from einops import rearrange
+import math
+from functools import partial
+from inspect import isfunction
+
 """Generate beta, alpha and forward noise"""
 
 timesteps = 300
@@ -72,6 +85,13 @@ def generate_timestamp(seed, num):
 
 # Visualize the forward noise process
 def show_forward_noise(train_images):
+    """
+    Plotting the forward progress of adding noise into a image.
+    Parameters:
+        train_images (np.array): the image dataset
+    Returns:
+        None
+    """
     step = timesteps // 10
     plan = [i*step for i in range(9)]
     fig, axes = plt.subplots(3, 3, figsize=(9,9))
@@ -87,3 +107,91 @@ def show_forward_noise(train_images):
                 axes[i,j].set_title(f"Timestamp {time_stamp}")
                 axes[i,j].axis('off')
     plt.show()
+
+
+"""Constructing U-Net model"""
+#Helper functions
+
+def exists(x):
+    return x is not None
+
+def default(val, d):
+    if exists(val):
+        return val
+    return d() if isfunction(d) else d
+
+# We will use this to convert timestamps to time encodings
+class SinusoidalPosEmb(Layer):
+    def __init__(self, dim, max_positions=10000):
+        super(SinusoidalPosEmb, self).__init__()
+        self.dim = dim
+        self.max_positions = max_positions
+
+    def call(self, x, training=True):
+        x = tf.cast(x, tf.float32)
+        half_dim = self.dim // 2
+        emb = math.log(self.max_positions) / (half_dim - 1)
+        emb = tf.exp(tf.range(half_dim, dtype=tf.float32) * -emb)
+        emb = x[:, None] * emb[None, :]
+
+        emb = tf.concat([tf.sin(emb), tf.cos(emb)], axis=-1)
+
+        return emb
+        
+# small helper modules
+class Identity(Layer):
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def call(self, x, training=True):
+        return tf.identity(x)
+
+
+class Residual(Layer):
+    def __init__(self, fn):
+        super(Residual, self).__init__()
+        self.fn = fn
+
+    def call(self, x, training=True):
+        return self.fn(x, training=training) + x
+
+def Upsample(dim):
+    return nn.Conv2DTranspose(filters=dim, kernel_size=4, 
+                                                  strides=2, padding='SAME')
+
+def Downsample(dim):
+    return nn.Conv2D(filters=dim, kernel_size=4, strides=2, padding='SAME')
+
+class PreNorm(Layer):
+    def __init__(self, dim, fn):
+        super(PreNorm, self).__init__()
+        self.fn = fn
+        self.norm = LayerNormalization()
+
+    def call(self, x, training=True):
+        x = self.norm(x)
+        return self.fn(x)
+
+class SiLU(Layer):
+    def __init__(self):
+        super(SiLU, self).__init__()
+
+    def call(self, x, training=True):
+        return x * tf.nn.sigmoid(x)
+
+def gelu(x, approximate=False):
+    if approximate:
+        coeff = tf.cast(0.044715, x.dtype)
+        return 0.5 * x * (1.0 + tf.tanh(0.7978845608028654 * (x + coeff * 
+                                                              tf.pow(x, 3))))
+    else:
+        return 0.5 * x * (1.0 + tf.math.erf(x / 
+                                        tf.cast(1.4142135623730951, x.dtype)))
+
+class GELU(Layer):
+    def __init__(self, approximate=False):
+        super(GELU, self).__init__()
+        self.approximate = approximate
+
+    def call(self, x, training=True):
+        return gelu(x, self.approximate)
