@@ -28,27 +28,21 @@ classify cancerous skin lesions.
 
 
 ### Example Inputs:
-Notes:
-Do not need superpixel pictures
-Do not need JSON files
-Two classes: with and without melanoma
+
 
 ### Example Outputs:
 
 
 ### Data preprocessing:
 Justify your training, validation and testing splits of the data.
+Training, testing and validation split is as given by the ISIC dataset.
 Image dimensions --> 640x640 as this is what dimension YOLOv5 was designed for.
 
 ### Results:
 
 ### References:
-https://pjreddie.com/media/files/papers/YOLOv3.pdf
 https://pjreddie.com/darknet/yolo/
 https://arxiv.org/pdf/1506.02640.pdf
+https://medium.com/mlearning-ai/training-yolov5-custom-dataset-with-ease-e4f6272148ad
 
-https://github.com/edwardguil/PatternFlow/tree/ffad4e701f303b069689e053e97b52555a5041f8/recognition/4576111-YOLO-ISICs(2018)
-https://github.com/lucaslin2020/PatternFlow/blob/d3918a651188ad6002771327106bc3a389c5fe71/recognition/s4569154/README.md
-https://github.com/shakes76/PatternFlow/blob/b7fb6f55a8abafa4698c535276b560037181f232/recognition/Skin_Lesion_detection_using_YOLOv3/README.md
-https://github.com/shakes76/PatternFlow/tree/a040943f9e3b11578ef99bda8fcbb7508791c4b6/recognition/S4607867_Jiaqiyu
-https://github.com/shakes76/PatternFlow/blob/57672770f7f73517e88143d7ba69d286999ea60c/recognition/s4548700/README.md
+
