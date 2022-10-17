@@ -49,5 +49,5 @@ x_train, x_test, x_validate, mean, variance = get_data()
 
 vqvae_trainer = VQVAETrainer(variance, 32, 128)
 vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
-vqvae_trainer.fit(x_train, epochs=5, batch_size=BATCH_SIZE, use_multiprocessing=True, validation_data=x_validate)
+vqvae_trainer.fit(x_train, epochs=5, batch_size=BATCH_SIZE, use_multiprocessing=True)
 vqvae_trainer.evaluate(x_test)

@@ -55,23 +55,23 @@ class VQVAE(tf.keras.Model):
         
         # Build encoder
         encoder_in = Input(shape=input_shape)
-        x = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
-        x = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x)
-        x = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x)
-        encoder_out = Conv2D(latent_dim, 1, padding='same')(x)
+        x1 = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
+        x2 = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x1)
+        x3 = Conv2D(64, 3, strides=2, activation='leaky_relu', padding='same')(x2)
+        encoder_out = Conv2D(latent_dim, 1, padding='same')(x3)
         self.encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
 
         # Build decoder
         decoder_in = Input(shape=self.encoder.output.shape[1:])
-        x = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(decoder_in)
-        x = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(x)
-        x = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(x)
-        decoder_out = Conv2DTranspose(1, 4, padding='same')(x)
+        y1 = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(decoder_in)
+        y2 = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(y1)
+        y3 = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(y2)
+        decoder_out = Conv2DTranspose(1, 4, padding='same')(y3)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
         # Add VQ layer
         self.vq_layer = VectorQuantizer(num_embeddings=num_embeddings, embedding_dim=latent_dim, name='vq')
-        
+
         #self.summary()
         
 
