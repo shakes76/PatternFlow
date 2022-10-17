@@ -8,7 +8,6 @@ from keras import layers
 from keras import activations
 from keras import initializers
 from keras import regularizers
-from keras import constraints
 from keras import Model
 from keras import Input
 from keras import backend
@@ -21,8 +20,7 @@ class GraphConvolution(layers.Layer):
 
     def __init__(self, output_dimension, activation_function=None, use_bias=True,
                  kernel_initializer="glorot_uniform", kernel_regularizer=None, bias_initializer='zeros',
-                 bias_regularizer=None, activity_regularizer=None, kernel_constraint=None,
-                 bias_constraint=None):
+                 bias_regularizer=None):
         self.output_dimension = output_dimension
         self.activation_function = activations.get(activation_function)
         self.use_bias = use_bias
@@ -32,10 +30,6 @@ class GraphConvolution(layers.Layer):
         # load the function for regularization
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
-        self.activity_regularizer = regularizers.get(activity_regularizer)
-        # constraint is the function to add constraints to weights
-        self.kernel_constraint = constraints.get(kernel_constraint)
-        self.bias_constraint = constraints.get(bias_constraint)
         super(GraphConvolution, self).__init__()
 
     def build(self, input_shape):
@@ -47,14 +41,12 @@ class GraphConvolution(layers.Layer):
         if not hasattr(self, 'weight'):
             self.weight = self.add_weight(name='weight', shape=(input_dimension, self.output_dimension),
                                           initializer=self.kernel_initializer,
-                                          constraint=self.kernel_constraint,
                                           regularizer=self.kernel_regularizer,
                                           trainable=True)
         if not hasattr(self, 'bias'):
             if self.use_bias:
                 self.bias = self.add_weight(name='bias', shape=(self.output_dimension,),
                                             initializer=self.bias_initializer,
-                                            constraint=self.bias_constraint,
                                             regularizer=self.bias_regularizer,
                                             trainable=True)
         self.built = True
