@@ -247,6 +247,14 @@ class UNet(nn.Module):
         out = self.unet_head(out)
         return out
 
+class ResidualBlock(nn.Module):
+    def __init__(self, function):
+        super().__init__()
+        self.function = function
+
+    def forward(self, x):
+        return self.function(x) + x
+
 # unet = UNet()
 # x = torch.randn(4, 3, 256, 256)
 # print(len(x))
