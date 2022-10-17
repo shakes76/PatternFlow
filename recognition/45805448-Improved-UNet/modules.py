@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout
 
-def context_module(residual_block, filters, kernel_size=3, strides=2, rate=0.3, seed=69):
+def context_module(residual_block, filters, kernel_size=3, rate=0.3, seed=69):
     """
     Creates a context module for the network, which extracts some new features at one UNet level.
 
@@ -14,12 +14,12 @@ def context_module(residual_block, filters, kernel_size=3, strides=2, rate=0.3, 
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(residual_block)
+    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(residual_block)
     context_drop = Dropout(rate=rate, seed=seed)(context_conv)
-    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(context_drop)
-    return context_conv
+    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(context_drop)
+    return tf.add(residual_block, context_conv)
 
-def reducing_module(residual_block):
+def reducing_module(residual_block, filters, kernel_size=3, strides=2):
     """
     Creates a reducing module for the network, which encodes the data down one level.
 
@@ -32,7 +32,8 @@ def reducing_module(residual_block):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    reducing_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(residual_block)
+    return reducing_conv
 
 def upsampling_module(residual_block):
     """
