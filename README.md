@@ -93,6 +93,9 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 ## Result
 This is the result.
 <p align="center">
+    <img src="asset/training_process.gif" width="450">
+</p>
+<p align="center">
     <table border='0'>
         <tr>
             <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
