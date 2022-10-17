@@ -16,15 +16,30 @@ CHANNELS = 1
 
 PRE_PROC_DATA_SAVE_LOC = "E:/ADNI/Processed"
 
-def load_data(directory_path, prefix):
+def load_data(directory_path: str, prefix: str) -> np.ndarray:
+  """
+  Processes and saves image data as a numpy array.
+
+  Attempts to find pre-processed data and load it from a save.
+  If a save cannot be found, processes the data.
+
+  Parameters:
+    - directory_path: Path to folder containing images to process
+    - prefix: String representing data type. Used for save filename
+
+  Returns:
+    - processed image dataset as numpy array.
+  """
   save_path = os.path.join(PRE_PROC_DATA_SAVE_LOC, f"{prefix}_preprocessed.npy")
 
   if not os.path.isfile(save_path):
+    # save cannot be found
     start = time.time()
     print("Processing data for file", save_path)
 
     data = []
 
+    # loop through and process images
     for filename in os.listdir(directory_path):
       path = os.path.join(directory_path, filename)
 
@@ -44,6 +59,7 @@ def load_data(directory_path, prefix):
     print (f'Image preprocess time: {elapsed}')
 
   else:
+    # save found
     print("Loading preprocessed data")
     data = np.load(save_path)
 
