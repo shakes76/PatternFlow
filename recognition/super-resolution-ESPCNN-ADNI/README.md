@@ -79,6 +79,11 @@ input to this function is the number of epochs to train for.
 This function will download the data, load it into datasets, perform training,
 and plot some example predictions and results.
 
+### Using the Trained Model
+To see the output of the trained model, use `predict.display_prediction`, 
+inputting a low-resolution image (shape 64, 60, 1) and the model. This will
+output a plot similar to figures 6, 7, and 8.
+
 ## Data
 ### Preprocessing
 The training and testing datasets have been pre-processed by the course 
