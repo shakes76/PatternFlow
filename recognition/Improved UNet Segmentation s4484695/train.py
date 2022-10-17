@@ -45,14 +45,13 @@ def init():
 
 def main():
     dataSets, dataLoaders, device = init()
+    model = modules.Improved2DUnet()
+    model = model.to(device)
 
     # Code for Diagnostics/Visualization & Discovery
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
     #print_model_info(model)
-
-    model = modules.Improved2DUnet()
-    model = model.to(device)
 
     train(dataLoaders, model, device)
     validate(dataLoaders, model, device)

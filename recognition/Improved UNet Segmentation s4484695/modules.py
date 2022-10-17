@@ -28,7 +28,7 @@ class Improved2DUnet(nn.Module):
             if i == 0:
                 self.convs_context.append(nn.Conv2d(self.in_channels, self.features[i], kernel_size=3, stride=1, padding=1, bias=False))
                 self.convs_local.append(nn.Conv2d(self.features_reversed[i + 1], self.features_reversed[i + 1], kernel_size=1, stride=1, padding=0, bias=False))
-            if i == 4:
+            elif i == 4:
                 self.convs_context.append(nn.Conv2d(self.features[i - 1], self.features[i], kernel_size=3, stride=1, padding=1, bias=False))
                 self.convs_local.append(nn.Conv2d(self.features_reversed[i - 1], self.out_channels, kernel_size=1, stride=1, padding=0, bias=False))
             else:
@@ -87,10 +87,11 @@ class Improved2DUnet(nn.Module):
     def forward(self, x):
         residuals = dict()
         skips = dict()
+        out = x
 
         #Context level 1 to 5
         for i in range(5):
-            out = self.convs_context[i](x)
+            out = self.convs_context[i](out)
             residuals[i] = out
             out = self.contexts[i](out)
             out += residuals[i]
