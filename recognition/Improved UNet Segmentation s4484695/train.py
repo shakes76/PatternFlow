@@ -1,4 +1,5 @@
 import dataset
+import modules
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -38,7 +39,19 @@ def init():
     dataSets["train"] = trainDataSet
     dataSets["test"] = testDataSet
 
-    return dataSets, dataLoaders
+    return dataSets, dataLoaders, device
+
+def main():
+    dataSets, dataLoaders, device = init()
+    #display_test(dataLoaders["valid"])
+    #calculate_mean_std()
+    model = modules.Improved2DUnet()
+    model = model.to(device)
+    print_model_info(model)
+
+def print_model_info(model):
+    print("Model No. of Parameters:", sum([param.nelement() for param in model.parameters()]))
+    print(model)
 
 def display_test(dataLoader):
     # Display image and label.
@@ -84,10 +97,5 @@ def calculate_mean_std():
     print('mean: '  + str(total_mean))
     print('std:  '  + str(total_std))
 
-
-def main():
-    dataSets, dataLoaders = init()
-    #display_test(dataLoaders["valid"])
-    calculate_mean_std()
 
 main()
