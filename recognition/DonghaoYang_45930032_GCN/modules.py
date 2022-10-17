@@ -20,7 +20,7 @@ class GraphConvolution(layers.Layer):
 
     def __init__(self, output_dimension, activation_function=None, use_bias=True,
                  kernel_initializer="glorot_uniform", kernel_regularizer=None, bias_initializer='zeros',
-                 bias_regularizer=None):
+                 bias_regularizer=None, **kwargs):
         self.output_dimension = output_dimension
         self.activation_function = activations.get(activation_function)
         self.use_bias = use_bias
@@ -69,8 +69,9 @@ class GraphConvolution(layers.Layer):
         """
         Override the "get_config()"
         """
-        config = super().get_config()
-        return config
+        config = {'output_dimension': self.output_dimension}
+        base_config = super(GraphConvolution, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 def GCN(features_matrix):
@@ -82,15 +83,19 @@ def GCN(features_matrix):
     input_feature = Input((features_number,))
     input_nodes = Input((nodes_number,))
     # layer1
-    gcn_layer1 = GraphConvolution(64, activation_function=activations.relu)([input_feature, input_nodes])
+    gcn_layer1 = GraphConvolution(output_dimension=64,
+                                  activation_function=activations.relu)([input_feature, input_nodes])
     dropout_layer1 = layers.Dropout(0.5)(gcn_layer1)
     # layer2
-    gcn_layer2 = GraphConvolution(32, activation_function=activations.relu)([dropout_layer1, input_nodes])
+    gcn_layer2 = GraphConvolution(output_dimension=32,
+                                  activation_function=activations.relu)([dropout_layer1, input_nodes])
     dropout_layer2 = layers.Dropout(0.5)(gcn_layer2)
     # layer3
-    gcn_layer3 = GraphConvolution(16, activation_function=activations.relu)([dropout_layer2, input_nodes])
+    gcn_layer3 = GraphConvolution(output_dimension=16,
+                                  activation_function=activations.relu)([dropout_layer2, input_nodes])
     dropout_layer3 = layers.Dropout(0.5)(gcn_layer3)
     # layer4
-    gcn_layer4 = GraphConvolution(4, activation_function=activations.softmax)([dropout_layer3, input_nodes])
+    gcn_layer4 = GraphConvolution(output_dimension=4,
+                                  activation_function=activations.softmax)([dropout_layer3, input_nodes])
     model = Model(inputs=[input_feature, input_nodes], outputs=gcn_layer4)
     return model

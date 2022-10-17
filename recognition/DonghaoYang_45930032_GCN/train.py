@@ -4,7 +4,6 @@ imported from "modules.py" and the data loader is imported from "dataset.py".
 """
 
 # All needed library for training and testing the GCN model.
-from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.metrics import classification_report
 from dataset import *
