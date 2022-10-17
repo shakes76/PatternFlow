@@ -1,7 +1,7 @@
 # Generative Model using VQ-VAE + PixelCNN
 The project involves the creation of a generative model using the OASIS brain image dataset. The 2 models used to generate
 the brains is a) VQ-VAE (Vector-Quantized Variationl Autoencoder) to learn the latent representation of the brain and 
-b) PixelCNN to learn the distributions so that it can randomly sample from this distribution to generate nove brain 
+b) DCGAN to learn the distributions so that it can randomly sample from this distribution to generate novel brain 
 images
 
 ## Usage Details
@@ -19,7 +19,7 @@ os
 To reproduce the results using the OASIS dataset, you will need to restructure them as specified in dataset loader
 path. Modify the data folder accordingly in driver.py and run the code to generate output. 
 
-The results may not be as displayed below due to the inherent volatility in PixelCNN and VQ-VAE. To get the best performance
+The results may not be as displayed below due to the inherent volatility in DCGANs and VQ-VAE. To get the best performance
 out of the model, I recommend multiple runs of the driver.py and choosing the best performing model. ANY LIMITATIONS
 
 
@@ -40,19 +40,7 @@ codebook indices q(z|x) which is then passed through the decoder to reconstruct 
 The vectors in the codebook are initialzed from a uniform prior. The loss used to update the parameters of the model
 during training is described by eq (3) in the original VQ-VAE paper [1].
 
-[comment]: <> (### Pixel CNN)
 
-[comment]: <> (After the VQ-VAE model has been trained to learn the discrete representations of the input images, we now come to the)
-
-[comment]: <> (problem of generating these images ourselves. The problem is that the initial codebook was randomised to be from a )
-
-[comment]: <> (uniform prior, but this does not allow correct sampling to generate new samples. We need to use another model to try )
-
-[comment]: <> (learn these codebook vectors or equivalently learn the distribution of the input images. PixelCNN is an autoregressive)
-
-[comment]: <> (model which generates new images pixel-by-pixel. Each new generated pixel takes in account all previous pixels &#40;hence )
-
-[comment]: <> (the autoregressive nature of the model&#41;.)
 
 ## Implementation:
 
