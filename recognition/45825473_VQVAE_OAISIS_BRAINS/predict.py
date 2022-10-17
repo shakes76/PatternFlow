@@ -7,58 +7,73 @@ from dataset import get_image_slices
 from keras.callbacks import History
 from skimage.metrics import structural_similarity
 import matplotlib.pyplot as plt
+import numpy as np
 
-def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, number_of_reconstructions):
-    #TODO predict model
-    pretrained_embeddings = quantizer.embeddings
-    priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
-    quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
-    quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
-    decoder = vqvae_trainer.vqvae.get_layer("decoder")
-    generated_samples = decoder.predict(quantized)
+def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images, number_of_reconstructions):
+  # Print the test image and their reconstruction
+  trained_vqvae_model = vqvae_trainer.vqvae
+  reconstructions_test = trained_vqvae_model.predict(test_images)
 
-    for i in range(number_of_reconstructions):
-        plt.subplot(1, 2, 1)
-        plt.imshow(priors[i,:,:])
-        plt.title("Code_image")
-        plt.axis("off")
+  # Print the test image and their associated coded image
+  encoder = vqvae_trainer.vqvae.get_layer("encoder")
+  quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+  # flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+  # codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+  # codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
-        plt.subplot(1, 2, 2)
-        plt.imshow(generated_samples[i][:, :, 0])
-        plt.title("Generated Sample_image")
-        plt.axis("off")
-        plt.show()
-    print("predict with specific model")
+  #TODO predict model
+  pretrained_embeddings = quantizer.embeddings
+  priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
+  quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
+  quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+  decoder = vqvae_trainer.vqvae.get_layer("decoder")
+  generated_samples = decoder.predict(quantized)
 
-def determine_SSIM(test_images_np, trained_vqvae_model, number_of_reconstructions):
+  for i in range(3):
+      plt.subplot(1, 2, 1)
+      plt.imshow(test_images[i, :, :, 0])
+      plt.title("Original_image")
+      plt.axis("off")
+
+      plt.subplot(1, 2, 2)
+      plt.imshow(reconstructions_test[i, :, :, 0])
+      plt.title("Reconstructed_image")
+      plt.axis("off")
+      plt.show()
+
+      plt.subplot(1, 2, 1)
+      plt.imshow(priors[i,:,:])
+      plt.title("Code_image")
+      plt.axis("off")
+
+      plt.subplot(1, 2, 2)
+      plt.imshow(generated_samples[i, :, :, 0])
+      plt.title("Generated Sample_image")
+      plt.axis("off")
+      plt.show()
+  return generated_samples, reconstructions_test
+
+def determine_SSIM(test_images_np, trained_vqvae_model,  generated_samples, reconstructions_test):
     # Compute the Structural Similarity Index (SSIM) between the two images for all test images
-    total_score = 0
-
-    for i in range(number_of_reconstructions): #544 is the number of test images
-        test_images = test_images_np
-        reconstructions_test = trained_vqvae_model.predict(test_images)
-        (score, diff) = structural_similarity(test_images[i], reconstructions_test[i], full=True, multichannel=True)
-        diff = (diff * 255).astype("uint8")
-        total_score += score
-
-    total_score = total_score / number_of_reconstructions #Get the mean SSIM from all test images
-    print("Mean SSIM: {}".format(total_score))
+    recon_similarity = tf.image.ssim(test_images_np, reconstructions_test, max_val=1)
+    print("Mean SSIM: {}".format(recon_similarity))
 
 def plot_losses(vqvaeTrainer):
     x = 1
 
 def main():
     train_images, test_images, validate_images = get_image_slices()
+    load_default = False
     if (len(sys.argv) == 3 and sys.argv[1] == "-m"):
-        print(sys.argv)
         try:
             #TODO load specific model and predict/generate images with loaded model
-            print("load loading VQVAE model and predict/generate images with default PixelCNN")
-            vqvae_trainer = keras.models.laod_model(sys.argv[1])
+            print("Loading custom VQVAE model to predict/generate images")
+            data_variance = np.var(train_images)
+            vqvae_trainer = train.VQVAETrainer(data_variance, latent_dim=16, num_embeddings=32) #Reduced num_embeddings to resolve memory errors
+            vqvae_trainer.vqvae = keras.models.load_model("VQVAE_Model") #This needs to be changed to sys.argv[2]
+            vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
             vqvae_trainer.fit(train_images, epochs=10, batch_size=32)
 
-
-            
             encoder = vqvae_trainer.vqvae.get_layer("encoder")
             quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
 
@@ -70,24 +85,24 @@ def main():
             codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
             priors = train.generate_probabilities_for_samples(pixel_cnn, sampler)
-            reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, 10)
-            determine_SSIM(test_images, vqvae_trainer.vqvae, len(test_images))
+            generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors,  encoded_outputs,test_images, 10)
+            determine_SSIM(test_images, vqvae_trainer.vqvae,  generated, reconstructions_test)
             
         except:
-            #TODO  Load default model as regular model was able to be predicted with
-            ##Check for VQVAE Model in folder
-            print('Error occured during loading custom model, default model will be loaded instead')
+            load_default = True
 
-            encoder = vqvae_trainer.vqvae.get_layer("encoder")
-            quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
-
-            vqvae_trainer, quantizer, priors, encoded_outputs, pixel_cnn, sampler = train.main()
-            predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, 10)
-            determine_SSIM(test_images, vqvae_trainer.vqvae, len(test_images))
-
-    elif (len(sys.argv == 1)):
-        print("loading DEFAULT model and predict/generate images with loaded model")
+    elif (len(sys.argv == 1) or load_default):
+        print("Loading default model to predict/generate image")
         vqvae_trainer, quantizer, priors, encoded_outputs, pixel_cnn, sampler = train.main()
+        encoder = vqvae_trainer.vqvae.get_layer("encoder")
+        quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+        encoded_outputs = encoder.predict(test_images)
+        flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+        codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+        codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+        priors = train.generate_probabilities_for_samples(pixel_cnn, sampler)
+        generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images, 10)
+        determine_SSIM(test_images, vqvae_trainer.vqvae,  generated, reconstructions_test)
     else:
         print("$ python3 predict.py [-m <PathToPreTrainedModel>]")
 
