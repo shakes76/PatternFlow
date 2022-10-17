@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout
+from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout, Add, Concatenate
 
 def context_module(residual_block, filters, kernel_size=3, rate=0.3, seed=69):
     """
@@ -17,7 +17,8 @@ def context_module(residual_block, filters, kernel_size=3, rate=0.3, seed=69):
     context_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(residual_block)
     context_drop = Dropout(rate=rate, seed=seed)(context_conv)
     context_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(context_drop)
-    return tf.add(residual_block, context_conv)
+    context_add = Add()([residual_block, context_conv])
+    return context_add
 
 def reducing_module(residual_block, filters, kernel_size=3, strides=2):
     """
@@ -35,7 +36,7 @@ def reducing_module(residual_block, filters, kernel_size=3, strides=2):
     reducing_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(residual_block)
     return reducing_conv
 
-def upsampling_module(residual_block):
+def upsampling_module(residual_block, concat_block, filters, kernel_size=3, size=2):
     """
     Creates an upsampling module for the network, which spatially repeats the features twice then
     halves the number of feature maps with a single convolution.
@@ -49,7 +50,10 @@ def upsampling_module(residual_block):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    upsampling_upsm = UpSampling2D(size=size)(residual_block)
+    upsampling_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(upsampling_upsm)
+    upsampling_cnct = Concatenate()([concat_block, upsampling_conv])
+    return upsampling_cnct
 
 def localization_module(residual_block):
     """
