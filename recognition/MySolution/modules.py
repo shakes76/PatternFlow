@@ -34,25 +34,27 @@ def get_node_indices(graph, ids):
 
 class Modules:
     def __init__(self, data):
+        self.test_gen = None
+        self.val_gen = None
+        self.gcn_model = None
+        self.generator = None
         self.model = None
         self.train_gen = None
         data_group = get_training_data(data.get_target())
-        self.build_model(data, data_group)
+        self.build_model(data)
         self.data_group = data_group
 
-    def build_model(self, data, split_data):
-        train_data, val_data, test_data, train_targets, val_targets, test_targets = \
-            split_data
-        generator = FullBatchNodeGenerator(data.get_graph())
-        corrupted_generator = CorruptedGenerator(generator)
+    def build_model(self, data):
+        self.generator = FullBatchNodeGenerator(data.get_graph())
+        corrupted_generator = CorruptedGenerator(self.generator)
         train_gen = corrupted_generator.flow(data.get_graph().nodes())
-        gcn_model = GCN(
+        self.gcn_model = GCN(
             layer_sizes=[16, 16],
             activations=["relu", "relu"],
-            generator=generator,
+            generator=self.generator,
             dropout=0.5
         )
-        deep_graph = DeepGraphInfomax(gcn_model, corrupted_generator)
+        deep_graph = DeepGraphInfomax(self.gcn_model, corrupted_generator)
         x_in, x_out = deep_graph.in_out_tensors()
         model = Model(inputs=x_in, outputs=x_out)
         model.compile(
@@ -61,7 +63,26 @@ class Modules:
         )
         self.model = model
         self.train_gen = train_gen
-    
+
+    def model_retrain(self, split_data):
+        train_data, val_data, test_data, train_targets, val_targets, test_targets =\
+            split_data
+        self.train_gen = self.generator.flow(train_data.index, train_targets)
+        self.test_gen = self.generator.flow(test_data.index, test_targets)
+        self.val_gen = self.generator.flow(val_data.index, val_targets)
+        x_in, x_out = self.gcn_model.in_out_tensors()
+        predictions = layers.Dense(
+            units=train_targets.shape[1],
+            activation="softmax"
+        )(x_out)
+        model = Model(inputs=x_in, outputs=predictions)
+        model.compile(
+            optimizer=optimizers.Adam(lr=0.01),
+            loss="categorical_crossentropy",
+            metrics=["acc"],
+        )
+        return model
+
     def get_model(self):
         return self.model
 
@@ -71,4 +92,5 @@ class Modules:
     def get_data_group(self):
         return self.data_group
 
-
+    def get_gen(self):
+        return self.train_gen, self.test_gen, self.val_gen
