@@ -1,9 +1,9 @@
 import tensorflow as tf
-from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input
+from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout
 
-def context_module(residual_block):
+def context_module(residual_block, filters, kernel_size=3, strides=2, rate=0.3, seed=69):
     """
-    Creates a context module for the network, as defined by Isensee et al.
+    Creates a context module for the network, which extracts some new features at one UNet level.
 
     Parameters:
         residual_block: input layer of dimensionality n by n
@@ -14,12 +14,14 @@ def context_module(residual_block):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(residual_block)
+    context_drop = Dropout(rate=rate, seed=seed)(context_conv)
+    context_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(context_drop)
+    return context_conv
 
-def reduction_module(residual_block):
+def reducing_module(residual_block):
     """
-    Creates a reduction module for the network, defined as a convolutional layer with stride 2 by
-    Isensee et al.
+    Creates a reducing module for the network, which encodes the data down one level.
 
     Parameters:
         residual_block: input layer of dimensionality n by n
@@ -82,7 +84,7 @@ def segmentation_module(residual_block):
 
 def context_aggregation_pathway(input):
     """
-    Creates the full encoding part of the network. This includes context and reduction modules.
+    Creates the full encoding part of the network. This includes context and reducing modules.
 
     Parameters:
         input: raw input for network of dimensionality N by N
