@@ -4,12 +4,12 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
 
-from dataset import get_dataset
+from dataset import get_train_dataset
 import modules
 from modules import VQVAETrainer
 
 # Get the datasets
-(train_ds, test_ds, _) = get_dataset()
+train_ds = get_test_dataset()
 data_variance = np.var(train_ds)
 
 # Train the VQ-VAE model

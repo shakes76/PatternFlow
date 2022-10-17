@@ -60,26 +60,14 @@ def unzip_dataset():
         print("Dataset already extracted.\n")
 
 # Load the dataset
-def load_dataset() -> (tf.data.Dataset, tf.data.Dataset, tf.data.Dataset):
+def load_dataset(folder: str) -> tf.data.Dataset:
     print("Loading training data...")
-    train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        dataset_directory + dataset_folder_name + dataset_train_folder,
+    ds = tf.keras.preprocessing.image_dataset_from_directory(
+        dataset_directory + dataset_folder_name + folder,
         labels=None,
         image_size=image_size,
     )
-    print("Loading testing data...")
-    test_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        dataset_directory + dataset_folder_name + dataset_test_folder,
-        labels=None,
-        image_size=image_size,
-    )
-    print("Loading validation data...")
-    val_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        dataset_directory + dataset_folder_name + dataset_val_folder,
-        labels=None,
-        image_size=image_size,
-    )
-    return (train_ds, test_ds, val_ds)
+    return ds
 
 # Scale the given image to a range of [-0.5, 0.5] and change it to 1 colour channel
 def _scale_image(image: tf.Tensor) -> tf.Tensor:
@@ -91,18 +79,25 @@ def _scale_image(image: tf.Tensor) -> tf.Tensor:
 def preprocess_data(dataset: tf.data.Dataset) -> np.array:
     return np.asarray(list(dataset.unbatch().map(_scale_image)))
 
-# Load and preprocess the dataset
-def get_dataset() -> (np.array, np.array, np.array):
+# Load and preprocess the training dataset
+def get_train_dataset() -> np.array:
     download_dataset()
     unzip_dataset()
 
-    train_ds, test_ds, val_ds = load_dataset()
-
+    train_ds = load_dataset(dataset_train_folder)
     train_ds = preprocess_data(train_ds)
-    test_ds = preprocess_data(test_ds)
-    val_ds = preprocess_data(val_ds)
 
-    return (train_ds, test_ds, val_ds)
+    return train_ds
+
+# Load and preprocess the testing dataset
+def get_test_dataset() -> np.array:
+    download_dataset()
+    unzip_dataset()
+
+    test_ds = load_dataset(dataset_train_folder)
+    test_ds = preprocess_data(test_ds)
+
+    return test_ds
 
 if __name__ == "__main__":
-    get_dataset()
+    get_train_dataset()
