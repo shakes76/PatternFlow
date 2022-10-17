@@ -2,106 +2,146 @@
 """Import libraries required for PyTorch"""
 import torch # Import PyTorch
 import torch.nn as nn # Import PyTorch Neural Network
+import torch.nn.functional as F # Import PyTorch Functional
+import math # Import Python Math Module
 
 # %%
 class Hyperparameters():
-    def get_rate_learn(self): return 2e-4 # Rate of learn of the optimizer
-    def get_size_batch(self): return 128 # Size of batches for the PyTorch Dataloader(s)
-    def get_size_image(self): return 64
-    def get_channels_image(self): return 1 # Number of input channels (from the image)
-    def get_size_z(self): return 100 # Size of the latent space
-    def get_num_epoch(self): return 20 # Number of training epoch(s)
-    def get_fn_loss(self): return nn.BCELoss() # Defines the loss function to be Binary Cross Entropy (BCE)
+    def get_rate_learn(self): # Rate of learn of the optimizer
+        return 2e-4
+    def get_size_batch(self): # Size of batches for the PyTorch Dataloader(s)
+        return 128
+    def get_size_image(self): 
+        return 64
+    def get_channels_image(self): # Number of input channels (from the image)
+        return 1
+    def get_len_e(self):
+        return 20 # Length of the embedding space
+    def get_size_e(self): # Size of the embedding space
+        return 100
+    def get_loss_terminal(self):
+        return 20 # Loss at which the embedding space terminates.
+    def get_num_epoch(self): # Number of training epoch(s)
+        return 20
+    def get_fn_loss(self): # Defines the loss function to be Binary Cross Entropy (BCE)
+        return nn.BCELoss()
     
 # %%
-class UNetEncode(nn.Module):
-    """UNet class for encoding component of UNet
+class VQ(nn.Module):
+    """Vector Quantizer
 
     Args:
-        nn (Module): nn (Module): Abstract class for PyTorch neural networks.
+        len_e (int): Length of the embedding space
+        size_e (int): Size of each vector in embedding space
     """
-    def __init__(self, channels_in, channels_out):
-        """Constructor for UNetEncode
+    def __init__(self, len_e, size_e, loss_threshold):
+        self.len_e = len_e # Length of the embedding space
+        self.size_e = size_e # Size of each vector in embedding space
+        
+        self.embedding = nn.Embedding(self.len_e, self.size_e) # Create embedding layer
+        self.embedding.weight.data.uniform_(-1/self.len_e, 1/self.len_e)
+        
+        self.loss_threshold = loss_threshold # 
+        
+    def forward(self, x):
+        """Iterate through network
 
         Args:
-            channels_in (int): Number of channel into the model
-            channels_out (int): Number of channels output from the model
+            x (_type_): State of network.
         """
-        super(UNetEncode, self).__init__() # Initiate abstract class
-        self.layer1 = nn.Sequential(nn.Conv2d(channels_in, 64, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(64, 64, 3, stride=1, padding=1), nn.ReLU())
-        self.layer2 = nn.Sequential(nn.Conv2d(64, 128, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(128, 128, 3, stride=1, padding=1), nn.ReLU())
-        self.layer3 = nn.Sequential(nn.Conv2d(128, 256, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(256, 256, 3, stride=1, padding=1), nn.ReLU())
-        self.layer4 = nn.Sequential(nn.Conv2d(256, 512, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(512, 512, 3, stride=1, padding=1), nn.ReLU())
-        self.layer5 = nn.Sequential(nn.Conv2d(512, 1024, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(1024, 1024, 3, stride=1, padding=1), nn.ReLU())
-        self.maxpool = nn.MaxPool2d(2, stride=2)
+        # Convert from a (Batches, Channels, Height, Width) tensor to a (Batches, Height, Width, Channels) tensor.
+        x = x.permute(0, 2, 3, 1).contiguous() 
+        shape_x = x.shape
         
-    def forward(self, x_layer5, x_layer4, x_layer3, x_layer2, x_layer1):
-        """Takes in a time step of the network and returns the next time step.
+        x_flat = x.view(-1, self.size_e) # Flatten
+        distances = (
+            torch.sum(x_flat ^ 2, dim=1, keepdim=True) + 
+            torch.sum(self.embedding.weight ^ 2, dim=1) -
+            2 * torch.matmul(x_flat, self.embedding.weight.t)
+        ) # Compute distances
+        
+        index_encodings = torch.argmin(distances, dim=1).unsqueeze(1)
+        encodings = torch.zeros(index_encodings.shape[0], self.len_e, device=x.device)
+        encodings.scatter_(1, index_encodings, 1)
+        
+        quantized = torch.matmul(encodings, self.embedding.weight).view(shape_x) # Quantize & unflatten
+        
+        loss_e = F.mse_loss(quantized.detach(), x)
+        loss_q = F.mse_loss(quantized, x.detach())
+        loss = loss_q + self.loss_threshold * loss_e
+        
+        quantized = x + (quantized - x).detach()
+        mean_probabilities = torch.mean(encodings, dim=0)
+        perplexity = torch.exp(
+            -torch.sum(
+                mean_probabilities * torch.log(mean_probabilities + 1e-10)
+            )
+        )
+        
+        return loss, quantized.permute(0, 3, 1, 2).contiguous(), perplexity, encodings
 
-        Args:
-            x (_type_): The current time step of the network.
-        """
-        x_layer1 = self.layer1(x)
-        x_layer2 = self.layer2(self.maxpool(x_layer1))
-        x_layer3 = self.layer3(self.maxpool(x_layer2))
-        x_layer4 = self.layer4(self.maxpool(x_layer3))
-        x_layer5 = self.layer5(self.maxpool(x_layer4))
-        
-        return (x_layer5, x_layer4, x_layer3, x_layer2, x_layer1)
 # %%
-class UNetDecode(nn.Module):
-    """UNet class for encoding component of UNet
+class ResidualBlock(nn.Module):
+    """Residual Network Block
 
     Args:
-        nn (Module): nn (Module): Abstract class for PyTorch neural networks.
+        nn (_type_): _description_
     """
-    def __init__(self, channels_in, channels_out):
-        """Constructor for UNetEncode
+    def __init__(self, channels_in, channels_out, channels_out_res):
+        super(ResidualBlock, self).__init__()
+        self.block = nn.Sequential(
+            nn.Relu(),
+            nn.Conv2d(channels_in, channels_out_res, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(channels_out_res, channels_out, kernel_size=1, stride=1, bias=False)
+        )
+    def forward(self, x):
+        return x + self.block(x)
 
-        Args:
-            channels_in (int): Number of channel into the model
-            channels_out (int): Number of channels output from the model
-        """
-        super(UNetDecode, self).__init__() # Initiate abstract class
-        self.layer1 = nn.Conv2d(64, 2, 3, stride=1, padding=1)
-        self.layer2 = nn.Sequential(nn.Conv2d(128, 64, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(64, 64, 3, stride=1, padding=1), nn.ReLU())
-        self.layer3 = nn.Sequential(nn.Conv2d(256, 128, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(128, 128, 3, stride=1, padding=1), nn.ReLU())
-        self.layer4 = nn.Sequential(nn.Conv2d(512, 256, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(256, 256, 3, stride=1, padding=1), nn.ReLU())
-        self.layer5 = nn.Sequential(nn.Conv2d(1024, 512, 3, stride=1, padding=1), nn.ReLU(), nn.Conv2d(512, 512, 3, stride=1, padding=1), nn.ReLU())
-        self.deconv_5_4 = nn.ConvTranspose2d(1024, 512, 2, stride=2)
-        self.deconv_4_3 = nn.ConvTranspose2d(512, 256, 2, stride=2)
-        self.deconv_3_2 = nn.ConvTranspose2d(256, 128, 2, stride=2)
-        self.deconv_2_1 = nn.ConvTranspose2d(128, 64, 2, stride=2)
-        
-    def forward(self, x_layer5, x_layer4, x_layer3, x_layer2, x_layer1):
-        """Takes in a time step of the network and returns the next time step.
+class Residual(nn.Module):
+    """Residual Network
 
-        Args:
-            x (_type_): The current time step of the network.
-        """
-        x = self.deconv_5_4(x_layer5)
-        x_layer4 = torch.cat([x, x_layer4], dim=1)
-        x_layer4 = self.layer5(x_layer4)
-
-        x = self.deconv_4_3(x_layer4)
-        x_layer3 = torch.cat([x, x_layer3], dim=1)
-        x_layer3 = self.layer4(x_layer3)
-
-        x = self.deconv_3_2(x_layer3)
-        x_layer2 = torch.cat([x, x_layer2], dim=1)
-        x_layer2 = self.layer3(x_layer2)
-
-        x = self.deconv_2_1(x_layer2)
-        x_layer1 = torch.cat([x, x_layer1], dim=1)
-        x_layer1 = self.layer2(x_layer1)
-
-        x = self.layer1(x_layer1)
-		
+    Args:
+        nn (_type_): _description_
+    """
+    def __init__(self, channels_in, channels_out, channels_out_res, num_res):
+        super(Residual, self).__init__()
+        self.num_res = num_res
+        self.relu = nn.ReLU()
+        self.resnet = nn.ModuleList(
+            [Residual(channels_in, channels_out, channels_out_res) for index_res in range(self.num_res)]
+            )
+    def forward(self, x):
+        for index_res in range(self.num_res):
+            x = self.resnet[index_res](x)
+        x = self.relu(x)
         return x
-# %%
-class UNet():
-    """UNet class for image denoising
 
-    Args:
-        nn (Module): Abstract class for PyTorch neural networks.
-    """
+# %%
+class Encoder(nn.Module):
+    def __init__(self, channels_in, channels_out, channels_out_res, num_res):
+        super(Encoder, self).__init__()
+        self.relu = nn.ReLU()
+        self.conv1 = nn.Conv2d(channels_in, channels_out // 2, kernel_size=4, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(channels_out // 2, channels_out, kernel_size=4, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(channels_out, channels_out, kernel_size=3, stride=1, padding=1)
+        self.resnet = Residual(channels_in, channels_out, channels_out_res, num_res)
+    def forward(self, x):
+        x = self.relu(self.conv1(x))
+        x = self.relu(self.conv2(x))
+        x = self.resnet(self.conv3(x))
+        return x
+    
+class Decoder(nn.Module):
+    def __init__(self, channels_in, channels_out, channels_out_res, num_res, channels_image):
+        super(Decoder, self).__init__()
+        self.conv1 = nn.Conv2d(channels_in, channels_out, kernel_size=3, stride=1, padding=1)
+        self.resnet = Residual(channels_out, channels_out, channels_out_res, num_res)
+        self.deconv1 = nn.ConvTranspose2d(channels_out, channels_out // 2, kernel_size=4, stride=2, padding=1)
+        self.deconv2 = nn.ConvTranspose2d(channels_out // 2, channels_image, kernel_size=4, stride=2, padding=1)
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.resnet(x)
+        x = self.relu(self.deconv1(x))
+        x = self.deconv2(x)
+        return x
