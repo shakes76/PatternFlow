@@ -1,0 +1,77 @@
+<!--#Title
+
+#Description of algorithm + problem it solves (paragraph)
+
+#How it works in a paragraph
+#figure/visualisation of model?
+
+#Dependencies requried, versions and how to reproduce results
+
+#Example inputs, outputs and plots of algorithm
+
+#Describe pre-processing + training/validation/testing splits -->
+
+
+#Vector Quantized Variational Autoencoder (VQVAE)
+##Generative model of the OASIS brain dataset
+</br>
+
+Task: Create a generative model of the OASIS brain data set using VQVAE that has a reasonable clear image and a structured similarity (SSIM) of over 0.6. The model firstly  takes a basic vqvae with some convolutional layers to reconstruct brain images from a dataset and secondly uses a PixelCNN prior to attempt to generate "new" brain images. 
+Examples of the origional, reconstructed and "new" brain images generated from the models can be found below.
+
+##VQVAE and how it works
+</br>
+
+Auto encoders come in many forms, ranging from their most basic and initial implementation , to a variational auto encoder, then a vector quantized variational autoencoder and even further. Proposed by Van der Oord er al in the Neural Discrete Representation Learning paper last revised in 2018 [1]. Like a typical variational auto encoder the VQVAE is composed of three components; An **Encoder**, **Decoder** and a **Latent Space**. 
+
+**Encoder**: Models a categorical distribution, from which you get integral values. Done through the use of a convolutional network that extracts the features of the supplied input images. 
+
+**Decoder**: Takes in the output of the latent space (Vector Quantization layer), and attempts to recreate the initial input given to the encoder. Uses Convolutional network to upsample (reverse the effects of the encoder) and reconstruct the origional input image from a simplified/compressed input.
+
+**Latent Space (Vector Quantization Layer)**: This layer takes the output from the encoder as its input and embeds selected sata based on distance and supplied a corresponding compressed output which is taken as the input for the decoder. This layer maintains a codebook of embeddeding vectors of a set dimension equal to the filters in the encoders output. 
+[2]
+<p align="center">
+<img src=".img\1_miNfFc9qT5PrS7ectJa_kw.png">
+</p>
+[3]
+
+#PixelCNN
+</br>
+
+#Model Results
+</br>
+The model generated was trained on the OASIS brain dataset. This dataset can be found with some preprocessing done on the [COMP3710 Blackboard Page](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). To use this data you will need to download and extract the zip file and ensure that the paths specified in train.py file for the variables train_images, test_images and validate_images point to the corresponding extracted non-segmented files. 
+
+The images found in these files are 256x256 greyscale pixel png's. In train.py using functions from dataset.py the images are extracted and processed such that they are normalised to values between 0 and 1 and the train and validate sets are combined into a single set of 10784 brain images which are used to train the model. the remaining 544 test images are used for evaluating the accuracy of the model.
+
+The modules.py file stores the class and functions for the VQVAE model and is called when running train.py. The encoder and decoder are both simple in their construction involving a convolutional layer with filter numbers of 32 and 64 and transposed convolutional layer with 64 and 32 respectively. 
+
+After Training the model on the combined train and validate set (named Oasis) for 30 epochs using batch sizes of 128 a model was generated. The reconstructed loss over the epochs can be seen in the following graph.
+<p align="center">
+<img src=".img\Reconstruction Loss.png">
+</p>
+As it can be seen the model starts performing quite badly which is to be expected but after around 20/30 epochs the loss begins to plateau.
+
+To test the Model the test set was used to determine how well the model can reconstruct images. The goal of the model was to be able to reconstruct brain images with a structural simalarity of 0.6 or more and based on the 544 test images supplied the model returns a structured simalarity of 0.74, with the lowest similarity at 0.66 and highest at 0.79. Examples  of both the origional test images and their reconstructed images and their codebook images can be seen as follows:
+<p align="center">
+<img src=".img\1.png">
+</p>
+<p align="center">
+<img src=".img\2.png">
+</p>
+<p align="center">
+<img src=".img\3.png">
+</p>
+
+
+#Dependencies
+</br>
+
+
+
+
+
+##References
+[1]Oord, A.van den, Vinyals, O. and Kavukcuoglu, K. (2018) Neural Discrete Representation Learning, arXiv.org. Available at: https://arxiv.org/abs/1711.00937. 
+[2]Yadav, S. (2020) Understanding vector quantized variational autoencoders (VQ-VAE), Medium. Medium. Available at: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a. 
+[3]Park, S. (2021) An overview on VQ-VAE: Learning Discrete Representation Space, Medium. Analytics Vidhya. Available at: https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337. 

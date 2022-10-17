@@ -51,16 +51,3 @@ def combine(train, test):
     Oasis = np.expand_dims(Oasis, -1).astype("float32")
     return Oasis
 
-def main():
-    train_images = FetchData('D:\\University\\2022 Sem 2\\COMP3710\\Project Report\\BranchFOlder\\keras_png_slices_data\\keras_png_slices_data\\keras_png_slices_train\\*')
-    test_images = FetchData('D:\\University\\2022 Sem 2\\COMP3710\\Project Report\\BranchFOlder\\keras_png_slices_data\\keras_png_slices_data\\keras_png_slices_test\\*')
-    validate_images = FetchData('D:\\University\\2022 Sem 2\\COMP3710\\Project Report\\BranchFOlder\\keras_png_slices_data\\keras_png_slices_data\\keras_png_slices_validate\\*')
-
-    train = ImageExtract(train_images)
-    test = ImageExtract(test_images)
-    validate = ImageExtract(validate_images)
-
-    Oasis = combine(train, test)
-
-if __name__ =="__main__":
-    main();
