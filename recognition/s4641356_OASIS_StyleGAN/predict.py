@@ -22,12 +22,6 @@ def generate_images(
                 If the folder does not exist it is created. If None images are 
                 not saved to disk. Defaults to None.
     """
-    #Constants relating to the given training set
-    #minor duplication tolerated to keep everything wrapped in a class/function
-    LATENT_DIM = 512
-    NOISE_START = 4
-    NOISE_END = 32
-
     #styleGAN model we call on random input to generate image data
     model = modules.StyleGAN(existing_model_folder= model_folder)
 
@@ -46,9 +40,9 @@ def generate_images(
                     model(
                         GANutils.random_generator_inputs(
                             num_images, 
-                            LATENT_DIM, 
-                            NOISE_START, 
-                            NOISE_END
+                            model.latent_dim, 
+                            model.start_res, 
+                            model.output_res
                             )
                         )[0],
                     model.get_mean()
