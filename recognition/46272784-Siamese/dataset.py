@@ -6,14 +6,33 @@ import tensorflow_datasets as tfds
 from tensorflow import image
 from tensorflow.keras import utils
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+# def preprocess_image(filename):
+#     """
+#     Load the specified file as a JPEG image, preprocess it and
+#     resize it to the target shape.
+#     """
+
+#     image_string = tf.io.read_file(filename)
+#     image = tf.image.decode_jpeg(image_string, channels=3)
+#     image = tf.image.convert_image_dtype(image, tf.float32)
+#     return image
+
+# def loadImage(dir):
+#     AD_dir = os.path.join(dir, 'train/AD')
+#     NC_dir = os.path.join(dir, 'train/NC')
+#     ad = sorted([os.path.join(AD_dir, f) for f in os.listdir(AD_dir)])
+#     nc = sorted([os.path.join(NC_dir, f) for f in os.listdir(NC_dir)])
+
 
 def transform_images(img, label):
     # transform to [0,1]
-    img = image.rgb_to_grayscale(img)
-    img = img / 255
+    # img = image.rgb_to_grayscale(img)
+    img = img / 255.0
     return img, label
 
-def loadFile(dir):
+def loadFile(dir, batch=8):
     print('>> Begin data loading')
     train_dir = os.path.join(dir, 'train')
     print('-Directory of the Training files is: {}'.format(train_dir))
@@ -26,7 +45,7 @@ def loadFile(dir):
                                                      seed=1,
                                                      image_size=(256, 240),
                                                      shuffle=True,
-                                                     batch_size=8)
+                                                     batch_size=batch)
     print('\n> 2/2 Loading Validation Data...')
     valid_ds = utils.image_dataset_from_directory(train_dir, 
                                                      labels = 'inferred', 
@@ -36,7 +55,7 @@ def loadFile(dir):
                                                      seed=1,
                                                      image_size=(256, 240),
                                                      shuffle=True,
-                                                     batch_size=8)
+                                                     batch_size=batch)
     print('\n> Mapping datasets to greyscale...')
     train_ds = train_ds.map(transform_images)
     valid_ds = valid_ds.map(transform_images)
@@ -55,7 +74,10 @@ def plotExample(ds):
 def main():
     # Code for testing the functions
     t, v = loadFile('F:/AI/COMP3710/data/AD_NC/')
-    plotExample(t)
+    # plotExample(t)
+    batch = t.take(1)
+    for img, label in batch:
+        print(img, label)
 
 if __name__ == "__main__":
     main()
