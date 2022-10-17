@@ -3,10 +3,11 @@ import torch.nn as nn
 import torch.utils as utils
 import torchvision
 import numpy as np
-
+import os
 import modules
 import dataset
 import visualise as vis
+import predict
 
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
@@ -43,7 +44,7 @@ class VQ_Training():
         self.save = save
         self.visualise = visualise
         if self.visualise == True:
-            self.visualiser = vis.Visualise(self.model, self.data)
+            self.visualiser = vis.VQVAE_Visualise(self.model, self.data)
             
     def train(self):
         epoch = 0
@@ -155,7 +156,7 @@ class PixelCNN_Training():
             utils.data.DataLoader(self.data, batch_size = 32, shuffle = True)
         
         self.save = save
-        if save != None:
+        if save != None and os.path.isfile(save) == True:
             cnn = modules.PixelCNN(num_embeddings)
             state_dict = torch.load(save, map_location="cpu")
             cnn.load_state_dict(state_dict)
@@ -188,7 +189,6 @@ class PixelCNN_Training():
                     flat_encoded  = encoded.reshape(-1, VQ.embedding_dim)
                     
                     a, b = VQ.argmin_indices(flat_encoded)
-              
                     b = b.view(-1, 64, 64)
                     c = nn.functional.one_hot(b, num_classes = self.num_embeddings).float()
                     c = c.permute(0, 3, 1, 2)
@@ -210,7 +210,7 @@ class PixelCNN_Training():
                     training_loss_arr.append(total_loss.item())
                     if self.save != None:
                         torch.save(self.PixelCNN_model.state_dict(), self.save)
-                    gen_image(self.model_path, self.save, self.num_embeddings, 
+                    predict.gen_image(self.model_path, self.save, self.num_embeddings, 
                               self.latent_dim)
                     
 
@@ -229,63 +229,10 @@ class PixelCNN_Training():
         plt.plot(np.arange(0, self.epochs), training_loss_arr)
         plt.show()
         
-def gen_image(train_path, model_path, num_embeddings, latent_dim):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = modules.VQVAE(num_embeddings,latent_dim,0.25)
-    state_dict = torch.load(train_path, map_location="cpu")
-    model.load_state_dict(state_dict)
-    model.to(device)
-    model.eval()
-    
-    cnn = modules.PixelCNN(num_embeddings)
-    state_dict = torch.load(model_path, map_location="cpu")
-    cnn.load_state_dict(state_dict)
-    cnn.to(device)
-    cnn.eval()
- 
-    prior = torch.zeros((1, num_embeddings, 64, 64), device = device)
-    
-    _, channels, rows, cols = prior.shape
-    
-    
-    with torch.no_grad():
-        for i in range(rows):
-            for j in range(cols):
-                out = cnn(prior.float())
 
-                out = out.permute(0,2,3,1).contiguous()
-                distribution = torch.distributions.categorical.Categorical(logits = out)
-                sampled = distribution.sample()
-                sampled = nn.functional.one_hot(sampled, num_classes = num_embeddings
-                                                ).permute(0, 3, 1, 2).contiguous()
-                prior[:, :, i , j] = sampled[:, :, i, j]
-
-    _, ax = plt.subplots(1,2)
-    ax[0].imshow(prior.argmax(1).view(64,64).to("cpu"))
-    ax[0].title.set_text("Latent Generation")
-
-    prior = prior.view(1,num_embeddings,-1)
-    prior = prior.permute(0,2,1).float()
-    quantized_bhwc = torch.matmul(prior, 
-                                  model.get_VQ().embedding_table.weight)
-    
-    quantized_bhwc = quantized_bhwc.view(1, 64, 64, latent_dim)
-    quantized = quantized_bhwc.permute(0, 3, 1, 2).contiguous()
-    
-    decoded = model.get_decoder()(quantized).to(device)
-    
-    decoded = decoded.view(-1, 3, 256,256).to(device).detach()
-    
-    decoded_grid = \
-        torchvision.utils.make_grid(decoded, normalize = True)
-    decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
-    
-    ax[1].imshow(decoded_grid)
-    ax[1].title.set_text("Decoded Generation")
-    plt.show()
         
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model2.pt"
-pixel_cnn_trainer = PixelCNN_Training(0.0003, 300, 
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model3_3.pt"
+pixel_cnn_trainer = PixelCNN_Training(0.0005, 500, 
                                       trained,data_path, num_embeddings = 64, 
                                       latent_dim = 16, save = save_model) 
                                       

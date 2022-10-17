@@ -253,16 +253,17 @@ class MaskedConv2d(nn.Conv2d):
         # Inherits 2d convolutional layer and its parameters
         super(MaskedConv2d, self).__init__(*args, **kwargs)
         #print(self.kernel_size)
+        self.mask_type = mask_type
         
-        self.register_buffer('mask', torch.ones(self.out_channels, self.in_channels, 
-                                        self.kernel_size[0], self.kernel_size[1]).float())
+        self.register_buffer('mask', self.weight.data.clone())
         
-        height, width = self.kernel_size
+        _, _, height, width = self.weight.size()
+        self.mask.fill_(1)
         # setup the mask, use floor operations to cover area above and left of
         # kernel position
         if mask_type == "A":
             self.mask[:, :, height//2, width//2:] = 0
-            self.mask[:, :, height // 2 + 1:] = 0
+            self.mask[:, :, height // 2 + 1:, :] = 0
         else:
             # include centre pixel
             self.mask[:, :, height // 2, width // 2 + 1:] = 0
@@ -275,8 +276,32 @@ class MaskedConv2d(nn.Conv2d):
         #apply mask
         self.weight.data = self.weight.data * self.mask
         #use the forward from nn.Conv2d
-        return super().forward(x)
+        return super(MaskedConv2d, self).forward(x)
+
+class ResBlock(nn.Module):
+    
+    def __init__(self, num_embeddings):
+        super(ResBlock, self).__init__()
+        self.num_embeddings = num_embeddings
         
+        self.res_block = nn.Sequential(
+            
+            nn.Conv2d(num_embeddings, num_embeddings, kernel_size = 1),
+            nn.BatchNorm2d(num_embeddings),
+            nn.ReLU(),
+            MaskedConv2d("B", in_channels = num_embeddings, out_channels \
+                         = num_embeddings//2, kernel_size = 3, padding = \
+                         "same"),
+            nn.BatchNorm2d(num_embeddings//2),
+            nn.ReLU(),
+            nn.Conv2d(num_embeddings//2, num_embeddings, kernel_size = 1),
+            nn.BatchNorm2d(num_embeddings),
+            nn.ReLU())
+    
+    def forward(self, x):
+        output = self.res_block(x)
+        return output + x
+    
         
 class PixelCNN(nn.Module):
     
@@ -286,18 +311,24 @@ class PixelCNN(nn.Module):
         self.pixelcnn_model = nn.Sequential(
 
             MaskedConv2d("A", in_channels = 64, 
-                         out_channels = 128, kernel_size = 7, padding = 3),
+                         out_channels = 128, kernel_size = 7, padding = "same"),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            #ResBlock(128),
+            #ResBlock(128),
+            MaskedConv2d("B", in_channels = 128, 
+                         out_channels = 128, kernel_size = 3, #stride = 1,
+                         padding = "same"),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
             MaskedConv2d("B", in_channels = 128, 
-                         out_channels = 128, kernel_size = 3, padding = 1),
+                         out_channels = 128, kernel_size = 3, #stride = 1,
+                         padding = "same"),
+            nn.BatchNorm2d(128),
+            
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 128, 
-                         out_channels = 128, kernel_size = 3, padding = 1),
-            nn.ReLU(),
-            MaskedConv2d("B", in_channels = 128, 
-                         out_channels = 128, kernel_size = 3, padding = 1),
-            nn.ReLU(),
-            nn.Conv2d(128, num_embeddings, 1),
+            nn.Conv2d(128, num_embeddings, kernel_size = 1, stride = 1,
+                      padding = "valid"),
                         
             )
         
