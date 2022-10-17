@@ -9,12 +9,14 @@ from keras import activations
 from keras import initializers
 from keras import regularizers
 from keras import constraints
+from keras import Model
 
 
 class GraphConvolution(layers.Layer):
     """
     This class contains the basic graph convolution layer
     """
+
     def __init__(self, output_dimension, activation_function=None, use_bias=True,
                  kernel_initializer="glorot_uniform", kernel_regularizer=None, bias_initializer='zeros',
                  bias_regularizer=None, activity_regularizer=None, kernel_constraint=None,
@@ -50,7 +52,7 @@ class GraphConvolution(layers.Layer):
             if self.use_bias:
                 self.bias = self.add_weight(name='bias', shape=(self.output_dimension,),
                                             initializer=self.bias_initializer,
-                                            constraint= self.bias_constraint,
+                                            constraint=self.bias_constraint,
                                             regularizer=self.bias_regularizer,
                                             trainable=True)
         self.built = True
@@ -67,4 +69,31 @@ class GraphConvolution(layers.Layer):
             output = tf.nn.bias_add(output, self.bias)
         if self.activation is not None:
             output = self.activation(output)
+        return output
+
+
+class GCN(Model):
+    def __init__(self):
+        """
+        This class initialises a gcn model
+        """
+        super(GCN, self).__init__()
+        self.gcn_layer1 = GraphConvolution(output_dimension=64,
+                                           activation_function=activations.relu)
+        self.gcn_layer2 = GraphConvolution(output_dimension=32,
+                                           activation_function=activations.relu)
+        self.gcn_layer3 = GraphConvolution(output_dimension=16,
+                                           activation_function=activations.relu)
+        self.gcn_layer4 = GraphConvolution(output_dimension=4,
+                                           activation_function=activations.softmax)
+
+    def call(self, inputs, training=False, mask=None):
+        features, edges = inputs
+        new_feature = self.gcn_layer1(inputs)
+        new_feature = layers.Dropout(0.2)(new_feature)
+        new_feature = self.gcn_layer2([new_feature, edges])
+        new_feature = layers.Dropout(0.2)(new_feature)
+        new_feature = self.gcn_layer3([new_feature, edges])
+        new_feature = layers.Dropout(0.2)(new_feature)
+        output = self.gcn_layer4([new_feature, edges])
         return output
