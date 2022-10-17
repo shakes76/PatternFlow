@@ -6,7 +6,8 @@ COMP3710, The University of Queensland, October 2022
 
 ## Algorithm Description
 This algorithm is a super-resolution convolutional neural network. It takes as 
-input a downscaled or small image and produces an upscaled image. 
+input a downscaled or small image and produces an upscaled image. It works on
+ADNI-MRI brain scan data.
 
 This differs from earlier algorithms as often these take images that have been
 reshaped to the final size. This leads to increased computational requirements
