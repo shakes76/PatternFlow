@@ -25,7 +25,7 @@ Improved-Unet has similar function as normal Unet, it can get the segmentation o
 image.
 One of the most important feature of Unet is putting relatively early data(in encoder part) 
 into late data(in decoder part). To make them combine, concatenate layers are used.
-! [ Structure ](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/structure.png)
+! [ Structure ](https://github.com/TianyuWu-UQ/PatternFlow/blob/topic-recognition/recognition/Improved_unet_ISIC/structure.png)
 
 ## ISIC dataset
 The dataset used in my implement is based on the ISIC dataset which contain images of different
@@ -34,7 +34,7 @@ Because of hardware limitations, I used:
 - 1051 image pairs contains origin data and segmentation image for training.
 - 110 image pairs for validation.
 - 219 images for get the output of Improved Unet model.
-! [ input_images ](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/input_example.jpg)
+! [ input_images ](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/Improved_unet_ISIC/input_example.jpg)
 
 ## Files contained
 - `dataset.py` containing the data loader, in which dataset is first being selected and useless
@@ -85,7 +85,7 @@ This is result visualisation of model output.
 Because there are only two possible output colors(black and white), so the output of model has 2 color channels.
 To visualise it, I add an empty third channel to plot it with RGB format, so the color of output visualisation 
 is in red and green.
-! [result](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/result.png)
+! [result](https://github.com/TianyuWu-UQ/PatternFlow/topic-recognition/recognition/Improved_unet_ISIC/result.png)
 A dice similarity coefficient is calculated by formula and get the result of higher than 85% which achieve 
 the target.
 
