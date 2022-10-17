@@ -31,11 +31,8 @@ def get_data():
     mean = np.mean(x_train)
     var = np.mean(x_train)
 
-    x_train -= 127.5
-    x_train /= 127.5
-    x_test -= 127.5
-    x_test /= 127.5
-    x_validate -= 127.5
-    x_validate /= 127.5
+    x_train = x_train/255.0 - 0.5
+    x_test = x_test/255.0 - 0.5
+    x_validate = x_validate/255.0 - 0.5
 
     return x_train, x_test, x_validate, mean, var
