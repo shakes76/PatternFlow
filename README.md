@@ -79,16 +79,15 @@ A few points to note,
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
 
 <p align="center">
-
-|                             | My Model                                   | Original Model
-| -------------               | -------------                              |------------- 
-| Dimension of latent vector  | 128                                        | 512
-| Image channel               | 1                                          | 3
-| Target resolution           | 256 x 256                                  | 1024 x 1024
-| Number of filters           | 256, ..., 32                               | 512, ..., 32
-| Number of FC layers         | depth of model (6)                         | 8
-| Upsampling method           | Upsample2D                                 | Bilinear
-
+    <table>
+        <tr><th></th><th>My Model</th><th>Original Model</th>
+        <tr><td>Dimension of latent vector</td><td>200</td><td>512</td></tr>
+        <tr><td>Image channel</td><td>1</td><td>3</td></tr>
+        <tr><td>Target resolution</td><td>256 x 256</td><td>1024 x 1024</td></tr>
+        <tr><td>Number of filters</td><td>256, ..., 32</td><td>512, ..., 32</td></tr>
+        <tr><td>Number of FC layers</td><td>depth of model (6)</td><td>8</td></tr>
+        <tr><td>Upsampling method</td><td>Upsample2D</td><td>Bilinear</td></tr>
+    </table>
 </p>
 
 ## Result
