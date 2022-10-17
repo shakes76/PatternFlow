@@ -93,7 +93,7 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 ## Result
 This is the result.
 <p align="center">
-    <img src="asset/training_process.gif" width="450">
+    <kbd><img src="asset/training_process.gif" width="450"></kbd>
 </p>
 <p align="center">
     <table border='0'>
@@ -112,7 +112,7 @@ This is the result.
 
 Loss plot.
 <p align="center">
-    <img src="asset/loss_plot.png" width="550">
+    <kbd><img src="asset/loss_plot.png" width="550">
 </p>
 
 Bilinear interpolation.
