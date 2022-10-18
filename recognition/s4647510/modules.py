@@ -107,6 +107,7 @@ class VQVAETrainer(keras.models.Model):
             name="reconstruction_loss"
         )
         self.vq_loss_tracker = keras.metrics.Mean(name="vq_loss")
+        self.ssim = keras.metrics.Mean(name="ssim")
 
     @property
     def metrics(self):
@@ -114,6 +115,7 @@ class VQVAETrainer(keras.models.Model):
             self.total_loss_tracker,
             self.reconstruction_loss_tracker,
             self.vq_loss_tracker,
+            self.ssim,
         ]
 
     def train_step(self, x):
@@ -124,6 +126,7 @@ class VQVAETrainer(keras.models.Model):
             # Calculate the losses.
             reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2))
             total_loss = reconstruction_loss + sum(self.vqvae.losses)
+            ssim = tf.image.ssim(x, reconstructions, 1)
 
         # Backpropagation.
         grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
@@ -133,12 +136,14 @@ class VQVAETrainer(keras.models.Model):
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.vq_loss_tracker.update_state(sum(self.vqvae.losses))
+        self.ssim.update_state(ssim)
 
         # Log results.
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result(),
+            "ssim": self.ssim.result(),
         }
 
 def show_subplot(original, reconstructed):
@@ -198,8 +203,8 @@ class PixelConvLayer(layers.Layer):
 class ResidualBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
-        self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
-        self.norm1 = keras.layers.BatchNormalization()
+        self.conv1 = layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.norm1 = layers.BatchNormalization()
         self.pixel_conv = PixelConvLayer(
             mask_type="B",
             filters=filters // 2,
@@ -207,9 +212,9 @@ class ResidualBlock(keras.layers.Layer):
             activation="relu",
             padding="same",
         )
-        self.norm2 = keras.layers.BatchNormalization()
-        self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
-        self.norm3 = keras.layers.BatchNormalization()
+        self.norm2 = layers.BatchNormalization()
+        self.conv2 = layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.norm3 = layers.BatchNormalization()
 
 
     def call(self, inputs):
@@ -219,4 +224,4 @@ class ResidualBlock(keras.layers.Layer):
         x = self.norm2(x)
         x = self.conv2(x)
         x = self.norm3(x)
-        return keras.layers.add([inputs, x])
+        return layers.add([inputs, x])

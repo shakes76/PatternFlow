@@ -12,16 +12,17 @@ import dataset, modules
 figure_path = "figures/"
 
 # Load data
-train, test, validate = dataset.load_data()
+train, test = dataset.load_data()
 
 # Train VQVAE
 vqvae_trainer = modules.VQVAETrainer(latent_dim=256, num_embeddings=256)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(train, epochs=30, batch_size=8, steps_per_epoch=len(train)/8)
+vqvae_trainer.fit(train, epochs=100, batch_size=8, steps_per_epoch=len(train)/8)
 
 # Plot learning
 plt.plot(vqvae_trainer.history.history['reconstruction_loss'], label='reconstruction_loss')
 plt.plot(vqvae_trainer.history.history['vqvae_loss'], label = 'vqvae_loss')
+plt.plot(vqvae_trainer.history.history['ssim'], label = 'ssim')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend(loc='lower right')
@@ -86,7 +87,6 @@ for _ in range(num_pixelcnn_layers):
     )(x)
     x = layers.BatchNormalization()(x)
 
-
 out = keras.layers.Conv2D(
     filters=256, kernel_size=1, strides=1, padding="valid"
 )(x)
@@ -106,9 +106,8 @@ pixel_cnn.fit(
     x=codebook_indices,
     y=codebook_indices,
     batch_size=32,
-    epochs=1000,
-
-    validation_split=0.25,
+    epochs=2000,
+    validation_split=0.2,
 )
 
 # Create a mini sampler model.
@@ -167,10 +166,19 @@ plt.plot(pixel_cnn.history.history['val_loss'], label = 'val_loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend(loc='lower right')
-plt.savefig(os.path.join(figure_path, "cnn_plot"))
+plt.savefig(os.path.join(figure_path, "cnn_loss_plot"))
+
+# Plot learning
+plt.figure()
+plt.plot(pixel_cnn.history.history['accuracy'], label='accuracy')
+plt.plot(pixel_cnn.history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+plt.savefig(os.path.join(figure_path, "cnn_accuracy_plot"))
 
 # Check SSIM
 for i in range(len(generated_samples)):
     img1 = train[i]
     img2 = generated_samples[i]
-    print(tf.image.ssim(img1, img2, 1, filter_size=11, filter_sigma=1.5, k1=0.01, k2=0.03))
+    print(i, tf.image.ssim(img1, img2, 1, filter_size=11, filter_sigma=1.5, k1=0.01, k2=0.03))
