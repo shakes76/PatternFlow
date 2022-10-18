@@ -28,18 +28,24 @@ data = load_data()
 
 def process_data(dataset):
   train_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features'][0:data[item].size/3]),
-    tf.data.Dataset.from_tensor_slices(data[''])
+    tf.data.Dataset.from_tensor_slices(data['features']
+                                       [0:round(data['features'].size/3)]),
+    tf.data.Dataset.from_tensor_slices(data['edges'][0:round(data['features'].size/3)])
   )).batch(64)
 
   valid_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features'][data[item].size/3:2*data[item].size/3]),
-    tf.data.Dataset.from_tensor_slices(data[''])
+    tf.data.Dataset.from_tensor_slices(data['features']
+                                       [round(data['features'].size/3):
+                                       round(2*data['features'].size/3)]),
+    tf.data.Dataset.from_tensor_slices(data['edges'][round(data['features'].size/3):
+                                       round(2*data['features'].size/3)])
   )).batch(64)
 
   test_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features'][2*data[item].size/3:]),
-    tf.data.Dataset.from_tensor_slices(data[''])
+    tf.data.Dataset.from_tensor_slices(data['features']
+                                       [round(2*data['features'].size/3):]),
+    tf.data.Dataset.from_tensor_slices(data['edges']
+                                       [round(2*data['features'].size/3):])
   )).batch(64)
 
   return train_ds, valid_ds, test_ds
@@ -50,3 +56,5 @@ for item in data.files:
     print(data[item])
     print(data[item].size)
 
+train, valid, test = process_data(data)
+print(train)
