@@ -83,6 +83,7 @@ def get_pixel_cnn(kernel_size, input_shape):
         padding="same")(onehot)
     x = tf.keras.layers.Add()([x1, x2])
     
+    # Residual block layers
     for _ in range(2):
         y = tf.keras.layers.Conv2D(
             filters=128,
@@ -206,8 +207,10 @@ class VQ(tf.keras.layers.Layer):
         inputs_shape = tf.shape(inputs)
         inputs_flat = tf.reshape(inputs, shape=(-1, latent_dims))
 
+        # Get quantized vectors
         results = get_indices(self.embeddings, inputs_flat)
 
+        # Get codebook loss
         codebook_loss = tf.reduce_mean(
             tf.square(tf.stop_gradient(results) - inputs_flat))
         commitment_loss = tf.reduce_mean(

@@ -37,22 +37,15 @@ else:
     predictions = vqvae.predict(data["validate"][0:5])
     print("Finished VQVAE Fitting")
 
+    # Plot loss
     import matplotlib.pyplot as plt
-    plt.plot(history.history["acc"])
-    plt.plot(history.history["val_acc"])
-    plt.title("VQVAE Accuracy")
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Val'])
-    plt.show()
-
-    import matplotlib.pyplot as plt
+    history.history["loss"] = tf.reduce_mean(history.history["loss"], axis=1)
+    history.history["loss"] = tf.reduce_mean(history.history["loss"], axis=1)
     plt.plot(history.history["loss"])
-    plt.plot(history.history["val_loss"])
     plt.title("VQVAE Loss")
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
-    plt.legend(['Train', 'Val'])
+    plt.legend(['Train'])
     plt.show()
 
     # Save model.
@@ -62,13 +55,15 @@ else:
 print("Finished Loading VQVAE")
 
 
-# Initialize the PixelCNN, Print a summary.
+# Initialize the PixelCNN
 print("Loading PixelCNN")
 pixelcnn = None
 if os.path.exists("pixelcnn.ckpt"):
+    # One exists, we can use that
     print("Existing model found in pixelcnn.ckpt, using that")
     pixelcnn = tf.keras.models.load_model("pixelcnn.ckpt")
 else:
+    # Have to make a new model
     print("pixelcnn.ckpt not found, creating new model")
     pixelcnn = get_pixel_cnn(kernel_size=max(
         pixelcnn_input_shape[0], pixelcnn_input_shape[1]), input_shape=pixelcnn_input_shape[0:2])
@@ -82,20 +77,23 @@ else:
         pixelcnn.predict(tf.random.uniform(shape=(1, *pixelcnn_input_shape[0:2]),
                          dtype=tf.int64, maxval=num_embeddings))
 
+    # Fitting Model
     print("Beginning PixelCNN Fitting")
     training_data = tf.concat([data["train"], data["validate"]], axis=0)
     pixelcnn, history = train_pixelcnn(pixelcnn, training_data, vqvae)
     print("Finished PixelCNN Fitting")
 
+    # Plotting loss
     import matplotlib.pyplot as plt
-    plt.plot(history.history["acc"])
-    plt.plot(history.history["val_acc"])
+    plt.plot(history.history["accuracy"])
+    plt.plot(history.history["val_accuracy"])
     plt.title("PixelCNN Accuracy")
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'])
     plt.show()
 
+    # Plotting accuracy
     import matplotlib.pyplot as plt
     plt.plot(history.history["loss"])
     plt.plot(history.history["val_loss"])
@@ -105,6 +103,7 @@ else:
     plt.legend(['Train', 'Val'])
     plt.show()
 
+    # Saving model
     print("Saving PixelCNN")
     pixelcnn.save("pixelcnn.ckpt")
     print("PixelCNN saved to pixelcnn.ckpt")

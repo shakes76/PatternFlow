@@ -13,7 +13,7 @@ def train_vqvae(model, raw_data):
     history = model.fit(raw_data,
               raw_data,
               epochs=2,
-              batch_size=32,
+              batch_size=32
               )
 
     return (model, history)
@@ -27,6 +27,7 @@ def train_pixelcnn(pixelcnn, raw_data, vqvae):
           vqvae - vqvae which the pixelcnn is learning
     returns: the pixelcnn trained on the raw data
     """
+    history = None
     # Slice the dataset into two to avoid OOM while training
     for i in range(2):
         dataset = tf.data.Dataset.from_tensor_slices(
@@ -46,12 +47,15 @@ def train_pixelcnn(pixelcnn, raw_data, vqvae):
         indices = tf.reshape(
             indices, shape=(-1, *pixelcnn_input_shape[0:2]))
 
-        history = pixelcnn.fit(
+        new_hist = pixelcnn.fit(
             x=tf.concat([indices], axis=0),
             y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                                             num_embeddings), dtype=tf.float64), shape=(-1, *pixelcnn_input_shape[0:2], num_embeddings)),
             batch_size=64,
-            epochs=25,
+            epochs=10,
             validation_split=0.1)
+        
+        if history is None:
+            history = new_hist
 
     return (pixelcnn, history)

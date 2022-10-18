@@ -1,4 +1,5 @@
-# Vector Quantised Variational Autoencoder for OASIS brain dataset
+# VQVAE and PixelCNN Generative Model for OASIS Brains Dataset
+This project implements the VQVAE [3] and PixelCNN models to encoded and generate images of brains based on the OASIS Brains dataset.
 # Background Information & Architecture
 ## VQVAE
 ![](resources/VQVAE-Architecture.png)
@@ -11,7 +12,7 @@ The Vector Quantisation (VQ) layer contains a codebook of K vectors of dimension
 
 The VQ-VAE uses SSIM as a loss function between the input image and decoded output.
 
-As this operation is non-differentiable, gradients skip the vector quantisation layer. Additionally, the codebook is trainable, trained based on the error between each input latent vector and its codebook mapping.
+As quantisation is non-differentiable, gradients skip the vector quantisation layer. Additionally, the codebook is trainable, trained based on the error between each input latent vector and its codebook mapping.
 
 
 ## PixelCNN
@@ -60,15 +61,22 @@ If any .pkl, or .ckpt files exist and you want to train a fresh model, delete th
 Run driver.py with python.
 
 # Results
+Results are not perfectly reproducible as PixelCNN randomly generates images, and training data is shuffled. Seeding can be used to overcome this.
 ## VQ-VAE Results
 The preset parameters used by driver.py will achieve approximately 90% of images having SSIM greater than 0.6, with a mean SSIM of 0.64. By changing the hyparameters it is possible to achieve 100% over 0.6, with a mean of 0.95, however that lead to reduced generative capabilities.
 
 The below figure demonstrates original images (left), encoded image (center) and decoded image (right) for a random sample of 6 images.
 ![](resources/VQVAE-Demo.png)
 
+A graph of loss for the VQVAE is not included as it is only trained on 2 epochs.
+
 ## PixelCNN Results
 The below figure demonstrates generated encodings (left) and decoded images (right) for the PixelCNN.
 ![](resources/PixelCNN-Demo.png)
+
+![](resources/PixelCNN-Loss.png)
+![](resources/PixelCNN-Accuracy.png)
+
 # References
 [1]Yadav, S. (2020) Understanding vector quantized variational autoencoders (VQ-VAE), Medium. Medium. Available at: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a (Accessed: October 6, 2022). 
 
