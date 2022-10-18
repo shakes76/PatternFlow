@@ -24,10 +24,18 @@ with open(filename, "rb") as file:
 
 import modules
 
+plt.figure(figsize=(10, 10))
+for images in x_train.take(1):
+    for i in range(9):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(images[i].numpy().astype("uint8"),cmap='gray')
+        plt.axis("off")
+
+plt.show()
 
 vqvae_trainer = modules.VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
 vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(x_train, epochs=3, batch_size=28)
+vqvae_trainer.fit(x_train, epochs=1, batch_size=128)
 
 
 def show_subplot(original, reconstructed):
