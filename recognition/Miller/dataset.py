@@ -16,7 +16,6 @@ def download_oasis ():
     # Download file from URL Path, origin=path, fname=file name, untar=compress file
     tf.keras.utils.get_file(origin=dataset_url,fname='oa-sis' ,untar=True)
   
-
 # Loads the training images (non segmented) from given path and returns an numpy array of arrays
 def load_training (path):
     image_list = []

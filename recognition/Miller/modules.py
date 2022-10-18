@@ -3,10 +3,24 @@
 implementated as a class or a function
 """
 import tensorflow as tf
-from tensorflow.python.keras.engine import input_spec
+
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 """CREATE STRUCTURE OF VQ-VAR MODEL"""
 
+
+"""
+Class Representation of the Vector Quantization laye
+
+Structure is: 
+    1. Reshape into (n,h,w,d)
+    2. Calculate L2-normalized distance between the inputs and the embeddings. -> (n*h*w, d)
+    3. Argmin -> find minimum distance between indices for each n*w*h vector
+    4. Index from dictionary: index the closest vector from the dictionary for each of n*h*w vectors
+    5. Reshape into original shape (n, h, w, d)
+    6. Copy gradients from q -> x
+"""
 class vq_layer(tf.keras.layers.Layer):
     def __init__(self, embedding_num, latent_dimension, beta, **kwargs):
         super().__init__(**kwargs)
@@ -19,90 +33,43 @@ class vq_layer(tf.keras.layers.Layer):
         self.embeddings = tf.Variable(initial_value=initial((self.latent_dimension, self.embedding_num), dtype="float32"),trainable=True)
 
     def call(self, x):
-        # Calculate the input shape
+        # Calculate the input shape and store for later -> Shape of (n,h,w,d)
         input = tf.shape(x)
-        print(input)
-        print("ahhh")
-        
 
-        # Flatten the inputs to keep the embedding dimension intact.
+        # Flatten the inputs to keep the embedding dimension intact. 
+        # Combine all dimensions into last one 'd' -> (n*h*w, d) 
         flatten = tf.reshape(x, [-1, self.latent_dimension])
 
         # Get code indices
         # Calculate L2-normalized distance between the inputs and the embeddings.
+        # For each n*h*w vectors, we calculate the distance from each of k vectors of embedding dictionaty to obtain matrix of shape (n*h*w, k)
         similarity = tf.matmul(flatten, self.embeddings)
         distances = (tf.reduce_sum(flatten ** 2, axis=1, keepdims=True) + tf.reduce_sum(self.embeddings ** 2, axis=0) - 2 * similarity)
 
-        # Derive the indices for minimum distances.
+        # For each n*h*w vectors, find the indices of closest k vector from dictionary; find minimum distance.
         encoded_indices = tf.argmin(distances, axis=1)
         
-        # Turn the indices into a one hot encoded vectors
+        # Turn the indices into a one hot encoded vectors; index the closest vector from the dictionary for each n*h*w vector
         encodings = tf.one_hot(encoded_indices, self.embedding_num)
         quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
 
-        # Reshape the quantized values back to its original input shape
+        # Reshape the quantized values back to its original input shape -> (n,h,w,d)
         quantized = tf.reshape(quantized, input)
         """
         # Calculate vector quantization loss and add that to the layer
-        commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
-        codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
-        
+        commitment_loss = tf.reduan((quantized - tf.stop_gradient(x)) ** 2)
+        codebook_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
+
         #self.add_loss(self.beta * commitment_loss + codebook_loss)
         """
         # Straight-through estimator.
+        # Unable to back propragate as gradient wont flow through argmin. Hence copy gradient from qunatised to x
         quantized = x + tf.stop_gradient(quantized - x)
-
+        
         return quantized
 
-
 """
-def initialise_embeddings(embedding_num, latent_dimension):
-    initial = tf.random_uniform_initializer()
-    return tf.Variable(initial_value=initial(shape=(embedding_num, latent_dimension), dtype="float32"), trainable=True, name="embeddings")
-
-# Vector Quantizer -> layer between encoder and decoder. Takes input from encoder and flattens. Then creates codebook
-def vq_layer(embedding_num, latent_dimension, beta, x):
-    
-    # Initialize the embeddings which will be quantized.
-    embeddings = initialise_embeddings(embedding_num, latent_dimension)
-    
-    # Calculate the input shape
-    input = tf.keras.layers.shape(x)
-    print(input)
-    print("ahhhh")
-
-    # Flatten the inputs to keep the embedding dimension intact.
-    flatten = tf.reshape(x, [-1, latent_dimension])
-
-    # Get code indices
-    # Calculate L2-normalized distance between the inputs and the embeddings.
-    similarity = tf.matmul(flatten, embeddings)
-    distances = (tf.reduce_sum(flatten ** 2, axis=1, keepdims=True) + tf.reduce_sum(embeddings ** 2, axis=0) - 2 * similarity)
-
-    # Derive the indices for minimum distances.
-    encoded_indices = tf.argmin(distances, axis=1)
-       
-    # Turn the indices into a one hot encoded vectors
-    encodings = tf.one_hot(encoded_indices, embedding_num)
-    quantized = tf.matmul(encodings, embeddings, transpose_b=True)
-
-    # Reshape the quantized values back to its original input shape
-    quantized = tf.reshape(quantized, input)
-
-    # Calculate vector quantization loss and add that to the layer
-    commitment_loss = tf.reduce_mean((tf.stop_gradient(quantized) - x) ** 2)
-    codebook_loss = tf.reduce_mean((quantized - tf.stop_gradient(x)) ** 2)
-    
-    #self.add_loss(self.beta * commitment_loss + codebook_loss)
-
-    # Straight-through estimator.
-    quantized = x + tf.stop_gradient(quantized - x)
-
-    return quantized
-"""
-
-
-"""
+Returns layered model for encoder architecture built from convolutional layers. 
 
 activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
 e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
@@ -110,10 +77,8 @@ e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss s
 # Encoder Component
 def encoder_component(image_size, latent_dimension):
 
+    # Create model for layers
     encoder = tf.keras.models.Sequential(name = "encoder")
-    # Instantiate a lower level keras tensor to start building model of known input shape size (not including batch size)
-    """inputs = tf.keras.layers.Input(shape=(image_size, image_size, 1 ), batch_size=1)
-    print(inputs.shape)"""
     
     #2D Convolutional Layers
         # filters -> dimesion of output space
@@ -122,27 +87,25 @@ def encoder_component(image_size, latent_dimension):
             # relu ->
         # strides -> spaces convolution window moves vertically and horizontally 
         # padding -> "same" pads with zeros to maintain output size same as input size
-    encoder.add(tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same", input_shape=(image_size,image_size,1)))
+    encoder.add(tf.keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"))
     encoder.add(tf.keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"))
-
     encoder.add(tf.keras.layers.Conv2D(latent_dimension, 1, padding="same"))
     
-    #return tf.keras.Model(inputs, outputs, name="encoder_component")
     return encoder
     
 
 """
+Returns layered model for decoder architecture built from  tranposed convolutional layers. 
 
 activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
 e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
 """
 # Decoder Component
-def decoder_component(image_size):
+def decoder_component():
 
-    # Instantiate a lower level keras tensor to start building model of known input shape size (not including batch size)
-    """inputs = tf.keras.Input((encoder_shape), batch_size=1)
-    print(inputs.shape)"""
+    # Create model for layers
     decoder = tf.keras.models.Sequential(name="decoder")
+
     #Transposed Convolutional Layers (deconvolution)
         # filters -> dimesion of output space
         # kernal_size -> convolution window size
@@ -152,10 +115,8 @@ def decoder_component(image_size):
         # padding -> "same" pads with zeros to maintain output size same as input size
     decoder.add(tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
     decoder.add(tf.keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
-    
     decoder.add(tf.keras.layers.Conv2DTranspose(1, 3, padding="same"))
     
-    #return tf.keras.Model(inputs, outputs, name="decoder_model")
     return decoder
 
 
@@ -170,46 +131,21 @@ class vqvae_model(tf.keras.models.Sequential):
         self.beta = beta
         
         # Create the model sequentially
+        input_layer = tf.keras.layers.InputLayer(input_shape=(image_size,image_size,1))
         vector_quantiser_layer = vq_layer(embeddings_num, latent_dimension, beta)
         encoder = encoder_component(image_size, latent_dimension)
-        decoder = decoder_component(image_size)
-
+        decoder = decoder_component()
+        
         # Add components of model
+        self.add(input_layer)
         self.add(encoder)
         self.add(vector_quantiser_layer)
         self.add(decoder)
 
-    
-    """print("START")
-    # Instantiate a lower level keras tensor to start building model of known input shape size (not including batch size)
-    inputs = tf.keras.layers.Input((image_size, image_size, 1 ), batch_size=1)
-
-
-    #encoder_shape = inputs.shape[1:]
-    print("The original inputs: ", inputs.shape)
-
-    """
-    #Build Model Levels
-    """
-    # Get encoder component layer with given latent dimension
-    encoder = encoder_component(image_size, latent_dimension)
-
-    #print("The encoder shape is: ", encoder.shape)
-    #exit()
-    #encoder_component_outputs = encoder(inputs)
-    #print(encoder_component_outputs.shape)
-    
-    # Get Quantized Layer with given number of embeddings and latent dimension
-    quantized_layer = vq_layer(embedings_num, latent_dimension, beta)
-    quantized_latents_dimensions = quantized_layer(encoder)
-
-    # Get decoder component layer with given latent dimension
-    decoder = decoder_component(image_size, latent_dimension, inputs.shape[1:])
-    print(decoder.shape)
-    reconstructions = decoder*(quantized_latents_dimensions)
-
-    return tf.keras.Model(inputs, reconstructions, name="vqvae_model")
-    """
-
-
-
+latent_dimensions = 16
+embeddings_number = 64
+image_size = 256
+# beta = [0.25, 2]
+beta = 0.25
+model = vqvae_model(image_size, latent_dimensions, embeddings_number, beta)
+model.summary()
