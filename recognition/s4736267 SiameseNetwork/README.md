@@ -226,7 +226,7 @@ The main code to train, validate and test the model is stored in train.py. To be
 The results are based on the last implementation of the SNN. 
 
 <p align="center">
-    <img src=Picture/training_loss.PNG width="600" >
+    <img src=Picture/training_loss.png width="600" >
 </p>
 <p align="center">
     <em> Figure 9: Loss during training epoch of training and validation set  </em>
