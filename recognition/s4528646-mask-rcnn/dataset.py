@@ -106,19 +106,34 @@ class ISICDataset(Dataset):
         
         return image, targets
 
-
-train_data = ISICDataset(
-    image_folder_path="./data/ISIC-2017_Training_Data", 
-    mask_folder_path="./data/ISIC-2017_Training_Part1_GroundTruth", 
-    diagnoses_path="./data/ISIC-2017_Training_Part3_GroundTruth.csv",
-    device=device,
-    transform=get_transform(True),
-    )
-
-image, target = train_data[0]
-fig, ax = plt.subplots()
-image = np.array(image.detach().cpu())
-ax.imshow(image.transpose((1,2,0)))
-bbox = target["boxes"][0]
-rect = Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=1, edgecolor='r', facecolor='none')
-ax.add_patch(rect)
+if __name__ == "__main__":
+    train_data = ISICDataset(
+        image_folder_path="./data/ISIC-2017_Training_Data", 
+        mask_folder_path="./data/ISIC-2017_Training_Part1_GroundTruth", 
+        diagnoses_path="./data/ISIC-2017_Training_Part3_GroundTruth.csv",
+        device=device,
+        transform=get_transform(True),
+        )
+    
+    image, target = train_data[0]
+    fig, ax = plt.subplots()
+    image = np.array(image.detach().cpu())
+    ax.imshow(image.transpose((1,2,0)))
+    bbox = target["boxes"][0]
+    rect = Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=1, edgecolor='r', facecolor='none')
+    rx, ry = rect.get_xy()
+    cx = rx + rect.get_width()/8.0
+    cy = ry - rect.get_height()/22.0
+    label = "Melanoma" if target["labels"][0] == 2 else "Non-Melanoma"
+    l = ax.annotate(
+            label,
+            (cx, cy),
+            fontsize=7,
+            # fontweight="bold",
+            color="r",
+            ha='center',
+            va='center'
+          )
+    ax.add_patch(rect)
+    fig, ax = plt.subplots()
+    ax.imshow(target["masks"][0,...])
