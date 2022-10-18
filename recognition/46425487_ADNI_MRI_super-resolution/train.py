@@ -3,7 +3,7 @@ from tensorflow import keras
 from modules import *
 from dataset import *
 
-train_ds, valid_ds = process_data()
+train_ds, valid_ds, test_ds = process_data()
 
 early_stopper= keras.callbacks.EarlyStopping(monitor="loss", patience=10)
 
