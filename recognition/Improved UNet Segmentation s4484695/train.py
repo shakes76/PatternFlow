@@ -15,19 +15,19 @@ import time
 # Hyper-parameters
 num_epochs = 10
 learning_rate = 5 * 10**-2
-batchSize = 64
+batchSize = 8
 learning_rate_decay = 0.985
 
-validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images"
-trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images"
-testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images"
-validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels"
-trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels"
-testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels"
+validationImagesPath = "../../../Data/Validation/Images"
+trainImagesPath = "../../../Data/Train/Images"
+testImagesPath = "../../../Data/Test/Images"
+validationLabelsPath = "../../../Data/Validation/Labels"
+trainLabelsPath = "../../../Data/Train/Labels"
+testLabelsPath = "../../../Data/Test/Labels"
 
 # Discovery path only needs to be specified if calling function calculate_mean_std.
-discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
-discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
+discoveryImagesPath = trainImagesPath
+discoveryLabelsPath = trainLabelsPath
 
 modelPath = "."
 outputPath = "./Output"
@@ -65,7 +65,7 @@ def main():
     # Code for Diagnostics/Visualization & Discovery
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
-    print_model_info(model)
+    #print_model_info(model)
 
     train(dataLoaders, model, device)
     validate(dataLoaders, model, device)
@@ -88,7 +88,7 @@ def train(dataLoaders, model, device):
             images = images.to(device)
             labels = labels.to(device)
 
-            outputs, seg_layers = model(images)
+            outputs = model(images)
             loss = criterion(outputs, labels)
 
             optimizer.zero_grad()
@@ -118,7 +118,7 @@ def validate(dataLoaders, model, device):
             images = images.to(device)
             labels = labels.to(device)
 
-            outputs, seg_layers = model(images)
+            outputs = model(images)
             losses_validation.append(dice_loss(seg_layers, labels))
             dice_similarities_validation.append(dice_coefficient(seg_layers, labels))
 
@@ -142,6 +142,10 @@ def dice_loss(outputs, labels):
 
 def dice_coefficient(outputs, labels, epsilon=10**-8):
     K = outputs.shape[1]
+    print(outputs.size())
+    print(outputs.type())
+    print(labels.size())
+    print(labels.type())
     if K == 1:
         labels_1_hot = torch.eye(K + 1)[labels.squeeze(1)]
         labels_1_hot = labels_1_hot.permute(0, 3, 1, 2).float()

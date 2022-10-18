@@ -1,0 +1,16 @@
+Training and Validation Commenced:
+torch.Size([8, 1, 128, 128])
+torch.Size([8, 1, 128, 128])
+torch.Size([8, 1, 128, 128])
+Traceback (most recent call last):
+  File "/home/Student/s4484695/COMP3710/Report/PatternFlow/recognition/Improved UNet Segmentation s4484695/train.py", line 218, in <module>
+    main()
+  File "/home/Student/s4484695/COMP3710/Report/PatternFlow/recognition/Improved UNet Segmentation s4484695/train.py", line 70, in main
+    train(dataLoaders, model, device)
+  File "/home/Student/s4484695/COMP3710/Report/PatternFlow/recognition/Improved UNet Segmentation s4484695/train.py", line 92, in train
+    loss = criterion(outputs, labels)
+  File "/home/Student/s4484695/COMP3710/Report/PatternFlow/recognition/Improved UNet Segmentation s4484695/train.py", line 141, in dice_loss
+    return 1 - dice_coefficient(outputs, labels)
+  File "/home/Student/s4484695/COMP3710/Report/PatternFlow/recognition/Improved UNet Segmentation s4484695/train.py", line 148, in dice_coefficient
+    labels_1_hot = torch.eye(K + 1)[labels.squeeze(1)]
+IndexError: tensors used as indices must be long, byte or bool tensors

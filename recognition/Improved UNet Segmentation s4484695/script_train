@@ -1,0 +1,10 @@
+#!/bin/bash
+#SBATCH --job-name=s4484695
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --partition=vgpu20
+#SBATCH --gres=gpu:1
+
+conda activate torch-env
+python train.py
