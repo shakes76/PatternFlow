@@ -68,7 +68,7 @@ class GNN(tf.keras.Model):
         self.postprocess = create_ffn(hidden_nodes, dropout_rate, name="postprocess")
 
         # Create a compute logits layer.
-        self.predict_labels = layers.Dense(units=num_classes, name="predict_labels", activation=tf.keras.activations.softmax)
+        self.predict_labels = layers.Dense(units=num_classes, name="predict_labels")
 
     def _predict_labels_for_indices(self, indices):
         """Returns network's predictions for the given node indices"""

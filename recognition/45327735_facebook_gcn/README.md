@@ -1,8 +1,10 @@
 # Facebook Graph Convolutional Model (GCM)
 ## Introduction
 This model performs supervised multi-class classification
-on the [Facebook Large Page-Page Dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html). The dataset is a
-graph network such that:
+on a partially processed version ([facebook.npz](https://graphmining.ai/datasets/ptg/facebook.npz))
+of the  [Facebook Large Page-Page Dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html). 
+
+The dataset is a graph network such that:
 
 - Each node (n=22470) represented a verified Facebook page
 - Each edge (m=171002) represented a mutual 'like' between two pages. Edges are not weighted.
@@ -10,9 +12,7 @@ graph network such that:
   the given page. Descriptions were written by page owners.
   
 The task was to classify each page into a category based on the
-node's features, and the features of its nearest neighbours. 
-
-The possible page categories: politicians, governmental organisations, television shows, and companies.
+node's features, and the features of its nearest neighbours. The possible page categories: politicians, governmental organisations, television shows, and companies.
 
 ## The Solution
 The algorithm trains a Graph Convolutional Model (GCM) neural network 
@@ -34,7 +34,7 @@ The model consists of:
   - Dropout layer
   - 32-node Dense layer
   
-- 4-node Dense layer w/ softmax (for predictions)
+- 4-node Dense layer (for predictions)
 
 ![model schema](./model.png)
 
@@ -142,7 +142,7 @@ The above accuracy and loss curves show that after Epoch 10, the model makes mar
 but steady improvement over time (acc: 0.89 to 0.93 by Epoch 110). This is possibly
 because feature data was not normalised, meaning layers would need to do additional
 work to learn any underlying distributions of the data. A batch normalisation layer
-would more efficiently learn this distribution and would likely learning time.
+would more efficiently learn this distribution and likely improve learning time.
 
 ## Dependencies
 - python = 3.7
