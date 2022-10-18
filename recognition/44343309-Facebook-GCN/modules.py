@@ -9,7 +9,7 @@ class GCN(Model):
   def __init__(self):
     super(GCN, self).__init__()
 
-  def __call__(self, inputs, training=False):
+  def call(self, inputs, training=False):
     edges = inputs[1]
     outModel = models.Sequential([
         GCNLayer(input_dim=128, output_dim=64, activation="relu", kernel_regularizer=regularizers.L2(0.01))(inputs), 
@@ -29,7 +29,7 @@ class GCNLayer(Layer):
     self.weight = self.add_weight(shape=(self.inDim, self.outDim), initializer="glorot_uniform")
     self.built = True
 
-  def __call__(self, inputs):
+  def call(self, inputs):
     features = inputs[0]
     edges = inputs[1]
     featWeights = tf.matmul(features, self.weight)
