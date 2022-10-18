@@ -1,19 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.utils import to_categorical ,Sequence
+from tensorflow.keras import backend as K
 import tensorflow_probability as tfp
 import tensorflow as tf
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, concatenate, Conv2DTranspose, BatchNormalization, Activation, Dropout
+from tensorflow.keras.optimizers import Adadelta, Nadam ,Adam
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, CSVLogger, TensorBoard
 
 import os
 from PIL import Image
 from glob import glob
 from pathlib import Path
 from random import sample, choice
+import shutil
 
 img_w = 4288
 img_h = 2848
@@ -69,12 +74,29 @@ plt.imshow(img/255)
 plt.subplot(122)
 plt.imshow(mask/255)
 
-plt.show()
+#plt.show()
 
-class_map = []
-for index,item in class_map_df.iterrows():
-    class_map.append(np.array([item['b'], item['w']]))
+class_map = [(255),(0)]
+
+def assert_map_range(mask,class_map):
+    mask = mask.astype("uint8")
+    for j in range(img_w):
+        for k in range(img_h):
+            assert mask[j][k] in class_map , tuple(mask[j][k])
+
+def form_2D_label(mask,class_map):
+    mask = mask.astype("uint8")
+    label = np.zeros(mask.shape[:2],dtype= np.uint8)
     
+    for i, rgb in enumerate(class_map):
+        label[(mask == rgb).all(axis=2)] = i
+    
+    return label
+
+lab = form_2D_label(mask,class_map)
+np.unique(lab,return_counts=True)
+
+
 
 '''
 seed = 909 # (IMPORTANT) to transform image and corresponding mask with same augmentation parameter.
