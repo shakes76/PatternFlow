@@ -5,6 +5,11 @@ from tensorflow.keras.layers import Conv2D, LeakyReLU, Flatten, MaxPool2d
 IMAGE_SIZE = (240,256,1)
 ALPHA = 0.2
 
+"""
+Containing the source code of the components of your model. 
+Each component must be implementated as a class or a function.
+"""
+
 def build_siamese():
     """
     Generate Siamese model
@@ -31,6 +36,25 @@ def build_siamese():
 
     return model
 
+def siamese_loss(x0, x1, y: int) -> float:
+    """
+    Custom loss function for siamese network.
+
+    Takes two vectors, then calculates their distance.
+
+    Vectors of the same class are rewarded for being close and punished for being far away.
+    Vectors of different classes are punished for being close and rewarded for being far away.
+
+    Parameters:
+        - x0 -- first vector
+        - x1 -- second vector
+        - y -- integer representing whether or not the two vectors are from the same class
+
+    Returns:
+        - loss value
+    """
+    # TODO
+    return 0
 
 
 def build_binary():
