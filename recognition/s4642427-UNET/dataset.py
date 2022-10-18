@@ -6,7 +6,7 @@ from keras.preprocessing.image import load_img, img_to_array
 #target_dir = 'ISIC-2017_Training_Part1_GroundTruth/ISIC-2017_Training_Part1_GroundTruth'
 
 class Dataloader:
-    def __init__(self, img_path, mask_path, IMG_WIDTH=1022, IMG_HEIGHT=767, split=0.8):
+    def __init__(self, img_path, mask_path, IMG_WIDTH=1020, IMG_HEIGHT=764, split=0.8):
             self.IMG_WIDTH = IMG_WIDTH
             self.IMG_HEIGHT = IMG_HEIGHT
             self.img_path = img_path
