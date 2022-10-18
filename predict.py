@@ -64,7 +64,7 @@ def plot_save(images, cols=None, plot=True, size=(256, 256), mode='L', save_path
 
     if save_path is not None:
         combined_image.save(save_path)
-        print(f'\n{n} images saved in {save_path}')
+        print(f'{n} images saved in {save_path}')
 
 
 # suppress optimizer warning when loading checkpoints.
@@ -114,3 +114,4 @@ w1234 = tf.concat(w1234, axis=0)
 inputs = gen_inputs(FC, ldim, sres, tres, w=w1234)
 images = Synthesis(inputs)
 plot_save(images, cols=10, size=output_res, save_path=os.path.join(folder, 'bilinear_interpolation.png'))
+print('Completed.')
