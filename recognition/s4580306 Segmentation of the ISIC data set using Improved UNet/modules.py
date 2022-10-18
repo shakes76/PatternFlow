@@ -1,8 +1,8 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
-from tensorflow import keras
 
 
+# from tensorflow import keras
 # from tensorflow.keras import layers
 
 
@@ -42,12 +42,12 @@ class ImprovedUNET(tf.keras.Model):
         return convolution2
 
     def data_pipe_line(self):
-        input_layer = tf.keras.layers.Input(shape=(256, 256, 3))
+        input = tf.keras.layers.Input(shape=(256, 256, 3))
 
         # Encoder
 
         convolution1 = tf.keras.layers.Conv2D(self.initial_output, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(input_layer)
+                                              activation='relu')(input)
         convolution_module1 = self.context_module(convolution1, self.initial_output)
         sum1 = tf.keras.layers.Add()([convolution1, convolution_module1])
         first_skip = sum1
@@ -103,7 +103,8 @@ class ImprovedUNET(tf.keras.Model):
         upper_segmented = tf.keras.layers.Conv2D(1, kernel_size=(1, 1), padding=self.padding)(convolution_module6)
         final_node = tf.keras.layers.Add()([upscaled_middle_segment, upper_segmented])
 
-        outputs = tf.keras.layers.Activation("sigmoid")(final_node)
-        model = tf.keras.Model(inputs=input, outputs=outputs)
+        activation = tf.keras.layers.Activation("sigmoid")(final_node)
+
+        model = tf.keras.Model(inputs=input, outputs=activation)
 
         return model

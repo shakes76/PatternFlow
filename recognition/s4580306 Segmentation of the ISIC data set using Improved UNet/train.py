@@ -46,7 +46,7 @@ def main():
     improved_unet = ImprovedUNET()
     model = improved_unet.data_pipe_line()
     model.compile(optimizer="adam", loss=dice_loss, metrics=['accuracy'])
-    print(model.summary())
+    # print(model.summary())
     history = model.fit(train_ds.batch(16), epochs=15, validation_data=validation_ds.batch(16))
 
     plot_history(history)
