@@ -63,7 +63,7 @@ def main():
 
     # callbacks
     sampling_cbk = SamplingCallBack(
-        output_img_res=(256, 240),  # some provided images are not square, resize to match.
+        output_img_res=(256, 256),  # some provided images are not square, resize to match.
         output_img_folder=subfolders['images'], 
         output_ckpts_folder=subfolders['ckpts'])
     fade_in_cbk = FadeInCallBack()

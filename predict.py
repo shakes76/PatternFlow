@@ -9,6 +9,7 @@ import config as cfg
 from modules import StyleGAN
 
 
+# load model
 def load_model(ckpts, sres, tres):
     depth = int(np.log2(tres/sres))
     # create model, load initial weights
@@ -21,7 +22,7 @@ def load_model(ckpts, sres, tres):
     print('Model loaded.')
     return model.FC, model.G
 
-
+# generate model inputs
 def gen_inputs(fc, latent_vec_dim, sres, tres, n=1, w=None):
     depth = int(np.log2(tres/sres))
     if w is None:
@@ -68,36 +69,34 @@ def plot_save(images, cols=None, plot=True, size=(256, 256), mode='L', save_path
 # suppress optimizer warning when loading checkpoints.
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+sres = cfg.SRES          
+tres = cfg.TRES      
+ldim = cfg.LDIM
 
-sres = cfg.SRES           # starting resolution of the model
-tres = cfg.TRES           # target resolution of the model
-ldim = cfg.LDIM           # latent vector dimention of the model
-output_res = (256, 256)   # output resolution of generated images
-ckpt = r'path of ckpts'   # path of checkpoint files
-
+# PARAMETERS TO SET
+output_res = (256, 256)          # output resolution of generated images
+n = 9                            # number of samples to generate, squre of an integer
+steps = 10                       # steps of interpolation
+ckpt = r'path of ckpts'          # path of checkpoint files, ex: r'C:\OASIS.ckpt'
+folder = r'path to save images'  # path of folder the generated images to be saved
 
 # build model
 FC, Synthesis = load_model(ckpt, sres, tres)
 
-
-# plot 100 random images
-n = 100
+# generate random samples
 inputs = gen_inputs(FC, ldim, sres, tres, n=n)
 images = Synthesis(inputs)
-plot_save(images, size=output_res, save_path=r'D:\generated.png')
-
+plot_save(images, size=output_res, save_path=os.path.join(folder, 'generated_samples.png'))
 
 # bilinear interpolation
 w1 = FC(tf.random.normal((1, ldim)))
 w2 = FC(tf.random.normal((1, ldim)))
 w3 = FC(tf.random.normal((1, ldim)))
 w4 = FC(tf.random.normal((1, ldim)))
-steps = 10
 w12 = []
 for i in range(steps):
     alpha = (i + 1.) / steps
     w12.append((1 - alpha) * w1 + alpha * w2)
-
 w34 = []
 for i in range(steps):
     alpha = (i + 1.) / steps
@@ -111,4 +110,4 @@ for i in range(steps):
 w1234 = tf.concat(w1234, axis=0)
 inputs = gen_inputs(FC, ldim, sres, tres, w=w1234)
 images = Synthesis(inputs)
-plot_save(images, cols=10, size=output_res, save_path=r'D:\bilinear_interpolation.png')
+plot_save(images, cols=10, size=output_res, save_path=os.path.join(folder, 'bilinear_interpolation.png'))
