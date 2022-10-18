@@ -104,7 +104,7 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
 
 ### Evolution
 <p align="center">
-    <kbd><img src="asset/training_process.gif" width="450"></kbd>
+    <kbd><img src="asset/training_process.gif" width="550"></kbd>
 </p>
 
 
@@ -121,14 +121,14 @@ Both discriminator and generator converges well in the lower dimensions, but flu
 <p align="center">
     <table border='0'>
         <tr>
-            <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
             <td><img src="asset/OASIS_samples.png" width="250", height="250"></td>
             <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
+            <td><img src="asset/AKOA_samples.png" width="250", height="250"></td>
         </tr>
         <tr align='center'>
-            <td>ADNI</td>
             <td>OASIS</td>
             <td>ADNI</td>
+            <td>AKOA</td>
         </tr>
     </table>
 </p>
@@ -137,6 +137,25 @@ Both discriminator and generator converges well in the lower dimensions, but flu
 <p align="center">
     <kbd><img src="asset/bilinear_interpolation.png" width="800"></dbd>
 </p>
+
+## How to play with `predict.py`?
+Once trained, `predict.py` can be used to load trained models and generate above images. It supports two types of image generations, nxn random images and bilinear interpolation as shown above.
+Make sure below parameters are properly set then directly run below command 
+
+```python predict.py```
+
+When then program finishes running, the generated images can be found in the specified folder.
+
+> **Note** make sure the same parameters are used as how model is trained. Keep all `.py` files under the same folder, as other files are dependencies of `predict.py`.
+
+```
+# PARAMETERS TO SET
+output_res = (256, 256)          # output resolution of generated images
+n = 9                            # number of samples to generate, squre of an integer
+steps = 10                       # steps of interpolation
+ckpt = r'path of ckpts'          # path of checkpoint files, ex: r'C:\OASIS.ckpt'
+folder = r'path to save images'  # path of folder the generated images to be saved
+```
 
 ## Reference
 * A Style-Based GANs, 2019. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
