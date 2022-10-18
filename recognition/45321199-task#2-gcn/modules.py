@@ -4,10 +4,10 @@ import tensorflow as tf
 from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses
 
 # Default Model Parameters
-CHANNELS        = 16
-DROPOUT         = 0.5
-LEARNING_RATE   = 0.01
-REG_RATE        = 0.00025   # regularisation rate
+CHANNELS        = 1024
+DROPOUT         = 0.7
+LEARNING_RATE   = 0.001
+REG_RATE        = 0.000025   # regularisation rate
 KERNAL_REGULARIZER = regularizers.l2(REG_RATE)
 
 
@@ -37,10 +37,15 @@ class GCN_Model:
                             kernel_regulariser=self.kernal_regularizer)([dropout_L0, node_input])
 
         dropout_L1 = layers.Dropout(self.dropout)(gcn_L0)
-        gcn_L1 = GCN_Layer(activations.softmax, 
-                            self.data['len_label_types'])([dropout_L1, node_input])
+        gcn_L1 = GCN_Layer(activations.relu, 
+                             self.channels,
+                             kernel_regulariser=self.kernal_regularizer)([dropout_L1, node_input])
+
+        dropout_L2 = layers.Dropout(self.dropout)(gcn_L1)
+        gcn_L2 = GCN_Layer(activations.softmax, 
+                            self.data['len_label_types'])([dropout_L2, node_input])
         
-        self.model = Model(inputs=[x_input, node_input], outputs=gcn_L1)
+        self.model = Model(inputs=[x_input, node_input], outputs=gcn_L2)
         self.model.summary()
 
     def compile(self):

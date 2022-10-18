@@ -1,7 +1,7 @@
 from modules import GCN_Model
 
 
-EPOCHS = 200     # number of epochs
+EPOCHS = 1000     # number of epochs
 
 
 class Trainer:
