@@ -10,6 +10,10 @@ Huge thanks to these videos for helping my understanding:
   * This repo was built largely referencing code in this [colab notebook](https://colab.research.google.com/drive/1sjy9odlSSy0RBVgMTgP7s99NXsqglsUL?usp=sharing) from the video. Quite a few changes were made to improve performance.
 * [Diffusion Models | Paper Explanation | Math Explained](https://www.youtube.com/watch?v=HoKDTa5jHvg&t=1338s)
 
+Diffusion papers:
+* [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
+* [Diffusion Models Beat GANs on Image Synthesis](https://arxiv.org/pdf/2105.05233.pdf)
+
 ## Contents
 * `train.py` - Command line utility that trains a new diffusion model on a dataset.
 * `dataset.py` - Wraps a directory of image files in a PyTorch dataloader. Images can be any size or format that can be opened by PIL. All images are resized to a given dimension, converted to RGB and normalised to a range of -1 to 1.
@@ -70,17 +74,20 @@ Some pretrained models are supplied in the examples section below.
 
 ## Algorithm Description
 ![](https://hcloudh.com/nextcloud/s/kRoAMTSQkJ4weZf/download/process.png)
-Diffusion image generation is described in these papers, [1](https://arxiv.org/pdf/2006.11239.pdf) [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
+Diffusion image generation is described in these papers: [1](https://arxiv.org/pdf/2006.11239.pdf), [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
 
 ![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}q(\mathbf{x}_t|\mathbf{x}_{t-1}):=\mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t}\mathbf{x}_{t-1},&space;\beta_t&space;\mathbf{I}))
 
 This is called the forward diffusion process. The reverse diffusion process is the opposite in that given an image at a certain timestep $\mathbf{x}_t$, the denoised image is given by:
 
-![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}p_\theta=(\mathbf{x}_{t-1}|\mathbf{x}_t):=\mathcal{N}(\mathbf{x}_{t-1};\mathbf{\mu}(\mathbf{x}_t,t),&space;\mathbf{\Sigma}_\theta(\mathbf{x}_t,t)))
+![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t):=\mathcal{N}(\mathbf{x}_{t-1};\mathbf{\mu}(\mathbf{x}_t,t),\mathbf{\Sigma}_\theta(\mathbf{x}_t,t)))
 
 A U-Net neural network is then trained to predict the noise in an image for a given timestep. To do this, the timestep $t$ is positionally encoded using sinusoidal embeddings between the convolutional layers in the U-Net blocks. Training is performed by passing in large numbers of images from a dataset with noise added using the forward diffusion process. The U-Net is passed the noisy image and timestep as the input and the isolated noise as the target.
 
 Once the U-Net has been trained, denoising can be performed on a random point in latent space (usually an image consisting of pure gaussian noise) using the U-Net by repeatedly subtracting the predicted noise over the entire reverse timestep range. This results in a new image that is perceptually similar to those in the training dataset.
+
+This project uses a simplified U-Net design omitting some of the features described in the papers above. The general architecutre is:
+![](https://hcloudh.com/nextcloud/s/atkz7cBTeJEDAbW/download/unet.png)
 
 ## Examples
 
