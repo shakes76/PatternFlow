@@ -11,6 +11,7 @@ from modules import StyleGAN
 
 # load model
 def load_model(ckpts, sres, tres):
+    print('Loading model...')
     depth = int(np.log2(tres/sres))
     # create model, load initial weights
     model = StyleGAN()
@@ -84,11 +85,13 @@ folder = r'path to save images'  # path of folder the generated images to be sav
 FC, Synthesis = load_model(ckpt, sres, tres)
 
 # generate random samples
+print(f'Generating {n} random images...')
 inputs = gen_inputs(FC, ldim, sres, tres, n=n)
 images = Synthesis(inputs)
 plot_save(images, size=output_res, save_path=os.path.join(folder, 'generated_samples.png'))
 
 # bilinear interpolation
+print('Generating bilinear interpolations...')
 w1 = FC(tf.random.normal((1, ldim)))
 w2 = FC(tf.random.normal((1, ldim)))
 w3 = FC(tf.random.normal((1, ldim)))
