@@ -1,3 +1,4 @@
+from cProfile import label
 import dataset
 import modules
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ import time
 
 # Hyper-parameters
 num_epochs = 30
-learning_rate = 5 * 10**-4
+learning_rate = 5 * 10**-2
 batchSize = 64
 learning_rate_decay = 0.985
 
@@ -29,18 +30,18 @@ testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Repor
 discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
 discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
 
-"""
-validationImagesPath = "../../../Data/Validation/Images"
-trainImagesPath = "../../../Data/Train/Images"
-testImagesPath = "../../../Data/Test/Images"
-validationLabelsPath = "../../../Data/Validation/Labels"
-trainLabelsPath = "../../../Data/Train/Labels"
-testLabelsPath = "../../../Data/Test/Labels"
 
-# Discovery path only needs to be specified if calling function calculate_mean_std.
-discoveryImagesPath = trainImagesPath
-discoveryLabelsPath = trainLabelsPath
-"""
+# validationImagesPath = "../../../Data/Validation/Images"
+# trainImagesPath = "../../../Data/Train/Images"
+# testImagesPath = "../../../Data/Test/Images"
+# validationLabelsPath = "../../../Data/Validation/Labels"
+# trainLabelsPath = "../../../Data/Train/Labels"
+# testLabelsPath = "../../../Data/Test/Labels"
+
+# # Discovery path only needs to be specified if calling function calculate_mean_std.
+# discoveryImagesPath = trainImagesPath
+# discoveryLabelsPath = trainLabelsPath
+
 
 modelPath = "model.pth"
 outputPath = "./Output"
@@ -79,69 +80,83 @@ def main():
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
     #print_model_info(model)
-
-    train(dataLoaders, model, device)
-    validate(dataLoaders, model, device)
+    train_and_validate(dataLoaders, model, device)
 
     torch.save(model.state_dict(), modelPath)
 
-def train(dataLoaders, model, device):
+def train_and_validate(dataLoaders, model, device):
     # Define optimization parameters and loss according to Improved Unet Paper.
     criterion = dice_loss
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=10**-5)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=learning_rate_decay)
-    totalStep = len(dataLoaders["train"])
 
     losses_training = list()
     dice_similarities_training = list()
+    losses_valid = list()
+    dice_similarities_valid = list()
 
-    model.train()
     print("Training and Validation Commenced:")
     start = time.time()
+
     for epoch in range(num_epochs):
-        for batchStep, (images, labels) in enumerate(dataLoaders["train"]):
-            images = images.to(device)
-            labels = labels.to(device)
+        train_loss, train_coeff = train(dataLoaders["train"], model, device, criterion, optimizer, scheduler)
+        valid_loss, valid_coeff = validate(dataLoaders["valid"], model, device, criterion)
 
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+        losses_training.append(train_loss)
+        dice_similarities_training.append(train_coeff)
+        losses_valid.append(valid_loss)
+        dice_similarities_valid.append(valid_coeff)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
 
-            if batchStep % 10 == 0:
-                losses_training.append(loss.item())
-                dice_similarities_training.append(dice_coefficient(outputs, labels))
-                print ("Epoch [{}/{}], Step [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}"
-                    .format(epoch+1, num_epochs, batchStep+1, totalStep, losses_training[-1], dice_similarities_training[-1]))
-            
-        scheduler.step()
+        print ("Epoch [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}".format(epoch+1, num_epochs, losses_training[-1], dice_similarities_training[-1]))
+        print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_valid) ,get_average(dice_similarities_valid)))
+        
+    
     end = time.time()
     elapsed = end - start
-    print("Training Took " + str(elapsed/60) + " Minutes")
+    print("Training & Validation Took " + str(elapsed/60) + " Minutes")
 
-def validate(dataLoaders, model, device):
-    losses_validation = list()
-    dice_similarities_validation = list()
 
-    print("> Validation")
-    start = time.time()
+def train(dataLoader, model, device, criterion, optimizer, scheduler):
+
+    model.train()
+
+    losses = list()
+    coefficients = list()
+
+    for images, labels in dataLoader:
+        images = images.to(device)
+        labels = labels.to(device)
+
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        losses.append(loss)
+        coefficients.append(dice_coefficient(outputs, labels))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+    scheduler.step()
+
+    return get_average(losses), get_average(coefficients)
+
+def validate(dataLoader, model, device, criterion):
+
+    losses = list()
+    coefficients = list()
+
     model.eval()
     with torch.no_grad():
-        for images, labels in dataLoaders["valid"]:
+        for images, labels in dataLoader:
             images = images.to(device)
             labels = labels.to(device)
 
             outputs = model(images)
-            losses_validation.append(dice_loss(outputs, labels))
-            dice_similarities_validation.append(dice_coefficient(outputs, labels))
-
-        print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_validation) ,get_average(dice_similarities_validation)))
-    end = time.time()
-    elapsed = end - start
-    print("Validation took " + str(elapsed/60) + " mins in total") 
-
+            losses.append(criterion(outputs, labels))
+            coefficients.append(dice_coefficient(outputs, labels))
+    
+    return get_average(losses), get_average(coefficients)
 
 
 # Variable numList must be a list of number types only
