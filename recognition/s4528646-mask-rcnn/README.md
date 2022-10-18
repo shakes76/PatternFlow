@@ -26,6 +26,12 @@ Figure 3: Example of target mask
 ## Training
 
 
+## Results
+
+![Example prediction](figures/example-prediction-melanoma.png)
+Figure 4: Example prediction by the trained network with positive classification
+
+
 ## Requirements
 
 * `python==3.9.12`
