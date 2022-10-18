@@ -13,17 +13,31 @@ import torchvision.transforms as transforms
 import time
 
 # Hyper-parameters
-num_epochs = 35
-learning_rate = 5 * 10**-4
-batchSize = 8
+num_epochs = 10
+learning_rate = 5 * 10**-2
+batchSize = 64
 learning_rate_decay = 0.985
 
+validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images"
+trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images"
+testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images"
+validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels"
+trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels"
+testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels"
+
+# Discovery path only needs to be specified if calling function calculate_mean_std.
+discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
+discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
+
+modelPath = "."
+outputPath = "./Output"
+
 def init():
-    validDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    validDataSet = dataset.ISIC2017DataSet(validationImagesPath, validationLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=True)
-    trainDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    trainDataSet = dataset.ISIC2017DataSet(trainImagesPath, trainLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     trainDataloader = DataLoader(trainDataSet, batch_size=batchSize, shuffle=True)
-    testDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels", dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
+    testDataSet = dataset.ISIC2017DataSet(testImagesPath, testLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     testDataloader = DataLoader(testDataSet, batch_size=batchSize, shuffle=True)
 
     # Device configuration
@@ -51,7 +65,7 @@ def main():
     # Code for Diagnostics/Visualization & Discovery
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
-    #print_model_info(model)
+    print_model_info(model)
 
     train(dataLoaders, model, device)
     validate(dataLoaders, model, device)
@@ -156,11 +170,12 @@ def print_model_info(model):
 def display_test(dataLoader):
     # Display image and label.
     train_features, train_labels = next(iter(dataLoader))
+    currentBatchSize = train_features.size()[0]
     print(f"Feature batch shape: {train_features.size()}")
     print(f"Labels batch shape: {train_labels.size()}")
 
-    _, axs = plt.subplots(batchSize, 2)
-    for row in range(batchSize):
+    _, axs = plt.subplots(currentBatchSize, 2)
+    for row in range(currentBatchSize):
         img = train_features[row]
         img = img.permute(1,2,0).numpy()
         label = train_labels[row]
@@ -176,7 +191,7 @@ def calculate_mean_std():
     height = 2016
     width = 3024
 
-    discoveryDataSet = dataset.ISIC2017DataSet(r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images", r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels", dataset.ISIC_transform_discovery(), dataset.ISIC_transform_label())
+    discoveryDataSet = dataset.ISIC2017DataSet(discoveryImagesPath, discoveryLabelsPath, dataset.ISIC_transform_discovery(), dataset.ISIC_transform_label())
     discoveryDataloader = DataLoader(discoveryDataSet, batch_size=batchSize, shuffle=True) 
 
     display_test(discoveryDataloader)

@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import time
+import math
 
 import torch
 from torch.utils.data import Dataset
@@ -13,6 +14,9 @@ import matplotlib.pyplot as plt
 
 import os
 from torchvision.io import read_image
+
+imageReduction = 128
+cropCoefficient = 0.9
 
 # Ensure to specify transforms for DataSet or otherwise will default to no transforms applied.
 # Complete Paths should be provided for labels and images folder.
@@ -55,10 +59,10 @@ def ISIC_transform_img():
     transformTrain = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
-        transforms.Resize((512, 512)),
-        transforms.Normalize((0.0304, 0.0254, 0.0235), (0.1471, 0.1247, 0.1169)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(485)
+        transforms.Resize((imageReduction, imageReduction))
+        #transforms.Normalize((0.0019, 0.0016, 0.0015), (0.0375, 0.0318, 0.0298)),
+        #transforms.RandomHorizontalFlip(),
+        #transforms.RandomCrop(math.sqrt(cropCoefficient*imageReduction*imageReduction))
     ])
 
     return transformTrain
@@ -68,7 +72,7 @@ def ISIC_transform_test():
     transformTrain = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
-        transforms.Resize((512, 512))
+        transforms.Resize((imageReduction, imageReduction))
     ])
 
     return transformTrain
@@ -78,7 +82,7 @@ def ISIC_transform_label():
     transformTest = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
-        transforms.Resize((512, 512))
+        transforms.Resize((imageReduction, imageReduction))
     ])
 
     return transformTest
@@ -88,8 +92,7 @@ def ISIC_transform_discovery():
     transformDiscovery = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
-        transforms.Resize((512, 512))
-        #transforms.Normalize((0,0,0),(1,1,1))
+        transforms.Resize((imageReduction, imageReduction))
     ])
 
     return transformDiscovery
