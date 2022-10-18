@@ -122,7 +122,7 @@ Epoch 99
 ![](https://hcloudh.com/nextcloud/s/QDdoBxFGF5RNLXg/download/predict2.jpeg)![](https://hcloudh.com/nextcloud/s/qZiA5zPDAxSAXgx/download/predict3.jpeg)![](https://hcloudh.com/nextcloud/s/84ftrCnnXJmgjGp/download/predict4.jpeg)![](https://hcloudh.com/nextcloud/s/EEodLTB24xiw6x2/download/predict6.jpeg)![](https://hcloudh.com/nextcloud/s/WjWceaEJ5BsbtJb/download/predict7.jpeg)![](https://hcloudh.com/nextcloud/s/4dkMk97t4KgFRRs/download/predict8.jpeg)![](https://hcloudh.com/nextcloud/s/S67ByeBPYtbq52G/download/predict9.jpeg)
 
 ### CelebA Dataset
-Just for fun, the model was also trained on the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) Aligned and Cropped dataset consisting of around 200,000 images. Image size 128x128, batch size 64, 1000 Timesteps, 100 epochs. Download the pre-trained [model]. The network does well with the faces but struggles in generating the backgrounds.
+Just for fun, the model was also trained on the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) dataset (aligned and cropped) consisting of around 200,000 images. Image size 128x128, batch size 64, 1000 Timesteps, 100 epochs. Download the pre-trained [model]. The network does well with the faces but struggles in generating hair and backgrounds.
 
 (https://hcloudh.com/nextcloud/s/wfy8tnaSNXzJqLb/download/celebA.pth).
 #### Training 
