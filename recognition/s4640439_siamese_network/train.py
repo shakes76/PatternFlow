@@ -2,6 +2,8 @@ import tensorflow as tf
 
 from modules import *
 from dataset import *
+import time
+import os
 
 """
 Containing the source code for training, validating, testing and saving your model. 
@@ -9,10 +11,31 @@ The model should be imported from “modules.py” and the data loader should be
 Make sure to plot the losses and metrics during training.
 
 """
-
 EPOCHS = 100
 BATCH_SIZE = 32
 BUFFER_SIZE = 20000
+
+MODEL_SAVE_DIR = "E:/ADNI/models"
+
+def siamese_loss(x0, x1, y: int) -> float:
+    """
+    Custom loss function for siamese network.
+
+    Takes two vectors, then calculates their distance.
+
+    Vectors of the same class are rewarded for being close and punished for being far away.
+    Vectors of different classes are punished for being close and rewarded for being far away.
+
+    Parameters:
+        - x0 -- first vector
+        - x1 -- second vector
+        - y -- integer representing whether or not the two vectors are from the same class
+
+    Returns:
+        - loss value
+    """
+    # TODO
+    return 0
 
 @tf.function
 def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
@@ -46,6 +69,44 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
 
         return loss
 
+def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
+    start = time.time()
+    print("Beginning Siamese Network Training")
+
+    for epoch in range(epochs):
+        epoch_start = time.time()
+
+        i = 0
+        for pos_batch, neg_batch in zip(pos_dataset, neg_dataset):
+            # alternate between same-same training and same-diff training
+            if i % 2 == 0:
+                # same training
+                same_class = True
+
+                #split batches
+                pos1, pos2 = tf.split(pos_batch, num_or_size_splits=2)
+                neg1, neg2 = tf.split(neg_batch, num_or_size_splits=2)
+
+                pos_loss = train_step(model, optimiser, pos1, pos2 , same_class)
+                neg_loss = train_step(model, optimiser, neg1, neg2 , same_class)
+                
+            else:
+                # diff training
+                same_class = False
+                diff_loss = train_step(model, optimiser, pos_batch, neg_batch, same_class)
+
+            i += 1
+        
+        epoch_elapsed = time.time() - epoch_start
+        print(f"Epoch {i} - training time: {epoch_elapsed}")
+    
+    elapsed = time.time() - start
+    print(f"Siamese Network Training Completed in {elapsed}")
+
+
+def train_binary_classifier(model, optimiser, siamese_model, pos_dataset, neg_dataset, epochs):
+    pass
+
 def main():
     # get training data
     training_data_positive = load_data(AD_TRAIN_PATH, "ad_train")
@@ -60,6 +121,17 @@ def main():
     # build models
     siamese_model = build_siamese()
     binary_classifier = build_binary()
+    
+    siamese_optimiser = tf.keras.optimizers.Adam(1.5e-4,0.5)
+    classifier_optimiser = tf.keras.optimizers.Adam(1.5e-4,0.5)
+
+    train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
+    train_binary_classifier(binary_classifier, classifier_optimiser, siamese_model, 
+                            train_data_pos, train_data_neg, EPOCHS)
+
+    siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
+    binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))
+
 
 if __name__ == "__main__":
-    train()
+    main()
