@@ -436,3 +436,4 @@ def get_checkpoint(path):
 
     # create our optimizer, we will use adam with a Learning rate of 1e-4
     opt = keras.optimizers.Adam(learning_rate=1e-4)
+    return unet
