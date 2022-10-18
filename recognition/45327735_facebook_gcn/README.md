@@ -36,12 +36,14 @@ The model consists of:
   
 - 4-node Dense layer w/ softmax (for predictions)
 
+![model schema](./model.png)
+
 **How the model works**
 
 The model works by feeding features of each node through FFNs to produce unique 
 representations for each node (i.e. 'messages'). The model then applies three Graph Convolutional Layers
-(GCLs) that retrieve and aggregate (by summation) the representations of any 
-neighbouring nodes. This is convolution! Multiple GCLs means the node will have 
+(GCLs) that retrieve and aggregate (by mean) the representations of any 
+neighbouring nodes. Multiple GCLs means the node will have 
 access to information about not just its neighbours (in iteration 1), but also the 
 neighbours of _those_ neighbours (in the iteration 2), and so on.
 
@@ -72,9 +74,11 @@ and lost over consecutive convolutions. Thus, this model implements skip connect
 between GCLs that combine the input and truncated output messages. This means nodes
 will retain information about inputs that might otherwise be lost during processing.
 
-**Batch Normalisation and Dropout Layers**
+**Dropout Layers**
 
-a note
+Dropout layers exist in the FFNs to mitigate overfitting. These layers cut nodes and in
+effect introduce noise into the sample, thus the model does not have access to complete
+data during training (which can be memorised!).
 
 ## Output and Performance
 
@@ -83,20 +87,35 @@ training the model. However, we still must split the Dataset into a training and
 to prevent data leakage. We do this by withholding the ground truth values for one third of 
 the nodes (i.e. the test set) during training.
 
-A UMAP representation of the data set. We note some clustering of page categories.
+Below is a UMAP representation of the data set. We note some clustering of page categories.
 
+![umap representation](./umap.png)
 
-Some example inputs.
+Some example 'node id' inputs:
 
+```
+tf.Tensor([ 3969  6829 14595 ...  7335  9164 14887], shape=(7416,), dtype=int32)
+```
 
-Some example outputs. We note a high accuracy score, likely due to the use of FFNs to 
-transform representations and skip connections to retain information that could be lost in this
+Some example outputs:
+```
+232/232 [==============================] - 5s 22ms/step
+Total Testing 7416
+Predictions [1, 3, 3, 1, 2, 1, 2, 2, 2, ... 2, 1, 2, 3]
+Which Correct: tf.Tensor([ True  True  True ...  True False  True], shape=(7416,), dtype=bool)
+Total Correct: 6927
+Accuracy: 0.9340614886731392
+```
+
+We note a high accuracy score, likely due to the use of FFNs to 
+re-project representations and skip connections to retain information that could be lost in this
 process.
 
+![graphs representation](./graphs.png)
 
-The accuracy and loss curves show that after Epoch 10, the model makes marginal
+The above accuracy and loss curves show that after Epoch 10, the model makes marginal
 but steady improvement over time (acc: 0.89 to 0.93 by Epoch 110). This is possibly
-because feature data was not normalsed, meaning layers would need to do additional
+because feature data was not normalised, meaning layers would need to do additional
 work to learn any underlying distributions of the data. A batch normalisation layer
 would more efficiently learn this distribution and would likely learning time.
 
