@@ -49,8 +49,8 @@ Name: pandas_version_1.4.4
 (https://pandas.pydata.org)
 
 Name: matplotlib_version_3.5.2
--- Python plotting package
-(https://matplotlib.org)
+Summary: Python plotting package
+Home-page: https://matplotlib.org
 
 
 use load_dataset(data_reshape = True) for first time of using this data
