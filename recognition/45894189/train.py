@@ -3,12 +3,14 @@ import matplotlib.pyplot as plt
 from dataset import load_data
 from tensorflow import keras
 from modules import Generator, Discriminator, WNetwork
+from util import ImageSaver, WeightSaver
 
 class StyleGAN(keras.Model):
-    def __init__(self):
+    def __init__(self, epochs):
         super(StyleGAN, self).__init__()
         self.discriminator = Discriminator().discriminator()
         self.generator = Generator().generator()
+        self.epochs = epochs
         # self.mapping = WNetwork()
 
     def compile(self):
@@ -22,7 +24,39 @@ class StyleGAN(keras.Model):
     @property
     def metrics(self):
         return [self.discriminator_loss_metric, self.generator_loss_metric]
-    
+
+    def plot_loss(self, history):
+        discriminator_loss_values = history.history['discriminator_loss']
+        generator_loss_values = history.history['generator_loss']
+
+        min_axis_value = min(min(generator_loss_values, discriminator_loss_values)) - 0.1
+        max_axis_value = max(max(generator_loss_values, discriminator_loss_values)) + 0.1
+
+        plt.plot(discriminator_loss_values, label='discriminator loss')
+        plt.plot(generator_loss_values, label = 'generator loss')
+
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.ylim([min_axis_value, max_axis_value])
+        plt.legend(loc='upper right')
+        plt.show()
+
+    def train(self, images_path: str=None, images_count: int=3, weights_path: str=None, plot_loss: bool=False):
+        callbacks=[]
+
+        if images_path:
+            callbacks.append(ImageSaver(images_path))
+        if weights_path:
+            callbacks.append(WeightSaver())
+
+        images = load_data()
+        self.compile()
+        history = self.fit(images, epochs=self.epochs, callbacks=callbacks)
+
+        if plot_loss:
+            self.plot_loss(history)
+        
+
     @tf.function
     def train_step(self, real_images):
         batch_size = tf.shape(real_images)[0]
@@ -75,6 +109,3 @@ class StyleGAN(keras.Model):
             self.d_optimizer.apply_gradients(zip(gradients, self.discriminator.trainable_variables))
 
         return d_loss
-
-
-
