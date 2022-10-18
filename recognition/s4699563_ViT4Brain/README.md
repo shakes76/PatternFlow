@@ -23,6 +23,7 @@ Put the unzipped preprocessed image files in the `datasets` folder. The path of 
 
 
 ***Training/Validation/Testing Set Spliting***
+
 Please note that  people from the same ID would only appear in either the train or validation set during training.
 
 * The test images follows the original download file folder struture.
