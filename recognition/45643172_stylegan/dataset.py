@@ -22,3 +22,10 @@ def load_ds_train():
     return ds_train
 
 
+def load_seg_ds_train():
+    path = './drive/MyDrive/Colab Notebooks/keras_png_slices_data/keras_png_slices_seg_train/'
+    ds_train = tf.keras.utils.image_dataset_from_directory(
+        path, label_mode=None,
+        image_size=(64, 64), batch_size=32
+    )
+    return ds_train
