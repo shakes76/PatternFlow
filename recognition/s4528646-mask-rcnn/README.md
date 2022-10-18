@@ -1,4 +1,4 @@
-# Detect and classify lesions in the ISIC 2017 dataset using Mask-RCNN
+# Detect and classify lesions in the ISIC 2017 dataset using Mask R-CNN
 We train a [Mask R-CNN model](https://arxiv.org/abs/1703.06870) on the [ISIC 2017 dataset](https://challenge.isic-archive.com/data/#2017) to detect skin lesions in an image and classify them as cancerous or benign. We start with a model pretrained on the COCO dataset provided by PyTorch (see [here](https://pytorch.org/vision/main/models/mask_rcnn.html)) and train it on the ISIC 2017 dataset. The model is a Mask R-CNN with a ResNet-50-FPN backbone, which is known to be capable of efficiently detecting and classifiying objects in images.
 
 ## Mask R-CNN
@@ -11,13 +11,17 @@ Figure 1: Picture of the Mask R-CNN from the original paper [1]
 
 Therefore, the loss of Mask R-CNN is the sum of the classification loss, the box regression loss, and the mask loss.
 
-## ISIC 2017 Challenge
+## ISIC 2017 Challenge Data
 
-### Example Input
+The ISIC 2017 Challenge Data provides images of skin lesions and ground truth segmentation masks and classifications as melanoma. We use the training, test, and validation split provided by the challenge and compute a bounding box bases on the ground truth masks.
+
+We aim to use Mask R-CNN to predict masks, bounding boxes and classifications of skin lesions in the ISIC data. In Figure 2 we show an example of an input image and the ground truth bounding box and classification.
 
 ![Example of image with bounding box and classification](figures/example-with-target-bounding-box.png)
 
 Figure 2: Example of input image with bounding box and classification
+
+In Figure 3 we show an example of the ground truth mask from which the bounding box has been computed.
 
 ![Example of target mask](figures/example-mask.png)
 
@@ -25,10 +29,12 @@ Figure 3: Example of target mask
 
 ## Training
 
+We use the train, test, validation split provided by the ISIC challenge. We are training our model on 2000 images of skin lesions, and train for 5 epochs.
 
 ## Results
 
 ![Example prediction](figures/example-prediction-melanoma.png)
+
 Figure 4: Example prediction by the trained network with positive classification
 
 
