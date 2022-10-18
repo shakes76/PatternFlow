@@ -1,9 +1,5 @@
 import tensorflow as tf
-import numpy as np
 
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import array_to_img
-from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 from IPython.display import display
