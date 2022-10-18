@@ -68,13 +68,13 @@ The next part of the model that was generated is the PixelCNN model that is supp
 </p>
 The model is starting to head in a direction where the images are starting to have either the general shape of a brain or general patterns of a brain, however overall perform quite poorly when it comes to actually generating a "new" and recognisable brain image. Potential changes that could be further made to the model to try and make the images more realistic would involve increasing the number of residual blocks and pixcelcnn layers. By doing this the number of parameters the model can train on would increase which could result in a more realistic looking brain. Other hyper-parameters that could be manipulated is the number of filters in each layer and kernel size. As it currently is the "new" brains look as follows:
 <p align="center">
-<img src="./img\g1.png">
+<img src="./img/g1.png">
 </p>
 <p align="center">
-<img src="./img\g2.png">
+<img src="./img/g2.png">
 </p>
 <p align="center">
-<img src="./img\g3.png">
+<img src="./img/g3.png">
 </p>
 
 From these images it is quite clear to a human that these images are not "brains" and as a result if the model were to be used to generate images of new brains the parameters of the PixelCNN would need to be modified. However the model does perform well at reconstructing code book images even the "new" ones it generates. 
