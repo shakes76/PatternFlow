@@ -29,7 +29,7 @@ testLabelsPath = "../../../Data/Test/Labels"
 discoveryImagesPath = trainImagesPath
 discoveryLabelsPath = trainLabelsPath
 
-modelPath = "."
+modelPath = "model.pth"
 outputPath = "./Output"
 
 def init():
@@ -69,6 +69,8 @@ def main():
 
     train(dataLoaders, model, device)
     validate(dataLoaders, model, device)
+
+    torch.save(model.state_dict(), modelPath)
 
 def train(dataLoaders, model, device):
     # Define optimization parameters and loss according to Improved Unet Paper.
@@ -126,6 +128,7 @@ def validate(dataLoaders, model, device):
     end = time.time()
     elapsed = end - start
     print("Validation took " + elapsed/60 + " mins in total") 
+
 
 
 # Variable numList must be a list of number types only
