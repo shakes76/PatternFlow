@@ -13,34 +13,37 @@ from modules import AlzheimerModel
 tf.get_logger().setLevel('INFO')
 assert len(tf.config.list_physical_devices("GPU")) >= 1, "No GPUs found"
 
-EPOCHS = 25
+EPOCHS = 50
 
 if __name__ == "__main__":
+    #Build and compile model
     az_model = AlzheimerModel(
         num_patches=NUM_PATCHES, 
-        num_layers=2,
-        num_heads=2,
+        num_layers=4,
+        num_heads=4,
         d_model=D_MODEL,
-        d_mlp=2000,
-        head_layers=100,
-        dropout_rate=0.2,
-        num_classes=2
+        d_mlp=1000,
+        head_layers=300,
+        dropout_rate=0.2
     )
 
     az_model.compile(
         loss=losses.SparseCategoricalCrossentropy(),
-        optimizer=tfa.optimizers.AdamW(0.1, 0.0005),
+        optimizer=optimizers.Adam(0.0003),
         metrics=['accuracy']
     )
 
     az_model.build((1, IMAGE_DIM, IMAGE_DIM, 3))
     print(az_model.summary())
 
+    #Get data
     train_ds = training_dataset()
     validation_ds = validation_dataset()
 
+    #Train model
     history = az_model.fit(train_ds, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=validation_ds)
 
+    #Save model and get training results
     az_model.save("az_model")
 
     loss = history.history['loss']
@@ -50,6 +53,7 @@ if __name__ == "__main__":
     
     epochs = range(1, EPOCHS+1)
 
+    #Plot training results
     plt.plot(epochs, acc, 'bo', label='Training acc')
     plt.plot(epochs, val_acc, 'b', label='Validation acc')
     plt.title('Training and validation accuracy')

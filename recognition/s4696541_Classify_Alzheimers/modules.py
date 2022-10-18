@@ -9,8 +9,18 @@ import numpy as np
 from dataset import IMAGE_DIM, make_patch
 
 class AlzheimerModel(keras.Model):
-    def __init__(self, num_patches, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes):
-        """Initialise the model"""
+    def __init__(self, num_patches, num_layers, num_heads, d_model, d_mlp, head_layers, dropout_rate, num_classes=2):
+        """
+        Initialise the model
+        num_patches: Number of patches in each image
+        num_layers: Number of transformer encoder layers to include
+        num_heads: Number of heads for self-attention blocks
+        d_model: Dimensionality of the image patches
+        d_mlp: Dimensionality of the MLP block
+        head_layers: Dimensionality of MLP block for classifer head
+        dropout_rate: Dropout rate for dropout layers
+        num_classes: Number of classes for classifier
+        """
         super().__init__()
 
         #Data augmentation
@@ -36,9 +46,6 @@ class AlzheimerModel(keras.Model):
         """Use the model with .fit"""
         x = self.augmentation(x, training=training)
 
-        #MAYBE ADD CNN tf.keras.layers.Conv2D x2-3
-        #BATCH NORM AFTER CNN
-
         x = make_patch(x)
 
         x = self.pos_encoder(x, training=training)
@@ -54,6 +61,11 @@ class AlzheimerModel(keras.Model):
 
 class PositionalEncoder(layers.Layer):
     def __init__(self, num_patches, d_model) -> None:
+        """
+        Initialise the positional encoder layer
+        num_patches: Number of patches in each image
+        d_model: Dimensionality of the image patches
+        """
         super().__init__()
         self.num_patches = num_patches
         self.d_model = d_model
@@ -63,6 +75,7 @@ class PositionalEncoder(layers.Layer):
         self.pos_embedding = layers.Embedding(num_patches+1, d_model)
     
     def call(self, x, training=True):
+        """Apply the transformer encoder on data inputs"""
         positions = tf.tile([tf.range(0, self.num_patches+1)], [tf.shape(x)[0], 1])
         pos_emb = self.pos_embedding(positions, training=training)
 
@@ -93,7 +106,12 @@ class TransformerEncoder(layers.Layer):
         
 class SelfAttention(layers.Layer):
     def __init__(self, heads, d_model, dropout_rate):
-        """Initialise the self attention layer"""
+        """
+        Initialise the self attention layer
+        heads: Number of heads for self-attention blocks
+        d_model: Dimensionality of the image patches
+        dropout_rate: Dropout rate for dropout layers
+        """
         super().__init__()
 
         self.layer_normalisation = layers.LayerNormalization()
@@ -111,7 +129,12 @@ class SelfAttention(layers.Layer):
 
 class MultiLayerPerceptron(layers.Layer):
     def __init__(self, d_mlp, d_model, dropout_rate):
-        """Initialise the multi layer perceptron"""
+        """
+        Initialise the Multi-layer Perceptron layer
+        d_mlp: Dimensionality of the MLP block
+        d_model: Dimensionality of the image patches
+        dropout_rate: Dropout rate for dropout layers
+        """
         super().__init__()
 
         self.layer_normalisation = layers.LayerNormalization()

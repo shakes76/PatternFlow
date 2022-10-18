@@ -2,8 +2,6 @@
 Data loading and preprocessing for alzheimers classification data.
 """
 import math
-from random import shuffle
-from matplotlib.figure import SubFigure
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
@@ -13,6 +11,7 @@ import numpy as np
 TRAIN_FILE_PATH = "../../../AD_NC/train"
 TEST_FILE_PATH = "../../../AD_NC/test"
 TEST_IMAGES = 21520
+VALIDATION_SPLIT = (((TEST_IMAGES*0.1) // 20) * 20)/TEST_IMAGES
 
 BATCH_SIZE = 32
 IMAGE_DIM = 240
@@ -23,25 +22,19 @@ NUM_PATCHES = (IMAGE_DIM//PATCH_SIZE) ** 2
 D_MODEL = (PATCH_SIZE**2) * 3
 
 def training_dataset() -> tf.data.Dataset:
-    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE, seed=SEED, validation_split=(((TEST_IMAGES*0.1) // 20) * 20)/TEST_IMAGES, subset="training")
-    # dataset = dataset.map(lambda x,y: (normalise(x),y))
+    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE, seed=SEED, validation_split=VALIDATION_SPLIT, subset="training")
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
 
 def validation_dataset() -> tf.data.Dataset:
-    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE, seed=SEED, validation_split=(((TEST_IMAGES*0.1) // 20) * 20)/TEST_IMAGES, subset="validation")
-    # dataset = dataset.map(lambda x,y: (normalise(x),y))
+    dataset = keras.preprocessing.image_dataset_from_directory(TRAIN_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE, seed=SEED, validation_split=VALIDATION_SPLIT, subset="validation")
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
 
 def testing_dataset() -> tf.data.Dataset:
     dataset = keras.preprocessing.image_dataset_from_directory(TEST_FILE_PATH, labels='inferred', batch_size=BATCH_SIZE, image_size=IMAGE_SIZE)
-    # dataset = dataset.map(lambda x,y: (normalise(x),y))
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
-
-# def normalise(image): #ONLY IF everything else fails - greyscale
-#     return (image-tf.reduce_mean(image))/tf.math.reduce_std(image)
 
 def make_patch(image):
     batch_size = tf.shape(image)[0]
@@ -59,6 +52,7 @@ def make_patch(image):
 
 import matplotlib.pyplot as plt
 
+#Test that training dataset can properly fet an image and create patches
 if __name__ == "__main__":
     plt.figure(figsize=(10, 10))
     ds = training_dataset()
