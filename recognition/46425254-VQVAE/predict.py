@@ -44,13 +44,20 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
         for i in range(rows):
             for j in range(cols):
                 out = cnn(prior.float())
-
-                out = out.permute(0,2,3,1).contiguous()
-                distribution = torch.distributions.categorical.Categorical(logits = out)
+                pixel = out[:, :, i, j]
+                values = torch.unique(pixel)
+                values = torch.sort(values, 0).values
+                #print(values.shape)
+                value = values[58]
+                pixel[pixel < value] = -999999
+                distribution = \
+                     torch.distributions.categorical.Categorical(logits = pixel)
+                
                 sampled = distribution.sample()
-                sampled = nn.functional.one_hot(sampled, num_classes = num_embeddings
-                                                ).permute(0, 3, 1, 2).contiguous()
-                prior[:, :, i , j] = sampled[:, :, i, j]
+                sampled = nn.functional.one_hot(sampled, \
+                                                num_classes = num_embeddings)
+                prior[:, :, i, j] = sampled
+             
 
     _, ax = plt.subplots(1,2)
     ax[0].imshow(prior.argmax(1).view(64,64).to("cpu"))

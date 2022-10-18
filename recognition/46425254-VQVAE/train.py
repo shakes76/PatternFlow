@@ -227,11 +227,14 @@ class PixelCNN_Training():
             torch.save(self.PixelCNN_model.state_dict(), self.save)
 
         plt.plot(np.arange(0, self.epochs), training_loss_arr)
+        plt.title("Training Loss vs Number of Epochs")
+        plt.xlabel("Number of Epochs")
+        plt.ylabel("Training Loss")
         plt.show()
         
 
         
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model3_3.pt"
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model3_5.pt"
 pixel_cnn_trainer = PixelCNN_Training(0.0005, 500, 
                                       trained,data_path, num_embeddings = 64, 
                                       latent_dim = 16, save = save_model) 
