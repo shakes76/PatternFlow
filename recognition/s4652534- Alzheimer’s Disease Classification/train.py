@@ -67,10 +67,11 @@ class TripletLoss(nn.Module):
 
         # calculate loss
         diff = dist_p - dist_n
-        if isinstance(self.margin, str) and self.margin == 'soft':
-            diff = F.softplus(diff)
-        else:
-            diff = torch.clamp(diff + self.margin, min=0.)
+        diff = F.softplus(diff)
+        # if isinstance(self.margin, str) and self.margin == 'soft':
+        #     diff = F.softplus(diff)
+        # else:
+        #     diff = torch.clamp(diff + self.margin, min=0.)
         loss = diff.mean()
 
         return loss
@@ -97,17 +98,19 @@ if __name__ == '__main__':
     num_classes = 2
     num_instances = 256
     batch_size = num_instances * num_classes
-    learning_rate = 1e-6
+    learning_rate = 1e-4
     weight_decay = 1e-4
     margin = 0.3
     lamda = 1.0
-    num_epochs = 200
+    num_epochs = 500
+
+    pretraining=True
 
     dataset = ADNI("./AD_NC")
     train_loader = dataset.get_train_loader(height, width, batch_size)
-    test_loader = dataset.get_test_loader(height, width, batch_size)
+    test_loader = dataset.get_test_loader(height, width, 2048)
 
-    model = resnet34(num_features=num_features, num_classes=num_classes)
+    model = resnet34(num_features=num_features, num_classes=num_classes, pretraining=pretraining)
     model.cuda()
 
     params = [{"params": [value]} for _, value in model.named_parameters() if value.requires_grad]
@@ -133,7 +136,7 @@ if __name__ == '__main__':
 
             loss_triplet = criterion_triplet(emds, labels)
             loss_cla = F.cross_entropy(probs, labels)
-            loss = loss_cla+lamda*loss_triplet
+            loss = loss_cla + loss_triplet
 
             optimizer.zero_grad()
             loss.backward()
@@ -142,7 +145,7 @@ if __name__ == '__main__':
             losses.update(loss.item())
 
         train_loss.append(losses.avg)
-        print("Loss {:.3f})".format(losses.avg))
+        print("Loss {:.3f}".format(losses.avg))
 
         model.eval()
         correct = 0
@@ -158,9 +161,9 @@ if __name__ == '__main__':
             test_acc.append(acc)
             if best_acc <= acc:
                 best_acc = acc
-                torch.save(model.state_dict(), "res34_best_model.pkl")
+                torch.save(model.state_dict(), "res18_best_model.pkl")
 
-        print("test acc {:.3f}, best acc {:.3f})".format(acc, best_acc))
+        print("test acc {:.3f}, best acc {:.3f}".format(acc, best_acc))
 
 
 

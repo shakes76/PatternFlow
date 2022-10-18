@@ -24,7 +24,6 @@ class Preprocessor(Dataset):
 
     def _get_single_item(self, index):
         fname, label = self.dataset[index]
-        # img = Image.open(osp.join(self.root, fname)).convert('RGB')
         img = Image.open(fname).convert('RGB')
         img = self.transformer(img)
         return img, label, index
@@ -59,8 +58,8 @@ class ADNI(Dataset):
         transformer = transforms.Compose([
             transforms.Resize((height, width), interpolation=3),
             transforms.RandomHorizontalFlip(p=0.5),
-            # transforms.RandomRotation(degrees=15),
-            transforms.RandomAffine(degrees=15, translate=(0.2, 0.2), scale=(0.2, 0.2), shear=15),
+            transforms.RandomRotation(degrees=15),
+            transforms.RandomAffine(degrees=15, translate=(0.2, 0.2)),
             transforms.ToTensor(),
         ])
 
@@ -69,10 +68,8 @@ class ADNI(Dataset):
 
         train_set = ConcatDataset([train_AD_set, train_NC_set])
 
-
-        train_loader = DataLoader(train_set, batch_size=batch_size, num_workers=16, shuffle=True,
-                                  pin_memory=True, drop_last=True)
-
+        train_loader = DataLoader(train_set, batch_size=batch_size, num_workers=16, shuffle=True, pin_memory=True, drop_last=True)
+        
         return train_loader
 
     def get_test_loader(self, height, width, batch_size):

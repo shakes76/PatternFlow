@@ -16,7 +16,7 @@ class ResNet(nn.Module):
         152: torchvision.models.resnet152,
     }
 
-    def __init__(self, depth, num_features=128, num_classes=2):
+    def __init__(self, depth, num_features=128, num_classes=2, pretraining=True):
         super(ResNet, self).__init__()
         self.depth = depth
         self.num_classes = num_classes
@@ -24,7 +24,7 @@ class ResNet(nn.Module):
         
         # Construct base (pretrained) resnet
 
-        resnet = ResNet.__factory[depth](pretrained=True)
+        resnet = ResNet.__factory[depth](pretrained=pretraining)
 
         self.out_planes = resnet.fc.in_features
 
@@ -49,13 +49,13 @@ class ResNet(nn.Module):
         return emb, prob
 
 
-def resnet18(num_features, num_classes):
-    return ResNet(18, num_features=num_features, num_classes=num_classes)
+def resnet18(num_features, num_classes, pretraining):
+    return ResNet(18, num_features=num_features, num_classes=num_classes, pretraining=pretraining)
 
 
-def resnet34(num_features, num_classes):
-    return ResNet(34, num_features=num_features, num_classes=num_classes)
+def resnet34(num_features, num_classes, pretraining):
+    return ResNet(34, num_features=num_features, num_classes=num_classes, pretraining=pretraining)
 
 
-def resnet50(num_features, num_classes):
-    return ResNet(50, num_features=num_features, num_classes=num_classes)
+def resnet50(num_features, num_classes, pretraining):
+    return ResNet(50, num_features=num_features, num_classes=num_classes, pretraining=pretraining)
