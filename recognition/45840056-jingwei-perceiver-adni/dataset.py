@@ -9,7 +9,8 @@ class ADNIDataset(Dataset):
     H = 240
     W = 256
 
-    def __init__(self, dataset_dir):
+    def __init__(self, dataset_dir, device):
+        self.device = device
         self.dataset_dir = dataset_dir
         self._scan_groups = []
 
@@ -34,11 +35,17 @@ class ADNIDataset(Dataset):
 
     def __getitem__(self, idx):
         scans, label = self._scan_groups[idx]
-        img_seq = torch.zeros(ADNIDataset.SCAN_GROUP_SIZE, ADNIDataset.H, ADNIDataset.W)
+        img_seq = torch.zeros(ADNIDataset.SCAN_GROUP_SIZE, ADNIDataset.H, ADNIDataset.W,\
+                              device=self.device)
         for i, img_path in enumerate(scans):
             img_seq[i] = read_image(os.path.join(self.dataset_dir, img_path))
 
-        return img_seq, label
+        return img_seq.unsqueeze(-1),\
+            torch.tensor(label, dtype=torch.float32, device=self.device).unsqueeze(0)
 
 if __name__ == "__main__":
-    ds = ADNIDataset("/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC")
+    device = torch.device("cpu")
+    ds = ADNIDataset("/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC", device)
+    img_seq, label = ds[0]
+    print(f"img_seq.shape: {img_seq.shape}")
+    print(f"label.shape  : {label.shape}")
