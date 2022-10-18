@@ -28,3 +28,14 @@ model.compile(optimizer=optimizer, loss=loss_function)
 
 result = model.fit(train_ds, epochs=100, callbacks=callbacks, validation_data=valid_ds, verbose=2)
 
+plt.plot(result.history['acc'])
+plt.plot(result.history['val_acc'])
+plt.ylabel('Accuracy')
+plt.xlabel('epoch')
+plt.savefig("acc.jpg")
+
+plt.plot(result.history['loss'])
+plt.plot(result.history['val_loss'])
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.savefig("loss.jpg")
