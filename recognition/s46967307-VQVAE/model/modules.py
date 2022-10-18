@@ -5,16 +5,35 @@ import numpy as np
 latent_dims = 128
 image_shape = (256, 256, 1)
 num_embeddings = 256
-encoder_depth = 5 # 6
+encoder_depth = 5
 encoded_image_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(latent_dims))
 pixelcnn_input_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(1))
-beta = 4.0 # 2.0
+beta = 4.0
 
 def ssim_loss(x, y):
-        return tf.reduce_mean(tf.image.ssim(x,y,1.0))
+    """
+    ssim_loss
+    args: x - the original set of images
+          y - the images being compared
+    compares images in x and y element-wise and calculates SSIM
+    returns the reduced mean for loss
+    """
+    return tf.reduce_mean(tf.image.ssim(x,y,1.0))
 
 class PixelConvLayer(tf.keras.layers.Layer):
+    """
+    PixelConvLayer
+    The convolutional layer unique to pixelcnn which implements masking of 
+    future pixels, and the current if type is A
+    otherwise functions as a normal conv layer.
+    """
+
     def __init__(self, mask_type, stack = 'VH', **kwargs):
+        """
+        args: mask_type - 'A' or 'B'. 'A' masks the central pixel, 'B' does not
+              stack     - 'Whether the conv layer checks horizontal, vertical or both
+                          as 'V', 'VH', or 'H'
+        """
         super(PixelConvLayer, self).__init__()
         self.mask_type = mask_type
         self.stack = stack
@@ -41,10 +60,15 @@ class PixelConvLayer(tf.keras.layers.Layer):
         return self.conv(inputs)
 
 def get_pixel_cnn(kernel_size, input_shape):
+    """
+    get_pixel_cnn
+    args: kernel_size - the size of the kernel for the first 'A' layer
+          input_shape - the shape for the input layer
+    returns: a pixelcnn with the provided kernel size and input shape
+    """
     inputs = tf.keras.Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(inputs, num_embeddings)
     onehot = tf.keras.layers.Dropout(0.2)(onehot)
-    # onehot = tf.keras.layers.BatchNormalization()(onehot)
     x1 = PixelConvLayer(
         mask_type="A",
         stack='V',
@@ -58,15 +82,12 @@ def get_pixel_cnn(kernel_size, input_shape):
         kernel_size=kernel_size,
         padding="same")(onehot)
     x = tf.keras.layers.Add()([x1, x2])
-    # x = tf.keras.layers.BatchNormalization()(x)
-    # x = tf.keras.layers.Dropout(0.3)(x)
     
     for _ in range(2):
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
         )(x)
-        # y = tf.keras.layers.BatchNormalization()(y)
         y1 = PixelConvLayer(
             mask_type="B",
             stack='H',
@@ -82,13 +103,10 @@ def get_pixel_cnn(kernel_size, input_shape):
             padding="same"
         )(y)
         y = tf.keras.layers.Add()([y1,y2])
-        # y = tf.keras.layers.Dropout(0.2)(y)
-        # y = tf.keras.layers.BatchNormalization()(y)
         y = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=1,
         )(y)
-        # y = tf.keras.layers.BatchNormalization()(y)
         x = tf.keras.layers.Add()([x,y])
 
     for _ in range(2):
@@ -107,7 +125,6 @@ def get_pixel_cnn(kernel_size, input_shape):
             strides=1,
             padding="valid")(x)
         x = tf.keras.layers.Add()([x1,x2])
-        # x = tf.keras.layers.BatchNormalization()(x)
 
     # Flatten each pixel down to the number of embeddings
     x= tf.keras.layers.Conv2D(
@@ -122,6 +139,9 @@ def get_pixel_cnn(kernel_size, input_shape):
 
 @tf.function
 def outer(y, embeddings):
+    """
+    returns the inner function over inputs y and each x from the embeddings
+    """
     return tf.vectorized_map(
         lambda x:
         inner(x, y),
@@ -129,10 +149,20 @@ def outer(y, embeddings):
 
 @tf.function
 def inner(x, y):
+    """
+    returns the normalized tensor x-y 
+    """
     return tf.norm(tf.math.subtract(x, y))
 
 def get_indices(embeddings, inputs_flat, quantize=True, splits=1):
-
+    """
+    get_indices
+    args: embeddings  - the set of embeddings from the vqvae
+          inputs_flat - the flattened set of latent vectors 
+          quantize    - if true return the values rather than indexes
+          splits      - for large input data this can determine the number
+                        of batches to avoid OOM
+    """
     split_inputs_flat = tf.split(inputs_flat, splits, axis=0)
 
     results = None
@@ -155,6 +185,12 @@ def get_indices(embeddings, inputs_flat, quantize=True, splits=1):
     return results
 
 class VQ(tf.keras.layers.Layer):
+    """
+    VQ
+    Vector Quantisation layer,
+    converts the latent dimension outputted by encoder of VQVAE into
+    the nearest vectors in the codebook in VQVAE.
+    """
     def __init__(self, **kwargs):
         super(VQ, self).__init__(**kwargs)
 
@@ -184,6 +220,13 @@ class VQ(tf.keras.layers.Layer):
         return inputs + tf.stop_gradient(results - inputs)
 
 class AE(tf.keras.Model):
+    """
+    AE
+    Autoencoder, contains three submodels, the encoder, vq, and deocder
+    vq is described in the vq class.
+    The encoder reduces the input images by 2^n (see hyperparameter)
+    The decoder reverses this effect after vq has been applied
+    """
     def __init__(self, **kwargs):
         super(AE, self).__init__(**kwargs)
 
@@ -194,8 +237,6 @@ class AE(tf.keras.Model):
         # latent space.
         input = tf.keras.layers.Input(shape=image_shape, batch_size=None, name="input")
         x = input
-        # x = tf.keras.layers.RandomTranslation(0.3,0.3,fill_mode='constant')(x)
-        # x = tf.keras.layers.RandomRotation(0.6, fill_mode='constant')(x)
         for n in range(encoder_depth):
             x = tf.keras.layers.Conv2D(
                 filters = min(128,64*int(pow(2,n))), 
@@ -229,8 +270,6 @@ class AE(tf.keras.Model):
         input = tf.keras.layers.Input(shape=encoded_image_shape, batch_size=None, name="input")
         x = input
         for n in range(encoder_depth):
-            # x = tf.keras.layers.Dropout(0.25)(x)
-            # x = tf.keras.layers.BatchNormalization()(x)
             x = tf.keras.layers.Conv2DTranspose(
                 filters = min(128,64*int(pow(2,n))), 
                 kernel_size = 3, 

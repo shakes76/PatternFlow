@@ -1,8 +1,15 @@
-import tensorflow as tf
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
+import cv2
 import pickle
 
 def load_data():
+    """
+    load_data
+    expects oasis dataset to be located in ./keras_png_slices_data,
+    loads this data and returns a dictionary of test, train and validation data.
+    """
     data = {
         "test": [],
         "train": [],
