@@ -8,9 +8,10 @@ SRCNN is a deep learning method (super resolution CNN) for reconstructing origin
 The key for SRCNN is that it used CNN to learn the pixel mapping from low-resolution image to high-resolution image. The actual CNN model is not complex and deep comparing with other more advance model as it is one of the initial proposed model using CNN to do the image reconstruction. It contains three layers that each handles a different task which will be shown in the structure part below. Basically, it takes a resized image and upscale to the original size using bicubic interpolation, then feed into the model of SRCNN. Since upscaled-image is indistinct but the size is same as original, SRCNN will conduct patch extraction from this image and using non-linear mapping，finally reconstruct the high-resolution image as output 
 #### SCRNN Structure	
 ![SRCNN structure](SRCNN_model_structure.png)
-**Layer1: 64, (9,9)**
-**Layer2: 32, (1,1)**
-**Layer3: 3,(5,5)**
+
+- **Layer1: 64, (9,9)**
+- **Layer2: 32, (1,1)**
+- **Layer3: 3,(5,5)**
 
 ## Setting up
 ### Environment Guide
