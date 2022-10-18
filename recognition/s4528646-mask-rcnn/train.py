@@ -5,10 +5,6 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 import pickle
-import gc
-
-gc.collect()
-torch.cuda.empty_cache()
 
 MODE = "debug"
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -33,11 +29,24 @@ train_dataloader = torch.utils.data.DataLoader(
     # num_workers=4
     )
 
+test_data = ISICDataset(
+    image_folder_path="./data/ISIC-2017_Validation_Data", 
+    mask_folder_path="./data/ISIC-2017_Validation_Part1_GroundTruth", 
+    diagnoses_path="./data/ISIC-2017_Validation_Part3_GroundTruth.csv",
+    device=device,
+    transform=get_transform(True),
+    )
+# train_data = torch.utils.data.Subset(train_data, range(250))
+test_dataloader = torch.utils.data.DataLoader(
+    train_data, 
+    batch_size=2, 
+    shuffle=True, 
+    collate_fn=lambda x:tuple(zip(*x)),
+    # num_workers=4
+    )
+
 def single_epoch(model, optimizer, dataloader, device, epoch):
     it = 0
-    classificiation_loss = []
-    box_regression_loss = []
-    mask_loss = []
     total_losses = []
     for images, targets in tqdm(dataloader):
         # load tensors into GPU
@@ -48,30 +57,19 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
         optimizer.zero_grad()
         losses = model(images, targets)
         total_loss = sum(loss for loss in losses.values())
-        classificiation_loss.append(losses["loss_classifier"].item())
-        box_regression_loss.append(losses["loss_box_reg"].item())
-        mask_loss.append(losses["loss_mask"].item())
-        total_losses.append(total_loss)
         total_loss.backward()
         # nn.utils.clip_grad_value_(model.parameters(), 5)
         optimizer.step()
+        total_losses.append(total_loss.detach().cpu().item())
+        
         it += 1
-        if it % 10 == 0:
-            plt.plot(classificiation_loss)
-            plt.title("Loss Classifier")
-            plt.show()
-            
-            plt.plot(box_regression_loss)
-            plt.title("Loss Box Regression")
-            plt.show()
-            
-            plt.plot(mask_loss)
-            plt.title("Loss Mask")
-            plt.show()
+        if it % 10 == 0:            
+            fig, ax = plt.subplots()
+            ax.plot(total_losses)
     
     return total_losses
 
-def train_model(model, dataloader, n_epochs):
+def train_model(model, train_dataloader, test_dataloader, n_epochs):
     model.to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.0025, weight_decay=0.0001, momentum=0.9)
@@ -79,18 +77,33 @@ def train_model(model, dataloader, n_epochs):
                                                    step_size=3,
                                                    gamma=0.1)
     model.train()
-    epoch_losses = {}
+    training_loss = []
+    testing_loss = []
     for epoch in tqdm(range(n_epochs)):
-        all_losses = single_epoch(model, optimizer, dataloader, device, epoch)
+        all_losses = single_epoch(model, optimizer, train_dataloader, device, epoch)
         lr_scheduler.step()
-        epoch_losses[epoch] = all_losses
+        training_loss.append(sum(all_losses))
+        with torch.no_grad():
+            all_losses = []
+            for images, targets in tqdm(test_dataloader):
+                images = [image.to(device) for image in images]
+                targets = [{k: v.to(device) for k, v in target.items()} for target in targets]
+                losses = model(images, targets)
+                total_loss = sum(loss for loss in losses.values())
+                all_losses.append(total_loss.detach().cpu().item())
+                
+            testing_loss.append(sum(all_losses))
+                
+        fig, ax = plt.subplots()
+        ax.plot(training_loss, label="Train")
+        ax.plot(testing_loss, label="Test")
+        ax.legend()
+                
         
-    return epoch_losses
+        
+    return training_loss
 
-torch.save(model.state_dict(), "Mask_RCNN_ISIC2.pt")     
-
-# Save loss dictionary to perform visualisations
-epoch_losses = train_model(model, train_dataloader, 1)
-with open('epoch_losses.pickle', 'wb') as handle:
-    pickle.dump(epoch_losses, handle, protocol=pickle.HIGHEST_PROTOCOL)
+if __name__ == "__main__":
+    training_loss = train_model(model, train_dataloader, test_dataloader, 10)
+    torch.save(model.state_dict(), "Mask_RCNN_ISIC3.pt")
     

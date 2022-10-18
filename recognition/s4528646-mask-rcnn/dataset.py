@@ -87,8 +87,7 @@ class ISICDataset(Dataset):
             boxes.append([xmin, ymin, xmax, ymax])
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        labels = torch.ones((1,), dtype=torch.int64)
-        labels[0] = label
+        labels = torch.as_tensor([label], dtype=torch.int64)
         masks = torch.as_tensor(masks, dtype=torch.uint8)
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         iscrowd = torch.zeros((1,), dtype=torch.int64)
