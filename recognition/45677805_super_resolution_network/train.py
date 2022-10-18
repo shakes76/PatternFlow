@@ -35,8 +35,6 @@ def train():
     resized_train_data.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     resized_val = resize_img_flow(val_data, 32)
     resized_val.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    # resized_test = resize_img_flow(test_data, 32)
-    # resized_test.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
     # get the srcnn model
     model = get_model()

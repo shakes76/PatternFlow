@@ -16,7 +16,7 @@ def get_train():
     train_dataset = data_train.map(lambda x: x / 255.0)
     print("train data: ", data_train)
     return train_dataset
-# train_data = get_train()
+
 
 def get_validation():
     data_val = image_dataset_from_directory(
@@ -26,7 +26,6 @@ def get_validation():
     val_dataset = data_val.map(lambda x: x / 255.0)
     print("val data: ", data_val)
     return val_dataset
-# val_data = get_validation()
 
 
 def get_test():
@@ -37,7 +36,7 @@ def get_test():
     test_dataset = data_test.map(lambda x: x / 255.0)
     print("test data: ", data_test)
     return test_dataset
-# test_data = get_test()
+
 
 
 """ rerurn img array representation of one image, return img array reprentation """
@@ -62,6 +61,3 @@ def resize_img_flow(data, size):
     data = data.map(
         lambda x: (resize_img(x, size), x))
     return data
-
-# resized_train_data = resize_img_flow(train_data, 32)
-# resized_val = resize_img_flow(val_data, 32)
