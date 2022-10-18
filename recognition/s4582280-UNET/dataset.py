@@ -32,14 +32,14 @@ def read_dir(path, split):
     for fname in direct:
         # Generate the file path per file name
         fpath = os.path.join(images_dir, fname)
-        im = Image.open(fpath).convert('RGB')
+        im = Image.open(fpath)#.convert('RGB')
         resized = im.resize(dim)
         X_image_train.append(resized)
 
     # Converting the image to numpy array
     X_image_array=[]
     for x in range(len(X_image_train)):
-        X_image=np.array(X_image_train[x],dtype='float32')
+        X_image=np.array(X_image_train[x],dtype='uint8')
         X_image_array.append(X_image)
 
     # Stack the array and convert to tensor

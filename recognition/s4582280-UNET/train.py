@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 EPOCHS = 18
-print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+#print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 # Load the data from file
-t, e, tr, et = load_isic(size=0.05)
+t, e, tr, et = load_isic(size=0.25)
 print(t.shape, tr.shape)
 tf.convert_to_tensor(t)
 tf.convert_to_tensor(tr)
@@ -29,7 +29,10 @@ def display(display_list):
         plt.axis("off")
     plt.show()
 
-def DiceLoss(y_true, y_pred, smooth=100):        
+def DiceLoss(true, pred, smooth=100):
+    y_true = tf.cast(true, tf.float32)
+    y_pred = tf.cast(pred, tf.float32)
+
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
@@ -37,9 +40,9 @@ def DiceLoss(y_true, y_pred, smooth=100):
     return dice
 
 def DiceCoefLoss(y_true, y_pred):
-    return 1-DiceLoss(y_true, y_pred)
+    return -DiceLoss(y_true, y_pred)
 
-#display([t[0], tr[0]])
+display([t[0], tr[0]])
 
 model = BuildUNET()
 model.compile(optimizer=tf.keras.optimizers.Adam(),

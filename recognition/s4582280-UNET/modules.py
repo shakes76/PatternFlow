@@ -12,15 +12,15 @@ def ConvDouble(x, filters):
     x = layers.Conv2D(filters, 3, padding="same", activation="relu",
                       kernel_initializer="he_normal")(x)
     
-    x = layers.Conv2D(filters, 3, padding="same", activation="relu",
-                      kernel_initializer="he_normal")(x)
-    return x
+    return (layers.Conv2D(filters, 3, padding="same", activation="relu",
+                      kernel_initializer="he_normal")(x))
+    
         
 # Downsampling block for feature extraction
 def Downsample(x, filters):
     block = ConvDouble(x, filters)
     pooling = layers.MaxPool2D(2)(block)
-    pooling = layers.Dropout(0.3)(pooling)
+    pooling = layers.Dropout(0.35)(pooling)
     return block, pooling
 
 # Upsampling block for decoding/expanding
@@ -30,7 +30,7 @@ def Upsample(x, features, filters):
     # Concatenation
     x = layers.concatenate([x, features])
     # dropout layer
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dropout(0.35)(x)
     # Double convolutional layers
     return ConvDouble(x, filters)
 
