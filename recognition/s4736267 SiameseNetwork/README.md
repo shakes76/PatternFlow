@@ -196,7 +196,7 @@ Minimizing the loss, the distance between the anchor and the positive sample d(a
 
 After training, the recieved feature vector of the anchor should be more similar compared with the positve sample than the negative sample. 
 
-###Adapting 3D ResNet approach
+### Adapting 3D ResNet approach
 
 The previous introduced 3D ResNet, was modified which resulted in the final implementation.
 
