@@ -9,7 +9,7 @@ class Dataset(torch.utils.data.Dataset):
         """
         Image loader base class
         
-        Takes a path to folder of images.
+        Takes a path to folder of images. Uses every image in the folder as the dataset.
         All images are resized to [im_len, im_len] when an item is requested.
         """
         self.path = path
@@ -19,9 +19,15 @@ class Dataset(torch.utils.data.Dataset):
         self.trf = transform.ToTensor()
 
     def __len__(self):
+        """
+        Returns number of images in dataset
+        """
         return self.len
     
     def __getitem__(self, index):
+        """
+        Gets the image at index
+        """
         image = Image.open(self.path + self.files[index])
         image = image.resize((self.img_size, self.img_size))
         image = image.convert('RGB')

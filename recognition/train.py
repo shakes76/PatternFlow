@@ -59,7 +59,6 @@ else:
 ds = Dataset(path, img_size=image_size)
 dataloader = DataLoader(ds, batch_size=batch_size, shuffle=True, drop_last=True)
 
-
 #create trainer
 trainer = Trainer(img_size=image_size, timesteps=timesteps, start=0.0001, end=0.02, create_images= disable_images, tensorboard = disable_tensorboard, schedule=beta_schedule)
 

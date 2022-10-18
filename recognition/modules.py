@@ -15,6 +15,8 @@ from torch.optim import Adam
 def show_tensor_image(image):
     """
     Helper function to display images from tensors
+
+    Rescales image from -1/1 to 0/1
     """
     reverse_transforms = transforms.Compose([
         transforms.Lambda(lambda t: (t + 1) / 2),
@@ -23,8 +25,6 @@ def show_tensor_image(image):
         transforms.Lambda(lambda t: t.numpy().astype(np.uint8)),
         transforms.ToPILImage(),
     ])
-
-    # Take first image of batch
     if len(image.shape) == 4:
         image = image[0, :, :, :] 
     plt.imshow(reverse_transforms(image))
@@ -36,6 +36,9 @@ Networks
 """
 class Block(nn.Module):
     def __init__(self, in_ch, out_ch, time_emb_dim, up=False):
+        """
+        U-Net Block. 2x convd with group norm
+        """
         super().__init__()
         self.time_mlp =  nn.Linear(time_emb_dim, out_ch)
         if up:
@@ -45,38 +48,24 @@ class Block(nn.Module):
             self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
             self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 1)
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
-        self.bnorm1 = nn.GroupNorm(1, out_ch)
-        self.bnorm2 = nn.GroupNorm(1, out_ch)
-        #self.bnorm1 = nn.BatchNorm2d(out_ch)
-        #self.bnorm2 = nn.BatchNorm2d(out_ch)
+        self.gnorm1 = nn.GroupNorm(1, out_ch)
+        self.gnorm2 = nn.GroupNorm(1, out_ch)
         self.relu  = nn.ReLU()
         
     def forward(self, x, t, ):
-        # First Conv
-        h = self.bnorm1(self.relu(self.conv1(x)))
-        # Time embedding
+        h = self.gnorm1(self.relu(self.conv1(x)))
         time_emb = self.relu(self.time_mlp(t))
-        # Extend last 2 dimensions
         time_emb = time_emb[(..., ) + (None, ) * 2]
-        # Add time channel
+        # Append time embeddings as extra channel
         h = h + time_emb
-        # Second Conv
-        h = self.bnorm2(self.relu(self.conv2(h)))
-        # Down or Upsample
+        h = self.gnorm2(self.relu(self.conv2(h)))
         return self.transform(h)
-
-class PreNorm(nn.Module):
-    def __init__(self, dim, fn):
-        super().__init__()
-        self.fn = fn
-        self.norm = nn.GroupNorm(1, dim)
-
-    def forward(self, x):
-        x = self.norm(x)
-        return self.fn(x)
 
 class SinusoidalPositionEmbeddings(nn.Module):
     def __init__(self, dim):
+        """
+        Applies sinusoial embeddings to timestep. 
+        """
         super().__init__()
         self.dim = dim
 
@@ -91,35 +80,43 @@ class SinusoidalPositionEmbeddings(nn.Module):
 
 class Unet(nn.Module):
     def __init__(self, im_size):
+        """
+        U-Net Diffusion Module
+
+        im_size, is the image dimension to be used. (im_size x im_size)
+        """
         self.img_size = im_size
         super().__init__()
         image_channels = 3
         #Autoconfigure Unet using image size
         down_channels = (im_size, im_size * 2, im_size * 4, im_size * 8)#(64, 128, 256, 512, 1024)
         up_channels = (im_size * 8, im_size * 4, im_size * 2, im_size)#(1024, 512, 256, 128, 64)
-        out_dim = 1 
+        #output dimensions
+        out_dim = 1
+        #time embedded dimension
         time_emb_dim = int(im_size * 4)
 
-        # Time embedding
+        #Time embedding
         self.time_mlp = nn.Sequential(
                 SinusoidalPositionEmbeddings(time_emb_dim),
                 nn.Linear(time_emb_dim, time_emb_dim),
                 nn.ReLU()
             )
         
-        # Initial projection
+        #Initial projection
         self.conv0 = nn.Conv2d(image_channels, down_channels[0], 3, padding=1)
 
+        #Create U-Net blocks
         self.downs = nn.ModuleList([])
         self.ups = nn.ModuleList([])
 
-        # Downsample
+        #Down
         for i in range(len(down_channels)-1):
             self.downs.append(#nn.ModuleList([
                 Block(down_channels[i], down_channels[i+1], time_emb_dim),
             )
             
-        # Upsample
+        #Up
         for i in range(len(up_channels)-1):
             self.ups.append(#nn.ModuleList([
                 Block(up_channels[i], up_channels[i+1], time_emb_dim, up=True),
@@ -128,11 +125,11 @@ class Unet(nn.Module):
         self.output = nn.Conv2d(up_channels[-1], 3, out_dim)
 
     def forward(self, x, timestep):
-        # Embedd time
+        #Embed time
         t = self.time_mlp(timestep)
-        # Initial conv
+        #Initial conv
         x = self.conv0(x)
-        # Unet
+        #Unet
         residual_inputs = []
         for down in self.downs:
             x = down(x, t)
@@ -150,12 +147,11 @@ class Unet(nn.Module):
 Training
 ------------
 """
-
 class Trainer:
-    """
-    Class to train Unet Diffusion model
-    """
     def __init__(self, img_size, timesteps=1000, start=0.0001, end=0.02, create_images=True, tensorboard=True, schedule='linear'):
+        """
+        Class to train U-Net Diffusion model
+        """
         self.img_size = img_size
         self.T = timesteps
         self.start = start
@@ -191,7 +187,7 @@ class Trainer:
 
     def beta_schedule(self, type):
         """
-        Diffusion noise schedule
+        Diffusion noise schedule. Choose from: 'linear', 'cosine', 'quadratic, 'sigmoid'.
         """
         if type == 'linear':
             return torch.linspace(self.start, self.end, self.T)
@@ -231,15 +227,13 @@ class Trainer:
         """
         Performs forward step adding noise to image.
 
-        Takes noiseless image x_0 and adds equavalent noise to timestep t
+        Takes noiseless image x_0 and adds equivalent noise to timestep t
         """
         noise = torch.randn_like(x_0)
         sqrt_alphas_cumprod_t = self.get_index_from_list(self.sqrt_alphas_cumprod, t, x_0.shape)
         sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(
             self.sqrt_one_minus_alphas_cumprod, t, x_0.shape
         )
-
-        # mean + variance
         return sqrt_alphas_cumprod_t.to(self.device) * x_0.to(self.device) + sqrt_one_minus_alphas_cumprod_t.to(self.device) * noise.to(self.device), noise.to(self.device)
 
     @torch.no_grad()
@@ -279,8 +273,8 @@ class Trainer:
     @torch.no_grad()
     def generate_image_plot(self, path, num_images=10):
         """
-        Performs backward denoising to noise to generate new image.
-        Plots num_images over all timesteps
+        Generates new image by completing full reverse denoising of all timesteps.
+        Plots num_images spread over all timesteps
         """
         img = torch.randn((1, 3, self.img_size, self.img_size), device=self.device)
         plt.figure(figsize=(15,15))
@@ -367,7 +361,7 @@ class Trainer:
 
     def save_model(self, path):
         """
-        Save model to path
+        Saves model to path
         """
         torch.save({
             'model_state_dict': self.model.state_dict(),
@@ -382,7 +376,7 @@ class Trainer:
 
     def load_model(self, path):
         """
-        Load model
+        Loads model from path
         """
         if 'model' in locals():
             self.model.cpu()
