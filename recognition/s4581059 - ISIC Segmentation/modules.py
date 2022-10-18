@@ -14,6 +14,7 @@ def model():
     kernel_size = (3,3,3)
     filters = 16
 
+    ##Encoder
     #Encoder consists of 2 3x3x3 convolutional layers with a dropout layer between them 
     #16 filters
     input = Input(shape=(64, 64, 16, 1))
@@ -46,6 +47,33 @@ def model():
     block_5_dropout = Dropout(0.3)(block_5_conv_1)
     block_5_conv_2 = Conv3D(filters * 16 , kernel_size, padding= "same", activation=relu)(block_5_dropout)
     add_block_5 = Add()([block_5_conv_1, block_5_conv_2])
+
+    ##Decoder
+    #Base level
+    dec_1_upsample = UpSampling3D()(add_block_5)
+    dec_1_conv_1 = Conv3D(filters * 8, kernel_size, padding="same", activation=relu)(dec_1_upsample)
+    dec_1_concat = Concatenate()[add_block_4, dec_1_conv_1]
+
+    #128 filters -> 64 filter UpSample
+    dec_2_conv_1 = Conv3D(filters * 8, kernel_size, padding="same", activation=relu)(dec_1_concat)
+    dec_2_conv_2 = Conv3D(filters * 4, kernel_size, padding="same", activation=relu)(dec_2_conv_1)
+    dec_2_upsample = UpSampling3D()(dec_2_conv_2)
+    dec_2_concat = Concatenate()[add_block_3, dec_2_upsample]
+
+    #64 filters -> 32 filter UpSample
+    dec_3_conv_1 = Conv3D(filters * 4, kernel_size, padding="same", activation=relu)(dec_2_concat)
+    dec_3_conv_2 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_3_conv_1)
+    dec_3_upsample = UpSampling3D()(dec_3_conv_2)
+    dec_3_concat = Concatenate()[add_block_2, dec_3_upsample]
+
+    #32 filters -> 16 filter UpSample
+    dec_4_conv_1 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_3_concat)
+    dec_4_conv_2 = Conv3D(filters * 1, kernel_size, padding="same", activation=relu)(dec_4_conv_1)
+    dec_4_upsample = UpSampling3D()(dec_4_conv_2)
+    dec_4_concat = Concatenate()[add_block_1, dec_4_upsample]
+
+    #3x3x3 Convolution
+    dec_5_conv_1 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_4_concat)
 
     
 
