@@ -10,6 +10,10 @@ Make sure to plot the losses and metrics during training.
 
 """
 
+EPOCHS = 100
+BATCH_SIZE = 32
+BUFFER_SIZE = 20000
+
 @tf.function
 def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
     """
@@ -41,3 +45,21 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
             siamese_gradients, siamese.trainable_variables))
 
         return loss
+
+def main():
+    # get training data
+    training_data_positive = load_data(AD_TRAIN_PATH, "ad_train")
+    training_data_negative = load_data(NC_TRAIN_PATH, "nc_train")
+
+    # convert to tensors
+    train_data_pos = tf.data.Dataset.from_tensor_slices(training_data_positive
+        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE)
+    train_data_neg = tf.data.Dataset.from_tensor_slices(training_data_negative
+        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE)
+
+    # build models
+    siamese_model = build_siamese()
+    binary_classifier = build_binary()
+
+if __name__ == "__main__":
+    train()
