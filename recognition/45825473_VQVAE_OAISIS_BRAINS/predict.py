@@ -9,7 +9,7 @@ from skimage.metrics import structural_similarity
 import matplotlib.pyplot as plt
 import numpy as np
 
-def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images, number_of_reconstructions):
+def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images):
   # Print the test image and their reconstruction
   trained_vqvae_model = vqvae_trainer.vqvae
   reconstructions_test = trained_vqvae_model.predict(test_images)
@@ -49,9 +49,12 @@ def predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outp
   return generated_samples, reconstructions_test
 
 def determine_SSIM(test_images_np, trained_vqvae_model,  generated_samples, reconstructions_test):
-    # Compute the Structural Similarity Index (SSIM) between the two images for all test images
-    recon_similarity = tf.image.ssim(test_images_np, reconstructions_test, max_val=1)
-    print("Mean SSIM: {}".format(recon_similarity))
+    recon_similarity = tf.math.reduce_max(tf.image.ssim(test_images_np, reconstructions_test, max_val=1))
+    generated_similarity = tf.math.reduce_max(tf.image.ssim(test_images_np[0:10], generated_samples, max_val=1))
+
+    # total_score = total_score / number_of_reconstructions #Get the mean SSIM from all test images
+    print("Mean recon SSIM: {}".format(recon_similarity))
+    print("Mean gen SSIM: {}".format(generated_similarity))
 
 def plot_losses(vqvaeTrainer):
     x = 1
@@ -80,7 +83,7 @@ def main():
             codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
 
             priors = train.generate_probabilities_for_samples(pixel_cnn, sampler)
-            generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors,  encoded_outputs,test_images, 10)
+            generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors,  encoded_outputs,test_images)
             determine_SSIM(test_images, vqvae_trainer.vqvae,  generated, reconstructions_test)
             
         except:
@@ -96,7 +99,7 @@ def main():
         codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
         codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
         priors = train.generate_probabilities_for_samples(pixel_cnn, sampler)
-        generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images, 10)
+        generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors, encoded_outputs, test_images)
         determine_SSIM(test_images, vqvae_trainer.vqvae,  generated, reconstructions_test)
     else:
         print("$ python3 predict.py [-m <PathToPreTrainedModel>]")

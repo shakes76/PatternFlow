@@ -1,6 +1,4 @@
-# Implementation of VQVAE for COMP3710 Project
-
-    //To be added
+# Implementation of generative VQVAE for preprocessed OASIS
 
 ## The VQVAE
 
@@ -9,10 +7,15 @@
 ## Model architecture
 
     //To be added
+    ![image]
 
 ## Preprocessed OASIS brain dataset
 
     //To be added
+
+## Results
+
+![image]
 
 ## Dependencies
 
@@ -44,4 +47,8 @@ $ python3 predict.py [-m <PathToPreTrainedModel>]
 
 ## References
 
-//To be added
+[1] S. Paul, "Vector-Quantized Variational Autoencoders", _keras.io_, Jul. 21, 2021. [Online]. Available: https://keras.io/examples/generative/vq_vae/ [Accessed: Oct. 16, 2022]
+
+[2] ADMoreau, "PixelCNN", _keras.io_, May 26, 2020. [Online]. Available: https://keras.io/examples/generative/pixelcnn/ [Accessed: Oct. 16, 2022]
+
+[3] Sieun Park "An overview on VQ-VAE: Learning Discrete Representation Space" Apr. 4, 2021. Available: https://miro.medium.com/max/720/1*miNfFc9qT5PrS7ectJa_kw.png [Accessed: Oct. 17, 2022]
