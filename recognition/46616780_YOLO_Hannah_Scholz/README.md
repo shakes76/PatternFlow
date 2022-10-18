@@ -21,10 +21,30 @@ classify cancerous skin lesions.
 ### How it works:
 
 
-### Model Architecture Visualisation:
 
+### Model Architecture Visualisation:
+![Model Visualisation](ModelVisualisation.jpg)
 
 ### Dependencies:
+
+#### Versions:
+MacOS Monterey 12.6
+
+Python - 3.9.12
+
+Google Collab
+
+#### How to run:
+1. Download images from: https://challenge.isic-archive.com/data/#2017
+2. Put all files in specified folders 
+3. Run the dataset.py file
+4. Compress the data into a .zip file called Archive.zip
+5. Download this file to google drive
+6. Run the yolov5_training.ipynb file - make sure the format of the files in folders is as specified below:
+
+![Folder Organisation](FolderOrganisation.jpg)
+
+7. 
 
 
 ### Example Inputs:
@@ -39,8 +59,14 @@ Training, testing and validation split is as given by the ISIC dataset.
 Image dimensions --> 640x640 as this is what dimension YOLOv5 was designed for.
 
 ### Results:
+#### Yolov5s
+
+#### Yolov5m
+
+#### Yolov5n
 
 ### References:
+https://github.com/ultralytics/yolov5
 https://pjreddie.com/darknet/yolo/
 https://arxiv.org/pdf/1506.02640.pdf
 https://medium.com/mlearning-ai/training-yolov5-custom-dataset-with-ease-e4f6272148ad
