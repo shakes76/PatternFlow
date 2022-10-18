@@ -146,7 +146,7 @@ Make sure below parameters are properly set then directly run below command
 
 When then program finishes running, the generated images can be found in the specified folder.
 
-> **Note** make sure the same parameters are used as how model is trained. Keep all `.py` files under the same folder, as other files are dependencies of `predict.py`.
+> **Note** make sure the same parameters are used as how model is trained, especially the target resolution has to match. Keep all `.py` files under the same folder, as other files are dependencies of `predict.py`.
 
 ```
 # PARAMETERS TO SET
