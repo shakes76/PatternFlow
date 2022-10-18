@@ -53,7 +53,7 @@ The final learning rates settled on were:
 And these provided stable training.
 Finally, it was found that training always collapsed around 30 epochs in. The constant base of the synthesis network was changed from 0's to 1's. This change appeared to provide indefinite stable training, with the generator almost collapsing at the same point, but recovering with no future episodes. This effect is evident in the training history plot below. It is theorised that the collapsing was due to 0's nullifying the effect of the initial few feature scaleing multiplications.
 
-The styleGAN training paradigm was custom written and defined in `train.py`. The training procedure was as described for GAN's above. Initially the discriminator was designed to conduct straight classification of images as real (1) or fake (0), using binary-cross-entropy as a loss function. This allowed the keras train_on_batch method to be employed, however training performance was poor and resultant images failed to capture even the rough shape of the desired brains. It was found that this method of discrimination was insufficient and the training procedure was rewritten to manually conduct training, compute loss, and backpropagate using GradientTapes. This allowed for the use of soft-plus as a loss function for the model
+The styleGAN training paradigm was custom written and defined in `train.py`. The training procedure was as described for GAN's above. Initially the discriminator was designed to conduct straight classification of images as real (1) or fake (0), using binary-cross-entropy as a loss function. This allowed the keras train_on_batch method to be employed, however training performance was poor and resultant images failed to capture even the rough shape of the desired brains. It was found that this method of discrimination was insufficient and the training procedure was rewritten to manually conduct training, compute loss, and backpropagate using GradientTapes. This allowed for the use of soft-plus as a loss function for the model. softplus sums the results of a batch (in this case discriminator realness scores) but with a curve that assymtotes towards zero for negative values. This allows for a
 
 ## Dependencies
 Python version: 3.10.4
@@ -78,10 +78,74 @@ Training the styleGAN in its current configuration has the following hardware re
 
 The VRAM requirement can be reduced by reducing the resolution of the compressed images (Achieved by lowering the `COMPRESSION_SIZE` constant in the train method), However the GPU used must still be CUDA and CUDNN compatible.
 
-## Usage
-
 ## Results
 
+
+## Usage
+The individual helper functions included are documented in their respective files.
+
+ To train a styleGAN for the OASIS dataset, one should run the `train` function included in `train.py`. The `train` function takes 3 arguments:
+ - `model`: the folder containing the StyleGAN
+ - `image_source`: the folder containing the training images
+ - `epochs`: the number of epochs to train for
+
+ If you wish to intialise and train a new styleGAN model from scratch, pass in `model = None`. This will generate a new styleGAN, which will be saved in the working directory inside the folder `model\`. This new styleGAN will be configured to train on images compressed to 64x64, with a latent dimension of 512 and using a synthesis network that begins with 4x4 resolution. If you wish to initialise a styleGAN with alternate parameters, you can modify the `COMPRESSION_SIZE`, `LATENT_DIM`, and `GENERATOR_INIT_SIZE` constants provided at the beginning of the function. Note that `COMPRESSION_SIZE` will also need to be set apropriately if training on a pre-existing model with an alternate output size and a training image cache has not been built yet.
+
+ Upon first running `train`, an image cache is constructed containing the normalised numerical data of the compressed images. This cache will be used as the training set while it exists in the working directory.
+
+ Upon completion of the requested training epochs, a plot is generated of the training losses. Training appends history to a `history.csv` in the working directly so consecutive runs of `train` will generate plots containing the information from previous training sessions.
+ If one wishes to plot a specific range of training epochs, one can run the `plot_history` function located in `GANUtils.py` directly, passing in the desired epoch range as the final argument.
+ 
+ The generated training history plot is displayed in its own window and saved to the working directory as `training_loss.png`
+
+ After each epoch, a sample of 5 generated images is saved to the `output` folder in the working directory. If one wishes to modify the number of samples taken per epoch, one can modify the `IMAGE_SAMPLE_COUNT` constant located at the beginning of the `train` function.
+
+ If one wishes to configure a different default location for these working components, one can modify the `TRAINING_HISTORY_FILE`, `IMAGE_SAMPLE_FOLDER`, `DEFAULT_MODEL_LOC` and `HISTORY_PLOT_FILE` constants included in the `train` function.
+
+Training is configured to run with a batch size of 64, as this was the maximum achievible with the VRAM availible (8GB). In order to configure this yourself, modify the `BATCH_SIZE` constant located at the top of the `train` function.
+
+This will result in two plots being displayed, one at 10 epochs, the other containing the full 20. The latter will be saved to disk and the `output/` folder will contain 20 sets of samples.
+
+To generate images from a trained styleGAN, one should run the ` generate_images` function provided in `predict.py`
+The `generate_images` function takes 3 arguments:
+ - `model_folder`: the folder containing the StyleGAN from which to generate the sample images
+ - `num_images`: the number of images to generate
+ - `save_folder`: the folder to save the generated images
+
+ If `save_folder = None` is passed, the images are not saved to disk, but they are still generated and rendered in their own window to the user.
+### Examples:
+```
+from train import train
+from predict import generate_images
+
+#Generate new styleGAN and train for 10 epochs
+train( 
+    model = None, 
+    image_source = "images/", 
+    epochs = 10
+    )
+
+#train the styleGAN for a further 10 epochs (20 total)
+train( 
+    model = "model/", 
+    image_source = "images/", 
+    epochs = 10
+    )
+
+#Generate and display 5 sample images from the trained model
+generate_images(
+    model_folder = "model/"
+    num_images = 5
+    save_folder = None
+    )
+
+#Generate and display 5 more samples, saving to "samples"
+generate_images(
+    model_folder = "model/"
+    num_images = 5
+    save_folder = "samples/"
+    )
+```
 ## References
 Generational Adversarial Networks: https://arxiv.org/pdf/1406.2661.pdf TODO how to refrence
 StyleGAN Theory: 

@@ -232,13 +232,15 @@ def train(
     TRAINING_HISTORY_FILE = "history.csv"
     IMAGE_SAMPLE_COUNT = 5
     IMAGE_SAMPLE_FOLDER = "output/"
-    COMPRESSION_SIZE = 32
+
+    #Note this will be ignored by dataloader if an image cache exists
+    COMPRESSION_SIZE = 32 
     
-    IMAGE_SIZE = 256
     GENERATOR_INIT_SIZE = 4
     LATENT_DIM = 512
 
     DEFAULT_MODEL_LOC = "model/"
+    HISTORY_PLOT_FILE = "training_loss.png"
 
     data_loader = dataset.OASIS_loader(image_source, COMPRESSION_SIZE)
     #if model = None use provided constants to generate new StyleGAN
@@ -268,6 +270,6 @@ def train(
     #training history) will be plotted
     GANutils.plot_training(
             GANutils.load_training_history(TRAINING_HISTORY_FILE),
-            "training_loss.png", style_GAN.epochs_trained
+            HISTORY_PLOT_FILE, style_GAN.epochs_trained
             )
 
