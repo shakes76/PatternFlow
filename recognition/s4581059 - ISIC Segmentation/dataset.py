@@ -7,8 +7,8 @@ import os
 #Contains the data loader for loading and preprocessing data
 
 path = "C:/Users/danie/Downloads/ISIC DATA/"
-img_height = 128
-img_width = 128
+img_height = 64
+img_width = 64
 img_channels = 3
 
 def load_data(path, split = 0.2):
@@ -44,6 +44,8 @@ def decode_image(images):
     image = tf.image.decode_jpeg(image, channels=img_channels) #3 img channels i.e. rgb
     image = tf.image.resize(image, (img_width, img_height))
     image -= tf.math.reduce_mean(image)
+    #3D Normalised DataSet
+    image = tf.concat([image]*16, 3)
     image = tf.divide(image, 255.0)
     return image
 
