@@ -126,7 +126,7 @@ def generate_PixelCNN(vq, pcnn, n):
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, 
-                         vqvae_trained = None, img_shape=img_shape, embed_num=64, 
+                         vq_trained = None, img_shape=img_shape, latent_dim=32, embed_num=32, 
                          result_path=result_path, vq_epoch=vq_epoch)
 
 VQVAE_result(vqvae_trained, test_data)

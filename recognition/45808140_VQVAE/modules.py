@@ -93,8 +93,8 @@ class VQVAE_model(keras.Model):
         self.input_x = input_x
         
         #models
-        self.encoder = Encoder().get_encoder()
-        self.decoder = Decoder().get_decoder()
+        self.encoder = Encoder(latent_dim=self.latent_dim, input_x=self.input_x).get_encoder()
+        self.decoder = Decoder(latent_dim=self.latent_dim).get_decoder()
         self.vq = VQ(self.no_embeddings, self.latent_dim)
         
         #define loss functions, total_loss, reconstruction loss and VQ loss

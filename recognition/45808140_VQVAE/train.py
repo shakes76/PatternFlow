@@ -10,9 +10,11 @@ import tensorflow_probability as tfp
 #Base variables
 root_path = 'AD_NC'
 img_shape = 256
+num_embeds = 128
+latent_dim = 32
+
 vq_epoch = 20
 pcnn_epoch = 10
-num_embeds = 128
 batch_size = 32
 no_resid = 2
 no_pcnn_layers = 2
@@ -49,13 +51,14 @@ def get_codebooks(vq, embeds):
     
     return mapper
 
-def vq_train(train_data, test_data, train_var, result_path, vqvae_trained=None, img_shape=img_shape, 
-    embed_num=num_embeds,vq_epoch=vq_epoch):
+def vq_train(train_data, test_data, train_var, result_path, vq_trained=None, img_shape=img_shape, 
+    latent_dim=latent_dim, embed_num=num_embeds,vq_epoch=vq_epoch):
     """Function to fit/train VQVAE model"""
 
     #Use pre-trained vqvae model if specified
-    if vqvae_trained is None:
-        VQVAE = VQVAE_model(img_shape, train_var, 16, embed_num)
+    if vq_trained is None:
+        VQVAE = VQVAE_model(img_shape, train_var, latent_dim=latent_dim, 
+                            no_embeddings=embed_num)
     else:
         VQVAE = vqvae_trained
 
