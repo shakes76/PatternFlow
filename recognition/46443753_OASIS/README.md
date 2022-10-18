@@ -24,7 +24,7 @@ From here, we can see from the figure, after some **affine transform A** of the 
 <p align="center">
   <img src="examples/stylgan.png" alt="stylegan" />
  </br>
- <em>Figure 2: StyleGAN Architecture - Generator</em></p>
+ <em>Figure 2: StyleGAN Architecture - Generator [1]</em></p>
 
 Moreover, based on the discussed architecture, due to computation limits, some slight modification was made to parameters of the architecture, which differes to the ones mentioned in the paper. This includes a filter size of 256 for the fully connected layers in the mapping network, a channel size of 128 in the constant input vector as compared to 512, and a latent dimension of 128. **A detailed model summary for the generator and discriminator was provided in the Appendix.**
 
