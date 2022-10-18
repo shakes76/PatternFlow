@@ -1,0 +1,92 @@
+/Users/donghaoyang/miniconda3/envs/comp3710-tensorflow-gpu/bin/python /Users/donghaoyang/comp3710Report/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/recognition/DonghaoYang_45930032_GCN/predict.py
+Metal device set to: Apple M1 Pro
+
+systemMemory: 16.00 GB
+maxCacheSize: 5.33 GB
+
+2022-10-18 11:05:12.214722: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2022-10-18 11:05:12.214818: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+Model: "model"
+__________________________________________________________________________________________________
+ Layer (type)                   Output Shape         Param #     Connected to
+==================================================================================================
+ input_1 (InputLayer)           [(None, 128)]        0           []
+
+ input_2 (InputLayer)           [(None, 22470)]      0           []
+
+ graph_convolution (GraphConvol  (None, 64)          8256        ['input_1[0][0]',
+ ution)                                                           'input_2[0][0]']
+
+ dropout (Dropout)              (None, 64)           0           ['graph_convolution[0][0]']
+
+ graph_convolution_1 (GraphConv  (None, 32)          2080        ['dropout[0][0]',
+ olution)                                                         'input_2[0][0]']
+
+ dropout_1 (Dropout)            (None, 32)           0           ['graph_convolution_1[0][0]']
+
+ graph_convolution_2 (GraphConv  (None, 16)          528         ['dropout_1[0][0]',
+ olution)                                                         'input_2[0][0]']
+
+ dropout_2 (Dropout)            (None, 16)           0           ['graph_convolution_2[0][0]']
+
+ graph_convolution_3 (GraphConv  (None, 4)           68          ['dropout_2[0][0]',
+ olution)                                                         'input_2[0][0]']
+
+==================================================================================================
+Total params: 10,932
+Trainable params: 10,932
+Non-trainable params: 0
+__________________________________________________________________________________________________
+Features data shape (22470, 128)
+Edges data shape (342004, 2)
+Target data shape (22470,)
+The number of nodes 22470 ; The number of features 128
+2022-10-18 11:05:12.456680: W tensorflow/core/platform/profile_utils/cpu_utils.cc:128] Failed to get CPU frequency: 0 Hz
+2022-10-18 11:05:12.456817: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:113] Plugin optimizer for device_type GPU is enabled.
+1/1 [==============================] - 0s 114ms/step
+Inference of classes for the first 10 pages:
+=========================================================
+The real class of page 0 is class 0
+The inferred class of page 0 is class 0
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 1 is class 2
+The inferred class of page 1 is class 2
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 2 is class 1
+The inferred class of page 2 is class 1
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 3 is class 2
+The inferred class of page 3 is class 2
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 4 is class 3
+The inferred class of page 4 is class 3
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 5 is class 3
+The inferred class of page 5 is class 3
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 6 is class 3
+The inferred class of page 6 is class 3
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 7 is class 3
+The inferred class of page 7 is class 3
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 8 is class 2
+The inferred class of page 8 is class 2
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+The real class of page 9 is class 2
+The inferred class of page 9 is class 2
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Prediction result with the whole data set:
+              precision    recall  f1-score   support
+
+           0       0.77      0.87      0.82      3327
+           1       0.97      0.80      0.88      6495
+           2       0.88      0.86      0.87      6880
+           3       0.82      0.95      0.88      5768
+
+    accuracy                           0.87     22470
+   macro avg       0.86      0.87      0.86     22470
+weighted avg       0.88      0.87      0.87     22470
+
+
+Process finished with exit code 0

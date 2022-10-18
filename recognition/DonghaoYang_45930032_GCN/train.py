@@ -53,6 +53,7 @@ def TSNE_embedding_plot(result, target):
     for class_i in range(4):  # there are only four classes
         class_i_nodes_positions = (np.where(node_color == class_i))[0]
         pyplot.scatter(tsne[class_i_nodes_positions, 0], tsne[class_i_nodes_positions, 1], label=class_i)
+    pyplot.savefig("TSNE_embedding_plot")  # save the TSNE_embedding_plot
     pyplot.show()
 
 
@@ -71,6 +72,7 @@ pyplot.title('GCN model training and validation accuracy')
 pyplot.ylabel('Accuracy')
 pyplot.xlabel('Epoch')
 pyplot.legend(['Training', 'Validation'])
+pyplot.savefig('GCN_model_training_and_validation_accuracy')  # save the accuracy plot
 pyplot.show()
 # Plot the loss of training and validation
 pyplot.plot(history.history['loss'])
@@ -79,6 +81,7 @@ pyplot.title('GCN model training and validation loss')
 pyplot.ylabel('Loss')
 pyplot.xlabel('Epoch')
 pyplot.legend(['Training', 'Validation'])
+pyplot.savefig('GCN_model_training_and_validation_loss')  # save the loss plot
 pyplot.show()
 
 """
