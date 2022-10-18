@@ -8,6 +8,23 @@ DROPOUT_PROB = 0.3
 INPUT_SHAPE = (256, 256, 1)
 
 
+def context_module(layer, num_filters):
+    """
+    Creates the context module as defined in the improved UNet. It normalises the model between every
+    Conv2D call. This module includes two 2D 3x3 conv layers with a dropout layer inbetween.
+
+    :param layer: the input layer within this module.
+    :param num_filters: the number of filters to pass into Conv2D.
+    :return: the final layer of this context module.
+    """
+    norm = BatchNormalization()(layer)
+    encoder = Conv2D(num_filters, 3, activation='relu', padding='same')(norm)
+    dropout = Dropout(DROPOUT_PROB)(encoder)
+    norm = BatchNormalization()(dropout)
+    encoder = Conv2D(num_filters, 3, activation='relu', padding='same')(norm)
+    return encoder
+
+
 def create_model(input_shape=INPUT_SHAPE):
     """
     Create the improved unet model. This will include all the convolutions, max pooling,
@@ -25,46 +42,31 @@ def create_model(input_shape=INPUT_SHAPE):
     # norm1 = InstanceNormalisation
     # Create the encoder:
     # First layer : 2 x 2D Convolutions, filter size 16,  with a 3x3 kernel size and a stride size of (2,2).
-    encoder_layer1 = Conv2D(16, 3, activation='relu', padding='same')(input)
-    dropout1 = Dropout(DROPOUT_PROB)(encoder_layer1)
-    norm1 = BatchNormalization()(dropout1)
-    encoder_layer1 = Conv2D(16, 3, activation='relu', padding='same')(norm1)
+    encoder_layer1 = context_module(input, 16)
 
     # max pooling for the first layer to get to the second one
     pool1 = MaxPooling2D()(encoder_layer1)
 
     # Second layer : 2 x 2D Convolutions, filter size 32,  with a 3x3 kernel size and a stride size of (2,2).
-    encoder_layer2 = Conv2D(32, 3, activation='relu', padding='same')(pool1)
-    dropout2 = Dropout(DROPOUT_PROB)(encoder_layer2)
-    norm2 = BatchNormalization()(dropout2)
-    encoder_layer2 = Conv2D(32, 3, activation='relu', padding='same')(norm2)
+    encoder_layer2 = context_module(pool1, 32)
 
     # max pooling for the second layer to get to the third one
     pool2 = MaxPooling2D()(encoder_layer2)
 
     # Third layer : 2 x 2D Convolutions, filter size 64,  with a 3x3 kernel size and a stride size of (2,2).
-    encoder_layer3 = Conv2D(64, 3, activation='relu', padding='same')(pool2)
-    dropout3 = Dropout(DROPOUT_PROB)(encoder_layer3)
-    norm3 = BatchNormalization()(dropout3)
-    encoder_layer3 = Conv2D(64, 3, activation='relu', padding='same')(norm3)
+    encoder_layer3 = context_module(pool2, 64)
 
     # max pooling for the third layer to get to the forth one
     pool3 = MaxPooling2D()(encoder_layer3)
 
     # Forth layer : 2 x 2D Convolutions, filter size 128,  with a 3x3 kernel size and a stride size of (2,2).
-    encoder_layer4 = Conv2D(128, 3, activation='relu', padding='same')(pool3)
-    dropout4 = Dropout(DROPOUT_PROB)(encoder_layer4)
-    norm4 = BatchNormalization()(dropout4)
-    encoder_layer4 = Conv2D(128, 3, activation='relu', padding='same')(norm4)
+    encoder_layer4 = context_module(pool3, 128)
 
     # max pooling for the forth layer to get to the fifth one
     pool4 = MaxPooling2D()(encoder_layer4)
 
     # Fifth layer : 2 x 2D Convolutions, filter size 256,  with a 3x3 kernel size and a stride size of (2,2).
-    encoder_layer5 = Conv2D(256, 3, activation='relu', padding='same')(pool4)
-    dropout5 = Dropout(DROPOUT_PROB)(encoder_layer5)
-    norm5 = BatchNormalization()(dropout5)
-    encoder_layer5 = Conv2D(256, 3, activation='relu', padding='same')(norm5)
+    encoder_layer5 = context_module(pool4, 256)
 
     # Create the decoder:
 
@@ -104,6 +106,8 @@ def create_model(input_shape=INPUT_SHAPE):
     # Third layer : 1 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
     # second one and a stride size of (2,2).
     decoder_layer1 = Conv2D(32, 3, activation='relu', padding='same')(con1)
+
+    # Now do all the segmentation layers.
 
     output = None
 
