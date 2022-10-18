@@ -15,7 +15,7 @@ class BrainDataset(Dataset):
         self.path = path
         AD_path = os.path.join(path, 'AD')
         NC_path = os.path.join(path, 'NC')
-        print(AD_path, 123)
+        # print(AD_path, 123)
         # print(os.path.join(AD_path,x) for x in os.listdir(AD_path) if x.endswith(".jpg",234))
 
         # Mark the label of AD as 1, NC as 0.
@@ -42,14 +42,10 @@ class BrainDataset(Dataset):
 
     def __len__(self):
         return len(self.files)
-
+    #Return the image data and label of the image
     def __getitem__(self, idx):
-        # print(self.files[2])
         fname = self.files[idx]
-        # print(fname[0],222)
         im = Image.open(fname[0])
         im = self.transform(im)
-        # im = self.data[idx]
         label = fname[1]
-        # print(im.shape,label)
         return im, label

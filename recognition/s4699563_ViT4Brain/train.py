@@ -3,7 +3,10 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, writer,device,test_loader):
+
+
+def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, writer,device):
+    #trian the model 
     best_acc=0
     for epoch in range(epochs):
 
@@ -108,7 +111,6 @@ def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, wr
             # only save best to prevent output memory exceed error
             torch.save(model.state_dict(), "pretrained_model.ckpt")
             best_acc=valid_acc
-    # test(model,test_loader,device)
 
 
 def test(model, test_loader,device):
