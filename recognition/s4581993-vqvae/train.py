@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 import tensorflow as tf
 
-from dataset import get_train_dataset
+from dataset import get_train_dataset, get_test_dataset
 import modules
 from modules import VQVAETrainer
 from utils import models_directory, vqvae_weights_filename
@@ -47,3 +47,15 @@ plt.xlabel('Epoch')
 
 plt.tight_layout()
 plt.show()
+
+# Find the SSIM between the original and decoded images
+print("Calculating average SSIM for test set...")
+test_ds = get_test_dataset()
+trained_vqvae_model = vqvae_trainer.vqvae
+reconstructions_test = trained_vqvae_model.predict(test_ds)
+
+ssim_values = np.zeros(len(test_ds))
+for i in range(len(test_ds)):
+    ssim_values[i] = tf.image.ssim(test_ds[i], reconstructions_test[i], 1)
+avg_ssim = np.mean(ssim_values)
+print("SSIM index:", avg_ssim)
