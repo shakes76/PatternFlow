@@ -4,7 +4,6 @@ channels:
   - anaconda
 dependencies:
   - python
-  - ipykernel #Remove when notebooks not required
   - pytorch
   - torchvision
   - cudatoolkit=11.3
