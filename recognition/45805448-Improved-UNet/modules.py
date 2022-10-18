@@ -73,7 +73,7 @@ def localization_module(residual_block, filters, kernel_size=3):
     localization_conv = Conv2D(filters=filters, kernel_size=1, padding='same')(localization_conv)
     return localization_conv
 
-def segmentation_module(residual_block):
+def segmentation_module(residual_block, filters, upsample=True, size=2):
     """
     Creates a segmentation module that takes input and applies a leaky ReLU activation for later
     usage. Segmentation modules are summed together to form the final network output.
@@ -87,7 +87,13 @@ def segmentation_module(residual_block):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    segmentation_conv = Conv2D(filters=filters, kernel_size=1, padding='same')
+    segmentation_add = Add()([residual_block, segmentation_conv])
+    if (upsample):
+        segmentation_upsm = UpSampling2D(size=size)(segmentation_add)
+        return segmentation_upsm
+    else:
+        return segmentation_add
 
 def context_aggregation_pathway(input):
     """
