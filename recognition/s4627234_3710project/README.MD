@@ -37,22 +37,20 @@ The ISIC package includes four folders, including Training, Testing, Validation 
 os, cv2, skimage, tensorflow-macos_version_2.9.2
 
 Name: SimpleITK_version_2.2.0
-
-Summary: SimpleITK is a simplified interface to the Insight Toolkit (ITK) for image registration and segmentation
-
-Home-page: http://simpleitk.org/
+-- SimpleITK is a simplified interface to the Insight Toolkit (ITK) for image registration and segmentation
+(http://simpleitk.org/)
 
 Name: numpy_version_1.23.1
-Summary: NumPy is the fundamental package for array computing with Python.
-Home-page: https://www.numpy.org
+-- NumPy is the fundamental package for array computing with Python.
+(https://www.numpy.org)
 
 Name: pandas_version_1.4.4
-Summary: Powerful data structures for data analysis, time series, and statistics
-Home-page: https://pandas.pydata.org
+-- Powerful data structures for data analysis, time series, and statistics
+(https://pandas.pydata.org)
 
 Name: matplotlib_version_3.5.2
-Summary: Python plotting package
-Home-page: https://matplotlib.org
+-- Python plotting package
+(https://matplotlib.org)
 
 
 use load_dataset(data_reshape = True) for first time of using this data
