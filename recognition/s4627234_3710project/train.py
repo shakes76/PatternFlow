@@ -8,6 +8,8 @@ def training():
     train_x, train_y, test_x, test_y = dataset.load_dataset()
     # print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
 
+    #normalize!!!
+
     model = modules.UNet()
 
     # fit the model with normal learning rate
