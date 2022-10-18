@@ -72,11 +72,11 @@ def load_isic(size=1):
 
     # Load training truth data from route
     trt_data = read_dir(training_truth_route, size)
-    print("Training Truth: ", tr_data.shape)
+    print("Training Truth: ", trt_data.shape)
 
     # Load testing truth data from route
     tet_data = read_dir(testing_truth_route, size)
-    print("Testing Truth: ", te_data.shape)
+    print("Testing Truth: ", tet_data.shape)
     return tr_data, te_data, trt_data, tet_data
     
 # Test loading data and displaying
