@@ -35,7 +35,7 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
     cnn.to(device)
     cnn.eval()
  
-    prior = torch.zeros((1, num_embeddings, 64, 64), device = device)
+    prior = torch.zeros((1, num_embeddings, 32, 32), device = device)
     
     _, channels, rows, cols = prior.shape
     
@@ -44,23 +44,30 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
         for i in range(rows):
             for j in range(cols):
                 out = cnn(prior.float())
-                pixel = out[:, :, i, j]
-                values = torch.unique(pixel)
-                values = torch.sort(values, 0).values
+                #pixel = out[:, :, i, j]
+                #values = torch.unique(pixel)
+                #values = torch.sort(values, 0).values
                 #print(values.shape)
-                value = values[58]
-                pixel[pixel < value] = -999999
-                distribution = \
-                     torch.distributions.categorical.Categorical(logits = pixel)
+                #value = values[61]
+                #pixel[pixel < value] = -999999
+                out = out.permute(0,2,3,1).contiguous()
+                distribution = torch.distributions.categorical.Categorical(logits = out)
                 
                 sampled = distribution.sample()
-                sampled = nn.functional.one_hot(sampled, \
-                                                num_classes = num_embeddings)
-                prior[:, :, i, j] = sampled
+                sampled = nn.functional.one_hot(sampled, num_classes = num_embeddings
+                                                ).permute(0, 3, 1, 2).contiguous()
+                prior[:, :, i , j] = sampled[:, :, i, j]
+                #distribution = \
+               #      torch.distributions.categorical.Categorical(logits = out)
+                
+               # sampled = distribution.sample()
+              # sampled = nn.functional.one_hot(sampled, \
+               #                                 num_classes = num_embeddings)
+               # prior[:, :, i, j] = sampled
              
 
     _, ax = plt.subplots(1,2)
-    ax[0].imshow(prior.argmax(1).view(64,64).to("cpu"))
+    ax[0].imshow(prior.argmax(1).view(32,32).to("cpu"))
     ax[0].title.set_text("Latent Generation")
 
     prior = prior.view(1,num_embeddings,-1)
@@ -68,12 +75,12 @@ def gen_image(train_path, model_path, num_embeddings, latent_dim):
     quantized_bhwc = torch.matmul(prior, 
                                   model.get_VQ().embedding_table.weight)
     
-    quantized_bhwc = quantized_bhwc.view(1, 64, 64, latent_dim)
+    quantized_bhwc = quantized_bhwc.view(1, 32, 32, latent_dim)
     quantized = quantized_bhwc.permute(0, 3, 1, 2).contiguous()
     
     decoded = model.get_decoder()(quantized).to(device)
     
-    decoded = decoded.view(-1, 3, 256,256).to(device).detach()
+    decoded = decoded.view(-1, 3, 128,128).to(device).detach()
     
     decoded_grid = \
         torchvision.utils.make_grid(decoded, normalize = True)
@@ -104,10 +111,7 @@ def VQVAE_predict(VQVAE_path, num_embeddings, latent_dim, data, coords):
     visualiser.VQVAE_discrete(coords)
     visualiser.visualise_VQVAE(coords)
 
-CNN =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model2.pt"
-train = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\train"
-test = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\keras_png_slices_data\test"
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\final_img_gen2.pt"
+trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
 
-VQVAE = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
-
-#VQVAE_predict(VQVAE, 64, 16, test, (0,0))
+gen_image(trained, save_model, 64, 16)

@@ -7,7 +7,7 @@ import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #Setting Global Parameters
-image_dim = (3,256,256)
+image_dim = (3,128,128)
 #learning_rate = 0.0001
 #latent_space = 256
 #num_embeddings = 256
@@ -287,15 +287,15 @@ class ResBlock(nn.Module):
         self.res_block = nn.Sequential(
             
             nn.Conv2d(num_embeddings, num_embeddings, kernel_size = 1),
-            nn.BatchNorm2d(num_embeddings),
+            #nn.BatchNorm2d(num_embeddings),
             nn.ReLU(),
             MaskedConv2d("B", in_channels = num_embeddings, out_channels \
                          = num_embeddings//2, kernel_size = 3, padding = \
                          "same"),
-            nn.BatchNorm2d(num_embeddings//2),
+            #nn.BatchNorm2d(num_embeddings//2),
             nn.ReLU(),
             nn.Conv2d(num_embeddings//2, num_embeddings, kernel_size = 1),
-            nn.BatchNorm2d(num_embeddings),
+            #nn.BatchNorm2d(num_embeddings),
             nn.ReLU())
     
     def forward(self, x):
@@ -310,24 +310,21 @@ class PixelCNN(nn.Module):
         self.num_embeddings = num_embeddings
         self.pixelcnn_model = nn.Sequential(
 
-            MaskedConv2d("A", in_channels = 64, 
-                         out_channels = 128, kernel_size = 7, padding = "same"),
-            nn.BatchNorm2d(128),
+            MaskedConv2d("A", in_channels = num_embeddings, 
+                         out_channels = 256, kernel_size = 9, padding = "same"),
             nn.ReLU(),
-            #ResBlock(128),
-            #ResBlock(128),
-            MaskedConv2d("B", in_channels = 128, 
-                         out_channels = 128, kernel_size = 3, #stride = 1,
+            ResBlock(256),
+            ResBlock(256),
+            MaskedConv2d("B", in_channels = 256, 
+                         out_channels = 256, kernel_size = 1, #stride = 1,
                          padding = "same"),
-            nn.BatchNorm2d(128),
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 128, 
-                         out_channels = 128, kernel_size = 3, #stride = 1,
-                         padding = "same"),
-            nn.BatchNorm2d(128),
-            
+            MaskedConv2d("B", in_channels = 256, 
+                         out_channels = 256, kernel_size = 1, #stride = 1,
+                         padding = "same"),            
             nn.ReLU(),
-            nn.Conv2d(128, num_embeddings, kernel_size = 1, stride = 1,
+      
+            nn.Conv2d(256, num_embeddings, kernel_size = 1, stride = 1,
                       padding = "valid"),
                         
             )

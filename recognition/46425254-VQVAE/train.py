@@ -24,6 +24,7 @@ class VQ_Training():
         super(VQ_Training).__init__()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.learning_rate = learning_rate
+        self.train_path = train_path
         self.epochs = epochs
         self.data = dataset.DataLoader(train_path)
         self.data2 = dataset.DataLoader(test_path)
@@ -43,8 +44,7 @@ class VQ_Training():
         
         self.save = save
         self.visualise = visualise
-        if self.visualise == True:
-            self.visualiser = vis.VQVAE_Visualise(self.model, self.data)
+       
             
     def train(self):
         epoch = 0
@@ -53,7 +53,7 @@ class VQ_Training():
             
             sub_step = 0
             for i, _ in self.training_data:
-                i = i.view(-1, 3, 256, 256).to(self.device)
+                i = i.view(-1, 3, 128, 128).to(self.device)
                 
                 decoder_outputs, VQ_loss = self.model(i)
                 #reset the optimizer gradients to 0 to avoid resuing prev iteration's 
@@ -75,10 +75,13 @@ class VQ_Training():
                         f"Loss : {total_loss:.4f}"
                     )
                     loss.append(total_loss.item())
-                    
-                    if self.visualise == True:
-                        self.visualiser.VQVAE_discrete((0,0))
-                        self.visualiser.visualise_VQVAE((0,0))
+                    if self.save != None:
+                        
+                        torch.save(self.model.state_dict(), self.save)
+                        
+                    if self.visualise == True and self.save != None:
+                        predict.VQVAE_predict(self.save, self.num_embeddings, \
+                                              self.latent_dim, self.train_path, (0,0))
         
                 
                 
@@ -105,11 +108,11 @@ class VQ_Training():
         ssim_list = []
         max_ssim = 0
         for i, _ in self.testing_data:
-            i = i.view(-1, 3, 256, 256).to(self.device).detach()
+            i = i.view(-1, 3, 128, 128).to(self.device).detach()
             real_grid = torchvision.utils.make_grid(i, normalize = True)
             with torch.no_grad():
                 decoded_img , _ = self.model(i)
-                decoded_img = decoded_img.view(-1, 3, 256,256).to(self.device).detach()
+                decoded_img = decoded_img.view(-1, 3, 128,128).to(self.device).detach()
                 decoded_grid = \
                     torchvision.utils.make_grid(decoded_img, normalize = True)
                 decoded_grid = decoded_grid.to("cpu").permute(1,2,0)
@@ -129,9 +132,8 @@ data_path2 = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\ke
 trained = r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\bruh.pt"
 lr = 0.001
 epochs  = 15
-
 #trainer = VQ_Training(lr, epochs, data_path, data_path2, NUM_EMBEDDINGS, LATENT_DIM,
-  #                    save = trained, visualise=True)
+ #                     save = trained, visualise=True)
 #trainer.train()
 #trainer.test()
 class PixelCNN_Training():
@@ -178,7 +180,7 @@ class PixelCNN_Training():
             
             sub_step = 0
             for i, _ in self.training_data:
-                i = i.view(-1, 3, 256, 256)
+                i = i.view(-1, 3, 128, 128)
                 
                 with torch.no_grad():
                     encoder = self.model.get_encoder().to(self.device)
@@ -189,7 +191,7 @@ class PixelCNN_Training():
                     flat_encoded  = encoded.reshape(-1, VQ.embedding_dim)
                     
                     a, b = VQ.argmin_indices(flat_encoded)
-                    b = b.view(-1, 64, 64)
+                    b = b.view(-1, 32, 32)
                     c = nn.functional.one_hot(b, num_classes = self.num_embeddings).float()
                     c = c.permute(0, 3, 1, 2)
                     #b = b.permute(1, 0, 2, 3).contiguous()
@@ -234,8 +236,8 @@ class PixelCNN_Training():
         
 
         
-save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\cnn_model3_5.pt"
-pixel_cnn_trainer = PixelCNN_Training(0.0005, 500, 
+save_model =  r"C:\Users\blobf\COMP3710\PatternFlow\recognition\46425254-VQVAE\trained_model\final_img_gen2.pt"
+pixel_cnn_trainer = PixelCNN_Training(0.0003, 300, 
                                       trained,data_path, num_embeddings = 64, 
                                       latent_dim = 16, save = save_model) 
                                       
