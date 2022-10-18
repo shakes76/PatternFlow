@@ -43,17 +43,17 @@ def setup_folders():
                 else:
                     shutil.copy2(os.path.join(source_ad_path, filename), train_ad)
             else:
-                if split_flag == 1:
-                    split_flag = 0
+                split_flag = (split_flag + 1) % 5
+                if split_flag == 0:
                     shutil.copy2(os.path.join(source_ad_path, filename), valid_ad)
                 else:
-                    split_flag = 1
                     shutil.copy2(os.path.join(source_ad_path, filename), train_ad)
 
                 previous_id = filename.split("_")[0]
 
         nc_files = os.listdir(source_nc_path)
 
+        split_flag = 0
         for filename in nc_files:
             if filename.split("_")[0] == previous_id:
                 if split_flag == 0:
@@ -61,11 +61,10 @@ def setup_folders():
                 else:
                     shutil.copy2(os.path.join(source_nc_path, filename), train_nc)
             else:
-                if split_flag == 1:
-                    split_flag = 0
+                split_flag = (split_flag + 1) % 5
+                if split_flag == 0:
                     shutil.copy2(os.path.join(source_nc_path, filename), valid_nc)
                 else:
-                    split_flag = 1
                     shutil.copy2(os.path.join(source_nc_path, filename), train_nc)
 
                 previous_id = filename.split("_")[0]
