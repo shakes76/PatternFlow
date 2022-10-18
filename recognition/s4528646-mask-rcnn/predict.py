@@ -24,10 +24,10 @@ val_dataloader = torch.utils.data.DataLoader(
 
 model = get_model()
 model.float()
-model.load_state_dict(torch.load("./Mask_RCNN_ISIC2.pt"))
+model.load_state_dict(torch.load("./Mask_RCNN_ISIC3.pt"))
 model.eval()
 #for image, targets in val_data:
-image, targets = val_data[53]
+image, targets = val_data[73]
 predictions = model([image])
 image = np.array(image.detach().cpu())
 image = image.transpose((1,2,0))
@@ -41,9 +41,22 @@ idx = torch.argmax(iou)
 bbox = boxes[idx].detach()
 mask = predictions[0]["masks"][idx]
 rect = Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=1, edgecolor='r', facecolor='none')
+rx, ry = rect.get_xy()
+cx = rx + rect.get_width()/8.0
+cy = ry - rect.get_height()/22.0
+label = "Melanoma" if targets["labels"][0] == 2 else "Non-Melanoma"
+l = ax.annotate(
+        label,
+        (cx, cy),
+        fontsize=7,
+        # fontweight="bold",
+        color="r",
+        ha='center',
+        va='center'
+      )
 ax.add_patch(rect)
-target_bbox = targets["boxes"][0]
-rect = Rectangle((target_bbox[0], target_bbox[1]), target_bbox[2] - target_bbox[0], target_bbox[3] - target_bbox[1], linewidth=1, edgecolor='b', facecolor='none')
-ax.add_patch(rect)
+# target_bbox = targets["boxes"][0]
+#rect = Rectangle((target_bbox[0], target_bbox[1]), target_bbox[2] - target_bbox[0], target_bbox[3] - target_bbox[1], linewidth=1, edgecolor='b', facecolor='none')
+#ax.add_patch(rect)
 print("Expected:", targets["labels"].item(), "Predicted:", predictions[0]["labels"][idx].item())
 print("IoU:", iou[idx])
