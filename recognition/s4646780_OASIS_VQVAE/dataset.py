@@ -56,7 +56,7 @@ class GANDataset(Dataset):
         self.root_dir = root_dir
         self.vqvae_model = model
         if train:
-            self.dataset = self.root_dir + "keras_png_slices_train"
+            self.dataset = os.path.join(self.root_dir, "keras_png_slices_train")
         if test:
             self.dataset = os.path.join(self.root_dir, "keras_png_slices_test")
         if validation:

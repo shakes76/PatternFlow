@@ -66,6 +66,7 @@ def train_DCGAN(vqvae, GAN_EPOCHS=50, LEARNING_RATE_GAN=2e-4, GAN_BATCH_SIZE=256
 
     # Training the DCGAN
     for epoch in range(GAN_EPOCHS):
+        print(epoch)
         for batch, real_image in enumerate(train_loader_gan):
             real_image = real_image.to(device)
             noise = torch.randn(GAN_BATCH_SIZE, 100, 1, 1).to(device)
