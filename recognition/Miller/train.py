@@ -7,6 +7,8 @@ sure to plot the losses and metrics during training
 import dataset as data
 import modules as mod
 from matplotlib import pyplot
+import tensorflow as tf
+import numpy as np
 
 # Download Data and then unzip
 #download_oasis()
@@ -74,6 +76,43 @@ pyplot.show()
 # Create a instance of the VQ-VAE model
 latent_dimensions = 16
 embeddings_number = 64
-model = mod.vqvae_model (latent_dimensions, embeddings_number)
+image_size = 256
+# beta = [0.25, 2]
+beta = 0.25
+model = mod.vqvae_model(image_size, latent_dimensions, embeddings_number, beta)
 
 model.summary()
+
+"""
+model.compile (optimizer='Adam', loss= 'CategoricalCrossentropy')
+
+# record history of training to display loss over ephocs 
+history = model.fit(train_X, train_Y,  validation_data= (validate_X, validate_Y) ,batch_size=32,shuffle='True',epochs=5)
+
+# evaluate against testing data 
+model.evaluate(test_X,test_Y)
+
+# validate output 
+out = model.predict(test_X)
+out_r = np.round(out)
+out_argmax = np.argmax (out,-1)
+gt_test_Y = np.argmax(test_Y,-1)
+
+im = 5
+
+for i in range (4):
+  print("prediction")
+  pyplot.imshow(out_r[im,:,:,i])
+  pyplot.show()
+  print("ground truth")
+  pyplot.imshow(test_Y[im,:,:,i])
+  pyplot.show()
+
+print ("prediction")
+pyplot.imshow(out_argmax[im,:,:])
+pyplot.show()
+
+print ("ground truth")
+pyplot.imshow(gt_test_Y [im,:,:])
+pyplot.show()
+"""
