@@ -14,7 +14,7 @@ Huge thanks to these videos for helping my understanding:
 * `train.py` - Command line utility that trains a new diffusion model on a dataset.
 * `dataset.py` - Wraps a directory of image files in a PyTorch dataloader. Images can be any size or format that can be opened by PIL. All images are resized to a given dimension, converted to RGB and normalised to a range of -1 to 1.
 * `modules.py` - Contains a Trainer class to handle training of the model. Contains the U-Net model and required components.
-* `predict.py` - Command line utility to predictsnew images from an existing `.pth` model
+* `predict.py` - Command line utility to predict a new images from an existing `.pth` model
 
 ## Usage
 ### Prerequisites
@@ -69,7 +69,7 @@ Parameters for `predict.py`
 Some pretrained models are supplied in the examples section below. 
 
 ## Algorithm Description
-![](https://hcloudh.com/nextcloud/s/Li4kreD8FnoSxKj/download/process.png)
+![](https://hcloudh.com/nextcloud/s/kRoAMTSQkJ4weZf/download/process.png)
 Diffusion image generation is described in these papers, [1](https://arxiv.org/pdf/2006.11239.pdf) [2](https://arxiv.org/pdf/2105.05233.pdf). They work by describing a markov chain in which gaussain noise is sucessively added to an image for a defined number of timesteps $T$ using a variance schedule $\beta_1,...,\beta_T$.  
 
 ![Equation](https://latex.codecogs.com/png.image?\dpi{110}\bg{white}q(\mathbf{x}_t|\mathbf{x}_{t-1}):=\mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t}\mathbf{x}_{t-1},&space;\beta_t&space;\mathbf{I}))
