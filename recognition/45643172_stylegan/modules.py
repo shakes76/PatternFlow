@@ -14,8 +14,19 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow_addons.layers import InstanceNormalization
 
-import gdown
-from zipfile import ZipFile
+def log2(x):
+    return int(np.log2(x))
+    
+def Mapping(num_stages, input_shape=512):
+    z = layers.Input(shape=(input_shape))
+    w = pixel_norm(z)
+    for i in range(8):
+        w = EqualizedDense(512, learning_rate_multiplier=0.01)(w)
+        w = layers.LeakyReLU(0.2)(w)
+    w = tf.tile(tf.expand_dims(w, 1), (1, num_stages, 1))
+    return keras.Model(z, w, name="mapping")
+
+
 def fade_in(alpha, a, b):
     return alpha * a + (1.0 - alpha) * b
 
@@ -136,7 +147,7 @@ class AdaIN(layers.Layer):
         ys = tf.reshape(self.dense_1(w), (-1, 1, 1, self.x_channels))
         yb = tf.reshape(self.dense_2(w), (-1, 1, 1, self.x_channels))
         return ys * x + yb
-        
+
 class Generator:
     def __init__(self, start_res_log2, target_res_log2):
         self.start_res_log2 = start_res_log2
