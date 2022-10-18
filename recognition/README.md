@@ -124,7 +124,6 @@ Epoch 99
 ### CelebA Dataset
 Just for fun, the model was also trained on the [CelebA](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) dataset (aligned and cropped) consisting of around 200,000 images. Image size 128x128, batch size 64, 1000 Timesteps, 100 epochs. Download the pre-trained [model](https://hcloudh.com/nextcloud/s/ma6ww8GF5XEoysT/download/celebA.pth). The network does well with the faces but struggles in generating hair and backgrounds.
 
-(https://hcloudh.com/nextcloud/s/wfy8tnaSNXzJqLb/download/celebA.pth).
 #### Training 
 Epoch 0
 ![](https://hcloudh.com/nextcloud/s/z3z6qcX2bz3dZGy/download/plot_epoch0.jpeg)
