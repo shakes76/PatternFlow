@@ -8,35 +8,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from dataset import ADNI
-from modules import resnet18, resnet34, resnet50
-
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-
-    def __init__(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-
-
-def pdist(v):
-    dist = torch.norm(v[:, None] - v, dim=2, p=2)
-    return dist
+from modules import resnet34
+from utils import AverageMeter, pdist, parse_data
 
 
 class TripletLoss(nn.Module):
@@ -75,12 +48,6 @@ class TripletLoss(nn.Module):
         loss = diff.mean()
 
         return loss
-
-
-def parse_data(inputs):
-    imgs, labels, indexes = inputs
-    return imgs.cuda(), labels.cuda(), indexes.cuda()
-
 
 if __name__ == '__main__':
 
@@ -161,7 +128,7 @@ if __name__ == '__main__':
             test_acc.append(acc)
             if best_acc <= acc:
                 best_acc = acc
-                torch.save(model.state_dict(), "res18_best_model.pkl")
+                torch.save(model.state_dict(), "best_model.pkl")
 
         print("test acc {:.3f}, best acc {:.3f}".format(acc, best_acc))
 
