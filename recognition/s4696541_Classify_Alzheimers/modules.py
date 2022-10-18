@@ -13,12 +13,10 @@ class AlzheimerModel(keras.Model):
         """Initialise the model"""
         super().__init__()
 
-        self.b_norm = layers.BatchNormalization()
-
         #Data augmentation
         self.augmentation = keras.Sequential([
             layers.Rescaling(1 / 255.0),
-            layers.RandomRotation(0.2),
+            layers.RandomRotation(0.3),
             layers.RandomFlip()
         ])
 
@@ -38,11 +36,12 @@ class AlzheimerModel(keras.Model):
         """Use the model with .fit"""
         x = self.augmentation(x, training=training)
 
+        #MAYBE ADD CNN tf.keras.layers.Conv2D x2-3
+        #BATCH NORM AFTER CNN
+
         x = make_patch(x)
 
         x = self.pos_encoder(x, training=training)
-
-        x = self.b_norm(x, training=training)
 
         for encoder in self.encoders:
             x = encoder(x, training=training)
