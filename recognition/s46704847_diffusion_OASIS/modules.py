@@ -436,4 +436,9 @@ def get_checkpoint(path):
 
     # create our optimizer, we will use adam with a Learning rate of 1e-4
     opt = keras.optimizers.Adam(learning_rate=1e-4)
-    return unet
+    return unet, ckpt_manager
+
+def loss_fn(real, generated):
+    loss = tf.math.reduce_mean((real - generated) ** 2)
+    return loss
+
