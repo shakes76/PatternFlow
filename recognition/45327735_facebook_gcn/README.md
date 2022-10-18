@@ -36,7 +36,7 @@ The model consists of:
   
 - 4-node Dense layer (for predictions)
 
-![model schema](./model.png)
+![model schema](assets/model.png)
 
 **How the model works**
 
@@ -89,7 +89,7 @@ the nodes (i.e. the test set) during training.
 
 Below is a UMAP representation of the data set. We note some clustering of page categories.
 
-![umap representation](./umap.PNG)
+![umap representation](assets/umap.PNG)
 
 Some example 'node id' inputs:
 
@@ -136,7 +136,7 @@ We note a high accuracy score, likely due to the use of FFNs to
 re-project representations and skip connections to retain information that could be lost in this
 process.
 
-![graphs representation](./graphs.PNG)
+![graphs representation](assets/graphs.PNG)
 
 The above accuracy and loss curves show that after Epoch 10, the model makes marginal
 but steady improvement over time (acc: 0.89 to 0.93 by Epoch 110). This is possibly
