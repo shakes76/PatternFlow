@@ -18,6 +18,7 @@ class BrainDataset(Dataset):
         print(AD_path, 123)
         # print(os.path.join(AD_path,x) for x in os.listdir(AD_path) if x.endswith(".jpg",234))
 
+        # Mark the label of AD as 1, NC as 0.
         self.AD_files = [(os.path.join(AD_path, x), 0)
                          for x in os.listdir(AD_path) if x.endswith(".jpeg")]
         self.NC_files = [(os.path.join(NC_path, x), 1)

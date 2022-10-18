@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, writer,device):
+def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, writer,device,test_loader):
     best_acc=0
     for epoch in range(epochs):
 
@@ -58,6 +58,8 @@ def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, wr
         writer.add_scalar('Loss/train', train_loss, epoch)
         writer.add_scalar('Accuracy/train',train_acc, epoch)
 
+        print(
+        f"[ Train | {epoch + 1:03d}/{epochs:03d} ] loss = {train_loss:.5f}, acc = {train_acc:.5f}")
 
         model.eval()
 
@@ -97,7 +99,7 @@ def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, wr
 
         # Print the information.
         print(
-            f"[ Valid | {epoch + 1:03d}/{epoch:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
+            f"[ Valid | {epoch + 1:03d}/{epochs:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
 
         # save models
         if valid_acc > best_acc:
@@ -106,6 +108,7 @@ def train(model,train_loader,val_loader,optimizer,scheduler,criterion,epochs, wr
             # only save best to prevent output memory exceed error
             torch.save(model.state_dict(), "pretrained_model.ckpt")
             best_acc=valid_acc
+    # test(model,test_loader,device)
 
 
 def test(model, test_loader,device):
@@ -116,6 +119,7 @@ def test(model, test_loader,device):
     Returns:
         The predicted labels.
     """
+    model.eval()
     test_accs=[]
     # Iterate the testset by batches.
     for batch in tqdm(test_loader):
