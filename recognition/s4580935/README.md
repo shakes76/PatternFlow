@@ -17,7 +17,7 @@ Auto encoders come in many forms, ranging from their most basic and initial impl
 **Latent Space (Vector Quantization Layer)**: This layer takes the output from the encoder as its input and embeds selected sata based on distance and supplied a corresponding compressed output which is taken as the input for the decoder. This layer maintains a codebook of embeddeding vectors of a set dimension equal to the filters in the encoders output. 
 [2]
 <p align="center">
-<img src=".img\1_miNfFc9qT5PrS7ectJa_kw.png">
+<img src="./img\1_miNfFc9qT5PrS7ectJa_kw.png">
 </p>
 [3]
 
