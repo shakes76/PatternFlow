@@ -1,11 +1,11 @@
-#Vector Quantized Variational Autoencoder (VQVAE)
-##Generative model of the OASIS brain dataset
+# Vector Quantized Variational Autoencoder (VQVAE)
+## Generative model of the OASIS brain dataset
 </br>
 
 Task: Create a generative model of the OASIS brain data set using VQVAE that has a reasonable clear image and a structured similarity (SSIM) of over 0.6. The model firstly  takes a basic vqvae with some convolutional layers to reconstruct brain images from a dataset and secondly uses a PixelCNN prior to attempt to generate "new" brain images. 
 Examples of the origional, reconstructed and "new" brain images generated from the models can be found below.
 
-##VQVAE and how it works
+## VQVAE and how it works
 </br>
 
 Auto encoders come in many forms, ranging from their most basic and initial implementation , to a variational auto encoder, then a vector quantized variational autoencoder and even further. Proposed by Van der Oord er al in the Neural Discrete Representation Learning paper last revised in 2018 [1]. Like a typical variational auto encoder the VQVAE is composed of three components; An **Encoder**, **Decoder** and a **Latent Space**. 
@@ -21,10 +21,10 @@ Auto encoders come in many forms, ranging from their most basic and initial impl
 </p>
 [3]
 
-#PixelCNN
+# PixelCNN
 </br>
 
-#Model Results
+# Model Results
 </br>
 The model generated was trained on the OASIS brain dataset. This dataset can be found with some preprocessing done on the [COMP3710 Blackboard Page](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). To use this data you will need to download and extract the zip file and ensure that the paths specified in train.py file for the variables train_images, test_images and validate_images point to the corresponding extracted non-segmented files. 
 
@@ -79,7 +79,7 @@ The model is starting to head in a direction where the images are starting to ha
 
 From these images it is quite clear to a human that these images are not "brains" and as a result if the model were to be used to generate images of new brains the parameters of the PixelCNN would need to be modified. However the model does perform well at reconstructing code book images even the "new" ones it generates. 
 
-#Dependencies
+# Dependencies
 </br>
  - Tensorflow version 2.5 or higher (used 2.9.2)
  - Tensorflow Probability version 0.16.0 (possible to install with the following command):
@@ -91,7 +91,7 @@ Please Note that testing and building of this model was done in google colab usi
 Note if the files are run using colab changes will need to be made to the file paths for accessing the images and you will likely need to allow access to google drive. For an example of how to run the files as a standalone script see the Report.ipynb file.
 
 
-##References
+## References
 [1]Oord, A.van den, Vinyals, O. and Kavukcuoglu, K. (2018) Neural Discrete Representation Learning, arXiv.org. Available at: https://arxiv.org/abs/1711.00937. 
 [2]Yadav, S. (2020) Understanding vector quantized variational autoencoders (VQ-VAE), Medium. Medium. Available at: https://shashank7-iitd.medium.com/understanding-vector-quantized-variational-autoencoders-vq-vae-323d710a888a. 
 [3]Park, S. (2021) An overview on VQ-VAE: Learning Discrete Representation Space, Medium. Analytics Vidhya. Available at: https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337. 
