@@ -39,3 +39,7 @@ plt.plot(result.history['val_loss'])
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.savefig("loss.jpg")
+
+model.load_weights(checkpoint_filepath)
+model.save("trained_model")
+test_ds.save("test_data")
