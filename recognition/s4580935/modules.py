@@ -96,7 +96,7 @@ def new_decoder(latent_dim):
     decoder_output = (layers.Conv2DTranspose(1, 3,padding="same"))(decoder)
     return keras.Model(latent_inputs, decoder_output, name="decoder")
 
-def get_vqvae(latent_dim=32, num_embeddings=128):
+def get_vqvae(latent_dim=32, num_embeddings=32):
     #build my vqvae structure
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = new_encoder(latent_dim)
@@ -108,7 +108,7 @@ def get_vqvae(latent_dim=32, num_embeddings=128):
     return keras.Model(inputs, reconstructions, name="vq_vae")
 
 class VQVAE(keras.models.Model):
-    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, **kwargs):
+    def __init__(self, train_variance, latent_dim=32, num_embeddings=64, **kwargs):
         super(VQVAE, self).__init__(**kwargs)
         self.train_variance = train_variance
         self.latent_dim = latent_dim

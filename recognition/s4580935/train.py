@@ -55,11 +55,13 @@ class ResidualBlock(keras.layers.Layer):
         self.conv2 = keras.layers.Conv2D(
             filters=filters, kernel_size=1, activation="relu"
         )
+        self.norm = keras.layers.BatchNormalization()
 
     def call(self, inputs):
         x = self.conv1(inputs)
         x = self.pixel_conv(x)
         x = self.conv2(x)
+        x = self.norm(x)
         return keras.layers.add([inputs, x])
 
 
@@ -90,9 +92,13 @@ def main():
     #determine the var in the Oasis set
     variance = np.var(Oasis)
     #build, compile and fit model
-    model = modules.VQVAE(variance, latent_dim=32, num_embeddings=128)
+    #Down embeddings more latent
+    model = modules.VQVAE(variance, latent_dim=32, num_embeddings=32)
     model.compile(optimizer=keras.optimizers.Adam())
     history = model.fit(Oasis, epochs=30, batch_size=128)
+    model.save("vqvae_model")
+    #To load a saved model run the following
+    #reconstructed_model = keras.models.load_model("vqvae_model")
     #Show Reconstruction Loss
     plt.subplot(211)
     plt.title('Reconstruction Loss')
@@ -174,7 +180,7 @@ def main():
     pixel_cnn.summary()
 
     # Generate the codebook indices.
-    encoded_outputs = encoder.predict(validate)
+    encoded_outputs = encoder.predict(Oasis)
     flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
     codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
 
@@ -190,9 +196,10 @@ def main():
         x=codebook_indices,
         y=codebook_indices,
         batch_size=128,
-        epochs=30,
+        epochs=15,
         validation_split=0.1,
     )
+    model.save("pixelcnn_model")
 
     # Create a mini sampler model.
     inputs = layers.Input(shape=pixel_cnn.input_shape[1:])
