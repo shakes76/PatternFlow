@@ -411,3 +411,28 @@ class Unet(Model):
         x = tf.concat([x, h.pop()], axis=-1)
         x = self.final_conv(x)
         return x
+
+def get_checkpoint(path):
+    # create our unet model
+    unet = Unet(channels=1)
+
+    # create our checkopint manager
+    ckpt = tf.train.Checkpoint(unet=unet)
+    ckpt_manager = tf.train.CheckpointManager(ckpt, path, max_to_keep=2)
+
+    # load from a previous checkpoint if it exists, else initialize the model from 
+    # scratch
+    if ckpt_manager.latest_checkpoint:
+        ckpt.restore(ckpt_manager.latest_checkpoint)
+        start_interation = int(ckpt_manager.latest_checkpoint.split("-")[-1])
+        print("Restored from {}".format(ckpt_manager.latest_checkpoint))
+    else:
+        print("Initializing from scratch.")
+
+    # initialize the model in the memory of our GPU
+    test_images = np.ones([1, 32, 32, 1])
+    test_timestamps = generate_timestamp(0, 1)
+    k = unet(test_images, test_timestamps)
+
+    # create our optimizer, we will use adam with a Learning rate of 1e-4
+    opt = keras.optimizers.Adam(learning_rate=1e-4)
