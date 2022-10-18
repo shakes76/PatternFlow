@@ -9,18 +9,16 @@ from utils import initialise_weights
 import torch.nn as nn
 
 
-def train_VQVAE():
+def train_VQVAE(NUM_EPOCHS=1500, LEARNING_RATE=1e-3):
     """
-    Function to train the VQVAE model with the OASIS dataset.
+    Function to train the VQ-VAE model with the OASIS dataset.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_loader, test_loader = create_train_test_loaders_vqvae()
-    LEARNING_RATE = 1e-3
     NUM_EMBEDDINGS = 512  # number of embeddings for codebook
     EMBEDDING_DIM = 64  # embedding dimension
     BETA_COST = 0.25  # commitment cost for VQ
     DATA_VARIANCE = 0.0338  # evaluated separately on training data
-    NUM_EPOCHS = 1500  # number of epochs to train the VQVAE
     train_res_recon_error = []
 
     model = VQVAE(NUM_EMBEDDINGS, EMBEDDING_DIM, BETA_COST).to(device)
@@ -48,12 +46,8 @@ def train_VQVAE():
     return model, train_res_recon_error
 
 
-def train_DCGAN(vqvae):
+def train_DCGAN(vqvae, GAN_EPOCHS=50, LEARNING_RATE_GAN=2e-4, GAN_BATCH_SIZE=256):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    GAN_BATCH_SIZE = 256
-    LEARNING_RATE_GAN = 2e-4
-    GAN_EPOCHS = 50  # number of epochs to train the GAN
-
     train_loader_gan, test_loader_gan = create_train_test_loaders_dcgan(vqvae, GAN_BATCH_SIZE)
 
     generator = Generator()
@@ -72,7 +66,6 @@ def train_DCGAN(vqvae):
 
     # Training the DCGAN
     for epoch in range(GAN_EPOCHS):
-        print(f"Epoch: {epoch + 1}\n: ")
         for batch, real_image in enumerate(train_loader_gan):
             real_image = real_image.to(device)
             noise = torch.randn(GAN_BATCH_SIZE, 100, 1, 1).to(device)
@@ -102,5 +95,3 @@ def train_DCGAN(vqvae):
                                   Loss D: {loss_disc:.3f}, loss G: {loss_gen:.3f}")
 
     return generator, torch.unique(real_image)
-
-
