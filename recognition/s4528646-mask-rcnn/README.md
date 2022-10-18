@@ -7,11 +7,21 @@ The Mask R-CNN architecture extends the Faster R-CNN, which outputs a class labe
 
 ![Mask R-CNN architecture](figures/mask-rcnn-architecture.PNG)
 
+Figure 1: Picture of the Mask R-CNN from the original paper [1]
+
 Therefore, the loss of Mask R-CNN is the sum of the classification loss, the box regression loss, and the mask loss.
 
 ## ISIC 2017 Challenge
 
 ### Example Input
+
+![Example of image with bounding box and classification](figures/example-with-target-bounding-box.png)
+
+Figure 2: Example of input image with bounding box and classification
+
+![Example of target mask](figures/example-mask.png)
+
+Figure 3: Example of target mask
 
 ## Training
 
@@ -29,4 +39,6 @@ Therefore, the loss of Mask R-CNN is the sum of the classification loss, the box
 * `tqdm==4.63.0`
 
 ## References
+[1] He, Kaiming, Georgia Gkioxari, Piotr Dollár, and Ross Girshick, “Mask R-CNN,” in 2017 IEEE International Conference on Computer Vision (ICCV), October 2017, pp. 2980–2988. [Online] Available: http://arxiv.org/abs/1703.06870.
 
+[2] Codella N, Gutman D, Celebi ME, Helba B, Marchetti MA, Dusza S, Kalloo A, Liopyris K, Mishra N, Kittler H, Halpern A. "Skin Lesion Analysis Toward Melanoma Detection: A Challenge at the 2017 International Symposium on Biomedical Imaging (ISBI), Hosted by the International Skin Imaging Collaboration (ISIC)". arXiv: 1710.05006 [cs.CV]
