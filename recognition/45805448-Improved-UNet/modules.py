@@ -95,7 +95,7 @@ def segmentation_module(residual_block, filters, upsample=True, size=2):
     else:
         return segmentation_add
 
-def context_aggregation_pathway(input):
+def context_aggregation_pathway(input, levels=4, filters=16):
     """
     Creates the full encoding part of the network. This includes context and reducing modules.
 
@@ -108,7 +108,16 @@ def context_aggregation_pathway(input):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    level = 1
+    reducing_layers = reducing_module(input, filters * level, strides=1) # Start convolution, doesn't reduce dimensionality
+    context_layers = context_module(reducing_layers, filters * level)
+
+    level = 2
+    while (level < levels):
+        reducing_layers = reducing_module(context_layers, filters * level)
+        context_layers = context_module(reducing_layers, filters * level)
+    
+    return context_layers
 
 def localization_pathway():
     """
