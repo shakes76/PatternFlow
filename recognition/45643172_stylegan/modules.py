@@ -1,6 +1,3 @@
-import os
-import random
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,7 +13,7 @@ from tensorflow_addons.layers import InstanceNormalization
 
 def log2(x):
     return int(np.log2(x))
-    
+
 def Mapping(num_stages, input_shape=512):
     z = layers.Input(shape=(input_shape))
     w = pixel_norm(z)
