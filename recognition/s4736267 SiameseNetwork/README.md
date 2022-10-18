@@ -3,12 +3,12 @@ Siamese Neural Network (SNN)
 Classification model of the ADNI brain data [OASIS brain](https://adni.loni.usc.edu/) data set using [Siamese Neural Networks for One-shot Image Recognition](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf). 
 
 **Author:** *Lukas Lobmaier (s4736267)*
-
+* [ADNI brain data set](#ADNI-brain-data-set)<br>
 * [SNN Architecture](#SNN-Architecture)<br>
 * [Design Approach](#Design-Approach)<br>
 * [Executing Code](#Executing-Code)<br>
 * [Results](#Results)<br>
-* [References](#References)
+* [References](#References)<br>
 
 ## ADNI brain data set
 The ADNI brain data [OASIS brain](https://adni.loni.usc.edu/) data
@@ -40,6 +40,7 @@ After the network has been tuned, the SNN provides good discriminative features.
 
 One application for SNNs lies in the field of face recognition. For example, a system tracking the access right of people entering the building. Pure classification is not possible because the database only contains the faces of the recognized people who are allowed to enter the building. Especially due to the SNN learning how faces differ,  the database can be kept quite small.
 
+## Design Approach
 ### Starting Point
 The main layer stack of the first implementation is based on the  [Siamese Neural Networks for One-shot Image Recognition](https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf) implementation.
 
@@ -216,11 +217,10 @@ Further improvements for the SNN implementation would be
 * Implement of true 3D augmentation (not slice based)
 
 ## Executing Code
-
-The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py. 
-* Important constants are defined in the top section of the file 
-* Predict.py loads the pre-trained model and reruns the testing on the test set 
-* Plotted images are stored in the root folder 
+The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py.
+* Important constants are defined in the top section of the file
+* Predict.py loads the pre-trained model and reruns the testing on the test set
+* Plotted images are stored in the root folder
 
 ## Results
 The results are based on the last implementation of the SNN. 
