@@ -233,7 +233,6 @@ The results are based on the last implementation of the SNN.
 </p>
 
 The final accuracy could be improved but didnt peak the required 80%.
-> Test Accuracy  : 0.5311720967292786
 
 Summarising the main problems facing during the implementation:
 * Different Dataset structures between training/validation and testing

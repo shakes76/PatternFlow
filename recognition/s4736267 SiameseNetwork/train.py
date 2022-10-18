@@ -39,13 +39,13 @@ train_factor=1000               #Number of Persons
 test_factor=400
 valid_factor=400
 
-FILE="weights_only.pth"         #File location of saved pretrained net
+FILE="weights_only_l.pth"         #File location of saved pretrained net
 
 #(0=disabled)
 load_pretrained_model=0
 scheduler_active=1
-gradient_clipping=0             #Gradient clippling         
-plot_feature_vectors=0          #Ploting feature vectors
+gradient_clipping=1             #Gradient clippling         
+plot_feature_vectors=1          #Ploting feature vectors
 plot_loss = 1                   #Ploting training and validation loss
 
 
@@ -70,12 +70,12 @@ else:
     net.eval()
 
 #Optimizer
-#criterion = modules.TripletLoss()
-criterion = torch.nn.TripletMarginLoss(margin=128.0)
-optimizer = optim.Adam(net.parameters(),lr = 0.0001, weight_decay=1e-3)
+criterion = modules.TripletLoss()
+#criterion = torch.nn.TripletMarginLoss(margin=64.0)
+optimizer = optim.Adam(net.parameters(),lr = 0.0001)
 
 #Learning rate scheduler
-scheduler = StepLR(optimizer, step_size=50, gamma=0.95)
+scheduler = StepLR(optimizer, step_size=200, gamma=0.95)
 
 
 
@@ -193,14 +193,34 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
     validation_loss[epoch]=loss_run/total
     print("->Validation Loss:",validation_loss[epoch].item(), flush=True)
     print("")
+
+    # Plotting training and validation loss 
+
+    if plot_loss==1:
+        plt.figure(3)
+        plt.plot(training_loss.detach().numpy(), label='Training_loss')
+        plt.plot(validation_loss.detach().numpy(), label='Validation_loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend(loc='lower center', bbox_to_anchor=(0.3, -0.3),ncol=2)
+        plt.twinx()
+
+        plt.savefig('Plot_Loss_l.png',bbox_inches='tight')
+
+        print('=> ---- Finished Plotting loss ---- ') 
+
+    
+
     gc.collect()
+
+
 
 ###################################################
 #                  Saving net parameters
 ###################################################
 
-torch.save(training_loss, "training_loss.pth")
-torch.save(validation_loss, "validation_loss.pth")
+torch.save(training_loss, "training_loss_l.pth")
+torch.save(validation_loss, "validation_loss_l.pth")
 torch.save(net.state_dict(), FILE)
 print('=> ---- Finished Training ---- ')
 
@@ -264,7 +284,7 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotAD.png',bbox_inches='tight')
+    plt.savefig('PlotAD_l.png',bbox_inches='tight')
 
     plt.figure(1)
     for i in range(10):
@@ -274,29 +294,12 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotNC.png',bbox_inches='tight')
+    plt.savefig('PlotNC_l.png',bbox_inches='tight')
 
     plt.figure(2)
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='red',linewidth='1')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('Plot.png',bbox_inches='tight')
+    plt.savefig('Plot_l.png',bbox_inches='tight')
     print('=> ---- Finished Plotting feature vectors ---- ')    
 
-#######################################################
-#       Plotting training and validation loss 
-#######################################################
-
-
-if plot_loss==1:
-    plt.figure(3)
-    plt.plot(training_loss.detach().numpy(), label='Training_loss')
-    plt.plot(validation_loss.detach().numpy(), label='Validation_loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend(loc='lower center', bbox_to_anchor=(0.3, -0.3),ncol=2)
-    plt.twinx()
-
-    plt.savefig('Plot_Loss.png',bbox_inches='tight')
-
-    print('=> ---- Finished Plotting loss ---- ') 

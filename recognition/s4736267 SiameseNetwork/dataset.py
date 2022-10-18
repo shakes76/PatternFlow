@@ -276,13 +276,13 @@ class DatasetTrain3D(Dataset):
 
             if self.transform:
                 image_1 = transform_idx_1(image_1)
-                image_2 = transform_idx_2(image_2)
-                image_3 = transform_idx_3(image_3)
+                image_2 = transform_idx_1(image_2)
+                image_3 = transform_idx_1(image_3)
 
             #save_image(image_1, 'basic_augmentation.png')
 
             i  = 25
-            for j in range(5):
+            for j in range(0):
                 rn = random.randint(0,1)
                 if rn==0:
                     

@@ -39,7 +39,7 @@ train_factor=1000               #Number of Persons
 test_factor=400
 valid_factor=400
 
-FILE="weights_only.pth"         #File location of saved pretrained net
+FILE="weights_only_l.pth"         #File location of saved pretrained net
 
 #(0=disabled)
 load_pretrained_model=0
