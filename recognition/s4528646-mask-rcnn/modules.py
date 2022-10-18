@@ -4,7 +4,7 @@ from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from torchvision.models.detection.rpn import AnchorGenerator
 import torchvision
 
-def get_model(num_classes=2):
+def get_model(num_classes=3):
     """
     Instantiate a PyTorch model based on Mask-RCNN with ResNet backbone,
     pretrained on COCO data set. 

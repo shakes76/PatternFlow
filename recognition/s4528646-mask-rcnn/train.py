@@ -24,7 +24,7 @@ train_data = ISICDataset(
     device=device,
     transform=get_transform(True),
     )
-# train_data = torch.utils.data.Subset(train_data, range(250))
+train_data = torch.utils.data.Subset(train_data, range(250))
 train_dataloader = torch.utils.data.DataLoader(
     train_data, 
     batch_size=2, 
@@ -53,7 +53,7 @@ def single_epoch(model, optimizer, dataloader, device, epoch):
         mask_loss.append(losses["loss_mask"].item())
         total_losses.append(total_loss)
         total_loss.backward()
-        # nn.utils.clip_grad_value_(model.parameters(), clip_value=1.0)
+        # nn.utils.clip_grad_value_(model.parameters(), 5)
         optimizer.step()
         it += 1
         if it % 10 == 0:
@@ -87,7 +87,7 @@ def train_model(model, dataloader, n_epochs):
         
     return epoch_losses
 
-torch.save(model.state_dict(), "Mask_RCNN_ISIC.pt")     
+torch.save(model.state_dict(), "Mask_RCNN_ISIC2.pt")     
 
 # Save loss dictionary to perform visualisations
 epoch_losses = train_model(model, train_dataloader, 1)

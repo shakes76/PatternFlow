@@ -52,9 +52,9 @@ class ISICDataset(Dataset):
         image_id = self.diagonoses_df.iloc[idx]["image_id"]
         is_melanoma = self.diagonoses_df.iloc[idx]["melanoma"]
         if is_melanoma:
-            label = 1
+            label = 2
         else:
-            label = 0
+            label = 1
             
         # Load image
         # Network expects dim 2 in dim 0
