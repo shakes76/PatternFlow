@@ -1,7 +1,7 @@
 from modules import create_vit_classifier
 from dataset import *
 import tensorflow_addons as tfa
-
+from tensorflow import keras
 learning_rate = 0.001
 weight_decay = 0.0001
 def run_final(model):
