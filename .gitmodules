@@ -1,0 +1,3 @@
+[submodule "recognition/ISIC_YOLO_45828447/yolov5"]
+	path = recognition/ISIC_YOLO_45828447/yolov5
+	url = https://github.com/ultralytics/yolov5.git
