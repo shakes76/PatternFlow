@@ -49,7 +49,9 @@ metrics. You can refer to :
 the code with **dice coefficient**. While compiling the model I have 
 used Adam optimizer. I have fitted the model and then saved it to use 
 later. This file contains the source code for training, validating, 
-testing and saving your model.
+testing and saving your model. All the graphs are also plotted for the 
+training of model. These graphs are really important in understanding 
+the statistics and journey of the model.
 
 Dice coefficient are important in evaluating the semantic segmentation 
 models. The Dice coefficient is very similar to the IoU. They are 
