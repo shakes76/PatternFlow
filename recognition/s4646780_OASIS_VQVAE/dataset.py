@@ -101,17 +101,16 @@ def create_train_test_loaders_vqvae():
     return train_loader, test_loader
 
 
-def create_train_test_loaders_dcgan(vqvae_model):
+def create_train_test_loaders_dcgan(vqvae_model, GAN_BATCH_SIZE):
     """
     Function to create the data loaders for loading and pre-processing the data for DCGAN.
     """
-    GAN_BATCH_SIZE = 256
 
     transforms_done = transforms.Compose([transforms.ToTensor(), transforms.Grayscale()])
     train_dataset = GANDataset(vqvae_model, root_dir="./keras_png_slices_data", train=True, transforms=transforms_done)
     test_dataset = GANDataset(vqvae_model, root_dir="./keras_png_slices_data", test=True, transforms=transforms_done)
 
     # Creates the loaders for train and test GAN data
-    train_loader = DataLoader(train_dataset, batch_size=GAN_BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=GAN_BATCH_SIZE, shuffle=False)
-    return train_loader, test_loader
+    train_loader_gan = DataLoader(train_dataset, batch_size=GAN_BATCH_SIZE, shuffle=True)
+    test_loader_gan = DataLoader(test_dataset, batch_size=GAN_BATCH_SIZE, shuffle=False)
+    return train_loader_gan, test_loader_gan

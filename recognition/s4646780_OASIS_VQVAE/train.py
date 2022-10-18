@@ -3,6 +3,10 @@ import torch
 import torch.nn.functional as F
 from dataset import create_train_test_loaders_vqvae, create_train_test_loaders_dcgan
 from modules import VQVAE
+from models.generator import Generator
+from models.discriminator import Discriminator
+from utils import initialise_weights
+import torch.nn as nn
 
 
 def train_VQVAE():
@@ -44,5 +48,59 @@ def train_VQVAE():
     return model, train_res_recon_error
 
 
-def train_DCGAN(model):
-    pass
+def train_DCGAN(vqvae):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    GAN_BATCH_SIZE = 256
+    LEARNING_RATE_GAN = 2e-4
+    GAN_EPOCHS = 50  # number of epochs to train the GAN
+
+    train_loader_gan, test_loader_gan = create_train_test_loaders_dcgan(vqvae, GAN_BATCH_SIZE)
+
+    generator = Generator()
+    discriminator = Discriminator()
+
+    # initialize weights for DCGAN
+    initialise_weights(generator)
+    initialise_weights(discriminator)
+
+    optimizer_gen = torch.optim.Adam(generator.parameters(), lr=LEARNING_RATE_GAN, betas=(0.5, 0.999))
+    optimizer_dis = torch.optim.Adam(discriminator.parameters(), lr=LEARNING_RATE_GAN, betas=(0.5, 0.999))
+    criterion = nn.BCELoss()
+
+    generator = generator.to(device)
+    discriminator = discriminator.to(device)
+
+    # Training the DCGAN
+    for epoch in range(GAN_EPOCHS):
+        print(f"Epoch: {epoch + 1}\n: ")
+        for batch, real_image in enumerate(train_loader_gan):
+            real_image = real_image.to(device)
+            noise = torch.randn(GAN_BATCH_SIZE, 100, 1, 1).to(device)
+            fake_image = generator(noise)
+
+            # Train discriminator
+            disc_real = discriminator(real_image).reshape(-1)
+            loss_disc_real = criterion(disc_real, torch.ones_like(disc_real))
+            # https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html
+            disc_fake = discriminator(fake_image.detach()).reshape(-1)
+            loss_disc_fake = criterion(disc_fake, torch.zeros_like(disc_fake))
+            loss_disc = (loss_disc_real + loss_disc_fake) / 2
+            discriminator.zero_grad()
+            loss_disc.backward()
+            optimizer_dis.step()
+
+            # train generator
+            output = discriminator(fake_image).reshape(-1)
+            loss_gen = criterion(output, torch.ones_like(output))
+            generator.zero_grad()
+            loss_gen.backward()
+            optimizer_gen.step()
+
+            if batch % 100 == 0:
+                print(
+                    f"Epoch [{epoch}/{GAN_EPOCHS}] Batch {batch}/{len(train_loader_gan)} \
+                                  Loss D: {loss_disc:.3f}, loss G: {loss_gen:.3f}")
+
+    return generator, torch.unique(real_image)
+
+
