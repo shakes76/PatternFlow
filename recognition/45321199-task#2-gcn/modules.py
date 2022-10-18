@@ -1,57 +1,64 @@
 from dataset import DataLoader
 import tensorflow as tf
 
-from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers
+from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses
 
 # Default Model Parameters
-CHANNELS        = 32
-DROPOUT         = 0.4
+CHANNELS        = 16
+DROPOUT         = 0.5
 LEARNING_RATE   = 0.01
+REG_RATE        = 0.00025   # regularisation rate
+KERNAL_REGULARIZER = regularizers.l2(REG_RATE)
 
 
 class GCN_Model:
-    def __init__(self, channels=CHANNELS, dropout=DROPOUT):
+    def __init__(self, channels=CHANNELS, dropout=DROPOUT, learning_rate=LEARNING_RATE, kernal_regularizer=KERNAL_REGULARIZER):
         self.channels = channels
-        self.dropout = dropout 
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.kernal_regularizer = kernal_regularizer
         self.model = None
         
         # get data
         data_loader = DataLoader()
         self.data = data_loader.load_data()
 
-        # make tensors
-        self.tf_features = tf.convert_to_tensor(self.data['features'])
-        self.tf_graph = tf.convert_to_tensor(self.data["graph_adj_mat"])
+        # create&compile model
+        self.create()
+        self.compile()
 
     def create(self):
-        x_input = layers.Input((self.data["len_features"],), dtype=tf.float64)
-        node_input = layers.Input((self.data["len_vertices"],), dtype=tf.float64, sparse=True)
+        x_input = layers.Input((self.data['len_features'],), dtype=tf.float32)
+        node_input = layers.Input((self.data['len_vertices'],), dtype=tf.float32, sparse=True)
 
         dropout_L0 = layers.Dropout(self.dropout)(x_input)
-        gcn_L0 = GCN_Layer(activations.relu, self.channels)([dropout_L0, node_input])
+        gcn_L0 = GCN_Layer(activations.relu, 
+                            self.channels, 
+                            kernel_regulariser=self.kernal_regularizer)([dropout_L0, node_input])
 
         dropout_L1 = layers.Dropout(self.dropout)(gcn_L0)
-        gcn_L1 = GCN_Layer(activations.relu, self.data["len_label_types"])([dropout_L1, node_input])
+        gcn_L1 = GCN_Layer(activations.softmax, 
+                            self.data['len_label_types'])([dropout_L1, node_input])
         
-        self.model = Model(inputs = [x_input, node_input], outputs=gcn_L1)
+        self.model = Model(inputs=[x_input, node_input], outputs=gcn_L1)
         self.model.summary()
 
     def compile(self):
-        if self.model is None:
+        if self.model is not None:
             self.model.compile(
                     optimizer=optimizers.Adam(learning_rate=self.learning_rate), 
-                    loss='categorical_crossentropy', 
+                    loss=losses.CategoricalCrossentropy(), 
                     metrics = ['acc'])
 
 
 class GCN_Layer(layers.Layer):
     def __init__(self, 
-        activation, 
-        channels=CHANNELS, 
-        kernel_initialiser='glorot_uniform',
-        kernel_regulariser=None):
+                    activation, 
+                    channels=CHANNELS, 
+                    kernel_initialiser='glorot_uniform',
+                    kernel_regulariser=None):
 
-        super().__init__() 
+        super().__init__()
         self.channels = channels
         self.activation = activations.get(activation) 
         self.kernel_initialiser = initializers.get(kernel_initialiser)

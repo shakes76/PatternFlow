@@ -6,13 +6,11 @@
 # from modules import Module
 # from train import Trainer
 # from predict import Predictor
-from modules import GCN_Model
-from dataset import DataLoader
+from train import Trainer
 
 def main():
-    gcn = GCN_Model()
-    gcn.create()
-    gcn.compile()
+    trainer = Trainer()
+    trainer.train()
     
     
 
