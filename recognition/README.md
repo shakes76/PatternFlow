@@ -68,7 +68,7 @@ Parameters for `predict.py`
 | _model_                    |       | required |                           | Path to `.pth` model file |
 | _--output_                 |  -o   | optional | ./                        | Output path to save images|
 | _--name_                   | -n    | optional | predict                   | Name prefix to use for generated images |
-| _--num_images_             | -i    | optional | 1.                        | Number of images to create |
+| _--num_images_             | -i    | optional | 1                         | Number of images to create |
 
 Some pretrained models are supplied in the examples section below. 
 
