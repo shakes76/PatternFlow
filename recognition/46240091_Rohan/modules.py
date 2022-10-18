@@ -14,22 +14,25 @@ import keras.preprocessing.image
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
 import tensorflow_probability as tfp
+from keras import layers
 
 
 def encoder(latent_dim=16):
-    input_layer = keras.Input(shape=(128, 128, 1))
-    e = keras.layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(input_layer)
-    e = keras.layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(e)
-    output = keras.layers.Conv2D(latent_dim, 1, padding="same")(e)
-    return keras.Model(input_layer, output, name="encoder")
+    model = keras.Sequential();
+    model.add(keras.Input(shape=(128, 128, 1)))
+    model.add(layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"))
+    model.add(layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"))
+    model.add(layers.Conv2D(latent_dim, 1, padding="same"))
+    return model
 
 
 def decoder(latent_dim=16):
-    latent_inputs = keras.Input(shape=encoder().output.shape[1:])
-    d =  keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(latent_inputs)
-    d =  keras.layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(d)
-    output =  keras.layers.Conv2DTranspose(1, 3, padding="same")(d)
-    return keras.Model(latent_inputs, output, name="decoder")
+    model = keras.Sequential();
+    model.add(keras.Input(shape=encoder().output.shape[1:]))
+    model.add(layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
+    model.add(layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
+    model.add(layers.Conv2DTranspose(1, 3, padding="same"))
+    return model
 
 #Vector Quantizer custom layer according to https://keras.io/examples/generative/vq_vae/#vectorquantizer-layer
 class VectorQuantizer(keras.layers.Layer):
