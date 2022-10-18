@@ -29,4 +29,12 @@ valid_ds = image_dataset_from_directory(
     color_mode = "grayscale"
 )
 
+def scale(image):
+    image = image / 255.0
+    return image 
+
+
+# Scale to (0, 1)
+train_ds = train_ds.map(scale)
+valid_ds = valid_ds.map(scale)
         
