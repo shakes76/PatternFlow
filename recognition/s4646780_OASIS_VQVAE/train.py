@@ -43,7 +43,7 @@ def train_VQVAE(NUM_EPOCHS=1500, LEARNING_RATE=1e-3):
             print('recon_error: %.3f' % np.mean(train_res_recon_error[-100:]))
             print()
 
-    return model, train_res_recon_error
+    return model, train_res_recon_error, test_loader
 
 
 def train_DCGAN(vqvae, GAN_EPOCHS=50, LEARNING_RATE_GAN=2e-4, GAN_BATCH_SIZE=256):

@@ -1,5 +1,5 @@
 import torch.nn as nn
-from blockEncoder import CompositeBlockEncoder
+from .blockEncoder import CompositeBlockEncoder
 
 
 class Encoder(nn.Module):

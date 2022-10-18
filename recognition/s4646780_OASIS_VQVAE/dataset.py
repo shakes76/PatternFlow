@@ -56,7 +56,7 @@ class GANDataset(Dataset):
         self.root_dir = root_dir
         self.vqvae_model = model
         if train:
-            self.dataset = os.path.join(self.root_dir, "keras_png_slices_train")
+            self.dataset = self.root_dir + "keras_png_slices_train"
         if test:
             self.dataset = os.path.join(self.root_dir, "keras_png_slices_test")
         if validation:
@@ -85,7 +85,7 @@ class GANDataset(Dataset):
         return encoding
 
 
-def create_train_test_loaders_vqvae(root_dir="./keras_png_slices_data"):
+def create_train_test_loaders_vqvae(root_dir=".\\s4646780_OASIS_VQVAE\\keras_png_slices_data"):
     """
     Function to create the data loaders for loading and pre-processing the data for VQ-VAE.
     """
@@ -101,7 +101,8 @@ def create_train_test_loaders_vqvae(root_dir="./keras_png_slices_data"):
     return train_loader, test_loader
 
 
-def create_train_test_loaders_dcgan(vqvae_model, GAN_BATCH_SIZE, root_dir="./keras_png_slices_data"):
+def create_train_test_loaders_dcgan(vqvae_model, GAN_BATCH_SIZE,
+                                    root_dir=".\\s4646780_OASIS_VQVAE\\keras_png_slices_data"):
     """
     Function to create the data loaders for loading and pre-processing the data for DCGAN.
     """
