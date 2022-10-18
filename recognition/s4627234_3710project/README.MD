@@ -37,7 +37,9 @@ The ISIC package includes four folders, including Training, Testing, Validation 
 os, cv2, skimage, tensorflow-macos_version_2.9.2
 
 Name: SimpleITK_version_2.2.0
+
 Summary: SimpleITK is a simplified interface to the Insight Toolkit (ITK) for image registration and segmentation
+
 Home-page: http://simpleitk.org/
 
 Name: numpy_version_1.23.1
