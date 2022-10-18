@@ -12,19 +12,52 @@ Reference: https://medium.com/@vedantjumle/image-generation-with-diffusion-
 __author__ = "Zhao Wang, 46704847"
 __email__ = "s4670484@student.uq.edu.au"
 
-import zipfile
 import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.keras import Model, Sequential
-from tensorflow.keras.layers import Layer, LayerNormalization
-import tensorflow.keras.layers as nn
-from tensorflow import keras, einsum
-import tensorflow_addons as tfa
-from einops import rearrange
-from tqdm import tqdm
-import math
-from functools import partial
-from inspect import isfunction
+from .modules import Unet, generate_timestamp, forward_noise, get_checkpoint
+from .modules import loss_fn
+from .dataset import get_zipped_dataset, normalize, set_train_batch
 
+""" Parameters"""
+PATH = "./dataset" # The path of zipped image dataset
+NUMBER_OF_SAMPLES = 2000 # The number of image samples used to training
+CKPT_PATH = "./checkpoint" # The path of the checkpoint
+EPOCS = 30
+
+"""Loading dataset"""
+images = normalize(get_zipped_dataset(PATH)[:NUMBER_OF_SAMPLES])
+train_images = set_train_batch(images)
+
+"""## Creating Unet instance and checkpoint"""
+unet, ckpt_manager = get_checkpoint(CKPT_PATH)
+
+"""## Training model"""
+rng = 0
+opt = tf.keras.optimizers.Adam(learning_rate=1e-4)
+def train_step(batch):
+    rng, tsrng = np.random.randint(0, 300, size=(2,))
+    timestep_values = generate_timestamp(tsrng, batch.shape[0])
+
+    noised_image, noise = forward_noise(rng, batch, timestep_values)
+    with tf.GradientTape() as tape:
+        prediction = unet(noised_image, timestep_values)
+        
+        loss_value = loss_fn(noise, prediction)
+    
+    gradients = tape.gradient(loss_value, unet.trainable_variables)
+    opt.apply_gradients(zip(gradients, unet.trainable_variables))
+
+    return loss_value
+
+for e in range(1, EPOCS+1):
+    bar = tf.keras.utils.Progbar(len(train_images)-1)
+    losses = []
+    for i, batch in enumerate(iter(train_images)):
+        # run the training loop
+        loss = train_step(batch)
+        losses.append(loss)
+        bar.update(i, values=[("loss", loss)])
+
+    avg = np.mean(losses)
+    print(f"Average loss for epoch {e}/{EPOCS}: {avg}")
+    ckpt_manager.save(checkpoint_number=e)
