@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 unet_model = build_unet_model()
 
+
 def dice_coef(y_true, y_pred, smooth=0):
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -21,8 +22,8 @@ unet_model.compile(optimizer=tf.keras.optimizers.Adam(),
                    loss=dice_coef_loss,
                    metrics=[dice_coef])
 
-unet_model.summary()
 
+unet_model.summary()
 
 unet_model.fit(X_train, Y_train, batch_size=8, epochs=3,
                validation_data=(X_validate, Y_validate))
@@ -41,7 +42,7 @@ plt.show()
 
 plt.plot(unet_model.history.history['loss'])
 plt.plot(unet_model.history.history['val_loss'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
+plt.title('model loss')
+plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.show()
