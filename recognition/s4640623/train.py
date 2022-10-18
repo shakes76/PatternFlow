@@ -28,6 +28,7 @@ for epoch in range(30):
     with tf.GradientTape() as tape:
         logits = model(data['features'])
         # Loss is only calculated on the training set.
-        loss = loss(train, logits[graph.ndata['train_mask']])
+        loss = loss(data['edges'][0:round(data['features'].size/3)], 
+                    logits[0:round(data['features'].size/3)])
         grads = tape.gradient(loss, model.trainable_weights)
         optimiser.apply_gradients(zip(grads, model.trainable_weights))
