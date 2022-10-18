@@ -9,8 +9,8 @@
 from dataset import DataLoader
 
 def main():
-    data_loader = DataLoader()
-    data_loader.load_data()
+    pass
+    
     
 
 if __name__ == "__main__":
