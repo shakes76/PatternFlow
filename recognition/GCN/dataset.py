@@ -63,7 +63,7 @@ def preprocess():
   features_df = pd.DataFrame(data['features'], columns=np.arange(0, 128))
   feature_dict = features_df.to_dict(orient='records')
   features = [tuple([i, f]) for i, f in enumerate(feature_dict)]
-  print(len(features_df))
+  print((features_df))
 
   # print("Total number of self-loops: ", len(list(nx.selfloop_edges(G))))
   print("before nodes!!")
@@ -92,28 +92,6 @@ def preprocess():
   # print(A_copy.shape)
   print("before dot!")
   AX = np.dot(A_copy,X)
-  # deg_mat = G_.degree()
-  # print(G.degree[0])
-  # for (n,deg) in list(deg_mat):
-  #   print(n, deg)
-  # deg_mat = np.diag([deg for (n,deg) in list(deg_mat)])
-  # print(type(deg_mat))
-  # 
-  # deg_mat = torch.from_numpy(deg_mat)
-  # deg_mat = deg_mat.float()
-  # print(deg_mat)
-  # print(normalize(deg_mat))
-  # D_inverse = linalg.inv(deg_mat)
-  # D_inverse = torch.linalg.inv(deg_mat)
-
-
-  # D_inverse = linalg.fractional_matrix_power(linalg.inv(deg_mat), -0.5)
-  # D_inv_AX = np.dot(D_inverse, AX)
-
-
-
-  # print(np.array(adj.sum(1)))
-  # features = torch.FloatTensor(np.array(features).todense())
   labels = torch.LongTensor(data['target'])
   # D_inverse = linalg.fractional_matrix_power(linalg.inv(deg_mat), -0.5)
   # D_inv_AX = np.dot(D_inverse, AX)
@@ -125,13 +103,13 @@ def preprocess():
   features = torch.FloatTensor(rownormalise(data['features']))
   print("before adj!")
   adj = torch.from_numpy(rownormalise(A_copy))
-  
-  idx_train = np.arange(int(0.5*len(data)))
+  print(int(0.5*len(features)))
+  idx_train = np.arange(int(0.5*len(features)))
   print("train", idx_train)
 
-  idx_val = np.arange(int(0.5*len(data)), int(0.5*len(data)) + int(0.25*len(data)))
+  idx_val = np.arange(int(0.5*len(features)), int(0.5*len(features)) + int(0.25*len(features)))
   print("val", idx_val)
-  idx_test = np.arange(int(0.5*len(data)) + int(0.25*len(data)), len(data))
+  idx_test = np.arange(int(0.5*len(features)) + int(0.25*len(features)), len(features))
   
   # print("test", idx_test)
   idx_train = torch.LongTensor(idx_train)
@@ -157,4 +135,4 @@ def preprocess():
   # deg_mat = tf.constant(deg_mat)
   # tf.cast(deg_mat, tf.float32)
   return adj, features, labels, idx_train, idx_val, idx_test
-
+  
