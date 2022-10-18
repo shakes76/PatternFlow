@@ -13,3 +13,9 @@ standard VAEs:
 VQ VAES:
     disccrete latent space
     optimised by using discrete "codbook" -> made by discreting dist between continuous embedding and encoded outputs, the ndiscrete codewords sent to decoder which trained to generate reconstructered samples.
+
+    Generative model based on VAE. 
+    Aims to make latent space discrete using VQ techniques
+
+    cons: loses the "easy latent sampling" propery of VAES. 2 stage training required to learn fitting categorical prior
+    + training objective not correspond to bound on log-likelihood amnymore
