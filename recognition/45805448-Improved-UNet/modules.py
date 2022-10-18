@@ -1,6 +1,8 @@
 import array
 import tensorflow as tf
-from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout, Add, Concatenate
+from keras import Model
+from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
+from keras.optimizers import Adam
 
 def context_module(residual_block, filters, kernel_size=3, rate=0.3, seed=69):
     """
@@ -163,7 +165,7 @@ def localization_pathway(encoded, contexts: list, filters=256, num_levels=5, seg
     return segmentation_layers
 
 
-def improved_unet():
+def improved_unet(input, filters=16, num_levels=5, segmentations=3):
     """
     Creates the full improved unet network. This includes the encoding from the context aggregation
     pathway and the upsampling & segmentation from the localization pathway.
@@ -174,3 +176,11 @@ def improved_unet():
     Returns:
         a tensor of labels derived from segmentation
     """
+    input_layer = Input(shape=input.shape)
+    encoded, contexts, filters = context_aggregation_pathway(input_layer, filters, num_levels)
+    output = localization_pathway(encoded, contexts, filters, num_levels, segmentations)
+
+    improved_unet = tf.keras.Model(inputs=input_layer, outputs=output)
+    improved_unet.compile(optimizer=Adam(), loss='binary_crossentropy')
+
+    return improved_unet
