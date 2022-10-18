@@ -60,7 +60,7 @@ def ISIC_transform_img():
         transforms.ToPILImage(),
         transforms.ToTensor(),
         transforms.Resize((imageReduction, imageReduction))
-        #transforms.Normalize((0.0019, 0.0016, 0.0015), (0.0375, 0.0318, 0.0298)),
+        #transforms.Normalize((0.0019, 0.0016, 0.0015), (0.0375, 0.0318, 0.0298))
         #transforms.RandomHorizontalFlip(),
         #transforms.RandomCrop(math.sqrt(cropCoefficient*imageReduction*imageReduction))
     ])

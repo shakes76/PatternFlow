@@ -13,11 +13,23 @@ import torchvision.transforms as transforms
 import time
 
 # Hyper-parameters
-num_epochs = 10
-learning_rate = 5 * 10**-2
-batchSize = 8
+num_epochs = 30
+learning_rate = 5 * 10**-4
+batchSize = 64
 learning_rate_decay = 0.985
 
+validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images"
+trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images"
+testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images"
+validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels"
+trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels"
+testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels"
+
+# Discovery path only needs to be specified if calling function calculate_mean_std.
+discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
+discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
+
+"""
 validationImagesPath = "../../../Data/Validation/Images"
 trainImagesPath = "../../../Data/Train/Images"
 testImagesPath = "../../../Data/Test/Images"
@@ -28,6 +40,7 @@ testLabelsPath = "../../../Data/Test/Labels"
 # Discovery path only needs to be specified if calling function calculate_mean_std.
 discoveryImagesPath = trainImagesPath
 discoveryLabelsPath = trainLabelsPath
+"""
 
 modelPath = "model.pth"
 outputPath = "./Output"
@@ -99,14 +112,14 @@ def train(dataLoaders, model, device):
 
             if batchStep % 10 == 0:
                 losses_training.append(loss.item())
-                dice_similarities_training.append(dice_coefficient(seg_layers, labels))
+                dice_similarities_training.append(dice_coefficient(outputs, labels))
                 print ("Epoch [{}/{}], Step [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}"
                     .format(epoch+1, num_epochs, batchStep+1, totalStep, losses_training[-1], dice_similarities_training[-1]))
             
         scheduler.step()
     end = time.time()
     elapsed = end - start
-    print("Training Took " + elapsed/60 + " Minutes")
+    print("Training Took " + str(elapsed/60) + " Minutes")
 
 def validate(dataLoaders, model, device):
     losses_validation = list()
@@ -121,13 +134,13 @@ def validate(dataLoaders, model, device):
             labels = labels.to(device)
 
             outputs = model(images)
-            losses_validation.append(dice_loss(seg_layers, labels))
-            dice_similarities_validation.append(dice_coefficient(seg_layers, labels))
+            losses_validation.append(dice_loss(outputs, labels))
+            dice_similarities_validation.append(dice_coefficient(outputs, labels))
 
         print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_validation) ,get_average(dice_similarities_validation)))
     end = time.time()
     elapsed = end - start
-    print("Validation took " + elapsed/60 + " mins in total") 
+    print("Validation took " + str(elapsed/60) + " mins in total") 
 
 
 
@@ -143,32 +156,25 @@ def get_average(numList):
 def dice_loss(outputs, labels):
     return 1 - dice_coefficient(outputs, labels)
 
+# outputs corresponds to u in improved Unet Paper, labels corresponds to v in improved unet paper.
+# Note: u must be softmax output of network and v must be a one hot encoding of ground truth segmentations
+
 def dice_coefficient(outputs, labels, epsilon=10**-8):
-    K = outputs.shape[1]
-    print(outputs.size())
-    print(outputs.type())
-    print(labels.size())
-    print(labels.type())
-    if K == 1:
-        labels_1_hot = torch.eye(K + 1)[labels.squeeze(1)]
-        labels_1_hot = labels_1_hot.permute(0, 3, 1, 2).float()
-        labels_1_hot_f = labels_1_hot[:, 0:1, :, :]
-        labels_1_hot_s = labels_1_hot[:, 1:2, :, :]
-        labels_1_hot = torch.cat([labels_1_hot_s, labels_1_hot_f], dim=1)
-        prob = torch.sigmoid(outputs)
-        min_prob = 1 - prob
-        probs = torch.cat([prob, min_prob], dim=1)
-    else:
-        labels_1_hot = torch.eye(K)[labels.squeeze(1)]
-        labels_1_hot = labels_1_hot.permute(0, 3, 1, 2).float()
-        probs = nn.Softmax(outputs, dim=1)
-    
-    labels_1_hot = labels_1_hot.type(outputs.type())
-    dims = (0,) + tuple(range(2, labels.ndimension()))
-    intersection = torch.sum(probs * labels_1_hot, dims)
-    denom = torch.sum(probs + labels_1_hot, dims)
-    dice_coefficient = (2. * intersection / (denom + epsilon)).mean()
-    return dice_coefficient
+
+    currentBatchSize = len(outputs)
+    smooth = 1.
+
+    outputs_flat = outputs.view(currentBatchSize, -1)
+    labels_flat = labels.view(currentBatchSize, -1)
+
+    intersection = (outputs_flat * labels_flat).sum()
+    diceCoefficient = (2. * intersection + smooth)/(outputs_flat.sum()+labels_flat.sum()+smooth)
+
+    #dims = (0,) + tuple(range(2, labels.ndimension()))
+    #intersection = torch.sum(outputs * labels, dims)
+    #denom = torch.sum(outputs + labels, dims)
+    #diceCoefficient = (2. * intersection / (denom + epsilon)).mean()
+    return diceCoefficient
 
 def print_model_info(model):
     print("Model No. of Parameters:", sum([param.nelement() for param in model.parameters()]))
