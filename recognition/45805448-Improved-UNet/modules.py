@@ -1,3 +1,4 @@
+import array
 import tensorflow as tf
 from keras.layers import Dense, LeakyReLU, Lambda, Reshape, Conv2D, UpSampling2D, GaussianNoise, Input, Dropout, Add, Concatenate
 
@@ -36,7 +37,7 @@ def reducing_module(residual_block, filters, kernel_size=3, strides=2):
     reducing_conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding='same')(residual_block)
     return reducing_conv
 
-def upsampling_module(residual_block, concat_block, filters, kernel_size=3, size=2):
+def upsampling_module(residual_block, context_block, filters, kernel_size=3, size=2):
     """
     Creates an upsampling module for the network, which spatially repeats the features twice then
     halves the number of feature maps with a single convolution.
@@ -52,7 +53,7 @@ def upsampling_module(residual_block, concat_block, filters, kernel_size=3, size
     """
     upsampling_upsm = UpSampling2D(size=size)(residual_block)
     upsampling_conv = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(upsampling_upsm)
-    upsampling_cnct = Concatenate()([concat_block, upsampling_conv])
+    upsampling_cnct = Concatenate()([context_block, upsampling_conv])
     return upsampling_cnct
 
 def localization_module(residual_block, filters, kernel_size=3):
@@ -73,7 +74,7 @@ def localization_module(residual_block, filters, kernel_size=3):
     localization_conv = Conv2D(filters=filters, kernel_size=1, padding='same')(localization_conv)
     return localization_conv
 
-def segmentation_module(residual_block, filters, upsample=True, size=2):
+def segmentation_module(residual_block, filters, prev_segmentation=None, upsample=True, size=2):
     """
     Creates a segmentation module that takes input and applies a leaky ReLU activation for later
     usage. Segmentation modules are summed together to form the final network output.
@@ -87,15 +88,19 @@ def segmentation_module(residual_block, filters, upsample=True, size=2):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    segmentation_conv = Conv2D(filters=filters, kernel_size=1, padding='same')
-    segmentation_add = Add()([residual_block, segmentation_conv])
-    if (upsample):
-        segmentation_upsm = UpSampling2D(size=size)(segmentation_add)
-        return segmentation_upsm
+    segmentation_conv = Conv2D(filters=filters, kernel_size=1, padding='same')(residual_block)
+    if prev_segmentation != None:
+        segmentation_add = Add()([prev_segmentation, segmentation_conv])
+        if upsample:
+            segmentation_upsm = UpSampling2D(size=size)(segmentation_add)
+            return segmentation_upsm
+        else:
+            return segmentation_add
     else:
-        return segmentation_add
+        segmentation_upsm = UpSampling2D(size=size)(segmentation_conv)
+        return segmentation_upsm
 
-def context_aggregation_pathway(input, levels=4, filters=16):
+def context_aggregation_pathway(input, filters=16, num_levels=5):
     """
     Creates the full encoding part of the network. This includes context and reducing modules.
 
@@ -108,18 +113,25 @@ def context_aggregation_pathway(input, levels=4, filters=16):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    level = 1
-    reducing_layers = reducing_module(input, filters * level, strides=1) # Start convolution, doesn't reduce dimensionality
-    context_layers = context_module(reducing_layers, filters * level)
+    contexts = []
 
-    level = 2
-    while (level < levels):
-        reducing_layers = reducing_module(context_layers, filters * level)
-        context_layers = context_module(reducing_layers, filters * level)
+    reducing_layers = reducing_module(input, filters, strides=1) # Start convolution, doesn't reduce dimensionality
+    context_layers = context_module(reducing_layers, filters)
+    contexts.append(context_layers)
+    filters = filters * 2
+
+    # Starting at level = 1
+    for _ in range(1, num_levels):
+        reducing_layers = reducing_module(context_layers, filters)
+        context_layers = context_module(reducing_layers, filters)
+        contexts.append(context_layers)
+        filters = filters * 2
+
+    contexts.pop() # Don't need last context for localization
     
-    return context_layers
+    return context_layers, contexts, filters
 
-def localization_pathway():
+def localization_pathway(encoded, contexts: list, filters=256, num_levels=5, segmentations=3):
     """
     Creates the full upsampling and segmentation part of the network. This includes upsampling and
     segmentation modules.
@@ -133,7 +145,23 @@ def localization_pathway():
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    pass
+    segmentation_layers = None
+    filters = filters // 2
+    upsampling_layers = upsampling_module(encoded, contexts.pop(), filters)
+
+    # Starting at level = max_level - 1
+    for level in range((num_levels - 1) - 1, 0):
+        localization_layers = localization_module(upsampling_layers, filters)
+        if level < segmentations:
+            segmentation_layers = segmentation_module(localization_layers, segmentation_layers)
+        filters = filters // 2
+        upsampling_layers = upsampling_module(localization_layers, contexts.pop(), filters)
+        
+    localization_layers = reducing_module(upsampling_layers, filters, strides=1) # End convolution, doesn't reduce dimensionality
+    segmentation_layers = segmentation_module(localization_layers, segmentation_layers, upsample=False)
+
+    return segmentation_layers
+
 
 def improved_unet():
     """
