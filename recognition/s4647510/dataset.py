@@ -22,11 +22,6 @@ def load_data():
     test_path = os.path.join(img_path, "test/")
     for filename in os.listdir(test_path):
         data_test.append(os.path.join(test_path, filename))
-        
-    data_validate = []
-    validate_path = os.path.join(img_path, "validate/")
-    for filename in os.listdir(validate_path):
-        data_validate.append(os.path.join(validate_path, filename))
     
     train = []
     for img in data_train:
@@ -41,12 +36,5 @@ def load_data():
         img = preprocess(img)
         test.append(img)
     test = np.array(test).astype('float32')
-
-    validate = []
-    for img in data_validate:
-        img = Image.open(img)
-        img = preprocess(img)
-        validate.append(img)
-    validate = np.array(validate).astype('float32')
         
-    return (train, test, validate)
+    return (train, test)
