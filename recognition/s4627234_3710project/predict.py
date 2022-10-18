@@ -18,7 +18,7 @@ def image_show(file_path, images_paths, image_num):
 def image_save():
     pass
 
-train_x, train_y, test_x, test_y = dataset.load_dataset()
+train_x, train_y, test_x, test_y = dataset.load_dataset(data_reshape = False)
 model = train.training()
 
 pred = model.predict(test_x)
@@ -46,6 +46,6 @@ ax.imshow(test_y[r])
 ax.title.set_text("Ground Truth")
 ax.axis('off')
 
-plt.savefig('./image/output.png')
+plt.savefig('./images/output.png')
 pass
 

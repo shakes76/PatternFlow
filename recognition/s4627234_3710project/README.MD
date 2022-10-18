@@ -30,6 +30,34 @@ The ISIC package includes four folders, including Training, Testing, Validation 
         * ISIC-2017_Validation_Part1_GroundTruth
 
 
+## How it works:
+
+
+
+## Install: 
+Using: git clone https://github.com/shakes76/PatternFlow.git
+
+
+## Using: 
+!!! Before running it, you must set path_data to the path of the data folder in the dataset.py folder.
+
+When using this data for the first time, you need to use dataset.load_dataset(data_reshape = True), this setting will convert all non-uniform data pattern sizes into 256*256 size patterns and save them in a new folder "data_Reshape" in the "data" folder ". The data format is as follows:
+
+* data_Reshaped
+    * Train
+    * Train_GT
+    * Test
+    * Test_GT
+    * Val
+    * Val_GT
+
+!!! Always remember to use (data_reshape = False) if reshaped data already exists
+
+
+## Testing: 
+
+
+## Conclusion:
 
 
 
@@ -49,8 +77,10 @@ Name: pandas_version_1.4.4
 (https://pandas.pydata.org)
 
 Name: matplotlib_version_3.5.2
-Summary: Python plotting package
-Home-page: https://matplotlib.org
+-- Python plotting package
+(https://matplotlib.org)
+
+
 
 
 use load_dataset(data_reshape = True) for first time of using this data
