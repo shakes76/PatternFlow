@@ -33,13 +33,31 @@ else:
     # Begin model training and validation.
     print("Beginning VQVAE Fitting")
     training_data = (tf.concat([data["train"], data["validate"]], axis=0))
-    model = train_vqvae(vqvae, training_data)
-    predictions = model.predict(data["validate"][0:5])
+    vqvae, history = train_vqvae(vqvae, training_data)
+    predictions = vqvae.predict(data["validate"][0:5])
     print("Finished VQVAE Fitting")
+
+    import matplotlib.pyplot as plt
+    plt.plot(history.history["acc"])
+    plt.plot(history.history["val_acc"])
+    plt.title("VQVAE Accuracy")
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'])
+    plt.show()
+
+    import matplotlib.pyplot as plt
+    plt.plot(history.history["loss"])
+    plt.plot(history.history["val_loss"])
+    plt.title("VQVAE Loss")
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'])
+    plt.show()
 
     # Save model.
     print("Saving VQVAE")
-    model.save("vqvae.ckpt")
+    vqvae.save("vqvae.ckpt")
     print("VQVAE Saved to vqvae.ckpt")
 print("Finished Loading VQVAE")
 
@@ -66,8 +84,26 @@ else:
 
     print("Beginning PixelCNN Fitting")
     training_data = tf.concat([data["train"], data["validate"]], axis=0)
-    pixelcnn = train_pixelcnn(pixelcnn, training_data, vqvae)
+    pixelcnn, history = train_pixelcnn(pixelcnn, training_data, vqvae)
     print("Finished PixelCNN Fitting")
+
+    import matplotlib.pyplot as plt
+    plt.plot(history.history["acc"])
+    plt.plot(history.history["val_acc"])
+    plt.title("PixelCNN Accuracy")
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'])
+    plt.show()
+
+    import matplotlib.pyplot as plt
+    plt.plot(history.history["loss"])
+    plt.plot(history.history["val_loss"])
+    plt.title("PixelCNN Loss")
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'])
+    plt.show()
 
     print("Saving PixelCNN")
     pixelcnn.save("pixelcnn.ckpt")

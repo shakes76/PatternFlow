@@ -10,13 +10,13 @@ def train_vqvae(model, raw_data):
           raw_data - a numpy array of images of the size of vqvae input
     returns: the model trained on the raw data
     """
-    model.fit(raw_data,
+    history = model.fit(raw_data,
               raw_data,
               epochs=2,
               batch_size=32,
               )
 
-    return model
+    return (model, history)
 
 
 def train_pixelcnn(pixelcnn, raw_data, vqvae):
@@ -46,7 +46,7 @@ def train_pixelcnn(pixelcnn, raw_data, vqvae):
         indices = tf.reshape(
             indices, shape=(-1, *pixelcnn_input_shape[0:2]))
 
-        pixelcnn.fit(
+        history = pixelcnn.fit(
             x=tf.concat([indices], axis=0),
             y=tf.reshape(tf.cast(tf.one_hot(tf.cast(tf.concat([indices], axis=0), dtype=tf.int64),
                                             num_embeddings), dtype=tf.float64), shape=(-1, *pixelcnn_input_shape[0:2], num_embeddings)),
@@ -54,4 +54,4 @@ def train_pixelcnn(pixelcnn, raw_data, vqvae):
             epochs=25,
             validation_split=0.1)
 
-    return pixelcnn
+    return (pixelcnn, history)

@@ -5,7 +5,7 @@ import numpy as np
 latent_dims = 128
 image_shape = (256, 256, 1)
 num_embeddings = 256
-encoder_depth = 5
+encoder_depth = 4
 encoded_image_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(latent_dims))
 pixelcnn_input_shape = (int(256/pow(2,encoder_depth)), int(256/pow(2,encoder_depth)), int(1))
 beta = 4.0
