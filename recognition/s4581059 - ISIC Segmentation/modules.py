@@ -12,6 +12,7 @@ def model():
     #"Throughout the network we use leaky ReLU nonlinearities with a negative slopes of 10^-2" - [1]
     relu = tf.keras.layers.LeakyReLU(alpha=1e-2)
     kernel_size = (3,3,3)
+    #Starting number of filters
     filters = 16
 
     ##Encoder
@@ -52,30 +53,44 @@ def model():
     #Base level
     dec_1_upsample = UpSampling3D()(add_block_5)
     dec_1_conv_1 = Conv3D(filters * 8, kernel_size, padding="same", activation=relu)(dec_1_upsample)
-    dec_1_concat = Concatenate()[add_block_4, dec_1_conv_1]
+    dec_1_concat = Concatenate()([add_block_4, dec_1_conv_1])
 
-    #128 filters -> 64 filter UpSample
+    #128 filters Local
     dec_2_conv_1 = Conv3D(filters * 8, kernel_size, padding="same", activation=relu)(dec_1_concat)
-    dec_2_conv_2 = Conv3D(filters * 4, kernel_size, padding="same", activation=relu)(dec_2_conv_1)
+    dec_2_conv_2 = Conv3D(filters * 8, (1, 1, 1), padding="same", activation=relu)(dec_2_conv_1)
     dec_2_upsample = UpSampling3D()(dec_2_conv_2)
-    dec_2_concat = Concatenate()[add_block_3, dec_2_upsample]
+    dec_2_conv_3 = Conv3D(filters * 4, kernel_size, padding="same", activation=relu)(dec_2_upsample)
+    dec_2_concat = Concatenate()([add_block_3, dec_2_conv_3])
 
-    #64 filters -> 32 filter UpSample
+    #64 filters Local
     dec_3_conv_1 = Conv3D(filters * 4, kernel_size, padding="same", activation=relu)(dec_2_concat)
-    dec_3_conv_2 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_3_conv_1)
+    dec_3_conv_2 = Conv3D(filters * 4, (1, 1, 1), padding="same", activation=relu)(dec_3_conv_1)
     dec_3_upsample = UpSampling3D()(dec_3_conv_2)
-    dec_3_concat = Concatenate()[add_block_2, dec_3_upsample]
+    dec_3_conv_3 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_3_upsample)
+    dec_3_concat = Concatenate()([add_block_2, dec_3_conv_3])
 
-    #32 filters -> 16 filter UpSample
+    #32 filters Local
     dec_4_conv_1 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_3_concat)
-    dec_4_conv_2 = Conv3D(filters * 1, kernel_size, padding="same", activation=relu)(dec_4_conv_1)
+    dec_4_conv_2 = Conv3D(filters * 2, (1, 1, 1), padding="same", activation=relu)(dec_4_conv_1)
     dec_4_upsample = UpSampling3D()(dec_4_conv_2)
-    dec_4_concat = Concatenate()[add_block_1, dec_4_upsample]
+    dec_4_conv_3 = Conv3D(filters, kernel_size, padding="same", activation=relu)(dec_4_upsample)
+    dec_4_concat = Concatenate()([add_block_1, dec_4_conv_3])
 
     #3x3x3 Convolution
     dec_5_conv_1 = Conv3D(filters * 2, kernel_size, padding="same", activation=relu)(dec_4_concat)
 
+    ##Segmentation Layers
+    seg_1 = Conv3D(filters * 2, (1, 1, 1), padding="same", activation=relu)(dec_3_upsample)
+    seg_32_64 = Add()([seg_1, dec_4_conv_2])
+    seg_32_64 = UpSampling3D()(seg_32_64)
+    seg_conc = Add()([dec_5_conv_1, seg_32_64])
+
+    ##Dense Softmax
+    output = Dense(2, activation="softmax")(seg_conc)
     
+    model = Model(input, output)
+    return model
+
 
 
 
