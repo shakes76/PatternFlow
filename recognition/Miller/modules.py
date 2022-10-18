@@ -22,7 +22,8 @@ class vq_layer(tf.keras.layers.Layer):
         # Calculate the input shape
         input = tf.shape(x)
         print(input)
-        print("ahhhh")
+        print("ahhh")
+        
 
         # Flatten the inputs to keep the embedding dimension intact.
         flatten = tf.reshape(x, [-1, self.latent_dimension])
