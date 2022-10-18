@@ -29,13 +29,25 @@ The ISIC package includes four folders, including Training, Testing, Validation 
         * ISIC-2017_Validation_Data
         * ISIC-2017_Validation_Part1_GroundTruth
 
+![image](./images/data_image_example.png)
+
 
 ## How it works:
+
+The structure of U-Net is shown in the following figure, the left part can be regarded as an encoder (down), and the right part can be regarded as a decoder (up).
+
+![image](./images/model256.png)
+
+The encoder has four submodules, each submodule contains two convolution layers, and each submodule is followed by a down-sampling layer implemented by MaxPool2D. The resolution of the input image is 256x256, and the resolutions of modules 1-5 are 256x256, 128x128, 64x64, 32x32, and 16x16, respectively. The encoder has two 3x3 un-padded convolutions and a 2x2 max pooling. 
+
+The decoder consists of four sub-modules, and the resolution is sequentially increased by up-sampling operations until it is consistent with the resolution of the input image. The decoder uses two 3x3 un-padded convolutions and . After four up-sampling, a final 1x1 convolution with a sigmoid activation function is applied.
 
 
 
 ## Install: 
-Using: git clone https://github.com/shakes76/PatternFlow.git
+``` 
+git clone https://github.com/shakes76/PatternFlow.git 
+```
 
 
 ## Using: 
@@ -53,6 +65,7 @@ When using this data for the first time, you need to use dataset.load_dataset(da
 
 !!! Always remember to use (data_reshape = False) if reshaped data already exists
 
+run predict.py to run the model
 
 ## Testing: 
 

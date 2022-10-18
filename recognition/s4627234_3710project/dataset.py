@@ -142,9 +142,6 @@ def load_dataset(data_reshape = False):
     path_test = path_data + '/data_Reshaped256/Test/'
     path_test_gt = path_data + '/data_Reshaped256/Test_GT/'
 
-    # train_csv = train_csv.sample(frac=1, random_state=23)
-    # test_csv = test_csv.sample(frac=1, random_state=23)
-
     train_x, train_y = load_data(train_csv, path_train, path_train_gt)
     test_x, test_y = load_data(test_csv, path_test, path_test_gt)
 
@@ -152,4 +149,20 @@ def load_dataset(data_reshape = False):
 
 
 
+
+def load_val():
+    """ Load the dataset
+
+    Returns:
+        numpy.ndarray, numpy.ndarray: return the image and its mask image for all val data 
+    """
+    val_csv = pd.read_csv(path_data + '/data_ISIC/ISIC-2017_Validation_Data/ISIC-2017_Validation_Data_metadata.csv')
+
+
+    path_val = path_data + '/data_Reshaped256/Val/'
+    path_val_gt = path_data + '/data_Reshaped256/Val_GT/'
+
+    val_x, val_y = load_data(val_csv, path_val, path_val_gt)
+
+    return val_x, val_y
 

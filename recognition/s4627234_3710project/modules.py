@@ -41,19 +41,19 @@ def DSC_loss (y_true, y_pred):
     """
     return 1 - DSC(y_true, y_pred)
 
-def down(x, filters, kernel_size=(3, 3), padding="same", strides=1):
+def down(x, filters):
 
-    c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(x)
-    c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(c)
+    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(x)
+    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
     p = MaxPool2D((2, 2), (2, 2))(c)
     return c, p
 
-def up(x, skip, filters, kernel_size=(3, 3), padding="same", strides=1):
+def up(x, skip, filters):
 
     us = UpSampling2D((2, 2))(x)
     concat = Concatenate()([us, skip])
-    c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(concat)
-    c = Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(c)
+    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(concat)
+    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
     return c
 
 def UNet():
