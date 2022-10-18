@@ -111,21 +111,25 @@ def make_fresh_folder(folder_path: str) -> None:
 
 def save_training_history(history: dict[list[float]], filename: str) -> None: 
     """
-    Appends training history to a specified csv file. Creates a new file if 
-    the specified file does not exist. Collumns of output file represent the 
-    tracked history of each passed metric. Each row of the file is a given batch
+    Appends training history of a training epoch to a specified csv file. 
+    Creates a new file if the specified file does not exist. Collumns of output 
+    file represent the tracked history of each passed metric. 
+    Each row of the file is a given epoch
 
     Args:
-        history (dict[list[float]]): Training history. Each key-value pair 
-                should represent a metric name paired with the list of ordered 
-                values representing the values of the metric per batch of training. 
+        history (dict[list[float]]): Training history for a training epoch. 
+                Each key-value pair should represent a metric name paired with 
+                the list of ordered values representing the values of the metric 
+                per epoch of training. 
         filename (str): Path to csv file in which history will be appended. 
                 If a file extention is not included .npy will be appended.
     """
      
     with open(filename, mode = 'a', newline='') as f:
-        #pass in history as variable length of *args
-        csv.writer(f).writerows(zip(*history.values()))
+        #take average of batch losses for the given epoch for each metric
+        csv.writer(f).writerow([
+                sum(history[metric])/len(history[metric]) for metric in history
+            ])
 
 def load_training_history(csv_location: str) -> dict[list[float]]:
     """
@@ -154,7 +158,6 @@ def load_training_history(csv_location: str) -> dict[list[float]]:
 def plot_training(
         history: dict[list[float]], 
         output_file: str, 
-        epochs_covered: int, 
         epoch_range: tuple[int,int] = None
         ) -> None:
     """
@@ -164,24 +167,19 @@ def plot_training(
     Args:
         history (dict[list[float]]): Training history. Each key-value pair 
                 should represent a metric name paired with the list of ordered 
-                values representing the values of the metric per batch of 
+                values representing the values of the metric per epoch of 
                 training.
         output_file (str): Path to which to save the generated figure. If the 
                 specified file already exists it will be overwritten.
-        epochs_covered (int): The number of epochs that were trained on to 
-                produce the supplied history.
         epoch_range (tuple[int,int], optional): Set of epochs to plot between. 
                 Set to None to plot entire training history. Defaults to None.
     """
-    
-    history_length = len(history[StyleGAN.METRICS[0]])
-    batch_size= history_length//epochs_covered #history stored per batch on disk
     
     #truncate to specified range if required
     if epoch_range is not None:
         start,end = epoch_range
         history = {metric: 
-                history[metric][start*batch_size:end*batch_size] 
+                history[metric][start:end] 
                 for metric in history
                 } 
     
@@ -194,9 +192,14 @@ def plot_training(
         plt.plot(history[metric])
     plt.title("StyleGAN Training Losses")
     plt.xlabel("Epoch")
-    #Manually scale x-tick labels to epochs instead of batches
-    plt.xticks(np.linspace(0,history_length,10), 
-            labels = list(map(int,np.linspace(0, epochs_covered, 10)))) 
+
+    #correctly display only integer epochs, with ticks starting from 1
+    plt.xlim(left = 0)
+    xlocs, xlabels = plt.xticks()
+    xlocs = list(map(int, xlocs))
+    xlabels = [x+1 for x in xlocs]
+    plt.xticks(xlocs, xlabels)
+
     plt.ylabel("Loss")
     plt.legend(StyleGAN.METRICS)
     plt.savefig(output_file)
