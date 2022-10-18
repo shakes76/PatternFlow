@@ -1,7 +1,6 @@
 from google.colab import drive
 drive.mount('/content/drive')
 
-import tensorflow as tf
 import numpy as np
 
 
