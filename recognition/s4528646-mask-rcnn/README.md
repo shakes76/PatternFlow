@@ -18,7 +18,15 @@ Therefore, the loss of Mask R-CNN is the sum of the classification loss, the box
 
 ## Requirements
 
-* 
+* `python==3.9.12`
+* `pytorch==1.12.1`
+* `torchvision==0.13.1`
+* `cudatoolkit==11.3.1`
+* `matplotlib==3.5.2`
+* `numpy==1.23.1`
+* `pandas==1.4.4`
+* `pillow==9.2.0`
+* `tqdm==4.63.0`
 
 ## References
 
