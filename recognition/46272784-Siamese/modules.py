@@ -10,7 +10,7 @@ from tensorflow import keras
 from tensorflow.keras import layers, Model
 import matplotlib.pyplot as plt
 
-def generatePairs(ad, nc, batch=8):
+def generatePairs(ad, nc, batch=16):
     print('>> Begin pair generation')
     # DataGenerator for weak augmentation
     datagen = keras.Sequential([layers.experimental.preprocessing.RandomRotation(0.15),
@@ -22,18 +22,16 @@ def generatePairs(ad, nc, batch=8):
     ad = ad.unbatch()
     nc = nc.unbatch()
     # Zipping the data into pairs and give them labels
-    diff1 = (data.Dataset.zip((ad, nc))).map(lambda im1, im2: (im1, im2, 1.))
-    diff2 = (data.Dataset.zip((nc, ad))).map(lambda im1, im2: (im1, im2, 1.))
-    same1 = (data.Dataset.zip((ad, ad))).map(lambda im1, im2: (im1, im2, 0.))
-    same2 = (data.Dataset.zip((nc, nc))).map(lambda im1, im2: (im1, im2, 0.))
+    diff1 = (data.Dataset.zip((ad, nc))).map(lambda im1, im2: (im1, im2, 0.))
+    diff2 = (data.Dataset.zip((nc, ad))).map(lambda im1, im2: (im1, im2, 0.))
+    same1 = (data.Dataset.zip((ad, ad))).map(lambda im1, im2: (im1, im2, 1.))
+    same2 = (data.Dataset.zip((nc, nc))).map(lambda im1, im2: (im1, im2, 1.))
     # Sample (concatinate) all four image-label pair datasets
     combined_ds = data.experimental.sample_from_datasets([diff1, diff2, same1, same2])
+    combined_ds = combined_ds.shuffle(1000)
     combined_ds = combined_ds.batch(batch_size=batch)
     print("> Apply data augmentation... (It's ganna take a while)")
-    # combined_ds.map(lambda im1, im2, l: (datagen(im1), datagen(im2), l)) # Wrong!!!!!
-    for i1, i2, _ in combined_ds:
-        i1 = datagen(i1)
-        i2 = datagen(i2)
+    combined_ds.map(lambda im1, im2, l: (datagen(im1), datagen(im2), l))
     print('>> Complete')
     return combined_ds
     
@@ -85,7 +83,7 @@ def makeSiamese(cnn):
 def loss(margin=1):
     def contrastive_loss(y_true, y_pred):
         return tf.math.reduce_mean(
-            (1 - y_true) * tf.math.square(y_pred) + y_true * tf.math.square(tf.math.maximum(margin - (y_pred), 0))
+            y_true * tf.math.square(y_pred) + (1 - y_true) * tf.math.square(tf.math.maximum(margin - (y_pred), 0))
         )
         
     def crossentropy(y_true, y_pred):

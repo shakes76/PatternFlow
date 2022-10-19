@@ -10,7 +10,7 @@ def transform_images(img):
     # print(img)
     return img
 
-def loadFile(dir, batch=8):
+def loadFile(dir, batch=16):
     print('>> Begin data loading')
     train_ad_dir = os.path.join(dir, 'train/AD')
     train_nc_dir = os.path.join(dir, 'train/NC')
@@ -20,7 +20,7 @@ def loadFile(dir, batch=8):
     train_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
                                                      label_mode = None,
-                                                     validation_split=0.3,
+                                                     validation_split=0.2,
                                                      subset="training",
                                                      seed=1,
                                                      image_size=(224, 224),
@@ -30,7 +30,7 @@ def loadFile(dir, batch=8):
     train_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = None,
                                                      label_mode = None,
-                                                     validation_split=0.3,
+                                                     validation_split=0.2,
                                                      subset="training",
                                                      seed=1,
                                                      image_size=(224, 224),
@@ -40,7 +40,7 @@ def loadFile(dir, batch=8):
     valid_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
                                                      label_mode = None,
-                                                     validation_split=0.3,
+                                                     validation_split=0.2,
                                                      subset="validation",
                                                      seed=1,
                                                      image_size=(224, 224),
@@ -49,7 +49,7 @@ def loadFile(dir, batch=8):
     valid_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = None,
                                                      label_mode = None,
-                                                     validation_split=0.3,
+                                                     validation_split=0.2,
                                                      subset="validation",
                                                      seed=1,
                                                      image_size=(224, 224),

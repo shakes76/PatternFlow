@@ -111,6 +111,7 @@ def main():
     opt = keras.optimizers.Adam(1e-4)
     siamese = modules.makeSiamese(modules.makeCNN())
     checkpoint_prefix, checkpoint = saveOption(opt, siamese)
+    checkpoint.restore(tf.train.latest_checkpoint(r'F:\AI\COMP3710\PatternFlow\recognition\46272784-Siamese\Siamese_ckeckpoint'))
     history = train(td, vd, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
     
     # # results = siamese.evaluate(vd)
