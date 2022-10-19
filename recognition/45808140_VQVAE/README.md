@@ -37,7 +37,7 @@ The graph below shows the total, VQ loss and reconstruction loss. We observe tha
 
 <p align='center'> <strong>50 epochs</strong> </p>
 
-<div style="text-align:center"><img src="./results/vq_50epochs.png" /></div>
+<p align="center"><img src="./results/vq_50epochs.png" /></p>
 
 ## **PixelCNN Model**
 ---
@@ -61,31 +61,26 @@ The following is the loss plot of the PixelCNN model. We notice that the loss de
 
 <p align="center"><img src="./results/pcnn_result_graph.png" /></p>
 
+<p align='center'><img src="./results/generated_3.png"/></p>
+
+<p align='center'><img src="./results/pcnn_good1.png"/></p>
+
+<p align='center'><img src="./results/generated_14.png"/></p>
+
+<p align='center'><img src="./results/generated_12.png"/></p>
+
+Observing the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains. However, we do get incremental improvements with hyperparameter tuning and training for more epochs. We found that a VQVAE model with less codebook/embedding space but a larger latent space yielded better results for the PixelCNN.
 
 ### **Data processing**
 There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset on COMP3710 blackboard the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for the train set and ~9000 images for the testing set. We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
 
-
-
-high level image overview of model and then briefly talk about implementation
-
-
-
-**figure and visualisations**
-
-
-**dependencies versions and reproducibility of results**
-
-## **Example usages**
----
+# **Example usages**
 **Creating new VQVAE model**
 ```
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, vq_trained=None, img_shape=img_shape, latent_dim=32, embed_num=32, result_path=result_path, vq_epoch=vq_epoch)
 ```
 
-**Loading existing model**
-
-Initialise new VQVAE model from VQVAE_model class in modules.py and load the weights
+**Loading existing model:** Initialise new VQVAE model from VQVAE_model class in modules.py and load the weights
 ```
 vq_trained = VQVAE_model(img_shape, train_var, latent_dim=latent_dim, no_embedding=embed_num)
 vq_trained = vq_trained.load_weights()
@@ -102,13 +97,12 @@ VQVAE_result(vqvae_trained, test_data)
 
 To load existing model perform the same steps but with PixelCNN class and then load weights and pass in the trained PixelCNN model into the pcnn_trained argument 
 ```
-pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, 
-                          pcnn_epoch=pcnn_epoch)
+pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, pcnn_epoch=pcnn_epoch)
 ```
 
 **Generate new brain images**
 ```
-generate_PixelCNN(vqvae_trained, pcnn_trained, 10)
+generate_PixelCNN(vqvae_trained, pcnn_trained, n=10)
 ```
 
 ## **Dependencies**
