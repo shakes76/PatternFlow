@@ -79,6 +79,7 @@ def get_feature_matrix(features):
         for v in vs:
             features_matrix[i, v] = 1
         i += 1
+    print("Feature matrix shape:", features_matrix.shape)
     return features_matrix
 
 
@@ -138,7 +139,7 @@ class Dataset:
         self.target = get_target(data_dir, self.features)
         self.graph = sg.StellarGraph(self.node_features, self.edges.astype(str))
 
-    def get_visualised_graph(self, samples=1500):
+    def get_visualised_graph(self, samples=3000):
         generate_graph(self.edges, self.target, samples)
 
     def get_edges(self):

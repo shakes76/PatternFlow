@@ -49,7 +49,7 @@ class Modules:
         corrupted_generator = CorruptedGenerator(self.generator)
         train_gen = corrupted_generator.flow(data.get_graph().nodes())
         self.gcn_model = GCN(
-            layer_sizes=[16, 16],
+            layer_sizes=[32, 32],
             activations=["relu", "relu"],
             generator=self.generator,
             dropout=0.5

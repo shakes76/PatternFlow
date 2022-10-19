@@ -47,7 +47,7 @@ def handle_training(module):
     )
     history = model.fit(
         train_gen,
-        epochs=200,
+        epochs=100,
         verbose=2,
         callbacks=[history_log]
     )
@@ -55,7 +55,7 @@ def handle_training(module):
     plot_loss_epoch(history.history)
     new_model = module.model_retrain(module.get_data_group())
     prediction = EarlyStopping(
-        monitor="val_acc", patience=50, restore_best_weights=True
+        monitor="val_acc", patience=20, restore_best_weights=True
     )
     train_gen, test_gen, val_gen = module.get_gen()
     pretrained_history = new_model.fit(
