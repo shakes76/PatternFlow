@@ -5,17 +5,25 @@
     Author: Adrian Rahul Kamal Rajkamal
     Student Number: 45811935
 """
+from os import mkdir
+from os.path import exists
 from dataset import *
 from modules import *
 import keras.callbacks
 from keras import optimizers
+from keras.models import load_model
 import tensorflow_probability as tfp
 import matplotlib.pyplot as plt
+import pandas as pd
 
-""" Main data-related constants """
+""" Main data/setup-related constants """
 FILE_PATH = "./ADNI_AD_NC_2D/AD_NC/"
+SAVED_MODEL_PATH = "./SavedModels/"  # Doesn't have to exist yet - code will create directory if not
+RESULTS_PATH = "./Results/"  # Doesn't have to exist yet - code will create directory if not
 IMG_DIMENSION = 256
 SEED = 42
+TRAINING_VQVAE = False  # Set to True to train the VQ-VAE
+TRAINING_PIXELCNN = True  # Set to True train the PixelCNN
 
 """ Hyper-parameters """
 RGB = True
@@ -23,7 +31,8 @@ NUM_EMBEDDINGS = 256
 BATCH_SIZE = 32
 LATENT_DIM = 32
 PIXEL_SHIFT = 0.5
-NUM_EPOCHS = 30
+NUM_EPOCHS_VQVAE = 7
+NUM_EPOCHS_PIXEL = 30
 VALIDATION_SPLIT = 0.3
 LEARNING_RATE = 0.001
 OPTIMISER = optimizers.Adam(learning_rate=LEARNING_RATE)
@@ -72,7 +81,7 @@ var_pixel_train = image_sse.sum() / (num_train_pixels - 1)
 vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM, rgb=RGB)
 
 
-# Define SSIM metric and Callback
+# Define SSIM metric
 
 
 def mean_ssim(data, data_size, model):
@@ -104,41 +113,94 @@ def mean_ssim(data, data_size, model):
         ssim_sum += total_batch_ssim
 
     # Return mean SSIM over entire dataset
-    return ssim_sum / data_size
+    return (ssim_sum / data_size).numpy()
 
 
-class SSIMTracking(keras.callbacks.Callback):
-    """ Calculates and displays the mean SSIM after each epoch """
+# Create directory to store model results (if said directory does not already exist)
+if not exists(SAVED_MODEL_PATH):
+    mkdir(SAVED_MODEL_PATH)
 
-    def __init__(self, dataset, dataset_size, dataset_name="Training"):
-        super(SSIMTracking, self).__init__()
-        self._dataset = dataset
-        self._dataset_name = dataset_name
-        self._dataset_size = dataset_size
+# Store training loss/metric results in CSV file - change append parameter to True if wanting to
+# continue training
+training_csv_logger = keras.callbacks.CSVLogger(SAVED_MODEL_PATH + 'training.log', separator=',',
+                                                append=False)
 
-    def on_epoch_end(self, epoch, logs=None):
-        """ Calculate and display the mean SSIM on each epoch """
-        print(f"Epoch {epoch}: {self._dataset_name} Mean SSIM: "
-              f"{mean_ssim(self._dataset, self._dataset_size, self.model)}")
-
+# Initialise final mean SSIM values
+final_train_mean_ssim = final_val_mean_ssim = 0
 
 # Train VQ-VAE
 vqvae.compile(optimizer=OPTIMISER)
 
-with tf.device(device):
-    history = vqvae.fit(train_data,
-                        epochs=NUM_EPOCHS,
-                        batch_size=BATCH_SIZE,
-                        callbacks=[SSIMTracking(dataset=train_data, dataset_size=num_train_images),
-                                   SSIMTracking(dataset=val_data, dataset_size=num_val_images,
-                                                dataset_name="Validation")]
-                        )
+if TRAINING_VQVAE:
+    with tf.device(device):
+        # Train data (datasets are of type tf.dataset, so are already batched - hence no need to
+        # specify batch sizes here)
+        vqvae.fit(train_data, epochs=NUM_EPOCHS_VQVAE, callbacks=[training_csv_logger],
+                  validation_data=val_data)
 
-# Save
+        # Final SSIM Values
+        final_train_mean_ssim = mean_ssim(train_data, num_train_images, vqvae)
+        final_val_mean_ssim = mean_ssim(val_data, num_val_images, vqvae)
+        print("Final Training Mean SSIM", final_train_mean_ssim)
+        print("Final Validation Mean SSIM", final_val_mean_ssim)
 
-# Plot
+    # Save model
+    vqvae.save(SAVED_MODEL_PATH + "trained_model")
 
-# Test/generate --> maybe load saved model above and put this in predict.py
+
+vqvae = load_model(SAVED_MODEL_PATH + "trained_model")
+print(vqvae.summary())
+
+# Plot training losses/metrics
+
+
+def plot_results(epoch_results):
+    """ Plots and saves all train/val losses"""
+    # Make folder to save plots
+    if not exists(RESULTS_PATH):
+        mkdir(RESULTS_PATH)
+
+    # Total losses
+    plt.figure()
+    plt.plot(epoch_results['total_loss'], label='Total Loss (Training)')
+    plt.plot(epoch_results['val_total_loss'], label='Total Loss (Validation)')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Total Loss')
+    plt.legend(loc='upper right')
+
+    plt.savefig(RESULTS_PATH + 'total_losses.png')
+
+    # Reconstruction losses
+    plt.figure()
+    plt.plot(epoch_results['reconstruction_loss'], label='Reconstruction Loss (Training)')
+    plt.plot(epoch_results['val_reconstruction_loss'], label='Reconstruction Loss (Validation)')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Total Loss')
+    plt.legend(loc='upper right')
+
+    plt.savefig(RESULTS_PATH + 'reconstruction_losses.png')
+
+    # Quantisation losses
+    plt.figure()
+    plt.plot(epoch_results['vq_loss'], label='Quantisation Loss (Training)')
+    plt.plot(epoch_results['val_vq_loss'], label='Quantisation Loss (Validation)')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Total Loss')
+    plt.legend(loc='upper right')
+
+    plt.savefig(RESULTS_PATH + 'quantisation_losses.png')
+
+
+training_results = pd.read_csv(SAVED_MODEL_PATH + 'training.log', sep=',', engine='python')
+plot_results(training_results)
+
+# Test/generate
 
 # Get trained VQ-VAE codebooks
 
@@ -146,8 +208,15 @@ with tf.device(device):
 
 # Compile & Fit (with trained VQ-VAE codebooks)
 
+if TRAINING_PIXELCNN:
+    pass
+
 # Save
 
 # Plot
 
 # Test/generate --> maybe load saved model above and put this in predict.py
+
+# FROM Ed: I would do a full test set prediction in train.py as it is a necessary step during
+# model development, and only predict on a few samples in predict.py to demonstrate running the code
+# in inference mode.

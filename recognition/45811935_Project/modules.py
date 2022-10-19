@@ -5,7 +5,7 @@
     Student Number: 45811935
 """
 import tensorflow as tf
-from keras import layers, Model
+from keras import layers, Model, metrics
 import numpy as np
 
 """ VQ-VAE """
@@ -159,9 +159,9 @@ class VQVAE(Model):
         self._vq = VQ(self._num_encoded, self._latent_dim, self._beta)
         self._decoder = Decoder(rgb=self._rgb)
 
-        self._total_loss = tf.keras.metrics.Mean(name="total_loss")
-        self._vq_loss = tf.keras.metrics.Mean(name="vq_loss")
-        self._reconstruction_loss = tf.keras.metrics.Mean(name="reconstruction_loss")
+        self._total_loss = metrics.Mean(name="total_loss")
+        self._vq_loss = metrics.Mean(name="vq_loss")
+        self._reconstruction_loss = metrics.Mean(name="reconstruction_loss")
 
     def call(self, inputs):
         """
@@ -208,7 +208,7 @@ class VQVAE(Model):
 
         # Log results.
         return {
-            "loss": self._total_loss.result(),
+            "total_loss": self._total_loss.result(),
             "vq_loss": self._vq_loss.result(),
             "reconstruction_loss": self._reconstruction_loss.result(),
         }
@@ -336,7 +336,7 @@ class PixelCNN(Model):
         self._num_filters = num_filters
         self._kernel_size = kernel_size
         self._activation = activation
-        self._total_loss = tf.keras.metrics.Mean(name="total_loss")
+        self._total_loss = metrics.Mean(name="total_loss")
 
         self._pixel_A = PixelConv(kernel_mask_type="A", filters=self._num_filters,
                                   kernel_size=self._kernel_size, activation=self._activation)
