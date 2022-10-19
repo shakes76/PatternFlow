@@ -10,6 +10,14 @@ Graph Convolutional Neural Networks aim to learn a pattern of signals in a given
 
 #### Using this file 
 ##### Dependencies required
+* Pytorch 1.12
+* Networkx
+* NumPy 
+* Pandas
+* Matplotlib
+* Sklearn
+* SciPy
+
 ##### Preprocessing Steps 
 ###### Train/Validation/Test Splits 
 #### Example Inputs 
