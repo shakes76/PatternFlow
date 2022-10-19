@@ -7,6 +7,7 @@ import tensorflow as tf
 
 BUFFER_SIZE = 1500
 BATCH_SIZE = 32
+DIRECTORY_PATH = "/content/data/"
 
 
 def normalise(images):
@@ -42,9 +43,9 @@ def getDatasets():
       Gets the OASIS Datasets
     """
     slice_train = getImages(
-        "/content/data/keras_png_slices_data/keras_png_slices_train/")
+        f"{DIRECTORY_PATH}keras_png_slices_data/keras_png_slices_train/")
     slice_test = getImages(
-        "/content/data/keras_png_slices_data/keras_png_slices_test/")
+        f"{DIRECTORY_PATH}keras_png_slices_data/keras_png_slices_test/")
     slice_val = getImages(
-        "/content/data/keras_png_slices_data/keras_png_slices_val/")
+        f"{DIRECTORY_PATH}keras_png_slices_data/keras_png_slices_val/")
     return [slice_train, slice_test, slice_val]
