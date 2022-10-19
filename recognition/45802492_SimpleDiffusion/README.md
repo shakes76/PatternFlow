@@ -28,8 +28,7 @@ Diffusion papers:
 
 ### Setup
 
-1. Clone this branch and cd to the `recognition/45802492_SimpleDiffusion
-` folder
+1. Clone this branch and cd to the `recognition/45802492_SimpleDiffusion/` folder
 2. Setup a new conda environment. An `environment.yml` file is supplied to do this automatically.
 
    ```
