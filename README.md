@@ -79,7 +79,7 @@ A few points to note,
 ### Model Variations
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
 
-|                             | My Model           | Original Model | Justification
+|                             | My Model           | Original       | Justification
 | -------------               | -------------      |-------------   |------------- 
 | Dimension of latent vector  | 200                | 512            | Original model trains 1024x1024 images, mine 256x256, reduced for simplification.
 | Image channel               | 1                  | 3              | The training images are in grayscale.
