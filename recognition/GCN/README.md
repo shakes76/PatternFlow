@@ -12,7 +12,7 @@
 
 ##### Preprocessing Steps 
 ###### Train/Validation/Test Splits 
-##### Example Inputs 
+#### Example Inputs 
 
 #### Example Outputs 
 
