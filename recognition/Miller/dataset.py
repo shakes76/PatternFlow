@@ -5,8 +5,9 @@ dataset.py" containing the data loader for loading and preprocessing your data
 import tensorflow as tf
 import glob
 import numpy as np
-from matplotlib import pyplot
 from matplotlib import image
+import random
+
 
 # Download the Oasis Data as zip file. Will need to extract it manually afterwards
 def download_oasis ():
@@ -76,7 +77,7 @@ def load_labels (path):
     return labels
 
 # One hot encode label data and convert to numpy array
-def process_labels(seg_data):
+def process_labels (seg_data):
     onehot_Y = []
 
     # Iterate through all array turned images by shapes first value
@@ -105,3 +106,14 @@ def process_labels(seg_data):
     #print (onehot_Y.shape)
 
     return onehot_Y
+
+# returns list of batch_size number of processed images randomly selected from the pre-processed training dataset
+def batched_and_processed (processed_data, batch_size):
+    xs = []
+    
+    for i in range(batch_size):
+      # randomly pick an image from the training datset
+      img = random.choice(processed_data)
+      xs.append(img)
+
+    return xs
