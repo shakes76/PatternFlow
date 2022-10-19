@@ -13,9 +13,8 @@ from utils import AverageMeter, pdist, parse_data
 
 
 class TripletLoss(nn.Module):
-    def __init__(self, margin=1.0):
+    def __init__(self):
         super(TripletLoss, self).__init__()
-        self.margin = margin
 
     def forward(self, inputs, targets):
         n = inputs.size(0)
@@ -41,10 +40,6 @@ class TripletLoss(nn.Module):
         # calculate loss
         diff = dist_p - dist_n
         diff = F.softplus(diff)
-        # if isinstance(self.margin, str) and self.margin == 'soft':
-        #     diff = F.softplus(diff)
-        # else:
-        #     diff = torch.clamp(diff + self.margin, min=0.)
         loss = diff.mean()
 
         return loss
@@ -69,8 +64,6 @@ if __name__ == '__main__':
     batch_size = num_instances * num_classes
     learning_rate = 1e-4
     weight_decay = 1e-4
-    margin = 0.3
-    lamda = 1.0
     num_epochs = 500
 
     pretraining=True
@@ -84,7 +77,7 @@ if __name__ == '__main__':
 
     params = [{"params": [value]} for _, value in model.named_parameters() if value.requires_grad]
     optimizer = torch.optim.Adam(params, lr=learning_rate, weight_decay=weight_decay)
-    criterion_triplet = TripletLoss(margin=margin)
+    criterion_triplet = TripletLoss()
 
     train_loss = []
     test_acc = []
@@ -100,11 +93,11 @@ if __name__ == '__main__':
 
         for step, inputs in enumerate(train_loader):
             imgs, labels, indexes = parse_data(inputs)
-
             emds, probs = model(imgs)
 
             loss_triplet = criterion_triplet(emds, labels)
             loss_cla = F.cross_entropy(probs, labels)
+            
             loss = loss_cla + loss_triplet
 
             optimizer.zero_grad()
