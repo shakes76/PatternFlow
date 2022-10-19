@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from dataset import DataLoader
 from modules import PatchLayer
-from train import IMAGE_SIZE, NUM_PATCHES, PATCH_SIZE, PROJECTION_DIM
+from parameters import DATA_LOAD_PATH, IMAGE_SIZE, NUM_PATCHES, PATCH_SIZE, PROJECTION_DIM
 
 
 def plot_image(dataset):
@@ -56,7 +56,7 @@ def plot_patches(dataset):
     plt.show()
 
 if __name__ == '__main__':
-    loader = DataLoader('C:/AD_NC')
+    loader = DataLoader(DATA_LOAD_PATH)
     train, val, test = loader.load_data()
     plot_image(train)
     plot_patches(train)
