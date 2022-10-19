@@ -6,6 +6,7 @@ Lower MSE indicates higher PSNR and reconstruction quality.
 
 The basic structure was inspired by ESPCN (Efficient Sub-Pixel CNN) proposed by Shi, 2016 and Keras implementation by Long, 2020. The model was also embedded with Residual Dense Blocks, inspired by Chakraborty, 2021. Residual blocks prevented early saturation or degradation with accuracy from increasing number of layers.
 
+ADNI MRI Dataset were used in this work (see citation)
 ## Dependencies and Versions
 
 - Ubuntu 16.04 or higher (Ubuntu 22.04.1 LTS was in used)
@@ -76,3 +77,8 @@ Reconstruct a low-resolution image to a high-resolution through a model.
 Plot results with additional zoom-in at a facotor of 4
 ### ESPCNCallback
 The ESPCNCallback object will compute and display the PSNR metric during training and testing
+
+## Reference
+Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A. P., Bishop, R., ... & Wang, Z. (2016). Real-time single image and video super-resolution using an efficient sub-pixel convolutional neural network. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1874-1883).
+Long, X. (2020). Image Super-Resolution using an Efficient Sub-Pixel CNN. https://keras.io/examples/vision/super_resolution_sub_pixel/#define-callbacks-to-monitor-training
+ADNI dataset for Alzheimer’s disease. (2022). ADNI MRI Dataset[Data set]. https://adni.loni.usc.edu/
