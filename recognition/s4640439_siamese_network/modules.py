@@ -1,9 +1,11 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, LeakyReLU, Flatten, MaxPool2d
+from tensorflow.keras.layers import Conv2D, LeakyReLU, Flatten, MaxPool2d, Dense
 
 IMAGE_SIZE = (240,256,1)
 ALPHA = 0.2
+
+SIAMESE_OUTPUT_SHAPE = (512,)
 
 """
 Containing the source code of the components of your model. 
@@ -36,27 +38,6 @@ def build_siamese():
 
     return model
 
-def siamese_loss(x0, x1, y: int) -> float:
-    """
-    Custom loss function for siamese network.
-
-    Takes two vectors, then calculates their distance.
-
-    Vectors of the same class are rewarded for being close and punished for being far away.
-    Vectors of different classes are punished for being close and rewarded for being far away.
-
-    Parameters:
-        - x0 -- first vector
-        - x1 -- second vector
-        - y -- integer representing whether or not the two vectors are from the same class
-
-    Returns:
-        - loss value
-    """
-    # TODO
-    return 0
-
-
 def build_binary():
     """
     Generate binary classifier
@@ -67,5 +48,11 @@ def build_binary():
     # TODO: define layers of model
 
     model = Sequential()
+
+    model.add(Dense(32, input_shape=SIAMESE_OUTPUT_SHAPE, activation="relu"))
+    model.add(Dense(8, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
+
+    model.compile(loss="binary_crossentropy", optimiser="adam", metrics=["accuracy"])
 
     return model

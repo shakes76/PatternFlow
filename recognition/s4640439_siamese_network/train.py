@@ -21,6 +21,8 @@ def siamese_loss(x0, x1, y: int) -> float:
     """
     Custom loss function for siamese network.
 
+    Based on contrastive loss.
+
     Takes two vectors, then calculates their distance.
 
     Vectors of the same class are rewarded for being close and punished for being far away.
@@ -103,9 +105,28 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
     elapsed = time.time() - start
     print(f"Siamese Network Training Completed in {elapsed}")
 
+def train_binary_classifier(model, siamese_model, pos_dataset, neg_dataset, epochs):
+    start = time.time()
+    print("Beginning Binary Classifier Training")
 
-def train_binary_classifier(model, optimiser, siamese_model, pos_dataset, neg_dataset, epochs):
-    pass
+    for epoch in range(epochs):
+        epoch_start = time.time()
+
+        for pos_batch, neg_batch in zip(pos_dataset, neg_dataset):
+            transformed_pos = siamese_model(pos_batch, training=False)
+            transformed_neg = siamese_model(neg_batch, training=False)
+
+            pos_labels = tf.ones_like(transformed_pos)
+            neg_labels = tf.zeros_like(transformed_neg)
+
+            model.fit(transformed_pos, pos_labels)
+            model.fit(transformed_neg, neg_labels)
+
+        epoch_elapsed = time.time() - epoch_start
+        print(f"Epoch {i} - training time: {epoch_elapsed}") 
+    
+    elapsed = time.time() - start
+    print(f"Binary Classifier Training Completed in {elapsed}")
 
 def main():
     # get training data
@@ -123,11 +144,9 @@ def main():
     binary_classifier = build_binary()
     
     siamese_optimiser = tf.keras.optimizers.Adam(1.5e-4,0.5)
-    classifier_optimiser = tf.keras.optimizers.Adam(1.5e-4,0.5)
 
     train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
-    train_binary_classifier(binary_classifier, classifier_optimiser, siamese_model, 
-                            train_data_pos, train_data_neg, EPOCHS)
+    train_binary_classifier(binary_classifier, siamese_model, train_data_pos, train_data_neg, EPOCHS)
 
     siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
     binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))
