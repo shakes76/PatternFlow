@@ -34,15 +34,16 @@ import dataset
 #######################################################
 
 epoch_range = 200
-batch_size=16
+batch_size=8
 train_factor=1000               #Number of Persons
 test_factor=400
 valid_factor=400
 
-FILE="weights_only_l.pth"         #File location of saved pretrained net
+FILE_LOAD="weights_only_l3.pth"         #File location of saved pretrained net
+FILE_SAVE="weights_only_l5.pth"         #File location of saved pretrained net
 
 #(0=disabled)
-load_pretrained_model=0
+load_pretrained_model=1
 scheduler_active=1
 gradient_clipping=1             #Gradient clippling         
 plot_feature_vectors=1          #Ploting feature vectors
@@ -63,24 +64,26 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if load_pretrained_model==0: 
     net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
     net = net.to(device)
+    #Weight initialisation
+    net.apply(modules.init_weights)
 else:
     
     net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
-    net.load_state_dict(torch.load(FILE))
+    net.load_state_dict(torch.load(FILE_LOAD))
+    net = net.to(device)
     net.eval()
 
 #Optimizer
 criterion = modules.TripletLoss()
 #criterion = torch.nn.TripletMarginLoss(margin=64.0)
-optimizer = optim.Adam(net.parameters(),lr = 0.0001)
+optimizer = optim.Adam(net.parameters(),lr = 0.00005)
 
 #Learning rate scheduler
 scheduler = StepLR(optimizer, step_size=200, gamma=0.95)
 
 
 
-#Weight initialisation
-#net.apply(modules.init_weights)
+
 
 #Loading Dataloaders
 train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset3D(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
@@ -196,19 +199,19 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 
     # Plotting training and validation loss 
 
-    if plot_loss==1:
+    if (plot_loss==1 and epoch%10==0 and epoch!=0) or epoch==(epoch_range-1):
         plt.figure(3)
-        plt.plot(training_loss.detach().numpy(), label='Training_loss')
-        plt.plot(validation_loss.detach().numpy(), label='Validation_loss')
+        plt.plot(training_loss[0:epoch].detach().numpy(), label='Training_loss')
+        plt.plot(validation_loss[0:epoch].detach().numpy(), label='Validation_loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.legend(loc='lower center', bbox_to_anchor=(0.3, -0.3),ncol=2)
         plt.twinx()
 
-        plt.savefig('Plot_Loss_l.png',bbox_inches='tight')
+        plt.savefig('Plot_Loss_l5.png',bbox_inches='tight')
 
         print('=> ---- Finished Plotting loss ---- ') 
-
+        plt.clf()
     
 
     gc.collect()
@@ -219,9 +222,9 @@ for epoch in range(epoch_range):  # loop over the dataset multiple times
 #                  Saving net parameters
 ###################################################
 
-torch.save(training_loss, "training_loss_l.pth")
-torch.save(validation_loss, "validation_loss_l.pth")
-torch.save(net.state_dict(), FILE)
+torch.save(training_loss, "training_loss_l5.pth")
+torch.save(validation_loss, "validation_loss_l5.pth")
+torch.save(net.state_dict(), FILE_SAVE)
 print('=> ---- Finished Training ---- ')
 
 ###################################################
@@ -284,7 +287,7 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotAD_l.png',bbox_inches='tight')
+    plt.savefig('PlotAD_l5.png',bbox_inches='tight')
 
     plt.figure(1)
     for i in range(10):
@@ -294,12 +297,12 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotNC_l.png',bbox_inches='tight')
+    plt.savefig('PlotNC_l5.png',bbox_inches='tight')
 
     plt.figure(2)
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='red',linewidth='1')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('Plot_l.png',bbox_inches='tight')
+    plt.savefig('Plot_l5.png',bbox_inches='tight')
     print('=> ---- Finished Plotting feature vectors ---- ')    
 

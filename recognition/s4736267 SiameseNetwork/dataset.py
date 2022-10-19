@@ -198,12 +198,12 @@ class DatasetTrain3D(Dataset):
 
         #RandomCropResize
         rn = random.randint(0,1)
-        if rn==0:
-            left_off = random.randint(0,40)
-            top_off  = random.randint(0,40)
+        if rn==1:
+            left_off = random.randint(0,20)
+            top_off  = random.randint(0,20)
 
-            width_off = random.randint(0,40)
-            height_off  = random.randint(0,40)
+            width_off = random.randint(0,20)
+            height_off  = random.randint(0,20)
 
             transform_train.transforms.insert(3,Random_Crop_Resize(left_off=left_off,top_off=top_off,width_off=width_off,height_off=height_off))
 
@@ -276,8 +276,8 @@ class DatasetTrain3D(Dataset):
 
             if self.transform:
                 image_1 = transform_idx_1(image_1)
-                image_2 = transform_idx_1(image_2)
-                image_3 = transform_idx_1(image_3)
+                image_2 = transform_idx_2(image_2)
+                image_3 = transform_idx_3(image_3)
 
             #save_image(image_1, 'basic_augmentation.png')
 
@@ -333,7 +333,104 @@ class DatasetTrain3D(Dataset):
 
         del transform_idx_1,transform_idx_2,transform_idx_3
 
-        return image3D_1, image3D_positive, image3D_negative
+        return image3D_1, image3D_positive, image3D_negative, label_1
+
+
+class DatasetTrainClass(Dataset):
+    def __init__(self, image_paths, transform=None):
+        self.image_paths = image_paths
+        self.transform = transform
+        self.size = int(len(image_paths)/20)    
+    
+    def transform_augmentation(self):
+
+        transform_train=transformation_3D()
+
+        #RandomCropResize
+        rn = random.randint(0,1)
+        if rn==1:
+            left_off = random.randint(0,20)
+            top_off  = random.randint(0,20)
+
+            width_off = random.randint(0,20)
+            height_off  = random.randint(0,20)
+
+            transform_train.transforms.insert(3,Random_Crop_Resize(left_off=left_off,top_off=top_off,width_off=width_off,height_off=height_off))
+
+        #RandomHorizontalFlip
+        rn = random.randint(0,1)
+        if rn==0:
+            transform_train.transforms.insert(1,transforms.RandomHorizontalFlip(p=1))
+
+        #RandomVerticalFlip
+        rn = random.randint(0,1)
+        if rn==0:
+            transform_train.transforms.insert(1,transforms.RandomVerticalFlip(p=1))
+        
+        
+
+        return transform_train
+
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        
+        image3D_1=torch.zeros(20,210,210)
+        
+        idx_1=idx
+        
+        label_1 = self.image_paths[idx_1*20].split('/')[-2]
+        label_1 = 0 if label_1=='AD' else 1
+        
+
+        transform_idx_1=self.transform_augmentation()
+
+        j=0
+        for i in range(20):
+            
+            image_filepath_1 = self.image_paths[idx_1*20+i]
+            image_1 = cv2.imread(image_filepath_1, cv2.IMREAD_GRAYSCALE)
+            
+
+            #toTen=transforms.ToTensor()
+            #save_image(toTen(image_1), 'orignal.png')
+
+            if self.transform:
+                image_1 = transform_idx_1(image_1)
+
+            #save_image(image_1, 'basic_augmentation.png')
+
+            i  = 25
+            for j in range(0):
+                rn = random.randint(0,1)
+                if rn==0:
+                    
+                    i1 = random.randint(0,210-i)
+                    i2  = random.randint(0,210-i)
+                
+                    transform_blackout=Random_Blackout(i1=i1,i2=i2,i=i)
+                    image_1=transform_blackout(image_1)
+            
+                rn = random.randint(0,1)
+            
+            #save_image(image_1, 'augmented.png')
+        
+
+            image3D_1[j]=image_1
+            j=j+1
+
+        image3D_1 = torch.unsqueeze(image3D_1, dim=0)
+
+        del transform_idx_1
+
+        return image3D_1, label_1
+
+
+
+
+
 
 class Dataset3D(Dataset):
     def __init__(self, image_paths, transform=None):
@@ -485,7 +582,6 @@ def dataset3D(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     test_dataset = Dataset3D(test_image_paths,transformation_3D())
     clas_dataset = DatasetClas3D(clas_image_paths,transformation_3D())
 
-
     #Dataloaders
     train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
 
@@ -494,3 +590,27 @@ def dataset3D(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
 
     return train_loader, valid_loader, test_loader, clas_dataset
+
+
+def datasetClass(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
+
+    #Preparation
+    
+    train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
+    test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
+
+    #Dataset
+    
+    test_dataset = Dataset3D(test_image_paths,transformation_3D())
+
+    train_dataset = DatasetTrainClass(train_image_paths,transformation_3D())
+    valid_dataset = DatasetTrainClass(valid_image_paths,transformation_3D()) 
+
+    #Dataloaders
+    train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
+
+    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
+
+    test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
+
+    return train_loader, valid_loader, test_loader

@@ -39,10 +39,10 @@ train_factor=1000               #Number of Persons
 test_factor=400
 valid_factor=400
 
-FILE="weights_only_l.pth"         #File location of saved pretrained net
+FILE="weights_only_l3.pth"         #File location of saved pretrained net
 
 #(0=disabled)
-load_pretrained_model=0
+load_pretrained_model=1
 plot_feature_vectors=1          #Ploting feature vectors
 plot_loss = 1                   #Ploting training and validation loss
 
@@ -66,6 +66,7 @@ else:
     net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
     net.load_state_dict(torch.load(FILE))
     net.eval()
+    net = net.to(device)
 
 
 #Loading Dataloaders
@@ -160,20 +161,3 @@ if plot_feature_vectors==1:
     plt.savefig('Plot_predict.png',bbox_inches='tight')
     print('=> ---- Finished Plotting feature vectors ---- ')    
 
-#######################################################
-#       Plotting training and validation loss 
-#######################################################
-
-
-if plot_loss==1:
-    plt.figure(3)
-    plt.plot(training_loss.detach().numpy(), label='Training_loss')
-    plt.plot(validation_loss.detach().numpy(), label='Validation_loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend(loc='lower center', bbox_to_anchor=(0.3, -0.3),ncol=2)
-    plt.twinx()
-
-    plt.savefig('Plot_Loss_predict.png',bbox_inches='tight')
-
-    print('=> ---- Finished Plotting loss ---- ') 

@@ -79,14 +79,14 @@ class ResNet_3D(nn.Module):
                                             nn.Dropout(p=0.1),
                                             nn.ReLU(),
                                             nn.Flatten(),
-                                            nn.Linear(12800, 4096),
-                                            nn.ReLU(),
-                                            nn.Linear(4096,1028),
-                                            nn.ReLU(),
-                                            nn.Linear(1028,128))
-                                            
+                                            #nn.Linear(12800, 4096),
+                                            #nn.ReLU(),
+                                            #nn.Linear(4096,1028),
+                                            #nn.ReLU(),
+                                            #nn.Linear(1028,128),
+                                            nn.Linear(12800, 2*2048),
 
-                                            #nn.ReLU()
+                                            nn.ReLU())
                                             #,
                                             #nn.Sigmoid())
         
@@ -189,6 +189,7 @@ class ResNet_3D(nn.Module):
 
 
 
+
 #######################################################
 #                  Classifier Net
 #######################################################
@@ -199,30 +200,32 @@ class Net_clas3D(nn.Module):
         
         self.final = nn.Sequential(
 
-            nn.BatchNorm1d(2*4096),
-            nn.LeakyReLU(negative_slope=0.001),
+            nn.Flatten(),
+            nn.Linear(2*2048, 2048),
+            nn.BatchNorm1d(2048),
+            nn.ReLU(),
 
-            nn.Linear(2*4096, 2*2048),
-            nn.BatchNorm1d(2*2048),
-            nn.LeakyReLU(negative_slope=0.001),
+            nn.Linear(2048, 2048),
+            nn.BatchNorm1d(2048),
+            nn.ReLU(),
 
-            nn.Linear(2*2048, 1024),
-            nn.BatchNorm1d(1024),
-            nn.LeakyReLU(negative_slope=0.001),
+            #nn.Linear(2048, 512),
+            #nn.BatchNorm1d(512),
+            #nn.ReLU(),
 
             nn.Dropout(p=0.5),
-            nn.Linear(1024, 1),
+            nn.Linear(2048, 1),
             #nn.sigmoid();
         )
 
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, img,img_AD,img_NC):
-        out_AD = torch.abs(img-img_AD)
-        out_NC = torch.abs(img-img_NC)
+    def forward(self, img):
+        #out_AD = torch.abs(img-img_AD)
+        #out_NC = torch.abs(img-img_NC)
         
-        output = torch.cat((out_AD, out_NC), 1)
-        output = self.final(output)
+        #output = torch.cat((out_AD, out_NC), 1)
+        output = self.final(img)
         output = self.sigmoid(output)
         
         return output
@@ -249,13 +252,14 @@ def init_weights(m):
 #######################################################
 class TripletLoss(torch.nn.Module):
 
-    def __init__(self, margin=10.0):
+    def __init__(self, margin=128.0):
         super(TripletLoss, self).__init__()
         self.margin = margin
 
     def forward(self, output_1, output_2, output_3):
-        distance_AP = F.pairwise_distance(output_1, output_2, keepdim = True)
-        distance_AN = F.pairwise_distance(output_1, output_3, keepdim = True)
+        m = nn.Sigmoid()
+        distance_AP = F.pairwise_distance(output_1, output_2, keepdim = True, p=1.0, eps=1e-06)
+        distance_AN = F.pairwise_distance(output_1, output_3, keepdim = True, p=1.0, eps=1e-06)
         #print(distance_AP[0].item(),distance_AN[0].item())
         loss_triplet = torch.mean(torch.clamp(distance_AP-distance_AN+self.margin,min=0))
 
