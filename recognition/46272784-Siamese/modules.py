@@ -1,6 +1,8 @@
 # This file contains the source code of the components of my model as functions or classes
 import os
 import sys
+
+from numpy.random.mtrand import normal
 sys.path.insert(1, os.getcwd())
 from dataset import loadFile
 
@@ -8,41 +10,61 @@ import random
 import numpy as np
 import tensorflow_datasets as tfds
 import tensorflow as tf
+from tensorflow import data
 from tensorflow import keras
 from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import resnet
 import matplotlib.pyplot as plt
 
-def getLabel(x, y):
-    if x[1] == y[1]:
-        # Same label
-        return x[0], y[0], 1.0
-    # Different Label
-    return x[0], y[0], 0.0
-
-def generatePairs(ds):
-    # zip the dataset with itself
-    pairs = tf.data.Dataset.zip((ds, ds))
-    # assigning label
-    return pairs.map(lambda x, y: (x[0], y[0], tf.cast(not tf.equal(x[1], y[1]), tf.float32)))
-
-def makeCNN(depth=64, kernel=(3, 3)):
-    base_cnn = resnet.ResNet50(weights="imagenet", input_shape=(256, 240, 3), include_top=False)
-
-    flatten = layers.Flatten()(base_cnn.output)
-    dense1 = layers.Dense(512, activation="relu")(flatten)
-    dense1 = layers.BatchNormalization()(dense1)
-    dense2 = layers.Dense(256, activation="relu")(dense1)
-    dense2 = layers.BatchNormalization()(dense2)
-    output = layers.Dense(256)(dense2)
+def generatePairs(ad, nc, batch=8):
+    # DataGenerator for weak augmentation
+    # datagen = keras.preprocessing.image.ImageDataGenerator(rotation_range=25,
+    #                                                        width_shift_range=0.2,
+    #                                                        height_shift_range=0.2)
+    # datagen.fit(ad)
+    # ad = datagen.flow(ad)
     
-    trainable = False
-    for layer in base_cnn.layers:
-        if layer.name == "conv5_block1_out":
-            trainable = True
-        layer.trainable = trainable
+    # datagen.fit(nc)
+    # nc = datagen.flow(nc)
     
-    return Model(inputs=base_cnn.input, outputs=output, name='CNN')
+    ad = ad.unbatch()
+    nc = nc.unbatch()
+    # Zipping the data into pairs and give them labels
+    diff1 = (data.Dataset.zip((ad, nc))).map(lambda im1, im2: (im1, im2, 1.))
+    diff2 = (data.Dataset.zip((nc, ad))).map(lambda im1, im2: (im1, im2, 1.))
+    same1 = (data.Dataset.zip((ad, ad))).map(lambda im1, im2: (im1, im2, 0.))
+    same2 = (data.Dataset.zip((nc, nc))).map(lambda im1, im2: (im1, im2, 0.))
+    # Sample (concatinate) all four image-label pair datasets
+    combined_ds = data.experimental.sample_from_datasets([diff1, diff2, same1, same2])
+    combined_ds.batch(batch_size=batch)
+    return combined_ds
+    
+
+def makeCNN():
+    # This CNN is almost the same as the one presented in the paper 
+    inputs = layers.Input(shape=(224, 224, 1))
+    conv = layers.Conv2D(64, 10, activation='relu')(inputs)
+    pool = layers.MaxPooling2D(2)(conv)
+    norm = layers.BatchNormalization()(pool)
+    
+    conv = layers.Conv2D(128, 7, activation='relu')(norm)
+    pool = layers.MaxPooling2D(2)(conv)
+    norm = layers.BatchNormalization()(pool)
+    
+    conv = layers.Conv2D(128, 4, activation='relu')(norm)
+    pool = layers.MaxPooling2D(2)(conv)
+    norm = layers.BatchNormalization()(pool)
+    
+    conv = layers.Conv2D(256, 4, activation='relu')(norm)
+    norm = layers.BatchNormalization()(conv)
+    
+    flat = layers.Flatten()(norm)
+    dense = layers.Dense(4096, activation='sigmoid')(flat)
+    dense = layers.Dense(1024, activation='sigmoid')(dense)
+    out = layers.Dense(512, activation='sigmoid')(dense)
+    
+    return Model(inputs=inputs, outputs=out, name='embeddingCNN')
+    
 
 def makeSiamese(cnn):
     EPS = 1e-8
@@ -74,10 +96,11 @@ def loss(margin=1):
 
 def main():
     # Code for testing the functions
-    t, v = loadFile('F:/AI/COMP3710/data/AD_NC/')
-    d = generatePairs(t)
+    t_a, t_n, v_a, v_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    d = generatePairs(t_a, t_n)
     for p in d:
         print(p)
+        break
     print(len(d)*8)
     
     # cnn = makeCNN()
