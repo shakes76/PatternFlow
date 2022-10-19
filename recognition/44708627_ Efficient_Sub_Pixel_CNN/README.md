@@ -79,6 +79,6 @@ Plot results with additional zoom-in at a facotor of 4
 The ESPCNCallback object will compute and display the PSNR metric during training and testing
 
 ## Reference
-Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A. P., Bishop, R., ... & Wang, Z. (2016). Real-time single image and video super-resolution using an efficient sub-pixel convolutional neural network. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1874-1883).
-Long, X. (2020). Image Super-Resolution using an Efficient Sub-Pixel CNN. https://keras.io/examples/vision/super_resolution_sub_pixel/#define-callbacks-to-monitor-training
-ADNI dataset for Alzheimer’s disease. (2022). ADNI MRI Dataset[Data set]. https://adni.loni.usc.edu/
+Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A. P., Bishop, R., ... & Wang, Z. (2016). Real-time single image and video super-resolution using an efficient sub-pixel convolutional neural network. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1874-1883).\
+Long, X. (2020). Image Super-Resolution using an Efficient Sub-Pixel CNN. https://keras.io/examples/vision/super_resolution_sub_pixel/#define-callbacks-to-monitor-training\
+ADNI dataset for Alzheimer’s disease. (2022). ADNI MRI Dataset[Data set]. https://adni.loni.usc.edu/\
