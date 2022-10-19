@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import Model
-from keras.layers import Input, Conv2D, MaxPooling2D, concatenate, UpSampling2D, Dropout, BatchNormalization
+from keras.layers import Input, Conv2D, Add, concatenate, UpSampling2D, Dropout, BatchNormalization
 
 # Dense, Flatten,
 DROPOUT_PROB = 0.3
@@ -34,6 +34,7 @@ def upsample_module(layer, num_filters):
     up = UpSampling2D(2)(layer)
     return Conv2D(num_filters, 3, activation='relu', padding='same')(up)
 
+
 def create_model(input_shape=INPUT_SHAPE):
     """
     Create the improved unet model. This will include all the convolutions, max pooling,
@@ -48,34 +49,49 @@ def create_model(input_shape=INPUT_SHAPE):
 
     # Create the input for the model.
     input = Input(shape=input_shape)
-    # norm1 = InstanceNormalisation
+
     # Create the encoder:
     # First layer : 2 x 2D Convolutions, filter size 16,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer1 = context_module(input, 16)
 
-    # max pooling for the first layer to get to the second one
-    pool1 = MaxPooling2D()(encoder_layer1)
+    # element wise sum of pre context module and post context module.
+    sum1 = Add()([input, encoder_layer1])
+
+    # Do conv with stride of 2 to reduce the size of the model.
+    pool1 = Conv2D(32, 3, 2, activation='relu', padding='same')(sum1)
 
     # Second layer : 2 x 2D Convolutions, filter size 32,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer2 = context_module(pool1, 32)
 
-    # max pooling for the second layer to get to the third one
-    pool2 = MaxPooling2D()(encoder_layer2)
+    # element wise sum of pre context module and post context module.
+    sum2 = Add()([pool1, encoder_layer2])
+
+    # Do conv with stride of 2 to reduce the size of the model.
+    pool2 = Conv2D(64, 3, 2, activation='relu', padding='same')(sum2)
 
     # Third layer : 2 x 2D Convolutions, filter size 64,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer3 = context_module(pool2, 64)
 
-    # max pooling for the third layer to get to the forth one
-    pool3 = MaxPooling2D()(encoder_layer3)
+    # element wise sum of pre context module and post context module.
+    sum3 = Add()([pool2, encoder_layer3])
+
+    # Do conv with stride of 2 to reduce the size of the model.
+    pool3 = Conv2D(128, 3, 2, activation='relu', padding='same')(sum3)
 
     # Forth layer : 2 x 2D Convolutions, filter size 128,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer4 = context_module(pool3, 128)
 
-    # max pooling for the forth layer to get to the fifth one
-    pool4 = MaxPooling2D()(encoder_layer4)
+    # element wise sum of pre context module and post context module.
+    sum4 = Add()([pool3, encoder_layer4])
+
+    # Do conv with stride of 2 to reduce the size of the model.
+    pool4 = Conv2D(256, 3, 2, activation='relu', padding='same')(sum4)
 
     # Fifth layer : 2 x 2D Convolutions, filter size 256,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer5 = context_module(pool4, 256)
+
+    # element wise sum of pre context module and post context module.
+    sum5 = Add()([pool4, encoder_layer5])
 
     # Create the decoder:
 
