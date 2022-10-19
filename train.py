@@ -20,6 +20,7 @@ def main():
     # suppress tensorflow logging
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+    assert CHANNELS == 1 or CHANNELS == 3, f'\'CHANNELS\' specified in config.py has to be 1 or 3 ({CHANNELS}).'
     # config check up
     assert len(BSIZE) == len(FILTERS) and len(FILTERS) == len(EPOCHS) and len(EPOCHS) == int(log2(TRES) - log2(SRES) + 1), \
         f'BSIZE, FILTERS and EPOCHS must have the same size ({len(BSIZE)}, {len(FILTERS)}, {len(EPOCHS[0])}), ' \
@@ -50,7 +51,8 @@ def main():
 
     print(f'Latent vector dimension: {LDIM}')
 
-    image_loader = ImageLoader(TRAINING_IMAGE_DIR, 'grayscale')
+    mode = 'grayscale' if CHANNELS == 1 else 'rgb'
+    image_loader = ImageLoader(TRAINING_IMAGE_DIR, mode)
 
     adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.0, beta_2=0.99, epsilon=1.e-8)
 

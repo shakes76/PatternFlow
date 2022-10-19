@@ -66,13 +66,13 @@ The structure of the model is given below.
 </p>
 
 A few points to note,
- - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L30) and [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L196)).
- - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
+ - latent vector z is passed through fully connected layers to generate w.
+ - w is transformed and injected 2 times in each resolution block.
  - number of fully connected layers is 8, w and z have the same dimension.
- - Input of 'Synthesis network' is constant (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L186)).
- - a noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L130)).
- - AdaIN (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/645897586b76a0b96dc23ec2ddb7ac442f33d445/clayers.py#L66)) takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/e7d4111eae9fadbe16f9431b2524d6f1093f9627/modules.py#L136)).
- - Loss function uses the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability (see [<ins>here</ins>](https://github.com/KaiatUQ/StyleGAN/blob/1b779b71d95165d94be52a9f77d3d5b272634be0/modules.py#L192)).
+ - Input of 'Synthesis network' is constant.
+ - a noise vector is injected 2 times in each resolution block.
+ - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector.
+ - Loss function uses the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability.
  - Model is trained progressively.
 
 ### Model Variations
@@ -109,7 +109,7 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
 
 
 ### Loss plot
-Both discriminator and generator converges well in the lower dimensions, but fluctuated at higher dimensions. Most significant changes in loss were observed when model grew, as highlighted in below plot.
+Both discriminator and generator converged well in the lower dimensions, but fluctuated at higher dimensions. Most significant changes in loss were observed when model grew, as highlighted in below plot.
 
 <p align="center">
     <kbd><img src="asset/loss_plot.png" width="550">
