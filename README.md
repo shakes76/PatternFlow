@@ -100,6 +100,7 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
  - Batch size: 16, 16, 8, 8, 8, 4, 4.
  - Epochs: 10, 15, 15, 15, 15, 15, 15.
  - Training images: 4800 selected.
+ - Model not stabilized after fade in.
 
 ### Evolution
 <p align="center">
