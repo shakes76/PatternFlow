@@ -20,9 +20,10 @@ class Embedding(nn.Module):
         flattened = x.view(-1, self.embedding.weight.size(1))
 
         # Calculate distances to find the closest codebook vectors
-        distances = (torch.sum(flattened**2, dim=1, keepdim=True) 
-                    + torch.sum(self.embedding.weight**2, dim=1)
-                    - 2 * torch.matmul(flattened, self.embedding.weight.t()))
+        distances = torch.addmm(torch.sum(flattened ** 2, dim=1, keepdim=True) + torch.sum(self.embedding.weight ** 2), 
+                                flattened,
+                                self.embedding.weight.t(),
+                                beta=1.0, alpha=-2.0)
         
         # We get the indices from argmin
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
