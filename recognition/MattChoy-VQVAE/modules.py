@@ -1,9 +1,15 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+import tensorflow_probability as tfp
+
 from tensorflow.keras.models import Sequential
+from tensorflow.keras import layers
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose
+from tensorflow.keras.layers import InputLayer, Input, Lambda
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from constants import image_shape, n_channels, n_residual_blocks, n_pixel_cnn_layers
+
 
 class Encoder(tf.keras.Model):
     def __init__(self, latent_dimensions, **kwargs):
@@ -34,6 +40,7 @@ class Decoder(tf.keras.Model):
 
     def call(self, x):
         return self.decoder(x)
+
 
 class VectorQuantiser(keras.layers.Layer):
     def __init__(self, num_embeddings, embedding_dimensions, **kwargs):
@@ -71,3 +78,58 @@ class VectorQuantiser(keras.layers.Layer):
         self.add_loss(commitment_loss + codebook_loss)
 
         return x + tf.stop_gradient(unflattened - x)
+
+
+class VQVAE(keras.models.Sequential):
+    def __init__(self, variance, latent_dimensions, num_embeddings, **kwargs):
+        super(VQVAE, self).__init__(**kwargs)
+        self.total_loss_list = []
+        self.reconstruction_loss_list = []
+        self.vq_loss_list = []
+        self.variance = variance
+        self.latent_dimensions = latent_dimensions
+        self.num_embeddings = num_embeddings
+
+        # Create the Sequential model
+        vector_quantiser = VectorQuantiser(num_embeddings, latent_dimensions, name="quantiser")
+        encoder = Encoder(latent_dimensions)
+        decoder = Decoder()
+
+        # Add the components of the model
+        self.add(encoder)
+        self.add(vector_quantiser)
+        self.add(decoder)
+
+        # Initialise the loss metrics
+        self.loss_total = keras.metrics.Mean()
+        self.loss_reconstruction = keras.metrics.Mean()
+        self.loss_vq = keras.metrics.Mean()
+
+
+    @property
+    def metrics(self):
+        return [self.loss_total, self.loss_reconstruction, self.loss_vq]
+
+    def train_step(self, data):
+        with tf.GradientTape() as tape:
+            reconstructions = self.call(data)
+            reconstruction_loss = tf.reduce_mean((data - reconstructions) ** 2) / self.variance
+            total_loss = reconstruction_loss + sum(self.losses)
+
+            gradients = tape.gradient(total_loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        self.loss_total.update_state(total_loss)
+        self.loss_reconstruction.update_state(reconstruction_loss)
+        self.loss_vq.update_state(sum(self.losses))
+
+        losses = {
+            "loss": self.loss_total.result(),
+            "reconstruction_loss": self.loss_reconstruction.result(),
+            "vqvae_loss": self.loss_vq.result(),
+        }
+        self.total_loss_list.append(losses["loss"])
+        self.reconstruction_loss_list.append(losses["reconstruction_loss"])
+        self.vq_loss_list.append(losses["vqvae_loss"])
+
+        return losses
