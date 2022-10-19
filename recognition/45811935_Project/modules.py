@@ -96,7 +96,6 @@ class Encoder(Model):
         super(Encoder, self).__init__(name=name)
         self._latent_dim = latent_dim
 
-        # self.input1 = Input(input_shape=self._img_size)
         self.conv1 = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")
         self.conv2 = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")
         self.conv3 = layers.Conv2D(self._latent_dim, 1, padding="same")
@@ -146,11 +145,10 @@ class VQVAE(Model):
         Defines main VQ-VAE architecture.
     """
 
-    def __init__(self, tr_var, img_size=28, num_encoded=64, latent_dim=16,
-                 beta=0.25, name="vq_vae"):
+    def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, name="vq_vae"):
         super(VQVAE, self).__init__(name=name)
         self._tr_var = tr_var
-        self._img_size = img_size
+        # self._img_size = img_size (default was 28)
         self._num_encoded = num_encoded
         self._latent_dim = latent_dim
         self._beta = beta
