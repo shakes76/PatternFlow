@@ -2,8 +2,6 @@
 %2. It should also list any dependencies required, including versions and address reproduciblility of results, if applicable. -->
 
 # Classifying Alzheimers using Vision Transformers
-DESCRIPTION + PROBLEM IT SOLVES
-
 Using neural networks in the medical field is an exciting new field of work which can have huge implications for the accuracy of diagnosises and could improve treatment quality for patients. In this project we attempted to use Vision Transformers (ViT) to classify brain MRI scans to be used in the identification of Alzheimers disease. This work was largely based on the paper by [Dosovitskiy, et al. (2020)](#references). Technology like this can be used in various medical applications and can provide medical staff with assistance in identification and classification. Particularly in remote areas with less specialists, these models can assist doctor's preliminary diagnoses in ways never before seen. 
 
 ## How it works
@@ -57,7 +55,7 @@ ___
 ### Data Preparation / Preprocessing
 The preprocessed version of the [ADNI Alzheimers dataset](https://adni.loni.usc.edu/) was downloaded and unzipped into a folder. The data was split into a training and test set, with each dataset containing a split between alzheimers and control patients. Each patient had a unique patient ID which ensured their 20 images MRI images were kept together. This is important for splitting the training dataset into a validation set [(described below)](#dataset-splits).
 
-![](/images/dataset_patching_example.png) \
+![](images/dataset_patching_example.png) \
 *Above: Image after applying patching process*
 
 The data was imported into the model by using the ```keras.preprocessing.image_dataset_from_directory()``` method. All preprocessing was done within the keras model; using ```Rescaling```, ```RandomRotation``` and ```RandomFlip```. The rescaling is used to normalise the pixel values between [0, 1]. The rotation and flip augmentations are used to help preserve rotational, horizontal and vertical symmetries. All of which should help promote generalisability for brain images which aren't like the training set.
@@ -85,11 +83,11 @@ Below is a list of the different parameters, a description and the value used in
 ___
 After a large number of tests tuning the hyper-parameters, the model was trained using the ones listed above. 90% of the data from the training dataset was used to train with, and 10% used for validation [(split as described above)](#dataset-splits). The model was trained with the previously mentioned hyper-parameters on the UQ Rangpur GPU Cluster for 50 epochs. The testing and validation accuracy were 81.27% and 73.79% respectively.
 
-![](/images/model_accuracy.png)
+![](images/model_accuracy.png)
 
 The validation accuracy wasn't as smooth as the training, but still showed slow positive improvement. The loss was also quite eratic. 
 
-![](/images/model_loss.png)
+![](images/model_loss.png)
 
 These are all indicators that some level of overfitting may be occuring, which could be attributed to the fact that the datasets are relatively small. The original ViT paper was trained on datasets with between 14-300M images, while our dataset was only about 20~30K images.
 
