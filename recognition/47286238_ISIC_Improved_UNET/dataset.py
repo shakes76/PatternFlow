@@ -9,28 +9,12 @@ class Dataset(torch.utils.data.Dataset):
         self.truth_path = truth_path
         self.metadata = pandas.read_csv(metadata_path)
 
-    #     # Load dataset folders
-    #     self.folder_train = torchvision.datasets.ImageFolder('data/training', transform=t)
-    #     self.folder_test_data = torchvision.datasets.ImageFolder('data/test/data', transform=t)
-    #     self.folder_validation_data = torchvision.datasets.ImageFolder('data/validation/data', transform=t)
-
-    #     self.folder_test_truth = torchvision.datasets.ImageFolder('data/test/truth', transform=t)
-    #     self.folder_validation_truth = torchvision.datasets.ImageFolder('data/validation/truth', transform=t)
-
-    # def load(self, batch_size) -> None:
-    #     self.loader_train = torch.utils.data.DataLoader(self.folder_train, batch_size=batch_size, shuffle=True)
-    #     self.loader_test_data = torch.utils.data.DataLoader(self.folder_test_data, batch_size=batch_size)
-    #     self.loader_validation_data = torch.utils.data.DataLoader(self.folder_validation_data, batch_size=batch_size)
-
-    #     self.loader_test_truth = torch.utils.data.DataLoader(self.folder_test_truth, batch_size=batch_size)
-    #     self.loader_validation_truth = torch.utils.data.DataLoader(self.folder_validation_truth, batch_size=batch_size)
-
     def __len__(self):
         """
         Reports the size of the dataset
         Required in order to use DataLoader
         """
-        len_data = len([file for file in os.listdir(self.data_path) if os.path.isfile(file)])
+        len_data = len([file for file in os.listdir(self.data_path)])
         return len_data
 
     def __getitem__(self, key):
@@ -53,23 +37,17 @@ class Dataset(torch.utils.data.Dataset):
 
         return data, truth
 
-train = Dataset(data_path='data/training/data', truth_path='data/training/truth', metadata_path='data/training/data/ISIC-2017_Training_Data_metadata.csv')
-data, truth = train[0]
+dataset_train = Dataset(
+        data_path='data/training/data', 
+        truth_path='data/training/truth', 
+        metadata_path='data/training/data/ISIC-2017_Training_Data_metadata.csv'
+        )
+data, truth = dataset_train[0]
 print(data.max())
 print(data.min())
 print(data.shape)
 print(truth.max())
 print(truth.min())
 print(truth.shape)
+print(len(dataset_train))
 
-
-# testing data dimensions
-# FIXME: delete before PR
-# ds = Dataset()
-# ds.load(12)
-# enum = enumerate(ds.loader_train)
-# batch_no, (images, labels) = next(enum)
-# print(images.min())
-# print(images.max())
-# print(images.shape)
-# print(labels)
