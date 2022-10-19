@@ -20,5 +20,18 @@ in case the scale of output of each GCN layer increases. Why we do like this is 
 in layer "l". D^(-1/2)A(hat)D^(-1/2)H(l) is just matrix multiplication and then conducting a linear transformation by a weighting matrix W(l). After that, 
 we get the input feature matrix of the next layer by a non-linear activation function.
 ![GCN Equation picture](readMeImage/GCN_equation.png)
+### Facebook pages classification problem
+The Facebook pages classification problem requires carry out a semi supervised multi-class node classification using [Facebook Large Page-page Network 
+dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html). There're four classes for pages: politicians, governmental organization, 
+television shows and companies. Firstly, the dataset needs to be preprocessed so that it's adhere to the requirements of the GCN train model. This can 
+be done by the dataset.py. Next, we need to build a reasonable multilayer GCN model for this classification problem. This is done by the modules.py and 
+our GCN model has 4 layers. Then, we need to train our defined multilayer GCN model with suitable metric and optimizer while we validate our model with 
+validation data set. The loss and accuracy of the training and validating process should be drawn to some plots. This is done by the train.py. In this 
+file, we conduct a test to our model with test dataset and draw a TSNE graph to showcase clusters as well. At last, we pack our trained model in a 
+format can be used by user directly and showcase example usage of my trained model.
 ## Reference
 [1] https://arxiv.org/abs/1609.02907
+[2] https://snap.stanford.edu/data/facebook-large-page-page-network.html
+[3] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/FacebookNetworkGCN
+[4] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/s4521842_GCN/GCN
+[5] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/s4628887_Task_2_GCN
