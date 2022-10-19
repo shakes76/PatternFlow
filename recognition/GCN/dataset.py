@@ -62,7 +62,7 @@ def preprocess():
   from sklearn.utils import shuffle
   #shuffle targets and features
   # print(data['features'].tolist())
-  features, target = (shuffle(data['features']), data['target'])
+  features, target = ((data['features']), data['target'])
 
   # get a feature dictionary 
   features_df = pd.DataFrame(features, columns=np.arange(0, 128))
