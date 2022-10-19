@@ -41,3 +41,18 @@ def process_data(data_path, masks_path, image_size):
     masks = to_categorical(masks, num_classes = 2)
     
     return data, masks
+
+def train_val_test_split(data, train, val):
+    """
+    Creates a train, validation, test, split of the data
+    train + val < 1 is a prerequisite
+    """
+    length = len(data)
+    train_index = int(train * length)
+    val_index = train_index + int(val * length)
+
+    training = data[ : train_index]
+    validation = data[train_index : val_index]
+    testing = data[val_index : ]
+
+    return training, validation, testing
