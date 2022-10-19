@@ -2,16 +2,12 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 
 
-# from tensorflow import keras
-# from tensorflow.keras import layers
-
-
 class ImprovedUNET(tf.keras.Model):
 
     def __init__(self):
         super(ImprovedUNET, self).__init__()
         self.padding = "same"
-        self.initial_output = 32
+        self.initial_output = 16
         self.contextDropoutRate = 0.3
         self.leakyAlpha = 0.01
 
@@ -42,7 +38,7 @@ class ImprovedUNET(tf.keras.Model):
         return convolution2
 
     def data_pipe_line(self):
-        input = tf.keras.layers.Input(shape=(256, 256, 1))
+        input = tf.keras.layers.Input(shape=(256, 256, 3))
 
         # Encoder
 
