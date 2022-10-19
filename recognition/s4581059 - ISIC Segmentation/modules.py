@@ -4,14 +4,19 @@ import tensorflow as tf
 from keras.layers import Input, Conv3D, Dropout, Dense, UpSampling3D, Concatenate, Add
 from keras.models import Model
 
+relu = tf.keras.layers.LeakyReLU(alpha=1e-2)
+kernel_size = (3,3,3)
+
+def conv_block(input, num_filters):
+    conv_1 = Conv3D(num_filters, kernel_size)
+
 
 def model():
     """
     Model made up of an encoder, decoder and the concatenation of the 2
     """
     #"Throughout the network we use leaky ReLU nonlinearities with a negative slopes of 10^-2" - [1]
-    relu = tf.keras.layers.LeakyReLU(alpha=1e-2)
-    kernel_size = (3,3,3)
+    
     #Starting number of filters
     filters = 16
 

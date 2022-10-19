@@ -8,15 +8,9 @@ import numpy as np
 
 path = "C:/Users/danie/Downloads/ISIC DATA/"
 
-def train():
+def train_model():
     #Load in data
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = load_data(path)
-    
-    #Process Data
-    train_x = decode_image(train_x)
-    valid_x = decode_image(valid_x)
-    train_y = decode_mask(train_y)
-    valid_y = decode_mask(valid_y)
     
     #Define model
     improved_unet_model = model()
@@ -34,7 +28,11 @@ def train():
     
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_schedule)  # type: ignore
 
-    improved_unet_model.compile(optimizer=optimizer, loss='categorical_crossentropy')
+    improved_unet_model.compile(
+        optimizer=optimizer,
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=['accuracy']
+    )
 
     improved_unet_model.fit(
         train_x, 
@@ -44,6 +42,8 @@ def train():
         validation_data=(valid_x, valid_y),
         steps_per_epoch=12
     )
-    
     return improved_unet_model
+
+if __name__ == "__main__":
+    print(train_model())
    
