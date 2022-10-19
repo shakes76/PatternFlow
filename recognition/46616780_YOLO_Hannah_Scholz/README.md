@@ -88,11 +88,15 @@ The YOLOV5 has three main models available to train, a small, medium and large m
 I first started training the YOLOV5 small model. Each model takes varying amounts of time to train and memory 
 consumption. Since I am using Google Collaboratory to train the model I decided to start with the small model. Unfortunately 
 Google Collaboratory only has a limited amount of memory available and CPU processing provided for free and so was 
-difficult and a very long process to train the model without interruption.
+difficult and a very long process to train the model without interruption. I am using the pretrained backbone of YOLOV5, 
+the default hyper-parameters, apart from the batch size which I have maximised as recommended, and am using YOLOV5 
+pretrained weights. 
 
 ### Yolov5s - small
+As expected the YOLOV5 model increases in performance as the epochs increase, as an example different results from 
+varying epoch numbers are displayed below. The aim is to reach an mAP score of 0.8 or higher. 
 #### 4 Epochs:
-<img width="800" alt="4EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
+<img width="800" alt="4EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/Results_Yolov5s_4Ep.png">
 
 <img width="300" alt="Output1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/Output1.jpg"> <img width="300" alt="Output2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/Output2.jpg"><img width="300" alt="Output3" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/Output3.jpg">
 
@@ -110,6 +114,9 @@ difficult and a very long process to train the model without interruption.
 
 <img width="300" alt="Output1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example1.jpg"> <img width="300" alt="Output2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example2.jpg"><img width="300" alt="Output3" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example3.jpg"><img width="300" alt="Output4" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example4.jpg"><img width="300" alt="Output5" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example5.jpg">
 
+As we can see from these results a metric/mAP_0.5 and metric/mAP_0.5:0.95 are slowly getting better and better, although 
+do not seem to be increasing any further after 300 epochs.
+Next is to train using the medium YOLOv5 model instead.
 
 ### Yolov5m - medium 
 #### 4 Epochs:
