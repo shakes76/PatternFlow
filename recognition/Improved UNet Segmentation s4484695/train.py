@@ -1,4 +1,5 @@
 from cProfile import label
+from turtle import title
 import dataset
 import modules
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ import time
 import numpy as np
 
 # Hyper-parameters
-num_epochs = 5
+num_epochs = 2
 learning_rate = 5 * 10**-2
 batchSize = 64
 learning_rate_decay = 0.985
@@ -113,10 +114,12 @@ def train_and_validate(dataLoaders, model, device):
 
     print("Training and Validation Commenced:")
     start = time.time()
+    epochNumber = 0
 
     for epoch in range(num_epochs):
+        epochNumber += 1
         train_loss, train_coeff = train(dataLoaders["train"], model, device, criterion, optimizer, scheduler)
-        valid_loss, valid_coeff = validate(dataLoaders["valid"], model, device, criterion)
+        valid_loss, valid_coeff = validate(dataLoaders["valid"], model, device, criterion, epochNumber)
 
         losses_training.append(train_loss)
         dice_similarities_training.append(train_coeff)
@@ -160,14 +163,14 @@ def train(dataLoader, model, device, criterion, optimizer, scheduler):
 
     return get_average(losses), get_average(coefficients)
 
-def validate(dataLoader, model, device, criterion):
+def validate(dataLoader, model, device, criterion, epochNumber):
 
     losses = list()
     coefficients = list()
 
     model.eval()
     with torch.no_grad():
-        for images, labels in dataLoader:
+        for step, (images, labels) in enumerate(dataLoader):
             images = images.to(device)
             labels = labels.to(device)
 
@@ -175,6 +178,9 @@ def validate(dataLoader, model, device, criterion):
             loss = criterion(outputs, labels)
             losses.append(loss.item())
             coefficients.append(dice_coefficient(outputs, labels).item())
+
+            if (step == 0):
+                save_segments(images, labels, outputs, 9, epochNumber)
     
     return get_average(losses), get_average(coefficients)
 
@@ -236,6 +242,42 @@ def display_test(dataLoader):
         axs[row][1].imshow(label, cmap="gray")
 
     plt.show()
+
+def save_segments(images, labels, outputs, numComparisons, epochNumber):
+    if numComparisons > batchSize:
+        numComparisons = batchSize
+    
+    images=images.cpu()
+    labels=labels.cpu()
+    outputs=outputs.cpu()
+
+    fig, axs = plt.subplots(numComparisons, 3)
+    axs[0][0].set_title("Image")
+    axs[0][1].set_title("Ground Truth")
+    axs[0][2].set_title("Predicted")
+    for row in range(numComparisons):
+        img = images[row]
+        img = img.permute(1,2,0).numpy()
+        label = labels[row]
+        label = label.permute(1,2,0).numpy()
+        pred = outputs[row]
+        pred = pred.permute(1,2,0).numpy()
+        axs[row][0].imshow(img)
+        axs[row][0].xaxis.set_visible(False)
+        axs[row][0].yaxis.set_visible(False)
+
+        axs[row][1].imshow(label, cmap="gray")
+        axs[row][1].xaxis.set_visible(False)
+        axs[row][1].yaxis.set_visible(False)
+
+        axs[row][2].imshow(pred, cmap="gray")
+        axs[row][2].xaxis.set_visible(False)
+        axs[row][2].yaxis.set_visible(False)
+    
+    fig.suptitle("Validation Segments Epoch: " + str(epochNumber))
+    #fig.tight_layout()
+    plt.savefig("ValidationSegmentsEpoch" + str(epochNumber))
+    plt.close()
 
 def save_list_as_scatter(trainList, valList, type, path):
     if (len(trainList) != len(valList)):
