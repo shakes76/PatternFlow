@@ -19,10 +19,10 @@ from .modules import loss_fn
 from .dataset import get_zipped_dataset, normalize, set_train_batch
 
 # Parameters
-PATH = "./dataset" # The path of zipped image dataset
+PATH = "/Users/wangzhao/Documents/dataset/keras_png_slices_data.zip" # The path of zipped image dataset
 NUMBER_OF_SAMPLES = 2000 # The number of image samples used to training
 IMAGE_SIZE = (64, 64)
-CKPT_PATH = "./checkpoint" # The path of the checkpoint
+CKPT_PATH = "/Users/wangzhao/Documents/checkpoint" # The path of the checkpoint
 EPOCS = 30
 BATCH_SIZE = 64 # set 16 in (128, 128) image size and 4 in (256, 256) image.
                 # otherwise, the graphic memory will be "Out of Memory"
