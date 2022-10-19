@@ -16,7 +16,7 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 
-def get_zipped_dataset(path):
+def get_zipped_dataset(path, image_size):
   """
   Reading zipped dataset from the path.
   Parameters:
@@ -28,7 +28,7 @@ def get_zipped_dataset(path):
   image_list = zipped_images.namelist()
   image_list = [image for image in image_list if '.png' in image]
   train_images = np.array([np.array(Image.open(zipped_images.open(image))
-                                  .resize((128,128))) for image in image_list])
+                                  .resize(image_size)) for image in image_list])
   return train_images
 
 def normalize(dataset):
