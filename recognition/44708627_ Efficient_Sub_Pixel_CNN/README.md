@@ -74,3 +74,5 @@ Utlize BICUBIC to downsample an image by a specified factor.
 Reconstruct a low-resolution image to a high-resolution through a model.
 ### plot_results
 Plot results with additional zoom-in at a facotor of 4
+### ESPCNCallback
+The ESPCNCallback object will compute and display the PSNR metric during training and testing
