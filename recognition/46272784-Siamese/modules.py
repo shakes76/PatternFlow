@@ -18,15 +18,14 @@ import matplotlib.pyplot as plt
 
 def generatePairs(ad, nc, batch=8):
     # DataGenerator for weak augmentation
-    # datagen = keras.preprocessing.image.ImageDataGenerator(rotation_range=25,
-    #                                                        width_shift_range=0.2,
-    #                                                        height_shift_range=0.2)
+    datagen = keras.Sequential([layers.experimental.preprocessing.RandomRotation(0.25),
+                                layers.experimental.preprocessing.RandomHeight(0.2),
+                                layers.experimental.preprocessing.RandomWidth(0.2)])
     # datagen.fit(ad)
     # ad = datagen.flow(ad)
     
     # datagen.fit(nc)
     # nc = datagen.flow(nc)
-    
     ad = ad.unbatch()
     nc = nc.unbatch()
     # Zipping the data into pairs and give them labels
@@ -37,6 +36,9 @@ def generatePairs(ad, nc, batch=8):
     # Sample (concatinate) all four image-label pair datasets
     combined_ds = data.experimental.sample_from_datasets([diff1, diff2, same1, same2])
     combined_ds = combined_ds.batch(batch_size=batch)
+    for im1, im2, _ in combined_ds:
+        im1 = datagen(im1)
+        im2 = datagen(im2)
     return combined_ds
     
 
