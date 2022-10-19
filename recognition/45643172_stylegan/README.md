@@ -1,5 +1,8 @@
 # Generator Model of the OASIS Brain dataset Using StyleGAN
 
+This project aims to use the OASIS brain dataset to train StyleGAN and generate clear images.
+It is worth noting that the given dataset has been divided into training set, test set and validation set.
+
 ## Introduction
 
 ### GAN
@@ -41,6 +44,15 @@ The AdaIN layers involve first standardizing the output of feature map to a stan
     <br>
     <em> traditional GAN generator vs StyleGAN generator.</em>
 </p>
+
+## Requirments
+
+- Windows or Linux OS
+- python 3.8
+- tensorflow 2.9.2
+- matplotlib 2.2.3
+- numpy 1.23.1
+- good gpu, what I used is colab premium gpu.
 
 
 
