@@ -97,3 +97,17 @@ class VectorQuantizer(layers.Layer):
       #Straight through estimator between decoder and encoder.
       quantized = x + tf.stop_gradient(quantized - x)
       return quantized
+
+
+def vqvae_model(latent_dim=16, num_embeddings=64):
+  """
+  Vqvae model that combines the encoder, vq-layer, and decoder 
+  """
+  encoder_model = encoder(latent_dim)
+  decoder_model = decoder(latent_dim)
+  encoder_inputs = keras.Input(shape=(128, 128, 1))
+  vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
+  vq_layer_inputs = encoder_model(encoder_inputs)
+  decoder_inputs = vq_layer(vq_layer_inputs)
+  vqvae_output = decoder_model(decoder_inputs)
+  return keras.Model(encoder_inputs, vqvae_output, name="vq_vae")      
