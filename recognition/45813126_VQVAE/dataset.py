@@ -1,5 +1,4 @@
-import tensorflow as tf
-from matplotlib import image, pyplot
+from matplotlib import image
 import glob
 import numpy as np
 
@@ -14,6 +13,13 @@ class Dataset:
         self.test_labels_path = path + "/keras_png_slices_seg_test"
         self.valid_data_path = path + "/keras_png_slices_validate"
         self.valid_labels_path = path + "/keras_png_slices_seg_validate"
+
+        self.train_data = self.load_process_images(self.train_data_path)
+        self.train_labels = self.load_process_labels(self.train_labels_path)
+        self.test_data = self.load_process_images(self.test_data_path)
+        self.test_labels = self.load_process_labels(self.test_labels_path)
+        self.valid_data = self.load_process_images(self.valid_data_path)
+        self.valid_labels = self.load_process_labels(self.valid_labels_path)
 
     # Load and process the data at the given path
     def load_process_images(self, path):
@@ -57,5 +63,3 @@ class Dataset:
                 one_hot_encs.append(one_hot_enc)
 
         return np.array(one_hot_encs)
-
-
