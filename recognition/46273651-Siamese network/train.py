@@ -24,6 +24,7 @@ def main():
     # create the model
     siamese = modules.siamese
 
+
     if training:
         optimizer = tf.keras.optimizers.Adam(0.00006)
         loss_tracker = tf.keras.metrics.Mean(name="loss")
