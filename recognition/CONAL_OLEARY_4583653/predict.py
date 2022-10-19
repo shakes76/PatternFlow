@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow_probability as tfp
 
+# Constants
 BATCH = 20
 
 
@@ -31,11 +32,10 @@ def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
     out = pixelCNN.predict(test)
     out = np.expand_dims(out[0], axis=0)
 
+    # Create the priors
     shape = ((BATCH,) + out.shape[1:])
     priors = tf.zeros(shape=shape)
     batch, rows, cols, embedding_count = priors.shape
-
-    # Create the priors
 
     # Iterate over the priors pixel by pixel.
     for row in range(rows):
@@ -45,8 +45,8 @@ def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
             x = pixelCNN(priors, training=False)
             dist = tfp.distributions.Categorical(logits=x)
             sampled = dist.sample()
-            sampled2 = tf.one_hot(sampled, 256)
-            priors = sampled2
+            sampled_code = tf.one_hot(sampled, 256)
+            priors = sampled_code
     print(f"Prior shape: {priors.shape}")
 
     embedding_dim = vqvae.vq_layer.embedding_dim
@@ -54,8 +54,6 @@ def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
     pixels = tf.constant(priors, dtype="float32")
 
     quantized = tf.matmul(pixels, pretrained_embeddings, transpose_b=True)
-    print(quantized.shape)
-    print(sampled.shape)
     # Plot the priors codebooks
     for i in range(batch):
         plt.figure()

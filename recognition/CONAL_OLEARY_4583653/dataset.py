@@ -4,7 +4,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-
+# Constants
 BUFFER_SIZE = 1500
 BATCH_SIZE = 32
 DIRECTORY_PATH = "/content/data/"

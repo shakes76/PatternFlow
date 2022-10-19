@@ -24,6 +24,7 @@ def trainPixelCNN(vqvae, pixelCNN, slice_train, slice_test):
       slice_train: The training dataset
       slice_test: The test dataset
     """
+    # Create codebooks from train dataset
     encoded_outputs = vqvae.encoder.predict(slice_test)
     shape = tf.shape(encoded_outputs).numpy()
 

@@ -238,6 +238,7 @@ class VQVAE(keras.models.Model):
         codebook_indices = codebook_indices.numpy().reshape(
             encoded_outputs.shape[:-1])
 
+        # Plot the Original Images vs their codebooks
         for i in range(len(test_images)):
             plt.subplot(1, 2, 1)
             plt.imshow(test_images[i].squeeze() + 0.5, cmap="gray")
