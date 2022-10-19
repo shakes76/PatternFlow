@@ -48,17 +48,17 @@ class Block(nn.Module):
             self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
             self.transform = nn.Conv2d(out_ch, out_ch, 4, 2, 1)
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
-        self.gnorm1 = nn.GroupNorm(1, out_ch)
-        self.gnorm2 = nn.GroupNorm(1, out_ch)
+        self.bnorm1 = nn.GroupNorm(1, out_ch)
+        self.bnorm2 = nn.GroupNorm(1, out_ch)
         self.relu  = nn.ReLU()
         
     def forward(self, x, t, ):
-        h = self.gnorm1(self.relu(self.conv1(x)))
+        h = self.bnorm1(self.relu(self.conv1(x)))
         time_emb = self.relu(self.time_mlp(t))
         time_emb = time_emb[(..., ) + (None, ) * 2]
         # Append time embeddings as extra channel
         h = h + time_emb
-        h = self.gnorm2(self.relu(self.conv2(h)))
+        h = self.bnorm2(self.relu(self.conv2(h)))
         return self.transform(h)
 
 class SinusoidalPositionEmbeddings(nn.Module):
