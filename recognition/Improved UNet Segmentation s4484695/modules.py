@@ -139,9 +139,10 @@ class Improved2DUnet(nn.Module):
         #print(out.size())
         #seg_layer = out
         #print(out.size())
-        #out = out.permute(0,2,3,1).contiguous().view(-1, self.out_channels)
+        #out = out.permute(0,2,3,1)
         #print(out.size())
-        out = self.softmax(out)
+        out= torch.sigmoid(out)
+        #out = self.softmax(out)
         #print(out.size())
 
         return out
