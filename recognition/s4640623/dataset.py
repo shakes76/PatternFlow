@@ -11,8 +11,7 @@ https://github.com/tkipf/gcn/tree/master/gcn
 """
 
 import numpy as np
-import tensorflow as tf
-
+import torch
 from google.colab import drive
 
 """Load facebook data
@@ -27,34 +26,30 @@ def load_data(path='/content/gdrive', file='/MyDrive/Colab Notebooks/Lab 3/faceb
 data = load_data()
 
 def process_data(dataset):
-  train_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features']
-                                       [0:round(data['features'].size/3)]),
-    tf.data.Dataset.from_tensor_slices(data['edges'][0:round(data['features'].size/3)])
-  )).batch(64)
+  train_ds = range(0,round(data['features'].shape[0]/3))
+  valid_ds = range(round(data['features'].shape[0]/3), round(2*data['features'].shape[0]/3))
+  test_ds = range(round(2*data['features'].shape[0]/3), round(2*data['features'].shape[0]))
 
-  valid_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features']
-                                       [round(data['features'].size/3):
-                                       round(2*data['features'].size/3)]),
-    tf.data.Dataset.from_tensor_slices(data['edges'][round(data['features'].size/3):
-                                       round(2*data['features'].size/3)])
-  )).batch(64)
+  train_ds = torch.LongTensor(train_ds)
+  valid_ds = torch.LongTensor(valid_ds)
+  test_ds = torch.LongTensor(test_ds)
 
-  test_ds = tf.data.Dataset.zip((
-    tf.data.Dataset.from_tensor_slices(data['features']
-                                       [round(2*data['features'].size/3):]),
-    tf.data.Dataset.from_tensor_slices(data['edges']
-                                       [round(2*data['features'].size/3):])
-  )).batch(64)
+  features = torch.as_tensor(data['features'])
+  features = features[0:round(features.size(dim = 0)/3), :]
+  target = torch.from_numpy(data['target'])
+  edges = torch.from_numpy(data['edges'])
 
-  return train_ds, valid_ds, test_ds
+  return train_ds, valid_ds, test_ds, features, target, edges
 
+train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
 for item in data.files:
     print(item)
-    print(1)
     print(data[item])
     print(data[item].size)
 
+for n in range(data['target'].size):
+  print(data['target'][n])
+
 train, valid, test = process_data(data)
-print(train)
+for element in train:
+  print(element)
