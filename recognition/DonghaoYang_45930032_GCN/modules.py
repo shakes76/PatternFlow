@@ -1,5 +1,7 @@
 """
 modules.py containing the source code of the components of my GCN model.
+Reference: [1]https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/blob/topic-recognition/recognition/s4628887_Task_2_GCN/GCNConv.py
+           [2]https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/blob/topic-recognition/recognition/s4628887_Task_2_GCN/model.py
 """
 
 # All needed library for creating a GCN model.

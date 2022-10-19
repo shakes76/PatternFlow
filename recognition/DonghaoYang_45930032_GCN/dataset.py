@@ -1,5 +1,6 @@
 """
 dataset.py containing the data loader for loading and preprocessing data
+Reference: https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/blob/topic-recognition/recognition/s4521842_GCN/GCN/data_preprocessing.py
 """
 
 # All needed library for loading and preprocessing data

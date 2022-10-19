@@ -1,6 +1,7 @@
 """
 "train.py" containing the source code for training, validating, testing and saving my model. The model is
 imported from "modules.py" and the data loader is imported from "dataset.py".
+Reference: https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/blob/topic-recognition/recognition/s4628887_Task_2_GCN/GCN_Node_Classification.ipynb
 """
 
 # All needed library for training and testing the GCN model.
