@@ -8,6 +8,9 @@
 7. [Example Inputs/Outputs](#example-inputs--outputs)
 8. [Plot of Algorithm](#plot-of-algorithm)
 9. [Pre-processing](#pre-processing)
+   - Preventing Data Leakage
+   - Cropping to Improve Computational Efficiency
+   - Expanding the Dataset with Augmentation
 10. [Training and Validation Splits](#training--validation-splits)
 11. [References](#references)
 
@@ -68,18 +71,31 @@ CNNs are local, self-attention is global
 # Figure / Visualizaton
 
 - training loss and accuracy (best, anomolies)
+  - validation accuracy above training accuracy
+  - good loss / accuracy plot, terrible test results
+  - stagnation
+  - sgd vs adam for same parameters
 - table of experiments
-- vit Model (in algorithm description)
+
 - 
+
+
+
+ 
 [Back to Top](#section-navigation)
 # Dependencies
 
-python 3.9
-matplotlib
-tensorflow 2.9
-numpy
-keras_cv
-tensorflow_addons
+### Image Preprocessing
+- augmentor
+- python 10
+
+### ViT
+- python 3.9
+- matplotlib
+- tensorflow 2.9
+- numpy
+- keras_cv
+- tensorflow_addons
 
 [Back to Top](#section-navigation)
 # Reproducibility of Results
@@ -104,8 +120,54 @@ tensorflow_addons
 4. augment
 
 
+The ADNI images are received in a zip format.  Extracted images are placed in the following file structure:
+
+```bash
+├───test
+│   ├───AD
+│   └───NC
+├───train
+│   ├───AD
+│   └───NC
+```
+
+The test set contains 9000 images of which 4460 are AD and 4540 are NC.  The training set contains 19360 images, of which 9360 are AD and 10000 are NC.  
+
+Here is image "218391_78.jpeg" from the AD folder:
+
+![This is an image](./images/218391_78.jpeg)
+
+Here is image "839474_78.jpeg" from the NC folder:
+
+![This is an image](./images/839474_78.jpeg)
+
+The files names appear to be formatted such that the numbers separated by "_" has some significance.  An assumption can be made that the first number is a patient ID and the second number is an image ID for this patient.  This assumption is supported by the fact that each ID is associated with 20 images.  Thus the 9360 training images for class "AD" contain images from 468 unique patients.
+
+#### Potential for Data Leakage
+
+This insight into the provenance of the filename has important implications for the selection of a method to generate a validation set.  If patient IDs are not taken into consideration and validation images are selected at random from the training set, then it would be possible for the images of one or more patients to appear in both the training and validation ("data leakage").  Thus a python script was created to generate the validation set taking into account the patient ID so that no images for any single patient are found in both the training and validation set.  
+
+#### Additional Observations Regarding Images
+
+Three additional observations regarding the images have implications for our pre-processing.  The first is that the images have the shape 256 x 240 (w x h).  The vision transformer requires square images from which to make patches so each image will need to be cropped.  Furthermore we can see that there is lots of empty space around each brain image.  Assuming the empty space will not play a role in classification performance, we can crop the images to a smaller size.  The benefit to the model is computational - for the same patch size, fewer patches will need to be processed for each image.  However, the brains will have variation in size and relative position on the image so care must be taken to select the minimum size that will reliably capture all brain images.  After some tinkering, an image size of 200 x 200 was found to significantly reduce empty space while also ensuring no brains were cropped.
+
+#### Mitigating The Impact of Dataset Size on ViT Performance
+
+
+
+
+This is a grayscale image with the dimensions 256 x 240.   
+- lots of empty space
+- orientation
+- brightness
+- 
+
+
+
+
 [Back to Top](#section-navigation)
 # Training & Validation Splits
+
 
 [Back to Top](#section-navigation)
 # References
@@ -117,3 +179,14 @@ $^2$ https://adni.loni.usc.edu/
 $n_{1}$
 
 [Back to Top](#section-navigation)
+
+To do:
+
+footnotes? 
+
+[^2].
+
+[^2]: 
+
+model summary from tensorflow
+
