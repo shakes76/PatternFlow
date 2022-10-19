@@ -40,7 +40,7 @@ Diffusion papers:
 1. Create a folder with training images in the local directory (eg. `PatternFlow/recognition/images`). There are no requirements on image size or naming. All images within the this folder will resized and used to train the model.
 2. Run the training script: `python train.py name path` which will start training. Every epoch a test image will be generated and saved to `./out` and a denoising timestep plot will be save to `./plot`.
    
-3. Tensorboard is also supported and training is saved to `./runs`. You can launch tensorboard using: `tensorboard --logdir ./`
+3. Tensorboard is also supported and training is saved to `./runs`. You can launch tensorboard using: `tensorboard --logdir ./` to view loss metrics during training.
 
 4. Once training has finished, the model will be saved as `name.pth` in the local directory. Additionally every epoch an `autosave.pth` file is also created.
 
