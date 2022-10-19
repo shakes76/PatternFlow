@@ -7,6 +7,10 @@ Lower MSE indicates higher PSNR and reconstruction quality.
 The basic structure was inspired by ESPCN (Efficient Sub-Pixel CNN) proposed by Shi, 2016 and Keras implementation by Long, 2020. The model was also embedded with Residual Dense Blocks, inspired by Chakraborty, 2021. Residual blocks prevented early saturation or degradation with accuracy from increasing number of layers.
 
 ADNI MRI Dataset were used in this work (see citation)
+
+## Importance of this work
+MRI in modern medicine require continuous monitoring human organs in real-time. High-resolution MRI scan could take up to 90 mintues for each scan, and hardly capture the dynamic change in human body. Real-time MRI was possible only with low image quality fast scans, as MRI scanning is done in time-based k-space. Super-Resolution algorithms will be very helpful to provide a higher-resoltion image for better disease diagnosing.
+
 ## Dependencies and Versions
 
 - Ubuntu 16.04 or higher (Ubuntu 22.04.1 LTS was in used)
@@ -57,6 +61,9 @@ The dataset has 30520 samples of Alzheimer’s disease (AD) and Cognitive Normal
 
 The dataset was resized to 300x300 and normalized from scale of (0,255) to (0,1).\
 Both train_ds and validation_ds were assigned in form of **tuple** (low-res_ds, high-res_ds).
+### Dependencies
+crop_size = 300
+upscale_factor = 4
 
 ## Utility functions
 These are some important utility functions, details are commented thoughout the code.
