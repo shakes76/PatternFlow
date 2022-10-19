@@ -13,6 +13,9 @@ https://github.com/tkipf/gcn/tree/master/gcn
 import numpy as np
 import torch
 from google.colab import drive
+import scipy.sparse as sp
+
+train_size = 3 # Number to divide dataset by for train, valid and test datasets
 
 """Load facebook data
 
@@ -40,6 +43,42 @@ def process_data(dataset):
   edges = torch.from_numpy(data['edges'])
 
   return train_ds, valid_ds, test_ds, features, target, edges
+
+def normalize(mx):
+  r_inv = np.power(np.array(mx.sum(1)), -1).flatten()
+  r_inv[np.isinf(r_inv)] = 0.
+  r_mat_inv = sp.diags(r_inv)
+  mx = r_mat_inv.dot(mx)
+  return mx
+
+def sparse_mx_to_sparse_tensor(mx):
+  mx = mx.tocoo().astype(np.float32)
+  indices = torch.from_numpy(
+      np.vstack((mx.row, mx.col)).astype(np.int64))
+  values = torch.from_numpy(mx.data)
+  shape = torch.Size(mx.shape)
+  return torch.sparse.FloatTensor(indices, values, shape)
+
+def adj_matrix(data):
+  edge_size = round(data['edges'].shape[0]/train_size)
+  target_size = round(data['target'].shape[0]/train_size)
+  #print(data['edges'].shape[0].max())
+  print(edge_size, target_size)
+
+  adj = sp.coo_matrix((np.ones(data['edges'].shape[0]), 
+                       (data['edges'][0:data['edges'].shape[0], 0], 
+                        data['edges'][0:data['edges'].shape[0], 1])),
+                      shape=(data['target'].shape[0], data['target'].shape[0]), 
+                      dtype=np.float32)
+  adj.resize((target_size, target_size))
+  #DEBUG
+  edge_size = round(data['edges'].shape[0])
+  target_size = round(data['target'].shape[0])
+  #DEBUG END
+  adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+  adj = normalize(adj + sp.eye(adj.shape[0]))
+  adj = sparse_mx_to_sparse_tensor(adj)
+  return adj
 
 train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
 for item in data.files:
