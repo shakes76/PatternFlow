@@ -52,12 +52,13 @@ image_sum = full_train_data.reduce(np.float32(0), lambda x, y: x + y).numpy().fl
 total_pixel_sum = image_sum.sum()
 mean_pixel_train = total_pixel_sum / num_train_pixels
 
-image_sse = full_train_data.reduce(np.float32(0), lambda x, y: x + (y - mean_pixel_train) ** 2)\
-                           .numpy().flatten()
+image_sse = full_train_data.reduce(np.float32(0), lambda x, y: x + (y - mean_pixel_train) ** 2) \
+    .numpy().flatten()
 var_pixel_train = image_sse.sum() / (num_train_pixels - 1)
 
 # Create VQ-VAE model
 vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM)
+
 
 # Define SSIM metric and Callback
 
@@ -97,6 +98,7 @@ def mean_ssim(data, model):
 
 class SSIMTracking(keras.callbacks.Callback):
     """ Calculates and displays the mean SSIM after each epoch """
+
     def __init__(self, dataset, dataset_name="Training"):
         super(SSIMTracking, self).__init__()
         self._dataset = dataset
@@ -118,9 +120,6 @@ with tf.device(device):
                         callbacks=[SSIMTracking(dataset=train_data),
                                    SSIMTracking(val_data, dataset_name="Validation")]
                         )
-
-
-
 
 # Save
 

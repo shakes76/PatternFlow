@@ -187,7 +187,7 @@ class VQVAE(Model):
         """
         with tf.GradientTape() as tape:
             # Get reconstructions
-            recon = self.vqvae(data)
+            recon = self(data)
 
             # Obtain loss values
             reconstruction_loss_val = (
@@ -200,24 +200,24 @@ class VQVAE(Model):
         self.optimizer.apply_gradients(zip(grads, self.trainable_variables))
 
         # Update loss values
-        self.total_loss.update_state(total_loss_val)
-        self.reconstruction_loss.update_state(reconstruction_loss_val)
-        self.vq_loss.update_state(sum(self.get_vq().losses))
+        self._total_loss.update_state(total_loss_val)
+        self._reconstruction_loss.update_state(reconstruction_loss_val)
+        self._vq_loss.update_state(sum(self.get_vq().losses))
 
         # Log results.
         return {
-            "loss": self.total_loss.result(),
-            "vq_loss": self.vq_loss.result(),
-            "reconstruction_loss": self.reconstruction_loss.result(),
+            "loss": self._total_loss.result(),
+            "vq_loss": self._vq_loss.result(),
+            "reconstruction_loss": self._reconstruction_loss.result(),
         }
 
     @property
     def metrics(self):
         """ Returns metrics """
         return [
-            self.total_loss,
-            self.vq_loss,
-            self.reconstruction_loss,
+            self._total_loss,
+            self._vq_loss,
+            self._reconstruction_loss,
         ]
 
     def get_encoder(self):
