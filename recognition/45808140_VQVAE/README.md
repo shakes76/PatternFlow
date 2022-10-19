@@ -2,16 +2,25 @@
 ## **Overview**
 This project aims to create a generative model for the ADNI dataset using VQVAE and PixelCNN. We use VQVAE to create discrete latent codebooks for which we will feed into PixelCNN to learn how to generate new codebook images that will decode into new brain images. We look to achieve this by getting at least 0.6 SSIM in the VQVAE model.
 
-### **Data processing**
-There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset on COMP3710 blackboard the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for the train set and ~9000 images for the testing set. We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
-
 # **Models**
 
 ## **VQVAE Model**
 ---
 <div style="text-align:center"><img src="./vqvae_model.png" /></div>
 
-The image above depicts the high-level structure of a VQVAE. Essentially, we encode the input image then learn the discrete latent space which maps the embedding space then we deocode the image using the embedded codebooks. 
+The image above depicts the high-level structure of a VQVAE model which consists of an encoder, vector quantisation layer and a decoder. 
+
+This is essentially an extension of the VAE model (image below) in which we feed input into the encoder to generate the latent vector representation then build out latent space by enforcing a uniform prior and determining the posterior for the latent space. Then we feed this through the decoder to reconstruct the image.
+
+<div style="text-align:center"><img src="./vae_model.png" height=500/></div>
+
+With the VQVAE we incorporate a vector-quantisation layer and use discrete latent representation and a discrete codebook. The codebook stores the latent vectors associated with a corresponding index. We use this to quantise the autoencoder to compare the output of the encoder to the codebooks and the codebook vector that is closest in euclidean distance is given to the decoder 
+
+ to determine the posterior distribution of latent random variables given the input, essentially, compressing the data into the latent space. 
+
+we encode the input image then learn the discrete latent space which maps the embedding space then we deocode the image using the embedded codebooks. 
+
+Define losses and break down model
 
 ### **VQVAE results**
 ---
@@ -38,6 +47,10 @@ PixelCNN uses convolutional layers to learn features for all pixels at the same 
 The following is the loss plot of the PixelCNN model. We notice that the loss decreases significantly in the beginning and only has incremental improvements after 20 epochs.
 
 <div style="text-align:center"><img src="./results/pcnn_result_graph.png" /></div>
+
+
+### **Data processing**
+There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset on COMP3710 blackboard the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for the train set and ~9000 images for the testing set. We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
 
 
 
