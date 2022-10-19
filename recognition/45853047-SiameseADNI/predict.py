@@ -19,7 +19,7 @@ def predict():
     for pair, label in classify_test_data:
         pred = classifier.predict(pair)
         for i in range(len(pred)):
-            print("Prediction: ", pred[i].eval())
+            print("Prediction: ", pred[i])
             print("Actual: ", label[i])
         break 
 
