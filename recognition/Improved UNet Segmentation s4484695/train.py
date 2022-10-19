@@ -23,10 +23,8 @@ learning_rate_decay = 0.985
 
 validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images"
 trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images"
-testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Images"
 validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels"
 trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels"
-testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Test\Labels"
 
 # Discovery path only needs to be specified if calling function calculate_mean_std.
 discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
@@ -36,10 +34,8 @@ discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\
 
 # validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Images"
 # trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
-# testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Test\Images"
 # validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Labels"
 # trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
-# testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Test\Labels"
 
 # # Discovery path only needs to be specified if calling function calculate_mean_std.
 # discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
@@ -49,10 +45,8 @@ discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\
 
 # validationImagesPath = "../../../Data/Validation/Images"
 # trainImagesPath = "../../../Data/Train/Images"
-# testImagesPath = "../../../Data/Test/Images"
 # validationLabelsPath = "../../../Data/Validation/Labels"
 # trainLabelsPath = "../../../Data/Train/Labels"
-# testLabelsPath = "../../../Data/Test/Labels"
 
 # # Discovery path only needs to be specified if calling function calculate_mean_std.
 # discoveryImagesPath = trainImagesPath
@@ -67,8 +61,6 @@ def init():
     validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=False)
     trainDataSet = dataset.ISIC2017DataSet(trainImagesPath, trainLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     trainDataloader = DataLoader(trainDataSet, batch_size=batchSize, shuffle=True)
-    testDataSet = dataset.ISIC2017DataSet(testImagesPath, testLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
-    testDataloader = DataLoader(testDataSet, batch_size=batchSize, shuffle=False)
 
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -78,12 +70,10 @@ def init():
     dataLoaders = dict()
     dataLoaders["valid"] = validDataloader
     dataLoaders["train"] = trainDataloader
-    dataLoaders["test"] = testDataloader
 
     dataSets = dict()
     dataSets["valid"] = validDataSet
     dataSets["train"] = trainDataSet
-    dataSets["test"] = testDataSet
 
     return dataSets, dataLoaders, device
 
@@ -243,7 +233,7 @@ def display_test(dataLoader):
 
     plt.show()
 
-def save_segments(images, labels, outputs, numComparisons, epochNumber):
+def save_segments(images, labels, outputs, numComparisons, epochNumber=num_epochs, test=False):
     if numComparisons > batchSize:
         numComparisons = batchSize
     
@@ -274,9 +264,14 @@ def save_segments(images, labels, outputs, numComparisons, epochNumber):
         axs[row][2].xaxis.set_visible(False)
         axs[row][2].yaxis.set_visible(False)
     
-    fig.suptitle("Validation Segments Epoch: " + str(epochNumber))
-    #fig.tight_layout()
-    plt.savefig("ValidationSegmentsEpoch" + str(epochNumber))
+    if (not test):
+        fig.suptitle("Validation Segments Epoch: " + str(epochNumber))
+        #fig.tight_layout()
+        plt.savefig("ValidationSegmentsEpoch" + str(epochNumber))
+    else:
+        fig.suptitle("Test Segments")
+        #fig.tight_layout()
+        plt.savefig("TestSegments")
     plt.close()
 
 def save_list_as_scatter(trainList, valList, type, path):
@@ -325,5 +320,5 @@ def calculate_mean_std():
     print('mean: '  + str(total_mean))
     print('std:  '  + str(total_std))
 
-
-main()
+if __name__ == "__main__":
+    main()
