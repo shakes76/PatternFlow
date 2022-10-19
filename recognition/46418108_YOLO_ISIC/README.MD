@@ -12,8 +12,11 @@ This package utilizes [YOLOv5](https://github.com/ultralytics/yolov5) to train a
 
 
 ### Dependencies 
-
-
+- PyTorch
+- Pillow
+- Git
+- [YOLOv5](https://github.com/ultralytics/yolov5)
+- 
 ### Data
 
 
@@ -24,6 +27,7 @@ The following two images show examples of inference using the model. It can be s
 <p align="center"><img src="./Results/ISIC_0000020.jpg" width="800"></p>
 The following image shows the results from the training:
 <p align="center"><img src="./Results/results.png" width="800"></p>
+<p align="center"><img src="./Results/model_summary.png" width="800"></p>
 
 ## Installation
 
