@@ -55,7 +55,15 @@ The AdaIN layers involve first standardizing the output of feature map to a stan
 - good gpu, what I used is colab premium gpu.
 
 
+## References
 
+https://machinelearningmastery.com/introduction-to-style-generative-adversarial-network-stylegan/
+
+https://machinelearningmastery.com/introduction-to-progressive-growing-generative-adversarial-networks/
+
+https://github.com/keras-team/keras-io
+
+https://github.com/NVlabs/stylegan
 
 
 
