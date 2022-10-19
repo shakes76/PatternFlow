@@ -1,16 +1,17 @@
 #Dataset Loader to get images and segmentations from paths
 import os
 from torch.utils.data import Dataset
-import matplotlib.image as mpimg
+from torchvision.transforms import ToTensor
+from PIL import Image
 
 train_image_path = "./drive/MyDrive/ISIC Data/Train_Images/"
 train_segmentation_path = "./drive/MyDrive/ISIC Data/Train_Segmentations/"
-
 
 class ISIC_Dataset(Dataset):
   def __init__(self, image_path, segmentation_path):
     self.img_paths = []
     self.seg_paths = []
+    self.transform = ToTensor()
 
     for path in sorted(os.listdir(image_path)):
       if (path.endswith(".jpg")):
@@ -24,6 +25,8 @@ class ISIC_Dataset(Dataset):
     return min(len(self.img_paths), len(self.seg_paths))
 
   def __getitem__(self, id):
-    image = mpimg.imread(self.img_paths[id])
-    mask = mpimg.imread(self.seg_paths[id])
+    image = self.transform(Image.open(self.img_paths[id]))
+    mask = self.transform(Image.open(self.seg_paths[id]))
     return (image, mask)
+
+train_dataset = ISIC_Dataset(train_image_path, train_segmentation_path)
