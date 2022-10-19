@@ -132,14 +132,14 @@ mypy.ini
 
 recognition/AKOA_Analysis
 
-recognition/outputs
-recognition/plots
-recognition/runs
-recognition/*.out
-recognition/brain
+recognition/45802492_SimpleDiffusion/outputs
+recognition/45802492_SimpleDiffusion/plots
+recognition/45802492_SimpleDiffusion/runs
+recognition/45802492_SimpleDiffusion/*.out
+recognition/45802492_SimpleDiffusion/brain
 
 .DS_Store
 *.pth
 
-recognition/inference
-recognition/img_align_celeba.zip
+recognition/45802492_SimpleDiffusion/inference
+recognition/45802492_SimpleDiffusion/mg_align_celeba.zip
