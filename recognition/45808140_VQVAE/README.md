@@ -51,6 +51,8 @@ Then we pass the initial convolution layer to residual blocks. These layers are 
 
 <p align="center"><img src="./resid.png" height=300/></p>
 
+**Loss:** We use the Sparse Categorical Crossentropy loss to quantify the loss of each pixel
+
 uses convolutional layers to learn features for all pixels at the same time. We also use masks 'A' to restrict connections to the pixels that have already been predicted and 'B' to allow connections from predicted colours to current pixels as to adhere to the conditional independence of the pixels.
 
 ### **PixelCNN results**
