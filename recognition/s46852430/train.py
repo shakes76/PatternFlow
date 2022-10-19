@@ -7,7 +7,6 @@ Created on Wed Oct 19 16:58:41 2022
 
 import os
 import numpy as np
-import cv2
 from glob import glob
 from IPython.display import clear_output
 from tensorflow.keras import backend
@@ -19,7 +18,6 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import Recall, Precision
 import dataset
 import model
-from tensorflow.python.client import device_lib
 
 
 
@@ -27,12 +25,7 @@ train_path ='C:/Users/eudre/test/ISIC-2017_Training_Data/*.jpg'
 mask_path ='C:/Users/eudre/test/ISIC-2017_Training_Part1_GroundTruth/*.png'
 
 def dice_coef(y_true, y_pred, epsilon=0.00001):
-    """
-    Dice = (2*|X & Y|)/ (|X|+ |Y|)
-         =  2*sum(|A*B|)/(sum(A^2)+sum(B^2))
-    ref: https://arxiv.org/pdf/1606.04797v1.pdf
-    
-    """
+
     axis = (0,1,2,3)
     dice_numerator = 2. * backend.sum(y_true * y_pred, axis=axis) + epsilon
     dice_denominator = backend.sum(y_true*y_true, axis=axis) + backend.sum(y_pred*y_pred, axis=axis) + epsilon
@@ -77,13 +70,11 @@ callbacks = [
     EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=False)
 ]
 
-# =============================================================================
-# model = model.modified_UNET((256,256,3))
-# model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
-# model_history = model.fit(train_dataset,
-#                       epochs=num_epoch,
-#                       validation_data=valid_dataset,
-#                       steps_per_epoch=train_steps,
-#                       validation_steps=valid_steps,
-#                       callbacks=callbacks)
-# =============================================================================
+model = model.modified_UNET((256,256,3))
+model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
+model_history = model.fit(train_dataset,
+                      epochs=num_epoch,
+                      validation_data=valid_dataset,
+                      steps_per_epoch=train_steps,
+                      validation_steps=valid_steps,
+                      callbacks=callbacks)
