@@ -4,6 +4,7 @@ import numpy as np
 import os
 import tensorflow as tf
 import tensorflow.keras as keras
+import matplotlib.pyplot as plt
 
 
 def train(train_path):
@@ -36,7 +37,16 @@ def main():
     train_ds_variance = data_loader.get_variance(train_ds)
     vqvae_trainer = Trainer(img_shape=(256, 256, 1), latent_dim=30, num_embeddings=128, variance=train_ds_variance)
     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-    vqvae_trainer.fit(train_ds_preprocessed)
+    history = vqvae_trainer.fit(train_ds_preprocessed)
+    print(history.history.keys())
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['reconstruction_loss'])
+    plt.plot(history.history['vqvae_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['loss', 'reconstruction_loss', 'vqvae_loss'], loc='upper right')
+    plt.show()
 
 
 if __name__ == '__main__':
