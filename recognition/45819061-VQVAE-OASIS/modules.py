@@ -59,7 +59,7 @@ def resblock(x, filters=256):
     return ReLU()(out)
 
 class VQVAE(tf.keras.Model):
-    def __init__(self, latent_dim=32, num_embeddings=64, input_shape=(256, 256, 1)):
+    def __init__(self, latent_dim=32, num_embeddings=64, input_shape=(256, 256, 1), residual_hiddens=64):
         super().__init__()
         self.latent_dim = latent_dim
         
@@ -67,15 +67,15 @@ class VQVAE(tf.keras.Model):
         encoder_in = Input(shape=input_shape)
         x1 = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
         x2 = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x1)
-        x3 = resblock(x2, 64)
-        x4 = resblock(x3, 64)
+        x3 = resblock(x2, residual_hiddens)
+        x4 = resblock(x3, residual_hiddens)
         encoder_out = Conv2D(latent_dim, 1, padding="same")(x4)
         self.encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
 
         # Build decoder
         decoder_in = Input(shape=self.encoder.output.shape[1:])
-        y1 = resblock(decoder_in, 64)
-        y2 = resblock(y1, 64)
+        y1 = resblock(decoder_in, residual_hiddens)
+        y2 = resblock(y1, residual_hiddens)
         y3 = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(y2)
         decoder_out = Conv2DTranspose(1, 4, strides=2, activation='leaky_relu', padding='same')(y3)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
