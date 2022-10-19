@@ -35,6 +35,13 @@ Running this GCN model to solve the Facebook pages classification problem, The b
 The address of the required dataset is:
 [Facebook Large Page-page Network 
 dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html)
+## Example inputs, outputs and plots of my algorithm
+The inputs of my GCN model is an adjacency matrix of the graph and the features' matrix of the nodes of the graph. This can be obtained by running
+dataset.py with raw data<br /><br />
+The example outputs of the train.py. Please refer to [train_output](./train_output). The example outputs of the predict.py. Please refer to 
+[predict_output](./predict_output).<br /><br />
+The below graphs are loss plot, accuracy plot and TSNE plot:![loss_plot](./GCN_model_training_and_validation_loss.png)
+![accuracy_plot](./GCN_model_training_and_validation_accuracy.png)![TSNE_plot](./TSNE_embedding_plot.png)
 ## Reference
 [1] https://arxiv.org/abs/1609.02907 <br />
 [2] https://snap.stanford.edu/data/facebook-large-page-page-network.html <br />
