@@ -31,19 +31,23 @@ class DataProcess:
     """
     split is a cool 80:10:10
     """
-    numTrain = int(self.numNodes*0.8)
-    numTestValid = int(self.numNodes*0.1)
-    trainLabels = self.target[:numTrain]
-    testLabels = self.target[numTrain:numTrain + numTestValid]
-    validaLabels = self.target[numTrain + numTestValid:numTrain + 2 * numTestValid]
-    
-    trainMask = np.zeros(self.numNodes, dtype=np.bool)
-    testMask = np.zeros(self.numNodes, dtype=np.bool)
-    validaMask = np.zeros(self.numNodes, dtype=np.bool)
+    trainSplit = int((self.numNodes) * 0.8)
+    trainSplit = range(trainSplit)
+    validaSplit = range(trainSplit, trainSplit + int((self.numNodes) * 0.1))
+    testSplit = range(trainSplit + int((self.numNodes) * 0.1), self.numNodes)
 
-    trainLabels[:numTrain] = True
-    testLabels[numTrain:numTrain + numTestValid] = True
-    validaLabels[numTrain + numTestValid:numTrain + 2 * numTestValid] = True
+    trainMask = np.zeros(self.numNodes, dtype=np.bool)
+    validaMask = np.zeros(self.numNodes, dtype=np.bool)
+    testMask = np.zeros(self.numNodes, dtype=np.bool)
+    trainMask[trainSplit] = True
+    validaMask[validaSplit] = True
+    testMask[testSplit] = True
+
+    # split labels into training, validation, test set
+    trainLabels = self.target[trainSplit]
+    validaLabels = self.target[validaSplit]
+    testLabels = self.target[testSplit]
+    return trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask
 
     return trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask
 
@@ -52,9 +56,11 @@ class DataProcess:
     self.features = normalize(self.features)
 
     adjMat = sp.coo_matrix(
-            (np.ones(self.edges.shape[0]), (self.edges[:, 0], self.edges[:, 1])),
-            shape=(self.target.shape[0], self.target.shape[0]),
-            dtype=np.float64
+            (np.ones(self.edges.shape[0]), 
+            (self.edges[:, 0], self.edges[:, 1])),
+            shape=(self.target.shape[0], 
+            self.target.shape[0]),
+            dtype=np.float32
         )
 
     normalAdj = normaliseAdjacency(adjMat)
@@ -64,27 +70,8 @@ class DataProcess:
     testLabels = LabelBinarizer().fit_transform(testLabels)
     validaLabels = LabelBinarizer().fit_transform(validaLabels)
     
-    return self.features, one_hot_labels, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels
+    return self.features, one_hot_labels, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels, self.target, self.numNodes, self.numFeatures
 
 
   def getData(self):
     return self.dataset
-
-#misc functions for testing
-def showFiles(data):
-  print(data.files)
-  return data.files
-
-def organiseData(data):
-  edges = data['edges']
-  features = data['features']
-  target = data['target']
-  return edges, features, target
-
-#def main():
- # facebook = np.load("facebook.npz")
- #dataset = DataLoadAndProcess()
- # datatat = dataset.getData()
-
-#if __name__ == '__main__':
-    #main()
