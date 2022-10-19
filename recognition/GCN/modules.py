@@ -32,7 +32,7 @@ class GNNLayer(Module):
     return output
 
 class Net(torch.nn.Module):
-  # simple 2 layer GCN
+  # change this
   def __init__(self, features, hidden_layers, outputs):
     super(Net, self).__init__()
     self.first_conv = GNNLayer(features, hidden_layers)
@@ -40,7 +40,9 @@ class Net(torch.nn.Module):
   
   def forward(self, input, adj):
     input = F.relu(self.first_conv(input, adj))
-    # x = F.dropout(x, self.dropout, training=self.training)
+    # add in extra dropout
+    input = F.dropout(input, 0.2, training=self.training)
     input = self.second_conv(input, adj)
+    # add in extra drop out 
+    input = F.dropout(input, 0.2, training=self.training)
     return F.softmax(input)
-
