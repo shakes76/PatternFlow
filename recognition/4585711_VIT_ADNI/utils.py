@@ -24,6 +24,7 @@ class Params():
     def dropout(self): return self.yaml["dropout"]
     def emb_dropout(self): return self.yaml["emb_dropout"]
     def epochs(self): return self.yaml["epochs"]
+    def learning_rate(self): return self.yaml["learning_rate"]
 
 def configure_gpus():
     gpus = tf.config.list_physical_devices('GPU')
