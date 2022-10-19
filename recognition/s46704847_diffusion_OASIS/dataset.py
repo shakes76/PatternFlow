@@ -27,8 +27,8 @@ def get_zipped_dataset(path):
   zipped_images = zipfile.ZipFile(path)
   image_list = zipped_images.namelist()
   image_list = [image for image in image_list if '.png' in image]
-  train_images = np.array([np.array(Image.open(zipped_images.open(image))) 
-                                                  for image in image_list])
+  train_images = np.array([np.array(Image.open(zipped_images.open(image))
+                                  .resize((128,128))) for image in image_list])
   return train_images
 
 def normalize(dataset):

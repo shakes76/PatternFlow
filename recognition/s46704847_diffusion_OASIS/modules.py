@@ -27,7 +27,7 @@ from inspect import isfunction
 
 """Generate beta, alpha and forward noise"""
 
-timesteps = 300
+timesteps = 1000
 
 # create beta 
 beta = np.linspace(0.0001, 0.02, timesteps)
