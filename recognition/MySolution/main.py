@@ -1,12 +1,14 @@
 import train
 import dataset
 import modules
+import predict
 
 
 def main():
     data = dataset.Dataset()
     module = modules.Modules(data)
-    train.handle_training(data, module)
+    train.handle_training(module)
+    predict.handle_prediction(data, module)
     print("ok!")
 
 
