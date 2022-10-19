@@ -83,4 +83,4 @@ Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A. P., Bishop, R., ... & 
 
 Long, X. (2020). Image Super-Resolution using an Efficient Sub-Pixel CNN. https://keras.io/examples/vision/super_resolution_sub_pixel/#define-callbacks-to-monitor-training
 
-ADNI dataset for Alzheimer’s disease. (2022). ADNI MRI Dataset[Data set]. https://adni.loni.usc.edu/
+ADNI dataset for Alzheimer’s disease. (2022). ADNI MRI Dataset [Data set]. https://adni.loni.usc.edu/
