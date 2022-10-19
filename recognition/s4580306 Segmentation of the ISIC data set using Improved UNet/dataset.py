@@ -38,11 +38,9 @@ def preprocess_labels(filenames):
     return image
 
 
-def data_loader(size=256, batch_size=16):
+def data_loader():
     # input data folders
 
-    # size = 128
-    # batch_size = 16
     training_data = tf.data.Dataset.list_files(training_input_dir, shuffle=False)
     training_data = training_data.map(preprocess_data)
     test_data = tf.data.Dataset.list_files(test_input_dir, shuffle=False)
