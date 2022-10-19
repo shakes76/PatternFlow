@@ -15,7 +15,7 @@ The encoder takes an input and compresses it to a smaller dimension. It does thi
 
 ### 2. VQ Layer
 
-The Vector Quantization layer sits between the encoder and decoder and maintains and learns a "codebook" and takes input from the Encoder and optimises codes which minimise the distance between encoder ouputs and codewords inside our codebook. These codewords live within a discrete latent space.
+The Vector Quantization Layer sits between the encoder and decoder and maintains and learns a "codebook" and takes input from the Encoder and optimises codes which minimise the distance between encoder ouputs and codewords inside our codebook. These codewords live within a discrete latent space.
 
 ### 3. Decoder
 
@@ -109,10 +109,16 @@ The output of this software is images of generated brains via a VQVAE trained on
 <img src="./imgs/pixelCNN_gen.png">
 </p>
 
+## **Training Validation Split**
+
+Pre-processing of the images were normalising to a value between 0 and 1. My validation split within the PixelCNN training was 0.25, so a quarter of all images were used as validation. In my hyperparameter tuning this seemed to give the best results.
+
 ## **References**
 
 ### Neural Discrete Representation Learning
 
 _Oord, Aaron van den and Vinyals, Oriol and Kavukcuoglu, Koray_, 2018 - arXiv, Neural Discrete Representation Learning - available at: https://arxiv.org/pdf/1711.00937v2.pdf
+
+### Vector-Quantized Variational Autoencoders
 
 _Sayak Paul_, 2021 - Keras, Vector-Quantized Variational Autoencoders - available at: https://keras.io/examples/generative/vq_vae/
