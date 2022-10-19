@@ -1,7 +1,14 @@
-<span style="color:red">Title:</span>
+## Section Navigation
+1. [Description of Algorithm](description-of-algorithm)
+2. [References](#-references)
+
+
+
 # Vision Transformer for ADNI Images
 
+#description-of-algorithm
 ## Description of Algorithm
+
 
 This is an implemention of a Vision Transformer (ViT) which follows as closely as possible the model presented by Dosovitskiy et al $^1$ in their 2021 paper *An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale*.     
 
@@ -87,7 +94,7 @@ tensorflow_addons
 ## Training & Validation Splits
 
 
-## References
+# References
 
 $^1$ An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale
 
