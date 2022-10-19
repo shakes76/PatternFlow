@@ -1,6 +1,6 @@
 # Simple Diffusion Image Generation
 
-Simple diffusion based image generation using pytorch.
+Simple diffusion based image generation using PyTorch.
 ![](https://hcloudh.com/nextcloud/s/TpPW8Z3EzCc3mP6/download/plot_epoch94.jpeg)
 #### References
 
