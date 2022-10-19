@@ -57,11 +57,11 @@ def forward_noise(seed, x_0, t):
     set_seed(seed)
     noise = np.random.normal(size=x_0.shape)
     reshaped_sqrt_alpha_bar_t = np.reshape(
-                                np.take(sqrt_alpha_bar, t), (-1, 1, 1, 1))
+                                    np.take(sqrt_alpha_bar, t), (-1, 1, 1, 1))
     reshaped_one_minus_sqrt_alpha_bar_t = np.reshape(np.take(
-                                one_minus_sqrt_alpha_bar, t), (-1, 1, 1, 1))
+                                    one_minus_sqrt_alpha_bar, t), (-1, 1, 1, 1))
     noisy_image = reshaped_sqrt_alpha_bar_t  * x_0 + \
-                                reshaped_one_minus_sqrt_alpha_bar_t  * noise
+                                    reshaped_one_minus_sqrt_alpha_bar_t  * noise
     return noisy_image, noise
 
 def generate_timestamp(seed, num):
@@ -75,11 +75,12 @@ def generate_timestamp(seed, num):
     """
     set_seed(seed)
     return tf.random.uniform(shape=[num], minval=0, maxval=timesteps, 
-                                                            dtype=tf.int32)
+                                                                dtype=tf.int32)
 
-# Visualize the forward noise process
+
 def show_forward_noise(train_images):
     """
+    Visualize the forward noise process.
     Plotting the forward progress of adding noise into a image.
     Parameters:
         train_images (np.array): the image dataset
@@ -108,15 +109,27 @@ def show_forward_noise(train_images):
 """Helper functions"""
 
 def exists(x):
+    """
+    Check if the input parameter is None.
+    Parameters:
+        x (...): the input parameter
+    Return:
+        (Bool): True if x is not empty, otherwise False.
+    """
     return x is not None
 
 def default(val, d):
+    """
+    If val is not None, return val. otherwise, return d.
+    """
     if exists(val):
         return val
     return d() if isfunction(d) else d
 
-# We will use this to convert timestamps to time encodings
 class SinusoidalPosEmb(Layer):
+    """
+    This class is to convert timestamps into time encodings.
+    """
     def __init__(self, dim, max_positions=10000):
         super(SinusoidalPosEmb, self).__init__()
         self.dim = dim
@@ -178,7 +191,7 @@ def gelu(x, approximate=False):
     if approximate:
         coeff = tf.cast(0.044715, x.dtype)
         return 0.5 * x * (1.0 + tf.tanh(0.7978845608028654 * (x + coeff * 
-                                                              tf.pow(x, 3))))
+                                                                tf.pow(x, 3))))
     else:
         return 0.5 * x * (1.0 + tf.math.erf(x / 
                                         tf.cast(1.4142135623730951, x.dtype)))
@@ -202,7 +215,6 @@ class Block(Layer):
         self.norm = tfa.layers.GroupNormalization(groups, epsilon=1e-05)
         self.act = SiLU()
 
-
     def call(self, x, gamma_beta=None, training=True):
         x = self.proj(x)
         x = self.norm(x, training=training)
@@ -213,6 +225,7 @@ class Block(Layer):
 
         x = self.act(x)
         return x
+
 
 class ResnetBlock(Layer):
     def __init__(self, dim, dim_out, time_emb_dim=None, groups=8):
@@ -226,7 +239,7 @@ class ResnetBlock(Layer):
         self.block1 = Block(dim_out, groups=groups)
         self.block2 = Block(dim_out, groups=groups)
         self.res_conv = nn.Conv2D(filters=dim_out, kernel_size=1, 
-                                  strides=1) if dim != dim_out else Identity()
+                                    strides=1) if dim != dim_out else Identity()
 
     def call(self, x, time_emb=None, training=True):
         gamma_beta = None
@@ -240,6 +253,7 @@ class ResnetBlock(Layer):
 
         return h + self.res_conv(x)
 
+
 class LinearAttention(Layer):
     def __init__(self, dim, heads=4, dim_head=32):
         super(LinearAttention, self).__init__()
@@ -248,7 +262,8 @@ class LinearAttention(Layer):
         self.hidden_dim = dim_head * heads
 
         self.attend = nn.Softmax()
-        self.to_qkv = nn.Conv2D(filters=self.hidden_dim * 3, kernel_size=1, strides=1, use_bias=False)
+        self.to_qkv = nn.Conv2D(filters=self.hidden_dim * 3, kernel_size=1, 
+                                                    strides=1, use_bias=False)
 
         self.to_out = Sequential([
             nn.Conv2D(filters=dim, kernel_size=1, strides=1),
@@ -259,7 +274,8 @@ class LinearAttention(Layer):
         b, h, w, c = x.shape
         qkv = self.to_qkv(x)
         qkv = tf.split(qkv, num_or_size_splits=3, axis=-1)
-        q, k, v = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', h=self.heads), qkv)
+        q, k, v = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', 
+                                                            h=self.heads), qkv)
 
         q = tf.nn.softmax(q, axis=-2)
         k = tf.nn.softmax(k, axis=-1)
@@ -268,10 +284,12 @@ class LinearAttention(Layer):
         context = einsum('b h d n, b h e n -> b h d e', k, v)
 
         out = einsum('b h d e, b h d n -> b h e n', context, q)
-        out = rearrange(out, 'b h c (x y) -> b x y (h c)', h=self.heads, x=h, y=w)
+        out = rearrange(out, 'b h c (x y) -> b x y (h c)', h=self.heads, x=h, 
+                                                                            y=w)
         out = self.to_out(out, training=training)
 
         return out
+
 
 class Attention(Layer):
     def __init__(self, dim, heads=4, dim_head=32):
@@ -280,18 +298,21 @@ class Attention(Layer):
         self.heads = heads
         self.hidden_dim = dim_head * heads
 
-        self.to_qkv = nn.Conv2D(filters=self.hidden_dim * 3, kernel_size=1, strides=1, use_bias=False)
+        self.to_qkv = nn.Conv2D(filters=self.hidden_dim * 3, kernel_size=1, 
+                                                    strides=1, use_bias=False)
         self.to_out = nn.Conv2D(filters=dim, kernel_size=1, strides=1)
 
     def call(self, x, training=True):
         b, h, w, c = x.shape
         qkv = self.to_qkv(x)
         qkv = tf.split(qkv, num_or_size_splits=3, axis=-1)
-        q, k, v = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', h=self.heads), qkv)
+        q, k, v = map(lambda t: rearrange(t, 'b x y (h c) -> b h c (x y)', 
+                                                            h=self.heads), qkv)
         q = q * self.scale
 
         sim = einsum('b h d i, b h d j -> b h i j', q, k)
-        sim_max = tf.stop_gradient(tf.expand_dims(tf.argmax(sim, axis=-1), axis=-1))
+        sim_max = tf.stop_gradient(tf.expand_dims(tf.argmax(sim, axis=-1), 
+                                                                    axis=-1))
         sim_max = tf.cast(sim_max, tf.float32)
         sim = sim - sim_max
         attn = tf.nn.softmax(sim, axis=-1)
@@ -407,6 +428,9 @@ class Unet(Model):
         return x
 
 def get_checkpoint(path):
+    """
+    Create and manage tensorflow checkpoints.
+    """
     # create our unet model
     unet = Unet(channels=1)
 
@@ -414,8 +438,9 @@ def get_checkpoint(path):
     ckpt = tf.train.Checkpoint(unet=unet)
     ckpt_manager = tf.train.CheckpointManager(ckpt, path, max_to_keep=2)
 
-    # load from a previous checkpoint if it exists, else initialize the model from 
-    # scratch
+    # load from a previous checkpoint if it exists, else initialize the model 
+    # from scratch
+
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         start_interation = int(ckpt_manager.latest_checkpoint.split("-")[-1])
@@ -433,6 +458,9 @@ def get_checkpoint(path):
     return unet, ckpt_manager
 
 def loss_fn(real, generated):
+    """
+    The loss function using l1 loss.
+    """
     loss = tf.math.reduce_mean((real - generated) ** 2)
     return loss
 
