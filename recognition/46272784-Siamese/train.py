@@ -69,7 +69,7 @@ def train(train_ds, valid_ds, epochs, train_step, checkpoint_prefix, checkpoint,
             batchnum += 1
         info['train_loss'].append(loss_tracker.result().numpy())
         train_accu = train_acc_metric.result().numpy()
-        info['train_accu'] = train_accu
+        info['train_accu'].append(train_accu)
         train_acc_metric.reset_states()
         loss_tracker.reset_states()
         
@@ -87,21 +87,21 @@ def train(train_ds, valid_ds, epochs, train_step, checkpoint_prefix, checkpoint,
             batchnum += 1
         info['valid_loss'].append(loss_tracker.result().numpy())   
         valid_accu = valid_acc_metric.result().numpy()
-        info['valid_accu'] = valid_accu     
+        info['valid_accu'].append(valid_accu)     
         valid_acc_metric.reset_states()
         loss_tracker.reset_states()
+        
+        # Save the model every epochs
+        if (epoch + 1) % 1 == 0:
+            checkpoint.save(file_prefix = checkpoint_prefix)   
                 
         row = [epoch, (info['train_loss'])[-1], (info['train_accu'])[-1], (info['valid_loss'])[-1], (info['valid_accu'])[-1]]
         print('Epoch {} | Train loss {} | Train Accu {} | Valid loss {} | Valid Accu {}'.
               format(row[0], row[1], row[2], row[3], row[4]))
-        f = open('./record.csv', 'w+')
+        f = open('./record.csv', 'a+')
         writer = csv.writer(f)
         writer.writerow(row)
         f.close()
-               
-        # Save the model every epochs
-        if (epoch + 1) % 1 == 0:
-            checkpoint.save(file_prefix = checkpoint_prefix)   
 
     return info
 
@@ -109,7 +109,7 @@ def main():
     t_ad, t_nc, v_ad, v_nc = loadFile('F:/AI/COMP3710/data/AD_NC/')
     td = modules.generatePairs(t_ad, t_nc)
     vd = modules.generatePairs(v_ad, v_nc)
-    opt = keras.optimizers.Adam(1e-4)
+    opt = keras.optimizers.RMSprop()
     siamese = modules.makeSiamese(modules.makeCNN())
     checkpoint_prefix, checkpoint = saveOption(opt, siamese)
     history = train(td, vd, 5, train_step, checkpoint_prefix, checkpoint, opt, siamese)
