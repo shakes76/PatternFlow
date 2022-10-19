@@ -26,11 +26,11 @@ from pathlib import Path
 #     nc = sorted([os.path.join(NC_dir, f) for f in os.listdir(NC_dir)])
 
 
-def transform_images(img, label):
+def transform_images(img):
     # transform to grayscale and standardize to [0,1]
     img = image.rgb_to_grayscale(img)
     img = img / 255.0
-    return img, label
+    return img
 
 def loadFile(dir, batch=8):
     print('>> Begin data loading')
@@ -40,8 +40,7 @@ def loadFile(dir, batch=8):
     print('-Directory of the Training NC files is: {}'.format(train_nc_dir))
     print('\n> 1/2 Loading Training Data...')
     train_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
-                                                     labels = 'inferred', 
-                                                     class_names =['AD', 'NC'],
+                                                     labels = None,
                                                      validation_split=0.3,
                                                      subset="training",
                                                      seed=1,
@@ -50,8 +49,7 @@ def loadFile(dir, batch=8):
                                                      batch_size=batch)
     
     train_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
-                                                     labels = 'inferred', 
-                                                     class_names =['AD', 'NC'],
+                                                     labels = None,
                                                      validation_split=0.3,
                                                      subset="training",
                                                      seed=1,
@@ -60,8 +58,7 @@ def loadFile(dir, batch=8):
                                                      batch_size=batch)
     print('\n> 2/2 Loading Validation Data...')
     valid_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
-                                                     labels = 'inferred', 
-                                                     class_names =['AD', 'NC'],
+                                                     labels = None,
                                                      validation_split=0.3,
                                                      subset="validation",
                                                      seed=1,
@@ -69,8 +66,7 @@ def loadFile(dir, batch=8):
                                                      shuffle=True,
                                                      batch_size=batch)
     valid_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
-                                                     labels = 'inferred', 
-                                                     class_names =['AD', 'NC'],
+                                                     labels = None,
                                                      validation_split=0.3,
                                                      subset="validation",
                                                      seed=1,
@@ -78,11 +74,13 @@ def loadFile(dir, batch=8):
                                                      shuffle=True,
                                                      batch_size=batch)
     print('\n> Mapping datasets to greyscale...')
-    train_ds = train_ds.map(transform_images)
-    valid_ds = valid_ds.map(transform_images)
+    train_ad_ds = train_ad_ds.map(transform_images)
+    train_nc_ds = train_nc_ds.map(transform_images)
+    valid_ad_ds = valid_ad_ds.map(transform_images)
+    valid_nc_ds = valid_nc_ds.map(transform_images)
     
     print('\n>> Data loading complete')
-    return train_ds, valid_ds
+    return train_ad_ds, train_nc_ds, valid_ad_ds, valid_nc_ds
     
 def plotExample(ds):
     batch = ds.take(1)
