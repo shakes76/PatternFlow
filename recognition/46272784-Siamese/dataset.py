@@ -27,17 +27,29 @@ from pathlib import Path
 
 
 def transform_images(img, label):
-    # transform to [0,1]
-    # img = image.rgb_to_grayscale(img)
+    # transform to grayscale and standardize to [0,1]
+    img = image.rgb_to_grayscale(img)
     img = img / 255.0
     return img, label
 
 def loadFile(dir, batch=8):
     print('>> Begin data loading')
-    train_dir = os.path.join(dir, 'train')
-    print('-Directory of the Training files is: {}'.format(train_dir))
+    train_ad_dir = os.path.join(dir, 'train/AD')
+    train_nc_dir = os.path.join(dir, 'train/NC')
+    print('-Directory of the Training AD files is: {}'.format(train_ad_dir))
+    print('-Directory of the Training NC files is: {}'.format(train_nc_dir))
     print('\n> 1/2 Loading Training Data...')
-    train_ds = utils.image_dataset_from_directory(train_dir, 
+    train_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
+                                                     labels = 'inferred', 
+                                                     class_names =['AD', 'NC'],
+                                                     validation_split=0.3,
+                                                     subset="training",
+                                                     seed=1,
+                                                     image_size=(256, 240),
+                                                     shuffle=True,
+                                                     batch_size=batch)
+    
+    train_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = 'inferred', 
                                                      class_names =['AD', 'NC'],
                                                      validation_split=0.3,
@@ -47,7 +59,16 @@ def loadFile(dir, batch=8):
                                                      shuffle=True,
                                                      batch_size=batch)
     print('\n> 2/2 Loading Validation Data...')
-    valid_ds = utils.image_dataset_from_directory(train_dir, 
+    valid_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
+                                                     labels = 'inferred', 
+                                                     class_names =['AD', 'NC'],
+                                                     validation_split=0.3,
+                                                     subset="validation",
+                                                     seed=1,
+                                                     image_size=(256, 240),
+                                                     shuffle=True,
+                                                     batch_size=batch)
+    valid_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = 'inferred', 
                                                      class_names =['AD', 'NC'],
                                                      validation_split=0.3,
