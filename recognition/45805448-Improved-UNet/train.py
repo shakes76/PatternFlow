@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 from keras.models import load_model, save_model
-from dataset import load_image_dataset_from_directory, save_dataset
+from dataset import load_image_dataset_from_directory, save_dataset, preprocess_dataset
 from modules import improved_unet
 
 TRAINER = None
@@ -34,6 +34,9 @@ class Trainer:
         images = load_image_dataset_from_directory(self.images_path, image_size=image_size)
         masks = load_image_dataset_from_directory(self.masks_path, image_size=image_size, color_mode='grayscale')
 
+        images = preprocess_dataset(images)
+        masks = preprocess_dataset(masks)
+
         num_samples = len(os.listdir(self.images_path))
         total = train_split + valid_split + test_split
         train_size = int(num_samples * (train_split / total))
@@ -49,9 +52,6 @@ class Trainer:
         train_masks = masks.take(train_size)
         valid_masks = masks.skip(train_size).take(valid_size)
         test_masks = masks.skip(train_size + valid_size).take(test_size)
-
-        print(tf.shape(list(train_images.as_numpy_iterator())))
-        print(tf.shape(list(train_masks.as_numpy_iterator())))
 
         self.train_dataset = tf.data.Dataset.zip((train_images, train_masks))
         self.valid_dataset = tf.data.Dataset.zip((valid_images, valid_masks))
