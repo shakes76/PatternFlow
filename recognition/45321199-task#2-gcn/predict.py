@@ -1,6 +1,8 @@
 from train import Trainer
 import matplotlib.pyplot as plt
+import numpy as np
 import os
+from sklearn.metrics import classification_report
 
 
 class Predicter:
@@ -10,10 +12,32 @@ class Predicter:
         self.model_dir = self.trainer.model_dir
         self.figs_dir = 'recognition/45321199-task#2-gcn/figures/'
 
+        # Get processed data
+        self.data = self.trainer.gcn.data
+
         # make figures dir
         if not os.path.exists(self.figs_dir):
             os.mkdir(self.figs_dir)
 
+    def run_all(self):
+        self.predict()
+        self.tsne_plot()
+        self.acc_loss_plots()
+    
+    def predict(self):
+        model = self.trainer.get_model()
+        data = self.data
+
+        predictions = model.predict(data['validation_data'][0], batch_size=data['len_vertices'])
+
+        true = np.argmax(data['encoded_labels'][data['test_mask']], axis=1)
+        pred = np.argmax(predictions[data['test_mask']], axis=1)
+
+        report = classification_report(true, pred)
+        print(report)
+
+    def tsne_plot(self):
+        pass
 
     def acc_loss_plots(self):
         history = self.trainer.get_history()
