@@ -36,41 +36,41 @@ def generatePairs(ad, nc, batch=8):
     same2 = (data.Dataset.zip((nc, nc))).map(lambda im1, im2: (im1, im2, 0.))
     # Sample (concatinate) all four image-label pair datasets
     combined_ds = data.experimental.sample_from_datasets([diff1, diff2, same1, same2])
-    combined_ds.batch(batch_size=batch)
+    combined_ds = combined_ds.batch(batch_size=batch)
     return combined_ds
     
 
 def makeCNN():
     # This CNN is almost the same as the one presented in the paper 
-    inputs = layers.Input(shape=(224, 224, 1))
-    conv = layers.Conv2D(64, 10, activation='relu')(inputs)
+    input = layers.Input(shape=(256, 240, 1))
+    conv = layers.Conv2D(64, 10, activation='relu', name='c0')(input)
     pool = layers.MaxPooling2D(2)(conv)
     norm = layers.BatchNormalization()(pool)
     
-    conv = layers.Conv2D(128, 7, activation='relu')(norm)
+    conv = layers.Conv2D(128, 7, activation='relu', name='c1')(norm)
     pool = layers.MaxPooling2D(2)(conv)
     norm = layers.BatchNormalization()(pool)
     
-    conv = layers.Conv2D(128, 4, activation='relu')(norm)
+    conv = layers.Conv2D(128, 4, activation='relu', name='c2')(norm)
     pool = layers.MaxPooling2D(2)(conv)
     norm = layers.BatchNormalization()(pool)
     
-    conv = layers.Conv2D(256, 4, activation='relu')(norm)
+    conv = layers.Conv2D(256, 4, activation='relu', name='c3')(norm)
     norm = layers.BatchNormalization()(conv)
     
-    flat = layers.Flatten()(norm)
-    dense = layers.Dense(4096, activation='sigmoid')(flat)
-    dense = layers.Dense(1024, activation='sigmoid')(dense)
-    out = layers.Dense(512, activation='sigmoid')(dense)
+    flat = layers.Flatten(name='flat')(norm)
+    # dense = layers.Dense(4096, activation='sigmoid')(flat)
+    # dense = layers.Dense(1024, activation='sigmoid', name='d0', kernel_regularizer=tf.keras.regularizers.l2(1e-3))(flat)
+    out = layers.Dense(512, activation='sigmoid', name='out', kernel_regularizer=tf.keras.regularizers.l2(1e-3))(flat)
     
-    return Model(inputs=inputs, outputs=out, name='embeddingCNN')
+    return Model(inputs=input, outputs=out, name='embeddingCNN')
     
 
 def makeSiamese(cnn):
     EPS = 1e-8
     
-    input_1 = layers.Input((256, 240, 3))
-    input_2 = layers.Input((256, 240, 3))
+    input_1 = layers.Input((256, 240, 1))
+    input_2 = layers.Input((256, 240, 1))
     
     tower_1 = cnn(input_1)
     tower_2 = cnn(input_2)
@@ -79,7 +79,7 @@ def makeSiamese(cnn):
     merge_layer = layers.Lambda(distance)([tower_1, tower_2])
     normal_layer = layers.BatchNormalization()(merge_layer)
     # 1 if same class, 0 if not
-    output_layer = layers.Dense(1, activation="sigmoid")(normal_layer)
+    output_layer = layers.Dense(1, activation="sigmoid", name='out2')(normal_layer)
     
     return Model(inputs=[input_1, input_2], outputs=output_layer, name='Siamese')
 
