@@ -6,7 +6,7 @@ from glob import glob
 import os
 #Contains the data loader for loading and preprocessing data
 
-path = "C:/Users/danie/Downloads/ISIC DATA/"
+
 img_height = 64
 img_width = 64
 img_channels = 3

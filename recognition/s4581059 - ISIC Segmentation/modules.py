@@ -1,7 +1,7 @@
 #Contains the source code of the components of the model.
 
 import tensorflow as tf
-from keras.layers import Input, Conv3D, MaxPooling3D, Dropout, Dense, UpSampling3D, Concatenate, Add
+from keras.layers import Input, Conv3D, Dropout, Dense, UpSampling3D, Concatenate, Add
 from keras.models import Model
 
 
@@ -89,11 +89,4 @@ def model():
     output = Dense(2, activation="softmax")(seg_conc)
     
     model = Model(input, output)
-    return model
-
-
-
-
-if __name__ == "__main__":
-   model()
-    
+    return model   
