@@ -133,6 +133,11 @@ class EmbedPatch(Layer):
 
 
 class MultiHeadAttentionLSA(layers.MultiHeadAttention):
+	"""
+	Multi Head Attention layer for the transformer encoder block, but with the
+	addition of using Local Self Attention to improve finer-level feature
+	learning.
+	"""
 	def __init__(self, **kwargs):
 		super(MultiHeadAttentionLSA, self).__init__(**kwargs)
 		self.tau = tf.Variable(math.sqrt(float(self._key_dim)), trainable=True)
