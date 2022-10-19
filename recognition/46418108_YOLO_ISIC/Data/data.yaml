@@ -1,0 +1,6 @@
+train: ../Data/train/
+test: ../Data/test/
+val: ../Data/valid/
+
+nc: 2
+names: ['Benign', 'Melanoma']
