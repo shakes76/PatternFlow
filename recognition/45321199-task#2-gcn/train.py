@@ -1,9 +1,10 @@
-from modules import GCN_Model
+from modules import GCN_Model, GCN_Layer
 import numpy as np
 import os
+from tensorflow.keras import models
 
 
-EPOCHS = 3000     # number of epochs
+EPOCHS = 10    # number of epochs
 
 
 class Trainer:
@@ -30,6 +31,10 @@ class Trainer:
 
             #save history
             np.save(self.history_dir, history.history)
+
+    def get_model(self):
+        return models.load_model(self.model_dir, 
+                                custom_objects={"GCN_Layer": GCN_Layer})
 
     def get_history(self):
         return np.load(self.history_dir, allow_pickle='TRUE').item()

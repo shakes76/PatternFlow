@@ -10,7 +10,7 @@ from predict import Predicter
 
 def main():
     pred = Predicter()
-    pred.acc_loss_plots()
+    pred.run_all()
     
     
 

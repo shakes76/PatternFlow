@@ -1,7 +1,7 @@
 from dataset import DataLoader
 import tensorflow as tf
 
-from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses
+from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses, utils
 
 # Default Model Parameters
 CHANNELS        = 256
@@ -11,8 +11,9 @@ REG_RATE        = 0.000005   # regularisation rate
 KERNAL_REGULARIZER = regularizers.l2(REG_RATE)
 
 
-class GCN_Model:
+class GCN_Model(Model):
     def __init__(self, channels=CHANNELS, dropout=DROPOUT, learning_rate=LEARNING_RATE, kernal_regularizer=KERNAL_REGULARIZER):
+        super(GCN_Model, self).__init__()
         self.channels = channels
         self.dropout = dropout
         self.learning_rate = learning_rate
@@ -32,21 +33,22 @@ class GCN_Model:
         node_input = layers.Input((self.data['len_vertices'],), dtype=tf.float64, sparse=True)
 
         dropout_L0 = layers.Dropout(self.dropout)(x_input)
-        gcn_L0 = GCN_Layer(activations.relu, 
-                            self.channels, 
+        gcn_L0 = GCN_Layer(activation=activations.relu, 
+                            channels=self.channels, 
                             kernel_regulariser=self.kernal_regularizer)([dropout_L0, node_input])
 
         dropout_L1 = layers.Dropout(self.dropout)(gcn_L0)
-        gcn_L1 = GCN_Layer(activations.relu, 
-                             self.channels // 2,
+        gcn_L1 = GCN_Layer(activation=activations.relu, 
+                             channels=self.channels // 2,
                              kernel_regulariser=self.kernal_regularizer)([dropout_L1, node_input])
 
         dropout_L2 = layers.Dropout(self.dropout)(gcn_L1)
-        gcn_L2 = GCN_Layer(activations.softmax, 
-                            self.data['len_label_types'])([dropout_L2, node_input])
+        gcn_L2 = GCN_Layer(activation=activations.softmax, 
+                            channels=self.data['len_label_types'])([dropout_L2, node_input])
         
         self.model = Model(inputs=[x_input, node_input], outputs=gcn_L2)
         self.model.summary()
+
 
     def compile(self):
         if self.model is not None:
@@ -58,12 +60,13 @@ class GCN_Model:
 
 class GCN_Layer(layers.Layer):
     def __init__(self, 
-                    activation, 
+                    activation=activations.relu, 
                     channels=CHANNELS, 
                     kernel_initialiser='glorot_uniform',
-                    kernel_regulariser=None):
+                    kernel_regulariser=None, 
+                    **kwargs):
 
-        super().__init__()
+        super(GCN_Layer, self).__init__(**kwargs)
         self.channels = channels
         self.activation = activations.get(activation) 
         self.kernel_initialiser = initializers.get(kernel_initialiser)
@@ -86,4 +89,6 @@ class GCN_Layer(layers.Layer):
         return self.activation(output)
     
     def get_config(self):
-        return {"channels": self.channels}
+        config = super(GCN_Layer, self).get_config()
+        config.update({"channels": self.channels})
+        return config
