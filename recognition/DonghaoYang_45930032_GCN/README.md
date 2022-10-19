@@ -9,6 +9,6 @@ recommendation system, natural language processing, computer vision and biochemi
 prediction. If GCN works on the nodes of the graph, then it can conduct nodes classification, which is the functionality I am going to realize in this 
 report.
 ### The introduction of the theory behind GCN
-
+![GCN layers picture](readMeImage/gcnLayer.png)
 ## Reference
 [1] https://arxiv.org/abs/1609.02907
