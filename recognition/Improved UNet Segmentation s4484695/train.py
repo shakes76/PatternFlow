@@ -12,9 +12,10 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 import time
+import numpy as np
 
 # Hyper-parameters
-num_epochs = 30
+num_epochs = 5
 learning_rate = 5 * 10**-2
 batchSize = 64
 learning_rate_decay = 0.985
@@ -30,6 +31,20 @@ testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Repor
 discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
 discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
 
+##################################################################################################################################
+
+# validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Images"
+# trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
+# testImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Test\Images"
+# validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Labels"
+# trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
+# testLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Test\Labels"
+
+# # Discovery path only needs to be specified if calling function calculate_mean_std.
+# discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
+# discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
+
+##################################################################################################################################
 
 # validationImagesPath = "../../../Data/Validation/Images"
 # trainImagesPath = "../../../Data/Train/Images"
@@ -48,11 +63,11 @@ outputPath = "./Output"
 
 def init():
     validDataSet = dataset.ISIC2017DataSet(validationImagesPath, validationLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
-    validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=True)
+    validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=False)
     trainDataSet = dataset.ISIC2017DataSet(trainImagesPath, trainLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     trainDataloader = DataLoader(trainDataSet, batch_size=batchSize, shuffle=True)
     testDataSet = dataset.ISIC2017DataSet(testImagesPath, testLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
-    testDataloader = DataLoader(testDataSet, batch_size=batchSize, shuffle=True)
+    testDataloader = DataLoader(testDataSet, batch_size=batchSize, shuffle=False)
 
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -80,6 +95,7 @@ def main():
     #display_test(dataLoaders["valid"])
     #calculate_mean_std()
     #print_model_info(model)
+
     train_and_validate(dataLoaders, model, device)
 
     torch.save(model.state_dict(), modelPath)
@@ -116,6 +132,9 @@ def train_and_validate(dataLoaders, model, device):
     elapsed = end - start
     print("Training & Validation Took " + str(elapsed/60) + " Minutes")
 
+    save_list_as_scatter(trainList=losses_training, valList=losses_valid, type="Loss", path="LossCurve.png")
+    save_list_as_scatter(trainList=dice_similarities_training, valList=dice_similarities_valid, type="Dice Coefficient", path="DiceCurve.png")
+
 
 def train(dataLoader, model, device, criterion, optimizer, scheduler):
 
@@ -130,8 +149,8 @@ def train(dataLoader, model, device, criterion, optimizer, scheduler):
 
         outputs = model(images)
         loss = criterion(outputs, labels)
-        losses.append(loss)
-        coefficients.append(dice_coefficient(outputs, labels))
+        losses.append(loss.item())
+        coefficients.append(dice_coefficient(outputs, labels).item())
 
         optimizer.zero_grad()
         loss.backward()
@@ -153,8 +172,9 @@ def validate(dataLoader, model, device, criterion):
             labels = labels.to(device)
 
             outputs = model(images)
-            losses.append(criterion(outputs, labels))
-            coefficients.append(dice_coefficient(outputs, labels))
+            loss = criterion(outputs, labels)
+            losses.append(loss.item())
+            coefficients.append(dice_coefficient(outputs, labels).item())
     
     return get_average(losses), get_average(coefficients)
 
@@ -176,19 +196,23 @@ def dice_loss(outputs, labels):
 
 def dice_coefficient(outputs, labels, epsilon=10**-8):
 
-    currentBatchSize = len(outputs)
-    smooth = 1.
+    # currentBatchSize = len(outputs)
+    # smooth = 1.
 
-    outputs_flat = outputs.view(currentBatchSize, -1)
-    labels_flat = labels.view(currentBatchSize, -1)
+    # outputs_flat = outputs.view(currentBatchSize, -1)
+    # labels_flat = labels.view(currentBatchSize, -1)
 
-    intersection = (outputs_flat * labels_flat).sum()
-    diceCoefficient = (2. * intersection + smooth)/(outputs_flat.sum()+labels_flat.sum()+smooth)
+    # intersection = (outputs_flat * labels_flat).sum()
+    # diceCoefficient = (2. * intersection)/(outputs_flat.sum()+labels_flat.sum()+epsilon)
 
-    #dims = (0,) + tuple(range(2, labels.ndimension()))
-    #intersection = torch.sum(outputs * labels, dims)
-    #denom = torch.sum(outputs + labels, dims)
-    #diceCoefficient = (2. * intersection / (denom + epsilon)).mean()
+    # #dims = (0,) + tuple(range(2, labels.ndimension()))
+    # intersection = torch.sum(outputs * labels, dims)
+    # denom = torch.sum(outputs + labels, dims)
+    # diceCoefficient = (2. * intersection / (denom + epsilon)).mean()
+
+    intersection = (outputs * labels).sum()
+    denom = (outputs + labels).sum() + epsilon
+    diceCoefficient = (2. * intersection) / denom
     return diceCoefficient
 
 def print_model_info(model):
@@ -212,6 +236,25 @@ def display_test(dataLoader):
         axs[row][1].imshow(label, cmap="gray")
 
     plt.show()
+
+def save_list_as_scatter(trainList, valList, type, path):
+    if (len(trainList) != len(valList)):
+        print("ERROR: Cannot display!")
+    
+    length = len(trainList)
+    xList = list()
+    x = 1
+    for i in range(length):
+        xList.append(x)
+        x += 1
+
+    plt.xticks(np.arange(min(xList), max(xList)+1, 1.0))
+    plt.plot(xList, trainList, label="Training " + type)
+    plt.plot(xList, valList, label="Validation " + type)
+    plt.legend()
+    plt.title("Training and Validation " + type + " Over Epochs")
+    plt.savefig(fname=path)
+    plt.close()
 
 def calculate_mean_std():
     psum    = torch.tensor([0.0, 0.0, 0.0])
