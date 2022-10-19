@@ -16,12 +16,12 @@ optimizer = Adam(learning_rate=0.001)
 dataset = DataLoadAndProcess()
 
 (features, labels, adjacency,
- trainMask, valMask, testMask,
+ trainMask, validaMask, testMask,
  trainLabels, validaLabels, testLabels, target, numNodes, numFeatures) = dataset.getData()
 
 classes = len(np.unique(target))
 
-model = GCN(numNodes, numFeatures, num_classes)
+model = GCN(numNodes, numFeatures, classes)
 
 checkpointPath = "training/cp.ckpt"
 checkpointDir = os.path.dirname(checkpointPath)
@@ -37,7 +37,7 @@ validation_data = ([features, adjacency], labels, validaMask)
 
 model.fit([features, adjacency],
           labels,
-          sample_weight=train_mask,
+          sample_weight=trainMask,
           epochs=50,
           batch_size=numNodes,
           validation_data=validation_data,
