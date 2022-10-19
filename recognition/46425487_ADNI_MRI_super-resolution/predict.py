@@ -35,6 +35,8 @@ def svplot(img, title, index):
     mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="blue")
     plt.savefig("./results/" + str(index) + "-" + title + ".png")
 
+
+# reconstruct low res images from test dataset using the model and compare them to the originals
 total_resize_psnr = 0.0
 total_predic_psnr = 0.0
 

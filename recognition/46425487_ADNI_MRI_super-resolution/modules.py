@@ -1,9 +1,11 @@
 import tensorflow as tf
-
 from tensorflow import keras
 from tensorflow.keras import layers
 
 def get_model(upscale_factor=4, channels=1):
+    """
+    This function creates the model to up scales images by the given upscale factor
+    """
     inputs = keras.Input(shape=(None, None, 1))
     x = layers.Conv2D(64, 5, activation = "leaky_relu", kernel_initializer = "Orthogonal", padding = "same")(inputs)
     x = layers.Conv2D(64, 3, activation = "leaky_relu", kernel_initializer = "Orthogonal", padding = "same")(x)
