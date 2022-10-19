@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras import Model
 from keras.backend import flatten, sum
-from keras.layers import LeakyReLU, Conv2D, UpSampling2D, InputLayer, Dropout, Add, Concatenate
+from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
 from keras.optimizers import Adam
 
 def convolution(filters, kernel_size=3, strides=1, padding='same', activation=LeakyReLU(alpha=0.01)):
@@ -189,7 +189,7 @@ def localization_pathway(encoded, contexts: list, filters=16, num_levels=5, segm
     convolution_layer = convolution(filters * 2)(upsampling_layers)
     segmentation_layers = segmentation_module(convolution_layer, segmentation_layers, upsample=False)
 
-    finish_layer = convolution(2, kernel_size=1, activation='softmax')(segmentation_layers)
+    finish_layer = convolution(1, kernel_size=1, activation='softmax')(segmentation_layers)
 
     return finish_layer
 
@@ -230,7 +230,7 @@ def improved_unet(input_shape, batch_size=None, filters=16, num_levels=5, segmen
     Returns:
         a tensor of labels derived from segmentation
     """
-    input = InputLayer(input_shape=input_shape, batch_size=batch_size)
+    input = Input(shape=input_shape, batch_size=batch_size)
     encoded, contexts = context_aggregation_pathway(input, filters, num_levels)
     output = localization_pathway(encoded, contexts, filters, num_levels, segmentations)
 

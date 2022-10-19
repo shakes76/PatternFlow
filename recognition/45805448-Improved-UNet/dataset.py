@@ -42,14 +42,14 @@ def load_image_dataset_from_directories(directories, image_size=(64, 64)):
 
     return image_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
-def load_image_dataset_from_directory(directory, image_size=(64, 64)):
+def load_image_dataset_from_directory(directory, image_size=(64, 64), color_mode='rgb'):
     """
     Loads a set of images from a directory.
 
     Returns:
         dataset of images
     """
-    return tf.keras.utils.image_dataset_from_directory(directory, labels=None, color_mode='rgb', 
+    return tf.keras.utils.image_dataset_from_directory(directory, labels=None, color_mode=color_mode, 
                                     batch_size=3, image_size=image_size, shuffle=True)
 
 def preprocess_dataset(dataset, seed=420):
