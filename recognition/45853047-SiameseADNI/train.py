@@ -49,7 +49,7 @@ def trainSNN(epochs=30):
     return siamese_fit
 
 
-def trainClassifier(epochs=30):
+def trainClassifier(epochs=10):
     """ Train the classifier
 
     Args:
