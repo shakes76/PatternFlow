@@ -93,7 +93,6 @@ Original paper aims to generate photo realistic images of resolution 1024 x 1024
 Below is a training trail in my experiment. Out of the three datasets, the OASIS is the easiest to train, but the model is also the easiest to collapse. While AKOA is relatively difficult to train since the trianing images are quite noisy.
 
 ### Settings
- - Training images are of 3 channels, but are black and white. Converted into 1 channel for efficiency without losing image quality.
  - Starting resolution: 4x4.
  - Target resolution: 256x256.
  - Latent vector dimemsion: 200.
@@ -102,7 +101,7 @@ Below is a training trail in my experiment. Out of the three datasets, the OASIS
  - Training images: 4800 selected.
  - Model not stabilized after fade in.
 
-### Evolution
+### Model Evolution
 <p align="center">
     <kbd><img src="asset/training_process.gif" width="550"></kbd>
 </p>
