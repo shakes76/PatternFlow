@@ -4,12 +4,8 @@ import os
 import pandas as pd
 import json
 import numpy as np
-import chardet
 import stellargraph as sg
-import tensorflow as tf
-import scipy as sp
 from tensorflow import keras
-from keras import layers
 
 
 def get_file():
@@ -18,6 +14,7 @@ def get_file():
     website and extracted.
 
     Returns: the data directory as data_dir
+
     """
 
     zip_file = keras.utils.get_file(
@@ -37,6 +34,7 @@ def get_edges(data_dir):
         data_dir: the path to the edge file
 
     Returns: The data read with panda.
+
     """
     edges = pd.read_csv(
         os.path.join(data_dir, "musae_facebook_edges.csv"),
@@ -67,6 +65,18 @@ def get_features(data_dir):
 
 
 def get_feature_matrix(features):
+    """
+    The get_feature_matrix() function use the given features to create a
+    feature matrix. Initialise an empty matrix of the size of feature
+    classes x number of features. Then label the matrix with ones for given
+    features for processing
+
+    Args:
+        features: The table of features to be used
+
+    Returns: the features in a matrix of ones and zeros
+
+    """
     max_feature = np.max(
         [v for v_list in features.values() for v in v_list]
     )
@@ -84,6 +94,17 @@ def get_feature_matrix(features):
 
 
 def get_node_features(features, feature_matrix):
+    """
+    The get_node_features() function insert the feature matrix into a pandas
+    data frame using the features' keys as index
+
+    Args:
+        features: The features to get keys for
+        feature_matrix: The matrix to be converted to pd.DataFrame
+
+    Returns: the panda data frame for of the matrix
+
+    """
     return pd.DataFrame(
         feature_matrix,
         index=features.keys(),
@@ -100,6 +121,7 @@ def get_target(data_dir, features):
         data_dir: the path to the target file
 
     Returns: The data read with panda.
+
     """
     target = pd.read_csv(
         os.path.join(data_dir, "musae_facebook_target.csv"),
@@ -114,6 +136,16 @@ def get_target(data_dir, features):
 
 
 def generate_graph(edges, target, samples):
+    """
+    The generate_graph() reates a graph that shows the connections between
+    each node with each node colored by class.
+
+    Args:
+        edges: The edges to be used and connected
+        target: The classes of each node
+        samples: The number of nodes to display (reduce loading time)
+
+    """
     class_values = sorted(target["page_type"].unique())
     target_values = sorted(target["id"].unique())
     class_idx = {name: ID for ID, name in enumerate(class_values)}
@@ -130,7 +162,17 @@ def generate_graph(edges, target, samples):
 
 
 class Dataset:
+    """
+    Class Dataset initialise the facebook dataset and generate a set of
+    arrays and tables useful for training the model
+
+    """
     def __init__(self):
+        """
+        Get the edges, features and target data from an online zip file
+        and produce a set of useful data values.
+
+        """
         data_dir = get_file()
         self.edges = get_edges(data_dir)
         self.features = get_features(data_dir)
@@ -140,22 +182,68 @@ class Dataset:
         self.graph = sg.StellarGraph(self.node_features, self.edges.astype(str))
 
     def get_visualised_graph(self, samples=3000):
+        """
+        The get_visualised_graph() function calls the generate_graph()
+        function to generate a graph of samples defined in the samples value
+
+        Args:
+            samples: The number of samples to display
+
+        """
         generate_graph(self.edges, self.target, samples)
 
     def get_edges(self):
+        """
+        The get_edges() function returns the edges of this class
+
+        Returns: the edges of this class
+
+        """
         return self.edges
 
     def get_features(self):
+        """
+        The get_features() function returns the features of this class
+
+        Returns: the features of this class
+
+        """
         return self.features
 
     def get_feature_matrix(self):
+        """
+        The get_feature_matrix() function returns the feature matrix of
+        this class
+
+        Returns: the feature matrix of this class
+
+        """
         return self.feature_matrix
 
     def get_node_features(self):
+        """
+        The get_node_features() function returns the node features of this
+        class
+
+        Returns: the node feature of this class
+
+        """
         return self.node_features
 
     def get_target(self):
+        """
+        The get_target() function returns the target of this class
+
+        Returns: the target of this class
+
+        """
         return self.target
 
     def get_graph(self):
+        """
+        The get_graph function returns the stellargraph of this class
+
+        Returns: the stellargraph of this class
+
+        """
         return self.graph

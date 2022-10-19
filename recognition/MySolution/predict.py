@@ -5,6 +5,16 @@ import matplotlib.pyplot as plt
 
 
 def handle_prediction(data, module):
+    """
+    Takes the dataset class and module class to test the trained model
+    on every facebook class. The predicted results is saved into a csv file
+    and the TSNE plot is saved as a png file
+
+    Args:
+        data: the dataset class used to varify the prediction
+        module: the module class that contains the model values
+
+    """
     new_model = keras.models.load_model("finalised_model")
     all_nodes = data.get_node_features().index
     all_gen = module.get_generator().flow(all_nodes)

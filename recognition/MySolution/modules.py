@@ -1,29 +1,27 @@
 import tensorflow as tf
 import numpy as np
-import stellargraph as sg
-from scipy import sparse as sp
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 from stellargraph.layer import DeepGraphInfomax
 from stellargraph.mapper import CorruptedGenerator, FullBatchNodeGenerator
-from tensorflow import keras
-from keras import layers, Input, Model, optimizers, losses
-from keras.layers import Dropout, Dense
-from stellargraph.layer.gcn import GraphConvolution, GatherIndices, GCN
-from keras.callbacks import EarlyStopping
-import dataset
-
-
-def get_node_indices(graph, ids):
-    node_ids = np.asarray(ids)
-    flat_node_ids = node_ids.reshape(-1)
-    flat_node_indices = graph.node_ids_to_ilocs(flat_node_ids)
-    node_indices = flat_node_indices.reshape(1, len(node_ids))
-    return node_indices
+from keras import layers, Model, optimizers
+from stellargraph.layer.gcn import GCN
 
 
 class Modules:
+    """
+    The Modules class stores variables of the created GCN models which
+    can be called
+
+    """
     def __init__(self, data):
+        """
+        takes the data variable from the dataset class to build a GCN model
+
+        Args:
+            data: the dataset class to be used for building the model
+
+        """
         self.target_encoding = None
         self.test_gen = None
         self.val_gen = None
@@ -36,6 +34,17 @@ class Modules:
         self.data_group = data_group
 
     def get_training_data(self, target, train_size=200):
+        """
+        The get_training_data() function takes the target dataset and separate
+        the data into training, validation and testing sets.
+
+        Args:
+            target: the dataset to be split into training, validation and testing
+            train_size: the size of the training set
+
+        Returns: the split data and the binary encoded version of the classes
+
+        """
         train_data, test_data = train_test_split(target, train_size=train_size)
         val_data, test_data = train_test_split(test_data, train_size=train_size)
         self.target_encoding = LabelBinarizer()
@@ -45,6 +54,16 @@ class Modules:
         return train_data, val_data, test_data, train_targets, val_targets, test_targets
     
     def build_model(self, data):
+        """
+        The build_model() function takes the dataset class to build a GCN
+        model. The generator shuffles node features and regular node features
+        to train the model to differentiate the real and fake. The GCN model
+        will use 2 hidden layers of 32 under relu.
+
+        Args:
+            data: The dataset class to be used for generating the model
+
+        """
         self.generator = FullBatchNodeGenerator(data.get_graph())
         corrupted_generator = CorruptedGenerator(self.generator)
         train_gen = corrupted_generator.flow(data.get_graph().nodes())
@@ -65,6 +84,17 @@ class Modules:
         self.train_gen = train_gen
 
     def model_retrain(self, split_data):
+        """
+        The model_retrain() function takes the split data to retrain the
+        GCN model created in the build_model() function.
+
+        Args:
+            split_data: A total of 6 datasets returned by the get_training_data()
+                        function
+
+        Returns: the new model for the final training
+
+        """
         train_data, val_data, test_data, train_targets, val_targets, test_targets =\
             split_data
         self.train_gen = self.generator.flow(train_data.index, train_targets)
@@ -84,19 +114,55 @@ class Modules:
         return model
 
     def get_model(self):
+        """
+        The get_model() function gets the pretraining model of this class
+
+        Returns: the pretraining model of this class
+
+        """
         return self.model
 
     def get_train_gen(self):
+        """
+        The get_train_gen() function gets the train generator values of this class
+
+        Returns: the train generator flow object
+
+        """
         return self.train_gen
 
     def get_data_group(self):
+        """
+        The get_data_group() function gets the group of train, val and test data
+
+        Returns: the train, val and test data
+
+        """
         return self.data_group
 
     def get_gen(self):
+        """
+        The get_gen() function return the train, test and val generators together
+
+        Returns: the train, test and val generator flow objects
+
+        """
         return self.train_gen, self.test_gen, self.val_gen
 
     def get_target_encoding(self):
+        """
+        The get_target_encoding() function returns the encoded target values
+
+        Returns: the encoded target values
+
+        """
         return self.target_encoding
 
     def get_generator(self):
+        """
+        The get_generator() function returns the generator used by the model
+
+        Returns: the generator used by the model
+
+        """
         return self.generator
