@@ -1,4 +1,4 @@
-# Generator Model of the OASIS Brain data set Using StyleGAN
+# Generator Model of the OASIS Brain dataset Using StyleGAN
 
 ## Introduction
 
@@ -8,11 +8,43 @@ Generative Adversarial Networks, are an effective approach for training deep con
 
 Training a GAN model involves two models: a generator used to output synthetic images, and a discriminator model used to classify images as real or fake, which is used to train the generator model. The two models are trained together in an adversarial manner, seeking an equilibrium.
 
-### progressive growing GAN
+### Progressive growing GAN
 
-Progressive Growing GAN uses a generator and discriminator model with the same general structure. The key of progressive growing GAN is it starts with small  images, like 4×4 pixels.
+Progressive Growing GAN uses a generator and discriminator model with the same general structure. The key of progressive growing GAN is it starts with small images, like 4×4 pixels. This is because training results on small images are more stable.
 
-During training, new blocks of convolutional layers are systematically added to both the generator model and the discriminator models.
+New convolutional layers are systematically added to generator model and discriminator models during training.
+
+The incremental addition of the layers allows the models to effectively learn coarse-level detail and later learn ever finer detail, both on the generator and discriminator side.
+
+<p>
+    <img src="images/pgGan.png" width="750px">
+    <br>
+    <em>Example of Progressively Adding Layers to Generator and Discriminator Models.</em>
+</p>
+
+### StyleGAN
+
+- The StyleGAN uses generator and discriminator models of the progressive growing GAN training method when training, so it also starts with small images.
+
+- The first point of deviation in the StyleGAN is that bilinear upsampling layers are unused instead of nearest neighbor which progressive growing GAN uses.
+
+- Next, a standalone mapping network is used that takes a randomly sampled point from the latent space as input and generates a style vector.
+The style vector is then transformed and incorporated into each block of the generator model after the convolutional layers via an operation called adaptive instance normalization or AdaIN.
+The AdaIN layers involve first standardizing the output of feature map to a standard Gaussian, then adding the style vector as a bias term.
+
+-  The model has size of input is 4x4x512 in order to begin the process of image synthesis.
+
+- Add noise to each activation map.  Different noise is generated for each block and is interpreted using per-layer scaling factors. These noises will generate some random variation to make the generated image more realistic
+
+<p>
+    <img src="images/stylegan.png" width="750px">
+    <br>
+    <em> traditional GAN generator vs StyleGAN generator.</em>
+</p>
+
+
+
+
 
 
 
