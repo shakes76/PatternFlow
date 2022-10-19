@@ -194,11 +194,11 @@ def plot_training(
     plt.xlabel("Epoch")
 
     #correctly display only integer epochs, with ticks starting from 1
-    plt.xlim(left = 0)
     xlocs, xlabels = plt.xticks()
     xlocs = list(map(int, xlocs))
     xlabels = [x+1 for x in xlocs]
     plt.xticks(xlocs, xlabels)
+    plt.xlim(xmin= 0, xmax=len(history[StyleGAN.METRICS[0]]))
 
     plt.ylabel("Loss")
     plt.legend(StyleGAN.METRICS)

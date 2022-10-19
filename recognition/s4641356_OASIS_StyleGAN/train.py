@@ -172,6 +172,7 @@ def fit(
             print("{0}: {3}, {1}: {4}, {2}: {5}".format(
                     *(modules.StyleGAN.METRICS + metrics_to_store) ))
 
+        #update training history
         style_GAN.epochs_trained += 1
         GANutils.save_training_history(epoch_metrics,training_history_location)
         
@@ -228,13 +229,13 @@ def train(
     """
 
     #Constant training parameters (Configured for local training using RTX2070)
-    BATCH_SIZE = 64
+    BATCH_SIZE = 16
     TRAINING_HISTORY_FILE = "history.csv"
     IMAGE_SAMPLE_COUNT = 5
     IMAGE_SAMPLE_FOLDER = "output/"
 
     #Note this will be ignored by dataloader if an image cache exists
-    COMPRESSION_SIZE = 32 
+    COMPRESSION_SIZE = 64 
     
     GENERATOR_INIT_SIZE = 4
     LATENT_DIM = 512
@@ -270,6 +271,6 @@ def train(
     #training history) will be plotted
     GANutils.plot_training(
             GANutils.load_training_history(TRAINING_HISTORY_FILE),
-            HISTORY_PLOT_FILE, style_GAN.epochs_trained
+            HISTORY_PLOT_FILE
             )
 
