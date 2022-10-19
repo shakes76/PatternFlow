@@ -4,22 +4,28 @@ The model implemented is able to reconstructs a high-resolution version of an im
 The model was also embedded with Residual Dense Blocks, inspired by Chakraborty, 2021. Residual blocks prevented early saturation or degradation with accuracy from increasing number of layers.
 
 ## Dependencies and Versions
+
 - Ubuntu 16.04 or higher (Ubuntu 22.04.1 LTS was in used)
 - NVIDIA® GPU drivers version 450.80.02 or higher (515.76 was in used)
-- CUDA Toolkit: 	 11.2.
-- cuDNN SDK:	 	 8.1.0.
-- Python:		 3.9.13
-- Tensorflow:	 	 2.9.1
-- matplotlib:	 	 3.5.2
-- Numpy:		 1.21.5
-- Keras:          	 1.1.2
-- Pillow:		 9.2.0
+
+| Package | Version |
+| --- | --- |
+| CUDA Toolkit | 11.2 |
+| cuDNN SDK | 8.1.0 |
+| Python | 3.9.13 |
+| Numpy | 1.21.5 |
+| Keras | 1.1.2 |
+| Pillow | 2.9.1 |
+| matplotlib | 3.5.2 |
+| Tensorflow | 2.9.1 |
 
 ## Example Input and Output
 The original image before down-sampling by factor of 4:
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Original.png?raw=true)
+
 The model input is:
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Low_Res.png?raw=true)
+
 The model output is:
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Model_Prediction.png?raw=true)
 
@@ -38,7 +44,9 @@ As mentioned above Residual blocks prevented early saturation or degradation wit
 
 ## Pre-processing
 The dataset has 30520 samples of Alzheimer’s disease (AD) and Cognitive Normal (CN).
-- 17216 samples were used for training and 4304 samples were used for validation.
-- 9000 samples were used for testing.
+| Training set   | Validation set | Testing set    |
+| -------------- | -------------- | -------------- |
+| 17216          | 4304           | 9000           |
+
 The dataset was resized to 300x300 and normalized from scale of (0,255) to (0,1).
 Both train_ds and validation_ds were assigned in form of **tuple** (low-res_ds, high-res_ds)
