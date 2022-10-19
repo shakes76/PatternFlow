@@ -31,22 +31,58 @@ The class token is now extracted from the Transformer Encoder output and fed int
 
 ## Problem it Solves
 
+CNNs are local, self-attention is global
 
 ## How it Works
 
+1. Download and unzip data 
+2. Create environment
+3. Prepare the data 
+   - Create new folder structure
+   - Create validation and training from train to preclude leakage
+   - Augment?
+   - Crop the images
+4. Update config.py
+5. run python train.py
+6. Load model weights and make predictions by running python predict.py 
+
 ## Figure / Visualizaton
+
+- training loss and accuracy (best, anomolies)
+- table of experiments
+- vit Model (in algorithm description)
+- 
 
 ## Dependencies
 
-## Versions
+python 3.9
+matplotlib
+tensorflow 2.9
+numpy
+keras_cv
+tensorflow_addons
 
-## Reproducibility
+
+## Reproducibility of Results
+- initial selection of validation set
+- seed in image_dataset_from_directory
+- hyperparams --> obviously stochastic by nature
 
 ## Example inputs / outputs
+- input: brain image?
+- output: test results?
+
 
 ## Plot of Algorithm
+- training loss and accuracy?
 
 ## Pre-processing
+1. create folders
+2. prevent leakage
+3. crop
+4. augment
+
+
 
 ## Training & Validation Splits
 
