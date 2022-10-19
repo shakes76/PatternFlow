@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras import Model
 from keras.backend import flatten, sum
-from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
+from keras.layers import LeakyReLU, Conv2D, UpSampling2D, InputLayer, Dropout, Add, Concatenate
 from keras.optimizers import Adam
 
 def convolution(filters, kernel_size=3, strides=1, padding='same', activation=LeakyReLU(alpha=0.01)):
@@ -219,7 +219,7 @@ def dice_coefficient(ground_truth, softmax_out):
     multiclass_summation = sum(ground_truth_flat * softmax_out_flat) / (sum(ground_truth_flat) + sum(softmax_out_flat))
     return -2 * multiclass_summation
 
-def improved_unet(input_shape, filters=16, num_levels=5, segmentations=3):
+def improved_unet(input_shape, batch_size=None, filters=16, num_levels=5, segmentations=3):
     """
     Creates the full improved unet network. This includes the encoding from the context aggregation
     pathway and the upsampling & segmentation from the localization pathway.
@@ -230,7 +230,7 @@ def improved_unet(input_shape, filters=16, num_levels=5, segmentations=3):
     Returns:
         a tensor of labels derived from segmentation
     """
-    input = Input(shape=input_shape)
+    input = InputLayer(input_shape=input_shape, batch_size=batch_size)
     encoded, contexts = context_aggregation_pathway(input, filters, num_levels)
     output = localization_pathway(encoded, contexts, filters, num_levels, segmentations)
 
