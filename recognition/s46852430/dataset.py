@@ -13,29 +13,28 @@ import cv2
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
-train_path ='C:\\Users\\eudre\\test\\ISIC-2017_Training_Data'
-mask_path ='C:\\Users\\eudre\\test\\ISIC-2017_Training_Part1_GroundTruth'
+
+
 
 H = 256
 W = 256
 
-def create_dir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-        
-# Use to delete superpixel image
-def delete_super(path):
-    os.chdir(train_path)
-    for fname in os.listdir(train_path):
-        if fname.endswith('superpixels.png') & fname.endswith('.csv'):
-            os.remove(fname)
 
-def load_data(train_path, mask_path):
-    images = sorted(glob(os.path.join(train_path, "*.jpg")))
-    masks = sorted(glob(os.path.join(mask_path, "*.jpg")))
-    
-    test_size = int(len(images) * 0.2)
-    
+# Use to delete superpixel image
+# =============================================================================
+# def delete_super():
+#     train_path ='C:/Users/eudre/test/ISIC-2017_Training_Data/'
+#     os.chdir(train_path)
+#     for fname in os.listdir(train_path):
+#         if fname.endswith('superpixels.png'):
+#             os.remove(fname)
+# 
+# =============================================================================
+def load_data(train_path, mask_path, split = 0.2):
+    images = sorted(glob.glob(train_path))
+    masks = sorted(glob.glob(mask_path))  
+    test_size = int(len(images) * split)
+
     train_x, valid_x = train_test_split(images, test_size=test_size, random_state=42)
     train_y, valid_y = train_test_split(masks, test_size=test_size, random_state=42)
 
@@ -78,6 +77,4 @@ def tf_dataset(X, Y, batch):
     dataset = dataset.batch(batch)
     dataset = dataset.prefetch(10)
     return dataset
-
-
 
