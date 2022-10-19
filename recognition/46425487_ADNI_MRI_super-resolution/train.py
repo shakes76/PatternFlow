@@ -24,9 +24,9 @@ callbacks = [early_stopper, model_checkpoint]
 loss_function= keras.losses.MeanSquaredError()
 optimizer = keras.optimizers.Adam(learning_rate=0.001)
 
-model.compile(optimizer=optimizer, loss=loss_function)
+model.compile(optimizer=optimizer, loss=loss_function, metrics=['acc'])
 
-result = model.fit(train_ds, epochs=100, callbacks=callbacks, validation_data=valid_ds, verbose=2)
+result = model.fit(train_ds, epochs=50, callbacks=callbacks, validation_data=valid_ds, verbose=2)
 
 plt.plot(result.history['acc'])
 plt.plot(result.history['val_acc'])
