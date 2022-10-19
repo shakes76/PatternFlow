@@ -54,6 +54,7 @@ The modules provided within the PR should allow for users to reproduce the resul
 
 1. The `DIRECTORY_PATH` inside _dataset.py_ is set to the correct directory under which the OASIS Dataset is located. If loading through Google Colab connected to Google Drive this will likely be at `"/content/{dirname}/"` where _dirname_ is the name of the directory within the runtime the data has been unloaded.
 2. You will likely need to purchase Google Colab Pro if you wish to run this on Google Colab without modification.
+3. To train the model and see the results; get your data using `dataset.getDatasets()` and then call `train.train()`.
 
 ## **I/O and Results / Plots**
 
@@ -114,6 +115,10 @@ The output of this software is images of generated brains via a VQVAE trained on
 Pre-processing of the images were normalising to a value between 0 and 1. My validation split within the PixelCNN training was 0.25, so a quarter of all images were used as validation. In my hyperparameter tuning this seemed to give the best results.
 
 ## **References**
+
+### Autoregressive Models - PixelCNN
+
+_Lopez Pinaya, da Costa and Dafflon_, 2020 - Towards Data Science, Autoregressive Models — PixelCNN - available at: https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1
 
 ### Neural Discrete Representation Learning
 

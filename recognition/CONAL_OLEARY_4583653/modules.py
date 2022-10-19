@@ -4,7 +4,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Reference to https://keras.io/examples/generative/vq_vae/
+"""
+    =========================================================
+    Reference to 
+        [-]: https://keras.io/examples/generative/vq_vae/
+        [-]: https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1
+    =========================================================
+"""
 
 
 class VectorQuantizer(layers.Layer):
