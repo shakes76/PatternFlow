@@ -34,3 +34,40 @@ class Decoder(tf.keras.Model):
 
     def call(self, x):
         return self.decoder(x)
+
+class VectorQuantiser(keras.layers.Layer):
+    def __init__(self, num_embeddings, embedding_dimensions, **kwargs):
+        super().__init__(**kwargs)
+        self.embedding_dimensions = embedding_dimensions
+        self.num_embeddings = num_embeddings
+        # beta training parameter
+        self.commitment_cost = 1
+
+        random_uniform_initialiser = tf.random_uniform_initializer()
+        self.embeddings = tf.Variable(
+            initial_value = random_uniform_initialiser(
+                shape=(embedding_dimensions, num_embeddings),
+                dtype="float32"),
+                trainable=True,
+                name="embeddings_vqvae",
+        )
+
+    def get_code_indices(self, flattened):
+        distances = tf.reduce_sum(flattened ** 2, axis=1, keepdims=True) \
+                    + tf.reduce_sum(self.embeddings ** 2, axis=0) \
+                    - 2 * tf.matmul(flattened, self.embeddings)
+        return tf.argmin(distances, axis=1)
+
+    def call(self, x):
+        input_shape = tf.shape(x)
+        flattened = tf.reshape(x, [-1, self.embedding_dimensions])
+        encoding_indices = self.get_code_indices(flattened)
+        encodings = tf.one_hot(encoding_indices, self.num_embeddings)
+        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
+        unflattened = tf.reshape(quantized, input_shape)
+
+        commitment_loss = self.commitment_cost * tf.reduce_mean((tf.stop_gradient(unflattened) - x) ** 2)
+        codebook_loss = tf.reduce_mean((unflattened - tf.stop_gradient(x)) ** 2)
+        self.add_loss(commitment_loss + codebook_loss)
+
+        return x + tf.stop_gradient(unflattened - x)
