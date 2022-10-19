@@ -14,6 +14,7 @@ tf.get_logger().setLevel('INFO')
 assert len(tf.config.list_physical_devices("GPU")) >= 1, "No GPUs found"
 
 EPOCHS = 50
+MODEL_PATH = "<INSERT MODEL PATH>"
 
 if __name__ == "__main__":
     #Build and compile model
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     history = az_model.fit(train_ds, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=validation_ds)
 
     #Save model and get training results
-    az_model.save("az_model")
+    az_model.save(MODEL_PATH)
 
     loss = history.history['loss']
     val_loss = history.history['val_loss']

@@ -8,8 +8,8 @@ from keras import layers
 import tensorflow_datasets as tfds
 import numpy as np
 
-TRAIN_FILE_PATH = "../../../AD_NC/train"
-TEST_FILE_PATH = "../../../AD_NC/test"
+TRAIN_FILE_PATH = "<INSERT TRAIN DATA PATH>"
+TEST_FILE_PATH = "<INSERT TEST DATA PATH>"
 TEST_IMAGES = 21520
 VALIDATION_SPLIT = (((TEST_IMAGES*0.1) // 20) * 20)/TEST_IMAGES
 
@@ -52,7 +52,7 @@ def make_patch(image):
 
 import matplotlib.pyplot as plt
 
-#Test that training dataset can properly fet an image and create patches
+#Test that training dataset can properly get an image and create patches
 if __name__ == "__main__":
     plt.figure(figsize=(10, 10))
     ds = training_dataset()
