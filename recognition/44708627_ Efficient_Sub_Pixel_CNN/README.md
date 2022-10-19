@@ -1,12 +1,17 @@
 # Brain MRI Super-Resolution Network
-The model implemented is able to reconstructs a high-resolution version of an image from a low-resolution (factor of 4) version given.\
+Lingxiao Gao
+44708627
+
+## Introduction
+The model implemented is able to reconstructs a high-resolution version of an image from a low-resolution (factor of 4) version given.
+
 The working principles were to train a customized CNN network with tuple of (low-res image, high-res image) and optimize mean squared error between prediction and high-res image.\
-Peak signal-to-noise ratio (PSNR) is commonly used to quantify reconstruction quality for images and is defined via MSE.
-Lower MSE indicates higher PSNR and reconstruction quality.
+
+Peak signal-to-noise ratio (PSNR) is commonly used to quantify reconstruction quality for images and is defined via MSE. Lower MSE indicates higher PSNR and reconstruction quality.
 
 The basic structure was inspired by ESPCN (Efficient Sub-Pixel CNN) proposed by Shi, 2016 and Keras implementation by Long, 2020. The model was also embedded with Residual Dense Blocks, inspired by Chakraborty, 2021. Residual blocks prevented early saturation or degradation with accuracy from increasing number of layers.
 
-ADNI MRI Dataset were used in this work (see citation)
+ADNI MRI Dataset were used in this work (see citation).
 
 ## Importance of this work
 MRI in modern medicine require continuous monitoring human organs in real-time. High-resolution MRI scan could take up to 90 mintues for each scan, and hardly capture the dynamic change in human body. Real-time MRI was possible only with low image quality fast scans, as MRI scanning is done in time-based k-space. Super-Resolution algorithms will be very helpful to provide a higher-resoltion image for better disease diagnosing.
@@ -40,48 +45,55 @@ The model input is:\
 The model output is:\
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Model_Prediction.png?raw=true)
 
-PSNR of low resolution image and high resolution image is 25.5161
-PSNR of predict and high resolution is 27.4348
+PSNR of low resolution image and high resolution image is 25.5161\
+PSNR of predict and high resolution is 27.4348\
 PSNR improvement between low resolution and prediction 1.9188
 
 ## Model Summary
 The model can be seen as:\
 Input => Conv => Conv => Residual_Block(4 Conv) => Conv => Residual_Block(4 Conv) => Sub-pixel_Conv.\
+
 As mentioned above Residual blocks prevented early saturation or degradation with accuracy from increasing number of layers.\
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Residual_Block.png?raw=true)
 
 ### Detail of model
+As shown below\
 ![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Model_summary.png?raw=true)
 
 ## Pre-processing
-The dataset has 30520 samples of Alzheimer’s disease (AD) and Cognitive Normal (CN).
+The dataset has 30520 samples of Alzheimer’s disease (AD) and Cognitive Normal (CN).\
+
 | Training set   | Validation set | Testing set    |
 | -------------- | -------------- | -------------- |
 | 17216          | 4304           | 9000           |
 
 The dataset was resized to 300x300 and normalized from scale of (0,255) to (0,1).\
 Both train_ds and validation_ds were assigned in form of **tuple** (low-res_ds, high-res_ds).
-### Dependencies
-crop_size = 300
-upscale_factor = 4
 
 ## Utility functions
 These are some important utility functions, details are commented thoughout the code.
 
 ### dataset_preprocessing
 Scale normalization, color space convertion and create tuple of dataset for trainning.
+
 ### setup_dataset
 Create image dataset from directory with 8:2 ratio.
+
 ### scaling
 Normalize an image from scale of (0,255) to (0,1).
+
 ### process_input/target
 Convert rgb color spcae to yuv color space to extract luminance information.
+
 ### get_lowres_image
 Utlize BICUBIC to downsample an image by a specified factor.
+
 ### upscale_image
 Reconstruct a low-resolution image to a high-resolution through a model.
+
 ### plot_results
 Plot results with additional zoom-in at a facotor of 4
+
 ### ESPCNCallback
 The ESPCNCallback object will compute and display the PSNR metric during training and testing
 
