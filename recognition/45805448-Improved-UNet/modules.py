@@ -1,6 +1,6 @@
-import array
 import tensorflow as tf
 from keras import Model
+from keras.backend import flatten, sum
 from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
 from keras.optimizers import Adam
 
@@ -162,7 +162,8 @@ def context_aggregation_pathway(input, filters=16, num_levels=5):
 def localization_pathway(encoded, contexts: list, filters=16, num_levels=5, segmentations=3):
     """
     Creates the full upsampling and segmentation part of the network. This includes upsampling and
-    segmentation modules.
+    segmentation modules. The output is ran through a softmax activation to determine the labels
+    for the individual pixels.
 
     Parameters:
         encoded_block: input of dimensionality n by n
@@ -192,6 +193,31 @@ def localization_pathway(encoded, contexts: list, filters=16, num_levels=5, segm
 
     return finish_layer
 
+def dice_coefficient(ground_truth, softmax_out):
+    """
+    Multiclass Dice loss function as defined by Isensee et al. This metric is used to counteract the
+    class imbalance in the data that other loss functions such as categorical crossentropy may
+    struggle with. 
+    
+    In other words, an image with too much background may be classed with too much respect to that, 
+    and miss the smaller occurences of other labels (such as the actual skin cancer) to minimise the
+    loss.
+
+    Parameters:
+        ground_truth: actual locations of the skin cancer
+        softmax_out: predicted locations of the cancer, extracted from the softmax activation in the
+            final layer of the improved UNet model
+
+    Returns:
+        customised loss between the ground truth of the image and the predicted labels
+
+    Reference:
+        https://arxiv.org/abs/1802.10508v1
+    """
+    ground_truth_flat = flatten(ground_truth)
+    softmax_out_flat = flatten(softmax_out)
+    multiclass_summation = sum(ground_truth_flat * softmax_out_flat) / (sum(ground_truth_flat) + sum(softmax_out_flat))
+    return -2 * multiclass_summation
 
 def improved_unet(input_shape, filters=16, num_levels=5, segmentations=3):
     """
@@ -206,10 +232,9 @@ def improved_unet(input_shape, filters=16, num_levels=5, segmentations=3):
     """
     input = Input(shape=input_shape)
     encoded, contexts = context_aggregation_pathway(input, filters, num_levels)
-    print(tf.keras.Model(inputs=input, outputs=encoded).summary())
     output = localization_pathway(encoded, contexts, filters, num_levels, segmentations)
 
-    improved_unet = tf.keras.Model(inputs=input, outputs=output)
-    improved_unet.compile(optimizer=Adam(), loss='binary_crossentropy')
+    improved_unet = Model(inputs=input, outputs=output)
+    improved_unet.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=[dice_coefficient])
 
     return improved_unet
