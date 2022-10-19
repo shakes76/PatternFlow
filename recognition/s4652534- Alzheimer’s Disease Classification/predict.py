@@ -15,8 +15,9 @@ if __name__ == '__main__':
     num_features = 128
     num_classes = 2
     batch_size = 15
+    dataset_dir = "./AD_NC"
 
-    dataset = ADNI("./AD_NC")
+    dataset = ADNI(dataset_dir)
     test_loader = dataset.get_test_loader(height, width, batch_size)
     label_dict = {0: "NC", 1: "AD"}
 
@@ -34,14 +35,15 @@ if __name__ == '__main__':
     labels = labels.cpu().numpy()
     predicted = predicted.cpu().numpy()
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(12, 8))
 
     for i in range(15):
         subplot = fig.add_subplot(3, 5, i+1)
         subplot.imshow(imgs[i])
         subplot.title.set_text(
-            "GT/Pre:" + label_dict[labels[i]] + "/" + predicted[labels[i]])
-    plt.show()
+            "GT/Pre:" + label_dict[labels[i]] + "/" + label_dict[predicted[i]])
+
+    plt.savefig("demo.jpg")
 
 
 

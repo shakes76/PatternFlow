@@ -59,6 +59,8 @@ if __name__ == '__main__':
     cudnn.deterministic = True
     cudnn.benchmark = True
 
+    dataset_dir = "./AD_NC"
+
     height = 224
     width = 224
     num_features = 128
@@ -73,7 +75,7 @@ if __name__ == '__main__':
 
     pretraining=True
 
-    dataset = ADNI("./AD_NC")
+    dataset = ADNI(dataset_dir)
     train_loader = dataset.get_train_loader(height, width, batch_size)
     test_loader = dataset.get_test_loader(height, width, 2048)
 
