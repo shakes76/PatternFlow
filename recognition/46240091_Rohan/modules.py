@@ -110,4 +110,53 @@ def vqvae_model(latent_dim=16, num_embeddings=64):
   vq_layer_inputs = encoder_model(encoder_inputs)
   decoder_inputs = vq_layer(vq_layer_inputs)
   vqvae_output = decoder_model(decoder_inputs)
-  return keras.Model(encoder_inputs, vqvae_output, name="vq_vae")      
+  return keras.Model(encoder_inputs, vqvae_output, name="vq_vae")   
+
+
+class VQVAETrainer(keras.models.Sequential):
+  """
+  VQVAE trainer class from Keras tutorial: 
+  https://keras.io/examples/generative/vq_vae/#wrapping-up-the-training-loop-inside-vqvaetrainer
+  """
+  def __init__(self, train_variance, latent_dim=16, num_embeddings=128, **kwargs):
+    super(VQVAETrainer, self).__init__(**kwargs)
+    self.train_variance = train_variance
+    self.latent_dim = latent_dim
+    self.num_embeddings = num_embeddings
+    self.vqvae1 = vqvae_model(self.latent_dim, self.num_embeddings)
+    self.total = keras.metrics.Mean()
+    self.reconstruction = keras.metrics.Mean()
+    self.vq = keras.metrics.Mean()
+
+  @property
+  def metrics(self):
+    """
+    The 3 loss metrics, reconstruction loss represents the information lost between the
+    original image and image reconstructed from VQVAE and total loss is the sum 
+    of this loss and sum of all losses from vqvae_model
+    """
+    return [self.total, self.reconstruction, self.vq]
+
+  def train_step(self, x):
+    with tf.GradientTape() as tape:
+      #Reconstructed images which are output from VQVAE.
+      reconstructions = self.vqvae1(x)
+
+      # Calculate the losses.
+      reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance)
+      total_loss = reconstruction_loss + sum(self.vqvae1.losses)
+
+    # Backpropagation.
+    gradients = tape.gradient(total_loss, self.vqvae1.trainable_variables)
+    self.optimizer.apply_gradients(zip(gradients, self.vqvae1.trainable_variables))
+
+    #Updating the losses
+    self.total.update_state(total_loss)
+    self.reconstruction.update_state(reconstruction_loss)
+    self.vq.update_state(sum(self.vqvae1.losses))
+
+    return {
+    "loss": self.total.result(),
+    "reconstruction_loss": self.reconstruction.result(),
+    "vqvae_loss": self.vq.result(),
+    }     
