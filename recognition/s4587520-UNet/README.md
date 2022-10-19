@@ -1,0 +1,1 @@
+This Project uses the StyleGAN2-ADA for Pytorch to generate OASIS Brain scan images
