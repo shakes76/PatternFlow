@@ -29,14 +29,25 @@ Figure 3: Example of target mask
 
 ## Training
 
-We use the train, test, validation split provided by the ISIC challenge. We are training our model on 2000 images of skin lesions, and train for 5 epochs.
+We use the train, test, validation split provided by the ISIC challenge. We are training our model on a subset of 2000 images of skin lesions, and train for 20 epochs. Due to memory constraints, we train on a random subset of 100 images of the training data. We plot both the training and test loss on each epoch which can be seen in Figure 4.
+
+![Training loss](figures/training-loss.png)
+
+Figure 4: Plot of total training and test loss on each iteration
 
 ## Results
 
+We show in Figure 5 and example bounding box prediction and classification of a sample of the validation data.
+
 ![Example prediction](figures/example-prediction-melanoma.png)
 
-Figure 4: Example prediction by the trained network with positive classification
+Figure 5: Example prediction by the trained network with positive classification
 
+The mask prediction for the same image is showed in Figure 6.
+
+![Example mask](figures/example-mask-prediction.png)
+
+Figure 6: Example mask prediction
 
 ## Requirements
 
