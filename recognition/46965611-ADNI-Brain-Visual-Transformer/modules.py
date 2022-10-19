@@ -16,10 +16,12 @@ class PatchLayer(Layer):
 	"""
 	Layer for shifting inputted images and transforming images into patches.
 	"""
-	def __init__(self, image_size, patch_size, num_patches, projection_dim):
-		super(PatchLayer, self).__init__()
+	def __init__(self, image_size, patch_size, num_patches, projection_dim, **kwargs):
+		super(PatchLayer, self).__init__(**kwargs)
 		self.image_size = image_size
 		self.patch_size = patch_size
+		self.num_patches = num_patches
+		self.projection_dim = projection_dim
 		self.half_patch = patch_size // 2
 		self.flatten_patches = layers.Reshape((num_patches, -1))
 		self.projection = layers.Dense(units=projection_dim)
@@ -89,15 +91,28 @@ class PatchLayer(Layer):
 
 		return (tokens, patches)
 
+	def get_config(self):
+		config = super(PatchLayer, self).get_config()
+		config.update(
+			{
+				'image_size': self.image_size,
+				'patch_size': self.patch_size,
+				'num_patches': self.num_patches,
+				'projection_dim': self.projection_dim
+			}
+		)
+		return config
+
 
 class EmbedPatch(Layer):
 	"""
 	Layer for projecting patches into a vector. Also adds a learnable
 	position embedding to the projected vector.
 	"""
-	def __init__(self, num_patches, projection_dim):
-		super(EmbedPatch, self).__init__()
+	def __init__(self, num_patches, projection_dim, **kwargs):
+		super(EmbedPatch, self).__init__(**kwargs)
 		self.num_patches = num_patches
+		self.projection_dim = projection_dim
 		self.position_embedding = layers.Embedding(
 			input_dim=self.num_patches, output_dim=projection_dim
 		)
@@ -105,6 +120,16 @@ class EmbedPatch(Layer):
 	def call(self, patches):
 		positions = tf.range(0, self.num_patches, delta=1)
 		return patches + self.position_embedding(positions)
+
+	def get_config(self):
+		config = super(EmbedPatch, self).get_config()
+		config.update(
+			{
+				'num_patches': self.num_patches,
+				'projection_dim': self.projection_dim
+			}
+		)
+		return config
 
 
 class MultiHeadAttentionLSA(layers.MultiHeadAttention):
@@ -116,6 +141,7 @@ class MultiHeadAttentionLSA(layers.MultiHeadAttention):
 			training=None):
 		query = tf.multiply(query, 1.0/self.tau)
 		attention_scores = tf.einsum(self._dot_product_equation, key, query)
+		attention_mask = tf.convert_to_tensor(attention_mask)
 		attention_scores = self._masked_softmax(attention_scores, attention_mask)
 		attention_scores_dropout = self._dropout_layer(
 			attention_scores, training=training
@@ -124,10 +150,14 @@ class MultiHeadAttentionLSA(layers.MultiHeadAttention):
 			self._combine_equation, attention_scores_dropout, value
 		)
 		return attention_output, attention_scores
+	
+	def get_config(self):
+		config = super(MultiHeadAttentionLSA, self).get_config()
+		return config
 
 def build_vision_transformer(input_shape, image_size, patch_size, num_patches,
 			attention_heads, projection_dim, hidden_units, dropout_rate,
-			transformer_layers):
+			transformer_layers, mlp_head_units):
 	"""
 	Builds the vision transformer model.
 	"""
@@ -172,7 +202,7 @@ def build_vision_transformer(input_shape, image_size, patch_size, num_patches,
 		mlp_layer = layer_norm_2
 		for units in hidden_units:
 			mlp_layer = layers.Dense(units, activation=tf.nn.gelu)(mlp_layer)
-			mlp_layer = layers.Dropout(dropout_rate)(mlp_layer)
+			mlp_layer = layers.Dropout(dropout_rate)(mlp_layer, training=False)
 		
 		# Second skip connection
 		encoded_patches = layers.Add()([mlp_layer, skip_1])
@@ -180,16 +210,16 @@ def build_vision_transformer(input_shape, image_size, patch_size, num_patches,
 	# Create a [batch_size, projection_dim] tensor
 	representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 	representation = layers.Flatten()(representation)
-	representation = layers.Dropout(0.5)(representation)
+	representation = layers.Dropout(dropout_rate)(representation, training=False)
 
 	# MLP layer for learning features
 	features = representation
-	for units in [2048, 1024]:
+	for units in mlp_head_units:
 		features = layers.Dense(units, activation=tf.nn.gelu)(features)
-		features = layers.Dropout(0.5)(features)
+		features = layers.Dropout(dropout_rate)(features, training=False)
 
 	# Classify outputs
-	logits = layers.Dense(2)(features)
+	logits = layers.Dense(1)(features)
 
 	# Create Keras model
 	model = tf.keras.Model(inputs=inputs, outputs=logits)
