@@ -1,6 +1,15 @@
-## Section Navigation
-1. [Description of Algorithm](description-of-algorithm)
-2. [References](#-references)
+# Section Navigation
+1. [Description of Algorithm](#description-of-algorithm)
+2. [Problem It Solves](#problem-it-solves)
+3. [How It Works](#how-it-works)
+4. [Figure/Visualization](#figure--visualizaton)
+5. [Dependencies](#dependencies)
+6. [Reproducibility of Results](#reproducibility-of-results)
+7. [Example Inputs/Outputs](#example-inputs--outputs)
+8. [Plot of Algorithm](#plot-of-algorithm)
+9. [Pre-processing](#pre-processing)
+10. [Training and Validation Splits](#training--validation-splits)
+11. [References](#references)
 
 
 
@@ -35,12 +44,14 @@ The embedding vectors are now passed through one or more layers of the Transform
 
 The class token is now extracted from the Transformer Encoder output and fed into a multilayer perceptron("The MLP Head") which consists of two or more hidden layers.  The output of the MLP Head is used to predict the sample classification.
 
+[Back to Top](#section-navigation)
+# Problem it Solves
 
-## Problem it Solves
 
 CNNs are local, self-attention is global
 
-## How it Works
+[Back to Top](#section-navigation)
+# How it Works
 
 1. Download and unzip data 
 2. Create environment
@@ -53,14 +64,15 @@ CNNs are local, self-attention is global
 5. run python train.py
 6. Load model weights and make predictions by running python predict.py 
 
-## Figure / Visualizaton
+[Back to Top](#section-navigation)
+# Figure / Visualizaton
 
 - training loss and accuracy (best, anomolies)
 - table of experiments
 - vit Model (in algorithm description)
 - 
-
-## Dependencies
+[Back to Top](#section-navigation)
+# Dependencies
 
 python 3.9
 matplotlib
@@ -69,31 +81,33 @@ numpy
 keras_cv
 tensorflow_addons
 
-
-## Reproducibility of Results
+[Back to Top](#section-navigation)
+# Reproducibility of Results
 - initial selection of validation set
 - seed in image_dataset_from_directory
 - hyperparams --> obviously stochastic by nature
 
-## Example inputs / outputs
+[Back to Top](#section-navigation)
+# Example inputs / outputs
 - input: brain image?
 - output: test results?
 
-
-## Plot of Algorithm
+[Back to Top](#section-navigation)
+# Plot of Algorithm
 - training loss and accuracy?
 
-## Pre-processing
+[Back to Top](#section-navigation)
+# Pre-processing
 1. create folders
 2. prevent leakage
 3. crop
 4. augment
 
 
+[Back to Top](#section-navigation)
+# Training & Validation Splits
 
-## Training & Validation Splits
-
-
+[Back to Top](#section-navigation)
 # References
 
 $^1$ An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale
@@ -101,3 +115,5 @@ $^1$ An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale
 $^2$ https://adni.loni.usc.edu/
 
 $n_{1}$
+
+[Back to Top](#section-navigation)
