@@ -1,4 +1,3 @@
-import torch.utils as utils
 from torch.utils.data import Dataset
 import torchvision
 from torchvision.transforms import transforms
@@ -15,6 +14,14 @@ training using VQVAE.
 Paramaters:
     data_path -> a path to the training, testing
     or validation folder of OASIS brain images
+    
+    The folder structure should look like this:
+        
+        folder the path points to is data folder.
+        
+        Data folder should contain a single folder that contains the images
+        
+        data folder -> img folder -> images 
 
 """
 
@@ -32,8 +39,8 @@ class DataLoader(Dataset):
         trans = transforms.Compose([transforms.ToTensor(),
                                    transforms.Normalize((0.5,), (0.5,)),
                                    transforms.Resize((128,128))])
-        data_loader = torchvision.datasets.ImageFolder(root = data_path, transform 
-                                        = trans)
+        data_loader = torchvision.datasets.ImageFolder(root = data_path, 
+                                                       transform = trans)
         
         self.data = data_loader
         #self.data = self.data/255.0

@@ -1,39 +1,43 @@
 import torch
 import torch.nn as nn
-import torch.utils as utils
-import torchvision
-import numpy as np
+
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#Setting Global Parameters
 image_dim = (3,128,128)
-#learning_rate = 0.0001
-#latent_space = 256
-#num_embeddings = 256
-#commitment_loss = 0.25
 
+"""
+Encoder for VQVAE
+Uses 3 Convolution 2d layers, with leaky ReLU activation functions and batch 
+normalisation layers in between. Sigmoid activation function at the end for 
+down sampling.
+
+"""
 class Encoder(nn.Module):
-    
+    """
+    Parameters:
+        latent_space -> latent dimension of VQVAE
+    """
     def __init__(self, latent_space):
         super(Encoder, self).__init__()
         self.latent_space = latent_space
         #3 convolutional layers for a latent space of 64
         self.model = nn.Sequential(
-            nn.Conv2d(3, self.latent_space, kernel_size=4, stride = 2, padding = 1),
-            # 3 * 256 * 256 -> 64 * 128 * 128
+            nn.Conv2d(3, self.latent_space, kernel_size=4, 
+                      stride = 2, padding = 1),
+            # 3 * 128 * 128 -> latent_space * 64 * 64
             nn.BatchNorm2d(self.latent_space),
             nn.LeakyReLU(0.1),
             
             nn.Conv2d(self.latent_space, self.latent_space*2, 
                       kernel_size=4, stride = 2, padding = 1),
-            # 64 * 128 * 128 -> 128 * 64 * 64
+            # latent_space * 64 * 64 -> latent_space*2  * 32 * 32
             nn.BatchNorm2d(self.latent_space*2),
             nn.LeakyReLU(0.1),
             
             nn.Conv2d(self.latent_space*2, self.latent_space, 
                       kernel_size=3, stride = 1, padding = 1),
-            # 64 * 128 * 128 
+            # latent_space*2 * 32 * 32 * latent_space * 32 * 32
             
             nn.Sigmoid(),)
         
@@ -43,10 +47,19 @@ class Encoder(nn.Module):
             
             
 
-    
+"""
+Encoder for VQVAE
+Uses 3 Convolution transpose 2d layers, with leaky ReLU activation functions 
+and batch normalisation layers in between, basically same as encoder. Tanh 
+activation function at the end for upsampling
+
+"""    
     
 class Decoder(nn.Module):
-    
+    """
+    Parameters:
+        latent_space -> latent dimension of VQVAE
+    """
     def __init__(self, latent_space):
         super(Decoder, self).__init__()
         self.latent_space = latent_space
@@ -61,7 +74,8 @@ class Decoder(nn.Module):
             nn.BatchNorm2d(self.latent_space),
             nn.LeakyReLU(0.1),
             
-            nn.ConvTranspose2d(self.latent_space, 3, kernel_size = 3, stride = 1, padding = 1),
+            nn.ConvTranspose2d(self.latent_space, 3, kernel_size = 3, stride = 
+                               1, padding = 1),
             nn.Tanh(),
             )
         
@@ -185,7 +199,8 @@ class VQ(nn.Module):
         # create a zeros tensor, with the position at indexes being 1
         # This creates a "beacon" so that position can be replaced by a 
         # embedded vector.
-        encodings = torch.zeros(indexes.shape[0], self.num_embeddings).to(device)
+        encodings = torch.zeros(indexes.shape[0], 
+                                self.num_embeddings).to(device)
         encodings.scatter_(1, indexes, 1)
         return encodings, standalone_indexes
         
@@ -216,7 +231,12 @@ Model that compiles the encoder, Vector Quantizer and decoder together.
 Some extra scaffolding added for tensor dimension compatability
 """
 class VQVAE(nn.Module):
-        
+    """
+    Parameters:
+        num_embeddings -> the number of embeddngs for VQVAE
+        latent_space -> latent dimension of VQVAE
+        commitment_loss -> scalable hyperparam, set to 0.25 as default
+    """
     def __init__(self, num_embeddings, latent_space, commitment_loss):
         super(VQVAE, self).__init__()
         self.num_embeddings = num_embeddings
@@ -234,21 +254,30 @@ class VQVAE(nn.Module):
         
         return decoder_outputs, loss
         
-
+    #Returns decoder
     def get_decoder(self):
         return self.decoder
-    
+    #Returns encoder
     def get_encoder(self):
         return self.encoder
-    
+    #Returns Vector Quantizer layer
     def get_VQ(self):
         return self.VQ
         
 
-
+"""
+Basic Masked Convolutional layer for PixelCNN, used standalone and as part of 
+residual blocks later.
+"""
                 
 class MaskedConv2d(nn.Conv2d):
-    
+    """
+    Parameters:
+        mask_type -> mask type for PixelCNN layer, A layers do not include 
+        centre pixel, while B layers do
+        
+        MaskedConv2d inherits parameters from regular Conv2d
+    """
     def __init__(self, mask_type, *args, **kwargs):
         # Inherits 2d convolutional layer and its parameters
         super(MaskedConv2d, self).__init__(*args, **kwargs)
@@ -278,8 +307,17 @@ class MaskedConv2d(nn.Conv2d):
         #use the forward from nn.Conv2d
         return super(MaskedConv2d, self).forward(x)
 
+
+"""
+Resdiual block built from MaskedConv2d layer.
+"""
 class ResBlock(nn.Module):
-    
+    """
+    Parameters:
+        num_embeddings -> the num of embeddings of VQVAE
+        
+        
+    """
     def __init__(self, num_embeddings):
         super(ResBlock, self).__init__()
         self.num_embeddings = num_embeddings
@@ -287,45 +325,54 @@ class ResBlock(nn.Module):
         self.res_block = nn.Sequential(
             
             nn.Conv2d(num_embeddings, num_embeddings, kernel_size = 1),
-            #nn.BatchNorm2d(num_embeddings),
             nn.ReLU(),
             MaskedConv2d("B", in_channels = num_embeddings, out_channels \
                          = num_embeddings//2, kernel_size = 3, padding = \
                          "same"),
-            #nn.BatchNorm2d(num_embeddings//2),
             nn.ReLU(),
             nn.Conv2d(num_embeddings//2, num_embeddings, kernel_size = 1),
-            #nn.BatchNorm2d(num_embeddings),
             nn.ReLU())
     
     def forward(self, x):
         output = self.res_block(x)
         return output + x
     
-        
+"""
+PixelCNN model, using MaskedConv2d layers and ResBlocks built from
+MaskedConv2d. 
+
+The model can be modified with additional Resblocks or regular 
+masked B layers optionally, however, the A layer must remain at the
+start. Use ReLU activation functions in between.
+"""
 class PixelCNN(nn.Module):
-    
+    """
+    Parameters:
+        num_embeddings -> the num of embeddings of VQVAE
+         
+    """
     def __init__(self, num_embeddings):
         super(PixelCNN, self).__init__()
         self.num_embeddings = num_embeddings
         self.pixelcnn_model = nn.Sequential(
 
             MaskedConv2d("A", in_channels = num_embeddings, 
-                         out_channels = 256, kernel_size = 9, padding = "same"),
-            nn.ReLU(),
-            ResBlock(256),
-            ResBlock(256),
-            MaskedConv2d("B", in_channels = 256, 
-                         out_channels = 256, kernel_size = 1, #stride = 1,
+                         out_channels = num_embeddings*4, kernel_size = 9, 
                          padding = "same"),
             nn.ReLU(),
-            MaskedConv2d("B", in_channels = 256, 
-                         out_channels = 256, kernel_size = 1, #stride = 1,
+            ResBlock(num_embeddings*4),
+            ResBlock(num_embeddings*4),
+            MaskedConv2d("B", in_channels = num_embeddings*4, 
+                         out_channels = num_embeddings*4, kernel_size = 1,
+                         padding = "same"),
+            nn.ReLU(),
+            MaskedConv2d("B", in_channels = num_embeddings*4, 
+                         out_channels = num_embeddings*4, kernel_size = 1,
                          padding = "same"),            
             nn.ReLU(),
       
-            nn.Conv2d(256, num_embeddings, kernel_size = 1, stride = 1,
-                      padding = "valid"),
+            nn.Conv2d(num_embeddings*4, num_embeddings, kernel_size = 1, 
+                      stride = 1, padding = "valid"),
                         
             )
         
