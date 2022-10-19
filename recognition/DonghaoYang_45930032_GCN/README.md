@@ -32,9 +32,8 @@ format can be used by user directly and showcase example usage of my trained mod
 ## Dependencies required
 Running this GCN model to solve the Facebook pages classification problem, The below libraries and versions of python and tensorflow are required:<br />
 [1]numpy;<br />[2]scipy;<br />[3]sklearn;<br />[4]keras;<br />[5]matplotlib;<br />[6]tensorflow2.9.2(GPU version);<br />[7]Python3.9.13 <br /><br />
-The address of the required dataset is:
-[Facebook Large Page-page Network 
-dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html)
+The address of the required dataset is:[**(But I actually make use of the partially processed version provided in the task sheet of problem 2)**](https://graphmining.ai/datasets/ptg/facebook.npz)
+<br />[Facebook Large Page-page Network dataset](https://snap.stanford.edu/data/facebook-large-page-page-network.html)
 ## Example inputs, outputs and plots of my algorithm
 The inputs of my GCN model is an adjacency matrix of the graph and the features' matrix of the nodes of the graph. This can be obtained by running
 dataset.py with raw data<br /><br />
@@ -42,9 +41,13 @@ The example outputs of the train.py. Please refer to [train_output](./train_outp
 [predict_output](./predict_output).<br /><br />
 The below graphs are loss plot, accuracy plot and TSNE plot:![loss_plot](./GCN_model_training_and_validation_loss.png)
 ![accuracy_plot](./GCN_model_training_and_validation_accuracy.png)![TSNE_plot](./TSNE_embedding_plot.png)
+## Pre-processing and the split of the data
+[**The Facebook pages data I made use of actually is the partially processed version provided in the task sheet of problem 2**](https://graphmining.ai/datasets/ptg/facebook.npz)
+<br /><br /> I split the dataset to train, test and validation sets with the ratio of 0.5, 0.25, 0.25 respectively.
 ## Reference
 [1] https://arxiv.org/abs/1609.02907 <br />
 [2] https://snap.stanford.edu/data/facebook-large-page-page-network.html <br />
 [3] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/FacebookNetworkGCN <br />
 [4] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/s4521842_GCN/GCN <br />
 [5] https://github.com/ElonQuasimodoYoung/COMP3710_Report_Donghao_Yang_45930032_PatternFlow/tree/topic-recognition/recognition/s4628887_Task_2_GCN <br />
+[6] https://graphmining.ai/datasets/ptg/facebook.npz <br />
