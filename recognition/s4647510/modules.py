@@ -7,13 +7,14 @@ import tensorflow_probability as tfp
 import tensorflow as tf
 import os
 
+# Based off Keras VQVAE tutorial: https://keras.io/examples/generative/vq_vae/
+# and Keras PixelCNN tutorial: https://keras.io/examples/generative/pixelcnn/
+
 class VectorQuantizer(layers.Layer):
     def __init__(self, num_embeddings, embedding_dim, beta=0.25, **kwargs):
         super().__init__(**kwargs)
         self.embedding_dim = embedding_dim
         self.num_embeddings = num_embeddings
-
-        # The `beta` parameter is best kept between [0.25, 2] as per the paper.
         self.beta = beta
 
         # Initialize the embeddings which we will quantize.
