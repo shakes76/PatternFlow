@@ -8,19 +8,22 @@ This project aims to create a generative model for the ADNI dataset using VQVAE 
 ---
 <div style="text-align:center"><img src="./vqvae_model.png" /></div>
 
-The image above depicts the high-level structure of a VQVAE model which consists of an encoder, vector quantisation layer and a decoder. 
+The image above depicts the high-level structure of a VQVAE model which consists of an encoder, vector quantisation layer which includes the discrete latent space and codebook vectors and a decoder. 
 
 This is essentially an extension of the VAE model (image below) in which we feed input into the encoder to generate the latent vector representation then build out latent space by enforcing a uniform prior and determining the posterior for the latent space. Then we feed this through the decoder to reconstruct the image.
 
 <div style="text-align:center"><img src="./vae_model.png" height=500/></div>
 
-With the VQVAE we incorporate a vector-quantisation layer and use discrete latent representation and a discrete codebook. The codebook stores the latent vectors associated with a corresponding index. We use this to quantise the autoencoder to compare the output of the encoder to the codebooks and the codebook vector that is closest in euclidean distance is given to the decoder 
+With the VQVAE we incorporate the vector-quantisation layer and use discrete latent representation and a discrete codebook. The codebook stores the latent vectors associated with a corresponding index. We use this to quantise the autoencoder to compare the output of the encoder to the codebooks and the we decode closest codebook vector in euclidean distance to reconstruct the image.
 
- to determine the posterior distribution of latent random variables given the input, essentially, compressing the data into the latent space. 
+**Loss**
+<div style="text-align:center"><img src="./loss.png"/></div>
+
+According to the paper there are 3 key loss metrics associated with the VQVAE model: total loss, vector quantisation loss and the reconstruction loss. The total loss is the combined loss from the VQ layer and the reconstructions. There are 2 components for the VQ loss: commitment and codebook. The codebook loss is just the L2-norm error to move the embedding/codebook vectors and commitment loss is to ensure the encoder commits to a codebook as the codebooks do not learn as fast as the encoder. 
+
+check below
 
 we encode the input image then learn the discrete latent space which maps the embedding space then we deocode the image using the embedded codebooks. 
-
-Define losses and break down model
 
 ### **VQVAE results**
 ---
@@ -38,9 +41,18 @@ The graph below shows the total, VQ loss and reconstruction loss. We observe tha
 
 ## **PixelCNN Model**
 ---
-<div style="text-align:center"><img src="./pcnn_model.png" /></div>
+<div style="text-align:center"><img src="./pcnn_model.png" height=600/></div>
 
-PixelCNN uses convolutional layers to learn features for all pixels at the same time. We also use masks 'A' to restrict connections to the pixels that have already been predicted and 'B' to allow connections from predicted colours to current pixels as to adhere to the conditional independence of the pixels.
+PixelCNN is a generative model that uses convolutional and residual blocks to generate images by iteratively calculating the distribution of prior pixels to generate the probability of later pixels.
+
+The input image first gets passed through the convolutional layer which generates receptive fields to learn features for all pixels at the same time. We need to also use masks to restrict the connections between layers. For the initial layer we use mask 'A' to restrict connections to the pixels that have already been predicted. The subsequent layers will use mask 'B' to allow connections only from predicted layers to the current pixels. This ensures that we adhere to requirement of conditional independence of pixels. 
+
+Then we pass the initial convolution layer to residual blocks. These layers are essentially trying to learn the true output by learning the residuals of the true output. We achieve this by skipping the connections between layers. 
+
+<div style="text-align:center"><img src="./resid.png" height=300/></div>
+
+
+uses convolutional layers to learn features for all pixels at the same time. We also use masks 'A' to restrict connections to the pixels that have already been predicted and 'B' to allow connections from predicted colours to current pixels as to adhere to the conditional independence of the pixels.
 
 ### **PixelCNN results**
 ---
