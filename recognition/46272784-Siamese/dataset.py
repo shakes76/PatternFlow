@@ -30,6 +30,7 @@ def transform_images(img):
     # transform to grayscale and standardize to [0,1]
     img = image.rgb_to_grayscale(img)
     img = img / 255.0
+    # print(img)
     return img
 
 def loadFile(dir, batch=8):
