@@ -20,7 +20,7 @@ train_data = ISICDataset(
     device=device,
     transform=get_transform(True),
     )
-train_data = torch.utils.data.Subset(train_data, range(250))
+train_data = torch.utils.data.Subset(train_data, range(100))
 train_dataloader = torch.utils.data.DataLoader(
     train_data, 
     batch_size=2, 
@@ -30,9 +30,9 @@ train_dataloader = torch.utils.data.DataLoader(
     )
 
 test_data = ISICDataset(
-    image_folder_path="./data/ISIC-2017_Validation_Data", 
-    mask_folder_path="./data/ISIC-2017_Validation_Part1_GroundTruth", 
-    diagnoses_path="./data/ISIC-2017_Validation_Part3_GroundTruth.csv",
+    image_folder_path="./data/ISIC-2017_Test_Data", 
+    mask_folder_path="./data/ISIC-2017_Test_v2_Part1_GroundTruth", 
+    diagnoses_path="./data/ISIC-2017_Test_v2_Part3_GroundTruth.csv",
     device=device,
     transform=get_transform(True),
     )
@@ -101,9 +101,14 @@ def train_model(model, train_dataloader, test_dataloader, n_epochs):
                 
         
         
-    return training_loss
+    return training_loss, testing_loss
 
 if __name__ == "__main__":
-    training_loss = train_model(model, train_dataloader, test_dataloader, 10)
-    torch.save(model.state_dict(), "Mask_RCNN_ISIC3.pt")
+    training_loss, testing_loss = train_model(model, train_dataloader, test_dataloader, 20)
+    torch.save(model.state_dict(), "Mask_RCNN_ISIC4.pt")
+    with open('training_loss.pickle', 'wb') as handle:
+        pickle.dump(training_loss, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+    with open('testing_loss.pickle', 'wb') as handle:
+        pickle.dump(testing_loss, handle, protocol=pickle.HIGHEST_PROTOCOL)
     

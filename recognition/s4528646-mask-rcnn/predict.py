@@ -24,9 +24,8 @@ val_dataloader = torch.utils.data.DataLoader(
 
 model = get_model()
 model.float()
-model.load_state_dict(torch.load("./Mask_RCNN_ISIC3.pt"))
+model.load_state_dict(torch.load("./Mask_RCNN_ISIC4.pt"))
 model.eval()
-#for image, targets in val_data:
 image, targets = val_data[73]
 predictions = model([image])
 image = np.array(image.detach().cpu())
@@ -37,7 +36,6 @@ boxes = predictions[0]["boxes"]
 scores = predictions[0]["scores"]
 iou = box_iou(boxes, targets["boxes"])
 idx = torch.argmax(iou)
- #   if predictions[0]["labels"][idx].item() == 2:
 bbox = boxes[idx].detach()
 mask = predictions[0]["masks"][idx]
 rect = Rectangle((bbox[0], bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1], linewidth=1, edgecolor='r', facecolor='none')
@@ -55,8 +53,9 @@ l = ax.annotate(
         va='center'
       )
 ax.add_patch(rect)
-# target_bbox = targets["boxes"][0]
-#rect = Rectangle((target_bbox[0], target_bbox[1]), target_bbox[2] - target_bbox[0], target_bbox[3] - target_bbox[1], linewidth=1, edgecolor='b', facecolor='none')
-#ax.add_patch(rect)
+# Classification
 print("Expected:", targets["labels"].item(), "Predicted:", predictions[0]["labels"][idx].item())
+# IoU
 print("IoU:", iou[idx])
+# Show mask prediction
+plt.imshow(predictions[0]["masks"][idx][0].detach() > 0.5)
