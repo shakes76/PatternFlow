@@ -21,11 +21,13 @@ from .dataset import get_zipped_dataset, normalize, set_train_batch
 """ Parameters"""
 PATH = "./dataset" # The path of zipped image dataset
 NUMBER_OF_SAMPLES = 2000 # The number of image samples used to training
+IMAGE_SIZE = (64, 64)
 CKPT_PATH = "./checkpoint" # The path of the checkpoint
 EPOCS = 30
+BATCH_SIZE = 16
 
 """Loading dataset"""
-images = normalize(get_zipped_dataset(PATH)[:NUMBER_OF_SAMPLES])
+images = normalize(get_zipped_dataset(PATH, IMAGE_SIZE)[:NUMBER_OF_SAMPLES])
 train_images = set_train_batch(images)
 
 """## Creating Unet instance and checkpoint"""
