@@ -18,22 +18,24 @@ from .modules import Unet, generate_timestamp, forward_noise, get_checkpoint
 from .modules import loss_fn
 from .dataset import get_zipped_dataset, normalize, set_train_batch
 
-""" Parameters"""
+# Parameters
 PATH = "./dataset" # The path of zipped image dataset
 NUMBER_OF_SAMPLES = 2000 # The number of image samples used to training
 IMAGE_SIZE = (64, 64)
 CKPT_PATH = "./checkpoint" # The path of the checkpoint
 EPOCS = 30
-BATCH_SIZE = 16
+BATCH_SIZE = 64 # set 16 in (128, 128) image size and 4 in (256, 256) image.
+                # otherwise, the graphic memory will be "Out of Memory"
+                # in google Colab pro.
 
-"""Loading dataset"""
+# Loading dataset
 images = normalize(get_zipped_dataset(PATH, IMAGE_SIZE)[:NUMBER_OF_SAMPLES])
-train_images = set_train_batch(images)
+train_images = set_train_batch(images, BATCH_SIZE)
 
-"""## Creating Unet instance and checkpoint"""
+# Creating Unet instance and checkpoint
 unet, ckpt_manager = get_checkpoint(CKPT_PATH)
 
-"""## Training model"""
+# Training model
 rng = 0
 opt = tf.keras.optimizers.Adam(learning_rate=1e-4)
 def train_step(batch):
