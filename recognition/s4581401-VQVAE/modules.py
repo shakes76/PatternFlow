@@ -1,7 +1,5 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
-import os
 from tensorflow import keras
 
 ###
@@ -18,6 +16,9 @@ from tensorflow import keras
 
 
 class VectorQuantizerLayer(tf.keras.layers.Layer):
+    """
+    Custom layer to represent the discrete latent space used within the VQVAE model
+    """
     def __init__(self, embedding_num, embedding_dim, beta, **kwargs):
         super().__init__(**kwargs)
         self._embedding_num = embedding_num
