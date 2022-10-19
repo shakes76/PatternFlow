@@ -46,8 +46,13 @@ class ConvDownsample(kr.layers.Layer) :
     
 ## Todo: make deconvolution for upsampling, see below:
 class ConvUpsample(kr.layers.Layer) :
-    def __init__(self):
-        pass
+    def __init__(self, outputSize):
+        super().__init__()
+        self.transform = kr.layers.Conv2DTranspose(outputSize, 3, 2, padding="same")
+        
+    def call(self, inputs) :
+        return self.transform(inputs)
+        
         
 ### Used in AutoEncoder / Unet
 class ResidualNetBlock(kr.layers.Layer) :
@@ -69,23 +74,6 @@ class ResidualNetBlock(kr.layers.Layer) :
         else :
             # Else, input is summed, like standard skip connection.
             self.skip1 = kr.layers.Lambda(lambda x : x)
-            
-            
-            
-            
-            
-            
-            ##
-            #          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            #               ERROR IS HERE!!!!!!!!!!
-            ##
-            ##
-            #        
-            #
-            #
-            #
-            #
-            #
         
         
     def call(self, inputs) :
