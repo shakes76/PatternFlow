@@ -2,7 +2,7 @@ from base64 import decode
 from matplotlib.cbook import flatten
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Layer, ReLU, Add, Dense, Conv2D, Conv2DTranspose, Flatten, Reshape
+from tensorflow.keras.layers import Input, Layer, ReLU, Add, Conv2D, Conv2DTranspose
 
 
 class VectorQuantizer(Layer):
@@ -50,7 +50,7 @@ class VectorQuantizer(Layer):
         return encoding_indices
 
 
-def resblock(x, filters):
+def resblock(x, filters=256):
     skip = Conv2D(filters, 1, strides=1, padding='same')(x)
     x = Conv2D(filters, 3, strides=1, padding='same')(x)
     x = ReLU()(x)
@@ -67,16 +67,17 @@ class VQVAE(tf.keras.Model):
         encoder_in = Input(shape=input_shape)
         x1 = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
         x2 = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x1)
-        x3 = resblock(x2, 256)
-        encoder_out = resblock(x3, 256)
+        x3 = resblock(x2, 64)
+        x4 = resblock(x3, 64)
+        encoder_out = Conv2D(latent_dim, 1, padding="same")(x4)
         self.encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
 
         # Build decoder
         decoder_in = Input(shape=self.encoder.output.shape[1:])
-        y1 = resblock(decoder_in, 256)
-        y2 = resblock(y1, 256)
+        y1 = resblock(decoder_in, 64)
+        y2 = resblock(y1, 64)
         y3 = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(y2)
-        decoder_out = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(y3)
+        decoder_out = Conv2DTranspose(1, 4, strides=2, activation='leaky_relu', padding='same')(y3)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
         # Add VQ layer

@@ -1,0 +1,6 @@
+
+# ignore data folder
+data/
+
+# constructed model
+mymodel/

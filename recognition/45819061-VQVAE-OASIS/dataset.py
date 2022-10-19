@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 from tqdm import tqdm
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 DATA_DIR = 'data/keras_png_slices_data'
 TRAIN_DATA = DATA_DIR + '/keras_png_slices_train'
 TEST_DATA = DATA_DIR + '/keras_png_slices_test'
