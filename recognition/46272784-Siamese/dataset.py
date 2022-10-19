@@ -41,6 +41,7 @@ def loadFile(dir, batch=8):
     print('\n> 1/2 Loading Training Data...')
     train_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
+                                                     label_mode = None,
                                                      validation_split=0.3,
                                                      subset="training",
                                                      seed=1,
@@ -50,6 +51,7 @@ def loadFile(dir, batch=8):
     
     train_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = None,
+                                                     label_mode = None,
                                                      validation_split=0.3,
                                                      subset="training",
                                                      seed=1,
@@ -59,6 +61,7 @@ def loadFile(dir, batch=8):
     print('\n> 2/2 Loading Validation Data...')
     valid_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
+                                                     label_mode = None,
                                                      validation_split=0.3,
                                                      subset="validation",
                                                      seed=1,
@@ -67,6 +70,7 @@ def loadFile(dir, batch=8):
                                                      batch_size=batch)
     valid_nc_ds = utils.image_dataset_from_directory(train_nc_dir, 
                                                      labels = None,
+                                                     label_mode = None,
                                                      validation_split=0.3,
                                                      subset="validation",
                                                      seed=1,
@@ -92,7 +96,7 @@ def plotExample(ds):
 
 def main():
     # Code for testing the functions
-    t, v = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    t_a, t_n, v_a, v_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
     # plotExample(t)
     batch = t.take(1)
     for img, label in batch:
