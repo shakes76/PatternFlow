@@ -26,21 +26,21 @@ def load_data(path='/content/gdrive', file='/MyDrive/Colab Notebooks/Lab 3/faceb
   data = np.load("{}{}".format(path, file))
   return data
 
-data = load_data()
-
 def process_data(dataset):
-  train_ds = range(0,round(data['features'].shape[0]/3))
-  valid_ds = range(round(data['features'].shape[0]/3), round(2*data['features'].shape[0]/3))
-  test_ds = range(round(2*data['features'].shape[0]/3), round(2*data['features'].shape[0]))
+  train_ds = range(0,round(dataset['features'].shape[0]/3))
+  valid_ds = range(round(dataset['features'].shape[0]/3), 
+                  round(2*dataset['features'].shape[0]/3))
+  test_ds = range(round(2*dataset['features'].shape[0]/3), 
+                  round(2*dataset['features'].shape[0]))
 
   train_ds = torch.LongTensor(train_ds)
   valid_ds = torch.LongTensor(valid_ds)
   test_ds = torch.LongTensor(test_ds)
 
-  features = torch.as_tensor(data['features'])
+  features = torch.as_tensor(dataset['features'])
   features = features[0:round(features.size(dim = 0)/3), :]
-  target = torch.from_numpy(data['target'])
-  edges = torch.from_numpy(data['edges'])
+  target = torch.from_numpy(dataset['target'])
+  edges = torch.from_numpy(dataset['edges'])
 
   return train_ds, valid_ds, test_ds, features, target, edges
 
@@ -59,36 +59,17 @@ def sparse_mx_to_sparse_tensor(mx):
   shape = torch.Size(mx.shape)
   return torch.sparse.FloatTensor(indices, values, shape)
 
-def adj_matrix(data):
-  edge_size = round(data['edges'].shape[0]/train_size)
-  target_size = round(data['target'].shape[0]/train_size)
-  #print(data['edges'].shape[0].max())
-  print(edge_size, target_size)
+def adj_matrix(dataset):
+  edge_size = round(dataset['edges'].shape[0]/train_size)
+  target_size = round(dataset['target'].shape[0]/train_size)
 
-  adj = sp.coo_matrix((np.ones(data['edges'].shape[0]), 
-                       (data['edges'][0:data['edges'].shape[0], 0], 
-                        data['edges'][0:data['edges'].shape[0], 1])),
-                      shape=(data['target'].shape[0], data['target'].shape[0]), 
+  adj = sp.coo_matrix((np.ones(dataset['edges'].shape[0]), 
+                       (dataset['edges'][0:dataset['edges'].shape[0], 0], 
+                        dataset['edges'][0:dataset['edges'].shape[0], 1])),
+                      shape=(dataset['target'].shape[0], dataset['target'].shape[0]), 
                       dtype=np.float32)
   adj.resize((target_size, target_size))
-  #DEBUG
-  edge_size = round(data['edges'].shape[0])
-  target_size = round(data['target'].shape[0])
-  #DEBUG END
   adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
   adj = normalize(adj + sp.eye(adj.shape[0]))
   adj = sparse_mx_to_sparse_tensor(adj)
   return adj
-
-train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
-for item in data.files:
-    print(item)
-    print(data[item])
-    print(data[item].size)
-
-for n in range(data['target'].size):
-  print(data['target'][n])
-
-train, valid, test = process_data(data)
-for element in train:
-  print(element)
