@@ -40,7 +40,7 @@ class ADNIDataset(Dataset):
         for i, img_path in enumerate(scans):
             img_seq[i] = read_image(os.path.join(self.dataset_dir, img_path))
 
-        return img_seq.unsqueeze(-1),\
+        return img_seq.unsqueeze(1),\
             torch.tensor(label, dtype=torch.float32, device=self.device).unsqueeze(0)
 
 if __name__ == "__main__":
