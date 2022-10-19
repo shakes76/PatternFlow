@@ -1,6 +1,6 @@
 ## Semi-Supervised MultiClass Node Classification with Graph Convolutional Networks (GCN) 
 #### Algorithm description 
-
+Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. 
 #### The problem to be solved 
 
 #### How GCNs work in this context
