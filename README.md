@@ -79,23 +79,21 @@ A few points to note,
 ### Model Variations
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
 
-<p align="center">
-    <table>
-        <tr><th></th><th>My Model</th><th>Original Model</th>
-        <tr><td>Dimension of latent vector</td><td>200</td><td>512</td></tr>
-        <tr><td>Image channel</td><td>1</td><td>3</td></tr>
-        <tr><td>Target resolution</td><td>256 x 256</td><td>1024 x 1024</td></tr>
-        <tr><td>Number of filters</td><td>256, ..., 32</td><td>512, ..., 32</td></tr>
-        <tr><td>Number of FC layers</td><td>depth of model (6)</td><td>8</td></tr>
-        <tr><td>Upsampling method</td><td>Upsample2D</td><td>Bilinear</td></tr>
-    </table>
-</p>
+|                             | My Model           | Original Model | Justification
+| -------------               | -------------      |-------------   |------------- 
+| Dimension of latent vector  | 200                | 512            | Original model trains 1024x1024 images, mine 256x256, reduced for simplification.
+| Image channel               | 1                  | 3              | The training images are in grayscale.
+| Target resolution           | 256 x 256          | 1024 x 1024    | The training images are in 256x256 or similar scale.
+| Number of filters           | 256, ..., 32       | 512, ..., 32   | Reduced unnecessary complexity.
+| Number of FC layers         | depth of model (6) | 8              | Reduced unnecessary complexity.
+| Upsampling method           | Upsample2D         | Bilinear       | Reduced unnecessary complexity.
 
 ## A Training Example
 
 Below is a training trail in my experiment. Out of the three datasets, the OASIS is the easiest to train, but the model is also the easiest to collapse. While AKOA is relatively difficult to train since the trianing images are quite noisy.
 
 ### Settings
+ - Training images are of 3 channels, but are black and white. Converted into 1 channel for efficiency without losing image quality.
  - Starting resolution: 4x4.
  - Target resolution: 256x256.
  - Latent vector dimemsion: 200.
