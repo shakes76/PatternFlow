@@ -37,17 +37,23 @@ Figure 4: Plot of total training and test loss on each iteration
 
 ## Results
 
-We show in Figure 5 and example bounding box prediction and classification of a sample of the validation data.
+We achieved an average IoU of 0.75, a precision score of 0.43, and recall of 0.76. A plot of the IoU for each prediction on the validation set is given in Figure 5.
+
+![Validation IoU](figures/iou-boxplot.png)
+
+Figure 5: IoU scores on the validation set
+
+We show in Figure 6 and example bounding box prediction and classification of a sample of the validation data.
 
 ![Example prediction](figures/example-prediction-melanoma.png)
 
-Figure 5: Example prediction by the trained network with positive classification
+Figure 6: Example prediction by the trained network with positive classification
 
-The mask prediction for the same image is showed in Figure 6.
+The mask prediction for the same image is showed in Figure 7.
 
 ![Example mask](figures/example-mask-prediction.png)
 
-Figure 6: Example mask prediction
+Figure 7: Example mask prediction
 
 ## Requirements
 
