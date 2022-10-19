@@ -12,7 +12,7 @@ from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from .modules import alpha, alpha_bar, timesteps, beta, get_checkpoint
-from .train import CKPT_PATH
+from .train import CKPT_PATH, IMAGE_SIZE
 from tqdm import tqdm
 
 # GIF saving path
@@ -22,6 +22,9 @@ GIF_PATH = "./gif/"
 unet, ckpt_manager = get_checkpoint(CKPT_PATH)
 # Save a GIF using logged images
 def save_gif(img_list, path="", interval=200):
+    """
+    Saving pictures as .gif file.
+    """
     # Transform images from [-1,1] to [0, 255]
     imgs = []
     for im in img_list:
@@ -41,6 +44,15 @@ def save_gif(img_list, path="", interval=200):
              save_all=True, duration=interval, loop=0)
     
 def ddpm(x_t, pred_noise, t):
+    """
+    Taking the predicted noise off from the image in timestamp t.
+    Parameters:
+        x_t (np.array): the image in timestamp t.
+        pred_noise (np.array): the predicted noise.
+        t (int): the timestamp t.
+    Returns:
+        (np.array): the image in timestamp t-1.
+    """
     alpha_t = np.take(alpha, t)
     alpha_t_bar = np.take(alpha_bar, t)
 
@@ -52,7 +64,7 @@ def ddpm(x_t, pred_noise, t):
 
     return mean + (var ** .5) * z
 
-x = tf.random.normal((1,256,256,1))
+x = tf.random.normal((1,IMAGE_SIZE[0],IMAGE_SIZE[1],1))
 img_list = []
 img_list.append(np.squeeze(np.squeeze(x, 0),-1))
 
@@ -62,7 +74,7 @@ for i in tqdm(range(timesteps-1)):
     x = ddpm(x, pred_noise, t)
     img_list.append(np.squeeze(np.squeeze(x, 0),-1))
 
-    if i % 100==0:
+    if i % 200==0:
         plt.imshow(np.array(np.clip((x[0] + 1) * 127.5, 0, 255), 
                                                   np.uint8)[:,:,0], cmap="gray")
         plt.show()
