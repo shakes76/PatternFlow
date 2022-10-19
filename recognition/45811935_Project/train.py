@@ -200,7 +200,8 @@ def plot_results(epoch_results):
 training_results = pd.read_csv(SAVED_MODEL_PATH + 'training.log', sep=',', engine='python')
 plot_results(training_results)
 
-# Test/generate
+# Generate reconstructions on test set
+
 
 # Get trained VQ-VAE codebooks
 
