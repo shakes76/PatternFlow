@@ -21,9 +21,18 @@ def context_module(layer, num_filters):
     encoder = Conv2D(num_filters, 3, activation='relu', padding='same')(norm)
     dropout = Dropout(DROPOUT_PROB)(encoder)
     norm = BatchNormalization()(dropout)
-    encoder = Conv2D(num_filters, 3, activation='relu', padding='same')(norm)
-    return encoder
+    return Conv2D(num_filters, 3, activation='relu', padding='same')(norm)
 
+
+def upsample_module(layer, num_filters):
+    """
+
+    :param layer:
+    :param num_filters:
+    :return:
+    """
+    up = UpSampling2D(2)(layer)
+    return Conv2D(num_filters, 3, activation='relu', padding='same')(up)
 
 def create_model(input_shape=INPUT_SHAPE):
     """
@@ -71,7 +80,7 @@ def create_model(input_shape=INPUT_SHAPE):
     # Create the decoder:
 
     # up sample layer 5 to get to layer 4
-    up4 = UpSampling2D()(encoder_layer5)
+    up4 = upsample_module(encoder_layer5, 128)
     # concatenate the output of encoder_layer4 with  the up sample
     con4 = concatenate([up4, encoder_layer4])
     # Forth layer : 2 x 2D Convolutions, filter size 128,  with a 3x3 kernel size for the first one and 1x1 for the
@@ -82,7 +91,7 @@ def create_model(input_shape=INPUT_SHAPE):
     decoder_layer4 = Conv2D(128, 1, activation='relu', padding='same')(decoder_layer4)
 
     # up sample layer 4 to get to layer 3
-    up3 = UpSampling2D()(decoder_layer4)
+    up3 = upsample_module(decoder_layer4, 64)
     # concatenate the output of encoder_layer4 with  the up sample
     con3 = concatenate([up3, encoder_layer3])
     # Third layer : 2 x 2D Convolutions, filter size 64,  with a 3x3 kernel size for the first one and 1x1 for the
@@ -91,7 +100,7 @@ def create_model(input_shape=INPUT_SHAPE):
     decoder_layer3 = Conv2D(64, 1, activation='relu', padding='same')(decoder_layer3)
 
     # up sample layer 3 to get to layer 2
-    up2 = UpSampling2D()(decoder_layer3)
+    up2 = upsample_module(decoder_layer3, 32)
     # concatenate the output of encoder_layer4 with  the up sample
     con2 = concatenate([up2, encoder_layer2])
     # Second layer : 2 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
@@ -100,7 +109,7 @@ def create_model(input_shape=INPUT_SHAPE):
     decoder_layer2 = Conv2D(32, 1, activation='relu', padding='same')(decoder_layer2)
 
     # up sample layer 2 to get to layer 1
-    up1 = UpSampling2D()(decoder_layer2)
+    up1 = upsample_module(decoder_layer2, 16)
     # concatenate the output of encoder_layer4 with  the up sample
     con1 = concatenate([up1, encoder_layer1])
     # Third layer : 1 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
