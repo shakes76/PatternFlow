@@ -7,8 +7,8 @@
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 
-def load_preprocess_image_data(path, img_dim, batch_size, validation_split=None, subset=None,
-                               seed=None, shift=0):
+def load_preprocess_image_data(path, img_dim, batch_size, rgb=True, validation_split=None,
+                               subset=None, seed=None, shift=0):
     """
         Load and preprocess image data (in our case, the ADNI dataset).
 
@@ -16,6 +16,7 @@ def load_preprocess_image_data(path, img_dim, batch_size, validation_split=None,
             path: absolute path to image data (unzipped).
             img_dim: Size of images (assume square)
             batch_size: Size of each batch
+            rgb: Whether images are loaded as RGB or as Grayscale (RGB by default)
             validation_split: proportion of data to keep for validation set (None by default -
                               i.e. no train/validation split)
             subset: Whether to load train or validation set if using train/validation split (None by
@@ -28,9 +29,9 @@ def load_preprocess_image_data(path, img_dim, batch_size, validation_split=None,
             A tf.data.Dataset of the image files.
     """
     img_data = image_dataset_from_directory(path,
-                                            label_mode=None,
+                                            label_mode=None,  # Get all images irrespective of label
                                             image_size=(img_dim, img_dim),
-                                            color_mode="rgb",
+                                            color_mode="rgb" if rgb else "grayscale",
                                             batch_size=batch_size,
                                             shuffle=True,
                                             validation_split=validation_split,

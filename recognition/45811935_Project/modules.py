@@ -120,11 +120,12 @@ class Decoder(Model):
         Defines Decoder for VQ-VAE.
     """
 
-    def __init__(self, name="decoder", **kwargs):
+    def __init__(self, name="decoder", rgb=True, **kwargs):
         super(Decoder, self).__init__(name=name, **kwargs)
+        self._num_channels = 3 if rgb else 1
         self.conv_t1 = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")
         self.conv_t2 = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")
-        self.conv_t3 = layers.Conv2DTranspose(1, 3, padding="same")
+        self.conv_t3 = layers.Conv2DTranspose(self._num_channels, 3, padding="same")
 
     def call(self, inputs):
         """
@@ -145,17 +146,18 @@ class VQVAE(Model):
         Defines main VQ-VAE architecture.
     """
 
-    def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, name="vq_vae"):
+    def __init__(self, tr_var, num_encoded=64, latent_dim=16, beta=0.25, rgb=True, name="vq_vae"):
         super(VQVAE, self).__init__(name=name)
         self._tr_var = tr_var
         # self._img_size = img_size (default was 28)
         self._num_encoded = num_encoded
         self._latent_dim = latent_dim
         self._beta = beta
+        self._rgb = rgb
 
         self._encoder = Encoder(self._latent_dim)
         self._vq = VQ(self._num_encoded, self._latent_dim, self._beta)
-        self._decoder = Decoder()
+        self._decoder = Decoder(rgb=self._rgb)
 
         self._total_loss = tf.keras.metrics.Mean(name="total_loss")
         self._vq_loss = tf.keras.metrics.Mean(name="vq_loss")
