@@ -4,7 +4,7 @@ import os
 from tensorflow.keras import models
 
 
-EPOCHS = 10    # number of epochs
+EPOCHS = 3000    # number of epochs
 
 
 class Trainer:

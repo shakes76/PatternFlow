@@ -21,15 +21,15 @@ class DataLoader:
         with np.load(self.data_dir) as data:
             edges, features, labels = data.values()
 
-
-        len_label_types = len(np.unique(labels))
+        label_types = np.unique(labels)
+        len_label_types = len(label_types)
         len_vertices = features.shape[0]
         len_features = features.shape[1]
         len_edges = len(edges) // 2
 
         # Print dimensions of data
         print(
-            f"Label Types:\t{len_label_types}",
+            f"Label Types:\t{label_types}",
             f"Edges:      \t{len_edges}",
             f"Vertices:   \t{len_vertices}",
             f"Features:   \t{len_features}",
@@ -70,6 +70,7 @@ class DataLoader:
             "val_mask": val_mask,
             "test_mask": test_mask,
             "encoded_labels" : encoded_labels,
+            "label_types" : label_types,
             "len_label_types" : len_label_types,
             "len_vertices" : len_vertices ,
             "len_features" : len_features ,

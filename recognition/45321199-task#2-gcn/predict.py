@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from sklearn.metrics import classification_report
+from sklearn.manifold import TSNE
 
 
 class Predicter:
@@ -28,16 +29,28 @@ class Predicter:
         model = self.trainer.get_model()
         data = self.data
 
-        predictions = model.predict(data['validation_data'][0], batch_size=data['len_vertices'])
-
-        true = np.argmax(data['encoded_labels'][data['test_mask']], axis=1)
-        pred = np.argmax(predictions[data['test_mask']], axis=1)
-
-        report = classification_report(true, pred)
+        self.predictions = model.predict(data['validation_data'][0], batch_size=data['len_vertices'])
+        report = classification_report(
+                                    np.argmax(data['encoded_labels'][data['test_mask']], axis=1), 
+                                    np.argmax(self.predictions[data['test_mask']], axis=1)
+                                )
         print(report)
 
     def tsne_plot(self):
-        pass
+        data = self.data
+        tsne = TSNE(n_components=2).fit_transform(self.predictions)
+        plt.figure(figsize=(10, 10))
+
+        colour_map = np.argmax(data['encoded_labels'], axis=1)
+        for type in data['label_types']:
+            indices = np.where(colour_map == type)
+            plt.scatter(tsne[indices[0], 0], tsne[indices[0], 1], label=type)
+            
+        plt.title('TSNE Plot')
+        plt.legend()
+
+        plt.savefig(self.figs_dir + "TSNE.png")
+        plt.show()
 
     def acc_loss_plots(self):
         history = self.trainer.get_history()
