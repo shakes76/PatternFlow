@@ -131,3 +131,4 @@ dmypy.json
 mypy.ini
 PatternFlow.code-workspace
 recognition/45321199-task#2-gcn/facebook.npz
+recognition/45321199-task#2-gcn/saved_model/saved_gcn.h5

@@ -4,10 +4,10 @@ import tensorflow as tf
 from tensorflow.keras import backend, activations, initializers, regularizers, layers, Model, optimizers, losses
 
 # Default Model Parameters
-CHANNELS        = 1024
-DROPOUT         = 0.7
-LEARNING_RATE   = 0.001
-REG_RATE        = 0.000025   # regularisation rate
+CHANNELS        = 256
+DROPOUT         = 0.05
+LEARNING_RATE   = 0.0001
+REG_RATE        = 0.000005   # regularisation rate
 KERNAL_REGULARIZER = regularizers.l2(REG_RATE)
 
 
@@ -28,8 +28,8 @@ class GCN_Model:
         self.compile()
 
     def create(self):
-        x_input = layers.Input((self.data['len_features'],), dtype=tf.float32)
-        node_input = layers.Input((self.data['len_vertices'],), dtype=tf.float32, sparse=True)
+        x_input = layers.Input((self.data['len_features'],), dtype=tf.float64)
+        node_input = layers.Input((self.data['len_vertices'],), dtype=tf.float64, sparse=True)
 
         dropout_L0 = layers.Dropout(self.dropout)(x_input)
         gcn_L0 = GCN_Layer(activations.relu, 
@@ -38,7 +38,7 @@ class GCN_Model:
 
         dropout_L1 = layers.Dropout(self.dropout)(gcn_L0)
         gcn_L1 = GCN_Layer(activations.relu, 
-                             self.channels,
+                             self.channels // 2,
                              kernel_regulariser=self.kernal_regularizer)([dropout_L1, node_input])
 
         dropout_L2 = layers.Dropout(self.dropout)(gcn_L1)
@@ -84,3 +84,6 @@ class GCN_Layer(layers.Layer):
         output = backend.dot(a, output)
 
         return self.activation(output)
+    
+    def get_config(self):
+        return {"channels": self.channels}

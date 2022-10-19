@@ -89,7 +89,7 @@ class DataLoader:
     @staticmethod
     def adj_mat_repr(len_vertices, edges):
         A = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
-                        shape=(len_vertices, len_vertices), dtype=np.float32)
+                        shape=(len_vertices, len_vertices), dtype=np.float64)
 
         A_ = A + sp.eye(A.shape[0])
         D = sp.diags(np.power(np.array(A_.sum(1)), -0.5).flatten())
