@@ -35,9 +35,10 @@ A few parameters have to be specified in `config.py`.
 | TRES                | Target resolution, must be the power of 2.                  | 256
 | BSIZE               | Batch size of each resolution training.                     | (32, 32, 32, 32, 16, 8, 4)
 | FILTERS             | Number of filters of each resolution.       | (256, 256, 256, 256, 128, 64, 32)
+| STAB                | Whether to stabilize-train the model after fade-in.         | False
 | EPOCHS              | Number of epochs to train for each resolution.              | {0:50, 1:(40,10), 2:(40,10), 3:(40,10), 4:(40,20), 5:(40,20), 6:(40,20)}
 | INPUT_IMAGE_FOLDER  | Folder of training images.                                  | D:\ADNI_AD_NC_2D
-| NSAMPLES            | Number of images to generate when training.| 25
+| NSAMPLES            | Number of images to generate when training.                 | 25
 | OUT_ROOT            | Root folder that contains training outputs.                 | D:\output
 
 > **Note** `OUT_ROOT` folder must not exist. Training will create `OUT_ROOT` folder and 4 sub-folders in it. They are,
