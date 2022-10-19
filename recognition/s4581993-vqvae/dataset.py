@@ -23,8 +23,8 @@ def download_dataset():
         os.mkdir(dataset_directory)
 
     # Download dataset zip
-    print(f"Downloading dataset into ./{dataset_directory}{dataset_zip_name}")
     if not os.path.exists(dataset_directory + dataset_zip_name):
+        print(f"Downloading dataset into ./{dataset_directory}{dataset_zip_name}")
         response = requests.get(dataset_location, stream=True)
         total_length = response.headers.get("content-length")
 
@@ -46,22 +46,22 @@ def download_dataset():
             print()
 
         print("Dataset downloaded.\n")
-    else:
-        print("Dataset already downloaded.\n")
+    #else:
+        #print("Dataset already downloaded.\n")
 
 # Unzip the dataset
 def unzip_dataset():
-    print(f"Extracting dataset into ./{dataset_directory}{dataset_folder_name}")
     if not os.path.isdir(dataset_directory + dataset_folder_name):
+        print(f"Extracting dataset into ./{dataset_directory}{dataset_folder_name}")
         with zipfile.ZipFile(dataset_directory + dataset_zip_name) as z:
             z.extractall(path=dataset_directory)
         print("Dataset extracted.\n")
-    else:
-        print("Dataset already extracted.\n")
+    #else:
+        #print("Dataset already extracted.\n")
 
 # Load the dataset
 def load_dataset(folder: str) -> tf.data.Dataset:
-    print("Loading training data...")
+    #print("Loading dataset...")
     ds = tf.keras.preprocessing.image_dataset_from_directory(
         dataset_directory + dataset_folder_name + folder,
         labels=None,
