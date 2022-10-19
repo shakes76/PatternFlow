@@ -14,9 +14,12 @@ AD_TEST_PATH = GLOBAL_PATH + 'AD_NC\\test\\AD'
 CN_TEST_PATH = GLOBAL_PATH + 'AD_NC\\test\\NC'
 
 
-def load_siamese_data():
+def load_siamese_data(batch_size=32):
     """ Load image data into tf Dataset, in the form of image pairs
     mapped to labels (0 for same, 1 for different)
+
+    Args:
+        batch_size (int): batch size for the data
 
     Returns:
         dataset: dataset for train and validation data
@@ -58,11 +61,15 @@ def load_siamese_data():
     dataset = tf.data.Dataset.zip(((base_ds, pair_ds), labels_ds)).shuffle(num_pairs)
     
     train, val = train_val_split(dataset, 0.8)
-    return train.batch(32) , val.batch(32)
+    return train.batch(batch_size) , val.batch(batch_size)
 
-def load_classify_data(testing: bool):
+def load_classify_data(testing: bool, batch_size=32):
     """ Load testing image data, images with labels,
     0 for ad, 1 for cn
+
+    Args:
+        testing (bool): data for testing
+        batch_size (int): batch size for the data
 
     Returns:
         dataset: dataset for testing
@@ -93,7 +100,7 @@ def load_classify_data(testing: bool):
         return dataset.batch(32)
     else:
         train, val = train_val_split(dataset, 0.7)
-        return train.batch(32) , val.batch(32)
+        return train.batch(batch_size) , val.batch(batch_size)
 
 def get_image(path):
     """ Get tf image from path

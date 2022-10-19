@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 SNN_PATH = 'recognition\\45853047-SiameseADNI\\models\\SNN.h5'
 CLASSIFIER_PATH = 'recognition\\45853047-SiameseADNI\\models\\Classifier.h5'
 
-
 def train():
     """ 
     Train both models and plot results
@@ -27,8 +26,11 @@ def train():
     plt.show()
 
 
-def trainSNN():
+def trainSNN(epochs=30):
     """ Train the SNN
+
+    Args:
+        epochs (int): number of epochs to run
 
     Returns:
         history: training history of the model
@@ -41,14 +43,17 @@ def trainSNN():
     model = siamese(128, 128)
 
     # Train
-    siamese_fit = model.fit(siamese_train, epochs=30, validation_data=siamese_val)
+    siamese_fit = model.fit(siamese_train, epochs=epochs, validation_data=siamese_val)
     model.save(SNN_PATH)
 
     return siamese_fit
 
 
-def trainClassifier():
+def trainClassifier(epochs=30):
     """ Train the classifier
+
+    Args:
+        epochs (int): number of epochs to run
 
     Returns:
         history: training history of the model
@@ -61,7 +66,7 @@ def trainClassifier():
     classifier = classification_model(siamese_model.get_layer(name="subnet"))
 
     # train
-    classifier_fit = classifier.fit(classify_train, epochs=10, validation_data=classify_val)
+    classifier_fit = classifier.fit(classify_train, epochs=epochs, validation_data=classify_val)
     classifier.save(CLASSIFIER_PATH)
 
     return classifier_fit
