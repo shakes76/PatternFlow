@@ -13,10 +13,10 @@ __author__ = "Zhao Wang, 46704847"
 __email__ = "s4670484@student.uq.edu.au"
 
 import numpy as np
+from modules import Unet, generate_timestamp, forward_noise, get_checkpoint
+from modules import loss_fn
+from dataset import get_zipped_dataset, normalize, set_train_batch
 import tensorflow as tf
-from .modules import Unet, generate_timestamp, forward_noise, get_checkpoint
-from .modules import loss_fn
-from .dataset import get_zipped_dataset, normalize, set_train_batch
 
 # Parameters
 PATH = "/Users/wangzhao/Documents/dataset/keras_png_slices_data.zip" # The path of zipped image dataset
