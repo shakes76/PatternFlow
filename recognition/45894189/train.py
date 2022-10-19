@@ -7,11 +7,12 @@ from modules import Generator, Discriminator, WNetwork
 from util import ImageSaver, WeightSaver
 
 class StyleGAN(keras.Model):
-    def __init__(self, epochs):
+    def __init__(self, epochs, batch_size):
         super(StyleGAN, self).__init__()
         self.discriminator = Discriminator().discriminator()
         self.generator = Generator().generator()
         self.epochs = epochs
+        self.batch_size = batch_size
 
     def compile(self):
         super(StyleGAN, self).compile()
@@ -66,9 +67,8 @@ class StyleGAN(keras.Model):
 
     @tf.function
     def train_step(self, real_images):
-        batch_size = tf.shape(real_images)[0]
-        d_loss = self.train_discriminator(real_images, batch_size)
-        g_loss = self.train_generator(batch_size)
+        d_loss = self.train_discriminator(real_images)
+        g_loss = self.train_generator()
 
         self.discriminator_loss_metric.update_state(d_loss)
         self.generator_loss_metric.update_state(g_loss)
@@ -78,15 +78,13 @@ class StyleGAN(keras.Model):
             "generator_loss": self.generator_loss_metric.result(),
         }
 
-    def train_generator(self, batch_size):
-        z = [tf.random.normal((batch_size, 512)) for i in range(7)]
-        noise = [tf.random.uniform([batch_size, res, res, 1]) for res in [4, 8, 16, 32, 64, 128, 256]] #TODO: Global variable these upscaling values somewhere
-        input = tf.ones([32, 4, 4, 512])
+    def train_generator(self):
+        generator_inputs = self.get_generator_inputs()
         with tf.GradientTape() as g_tape:
-            fake_images = self.generator([input, z, noise])
+            fake_images = self.generator(generator_inputs)
             predictions = self.discriminator(fake_images)
 
-            goal_labels = tf.zeros([batch_size, 1])
+            goal_labels = tf.zeros([self.batch_size, 1])
             g_loss = self.loss_fn(goal_labels, predictions)
 
             trainable_variables = self.generator.trainable_variables
@@ -95,16 +93,14 @@ class StyleGAN(keras.Model):
 
         return g_loss
 
-    def train_discriminator(self, real_images, batch_size):
-        z = [tf.random.normal((batch_size, 512)) for i in range(7)]
-        noise = [tf.random.uniform([batch_size, res, res, 1]) for res in [4, 8, 16, 32, 64, 128, 256]] #TODO: Global variable these upscaling values somewhere
-        input = tf.ones([32, 4, 4, 512])
-        generated_images = self.generator([input, z, noise])
+    def train_discriminator(self, real_images):
+        generator_inputs = self.get_generator_inputs()
+        generated_images = self.generator(generator_inputs)
 
         # Combine real and fake, add labels with random noise
         images = tf.concat([generated_images, real_images], axis=0)
         labels = tf.concat(
-            [tf.ones([batch_size, 1]), tf.zeros([batch_size, 1])], axis=0
+            [tf.ones([self.batch_size, 1]), tf.zeros([self.batch_size, 1])], axis=0
         )
 
         # Train discriminator model
@@ -115,3 +111,16 @@ class StyleGAN(keras.Model):
             self.d_optimizer.apply_gradients(zip(gradients, self.discriminator.trainable_variables))
 
         return d_loss
+
+    def get_generator_inputs(self):
+
+        # latent space noise for input into mapping
+        z = [tf.random.normal((self.batch_size, 512)) for i in range(7)]
+
+        # noise for B block inputs
+        noise = [tf.random.uniform([self.batch_size, res, res, 1]) for res in [4, 8, 16, 32, 64, 128, 256]]
+
+        # constant generator input
+        input = tf.ones([self.batch_size, 4, 4, 512])
+
+        return [input, z, noise]

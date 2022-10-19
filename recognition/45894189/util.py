@@ -9,16 +9,13 @@ class ImageSaver(keras.callbacks.Callback):
         self.filepath= os.path.join(dirname, relative_filepath)
 
     def on_epoch_end(self, epoch, logs):
-        z = [tf.random.normal((32, 512)) for i in range(7)]
-        noise = [tf.random.uniform([32, res, res, 1]) for res in [4, 8, 16, 32, 64, 128, 256]] #TODO: Global variable these upscaling values somewhere
-        input = tf.ones([32, 4, 4, 512])
-        output_images = self.model.generator([input, z, noise])
+        generator_inputs = self.model.get_generator_inputs()
+        output_images = self.model.generator(generator_inputs)
         output_images *= 256
         output_images.numpy()
         for i in range(self.image_count):
             img = keras.preprocessing.image.array_to_img(output_images[i])
             img.save("{}\epoch_{}_image_{}.png".format(self.filepath, epoch, i))
-        print("{}\epoch_{}_image_{}.png".format(self.filepath, epoch, 0))
 
 class WeightSaver(keras.callbacks.Callback):
     def __init__(self, relative_filepath):

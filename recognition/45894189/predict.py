@@ -3,23 +3,38 @@ import os
 from tensorflow import keras
 from train import StyleGAN
 
-# Input File Locations
-INPUT_IMAGES_PATH = "keras_png_slices"      # path for input images (non-null)
+#=======INPUT=FILE=LOCATIONS=========
 
-# INPUT_GENERATOR_WEIGHTS_PATH = ""
-# INPUT_DISCRIMINATOR_WEIGHTS_PATH = ""
+# path for input images (non-null unless using a pretrained model)
+INPUT_IMAGES_PATH = "keras_png_slices"      
 
-INPUT_GENERATOR_WEIGHTS_PATH = "weights/epoch_1_generator.h5"
-INPUT_DISCRIMINATOR_WEIGHTS_PATH = "weights/epoch_1_discriminator.h5"                                   # path for input weights (null for training)
+# path for input weights ("" for training)
+INPUT_GENERATOR_WEIGHTS_PATH = ""           
+INPUT_DISCRIMINATOR_WEIGHTS_PATH = ""
 
-# Output Parameters
-OUTPUT_IMAGES_PATH = "images"          # path for saved image output (null for no saving)
-OUTPUT_WEIGHTS_PATH = "weights"         # path for weight saving (null for no saving)
-OUTPUT_IMAGES_COUNT = 3          # number of images to save per epoch
-PLOT_LOSS = True                # true to produce a loss plot, if OUTPUT_IMAGE_PATH is non-null saved in the same directory
+# INPUT_GENERATOR_WEIGHTS_PATH = "weights/epoch_1_generator.h5"
+# INPUT_DISCRIMINATOR_WEIGHTS_PATH = "weights/epoch_1_discriminator.h5"
 
-# Training Variables
-EPOCHS = 2      # number of training epochs
+#=======OUTPUT=FILE=LOCATIONS=========
+
+# path for saved image output ("" for no saving)
+OUTPUT_IMAGES_PATH = "images"
+
+# path for saved weight output ("" for no saving)
+OUTPUT_WEIGHTS_PATH = "weights"
+
+# number of output images per epoch
+OUTPUT_IMAGES_COUNT = 3
+
+# true to produce a loss plot, saved in the same directory as OUTPUT_IMAGES_PATH
+PLOT_LOSS = True                
+
+#=======TRAINING=VARIABLES=========
+
+# number of training epochs
+EPOCHS = 2
+
+# training batch size
 BATCH_SIZE = 32
 
 def main():
@@ -37,7 +52,7 @@ def main():
             os.mkdir(filepath)
 
     # create / train model
-    style_gan = StyleGAN(epochs=EPOCHS)
+    style_gan = StyleGAN(epochs=EPOCHS, batch_size=BATCH_SIZE)
     if INPUT_GENERATOR_WEIGHTS_PATH != "" and INPUT_DISCRIMINATOR_WEIGHTS_PATH != "":
         style_gan.built = True
 
@@ -56,11 +71,9 @@ def main():
     show_example_output(style_gan)
 
 def show_example_output(style_gan):
-    z = [tf.random.normal((32, 512)) for i in range(7)]
-    noise = [tf.random.uniform([32, res, res, 1]) for res in [4, 8, 16, 32, 64, 128, 256]]
-    input = tf.ones([32, 4, 4, 512])
+    generator_inputs = style_gan.get_generator_inputs()
 
-    output_images = style_gan.generator([input, z, noise])
+    output_images = style_gan.generator(generator_inputs)
     output_images *= 256
     output_images.numpy()
 
