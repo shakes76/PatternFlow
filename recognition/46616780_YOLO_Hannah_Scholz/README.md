@@ -13,14 +13,14 @@ Compared to the original YOLO, YOLOV5 has a few changes to improve training and 
 I chose the YOLOV5 model as it is very easy to use and is based in the PyTorch framework, something that we have been
 utilising for most of the semester. 
 
-### Problem it solves:
+### Problem it solves
 In this specific circumstance with the dataset provided, detecting problematic skin lesions early could be one of the 
 best preventative methods for stopping the development of life-threatening skin cancers.
 This model provides a solution to this problem. Using convolutional neural networks, the YOLOV5 provides the ability 
 for skin lesions to be identified using image detection. This could potentially aid medical professionals to correctly 
 classify cancerous skin lesions.
 
-### How it works:
+### How it works
 YOLOV5 is a single stage object detector that has three main components:
 1. **The model backbone** - A convolutional neural network that extracts important features from a  given input image.
 Networks. 
@@ -40,18 +40,20 @@ is necessary as the recommended number of images per class for YOLOV5 is over 1,
 
 <img width="500" alt="Augmentation Visualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/DataAugmentationVisualisation.jpeg">
 
-### Model Architecture Visualisation:
+### Model Architecture Visualisation
 Here we can see a visualisation of the model parts:
 
 <img width="800" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
 
-### Dependencies:
-#### Versions:
+### Dependencies
+#### Versions
 MacOS Monterey 12.6
+
 Python - 3.9.12
+
 Google Collab
 
-#### How to run:
+#### How to run
 1. Download images from: https://challenge.isic-archive.com/data/#2017
 2. Put all files in specified folders - training, testing, validation 
 3. Run the dataset.py file
@@ -63,15 +65,13 @@ Google Collab
 
 7. Observe the results using train.ipynb file.
 
-### Example Inputs:
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg"> <img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
+### Example Inputs
+<img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg"> <img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
 
-### Example Outputs:
+### Example Outputs
+<img width="300" alt="Output1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Output1.jpg"> <img width="300" alt="Output2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Output2.jpg"><img width="200" alt="Output3" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Output3.jpg">
 
-
-
-
-### Data preprocessing:
+### Data preprocessing
 The data preprocessing is contained in the dataset.py file.
 Since the training, testing and validation split is as given by the ISIC dataset, there is no requirement to determine 
 how to split the data.
@@ -81,35 +81,58 @@ Next the dataset contained some unnecessary photos in a .png format that had to 
 Bounding boxes had to be determined for each mask photo:
 <img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png"> <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
 
+### Results
+The YOLOV5 has three main models available to train, a small, medium and large model. 
 
-### Results:
+<img width="200" alt="Model Types" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/YOLOv5Models.jpeg"> 
+
+I first started training the YOLOV5 small model. Each model takes varying amounts of time to train and memory 
+consumption. Since I am using Google Collaboratory to train the model I decided to start with the small model. Unfortunately 
+Google Collaboratory only has a limited amount of memory  available to free users and so was difficult and a very long 
+process to train the model without interruption.
+
 ### Yolov5s - small
 #### 4 Epochs:
-<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
+<img width="800" alt="4EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
 
 
 #### 50 Epochs:
-<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_50Ep.png">
+<img width="800" alt="50EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_50Ep.png">
 
 
 #### 100 Epochs:
-<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_100Ep.png">
+<img width="800" alt="100EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_100Ep.png">
+
+#### 200 Epochs:
 
 
 ### Yolov5m - medium 
+#### 4 Epochs:
 
 
+#### 50 Epochs:
 
 
+#### 100 Epochs:
+
+
+#### 200 Epochs:
+
+
+### Conclusion of results:
 
 
 
 
 ### References:
 https://github.com/ultralytics/yolov5
+
 https://docs.ultralytics.com/tutorials/training-tips-best-results/
+
 https://blog.roboflow.com/yolov5-improvements-and-evaluation/
+
 https://arxiv.org/pdf/1506.02640.pdf
+
 https://medium.com/mlearning-ai/training-yolov5-custom-dataset-with-ease-e4f6272148ad
 
 
