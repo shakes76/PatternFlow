@@ -1,4 +1,5 @@
 import os
+import sys
 
 from modules import *
 from train import *
@@ -25,6 +26,6 @@ def predict(url, name):
     images = style_gan({"style_code": w, "noise": noise, "alpha": 1.0})
     plot_images(images, 5)
 
-url = ""
-name = ""
-predict(url, name)
+
+if __name__ == "__main__":
+    predict(sys.argv[1], sys.argv[2])
