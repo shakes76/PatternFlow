@@ -29,14 +29,14 @@ GANs are currently considered one of the most powerful generational network tech
 
 StyleGAN attempts to combat this issue in the context of image generation with a revolutionary new generator architecture. In styleGAN the input latent vector z is first processed through a feature selection network f such that the distribution of w = f(z) closely relates to the distribution of features in the sample images. The generator then utilises a synthesis network g, which starts with a stack of constant values (an image per channel) that are convolved and upscaled to eventually form an image, with w informing the scaling and biasing at each resolution through the process of Adaptive Instance Normalization (AdaIN) given by the following: [2]
 <div align="center">
-    <img src="resources/adaIN.png" alt = "adaIN equation" title = "adaIN equation"/>
+    <img src="resources/adaIN.PNG" alt = "adaIN equation" title = "adaIN equation"/>
 </div>
 With this construction, the vector w of features (which is distributed desirably) directly informs the selection of features, from the most macroscopic while the resolution is low, to more fine details as the image approaches its target resolution. Noise is also introduced at each stage of generation to control the finest details, such as freckles on faces. [2]
 
 The difference between a traditional GAN generator and a styleGAN generator is illustrated below (Image Sourced from [2]):
 
 <div align="center">
-    <img src="resources/styleGAN.png" alt = "styleGAN architecture" title = "styleGAN architecture"/>   
+    <img src="resources/styleGAN.PNG" alt = "styleGAN architecture" title = "styleGAN architecture"/>   
 </div>
 
  
