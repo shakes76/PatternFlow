@@ -60,3 +60,49 @@ class VectorQuantizer(layers.Layer):
 
         encoding_indices = tf.argmin(distances, axis=1)
         return encoding_indices
+
+
+class Encoder(keras.models.Model):
+    def __init__(self, latent_dim=256, **kwargs):
+        """
+          latent_dim: Dimension of the latent output space
+        """
+        super().__init__(**kwargs)
+        self.intermediate_layers = [
+            layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"),
+            layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"),
+            layers.Conv2D(128, 3, activation="relu",
+                          strides=2, padding="same"),
+        ]
+        self.final_layer = layers.Conv2D(latent_dim, 1, padding="same")
+
+    def call(self, input):
+        payload = input
+        for layer in self.intermediate_layers:
+            payload = layer(payload)
+        final_result = self.final_layer(payload)
+        return final_result
+
+
+class Decoder(keras.models.Model):
+    def __init__(self, latent_dim=256, **kwargs):
+        """
+          latent_dim: Dimension of the latent input space
+        """
+        super().__init__(**kwargs)
+        self.intermediate_layers = [
+            layers.Conv2DTranspose(latent_dim, 3, activation="relu",
+                                   strides=2, padding="same"),
+            layers.Conv2DTranspose(latent_dim // 2, 3, activation="relu",
+                                   strides=2, padding="same"),
+            layers.Conv2DTranspose(latent_dim // 4, 3, activation="relu",
+                                   strides=2, padding="same"),
+        ]
+        self.final_layer = layers.Conv2DTranspose(1, 3, padding="same")
+
+    def call(self, input):
+        payload = input
+        for layer in self.intermediate_layers:
+            payload = layer(payload)
+        final_result = self.final_layer(payload)
+        return final_result
