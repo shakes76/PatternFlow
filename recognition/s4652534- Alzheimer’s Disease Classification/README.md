@@ -12,7 +12,7 @@ Create a classifier based on Siamese network to classify Alzheimer’s disease (
 # Dataset
 ADNI brain data set will be automatically loaded during training and testing by setting the variable "dataset_dir" (in both train.py and predict.py) as the dictionary where the ADNI brain data set is stored. 
 
-ADNI brain data set is split into two sets, i.e., a training set and a testing set, where the former includes 10400 AD + 11120 NC samples and the latter includes 4460 AD + 4540 samples.
+ADNI brain data set is split into two sets, i.e., a training set and a testing set, where the former includes 10400 AD + 11120 NC samples and the latter includes 4460 AD + 4540 NC samples.
 
 # Implementation Details
 In this project, the Resnet-34 [] is used as the backbone, followed by a fully-connected layer, a batch normalization layer and a classification layer. In addition to the widely used Cross-Entropy classification loss, the hard-batch sofr-margin triplet loss [] is utilized based on Siamese network for learning more represenative intermediate represenations (the output of the backbone) to facilitate classification. The weight of the two losses are equal.
