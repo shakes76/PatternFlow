@@ -46,8 +46,8 @@ def localisation_module(layer, num_filters):
     :param num_filters: the number of filters to pass into Conv2D.
     :return: the final layer of this localisation module.
     """
-    decoder = Conv2D(64, 3, activation='relu', padding='same')(layer)
-    return Conv2D(64, 1, activation='relu', padding='same')(decoder)
+    decoder = Conv2D(num_filters, 3, activation='relu', padding='same')(layer)
+    return Conv2D(num_filters, 1, activation='relu', padding='same')(decoder)
 
 
 def create_model(input_shape=INPUT_SHAPE):
@@ -106,43 +106,47 @@ def create_model(input_shape=INPUT_SHAPE):
     # up sample layer 5 to get to layer 4
     up4 = upsample_module(sum5, 128)
 
-    # concatenate the output of encoder_layer4 with  the up sample
-    con4 = concatenate([up4, encoder_layer4])
+    # concatenate the output of sum4 with  the up sample
+    con4 = concatenate([up4, sum4])
     # Forth layer : 2 x 2D Convolutions, filter size 128,  with a 3x3 kernel size for the first one and 1x1 for the
     # second one and a stride size of (2,2).
-    decoder_layer4 = Conv2D(128, 3, activation='relu', padding='same')(con4)
-    # decoder_layer4 = Dropout(DROPOUT_PROB)(encoder_layer5)
-    # decoder_layer4 = BatchNormalization()(decoder_layer4)
-    decoder_layer4 = Conv2D(128, 1, activation='relu', padding='same')(decoder_layer4)
-
+    decoder_layer4 = localisation_module(con4, 128)
     # up sample layer 4 to get to layer 3
     up3 = upsample_module(decoder_layer4, 64)
-    # concatenate the output of encoder_layer4 with  the up sample
-    con3 = concatenate([up3, encoder_layer3])
+
+    # concatenate the output of sum3 with  the up sample
+    con3 = concatenate([up3, sum3])
     # Third layer : 2 x 2D Convolutions, filter size 64,  with a 3x3 kernel size for the first one and 1x1 for the
     # second one and a stride size of (2,2).
-    decoder_layer3 = Conv2D(64, 3, activation='relu', padding='same')(con3)
-    decoder_layer3 = Conv2D(64, 1, activation='relu', padding='same')(decoder_layer3)
-
+    decoder_layer3 = localisation_module(con3, 64)
     # up sample layer 3 to get to layer 2
     up2 = upsample_module(decoder_layer3, 32)
-    # concatenate the output of encoder_layer4 with  the up sample
-    con2 = concatenate([up2, encoder_layer2])
+
+    # concatenate the output of sum2 with  the up sample
+    con2 = concatenate([up2, sum2])
     # Second layer : 2 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
     # second one and a stride size of (2,2).
-    decoder_layer2 = Conv2D(32, 3, activation='relu', padding='same')(con2)
-    decoder_layer2 = Conv2D(32, 1, activation='relu', padding='same')(decoder_layer2)
-
+    decoder_layer2 = localisation_module(con2, 32)
     # up sample layer 2 to get to layer 1
     up1 = upsample_module(decoder_layer2, 16)
-    # concatenate the output of encoder_layer4 with  the up sample
-    con1 = concatenate([up1, encoder_layer1])
-    # Third layer : 1 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
+
+    # concatenate the output of sum1 with  the up sample
+    con1 = concatenate([up1, sum1])
+    # First layer : 1 x 2D Convolutions, filter size 32,  with a 3x3 kernel size for the first one and 1x1 for the
     # second one and a stride size of (2,2).
     decoder_layer1 = Conv2D(32, 3, activation='relu', padding='same')(con1)
 
     # Now do all the segmentation layers.
+    seg_layer3 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer3)
+    seg_layer2 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer2)
+    seg_layer1 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer1)
 
-    output = None
+    # element wise sum of segmentation layers
+    seg_sum_2 = Add()([seg_layer3, seg_layer2])
+    seg_sum_1 = Add()([seg_layer1, seg_sum_2])
+
+    # softmax to finish off 
+    # todo: should this filter size be 16?
+    output = Conv2D(16, 3, activation='softmax', padding='same')(seg_sum_1)
 
     return Model(inputs=input, outputs=output)
