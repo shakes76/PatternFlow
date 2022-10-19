@@ -38,20 +38,17 @@ optimiser.
 YOLOV5 also applies **data augmentation** during training, to increase the amount of data to improve the performance. This
 is necessary as the recommended number of images per class for YOLOV5 is over 1,500 images.
 
-<img width="400" alt="Augmentation Visualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/DataAugmentationVisualisation.jpeg">
+<img width="500" alt="Augmentation Visualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/DataAugmentationVisualisation.jpeg">
 
 ### Model Architecture Visualisation:
 Here we can see a visualisation of the model parts:
 
-
-<img width="600" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
+<img width="800" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
 
 ### Dependencies:
 #### Versions:
 MacOS Monterey 12.6
-
 Python - 3.9.12
-
 Google Collab
 
 #### How to run:
@@ -67,9 +64,7 @@ Google Collab
 7. Observe the results using train.ipynb file.
 
 ### Example Inputs:
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg">
-
-<img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
+<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg"> <img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
 
 ### Example Outputs:
 
@@ -84,26 +79,30 @@ There was however many more aspects in which the data needed preprocessing.
 The images all had varying sizes for a start. YOLOV5 takes image sizes of 640x640, so all images were resized.
 Next the dataset contained some unnecessary photos in a .png format that had to be removed. 
 Bounding boxes had to be determined for each mask photo:
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png">
-
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
+<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png"> <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
 
 
 ### Results:
 ### Yolov5s - small
 #### 4 Epochs:
-<img width="600" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
+<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
 
 
 #### 50 Epochs:
-<img width="600" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_50Ep.png">
+<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_50Ep.png">
 
 
 #### 100 Epochs:
-<img width="600" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_100Ep.png">
+<img width="800" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_100Ep.png">
 
 
 ### Yolov5m - medium 
+
+
+
+
+
+
 
 
 ### References:
