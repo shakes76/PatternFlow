@@ -37,7 +37,7 @@ YOLOV5 also applies **data augmentation** during training, to increase the amoun
 is necessary as the recommended number of images per class for YOLOV5 is over 1,500 images.
 
 ### Model Architecture Visualisation:
-<img width="500" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/ModelVisualisation.jpg">
+<img width="500" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
 
 ### Dependencies:
 
@@ -56,14 +56,14 @@ Google Collab
 5. Download this file to google drive
 6. Run the yolov5_training.ipynb file - make sure the format of the files in folders is as specified below:
 
-<img width="100" alt="FolderOrganisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/FolderOrganisation.jpg">
+<img width="300" alt="FolderOrganisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/FolderOrganisation.jpg">
 
 7. Observe the results 
 
 ### Example Inputs:
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/ExampleInput1.jpg">
+<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg">
 
-<img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/ExampleInput2.jpg">
+<img width="200" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
 
 ### Example Outputs:
 
@@ -78,10 +78,21 @@ Next the dataset contained some unnecessary photos in a .png format that had to 
 
 ### Results:
 #### Yolov5s - small
+#### 4 Epochs:
+<img width="400" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_4Ep.png">
+
+
+#### 50 Epochs:
+<img width="400" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_50Ep.png">
+
+
+#### 100 Epochs:
+<img width="400" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/Results_Yolov5s_100Ep.png">
+
+
 
 #### Yolov5m - medium 
 
-#### Yolov5l - large 
 
 ### References:
 https://github.com/ultralytics/yolov5
