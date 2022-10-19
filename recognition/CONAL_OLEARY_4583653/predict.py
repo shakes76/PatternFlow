@@ -9,10 +9,20 @@ BATCH = 20
 
 
 def VQVAEPredict(vqvae, slice_test):
+    """
+      vqvae: The instantiated VQVAE Model
+      slice_test: The testing dataset
+    """
     vqvae.plot(10, slice_test)
 
 
 def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
+    """
+      vqvae: The instantiated VQVAE Model
+      pixelCNN: The instantiated pixelCNN Model
+      slice_train: The training dataset
+      slice_test: The test dataset
+    """
     test = slice_test.take(1)
     for elem in test:
         elem = elem.numpy()
@@ -24,6 +34,9 @@ def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
     shape = ((BATCH,) + out.shape[1:])
     priors = tf.zeros(shape=shape)
     batch, rows, cols, embedding_count = priors.shape
+
+    # Create the priors
+
     # Iterate over the priors pixel by pixel.
     for row in range(rows):
         for col in range(cols):
@@ -43,10 +56,12 @@ def PixelCNNPredict(vqvae, pixelCNN, slice_train, slice_test):
     quantized = tf.matmul(pixels, pretrained_embeddings, transpose_b=True)
     print(quantized.shape)
     print(sampled.shape)
+    # Plot the priors codebooks
     for i in range(batch):
         plt.figure()
         plt.imshow(sampled[i])
 
+    # Plot and save the generated brains
     generated_samples = vqvae.decoder.predict(quantized)
     for i in range(batch):
         plt.figure(figsize=(5, 6))

@@ -46,6 +46,10 @@ def trainPixelCNN(vqvae, pixelCNN, slice_train, slice_test):
 
 
 def train(slice_train, slice_test):
+    """
+      slice_train: The training dataset
+      slice_test: The test dataset
+    """
     vqvae = modules.VQVAE()
     vqvae.compile(optimizer=keras.optimizers.Adam())
     print("Beginning training of VQVAE\n")

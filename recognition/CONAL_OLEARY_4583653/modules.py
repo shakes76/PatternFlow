@@ -30,7 +30,9 @@ class VectorQuantizer(layers.Layer):
         )
 
     def call(self, input):
-
+        """
+            input: The input to the VQ Layer (output of Encoder)
+        """
         # Flattening
         shape = tf.shape(input)
         flattened_input = tf.reshape(input, [-1, self.embedding_dim])
@@ -54,6 +56,9 @@ class VectorQuantizer(layers.Layer):
         return quantized
 
     def get_code_indices(self, flattened_input):
+        """
+            flattened_input: A flattened input vector
+        """
         similarity = tf.matmul(flattened_input, self.embeddings)
         distances = (tf.reduce_sum(flattened_input**2, axis=1, keepdims=True) +
                      tf.reduce_sum(self.embeddings**2, axis=0) - 2*similarity)
@@ -77,6 +82,9 @@ class Encoder(keras.models.Model):
         self.final_layer = layers.Conv2D(latent_dim, 1, padding="same")
 
     def call(self, input):
+        """
+            input: A brain image for the encoder to encode
+        """
         payload = input
         for layer in self.intermediate_layers:
             payload = layer(payload)
@@ -101,6 +109,9 @@ class Decoder(keras.models.Model):
         self.final_layer = layers.Conv2DTranspose(1, 3, padding="same")
 
     def call(self, input):
+        """
+            input: A vector from the discrete latent space (output of VQ Layer)
+        """
         payload = input
         for layer in self.intermediate_layers:
             payload = layer(payload)
@@ -128,6 +139,9 @@ class VQVAE(keras.models.Model):
         self.vq_loss = tf.keras.metrics.Mean(name="vq_loss")
 
     def call(self, input, training=False):
+        """
+            input: A brain image
+        """
         encoder_outputs = self.encoder(input, training=training)
         quantized_latents = self.vq_layer(encoder_outputs, training=training)
         reconstructions = self.decoder(quantized_latents, training=training)
@@ -144,6 +158,9 @@ class VQVAE(keras.models.Model):
         return [self.total_loss, self.reconstruction_loss, self.vq_loss]
 
     def train_step(self, input):
+        """
+            input: A brain image
+        """
         with tf.GradientTape() as tape:
             # Output from the VQ-VAE.
             reconstructions = self(input, training=True)
@@ -174,6 +191,10 @@ class VQVAE(keras.models.Model):
         return {metric.name: metric.result() for metric in self.metrics}
 
     def show_subplot(self, original, reconstructed):
+        """
+            original: An original image of a brain from a dataset
+            reconstructed: A reconstructed brain that has come from the output of the VQVAE
+        """
         plt.subplot(1, 2, 1)
         plt.imshow(original.squeeze() + 0.5)
         plt.title("Original")
@@ -189,6 +210,10 @@ class VQVAE(keras.models.Model):
             reconstructed * 255, original*255, max_val=255))
 
     def plot(self, num, test_data):
+        """
+            num: Number of images to plot
+            test_data: The test dataset
+        """
         test_imgs = test_data.take(1)
         for elem in test_imgs:
             test_imgs = elem.numpy()
@@ -202,6 +227,9 @@ class VQVAE(keras.models.Model):
         self.plot_codes(test_images)
 
     def plot_codes(self, test_images):
+        """
+            test_images: The images which we wish to construct codebooks from
+        """
         encoded_outputs = self.encoder.predict(test_images)
         print(encoded_outputs.shape[1:-1])
         flat_enc_outputs = encoded_outputs.reshape(
@@ -225,11 +253,17 @@ class VQVAE(keras.models.Model):
 
 class PixelConvLayer(layers.Layer):
     def __init__(self, mask_type, **kwargs):
+        """
+            mask_type: The type of mask, "A" or "B"
+        """
         super(PixelConvLayer, self).__init__()
         self.mask_type = mask_type
         self.conv = layers.Conv2D(**kwargs)
 
     def build(self, input_shape):
+        """
+            input_shape: The shape the first Conv Layer should accept as input
+        """
         # Build the conv2d layer to initialize kernel variables
         self.conv.build(input_shape)
         # Use the initialized kernel to create the mask
@@ -241,13 +275,18 @@ class PixelConvLayer(layers.Layer):
             self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
 
     def call(self, inputs):
+        """
+            inputs: A tensor to input to the PixelConvLayer
+        """
         self.conv.kernel.assign(self.conv.kernel * self.mask)
         return self.conv(inputs)
 
 
 class ResidualBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
-
+        """
+            filters: The number of filters
+        """
         super(ResidualBlock, self).__init__(**kwargs)
         self.conv1 = keras.layers.Conv2D(
             filters=filters, kernel_size=1, activation="relu")
@@ -265,6 +304,9 @@ class ResidualBlock(keras.layers.Layer):
         self.norm3 = keras.layers.BatchNormalization()
 
     def call(self, inputs):
+        """
+            inputs: the input to the Residual Block
+        """
         x = self.conv1(inputs)
         x = self.norm1(x)
         x = self.pixel_conv(x)
@@ -276,6 +318,11 @@ class ResidualBlock(keras.layers.Layer):
 
 class PixelCNN(keras.models.Model):
     def __init__(self, num_blocks, num_layers, num_embeddings, **kwargs):
+        """
+            num_blocks: The number of Residual Blocks
+            num_layers: The number of PixelConvLayers
+            num_embeddings: The number of embeddings
+        """
         super().__init__(**kwargs)
         self.num_blocks = num_blocks
         self.num_layers = num_layers
@@ -299,6 +346,9 @@ class PixelCNN(keras.models.Model):
             filters=num_embeddings, kernel_size=1, strides=1, padding="valid")
 
     def call(self, input):
+        """
+            input: The input to the PixelCNN (a generated codebook)
+        """
         input = self.first_layer(input)
         input = self.norm1(input)
 
