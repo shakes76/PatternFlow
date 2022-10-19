@@ -20,14 +20,14 @@ The model was also embedded with Residual Dense Blocks, inspired by Chakraborty,
 | Tensorflow | 2.9.1 |
 
 ## Example Input and Output
-The original image before down-sampling by factor of 4:
-![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Original.png?raw=true)
+The original image before down-sampling by factor of 4:\
+![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Original.png?raw=true)\
 
-The model input is:
-![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Low_Res.png?raw=true)
+The model input is:\
+![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Low_Res.png?raw=true)\
 
-The model output is:
-![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Model_Prediction.png?raw=true)
+The model output is:\
+![alt text](https://github.com/LingxiaoGao/PatternFlow/blob/topic-recognition/recognition/44708627_%20Efficient_Sub_Pixel_CNN/Demo_Example/Model_Prediction.png?raw=true)\
 
 PSNR of low resolution image and high resolution image is 25.5161
 PSNR of predict and high resolution is 27.4348
@@ -49,4 +49,5 @@ The dataset has 30520 samples of Alzheimer’s disease (AD) and Cognitive Normal
 | 17216          | 4304           | 9000           |
 
 The dataset was resized to 300x300 and normalized from scale of (0,255) to (0,1).
+
 Both train_ds and validation_ds were assigned in form of **tuple** (low-res_ds, high-res_ds)
