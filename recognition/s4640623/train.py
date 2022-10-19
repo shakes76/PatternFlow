@@ -12,23 +12,36 @@ drive.mount('/content/gdrive')
 import sys
 sys.path.insert(0, 'gdrive/MyDrive/Colab Notebooks/Lab 3')
 
-import tensorflow as tf
+import torch.optim as optim
+import torch.nn.functional as func
 
 import modules
 import dataset
 
+# Load and process data
 data = load_data()
-train, valid, test = process_data(data)
+train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
+adj = adj_matrix(data)
 
-model = GraphConvolutionNetwork(graph, x, y, z)
-loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-optimiser = tf.train.AdamOptimizer(0.01)
+model = GCN(features.size(dim = 1),
+            features.size(dim = 0),
+            data['target'].argmax())
+optimiser = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 
-for epoch in range(30):
-    with tf.GradientTape() as tape:
-        logits = model(data['features'])
-        # Loss is only calculated on the training set.
-        loss = loss(data['edges'][0:round(data['features'].size/3)], 
-                    logits[0:round(data['features'].size/3)])
-        grads = tape.gradient(loss, model.trainable_weights)
-        optimiser.apply_gradients(zip(grads, model.trainable_weights))
+def train(epoch):
+    model.train()
+    optimiser.zero_grad()
+    print(features.shape)
+    print(adj)
+    output = model(features, adj)
+    
+    # Use negative log likelihood loss
+    loss_train = func.nll_loss(output[train_ds], target[train_ds])
+    loss_train.backward()
+    optimiser.step()
+
+    loss_val = func.nll_loss(output[valid_ds], target[valid_ds])
+    print('Epoch: {}'.format(epoch+1),
+          'loss_train: {}'.format(loss_train.item()),
+          'loss_val: {}'.format(loss_val.item()),
+          )
