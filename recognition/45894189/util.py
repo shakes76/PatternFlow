@@ -1,9 +1,12 @@
 import tensorflow as tf
+import os
 from tensorflow import keras
 
 class ImageSaver(keras.callbacks.Callback):
-    def __init__(self, image_count=3):
+    def __init__(self, relative_filepath, image_count=3):
         self.image_count= image_count
+        dirname = os.path.dirname(__file__)
+        self.filepath= os.path.join(dirname, relative_filepath)
 
     def on_epoch_end(self, epoch, logs):
         z = [tf.random.normal((32, 512)) for i in range(7)]
@@ -14,11 +17,14 @@ class ImageSaver(keras.callbacks.Callback):
         output_images.numpy()
         for i in range(self.image_count):
             img = keras.preprocessing.image.array_to_img(output_images[i])
-            img.save("generated_img_%03d_%d.png" % (epoch, i))
+            img.save("{}\epoch_{}_image_{}.png".format(self.filepath, epoch, i))
+        print("{}\epoch_{}_image_{}.png".format(self.filepath, epoch, 0))
 
 class WeightSaver(keras.callbacks.Callback):
-    def __init__(self):
-        pass
+    def __init__(self, relative_filepath):
+        dirname = os.path.dirname(__file__)
+        self.filepath= os.path.join(dirname, relative_filepath)
 
     def on_epoch_end(self, epoch, logs):
-        pass
+        self.model.generator.save_weights("{}\epoch_{}_generator.h5".format(self.filepath, epoch))
+        self.model.discriminator.save_weights("{}\epoch_{}_discriminator.h5".format(self.filepath, epoch))

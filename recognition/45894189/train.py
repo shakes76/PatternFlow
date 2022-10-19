@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import os
 from dataset import load_data
 from tensorflow import keras
 from modules import Generator, Discriminator, WNetwork
@@ -11,7 +12,6 @@ class StyleGAN(keras.Model):
         self.discriminator = Discriminator().discriminator()
         self.generator = Generator().generator()
         self.epochs = epochs
-        # self.mapping = WNetwork()
 
     def compile(self):
         super(StyleGAN, self).compile()
@@ -25,7 +25,7 @@ class StyleGAN(keras.Model):
     def metrics(self):
         return [self.discriminator_loss_metric, self.generator_loss_metric]
 
-    def plot_loss(self, history):
+    def plot_loss(self, history, relative_filepath):
         discriminator_loss_values = history.history['discriminator_loss']
         generator_loss_values = history.history['generator_loss']
 
@@ -39,22 +39,29 @@ class StyleGAN(keras.Model):
         plt.ylabel('Loss')
         plt.ylim([min_axis_value, max_axis_value])
         plt.legend(loc='upper right')
-        plt.show()
 
-    def train(self, images_path: str=None, images_count: int=3, weights_path: str=None, plot_loss: bool=False):
+        if relative_filepath != "":
+            dirname = os.path.dirname(__file__)
+            filepath= os.path.join(dirname, relative_filepath)
+            plt.savefig("{}\loss_plot.png".format(filepath))
+            
+        plt.show()
+        
+
+    def train(self, input_images_path="/keras_png_slices/", output_images_path="", images_count=3, weights_path="", plot_loss: bool=False):
         callbacks=[]
 
-        if images_path:
-            callbacks.append(ImageSaver(images_path))
-        if weights_path:
-            callbacks.append(WeightSaver())
+        if output_images_path != "":
+            callbacks.append(ImageSaver(output_images_path, images_count))
+        if weights_path != "":
+            callbacks.append(WeightSaver(weights_path))
 
-        images = load_data()
+        images = load_data(input_images_path)
         self.compile()
         history = self.fit(images, epochs=self.epochs, callbacks=callbacks)
 
         if plot_loss:
-            self.plot_loss(history)
+            self.plot_loss(history, output_images_path)
         
 
     @tf.function
@@ -82,7 +89,6 @@ class StyleGAN(keras.Model):
             goal_labels = tf.zeros([batch_size, 1])
             g_loss = self.loss_fn(goal_labels, predictions)
 
-            # trainable_variables = (self.mapping.trainable_variables + self.generator.trainable_variables)
             trainable_variables = self.generator.trainable_variables
             gradients = g_tape.gradient(g_loss, trainable_variables)
             self.g_optimizer.apply_gradients(zip(gradients, trainable_variables))
