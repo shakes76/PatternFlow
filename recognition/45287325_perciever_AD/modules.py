@@ -12,23 +12,23 @@ class CrossAttention(nn.Module):
 
     Then put them through the attention block, before one last linear layer
     """
-    def __init__(self, d_latents):
+    def __init__(self, n_latents, d_latents):
         super(CrossAttention, self).__init__()
         self.q_ln = nn.LayerNorm(1)
         self.kv_ln = nn.LayerNorm(1)
-        self.q_l = nn.Linear(1,d_latents)
-        self.kv_l = nn.Linear(1, d_latents)
+        self.q_l = nn.Linear(n_latents, d_latents)
+        self.k_l = nn.Linear(1, d_latents)
+        self.v_l = nn.Linear(1, d_latents)
         self.attn = nn.MultiheadAttention(d_latents, 1, batch_first=True)           
         self.o_l = Conv1D(d_latents)
 
-    def forward(self, query, key_value):
-        q = self.q_l(self.q_ln(query))
-        kv = self.kv_l(self.kv_ln(key_value))
-        attn = self.attn(q, kv, kv)[0]
+    def forward(self, latent, data):
+        q = self.q_l(self.q_ln(latent))
+        k = self.k_l(self.kv_ln(data))
+        v = self.v_l(self.kv_ln(data))
+        attn = self.attn(q, k, v)[0]
         output = self.o_l(attn)
         return output
-
-
 
 class SelfAttention(nn.Module):
     """
@@ -38,7 +38,25 @@ class SelfAttention(nn.Module):
 
     Then put them through the attention block, before one last linear layer
     """
-    pass
+    def __init__(self, n_latents, d_latents):
+        super(SelfAttention, self).__init__()
+        self.q_ln = nn.LayerNorm(d_latents)
+        self.k_ln = nn.LayerNorm(d_latents)
+        self.v_ln = nn.LayerNorm(d_latents)
+        self.q_l = Conv1D(d_latents)
+        self.k_l = Conv1D(d_latents)
+        self.v_l = Conv1D(d_latents)
+        self.attn = nn.MultiheadAttention(d_latents, 1, batch_first=True)           
+        self.o_l = Conv1D(d_latents)
+
+    def forward(self, latent):
+        q = self.q_l(self.q_ln(latent))
+        k = self.k_l(self.k_ln(latent))
+        v = self.v_l(self.v_ln(latent))
+        attn = self.attn(q, k, v)[0]
+        output = self.o_l(attn)
+        return output
+
 
 class LatentTransformer(nn.Module):
     """
