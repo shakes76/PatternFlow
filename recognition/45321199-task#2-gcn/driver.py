@@ -5,12 +5,12 @@
 
 # from modules import Module
 # from train import Trainer
-# from predict import Predictor
-from train import Trainer
+from predict import Predicter
+
 
 def main():
-    trainer = Trainer()
-    trainer.train()
+    pred = Predicter()
+    pred.acc_loss_plots()
     
     
 
