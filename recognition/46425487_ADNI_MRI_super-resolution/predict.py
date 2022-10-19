@@ -2,10 +2,38 @@ import tensorflow as tf
 import numpy as np
 from tensorflow import keras
 from PIL import Image
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 # import the model and test data set created by train.py
 model = keras.models.load_model('./trained_model')
 test_ds = tf.data.Dataset.load('./test_data')
+
+def svplot(img, title, index):
+
+    #Create a new figure with a default 111 subplot.
+    fig, ax = plt.subplots()
+    im = ax.imshow(img[::-1], origin="lower", cmap="gray", vmin=0, vmax=1)
+
+    plt.title(title)
+    # zoom by a factor of two and plot it in the lower left of image
+    axins = zoomed_inset_axes(ax, 2, loc=3)
+    axins.imshow(img[::-1], origin="lower", cmap="gray", vmin=0, vmax=1)
+
+    # Specify the zoom area
+    x1, x2, y1, y2 = 100, 160, 100, 160
+    # Apply the x-limits.
+    axins.set_xlim(x1, x2)
+    # Apply the y-limits.
+    axins.set_ylim(y1, y2)
+
+    plt.yticks(visible=False)
+    plt.xticks(visible=False)
+
+    # draw lines from zoom area to zoomed in plot
+    mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="blue")
+    plt.savefig("./results/" + str(index) + "-" + title + ".png")
 
 total_resize_psnr = 0.0
 total_predic_psnr = 0.0
@@ -36,6 +64,9 @@ for batch in test_ds.take(1):
         print(f"PSNR of low res and high res for image {i} is {resize_psnr:.4f}")
         print(f"PSNR of predicted and high res for image {i} is {predic_psnr:.4f}")
 
+        svplot(low_res, "low-res", i)
+        svplot(high_res, "high-res", i)
+        svplot(predicted, "predicted", i)
+
 print(f"Average PSNR of low res and high res for images is {total_resize_psnr/32:.4f}")
 print(f"Average PSNR of predicted and high res for images is {total_predic_psnr/32:.4f}")
-
