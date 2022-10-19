@@ -55,8 +55,8 @@ def WNetwork(latent_dim=512):
     z = layers.Input(shape=[latent_dim])
     w = z
     for _ in range(8):
-        w = layers.Dense(latent_dim)(z)
-        w = layers.LeakyReLU(0.2)(z)
+        w = layers.Dense(latent_dim)(w)
+        w = layers.LeakyReLU(0.2)(w)
     return tf.keras.Model(z, w)
 
 class Generator():
@@ -122,13 +122,8 @@ class Generator():
             z_inputs.append(layers.Input(shape=[512]))
             curr_size *= 2
 
-        # build mapping network
-        z = layers.Input(shape=[512])
-        w = z
-        for _ in range(8):
-            w = layers.Dense(n_filters)(w)
-            w = layers.LeakyReLU(0.2)(w)
-        mapping = tf.keras.Model(z, w)
+        # build network mapping latent noise to style code
+        mapping = WNetwork()
 
         # add generator architecture
         x = layers.Activation("linear")(x)    

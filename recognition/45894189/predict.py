@@ -32,7 +32,7 @@ PLOT_LOSS = True
 #=======TRAINING=VARIABLES=========
 
 # number of training epochs
-EPOCHS = 2
+EPOCHS = 100
 
 # training batch size
 BATCH_SIZE = 32
