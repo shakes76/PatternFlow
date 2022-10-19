@@ -1,6 +1,6 @@
 # Simple Diffusion Image Generation
 
-Simple diffusion based image generation using PyTorch.
+Simple diffusion based image generation using PyTorch. This model can learn from a dataset of images and generate new images that are perceptually similar to those in the dataset.
 ![](https://hcloudh.com/nextcloud/s/TpPW8Z3EzCc3mP6/download/plot_epoch94.jpeg)
 #### References
 
