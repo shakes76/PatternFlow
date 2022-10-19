@@ -10,30 +10,15 @@ from dataset import DataLoader
 from modules import build_vision_transformer
 import tensorflow as tf
 import tensorflow_addons as tfa
+import matplotlib.pyplot as plt
+from parameters import *
 
-# Hyperparameters
-IMAGE_SIZE = 128
-PATCH_SIZE = 16
-BATCH_SIZE = 64
-PROJECTION_DIM = 64
-LEARNING_RATE = 0.001
-ATTENTION_HEADS = 5
-HIDDEN_UNITS = [PROJECTION_DIM * 2, PROJECTION_DIM]
-DROPOUT_RATE = 0.1
-TRANSFORMER_LAYERS = 5
-INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 3)
 
-NUM_PATCHES = int((IMAGE_SIZE/PATCH_SIZE) ** 2)
-CLASS_TYPES = ['NC', 'AD']
-WEIGHT_DECAY = 0.0001
-EPOCHS = 5
-
-def train_model():
-    # Load data
-    loader = DataLoader("C:/AD_NC", IMAGE_SIZE, BATCH_SIZE)
-    train, val, test = loader.load_data()
-
-    # Build a compile model
+def compile_model():
+    """
+    Builds and compiles the model.
+    """
+    # Build and compile model
     optimizer = tfa.optimizers.AdamW(
         learning_rate=LEARNING_RATE,
         weight_decay=WEIGHT_DECAY
@@ -48,21 +33,69 @@ def train_model():
         PROJECTION_DIM,
         HIDDEN_UNITS,
         DROPOUT_RATE,
-        TRANSFORMER_LAYERS
+        TRANSFORMER_LAYERS,
+        MLP_HEAD_UNITS
     )
 
     model.compile(
         optimizer=optimizer,
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[
-            tf.keras.metrics.SparseCategoricalAccuracy(name='accuracy')
+            tf.keras.metrics.BinaryAccuracy(name='accuracy')
         ]
     )
 
+    return model
+    
+
+def train_model(model, train_data, val_data):
+    """
+    Trains and saves the model.
+    """
+
     # Train model
     history = model.fit(
-        x=train,
+        x=train_data,
         batch_size=BATCH_SIZE,
         epochs=EPOCHS,
-        validation_data=val
+        validation_data=val_data
     )
+
+    # Save model
+    model.save(
+        MODEL_SAVE_PATH,
+        overwrite=True,
+        include_optimizer=True,
+        save_format='tf'
+    )
+
+    # Plot and save accuracy curves
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.suptitle('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['train', 'val'])
+    plt.savefig('accuracy.png')
+    plt.clf()
+
+    # Plot and save loss curves
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.suptitle('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['train', 'val'])
+    plt.savefig('losses.png')
+    plt.clf()
+
+
+if __name__ == '__main__':
+    # Load data
+    loader = DataLoader(DATA_LOAD_PATH, IMAGE_SIZE, BATCH_SIZE)
+    train, val, test = loader.load_data()
+
+    # Compile and train model
+    model = compile_model()
+    print(model.summary())
+    train_model(model, train, val)
