@@ -28,5 +28,4 @@ class DataLoader():
         return np.var(dataset / 255.0)
 
 
-# train_path = ["/content/drive/My Drive/comp3710/project/keras_png_slices_data/keras_png_slices_data/keras_png_slices_train", "/content/drive/My Drive/comp3710/project/keras_png_slices_data/keras_png_slices_data/keras_png_slices_seg_train"]
-# test_path = ["/content/drive/My Drive/comp3710/project/keras_png_slices_data/keras_png_slices_data/keras_png_slices_test", "/content/drive/My Drive/comp3710/project/keras_png_slices_data/keras_png_slices_data/keras_png_slices_test"]
+
