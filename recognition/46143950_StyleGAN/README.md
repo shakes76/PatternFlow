@@ -129,7 +129,7 @@ Both discriminator and generator converged well in the lower dimensions, but flu
 ## How to play with `predict.py`?
 Once trained, `predict.py` can be used to load trained models and generate above images. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly set before running below command. 
 
-:boom: Trained models that generated above images can be found [here](https://drive.google.com/file/d/15CD1oabf8B_Zu1d4a4ixl2ns-zfg1OIv/view?usp=sharing).
+:boom: Trained models that generated above images can be found [<ins>here</ins>](https://drive.google.com/file/d/15CD1oabf8B_Zu1d4a4ixl2ns-zfg1OIv/view?usp=sharing).
 
 ```python predict.py```
 
