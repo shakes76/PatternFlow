@@ -7,6 +7,8 @@ from pixel import *
 
 
 def show_subplot(original, reconstructed):
+    SSIM = tf.image.ssim(original, reconstructed, max_val=1)
+    plt.suptitle("SSIM: {}".format(SSIM))
     plt.subplot(1, 2, 1)
     plt.imshow(original.squeeze() + 0.5)
     plt.title("Original")
@@ -93,7 +95,7 @@ def get_priors(pixel_cnn_model, sampler):
     priors = np.zeros(shape=(batch,) + (pixel_cnn_model.input_shape)[1:])
     batch, rows, cols = priors.shape
 
-    # Iterate over the priors because generation has to be done sequentially pixel by pixel.
+    # Iterate over the priors because generation is done sequentially pixel by pixel.
     for row in range(rows):
         for col in range(cols):
             # Feed the whole array and retrieving the pixel value probabilities for the next
@@ -105,6 +107,33 @@ def get_priors(pixel_cnn_model, sampler):
     print(f"Prior shape: {priors.shape}")
     return priors
 
+
+def get_priors2(vqvae_trainer, pixel_cnn, encoder_output_shape):
+    n_priors = 10
+    priors = tf.Variable(tf.zeros(shape=(n_priors,) + pixel_cnn.input_shape[1:], dtype=tf.int32))
+
+    _, rows, cols = priors.shape
+
+    for row in range(rows):
+        for col in range(cols):
+            print(f"\rrow: {row}, col: {col}", end="")
+            dist = tfp.distributions.Categorical(logits=pixel_cnn(priors, training=False))
+            probs = dist.sample()
+
+            priors = priors[:, row, col].assign(probs[:, row, col])
+    quantiser = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+
+    embeddings = quantiser.embeddings
+    priors = tf.cast(priors, tf.int32)
+    priors_one_hot = tf.one_hot(priors, vqvae_trainer.num_embeddings)
+    priors_one_hot = tf.cast(priors_one_hot, tf.float32)
+    quantised = tf.matmul(priors_one_hot, embeddings, transpose_b=True)
+    quantised = tf.reshape(quantised, (-1, *(encoder_output_shape[1:])))
+
+    # Generate novel images.
+    # decoder = vqvae_trainer.vqvae.get_layer("decoder")
+    # generated_samples = decoder.predict(quantised)
+    return priors, quantised
 # ================
 # Perform an embedding lookup.
 def quantize_priors(priors, vqvae_trainer, encoder_output_shape):
@@ -112,7 +141,7 @@ def quantize_priors(priors, vqvae_trainer, encoder_output_shape):
     pretrained_embeddings = quantizer.embeddings
     priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
     quantized = tf.matmul(
-        priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+        priors_ohe, pretrained_embeddings, transpose_b=True
     )
     quantized = tf.reshape(quantized, (-1, *(encoder_output_shape[1:])))
     return quantized

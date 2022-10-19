@@ -56,7 +56,7 @@ class VQVAETrainer(keras.models.Model):
 
 
 # =====================================================
-def train_vqvae(vqvae_trainer, data, latent_dim=16, num_embeddings=32, num_epochs=20, CHECKPOINT='./model_weights/new_weights', LOAD_WEIGHTS=False):
+def train_vqvae(vqvae_trainer, data, num_epochs=20, CHECKPOINT='./model_weights/new_weights', LOAD_WEIGHTS=False):
 
     history = None
     if LOAD_WEIGHTS:
@@ -101,8 +101,6 @@ def plot_training(history):
 def initialise_pixel(encoder_output_shape, vqvae_trainer):
     num_residual_blocks = 2
     num_pixelcnn_layers = 2
-    encoder = vqvae_trainer.vqvae.get_layer("encoder")
-    quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
     pixelcnn_input_shape = encoder_output_shape[1:-1]
     print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
 
@@ -122,31 +120,37 @@ def prepare_encodings(train_np, vqvae_trainer):
     pixel_train = train_np[:2000,:,:,:]
     encoded_outputs = encoder.predict(pixel_train, batch_size=2)
 
+    # Create batches to prevent 
     batched_train = batch_np(encoded_outputs, 32)
     codebook_indices = np.empty(shape=(1,64,64))
 
     for batch in batched_train:
-        print("batch")
         flat_enc_outputs = batch.reshape(-1, batch.shape[-1])
         indices = quantizer.get_code_indices(flat_enc_outputs)
         indices = indices.numpy().reshape(batch.shape[:-1])
         codebook_indices = np.append(codebook_indices, indices, 0)
-
     return codebook_indices[1:,:,:]
 
 # ============================================================
 # Compile and run the pixel CNN model
-def train_pixel(pixel_cnn_model, codebook_indices, epochs):
+def train_pixel(pixel_cnn_model, codebook_indices, epochs, pixel_checkpoint='./CNNmodel_weights/pixel_weights', LOAD_WEIGHTS=False):
     pixel_cnn_model.compile(
         optimizer=keras.optimizers.Adam(3e-4),
         loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=["accuracy"],
     )
     # need to fix y
-    pixel_cnn_model.fit(
-        x=codebook_indices,
-        y=codebook_indices,
-        batch_size=8,
-        epochs=epochs,
-        validation_split=0.1,
-    )
+
+    if LOAD_WEIGHTS:
+        pixel_cnn_model.load_weights(pixel_checkpoint)
+    else:
+        pixel_cnn_model.fit(
+            x=codebook_indices,
+            y=codebook_indices,
+            batch_size=8,
+            epochs=epochs,
+            validation_split=0.1,
+        )
+        pixel_cnn_model.save_weights(pixel_checkpoint)
+
+    

@@ -30,10 +30,10 @@ class PixelConvLayer(layers.Layer):
 
 # Next, we build our residual block layer.
 # This is just a normal residual block, but based on the PixelConvLayer.
-class ResidualBlock(keras.layers.Layer):
+class ResidualBlock(layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
-        self.conv1 = keras.layers.Conv2D(
+        self.conv1 = layers.Conv2D(
             filters=filters, kernel_size=1, activation="relu"
         )
         self.pixel_conv = PixelConvLayer(
@@ -42,16 +42,21 @@ class ResidualBlock(keras.layers.Layer):
             kernel_size=3,
             activation="relu",
             padding="same",
-        )
-        self.conv2 = keras.layers.Conv2D(
-            filters=filters, kernel_size=1, activation="relu"
-        )
+            )
+        self.conv2 = layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.norm1 = layers.BatchNormalization()
+        self.norm2 = layers.BatchNormalization()
+        self.norm3 = layers.BatchNormalization()
+
 
     def call(self, inputs):
         x = self.conv1(inputs)
+        x = self.norm1(x)
         x = self.pixel_conv(x)
+        x = self.norm2(x)
         x = self.conv2(x)
-        return keras.layers.add([inputs, x])
+        x = self.norm3(x)
+        return layers.add([inputs, x])
 
 class PixelCNN(keras.Model):
     
@@ -76,6 +81,7 @@ class PixelCNN(keras.Model):
             x = ResidualBlock(filters=128)(x)
 
         for _ in range(self.num_layers):
+            x = layers.Dropout(0.3)(x)
             x = PixelConvLayer(
                 mask_type="B",
                 filters=128,
@@ -83,9 +89,11 @@ class PixelCNN(keras.Model):
                 strides=1,
                 activation="relu",
                 padding="valid",
-            )(x)
+                )(x)
+            x = layers.BatchNormalization()(x)
+            
 
-        out = keras.layers.Conv2D(
+        out = layers.Conv2D(
             filters=self.vqvae_trainer.num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
 
         pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
