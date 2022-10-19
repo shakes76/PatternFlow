@@ -36,18 +36,3 @@ class Dataset(torch.utils.data.Dataset):
         truth = torch.divide(truth, 255)
 
         return data, truth
-
-dataset_train = Dataset(
-        data_path='data/training/data', 
-        truth_path='data/training/truth', 
-        metadata_path='data/training/data/ISIC-2017_Training_Data_metadata.csv'
-        )
-data, truth = dataset_train[0]
-print(data.max())
-print(data.min())
-print(data.shape)
-print(truth.max())
-print(truth.min())
-print(truth.shape)
-print(len(dataset_train))
-
