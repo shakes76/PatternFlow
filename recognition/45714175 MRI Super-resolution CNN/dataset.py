@@ -11,6 +11,8 @@ import tensorflow as tf
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
 
+from IPython.display import display
+
 def downloadDataSet():
   """Download the preprocessed version of the ADNI dataset for Alzheimers 
   disease from the blackboard course help site. Returns string path to file"""
@@ -21,26 +23,43 @@ def downloadDataSet():
 def getTraining(datasetPath):
     """Returns normalised training set"""
     directory = os.path.join(datasetPath, "train")
-    training = image_dataset_from_directory(directory, labels="inferred", image_size=(128, 128), batch_size=32,
-                validation_split=0.3, subset="training", color_mode="grayscale", label_mode=None)
+    training = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
+                validation_split=0.3, subset="training", color_mode="grayscale", label_mode=None, seed=1)
 
-    normalisedData = training.map(lambda x: x / 255.0)
-    return normalisedData
+    training = training.map(lambda x: x / 255.0)
+
+    # Downsample and add targets
+    training = training.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="guassian"), x))
+    return training
 
 def getValidation(datasetPath):
     """Returns noramlised validation set"""
     directory = os.path.join(datasetPath, "train")
-    validation = image_dataset_from_directory(directory, labels="inferred", image_size=(128, 128), batch_size=32,
-                validation_split=0.3, subset="validation", color_mode="grayscale", label_mode=None)
+    validation = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
+                validation_split=0.3, subset="validation", color_mode="grayscale", label_mode=None, seed=1)
 
-    normalisedData = validation.map(lambda x: x / 255.0)
-    return normalisedData
+    validation = validation.map(lambda x: x / 255.0)
+    
+    # Downsample and add targets
+    validation = validation.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="gaussian"), x))
+    return validation
 
 def getTest(datasetPath):
     """Returns normalized test set"""
     directory = os.path.join(datasetPath, "test")
-    test = image_dataset_from_directory(directory, labels="inferred", image_size=(128, 128), batch_size=32,
+    training = image_dataset_from_directory(directory, labels="inferred", image_size=(240, 256), batch_size=32,
                 color_mode="grayscale", label_mode=None)
 
-    normalisedData = test.map(lambda x: x / 255.0)
+    normalisedData = training.map(lambda x: x / 255.0)
     return normalisedData
+
+
+
+def preview_data(dataset):
+    """Function to construct a matplotlib figure to preview 
+    some given images in a dataset
+    """
+    plt.figure(figsize=(10, 20))
+    for batch in dataset.take(1):
+        for image in batch:
+            display(keras.preprocessing.image.array_to_img(image))
