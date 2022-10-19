@@ -1,8 +1,9 @@
 from modules import GCN_Model
+import numpy as np
 import os
 
 
-EPOCHS = 10     # number of epochs
+EPOCHS = 3000     # number of epochs
 
 
 class Trainer:
@@ -10,20 +11,28 @@ class Trainer:
         self.epochs = epochs
         self.gcn = GCN_Model()
         self.model_dir = 'recognition/45321199-task#2-gcn/saved_model/saved_gcn.h5'
+        self.history_dir = 'recognition/45321199-task#2-gcn/saved_model/history.npy'
         self.overwrite = overwrite
     
     def train(self):
         # Train
         if not os.path.exists(self.model_dir) or self.overwrite == True:
             data = self.gcn.data
-            self.history = self.gcn.model.fit(data['validation_data'][0], 
+            history = self.gcn.model.fit(data['validation_data'][0], 
                                     data['encoded_labels'],
                                     sample_weight=data['train_mask'],
                                     epochs=self.epochs,
                                     batch_size=data['len_vertices'],
                                     validation_data=data['validation_data'],
                                     shuffle=False)
+            # save model
             self.gcn.model.save(self.model_dir)
 
+            #save history
+            np.save(self.history_dir, history.history)
+
     def get_history(self):
-        return self.history
+        return np.load(self.history_dir, allow_pickle='TRUE').item()
+    
+    def get_model_dir(self):
+        return self.model_dir
