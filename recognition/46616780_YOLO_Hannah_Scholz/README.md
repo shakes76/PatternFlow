@@ -1,4 +1,3 @@
-
 ## YOLOV5 Image Detection
 #### By Hannah Scholz - s4661678
 This is a python based package that utilises a YOLOV5 model to detect skin lesions.
@@ -43,7 +42,7 @@ is necessary as the recommended number of images per class for YOLOV5 is over 1,
 ### Model Architecture Visualisation
 Here we can see a visualisation of the model parts:
 
-<img width="1500" alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
+<img alt="ModelVisualisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ModelVisualisation.jpg">
 
 ### Dependencies
 #### Versions
