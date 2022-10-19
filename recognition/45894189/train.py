@@ -15,10 +15,19 @@ class StyleGAN(keras.Model):
         self.batch_size = batch_size
 
     def compile(self):
+        """
+        first time compile of the StyleGAN model
+        """
         super(StyleGAN, self).compile()
+
+        # set optimizers
         self.d_optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5)
         self.g_optimizer=tf.keras.optimizers.Adam(learning_rate=1.25e-5)
+
+        # set loss function
         self.loss_fn=tf.keras.losses.BinaryCrossentropy()
+
+        # initialise logging
         self.discriminator_loss_metric = keras.metrics.Mean(name="discriminator_loss")
         self.generator_loss_metric = keras.metrics.Mean(name="generator_loss")
 
@@ -27,9 +36,17 @@ class StyleGAN(keras.Model):
         return [self.discriminator_loss_metric, self.generator_loss_metric]
 
     def plot_loss(self, history, relative_filepath):
+        """
+        plots saves and shows a loss graph of the StyleGAN training.
+        param history: the model metrics logging
+        param relative_filepath: the relative filepath for saving the plot ("" for no saving)
+        """
+
+        # pull metrics
         discriminator_loss_values = history.history['discriminator_loss']
         generator_loss_values = history.history['generator_loss']
 
+        # plot values
         min_axis_value = min(min(generator_loss_values, discriminator_loss_values)) - 0.1
         max_axis_value = max(max(generator_loss_values, discriminator_loss_values)) + 0.1
 
@@ -41,6 +58,7 @@ class StyleGAN(keras.Model):
         plt.ylim([min_axis_value, max_axis_value])
         plt.legend(loc='upper right')
 
+        # save and show plot
         if relative_filepath != "":
             dirname = os.path.dirname(__file__)
             filepath= os.path.join(dirname, relative_filepath)
@@ -50,8 +68,17 @@ class StyleGAN(keras.Model):
         
 
     def train(self, input_images_path="/keras_png_slices/", output_images_path="", images_count=3, weights_path="", plot_loss: bool=False):
+        """
+        trains the StyleGAN model over the specified epochs and builds the requested callbacks.
+        param input_images_path: relative path for input image data
+        param output_images_path: relative output image paths ("" for no saving)
+        param images_count: number of images to save
+        param weights_path: relative output weight path ("" for no saving)
+        param plot_loss: True if loss should be plotted/saved, otherwise False
+        """
         callbacks=[]
 
+        # add image and model saving callbacks if paths are specified
         if output_images_path != "":
             callbacks.append(ImageSaver(output_images_path, images_count))
         if weights_path != "":
@@ -67,6 +94,11 @@ class StyleGAN(keras.Model):
 
     @tf.function
     def train_step(self, real_images):
+        """
+        processes one epoch of StyleGAN training.
+        param real_images: real image data
+        output: dictionary of loss metrics
+        """
         d_loss = self.train_discriminator(real_images)
         g_loss = self.train_generator()
 
@@ -79,14 +111,20 @@ class StyleGAN(keras.Model):
         }
 
     def train_generator(self):
+        """
+        processes one epoch of generator training
+        returns: generator loss
+        """
         generator_inputs = self.get_generator_inputs()
         with tf.GradientTape() as g_tape:
             fake_images = self.generator(generator_inputs)
             predictions = self.discriminator(fake_images)
 
+            # the generator wants its fake images to be labelled as real (0)
             goal_labels = tf.zeros([self.batch_size, 1])
             g_loss = self.loss_fn(goal_labels, predictions)
 
+            # apply gradients
             trainable_variables = self.generator.trainable_variables
             gradients = g_tape.gradient(g_loss, trainable_variables)
             self.g_optimizer.apply_gradients(zip(gradients, trainable_variables))
@@ -94,10 +132,15 @@ class StyleGAN(keras.Model):
         return g_loss
 
     def train_discriminator(self, real_images):
+        """
+        processes one epoch of discriminator training
+        real_images: real image data
+        output: discriminator loss
+        """
         generator_inputs = self.get_generator_inputs()
         generated_images = self.generator(generator_inputs)
 
-        # Combine real and fake, add labels with random noise
+        # Combine real and fake images, with corresponding labels fake -> 1, real -> 0
         images = tf.concat([generated_images, real_images], axis=0)
         labels = tf.concat(
             [tf.ones([self.batch_size, 1]), tf.zeros([self.batch_size, 1])], axis=0
@@ -113,7 +156,11 @@ class StyleGAN(keras.Model):
         return d_loss
 
     def get_generator_inputs(self):
-
+        """
+        generates a set of inputs for the generator model, including latent z inputs, random noise inputs
+        and a constant input layer
+        returns: generator input list
+        """
         # latent space noise for input into mapping
         z = [tf.random.normal((self.batch_size, 512)) for i in range(7)]
 

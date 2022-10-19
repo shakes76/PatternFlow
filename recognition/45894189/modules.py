@@ -5,6 +5,10 @@ from keras import layers
 def add_noise(n_filters, image_size):
     """
     Noise input layer [B]
+    input input: current x tensor state
+    input noise: vector of random image noise
+    output x: x tensor after scaled noise is applied
+    returns: noise model
     """
     input = layers.Input((image_size, image_size, n_filters))
     noise = layers.Input((image_size, image_size, 1))
@@ -17,7 +21,11 @@ def add_noise(n_filters, image_size):
 def AdaIN(n_filters, image_size, epsilon=1e-8):
     """
     Combined AdaIN and [A] layer. Affine transform of W is used to perform
-    Instance Normalisation on X values 
+    Instance Normalisation on X values
+    input input: current x tensor state
+    input w: style vector
+    output x: x vector after AdaIN is applied
+    returns: AdaIN model 
     """
     input = layers.Input((image_size, image_size, n_filters))
     w = layers.Input(512) # = latent_dim
@@ -40,6 +48,8 @@ def WNetwork(latent_dim=512):
     """
     Mapping Network z -> w mapping latent noise to style code with set of
     fully connected layers
+    input z: latent vector
+    output w: style vector
     returns: Mapping Network
     """
     z = layers.Input(shape=[latent_dim])
@@ -50,11 +60,25 @@ def WNetwork(latent_dim=512):
     return tf.keras.Model(z, w)
 
 class Generator():
+    """
+    Generator class contains methods to build a generator model. The generator takes in 3 inputs,
+    random latent input, noise inputs and a constant input layer. It outputs B/W pixel values
+    for brain MRI images.
+    """
     def __init__(self):
-        self.init_size = 4
-        self.init_filters = 512
+        self.init_size = 4          # initial input size
+        self.init_filters = 512     # number of filters in initial input
 
     def generator_block(self, n_filters, image_size):
+        """
+        produces a model of the middle blocks of the generator at different sizes
+        param n_filters: the number of filters for the INPUT to this block
+        param image_size: singular value for the equal length/width of the INPUT to this block
+        input input_tensor: the current x tensor
+        input w: style vector to use in AdaIN layers
+        input noise: tensor of random noise
+        output x: x tensor after being processed
+        """
         input_tensor = layers.Input(shape=(image_size, image_size, n_filters))
         noise = layers.Input(shape=(2*image_size, 2*image_size, 1))
         w = layers.Input(shape=512)
@@ -77,12 +101,20 @@ class Generator():
         return tf.keras.Model([input_tensor, w, noise], x)
 
     def generator(self):
+        """
+        produces a generator model That upscales latent inputs to a generated brain image.
+        input input: constant input layer of 1s
+        input z_inputs: array of random latent inputs
+        input noise_inputs: array of random noise tensors, of increasing size for consecutive input
+        output: processed image
+        """
         current_size = self.init_size # 4
         n_filters = self.init_filters # 512
         input = layers.Input(shape=(current_size, current_size, n_filters))
         x = input
         i = 0
 
+        # unpack input lists
         noise_inputs, z_inputs = [], []
         curr_size = self.init_size
         while curr_size <= 256:
@@ -90,6 +122,7 @@ class Generator():
             z_inputs.append(layers.Input(shape=[512]))
             curr_size *= 2
 
+        # build mapping network
         z = layers.Input(shape=[512])
         w = z
         for _ in range(8):
@@ -97,6 +130,7 @@ class Generator():
             w = layers.LeakyReLU(0.2)(w)
         mapping = tf.keras.Model(z, w)
 
+        # add generator architecture
         x = layers.Activation("linear")(x)    
         x = add_noise(n_filters, current_size)([x, noise_inputs[i]])
         x = AdaIN(n_filters, current_size)([x, mapping(z_inputs[i])])
@@ -125,9 +159,13 @@ class Discriminator():
     def discriminator_block(self, n_filters, image_size):
         """
         Main block for discriminator containing two convolutional layers with LeakyReLU activation. the second layer doubles the number
-        of filters. The block is ended with a downsampling of the image that halves it's size
+        of filters. The block is ended with a downsampling of the image that halves it's size.
+        param n_filters: number of filters for the convolutional layers within the discriminator block
+        param image_size: size of the image as it is INPUT into the block
+        input input_tensor: image tensor x in it's current state
+        output x: output of the block
         """
-
+        # no filters for initial block
         if image_size == self.init_size:
             input_tensor = layers.Input(shape=(image_size, image_size, 1))
         else:
@@ -144,13 +182,16 @@ class Discriminator():
         """
         Discriminator model, takes in 256x256x1 images and calssifies them as real or fake. Built with initial input and convolution layer,
         then repeated discriminator blocks until the image is downsampled to 4x4, and finished with 2 convolutions layers, then a flatten and
-        Dense classification layer
+        Dense classification layer.
+        input input_tensor: image data
+        output: binary classification 1 -> fake image; 0 -> real image
         """
         current_size = self.init_size
         n_filters = self.init_filters
         input_tensor = layers.Input(shape=[current_size, current_size, 1])
         x = input_tensor
 
+        # build model
         while current_size > 4:
             x = self.discriminator_block(n_filters, current_size)(x)
             current_size = current_size // 2
