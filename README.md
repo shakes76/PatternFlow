@@ -118,18 +118,7 @@ Both discriminator and generator converged well in the lower dimensions, but flu
 
 ### Generated images of the three datasets.
 <p align="center">
-    <table border='0'>
-        <tr>
-            <td><img src="asset/OASIS_samples.png" width="250", height="250"></td>
-            <td><img src="asset/ADNI_samples.png" width="250", height="250"></td>
-            <td><img src="asset/AKOA_samples.png" width="250", height="250"></td>
-        </tr>
-        <tr align='center'>
-            <td>OASIS</td>
-            <td>ADNI</td>
-            <td>AKOA</td>
-        </tr>
-    </table>
+    <kbd><img src="asset/samples.png"></dbd>
 </p>
 
 ### Bilinear interpolation.
