@@ -73,7 +73,7 @@ A few points to note,
  - Input of 'Synthesis network' is constant.
  - a noise vector is injected 2 times in each resolution block.
  - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector.
- - Loss function uses the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability.
+ - Loss function is the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability.
  - Model is trained progressively.
 
 ### Model Variations
