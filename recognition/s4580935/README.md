@@ -29,7 +29,7 @@ The images found in these files are 256x256 greyscale pixel png's. In train.py u
 
 The modules.py file stores the class and functions for the VQVAE model and is called when running train.py. The encoder and decoder are both simple in their construction involving a convolutional layer with filter numbers of 32 and 64 and transposed convolutional layer with 64 and 32 respectively. The summary of the VQVAE model can be seen as follows:
 <p align="center">
-<img src="./img/vqvae.png">
+<img src="./img/vqvae.PNG">
 </p>
 
 After Training the model on the combined train and validate set (named Oasis) for 30 epochs using batch sizes of 128 a model was generated. The reconstructed loss over the epochs can be seen in the following graph.
@@ -40,13 +40,13 @@ As it can be seen the model starts performing quite badly which is to be expecte
 
 To test the Model the test set was used to determine how well the model can reconstruct images. The goal of the model was to be able to reconstruct brain images with a structural simalarity of 0.6 or more and based on the 544 test images supplied the model returns a structured simalarity of 0.75, with the lowest similarity at 0.68 and highest at 0.80. Examples  of both the origional test images and their reconstructed images and their codebook images can be seen as follows:
 <p align="center">
-<img src="./img/1.png">
+<img src="./img/1.PNG">
 </p>
 <p align="center">
-<img src="./img/2.png">
+<img src="./img/2.PNG">
 </p>
 <p align="center">
-<img src="./img/3.png">
+<img src="./img/3.PNG">
 </p>
 <p align="center">
 <img src="./img/c1.png">
@@ -61,17 +61,17 @@ To test the Model the test set was used to determine how well the model can reco
 
 The next part of the model that was generated is the PixelCNN model that is suppose to try and generate new brain images and then reconstruct them. This model was significantly more resource intensive to train and required colab pro premium gpu's and high ram and still took time. The code for this model was taken from the corresponding keras tutorial on VQVAE's and due with the current parameters performs quite poorly when it comes to creating "new" brains [4]. The summary for the model is as follows:
 <p align="center">
-<img src="./img/pixel.png">
+<img src="./img/pixel.PNG">
 </p>
 The model is starting to head in a direction where the images are starting to have either the general shape of a brain or general patterns of a brain, however overall perform quite poorly when it comes to actually generating a "new" and recognisable brain image. Potential changes that could be further made to the model to try and make the images more realistic would involve increasing the number of residual blocks and pixcelcnn layers. By doing this the number of parameters the model can train on would increase which could result in a more realistic looking brain. Other hyper-parameters that could be manipulated is the number of filters in each layer and kernel size. As it currently is the "new" brains look as follows:
 <p align="center">
-<img src="./img/g1.png">
+<img src="./img/g1.PNG">
 </p>
 <p align="center">
-<img src="./img/g2.png">
+<img src="./img/g2.PNG">
 </p>
 <p align="center">
-<img src="./img/g3.png">
+<img src="./img/g3.PNG">
 </p>
 
 From these images it is quite clear to a human that these images are not "brains" and as a result if the model were to be used to generate images of new brains the parameters of the PixelCNN would need to be modified. However the model does perform well at reconstructing code book images even the "new" ones it generates. 
