@@ -19,22 +19,22 @@ class DataLoader():
         Loads the dataset that will be used into Tensorflow datasets.
         """
         train_data = tf.keras.preprocessing.image_dataset_from_directory(
-            self.directory + "/train", labels='inferred', label_mode='int',
+            self.directory + "/train", labels='inferred', label_mode='binary',
             image_size=[self.image_size, self.image_size],
-            shuffle=True, batch_size=self.batch_size
+            shuffle=True, batch_size=self.batch_size, seed=8, class_names=['AD', 'NC']
         )
 
         test_data = tf.keras.preprocessing.image_dataset_from_directory(
-            self.directory + "/test", labels='inferred', label_mode='int', 
+            self.directory + "/test", labels='inferred', label_mode='binary', 
             image_size=[self.image_size, self.image_size],
-            shuffle=True, batch_size=self.batch_size
+            shuffle=True, batch_size=self.batch_size, seed=8, class_names=['AD', 'NC']
         )
 
         # Augment data
         normalize = tf.keras.layers.Normalization()
-        flip = tf.keras.layers.RandomFlip('horizontal')
-        rotate = tf.keras.layers.RandomRotation(0.02)
-        zoom = tf.keras.layers.RandomZoom(0.1, 0.1)
+        flip = tf.keras.layers.RandomFlip(mode='horizontal', seed=8)
+        rotate = tf.keras.layers.RandomRotation(factor=0.02, seed=8)
+        zoom = tf.keras.layers.RandomZoom(height_factor=0.1, width_factor=0.1, seed=8)
 
         train_data = train_data.map(
             lambda x, y: (rotate(flip(zoom(normalize(x)))), y)
@@ -45,9 +45,9 @@ class DataLoader():
         )
 
         # Take half of the 9000 images from the test set as validation data
-        validation_data = test_data.take(9000//self.batch_size)
+        validation_data = test_data.take(len(list(test_data))//2)
 
         # Use remaining 4500 images as test set
-        test_data = test_data.skip(9000//self.batch_size)
+        test_data = test_data.skip(len(list(test_data))//2)
 
         return train_data, validation_data, test_data
