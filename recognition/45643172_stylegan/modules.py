@@ -145,6 +145,9 @@ class AdaIN(layers.Layer):
         yb = tf.reshape(self.dense_2(w), (-1, 1, 1, self.x_channels))
         return ys * x + yb
 
+"""For the generator, we build generator blocks at multiple resolutions, e.g. 4x4, 8x8, ...up to 1024x1024. 
+We only use 4x4 in the beginning and we use progressively larger-resolution blocks as the training proceeds. 
+Same for the discriminator."""
 class Generator:
     def __init__(self, start_res_log2, target_res_log2):
         self.start_res_log2 = start_res_log2
