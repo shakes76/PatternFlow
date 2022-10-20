@@ -1,4 +1,3 @@
-from base64 import encode
 import tensorflow as tf
 
 
@@ -54,8 +53,7 @@ class VectorQuantizer(tf.keras.layers.Layer):
 
 
 class VAE:
-    def __init__(self, num_embeddings, latent_dim, beta):
-
+    def __init__(self, num_embeddings, latent_dim, beta = 0.25):
         # Variables
         self.num_embeddings = num_embeddings
         self.latent_dim = latent_dim
@@ -89,4 +87,4 @@ class VAE:
         outputs = vq_layer_model(outputs)
         outputs = decoder_model(outputs)
 
-        return tf.keras.Model(inputs, outputs, name = "VQ VAE model")
+        return tf.keras.Model(inputs, outputs, name = "VQ_VAE_model")
