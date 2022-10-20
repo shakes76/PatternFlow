@@ -51,14 +51,23 @@ def predict_model_reconstructions(vqvae_trainer, quantizer, priors, test_images,
       plt.show()
   return generated_samples, reconstructions_test
 
-def determine_SSIM(test_images_np, generated_samples, reconstructions_test):
+def determine_SSIM(test_images_np, reconstructions_test):
     # Compute the Structural Similarity Index (SSIM) between the two images for all test images
-    recon_similarity = tf.math.reduce_mean(tf.image.ssim(test_images_np[0:10], reconstructions_test[0:10], max_val=1))
-    max = tf.math.reduce_max(tf.image.ssim(test_images_np[0:10], reconstructions_test[0:10], max_val=1))
+    avgssim = 0
+    maxssim = 0
+    for testImage, reconImage in zip(test_images_np, reconstructions_test): 
+      tmpssim = tf.image.ssim(testImage, reconImage, max_val=255)
+      if tmpssim > maxssim:
+        maxssim = tmpssim
+      avgssim += tmpssim
+    avgssim = avgssim / len(test_images_np) 
 
+    # recon_similarity = tf.math.reduce_mean(tf.image.ssim(test_images_np, reconstructions_test, max_val=1))
+    # max = tf.math.reduce_max(tf.image.ssim(test_images_np, reconstructions_test, max_val=1))
+    print(len(test_images_np), len(reconstructions_test))
     # total_score = total_score / number_of_reconstructions #Get the mean SSIM from all test images
-    print("Mean recon SSIM: {}".format(recon_similarity))
-    print("Max SSIM: {}".format(max))
+    print("Mean recon SSIM: {}".format(avgssim))
+    print("Max recon SSIM: {}".format(maxssim))
 
 def main():
     train_images, test_images, validate_images = get_image_slices()
@@ -83,7 +92,7 @@ def main():
 
             priors = train.generate_probabilities_for_samples(pixel_cnn, sampler)
             generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors,test_images, encoded_outputs)
-            determine_SSIM(test_images, generated, reconstructions_test)
+            determine_SSIM(test_images, reconstructions_test)
         except:
             load_default = True
 
@@ -97,7 +106,7 @@ def main():
         codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
         codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
         generated, reconstructions_test = predict_model_reconstructions(vqvae_trainer, quantizer, priors,test_images, encoded_outputs)
-        determine_SSIM(test_images, generated, reconstructions_test)
+        determine_SSIM(test_images, reconstructions_test)
     else:
         print("$ python3 predict.py [-m <PathToPreTrainedModel>]")
 
