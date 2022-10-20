@@ -127,7 +127,6 @@ class IUNET(nn.Module):
         out = self.context1(out)
         out = torch.add(residual, out) # elementwise sum
         out1 = out
-        print(out.shape)
 
         # depth 1: 32 filters out
         out = self.conv2(out)
@@ -158,13 +157,10 @@ class IUNET(nn.Module):
 
         ### Localization Pathway
         # depth 5
-        # out = torch.cat((out, out5), dim=1)
         out = self.upsample5(out)
 
         # depth 4
-        print(out.shape)
         out = torch.cat((out, out4), dim=1)
-        print(out.shape) # 256
         # conv1 256-256
         # conv2 256-128
         out = self.localize4(out)
@@ -187,10 +183,6 @@ class IUNET(nn.Module):
         out = torch.cat((out, out1), dim=1)
         out = self.conv1_localization(out)
 
-        print(l3.shape)
-        print(l2.shape)
-        print(out.shape)
-
         # segmentation layers
         s3 = self.seg3(l3)
         s3 = self.upscale(s3)
@@ -202,7 +194,6 @@ class IUNET(nn.Module):
 
         # output
         out = self.out_layer(out)
-        print(out.shape)
         return out
         
 
@@ -210,4 +201,6 @@ if __name__ == '__main__':
     x = torch.rand((2, 3, 256, 256)).to('cuda')
     iunet = IUNET(3, 16).to('cuda')
     y = iunet(x)
+    print(x.shape)
+    print(y.shape)
     
