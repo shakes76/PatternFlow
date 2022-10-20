@@ -28,11 +28,11 @@ def get_loaders():
     batch_size = 4
     num_workers = 1
 
-    train_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_train"),
+    train_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_train"),
                               batch_size=batch_size, num_workers=num_workers, pin_memory=True)
-    test_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_test"),
+    test_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_test"),
                              batch_size=batch_size, shuffle=True)
-    validation_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_validate"),
+    validation_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_validate"),
                                    batch_size=batch_size, drop_last=True,
                                    num_workers=num_workers, pin_memory=True)
 

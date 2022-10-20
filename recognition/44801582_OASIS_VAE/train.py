@@ -62,7 +62,7 @@ def main():
 
     train_loader, test_loader, validation_loader = get_loaders()
 
-    model = VQ_VAE(1, 256, 512).to(device)
+    model = VQ_VAE(256, 512).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     fixed_images = next(iter(test_loader))
