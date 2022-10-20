@@ -211,7 +211,7 @@ class ResidualBlock(keras.layers.Layer):
 def get_pixelcnn(
         num_residual_blocks,
         num_pixelcnn_layers,
-        input_size=(16, 16),
+        input_size=(8, 8),
         num_embeddings=128,
 ):
     pixelcnn_inputs = keras.Input(shape=input_size, dtype=tf.int32)
