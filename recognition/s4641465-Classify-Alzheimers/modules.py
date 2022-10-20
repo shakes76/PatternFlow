@@ -27,3 +27,7 @@ def get_model(upscale_factor=4, channels=1):
     outputs = tf.nn.depth_to_space(x, upscale_factor)
 
     return keras.Model(inputs, outputs)
+
+def load_model():
+    model = get_model()
+    model.load_weights("tmp\\checkpoint\\")
