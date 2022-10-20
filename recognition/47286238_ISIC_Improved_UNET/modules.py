@@ -45,8 +45,10 @@ class IUNET(nn.Module):
         self.upsample3 = self.upsample(filter_size*4, filter_size*2)
         self.upsample2 = self.upsample(filter_size*2, filter_size)
 
-        ## TODO: Localization Module
-        self.localization = nn.Sequential()
+        ## Localization Module
+        self.localize4 = self.localization(filter_size*8)
+        self.localize3 = self.localization(filter_size*4)
+        self.localize2 = self.localization(filter_size*2)
 
         ## TODO: Segmentation Module
         self.segmentation = nn.Sequential()
@@ -57,12 +59,12 @@ class IUNET(nn.Module):
         ## Leaky ReLU
         self.lrelu = nn.LeakyReLU(negative_slope=1e-2)
 
-    def conv(self, filters_in, filters_out, stride) -> nn.Sequential:
+    def conv(self, filters_in, filters_out, stride, kernel_size=3, padding=1) -> nn.Sequential:
         return nn.Sequential(
             nn.Conv2d(
                 filters_in, 
                 filters_out,
-                kernel_size=3, stride=stride, padding=1, bias=False),
+                kernel_size=kernel_size, stride=stride, padding=padding, bias=False),
             nn.InstanceNorm2d(filters_out),
             self.lrelu
         )
@@ -84,6 +86,15 @@ class IUNET(nn.Module):
         return nn.Sequential(
             nn.Upsample(scale_factor=2),
             self.conv(filters_in, filters_out, stride=1)
+        )
+
+    def localization(self, filters) -> nn.Sequential:
+        """ 
+        Localization module as described by Isensee et al.
+        """
+        return nn.Sequential(
+            self.conv(filters, filters, 1),
+            self.conv(filters, filters, 1, kernel_size=1, padding=0)
         )
 
     def forward(self, x):
