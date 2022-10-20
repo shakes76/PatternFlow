@@ -5,8 +5,11 @@
 # from tensorflow.python.keras.models import Model
 
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate, UpSampling2D, Input
+from tensorflow.keras.layers import Conv2D, MaxPool2D, Dense, Concatenate
+from tensorflow.keras.layers import UpSampling2D, Input, LeakyReLU, Add, Dropout
 from tensorflow.keras.models import Model
+
+import tensorflow_addons as tfa
 from keras import backend as k
 
 
@@ -41,23 +44,24 @@ def DSC_loss (y_true, y_pred):
     """
     return 1 - DSC(y_true, y_pred)
 
-def down(x, filters):
 
+#-- normal UNet --#
+
+def down(x, filters):
     c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(x)
     c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
-    p = MaxPool2D((2, 2), (2, 2))(c)
-    return c, p
+    c = Concatenate()([x, c])
+    out = MaxPool2D((2, 2), (2, 2))(c)
+    return c, out
 
 def up(x, skip, filters):
-
     us = UpSampling2D((2, 2))(x)
     concat = Concatenate()([us, skip])
     c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(concat)
-    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
-    return c
+    out = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
+    return out
 
 def UNet():
-
     f = 16
     inputs=Input((256,256,3))
     p0 = inputs
@@ -77,3 +81,53 @@ def UNet():
     outputs = Conv2D(3, (1, 1), padding="same", activation="sigmoid")(u4)
     model = Model(inputs, outputs)
     return model
+
+
+#-- improved UNet --#
+
+act = LeakyReLU(alpha = 0.01)
+
+def down_context_module(input, filters):
+    """
+        A context module consisting of two 3x3 convolutions with a dropout of 0.3 between them
+    """
+    conv1 = tfa.layers.InstanceNormalization()(input)
+    conv1 = Conv2D(filters, (3, 3), padding = "same", activation = act)(conv1)
+    dropout = Dropout(0.3) (conv1)
+    conv2 = tfa.layers.InstanceNormalization()(dropout)
+    conv2 = Conv2D(filters, (3, 3), padding = "same", activation = act)(conv2)
+    return conv2
+
+def down_imp(input, filters, stride):
+    """
+        encode module with  3x3 convolution
+    """
+    conv = Conv2D(filters, (3, 3), strides = stride, padding = "same")(input)
+    conv_module = down_context_module(conv, filters)
+    add = Add()([conv, conv_module])
+    
+    return add
+	
+
+def up_imp(input, adds, filter1, filter2):
+    """
+        decode module with 3x3 convolution
+    """
+    up = UpSampling2D((2, 2))(input)
+    up = Conv2D(filter1, (3, 3), padding = "same", activation = act)(up)
+    concat = Concatenate()([up, adds])
+    local = localization_module(concat, filter2, filter2)
+    return local
+	
+
+def localization_module(input, filter1, filter2):
+    """
+        A localization module consists of a 3x3 convolution 
+        and a 1x1 convolution that halves the number of features
+    """
+    conv1 = Conv2D(filter1, (3, 3), padding = "same", activation = act)(input)
+    conv2 = Conv2D(filter2, (1, 1), padding = "same", activation = act)(conv1)
+    return conv2
+
+
+
