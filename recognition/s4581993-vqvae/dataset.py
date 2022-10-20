@@ -14,7 +14,7 @@ dataset_train_folder = "keras_png_slices_train"
 dataset_test_folder = "keras_png_slices_test"
 dataset_val_folder = "keras_png_slices_validate"
 
-image_size = (64, 64)
+image_size = (128, 128)
 
 # Download the dataset, if it hasn't already been downloaded
 def download_dataset():
