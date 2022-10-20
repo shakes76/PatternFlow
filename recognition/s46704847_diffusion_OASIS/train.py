@@ -8,7 +8,7 @@ __email__ = "s4670484@student.uq.edu.au"
 
 import numpy as np
 from modules import Unet, generate_timestamp, forward_noise, get_checkpoint
-from modules import loss_fn
+from modules import loss_fn, show_forward_noise
 from dataset import get_zipped_dataset, normalize, set_train_batch
 import tensorflow as tf
 
@@ -25,6 +25,9 @@ BATCH_SIZE = 16 # set 64 in (64, 64) image size, 16 in (128, 128) image size ,
 # Loading dataset
 images = normalize(get_zipped_dataset(PATH, IMAGE_SIZE)[:NUMBER_OF_SAMPLES])
 train_images = set_train_batch(images, BATCH_SIZE)
+
+# Showing forward process
+show_forward_noise(images)
 
 # Creating Unet instance and checkpoint
 unet, ckpt_manager = get_checkpoint(CKPT_PATH)
