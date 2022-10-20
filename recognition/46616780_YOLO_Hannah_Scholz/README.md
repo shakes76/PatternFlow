@@ -79,6 +79,8 @@ Bounding boxes also had to be determined for each mask photo:
 <img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png">
 <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
 
+
+
 Bounding boxes can be visualised using the predict.py file.
 
 ### Results
@@ -151,21 +153,22 @@ class.
 
 
 ### File Contents:
-dataset.py --->
+dataset.py ---> Contains functions to preprocess the data.
 
-modules.py --->
+modules.py ---> Since YOLOV5 can be followed model wise from the YOLOV5 GitHub this file is empty, a link
+to the repository I used is linked above as a submodule.
 
-predict.py --->
+predict.py ---> Contains code to draw bounding boxes on images, the YOLOV5_training.ipynb contains 
+functions and code to display the images and results.
 
-train.py --->
+train.py ---> The YOLOV5_training.ipynb file contains everything this file should contain, the file was not
+renamed as it would delete the commit history from GoogleCollab.
 
-YOLOV5_training.ipynb --->
+YOLOV5_training.ipynb ---> Contains the training of the model, shows results and calculates IOU values.
 
-README.md --->
+PhotoResults folder ---> Contains photos of the results used in the README.md
 
-PhotoResults folder ---> 
-
-PhotosForReadMe folder ---> 
+PhotosForReadMe folder ---> Contains photos used in the README.md
 
 
 ### References:
