@@ -86,7 +86,16 @@ def read_data(x, y):
 
 # ------------------------------------
 
-(trainX, trainY), (testX, testY), (validX, validY) = load_isic("./Data/")
+# Function to allow me to get all the training and test sets I need in one go
+def full_load(path):
+    (trainX, trainY), (testX, testY), (validX, validY) = load_isic("./Data/")
+
+    trainSet = tf_dataset_conv(trainX, trainY, BATCHES)
+    testSet = tf_dataset_conv(testX, testY, BATCHES)
+    validSet = tf_dataset_conv(validX, validY, BATCHES)
+
+    return trainSet, testSet, validSet
+
 
 train_set = tf_dataset_conv(trainX, trainY, BATCHES)
 
