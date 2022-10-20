@@ -7,7 +7,7 @@ This repository is used to implement the vq-vae project of COMP3710, where a var
 
 ## Requirement
 - Python 3.6+
-- Tensorflow 2.9.2
+- Tensorflow 2.10.0+
 - CUDA toolkit
 - tensorflow-probability 0.16.0
 - matplotlib 3.2.2
