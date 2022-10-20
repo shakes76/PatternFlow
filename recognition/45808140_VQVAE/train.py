@@ -10,11 +10,11 @@ import tensorflow_probability as tfp
 #Base variables
 root_path = 'AD_NC'
 img_shape = 256
-num_embeds = 128
+num_embeds = 64
 latent_dim = 32
 
 vq_epoch = 20
-pcnn_epoch = 10
+pcnn_epoch = 50
 batch_size = 32
 no_resid = 2
 no_pcnn_layers = 2

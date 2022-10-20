@@ -11,8 +11,8 @@ import tensorflow_probability as tfp
 #Variables
 root_path = 'AD_NC'
 img_shape = 256
-vq_epoch = 5
-pcnn_epoch = 3
+vq_epoch = 20
+pcnn_epoch = 10
 batch_size = 32
 num_embeds = 64
 result_path = 'results'
@@ -125,13 +125,19 @@ def generate_PixelCNN(vq, pcnn, n):
 
 (train_data, test_data, train_var) = load_data(root_path, batch_size)
 
-vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, 
-                         vq_trained = None, img_shape=img_shape, latent_dim=32, embed_num=32, 
-                         result_path=result_path, vq_epoch=vq_epoch)
+#Load VQVAE model 
+VQVAE = VQVAE_model(img_shape, train_var, latent_dim=32, no_embeddings=64)
+VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
+VQVAE.load_weights('path_to_weights')
 
-VQVAE_result(vqvae_trained, test_data)
+#Generate VQVAE results
+VQVAE_result(VQVAE, test_data)
 
-pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, 
-                          pcnn_epoch=pcnn_epoch)
+#Load PCNN model
+pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
+pcnn.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-4), 
+             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True))
+pcnn.load_weights('path_to_weights')
 
+#Generate PCNN results
 generate_PixelCNN(vqvae_trained, pcnn_trained, n=10)
