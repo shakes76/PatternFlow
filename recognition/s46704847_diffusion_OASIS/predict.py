@@ -11,15 +11,26 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from .modules import alpha, alpha_bar, timesteps, beta, get_checkpoint
-from .train import CKPT_PATH, IMAGE_SIZE
+from modules import get_checkpoint, timesteps
+from train import CKPT_PATH, IMAGE_SIZE
 from tqdm import tqdm
 
 # GIF saving path
 GIF_PATH = "./gif/"
 
+# create beta 
+beta = np.linspace(0.0001, 0.02, timesteps)
+
+# calculate alpha
+alpha = 1 - beta
+alpha_bar = np.cumprod(alpha, 0)
+alpha_bar = np.concatenate((np.array([1.]), alpha_bar[:-1]), axis=0)
+sqrt_alpha_bar = np.sqrt(alpha_bar)
+one_minus_sqrt_alpha_bar = np.sqrt(1-alpha_bar)
+
 # load model
 unet, ckpt_manager = get_checkpoint(CKPT_PATH)
+
 # Save a GIF using logged images
 def save_gif(img_list, path="", interval=200):
     """
