@@ -19,4 +19,4 @@ if __name__ == "__main__":
     other_size  = int(np.round(ADNI.NUM_SEQUENCES * 0.8))
     ts_size  = int(np.round(ADNI.NUM_SEQUENCES * 0.2))
     ds, ts_ds = random_split(ds, (other_size, ts_size), torch.Generator().manual_seed(42))
-    predict(model, ts_ds, batch_size)
+    print_accuracy(model, ts_ds, batch_size)

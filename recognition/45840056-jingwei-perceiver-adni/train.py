@@ -9,6 +9,7 @@ from dataset import ADNI
 from modules import AdniClassifier
 
 def print_accuracy(model, ds, batch_size):
+    """Print the accuracy of the model on the data subset."""
     loader = DataLoader(ds, batch_size=batch_size)
     loop = tqdm(loader)
     correct = 0
@@ -45,6 +46,7 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     ds = ADNI(device, "/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC")
 
+    # Get data subsets
     tr_size  = int(np.round(ADNI.NUM_SEQUENCES * 0.65))
     val_size = int(np.round(ADNI.NUM_SEQUENCES * 0.15))
     ts_size  = int(np.round(ADNI.NUM_SEQUENCES * 0.2))
@@ -55,8 +57,10 @@ if __name__ == "__main__":
     ds, ts_ds = random_split(ds, (tr_size + val_size, ts_size), torch.Generator().manual_seed(42))
     tr_ds, val_ds = random_split(ds, (tr_size, val_size))
 
+    # Get trained model
     model, batch_losses = train(device, tr_ds, batch_size)
 
+    # Plot batch loss
     torch.save(model, "model.pkl")
     plt.plot(batch_losses)
     plt.title("Batch Loss")
