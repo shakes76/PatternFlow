@@ -13,7 +13,7 @@ unique architecture, relying solely on attention rather than convolutions or rec
 of attention over these methods is that inputs can be related as a linear function of distance.
 ### Self-Attention
 The critical component of vision transformers, self-attention enables the model to generate a complex understanding of the training data.
-As Transformers gained their popularity through their ability to perform language processing this is best explained using this lens. 
+As Transformers gained their popularity through language processing this is best explained through this lens. 
 Consider this sentence: *'The cat sat on the mat, it was hot.'*. An english speaker can make the connection that both 'cat' and 'it' 
 refer to the same object and are thus highly related. In the same way self attention aims to find these relationships within the input data presented. Vision Transformers 
 perform this self-attention not on words but rather on patches of the image. 
@@ -82,7 +82,7 @@ data_augmentation = keras.Sequential(
 ```
 ## Usage
 To use the project simply download the [ADNI](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI) data. Then extract 
-it into the directory of project. Then run train.py and the model will train. Once the model finishes training copy 
+it into the project directory. Then run train.py and the model will train. Once the model finishes training copy 
 the weights in ./tmp into a separate folder if you wish to save them. To use predict.py alter the directory below 
 to be the directory of your saved model.
 ```python
