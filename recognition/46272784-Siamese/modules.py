@@ -44,7 +44,7 @@ def generatePairs(ad, nc, batch=16):
     
 
 def makeCNN():
-    # This CNN is almost the same as the one presented in the paper 
+    # This CNN is inspired by the one presented in the paper 
     input = layers.Input(shape=(64, 64, 1))
     conv = layers.Conv2D(32, 10, activation='relu', name='c0', padding='same')(input)
     pool = layers.MaxPooling2D(2)(conv)
@@ -59,9 +59,10 @@ def makeCNN():
     norm = layers.BatchNormalization()(pool)
     
     conv = layers.Conv2D(256, 4, activation='relu', name='c3', padding='same')(norm)
+    norm = layers.BatchNormalization()(pool)
     
     
-    flat = layers.Flatten(name='flat')(conv)
+    flat = layers.Flatten(name='flat')(norm)
     out = layers.Dense(256, activation='sigmoid', name='out')(flat)
     
     return Model(inputs=input, outputs=out, name='embeddingCNN')
