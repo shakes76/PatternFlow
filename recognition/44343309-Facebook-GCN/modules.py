@@ -3,8 +3,6 @@ import numpy as np
 from tensorflow.keras import Model, activations, initializers, regularizers
 from tensorflow.keras.layers import Layer, Input, Dropout
 
-
-
 def GCN(numNodes, numFeatures, numClasses, channelA=64, channelB=32, channelC=16, channelD=8, dropout=0.1):
   features = Input(shape=(numFeatures))
   nodes = Input((numNodes), sparse=True)
@@ -49,5 +47,6 @@ class GCNLayer(Layer):
     features, edges = input
     output = tf.keras.backend.dot(features, self.kernel)
     output = tf.keras.backend.dot(edges, output)
+    output = self.activation(output)
 
     return output
