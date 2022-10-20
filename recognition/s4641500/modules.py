@@ -5,7 +5,6 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
 
-
 # vector quantizer class
 class VQ(layers.Layer):
     def __init__(self, embed_n, embed_d, beta=0.25, **kwargs):
@@ -63,9 +62,6 @@ class VQ(layers.Layer):
         })
         return config
 
-    
-
-
 class Train_VQVAE(keras.models.Model):
     def __init__(self, train_variance, dim=32, embed_n=128, **kwargs):
         super(Train_VQVAE, self).__init__(**kwargs)
@@ -111,7 +107,6 @@ class Train_VQVAE(keras.models.Model):
             "vqvae_loss": self.vq_loss.result(),
         }
 
-
 def encoder(dim=16):
     inputs = keras.Input(shape=(80, 80, 1))
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
@@ -120,7 +115,6 @@ def encoder(dim=16):
     x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
     out = layers.Conv2D(dim, 1, padding="same")(x)
     return keras.Model(inputs, out, name="encoder")
-
 
 def decoder(dim=16):
     inputs = keras.Input(shape=encoder(dim).output.shape[1:])
@@ -131,7 +125,6 @@ def decoder(dim=16):
     out = layers.Conv2DTranspose(1, 3, padding="same")(x)
     return keras.Model(inputs, out, name="decoder")
 
-
 def get_vqvae(dim=16, embed_n=64):
     vq_layer = VQ(embed_n, dim, name="vector_quantizer")
     enc = encoder(dim)
@@ -141,10 +134,6 @@ def get_vqvae(dim=16, embed_n=64):
     quantized_latents = vq_layer(out)
     reconstructions = dec(quantized_latents)
     return keras.Model(inputs, reconstructions, name="vq_vae")
-
-
-get_vqvae().summary()
-
 
 # builds on the 2D convolutional layer, but includes masking
 class PixelConvLayer(layers.Layer):
@@ -175,7 +164,6 @@ class PixelConvLayer(layers.Layer):
         })
         return config
 
-
 # residual block layer
 class ResBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
@@ -198,7 +186,6 @@ class ResBlock(keras.layers.Layer):
             "filters" : self.filters
         })
         return config
-
 
 def get_pixelcnn(vqvae_trainer, encoded_outputs):
     """
@@ -236,5 +223,3 @@ def get_pixelcnn(vqvae_trainer, encoded_outputs):
     pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
     
     return pixel_cnn
-    
-     
