@@ -60,7 +60,13 @@ When running the small version of the YOLO v5 model, the following model structu
  24      [17, 20, 23]  1     18879  models.yolo.Detect                      [2, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [128, 256, 512]]
 Model summary: 214 layers, 7025023 parameters, 7025023 gradients, 16.0 GFLOPs
 ```
+## Accuracy Metrics
+### Intersection over Union (IOU)
+
+### Mean Average Precision (mAP)
+
 
 ## References
 https://challenge.isic-archive.com/data/#2017
+
 https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data
