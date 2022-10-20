@@ -24,7 +24,7 @@ set are used to measure the validation metrics during training.
 
 ## Results
 ### Training
-After 15 epochs, the following plot of losses and dice similarity coefficients of both training and validation datasets was achieved:
+After 15 epochs, the following plot of losses and dice similarity coefficients of both training and validation datasets were achieved:
 
 ![Loss plot](static/loss_history.png)
 ![DSC plot](static/dsc_history.png)
