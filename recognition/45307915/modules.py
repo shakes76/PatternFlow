@@ -1,105 +1,168 @@
-import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, MaxPooling2D, Flatten, Dense, Reshape, Conv2DTranspose, Concatenate, Dropout
+from tensorflow.keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, Concatenate, Activation
 from tensorflow.keras.models import Model
+
+import tensorflow_addons as tf
+from tensorflow_addons.layers import InstanceNormalization
 
 class ImprovedUNETModel():
     
-    def __init__(self, n_classes, img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
+    def __init__(self, img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
         """ Create a new Improved UNET Model instance.
         
         Described in the paper Brain Tumor Segmentation and Radiomics
         
         Parameters:
-            n_classes (int): Number of classes
             img_wdith (int): Image Width
             img_height (int): Image Height
         """
-        self.n_classes = n_classes
         self.img_width = img_width
         self.img_height = img_height
         
+        self.init_filters = 16
         self.padding = 'same'
         self.leakyAlpha = 1e-2
         self.dropoutRate = 0.3
         
         self.model = self.modelArchitecture()
         
-    def contextBlock(self, inputs, n_filters):
+    def contextModule(self, inputs, n_filters):
         """ Improved UNET Context Block
         
         "Each context module is in fact a pre-activation residual block with two
         3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between"
+        
+        Batch normalisation layers were added
+        Leaky ReLU activations were used
 
         Parameters:
-            inputs ():
-            n_filters (int):
+            inputs (tf.Tensor): A () tensor inputted into the module
+            n_filters (int): Number of filters for this module
 
         Return:
-            int: something
+            tf.Tensor: A () tensor output from this module
 
         """
-        x = BatchNormalization()(inputs)
+        x = InstanceNormalization()(inputs)
         x = LeakyReLU(alpha=self.leakyAlpha)(x)
         x = Conv2D(n_filters, (3,3), padding=self.padding)(x)
         
         x = Dropout(self.dropoutRate)(x)
         
-        x = BatchNormalization()(inputs)
+        x = InstanceNormalization()(x)
         x = LeakyReLU(alpha=self.leakyAlpha)(x)
         x = Conv2D(n_filters, (3,3), padding=self.padding)(x)
         
         return x
+    
+    def upsamplingModule(self, inputs, n_filters):
+        """ Improved UNET Upsampling Block
         
-    def encoderBlock(self, inputs, n_filters, max_pooling=True, strides=(1,1)):
-        """ Improved UNET Encoder Block
-        
-        2 convolution layers and 1 Max Pooling layer
-        Skip connection info is also saved
+        "This is achieved by first upsampling the low resolution feature maps, 
+        which is done by means of a simple upscale that repeats the feature voxels 
+        twice in each spatial dimension, followed by a 3x3x3 convolution"
 
         Parameters:
-            inputs ():
-            n_filters (int):
-            max_pooling (bool):
+            inputs (tf.Tensor): A () tensor inputted into the module 
+            n_filters (int): Number of filters for this module
 
         Return:
-            (,): something
+            tf.Tensor: A () tensor output from this module
+
+        """
+        x = UpSampling2D(interpolation='bilinear')(inputs)
+        x = Conv2D(n_filters, (3,3), padding=self.padding)(x)
+        x = LeakyReLU(alpha=self.leakyAlpha)(x)
+        x = InstanceNormalization()(x)
+        
+        return x
+    
+    def localisationModule(self, inputs, n_filters):
+        """ Improved UNET Localisation Layer
+        
+        "A localization module consists of a 3x3x3 convolution followed 
+        by a 1x1x1 convolution"
+
+        Parameters:
+            inputs (tf.Tensor): A () tensor inputted into the module 
+            n_filters (int): Number of filters for this module
+
+        Return:
+            tf.Tensor: A () tensor output from this module
+
+        """
+        x = Conv2D(n_filters, (3,3), padding=self.padding)(inputs)
+        x = LeakyReLU(alpha=self.leakyAlpha)(x)
+        x = InstanceNormalization()(x)
+        
+        x = Conv2D(n_filters, (1,1), padding=self.padding)(x)
+        x = LeakyReLU(alpha=self.leakyAlpha)(x)
+        x = InstanceNormalization()(x)
+        
+        return x
+    
+    def segmentationLayer(self, inputs, n_filters):
+        """ Improved UNET Segmentation Layer
+        
+        ""
+
+        Parameters:
+            inputs (tf.Tensor): A () tensor inputted into the layer 
+            n_filters (int): Number of filters for this module
+
+        Return:
+            tf.Tensor: A () tensor output from this module
+
+        """
+        x = Conv2D(n_filters, (1,1), padding=self.padding)(inputs)
+        x = LeakyReLU(alpha=self.leakyAlpha)(x)
+        
+        return x
+        
+    def encoderBlock(self, inputs, n_filters, strides=(1,1)):
+        """ Improved UNET Encoder Block
+        
+        1 convolution layer and 1 context module
+
+        Parameters:
+            inputs (tf.Tensor): A () tensor inputted into the block 
+            n_filters (int): Number of filters for this block
+            strides ((int, int)): Strides for the convolution
+
+        Return:
+            tf.Tensor: A () tensor output from this module
 
         """
     
         x = Conv2D(n_filters, (3,3), strides=strides, padding=self.padding)(inputs)
-        x = LeakyReLU(alpha=self.leakyAlpha)(x)
-        x = self.contextModule(x, n_filters)
-        
-        
-        if max_pooling:
-            next_layer = MaxPooling2D(pool_size=(2,2))(x)
-        else:
-            next_layer = x
+        convOutput = LeakyReLU(alpha=self.leakyAlpha)(x)
+        contextOutput = self.contextModule(convOutput, n_filters)
+        x = Add()([convOutput, contextOutput])
 
-        skip_connection = x
+        return x
 
-        return next_layer, skip_connection
-
-    # Mini decoder block of 1 up convolution layer, 1 concatenation layer (skip layer and up layer), and 2 convolution layer
     def decoderBlock(self, prev_layer_input, skip_layer_input, n_filters):
-        """ Create a new Yolo Model instance.
+        """ Improved UNET Decoder Block
+        
+        1 concatenation layer
+        1 localisation layer
+        1 upsampling layer
 
         Parameters:
-            
+            prev_layer_input (tf.Tensor): A () tensor input from the previous layer
+            skip_layer_input (tf.Tensor): A () tensor from the skip connection
+            n_filters (int): Number of filters for this block
 
         Return:
-            int: something
+            (tf.Tensor,tf.Tensor): A () tensor from the localisation layer 
+                and a () tensor output from this module
 
         """
-    
-        up = Conv2DTranspose(n_filters, (3,3), strides=(2,2), padding='same')(prev_layer_input)
-
-        merge = Concatenate(axis=3)([up, skip_layer_input])
-
-        x = Conv2D(n_filters, (3,3), activation='relu', padding='same')(merge)
-        x = Conv2D(n_filters, (3,3), activation='relu', padding='same')(x)
-        return x
+        x = Concatenate()([prev_layer_input, skip_layer_input])
+        localisation = self.localisationModule(x, n_filters)
+        x = self.upsamplingModule(localisation, n_filters / 2)
+        
+        return localisation, x
     
         
     def modelArchitecture(self):
@@ -112,31 +175,48 @@ class ImprovedUNETModel():
 
         """
         
-        inputs = Input(shape=(256,256,1))
+        inputs = Input(shape=(self.img_height,self.img_width,1))
 
-#         # Stack mini encoders, doubling number of filter in each block
-#         encoder, skip1 = EncoderBlock(inputs, 32)
-#         encoder, skip2 = EncoderBlock(encoder, 64)
-#         encoder, skip3 = EncoderBlock(encoder, 128)
-#         # encoder, skip4 = EncoderBlock(encoder, 256)
-
-#         encoder, skip5 = EncoderBlock(encoder, 256, False)
-
-#         # Stack mini decoders, halving number of filter in each block
-#         # decoder = DecoderBlock(encoder, skip4, 256)
-#         decoder = DecoderBlock(encoder, skip3, 128)
-#         decoder = DecoderBlock(decoder, skip2, 64)
-#         decoder = DecoderBlock(decoder, skip1, 32)
-
-#         outputs = Conv2D(4, 1, activation='softmax')(decoder)
-
+        # Stack 5 encoders, doubling number of filter in each block.
+        # Saving a skip connection for each
+        encoder = self.encoderBlock(inputs, self.init_filters)
+        skip1 = encoder
+        encoder = self.encoderBlock(encoder, self.init_filters * 2, strides=(2,2))
+        skip2 = encoder
+        encoder = self.encoderBlock(encoder, self.init_filters * 4, strides=(2,2))
+        skip3 = encoder
+        encoder = self.encoderBlock(encoder, self.init_filters * 8, strides=(2,2))
+        skip4 = encoder        
+        encoder = self.encoderBlock(encoder, self.init_filters * 16, strides=(2,2))
         
+        # Upsampling
+        upsample = self.upsamplingModule(encoder, self.init_filters * 8)
+        
+        # Stack 3 decoders, halving number of filter in each block.
+        # Saving localisation layers
+        x, decoder = self.decoderBlock(upsample, skip4, self.init_filters * 8)
+        localisation1, decoder = self.decoderBlock(decoder, skip3, self.init_filters * 4)
+        localisation2, decoder = self.decoderBlock(decoder, skip2, self.init_filters * 2)
+        
+        # Upsample the first segmentation layer, Add the segmentation layers
+        segmentation1 = self.segmentationLayer(localisation1, 1)
+        upScaleSegmentation1 = UpSampling2D(interpolation='bilinear')(segmentation1)
+        segmentation2 = self.segmentationLayer(localisation2, 1)
+        firstSum = Add()([upScaleSegmentation1, segmentation2])
+        
+        # Final decoding block
+        # Concatenation, Convolution, Segmentation
+        decoder = Concatenate()([decoder, skip1])
+        decoder = Conv2D(self.init_filters * 2, (3,3), padding=self.padding)(decoder)
+        decoder = LeakyReLU(alpha=self.leakyAlpha)(decoder)
+        segmentation3 = self.segmentationLayer(decoder, 1)
+        
+        # Upsample the first segmentation sum, Add the final segmentation layers
+        upScaleFirstSum = UpSampling2D(interpolation='bilinear')(firstSum)
+        secondSum = Add()([upScaleFirstSum, segmentation3])
+        
+        outputs = Activation('sigmoid')(secondSum)
         
         model = Model(inputs, outputs)
         
         return model
-    
-    def compileModel(self): 
-        self.model.compile(optimizer='adam',
-                          loss=,
-                          metrics=[tf.keras.metrics.IoU(num_classes=self.n_classes, target_class_ids=[0])])
