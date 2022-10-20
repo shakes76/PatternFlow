@@ -1,10 +1,12 @@
-import os
+__author__ = "Utkarsh Sharma"
 
+import os
 import torch
 from torch.utils.data import Dataset
 import cv2
 from torchvision import transforms
 from torch.utils.data import DataLoader
+from constants import DEVICE
 
 
 class OASISDataset(Dataset):
@@ -74,18 +76,17 @@ class GANDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.transform(image) if self.transform else image
         image = image.unsqueeze(dim=0)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        image = image.to(device)
+        image = image.to(DEVICE)
 
         encoded_output = self.vqvae_model.pre_vq_conv(self.vqvae_model.encoder(image))
         _, _, _, encoding = self.vqvae_model.vq_vae(encoded_output)  # gets the encoding from the VQ-VAE to pass to GAN
-        encoding = encoding.float().to(device)
+        encoding = encoding.float().to(DEVICE)
         encoding = encoding.view(64, 64)
         encoding = torch.stack((encoding, encoding, encoding), 0)  # GAN uses 3 input channel
         return encoding
 
 
-def create_train_test_loaders_vqvae(root_dir=".\\s4646780_OASIS_VQVAE\\keras_png_slices_data"):
+def create_train_test_loaders_vqvae(root_dir):
     """
     Function to create the data loaders for loading and pre-processing the data for VQ-VAE.
     """
@@ -101,8 +102,7 @@ def create_train_test_loaders_vqvae(root_dir=".\\s4646780_OASIS_VQVAE\\keras_png
     return train_loader, test_loader
 
 
-def create_train_test_loaders_dcgan(vqvae_model, GAN_BATCH_SIZE,
-                                    root_dir=".\\s4646780_OASIS_VQVAE\\keras_png_slices_data"):
+def create_train_test_loaders_dcgan(vqvae_model, gan_batch_size, root_dir):
     """
     Function to create the data loaders for loading and pre-processing the data for DCGAN.
     """
@@ -112,6 +112,6 @@ def create_train_test_loaders_dcgan(vqvae_model, GAN_BATCH_SIZE,
     test_dataset = GANDataset(vqvae_model, root_dir=root_dir, test=True, transforms=transforms_done)
 
     # Creates the loaders for train and test GAN data
-    train_loader_gan = DataLoader(train_dataset, batch_size=GAN_BATCH_SIZE, shuffle=True)
-    test_loader_gan = DataLoader(test_dataset, batch_size=GAN_BATCH_SIZE, shuffle=False)
+    train_loader_gan = DataLoader(train_dataset, batch_size=gan_batch_size, shuffle=True)
+    test_loader_gan = DataLoader(test_dataset, batch_size=gan_batch_size, shuffle=False)
     return train_loader_gan, test_loader_gan

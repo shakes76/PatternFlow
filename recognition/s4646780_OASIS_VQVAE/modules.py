@@ -1,3 +1,5 @@
+__author__ = "Utkarsh Sharma"
+
 import torch.nn as nn
 from models.encoder import Encoder
 from models.vectorQuantiser import VectorQuantiser

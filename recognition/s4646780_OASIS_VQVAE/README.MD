@@ -6,19 +6,22 @@ images.
 
 ## Usage Details
 ### Dependencies
-numpy==1.20.4
-tqdm==4.62.1
-opencv==8.3.6
-pytorch_msssim
-matplotlib == 3.4.2
-random
-os
+- numpy==1.19.5
+- opencv-python==4.6.0.66
+- pytorch-msssim==0.2.1
+- matplotlib==3.6.1
+- torch==1.10.2
+- torchaudio==0.10.2
+- torchvision==0.11.3
+- torchmetrics==0.10.0
 
 To reproduce the results using the OASIS dataset, you will need to restructure them as specified in dataset loader
-path. Modify the data folder accordingly in driver.py and run the code to generate output. 
+path. Modify the data folder accordingly in constants.py and run the driver.py to generate output. 
 
 The results may not be as displayed below due to the inherent volatility in DCGANs and VQ-VAE. To get the best performance
-out of the model, I recommend multiple runs of the driver.py and choosing the best performing model. ANY LIMITATIONS
+out of the models, I recommend running driver.py multiple times and choosing the best performing model. If you want to 
+modify any details about the code such as DCGAN epochs, learning rate, VQ-VAE learning rate etc, those are located in
+the constant.py and you'll only have to change it in that location.
 
 
 ## Model Explanation:
