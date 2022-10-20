@@ -8,11 +8,14 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
     """
     def __init__(self, embedding_num, embedding_dim, beta, **kwargs):
         super().__init__(**kwargs)
+        # Embedding parameters
         self._embedding_num = embedding_num
         self._embedding_dim = embedding_dim
+
+        # Scales commitment loss for encoder picking an embedding
         self._commitment_cost = beta
 
-        #Initialise the embeddings which we are going to quantise using a uniform distribution
+        # Initialise the embeddings which we are going to quantise using a uniform distribution
         initial_embedding = tf.random_uniform_initializer()
         self._embedding_shape = (self._embedding_dim, self._embedding_num)
         self._embedding = tf.Variable(initial_value=initial_embedding(shape=self._embedding_shape),
@@ -20,34 +23,42 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
                                                                       trainable=True)
 
     def call(self, x):
-        #We need to flatten all of the dimensions so that we get a total number of vectors to be quantized independently
+        # We need to flatten all of the dimensions so that we get a total number of vectors to be quantized independently
         input_shape = tf.shape(x)
 
         flattened_vector = tf.reshape(x, [-1, self._embedding_dim])
-        #Now we need to find the embedding indices for each of the flattened vectors based on minimising the L2 normalised distance
+        # Now we need to find the embedding indices for each of the flattened vectors based on minimising the L2 normalised distance
         encoding_indices = self.get_closest_index(flattened_vector)
 
-        #Need to one-hot encode them so that quantisation can occur
+        # Need to one-hot encode them so that quantisation can occur
         one_hot_encoding = tf.one_hot(encoding_indices, self._embedding_num)
 
-        #Calculate quantised values and return the flattened vector into the original input shape
+        # Calculate quantised values and return the flattened vector into the original input shape
         quantized_vectors = tf.matmul(one_hot_encoding, self._embedding, transpose_b=True)
         quantized_vectors = tf.reshape(quantized_vectors, input_shape)
 
-        #Calculate the quantized vector loss and add it to the layer. For losses we use mean squared error.
-        # Loss learnt by encoder
+        # Calculate the quantized vector loss and add it to the layer. For losses we use mean squared error.
         commitment_loss = tf.reduce_mean((x - tf.stop_gradient(quantized_vectors) ) ** 2)
         # Embeddings optimised by codebook loss
         codebook_loss = tf.reduce_mean((tf.stop_gradient(x) - quantized_vectors) ** 2)
         self.add_loss(self._commitment_cost * commitment_loss + codebook_loss)
-        #Note we use a stopgradient operator. Defined as identity during a forward computation time, and has zero partial
-        #derivatives. Therefore, the operand it is applied to becomes a non-updated constant.
+        # Note we use a stopgradient operator. Defined as identity during a forward computation time, and has zero partial
+        # derivatives. Therefore, the operand it is applied to becomes a non-updated constant.
 
-        #Using stop_gradient, during backpropagation the gradients of the output are given back to the inputs
+        # Using stop_gradient, during backpropagation the gradients of the output are given back to the inputs
         quantized_vectors = x + tf.stop_gradient(quantized_vectors - x)
         return quantized_vectors
 
     def get_closest_index(self, flattened_vector):
+        """
+        Returns the indices of the closest embeddings inside the codebook for the given flattened pixel vector
+
+        params:
+            flattened_vector - Flattened image vector
+
+        Returns:
+            Index of the closest embedding in the codebook
+        """
 
         pixel_vector_len = tf.reduce_sum(flattened_vector ** 2, axis=1, keepdims=True) #(Height * Width, 1)
         embedding_len = tf.reduce_sum(self._embedding ** 2, axis=0, keepdims=True) #(1, #embeddings)
@@ -57,6 +68,12 @@ class VectorQuantizerLayer(tf.keras.layers.Layer):
 
 
 class VQVAEModel(tf.keras.Model):
+    """
+    Custom trainable keras model to implement the VQ-VAE Model.
+    Model is able to be compiled with self.compile() and trained with self.fit()
+
+    Adapted from https://keras.io/examples/generative/vq_vae/
+    """
     def __init__(self, img_shape, embedding_num, embedding_dim, beta, data_variance, **kwargs):
         super(VQVAEModel, self).__init__(**kwargs)
 
@@ -64,7 +81,7 @@ class VQVAEModel(tf.keras.Model):
         self._img_shape = img_shape
         self._embedding_num = embedding_num
         self._embedding_dim = embedding_dim
-        self._beta = beta
+        self._beta = beta #Commitment loss in Vector Quantized Layer
         self._data_variance = data_variance
 
         # Model components
@@ -73,9 +90,6 @@ class VQVAEModel(tf.keras.Model):
             self._embedding_num, self._embedding_dim, self._beta)
         self._decoder = self.create_decoder(self._img_shape)
 
-        # Model itself
-        # self._vqvae = self.create_vqvae_model()
-
         # Loss metrics
         self._total_loss = keras.metrics.Mean(name="total_loss")
         self._reconstruction_loss = keras.metrics.Mean(name="reconstruction_loss")
@@ -83,9 +97,22 @@ class VQVAEModel(tf.keras.Model):
         self._mean_ssim = keras.metrics.Mean(name="mean_ssim")
 
     def get_vq(self):
+        """
+        Returns the Vector Quantized Layer within the model. If the VQ-VAE model is trained, returns the trained vector
+        quantized layer
+        """
         return self._vq
 
     def create_encoder(self, embedding_dim, img_shape):
+        """
+        Method initialises the encoder for the VQ-VAE model. Should only be called inside the class, not externally
+
+        params:
+            embedding_dim - Number of embeddings in the codebook
+            img_shape - Shape of the image being encoded
+        Returns:
+            A Sequential Keras model which is the encoder
+        """
         # My encoder implementation
         encoder_model = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=img_shape),
@@ -98,10 +125,21 @@ class VQVAEModel(tf.keras.Model):
         return encoder_model
 
     def get_encoder(self):
+        """
+        Returns the Encoder Model within the model. If the VQ-VAE model is trained, returns the trained encoder
+        """
         return self._encoder
 
     def create_decoder(self, img_shape):
-        # My decoder implementation
+        """
+        Method initialises the encoder for the VQ-VAE model. Should only be called inside the class, not externally
+
+        params:
+            embedding_dim - Number of embeddings in the codebook
+            img_shape - Shape of the image being encoded
+        Returns:
+            A Sequential Keras model which is the decoder
+        """
         decoder_model = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=self.get_encoder().output.shape[1:]),
             tf.keras.layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"),
@@ -112,9 +150,20 @@ class VQVAEModel(tf.keras.Model):
         return decoder_model
 
     def get_decoder(self):
+        """
+        Returns the Decoder Model within the model. If the VQ-VAE model is trained, returns the trained decoder
+        """
         return self._decoder
 
     def create_vqvae_model(self):
+        """
+        Method to create the VQ-VAE model. Only done to be able to run the model summary to see the number
+        of parameters and the structure of the model. Implemented for flexibility of implementation, but not actually
+        implemented / used in the project
+
+        Returns:
+        A keras model representing the VQ-VAE model used for looking at the summary of the model structure
+        """
         initial_layer = tf.keras.Input(shape=self._img_shape)
         encoder_layer = self._encoder(initial_layer)
         vq_layer = self._vq(encoder_layer)
@@ -127,11 +176,11 @@ class VQVAEModel(tf.keras.Model):
         x = self._decoder(x)
         return x
 
-    def get_vqvae(self):
-        return self._vqvae
-
     @property
     def metrics(self):
+        """
+        Returns: A list of the metrics used for training the model
+        """
         return [
             self._total_loss,
             self._reconstruction_loss,
@@ -143,6 +192,7 @@ class VQVAEModel(tf.keras.Model):
         The method contains the mathematical logic for one step of training.
         Includes the forward pass, loss calculation, backpropagation, and metric updates.
         """
+
         with tf.GradientTape() as tape:
             reconstructed_img = self(x)
 
@@ -166,13 +216,12 @@ class VQVAEModel(tf.keras.Model):
         return {
             "loss": self._total_loss.result(),
             "reconstruction_loss": self._reconstruction_loss.result(),
-            "vq loss": self._vq_loss.result()  # ,
-            # "mean ssim": self._mean_ssim.result()
+            "vq loss": self._vq_loss.result()
         }
 
     def test_step(self, x):
         """
-        The method contains the mathematical logic for one step of training.
+        The method contains the mathematical logic for one step validation step.
         Includes the forward pass, loss calculation, backpropagation, and metric updates.
         """
         with tf.GradientTape() as tape:
@@ -203,20 +252,25 @@ class VQVAEModel(tf.keras.Model):
         }
 
 
-# Adapted from https://keras.io/examples/generative/pixelcnn/
-# Adapted from https://keras.io/examples/generative/pixelcnn/
 class PixelConvLayer(tf.keras.layers.Layer):
+    """
+    Custom keras layer representing a single Pixel Convolutional Layer
+    """
     def __init__(self, mask_type, **kwargs):
         super(PixelConvLayer, self).__init__()
         self._mask_type = mask_type
         self._convolution = tf.keras.layers.Conv2D(**kwargs)
 
     def build(self, img_shape):
-        # Initialise the kernel variables
+        """
+        Builds the layer based on a convolutional layer, with appropriate based implemented
+        params:
+            img_shape - Shape of the input image
+        """
         self._convolution.build(input_shape=img_shape)
         self._conv_kernel_shape = self._convolution.kernel.get_shape()
         self.mask = np.zeros(shape=self._conv_kernel_shape)
-        # I couldn't get this working myself, used reference.
+        # Reference for setting up the mask propertly: https://keras.io/examples/generative/pixelcnn/
         self.mask[: self._conv_kernel_shape[0] // 2, ...] = 1.0
         self.mask[self._conv_kernel_shape[0] // 2, : self._conv_kernel_shape[1] // 2, ...] = 1.0
 
@@ -231,8 +285,11 @@ class PixelConvLayer(tf.keras.layers.Layer):
         return self._convolution(x)
 
 
-# Represents a single residual block within the model
 class ResidualBlock(tf.keras.layers.Layer):
+    """
+    Custom keras layer representing a single residual block
+    Layer consists of a Pixel Convolution Layer between two 2D Convolutional layers
+    """
     def __init__(self, input_filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
 
@@ -253,22 +310,32 @@ class ResidualBlock(tf.keras.layers.Layer):
 
 
 class PixelCNNModel(tf.keras.Model):
+    """
+    Custom trainable keras model to implement the PixelCNN Model.
+    Model is able to be compiled with self.compile() and trained with self.fit()
+
+    Adapted from https://keras.io/examples/generative/vq_vae/
+    """
     def __init__(self, input_shape, embedding_num, input_filters, num_res_layer, num_pixel_layer, **kwargs):
         super(PixelCNNModel, self).__init__(**kwargs)
+
+        # Parameters
         self._input_shape = input_shape
         self._embedding_num = embedding_num
         self._filters = input_filters
         self._num_res_layer = num_res_layer
         self._num_pixel_layer = num_pixel_layer
 
+        # Initialising the model
         input_layer = tf.keras.Input(shape=self._input_shape, dtype=tf.int32)
         one_hot_input = tf.one_hot(input_layer, self._embedding_num)
         x = PixelConvLayer(mask_type="A", filters=self._filters, kernel_size=7, activation="relu", padding="same")(
             one_hot_input)
-        # x = PixelConvLayer(mask_type = "A", filters = self._filters, kernel_size = 7, activation = "relu", padding = "same")(input_layer)
+        # Adding residual blocks
         for _ in range(self._num_res_layer):
             x = ResidualBlock(self._filters)(x)
 
+        # Adding Pixel Convolution Layers
         for _ in range(self._num_pixel_layer):
             x = PixelConvLayer(mask_type="B", filters=self._filters, kernel_size=1, strides=1, activation="relu",
                                padding="valid")(x)
@@ -282,7 +349,11 @@ class PixelCNNModel(tf.keras.Model):
         return self._pixel_cnn_model(x)
 
     def train_step(self, x):
-        # https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit
+        """
+        The method contains the mathematical logic for one step of training.
+        Includes the forward pass, loss calculation, backpropagation, and metric updates.
+        """
+
         with tf.GradientTape() as tape:
             predicted_output = self(x)
             total_loss = self.compiled_loss(x, predicted_output)
@@ -295,6 +366,11 @@ class PixelCNNModel(tf.keras.Model):
         }
 
     def test_step(self, x):
+        """
+        The method contains the mathematical logic for one step validation step.
+        Includes the forward pass, loss calculation, backpropagation, and metric updates.
+        """
+
         with tf.GradientTape() as tape:
             predicted_output = self(x)
             total_loss = self.compiled_loss(x, predicted_output)

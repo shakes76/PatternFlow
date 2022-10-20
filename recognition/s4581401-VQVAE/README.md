@@ -32,7 +32,7 @@ then generates new codebook samples which are decoded by the VQ-VAE to generate 
 
 ## References
 
-Tutorial referenced for understanding and creating the VQVAE Model
+References for understanding and creating the VQ-VAE Model
 - https://keras.io/examples/generative/vq_vae/
 - https://www.kaggle.com/code/ameroyer/keras-vq-vae-for-image-generation/notebook
 - https://www.youtube.com/watch?v=VZFVUrYcig0
@@ -43,6 +43,7 @@ Tutorial referenced for creating the PixelCNN model
 
 Customising a tf.keras model
 - https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit
+- https://www.tensorflow.org/guide/keras/custom_layers_and_models
 
 Academic Paper references for VQ-VAE and PixelCNN
 - https://arxiv.org/pdf/1711.00937.pdf

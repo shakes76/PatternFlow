@@ -149,11 +149,15 @@ batch_size = 32
 latent_dim = 128 # Keep larger for more dimensions in the latent space
 num_embeddings= 32 # Keep low so it is easier to train the pixelCNN
 
+test_path = "AD_NC/test" # Path to the test data directory
+
 # Loading in the testing dataset
 test_ds = load_test_data(test_path, img_height, img_width, batch_size)
 
 # Call function to re-instance model. Important that the hyperparmaeters used in the initialisation are the
-# same as the trained mode. Comment out if the trained model is already defined and loaded in
+# same as the trained mode.
+
+# IMPORTANT: Comment out the reinitialisation and loading weights if the trained model is already defined
 
 # Loading VQVAE. Note that the data_variance argument is used for training loss,
 # so accurate variance not required for prediction
