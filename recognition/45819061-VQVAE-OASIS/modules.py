@@ -91,7 +91,7 @@ class ResidualBlock(Layer):
         x = self.conv2(x)
         return Add()([inputs, x])
 
-def get_pixelcnn(input_shape, num_embeddings, filters=64, num_residual_blocks=2, num_pixelcnn_layers=2, **kwargs):
+def get_pixelcnn(input_shape, num_embeddings, filters=256, num_residual_blocks=3, num_pixelcnn_layers=3, **kwargs):
     pixelcnn_inputs = Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(pixelcnn_inputs, num_embeddings)
     x = PixelCNN(mask_type='A', filters=filters, kernel_size=7, activation='leaky_relu', padding='same')(onehot)
@@ -124,7 +124,7 @@ class VQVAE(tf.keras.Model):
         y = resblock(y, residual_hiddens)
         y = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(y)
         y = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(y)
-        decoder_out = Conv2DTranspose(1, 3, strides=1, activation='leaky_relu', padding='same')(y)
+        decoder_out = Conv2DTranspose(1, 3, strides=1, activation='tanh', padding='same')(y)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
         # Add VQ layer
