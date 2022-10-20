@@ -35,12 +35,12 @@ class Patches(layers.Layer):
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
         return patches
 
-
-
 """
 Multilayer perceptron (MLP)
-
+Multiple (n = layer_count) dense layers with dropout
 """
 def MLP(layer, layer_count, dropout):
     for count in layer_count:
-        layer = layers.Dense(count, activation='LeakyReLu')
+        layer = layers.Dense(count, activation='GeLU')(layer)
+        layer = layers.Dropout(dropout)(layer)
+    return layer

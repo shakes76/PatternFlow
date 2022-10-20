@@ -29,4 +29,4 @@ def load_dataset():
         test_images.append(img)
 
     print("Data successfully loaded")
-    return (train_images, test_images)
+    return (np.array(train_images), np.array(test_images))
