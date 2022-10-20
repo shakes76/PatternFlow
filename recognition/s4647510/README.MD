@@ -11,7 +11,7 @@ The VQVAE is a modified version of a standard Variational Autoencoder where it o
 Firstly, the VQVAE involves an encoder convolutional network that creates a downsampled code for each image. The VQVAE also involves a convolutional network decoder, which transforms a code back into an image.
 The latent space in this autoencoder is a trainable codebook which is quantised rather than being a continuous normal distribution.
 
-![VQVAE Diagram](https://user-images.githubusercontent.com/41940464/196821144-fa41993c-5bfb-48e0-8837-b74925c2fde0.png)
+![VQVAE Diagram (1)](https://user-images.githubusercontent.com/41940464/196836845-6fd8d6ca-5e56-408e-8404-4ec546b1d13e.png)
 
 ### PixelCNN
 
