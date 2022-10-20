@@ -80,6 +80,11 @@ Many images were generated with an SSIM score > 0.6, with some shown below:
 ![decoded_1](https://user-images.githubusercontent.com/41940464/196828873-153c71dd-c6c4-439b-8406-85658d4587e9.png)
 ![decoded_3](https://user-images.githubusercontent.com/41940464/196828875-10a160e6-6e18-4510-a726-7a31b20b1828.png)
 
+## Reproducability
+
+The VQVAE and PixelCNN have been saved and running predict.py will load the trained models to generate new images with similar results to what is shown here.
+The models can be trained differently by modifying train.py. Any of the OASIS images can be used for training, testing and validating.
+
 ## References
 1. A.v.d. Oord, O. Vinyals, and K. Kavukcuoglu, “Neural Discrete Representation Learning,”
 arXiv:1711.00937 [cs], May 2018, arXiv: 1711.00937. [Online]. Available: http://arxiv.org/abs/1711.00937
