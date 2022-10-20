@@ -20,7 +20,7 @@ The code of this project can be also find in the [Google Colab](https://colab.re
 
 ## Installation
 ---
-### 1. Install the Tensorflow
+### &nbsp; 1. Install the Tensorflow
 If there is no Tensorflow in your computer, please install the Tensorflow 2.8.1+.
 ```
 $ pip install tensorflow
@@ -29,7 +29,7 @@ If you use Anaconda, use this command:
 ```
 $ conda install -c conda-forge tensorflow
 ``` 
-### 2. Install tensorflow_addons
+### &nbsp;2. Install tensorflow_addons
 The tesnorflow_addons has no MacOS version in anaconda. Install tensorflow_addons using the following command:
 ```
 pip install tensorflow_addons
@@ -38,7 +38,7 @@ If you use Anaconda, use this command:
 ```
 conda install -c esri tensorflow-addons
 ```
-### 3. Install einops
+### &nbsp;3. Install einops
 The rearrange function in einops library is useful for time embedding in Attention.Install einops using the following command:
 ```
 pip install einops
@@ -47,7 +47,13 @@ or
 ```
 conda install -c conda-forge einops
 ```
-## Introduction
+## Code usage
+---
+
+
+
+
+## Stable Diffusion
 
 The modle of Stabel Diffusion is shown as follow:
 ![](/imgs/stable_diffusion.png)
