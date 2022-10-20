@@ -26,7 +26,7 @@ vision onto a premade image, meaning it must match the resolution
 
 ## Running the algorithm
 It is very easy to run the algorithm, simply run the train.py file and it will begin the training process while producing
-a nice set of accuracy and loss graphs to show how well it performed overtime.
+a nice set of accuracy and loss graphs to show how well it performed overtime, 
 
 ### Epochs
 The base number of epochs is set to 4 so that anyone without a proper GPU can run this within a decent timeframe, however
@@ -51,11 +51,3 @@ enough training data for the process but also enough so that it can properly val
 - ISIC dataset files (placed into "Data" folder), you need both the true masks and the normal testing files
 
 
-1. The readme file should contain a title, a description of the algorithm and the problem that it solves
-(approximately a paragraph), how it works in a paragraph and a figure/visualisation.
-2. It should also list any dependencies required, including versions and address reproduciblility of results,
-if applicable.
-3. provide example inputs, outputs and plots of your algorithm
-4. The read me file should be properly formatted using GitHub markdown
-5. Describe any specific pre-processing you have used with references if any. Justify your training, validation
-and testing splits of the data.
