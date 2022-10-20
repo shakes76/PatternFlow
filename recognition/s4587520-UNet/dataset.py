@@ -4,8 +4,8 @@ from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
 from PIL import Image
 
-train_image_path = "./drive/MyDrive/ISIC Data/Train_Images/"
-train_segmentation_path = "./drive/MyDrive/ISIC Data/Train_Segmentations/"
+train_image_path = "./ISIC-2017_Training_Data"
+train_segmentation_path = "./ISIC-2017_Training_Part1_GroundTruth"
 
 class ISIC_Dataset(Dataset):
   def __init__(self, image_path, segmentation_path):
