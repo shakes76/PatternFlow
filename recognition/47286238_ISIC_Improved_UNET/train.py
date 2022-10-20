@@ -1,3 +1,4 @@
+from sched import scheduler
 import torch, torchvision
 from dataset import Dataset
 from modules import IUNET
@@ -82,11 +83,13 @@ if __name__ == '__main__':
     dataloader_validation = torch.utils.data.DataLoader(dataset_validation, batch_size=batch_size, shuffle=False)
     
 
-    learning_rate = 1e-3
+    learning_rate = 5e-4
+    decay = 0.985
     num_epochs = 15
 
     model = IUNET(3, 16).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+    sched = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=decay)
 
     loss_history = []
     dsc_history = []
@@ -119,6 +122,7 @@ if __name__ == '__main__':
             optimizer.step()
             if batch_no == 800 / batch_size:
                 break
+        sched.step()
 
         epoch_loss = sum(losses)/len(losses)
         epoch_dsc = sum(dscs)/len(dscs)
