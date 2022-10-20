@@ -24,24 +24,28 @@ train_ds, valid_ds, test_ds, features, target, edges = process_data(data)
 adj = adj_matrix(data)
 
 model = GCN(features.size(dim = 1),
-            features.size(dim = 0),
+            features.size(dim = 1),
             data['target'].argmax())
-optimiser = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+optimizer = optim.Adam(model.parameters(),
+                       lr=0.01, weight_decay=5e-4)
 
 def train(epoch):
+    t = time.time()
     model.train()
-    optimiser.zero_grad()
-    print(features.shape)
-    print(adj)
+    optimizer.zero_grad()
     output = model(features, adj)
     
     # Use negative log likelihood loss
     loss_train = func.nll_loss(output[train_ds], target[train_ds])
+    acc_train = accuracy(output[train_ds], target[train_ds])
     loss_train.backward()
-    optimiser.step()
+    optimizer.step()
 
     loss_val = func.nll_loss(output[valid_ds], target[valid_ds])
+    acc_val = accuracy(output[valid_ds], target[valid_ds])
     print('Epoch: {}'.format(epoch+1),
-          'loss_train: {}'.format(loss_train.item()),
-          'loss_val: {}'.format(loss_val.item()),
-          )
+          'loss_train: {:.4f}'.format(loss_train.item()),
+          'acc_train: {:.4f}'.format(acc_train.item()),
+          'loss_val: {:.4f}'.format(loss_val.item()),
+          'acc_val: {:.4f}'.format(acc_val.item()),
+          'time: {:.4f}s'.format(time.time() - t))
