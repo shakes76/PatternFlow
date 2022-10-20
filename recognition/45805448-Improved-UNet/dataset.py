@@ -50,7 +50,7 @@ def load_image_dataset_from_directory(directory, image_size=(64, 64), color_mode
         dataset of images
     """
     return tf.keras.utils.image_dataset_from_directory(directory, labels=None, color_mode=color_mode, 
-                                    batch_size=3, image_size=image_size, shuffle=True)
+                                    batch_size=6, image_size=image_size, shuffle=True, seed=69)
 
 def preprocess_dataset(dataset, seed=420):
     """
@@ -60,9 +60,9 @@ def preprocess_dataset(dataset, seed=420):
         the preprocessed dataset
     """
     tf.random.set_seed(seed)
-    return dataset.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
+    return dataset.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
 
-def preprocess(images):
+def preprocess(images, masks):
     """
     Preprocess the images by applying normalization, random horizontal & 
     vertical flips, and random cropping.
@@ -71,15 +71,24 @@ def preprocess(images):
         similarly augmented images and masks
     """
     # Normalization
-    normalize = Rescaling(1./255)(images)
-
+    normalize = Rescaling(1./255)
     # Random flipping
-    horizontal_flip = RandomFlip(mode='horizontal')(normalize)
-    vertical_flip = RandomFlip(mode='vertical')(horizontal_flip)
-
+    horizontal_flip = RandomFlip(mode='horizontal')
+    vertical_flip = RandomFlip(mode='vertical')
     # Random cropping
     _, height, width, _ = images.shape
-    pad = ZeroPadding2D(padding=4)(vertical_flip)
-    crop = RandomCrop(height=height, width=width)(pad)
+    pad = ZeroPadding2D(padding=4)
+    crop = RandomCrop(height=height, width=width)
+    # Complete data augmentation model
+    augmentations = tf.keras.Sequential([normalize, horizontal_flip, vertical_flip, pad, crop])
 
-    return crop
+    # Concatenate images and masks to ensure same random distribution
+    # masks = tf.stack([masks, masks, masks], -1)
+    # masks = tf.cast(masks, tf.float32)
+    images_masks = tf.concat([images, masks], -1)
+    images_masks = augmentations(images_masks)
+    # Return to normal shape
+    images = images_masks[:,:,:,0:3]
+    masks = images_masks[:,:,:,3]
+
+    return images, masks
