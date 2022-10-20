@@ -56,10 +56,29 @@ if __name__ == "__main__":
     model.compile(optimizer=Adam(lr), loss=DiceLoss, metrics=metrics)
 
     # Fit the model
-    model.fit(
+    history = model.fit(
         trainDataset, epochs=epochs, validation_data=validDataset,
         steps_per_epoch=trainSteps, validation_steps=validSteps,
-    )    
+    )
+
+    # Plotting model
+    print(history.history.keys())
+    #  "Accuracy"
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.show()
+    # "Loss"
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.show()
 
 """
 #train.py
