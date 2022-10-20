@@ -14,12 +14,25 @@ from keras import layers
 from CustomLayers import *
 
 
+def sinusoidalTimeEmbedding(input):
+    frequencies = tf.exp(
+        tf.linspace(
+            tf.math.log(1.0),
+            tf.math.log(1000.0),
+            32 // 2,   # latentDim//2
+        )
+    )
+    embeddings = tf.concat(
+        [tf.sin(2.0 * math.pi * frequencies * input), tf.cos(2.0 * math.pi * frequencies * input)], axis=3
+    )
+    return embeddings
 
 
 class UNetBlock(kr.layers.Layer) :
     def __init__(self, outputSize, blockSize = 32, upBlock = False, upSampler = ConvUpsample, downSampler = ConvDownsample) :
         super().__init__()
         self.blockSize = blockSize
+        self.outputSize = outputSize
         
         self.conv1 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
         self.bNorm1 = kr.layers.BatchNormalization()
@@ -27,8 +40,8 @@ class UNetBlock(kr.layers.Layer) :
         self.conv2 = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
         self.bNorm2 = kr.layers.BatchNormalization()
         
-        self.embedder = kr.layers.UpSampling2D(blockSize)
-        self.embedderConv = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
+        #self.embedder = kr.layers.Dense(blockSize)
+        #self.embedderConv = kr.layers.Conv2D(outputSize, 3, padding = "same", activation = kr.activations.relu)
         
         # If upsampling occurs in block
         if (upBlock) :
@@ -36,24 +49,21 @@ class UNetBlock(kr.layers.Layer) :
         else :
             self.transformer = downSampler(outputSize)
     
-    def call(self, inputs) :
-        imageInput = inputs[0]
-        timeEmbedding = inputs[1]
+    def call(self, input) :
+        
         
         #print("ImageIS")
         #print(imageInput)
 
         #print("PRE EMBEDDING:", timeEmbedding)
-        e = self.embedder(timeEmbedding)
-        #print("POST EMBEDDING:", e)
-        #print("MY BLOCKSIZE: ", self.blockSize)
-        e = self.embedderConv(e)
+        #e = self.embedder(timeEmbedding)
+        
 
-        x = self.conv1(imageInput) 
+        x = self.conv1(input) 
 
         #print("--------------\nX :", x)
         #print("e :", e, "\n---------------------------")
-        x = self.bNorm1(x + e)
+        x = self.bNorm1(x)
 
         x = self.conv2(x)
         x = self.bNorm2(x)
@@ -62,99 +72,64 @@ class UNetBlock(kr.layers.Layer) :
         #print(transformed)
         return (x, transformed)
 
-        
-class UNet(kr.layers.Layer):
-    def __init__(self, blockDepths = [64, 128, 256, 512], blockSize = [32, 16, 8, 4], bottleNeck = 1024) :
-        super().__init__()
-        """
-        self.layerCount = len(blockDepths)
-        self.conv1 = kr.layers.Conv2D(filters = blockDepths[0], kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
-        self.conv2 = kr.layers.Conv2D(filters = blockDepths[0], kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
-        self.finalLayer = kr.layers.Conv2D(filters = 1, kernel_size = 1, strides = 1, activation = kr.activations.relu)
-        self.bottleNeck = UNetBlock(bottleNeck, blockSize = blockSize[-1]//2, upBlock = True)
-        
-        
-        self.downBlocks = []
-        self.upBlocks = []
+def buildUnet(latentSpaceSize) :
+    noisedImages = kr.Input(shape=(32, 32, 1))
+    noiseIntensity = kr.Input(shape=(1, 1, 1))
 
-        self.downBlocks.append(UNetBlock(blockDepths[i], blockSize[i], upBlock = False))
-        
-        for i in range(self.layerCount) :
-            self.downBlocks.append(UNetBlock(blockDepths[i], blockSize[i], upBlock = False))
-            self.upBlocks.insert(0, UNetBlock(blockDepths[i], blockSize[i], upBlock = True))
-        self.upBlocks.pop()
+    embedding = kr.layers.Lambda(sinusoidalTimeEmbedding)(noiseIntensity)
+    embedding = kr.layers.UpSampling2D(size=latentSpaceSize, interpolation="nearest")(embedding)
 
+    initialConvLayer = kr.layers.Conv2D(64, kernel_size = 1)
+    
+    # Downsampling Layers
+    convLeftLayer1 = UNetBlock(64, 32, upBlock = False)
+    convLeftLayer2 = UNetBlock(128, 16, upBlock = False)
+    convLeftLayer3 = UNetBlock(256, 8, upBlock = False)
+    convLeftLayer4 = UNetBlock(512, 4, upBlock = False)
 
-        _, lastBlock = self.bottleNeck((lastBlock, timeEmbedding))
-        for i in range(self.layerCount-1) :
-          lastBlock = kr.layers.concatenate((skipConnections[i], lastBlock))
+    # Upsampling Layers
+    convRightLayer4 = UNetBlock(512, 4, upBlock = True)
+    convRightLayer3 = UNetBlock(256, 8, upBlock = True)
+    convRightLayer2 = UNetBlock(128, 16, upBlock = True)
+    #convRightLayer1 = UNetBlock(64, 32, upBlock = True) ## SHOULD NOT BE CALLED
 
-          _, lastBlock = self.upBlocks[i]((lastBlock, timeEmbedding))
-            
-        
-        lastBlock = self.conv1(lastBlock)
-        lastBlock = self.conv2(lastBlock)
-        return self.finalLayer(lastBlock)
-        """
+    # Final Layers
+    conv1 = kr.layers.Conv2D(filters = 64, kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
+    conv2 = kr.layers.Conv2D(filters = 64, kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
+    finalLayer = kr.layers.Conv2D(filters = 1, kernel_size = 1, strides = 1, activation = kr.activations.relu)
 
-        # Downsampling Layers
-        self.convLeftLayer1 = UNetBlock(64, 32, upBlock = False)
-        self.convLeftLayer2 = UNetBlock(128, 16, upBlock = False)
-        self.convLeftLayer3 = UNetBlock(256, 8, upBlock = False)
-        self.convLeftLayer4 = UNetBlock(512, 4, upBlock = False)
+    # Bottleneck
+    bottleNeck = UNetBlock(1024, blockSize = 2, upBlock = True)  
 
+    x = initialConvLayer(noisedImages)
 
-        # Upsampling Layers
-        self.convRightLayer4 = UNetBlock(512, 4, upBlock = True)
-        self.convRightLayer3 = UNetBlock(256, 8, upBlock = True)
-        self.convRightLayer2 = UNetBlock(128, 16, upBlock = True)
-        self.convRightLayer1 = UNetBlock(64, 32, upBlock = True) ## SHOULD NOT BE CALLED
+    print("x is :")
+    print(x)
+    print(embedding)
+    x = kr.layers.concatenate([x, embedding])
 
-        # Final Layers
-        self.conv1 = kr.layers.Conv2D(filters = blockDepths[0], kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
-        self.conv2 = kr.layers.Conv2D(filters = blockDepths[0], kernel_size = 1, strides = 1, padding="same", activation = kr.activations.relu)
-        self.finalLayer = kr.layers.Conv2D(filters = 1, kernel_size = 1, strides = 1, activation = kr.activations.relu)
+    layer1Skip, x = convLeftLayer1(x)
+    layer2Skip, x = convLeftLayer2(x)
+    layer3Skip, x = convLeftLayer3(x)
+    layer4Skip, x = convLeftLayer4(x)
 
-        self.bottleNeck = UNetBlock(bottleNeck, blockSize = blockSize[-1]//2, upBlock = True)
-            
-    def call(self, input) :
-        images, timeEmbedding = input
+    _, x = bottleNeck(x) 
 
-        print("IMAGE:")
-        print(images)
-        print("TIME EMBEDDING:")
-        print(timeEmbedding)
+    x = kr.layers.concatenate([x,layer4Skip])
+    _, x = convRightLayer4(x)
 
-        lastBlock = images
-        skipConnections = []
-        
+    x = kr.layers.concatenate([x,layer3Skip])
+    _, x = convRightLayer3(x)
+    x = kr.layers.concatenate([x,layer2Skip])
+    _, x = convRightLayer2(x)
 
-        layer1Skip, x = self.convLeftLayer1((images, timeEmbedding))
-        layer2Skip, x = self.convLeftLayer2((x, timeEmbedding))
-        layer3Skip, x = self.convLeftLayer3((x, timeEmbedding))
-        layer4Skip, x = self.convLeftLayer4((x, timeEmbedding))
+    x = kr.layers.concatenate([x,layer1Skip])
 
-        _, x = self.bottleNeck((x, timeEmbedding)) 
+    x = conv1(x)
+    x = conv2(x)
+    x = finalLayer(x)
 
-        x = kr.layers.concatenate([x,layer4Skip])
-        _, x = self.convRightLayer4((x, timeEmbedding))
-
-        x = kr.layers.concatenate([x,layer3Skip])
-        _, x = self.convRightLayer3((x, timeEmbedding))
-
-        x = kr.layers.concatenate([x,layer2Skip])
-        _, x = self.convRightLayer2((x, timeEmbedding))
-
-        x = kr.layers.concatenate([x,layer1Skip])
-        #_, x = self.convRightLayer1((x, timeEmbedding))
-
-        x = self.conv1(x)
-        x = self.conv2(x)
-        return self.finalLayer(x)
-
-
-        
-  
+    return kr.Model([noisedImages, noiseIntensity], x)
 
 class StableDiffusionModel(kr.Model) :
     """
@@ -167,18 +142,16 @@ class StableDiffusionModel(kr.Model) :
     
 
     
-############################### SIMPLY ADD TIME EMBEDDING AT EACH STEP!!!! ####
     def __init__(self, encoder, decoder, latentSize = 32, timeDim = 256, scheduleSteps = 1000, betaInitial = 0.02, betaFinal =1e-4):
         super().__init__()
         
         # Input Image
         self.encoder = encoder
         self.decoder = decoder
-        self.UNet = UNet()
+        self.myModel = buildUnet(32)
         
         self.latentSize = latentSize
         self.timeDim = timeDim
-        self.scheduleSteps = scheduleSteps
 
         self.scheduleSteps = scheduleSteps
         self.betaInitial = betaInitial
@@ -190,7 +163,7 @@ class StableDiffusionModel(kr.Model) :
         self.alphaHat = tf.math.cumprod(self.alpha)
 
 
-    def noiseImage(self, image, step) :
+    def noiseImage(self, image, step) : ########################################
       #print("StepShape:")
       #print(step.shape)
       sqrtAlphaHat = tf.math.sqrt(tf.gather(self.alphaHat, indices = step))[:,None, None]
@@ -198,6 +171,17 @@ class StableDiffusionModel(kr.Model) :
       noise = tf.random.normal(shape=())
 
       return image * sqrtAlphaHat + sqrtAlphaHatCompliment * noise, noise
+
+
+    def getNoiseIntensity(self, diffusionTimes) :
+        start = tf.acos(0.95)
+        end = tf.acos(0.02)
+
+        diffusion_angles = start + diffusionTimes * (end-start)
+        signalIntensity = tf.cos(diffusion_angles)
+        noiseIntensity = tf.sin(diffusion_angles)
+
+        return noiseIntensity, signalIntensity
         
 
     def compile(self, **kwargs) :
@@ -208,7 +192,7 @@ class StableDiffusionModel(kr.Model) :
     def calculatePrevStep(self, image, predictedNoise, noise,   step) :
 
       leftTerm = tf.math.pow(tf.math.sqrt(self.alpha[step]), -1)
-      bracketTerm = (image - (tf.gather(1-self.alpha, indices=[step])/tf.gather(1-self.alphaHat, indices=[step])) * predictedNoise)
+      bracketTerm = (image - (tf.gather(1-self.alpha, indices=[step])/tf.gather(1-self.alphaHat, indices=[step])) * predictedNoise) #######################
       rightTerm = tf.math.sqrt(self.beta[step]) * noise
 
       return leftTerm*bracketTerm + rightTerm
@@ -216,58 +200,40 @@ class StableDiffusionModel(kr.Model) :
     @property
     def metrics(self):
         return [self.lossMetric]
-        
-    def sinusoidalTimeEmbedding(self, time) :
-        channels = self.timeDim
-
-        time = tf.cast(tf.expand_dims(time, axis=-1), dtype=tf.float32)
-
-        frequencyInverse = tf.cast(1.0/(10000.0 ** (tf.range(0, channels, 2)/channels)), dtype=tf.float32)
-        print("Time")
-        print(time)
-        posA = tf.sin(tf.tile(time, (1, channels // 2)) * frequencyInverse)
-        posB = tf.cos(tf.tile(time, (1, channels // 2)) * frequencyInverse)
-        a = tf.concat((posA, posB), axis=-1)[:, None, None]
-        print(a.shape)
-        return a
 
     def generateTimeSteps(self, size) :
         return tf.random.uniform(shape=(size,), dtype = tf.dtypes.int32, minval = 1, maxval = self.scheduleSteps)
     
-    def denoise(self, noisedImage, noiseIntensity) :
-        #print(noiseIntensity)
-        noiseIntensity = tf.cast(noiseIntensity, dtype = tf.float32)
-        timeEmbedding = self.sinusoidalTimeEmbedding(noiseIntensity)
-        predictedNoise = self.UNet((noisedImage, timeEmbedding))
-        predictedImage = (noisedImage - (predictedNoise * noiseIntensity)) / (1-noiseIntensity)
-
-        return predictedNoise, predictedImage
+    def denoise(self, noisedImages, noiseIntensity, signalIntensity) :
+        predictedNoises = self.myModel.call([noisedImages, noiseIntensity**2])
+        predictedImages = (noisedImages - (predictedNoises * noiseIntensity)) / signalIntensity
+        
+        return predictedNoises, predictedImages
 
         
     def train_step(self, images) :
         latentImages= self.encoder(images)
-
-        #print("LATENT IMAGES")
-        #print(latentImages)
+            
         
-        steps = self.generateTimeSteps(latentImages.shape[0])
-
-        #print("STEPS")
-        #print(steps)
-
-        noisedImages, noises = self.noiseImage(latentImages, steps)
-
-        #print("NOISED IMAGE:")
-        #print(noisedImages)
+        noises = tf.random.normal(shape =(32, 32, 32, 1))
+        diffusionTimes = tf.random.uniform(shape=(32, 1, 1, 1), minval=0.0, maxval=1.0)
+        
+        noiseIntensity, signalIntensity = self.getNoiseIntensity(diffusionTimes)
+        
+        noisedImages = noiseIntensity * noises + signalIntensity * latentImages
         
         with tf.GradientTape() as tape:
-            # Network predictes noise and image.
-            predictedNoises, predictedImages = self.denoise(noisedImages, steps)
-            noiseLoss = self.loss(noises, predictedNoises)
+            # train the network to separate noisy images to their components
+            predictedNoise, predictedImages = self.denoise(noisedImages, noiseIntensity, signalIntensity)
+
+            noiseLoss = self.loss(noises, predictedNoise)  # used for training
         
         gradients = tape.gradient(noiseLoss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
 
         self.lossMetric.update_state(noiseLoss)
         return {"loss" : self.lossMetric.result()}
+    
+    
+    """
     
