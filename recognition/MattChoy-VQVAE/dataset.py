@@ -1,24 +1,24 @@
-import constants
+from constants import image_shape, batch_size, dataset_seed
 
 import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
-dataset_fp = os.path.join(os.getcwd(), "data", "OASIS")
+dataset_fp = os.path.join("data", "OASIS")
 
 x_train = image_dataset_from_directory(
     os.path.join(dataset_fp, "train"),
-    batch_size=constants.batch_size,
-    image_size=constants.image_shape,
-    seed=constants.dataset_seed,
+    batch_size=batch_size,
+    image_size=image_shape,
+    seed=dataset_seed,
     label_mode = None
 )
 
 x_test = image_dataset_from_directory(
     os.path.join(dataset_fp, "test"),
-    batch_size=constants.batch_size,
-    image_size=constants.image_shape,
-    seed=constants.dataset_seed,
+    batch_size=batch_size,
+    image_size=image_shape,
+    seed=dataset_seed,
     label_mode = None
 )
 
