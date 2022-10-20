@@ -166,7 +166,7 @@ The models are trained on the Google Colab pro with NVIDIA Tesla T4 15GB GPU. Th
     IMAGE_SIZE = (256, 256)  
     BATCH_SIZE = 4  
     EPOCHS = 200  
-    ![](imgs/ddpm256.JPG)
+    ![](imgs/ddpm256.jpg)
 
 The model did not converge well on the 256X256 size images. One possible reason is the batch size being too small, only 4. The training process was limited by the graphical memory size. I can only choose the largest image space and batch size combinations listed above. Too big batch size will triger the Out Of Memory(OOM) error.
 <br> 
