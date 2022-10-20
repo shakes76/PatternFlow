@@ -3,13 +3,10 @@ import glob
 import os
 from PIL import Image
 
-# find and initialise dataset
-train_path = "keras_png_slices_data/keras_png_slices_train"
-test_path = "keras_png_slices_data/keras_png_slices_test"
-validation_path = "keras_png_slices_data/keras_png_slices_validate"
-train_files = os.listdir(train_path)
-test_files = os.listdir(test_path)
-validation_files = os.listdir(validation_path)
+# load paths
+TR_PATH = "keras_png_slices_data/keras_png_slices_train"
+TST_PATH = "keras_png_slices_data/keras_png_slices_test"
+V_PATH = "keras_png_slices_data/keras_png_slices_validate"
 
 # data dimensions
 IMG_H = 80
@@ -29,18 +26,22 @@ def load_images(p, image_path):
         images.append(image)
     return images
 
-train_imgs = load_images(train_path, train_files)
-test_imgs = load_images(test_path, test_files)
-x_train = np.array(train_imgs)
-x_test = np.array(test_imgs)
 
-# normalise data to [-0.5, 0.5]
-x_train_scaled = (x_train / 255.0) - 0.5
-x_test_scaled = (x_test / 255.0) - 0.5
+def load_dataset():
+    train_files = os.listdir(TR_PATH)
+    test_files = os.listdir(TST_PATH)
+    validation_files = os.listdir(V_PATH) # obsolete?
 
-# get variance for mse
-data_variance = np.var(x_train / 255.0)
+    # load images from path
+    train_imgs = load_images(TR_PATH, train_files)
+    test_imgs = load_images(TST_PATH, test_files)
+    x_train = np.array(train_imgs)
+    x_test = np.array(test_imgs)
 
-# Check shapes of arrays
-print(x_train.shape)
-print(data_variance.shape)
+    # normalise data to [-0.5, 0.5]
+    x_train_scaled = (x_train / 255.0) - 0.5
+    x_test_scaled = (x_test / 255.0) - 0.5
+
+    # get variance for mse
+    data_variance = np.var(x_train / 255.0)
+    return (train_imgs, test_imgs, x_train_scaled, x_test_scaled, data_variance)

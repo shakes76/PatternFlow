@@ -54,6 +54,17 @@ class VQ(layers.Layer):
         encode_indices = tf.argmin(dists, axis=1)
         return encode_indices
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "embed_d": self.embed_d,
+            "embed_n": self.embed_n,
+            "beta": self.beta,
+        })
+        return config
+
+    
+
 
 class Train_VQVAE(keras.models.Model):
     def __init__(self, train_variance, dim=32, embed_n=128, **kwargs):
@@ -157,15 +168,23 @@ class PixelConvLayer(layers.Layer):
         self.conv.kernel.assign(self.conv.kernel * self.mask)
         return self.conv(inputs)
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "mask_type": self.mask_type,
+        })
+        return config
+
 
 # residual block layer
 class ResBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResBlock, self).__init__(**kwargs)
-        self.conv_1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
-        self.pixel_conv = PixelConvLayer(mask_type="B", filters=filters // 2, kernel_size=3,
+        self.filters = filters
+        self.conv_1 = keras.layers.Conv2D(filters=self.filters, kernel_size=1, activation="relu")
+        self.pixel_conv = PixelConvLayer(mask_type="B", filters=self.filters // 2, kernel_size=3,
             activation="relu", padding="same",)
-        self.conv_2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.conv_2 = keras.layers.Conv2D(filters=self.filters, kernel_size=1, activation="relu")
 
     def call(self, inputs):
         conv = self.conv_1(inputs)
@@ -173,3 +192,49 @@ class ResBlock(keras.layers.Layer):
         conv = self.conv_2(conv)
         return keras.layers.add([inputs, conv])
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "filters" : self.filters
+        })
+        return config
+
+
+def get_pixelcnn(vqvae_trainer, encoded_outputs):
+    """
+    Builds and returns the PixelCNN model.
+    """
+    
+    # Initialise number of PixelCNN blocks
+    num_residual_blocks = 2
+    num_pixelcnn_layers = 2
+    pixelcnn_input_shape = encoded_outputs.shape[1:-1]
+    print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+    
+    # Initialise inputs to PixelCNN
+    pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
+    ohe = tf.one_hot(pixelcnn_inputs, vqvae_trainer.embed_n)
+    x = PixelConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same")(ohe)
+
+    # Build PixelCNN model
+    for _ in range(num_residual_blocks):
+        x = ResBlock(filters=128)(x)
+
+    for _ in range(num_pixelcnn_layers):
+        x = PixelConvLayer(
+            mask_type="B",
+            filters=128,
+            kernel_size=1,
+            strides=1,
+            activation="relu",
+            padding="valid",
+        )(x)
+
+    # Outputs from PixelCNN    
+    out = keras.layers.Conv2D(filters=vqvae_trainer.embed_n, kernel_size=1, strides=1, padding="valid")(x)
+
+    pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
+    
+    return pixel_cnn
+    
+     
