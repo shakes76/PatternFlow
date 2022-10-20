@@ -16,9 +16,8 @@ def run_final(model):
             keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
         ],
     )
-
+    # Replace this filepath with location of best model
     final_filepath = "./best_model/checkpoint"
-
 
     model.load_weights(final_filepath)
     _, accuracy = model.evaluate(get_test_data())

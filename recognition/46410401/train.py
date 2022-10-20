@@ -1,25 +1,12 @@
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 from modules import create_vit_classifier
 from dataset import *
 import tensorflow_addons as tfa
+import matplotlib.pyplot as plt
 
 learning_rate = 0.001
 weight_decay = 0.0001
 batch_size = 256
 num_epochs = 100
-image_size = 72  # We'll resize input images to this size
-patch_size = 6  # Size of the patches to be extract from the input images
-num_patches = (image_size // patch_size) ** 2
-projection_dim = 64
-num_heads = 4
-transformer_units = [
-    projection_dim * 2,
-    projection_dim,
-]  # Size of the transformer layers
-transformer_layers = 8
-mlp_head_units = [2048, 1024]
 
 
 def run_experiment(model):
@@ -35,6 +22,7 @@ def run_experiment(model):
         ],
     )
 
+    # Set checkpoint weights that save the best validation accuracy model
     checkpoint_filepath = "./tmp/checkpoint"
     checkpoint_callback = keras.callbacks.ModelCheckpoint(
         checkpoint_filepath,
@@ -51,10 +39,18 @@ def run_experiment(model):
         callbacks=[checkpoint_callback],
     )
 
+    # Plot training history
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
     model.load_weights(checkpoint_filepath)
-    _, accuracy, top_5_accuracy = model.evaluate(get_test_data())
+    _, accuracy = model.evaluate(get_test_data())
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
 
     return history
 
@@ -62,4 +58,4 @@ def run_experiment(model):
 if __name__ == "__main__":
     setup_folders()
     vit_classifier = create_vit_classifier()
-    history = run_experiment(vit_classifier)
+    final_history = run_experiment(vit_classifier)
