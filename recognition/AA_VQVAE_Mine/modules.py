@@ -9,9 +9,11 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, concatenate, Conv2DTranspose, BatchNormalization, Activation, Dropout
 from tensorflow.keras.models import Model, load_model
 
-img_h = 4288
-img_w = 2848
-b_size = 32
+import dataset
+
+img_h = dataset.img_h
+img_w = dataset.img_w
+b_size = dataset.b_size
 
 def conv_block(tensor, nfilters, size=3, padding='same', initializer="he_normal"):
     block = Conv2D(filters=nfilters, kernel_size=(size, size), padding=padding, kernel_initializer=initializer)(tensor)

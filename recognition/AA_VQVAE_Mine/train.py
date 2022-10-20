@@ -6,10 +6,6 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
 
-from tensorflow.keras.optimizers import Adadelta, Nadam ,Adam
-from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, CSVLogger, TensorBoard
-
 
 import dataset
 import modules
