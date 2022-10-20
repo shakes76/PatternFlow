@@ -25,6 +25,9 @@ trainloader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=T
 #Load model from file
 model = UNet().to(device)
 
+#Optimiser as per paper
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.0001)
+
 #Training Loop that records metrics
 for epoch in range(EPOCHS):
 
@@ -37,11 +40,17 @@ for epoch in range(EPOCHS):
       imgs = imgs.to(device)
       truths = truths.to(device)
 
-      #Forward Pass
+      #Zero the gradient
+      optimizer.zero_grad()
+
+      #Forward (and backward) Pass
       outputs = model(imgs)
 
       #Calculate loss
       similarity = dice_similarity(outputs, truths)
       print("DICE Similarity Coefficient ", similarity)
+      optimizer.step()
+
+    torch.save(model.state_dict(), save_path)
 
 #Save Trained weights
