@@ -35,3 +35,7 @@ To use this repo, clone it and make sure all the dependencies are installed
 
 
 ## Usage
+Modules.py contains an interface for downloading YOLOv5 from GitHub. If it does not work then clone the YOLOv5 repo into the project folder. 
+
+
+## References
