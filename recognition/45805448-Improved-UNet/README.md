@@ -12,9 +12,26 @@ The [dataset used](https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_IS
 
 ### Image Segmentation using Improved UNet
 
+In 2017, [1] created the Improved UNet, which borrows from the original UNet architecture and applies the following changes:
 
+- customised data augmentation (standardisation and cropping)
+- using twice the number of filters in the localization pathway (upsampling half of the network)
+- applied Leaky ReLU activation to intermediate layers
+- adapted the dice loss function for multiple classes
+
+The full structure of the Improved UNet can be seen below:
+
+![Improved UNet Structure](images/improved_unet_structure.png)
+
+In the first half of the network known as the "context aggregation pathway", the network encodes the information using convolutional and adding layers to extract features. Every time this is done, the network enters a new "level" where the output tensor is saved for later usage in the other half of the network.
+
+In the second half of the network known as the "localization pathway", the network upsamples back to the original image size, while localizing the samples by incorporating the features extracted at every intermediate level in the first half. Additionally, this Improved UNet utilises deep supervision by integrating the segmentation layers alongside some of the upsampling modules, introducing nonlinearity to the network. The upsampling and segmentation paths finally combine at the end to produce the final segmentation results.
 
 ## Methods
+
+### Preprocessing
+
+
 
 ## Results
 
