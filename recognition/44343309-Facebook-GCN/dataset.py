@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.sparse as sp
+import scipy as sp
 import tensorflow as tf
 from sklearn.preprocessing import LabelBinarizer, normalize
 
@@ -41,7 +41,7 @@ class DataProcess:
 
   def processing(self):
     labelsOneHot = tf.keras.utils.to_categorical(self.target, 4)
-    adjMat = sp.coo_matrix(
+    adjMat = sp.sparse.coo_matrix(
             (np.ones(self.edges.shape[0]), 
             (self.edges[:, 0], self.edges[:, 1])),
             shape=(self.target.shape[0], self.target.shape[0]),
