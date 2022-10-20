@@ -28,7 +28,7 @@ class VQ(layers.Layer):
         flattened = tf.reshape(x, [-1, self.embed_d])
         encoding_indices = self.get_code_indices(flattened)
         encodings = tf.one_hot(encoding_indices, self.embed_n)
-        quantized = tf.matmul(encodings, self.embeddings, transpose_b=True)
+        quantized = tf.matmul(encodings, self.embeds, transpose_b=True)
 
         # get back original shape
         quantized = tf.reshape(quantized, shape)
@@ -41,7 +41,7 @@ class VQ(layers.Layer):
         quantized = x + tf.stop_gradient(quantized - x)
         return quantized
 
-    def get_indices(self, flattened):
+    def get_code_indices(self, flattened):
         # l2-normalised distance between input and codes
         similarity = tf.matmul(flattened, self.embeds)
         dists = (
@@ -54,8 +54,55 @@ class VQ(layers.Layer):
         encode_indices = tf.argmin(dists, axis=1)
         return encode_indices
 
-def get_encoder(dim=16):
-    inputs = keras.Input(shape=(28, 28, 1))
+
+class Train_VQVAE(keras.models.Model):
+    def __init__(self, train_variance, dim=32, embed_n=128, **kwargs):
+        super(Train_VQVAE, self).__init__(**kwargs)
+        self.train_variance = train_variance
+        self.dim = dim
+        self.embed_n = embed_n
+        self.vqvae = get_vqvae(self.dim, self.embed_n)
+        self.total_loss = keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss = keras.metrics.Mean(
+            name="reconstruction_loss"
+        )
+        self.vq_loss = keras.metrics.Mean(name="vq_loss")
+
+    @property
+    def metrics(self):
+        return [
+            self.total_loss,
+            self.reconstruction_loss,
+            self.vq_loss,
+        ]
+
+    def train_step(self, x):
+        with tf.GradientTape() as tape:
+            reconstructions = self.vqvae(x)
+
+            # calculate loss
+            reconstruction_loss = (
+                tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance
+            )
+            total_loss = reconstruction_loss + sum(self.vqvae.losses)
+
+        # backpropagate
+        grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.vqvae.trainable_variables))
+
+        # track loss
+        self.total_loss.update_state(total_loss)
+        self.reconstruction_loss.update_state(reconstruction_loss)
+        self.vq_loss.update_state(sum(self.vqvae.losses))
+        return {
+            "loss": self.total_loss.result(),
+            "reconstruction_loss": self.reconstruction_loss.result(),
+            "vqvae_loss": self.vq_loss.result(),
+        }
+
+
+def encoder(dim=16):
+    inputs = keras.Input(shape=(80, 80, 1))
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
         inputs
     )
@@ -64,8 +111,8 @@ def get_encoder(dim=16):
     return keras.Model(inputs, out, name="encoder")
 
 
-def get_decoder(dim=16):
-    inputs = keras.Input(shape=get_encoder(dim).output.shape[1:])
+def decoder(dim=16):
+    inputs = keras.Input(shape=encoder(dim).output.shape[1:])
     x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(
         inputs
     )
@@ -73,4 +120,56 @@ def get_decoder(dim=16):
     out = layers.Conv2DTranspose(1, 3, padding="same")(x)
     return keras.Model(inputs, out, name="decoder")
 
+
+def get_vqvae(dim=16, embed_n=64):
+    vq_layer = VQ(embed_n, dim, name="vector_quantizer")
+    enc = encoder(dim)
+    dec = decoder(dim)
+    inputs = keras.Input(shape=(80, 80, 1))
+    out = enc(inputs)
+    quantized_latents = vq_layer(out)
+    reconstructions = dec(quantized_latents)
+    return keras.Model(inputs, reconstructions, name="vq_vae")
+
+
+get_vqvae().summary()
+
+
+# builds on the 2D convolutional layer, but includes masking
+class PixelConvLayer(layers.Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(PixelConvLayer, self).__init__()
+        self.mask_type = mask_type
+        self.conv = layers.Conv2D(**kwargs)
+
+    def build(self, input):
+        # initialize kernel variables
+        self.conv.build(input)
+        # create the mask
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+        if self.mask_type == "B":
+            self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+
+# residual block layer
+class ResBlock(keras.layers.Layer):
+    def __init__(self, filters, **kwargs):
+        super(ResBlock, self).__init__(**kwargs)
+        self.conv_1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+        self.pixel_conv = PixelConvLayer(mask_type="B", filters=filters // 2, kernel_size=3,
+            activation="relu", padding="same",)
+        self.conv_2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+
+    def call(self, inputs):
+        conv = self.conv_1(inputs)
+        conv = self.pixel_conv(conv)
+        conv = self.conv_2(conv)
+        return keras.layers.add([inputs, conv])
 
