@@ -25,3 +25,10 @@ The model is trained for 10 epochs using binary cross entropy as loss function a
 ## **Dependencies**
 - TensorFlow: 2.6.0
 - Matplotlib: 3.5.2
+
+## **Reference**
+- G. Koch, R. Zemel, R. Salakhutdinov et al., "Siamese Neural Networks for One-shot Image Recognition"
+- Keras tutorial on Siamese network, https://keras.io/examples/vision/siamese_contrastive/
+- Tensorflow tutorial on save and load model, https://www.tensorflow.org/tutorials/keras/save_and_load
+- Tensorflow tutorial on writing training loop, https://www.tensorflow.org/guide/keras/writing_a_training_loop_from_scratch
+  
