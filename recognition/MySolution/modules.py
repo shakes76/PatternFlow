@@ -8,14 +8,14 @@ from train import *
 from dataset import *
 
 def main():
-    LoadData() # Loads all the given data
+    #LoadData() # Loads all the given data
 
     x_train = np.load('X_train.npy')
 
-    num_classes = 2 # AD or NC
+    num_classes = 1 # AD or NC
     input_shape = (240, 256, 1)
-    image_size = 128
-    patch_size = 18
+    image_size = 250
+    patch_size = 32
     num_patches = (image_size // patch_size) ** 2
     projection_dim = 128 # increase
     num_heads = 12 # increase
@@ -90,10 +90,10 @@ def main():
 
     features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
 
-    logits = layers.Dense(num_classes)(features)
+    logits = layers.Dense(num_classes, activation="sigmoid")(features)
 
     model = keras.Model(inputs=inputs, outputs=logits)
-    # model.summary()
+    model.summary()
     Train(model=model)
 
 def mlp(x, hidden_units, dropout_rate):

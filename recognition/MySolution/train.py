@@ -23,7 +23,7 @@ class Train:
 
         model.compile(
             optimizer=optimizer,
-            loss= tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            loss= tf.keras.losses.BinaryCrossentropy(from_logits=False),
             metrics = [
                 keras.metrics.SparseCategoricalAccuracy(name="Accuracy"),
                 keras.metrics.SparseTopKCategoricalAccuracy(5, name="top-5-accuracy"),
