@@ -9,6 +9,11 @@ import glob
 
 # %%
 def load_images(path):
+    """
+    Loads X images; i.e. images of potential melanoma cases.
+
+    :return: list of X images
+    """
     image_list = []
     for filename in glob.glob(path+'/*.jpg'):
         img = Image.open(filename).convert('RGB')
@@ -22,6 +27,11 @@ def load_images(path):
 
 # %%
 def load_labels(path):
+    """
+    Loads y images; i.e. segmentations of potential meelanoma cases.
+
+    :return: list of y images
+    """
     image_list =[]
     for filename in glob.glob(path+'/*.png'): 
         img = Image.open(filename).convert('RGB')
@@ -32,6 +42,3 @@ def load_labels(path):
 
     print('label set shape:', np.array(image_list).shape)
     return np.array(image_list)
-
-
-# %%

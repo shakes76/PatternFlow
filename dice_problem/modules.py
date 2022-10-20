@@ -2,6 +2,12 @@ import tensorflow as tf
 import numpy as np
 
 def EncoderMiniBlock(inputs, n_filters=32, dropout_prob=0.3, max_pooling=True):
+    """
+    Creates an architecture for learning using multiple convolution layers, max pooling, and relu activation. 
+    Dropout can be added for regularization to prevent overfitting. 
+    
+    :return: activation values for the next layer
+    """
     conv = tf.keras.layers.Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='HeNormal')(inputs)
     conv = tf.keras.layers.Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='HeNormal')(conv)
 
@@ -19,6 +25,11 @@ def EncoderMiniBlock(inputs, n_filters=32, dropout_prob=0.3, max_pooling=True):
     return next_layer, skip_connection
 
 def DecoderMiniBlock(prev_layer_input, skip_layer_input, n_filters=32):
+    """
+    A decoder block to assist the encoderer.
+    
+    :return: decoded layer output
+    """
     up = tf.keras.layers.Conv2DTranspose(n_filters, (3,3), strides=(2,2), padding='same')(prev_layer_input)
 
     merge = tf.keras.layers.concatenate([up, skip_layer_input])
@@ -30,8 +41,9 @@ def DecoderMiniBlock(prev_layer_input, skip_layer_input, n_filters=32):
 
 def unet(input_size=(128, 128, 3), n_filters=32, n_classes=255):
     """
-    Combine both encoder and decoder blocks according to the U-Net research paper
-    Return the model as output 
+    Combines encoder and decoder blocks to form the overall UNet architecture.
+
+    :return: final model
     """
     # Input size represent the size of 1 image (the size used for pre-processing) 
     inputs = tf.keras.Input(input_size)
