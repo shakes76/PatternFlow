@@ -53,12 +53,9 @@ plt.show()
 num_residual_blocks = 2
 num_pixelcnn_layers = 2
 
-# Encode an image to get the output shape
-# I'm sure there's a better way to do this, but the custom layers make it hard
 encoder = vqvae_trainer.vqvae.get_layer("encoder")
 quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
-encoded_output = encoder.predict(train_ds[np.newaxis, 0])
-pixelcnn_input_shape = encoded_output.shape[1:-1]
+pixelcnn_input_shape = quantizer.output_shape[1:-1]
 print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
 
 pixel_cnn = get_pixelcnn(
