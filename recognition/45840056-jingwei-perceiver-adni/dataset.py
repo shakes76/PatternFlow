@@ -16,7 +16,7 @@ class ADNI(Dataset):
     This dataset treats the ADNI data as fixed-length sequences of brain scans. These brain scans
     are images with a single color channel and a dimension of 240 x 256. The shape of a resulting
     batch tensor is (B, S, C, H, W) where B = batch size, S = sequence length (20),
-    C = color channels (1), H = height (240) and W = width (256).
+    C = color channels (1), H = height (224) and W = width (224).
     """
     NUM_SEQUENCES = 1526	# The number of image sequences in the dataset
     SEQUENCE_LENGTH = 20	# The length of each image sequence
