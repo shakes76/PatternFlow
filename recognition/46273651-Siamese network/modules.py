@@ -4,6 +4,10 @@ from tensorflow.keras import layers
 import numpy as np
 
 
+
+"""
+A CNN module that used to extract the feature from the input images.
+"""
 embedding_model = tf.keras.Sequential(
     [
         keras.Input(shape=(224, 224, 1)),
@@ -31,11 +35,10 @@ def euclidean_distance(vects):
     """Find the Euclidean distance between two vectors.
 
     Arguments:
-        vects: List containing two tensors of same length.
+        vects: Input1 and input2.
 
     Returns:
-        Tensor containing euclidean distance
-        (as floating point value) between vectors.
+        A vector containing the Euclidean distance between these two vectors.
     """
 
     x, y = vects
@@ -43,12 +46,13 @@ def euclidean_distance(vects):
     return tf.math.sqrt(tf.math.maximum(sum_square, tf.keras.backend.epsilon()))
 
 
+"""
+A Siamese network that takes 2 images as input and learns a shared embedding across them.
+The output of the network is a number between [0,1] based on euclidian distances of the input.
+"""
 input_1 = layers.Input(name="pair_x", shape=(224, 224, 1))
 input_2 =layers.Input(name="pair_y", shape=(224, 224, 1))
 
-# As mentioned above, Siamese Network share weights between
-# tower networks (sister networks). To allow this, we will use
-# same embedding network for both tower networks.
 tower_1 = embedding_model(input_1)
 tower_2 = embedding_model(input_2)
 
@@ -59,22 +63,48 @@ siamese.summary()
 
 
 class SiameseModel(keras.Model):
+    """
+    A Siamese Model that used to train the siamese network.
+    The loss function used to train the model is binary_cross_entropy
+    The accuracy metric is binary_accuracy
+    """
 
-    def __init__(self, siamese_network, margin=1.0):
+    def __init__(self, siamese_network = siamese):
+        """
+        A Keras Model Wrapper to train the siames network.
+
+        Args:
+            siamese_network: A siamese network model that used to determine the similarity of 2 input images.
+            loss_tracker: calculate the loss of the model
+            acc_tracker: calculate accuracy of the model
+        """
         super(SiameseModel, self).__init__()
         self.siamese_network = siamese_network
-        self.margin = margin
         self.loss_tracker = keras.metrics.Mean(name="loss")
         self.acc_tracker = keras.metrics.Mean(name="acc")
 
     def call(self, inputs):
+        """
+        Returns the output of the network as provided input to the network.
+
+        Args:
+            inputs: A input Tensor.
+
+        Returns:
+            the output of the network.
+        """
         return self.siamese_network([inputs[0], inputs[1]])
 
     def train_step(self, data):
-        # GradientTape is a context manager that records every operation that
-        # you do inside. We are using it here to compute the loss so we can get
-        # the gradients and apply them using the optimizer specified in
-        # `compile()`.
+        """
+        The training step is used to update the weights of the network.
+
+        Args:
+            data: input pairs with their labels.
+        Returns:
+            The loss and accuracy of single step of the network.
+        """
+
         with tf.GradientTape() as tape:
             img1, img2, y_true = data
             y_true = tf.expand_dims(y_true, 1)            
@@ -83,8 +113,7 @@ class SiameseModel(keras.Model):
             loss = keras.losses.binary_crossentropy(y_true, logits)
             acc = keras.metrics.binary_accuracy(y_true, logits)
 
-        # Storing the gradients of the loss function with respect to the
-        # weights/parameters.
+        # Storing the gradients of the loss function
         gradients = tape.gradient(loss, self.siamese_network.trainable_weights)
 
         # Applying the gradients on the model using the specified optimizer
@@ -92,7 +121,7 @@ class SiameseModel(keras.Model):
             zip(gradients, self.siamese_network.trainable_weights)
         )
 
-        # Let's update and return the training loss metric.
+        # update and return the training loss metric.
         self.loss_tracker.update_state(loss)
 
         # Update the accuracy metric.
@@ -101,6 +130,15 @@ class SiameseModel(keras.Model):
         return {"loss": self.loss_tracker.result(), "accuracy": self.acc_tracker.result()}
 
     def test_step(self, data):
+        """
+        The test step is used to test performace of the network.
+
+        Args:
+            data: input pairs with their labels.
+        Returns:
+            The loss and accuracy of single step of the network.
+        """
+
         img1, img2, y_true = data
         y_true = tf.expand_dims(y_true, 1)
 
@@ -117,8 +155,6 @@ class SiameseModel(keras.Model):
 
     @property
     def metrics(self):
-        # We need to list our metrics here so the `reset_states()` can be
-        # called automatically.
         return [self.loss_tracker, self.acc_tracker]
 
 
@@ -133,11 +169,3 @@ def classifier():
             ])
     
     return model
-
-
-def main():
-    embedding_model.summary()
-    siamese.summary()
-
-if __name__ == '__main__':
-    main()
