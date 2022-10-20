@@ -13,8 +13,8 @@ def loadData(data):
 
 
 class DataProcess:
-  def __init__(self):
-    self.edges, self.features, self.target = loadData("facebook.npz")
+  def __init__(self, path):
+    self.edges, self.features, self.target = loadData(path)
     self.numNodes = self.features.shape[0]
     self.numFeatures = self.features.shape[1]
 
