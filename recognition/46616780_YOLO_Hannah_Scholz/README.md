@@ -121,9 +121,9 @@ a good IOU score, which is the direct measurement of how close the predicted box
 
 As we can see from these results a metric/mAP_0.5 and metric/mAP_0.5:0.95 are slowly getting better and better, although 
 do not seem to be increasing any further after 300 epochs. Using the function I have created to calculate the IOU metric
-in the YOLOV5_training.ipynb file, the dataset has an IOU value of
+in the YOLOV5_training.ipynb file, the dataset has an IOU value of 0.8643.
 
-Next is to train using the medium YOLOv5 model instead.
+Next is to train using the medium YOLOv5 model instead to see if the performance improves further.
 
 ### Yolov5m - medium 
 #### 4 Epochs:
@@ -143,7 +143,7 @@ Next is to train using the medium YOLOv5 model instead.
 As we can see from these results a metric/mAP_0.5 and metric/mAP_0.5:0.95 are slowly increasing through each increase in
 epoch number in a very similar way to the small YOLOV5 model. And again it does not seem to be increasing any further 
 after 300 epochs. Using the function I have created to calculate the IOU metric in the YOLOV5_training.ipynb file, 
-the 300 epoch results have an IOU value of 0.8961643453882352.
+the 300 epoch results have an IOU value of 0.8961.
 
 ### Conclusion of results:
 Through these results we can see the model receives high results for metric/mAP_0.5, metric/mAP_0.5:0.95 and IOU values.
