@@ -1,3 +1,7 @@
+"""
+This is the script to train the Siamese Network.
+"""
+
 import dataset
 import modules
 
@@ -8,21 +12,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+# set the path to the training data and the test data
 TRAIN_AD_PATH = './AD_NC/train/AD'
 TRAIN_NC_PATH = './AD_NC/train/NC'
 TEST_AD_PATH = './AD_NC/test/AD'
 TEST_NC_PATH = './AD_NC/test/NC'
 
-INPUT_SHAPE = (224, 224)
+# set the parameters of the input images
+INPUT_SHAPE = (60, 64)
 COLOR_MODE = 'grayscale'
+
+# set the batch size and the training size
 BATCH_SIZE = 16
 TRAINING_SIZE = 1800
 
+# set the mode of the program
 TRAINING_MODE = True
-VISUALIZE = False
+VISUALIZE = True
 
 
 def main():
+    '''
+    The main function used to training, validating and testing the model.
+    and visualize the result of the model.
+    '''
+    
     # load the Train and Validation data
     AD_dataset = dataset.load_data(TRAIN_AD_PATH, INPUT_SHAPE, COLOR_MODE)
     NC_dataset = dataset.load_data(TRAIN_NC_PATH, INPUT_SHAPE, COLOR_MODE)
@@ -44,7 +58,7 @@ def main():
 
 
     # set up the callbacks to save the weights 
-    checkpoint_path = "training2/cp-{epoch:04d}.ckpt"
+    checkpoint_path = "training3/cp-{epoch:04d}.ckpt"
     checkpoint_dir = os.path.dirname(checkpoint_path)
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path, 
@@ -52,19 +66,20 @@ def main():
         save_weights_only=True,
         save_freq='epoch')
 
+    # record the training history
+    csv_logger = tf.keras.callbacks.CSVLogger('training3.log',append=False)
+
+    # create the model
+    siamese = modules.SiameseModel()
+
+    # compile the model 
+    siamese.compile(optimizer=tf.keras.optimizers.Adam(0.00006))
+
     # Start the training if TRAINING_MODE is True
     if TRAINING_MODE:
-        # create the model
-        siamese = modules.SiameseModel()
-
-        # record the training history
-        csv_logger = tf.keras.callbacks.CSVLogger('training.log',append=False)
-
-        # compile the model 
-        siamese.compile(optimizer=tf.keras.optimizers.Adam(0.00006))
 
         # train the model
-        history = siamese.fit(train_dataset, epochs=10, validation_data=validation_dataset, callbacks=[cp_callback, csv_logger])
+        history = siamese.fit(train_dataset, epochs=25, validation_data=validation_dataset, callbacks=[cp_callback, csv_logger])
 
         if VISUALIZE:
             # plot the training loss and accuracy
@@ -83,7 +98,7 @@ def main():
 
     else:
         # load the weights of the model
-        siamese.load_weights(tf.train.latest_checkpoint("checkpoints"))
+        siamese.load_weights('training3/cp-0021.ckpt')
 
     # evaluate the model on the validation data
     loss, accuracy = siamese.evaluate(test_dataset)
