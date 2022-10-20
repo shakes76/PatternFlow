@@ -28,10 +28,40 @@ def ResidualBlock(inputs, filters, strides=1):
     return x + s
     
 # Decoder block for the other back of the encoder
-def decoder(inputs, skips, filters):
+def DecoderBlock(inputs, skips, filters):
     x = UpSampling2D((2, 2))(inputs)
     x = Concatenate()([x, skips])
     return ResidualBlock(x, filters)
+
+def BuildResUnet(shape):
+    inputs = Input(shape)
+
+    # First layer of encoding
+    x = Conv2D(64, 3, padding="same", strides=1)(inputs)
+    x = BatchNorm(x)
+    x = Conv2D(64, 3, padding="same", strides=1)(x)
+    s = Conv2D(64, 1, padding="same", strides=1)(inputs)
+    e1 = x + s
+
+    # Remaining encoding layers with skip connections
+    e2 = ResidualBlock(e1, 128, strides=2)
+    e3 = ResidualBlock(e2, 256, strides=2)
+
+    """ Bridge """
+    b = ResidualBlock(e3, 512, strides=2)
+
+    """ Decoder 1, 2, 3 """
+    d1 = DecoderBlock(b, s3, 256)
+    d2 = DecoderBlock(d1, s2, 128)
+    d3 = DecoderBlock(d2, s1, 64)
+
+    """ Classifier """
+    outputs = Conv2D(1, 1, activation="sigmoid", padding="same")(d3)
+
+    """ Model """
+    model = Model(inputs, outputs)
+    return model
+    
 
 """
 # A block which creates a double convolutional layer 

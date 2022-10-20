@@ -9,9 +9,57 @@ from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger, ReduceLROnPla
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import Recall, Precision
 from tensorflow.keras import backend as K
+from modules import BuildResUnet
+from dataset import FullLoad
 
+# Parameters
+smooth = 1e-14
 
+# Dice coefficient
+def DiceCoef(trueY, predY):
+    trueY = tf.keras.layers.Flatten()(trueY)
+    predY = tf.keras.layers.Flatten()(predY)
+    intersection = tf.reduce_sum(predY * trueY)
+    return (2. * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
 
+def DiceLoss(trueY, predY):
+    return 1 - DiceCoef(trueY, predY)
+
+# Main function loop
+if __name__ == "__main__":
+    # Randomizing the seed for tensorflow and numpy
+    tf.random.set_seed(42)
+    np.random.seed(42)
+
+    # Create a files directory if need be
+    if not os.path.exists("files"):
+        os.makedirs("files")
+
+    # Parameters for the project
+    lr = 1e-5
+    epochs=4
+    H, W = 256, 256
+    modelPath = os.path.join("files", "model.h5")
+    csvPath = os.path.join("files", "data.csv")
+
+    # Loading the dataset
+    path = "./Data/"
+    trainDataset, testDataset, validDataset = FullLoad("./Data/")
+    trainSteps = len(trainDataset)
+    validSteps = len(validDataset)
+
+    # Implementing the model
+    model = BuildResUnet((H, W, 3))
+    metrics = [DiceCoef, Recall(), Precision()]
+
+    # Build the model
+    model.compile(optimizer=Adam(lr), loss=DiceLoss, metrics=metrics)
+
+    # Fit the model
+    model.fit(
+        trainDataset, epochs=epochs, validation_data=validDataset,
+        steps_per_epoch=trainSteps, validation_steps=validSteps,
+    )    
 
 """
 #train.py
