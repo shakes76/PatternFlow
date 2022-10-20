@@ -13,15 +13,15 @@ I chose the YOLOV5 model as it is very easy to use and is based in the PyTorch f
 utilising for most of the semester. 
 
 ### Problem it solves
-In this specific circumstance with the dataset provided, detecting problematic skin lesions early could be one of the 
-best preventative methods for stopping the development of life-threatening skin cancers.
-This model provides a solution to this problem. Using convolutional neural networks, the YOLOV5 provides the ability 
-for skin lesions to be identified using image detection. This could potentially aid medical professionals to correctly 
-classify cancerous skin lesions.
+In this specific circumstance with the dataset provided, early detection of problematic skin lesions could be one of the 
+best preventative methods for stopping the development of life-threatening skin cancers. 
+This model provides a solution to this problem. Using convolutional neural networks, the YOLOV5 model provides the 
+ability for skin lesions to be identified using image detection. This could potentially aid medical professionals in 
+correctly identifying cancerous skin lesions.
 
 ### How it works
 YOLOV5 is a single stage object detector that has three main components:
-1. **The model backbone** - A convolutional neural network that extracts important features from a  given input image.
+1. **The model backbone** - A convolutional neural network that extracts important features from a given input image.
 Networks. 
 
 2. **The model neck** - Generates a series of layers, which help the model to mix and combine features. 
@@ -29,10 +29,10 @@ Networks.
 3. **The model head** - Used to perform the final detection by applying anchor boxes, generates class probabilities
 and bounding boxes.
 
-The **activation function** used by YOLOV5 is the LeakyReLU and the sigmoid activation function.
+The **activation function** used by YOLOV5 is the LeakyReLU and the sigmoid activation functions.  
 
-The **optimisation function** used by YOLOV5 is either the stochastic gradient descent function or the adam
-optimiser. 
+The **optimisation function** used by YOLOV5 is either the stochastic gradient descent (SGD) function or the adam
+optimiser. In this report the default optimiser used is SGD.
 
 YOLOV5 also applies **data augmentation** during training, to increase the amount of data to improve the performance. This
 is necessary as the recommended number of images per class for YOLOV5 is over 1,500 images.
@@ -46,8 +46,6 @@ Here we can see a visualisation of the model parts:
 
 ### Dependencies
 #### Versions
-MacOS Monterey 12.6
-
 Python - 3.9.12
 
 Google Collab
@@ -56,13 +54,13 @@ Google Collab
 1. Download images from: https://challenge.isic-archive.com/data/#2017
 2. Put all files in specified folders - training, testing, validation 
 3. Run the dataset.py file
-4. Compress the data into a .zip file called Archive.zip
-5. Download this file to google drive
-6. Run the train.ipynb file - make sure the format of the files in folders is as specified below:
+4. Compress the data into a .zip file called Archive.zip which contains all the labels and images in the format below:
 
 <img width="300" alt="FolderOrganisation" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/FolderOrganisation.jpg">
 
-7. Observe the results using train.ipynb file.
+5. Download this file to google drive
+6. Run the train.ipynb file - make sure the format of the files in folders is as specified above
+7. Observe the results in the specific folders of YOLOV5.
 
 ### Example Inputs
 <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput1.jpg"> <img width="300" alt="Example2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleInput2.jpg">
@@ -77,8 +75,9 @@ how to split the data.
 There was however many more aspects in which the data needed preprocessing.
 The images all had varying sizes for a start. YOLOV5 takes image sizes of 640x640, so all images were resized.
 Next the dataset contained some unnecessary photos in a .png format that had to be removed. 
-Bounding boxes had to be determined for each mask photo:
+Bounding boxes also had to be determined for each mask photo:
 <img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png"> <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
+Bounding boxes can be visualised using the predict.py file.
 
 ### Results
 The YOLOV5 has three main models available to train, a small, medium and large model. 
@@ -124,20 +123,39 @@ Next is to train using the medium YOLOv5 model instead.
 
 ### Yolov5m - medium 
 #### 4 Epochs:
-
+<img width="800" alt="4EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/YOLOV5m_4Ep.png">
 
 #### 50 Epochs:
-
+<img width="800" alt="50EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/YOLOV5m_50Ep.png">
 
 #### 100 Epochs:
+<img width="800" alt="50EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/YOLOV5m_100Ep.png">
 
+#### 300 Epochs:
+<img width="800" alt="300EpochResult" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/YOLOV5m_300Ep.png">
 
-#### 200 Epochs:
-
+<img width="300" alt="Example1_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example1_M.jpg"> <img width="300" alt="Example2_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example2_M.jpg"><img width="300" alt="Example3_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example3_M.jpg"><img width="300" alt="Example4_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example4_M.jpg"><img width="300" alt="Example5_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example5_M.jpg">
 
 ### Conclusion of results:
 
 
+
+### File Contents:
+dataset.py --->
+
+modules.py --->
+
+predict.py --->
+
+train.py --->
+
+YOLOV5_training.ipynb --->
+
+README.md --->
+
+PhotoResults folder ---> 
+
+PhotosForReadMe folder ---> 
 
 
 ### References:
