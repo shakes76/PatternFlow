@@ -70,3 +70,16 @@ both the images) in the both images we are comparing and multiple it by
 trained model. It is the file where the *_evaluation of model is done_* and 
 prints out the results. Through this file one can correlate and *predict* 
 the results that model brings.</sub>
+
+### About Plotted graphs
+<sub> I have plotted two graphs. Both of these graphs are **plotted** 
+**after** the training of model is completed. One graph is for the 
+**dice coefficient similaritiy** : 
+[https://github.com/Sanchitjain16/PatternFlow/blob/topic-recognition/recognition/s4746168_report_assessment/Plotted_Graph/Dice%20Coefficient.png] 
+and the other one is for the **loss** : 
+[https://github.com/Sanchitjain16/PatternFlow/blob/topic-recognition/recognition/s4746168_report_assessment/Plotted_Graph/Loss.png]. 
+
+**IMPORTANT NOTE : ** 
+**_These graphs are plotted for 3 epochs only and the dataset for these_** 
+**_graphs is also very limited and hence they might have higher values in_** 
+**_plotting rather than the original graphs when full dataset is loaded._**
