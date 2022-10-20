@@ -142,34 +142,6 @@ class VQVAE(keras.models.Sequential):
 
         return losses
 
-class PixelConvLayer(keras.layers.Layer):
-    def __init__(self, mask_type=None, **kwargs):
-        super(PixelConvLayer, self).__init__()
-        self.mask_type = mask_type
-        self.conv = Conv2D(**kwargs)
-
-    def build(self, input_shape):
-        self.conv.build(input_shape)
-        kernel_shape = self.conv.kernel.get_shape()
-
-        self.mask = tf.Variable(tf.zeros(shape=kernel_shape, dtype=tf.float32), dtype=tf.float32, name="PixelCNN_Conv_Mask")
-
-        shape = self.mask[: kernel_shape[0] // 2, ...].shape
-        self.mask = self.mask[: kernel_shape[0] // 2, ...].assign(tf.ones(shape=shape))
-
-        shape = self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...].shape
-        self.mask = self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...].assign(tf.ones(shape=shape))
-        if self.mask_type == "B":
-            shape = self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...].shape
-            self.mask = self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...].assign(tf.ones(shape=shape))
-        self.mask = tf.constant(self.mask)
-
-
-    def call(self, inputs):
-        x = self.mask * self.conv.kernel
-        self.conv.kernel.assign(x)
-        return self.conv(inputs)
-
 
 class ResidualBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
@@ -177,12 +149,11 @@ class ResidualBlock(keras.layers.Layer):
         self.conv1 = Conv2D(
             filters=filters, kernel_size=1, activation="relu"
         )
-        self.pixel_conv = PixelConvLayer(
-            mask_type="B",
-            filters=filters // 2,
+        self.pixel_conv = Conv2D(
+            filters = filters // 2,
             kernel_size=3,
             activation="relu",
-            padding="same",
+            padding="same"
         )
         self.conv2 = keras.layers.Conv2D(
             filters=filters, kernel_size=1, activation="relu"
@@ -197,8 +168,8 @@ class ResidualBlock(keras.layers.Layer):
 x = keras.Input(shape=10, dtype=tf.int32)
 
 class OneHotLayer(tf.keras.layers.Layer):
-    def __init__(self, n_embeddings):
-        super(OneHotLayer, self).__init__()
+    def __init__(self, n_embeddings, **kwargs):
+        super(OneHotLayer, self).__init__(**kwargs)
         self.n_embeddings = n_embeddings
 
     def call(self, inputs):
@@ -213,64 +184,32 @@ class PixelCNN(tf.keras.Model):
         self.n_embeddings = n_embeddings
 
         self.model = Sequential()
-        self.model.add(OneHotLayer(n_embeddings))
+        self.model.add(OneHotLayer(n_embeddings, name="OneHot"))
 
         self.model.add(
-            PixelConvLayer(
-                mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
+            Conv2D(
+                filters=128, kernel_size=7, activation="relu", padding="same"
             )
         )
 
         for i in range(n_residual_blocks):
-            self.model.add(ResidualBlock(filters=128))
+            self.model.add(ResidualBlock(filters=128, name=f"ResidualBlock{i}"))
 
         for i in range(n_pixel_cnn_layers):
-            self.model.add(PixelConvLayer(mask_type="B", filters=128, kernel_size=1, strides=1,
-                    activation="relu", padding="valid", ))
+            Conv2D(
+                filters=128, kernel_size=1, strides=1, activation="relu", padding="valid"
+            )
 
         self.model.add(keras.layers.Conv2D(filters=n_embeddings, kernel_size=1,
-                strides=1, padding="valid"))
+                strides=1, padding="valid", name="Conv2D"))
 
-    def get_config():
+    def get_config(self):
         config = super().get_config()
         config.update({
             "in_shape": self.in_shape,
             "n_embeddings": self.n_embeddings
         })
-        return get_config
+        return config
 
     def call(self, x):
         return self.model(x)
-
-
-# def create_pixel_cnn(input_shape, n_embeddings):
-#     model = Sequential()
-#     model.add(OneHotLayer(n_embeddings))
-#     model.add(
-#         PixelConvLayer(
-#             mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same"
-#         )
-#     )
-#
-#     for i in range(n_residual_blocks):
-#         model.add(ResidualBlock(filters=128))
-#
-#     for i in range(n_pixel_cnn_layers):
-#         model.add(
-#             PixelConvLayer(
-#                 mask_type="B",
-#                 filters=128,
-#                 kernel_size=1,
-#                 strides=1,
-#                 activation="relu",
-#                 padding="valid",
-#             )
-#         )
-#
-#     model.add(
-#         keras.layers.Conv2D(
-#             filters=n_embeddings, kernel_size=1, strides=1, padding="valid"
-#         )
-#     )
-#
-#     return model
