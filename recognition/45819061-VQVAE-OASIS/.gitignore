@@ -3,7 +3,8 @@
 data/
 
 # constructed model
-mymodel/
+vqvae/
+pixelcnn/
 
 # all images
 **.png

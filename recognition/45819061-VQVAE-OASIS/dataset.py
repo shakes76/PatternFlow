@@ -4,11 +4,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-BATCH_SIZE = 64
-DATA_DIR = 'data/keras_png_slices_data'
-TRAIN_DATA = DATA_DIR + '/keras_png_slices_train'
-TEST_DATA = DATA_DIR + '/keras_png_slices_test'
-VALIDATE_DATA = DATA_DIR + '/keras_png_slices_validate'
+
 
 def reader(f):
     return tf.io.decode_png(tf.io.read_file(f), channels=1)
@@ -29,10 +25,10 @@ def load(files, use_multiprocessing=False):
     optional argument use_multiprocessing defaults to false can specify and integer to spawn child
     processes to load faster on machines with sufficient capabilities
 """
-def get_data(use_multiprocessing=False):
-    files_train = [os.path.join(TRAIN_DATA, f) for f in os.listdir(TRAIN_DATA) if os.path.isfile(os.path.join(TRAIN_DATA, f))]
-    files_test = [os.path.join(TEST_DATA, f) for f in os.listdir(TEST_DATA) if os.path.isfile(os.path.join(TEST_DATA, f))]
-    files_validate = [os.path.join(VALIDATE_DATA, f) for f in os.listdir(VALIDATE_DATA) if os.path.isfile(os.path.join(VALIDATE_DATA, f))]
+def get_data(train_dir, test_dir, validate_dir, use_multiprocessing=False):
+    files_train = [os.path.join(train_dir, f) for f in os.listdir(train_dir) if os.path.isfile(os.path.join(train_dir, f))]
+    files_test = [os.path.join(test_dir, f) for f in os.listdir(test_dir) if os.path.isfile(os.path.join(test_dir, f))]
+    files_validate = [os.path.join(validate_dir, f) for f in os.listdir(validate_dir) if os.path.isfile(os.path.join(validate_dir, f))]
 
     print("Loading data")
     x_train = load(files_train, use_multiprocessing)

@@ -1,18 +1,17 @@
 from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
-from dataset import BATCH_SIZE, get_data
-from modules import VQVAE, get_pixelcnn, get_pixelcnn_sampler
+from modules import VQVAE, get_pixelcnn
 
 
 class VQVAETrainer (tf.keras.models.Model):
-    def __init__(self, train_variance, latent_dim=32, num_embeddings=128):
+    def __init__(self, train_variance, latent_dim=32, num_embeddings=128, residual_hiddens=256):
         super(VQVAETrainer, self).__init__()
         self.train_variance = train_variance
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
 
-        self.model = VQVAE(self.latent_dim, self.num_embeddings, (256, 256, 1), residual_hiddens=16)
+        self.model = VQVAE(self.latent_dim, self.num_embeddings, (256, 256, 1), residual_hiddens=residual_hiddens)
         self.total_loss_tracker = tf.keras.metrics.Mean(name='total_loss')
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name='reconstruction_loss')
         self.vq_loss_tracker = tf.keras.metrics.Mean(name='vq_loss')
@@ -61,25 +60,24 @@ class VQVAETrainer (tf.keras.models.Model):
             "ssim": self.ssim_tracker.result()
         }
 
-LATENT_DIM = 8
-NUM_EMBEDDINGS = 16
 
-def train(x_train, x_test, x_validate, epochs=30):
+
+def train(x_train, x_test, x_validate, epochs=30, batch_size=16, out_dir='vqvae', **kwargs):
     data_variance = np.var(x_train)
 
-    vqvae_trainer = VQVAETrainer(data_variance, LATENT_DIM, NUM_EMBEDDINGS)
+    vqvae_trainer = VQVAETrainer(data_variance, **kwargs)
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     history = vqvae_trainer.fit(
         x=x_train, 
         epochs=epochs, 
-        batch_size=BATCH_SIZE, 
+        batch_size=batch_size, 
         use_multiprocessing=True, 
         validation_data=(x_validate, x_validate), 
         shuffle=True, 
         validation_freq=1
     )
 
-    eval_results = vqvae_trainer.evaluate(x_test, x_test, batch_size=BATCH_SIZE)
+    eval_results = vqvae_trainer.evaluate(x_test, x_test, batch_size=batch_size)
     print("Structured similarity score:", eval_results)
 
 
@@ -96,62 +94,24 @@ def train(x_train, x_test, x_validate, epochs=30):
     plt.close()
 
     
-
+    plt.plot(history.history['ssim'])
+    plt.plot(history.history['val_ssim'])
+    plt.title('Model ssim')
+    plt.ylabel('ssim')
+    plt.xlabel('epoch')
     plt.ylim((0, 1))
     plt.legend(['training set', 'validation set'])
     plt.savefig('ssim')
     plt.close()
 
-
-    vqvae_trainer.model.save('vqvae')
+    vqvae_trainer.model.summary()
+    vqvae_trainer.model.save(out_dir)
     return vqvae_trainer.model
 
-def show_subplot(original, reconstructed, i):
-    plt.subplot(1, 2, 1)
-    plt.imshow(original.squeeze() + 0.5)
-    plt.title("Original")
-    plt.axis("off")
 
-    plt.subplot(1, 2, 2)
-    plt.imshow(reconstructed.squeeze() + 0.5)
-    plt.title("Reconstructed")
-    plt.axis("off")
-    plt.savefig('fig'+str(i))
-    plt.close()
-
-def demo_model(model, x_test):
-    idx = np.random.choice(len(x_test), 10)
-    test_images = x_test[idx]
-    reconstructions_test = model.predict(test_images)
-
-    for i, (test_image, reconstructed_image) in enumerate(zip(test_images, reconstructions_test)):
-        show_subplot(test_image, reconstructed_image, i)
-
+def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30, batch_size=16, out_dir='pixelcnn', **kwargs):
     encoder = model.get_layer("encoder")
     quantizer = model.get_layer("vector_quantizer")
-
-    encoded_outputs = encoder.predict(test_images)
-    flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-    codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
-    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-
-    for i in range(len(test_images)):
-        plt.subplot(1, 2, 1)
-        plt.imshow(test_images[i].squeeze() + 0.5)
-        plt.title("Original")
-        plt.axis("off")
-
-        plt.subplot(1, 2, 2)
-        plt.imshow(codebook_indices[i])
-        plt.title("Code")
-        plt.axis("off")
-        plt.savefig('embedding'+str(i))
-        plt.close()
-
-def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30):
-    encoder = model.get_layer("encoder")
-    quantizer = model.get_layer("vector_quantizer")
-    decoder = model.get_layer("decoder")
 
     encoded_training = encoder.predict(x_train)
     flat_enc_training = encoded_training.reshape(-1, encoded_training.shape[-1])
@@ -164,47 +124,25 @@ def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30):
     codebook_indices_validation = codebook_indices_validation.numpy().reshape(encoded_validation.shape[:-1])
 
 
-    pixelcnn = get_pixelcnn(num_embeddings=NUM_EMBEDDINGS)
+    pixelcnn = get_pixelcnn(encoded_training.shape[1:-1], **kwargs)
     pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
-    pixelcnn.fit(
+    history = pixelcnn.fit(
         x=codebook_indices_training, 
         y=codebook_indices_training, 
-        batch_size=BATCH_SIZE, 
+        batch_size=batch_size, 
         epochs=epochs,
         validation_data=(codebook_indices_validation, codebook_indices_validation)
     )
 
-
-    sampler = get_pixelcnn_sampler(pixelcnn)
-
-    prior_batch_size = 10
-    priors = np.zeros(shape=(prior_batch_size,) + pixelcnn.input_shape[1:])
-    batch, rows, cols = priors.shape
-
-    for row in range(rows):
-        for col in range(cols):
-            probs = sampler.predict(priors)
-            priors[:, row, col] = probs[:, row, col]
-
-    pretrained_embeddings = quantizer.embeddings
-    prior_onehot = tf.one_hot(priors.astype("int32"), NUM_EMBEDDINGS).numpy()
-    quantized = tf.matmul(prior_onehot.astype("float32"), pretrained_embeddings, transpose_b=True)
-    quantized = tf.reshape(quantized, (-1, *(encoded_training.shape[1:])))
-
-    # Generate novel images.
-    generated_samples = decoder.predict(quantized)
-
-    for i in range(batch):
-        plt.subplot(1, 2, 1)
-        plt.imshow(priors[i])
-        plt.title("Code")
-        plt.axis("off")
-
-        plt.subplot(1, 2, 2)
-        plt.imshow(generated_samples[i].squeeze() + 0.5)
-        plt.title("Generated Sample")
-        plt.axis("off")
-        plt.savefig('gen'+str(i))
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.ylim((0, 1))
+    plt.legend(['training set', 'validation set'])
+    plt.savefig('pcnnacc')
+    plt.close()
         
     pixelcnn.save('pixelcnn')
     return pixelcnn
