@@ -116,13 +116,13 @@ Considering a picture in Fig.2, we gradually add a small amounts of random noise
 ![](imgs/forward_noise.png)
 <p align='center'> Fig.2. Picture diffusion process </p> 
 
-This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $ x_0 $ as the original picture, $ x_t $ as the final unrecognized picture (random noise). We can define the process as :  
-$$ q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI) $$   
-Here $ \beta $ follows a variance schedule of linier increase from 0.0001 to 0.02.  
+This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $x_0$ as the original picture, $x_t$ as the final unrecognized picture (random noise). We can define the process as :  
+$$q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI)$$   
+Here $\beta$ follows a variance schedule of linier increase from 0.0001 to 0.02.  
 The process from $x_1$ to $x_t$ can be define as:  
-$$q(x_{1:T}|x_0)=\prod_{{t=1}}^{T} q(x_t|x_{t-1}) $$  
+$$q(x_{1:T}|x_0)=\prod_{{t=1}}^{T} q(x_t|x_{t-1})$$  
 
-However, this process of adding noise is inefficient as we must calculate the previous $x_{t-1}$ steps if we want to get a random picture in time $t$ .Here we introduce a new variable $ \alpha$ : $$ \alpha_t = 1-\beta_t $$ $$\overline \alpha_t = \prod_{s=1}^T\alpha_s $$ $$q(x_t|x_0)= N(x_t;\sqrt{\overline\alpha_t}x_0,(1-\overline\alpha_t)I) $$ Now, we can get $x_t$ from $x_0$ in one step of calculation.
+However, this process of adding noise is inefficient as we must calculate the previous $x_{t-1}$ steps if we want to get a random picture in time $t$ .Here we introduce a new variable $\alpha$ : $$\alpha_t = 1-\beta_t$$ $$\overline \alpha_t = \prod_{s=1}^T\alpha_s$$ $$q(x_t|x_0)= N(x_t;\sqrt{\overline\alpha_t}x_0,(1-\overline\alpha_t)I)$$ Now, we can get $x_t$ from $x_0$ in one step of calculation.
 
 This definition of $\beta$ and $\alpha$ can be found in the code of [here](modules.py#L26-L34).
 
@@ -144,7 +144,7 @@ However, this porject is using the OASIS brain dataset which concentrates on a s
 
 Now, we have the structure of the backward denoise Attention U-Net Model. We need to choose optimizer and loss fuction. We will use Adam optimizer with a initial learning rate of $1e-4$ .  
 
-We calculate the loss between the predicted noise $\epsilon_0$ and the original noise $\epsilon$ by the following formula:$$Loss_{simplified}(\theta)=\mathbb{E}_{t,x_0,\epsilon}[||\epsilon-\epsilon_0(\sqrt{\overline\alpha_t}x_0+\sqrt{1-\overline\alpha_t}\epsilon,t)||^2] \qquad \epsilon\in N(0, I)$$  This loss function is the L1 loss between predicted noise and the original noise.  
+We calculate the loss between the predicted noise $\epsilon_0$ and the original noise $\epsilon$ by the following formula:$$Loss_{simplified}(\theta)=\mathbb{E}_{t,x_0,\epsilon}[||\epsilon-\epsilon_0(\sqrt{\overline\alpha_t}x_0+\sqrt{1-\overline\alpha_t}\epsilon,t)||^2]\qquad\epsilon\in{N(0, I)}$$  This loss function is the L1 loss between predicted noise and the original noise.  
 <br>
 
 ## Results
