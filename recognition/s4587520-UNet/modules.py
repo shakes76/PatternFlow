@@ -1,5 +1,4 @@
 #Create Model
-from contextvars import Context
 import torch
 from torch import nn
 
@@ -7,7 +6,7 @@ class UNet(nn.Module):
   def __init__(self):
     super().__init__()
     self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3)
-    self.conv32 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3)
+    self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
     self.context16 = Context_Module(16)
     self.context32 = Context_Module(32)
     self.context64 = Context_Module(64)
@@ -38,8 +37,6 @@ class UNet(nn.Module):
     x4 = self.context128(x)
     x = self.stride256(x4)
     x = self.context256(x)
-    print(x.size())
-    print(x4.size())
     x = self.upsample128(x, x4)
     x = self.local128(x)
     x = self.upsample64(x, x3)
@@ -54,12 +51,17 @@ class UNet(nn.Module):
 
 
 #Context Module: 2 3x3 convs connected by 0.3 dropout, adds input after module
+#Leaky RelU activation with instance normalisation
 class Context_Module(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
+      nn.InstanceNorm2d(output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
       nn.Conv2d(output_filters, output_filters, kernel_size=3, padding=1),
       nn.Dropout(p=0.3),
+      nn.InstanceNorm2d(output_filters),
+      nn.LeakyReLU(negative_slope=0.01),
       nn.Conv2d(output_filters, output_filters, kernel_size=3, padding=1)
     )
 
@@ -79,7 +81,10 @@ class Upsampling_Module(nn.Module):
 
   def forward(self, main, cat):
     #main is the signal to be processed and cat is the signal to be concatenated
-    return torch.cat((self.stack(main), cat))
+    out = self.stack(main)
+    print(out.size())
+    print(cat.size())
+    return torch.cat((out, cat), dim=1)
 
 #Performs a 3x3 conv with stride 2 at set output filters
 class Stride2_Conv(nn.Module):
@@ -98,7 +103,7 @@ class Localisation_Module(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
-        nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3),
+        nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding=1),
         nn.Conv2d(2*output_filters, output_filters, kernel_size=1)
     )
   def forward(self, x):
