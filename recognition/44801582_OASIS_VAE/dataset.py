@@ -8,6 +8,7 @@ import torchvision
 
 class OASISDataset(Dataset):
     def __init__(self, data_dir):
+        self.dir = data_dir
         self.data = os.listdir(data_dir)
 
         self.transform = torchvision.transforms.Compose([
@@ -18,9 +19,9 @@ class OASISDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        image = torchvision.io.read_image(self.data[index])
-        image = self.transform(image)
-        return image
+        image = torchvision.io.read_image(f"{self.dir}/{self.data[index]}")
+        # image = self.transform(image)
+        return image.float()
 
 
 def get_loaders():
@@ -28,11 +29,11 @@ def get_loaders():
     num_workers = 1
 
     train_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_train"),
-                              batch_size=4, num_workers=num_workers, pin_memory=True)
+                              batch_size=batch_size, num_workers=num_workers, pin_memory=True)
     test_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_test"),
                              batch_size=batch_size, shuffle=True)
     validation_loader = DataLoader(OASISDataset("keras_png_slices_data/keras_png_slices_validate"),
-                              batch_size=batch_size, drop_last=True,
-                              num_workers=num_workers, pin_memory=True)
+                                   batch_size=batch_size, drop_last=True,
+                                   num_workers=num_workers, pin_memory=True)
 
     return train_loader, test_loader, validation_loader
