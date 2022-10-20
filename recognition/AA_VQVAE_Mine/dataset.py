@@ -8,10 +8,6 @@ from tensorflow.keras.utils import to_categorical ,Sequence
 from tensorflow.keras import backend as K
 import tensorflow_probability as tfp
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, concatenate, Conv2DTranspose, BatchNormalization, Activation, Dropout
-from tensorflow.keras.optimizers import Adadelta, Nadam ,Adam
-from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, CSVLogger, TensorBoard
 
 import os
 from PIL import Image
@@ -23,8 +19,7 @@ import shutil
 img_h = 4288
 img_w = 2848
 b_size = 32
-partition = {}
-labels = {}
+
 
 im_root = Path(os.path.join(os.getcwd(), "recognition\AA_VQVAE_Mine\DataSets\ISIC"))
 
