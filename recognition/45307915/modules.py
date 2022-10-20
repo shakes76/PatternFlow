@@ -7,7 +7,7 @@ from tensorflow_addons.layers import InstanceNormalization
 
 class ImprovedUNETModel():
     
-    def __init__(self, img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
+    def __init__(self, img_width, img_height):
         """ Create a new Improved UNET Model instance.
         
         Described in the paper Brain Tumor Segmentation and Radiomics
