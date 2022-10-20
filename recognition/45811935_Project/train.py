@@ -22,6 +22,7 @@ SAVED_MODEL_PATH = "./SavedModels/"  # Doesn't have to exist yet - code will cre
 RESULTS_PATH = "./Results/"  # Doesn't have to exist yet - code will create directory if not
 IMG_DIMENSION = 256
 SEED = 42
+
 TRAINING_VQVAE = False  # Set to True to train the VQ-VAE
 TRAINING_PIXELCNN = True  # Set to True train the PixelCNN
 
@@ -40,6 +41,8 @@ OPTIMISER = optimizers.Adam(learning_rate=LEARNING_RATE)
 # Check if GPU is available and if so use it, otherwise use CPU
 gpu_used = len(tf.config.list_physical_devices('GPU'))
 device = "/GPU:0" if gpu_used else "/CPU:0"
+
+""" Loading Data and Calculating Variance & Mean SSIM """
 
 # Load and pre-process data
 train_data = load_preprocess_image_data(path=FILE_PATH + "train", img_dim=IMG_DIMENSION,
@@ -77,10 +80,6 @@ image_sse = full_train_data.reduce(np.float32(0), lambda x, y: x + (y - mean_pix
     .numpy().flatten()
 var_pixel_train = image_sse.sum() / (num_train_pixels - 1)
 
-# Create VQ-VAE model
-vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM, rgb=RGB)
-
-
 # Define SSIM metric
 
 
@@ -116,6 +115,13 @@ def mean_ssim(data, data_size, model):
     return (ssim_sum / data_size).numpy()
 
 
+""" VQ-VAE Model (Train/Val/Test/Save/Plot) """
+
+
+# Create VQ-VAE model
+vqvae = VQVAE(tr_var=var_pixel_train, num_encoded=NUM_EMBEDDINGS, latent_dim=LATENT_DIM, rgb=RGB)
+
+
 # Create directory to store model results (if said directory does not already exist)
 if not exists(SAVED_MODEL_PATH):
     mkdir(SAVED_MODEL_PATH)
@@ -144,10 +150,10 @@ if TRAINING_VQVAE:
         print("Final Training Mean SSIM", final_train_mean_ssim)
         print("Final Validation Mean SSIM", final_val_mean_ssim)
 
-    # Save model
+    # Save trained model
     vqvae.save(SAVED_MODEL_PATH + "trained_model")
 
-
+# Load trained model
 vqvae = load_model(SAVED_MODEL_PATH + "trained_model")
 print(vqvae.summary())
 
@@ -200,8 +206,59 @@ def plot_results(epoch_results):
 training_results = pd.read_csv(SAVED_MODEL_PATH + 'training.log', sep=',', engine='python')
 plot_results(training_results)
 
-# Generate reconstructions on test set
+# Generate and plot 10 reconstructions from test set, along with their codes and inputs and SSIMs
+# for sample_batch in test_data.take(1).as_numpy_iterator():
+#     sample_batch = sample_batch[:10]
+#
+# # Reconstruction
+# reconstructed = vqvae.predict(sample_batch)
+#
+# # Code (Flattened)
+# encoder_outputs = vqvae.get_encoder().predict(sample_batch)
+# encoder_outputs_flattened = encoder_outputs.reshape(-1, encoder_outputs.shape[-1])
+# codebook_indices = vqvae.get_vq().get_codebook_indices(encoder_outputs_flattened)
+#
+# # Code (reshaped)
+# codebook_indices = codebook_indices.numpy().reshape(encoder_outputs.shape[:-1])
+#
+# # Unshift and reshape reconstructions and original images and print SSIM values
+# num_channels = 3 if RGB else 1
+#
+# plt.figure()
+# for i in range(len(sample_batch)):
+#     test_image = tf.reshape(sample_batch[i], (1, IMG_DIMENSION, IMG_DIMENSION, num_channels))\
+#                      + PIXEL_SHIFT
+#
+#     reconstructed_image = tf.reshape(reconstructed[i],
+#                                      (1, IMG_DIMENSION, IMG_DIMENSION, num_channels)) + PIXEL_SHIFT
+#
+#     codebook_image = codebook_indices[i]
+#
+#     plt.subplot(1, 3, 1)
+#     plt.imshow(tf.squeeze(test_image))
+#     plt.title("Test Image")
+#     plt.axis("off")
+#
+#     plt.subplot(1, 3, 2)
+#     plt.imshow(codebook_image)
+#     plt.title("Codebook")
+#     plt.axis("off")
+#
+#     plt.subplot(1, 3, 3)
+#     plt.imshow(tf.squeeze(reconstructed_image))
+#     plt.title("Reconstruction")
+#     plt.axis("off")
+#
+#     plt.show()
+#     ssim = tf.math.reduce_sum(tf.image.ssim(test_image, reconstructed_image, max_val=1.0)).numpy()
+#     print("SSIM between Test Image and Reconstruction: ", ssim)
+# plt.savefig(RESULTS_PATH + 'vq_vae_reconstructions.png')
 
+# Present overall mean test SSIM for VQ-VAE:
+# test_mean_ssim_vqvae = mean_ssim(test_data, num_test_images, vqvae)
+# print("VQ-VAE Test Mean SSIM:", test_mean_ssim_vqvae)
+
+""" PixelCNN Model (Train/Val/Test/Save/Plot) """
 
 # Get trained VQ-VAE codebooks
 

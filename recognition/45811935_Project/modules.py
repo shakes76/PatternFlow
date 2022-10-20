@@ -179,7 +179,7 @@ class VQVAE(Model):
 
     def train_step(self, data):
         """
-            Performs one iteration of training and return loss values.
+            Performs one iteration of training and returns loss values.
 
             Args:
                 data: input data
@@ -212,6 +212,19 @@ class VQVAE(Model):
             "vq_loss": self._vq_loss.result(),
             "reconstruction_loss": self._reconstruction_loss.result(),
         }
+
+    def test_step(self, data):
+        """
+            Performs one iteration of evaluation and returns loss values.
+
+            Args:
+                data: input data
+
+            Returns: loss values
+
+        """
+        # Exact same procedure as training
+        return self.train_step(data)
 
     @property
     def metrics(self):
