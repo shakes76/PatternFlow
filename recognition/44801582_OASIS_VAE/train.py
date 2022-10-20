@@ -7,21 +7,39 @@ from dataset import *
 from modules import VQ_VAE
 
 import torch
+from torch.nn.functional import mse_loss
 from tensorboardX import SummaryWriter
 from datetime import datetime
 
 
-def train(model, data, optimizer, writer):
+def train(model, data, optimizer, writer, iter):
+    for images in data:
+        images = images.to(device)
+
+        optimizer.zero_grad()
+        reconstruct, encoding, x_quantized = model(images)
+
+        loss_recons = mse_loss(reconstruct, images)
+        loss_vq = mse_loss(x_quantized, encoding.detach())
+        loss_commit = mse_loss(encoding, x_quantized.detach())
+
+        loss = loss_recons + loss_vq + beta * loss_commit
+        loss.backward()
+
+        writer.add_scalar('train_reconstruction', loss_recons.item(), iter)
+        writer.add_scalar('train_quantization', loss_vq.item(), iter)
+
+        optimizer.step()
+        iter += 1
+
+
+def test(model, data, writer, iter):
     pass
 
 
-def test(model, data, writer):
-    pass
-
-
-def run_epoch(model, train_data, test_data, optimizer, writer):
-    train(model, train_data, optimizer, writer)
-    test(model, test_data, writer)
+def run_epoch(model, train_data, test_data, optimizer, writer, iter):
+    train(model, train_data, optimizer, writer, iter)
+    test(model, test_data, writer, iter)
 
 
 def main():
@@ -29,17 +47,21 @@ def main():
 
     train_loader, test_loader, validation_loader = get_loaders()
 
-    model = VQ_VAE().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=2e-4)
+    model = VQ_VAE(1, 256, 512).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    iter = 0
 
     for epoch in range(3):
-        run_epoch(model, train_loader, test_loader, optimizer, writer)
+        run_epoch(model, train_loader, test_loader, optimizer, writer, iter)
 
         with open(f"{save_filename}/model_{epoch + 1}.pt", 'wb') as f:
             torch.save(model.state_dict(), f)
 
 
 if __name__ == "__main__":
+    lr = 2e-4
+    beta = 1
+
     # Create logs and models folder if they don't exist
     if not os.path.exists('./logs'):
         os.makedirs('./logs')
@@ -50,6 +72,6 @@ if __name__ == "__main__":
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     save_filename = f"./models/{current_time}"
-    os.makedirs(save_filenameBu)
+    os.makedirs(save_filename)
 
     main()
