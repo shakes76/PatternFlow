@@ -106,7 +106,7 @@ $ sudo sh test.sh
 
 Stable Diffusion is an AI-generated text-to-image model that will empower billions of people to create stunning art within seconds. The structure of Stabel Diffusion is shown as follow:
 ![](imgs/stable_diffusion.png)
-<p align='center'> Fig.1. Stable diffusion structure </p>    
+<p align='center'> Fig.1. <i>Stable diffusion structure</i> </p>    
 
 From the Fig.1 we can see the process of the diffusion model can be divided into two phase:  
 * Forward adding noise phase
@@ -119,7 +119,7 @@ The concept of diffusion is from the physics concept. In Physics, diffusion is d
 Considering a picture in Fig.2, we gradually add a small amounts of random noise into the picture at a time. After hundreds of steps, the picture will become unrecognizable.
 
 ![](imgs/forward_noise.png)
-<p align='center'> Fig.2. Picture diffusion process </p> 
+<p align='center'> Fig.2. <i>Picture diffusion process</i> </p> 
 
 This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $x_0$ as the original picture, $x_t$ as the final unrecognized picture (random noise). We can define the process as :  
 $$q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI)$$   
@@ -138,14 +138,14 @@ This definition of $\beta$ and $\alpha$ can be found in the code of [here](modul
 The backward phase is the reverse of the forward phase. We want to denoise the picture step by step and finally get a legible picture, see Fig.3.
 
 ![](imgs/forward_noise1.png)
-<p align='center'> Fig.3. Denoising process </p> 
+<p align='center'> Fig.3. <i>Denoising process</i> </p> 
 
 For the backward phase, we use an Attantion U-NET to predict a noise picture in each step. The Conditioning block in the Fig.1 is where the attantion comes from in the U-Net. The block can be a transformer model or a word-to-vector model which can generate a vecor including some words information.
 
 However, this porject is using the OASIS brain dataset which concentrates on a single pattern of images, being hard to be described by some words. Thus, I use the time embedding attention to alter the word embedding attention in the U-Net, see Fig.4.
 
 ![](imgs/attention_unet.png)
-<p align='center'> Fig.4. Attention U-Net </p> 
+<p align='center'> <i>Fig.4. Attention U-Net</i> </p> 
 
 Now, we have the structure of the backward denoise Attention U-Net Model. We need to choose optimizer and loss fuction. We will use Adam optimizer with a initial learning rate of $1e-4$ .  
 
@@ -160,7 +160,8 @@ The models are trained on the Google Colab pro with NVIDIA Tesla T4 15GB GPU. Th
     BATCH_SIZE = 64  
     EPOCHS = 50  
     ![](imgs/ddpm64.gif)
-    ![](imgs/ddpm64.jpg)
+    ![](imgs/ddpm64.jpg)  
+    Fig.5. _64X64 gif and image_
 
 * 128X128 Images  
     IMAGE_SIZE = (128, 128)  
@@ -168,12 +169,14 @@ The models are trained on the Google Colab pro with NVIDIA Tesla T4 15GB GPU. Th
     EPOCHS = 100  
     ![](imgs/ddpm128.gif)
     ![](imgs/ddpm128.jpg)  
+    Fig.6. _128X128 gif and image_
 
 * 256X256 Images  
     IMAGE_SIZE = (256, 256)  
     BATCH_SIZE = 4  
     EPOCHS = 200  
-    ![](imgs/ddpm256.jpg)
+    ![](imgs/ddpm256.jpg)  
+    Fig.7. _256X256 image_
 
 The model did not converge well on the 256X256 size images. One possible reason is the batch size being too small, only 4. The training process was limited by the graphical memory size. I can only choose the largest image space and batch size combinations listed above. Too big batch size will triger the Out Of Memory(OOM) error.
 <br> 
