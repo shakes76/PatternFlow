@@ -39,7 +39,7 @@ def run_experiment(model):
         callbacks=[checkpoint_callback],
     )
 
-    # Plot training history
+    # Plot training Accuracy
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
     plt.title('model accuracy')
@@ -48,6 +48,7 @@ def run_experiment(model):
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
 
+    # Display test accuracy
     model.load_weights(checkpoint_filepath)
     _, accuracy = model.evaluate(get_test_data())
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")

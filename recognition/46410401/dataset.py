@@ -5,6 +5,7 @@ import shutil
 
 
 def setup_folders():
+    # Create directory paths.
     valid_directory = "valid-split"
     train_directory = "train-split"
     parent_dir = os.getcwd()
@@ -24,6 +25,7 @@ def setup_folders():
     train_nc = os.path.join(train_path, "NC")
 
     try:
+        # If directories already exist will cause exception.
         os.mkdir(valid_path)
         os.mkdir(valid_ad)
         os.mkdir(valid_nc)
@@ -34,7 +36,10 @@ def setup_folders():
 
         ad_files = os.listdir(source_ad_path)
 
+        # Alzheimer's images
+        # Split flag is used to ensure 80% of images go into train and 20% go into validation.
         split_flag = 0
+        # Previous ID ensures patients with the same ID end up in the same dataset.
         previous_id = 0
         for filename in ad_files:
             if filename.split("_")[0] == previous_id:
@@ -53,7 +58,11 @@ def setup_folders():
 
         nc_files = os.listdir(source_nc_path)
 
+        # Healthy Images
+        # Split flag is used to ensure 80% of images go into train and 20% go into validation.
         split_flag = 0
+        # Previous ID ensures patients with the same ID end up in the same dataset.
+        previous_id = 0
         for filename in nc_files:
             if filename.split("_")[0] == previous_id:
                 if split_flag == 0:
