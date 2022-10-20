@@ -43,6 +43,9 @@ def generatePairs(ad, nc, batch=16):
     
 
 def makeCNN():
+    """
+    Creates a CNN used in siamese network
+    """
     # This CNN is inspired by the one presented in the paper 
     input = layers.Input(shape=(64, 64, 1))
     conv = layers.Conv2D(32, 10, activation='relu', name='c0', padding='same')(input)
@@ -68,6 +71,9 @@ def makeCNN():
     
 
 def makeSiamese(cnn):
+    """
+    Creates a siamese network with a given CNN
+    """
     EPS = 1e-8
     
     input_1 = layers.Input((64, 64, 1))

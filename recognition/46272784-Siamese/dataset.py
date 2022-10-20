@@ -4,7 +4,9 @@ from tensorflow import image
 from tensorflow.keras import utils
 
 def transform_images(img):
-    # transform to grayscale and standardize to [0,1]
+    """
+    Transform to grayscale and standardize to [0,1]
+    """
     img = image.rgb_to_grayscale(img)
     img = img / 255.0
     # print(img)

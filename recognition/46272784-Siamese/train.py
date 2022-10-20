@@ -22,7 +22,9 @@ def saveOption(optimizer, siamese):
 
 @tf.function
 def train_step(pairs, optimizer, siamese, train_acc_metric):
-    # print(pairs)
+    """
+    Training process: compute loss, apply gradient
+    """
     with tf.GradientTape() as gra_tape:
         y_true = pairs[2]
         # print(pairs[0], pairs[1])
@@ -37,6 +39,9 @@ def train_step(pairs, optimizer, siamese, train_acc_metric):
 
 @tf.function
 def valid_step(pairs, siamese, test_acc_metric):
+    """
+    Compute validation loss
+    """
     y_true = pairs[2]
     y_pred = siamese([pairs[0], pairs[1]], training=False)
     lossValue = (modules.loss())(y_true, y_pred)
@@ -45,6 +50,9 @@ def valid_step(pairs, siamese, test_acc_metric):
 
 @tf.function
 def test_step(pairs, siamese, acc_metric):
+    """
+    Compute testing loss
+    """
     y_true = pairs[2]
     y_pred = siamese([pairs[0], pairs[1]], training=False)
     lossValue = (modules.loss())(y_true, y_pred)
