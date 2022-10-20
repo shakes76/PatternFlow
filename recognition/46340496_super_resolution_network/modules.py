@@ -54,6 +54,6 @@ def plot_results(img, prefix, title):
 # Getting the low-resolution image
 def get_lowres_image(img):
     image = tf.image.resize(img, (256, 240))
-    plt.imshow(image)
-    plt.show()
+    # plt.imshow(image)
+    # plt.show()
     return image

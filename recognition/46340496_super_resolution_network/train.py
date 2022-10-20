@@ -22,10 +22,10 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         print("Mean PSNR for epoch: %.2f" %  (np.mean(self.psnr)))
-        if True:
-            result = self.model(self.test_img[tf.newaxis, ...])[0]
-            plt.imshow(result)
-            plt.show()
+        # if True:
+        #     result = self.model(self.test_img[tf.newaxis, ...])[0]
+        #     plt.imshow(result)
+        #     plt.show()
 
     def on_test_batch_end(self, batch, logs=None):
         self.psnr.append(10 * math.log10(1 / logs["loss"]))
