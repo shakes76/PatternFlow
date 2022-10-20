@@ -7,6 +7,7 @@ class UNet(nn.Module):
     super().__init__()
     self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding="same")
     self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding="same")
+    self.softmax = nn.Softmax(dim=1)
     self.context16 = Context_Module(16)
     self.context32 = Context_Module(32)
     self.context64 = Context_Module(64)
@@ -24,6 +25,10 @@ class UNet(nn.Module):
     self.local32 = Localisation_Module(32)
     self.local64 = Localisation_Module(64)
     self.local128 = Localisation_Module(128)
+    self.seg32_a = Segmentation_Module(32)
+    self.seg32_b = Segmentation_Module(32)
+    self.seg64 = Segmentation_Module(64)
+    self.upscale = nn.UpsamplingNearest2d(scale_factor=2)
     
 
   def forward(self, x):
@@ -46,7 +51,16 @@ class UNet(nn.Module):
     x = self.upsample16(x6, x1)
     x = self.conv32(x)
     
-    #prediction = self.softmax(x)
+    #Segmentation Layers
+    x5 = self.seg64(x5)
+    x5 = simple_size_fix(self.upscale(x5), x6)
+    x6 = torch.add(self.seg32_a(x6), x5)
+    x6 = simple_size_fix(self.upscale(x6), x)
+    x = torch.add(self.seg32_b(x), x6)
+    
+    #Output
+    prediction = self.softmax(x)
+
     return x
 
 
@@ -103,6 +117,17 @@ class Localisation_Module(nn.Module):
     self.stack = nn.Sequential(
         nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding="same"),
         nn.Conv2d(2*output_filters, output_filters, kernel_size=1)
+    )
+  def forward(self, x):
+    return self.stack(x)
+
+#Segmentation module
+#3x3 conv followed by 1x1 conv that halves features
+class Segmentation_Module(nn.Module):
+  def __init__(self, input_filters):
+    super().__init__()
+    self.stack = nn.Sequential(
+        nn.Conv2d(input_filters, 1, kernel_size=3, padding="same"),
     )
   def forward(self, x):
     return self.stack(x)
