@@ -43,7 +43,7 @@ is to the original representation in the test set, the higher SSIM value is and 
 
 ![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/SSIM_ReconstructionLoss.PNG)
 
-In terms of Average and Max SSIM values, they were very reasonable as well with an average SSIM of 0.877 and max SSIM of 0.907 in the test images
+In terms of SSIM values, they were very reasonable as well with an average SSIM of 0.877 and max SSIM of 0.907 in the test images
 
 ![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/SSIM.PNG)
 
