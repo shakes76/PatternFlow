@@ -105,7 +105,7 @@ displayed below.
 * Transformer Layers: 16
 * Learning Rate: 0.001
 
-![img.png](Images/32 Batch 0.001 Learning rate depth 16.png)
+![img.png](Images/Image32.png)
 
 * Image Size: 72
 * Batch Size: 64
@@ -113,7 +113,7 @@ displayed below.
 * Transformer Layers: 8
 * Learning Rate: 0.001
 
-![img.png](Images/64 batch 0.001 learning rate depth 8.png)
+![img.png](Images/image648.png)
 
 * Image Size: 256
 * Batch Size: 64
@@ -121,7 +121,7 @@ displayed below.
 * Transformer Layers: 8
 * Learning Rate: 0.001
 
-![img.png](Images/64 batch 256 image size 0.001 learning rate depth 8.png)
+![img.png](Images/image256.png)
 
 * Image Size: 72
 * Batch Size: 64
@@ -129,7 +129,7 @@ displayed below.
 * Transformer Layers: 16
 * Learning Rate: 0.0003
 
-![img.png](Images/1024 batch 0.0003 Learning rate depth 16.png)
+![img.png](Images/img1024.png)
 
 ## Results
 The best results achieved were with the following hyper-parameters:
