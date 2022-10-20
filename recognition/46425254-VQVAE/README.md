@@ -84,6 +84,7 @@ The SSIM metrics calculated after running the test dataset through the VQVAE is 
 The loss graph for training is recorded below:
 
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/VQVAE_Loss.png?raw=true)
+
 As seen with the decoded image above, it still is not very clear compared to the encoded image. However, it was only trained with 15 epochs. The model, if given more time to train would have produced decoded images with far more high quality.
 
 ### Image Generation:
@@ -93,6 +94,7 @@ Even with a trained decoder, it will not be able to generate images from scratch
 The PixelCNN is a model that generates models pixel by pixel, with the current pixel being generated being based on the previously generated pixels. This rule is strict, as the model does not allow the current pixel being generated to know of the future, yet to be generated pixels.
 
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/b5351924ebb95fd94b04b89a539ceca85c9ecb23/recognition/46425254-VQVAE/readme_images/pixelCNN.png?raw=true)![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/pixelCNNB.png?raw=true)
+
 Above is an example of  pixelCNN kernel masks, there are two types of masks, A mask and B mask shown respectively. 
 For a mask with the current pixel being in the dead center of the layer:
 - If the mask type is A, then the current pixel is not included
