@@ -12,61 +12,46 @@ import numpy as np
 
 from keras import layers
 from CustomLayers import *
-
 class Encoder(kr.Sequential) :
     def __init__(self, inputSize, activation = kr.activations.swish, downSampleLayer = ConvDownsample, normLayers = True) :
         super().__init__(
             [
             # Block downsampling by factor of 2
-                ResidualNetBlock(1, 64, 3, activation = activation, normLayers = normLayers),
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers), 
-                downSampleLayer(64),
+                ResidualNetBlock(1, 256, 3, activation = activation, normLayers = normLayers),
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers), 
+                downSampleLayer(256),
             
             # Block downsampling by factor of 2
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),  
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers), 
-                downSampleLayer(64),
-            
-            # Block downsampling by factor of 2
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                downSampleLayer(64),
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers),  
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers), 
+                downSampleLayer(256),
             
             # Reducing filter channel back to 1
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),  
-                ResidualNetBlock(64, 1, 3, activation = activation, normLayers = normLayers)
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers),   
+                ResidualNetBlock(256, 1, 3, activation = activation, normLayers = normLayers)
             ])
         
-        
-################################################ CONSIDER DECONVOLUTION  ################################################
 
 class Decoder(kr.Sequential) :
     def __init__(self, latentSpaceSize, outputSize, activation = kr.activations.swish, upSampleLayer = kr.layers.UpSampling2D, normLayers = True) :
         super().__init__(
             [    
             # Block upsampling by factor of 2
-                ResidualNetBlock(1, 64, 3, activation = activation, normLayers = normLayers),
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                upSampleLayer(),
+                ResidualNetBlock(1, 256, 3, activation = activation, normLayers = normLayers),
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers),   
+                ConvUpsample(256),
             
             # Block upsampling by factor of 2
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                upSampleLayer(),
-            
-            # Block upsampling by factor of 2
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                upSampleLayer(),
-            
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers),   
+                ResidualNetBlock(256, 256, 3, activation = activation, normLayers = normLayers),   
+                ConvUpsample(256),
+
             # Reducing filter channel back to 1
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),   
-                ResidualNetBlock(64, 64, 3, activation = activation, normLayers = normLayers),  
+                ResidualNetBlock(256, 128, 3, activation = activation, normLayers = normLayers),  
+                ResidualNetBlock(128, 64, 3, activation = activation, normLayers = normLayers),
                 ResidualNetBlock(64, 1, 3, activation = activation, normLayers = normLayers)
             ])
+
                                  
 class AutoEncoder(kr.Model) :
     """
@@ -97,8 +82,8 @@ class AutoEncoder(kr.Model) :
 
     def buildEncoder(self) :
         newInput = kr.Input(self.inputSize)
-        return kr.models.Model(newInput, self.encoder(newInput)) ####################################################
+        return kr.models.Model(newInput, self.encoder((newInput, newInput, 1)))
     
     def buildDecoder(self) :
         newLatent = kr.Input(self.latentSpaceSize)
-        return kr.models.Model(newLatent, self.decoder(newLatent)) ####################################################
+        return kr.models.Model(newLatent, self.decoder((newInput, newInput, 1)))
