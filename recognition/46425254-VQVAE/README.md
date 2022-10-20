@@ -41,7 +41,10 @@ Create a new folder for each of the folders above, for example:
 -- For the example above, only call, for example: path1/path2/path3/train when the file path is a parameter.
 
 These are some of the samples from the dataset:
-![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_27.nii.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_19.nii.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_11.nii.png?raw=true)
+
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_27.nii.png?raw=true) 
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_19.nii.png?raw=true) 
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/98928ee91bfcab16a7725e246540020f6ae678d0/recognition/46425254-VQVAE/readme_images/case_001_slice_11.nii.png?raw=true)
 ## Model Architecture:
 The model architecture for the VQVAE, stored in the modules.py file is as follows:
 The Latent Space specified was 16.
@@ -70,13 +73,16 @@ The model was trained for 15 epochs, with a learning rate of 0.001 using the ada
 The testing set was used to test SSIM of decoded images with their original counterparts, using the training set would be considered an overfit since that was used to train the encoding/decoding process.
 
 Here are the results after training for 15 epochs:
-![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/Lat_Enc2.png?raw=true) 
+
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/Lat_Enc2.png?raw=true)
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/Dec_Enc1.png?raw=true) 
 
 The SSIM metrics calculated after running the test dataset through the VQVAE is recorded below:
+
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/SSIM_1.png?raw=true)
 
 The loss graph for training is recorded below:
+
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/VQVAE_Loss.png?raw=true)
 As seen with the decoded image above, it still is not very clear compared to the encoded image. However, it was only trained with 15 epochs. The model, if given more time to train would have produced decoded images with far more high quality.
 
@@ -124,25 +130,34 @@ Initially, the problem ran into many problems with generation. Completely blank 
 However, another problem arose, as images generated, even after hundreds of epochs, had the patterns and features of the data, but hardly their shape.
 
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_256_Epcoh%20150.png?raw=true)
+
 This generation was at epoch 150.
+
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_256_Epcoh%20170.png?raw=true)
+
 This generation was at epcoh 170. Features such as the carapace and the brain innards are clearly visible, but the shape was not defined.
 
 However, after much deliberation, it was found that a smaller dimension of the original data could help with speeding up the generation training process. The model is clearly working, with features clearly being generated, however, the problem space for the generation for simply too large and the model could not generate a proper shape given all the possible likelihoods.
 
 Therefore, all of the data, when loaded in the dataset file, was resized to be (128,128), half the size. And after 300 epochs of training, these are some samples of generated images:
 
-![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent1.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent2.png?raw=true)
-![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent4.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent3.png?raw=true)
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent1.png?raw=true) 
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent2.png?raw=true)
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent4.png?raw=true) 
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent3.png?raw=true)
 
 These were the generated samples during training:
+
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%2020.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%20100.png?raw=true)
+
 This is around epoch 20 and 100 respectively.
 
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%20160.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%20200.png?raw=true)
+
 This is around epoch 160 and 200 respectively.
 
 The loss during the training process is shown here:
+
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/28903c8ff707df09fcb1dcd3a7d86145f8ec0d9f/recognition/46425254-VQVAE/readme_images/PixelCNN_Loss.png?raw=true)
 
 ### Instructions to use:
