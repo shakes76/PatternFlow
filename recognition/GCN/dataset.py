@@ -45,7 +45,8 @@ def rownormalise(inp):
   return inp
     
 def preprocess():
-  data = (np.load('./facebook.npz'))
+  data = np.load('mnt/MyDrive/Colab Notebooks/facebook.npz')
+  # data = (np.load('./facebook.npz'))
   # print(data)
   lst = data.files
   print(lst)
@@ -59,8 +60,6 @@ def preprocess():
   features_list = (data['features']).tolist()
   feature_names = (np.arange(0, 128)).tolist()
 
-  from sklearn.utils import shuffle
-  #shuffle targets and features
   # print(data['features'].tolist())
   features, target = ((data['features']), data['target'])
 
@@ -68,9 +67,7 @@ def preprocess():
   features_df = pd.DataFrame(features, columns=np.arange(0, 128))
   feature_dict = features_df.to_dict(orient='records')
   features_ = [tuple([i, f]) for i, f in enumerate(feature_dict)]
-  # print((features_df))
 
-  # print("Total number of self-loops: ", len(list(nx.selfloop_edges(G))))
   print("before nodes!!")
   G.add_nodes_from(features_, name=np.arange(1, G.number_of_nodes()))
 
@@ -90,35 +87,25 @@ def preprocess():
 
   A_copy = A.copy()
 
-  # print(A_copy)
-  # print("adj", A_copy[np.nonzero(A_copy)])
-
   np.fill_diagonal(A, 1)
-  # print(A)
-  # print(A_copy)
+
   print("added loops!!")
   diags = np.diag(A) + np.diag(A_copy)
   # print(diags)
   np.fill_diagonal(A_copy, diags)
 
-  
   # print(A_copy)
   print("before dot!")
-  # AX = np.dot(A_copy,X)
- 
-  # D_inverse = linalg.fractional_matrix_power(linalg.inv(deg_mat), -0.5)
-  # D_inv_AX = np.dot(D_inverse, AX)
 
-  # normalised_adjacency = D_inv_AX
-  # print("here!")
-  adj = rownormalise(A_copy)#torch.from_numpy(rownormalise(A_copy))
+  adj_mtrx = torch.from_numpy(rownormalise(A_copy)) #rownormalise(A_copy)
   print("sum", np.array(features.sum(1)))
   features = rownormalise(features)
   # print(int(0.5*len(features)))
   idx_train = np.arange(int(0.6*len(features)))
   # print("train", idx_train)
+
   idx_val = np.arange(int(0.6*len(features)), int(0.6*len(features)) + int(0.2*len(features)))
-  # print("val", idx_val)
+
   idx_test = np.arange(int(0.6*len(features)) + int(0.2*len(features)), len(features))
   
   # print("test", idx_test)
@@ -126,18 +113,11 @@ def preprocess():
   idx_val = torch.LongTensor(idx_val)
   idx_test = torch.LongTensor(idx_test)
 
-
- 
-  train_adj = torch.from_numpy(adj[idx_train,:][:, idx_train])
-  val_adj = torch.from_numpy(adj[idx_val, :][:, idx_val])
-  test_adj = torch.from_numpy(adj[idx_test, :][:, idx_test])
-
   encoder_target = LabelBinarizer()
   encoded = encoder_target.fit_transform(target)
   
   labels = torch.LongTensor(np.where(encoded)[1])
-  # print(labels)
+
   features = torch.FloatTensor((features))
-  # print("before adj!")
   
-  return train_adj, val_adj, test_adj, features, labels, idx_train, idx_val, idx_test
+  return adj_mtrx, features, labels, idx_train, idx_val, idx_test
