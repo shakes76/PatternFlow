@@ -140,3 +140,9 @@ def simple_size_fix(x, desired):
   x = nn.functional.pad(x, [0, pad_width, 0, pad_height])
   return x
 
+#Calculates DICE similarity coefficient
+def dice_similarity(prediction, truth):
+  numerator = torch.sum(torch.mul(prediction[0, 0, :, :], truth[0,0,:,:])).item()
+  denom = torch.sum(prediction[0, 0, :, :]).item() + torch.sum(truth[0, 0, :, :]).item()
+
+  return 2*numerator/denom
