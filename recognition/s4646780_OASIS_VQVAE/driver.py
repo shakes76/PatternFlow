@@ -1,11 +1,9 @@
 """
 Main functionality which calls all the necessary scripts for model to run.
 """
-import torch
 
 from train import train_VQVAE, train_DCGAN
 from predict import VisualiseVQVAE, PredictGAN
-from modules import VQVAE
 
 
 def main():
