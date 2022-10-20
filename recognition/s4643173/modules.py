@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -29,7 +31,7 @@ class Embedding(nn.Module):
         
         # We get the indices from argmin
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
-        encodings = torch.zeros(encoding_indices.shape[0], self.K, device='cuda')
+        encodings = torch.zeros(encoding_indices.shape[0], self.K, device=DEVICE)
         encodings.scatter_(1, encoding_indices, 1)
 
         # Quantize the vector by multiplying the encodings with the embeddings
@@ -46,7 +48,7 @@ class Embedding(nn.Module):
 
     def quantise(self, x, batch_size):
         encoding_indices = x.unsqueeze(1)
-        encodings = torch.zeros(encoding_indices.shape[0], self.K, device='cuda')
+        encodings = torch.zeros(encoding_indices.shape[0], self.K, device=DEVICE)
         encodings.scatter_(1, encoding_indices, 1)
         quantized = torch.matmul(encodings, self.embedding.weight).view(batch_size, 64, 64, 256)
         return quantized.permute(0, 3, 1, 2).contiguous()

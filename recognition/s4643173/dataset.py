@@ -1,8 +1,8 @@
 from torchvision import transforms, datasets
 import torch 
 
-TRAIN_DATA_PATH = "D:\keras_png_slices_data\keras_png_slices_data\keras_png_slices_train"
-TEST_DATA_PATH = "D:\keras_png_slices_data\keras_png_slices_data\keras_png_slices_test"
+TRAIN_DATA_PATH = "your/path/to/data"
+TEST_DATA_PATH = "your/path/to/data"
 
 def get_data(batch_size_train, batch_size_test):
     transform = transforms.Compose([
