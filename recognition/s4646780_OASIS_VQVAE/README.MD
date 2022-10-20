@@ -72,7 +72,6 @@ Final Conv2d  | 1 | 3 | 1 | 1 | (16 x 256 x 256) | (1 x 256 x 256)
 The architecture for the generator was from [2]: <br/>
 ![Generator from original paper](./images/generator.PNG)
 
-The models described above are implemented in the following modules: 
 
 ## Results:
 For the input to VQ-VAE, it was the full grayscale image (pixel ranging from  0-255) and no pixel normalisation was 
