@@ -17,4 +17,21 @@ def compare_reconstructions(vqvae, dataset, n_images):
 def ssim(original_images, reconstructed_images):
     # https://en.wikipedia.org/wiki/Structural_similarity
     similarity = tf.reduce_mean(tf.image.ssim(original_images, reconstructed_images, max_val=1))
-    print("SSIM is:", similarity)
+    print("SSIM is:", float(similarity))
+
+def show_reconstructions(n_images, test_samples, reconstructed):
+    for i in range(n_images):
+        original_image = tf.squeeze(test_samples[i], axis=2)
+        reconstructed_image = tf.squeeze(reconstructed[i], axis=2)
+
+        plt.subplot(1, 2, 1)
+        plt.imshow(original_image, vmin=0, vmax=1, cmap="gray")
+        plt.title("Original")
+        plt.axis("off")
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(reconstructed_image, vmin=0, vmax=1, cmap="gray")
+        plt.title("Reconstructed")
+        plt.axis("off")
+
+        plt.show()
