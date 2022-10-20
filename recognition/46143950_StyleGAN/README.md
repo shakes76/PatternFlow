@@ -68,13 +68,13 @@ The structure of the model is given below.
 
 A few points to note,
 
- - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](modules.py#L180) and [<ins>here</ins>](modules.py#L210)).
- - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L130)).
+ - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](modules.py#L184) and [<ins>here</ins>](modules.py#L213)).
+ - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L127) and [<ins>here</ins>](modules.py#L133)).
  - number of fully connected layers is 8, w and z have the same dimension.
- - Input of 'Synthesis network' is constant (see [<ins>here</ins>](modules.py#L174)).
- - a noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L122) and see [<ins>here</ins>](modules.py#L128)).
- - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](modules.py#L122) and see [<ins>here</ins>](modules.py#L128)).
- - Loss function is the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability (see [<ins>here</ins>](modules.py#L192)).
+ - Input of 'Synthesis network' is constant (see [<ins>here</ins>](modules.py#L177)).
+ - a noise vector is injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
+ - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector (see [<ins>here</ins>](modules.py#L125) and see [<ins>here</ins>](modules.py#L131)).
+ - Loss function is the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability (see [<ins>here</ins>](modules.py#L196)).
  - Model is trained progressively.
 
 ### Model Variations
