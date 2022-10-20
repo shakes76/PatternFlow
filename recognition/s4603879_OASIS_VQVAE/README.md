@@ -20,10 +20,10 @@ This repository is used to implement the vq-vae project of COMP3710, where a var
 Different from traditional variational autoencoders, VQ-VAE has the modified latent space with an additional vector quantized layer which makes use of a codebook. The output of the encoder is compared to the codebook columns(embeddings) and the we use the closest embedding whose L2 norm distance is the minimum will be chosen and we use one-hot encoding to do the quantization so as to achieve the minimum information losses. Then the quantized vector will be passed to the decoder as input and the decoder will reproduce the images. The codebook is learnt during the training process via gradient descent.
 
 ### Encoder
-The encoder is a convolutional model built upon convolutional layers transforming images from size (256, 256, 1) to (32, 32, 30).
+The encoder is a convolutional neural network model built upon convolutional layers transforming images from size (256, 256, 1) to (32, 32, 30).
 
 ### Decoder
-The decoder is implemented with transpose conv layers to recreate (256, 256, 1) images.
+The decoder is a CNN model that is implemented with transpose conv layers to recreate (256, 256, 1) images.
 
 ```
 Model: "encoder"
