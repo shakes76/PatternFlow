@@ -49,12 +49,23 @@ class IUNET(nn.Module):
         self.upsample2 = self.upsample(filter_size*2, filter_size)
 
         ## Localization Module
-        self.localize4 = self.localization(filter_size*8)
-        self.localize3 = self.localization(filter_size*4)
-        self.localize2 = self.localization(filter_size*2)
+        self.localize4 = self.localization(filter_size*16, filter_size*8)
+        self.localize3 = self.localization(filter_size*8, filter_size*4)
+        self.localize2 = self.localization(filter_size*4, filter_size*2)
 
-        ## Softmax
-        self.softmax = nn.Softmax2d()
+        ## 3x3 Convolution
+        self.conv1_localization = self.conv(filter_size*2, filter_size*2, 1)
+
+        ## Segmentation layers
+        self.upscale = nn.Upsample(scale_factor=2)
+        self.seg3 = self.conv(filter_size*4, filter_size, stride=1, kernel_size=1, padding=0)
+        self.seg2 = self.conv(filter_size*2, filter_size, stride=1, kernel_size=1, padding=0)
+        self.seg1 = self.conv(filter_size*2, filter_size, stride=1, kernel_size=1, padding=0)
+
+        ## Output Layer
+        self.out_layer = nn.Sequential(
+            self.conv(filter_size, in_channels, stride=1)
+        )
 
 
     def conv(self, filters_in, filters_out, stride, kernel_size=3, padding=1) -> nn.Sequential:
@@ -86,18 +97,21 @@ class IUNET(nn.Module):
             self.conv(filters_in, filters_out, stride=1)
         )
 
-    def localization(self, filters) -> nn.Sequential:
+    def localization(self, filters_in, filters_out) -> nn.Sequential:
         """ 
         Localization module as described by Isensee et al.
         """
         return nn.Sequential(
-            self.conv(filters, filters, 1),
-            self.conv(filters, filters, 1, kernel_size=1, padding=0)
+            self.conv(filters_in, filters_in, 1),
+            # 1x1 convolution to halve feature map
+            self.conv(filters_in, filters_out, 1, kernel_size=1, padding=0)
         )
     
     def forward(self, x):
         """ 
         Generate predicted segmentation for given image
+        NOTE: The usage of the notation for 'depth' here is nonstandard, 
+                it is merely used for convenience
         x: image in the form of a tensor of shape (N, C, H, W)
             N: # of images in current batch
             C: # of channels
@@ -145,15 +159,55 @@ class IUNET(nn.Module):
         ### Localization Pathway
         # depth 5
         # out = torch.cat((out, out5), dim=1)
-        print(out.shape)
         out = self.upsample5(out)
-        
 
+        # depth 4
+        print(out.shape)
+        out = torch.cat((out, out4), dim=1)
+        print(out.shape) # 256
+        # conv1 256-256
+        # conv2 256-128
+        out = self.localize4(out)
+        # upsample 128-64
+        out = self.upsample4(out)
+
+        # depth 3
+        out = torch.cat((out, out3), dim=1)
+        out = self.localize3(out)
+        l3 = out # localization results to be used in segmentation layers
+        out = self.upsample3(out) 
+
+        # depth 2
+        out = torch.cat((out, out2), dim=1)
+        out = self.localize2(out)
+        l2 = out
+        out = self.upsample2(out)
+
+        # depth 1
+        out = torch.cat((out, out1), dim=1)
+        out = self.conv1_localization(out)
+
+        print(l3.shape)
+        print(l2.shape)
+        print(out.shape)
+
+        # segmentation layers
+        s3 = self.seg3(l3)
+        s3 = self.upscale(s3)
+        s2 = self.seg2(l2)
+        s23 = torch.add(s3, s2)
+        s23 = self.upscale(s23)
+        out = self.seg1(out)
+        out = torch.add(s23, out)
+
+        # output
+        out = self.out_layer(out)
+        print(out.shape)
         return out
         
 
 if __name__ == '__main__':
-    x = torch.rand((6, 3, 256, 256)).to('cuda')
+    x = torch.rand((2, 3, 256, 256)).to('cuda')
     iunet = IUNET(3, 16).to('cuda')
     y = iunet(x)
     
