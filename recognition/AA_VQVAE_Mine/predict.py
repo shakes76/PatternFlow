@@ -5,10 +5,11 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
+from random import sample, choice
+
 
 import train
 import dataset
-import modules
 
 img_mask = choice(dataset.val_pair)
 img= img_to_array(load_img(img_mask[0] , target_size= (dataset.img_w,dataset.img_h)))
