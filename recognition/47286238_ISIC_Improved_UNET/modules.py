@@ -21,6 +21,9 @@ class IUNET(nn.Module):
         self.in_channels = in_channels
         self.filter_size = filter_size
 
+        ## Leaky ReLU
+        self.lrelu = nn.LeakyReLU(negative_slope=1e-2)
+
         ### Context Pathway (encoder)
         ## Initial 3x3 Convolution
         self.conv1 = self.conv(in_channels, filter_size, 1)
@@ -50,14 +53,9 @@ class IUNET(nn.Module):
         self.localize3 = self.localization(filter_size*4)
         self.localize2 = self.localization(filter_size*2)
 
-        ## TODO: Segmentation Module
-        self.segmentation = nn.Sequential()
-
         ## Softmax
         self.softmax = nn.Softmax2d()
 
-        ## Leaky ReLU
-        self.lrelu = nn.LeakyReLU(negative_slope=1e-2)
 
     def conv(self, filters_in, filters_out, stride, kernel_size=3, padding=1) -> nn.Sequential:
         return nn.Sequential(
@@ -96,7 +94,7 @@ class IUNET(nn.Module):
             self.conv(filters, filters, 1),
             self.conv(filters, filters, 1, kernel_size=1, padding=0)
         )
-
+    
     def forward(self, x):
         """ 
         Generate predicted segmentation for given image
@@ -115,37 +113,47 @@ class IUNET(nn.Module):
         out = self.context1(out)
         out = torch.add(residual, out) # elementwise sum
         out1 = out
+        print(out.shape)
 
         # depth 1: 32 filters out
-        out = self.conv2(x)
+        out = self.conv2(out)
         residual = out
         out = self.context2(out)
         out = torch.add(residual, out) # elementwise sum
         out2 = out
 
         # depth 3: 64 filters out
-        out = self.conv3(x)
+        out = self.conv3(out)
         residual = out
         out = self.context3(out)
         out = torch.add(residual, out) # elementwise sum
         out3 = out
 
         # depth 4: 128 filters out
-        out = self.conv4(x)
+        out = self.conv4(out)
         residual = out
         out = self.context4(out)
         out = torch.add(residual, out) # elementwise sum
         out4 = out
 
         # depth 5: 256 filters out
-        out = self.conv5(x)
+        out = self.conv5(out)
         residual = out
         out = self.context5(out)
         out = torch.add(residual, out) # elementwise sum
-        out5 = out
 
         ### Localization Pathway
-        # TODO
-
-        return None
+        # depth 5
+        # out = torch.cat((out, out5), dim=1)
+        print(out.shape)
+        out = self.upsample5(out)
         
+
+        return out
+        
+
+if __name__ == '__main__':
+    x = torch.rand((6, 3, 256, 256)).to('cuda')
+    iunet = IUNET(3, 16).to('cuda')
+    y = iunet(x)
+    
