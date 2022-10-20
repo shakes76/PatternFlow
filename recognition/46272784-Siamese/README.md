@@ -5,6 +5,7 @@
 The Siamese Neural Network (SNN) is an artificial neural network that contains two (or more) parallel and identical Convolutional Neural Networks (CNN) which accept distinct inputs and produces embedding for the input. These embeddings are compared to generate a similarity score. The following figure illustrates the architecture of a SNN.
 
 ![1_23mikUF3HBJGUqrX7tMKQQ](https://user-images.githubusercontent.com/103046146/196857370-c953cb10-4b42-43e1-b42e-53d398439ee6.png)
+
 For this project, the inputs are images from the ADNI brain dataset.
 
 ## **Implimentation**
@@ -17,13 +18,14 @@ Now the images are splited into classes, we can then generate pairs by tf.zip, w
 ![Figure_1](https://user-images.githubusercontent.com/103046146/196894876-e7a6aafb-b5a9-4a07-9404-116564fe4eb6.png)
 
 ### ***Data augmentation:***
-To increase accuracy, data augmentation is also used. The images are randomly rotated, shifted, flipped and stretched.
+To increase accuracy, data augmentation is also used. The images are randomly rotated, shifted and stretched.
 
 ## **Training**
 The model is trained for 10 epochs using binary cross entropy as loss function and adam as optimizer. (Note: I was unable to impliment the prograss bar using tqdm, as a remedy, the training loss and accuracy are printed out) The following plots shows the training/validation accuracy. It is clear that the validation accuracy is greater than 80%.\
 ![Screenshot 2022-10-20 182246](https://user-images.githubusercontent.com/103046146/196896057-cd69a1fa-e55a-4420-b4b8-f09543d9ada3.png)
 
 ## **Dependencies**
+- Python: 3.9.13
 - TensorFlow: 2.6.0
 - Matplotlib: 3.5.2
 
