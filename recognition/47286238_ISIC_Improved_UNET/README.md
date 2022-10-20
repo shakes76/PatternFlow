@@ -4,22 +4,20 @@
 
 Submission for the final report in the course COMP3710 (Pattern Recognition & Analysis)
 
-This is an implementation of the Improved UNET model, as detailed in the paper by Isensee et al. (2018) [1], applied to segment images of skin lesions on the ISIC challenge 2017 dataset.
-
 ## Algorithm Overview
 ![IUNET Architecture](static/IUNET.png)
-The Improved UNET model is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover finer details to be included in the final output mask.
+The Improved UNET network, as detailed in the paper by Isensee et al. (2018) [1], is split into a context pathway and a localization pathway. The context pathway performs feature extraction, the result of which is then taken as the input for the localization pathway which, as the name suggests, aims to localize particular areas of interest. Both pathways are connected to each other via skip connections, which allows the network to recover finer details to be included in the final output mask. Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization.
 
-Beyond the diagram, Improved UNET utilizes dropout layers between convolutions in each context module. It also uses instance normalization in place of batch normalization, which the author owes to its small batch sizes destabilizing batch normalization.
+This algorithm aims to utilize the Improved UNET network to segment areas of lesions on skin. The network will take an RGB image of skin with lesions on it, and output a mask detailing what region the lesion occupies.
 
 ### How It Works
-As the input passes forward through the model, what results are images of a similar shape as its input. To generate a mask from this output image, the implemented algorithm isolates the first RGB channel of the image, then sets whatever elements are of a value greater than or equal to a given threshold value (in this case, 0.5) to 1.0, and whatever is lower than that is set to 0.0. This resulting mask can then be compared with the ground truth of the data. From this the loss can be calculated, and have its result backpropagated along the network via chain rule in order to tune the weights of the layers.
+As the input passes forward through the network, what results are images of a similar shape as its input. To generate a mask from this output image, the implemented algorithm isolates the first RGB channel of the image, then sets whatever elements are of a value greater than or equal to a given threshold value (in this case, 0.5) to 1.0, and whatever is lower than that is set to 0.0. This resulting mask can then be compared with the ground truth of the data. From this the loss can be calculated, and have its result backpropagated along the network via chain rule in order to tune the weights of the layers.
 
 ### Loss and Metrics
 The performance of this model was measured using the Sørensen–Dice coefficient [2]. The loss function is directly derived from this statistic, being 1 - the Dice coefficient.
 
 ### Dataset
-Each element of the dataset, upon retrieval by the data loader, is resized to become 128x128 to reduce memory consumption and training time. Each image is read as an RGB image and has their RGB values normalized such that they fall between 0 and 1.
+This algorithm operates on the ISIC Challenge 2017 Dataset. Each element of the dataset, upon retrieval by the data loader, is resized to become 128x128 to reduce memory consumption and training time. Each image is read as an RGB image and has their RGB values normalized such that they fall between 0 and 1.
 
 When training the model, the algorithm loads 800 training elements at a time, though it shuffles the loader per epoch, effectively covering the majority of if not entire dataset over 15 total epochs. Due to time and resource constraints, only 100 of the 150 total elements of the validation datao
 set are used to measure the validation metrics during training.
