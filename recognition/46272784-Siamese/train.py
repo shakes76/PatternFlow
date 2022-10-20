@@ -133,10 +133,12 @@ def main():
     valid_ds = modules.generatePairs(v_a, v_n)
     test_ds = modules.generatePairs(te_a, te_n)
     opt = keras.optimizers.Adam(1e-4)
-    siamese = modules.makeSiamese(modules.makeCNN())
+    cnn = modules.makeCNN()
+    siamese = modules.makeSiamese(cnn)
     checkpoint_prefix, checkpoint = saveOption(opt, siamese)
     checkpoint.restore(tf.train.latest_checkpoint(r'F:\AI\COMP3710\PatternFlow\recognition\46272784-Siamese\Siamese_ckeckpoint'))
     history = train(train_ds, valid_ds, test_ds, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
+    cnn.save('cnn.h5')
     
     # # results = siamese.evaluate(vd)
     # # print("test loss, test acc:", results)
