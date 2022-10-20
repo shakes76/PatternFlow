@@ -194,11 +194,47 @@ class UNet(nn.Module):
             pos_dim (int, optional): positional dimension. Defaults to 256.
         """
         super(UNet, self).__init__()
-        self.unet_encoder = EncoderBlock(dim_in_encoder, dim_out_encoder)
-        self.unet_decoder = DecoderBlock(dim_in_decoder, dim_out_decoder)
-        self.unet_head = nn.Conv2d(dim_out_decoder, 1, kernel_size=1)
-        self.position_block = PositionalEmbeddingTransformerBlock(32)
+        self.pos_dim = pos_dim 
+        # Decoding part of the UNet                                     #  in --> out
+        self.in_layer = ConvReluBlock(dim_in_out, m_dim)                #   3 --> 64
+        self.decoder1 = DecoderBlock(m_dim, m_dim*2)                    #  64 --> 128
+        self.attention1 = AttentionBlock(m_dim*2, m_dim/2)              # 128 --> 32
+        self.decoder2 = DecoderBlock(m_dim*2, m_dim*4)                  # 128 --> 256
+        self.attention2 = AttentionBlock(m_dim*4, m_dim/4)              # 256 --> 16
+        self.decoder3 = DecoderBlock(m_dim*4, m_dim*4)                  # 256 --> 256
+        self.attention3 = AttentionBlock(m_dim*4, m_dim/8)              # 256 --> 8
 
+        # Bottle neck of the UNet                                       #  in --> out
+        self.b1 = ConvReluBlock(m_dim*4, m_dim*8)                       # 256 --> 512
+        self.b2 = ConvReluBlock(m_dim*8, m_dim*8)                       # 512 --> 512
+        self.b3 = ConvReluBlock(m_dim*8, m_dim*4)                       # 512 --> 256
+
+        # Encoding part of the UNet                                     #  in --> out
+        self.encoder1 = EncoderBlock(m_dim*8, m_dim*4)                  # 512 --> 256
+        self.attention4 = AttentionBlock(m_dim*2, m_dim/4)              # 128 --> 16
+        self.encoder2 = EncoderBlock(m_dim*4, m_dim)                    # 256 --> 64
+        self.attention5 = AttentionBlock(m_dim, m_dim/2)                #  64 --> 32
+        self.encoder3 = EncoderBlock(m_dim*2, m_dim)                    # 128 --> 64
+        self.attention6 = AttentionBlock(m_dim, m_dim)                  # 64 --> 64
+        self.out_layer = nn.Conv2d(m_dim, dim_in_out, kernel_size=1)    # 64 --> 3
+    
+    def positional_embedding(self, position, dims):
+        """
+        Calculate the positional tensor using transformer positional embedding
+
+        Args:
+            position (Tensor): position tensor result of previous positional encoding   
+            dims (int): number of channels
+
+        Returns:
+            Tensor: positional embedded tensor
+        """
+        embeddings = math.log(10000) / ((dims // 2) - 1)
+        embeddings = torch.exp(torch.arange(dims // 2, device=position.device) * -embeddings)
+        embeddings = position[:, None] * embeddings[None, :]
+        embeddings = torch.cat((embeddings.sin(), embeddings.cos()), dim=-1)
+        return embeddings
+    
     def forward(self, x, position):
         """
         Method to run an input tensor forward through the unet
