@@ -44,7 +44,7 @@ The first one is original image and the second one is images with size downscali
 ![resized by tensorflow function](predict_result/upscale.png)
 #### SRCNN 
 ![SRCNN](predict_result/SRCNN.png)
-From paper as iterations increases, the output image will become more clear. Due to GPU limitation, this is my model currently can reconstruct
+From paper as the number of iterations increases, the output image will become more clear. Due to GPU limitation, this is my model currently can reconstruct
 
 ## Pre-processing
 download the dataset from blackborad course help page **ADNI MRI Dataset (2D slices)** and unzipp file, normalized the data after load the data. 

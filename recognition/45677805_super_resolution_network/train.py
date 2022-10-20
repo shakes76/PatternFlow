@@ -30,7 +30,7 @@ def train():
     train_data = get_train()
     val_data = get_validation()
 
-    #resize the train , validation and test data set and prefetc the data into CPU
+    #resize the train , validation and prefect(speed up data flow feeding to the model) the data into CPU
     resized_train_data = resize_img_flow(train_data, 32)
     resized_train_data.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     resized_val = resize_img_flow(val_data, 32)
