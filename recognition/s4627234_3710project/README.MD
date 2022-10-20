@@ -120,13 +120,9 @@ tf.Tensor(0.83824617, shape=(), dtype=float32)
 The image folder contains the first 50 original images, predict mask , and ground truth comparison. You can also change the output image number by changing the number_list in predict.py.
 
 ### Some example of images:
-![image](./images/output0.png)
-![image](./images/output2.png)
-![image](./images/output5.png)
-![image](./images/output10.png)
-![image](./images/output13.png)
-![image](./images/output37.png)
-
+![image](./images/output0.png)![image](./images/output2.png)
+![image](./images/output5.png)![image](./images/output10.png)
+![image](./images/output13.png)![image](./images/output37.png)
 
 
 ## Packages:
