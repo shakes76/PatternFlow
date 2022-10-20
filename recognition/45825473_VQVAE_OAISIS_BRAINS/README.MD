@@ -26,7 +26,7 @@ Overall, the model produced reasonable results with both reconstructed and gener
 
 ### Brain reconstruction
 
-![image] (https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/ReconstructedBrains.PNG)
+![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/ReconstructedBrains.PNG)
 
 ### Loss & SSIM
 
@@ -34,7 +34,7 @@ Overall, the model produced reasonable results with both reconstructed and gener
 
 ### Brain Generations
 
-![image] (https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/GeneratedBrains.PNG)
+![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/GeneratedBrains.PNG)
 
 ## Dependencies
 
