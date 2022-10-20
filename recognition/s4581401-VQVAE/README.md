@@ -51,7 +51,6 @@ to be between [0,1], which gave good performance.***
 
 The VQ-VAE model was trained for 30 epochs, and a steady decline in training and validation reconstruction loss was observed.
 The final obtained ***reconstruction loss for training and validation was 0.048 and 0.050 respectively.***
-- Include Image
 
 In each validation step, the mean SSIM between the input image and decoded output image was calculated. The mean SSIM quickly
 steadily increases as the epochs increase, ***achieving a final mean SSIM of 0.835 on the validation set.***
@@ -77,8 +76,11 @@ sizes and number of embeddings performed better.
 Below are some example input images from the ADNI dataset, codebooks and decoded codebook images from the VQ-VAE model, 
 as well as the SSIM value between input and output images. 
 
-- Include Image
-- Include Image
+![!](./images/ReconstructedBrain.PNG)
+
+<p align = "center"><img src = "./images/ReconstructedBrain.PNG"></p>
+
+![!](./images/ReconstructedBrain2.PNG)
 
 We find that after 30 epochs that the decoded images have an ***average SSIM of 0.823*** across the 9000 ADNI 
 test images (above is 0.6 SSIM threshold). Decoded images visually resemble the input images, indicating that the 
@@ -140,4 +142,3 @@ Academic Paper references for VQ-VAE and PixelCNN
 - https://arxiv.org/pdf/1601.06759v3.pdf
 
 
-<p align="center"><img src=""></p>
