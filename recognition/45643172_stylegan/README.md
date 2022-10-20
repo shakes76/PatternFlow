@@ -65,6 +65,22 @@ Below are some examples.
 ![example 3](images/case_002_slice_11.nii.png)
 ![example 4](images/case_009_slice_1.nii.png)
 
+## Executing Code
+
+### Train the model:
+    python train.py 
+
+### Use the model to predict:
+    python predict.py [input_path] 
+
+where the [input_path] is the path of the input.
+
+
+## Result
+
+
+
+
 ## References
 
 https://machinelearningmastery.com/introduction-to-style-generative-adversarial-network-stylegan/

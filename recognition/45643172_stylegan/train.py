@@ -18,7 +18,9 @@ from modules import *
 START_RES = 4
 TARGET_RES = 16
 
-style_gan = StyleGAN(start_res=START_RES, target_res=TARGET_RES)
+def load_model():
+    
+    return StyleGAN(start_res=START_RES, target_res=TARGET_RES)
 
 def train(
     start_res=START_RES,
@@ -82,5 +84,5 @@ def train(
 
 if __name__ == "__main__":
     tf.config.run_functions_eagerly(True)
-    train(steps_per_epoch=2000)
+    train(steps_per_epoch=10000)
 
