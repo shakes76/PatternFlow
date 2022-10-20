@@ -38,7 +38,6 @@ def process_data(dataset):
   test_ds = torch.LongTensor(test_ds)
 
   features = torch.as_tensor(dataset['features'])
-  features = features[0:round(features.size(dim = 0)/3), :]
   target = torch.from_numpy(dataset['target'])
   edges = torch.from_numpy(dataset['edges'])
 
@@ -68,7 +67,6 @@ def adj_matrix(dataset):
                         dataset['edges'][0:dataset['edges'].shape[0], 1])),
                       shape=(dataset['target'].shape[0], dataset['target'].shape[0]), 
                       dtype=np.float32)
-  adj.resize((target_size, target_size))
   adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
   adj = normalize(adj + sp.eye(adj.shape[0]))
   adj = sparse_mx_to_sparse_tensor(adj)
