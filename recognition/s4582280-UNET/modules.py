@@ -15,6 +15,23 @@ def BatchNorm(inputs):
     x = BatchNormalization()(inputs)
     return (Activation("relu")(x))
 
+# Residual block for feature extraction
+def ResidualBlock(inputs, filters, strides=1):
+    # Double convolutional layer
+    x = BatchNorm(inputs)
+    x = Conv2D(filters, 3, strides=strides, padding="same")(x)
+    x = BatchNorm(x)
+    x = Conv2D(filters, 3, strides=1, padding="same")(x)
+
+    # Skip connecting
+    s = Conv2D(filters, 1, strides=strides, padding="same")(inputs)
+    return x + s
+    
+# Decoder block for the other back of the encoder
+def decoder(inputs, skips, filters):
+    x = UpSampling2D((2, 2))(inputs)
+    x = Concatenate()([x, skips])
+    return ResidualBlock(x, filters)
 
 """
 # A block which creates a double convolutional layer 
