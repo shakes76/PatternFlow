@@ -26,14 +26,14 @@ class Tester():
         except (FileNotFoundError): # If model doesn't exist create model
             print("VQVAE Model does not exist, please train with train.Trainer()")
             
-    def get_slice_e(self, model, dataloader):
+    def get_slice_e(self, model_vqvae, dataloader):
         X_real = next(iter(dataloader))
         x_real = X_real[0][0].unsqueeze(0) # Obtain sample from dataloader batch
         x_real = x_real.to(self.device)
-        encoded = model.encoder(x_real)
-        preconv = model.preconv(encoded)
-        _, quantized_x, index_e, encoded_e = model.vq(preconv)
-        x_decoded = model.decoder(quantized_x)
+        encoded = model_vqvae.encoder(x_real)
+        preconv = model_vqvae.preconv(encoded)
+        _, quantized_x, index_e, encoded_e = model_vqvae.vq(preconv)
+        x_decoded = model_vqvae.decoder(quantized_x)
         slice_e = encoded_e
         slice_e_view = slice_e.view(64, 64)
         slice_e_view = slice_e_view.to("cpu")
@@ -56,9 +56,6 @@ class Tester():
         slice_e_dcgan_np = slice_e_dcgan.to("cpu").detach().numpy()
         # slice_e_dcgan = torch.flatten(slice_e_dcgan)
         return slice_e_dcgan, slice_e_dcgan_np
-    
-    def get_range_intensity(self, slice_e):
-        return [torch.min(slice_e).float(), torch.max(slice_e).float()]
         
     def decode_batch(self, model_vqvae, dataloader):
         X_real = next(iter(dataloader))
@@ -71,7 +68,6 @@ class Tester():
         return x_real, x_decoded
     
     def decode_slice_e(self, model_vqvae, slice_e):
-        self.range_intensity = self.get_range_intensity(slice_e)
         slice_e_quantized = model_vqvae.vq.get_quantized_x(slice_e)
         slice_e_decoded = model_vqvae.decoder(slice_e_quantized).to("cpu")
         slice_e_decoded_np = slice_e_decoded.detach().numpy()[0][0]
@@ -95,7 +91,7 @@ class Tester():
     
     def convert_dcgan_slice_e(self, slice_e_dcgan):
         slice_e_dcgan = torch.flatten(slice_e_dcgan)
-        range_intensity = self.range_intensity
+        range_intensity = [70, 358]
         slice_e_dcgan_min = torch.min(slice_e_dcgan)
         slice_e_dcgan_max = torch.max(slice_e_dcgan)
         num_slice = len(range_intensity)
@@ -103,7 +99,7 @@ class Tester():
         for slice in range(0, num_slice):
             minimum = slice_e_dcgan_min + slice * size_slice
             slice_e_dcgan[torch.logical_and(minimum <= slice_e_dcgan, slice_e_dcgan <= (minimum+size_slice))] = range_intensity[slice]
-        torch.unique(slice_e_dcgan)
+        # print(torch.unique(slice_e_dcgan))
         slice_e_dcgan_converted = slice_e_dcgan
         slice_e_dcgan_converted_np = slice_e_dcgan_converted.view(64, 64).to("cpu").detach().numpy()
         return slice_e_dcgan_converted, slice_e_dcgan_converted_np
