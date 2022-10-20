@@ -126,7 +126,7 @@ def decoder(dim=16):
     return keras.Model(inputs, out, name="decoder")
 
 def get_vqvae(dim=16, embed_n=64):
-    vq_layer = VQ(embed_n, dim, name="vector_quantizer")
+    vq_layer = VQ(embed_n, dim, beta=0.25, name="vector_quantizer")
     enc = encoder(dim)
     dec = decoder(dim)
     inputs = keras.Input(shape=(80, 80, 1))
@@ -187,23 +187,23 @@ class ResBlock(keras.layers.Layer):
         })
         return config
 
-def get_pixelcnn(vqvae_trainer, encoded_outputs):
+def get_pcnn(vqvae, encoded_outputs):
     """
     Builds and returns the PixelCNN model.
     """
     
-    # Initialise number of PixelCNN blocks
+    # init num of PCNN blocks
     num_residual_blocks = 2
     num_pixelcnn_layers = 2
-    pixelcnn_input_shape = encoded_outputs.shape[1:-1]
-    print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+    input_shape = encoded_outputs.shape[1:-1]
+    print(f"Input shape of the PixelCNN: {input_shape}")
     
-    # Initialise inputs to PixelCNN
-    pixelcnn_inputs = keras.Input(shape=pixelcnn_input_shape, dtype=tf.int32)
-    ohe = tf.one_hot(pixelcnn_inputs, vqvae_trainer.embed_n)
+    # initialise inputs to PCNN
+    pcnn_inputs = keras.Input(shape=input_shape, dtype=tf.int32)
+    ohe = tf.one_hot(pcnn_inputs, vqvae.embed_n)
     x = PixelConvLayer(mask_type="A", filters=128, kernel_size=7, activation="relu", padding="same")(ohe)
 
-    # Build PixelCNN model
+    # build PCNN model
     for _ in range(num_residual_blocks):
         x = ResBlock(filters=128)(x)
 
@@ -217,9 +217,8 @@ def get_pixelcnn(vqvae_trainer, encoded_outputs):
             padding="valid",
         )(x)
 
-    # Outputs from PixelCNN    
-    out = keras.layers.Conv2D(filters=vqvae_trainer.embed_n, kernel_size=1, strides=1, padding="valid")(x)
-
-    pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
+    # outputs from PCNN    
+    out = keras.layers.Conv2D(filters=vqvae.embed_n, kernel_size=1, strides=1, padding="valid")(x)
+    pcnn = keras.Model(pcnn_inputs, out, name="pixel_cnn")
     
-    return pixel_cnn
+    return pcnn
