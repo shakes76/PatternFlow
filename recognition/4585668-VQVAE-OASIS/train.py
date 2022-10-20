@@ -7,8 +7,8 @@ from tensorflow		import keras
 LATENT_DIMENSION_SIZE	= 16
 NUM_EMBEDDINGS			= 64
 BETA					= 0.25
-VQVAE_EPOCHS			= 1
-PCNN_EPOCHS				= 50
+VQVAE_EPOCHS			= 100
+PCNN_EPOCHS				= 100
 # Based on GTX1660Ti Mobile
 BATCH_SIZE				= 128
 OPTIMISER				= keras.optimizers.Adam
@@ -18,6 +18,7 @@ VALIDATION_SPLIT		= 0.1
 METRICS					= ["accuracy"]
 MODEL_PATH				= "vqvae.h5"
 PCNN_PATH				= "pixel_communist_news_network.h5"
+#TRAINER_PATH			= "trainer.h5"
 
 def train_vqvae(train_set, train_vnce):
 	"""Train up a VQVAE from a training dataset and serialise it to a h5
@@ -49,13 +50,13 @@ def main():
 	encoded_out		= encoded_out[:len(encoded_out) // 2] # Nothing to see here
 	qtiser			= trainer.vqvae.get_layer("quantiser")
 	flat_encs		= encoded_out.reshape(FLAT, encoded_out.shape[FLAT])
-	print(f"CUNT {len(flat_encs)}")
 	codebooks		= qtiser.code_indices(flat_encs)
 	codebooks		= codebooks.numpy().reshape(encoded_out.shape[:-1])
 	pcnn			= build_pcnn(trainer, encoded_out)
 	pcnn.compile(optimizer = OPTIMISER(PCNN_OPT), loss = LOSS, metrics = METRICS)
 	pcnn_training	= pcnn.fit(x = codebooks, y = codebooks, batch_size = BATCH_SIZE, epochs = PCNN_EPOCHS, validation_split = VALIDATION_SPLIT)
 	pcnn.save(PCNN_PATH)
+	#trainer.save_weights(TRAINER_PATH)
 
 if __name__ == "__main__":
 	main()

@@ -183,7 +183,8 @@ class PixelConvolution(layers.Layer):
 	def __init__(self, mask_type, **kwargs):
 		super(PixelConvolution, self).__init__()
 		self.mask_type	= mask_type
-		self.conv		= layers.Conv2D(**kwargs)
+		# WHY YOU NO KWARG?!?!?!?!?!
+		self.conv		= layers.Conv2D(filters = NO_FILTERS, kernel_size = KERN_SIZE, activation = "relu", padding = "same")
 
 	def build(self, input_shape):
 		"""Construct the convolutional kernel"""
@@ -202,7 +203,7 @@ class PixelConvolution(layers.Layer):
 
 	def get_config(self):
 		config = super().get_config()
-		config.update({"mask": self.mask})
+		config.update({"mask_type": self.mask_type})
 		return config
 
 class ResidualBlock(layers.Layer):
@@ -211,16 +212,16 @@ class ResidualBlock(layers.Layer):
 		super(ResidualBlock, self).__init__(**kwargs)
 		self.filters = filters
 		self.conv1 = layers.Conv2D(
-			filters = self.filters, kernel_size = CONV1_KERN_SIZE, activation="relu"
+			filters = filters, kernel_size = CONV1_KERN_SIZE, activation = "relu"
 		)
 		self.pixel_conv = PixelConvolution(
 			mask_type	= "B",
-			filters		= self.filters // FILTER_FACTOR,
+			filters		= filters // FILTER_FACTOR,
 			kernel_size	= KERN_SIZE,
 			activation	= "relu",
 			padding		= "same",
 		)
-		self.conv2 = layers.Conv2D(filters = self.filters, kernel_size = CONV1_KERN_SIZE, activation = "relu")
+		self.conv2 = layers.Conv2D(filters = filters, kernel_size = CONV1_KERN_SIZE, activation = "relu")
 
 	def call(self, inputs):
 		"""Forward computation handler"""
