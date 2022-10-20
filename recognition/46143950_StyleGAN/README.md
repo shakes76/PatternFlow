@@ -78,7 +78,7 @@ A few points to note,
  - model is trained progressively.
 
 ### Model Variations
-Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version (interms of training configurations, not model structure) of StyleGAN, to avoid unnecessary complication, which saves training time.
+Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version (in terms of training configurations, not model structure) of StyleGAN, to avoid unnecessary complication, which saves training time.
 
 |                             | My Model           | Original       | Justification
 | -------------               | -------------      |-------------   |------------- 
