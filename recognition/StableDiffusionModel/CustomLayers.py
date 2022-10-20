@@ -12,12 +12,6 @@ import matplotlib as plt
 import numpy as np
 
 
-### Unet architecture: 
-
-##################################### PROBABLY USE SWISH AS ACTIV FUNCTION OVER RELU  //// LOOK INTO GEGLU
-### Layers needed
-
-    #### Padded Convolution layer (st. inputDim = outputDim)
     
 class ZeroPaddedConv2D(kr.layers.Layer) :
     def __init__(self, filters, kernelSize =3, stride = (1,1), padding = (1,1), activation = None) :
@@ -41,30 +35,33 @@ class ConvDownsample(kr.layers.Layer) :
                                          padding = (1,1), 
                                          activation = activation)
         
+        self.norm1 = kr.layers.BatchNormalization()
+        
     def call(self, inputs) :
-        return self.conv1(inputs)
+        return self.norm1(self.conv1(inputs))
     
-## Todo: make deconvolution for upsampling, see below:
+
 class ConvUpsample(kr.layers.Layer) :
     def __init__(self, outputSize):
         super().__init__()
         self.transform = kr.layers.Conv2DTranspose(outputSize, 3, 2, padding="same")
+        self.norm1 = kr.layers.BatchNormalization()
         
     def call(self, inputs) :
-        return self.transform(inputs)
+        return self.norm1(self.transform(inputs))
         
         
 ### Used in AutoEncoder / Unet
 class ResidualNetBlock(kr.layers.Layer) :
-    def __init__(self, inputDim, outputDim, kernelSize, normLayers = True, activation = None, epsilon = 1e-6) :
+    def __init__(self, inputDim, outputDim, kernelSize, normLayers = True, activation = None, epsilon = 1e-4) :
         super().__init__()
         
         self.__isNormed = normLayers
         
         self.conv1 = ZeroPaddedConv2D(outputDim, kernelSize, activation = activation)
-        self.conv2 = ZeroPaddedConv2D(outputDim, kernelSize, activation = activation)
-        self.norm1 = tfa.layers.GroupNormalization(epsilon = epsilon)
-        self.norm2 = tfa.layers.GroupNormalization(epsilon = epsilon)
+        #self.conv2 = ZeroPaddedConv2D(outputDim, kernelSize, activation = activation)
+        self.norm1 = kr.layers.BatchNormalization()
+        #self.norm2 = kr.layers.BatchNormalization(epsilon = epsilon)
         
         if (inputDim != outputDim) :
             # If the input dimension is different from the output dimension 
@@ -81,17 +78,14 @@ class ResidualNetBlock(kr.layers.Layer) :
             # if groupNorm layers are enabled
             
             x = self.conv1(inputs)
-            x = self.norm1(x)
-            x = self.conv2(x)
-            x = self.norm2(x)
+            x = x + self.skip1(inputs)
+            #x = self.conv2(x)
+            #x = self.norm2(x)
             
-            return x + self.skip1(inputs)
+            return self.norm1(x)
         else :
             # If groupNorm layers are not enabled
             x = self.conv1(inputs)
             x = self.conv2(x)
             
             return x + self.skip1(inputs)
-        
-        
-    
