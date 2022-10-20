@@ -5,7 +5,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from torch.utils.data import random_split, DataLoader
 from tqdm import tqdm
-from dataset import ADNI
+from dataset import ADNI, dataset_dir
 from modules import AdniClassifier
 
 def print_accuracy(model, ds, batch_size):
@@ -44,7 +44,7 @@ def train(device, tr_ds, batch_size, epochs=24):
 if __name__ == "__main__":
     batch_size = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    ds = ADNI(device, "/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC")
+    ds = ADNI(device, dataset_dir)
 
     # Get data subsets
     tr_size  = int(np.round(ADNI.NUM_SEQUENCES * 0.65))

@@ -4,6 +4,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision.io import read_image
 
+dataset_dir = "/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC"
+
 def img_filename_as_numerical(s: str):
     """Create key from image file name for sorting"""
     seq_id, img_idx = s[:-5].split("/")[-1].split("_")
@@ -81,7 +83,7 @@ def calculate_dataset_mean_stdev(loader, batch_size):
 
 if __name__ == "__main__":
     device = torch.device("cpu")
-    ds = ADNI(device, "/home/jingweini/Documents/uni/COMP3710/report/data/AD_NC")
+    ds = ADNI(device, dataset_dir)
     batch_size = 14
 
     # loader = DataLoader(ds, batch_size=batch_size)
