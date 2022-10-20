@@ -14,3 +14,9 @@ def dice_coefficient(a, b):
     mag_b = sum(b)
     
     return (2.0 * a_union_b) / (mag_a + mag_b)
+
+def dice_coefficient_loss(truth, predition):
+    """
+    Loss function as described in the Improved Unet paper.
+    """
+    return 1 - dice_coefficient(truth, predition)
