@@ -5,6 +5,12 @@ import torch.nn.functional as F
 # Seed the random number generator for reproducibility of the results
 torch.manual_seed(3710)
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.xavier_uniform_(m.weight.data)
+        m.bias.data.fill_(0)
+
 class Embedding(nn.Module):
     def __init__(self, K, D):
         super().__init__()
@@ -20,10 +26,9 @@ class Embedding(nn.Module):
         flattened = x.view(-1, self.embedding.weight.size(1))
 
         # Calculate distances to find the closest codebook vectors
-        distances = torch.addmm(torch.sum(flattened ** 2, dim=1, keepdim=True) + torch.sum(self.embedding.weight ** 2), 
-                                flattened,
-                                self.embedding.weight.t(),
-                                beta=1.0, alpha=-2.0)
+        distances = (torch.sum(flattened**2, dim=1, keepdim=True) 
+                    + torch.sum(self.embedding.weight**2, dim=1)
+                    - 2 * torch.matmul(flattened, self.embedding.weight.t()))
         
         # We get the indices from argmin
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
@@ -96,6 +101,8 @@ class VQVAE(nn.Module):
         self.encoder = Encoder(in_channels, out_channels)
         self.codebook = Embedding(K, out_channels)
         self.decoder = Decoder(out_channels, in_channels)
+
+        self.apply(weights_init)
 
     def forward(self, x):
         loss, quantized, _, _ = self.codebook(self.encoder(x))
