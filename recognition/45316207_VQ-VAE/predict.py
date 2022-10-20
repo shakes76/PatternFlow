@@ -12,7 +12,6 @@ Shows example usage of the trained model with visualisations of it's output resu
 import dataset
 import utils
 from tensorflow import keras
-import numpy as np
 
 
 if __name__ == "__main__":
@@ -24,15 +23,25 @@ if __name__ == "__main__":
 
 
     # ---------------------------------------------------------------------------- #
-    #                             IMPORT TRAINED MODEL                             #
+    #                          IMPORT TRAINED VQVAE MODEL                          #
     # ---------------------------------------------------------------------------- #
-    # Import trained and saved model from file
+    # Import trained and saved vqvae model from file
     trained_vqvae_model = keras.models.load_model("./vqvae_saved_model")
 
 
-    # ---------------------------------------------------------------------------- #s
+    # ---------------------------------------------------------------------------- #
+    #                         IMPORT TRAINED PIXELCNN MODEL                        #
+    # ---------------------------------------------------------------------------- #
+    # Import trained and saved pixelcnn model from file
+    trained_pixelcnn_model = keras.models.load_model("./pixelcnn_saved_model")
+
+
+    # ---------------------------------------------------------------------------- #
     #                                 FINAL RESULTS                                #
     # ---------------------------------------------------------------------------- #
     # Visualise the final results and calculate the structural similarity index (SSIM)
     examples_to_show = 10
     utils.show_reconstruction_examples(trained_vqvae_model, test_data, examples_to_show)
+
+    # Visualise the deiscrete codes
+    utils.visualise_codes(trained_vqvae_model, test_data, examples_to_show)

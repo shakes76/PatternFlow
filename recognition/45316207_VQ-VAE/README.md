@@ -7,18 +7,21 @@ by Alex Nicholson, 45316207
 
 ## Project Overview
 
-* **Description of the algorithm and the problem that it solves (approximately a paragraph)**
-* **How it works (approximately a paragraph)**
+### The Algorithm and the Problem
 
-Details:
+**Description of the algorithm and the problem that it solves (approximately a paragraph):**
+The algorithm implemented in this project is a [VQ-VAE](https://arxiv.org/abs/1711.00937) (Vector Quantised - Variational Auto-Encoder) model, which is an architecture that aims to encode data into a compressed format (embedding higher dimensional data into a lower dimenisional subspace) and then decode this compressed format to recreate the original image as closely as possible. What are we using it to do here...???
 
-* Model: [VQ-VAE (original)](https://arxiv.org/abs/1711.00937)
-* Dataset: [OASIS](https://www.oasis-brains.org/#data)
+...Dataset: [OASIS](https://www.oasis-brains.org/#data)...
 
-Goals:
+### How it Works
 
-* “Reasonably clear image”
-* [Structured Similarity (SSIM)](https://en.wikipedia.org/wiki/Structural_similarity) index of over 0.6
+**How it works (approximately a paragraph):**
+It works by transforming the image into a set of encoding vectors, using a CNN (convolutional neural network) encoder network, which are then quantised to fit the codebook vectors of the model. These quantised encodings are then passed to the decoder network which is made up of a transposed convolution (deconvolution) layers, which generated a synthetic reconstruction that is very similar to the original input image. ...???
+
+### Goals
+
+The performance goals for this project are, generally, for the model to produce a “reasonably clear image” and also, more concretely, for the model to achieve an average structured similarity index (SSIM) of over 0.6.
 
 ---
 
@@ -55,7 +58,7 @@ The following dependancies were used in the project:
 **Describe any specific pre-processing you have used with references if any.**
 
 **Justify your training, validation and testing splits of the data.**
-The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up 85%, 10%, and 5% respectively (total 11,328 images in dataset). This is in line with good standard practice for dataset partitioning...
+The training, validation and testing splits of the data were used as provided in the original dataset, with these partitions taking up 85%, 10%, and 5% respectively (total 11,328 images in dataset). This is in line with good standard practice for dataset partitioning ...???
 
 ---
 
@@ -73,7 +76,7 @@ Below are some examples of the generations made by the VQ VQE model after 10 epo
 ### Generation Quality Over Time
 
 Below is an animation of the progression of the quality of the model's generations over the course of training.
-![alt text](./vqvae_training_progression.gif)
+![alt text](./out/vqvae_training_progression.gif)
 
 ### Training Metrics
 
@@ -84,10 +87,10 @@ The various loss metrics of the model were recorded throughout training to track
 * VQ VAE Loss: What does the VQ VAE loss represent???
 
 These losses are plotted over the course of the models training in both standard and log scales below:
-![alt text](./training_loss_curves.png)
+![alt text](./out/training_loss_curves.png)
 
 Model Log Loss Progress Throughout Training:
-![alt text](./training_logloss_curves.png)
+![alt text](./out/training_logloss_curves.png)
 
 In addition to statistical losses, a more real world metric to track the quality of our generations over time is to compare the similarity of the reconstructed output images it produces with the original input image they are created from. This similarity can be measured by the SSIM (Structured Similarity Index). At the end of each epoch, the SSIM was computed for 10 randomly selected images from the test dataset, and the average was recorded. This average SSIM can be seen plotted over time below:
 ![alt text](./training_ssim_curve.png)

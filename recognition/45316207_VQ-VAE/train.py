@@ -141,7 +141,7 @@ class ProgressImagesCallback(keras.callbacks.Callback):
         Show an animated gif of the progress throughout training
         """
 
-        anim_file = 'vqvae_training_progression.gif'
+        anim_file = 'out/vqvae_training_progression.gif'
 
         with imageio.get_writer(anim_file, mode='I') as writer:
             filenames = glob.glob('out/image*.png')
