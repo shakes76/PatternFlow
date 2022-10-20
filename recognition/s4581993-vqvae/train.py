@@ -48,24 +48,6 @@ plt.xlabel('Epoch')
 plt.tight_layout()
 plt.show()
 
-# Find the SSIM between the original and decoded images
-print("Calculating SSIM across test set...")
-trained_vqvae_model = vqvae_trainer.vqvae
-reconstructions_test = trained_vqvae_model.predict(test_ds)
-
-ssim_values = np.zeros(len(test_ds))
-for i in range(len(test_ds)):
-    ssim_values[i] = tf.image.ssim(test_ds[i], reconstructions_test[i], 1)
-avg_ssim = np.mean(ssim_values)
-print("SSIM index:", avg_ssim)
-
-# Show a histogram of the SSIM values
-plt.hist(ssim_values)
-plt.ylabel('Number of occurrences')
-plt.xlabel('SSIM')
-plt.title('Structural similarity index measure')
-plt.annotate(f'Mean: %f' % avg_ssim, xy=(0.05, 0.95), xycoords='axes fraction')
-plt.show()
 # Set up the PixelCNN to generate images that imitate the code, to generate
 # new brains
 num_residual_blocks = 2
