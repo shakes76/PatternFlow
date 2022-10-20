@@ -9,6 +9,12 @@ EPOCHS = 30
 
 
 def plot_history(history):
+    """
+    Plots the value of the Dice Coefficient and Accuracy throughout training and validation.
+    Args:
+        history: loss and coefficient history of the model during training.
+
+    """
     plt.figure()
     plt.plot(history.history['dice_coef'], 'r', label='Training Dice')
     plt.plot(history.history['val_dice_coef'], 'bo', label='Validation Dice')
@@ -22,53 +28,40 @@ def plot_history(history):
     plt.show()
 
 
-def generate_prediction(test_data, model):
-    prediction_batch = 20
-    batched_test_data = test_data.batch(prediction_batch)
-    test_image, test_mask = next(iter(batched_test_data))
-    mask_prediction = model.predict(test_image)
-
-    # Plot the original image, ground truth and result from the network.
-    for i in range(prediction_batch):
-        plt.figure(figsize=(10, 10))
-
-        # Plot the test image
-        plt.subplot(1, 3, 1)
-        plt.imshow(test_image[i])
-        plt.title("Input Image")
-        plt.axis("off")
-
-        # Plot the test mask
-        plt.subplot(1, 3, 2)
-        plt.imshow(test_mask[i], cmap="gray")
-        plt.title("Ground Truth Mask")
-        plt.axis("off")
-
-        # Plot the resultant mask
-        plt.subplot(1, 3, 3)
-
-        # Display 0 or 1 for classes
-        prediction = tf.where(mask_prediction[i] > 0.5, 1.0, 0.0)
-        plt.imshow(prediction)
-        plt.title("Resultant Mask")
-        plt.axis("off")
-
-        plt.show()
-    return
-
-
 def dice_coefficient(y_true, y_predicted):
+    """
+    Calculates the Dice Coefficient used in the model.
+    DSC Tensorflow implementation sourced from Medium:
+        [https://medium.com/@karan_jakhar/100-days-of-code-day-7-84e4918cb72c]
+        [16/10/2022]
+
+    Args:
+        y_true: true output
+        y_predicted: output predicted by the model
+
+    Returns: the dice coefficient for the prediction
+
+    """
     y_true_f = tf.keras.backend.flatten(y_true)
     y_predicted_f = tf.keras.backend.flatten(y_predicted)
 
     intersection = tf.keras.backend.sum(y_true_f * y_predicted_f)
 
-    dice_coefficient = (2. * intersection + 1.) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_predicted_f))
+    dice_coeff = (2. * intersection + 1.) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_predicted_f))
 
-    return dice_coefficient
+    return dice_coeff
 
 
 def dice_loss(y_true, y_pred):
+    """
+    Calculates the Dice Coefficient Loss function
+    Args:
+        y_true: true output
+        y_pred: output predicted by the model
+
+    Returns: dice loss
+
+    """
     return 1 - dice_coefficient(y_true, y_pred)
 
 
@@ -115,7 +108,6 @@ def main():
     plt.xlabel('Dice Coefficient')
     plt.show()
 
-    generate_prediction(test_ds, model)
 
 
 if __name__ == "__main__":

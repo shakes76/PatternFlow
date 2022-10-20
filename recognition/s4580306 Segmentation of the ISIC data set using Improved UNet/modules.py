@@ -1,5 +1,7 @@
 import tensorflow as tf
-import tensorflow_addons as tfa
+from tensorflow.keras.layers import Conv2D, UpSampling2D, Concatenate, Input, LeakyReLU, SpatialDropout2D, Softmax, Flatten
+from tensorflow_addons.layers import InstanceNormalization
+from tensorflow.keras.models import Model
 
 
 class ImprovedUNET(tf.keras.Model):
@@ -7,100 +9,125 @@ class ImprovedUNET(tf.keras.Model):
     def __init__(self):
         super(ImprovedUNET, self).__init__()
         self.padding = "same"
-        self.initial_output = 16
-        self.contextDropoutRate = 0.3
+        self.initial_output = 64
+        self.contextDropoutRate = 0.6
         self.leakyAlpha = 0.01
 
-    def context_module(self, input, output_filters):
-        convolution1 = tfa.layers.InstanceNormalization()(input)
-        convolution1 = tf.keras.layers.Conv2D(output_filters, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(convolution1)
-        dropout = tf.keras.layers.Dropout(self.contextDropoutRate)(convolution1)
-        convolution2 = tfa.layers.InstanceNormalization()(dropout)
-        convolution2 = tf.keras.layers.Conv2D(output_filters, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(convolution2)
-        return convolution2
+    def encoder_block(self, input_layer, filters, stride):
+        """
+        Set of layers which encode the images to latent space,
+        Consists of a convolution layer of given stride followed by a context module
+        which has two convolution layers and a dropout layer.
 
-    def perform_upsampling(self, input, output_filters):
-        upsample = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation="bilinear")(input)
-        upsample = tf.keras.layers.Conv2D(output_filters, kernel_size=(3, 3), padding=self.padding,
-                                          activation='relu')(upsample)
-        upsample = tfa.layers.InstanceNormalization()(upsample)
-        return upsample
+        :param input_layer: Layer to connect to encoder block.
+        :param filters: Filter size of all convolution layers.
+        :param stride: Stride of first convolution layer, should be 1 for every first layer and 2 for the rest.
+        :return: Layer after encoder block has been connected to input layer.
+        """
+        # Level 1 context pathway
+        conv_layer = Conv2D(filters, 3, strides=stride, padding=self.padding, activation="relu")(input_layer)
+        residual = conv_layer
+        # Context module
+        c_module = LeakyReLU()(conv_layer)
+        conv_layer = Conv2D(filters, 3, strides=1, padding=self.padding, activation="relu")(c_module)
+        dropout = SpatialDropout2D(self.contextDropoutRate)(conv_layer)
+        c_module = Conv2D(filters, 3, strides=1, padding=self.padding, activation="relu")(dropout)
+        # Element wise summation of convolution and context module
+        sum = tf.math.add(c_module, residual)
+        norm_layer = InstanceNormalization()(sum)
+        return LeakyReLU()(norm_layer)
 
-    def localization_module(self, input, output_filters):
-        convolution1 = tfa.layers.InstanceNormalization()(input)
-        convolution1 = tf.keras.layers.Conv2D(output_filters, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(convolution1)
-        convolution2 = tfa.layers.InstanceNormalization()(convolution1)
-        convolution2 = tf.keras.layers.Conv2D(output_filters, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(convolution2)
-        return convolution2
+    def upsample_module(self, input_layer, filters):
+        """
+        Upsample module as defined by report, consists of upsample layer and convolution layer.
 
-    def data_pipe_line(self):
-        input = tf.keras.layers.Input(shape=(256, 256, 3))
+        :param input_layer: Layer to connect to upsample modules.
+        :param filters: filter size for convolution layer.
+        :return: Layer after input_layer has been connected to upsample layer.
+        """
+        norm = InstanceNormalization()(input_layer)
+        norm = LeakyReLU()(norm)
+        upsample = UpSampling2D(2, interpolation="nearest")(norm)
+        conv_layer = Conv2D(filters, 3, strides=1, padding=self.padding, activation="relu")(upsample)
+        norm = InstanceNormalization()(conv_layer)
+        return LeakyReLU()(norm)
 
+    def localisation_module(self, input_layer, context, filters):
+        """
+        Localisation module as described by report. Consists of concatenation of context and a convolution layer that halves
+        the number of filters.
+
+        :param input_layer: Layer that connects to localization modules.
+        :param context: layer that is a skip connection from the encoder.
+        :param filters: Filter size of convolution layers.
+        :return: Layer after input_layer has been connected to localisation layer.
+        """
+        cat = Concatenate()([input_layer, context])
+        conv_layer = Conv2D(filters, 3, strides=1, padding="same", activation="relu")(cat)
+        norm = InstanceNormalization()(conv_layer)
+        norm = LeakyReLU()(norm)
+        # Segmentation layer for deep supervision
+        return Conv2D(filters / 2, 1, strides=1, padding="same", activation="relu")(norm)
+
+    def data_pipeline(self, input_size=(256, 256, 3), filter_size=64):
+        """
+        Builds Improved Unet model
+
+        :param input_size: Tuple of input size, in format (image width, image height, number of channels).
+        :param filter_size: Base number of filters.
+        :return: Improved Unet model
+        """
         # Encoder
 
-        convolution1 = tf.keras.layers.Conv2D(self.initial_output, kernel_size=(3, 3), padding=self.padding,
-                                              activation='relu')(input)
-        convolution_module1 = self.context_module(convolution1, self.initial_output)
-        sum1 = tf.keras.layers.Add()([convolution1, convolution_module1])
-        first_skip = sum1
+        # Level 1 context pathway
+        input_layer = Input(input_size)
+        out = self.encoder_block(input_layer, filter_size, 1)
+        # Skip connection
+        context_1 = out
 
-        convolution2 = tf.keras.layers.Conv2D(self.initial_output * 2, kernel_size=(3, 3), strides=(2, 2),
-                                              padding=self.padding, activation='relu')(sum1)
-        convolution_module2 = self.context_module(convolution2, self.initial_output * 2)
-        sum2 = tf.keras.layers.Add()([convolution2, convolution_module2])
-        second_skip = sum2
+        # Level 2 context pathway
+        out = self.encoder_block(out, filter_size * 2, 2)
+        context_2 = out
 
-        convolution3 = tf.keras.layers.Conv2D(self.initial_output * 4, kernel_size=(3, 3), strides=(2, 2),
-                                              padding=self.padding, activation='relu')(sum2)
-        convolution_module3 = self.context_module(convolution3, self.initial_output * 4)
-        sum3 = tf.keras.layers.Add()([convolution3, convolution_module3])
-        third_skip = sum3
+        # Level 3 context gateway
+        out = self.encoder_block(out, filter_size * 4, 2)
+        context_3 = out
 
-        convolution4 = tf.keras.layers.Conv2D(self.initial_output * 8, kernel_size=(3, 3), strides=(2, 2),
-                                              padding=self.padding, activation='relu')(sum3)
-        convolution_module4 = self.context_module(convolution4, self.initial_output * 8)
-        sum4 = tf.keras.layers.Add()([convolution4, convolution_module4])
-        fourth_skip = sum4
+        # Level 4 context gateway
+        out = self.encoder_block(out, filter_size * 8, 2)
+        context_4 = out
 
-        convolution5 = tf.keras.layers.Conv2D(self.initial_output * 16, kernel_size=(3, 3), strides=(2, 2),
-                                              padding=self.padding, activation='relu')(sum4)
-        convolution_module5 = self.context_module(convolution5, self.initial_output * 16)
-        sum5 = tf.keras.layers.Add()([convolution5, convolution_module5])
+        # Level 5
+        out = self.encoder_block(out, filter_size * 16, 2)
+        out = self.upsample_module(out, filter_size * 8)
 
         # Decoder
-        upsample_module1 = self.perform_upsampling(sum5, self.initial_output * 8)
-        concatenation_module1 = tf.keras.layers.concatenate([upsample_module1, fourth_skip])
-        localisation_output1 = self.localization_module(concatenation_module1, self.initial_output * 8)
 
-        upsample_module2 = self.perform_upsampling(localisation_output1, self.initial_output * 4)
-        concatenation_module2 = tf.keras.layers.concatenate([upsample_module2, third_skip])
-        localisation_output2 = self.localization_module(concatenation_module2, self.initial_output * 4)
+        # Level 1 localisation pathway
+        out = self.localisation_module(out, context_4, filter_size * 8)
+        out = self.upsample_module(out, filter_size * 4)
 
-        lower_segmented = tf.keras.layers.Conv2D(1, (1, 1), padding=self.padding)(localisation_output2)
-        upscaled_lower_segment = tf.keras.layers.UpSampling2D(size=(2, 2))(lower_segmented)
+        # Level 2 localisation pathway - Save localisation for deep supervision
+        seg_1 = self.localisation_module(out, context_3, filter_size * 4)
+        out = self.upsample_module(seg_1, filter_size * 2)
 
-        upsample_module3 = self.perform_upsampling(localisation_output2, self.initial_output * 2)
-        concatenation_module3 = tf.keras.layers.concatenate([upsample_module3, second_skip])
-        localisation_output3 = self.localization_module(concatenation_module3, self.initial_output * 2)
+        # Level 3 localisation pathway-Save localisation for deep supervision
+        seg_2 = self.localisation_module(out, context_2, filter_size * 2)
+        out = self.upsample_module(seg_2, filter_size)
 
-        middle_segmented = tf.keras.layers.Conv2D(1, (1, 1), padding=self.padding)(localisation_output3)
-        first_skip_sum = tf.keras.layers.Add()([upscaled_lower_segment, middle_segmented])
-        upscaled_middle_segment = tf.keras.layers.UpSampling2D(size=(2, 2))(first_skip_sum)
+        # Level 4 localisation pathway
+        cat = Concatenate()([out, context_1])
+        conv_layer = Conv2D(filter_size, 3, strides=1, padding=self.padding, activation="relu")(cat)
+        norm = InstanceNormalization()(conv_layer)
+        out = LeakyReLU()(norm)
 
-        upsample_module4 = self.perform_upsampling(localisation_output3, self.initial_output * 1)
-        concatenation_module4 = tf.keras.layers.concatenate([upsample_module4, first_skip])
-
-        convolution_module6 = tf.keras.layers.Conv2D(self.initial_output * 2, kernel_size=(3, 3), padding=self.padding)(
-            concatenation_module4)
-        upper_segmented = tf.keras.layers.Conv2D(1, kernel_size=(1, 1), padding=self.padding)(convolution_module6)
-        final_node = tf.keras.layers.Add()([upscaled_middle_segment, upper_segmented])
-
-        activation = tf.keras.layers.Activation("sigmoid")(final_node)
-
-        model = tf.keras.Model(inputs=input, outputs=activation)
-
-        return model
+        # Element wise summation of deep supervision layers
+        seg_1 = Conv2D(filter_size, 1, strides=1, padding=self.padding, activation="relu")(seg_1)
+        seg_1 = UpSampling2D(2)(seg_1)
+        seg_2 = Conv2D(filter_size, 1, strides=1, padding=self.padding, activation="relu")(seg_2)
+        seg_layer = seg_1 + seg_2
+        seg_layer = UpSampling2D(2)(seg_layer)
+        out = out + seg_layer
+        # reduce output to mask of channel 1
+        out = Conv2D(1, 3, strides=1, padding=self.padding, activation="sigmoid")(out)
+        return Model(inputs=input_layer, outputs=out)

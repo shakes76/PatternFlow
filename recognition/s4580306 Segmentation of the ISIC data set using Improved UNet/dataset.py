@@ -4,6 +4,7 @@ import tensorflow as tf
 HEIGHT = 256
 WIDTH = 256
 
+# locations of the Datasets and Labels. Alter these for use
 training_labels_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Training_Part1_GroundTruth"
 test_labels_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Test_v2_Part1_GroundTruth"
 validation_labels_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Validation_Part1_GroundTruth"
@@ -11,11 +12,20 @@ training_input_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Training_Data"
 validation_input_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Validation_Data"
 test_input_dir = "C:/Users/Jacob/Downloads/ISIC-2017_Test_v2_Data"
 
+# Seed used for generating random augmentations in augment_train_data
 seed = 150
 rng = tf.random.Generator.from_seed(seed, alg='philox')
 
 
 def augment_train_data(data_filenames, mask_filenames):
+    """
+    Randomly augments the
+    Args:
+        mask_filenames: File path of the Input Mask data
+        data_filenames: File path of the Input Data
+
+    Returns: Augmented Image and associated mask
+    """
     image = preprocess_data(data_filenames)
     mask = preprocess_labels(mask_filenames)
     new_seed = rng.make_seeds(2)[0]
@@ -29,6 +39,18 @@ def augment_train_data(data_filenames, mask_filenames):
 
 
 def preprocess_data(filenames):
+    """
+    Loads and preprocesses the images.
+
+    Image loading and decoding sourced from Tensorflow:
+        [https://www.tensorflow.org/api_docs/python/tf/io/read_file]
+        [15/10/2022]
+
+    Args:
+        filenames: File path of the Input data
+
+    Returns: Preprocessed Image tensor
+    """
     data = tf.io.read_file(filenames)
     image = tf.io.decode_jpeg(data, channels=3)
     image = tf.image.resize(image, [HEIGHT, WIDTH])
@@ -37,6 +59,14 @@ def preprocess_data(filenames):
 
 
 def preprocess_labels(filenames):
+    """
+    Loads and preprocesses the masks.
+
+    Args:
+        filenames: File path of the Input mask
+
+    Returns: Preprocessed Mask tensor
+    """
     data = tf.io.read_file(filenames)
     mask = tf.io.decode_png(data, channels=1)
     mask = tf.image.resize(mask, [HEIGHT, WIDTH])
@@ -46,7 +76,12 @@ def preprocess_labels(filenames):
 
 
 def data_loader():
-    # input data folders
+    """
+    Loads and preprocesses the training, test, and validation data and labels
+    and performs augmentation on the training data set.
+    Returns: training, test, and validation data sets for use in the model.
+
+    """
 
     training_data = tf.data.Dataset.list_files(training_input_dir, shuffle=False)
     test_data = tf.data.Dataset.list_files(test_input_dir, shuffle=False)

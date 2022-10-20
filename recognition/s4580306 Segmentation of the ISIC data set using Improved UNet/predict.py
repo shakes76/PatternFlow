@@ -1,5 +1,4 @@
 from train import *
-import tensorflow as tf
 from dataset import *
 
 
@@ -21,7 +20,8 @@ def generate_prediction(test_data, model):
 
         # Plot the test mask
         plt.subplot(1, 3, 2)
-        plt.imshow(test_mask[i])
+        mask = tf.reshape(test_mask[i], (256, 256))
+        plt.imshow(mask, cmap="gray")
         plt.title("Ground Truth Mask")
         plt.axis("off")
 
@@ -30,7 +30,8 @@ def generate_prediction(test_data, model):
 
         # Display 0 or 1 for classes
         prediction = tf.where(mask_prediction[i] > 0.5, 1.0, 0.0)
-        plt.imshow(prediction)
+        pred = tf.reshape(prediction, (256, 256))
+        plt.imshow(pred)
         plt.title("Resultant Mask")
         plt.axis("off")
 

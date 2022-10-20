@@ -3,6 +3,17 @@
 This project implements an Improved version of the U-Net architecture which was designed by Isensee and colleagues, found in the report: https://arxiv.org/pdf/1802.10508v1.pdf.
 This model follows the structure of a U-Net implementation but with key areas of improvement which enhance the performance of the model. [1]
 
+## ISICs Data Set
+This Improved U-Net model was used to segment the 2017 ISIC Dataset which is a collection of skin lesions.
+The training, test, and validation datasets provided were used for their respective training sets and
+due to the low number of total samples, augmentation was implemented on the training set;  vertical and horizontal
+flips of the data were employed.
+
+### Data Preprocessing
+In the preprocessing phase, the training data and masks were normalized and resized to (256, 256), the training 
+data has 3 channels of colour whilst the masks were reduced to grayscale. A threshold was applied to the masks where values > 0.5 were rounded to 1
+and the other masks are set to 0 in order to boost performance of the model. 
+
 ## Description of Algorithm
 
 ![](Images/Improved-Unet.png)
@@ -11,7 +22,7 @@ _Figure 1: Improved UNet Architecture[1]_
 The Improved U-Net model consists of three types of modules as seen in figure 1:
 ### Context Pathway
   This pathway is designed to encode the input images into increasingly compact representations
-  as the network progresses. This is achieved through the use of 3x3 Convolutions and context modules
+  as the network progresses. This is achieved through the use of 3x3 Convolutions and context modules.
   The context module is described by 2 convolution layers with a dropout layer in between. 
   These are residual blocks, a type of skip connection that learns the residual function 
   with reference to an input [2].
@@ -36,8 +47,25 @@ from lower levels of the network to propagate into the higher levels through sum
 are upsampled via a convolutional layer to allow for summation of different depths of layers.
 
 
+## Results
 
 
+### Tuning of Hyper parameters
+During training, various values of hyper parameters were tested in order to balance performance and the running time of 
+the algorithm with the best results coming from a batch size of 1 and learning rate of 0.001. 
+
+
+## Dependencies
+- Tensorflow 2.9.2
+- Matplotlib 3.2.2
+- Python 3.7.15
+- Tensorflow addons 0.18.0
+
+## Usage
+In order to run this algorithm, the above dependencies are required. In addition to this, the ISICs 2017 training, 
+validation, and test datasets must be unzipped and available locally. Altering the paths to the datasets and labels in 
+dataset.py will be required. Then run `python train.py` in a command line. Depending on the desired running time of the 
+algorithm, the values of EPOCHS, LEARNING_RATE, BATCH_SIZE in train.py may be altered.
 
 
 
