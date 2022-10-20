@@ -16,5 +16,5 @@ import modules
 
 modules.model.compile(optimizer='adam', loss='categorical_crossentropy' ,metrics=['accuracy'])
 
-results = modules.model.fit(dataset.train_generator , steps_per_epoch=dataset.train_steps ,epochs=30,
+results = modules.model.fit(dataset.train_generator , steps_per_epoch=dataset.train_steps ,epochs=10,
                               validation_data=dataset.val_generator,validation_steps=dataset.val_steps)

@@ -16,8 +16,8 @@ from pathlib import Path
 from random import sample, choice
 import shutil
 
-img_h = 4288
-img_w = 2848
+img_h = 432
+img_w = 288
 b_size = 32
 
 
