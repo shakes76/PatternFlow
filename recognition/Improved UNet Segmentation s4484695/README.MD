@@ -60,3 +60,11 @@ Only pre-processing done to images and labels is conversion from PIL Image to te
 
 ![Test Inference Vizualisation](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/Inference.PNG)
 ![Test Inference Vizualisation](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/TestSegments.png)
+
+## References
+- https://arxiv.org/abs/1802.10508v1
+- https://github.com/pykao/Modified-3D-UNet-Pytorch
+- https://colab.research.google.com/drive/1nfXJrNN3Q6yQMrtldeHx7wx7QuO1YsDQ?usp=sharing#scrollTo=3YoDJJZjxV6B
+- https://github.com/pykao/Modified-3D-UNet-Pytorch
+- https://kozodoi.me/python/deep%20learning/pytorch/tutorial/2021/03/08/image-mean-std.html#:~:text=mean%3A%20simply%20divide%20the%20sum,(df)%20*%20image_size%20*%20image_size
+- https://github.com/kevinzakka/pytorch-goodies/blob/master/losses.py
