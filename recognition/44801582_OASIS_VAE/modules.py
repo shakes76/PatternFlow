@@ -7,34 +7,10 @@ import torch.nn as nn
 from functions import vector_quantizer, vector_quantizer_straight_through
 
 
-# class VQVAE(nn.Module):
-#     def __init__(self, latent, device):
-#         super(VQVAE, self).__init__()
-#
-#         self.device = device
-#         self.encoder = Encoder(latent)
-#         self.decoder = Decoder(latent)
-#
-#     def forward(self, x):
-#         x = x.to(self.device)
-#         z = self.encoder(x)
-#         return self.decoder(z)
-
 def get_pad(output, stride):
     return (output * (stride - 1) - stride)/2
 
-# class Encoder(nn.Module):
-#     def __init__(self, latent):
-#         super(Encoder, self).__init__()
-#
-#         self.encoder = nn.Sequential(
-#         )
-#
-#     def forward(self, x):
-#         z = self.encoder(x)
-#         # Not a finished implementation, need to implement re-parametrisation
-#
-#         return z
+
 def get_encoder(latent_dim=16):
     enc_model = nn.Sequential(
         nn.LazyConv2d(32, 3, stride=2, padding=1),
@@ -67,19 +43,6 @@ class VQ(nn.Module):
 
         return x_q, flat
 
-
-
-# class Decoder(nn.Module):
-#     def __init__(self, latent):
-#         super(Decoder, self).__init__()
-#
-#         self.decoder = nn.Sequential(
-#         )
-#
-#     def forward(self, z):
-#         x = self.decoder(z)
-#         x = torch.sigmoid(x)
-#         return x
 
 def get_decoder(latent_dim=16):
     dec_model = nn.Sequential(
