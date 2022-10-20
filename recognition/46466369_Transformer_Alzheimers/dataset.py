@@ -1,10 +1,12 @@
-# reads the data
-
-#file path: ../AD_NC/test
 import os
 from pathlib import Path
 import numpy as np
 from PIL import Image
+
+"""
+dataset.py
+Contains the data loader for loading and preprocessing the data
+"""
 
 # Path to dataset directory
 path = "C:/Users/Eric/Documents/uni/2022_sem2/comp3710/report/AD_NC"
@@ -28,10 +30,3 @@ def load_dataset():
 
     print("Data successfully loaded")
     return (train_images, test_images)
-    
-"""
-train_images = []
-for f in os.listdir(os.path.join(root_path, 'Train')):
-    img = np.array(Image.load(img))
-    train_images(img)
-"""
