@@ -13,48 +13,43 @@ import torchvision.transforms as transforms
 import time
 import numpy as np
 
-# Hyper-parameters
+# Hyper-parameters, can adjust these to affect loss and dice coefficients of training and test of model. 
+# These parameters achieve the target goal of >0.8 dice coefficient average on test set.
 num_epochs = 30
 learning_rate = 5 * 10**-4
 batchSize = 16
 learning_rate_decay = 0.985
 
-# validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Images"
-# trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Images"
-# validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Validation\Labels"
-# trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Small Data\Train\Labels"
-
-# # Discovery path only needs to be specified if calling function calculate_mean_std.
-# discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
-# discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
-
-##################################################################################################################################
-
-validationImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Images"
-trainImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
-validationLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Validation\Labels"
-trainLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
-
+# PATHS
+# Change these values to Relevant Labels, Images folder paths. Images and Labels must be alrady separated.
+# IE: Validation, train and test set must already be split into different folders, and also labels and images must be stored in different paths.
+validationImagesPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
+trainImagesPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
+validationLabelsPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
+trainLabelsPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
 # Discovery path only needs to be specified if calling function calculate_mean_std.
-discoveryImagesPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Images"
-discoveryLabelsPath = r"C:\Users\kamra\OneDrive\Desktop\Uni Stuff\2022\COMP3710\Report\Data\Train\Labels"
-
-##################################################################################################################################
-
-# validationImagesPath = "../../../Data/Validation/Images"
-# trainImagesPath = "../../../Data/Train/Images"
-# validationLabelsPath = "../../../Data/Validation/Labels"
-# trainLabelsPath = "../../../Data/Train/Labels"
-
-# # Discovery path only needs to be specified if calling function calculate_mean_std.
-# discoveryImagesPath = trainImagesPath
-# discoveryLabelsPath = trainLabelsPath
+discoveryImagesPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
+discoveryLabelsPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
+# Below is the path to save model to after training is complete
+modelPath = r"PLACEHOLDER, CHANGE THIS TO APPLICABLE PATH"
 
 
-modelPath = "model.pth"
-outputPath = "./Output"
+"""
+Improved 2D-UNet for Binary Segmentation of ISIC2017 Lesion Data Set.
+>0.8 Test Set Accuracy achieved.
+
+Training of U-Net Model takes place in this script, saves model to above specified path for inference or other purposes.
+
+Make sure you have followed instructions above to set paths properly, or unpredictable behaviour for this training algorithm.
+"""
+
 
 def init():
+    """
+    Initializes Data Sets, checks for CUDA GPU.
+
+    return: dictionary for datasets of validation and training, dictionary for dataloaders of validation and training.
+    """
     validDataSet = dataset.ISIC2017DataSet(validationImagesPath, validationLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
     validDataloader = DataLoader(validDataSet, batch_size=batchSize, shuffle=False)
     trainDataSet = dataset.ISIC2017DataSet(trainImagesPath, trainLabelsPath, dataset.ISIC_transform_img(), dataset.ISIC_transform_label())
@@ -76,6 +71,11 @@ def init():
     return dataSets, dataLoaders, device
 
 def main():
+    """
+    Controls flow of train.py script when executed as __main__ script. Trains model then saves model upon training completion.
+
+    return: none
+    """
     dataSets, dataLoaders, device = init()
     model = modules.Improved2DUnet()
     model = model.to(device)
@@ -90,6 +90,16 @@ def main():
     torch.save(model.state_dict(), modelPath)
 
 def train_and_validate(dataLoaders, model, device):
+    """
+    Implements training and validation with loss functions, optimizer and scheduler as specified in 
+    “Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,”, with hyper parameters specified above.
+    Saves plot of loss and coefficient metrices curve.
+
+    dataloaders: dictionary of PyTorch DataLoader objects
+    model: Model of type nn.module
+    device: Device being used for training.
+    return: none   
+    """
     # Define optimization parameters and loss according to Improved Unet Paper.
     criterion = dice_loss
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=10**-5)
@@ -116,18 +126,29 @@ def train_and_validate(dataLoaders, model, device):
 
 
         print ("Epoch [{}/{}], Training Loss: {:.5f}, Training Dice Similarity {:.5f}".format(epoch+1, num_epochs, losses_training[-1], dice_similarities_training[-1]))
-        print('Validation Training Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_valid) ,get_average(dice_similarities_valid)))
+        print('Validation Loss: {:.5f}, Validation Average Dice Similarity: {:.5f}'.format(get_average(losses_valid) ,get_average(dice_similarities_valid)))
         
     
     end = time.time()
     elapsed = end - start
     print("Training & Validation Took " + str(elapsed/60) + " Minutes")
 
-    save_list_as_scatter(trainList=losses_training, valList=losses_valid, type="Loss", path="LossCurve.png")
-    save_list_as_scatter(trainList=dice_similarities_training, valList=dice_similarities_valid, type="Dice Coefficient", path="DiceCurve.png")
+    save_list_as_plot(trainList=losses_training, valList=losses_valid, type="Loss", path="LossCurve.png")
+    save_list_as_plot(trainList=dice_similarities_training, valList=dice_similarities_valid, type="Dice Coefficient", path="DiceCurve.png")
 
 
 def train(dataLoader, model, device, criterion, optimizer, scheduler):
+    """
+    Completes one epoch of training.
+
+    dataloader: PyTorch DataLoader object
+    model: Model of type nn.Module
+    device: Device being used for training.
+    criterion: function returning a function for calculating loss.
+    optimizer: torch.optim object
+    scheduler: torch.optim.scheduler object
+    return: average loss and dice coefficient once completed current epoch   
+    """
 
     model.train()
 
@@ -152,6 +173,17 @@ def train(dataLoader, model, device, criterion, optimizer, scheduler):
     return get_average(losses), get_average(coefficients)
 
 def validate(dataLoader, model, device, criterion, epochNumber):
+    
+    """
+    Completes one epoch of training.
+
+    dataloader: PyTorch DataLoader object
+    model: Model of type nn.Module
+    device: Device being used for training.
+    criterion: function returning a function for calculating loss.
+    epochNumber: current epoch
+    return: average loss and dice coefficient once completed current epoch   
+    """
 
     losses = list()
     coefficients = list()
@@ -175,6 +207,12 @@ def validate(dataLoader, model, device, criterion, epochNumber):
 
 # Variable numList must be a list of number types only
 def get_average(numList):
+    """
+    Calculates Averages of a list of number types.
+
+    numList: a List object containing only number types
+    return: number type (float, int, etc...)
+    """
     size = len(numList)
     count = 0
     for num in numList:
@@ -183,26 +221,24 @@ def get_average(numList):
     return count / size
 
 def dice_loss(outputs, labels):
+    """
+    Calculates binary dice loss given predicted outputs and ground truth labels.
+
+    outputs: torch array of predicted outputs
+    labels: torch array of ground truth labels
+    return: binary dice loss
+    """
     return 1 - dice_coefficient(outputs, labels)
 
-# outputs corresponds to u in improved Unet Paper, labels corresponds to v in improved unet paper.
-# Note: u must be softmax output of network and v must be a one hot encoding of ground truth segmentations
-
 def dice_coefficient(outputs, labels, epsilon=10**-8):
+    """
+    Calculates binary dice coefficient given predicted outputs and ground truth labels.
 
-    # currentBatchSize = len(outputs)
-    # smooth = 1.
-
-    # outputs_flat = outputs.view(currentBatchSize, -1)
-    # labels_flat = labels.view(currentBatchSize, -1)
-
-    # intersection = (outputs_flat * labels_flat).sum()
-    # diceCoefficient = (2. * intersection)/(outputs_flat.sum()+labels_flat.sum()+epsilon)
-
-    # #dims = (0,) + tuple(range(2, labels.ndimension()))
-    # intersection = torch.sum(outputs * labels, dims)
-    # denom = torch.sum(outputs + labels, dims)
-    # diceCoefficient = (2. * intersection / (denom + epsilon)).mean()
+    outputs: torch array of predicted outputs
+    labels: torch array of ground truth labels
+    epsilon: small value to prevent 0 division error, this value should not be changed unless you have reasons to.
+    return: binary dice coefficient
+    """
 
     intersection = (outputs * labels).sum()
     denom = (outputs + labels).sum() + epsilon
@@ -210,11 +246,21 @@ def dice_coefficient(outputs, labels, epsilon=10**-8):
     return diceCoefficient
 
 def print_model_info(model):
+    """
+    Provides information about nn.Module object.
+
+    model: nn.Module
+    """
     print("Model No. of Parameters:", sum([param.nelement() for param in model.parameters()]))
     print(model)
 
 def display_test(dataLoader):
-    # Display image and label.
+    """
+    Functions for testing dataLoader data has been loaded as expected. Helpful for vizualising loaded data.
+
+    dataloader: PyTorch DataLoader object
+    """
+
     train_features, train_labels = next(iter(dataLoader))
     currentBatchSize = train_features.size()[0]
     print(f"Feature batch shape: {train_features.size()}")
@@ -232,6 +278,17 @@ def display_test(dataLoader):
     plt.show()
 
 def save_segments(images, labels, outputs, numComparisons, epochNumber=num_epochs, test=False):
+    """
+    Saves the first numComparisons images with corresponding ground truth labels and predicted labels for easy and succinct visualization.
+
+    images: torch array of images.
+    outputs: torch array of predicted outputs.
+    labels: torch array of ground truth labels.
+    numComparisons: number of image, ground truth and predictions to save for comparison.
+    epochNumber: epoch number of corresponding segments.
+    test: True if saving segments for test set, false for training or validation.
+    """
+
     if numComparisons > batchSize:
         numComparisons = batchSize
     
@@ -272,7 +329,15 @@ def save_segments(images, labels, outputs, numComparisons, epochNumber=num_epoch
         plt.savefig("TestSegments")
     plt.close()
 
-def save_list_as_scatter(trainList, valList, type, path):
+def save_list_as_plot(trainList, valList, type, path):
+    """
+    Saves a plot of two lists of type to path, each entry pair corresponds to an epoch.
+
+    trainList: list of number type and same size as valList
+    valList: list of number type and same size as trainList
+    type: the type of data stored in the lists
+    path: path to save plot to
+    """
     if (len(trainList) != len(valList)):
         print("ERROR: Cannot display!")
     
@@ -292,6 +357,9 @@ def save_list_as_scatter(trainList, valList, type, path):
     plt.close()
 
 def calculate_mean_std():
+    """
+    Used for discovering mean and standard deviation for normalization of ISIC2017 DataSet.
+    """
     psum    = torch.tensor([0.0, 0.0, 0.0])
     psum_sq = torch.tensor([0.0, 0.0, 0.0])
     height = 2016
@@ -318,5 +386,6 @@ def calculate_mean_std():
     print('mean: '  + str(total_mean))
     print('std:  '  + str(total_std))
 
+# If train.py is executed as main script then train.main()
 if __name__ == "__main__":
     main()

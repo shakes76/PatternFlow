@@ -15,13 +15,25 @@ import matplotlib.pyplot as plt
 import os
 from torchvision.io import read_image
 
+# Hyper-Parameters can adjust these to affect loss and dice coefficients of training and test of model. 
+# These parameters achieve the target goal of >0.8 dice coefficient average on test set.
 imageReduction = 128
 cropCoefficient = 0.9
 
 # Ensure to specify transforms for DataSet or otherwise will default to no transforms applied.
-# Complete Paths should be provided for labels and images folder.
 class ISIC2017DataSet(Dataset):
+    """
+    Implements a class object representing ISIC2017DataSet inheriting from DataSet
+    """
     def __init__(self, imgs_path, labels_path, transform=None, labelTransform=None):
+        """
+        Initialize class object with path and transforms. This is a mandatory function to implement a DataSet.
+
+        imgs_path: path to folder containing images
+        labels_path: path to folder containing label masks, labels and images must be in separate folders.
+        transform: transforms to apply to images, of type torchvision.transforms
+        labelTransform: transforms to apply to labels, of type torchvision.transforms
+        """
         self.LabelsPath = labels_path
         self.ImagesPath = imgs_path
         # os.listdir does not gaurantee order.
@@ -33,6 +45,11 @@ class ISIC2017DataSet(Dataset):
         self.labelTransform = labelTransform
 
     def __len__(self):
+        """
+        This is a mandatory function to implement a DataSet.
+
+        Calculates the length/size of the DataSet.
+        """
         if self.ImagesSize != self.LabelsSize:
             print("Bad Data! Please Check Data, or unpredictable behaviour!")
             return -1
@@ -42,6 +59,14 @@ class ISIC2017DataSet(Dataset):
     # Using os.path.join with self.imageNames + "_segmentation" ensures img_path and label_path both refer to same sample. 
     # This is required as os.listdir does not gaurantee order.
     def __getitem__(self, idx):
+        """
+        This is a mandatory function to implement a DataSet.
+
+        Gets an image at index:idx and it's corresponding label. Label name must be in format of imageName_segmentation.png.
+
+        idx: integer (index)
+        return: tuple (image, label)
+        """
         img_path = os.path.join(self.ImagesPath, self.imageNames[idx])
         image = read_image(img_path)
         label_path = os.path.join(self.LabelsPath, self.imageNames[idx].removesuffix(".jpg") + "_segmentation.png")
@@ -55,7 +80,11 @@ class ISIC2017DataSet(Dataset):
         return image, label
     
 def ISIC_transform_img():
-        
+    """
+    Tranforms to images for training.
+
+    return: transforms
+    """
     transformTrain = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
@@ -68,7 +97,11 @@ def ISIC_transform_img():
     return transformTrain
 
 def ISIC_transform_test():
-    
+    """
+    Tranforms to images for test inference.
+
+    return: transforms
+    """
     transformTrain = transforms.Compose([
         transforms.ToPILImage(),
         transforms.ToTensor(),
@@ -78,6 +111,11 @@ def ISIC_transform_test():
     return transformTrain
 
 def ISIC_transform_label():
+    """
+    Tranforms to images for labels.
+
+    return: transforms
+    """
         
     transformTest = transforms.Compose([
         transforms.ToPILImage(),
@@ -88,6 +126,11 @@ def ISIC_transform_label():
     return transformTest
 
 def ISIC_transform_discovery():
+    """
+    Tranforms to images for discovery (Calculating normalization values).
+
+    return: transforms
+    """
 
     transformDiscovery = transforms.Compose([
         transforms.ToPILImage(),
