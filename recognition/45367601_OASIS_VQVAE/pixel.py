@@ -33,9 +33,7 @@ class PixelConvLayer(layers.Layer):
 class ResidualBlock(layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResidualBlock, self).__init__(**kwargs)
-        self.conv1 = layers.Conv2D(
-            filters=filters, kernel_size=1, activation="relu"
-        )
+        self.conv1 = layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
         self.pixel_conv = PixelConvLayer(
             mask_type="B",
             filters=filters // 2,

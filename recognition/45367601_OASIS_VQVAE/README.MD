@@ -17,3 +17,6 @@ The produced model was based on the open-source solution available in the Keras 
 The VQ-VAE component of the generative task performed well; it was capable of reproducing the brain scans with a SSIM averaging well above 0.8 (typically, closer to 0.95 on the tested images). A series of images, alongside their respective reconstructions, are shown below. 
 
 The PixelCNN generative model did not perform as hoped; the randomly generated encodings did not replicate the structure of the encodings from the brain images, and therefore the decoded images did not closely resemble real brains. Some of the generated brain models are shown below.
+
+
+Notably, it appears that some aspects were retained (the 'wrinkles' in grey matter, the defined outer ring, etc.), but the shape of the brains was not learnt effectively, even when the Pixel was trained for 600+ epochs. One potential reason for this is that the model could not be trained on the full 9000+ brains in the training set; only approx. 2000 were able to be run at a time. 
