@@ -171,3 +171,8 @@ The loss during the training process is shown here:
 - Matplotlib.pyplot for plotting the images and generations.
 - numpy for utility
 - skimage.metrics for SSIM measurement
+
+### References:
+- https://www.oasis-brains.org/ -> Dataset Used (Use OASIS one)
+- https://arxiv.org/abs/1711.00937 -> VQVAE paper
+- https://arxiv.org/abs/1606.05328 -> PixelCNN paper
