@@ -64,14 +64,14 @@ class VQVAETrainer (tf.keras.models.Model):
 LATENT_DIM = 8
 NUM_EMBEDDINGS = 16
 
-def train(x_train, x_test, x_validate):
+def train(x_train, x_test, x_validate, epochs=30):
     data_variance = np.var(x_train)
 
     vqvae_trainer = VQVAETrainer(data_variance, LATENT_DIM, NUM_EMBEDDINGS)
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     history = vqvae_trainer.fit(
         x=x_train, 
-        epochs=5, 
+        epochs=epochs, 
         batch_size=BATCH_SIZE, 
         use_multiprocessing=True, 
         validation_data=(x_validate, x_validate), 
@@ -103,7 +103,8 @@ def train(x_train, x_test, x_validate):
     plt.close()
 
 
-    vqvae_trainer.model.save('mymodel')
+    vqvae_trainer.model.save('vqvae')
+    return vqvae_trainer.model
 
 def show_subplot(original, reconstructed, i):
     plt.subplot(1, 2, 1)
@@ -147,7 +148,7 @@ def demo_model(model, x_test):
         plt.savefig('embedding'+str(i))
         plt.close()
 
-def pixelcnn_train(model, x_train, x_test, x_validate):
+def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30):
     encoder = model.get_layer("encoder")
     quantizer = model.get_layer("vector_quantizer")
     decoder = model.get_layer("decoder")
@@ -165,7 +166,13 @@ def pixelcnn_train(model, x_train, x_test, x_validate):
 
     pixelcnn = get_pixelcnn(num_embeddings=NUM_EMBEDDINGS)
     pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
-    pixelcnn.fit(x=codebook_indices_training, y=codebook_indices_training, batch_size=BATCH_SIZE, epochs=30, validation_data=(codebook_indices_validation, codebook_indices_validation))
+    pixelcnn.fit(
+        x=codebook_indices_training, 
+        y=codebook_indices_training, 
+        batch_size=BATCH_SIZE, 
+        epochs=epochs,
+        validation_data=(codebook_indices_validation, codebook_indices_validation)
+    )
 
 
     sampler = get_pixelcnn_sampler(pixelcnn)
@@ -182,7 +189,7 @@ def pixelcnn_train(model, x_train, x_test, x_validate):
     pretrained_embeddings = quantizer.embeddings
     prior_onehot = tf.one_hot(priors.astype("int32"), NUM_EMBEDDINGS).numpy()
     quantized = tf.matmul(prior_onehot.astype("float32"), pretrained_embeddings, transpose_b=True)
-    quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+    quantized = tf.reshape(quantized, (-1, *(encoded_training.shape[1:])))
 
     # Generate novel images.
     generated_samples = decoder.predict(quantized)
@@ -199,3 +206,5 @@ def pixelcnn_train(model, x_train, x_test, x_validate):
         plt.axis("off")
         plt.savefig('gen'+str(i))
         
+    pixelcnn.save('pixelcnn')
+    return pixelcnn
