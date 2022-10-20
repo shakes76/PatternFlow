@@ -14,13 +14,13 @@ def main():
 
     num_classes = 2 # AD or NC
     input_shape = (240, 256, 1)
-    image_size = 250
-    patch_size = 32
+    image_size = 180
+    patch_size = 16
     num_patches = (image_size // patch_size) ** 2
-    projection_dim = 64 # increase
-    num_heads = 8 # increase
+    projection_dim = 128 # increase
+    num_heads = 4 # increase
     transformer_units = [
-        projection_dim * 3, # increase
+        projection_dim * 5, # increase
         projection_dim,
     ] # size of the transformer layers
     transformer_layers = 9
