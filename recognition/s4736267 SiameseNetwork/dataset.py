@@ -336,7 +336,7 @@ class DatasetTrain3D(Dataset):
         return image3D_1, image3D_positive, image3D_negative, label_1
 
 
-class DatasetTrainClass(Dataset):
+class DatasetTrainClas(Dataset):
     def __init__(self, image_paths, transform=None):
         self.image_paths = image_paths
         self.transform = transform
@@ -469,7 +469,7 @@ class Dataset3D(Dataset):
 
         return image3D, label
 
-class DatasetClas3D(Dataset):
+class DatasetClasFV(Dataset): #Feature Vector
     def __init__(self, image_paths, transform=None):
         self.image_paths = image_paths
         self.transform = transform
@@ -501,21 +501,21 @@ class DatasetClas3D(Dataset):
 
 
 #######################################################
-#                  Return Classification Source
+#                  Return Classification Source for feature vectors FV
 #######################################################  
 
-def clas_output3D(clas_dataset,input_data):
+def clas_outputFV(clas_dataset,input_data):
 
-    clas_Person_AD = torch.zeros_like(input_data)
-    clas_Person_NC = torch.zeros_like(input_data)
+    FV_Person_AD = torch.zeros_like(input_data)
+    FV_Person_NC = torch.zeros_like(input_data)
 
     
 
     for i in range(input_data.shape[0]):
-        clas_Person_AD[i] = clas_dataset[i]
-        clas_Person_NC[i] = clas_dataset[i+10] #Second Set represents NC
+        FV_Person_AD[i] = clas_dataset[i]
+        FV_Person_NC[i] = clas_dataset[i+10] #Second Set represents NC
 
-    return clas_Person_AD, clas_Person_NC
+    return FV_Person_AD, FV_Person_NC
 
 
 #######################################################
@@ -573,44 +573,29 @@ def dataset3D(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
     
     train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
     test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
-    clas_image_paths = clas_data()
+    image_paths_FV = clas_data()
 
     #Dataset
     
     train_dataset = DatasetTrain3D(train_image_paths,transformation_3D())
     valid_dataset = DatasetTrain3D(valid_image_paths,transformation_3D()) 
-    test_dataset = Dataset3D(test_image_paths,transformation_3D())
-    clas_dataset = DatasetClas3D(clas_image_paths,transformation_3D())
+    test_dataset  = Dataset3D(test_image_paths,transformation_3D())
+    dataset_FV    = DatasetClasFV(image_paths_FV,transformation_3D())
+
+
+    train_dataset_clas = DatasetTrainClas(train_image_paths,transformation_3D())
+    valid_dataset_clas = DatasetTrainClas(valid_image_paths,transformation_3D()) 
 
     #Dataloaders
     train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
-
     valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
-
     test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
 
-    return train_loader, valid_loader, test_loader, clas_dataset
-
-
-def datasetClass(batch_size=64, TRAIN_SIZE = 200, VALID_SIZE= 20, TEST_SIZE=20):
-
-    #Preparation
+    train_loader_clas = DataLoader(train_dataset_clas, batch_size, shuffle=True,num_workers=1)
+    valid_loader_clas = DataLoader(valid_dataset_clas, batch_size, shuffle=True,num_workers=1)
     
-    train_image_paths, valid_image_paths = train_valid_data(TRAIN_DATA_SIZE = TRAIN_SIZE,VALID_DATA_SIZE = VALID_SIZE)
-    test_image_paths = test_data(DATA_SIZE=TEST_SIZE)
 
-    #Dataset
-    
-    test_dataset = Dataset3D(test_image_paths,transformation_3D())
 
-    train_dataset = DatasetTrainClass(train_image_paths,transformation_3D())
-    valid_dataset = DatasetTrainClass(valid_image_paths,transformation_3D()) 
+    return train_loader, valid_loader, test_loader, train_loader_clas, valid_loader_clas, dataset_FV
 
-    #Dataloaders
-    train_loader = DataLoader(train_dataset, batch_size, shuffle=True,num_workers=1)
 
-    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True,num_workers=1)
-
-    test_loader = DataLoader(test_dataset, batch_size, shuffle=False,num_workers=1)
-
-    return train_loader, valid_loader, test_loader

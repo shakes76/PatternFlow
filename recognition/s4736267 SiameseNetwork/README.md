@@ -165,9 +165,6 @@ Adding a deeper structure by using more residual blocks for the ResNet approach,
 ### One Shot image recognition
 Due to the approach of a one-shot image recognition, only one sample person of two classes was used. Instead of using one reference image for both classes, the number could be increased to 10.
 Averaging the slices across the patients does not provide an improvement. This is mainly due to the orientation and location of the brain centers being different between patients.
-
-Averaging the slices itself across the patients, does not provide a improvement. This is mainly due to the orientation and location of the brain centers beeing different between patients.
-
 <p align="center">
     <img src=Picture/singlemean.PNG width="600" >
 </p>
@@ -208,18 +205,37 @@ The previous introduced 3D ResNet, was modified which resulted in the final impl
 </p>
 
 The major change was the introduction of two additonal linear linear layers at the end of the branch structure and the removal of the previous used adaptive average pooling function. Furthermore the number of identiy blocks was reduced, so that all four stages contain 4 residual blocks. 
-Especially due to the introduction of the average poling layer, the runtime of the SNN increased dramatically.
+Especially due to the introduction of the average poling layer, the runtime of the SNN increased dramatically. 
+
+> Test accuracy 70.35%
+
+### Reusing the additional classification network
+
+Instead of picking a small number of references for final classification, the previous described classification net is used to further improve the performance of the overall system. With a total number of three linear layers and the use of the BCEloss() function, the implementationn of the classifcation net is kept quite simple.
+
+> Test accuracy 75.35%
 
 ### Outlook:
 Further improvements for the SNN implementation would be
-* Reusing the additional classification network
+* The resulting SNN is very sensetive to changes in the layer structure, training parameters and amount of augmentastion => Introduction of optimsation strategies like Bayesian Optimisation
 * Tuning the SNN while training the classification Net
 * Implement of true 3D augmentation (not slice based)
+* Improving training time by using more efficent approaches in the net definitions
+* Introducing training strategies, to prevent strange behaviour [Figure 9]
+
+<p align="center">
+    <img src=Picture/trainingbehav.png width="600" >
+</p>
+<p align="center">
+    <em> Figure 9: Strange behaviour loss during training  </em>
+</p>
+
+
 
 ## Executing Code
 The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py.
 * Important constants are defined in the top section of the file
-* Predict.py loads the pre-trained model and reruns the testing on the test set
+* Predict.py loads the pre-trained models and reruns the testing on the test set
 * Plotted images are stored in the root folder
 
 ## Results
@@ -229,10 +245,12 @@ The results are based on the last implementation of the SNN.
     <img src=Picture/training_loss.png width="600" >
 </p>
 <p align="center">
-    <em> Figure 9: Loss during training epoch of training and validation set  </em>
+    <em> Figure 10: Loss during training epoch of training and validation set  </em>
 </p>
 
 The final accuracy could be improved but didnt peak the required 80%.
+
+> Test accuracy 75.35%
 
 Summarising the main problems facing during the implementation:
 * Different Dataset structures between training/validation and testing

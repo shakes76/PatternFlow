@@ -201,20 +201,20 @@ class Net_clas3D(nn.Module):
         self.final = nn.Sequential(
 
             nn.Flatten(),
-            nn.Linear(2*2048, 2048),
-            nn.BatchNorm1d(2048),
+            nn.Linear(8*512, 8*512),
+            nn.BatchNorm1d(8*512),
             nn.ReLU(),
 
-            nn.Linear(2048, 2048),
-            nn.BatchNorm1d(2048),
+            nn.Linear(8*512, 4*512),
+            nn.BatchNorm1d(4*512),
             nn.ReLU(),
 
-            #nn.Linear(2048, 512),
-            #nn.BatchNorm1d(512),
-            #nn.ReLU(),
+            nn.Linear(4*512, 1*512),
+            nn.BatchNorm1d(1*512),
+            nn.ReLU(),
 
             nn.Dropout(p=0.5),
-            nn.Linear(2048, 1),
+            nn.Linear(512, 1),
             #nn.sigmoid();
         )
 

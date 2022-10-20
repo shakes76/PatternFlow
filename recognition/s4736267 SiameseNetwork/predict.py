@@ -33,18 +33,21 @@ import dataset
 #                  Defining constants
 #######################################################
 
-epoch_range = 200
-batch_size=16
-train_factor=1000               #Number of Persons
+epoch_range = 300
+epoch_range_clas = 30
+
+batch_size=8
+train_factor=10000               #Number of Persons
 test_factor=400
 valid_factor=400
 
-FILE="weights_only_l3.pth"         #File location of saved pretrained net
+FILE_SNN_LOAD   ="SNN_weights.pth"                   #Load location of pre-trained ResNet 
+FILE_CLAS_LOAD  ="CLAS_weights.pth"                   #Load location of pre-trained Classification Net 
+
 
 #(0=disabled)
-load_pretrained_model=1
-plot_feature_vectors=1          #Ploting feature vectors
-plot_loss = 1                   #Ploting training and validation loss
+plot_feature_vectors=0          #Ploting feature vectors
+
 
 
 #######################################################
@@ -58,62 +61,48 @@ torch.cuda.empty_cache()
 #Importing CNN Model
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-if load_pretrained_model==0: 
-    net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
-    net = net.to(device)
-else:
-    
-    net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
-    net.load_state_dict(torch.load(FILE))
-    net.eval()
-    net = net.to(device)
+net = modules.ResNet_3D(modules.Residual_Identity_Block_R3D,modules.Residual_Conv_Block_R3D)
+net.load_state_dict(torch.load(FILE_SNN_LOAD))
+net = net.to(device)
+net.eval()
+
+net_clas = modules.Net_clas3D()
+net_clas.load_state_dict(torch.load(FILE_CLAS_LOAD))
+net_clas = net.to(device)
+net_clas.eval()
 
 
 #Loading Dataloaders
-train_loader, valid_loader, test_loader, clas_dataset =dataset.dataset3D(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor+20)
+train_loader, valid_loader, test_loader, train_loader_clas, valid_loader_clas, dataset_FV =dataset.dataset3D(batch_size,TRAIN_SIZE = 20*train_factor, VALID_SIZE= 20*valid_factor, TEST_SIZE=20*test_factor)
 
-#######################################################
-#                  Loading clasification image
-#######################################################
-
-##Classification Input Data
-input_shape=torch.zeros(10,1,20,210,210)
-clas_image_AD, clas_image_NC = dataset.clas_output3D(clas_dataset,input_shape)
-clas_image_AD=clas_image_AD.to(device)
-clas_image_NC=clas_image_NC.to(device)
+#Mean and deviation calculation
+#xy,yz = dataset.mean_std_calculation(train_loader)
+#dataset.crop_area_pos(train_loader)   not working !!
 
 print("Initialitaion finished", flush=True)
-
-###################################################
-#          Calculation of classification vector
-###################################################
-
-outputAD = net.forward_once(clas_image_AD)
-outputNC = net.forward_once(clas_image_NC)
-feature_AD=torch.mean(outputAD,dim=0)
-feature_NC=torch.mean(outputNC,dim=0)
+print("")
 
 #######################################################
 #                  Testing
 #######################################################
 
+print("Start testing", flush=True)
 with torch.no_grad():
     correct = 0
     total = 0
-
+    net_clas.eval()
 
     for i, data in enumerate(test_loader, 0):
+        
         inputs= data[0].to(device) 
         
         labels= data[1].to(device).to(torch.float32)
-
-        output1= net.forward_once(inputs)
         
-        euclidean_distance_AD = F.pairwise_distance(output1, feature_AD)    
-        euclidean_distance_NC = F.pairwise_distance(output1, feature_NC)
+        feauture_inputs   = net.forward_once(inputs)
+        output = net_clas(feauture_inputs)#.squeeze(0)
+        output=output.squeeze(1)
 
-        predicted_labels = torch.ge(euclidean_distance_AD,euclidean_distance_NC)*1
-        
+        predicted_labels = torch.round(output)
         correct_tensor=torch.eq(labels,predicted_labels)
     
         correct_run = torch.sum(correct_tensor)
@@ -121,18 +110,30 @@ with torch.no_grad():
         total += torch.numel(labels)
 
     test_accuracy=correct/total
-    print("")
-    print("   ->Test Accuracy  :",test_accuracy.item(), flush=True)
+    print("->Test Accuracy  :",test_accuracy.item(), flush=True)
 
     gc.collect()
 
-print('=> ---- Finished Testing ---- ')
+print('=> ---- Finished Testing ---- ', flush=True)
+print("")
 
 #######################################################
 # Plotting feature vectors of classification reference
 #######################################################
 
 if plot_feature_vectors==1:
+    print("Start plotting feature vectors", flush=True)
+    
+    ##Classification Input Data
+    input_shape=torch.zeros(10,1,20,210,210)
+    FV_image_AD, FV_image_NC = dataset.clas_outputFV(dataset_FV,input_shape)
+    FV_image_AD=FV_image_AD.to(device)
+    FV_image_NC=FV_image_NC.to(device)
+
+    outputAD = net.forward_once(FV_image_AD)
+    outputNC = net.forward_once(FV_image_NC)
+    feature_AD=torch.mean(outputAD,dim=0)
+    feature_NC=torch.mean(outputNC,dim=0)
 
     plt.figure(0)
 
@@ -142,7 +143,7 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotAD_predict.png',bbox_inches='tight')
+    plt.savefig('PlotAD.png',bbox_inches='tight')
 
     plt.figure(1)
     for i in range(10):
@@ -152,12 +153,12 @@ if plot_feature_vectors==1:
 
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='black',linewidth='4')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('PlotNC_predict.png',bbox_inches='tight')
+    plt.savefig('PlotNC.png',bbox_inches='tight')
 
     plt.figure(2)
     plt.plot(feature_AD.cpu().detach().numpy(), label='AD',color='black',linewidth='4')
     plt.plot(feature_NC.cpu().detach().numpy(), label='NC',color='red',linewidth='1')
     plt.legend(loc='lower right', bbox_to_anchor=(-0.1, 0))
-    plt.savefig('Plot_predict.png',bbox_inches='tight')
+    plt.savefig('PlotADNC.png',bbox_inches='tight')
     print('=> ---- Finished Plotting feature vectors ---- ')    
 
