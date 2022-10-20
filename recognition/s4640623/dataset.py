@@ -9,14 +9,15 @@ Original file is located at
 
 import numpy as np
 import torch
-from google.colab import drive
 import scipy.sparse as sp
+from io import BytesIO
+import requests
 
 train_size = 3 # Number to divide dataset by for train, valid and test datasets
 
-def load_data(path='/content/gdrive', file='/MyDrive/Colab Notebooks/Lab 3/facebook.npz'):
-  drive.mount('/content/gdrive', force_remount=True);
-  data = np.load("{}{}".format(path, file))
+def load_data(path="https://graphmining.ai/datasets/ptg/facebook.npz"):
+  mydata = pd.read_csv("https://graphmining.ai/datasets/ptg/facebook.npz")
+  data = np.load(BytesIO(r.raw.read()))
   return data
 
 def process_data(dataset):
