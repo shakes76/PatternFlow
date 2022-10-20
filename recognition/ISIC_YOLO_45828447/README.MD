@@ -5,16 +5,28 @@ The aim of this project is to prepare the 2000 lesion images inside the ISIC 201
 ## YOLO v5
 *You Only Look Once*, or YOLO is a real-time object detection neural network. It is known to be a fast performing, lightweight model and thus can be deployed on slower hardware to achieve reasonable performance. 
 
-# Loss Function
-[Loss Function of the YOLO model](Images/loss_func.jpg)
+### How it works
 
+### Loss Function
+![Loss Function of the YOLO model](Images/loss_func.jpg)
+The multi-part loss function above was used during training by the YOLO v5 model, which sums the loss between the localisation loss, object confidence loss and classification loss. 
 
 ## ISIC Challenge 2017 Dataset
 The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are known to be either unharmful, melanoma or seborrheic keratosis. The dataset has already split its data into individual training, validation and test datasets. The training data includes 2000 lesion images in JPEG format, along with the ground truth in PNG format. The validation set and test set includes 150 and 600 JPEG images respectively and, like the training data, includes the ground truth for each image. The dataset includes extra information such as the patients age and gender, these are not within the scope of the project and will not be encoded during training. 
 
+## Dependencies
+- Python -> 3.9
+- YOLOv5 from their GitHub Page and its associated dependencies
+- numpy
+- matplotlib
+- pillow (PIL)
+
 
 ## Pre-processing
-
+The dataset downloaded from the ISIC website was then processed for training/test/validating as follows:
+- Resized both the skin images and segmentation (ground truth) to 640 x 640
+- Encoded the ground truth images to the YOLO v5 label structure for bounding boxes-> (label, center_x, center_y, width, height)
+- Split into training/validation/test folders in the same form as on the ISIC webpage (2000/150/600)
 
 ## Running the Model
 The train was run in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s.
