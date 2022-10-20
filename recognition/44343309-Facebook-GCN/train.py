@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
+from sklearn.manifold import TSNE
 
 class ModelTrainer:
     def __init__(self, checkpointPath):
@@ -35,7 +35,7 @@ class ModelTrainer:
         self.cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpointPath, save_weights_only=True, verbose=1, save_freq=10)
 
         self.epochs=350
-        
+
         self.trainAcc = []
         self.trainLoss = []
         self.valAcc = []
@@ -77,9 +77,29 @@ class ModelTrainer:
         plt.legend()
         plt.show()
 
+    def predictResults(self):
+        return self.model.predict([self.features, self.adjacency], batch_size=self.numNodes), self.labels[self.testMask]
+    
+    def plotTSNE(self, labels, predictions):
+        tsne = TSNE(n_components=2).fit_transform(predictions)
+        colourMap = np.argmax(labels, axis=1)
+        plt.figure(figsize=(15,15))
+        for classes in range(self.classes):
+            indices = np.where(colourMap == classes)
+            indices = indices[0]
+            plt.scatter(tsne[indices, 0], tsne[indices, 1], label=classes)
+
+        plt.legend()
+        plt.show()
+
 def main():
-    model = ModelTrainer("training/cp.ckpt")
-    model.generateModel()
+ model = ModelTrainer("facebook.npz", "training/cp.ckpt")
+ model.generateModel()
+ model.getSummary()
+ model.lossPlots()
+ prediction, testLabs = model.predictResults()
+ model.plotTSNE(testLabs, prediction)
+ 
 
 if __name__ == '__main__':
     main()
