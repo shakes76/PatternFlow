@@ -134,20 +134,64 @@ class DecoderBlock(nn.Module):
         emb_x = self.embedded_block(position)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1])
         return emb_x + x
 
+class AttentionBlock(nn.Module):
+    """
+    Transformer attention block to enhance some parts of the
+    data and diminish other parts
+    """
+    def __init__(self, dims, dim_size):
+        """
+        Attention Block class constructor to initialize the object
+
+        Args:
+            dims (int): number of channels
+            dim_size (int): size of channels
+        """
+        super(AttentionBlock, self).__init__()
+        self.dims = dims
+        self.dim_size = dim_size
+        self.mha_block = nn.MultiheadAttention(dims, 4, batch_first=True)
+        self.layer_norm_block = nn.LayerNorm([dims])
+        self.linear_block = nn.Linear(dims, dims)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        """
+        Method to run an input tensor forward through the attention block
+        and returns the output tensor
+
+        Args:
+            x (Tensor): input tensor
+
+        Returns:
+            Tensor: output tensor
+        """
+        # Restructure the tensor for cross attention
+        x = x.view(-1, self.dims, self.dim_size * self.dim_size).swapaxes(1, 2)
+        x1 = self.linear_block(x)
+        x2, _ = self.mha_block(x1, x1, x1)
+        x3 = x2 + x
+        x4 = self.layer_norm_block(x3)
+        x5 = self.linear_block(x4)
+        x6 = self.relu(x5)
+        x7 = self.linear_block(x6)
+        x8 = x7 + x3
+        # Return the restructured attention tensor
+        return x8.swapaxes(2, 1).view(-1, self.dims, self.dim_size, self.dim_size)
+
 class UNet(nn.Module):
     """
-    Unet model consisting of a decoding block and an encoding block
-    followed by a resulting convolution layer with out dimension 1
+    Unet model consisting of a decoding block, an encoding block,
+    cross attention, and residual skip connections
     """
-    def __init__(self, dim_in_encoder=1, dim_out_encoder=1024, dim_in_decoder=1024, dim_out_decoder=64):
+    def __init__(self, dim_in_out=3, m_dim=64, pos_dim=256):
         """
         Unet class constructor to initialize the object
 
         Args:
-            dim_in_encoder (int, optional): number of channels in the input image. Defaults to 3.
-            dim_out_encoder (int, optional): number of channels produced by the convolution. Defaults to 1024.
-            dim_in_decoder (int, optional): number of channels in the input image. Defaults to 1024.
-            dim_out_decoder (int, optional): number of channels produced by the convolution. Defaults to 64.
+            dim_in_out (int, optional): number of channels in the input image. Defaults to 3.
+            m_dim (int, optional): dimensional multiplier for generalization. Defaults to 64.
+            pos_dim (int, optional): positional dimension. Defaults to 256.
         """
         super(UNet, self).__init__()
         self.unet_encoder = EncoderBlock(dim_in_encoder, dim_out_encoder)

@@ -21,8 +21,7 @@ def load_dataset(path, image_size=128, batch_size=64):
         torchvision.transforms.Resize(image_size+(0.25*image_size)),
         torchvision.transforms.RandomResizedCrop(image_size, scale=(0.8, 1.0)),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Grayscale(num_output_channels=1),
-        torchvision.transforms.Normalize(0.5, 0.5)
+        torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
 
