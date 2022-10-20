@@ -30,17 +30,23 @@ model.compile(optimizer=optimizer, loss=loss_function, metrics=['acc'])
 result = model.fit(train_ds, epochs=50, callbacks=callbacks, validation_data=valid_ds, verbose=2)
 
 # plot the accuracy from training
-plt.plot(result.history['acc'])
-plt.plot(result.history['val_acc'])
+plt.title("Accuracy Over Epochs")
+plt.plot(result.history['acc'], label="accuracy")
+plt.plot(result.history['val_acc'], label="validation accuracy")
 plt.ylabel('Accuracy')
 plt.xlabel('epoch')
+plt.legend()
 plt.savefig("acc.jpg")
 
+plt.clf()
+
 # plot the loss from training
-plt.plot(result.history['loss'])
-plt.plot(result.history['val_loss'])
+plt.title("Loss Over Epochs")
+plt.plot(result.history['loss'], label="loss")
+plt.plot(result.history['val_loss'], label="validation loss")
 plt.ylabel('loss')
 plt.xlabel('epoch')
+plt.legend()
 plt.savefig("loss.jpg")
 
 # load the best weights and save the model
