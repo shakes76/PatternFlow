@@ -5,9 +5,11 @@ sure to plot the losses and metrics during training.
 """
 from dataset import *
 from modules import VQ_VAE
+from utils import gen_samples
 
 import torch
 from torch.nn.functional import mse_loss
+from torchvision.utils import save_image, make_grid
 from tensorboardX import SummaryWriter
 from datetime import datetime
 
@@ -62,13 +64,20 @@ def main():
 
     model = VQ_VAE(1, 256, 512).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    iter = 0
+
+    fixed_images = next(iter(test_loader))
+    fixed_grid = make_grid(fixed_images, nrow=8, range=(-1, 1), normalize=True)
+    writer.add_image('original', fixed_grid, 0)
 
     for epoch in range(3):
-        run_epoch(model, train_loader, test_loader, optimizer, writer, iter)
-        iter += 1
+        run_epoch(model, train_loader, test_loader, optimizer, writer, epoch)
+
         with open(f"{save_filename}/model_{epoch + 1}.pt", 'wb') as f:
             torch.save(model.state_dict(), f)
+
+        reconstruction = gen_samples(fixed_images, model, device)
+        grid = make_grid(reconstruction.cpu(), nrow=8, range=(-1, 1), normalize=True)
+        writer.add_image('reconstruction', grid, epoch + 1)
 
 
 if __name__ == "__main__":
