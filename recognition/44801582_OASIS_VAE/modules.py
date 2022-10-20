@@ -56,7 +56,7 @@ def def_decoder(latent_dim):
     return keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
 
-def get_vqvae(latent_dim=16, num_embeddings=64):
+def VQVAE(latent_dim=16, num_embeddings=64):
     vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
     encoder = def_encoder(latent_dim)
     decoder = def_decoder(latent_dim)
