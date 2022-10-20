@@ -7,7 +7,7 @@ class UNet(nn.Module):
     super().__init__()
     self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding="same")
     self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding="same")
-    self.softmax = nn.Softmax(dim=1)
+    self.softmax = nn.Softmax2d()
     self.context16 = Context_Module(16)
     self.context32 = Context_Module(32)
     self.context64 = Context_Module(64)
@@ -59,7 +59,7 @@ class UNet(nn.Module):
     x = torch.add(self.seg32_b(x), x6)
     
     #Output
-    prediction = self.softmax(x)
+    x = self.softmax(x)
 
     return x
 
@@ -127,7 +127,7 @@ class Segmentation_Module(nn.Module):
   def __init__(self, input_filters):
     super().__init__()
     self.stack = nn.Sequential(
-        nn.Conv2d(input_filters, 1, kernel_size=3, padding="same"),
+        nn.Conv2d(input_filters, 2, kernel_size=3, padding="same"),
     )
   def forward(self, x):
     return self.stack(x)
