@@ -1,0 +1,139 @@
+Model: "ImprovedUnetModel"
+__________________________________________________________________________________________________
+ Layer (type)                   Output Shape         Param #     Connected to                     
+==================================================================================================
+ input_4 (InputLayer)           [(None, 128, 128, 1  0           []                               
+                                )]                                                                
+                                                                                                  
+ conv2d_90 (Conv2D)             (None, 128, 128, 16  160         ['input_4[0][0]']                
+                                )                                                                 
+                                                                                                  
+ conv2d_91 (Conv2D)             (None, 128, 128, 16  2320        ['conv2d_90[0][0]']              
+                                )                                                                 
+                                                                                                  
+ conv2d_92 (Conv2D)             (None, 128, 128, 16  2320        ['conv2d_91[0][0]']              
+                                )                                                                 
+                                                                                                  
+ dropout_15 (Dropout)           (None, 128, 128, 16  0           ['conv2d_92[0][0]']              
+                                )                                                                 
+                                                                                                  
+ add_21 (Add)                   (None, 128, 128, 16  0           ['conv2d_90[0][0]',              
+                                )                                 'dropout_15[0][0]']             
+                                                                                                  
+ conv2d_93 (Conv2D)             (None, 64, 64, 32)   4640        ['add_21[0][0]']                 
+                                                                                                  
+ conv2d_94 (Conv2D)             (None, 64, 64, 32)   9248        ['conv2d_93[0][0]']              
+                                                                                                  
+ conv2d_95 (Conv2D)             (None, 64, 64, 32)   9248        ['conv2d_94[0][0]']              
+                                                                                                  
+ dropout_16 (Dropout)           (None, 64, 64, 32)   0           ['conv2d_95[0][0]']              
+                                                                                                  
+ add_22 (Add)                   (None, 64, 64, 32)   0           ['conv2d_93[0][0]',              
+                                                                  'dropout_16[0][0]']             
+                                                                                                  
+ conv2d_96 (Conv2D)             (None, 32, 32, 64)   18496       ['add_22[0][0]']                 
+                                                                                                  
+ conv2d_97 (Conv2D)             (None, 32, 32, 64)   36928       ['conv2d_96[0][0]']              
+                                                                                                  
+ conv2d_98 (Conv2D)             (None, 32, 32, 64)   36928       ['conv2d_97[0][0]']              
+                                                                                                  
+ dropout_17 (Dropout)           (None, 32, 32, 64)   0           ['conv2d_98[0][0]']              
+                                                                                                  
+ add_23 (Add)                   (None, 32, 32, 64)   0           ['conv2d_96[0][0]',              
+                                                                  'dropout_17[0][0]']             
+                                                                                                  
+ conv2d_99 (Conv2D)             (None, 16, 16, 128)  73856       ['add_23[0][0]']                 
+                                                                                                  
+ conv2d_100 (Conv2D)            (None, 16, 16, 128)  147584      ['conv2d_99[0][0]']              
+                                                                                                  
+ conv2d_101 (Conv2D)            (None, 16, 16, 128)  147584      ['conv2d_100[0][0]']             
+                                                                                                  
+ dropout_18 (Dropout)           (None, 16, 16, 128)  0           ['conv2d_101[0][0]']             
+                                                                                                  
+ add_24 (Add)                   (None, 16, 16, 128)  0           ['conv2d_99[0][0]',              
+                                                                  'dropout_18[0][0]']             
+                                                                                                  
+ conv2d_102 (Conv2D)            (None, 8, 8, 256)    295168      ['add_24[0][0]']                 
+                                                                                                  
+ conv2d_103 (Conv2D)            (None, 8, 8, 256)    590080      ['conv2d_102[0][0]']             
+                                                                                                  
+ conv2d_104 (Conv2D)            (None, 8, 8, 256)    590080      ['conv2d_103[0][0]']             
+                                                                                                  
+ dropout_19 (Dropout)           (None, 8, 8, 256)    0           ['conv2d_104[0][0]']             
+                                                                                                  
+ add_25 (Add)                   (None, 8, 8, 256)    0           ['conv2d_102[0][0]',             
+                                                                  'dropout_19[0][0]']             
+                                                                                                  
+ up_sampling2d_18 (UpSampling2D  (None, 16, 16, 256)  0          ['add_25[0][0]']                 
+ )                                                                                                
+                                                                                                  
+ conv2d_105 (Conv2D)            (None, 16, 16, 128)  295040      ['up_sampling2d_18[0][0]']       
+                                                                                                  
+ concatenate_12 (Concatenate)   (None, 16, 16, 256)  0           ['conv2d_105[0][0]',             
+                                                                  'add_24[0][0]']                 
+                                                                                                  
+ conv2d_106 (Conv2D)            (None, 16, 16, 128)  295040      ['concatenate_12[0][0]']         
+                                                                                                  
+ conv2d_107 (Conv2D)            (None, 16, 16, 128)  16512       ['conv2d_106[0][0]']             
+                                                                                                  
+ up_sampling2d_19 (UpSampling2D  (None, 32, 32, 128)  0          ['conv2d_107[0][0]']             
+ )                                                                                                
+                                                                                                  
+ conv2d_108 (Conv2D)            (None, 32, 32, 64)   73792       ['up_sampling2d_19[0][0]']       
+                                                                                                  
+ concatenate_13 (Concatenate)   (None, 32, 32, 128)  0           ['conv2d_108[0][0]',             
+                                                                  'add_23[0][0]']                 
+                                                                                                  
+ conv2d_109 (Conv2D)            (None, 32, 32, 64)   73792       ['concatenate_13[0][0]']         
+                                                                                                  
+ conv2d_110 (Conv2D)            (None, 32, 32, 64)   4160        ['conv2d_109[0][0]']             
+                                                                                                  
+ up_sampling2d_21 (UpSampling2D  (None, 64, 64, 64)  0           ['conv2d_110[0][0]']             
+ )                                                                                                
+                                                                                                  
+ conv2d_112 (Conv2D)            (None, 64, 64, 32)   18464       ['up_sampling2d_21[0][0]']       
+                                                                                                  
+ concatenate_14 (Concatenate)   (None, 64, 64, 64)   0           ['conv2d_112[0][0]',             
+                                                                  'add_22[0][0]']                 
+                                                                                                  
+ conv2d_113 (Conv2D)            (None, 64, 64, 32)   18464       ['concatenate_14[0][0]']         
+                                                                                                  
+ conv2d_114 (Conv2D)            (None, 64, 64, 32)   1056        ['conv2d_113[0][0]']             
+                                                                                                  
+ up_sampling2d_23 (UpSampling2D  (None, 128, 128, 32  0          ['conv2d_114[0][0]']             
+ )                              )                                                                 
+                                                                                                  
+ conv2d_116 (Conv2D)            (None, 128, 128, 16  4624        ['up_sampling2d_23[0][0]']       
+                                )                                                                 
+                                                                                                  
+ conv2d_111 (Conv2D)            (None, 32, 32, 16)   1040        ['conv2d_110[0][0]']             
+                                                                                                  
+ concatenate_15 (Concatenate)   (None, 128, 128, 32  0           ['conv2d_116[0][0]',             
+                                )                                 'add_21[0][0]']                 
+                                                                                                  
+ conv2d_115 (Conv2D)            (None, 64, 64, 16)   528         ['conv2d_114[0][0]']             
+                                                                                                  
+ up_sampling2d_20 (UpSampling2D  (None, 64, 64, 16)  0           ['conv2d_111[0][0]']             
+ )                                                                                                
+                                                                                                  
+ conv2d_117 (Conv2D)            (None, 128, 128, 32  9248        ['concatenate_15[0][0]']         
+                                )                                                                 
+                                                                                                  
+ add_26 (Add)                   (None, 64, 64, 16)   0           ['conv2d_115[0][0]',             
+                                                                  'up_sampling2d_20[0][0]']       
+                                                                                                  
+ conv2d_118 (Conv2D)            (None, 128, 128, 16  528         ['conv2d_117[0][0]']             
+                                )                                                                 
+                                                                                                  
+ up_sampling2d_22 (UpSampling2D  (None, 128, 128, 16  0          ['add_26[0][0]']                 
+ )                              )                                                                 
+                                                                                                  
+ add_27 (Add)                   (None, 128, 128, 16  0           ['conv2d_118[0][0]',             
+                                )                                 'up_sampling2d_22[0][0]']       
+                                                                                                  
+ conv2d_119 (Conv2D)            (None, 128, 128, 2)  290         ['add_27[0][0]']                 
+                                                                                                  
+==================================================================================================
+Total params: 2,777,218
+Trainable params: 2,777,218
+Non-trainable params: 0
