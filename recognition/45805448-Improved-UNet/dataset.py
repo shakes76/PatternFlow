@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras.layers import Rescaling, RandomFlip, ZeroPadding2D, RandomCrop
+from keras.layers import Rescaling, RandomFlip, ZeroPadding2D, RandomCrop, minimum, concatenate
 
 def merge_image_mask_datasets(image_dataset, mask_dataset):
     """
@@ -71,24 +71,21 @@ def preprocess(images, masks):
         similarly augmented images and masks
     """
     # Normalization
-    normalize = Rescaling(1./255)
+    normalize = Rescaling(1./255)(images)
+    bound = Rescaling(1./255)(masks)
+    # One-Hot Encoding
+    categorical = tf.squeeze(tf.one_hot(tf.cast(tf.round(bound), dtype=tf.int32), depth=2))
+    # Concatenate to ensure consistence randomisation
+    images_masks = tf.concat([normalize, categorical], -1)
     # Random flipping
-    horizontal_flip = RandomFlip(mode='horizontal')
-    vertical_flip = RandomFlip(mode='vertical')
+    flips = RandomFlip()(images_masks)
     # Random cropping
     _, height, width, _ = images.shape
-    pad = ZeroPadding2D(padding=4)
-    crop = RandomCrop(height=height, width=width)
-    # Complete data augmentation model
-    augmentations = tf.keras.Sequential([normalize, horizontal_flip, vertical_flip, pad, crop])
+    pad = ZeroPadding2D(padding=8)(flips)
+    crop = RandomCrop(height=height, width=width)(pad)
 
-    # Concatenate images and masks to ensure same random distribution
-    # masks = tf.stack([masks, masks, masks], -1)
-    # masks = tf.cast(masks, tf.float32)
-    images_masks = tf.concat([images, masks], -1)
-    images_masks = augmentations(images_masks)
     # Return to normal shape
-    images = images_masks[:,:,:,0:3]
-    masks = images_masks[:,:,:,3:]
+    images = crop[:,:,:,0:3]
+    masks = crop[:,:,:,3:]
 
     return images, masks

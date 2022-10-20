@@ -59,8 +59,7 @@ class Trainer:
 
         for test_batch in self.test_dataset:
             test_images, test_masks = test_batch[0], test_batch[1]
-            self.batch_size, self.image_height, self.image_width, _ = tf.shape(test_images)
-
+            self.batch_size, self.image_height, self.image_width, _ = list(tf.shape(test_images))
             print(f'Shape of input: {tf.shape(test_images)}')
             print(f'Shape of output: {tf.shape(test_masks)}')
             break
@@ -74,7 +73,7 @@ class Trainer:
     def display_data(self):
         # batch = tf.Tensor(list(self.train_dataset.take(1).as_numpy_iterator()), dtype=tf.float32)
         for element in self.train_dataset:
-            train_images, train_masks = element[0], element[1]
+            train_images, train_masks = element[0], tf.argmax(element[1], axis=-1)
 
             plt.figure(figsize=(10,10))
             for i in range(BATCH_SIZE):
@@ -98,11 +97,13 @@ class Trainer:
         print(self.model.summary())
 
     def train_model(self, epochs=2):
-        self.model.fit(self.train_dataset, epochs=epochs, validation_data=self.valid_dataset, verbose=2)
+        self.model.fit(self.train_dataset, epochs=epochs, validation_data=self.valid_dataset, verbose=1)
 
     def load_model(self):
-        self.model = load_model(self.model_path)
+        if self.model == None:
+            self.build_model()
+        self.model.load_weights(self.model_path)
 
     def save_model(self):
-        save_model(self.model, self.model_path, overwrite=True)
+        self.model.save_weights(self.model_path, overwrite=True)
     

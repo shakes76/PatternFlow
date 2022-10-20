@@ -4,32 +4,32 @@ from keras.backend import flatten, sum
 from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
 from keras.optimizers import Adam
 
-def convolution(filters, kernel_size=3, strides=1, padding='same', activation=LeakyReLU(alpha=0.01)):
+def convolution(input, filters, kernel_size=3, strides=1, padding='same', activation=LeakyReLU(alpha=0.01)):
     """
     Default convolution layer configuration.
 
     Returns:
         a convolution layer
     """
-    return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)
+    return Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation)(input)
 
-def dropout(rate=0.3, seed=69):
+def dropout(input, rate=0.3, seed=69):
     """
     Default dropout layer configuration.
 
     Returns:
         a dropout layer
     """
-    return Dropout(rate=rate, seed=seed)
+    return Dropout(rate=rate, seed=seed)(input)
 
-def upsampling(size=2):
+def upsampling(input, size=2):
     """
     Default upsampling layer configuration.
 
     Returns:
         an upsampling layer
     """
-    return UpSampling2D(size=size)
+    return UpSampling2D(size=size)(input)
 
 def context_module(residual_block, filters):
     """
@@ -44,9 +44,9 @@ def context_module(residual_block, filters):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    context_conv = convolution(filters)(residual_block)
-    context_drop = dropout()(context_conv)
-    context_conv = convolution(filters)(context_drop)
+    context_conv = convolution(residual_block, filters)
+    context_drop = dropout(context_conv)
+    context_conv = convolution(context_drop, filters)
     context_add = Add()([residual_block, context_conv])
     return context_add
 
@@ -63,7 +63,7 @@ def reducing_module(residual_block, filters):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    reducing_conv = convolution(filters, strides=2)(residual_block)
+    reducing_conv = convolution(residual_block, filters, strides=2)
     return reducing_conv
 
 def upsampling_module(residual_block, context_block, filters):
@@ -80,8 +80,8 @@ def upsampling_module(residual_block, context_block, filters):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    upsampling_upsm = upsampling()(residual_block)
-    upsampling_conv = convolution(filters)(upsampling_upsm)
+    upsampling_upsm = upsampling(residual_block)
+    upsampling_conv = convolution(upsampling_upsm, filters)
     upsampling_cnct = Concatenate()([context_block, upsampling_conv])
     return upsampling_cnct
 
@@ -99,8 +99,8 @@ def localization_module(residual_block, filters):
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    localization_conv = convolution(filters)(residual_block)
-    localization_conv = convolution(filters, kernel_size=1)(localization_conv)
+    localization_conv = convolution(residual_block, filters)
+    localization_conv = convolution(localization_conv, filters, kernel_size=1)
     return localization_conv
 
 def segmentation_module(residual_block, prev_segmentation=None, filters=16, upsample=True):
@@ -117,16 +117,16 @@ def segmentation_module(residual_block, prev_segmentation=None, filters=16, upsa
     Reference:
         https://arxiv.org/abs/1802.10508v1
     """
-    segmentation_conv = convolution(filters, kernel_size=1)(residual_block)
+    segmentation_conv = convolution(residual_block, filters, kernel_size=1)
     if prev_segmentation != None:
         segmentation_add = Add()([prev_segmentation, segmentation_conv])
         if upsample:
-            segmentation_upsm = upsampling()(segmentation_add)
+            segmentation_upsm = upsampling(segmentation_add)
             return segmentation_upsm
         else:
             return segmentation_add
     else:
-        segmentation_upsm = upsampling()(segmentation_conv)
+        segmentation_upsm = upsampling(segmentation_conv)
         return segmentation_upsm
 
 def context_aggregation_pathway(input, filters=16, num_levels=5):
@@ -144,7 +144,7 @@ def context_aggregation_pathway(input, filters=16, num_levels=5):
     """
     # Initialize context aggregation pathway
     contexts = []
-    start_layer = convolution(filters)(input)
+    start_layer = convolution(input, filters)
     context_layers = context_module(start_layer, filters)
     contexts.append(context_layers)
 
@@ -186,10 +186,10 @@ def localization_pathway(encoded, contexts: list, filters=16, num_levels=5, segm
         upsampling_layers = upsampling_module(localization_layers, contexts.pop(), filters * 2**(level - 1))
         
     # Complete localization pathway
-    convolution_layer = convolution(filters * 2)(upsampling_layers)
+    convolution_layer = convolution(upsampling_layers, filters * 2)
     segmentation_layers = segmentation_module(convolution_layer, segmentation_layers, upsample=False)
 
-    finish_layer = convolution(1, kernel_size=1, activation='softmax')(segmentation_layers)
+    finish_layer = convolution(segmentation_layers, 2, kernel_size=1, activation='softmax')
 
     return finish_layer
 
