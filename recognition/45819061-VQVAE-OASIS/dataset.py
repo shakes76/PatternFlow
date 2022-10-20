@@ -39,11 +39,9 @@ def get_data(use_multiprocessing=False):
     x_test = load(files_test, use_multiprocessing)
     x_validate = load(files_validate, use_multiprocessing)
 
-    mean = np.mean(x_train)
-    var = np.mean(x_train)
+    # scale image data to [-1, 1] range
+    x_train = x_train/127.5 - 1.0
+    x_test = x_test/127.5 - 1.0
+    x_validate = x_validate/127.5 - 1.0
 
-    x_train = x_train/255.0 - 0.5
-    x_test = x_test/255.0 - 0.5
-    x_validate = x_validate/255.0 - 0.5
-
-    return x_train, x_test, x_validate, mean, var
+    return x_train, x_test, x_validate

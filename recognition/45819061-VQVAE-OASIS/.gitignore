@@ -4,3 +4,6 @@ data/
 
 # constructed model
 mymodel/
+
+# all images
+**.png
