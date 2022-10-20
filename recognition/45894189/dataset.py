@@ -2,7 +2,7 @@ import os
 import tensorflow
 from tensorflow import keras
 
-def load_data(relative_filepath = "/keras_png_slices/"):
+def load_data(relative_filepath = "keras_png_slices_data"):
     """
     loads image data from the given filepath with normalised values [0, 1]
     param filepath: image set location

@@ -6,7 +6,7 @@ from train import StyleGAN
 #=======INPUT=FILE=LOCATIONS=========
 
 # path for input images (non-null unless using a pretrained model)
-INPUT_IMAGES_PATH = "keras_png_slices"      
+INPUT_IMAGES_PATH = "keras_png_slices_data"      
 
 # path for input weights ("" for training)
 INPUT_GENERATOR_WEIGHTS_PATH = ""           

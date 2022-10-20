@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from dataset import load_data
 from tensorflow import keras
-from modules import Generator, Discriminator, WNetwork
+from modules import Generator, Discriminator
 from util import ImageSaver, WeightSaver
 
 class StyleGAN(keras.Model):
