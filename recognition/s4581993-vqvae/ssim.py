@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,6 +8,11 @@ import tensorflow as tf
 from dataset import get_train_dataset, get_test_dataset
 from modules import VQVAETrainer
 from utils import models_directory, vqvae_weights_filename
+
+# Make sure the trained weights exist
+if not os.path.isfile(models_directory + vqvae_weights_filename + ".index"):
+    print("Missing VQ-VAE training weights. Please run train.py", file=sys.stderr)
+    exit(1)
 
 # Load the datasets
 test_ds = get_test_dataset()
