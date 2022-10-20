@@ -12,4 +12,6 @@ valid_x = load_images('C:/TechnoCore/2022/COMP3710/project/valid_x')
 valid_y = load_labels('C:/TechnoCore/2022/COMP3710/project/valid_y')
 
 # %%
-results = train_unet(train_x, train_y, valid_x, valid_y)
+unet, results = train_unet(train_x, train_y, valid_x, valid_y)
+
+# %%

@@ -39,7 +39,7 @@ def DecoderMiniBlock(prev_layer_input, skip_layer_input, n_filters=32):
     
     return conv
 
-def unet(input_size=(128, 128, 3), n_filters=32, n_classes=255):
+def unet_full(input_size=(128, 128, 3), n_filters=32, n_classes=255):
     """
     Combines encoder and decoder blocks to form the overall UNet architecture.
 

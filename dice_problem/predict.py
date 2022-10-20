@@ -21,7 +21,7 @@ def dice_coefficient(model, valid_x, valid_y):
     """
     pred_y = []
     for image in valid_x:
-        pred_y.append(model.predict(image))'
+        pred_y.append(model.predict(image))
     
     true_y_f = k.flatten(valid_y)
     pred_y_f = k.flatten(pred_y) 
