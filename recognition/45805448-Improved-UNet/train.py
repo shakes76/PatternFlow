@@ -71,9 +71,8 @@ class Trainer:
                 f'Batch size: {self.batch_size}')
 
     def display_data(self):
-        # batch = tf.Tensor(list(self.train_dataset.take(1).as_numpy_iterator()), dtype=tf.float32)
-        for element in self.train_dataset:
-            train_images, train_masks = element[0], tf.argmax(element[1], axis=-1)
+        for batch in self.train_dataset:
+            train_images, train_masks = batch[0], tf.argmax(batch[1], axis=-1)
 
             plt.figure(figsize=(10,10))
             for i in range(BATCH_SIZE):

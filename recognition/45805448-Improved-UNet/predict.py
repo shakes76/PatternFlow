@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-from keras.models import load_model
-from dataset import load_dataset
-from train import Trainer
+import tensorflow as tf
 
 class Predictor:
     def __init__(self):
@@ -28,8 +26,8 @@ class Predictor:
 
         plt.figure(figsize=(10,10))
         for batch in self.trainer.test_dataset.take(1):
-            test_images, test_masks = batch[0], batch[1]
-            predicted_masks = self.model.predict(test_images)
+            test_images, test_masks = batch[0], tf.argmax(batch[1], axis=-1)
+            predicted_masks = tf.argmax(self.model.predict(test_images), axis=-1)
             for i in range(self.trainer.batch_size):
 
                 plt.subplot(5, 3, i*3 + 1)
