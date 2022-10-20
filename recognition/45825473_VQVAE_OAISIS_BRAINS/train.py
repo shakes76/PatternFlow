@@ -28,12 +28,14 @@ def train_vqvae(train_images):
   plt.plot(epochs, loss)
   plt.xlabel("Number of Epochs")
   plt.ylabel("Loss")
-  plt.title("Total loss ")
+  plt.title("Total loss")
+  plt.save('Total loss.png')
   plt.show()
   plt.xlabel("Number of Epochs")
   plt.title("SSIM & Reconstruction Loss")
-  plt.gca().legend(('Reconstruction Loss','SSIM'))
-  plt.plot(epochs, reconstruction_loss, epochs, epoch_ssim )
+  plt.plot(epochs, reconstruction_loss, label="SSIM")
+  plt.plot(epochs, epoch_ssim, label="Reconstruction Loss")
+  plt.save('SSIM.png')
   plt.show()
 
   return vqvae_trainer
