@@ -163,21 +163,3 @@ def visualize(img1, img2, labels, to_show=6, num_col=3, predictions=None, test=F
     else:
         plt.tight_layout(rect=(0, 0, 1.5, 1.5))
     plt.show()
-
-
-def main():
-    AD_dataset = load_data('./AD_NC/train/AD', (224, 224))
-    NC_dataset = load_data('./AD_NC/train/NC', (224, 224))
-
-    pos_pair1, pos_pair2, neg_pair1, neg_pair2 = make_pair(AD_dataset, NC_dataset)
-
-    choice_dataset = shuffle(pos_pair1, pos_pair2, neg_pair1, neg_pair2)
-
-    train_dataset, validation_dataset = split_dataset(choice_dataset, 16, 100)
-
-    for img1, img2, label in train_dataset.take(1):
-        visualize(img1, img2, label)
-
-
-if __name__ == '__main__':
-    main()
