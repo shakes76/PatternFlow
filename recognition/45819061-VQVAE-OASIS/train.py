@@ -63,7 +63,6 @@ class VQVAETrainer (tf.keras.models.Model):
 
 LATENT_DIM = 8
 NUM_EMBEDDINGS = 16
-x_train, x_test, x_validate = get_data()
 
 def train(x_train, x_test, x_validate):
     data_variance = np.var(x_train)
