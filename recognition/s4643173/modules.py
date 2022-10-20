@@ -2,9 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Seed the random number generator for reproducibility of the results
-torch.manual_seed(3710)
-
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -45,7 +42,14 @@ class Embedding(nn.Module):
         
         quantized = x + (quantized - x).detach()
 
-        return vq_loss + self.commitment_cost * commit_loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, encoding_indices.squeeze()
+        return vq_loss + self.commitment_cost * commit_loss, quantized.permute(0, 3, 1, 2).contiguous(), encodings, torch.argmin(distances, dim=1)
+
+    def quantise(self, x, batch_size):
+        encoding_indices = x.unsqueeze(1)
+        encodings = torch.zeros(encoding_indices.shape[0], self.K, device='cuda')
+        encodings.scatter_(1, encoding_indices, 1)
+        quantized = torch.matmul(encodings, self.embedding.weight).view(batch_size, 64, 64, 256)
+        return quantized.permute(0, 3, 1, 2).contiguous()
 
 class ResBlock(nn.Module):
     def __init__(self, channels):

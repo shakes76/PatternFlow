@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-import torch.nn as nn
 import matplotlib.pyplot as plt
 import numpy as np
 from modules import *
@@ -8,9 +7,7 @@ from dataset import *
 from torchmetrics import StructuralSimilarityIndexMeasure
 from torchvision.utils import save_image
 import pickle
-
-# Seed the random number generator for reproducibility of the results
-torch.manual_seed(3710)
+import torch.nn as nn
 
 SSIM = StructuralSimilarityIndexMeasure()
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -46,7 +43,7 @@ def fit_vqvae():
     optimiser = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
     fixed_images, _ = next(iter(test_loader))
-    save_image(fixed_images, fp='Test.png', nrow=8, normalize=True)
+    save_image(fixed_images, fp='Test.png', normalize=True)
 
     best_ssim = 0
     recon_losses = []
@@ -60,14 +57,17 @@ def fit_vqvae():
         ssim = SSIM(fixed_images, recontructed)
         print(f'Epoch {epoch + 1}: Reconstruction Loss - {loss}, SSIM - {ssim}')
         if ssim > best_ssim:
-            save_image(recontructed, fp='Reconstructed.png', nrow=8, normalize=True)
+            save_image(recontructed, fp='Reconstructed.png', normalize=True)
             with open('VQVAE', 'wb') as f:
                 pickle.dump(model, f)
 
         recon_losses.append(loss)
 
     plt.plot(range(1, NUM_EPOCHS + 1), recon_losses)
-    plt.xlim(1, 20)
+    plt.title('Reconstruction Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.xticks(range(2, 21, 2), list(range(2, 21, 2)))
     plt.savefig('Loss.png')
     print(best_ssim)
     return best_ssim
@@ -138,9 +138,11 @@ def fit_gan():
             if batch != 0 and batch % 100 == 0:
                 print(f'Epoch {epoch + 1}: Gen Loss - {gen_loss.item():.4f}, Disc Loss - {dis_loss.item():.4f}')
         
-        avg_gen_loss.append(total_gen_loss / len(dataloader))
-        avg_disc_loss.append(total_disc_loss / len(dataloader))
+        avg_gen_loss.append((total_gen_loss / len(dataloader)))
+        avg_disc_loss.append((total_disc_loss / len(dataloader)))
 
+    with open('Gen', 'wb') as f:
+        pickle.dump(gen, f)
     plt.plot(range(1, NUM_EPOCHS_GAN + 1), avg_disc_loss)
     plt.plot(range(1, NUM_EPOCHS_GAN + 1), avg_gen_loss)
     plt.xlim(1, NUM_EPOCHS_GAN)
@@ -149,9 +151,5 @@ def fit_gan():
     plt.ylabel('Loss')
     plt.legend(['Discriminator', 'Generator'])
     plt.savefig('DCGAN Loss.png')
-    with open('Gen', 'wb') as f:
-        pickle.dump(gen, f)
-
-fit_gan()
 
     
