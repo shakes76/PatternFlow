@@ -112,7 +112,10 @@ class StyleGAN(Model):
         x1 = end
         for i in [-4, -3, -2, -1]:
             x1 = self.G.layers[i](x1)
-
+            
+        # __/-- upsample -----> (x1) \__ weighted sum (ax1 + (1-a)x2)
+        #   \-- conv - conv --> (x2) /
+        
         # branch
         w = Input(shape=(LDIM), name=f'w({d})')
         B = Input(shape=(res, res, 1), name=f'B({d})')
@@ -182,24 +185,23 @@ class StyleGAN(Model):
             inputs = [const]
             for i in range(self.current_depth+1):
                 w = ws[:, i]
-                B = tf.random.normal((batch_size, SRES*(2**i), SRES*(2**i), 1))
+                B = tf.random.normal((batch_size, SRES*(2**i), SRES*(2**i), 1)) # (batch size, w, h, 1)
                 inputs += [w, B]
             
             # generate fake images
             fake_images = self.G(inputs, training=True)
             fake_pred = self.D(fake_images, training=True)
             real_pred = self.D(real_images, training=True)
+            
             # wasserstein
             d_loss = tf.reduce_mean(fake_pred) - tf.reduce_mean(real_pred)
 
-            # gradient penalty, lambda 10
+            # gradient penalty to ensure 1-Lipschitz continuity for wasserstein
+            # # lambda=10, drift weight = 0.001
             penulty = 10 * self.gradient_penalty(batch_size, real_images, fake_images)
-            
-            # drift for regularization, drift weight 0.001
             drift = .001 * tf.reduce_mean(tf.square(real_pred))
             
             # discriminator loss = original discriminator loss + penulty + drift
-            # lambda=10, drift weight = 0.001
             d_loss = d_loss + penulty + drift
 
         d_grad = tape.gradient(d_loss, self.D.trainable_weights)
@@ -221,7 +223,7 @@ class StyleGAN(Model):
             # wasserstein
             g_loss = -tf.reduce_mean(fake_pred)
             
-        # grad w.r.t fc layers and generator
+        # grad w.r.t (fc layers and generator)
         trainable_weights = self.FC.trainable_weights + self.G.trainable_weights
         g_grad = tape.gradient(g_loss, trainable_weights)
         self.g_optimizer.apply_gradients(zip(g_grad, trainable_weights))
