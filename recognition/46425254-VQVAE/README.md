@@ -67,6 +67,7 @@ The Latent Space specified was 16.
 
 ### VQVAE Training:
 The model was trained for 15 epochs, with a learning rate of 0.001 using the adam optimiser. The loss is specified from the VQVAE loss formula from the paper.
+The testing set was used to test SSIM of decoded images with their original counterparts, using the training set would be considered an overfit since that was used to train the encoding/decoding process.
 
 Here are the results after training for 15 epochs:
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/e6a45175f40c8ad5360c5cda3767f22dd68c31c5/recognition/46425254-VQVAE/readme_images/Lat_Enc2.png?raw=true) 
@@ -116,6 +117,7 @@ The PixelCNN Architecture is specified below:
 
 ### PixelCNN Training:
 The model was trained in many different configurations, and even more number of epochs. The most common learning rate used was 0.0003 using the adam optimiser. Cross Entropy Loss was used.
+Since this is a generative model, testing and validation sets were considered unneccesary, since the model is generative in nature, and only a "reasonably clear image" is needed.
 
 Initially, the problem ran into many problems with generation. Completely blank images were generated for the duration of training. This was later solved when it was found that a Categorical Distribution Sampler was needed to sample each of the pixels during image generation.
 
