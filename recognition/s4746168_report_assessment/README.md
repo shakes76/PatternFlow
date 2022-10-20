@@ -82,4 +82,4 @@ and the other one is for the **loss** :
 **IMPORTANT NOTE : ** 
 **_These graphs are plotted for 3 epochs only and the dataset for these_** 
 **_graphs is also very limited and hence they might have higher values in_** 
-**_plotting rather than the original graphs when full dataset is loaded._**
+**_plotting rather than the original graphs when full dataset is loaded._**</sub>
