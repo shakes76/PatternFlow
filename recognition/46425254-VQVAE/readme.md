@@ -139,6 +139,10 @@ This is around epoch 20 and 100 respectively.
 
 ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%20160.png?raw=true) ![alt text](https://github.com/Quentin1168/PatternFlow/blob/fe95be39b6c6e04fa1a581f9a0ca6b4fcf723fe3/recognition/46425254-VQVAE/readme_images/PCNN_Latent%20epoch%20200.png?raw=true)
 This is around epoch 160 and 200 respectively.
+
+The loss during the training process is shown here:
+![alt text](https://github.com/Quentin1168/PatternFlow/blob/28903c8ff707df09fcb1dcd3a7d86145f8ec0d9f/recognition/46425254-VQVAE/readme_images/PixelCNN_Loss.png?raw=true)
+
 ### Instructions to use:
 1. Open train.py, and following the documentation, run the VQVAE trainer first, and then the test to see the SSIM of the decoded images, specify a save file so that the VQVAE model can be saved.
 2. Using the path to the VQVAE model, train a pixel CNN. Images should show up as plots as the model is trained. 
