@@ -6,4 +6,4 @@ venv/
 
 # saved objects
 *.pt
-
+*.pkl
