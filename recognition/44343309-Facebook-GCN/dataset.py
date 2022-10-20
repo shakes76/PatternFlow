@@ -24,22 +24,19 @@ class DataProcess:
     """
     split is a cool 80:10:10
     """
-    trainSplit = int((self.numNodes) * 0.8)
-    trainSplit = range(trainSplit)
-    validaSplit = range(trainSplit, trainSplit + int((self.numNodes) * 0.1))
-    testSplit = range(trainSplit + int((self.numNodes) * 0.1), self.numNodes)
+    numTrain = int(self.numNodes*0.8)
+    numTestValid = int(self.numNodes*0.1)
 
-    trainMask = np.zeros(self.numNodes, dtype=np.bool)
-    validaMask = np.zeros(self.numNodes, dtype=np.bool)
-    testMask = np.zeros(self.numNodes, dtype=np.bool)
-    trainMask[trainSplit] = True
-    validaMask[validaSplit] = True
-    testMask[testSplit] = True
+    trainLabels = self.target[:numTrain]
+    testLabels = self.target[numTrain:numTrain + numTestValid]
+    validaLabels = self.target[numTrain + numTestValid:numTrain + 2 * numTestValid]
+    
+    trainMask = testMask = validaMask = np.zeros(self.numNodes, dtype=np.bool)
 
-    # split labels into training, validation, test set
-    trainLabels = self.target[trainSplit]
-    validaLabels = self.target[validaSplit]
-    testLabels = self.target[testSplit]
+    trainMask[:numTrain] = True
+    testMask[numTrain:numTrain + numTestValid] = True
+    validaMask[numTrain + numTestValid:numTrain + 2 * numTestValid] = True
+
     return trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask
 
   def processing(self):
