@@ -1,23 +1,23 @@
 import torch
 from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
 """
-All images returned are of size 3 * 240 * 240
+All images returned are of size 1 * 240 * 240
 """
 
 def transform():
     """
     Transform that crops some of than blank space out of the images. 
     """
-    return transforms.Compose([transforms.Lambda(lambda x:  transforms.functional.crop(x, 0, 16, 240, 240)), 
+    return transforms.Compose([transforms.Lambda(lambda x:  transforms.functional.crop(x, 0, 16, 240, 240)),
+                                transforms.Lambda(lambda x:  transforms.functional.rgb_to_grayscale(x)),
                                 transforms.ToTensor(), 
                                 transforms.Lambda(lambda x: resize(x))])
 
 def resize(x):
     """
-    Transforms the images from 3x200x200 to 200x200x3
+    Transforms the images from 1x240x240 to 240x240x1
     """
-    return torch.stack([x[i] for i in range(3)], dim=2)
+    return x[0][:, :, None]
 
 def train_data_loader(dir, batch_size=32):
     train_dataset = datasets.ImageFolder(dir + '/train', transform=transform())
