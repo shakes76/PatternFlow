@@ -117,25 +117,20 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
     elapsed = time.time() - start
     print(f"Siamese Network Training Completed in {elapsed}")
 
-def train_binary_classifier(model, siamese_model, pos_dataset, neg_dataset, epochs):
+def train_binary_classifier(model, siamese_model, training_data_positive, training_data_negative):
     start = time.time()
     print("Beginning Binary Classifier Training")
 
-    for epoch in range(epochs):
-        epoch_start = time.time()
+    pos_labels = np.ones(training_data_positive.shape[0])
+    neg_labels = np.zeros(training_data_negative.shape[0])
 
-        for pos_batch, neg_batch in zip(pos_dataset, neg_dataset):
-            transformed_pos = siamese_model(pos_batch, training=False)
-            transformed_neg = siamese_model(neg_batch, training=False)
+    pos_embeddings = siamese_model.predict(training_data_positive)
+    neg_embeddings = siamese_model.predict(training_data_negative)
 
-            pos_labels = tf.ones_like(transformed_pos[1])
-            neg_labels = tf.zeros_like(transformed_neg[1])
+    embeddings = np.concatenate((pos_embeddings, neg_embeddings))
+    labels = np.concatenate((pos_labels, neg_labels))
 
-            model.fit(transformed_pos, pos_labels)
-            model.fit(transformed_neg, neg_labels)
-
-        epoch_elapsed = time.time() - epoch_start
-        print(f"Epoch {epoch} - training time: {epoch_elapsed}") 
+    model.fit(embeddings, labels, epochs=EPOCHS, batch_size=BATCH_SIZE)
     
     elapsed = time.time() - start
     print(f"Binary Classifier Training Completed in {elapsed}")
@@ -158,7 +153,7 @@ def main():
     siamese_optimiser = tf.keras.optimizers.Adam(0.05)
 
     train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
-    train_binary_classifier(binary_classifier, siamese_model, train_data_pos, train_data_neg, EPOCHS)
+    train_binary_classifier(binary_classifier, siamese_model, training_data_positive, training_data_negative)
 
     siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
     binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))

@@ -46,8 +46,9 @@ def build_binary():
     """
     model = Sequential()
 
-    model.add(Dense(32, input_shape=SIAMESE_OUTPUT_SHAPE, activation="relu"))
-    model.add(Dense(8, activation="relu"))
+    model.add(Dense(64, input_shape=SIAMESE_OUTPUT_SHAPE, activation="relu"))
+    model.add(Dense(16, activation="relu"))
+    model.add(Dense(4, activation="relu"))
     model.add(Dense(1, activation="sigmoid"))
 
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
