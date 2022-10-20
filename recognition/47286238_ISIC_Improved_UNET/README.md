@@ -19,6 +19,8 @@ As the input passes forward through the model, what results are images of a simi
 The performance of this model was measured using the Sørensen–Dice coefficient [2]. The loss function is directly derived from this statistic, being 1 - the Dice coefficient.
 
 ### Dataset
+Each element of the dataset, upon retrieval by the data loader, is resized to become 128x128 to reduce memory consumption and training time. Each image is read as an RGB image and has their RGB values normalized such that they fall between 0 and 1.
+
 When training the model, the algorithm loads 800 training elements at a time, though it shuffles the loader per epoch, effectively covering the majority of if not entire dataset over 15 total epochs. Due to time and resource constraints, only 100 of the 150 total elements of the validation datao
 set are used to measure the validation metrics during training.
 
