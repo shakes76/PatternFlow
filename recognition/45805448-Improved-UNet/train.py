@@ -68,6 +68,9 @@ class Trainer:
             print(f'Output shape: {tf.shape(test_masks)}')
 
     def plot_data(self):
+        if not os.path.isdir(self.plots_path):
+            os.makedirs(self.plots_path)
+
         for batch in self.test_dataset.take(1):
             test_images, test_masks = batch[0], tf.argmax(batch[1], axis=-1)
 
@@ -113,11 +116,13 @@ class Trainer:
     def load_model(self):
         if self.model == None:
             self.build_model()
+
         self.model.load_weights(self.model_path + '/model')
 
     def save_model(self):
         if not os.path.isdir(self.model_path):
             os.makedirs(self.model_path)
+            
         self.model.save_weights(self.model_path + '/model', overwrite=True)
 
 
