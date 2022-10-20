@@ -46,9 +46,8 @@ class DataLoader():
         #Normalise
         images = images / 255.
 
-        print(images)
-
         return images
+
 
     def preprocessMasks(self, filenames):
         """
@@ -86,10 +85,10 @@ class DataLoader():
         """
 
         image_data = tf.data.Dataset.list_files(self.images_path, shuffle=False)
-        processedImages = image_data.map(preprocessImages)
+        processedImages = image_data.map(self.preprocessImages)
 
         masks_data = tf.data.Dataset.list_files(self.masks_path, shuffle=False)
-        processedMasks = masks_data.map(preprocessMasks)
+        processedMasks = masks_data.map(self.preprocessMasks)
 
         dataset = tf.data.Dataset.zip((processedImages, processedMasks))
 
