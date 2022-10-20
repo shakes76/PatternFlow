@@ -12,13 +12,13 @@ The input is passed through a sigmoid layer. While, in the referenced paper (“
 
 ## Dependencies
 
-Python = 3.9.13
-PyTorch = 1.12.1
-TorchVision = 0.13.1
-NumPy = 1.23.1
-CudaToolKit = 11.6.0
-tqdm = 4.64.1
-MatPlotLib = 3.5.2
+-Python = 3.9.13
+-PyTorch = 1.12.1
+-TorchVision = 0.13.1
+-NumPy = 1.23.1
+-CudaToolKit = 11.6.0
+-tqdm = 4.64.1
+-MatPlotLib = 3.5.2
 
 ## Reproducibility of Results
 
@@ -34,10 +34,8 @@ Only pre-processing done to images and labels is conversion from PIL Image to te
 
 ## Training and Validation Binary loss and Dice Coefficient Plots
 
-### Dice Coefficients vs Epochs
 ![Dice Coefficient vs Epochs](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/DiceCurve.png)
 
-### Dice Loss vs Epochs
 ![Dice Loss vs Epochs](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/LossCurve.png)
 
 ## Training and Validation Visualizations
