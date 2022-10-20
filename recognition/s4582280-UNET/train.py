@@ -20,7 +20,7 @@ def DiceCoef(trueY, predY):
     trueY = tf.keras.layers.Flatten()(trueY)
     predY = tf.keras.layers.Flatten()(predY)
     intersection = tf.reduce_sum(predY * trueY)
-    return (2. * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
+    return (2 * intersection + smooth) / (tf.reduce_sum(trueY) + tf.reduce_sum(predY) + smooth)
 
 def DiceLoss(trueY, predY):
     return 1 - DiceCoef(trueY, predY)

@@ -1,6 +1,7 @@
 #dataset.py, contains all relevant functions for loading and processing data
 
 # Imports
+import cv2
 import numpy as np
 import os, shutil
 import tensorflow as tf
