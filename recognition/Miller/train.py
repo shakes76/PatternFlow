@@ -72,6 +72,16 @@ pyplot.imshow(test_Y[2,:,:,3])
 pyplot.show()
 """
 
+# %%
+batch_size = 32
+
+#train_X = tf.convert_to_tensor(train_X)
+#validate_X = tf.convert_to_tensor(validate_X)
+batched_and_processed_train = tf.convert_to_tensor(data.batched_and_processed(train_X, batch_size))
+batched_and_processed_validate = tf.convert_to_tensor(data.batched_and_processed(validate_X, batch_size))
+#print(batched_and_processed_train.shape)
+#print(batched_and_processed_validate.shape)
+exit()
 """ MODEL AND TRAIN VQ-VAE """
 # Create a instance of the VQ-VAE model
 latent_dimensions = 16
