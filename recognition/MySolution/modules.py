@@ -14,8 +14,8 @@ def main():
 
     num_classes = 2 # AD or NC
     input_shape = (240, 256, 1)
-    image_size = 250
-    patch_size = 32
+    image_size = 128
+    patch_size = 18
     num_patches = (image_size // patch_size) ** 2
     projection_dim = 128 # increase
     num_heads = 12 # increase
