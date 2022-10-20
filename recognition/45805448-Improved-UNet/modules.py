@@ -1,8 +1,12 @@
-import tensorflow as tf
 from keras import Model
 from keras.backend import flatten, sum
 from keras.layers import LeakyReLU, Conv2D, UpSampling2D, Input, Dropout, Add, Concatenate
 from keras.optimizers import Adam
+
+# Default values for ISIC 2016 Training Dataset
+NUM_FILTERS = 16
+NUM_LEVELS = 5
+NUM_SEGMENTATIONS = 3
 
 def convolution(input, filters, kernel_size=3, strides=1, padding='same', activation=LeakyReLU(alpha=0.01)):
     """
@@ -217,9 +221,9 @@ def dice_coefficient(ground_truth, softmax_out):
     ground_truth_flat = flatten(ground_truth)
     softmax_out_flat = flatten(softmax_out)
     multiclass_summation = sum(ground_truth_flat * softmax_out_flat) / (sum(ground_truth_flat) + sum(softmax_out_flat))
-    return -2 * multiclass_summation
+    return 2 * multiclass_summation
 
-def improved_unet(input_shape, batch_size=None, filters=16, num_levels=5, segmentations=3):
+def improved_unet(input_shape, batch_size, filters=NUM_FILTERS, num_levels=NUM_LEVELS, segmentations=NUM_SEGMENTATIONS):
     """
     Creates the full improved unet network. This includes the encoding from the context aggregation
     pathway and the upsampling & segmentation from the localization pathway.

@@ -1,5 +1,7 @@
 import tensorflow as tf
-from keras.layers import Rescaling, RandomFlip, ZeroPadding2D, RandomCrop, minimum, concatenate
+from keras.layers import Rescaling, RandomFlip, ZeroPadding2D, RandomCrop
+
+SEED = 69
 
 def merge_image_mask_datasets(image_dataset, mask_dataset):
     """
@@ -25,24 +27,7 @@ def load_dataset(filepath):
     """
     return tf.data.Dataset.load(filepath).prefetch(buffer_size=tf.data.AUTOTUNE)
 
-def load_image_dataset_from_directories(directories, image_size=(64, 64)):
-    """
-    Loads images from several directories and concatenates them into one cached dataset. 
-
-    Returns:
-        cached dataset of images
-    """
-    datasets = []
-    for directory in directories:
-        datasets.append(load_image_dataset_from_directory(directory, image_size))
-
-    image_dataset = datasets[0]
-    for dataset in datasets[1:]:
-        image_dataset = image_dataset.concatenate(dataset)
-
-    return image_dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
-
-def load_image_dataset_from_directory(directory, image_size=(64, 64), batch_size=5, color_mode='rgb'):
+def load_image_dataset_from_directory(directory, image_size, batch_size, color_mode='rgb'):
     """
     Loads a set of images from a directory.
 
@@ -50,16 +35,16 @@ def load_image_dataset_from_directory(directory, image_size=(64, 64), batch_size
         dataset of images
     """
     return tf.keras.utils.image_dataset_from_directory(directory, labels=None, color_mode=color_mode, 
-                                    batch_size=batch_size, image_size=image_size, shuffle=True, seed=69)
+                                    batch_size=batch_size, image_size=image_size, shuffle=True, seed=SEED)
 
-def preprocess_dataset(dataset, seed=420):
+def preprocess_dataset(dataset):
     """
     Preprocesses an entire dataset.
 
     Returns:
         the preprocessed dataset
     """
-    tf.random.set_seed(seed)
+    tf.random.set_seed(SEED)
     return dataset.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
 
 def preprocess(images, masks):
