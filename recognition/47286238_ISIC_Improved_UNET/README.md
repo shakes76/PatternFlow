@@ -73,7 +73,11 @@ cudatoolkit == 11.3.1
 Due to the shuffling of the dataset during training, it cannot be guaranteed that the resulting model after training can be exactly reproduced over multiple iterations.
 
 ## Notes
+### On Hyperparameters
 The current hyperparameters are, admittedly, suboptimal. However, due to resource and time constraints, the batch size is set to 1 as going any higher leads to out-of-memory errors on my machine. This has been tested on the Rangpur compute system, and it seems to be able to tolerate higher batch sizes of at least 10, though execution times were faster locally.
+
+### Additional files
+An additional module (plot.py) was created to plot the loss and Dice similarity coefficient values on each epoch during the training session.
 
 ## References
 1. [Isensee et al. (2018)](https://arxiv.org/abs/1802.10508v1)
