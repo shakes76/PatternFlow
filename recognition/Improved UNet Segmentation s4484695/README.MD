@@ -10,6 +10,17 @@ This algorithm passess the input through context layers, this is done to extract
 
 The input is passed through a sigmoid layer. While, in the referenced paper (“Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge,”) a softmax layer is employed. I've chosen to use a sigmoid layer since the output is binary. Various hyper parameters have also been tweaked when compared to the paper such as epoch number reduced from 300 to 30, this was done because the ISIC2017 dataset is easier to solve. Please note I used a binary dice loss and binary dice coefficient for this implementation since the output from my model is binary.
 
+## How to Use Model
+
+Ensuring that you have the appropriate ISIC2017 DataSet and is split into folders as described in train.py comments.
+
+In train.py and predict.py replace placeholders with appropriate paths.
+1. Run train.py, wait until training is completed will recieve a print in console similar to:
+![Train.py Example]()
+2. Run predict.py, making sure not to delete or move model file created by train.py. Once inference is should will recieve a print in console similar to
+![predict.py Example]()
+3. Navigate to your specified path, where model, train.py and predict.py are stored. You will find .png files with data vizualisations.
+
 ## Dependencies
 
 - Python = 3.9.13
