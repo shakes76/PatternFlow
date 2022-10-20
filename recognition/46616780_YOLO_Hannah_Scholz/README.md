@@ -76,7 +76,9 @@ There was however many more aspects in which the data needed preprocessing.
 The images all had varying sizes for a start. YOLOV5 takes image sizes of 640x640, so all images were resized.
 Next the dataset contained some unnecessary photos in a .png format that had to be removed. 
 Bounding boxes also had to be determined for each mask photo:
-<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png"> <img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
+<img width="200" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/ExampleMaskPhoto.png">
+<img width="300" alt="Example1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotosForReadMe/BoundingBoxOnMask.png">
+
 Bounding boxes can be visualised using the predict.py file.
 
 ### Results
@@ -116,9 +118,9 @@ a good IOU score, which is the direct measurement of how close the predicted box
 <img width="300" alt="Output1" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example1.jpg"> <img width="300" alt="Output2" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example2.jpg"><img width="300" alt="Output3" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example3.jpg"><img width="300" alt="Output4" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example4.jpg"><img width="300" alt="Output5" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_example5.jpg">
 
 As we can see from these results a metric/mAP_0.5 and metric/mAP_0.5:0.95 are slowly getting better and better, although 
-do not seem to be increasing any further after 300 epochs. 
-We also can see and should note that the classification loss is increasing when we should be observing a decrease over 
-epochs.
+do not seem to be increasing any further after 300 epochs. Using the function I have created to calculate the IOU metric
+in the YOLOV5_training.ipynb file, the dataset has an IOU value of
+
 Next is to train using the medium YOLOv5 model instead.
 
 ### Yolov5m - medium 
@@ -136,8 +138,16 @@ Next is to train using the medium YOLOv5 model instead.
 
 <img width="300" alt="Example1_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example1_M.jpg"> <img width="300" alt="Example2_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example2_M.jpg"><img width="300" alt="Example3_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example3_M.jpg"><img width="300" alt="Example4_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example4_M.jpg"><img width="300" alt="Example5_300Ep_M" src="https://github.com/hannahscholz/PatternFlowHS/blob/topic-recognition/recognition/46616780_YOLO_Hannah_Scholz/PhotoResults/300Epoch_Example5_M.jpg">
 
-### Conclusion of results:
+As we can see from these results a metric/mAP_0.5 and metric/mAP_0.5:0.95 are slowly increasing through each increase in
+epoch number in a very similar way to the small YOLOV5 model. And again it does not seem to be increasing any further 
+after 300 epochs. Using the function I have created to calculate the IOU metric in the YOLOV5_training.ipynb file, 
+the 300 epoch results have an IOU value of 0.8961643453882352.
 
+### Conclusion of results:
+Through these results we can see the model receives high results for metric/mAP_0.5, metric/mAP_0.5:0.95 and IOU values.
+Although we should note that the classification loss is increasing for both models. From research, I believe
+this may be from the fact that the data is on the smaller side, as YOLOV5 creators recommend over 1,500 images per
+class. 
 
 
 ### File Contents:
@@ -169,4 +179,5 @@ https://arxiv.org/pdf/1506.02640.pdf
 
 https://medium.com/mlearning-ai/training-yolov5-custom-dataset-with-ease-e4f6272148ad
 
-
+https://github.com/ultralytics/yolov5/issues/388
+https://github.com/ultralytics/yolov5/issues/36

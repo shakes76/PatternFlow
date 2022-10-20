@@ -68,7 +68,6 @@ def bounding_box_figure(img):
 
     plt.show()
 
-
 def main():
     with im.open(EXAMPLE_IMAGE_PATH) as img:
         bounding_box_figure(img)
