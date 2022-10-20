@@ -11,36 +11,54 @@ import numpy as np
 import pandas as pd
 import os
 
-optimizer = Adam(learning_rate=0.001)
+class ModelTrainer:
+    def __init__(self, checkpointPath):
+        self.optimizer = Adam(learning_rate=0.001)
+        self.dataset = DataProcess()
 
-dataset = DataLoadAndProcess()
+        (self.features, 
+        self.labels, 
+        self.adjacency, 
+        self.trainMask, 
+        self.validaMask, 
+        self.testMask, 
+        self.trainLabels, 
+        self.validaLabels, 
+        self.testLabels, 
+        self.target, 
+        self.numNodes, 
+        self.numFeatures) = self.dataset.getData()
 
-(features, labels, adjacency,
- trainMask, validaMask, testMask,
- trainLabels, validaLabels, testLabels, target, numNodes, numFeatures) = dataset.getData()
+        self.classes = len(np.unique(self.target))
 
-classes = len(np.unique(target))
+        self.model = GCN(self.numNodes, self.numFeatures, self.classes)
+        self.validation_data = ([self.features, self.adjacency], self.labels, self.validaMask)
 
-model = GCN(numNodes, numFeatures, classes)
+        self.checkpointDir = os.path.dirname(checkpointPath)
+        #create checkpoint callback
+        self.cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpointPath, save_weights_only=True, verbose=1, save_freq=10)
 
-checkpointPath = "training/cp.ckpt"
-checkpointDir = os.path.dirname(checkpointPath)
+    def generateModel(self):
+        self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', weighted_metrics=['acc'])
+        self.model.fit(
+            [self.features, self.adjacency],
+            self.labels,
+            sample_weight=self.trainMask,
+            epochs=50,
+            batch_size=self.numNodes,
+            validation_data=self.validation_data,
+            shuffle=False,
+            callbacks=[self.cp_callback]
+        )
+        return self.model
 
-#create checkpoint callback
-cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpointPath, save_weights_only=True, verbose=1, save_freq=10)
+def main():
+    model = ModelTrainer("training/cp.ckpt")
+    model.generateModel()
 
-model.compile(optimizer=optimizer, loss='categorical_crossentropy', weighted_metrics=['acc'])
+if __name__ == '__main__':
+    main()
 
-model.summary()
 
-validation_data = ([features, adjacency], labels, validaMask)
 
-model.fit([features, adjacency],
-          labels,
-          sample_weight=trainMask,
-          epochs=50,
-          batch_size=numNodes,
-          validation_data=validation_data,
-          shuffle=False,
-          callbacks=[cp_callback]
- )
+

@@ -55,6 +55,5 @@ class DataProcess:
 
     return self.features, labelsOneHot, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels, self.target, self.numNodes, self.numFeatures
 
-
   def getData(self):
     return self.dataset
