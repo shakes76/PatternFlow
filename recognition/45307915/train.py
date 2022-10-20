@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 
@@ -71,6 +74,35 @@ def diceLoss(y_true, y_pred):
     """
     return 1 - diceCoefficient(y_true, y_pred)
 
+def plotResults(history):
+    """
+    Plots Dice Coefficient and Dice Coefficient Loss vs Epoch.
+    For both training and validation.
+
+    Parameters:
+        history (History): record of training and validation metrics
+
+    """
+    modelHistory = history.history
+    
+    #Loss plots
+    plt.plot(modelHistory['loss'])
+    plt.plot(modelHistory['val_loss'])
+    plt.title('Dice Coefficient Loss')
+    plt.ylabel('Loss (%)')
+    plt.xlabel('Epoch')
+    plt.legend(['Training', 'Validation'], loc='upper right')
+    plt.show()
+    
+    #Accuracy plots
+    plt.plot(modelHistory['diceCoefficient'])
+    plt.plot(modelHistory['val_diceCoefficient'])
+    plt.title('Dice Coefficient')
+    plt.ylabel('DSC')
+    plt.xlabel('Epoch')
+    plt.legend(['Training', 'Validation'], loc='upper left')
+    plt.show()
+
 def main():
 
     # Data loading and preprocessing
@@ -87,6 +119,8 @@ def main():
     model.compile(optimizer=adamOptimizer, loss=diceLoss, metrics=[diceCoefficient])
     
     results = model.fit(train_batched, epochs=EPOCHS, validation_data=validate_batched)
+
+    plotResults(results)
 
 
 if __name__ == "__main__":
