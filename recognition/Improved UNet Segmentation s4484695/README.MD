@@ -16,9 +16,9 @@ Ensuring that you have the appropriate ISIC2017 DataSet and is split into folder
 
 In train.py and predict.py replace placeholders with appropriate paths.
 1. Run train.py, wait until training is completed will recieve a print in console similar to:
-![Train.py Example]()
+![Train.py Example](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/trainconsole.PNG)
 2. Run predict.py, making sure not to delete or move model file created by train.py. Once inference is should will recieve a print in console similar to
-![predict.py Example]()
+![predict.py Example](https://github.com/Kamran496/PatternFlow/blob/master/recognition/Improved%20UNet%20Segmentation%20s4484695/Results/testconsole.PNG)
 3. Navigate to your specified path, where model, train.py and predict.py are stored. You will find .png files with data vizualisations.
 
 ## Dependencies
