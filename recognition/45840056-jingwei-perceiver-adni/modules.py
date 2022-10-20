@@ -4,7 +4,7 @@
 import torch
 import torch.nn as nn
 from torchvision.models import resnet50, ResNet50_Weights
-from perceiver_pytorch import PerceiverIO
+from perceiver_pytorch import Perceiver
 
 class AdniClassifier(nn.Module):
     RESNET_OUTPUT_DIM = 2048
@@ -28,20 +28,17 @@ class AdniClassifier(nn.Module):
         # Don't use the last fc layer. The resulting output is a vector of 2048 features.
         self.resnet = nn.Sequential(*tuple(resnet.children())[:-1])
 
-        # PerceiverIO for classifying a sequence
-        self.perceiver = PerceiverIO(
-            depth = 6,												# comes from the paper (p.9)
-            dim = AdniClassifier.RESNET_OUTPUT_DIM,
-            queries_dim = AdniClassifier.PERCEIVER_LATENT_DIM,
-            logits_dim = 1,
+        # Perceiver for classifying a sequence
+        self.perceiver = Perceiver(
+            num_freq_bands = 6,
+            depth = 6,
+            max_freq = 10.,
+            input_channels = AdniClassifier.RESNET_OUTPUT_DIM,
+            input_axis = 1,
             num_latents = AdniClassifier.PERCEIVER_NUM_LATENTS,
             latent_dim = AdniClassifier.PERCEIVER_LATENT_DIM,
+            num_classes = 1,
         )
-
-        # Hidden latent state, initialize as Normal(0, 0.02) according to p.17 of the paper
-        # Note there is a dummy dimension which is squeezed out in forward()
-        self._latent = nn.Parameter(\
-            torch.clamp(0.02 * torch.randn((1, AdniClassifier.PERCEIVER_LATENT_DIM)), -2, 2))
 
     def forward(self, x):
         B, S, C, H, W = x.shape
@@ -49,8 +46,8 @@ class AdniClassifier(nn.Module):
         out = self.pre_resnet(x)
         out = self.resnet(out)
         out = out.reshape((B, S, AdniClassifier.RESNET_OUTPUT_DIM))
-        out = self.perceiver(out, queries=self._latent)
-        return torch.sigmoid(out).squeeze(1)
+        out = self.perceiver(out)
+        return torch.sigmoid(out)
 
 if __name__ == "__main__":
     device = torch.device("cpu")

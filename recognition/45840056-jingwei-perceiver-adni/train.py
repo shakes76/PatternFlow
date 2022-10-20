@@ -18,7 +18,7 @@ def print_accuracy(model, ds, batch_size):
         correct += torch.eq(pred, label.to(torch.int8)).sum()
     print(f"accuracy: {(correct / len(ds)).item():.5f}")
 
-def train(device, tr_ds, batch_size, epochs=23):
+def train(device, tr_ds, batch_size, epochs=24):
     loader = DataLoader(tr_ds, shuffle=True, batch_size=batch_size)
     model = AdniClassifier().to(device)
     optimizer = optim.Adam(model.parameters(), 1e-5)
