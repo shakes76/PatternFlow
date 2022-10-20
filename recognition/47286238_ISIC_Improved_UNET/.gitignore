@@ -1,3 +1,9 @@
 # Dataset folder
 data/
+
+# virtual environment folder
 venv/
+
+# saved objects
+*.pt
+
