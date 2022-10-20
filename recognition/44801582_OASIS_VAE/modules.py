@@ -7,10 +7,6 @@ import torch.nn as nn
 from functions import vector_quantizer, vector_quantizer_straight_through
 
 
-def get_pad(output, stride):
-    return (output * (stride - 1) - stride)/2
-
-
 def get_encoder(latent_dim=16):
     enc_model = nn.Sequential(
         nn.LazyConv2d(32, 3, stride=2, padding=1),
@@ -24,7 +20,7 @@ def get_encoder(latent_dim=16):
 
 
 class VQ(nn.Module):
-    def __init__(self, num_embeddings, embedding_dim, beta=0.25):
+    def __init__(self, num_embeddings, embedding_dim):
         super().__init__()
         self.embed = nn.Embedding(num_embeddings, embedding_dim)
 
@@ -36,36 +32,42 @@ class VQ(nn.Module):
 
     def straight_through(self, x):
         x = x.permute(0, 2, 3, 1).contiguous()
-        x_q, ind = vector_quantizer_straight_through(x, self.embed.weight.detach())
-        x_q = x_q.permute(0, 3, 1, 2).contiguous()
+        x_quantized_straight_through, ind = vector_quantizer_straight_through(x, self.embed.weight.detach())
+        x_quantized_straight_through = x_quantized_straight_through.permute(0, 3, 1, 2).contiguous()
 
-        flat = torch.index_select(self.embedding.weight, dim=0, index=ind).view_as(x).permute(0, 3, 1, 2).contiguous()
+        x_quantized = torch.index_select(self.embedding.weight, dim=0, index=ind)\
+            .view_as(x).permute(0, 3, 1, 2).contiguous()
 
-        return x_q, flat
+        return x_quantized_straight_through, x_quantized
 
 
-def get_decoder(latent_dim=16):
+def get_decoder():
     dec_model = nn.Sequential(
-        nn.LazyConvTranspose2d(64, 3, stride=2, padding="same"),
+        nn.LazyConvTranspose2d(64, 3, stride=2, padding=1),
         nn.ReLU(),
-        nn.LazyConvTranspose2d(32, 3, stride=2, padding="same"),
+        nn.LazyConvTranspose2d(32, 3, stride=2, padding=1),
         nn.ReLU(),
-        nn.LazyConvTranspose2d(1, 3, stride=2, padding="same")
+        nn.LazyConvTranspose2d(1, 3, stride=2, padding=1)
     )
 
     return dec_model
 
 
-def get_vqvae(latent_dim=16, num_embeddings=64):
-    vqvae_model = nn.Sequential(
-        get_encoder(latent_dim),
-        VQ(num_embeddings, latent_dim),
-        get_decoder(latent_dim)
-    )
+class VQ_VAE(nn.Module):
+    def __init__(self, latent_dim=16, num_embeddings=64):
+        super().__init__()
+        self.encoder = get_encoder()
+        self.codebook = VQ(latent_dim, num_embeddings)
+        self.decoder = get_decoder()
 
-    return vqvae_model
+    def encode(self, x):
+        return self.codebook(self.encoder(x))
 
+    def decode(self, latents):
+        return self.decoder(self.codebook.embedding(latents).permute(0, 3, 1, 2))
 
-
-if __name__ == "__main__":
-    model = get_vqvae()
+    def forward(self, x):
+        encoding = self.encoder(x)
+        x_quantized_straight_through, x_quantized = self.codebook.straight_through(encoding)
+        reconstruct = self.decoder(x_quantized_straight_through)
+        return reconstruct, encoding, x_quantized
