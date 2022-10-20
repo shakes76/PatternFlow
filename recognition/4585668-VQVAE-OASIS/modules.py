@@ -11,6 +11,7 @@ import	tensorflow				as		tf
 from	tensorflow				import	keras
 from	tensorflow.keras		import	layers
 #rom	dataset					import	ENC_IN_SHAPE
+from	numpy					import	zeros
 
 FLATTEN				= -1
 STRIDES				= 2
@@ -181,7 +182,7 @@ class PixelConvolution(layers.Layer):
 	def __init__(self, mask, **kwargs):
 		super().__init__()
 		self.mask = mask
-		self.conv = Conv2D(**kwargs)
+		self.conv = layers.Conv2D(**kwargs)
 
 	def build(self, input_shape):
 		"""Construct the convolutional kernel"""
@@ -198,21 +199,27 @@ class PixelConvolution(layers.Layer):
 		self.conv.kernel.assign(self.conv.kernel * self.mask)
 		return self.conv(inputs)
 
+	def get_config(self):
+		config = super().get_config()
+		config.update({"mask": self.mask})
+		return config
+
 class ResidualBlock(layers.Layer):
 	"""Resnet block based on PixelConvolution layers"""
 	def __init__(self, filters, **kwargs):
 		super(ResidualBlock, self).__init__(**kwargs)
-		self.conv1 = Conv2D(
-			filters = filters, kernel_size = CONV1_KERN_SIZE, activation="relu"
+		self.filters = filters
+		self.conv1 = layers.Conv2D(
+			filters = self.filters, kernel_size = CONV1_KERN_SIZE, activation="relu"
 		)
 		self.pixel_conv = PixelConvolution(
 			mask		= "B",
-			filters		= filters // FILTER_FACTOR,
+			filters		= self.filters // FILTER_FACTOR,
 			kernel_size	= KERN_SIZE,
 			activation	= "relu",
 			padding		= "same",
 		)
-		self.conv2 = Conv2D(filters = filters, kernel_size = CONV1_KERN_SIZE, activation = "relu")
+		self.conv2 = layers.Conv2D(filters = self.filters, kernel_size = CONV1_KERN_SIZE, activation = "relu")
 
 	def call(self, inputs):
 		"""Forward computation handler"""
@@ -220,21 +227,26 @@ class ResidualBlock(layers.Layer):
 		layer	= self.pixel_conv(layer)
 		layer	= self.conv2(layer)
 
-		return add([inputs, layer])
+		return layers.add([inputs, layer])
 
-def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, trainer):
+	def get_config(self):
+		config = super().get_config()
+		config.update({"filters": self.filters})
+		return config
+
+def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, n_embeds):
 	"""Construct the Pixel CNN
 
 	in_shape		- shape of PCNN inputs
 	no_resid_blocks	- the number of residual blocks within the PCNN
 	no_pcnn_layers	- the number of layers within the PCNN
-	trainer			- the training wrapper class for the VQVAE
+	n_embeds		- the number of embeddings in the VQVAE
 
 	return			- the assembled Pixel CNN
 	"""
 
-	pcnn_ins	= Input(shape = in_shape, dtype = tf.int32)
-	onehot		= tf.one_hot(pcnn_ins, trainer.n_embeds)
+	pcnn_ins	= keras.Input(shape = in_shape, dtype = tf.int32)
+	onehot		= tf.one_hot(pcnn_ins, n_embeds)
 	layer		= PixelConvolution(mask = "A", filters = NO_FILTERS, kernel_size = PCNN_IN_KERN_SIZE, activation = "relu", padding = "same")(onehot)
 
 	for _ in range(no_resid_blocks):
@@ -250,8 +262,8 @@ def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, trainer):
 			padding		= "valid",
 		)(layer)
 
-	out		= Conv2D(filters = trainer.n_embeds, kernel_size = PCNN_OUT_KERN_SIZE, strides = PCNN_STRIDES, padding = "valid")(layer)
-	pcnn	= Model(pcnn_ins, out)
+	out		= layers.Conv2D(filters = n_embeds, kernel_size = PCNN_OUT_KERN_SIZE, strides = PCNN_STRIDES, padding = "valid")(layer)
+	pcnn	= keras.Model(pcnn_ins, out)
 	pcnn.summary()
 
 	return pcnn
