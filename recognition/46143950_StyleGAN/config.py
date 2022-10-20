@@ -16,7 +16,7 @@ EPOCHS = {
     4: (15, 10),                                      # ephocs of 64x64 fade in and stabilize
     5: (15, 10),                                      # ephocs of 128x128 fade in and stabilize
     6: (15, 10)                                       # ephocs of 256x256 fade in and stabilize
-    }                                                   
+}                                                   
 
 NSAMPLES = 25                                         # number of output images must be a number with int sqrt
 TRAINING_IMAGE_DIR = 'your training Images directory' # training image folder
