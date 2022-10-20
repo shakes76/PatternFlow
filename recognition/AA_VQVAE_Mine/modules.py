@@ -32,7 +32,7 @@ def deconv_block(tensor, residual, nfilters, size=3, padding='same', strides=(2,
 
 def Unet(h, w, filters):
 # down
-    input = Input(shape=(h, w, 1), name='image_input')
+    input = Input(shape=(h, w, 3), name='image_input')
     conv1_snapshot = conv_block(input, nfilters=filters)
     conv1_out = MaxPooling2D(pool_size=(2, 2))(conv1_snapshot) 
     conv2_snapshot = conv_block(conv1_out, nfilters=filters*2)
