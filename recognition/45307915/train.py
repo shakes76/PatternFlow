@@ -1,6 +1,4 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
-from math import floor
 
 IMAGES_PATH = "./ISIC-2017_Training_Data/*.jpg"
 MASKS_PATH = "./ISIC-2017_Training_Part1_GroundTruth/*.png"
@@ -30,11 +28,11 @@ class DataLoader():
         """
         Load and preprocess the image files.
 
-            Parameters:
-                filenames (tf.string): names of all image files
+        Parameters:
+            filenames (tf.string): names of all image files
 
-            Return:
-                tf.Dataset: A (img_height, img_width, 1) tensor containing all the image file data
+        Return:
+            tf.Dataset: A (img_height, img_width, 1) tensor containing all the image file data
 
         """
         raw = tf.io.read_file(filenames)
@@ -53,11 +51,11 @@ class DataLoader():
         """
         Load and preprocess the mask files.
 
-            Parameters:
-                filenames (tf.string): names of all mask files
+        Parameters:
+            filenames (tf.string): names of all mask files
 
-            Return:
-                tf.Dataset: A (img_height, img_width, 1) tensor containing all the mask file data
+        Return:
+            tf.Dataset: A (img_height, img_width, 1) tensor containing all the mask file data
 
         """
         raw = tf.io.read_file(filenames)
@@ -79,8 +77,8 @@ class DataLoader():
         Loads and prepocesses all the image and mask data, located at IMAGES_PATH and MASKS_PATH.
 
 
-            Return:
-                tf.Dataset: A (img_height, img_width, 1) tensor containing the processed image and mask data
+        Return:
+            tf.Dataset: A (img_height, img_width, 1) tensor containing the processed image and mask data
 
         """
 
@@ -93,3 +91,14 @@ class DataLoader():
         dataset = tf.data.Dataset.zip((processedImages, processedMasks))
 
         return dataset
+    
+    def getData(self):
+        """
+        Gets the loaded image and mask data.
+
+
+        Return:
+            tf.Dataset: A (img_height, img_width, 1) tensor containing the processed image and mask data
+
+        """
+        return self.data
