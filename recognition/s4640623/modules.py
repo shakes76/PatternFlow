@@ -30,19 +30,18 @@ class GraphConvolutionLayer(Module):
   def reset_parameters(self):
     stdv = 1. / math.sqrt(self.weight.size(1))
     self.weight.data.uniform_(-stdv, stdv)
-    print(self._output_feat)
     self.bias.data.uniform_(-stdv, stdv)
 
   def forward(self, input, adj):
-        support = torch.mm(input, self.weight)
-        output = torch.spmm(adj, support)
-        return output + self.bias
+    support = torch.mm(input, self.weight)
+    output = torch.spmm(adj, support)
+    return output + self.bias
 
 class GCN(nn.Module):
-  def __init__(self, nfeat, nhid, nclass, dropout = 0.5):
+  def __init__(self, input_feat, output_feat, nclass, dropout = 0.5):
     super(GCN, self).__init__()
-    self.GraphConv1 = GraphConvolutionLayer(nfeat, nhid)
-    self.GraphConv2 = GraphConvolutionLayer(nhid, nclass)
+    self.GraphConv1 = GraphConvolutionLayer(input_feat, output_feat)
+    self.GraphConv2 = GraphConvolutionLayer(output_feat, nclass)
     self.dropout = dropout
 
   def forward(self, x, adj):
