@@ -86,14 +86,19 @@ The reason why I didn't use argument transmitting from python command is the pre
 
 ### 2. Code Excution  
 After setting the parameters, open the Terminal (Command line) under this file folder, then type the command as follows:  
-* training model:
+* Training model:
 ```
 $ python train.py
 ```
-* generating a picture:
+* Generating a picture:
 ```
 $ python predict.py
 ```  
+* Test models
+```
+$ sudo sh test.sh
+```
+
 
 <br>
 
