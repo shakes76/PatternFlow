@@ -163,7 +163,6 @@ class ImprovedUNETModel():
         x = self.upsamplingModule(localisation, n_filters / 2)
         
         return localisation, x
-    
         
     def modelArchitecture(self):
         """ Defines Improved UNET model network
@@ -220,3 +219,14 @@ class ImprovedUNETModel():
         model = Model(inputs, outputs)
         
         return model
+
+    def getModel(self):
+        """
+        Gets the improved UNET model.
+
+
+        Return:
+            tf.keras.models.Model: CNN defined by Improved UNET architecture
+
+        """
+        return self.model
