@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import PIL
 
 
-def train():
+def train(epochs):
     train_path = "dataset\\train"
     test_path = "dataset\\test"
     
@@ -21,7 +21,8 @@ def train():
     upscale_factor = 4
     crop_size = 200
     train_ds, val_ds, test_ds = get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size)
-    checkpoint_filepath = "tmp\\checkpoint\\"
+    print(train_ds.element_spec)
+    checkpoint_filepath = "tmp\\checkpoint"
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
@@ -37,7 +38,6 @@ def train():
 
     loss_fn = keras.losses.MeanSquaredError()
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
-    epochs = 100
     model.compile(
         optimizer=optimizer, loss=loss_fn,
     )
@@ -48,12 +48,14 @@ def train():
 
     model.load_weights(checkpoint_filepath)
 
+    return model, test_ds
+
 def plot_results(img, prefix, title):
     img_array = img_to_array(img)
     img_array = img_array.astype('float32') / 255.0
 
     fig, ax = plt.subplots()
-    im = ax.imshow(img_array[::-1], origin="lower")
+    im = ax.imshow(img_array[::-1], origin="lower", cmap="gray")
     
     plt.title(title)
 
@@ -63,14 +65,13 @@ def plot_results(img, prefix, title):
     plt.show()
 
 def get_lowres_image(img, upscale_factor):
-    return tf.imgage.resize(
+    return tf.image.resize(
         img,
-        (img.size[0] // upscale_factor, img.size[1] // upscale_factor),
-        PIL.Image.BICUBIC
+        (img.shape[0] // upscale_factor, img.shape[1] // upscale_factor)
     )
 
 def main():
-    train()
+    train(100)
 
 if __name__ == "__main__":
     main()

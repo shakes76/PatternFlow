@@ -11,16 +11,9 @@ def scaling(input_image):
     return input_image
 
 def process_input(input, input_size):
-    input = tf.image.rgb_to_yuv(input)
-    last_dimension_axis = len(input.shape) - 1
-    y, _ ,_ = tf.split(input, 3, axis=last_dimension_axis)
-    return tf.image.resize(y, [input_size, input_size], method="area")
+    return tf.image.resize(input, [input_size, input_size], method="area")
 
-def process_target(input):
-    input = tf.image.rgb_to_yuv(input)
-    last_dimension_axis = len(input.shape) - 1
-    y, _ ,_ = tf.split(input, 3, axis=last_dimension_axis)
-    return y
+
 
 """
 Retrieves the datasets from the folder for use by the algorithm
@@ -33,6 +26,7 @@ def get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size):
     train_ds = tf.keras.utils.image_dataset_from_directory(
         train_path, 
         batch_size = batch_size,
+        color_mode = "grayscale",
         image_size=(crop_size, crop_size),
         label_mode = None,
         validation_split = 0.1,
@@ -42,22 +36,25 @@ def get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size):
     val_ds = tf.keras.utils.image_dataset_from_directory(
         train_path, 
         batch_size = batch_size,
+        color_mode = "grayscale",
         image_size=(crop_size, crop_size),
         label_mode = None,
         validation_split = 0.1,
         seed = 123,
         subset = "validation")
 
-    test_ds = tf.keras.utils.image_dataset_from_directory(test_path, label_mode = None)
+    test_ds = tf.keras.utils.image_dataset_from_directory(
+        test_path, 
+        color_mode = "grayscale",
+        image_size=(crop_size, crop_size), 
+        label_mode = None)
 
-    train_ds = train_ds.map(scaling)
-    val_ds = val_ds.map(scaling)
 
     train_ds = train_ds.map(
-        lambda x: (process_input(x, input_size), process_target(x))
+        lambda x: (tf.image.resize(x, [input_size, input_size], method="area"), x)
     )
     val_ds = val_ds.map(
-    lambda x: (process_input(x, input_size), process_target(x))
+        lambda x: (tf.image.resize(x, [input_size, input_size], method="area"), x)
     )
     return train_ds, val_ds, test_ds
 
