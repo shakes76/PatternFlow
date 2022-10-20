@@ -6,6 +6,39 @@ from tensorflow.keras import layers
 import tensorflow_probability as tfp
 import tensorflow as tf
 
+from tensorflow.keras.optimizers import Adadelta, Nadam ,Adam
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, CSVLogger, TensorBoard
+
+
+import dataset
+import modules
+
+modules.model.compile(optimizer='adam', loss='categorical_crossentropy' ,metrics=['accuracy'])
+
+es = EarlyStopping(mode='max', monitor='val_acc', patience=10, verbose=0)
+tb = TensorBoard(log_dir="logs/", histogram_freq=0, write_graph=True, write_images=False)
+rl = ReduceLROnPlateau(monitor='val_acc',factor=0.1,patience=5,verbose=1,mode="max",min_lr=0.0001)
+
+results = modules.model.fit(dataset.train_generator , steps_per_epoch=dataset.train_steps ,epochs=30,
+                              validation_data=dataset.val_generator,validation_steps=dataset.val_steps,callbacks=[es,tb,rl])
+
+'''
+def show_subplot(original, reconstructed):
+    plt.subplot(1, 2, 1)
+    plt.imshow(original.squeeze() + 0.5,cmap='gray')
+    plt.title("Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(reconstructed.squeeze() + 0.5,cmap='gray')
+    plt.title("Reconstructed")
+    plt.axis("off")
+
+    plt.show()
+
+
+
 
 import pickle
 
@@ -22,40 +55,4 @@ filename = "resultc.pickle"
 with open(filename, "rb") as file:
     x_test_scaled = pickle.load(file)
 
-import modules
-
-plt.figure(figsize=(10, 10))
-for images in x_train.take(1):
-    for i in range(9):
-        ax = plt.subplot(3, 3, i + 1)
-        plt.imshow(images[i].numpy().astype("uint8"),cmap='gray')
-        plt.axis("off")
-
-plt.show()
-
-vqvae_trainer = modules.VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128)
-vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-vqvae_trainer.fit(x_train, epochs=1, batch_size=128)
-
-
-def show_subplot(original, reconstructed):
-    plt.subplot(1, 2, 1)
-    plt.imshow(original.squeeze() + 0.5,cmap='gray')
-    plt.title("Original")
-    plt.axis("off")
-
-    plt.subplot(1, 2, 2)
-    plt.imshow(reconstructed.squeeze() + 0.5,cmap='gray')
-    plt.title("Reconstructed")
-    plt.axis("off")
-
-    plt.show()
-
-
-trained_vqvae_model = vqvae_trainer.vqvae
-idx = np.random.choice(len(x_test_scaled), 10)
-test_images = x_test_scaled[idx]
-reconstructions_test = trained_vqvae_model.predict(test_images)
-
-for test_image, reconstructed_image in zip(test_images, reconstructions_test):
-    show_subplot(test_image, reconstructed_image)
+'''
