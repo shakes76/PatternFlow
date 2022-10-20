@@ -55,13 +55,13 @@ All the convolution, context, element-wise-sum in encoding are integrated into t
 
 Part of upsampling, concatenate, and localization in decoding are integrated into the down_imp() function.
 
-** context module: **
+__Context module:__
 Described by 2 convolution layers (all except the first one with stride 2) with a dropout layer (0.3) in between.
 
-** Upsampling module: **
+__Upsampling module:__
 It consists of an upsampling layer and a convolution layer.
 
-** localization module: **
+__Localization module:__
 Completed by a 3x3 convolution and a 1x1 convolution.
 
 Instance normalization and Leaky reLU are used throughout the architecture. The model is compiled with dice coefficient loss and dice coefficient.
