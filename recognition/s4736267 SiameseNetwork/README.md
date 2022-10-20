@@ -207,13 +207,9 @@ The previous introduced 3D ResNet, was modified which resulted in the final impl
 The major change was the introduction of two additonal linear linear layers at the end of the branch structure and the removal of the previous used adaptive average pooling function. Furthermore the number of identiy blocks was reduced, so that all four stages contain 4 residual blocks. 
 Especially due to the introduction of the average poling layer, the runtime of the SNN increased dramatically. 
 
-> Test accuracy 70.35%
-
 ### Reusing the additional classification network
 
-Instead of picking a small number of references for final classification, the previous described classification net is used to further improve the performance of the overall system. With a total number of three linear layers and the use of the BCEloss() function, the implementationn of the classifcation net is kept quite simple.
-
-> Test accuracy 75.35%
+Instead of picking a small number of references for final classification, the previous described classification net is used to further improve the performance of the overall system. With a total number of four linear layers and the use of the BCEloss() function, the implementationn of the classifcation net is kept quite simple.
 
 ### Outlook:
 Further improvements for the SNN implementation would be
@@ -242,22 +238,28 @@ The main code to train, validate and test the model is stored in train.py. To be
 The results are based on the last implementation of the SNN. 
 
 <p align="center">
-    <img src=Picture/training_loss.png width="600" >
+    <img src=Picture/training_loss_snn.png width="600" >
 </p>
 <p align="center">
-    <em> Figure 10: Loss during training epoch of training and validation set  </em>
+    <em> Figure 10: Loss during training epoch of training and validation set of SNN  </em>
 </p>
 
+<p align="center">
+    <img src=Picture/training_loss_classifier.png width="600" >
+</p>
+<p align="center">
+    <em> Figure 11: Loss during training epoch of training and validation set of classifier  </em>
+</p>
 The final accuracy could be improved but didnt peak the required 80%.
 
-> Test accuracy 75.35%
+> Test accuracy 78.35% with feautre vector
+> Test accuracy 78.35% with classifier
 
 Summarising the main problems facing during the implementation:
 * Different Dataset structures between training/validation and testing
 * Labeling of Dataset
 * Same output for all inputs
 * Peak accuracy of 53% => equals distribution of the train set
-
 
 
 ## References

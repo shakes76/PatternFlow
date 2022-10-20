@@ -34,7 +34,7 @@ import dataset
 #######################################################
 
 epoch_range = 300
-epoch_range_clas = 30
+epoch_range_clas = 100
 
 batch_size=8
 train_factor=10000               #Number of Persons
@@ -48,8 +48,8 @@ FILE_CLAS_LOAD  ="CLAS_weights.pth"                   #Load location of pre-trai
 FILE_CLAS_UPDATE="CLAS_weights_improved.pth"     #Save location of trained Classification Net => only if training is continued
 
 #(0=disabled)
-load_pretrained_model=1
-training=0
+load_pretrained_model=0
+training=1
 
 load_pretrained_model_clas=0
 training_clas=1
@@ -60,8 +60,8 @@ gradient_clipping=0             #Gradient clippling
 scheduler_active_clas=1
 gradient_clipping_clas=0        #Gradient clippling  
 
-plot_feature_vectors=0          #Ploting feature vectors
-plot_loss = 0                   #Ploting training and validation loss
+plot_feature_vectors=1          #Ploting feature vectors
+plot_loss = 1                   #Ploting training and validation loss
 
 
 #######################################################
