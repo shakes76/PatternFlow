@@ -29,7 +29,7 @@ Figure 3: Example of target mask
 
 ## Training
 
-We use the train, test, validation split provided by the ISIC challenge. We are training our model on a subset of 2000 images of skin lesions, and train for 20 epochs. Due to memory constraints, we train on a random subset of 100 images of the training data. We plot both the training and test loss on each epoch which can be seen in Figure 4.
+We use the train, test, validation split provided by the ISIC challenge. We are training our model on a subset of 2000 images of skin lesions, and train for 20 epochs. Due to memory constraints, we train on a random subset of 100 images of the training data. We plot both the training and test loss on each epoch which can be seen in Figure 4. The optimizer was chosen to match that from the original paper, namely we use stochastic gradient descent with a learning rate of 0.0025 (the original paper trains with 0.02 and a batch size of 16, our batch size is 2 so we take 1/8 of the learning rate).
 
 ![Training loss](figures/training-loss.png)
 
