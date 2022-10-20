@@ -4,13 +4,13 @@ VQVAE components for COMP3710 VQVAE project
 Inspired by https://keras.io/examples/generative/vq_vae/
 """
 
-import	tensorflow					as		tf
-from	numpy						import	zeros
-from	tensorflow.keras			import	Input,	Model
-from	tensorflow.keras.layers		import	add,	Conv2D, Conv2DTranspose, Layer
-from	tensorflow.keras.metrics	import	Mean
-from	tensorflow.keras.models		import	Model
-from	dataset						import	ENC_IN_SHAPE
+# Name collisions in imports :((( have to spell out exact model paths and clog up the code
+
+#import	tensorflow_probability	as		tfp
+import	tensorflow				as		tf
+from	tensorflow				import	keras
+from	tensorflow.keras		import	layers
+#rom	dataset					import	ENC_IN_SHAPE
 
 FLATTEN				= -1
 STRIDES				= 2
@@ -26,36 +26,28 @@ PCNN_OUT_KERN_SIZE	= 1
 PCNN_MID_KERN_SIZE	= 1
 KERN_INIT			= 1.0
 RESIDUAL_BLOCKS		= 2
+ENC_IN_SHAPE		= (80, 80, 1)
 
-class VectorQuantizer(Layer):
+class VectorQuantiser(layers.Layer):
 	"""
 	Custom layer to handle vector quantisation
 	"""
-	def __init__(self, embeds, embed_dim, beta, **kwargs):
+	def __init__(self, n_embeds, embed_dim, beta, **kwargs):
 		super().__init__(**kwargs)
 		self.embed_dim		= embed_dim
-		self.embeds			= embeds
-		self.beta			= beta
+		self.n_embeds		= n_embeds
+		self.beta			= (beta)
 		w_init				= tf.random_uniform_initializer()
 		self.embeddings		= tf.Variable(
 			initial_value	= w_init(
-				shape = (self.embed_dim, self.embeds), dtype="float32"
-			),
-			trainable = True
-		)
+				shape = (self.embed_dim, self.n_embeds), dtype = "float32"
+			), trainable = True, name = "embeddings_vqvae")
 
-	"""
-	TODO probs kill this later
-
-	def code_inds(self, flat):
+	def code_indices(self, flat):
 		sim		= tf.matmul(flat, self.embeddings)
-		dists	= (tf.reduce_sum(flat ** 2, axis = 1, keepdims = True)
-				+ tf.reduce_sum(self.embeds ** 2, axis = 0)
-				- 2 * sim)
-		indices	= tf.argmin(dists, axis = 1)
-
-		return indices
-	"""
+		dists	= tf.reduce_sum(flat ** 2, axis = 1, keepdims = True) + tf.reduce_sum(self.embeddings ** 2, axis = 0) - 2 * sim
+		encodes	= tf.argmin(dists, axis = 1)
+		return encodes
 
 	def call(self, x):
 		"""
@@ -68,24 +60,27 @@ class VectorQuantizer(Layer):
 
 		in_shape	= tf.shape(x)
 		flat		= tf.reshape(x, [FLATTEN, self.embed_dim])
-		#enc_ind		= self.code_inds(flat)
-
-		dists		= (tf.reduce_sum(flat ** 2, axis = 1, keepdims = True)
-						+ tf.reduce_sum(self.embeddings ** 2, axis = 0)
-						- 2 * tf.matmul(flat, self.embeddings))
-		enc_ind		= tf.argmin(dists, axis = 1)
-		enc			= tf.one_hot(enc_ind, self.embeds)
+		enc_ind		= self.code_indices(flat)
+		enc			= tf.one_hot(enc_ind, self.n_embeds)
 		qtised		= tf.matmul(enc, self.embeddings, transpose_b = True)
 		qtised		= tf.reshape(qtised, in_shape)
-		commit		= self.beta + tf.reduce_mean(tf.stop_gradient(qtised) - x) ** 2
-
-		#commit		= tf.reduce_mean((tf.stop_gradient(qtised) - x) ** 2)
+		commit		= self.beta * tf.reduce_mean(tf.stop_gradient(qtised) - x) ** 2
 		codebook	= tf.reduce_mean((qtised - tf.stop_gradient(x)) ** 2)
 		self.add_loss(commit + codebook)
-		#self.add_loss(self.beta * commit + codebook)
 		qtised		= x + tf.stop_gradient(qtised - x)
 
 		return qtised
+
+	def get_config(self):
+		"""So that saving actually works"""
+		config = super().get_config()
+		config.update({
+			"n_embeds"	: self.n_embeds,
+			"embed_dim"	: self.embed_dim,
+			"beta"		: self.beta,
+		})
+
+		return config
 
 def encoder(lat_dim):
 	"""
@@ -96,12 +91,13 @@ def encoder(lat_dim):
 	return	- the encoder half of the VQVAE
 	"""
 
-	enc_in	= Input(shape = ENC_IN_SHAPE)
-	convos	= Conv2D(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(enc_in)
-	convos	= Conv2D(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
-	enc_out	= Conv2D(lat_dim, 1, padding = "same")(convos)
+	enc_in	= keras.Input(shape = ENC_IN_SHAPE)
+	convos	= layers.Conv2D(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(enc_in)
+	convos2	= layers.Conv2D(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	enc_out	= layers.Conv2D(lat_dim, 1, padding = "same")(convos2)
 
-	return Model(enc_in, enc_out)
+	return keras.Model(enc_in, enc_out, name = "encoder")
+
 
 def decoder(lat_dim):
 	"""
@@ -112,12 +108,13 @@ def decoder(lat_dim):
 	return	- the decoder half of the VQVAE
 	"""
 
-	lat_in	= Input(shape = encoder(lat_dim).output.shape[1:])
-	convos	= Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
-	convos	= Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
-	dec_out	= Conv2DTranspose(1, KERN_SIZE, padding = "same")(convos)
+	lat_in	= keras.Input(shape = encoder(lat_dim).output.shape[1:])
+	convos	= layers.Conv2DTranspose(2 * CONV_W_FACTOR,	KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(lat_in)
+	convos2	= layers.Conv2DTranspose(CONV_W_FACTOR,		KERN_SIZE, activation = "relu", strides = STRIDES, padding = "same")(convos)
+	dec_out	= layers.Conv2DTranspose(1, KERN_SIZE, padding = "same")(convos2)
 
-	return Model(lat_in, dec_out)
+
+	return keras.Model(lat_in, dec_out, name = "decoder")
 
 def build_vqvae(lat_dim, embeds, beta):
 	"""
@@ -130,32 +127,32 @@ def build_vqvae(lat_dim, embeds, beta):
 	return	- the assembled VQVAE
 	"""
 
-	vq			= VectorQuantizer(embeds, lat_dim, beta)
+	vq			= VectorQuantiser(embeds, lat_dim, beta, name = "vector_quantiser")
 	enc			= encoder(lat_dim)
 	dec			= decoder(lat_dim)
-	ins			= Input(shape = ENC_IN_SHAPE)
+	ins			= keras.Input(shape = ENC_IN_SHAPE)
 	enc_out		= enc(ins)
 	qtised		= vq(enc_out)
 	reconstruct	= dec(qtised)
 
-	return Model(ins, reconstruct)
+	return keras.Model(ins, reconstruct, name = "vqvae")
 
-class Trainer(Model):
+class Trainer(keras.models.Model):
 	"""Wrapper class for vqvae training functionality"""
 	def __init__(self, train_vnce, lat_dim, n_embeds, beta, **kwargs):
-		super().__init__(**kwargs)
+		super(Trainer, self).__init__(**kwargs)
 		self.train_vnce	= train_vnce
 		self.lat_dim	= lat_dim
 		self.n_embeds	= n_embeds
 		self.vqvae		= build_vqvae(self.lat_dim, self.n_embeds, beta)
-		self.tot_loss	= Mean()
-		self.recon_loss	= Mean()
-		self.vq_loss	= Mean()
+		self.tot_loss	= keras.metrics.Mean()
+		self.recon_loss	= keras.metrics.Mean()
+		self.vq_loss	= keras.metrics.Mean()
 
 	@property
 	def metrics(self):
 		"""Total loss, reconstruction loss, vector quantisation loss"""
-		return self.tot_loss, self.recon_loss, self.vq_loss
+		return [self.tot_loss, self.recon_loss, self.vq_loss]
 
 	def train_step(self, x):
 		"""Individual VQVAE training step"""
@@ -179,7 +176,7 @@ class Trainer(Model):
 			"vqvae_loss"			:	self.vq_loss.result()
 		}
 
-class PixelConvolution(Layer):
+class PixelConvolution(layers.Layer):
 	"""Pixel convolutional layer for pixel cnn"""
 	def __init__(self, mask, **kwargs):
 		super().__init__()
@@ -201,7 +198,7 @@ class PixelConvolution(Layer):
 		self.conv.kernel.assign(self.conv.kernel * self.mask)
 		return self.conv(inputs)
 
-class ResidualBlock(Layer):
+class ResidualBlock(layers.Layer):
 	"""Resnet block based on PixelConvolution layers"""
 	def __init__(self, filters, **kwargs):
 		super(ResidualBlock, self).__init__(**kwargs)

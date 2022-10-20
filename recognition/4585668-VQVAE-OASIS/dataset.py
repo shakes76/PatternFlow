@@ -8,7 +8,7 @@ from	numpy				import	array,	reshape
 from	PIL					import	Image
 import	tensorflow			as		tf
 
-NMALISE			= 255
+NMALISE			= 255.0
 CENTRE			= 0.5
 IMAGE_DIM		= 80
 ENC_IN_SHAPE	= (80, 80, 1)
@@ -22,6 +22,7 @@ TESTING			= BASE + "test/*"
 VALIDATION		= BASE + "validate/*"
 
 def get_ttv():
+
 	"""
 	Read in the training/testing/validation datasets from local files.
 	Mostly repurposed from demo 2
@@ -29,19 +30,6 @@ def get_ttv():
 	return	- the training, testing and validation datasets
 	"""
 
-	#image	= lambda f: (tf.io.decode_png(tf.io.read_file(f)) / NMALISE) - CENTRE
-	#to_dset	= lambda d: tf.data.Dataset.from_tensor_slices(d).map(image)
-	#npify	= lambda d: array(list(to_dset(d)))
-
-	image	= lambda i: Image.open(i).resize((IMAGE_DIM, IMAGE_DIM))
-	npify	= lambda d: array([reshape(image(i), ENC_IN_SHAPE) for i in d])
-	normal	= lambda d: (npify(d) / NMALISE) - CENTRE
-
-	train	= glob(TRAINING)
-	testing	= glob(TESTING)
-	valid	= glob(VALIDATION)
-
-	"""
 	srcs	= (glob(TRAINING), glob(TESTING), glob(VALIDATION))
 	dsets	=([[]] * SPLITS)
 
@@ -56,18 +44,10 @@ def get_ttv():
 	train_dset, test_dset, val_dset = as_arrs
 	norm_train	= (train_dset / NMALISE) - CENTRE
 
-	"""
-	"""
-	Unsure why I even had this in demo 2 tbh ==> probs unneccesary
-	train.sort()
-	testing.sort()
-	valid.sort()
-	"""
-	train_dset	= normal(train)
-	test_dset	= normal(testing)
-	val_dset	= normal(valid)
-
 	return (train_dset, test_dset, val_dset)
+
+def normalise(dset):
+	return dset / NMALISE - CENTRE
 
 def preview(dataset, n):
 	"""
