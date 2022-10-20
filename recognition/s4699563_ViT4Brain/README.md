@@ -81,6 +81,8 @@ The plot of loss and accuracy during training and validation can been seen as fo
 
 Unfortunately even the accuracy of training and validation is apporaching to 100%, the testing accuracy is only **$0.643$**. The first thought came to my mind is overfitting. However, to reduce the influence of overfittly as much as possible, data augmentation and dropout has been considered. For data augmentation, RandomHorizontalFlip, RandomVerticalFlip, and RandomRotation have been used. And the model is trained with setting dropout = $0.2$.
 
+The pretrained model weights can be found at this link: https://drive.google.com/file/d/10P5XHFet2EGS323bSHACo7wMRKz82ZQv/view?usp=sharing
+
 ### Better accuracy using existing pacakge
 A variant of ViT, <a href ='https://arxiv.org/abs/2203.15380'>SepVit</a> ,has been tried and finally got above **$0.758$** accuracy. The innovation of this model is using depthwise-pointwise self-attention.
 By using package from https://github.com/lucidrains/vit-pytorch, fistly  'pip install vit-pytorch'. And use pretrained model from https://drive.google.com/file/d/1EZY9jvK5CnMFLIfqHZsuY9gZX5ERbQL7/view?usp=sharing , and put it in the same folder with main.py.
