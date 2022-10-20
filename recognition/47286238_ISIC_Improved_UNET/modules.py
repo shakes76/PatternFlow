@@ -64,7 +64,8 @@ class IUNET(nn.Module):
 
         ## Output Layer
         self.out_layer = nn.Sequential(
-            self.conv(filter_size, in_channels, stride=1)
+            self.conv(filter_size, in_channels, stride=1),
+            nn.Softmax2d()
         )
 
 
