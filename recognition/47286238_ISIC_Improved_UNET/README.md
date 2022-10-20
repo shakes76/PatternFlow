@@ -73,5 +73,5 @@ Due to the shuffling of the dataset during training, it cannot be guaranteed tha
 The current hyperparameters are, admittedly, suboptimal. However, due to resource and time constraints, the batch size is set to 1 as going any higher leads to out-of-memory errors on my machine. This has been tested on the Rangpur compute system, and it seems to be able to tolerate higher batch sizes of at least 10, though execution times were faster locally.
 
 ## References
-1. (Isensee et al. (2018))[https://arxiv.org/abs/1802.10508v1]
-2. (Wikipedia: Sørensen–Dice coefficient)[https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]
+1. [Isensee et al. (2018)](https://arxiv.org/abs/1802.10508v1)
+2. [Wikipedia: Sørensen–Dice coefficient](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient)
