@@ -11,7 +11,6 @@ def load_data(path):
     """
     Loads a ISIC data set
     Param: path - should reference a folder which contains 2 subfolders one with images, and one with masks
-    Param: split - the ratio of valid and testing data: default is 0.2 i.e 0.6/0.2/0.2 train/test/valid
     Returns: Raw data in the form: (train_x, train_y), (valid_x, valid_y), (test_x, test_y)
     """
 

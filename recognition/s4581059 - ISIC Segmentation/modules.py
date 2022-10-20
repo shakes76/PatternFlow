@@ -1,27 +1,22 @@
 #Contains the source code of the components of the model.
 
 import tensorflow as tf
-from keras.layers import Input, Conv2D, Dropout, Dense, UpSampling2D, Concatenate, Add
+from keras.layers import Input, Conv2D, Dropout, UpSampling2D, Concatenate, Add
 from keras.models import Model
 
+#"Throughout the network we use leaky ReLU nonlinearities with a negative slopes of 10^-2" - [1]
 relu = tf.keras.layers.LeakyReLU(alpha=1e-2)
 kernel_size = (3,3)
 
-def conv_block(input, num_filters, connected):
+def conv_block(input, num_filters):
     """
     Creates a convolutional block - i.e. Two convolutional layers with a dropout layer in between
     Noted: Dropout layer rate is set to 0.3
     Param: input - the layer in which the convolutional block will input
     Param: num_filters - the number of filters required for the convolutional block
-    Param: (bool) connected - denotes with the blocks are connected
     Returns: The outputted convolutional layer
     """
-    if connected:
-        strides = (2, 2)
-    else: 
-        strides = (1, 1)
-
-    conv_1 = Conv2D(num_filters, kernel_size, strides=strides, padding="same", activation=relu)(input)
+    conv_1 = Conv2D(num_filters, kernel_size, padding="same", activation=relu)(input)
     drop = Dropout(0.3)(conv_1)
     conv_2 = Conv2D(num_filters, kernel_size, padding="same", activation=relu)(drop)
     
@@ -42,7 +37,7 @@ def model():
     """
     Model made up of an encoder, decoder and the concatenation of the 2
     """
-    #"Throughout the network we use leaky ReLU nonlinearities with a negative slopes of 10^-2" - [1]
+    
     
     #Starting number of filters
     filters = 16
@@ -52,28 +47,28 @@ def model():
     #16 filters
     input = Input(shape=(128, 128, 1))
     layer_1 = Conv2D(filters, kernel_size, padding="same", activation=relu)(input)
-    block_1 = conv_block(layer_1, filters, False)
+    block_1 = conv_block(layer_1, filters)
     add_block_1 = Add()([layer_1, block_1])
     
     #Context modules are connected by 3x3x3 convolutions with input stride 2
     #32 filters
-    layer_2 = Conv2D(filters * 2, kernel_size, padding="same", activation=relu)(add_block_1)
-    block_2 = conv_block(layer_2, filters * 2, True)
+    layer_2 = Conv2D(filters * 2, kernel_size, strides=(2, 2), padding="same", activation=relu)(add_block_1)
+    block_2 = conv_block(layer_2, filters * 2)
     add_block_2 = Add()([layer_2, block_2])
 
     #64 filters
-    layer_3 = Conv2D(filters * 4, kernel_size, padding="same", activation=relu)(add_block_2)
-    block_3 = conv_block(layer_3, filters * 4, True)
+    layer_3 = Conv2D(filters * 4, kernel_size, strides=(2, 2), padding="same", activation=relu)(add_block_2)
+    block_3 = conv_block(layer_3, filters * 4)
     add_block_3 = Add()([layer_3, block_3])
 
     #128 filters
-    layer_4 = Conv2D(filters * 8, kernel_size, padding="same", activation=relu)(add_block_3)
-    block_4 = conv_block(layer_4, filters * 8, True)
+    layer_4 = Conv2D(filters * 8, kernel_size, strides=(2, 2), padding="same", activation=relu)(add_block_3)
+    block_4 = conv_block(layer_4, filters * 8)
     add_block_4 = Add()([layer_4, block_4])
 
     #256 filters
-    layer_5 = Conv2D(filters * 16, kernel_size, padding="same", activation=relu)(add_block_4)
-    block_5 = conv_block(layer_5, filters * 16, True)
+    layer_5 = Conv2D(filters * 16, kernel_size, strides=(2, 2), padding="same", activation=relu)(add_block_4)
+    block_5 = conv_block(layer_5, filters * 16)
     add_block_5 = Add()([layer_5, block_5])
 
     ##Decoder
@@ -109,11 +104,11 @@ def model():
     # 2. Add to lower segmentation layer where appropriate
     # 3. Upscale
 
-    seg_1 = Conv2D(filters * 2, (1, 1), padding="same", activation=relu)(dec_3_conv_1)
+    seg_1 = Conv2D(filters, (1, 1), padding="same", activation=relu)(dec_3_conv_1)
     #Bottom layer therefore skip adding
     seg_1 = UpSampling2D()(seg_1)
 
-    seg_2 = Conv2D(filters * 2, (1, 1), padding="same", activation=relu)(dec_4_conv_1)
+    seg_2 = Conv2D(filters, (1, 1), padding="same", activation=relu)(dec_4_conv_1)
     seg_2 = Add()([seg_2, seg_1])
     seg_2 = UpSampling2D()(seg_2)
 
