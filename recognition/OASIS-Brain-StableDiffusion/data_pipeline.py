@@ -2,7 +2,8 @@ from torch.utils.data import DataLoader
 import torchvision
 
 
-def load_dataset(path, image_size=256, batch_size=64):
+
+def load_dataset(path, image_size=128, batch_size=64):
     """
     Normalizes and loads images from a specified dataset into a dataloader
 
@@ -17,14 +18,16 @@ def load_dataset(path, image_size=256, batch_size=64):
     # define the transform used to normalize the input data
     transforms = torchvision.transforms.Compose(
         [
-        torchvision.transforms.Resize(image_size),
+        torchvision.transforms.Resize(image_size+(0.25*image_size)),
+        torchvision.transforms.RandomResizedCrop(image_size, scale=(0.8, 1.0)),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Lambda(lambda x: (x - 0.5) * 2) # scaled linearly to [-1, 1]
+        torchvision.transforms.Grayscale(num_output_channels=1),
+        torchvision.transforms.Normalize(0.5, 0.5)
         ]
     )
 
     # create the pyTorch dataset and dataloader
     dataset = torchvision.datasets.ImageFolder(root=path, transform=transforms)
-    dataset_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True,)
+    dataset_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     return dataset_loader

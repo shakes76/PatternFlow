@@ -57,7 +57,7 @@ class EncoderBlock(nn.Module):
     Encoder block consisting of 5 ConvReluBlocks each
     followed by a max pooling layer
     """
-    def __init__(self, dim_in=3, dim_out=1024):
+    def __init__(self, dim_in=1, dim_out=1024):
         """
         Encoder Block class constructor to initialize the object
 
@@ -213,7 +213,7 @@ class UNet(nn.Module):
     Unet model consisting of a decoding block and an encoding block
     followed by a resulting convolution layer with out dimension 1
     """
-    def __init__(self, dim_in_encoder=3, dim_out_encoder=1024, dim_in_decoder=1024, dim_out_decoder=64):
+    def __init__(self, dim_in_encoder=1, dim_out_encoder=1024, dim_in_decoder=1024, dim_out_decoder=64):
         """
         Unet class constructor to initialize the object
 
@@ -256,7 +256,8 @@ class ResidualBlock(nn.Module):
         return self.function(x) + x
 
 # unet = UNet()
-# x = torch.randn(4, 3, 256, 256)
+# print(unet)
+# x = torch.randn(5, 1, 256, 256)
 # print(len(x))
 # print("unet features")
-# print(unet(x, torch.Tensor([1, 1, 64, 128])).shape)
+# print(unet(x, torch.Tensor([5, 1, 64, 128])).shape)
