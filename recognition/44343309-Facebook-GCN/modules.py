@@ -1,6 +1,5 @@
 import tensorflow as tf
-import numpy as np
-from tensorflow.keras import Model, activations, initializers, regularizers
+from tensorflow.keras import Model, activations, initializers
 from tensorflow.keras.layers import Layer, Input, Dropout
 
 def GCN(numNodes, numFeatures, numClasses, channelA=64, channelB=32, channelC=16, channelD=8, dropout=0.1):
