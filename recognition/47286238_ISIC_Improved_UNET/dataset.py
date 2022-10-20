@@ -21,7 +21,7 @@ class Dataset(torch.utils.data.Dataset):
         """ 
         Yields a data-groundtruth sample for a given key
         """
-        resize = T.Resize((256,256))
+        resize = T.Resize((128,128))
 
         data_id = self.metadata.iloc[key]['image_id']
         data_path = os.path.join(self.data_path, data_id + '.jpg')
