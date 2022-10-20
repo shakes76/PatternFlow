@@ -20,7 +20,7 @@ The code of this project can be also found in the [Google Colab](https://colab.r
 
 ## Installation
 ---
-### &nbsp; 1. Install the Tensorflow
+###  1. Install the Tensorflow
 If there is no Tensorflow in your computer, please install the Tensorflow 2.8.1+.
 ```
 $ pip install tensorflow
@@ -29,7 +29,7 @@ If you use Anaconda, use this command:
 ```
 $ conda install -c conda-forge tensorflow
 ``` 
-### &nbsp;2. Install tensorflow_addons
+### 2. Install tensorflow_addons
 The tesnorflow_addons has no MacOS version in anaconda. Install tensorflow_addons using the following command:
 ```
 $ pip install tensorflow_addons
@@ -38,7 +38,7 @@ If you use Anaconda, use this command:
 ```
 $ conda install -c esri tensorflow-addons
 ```
-### &nbsp;3. Install einops
+### 3. Install einops
 The rearrange function in einops library is useful for time embedding in Attention.Install einops using the following command:
 ```
 $ pip install einops
@@ -59,8 +59,8 @@ There are four .py files in this repository:
 
 The dataset.py and modules.py are support files including some support functions. The predict.py and train.py files are excuting files for predicting a picture and training a model from the OASIS brain dataset, respectively.
 
-### &nbsp; Parameter Setting  
-#### &nbsp;&nbsp; 1. train.py  
+###    1. Parameter Setting  
+####  1.1 train.py  
 * PATH = "./dataset/keras_png_slices_data.zip"  
     The path of zipped image dataset  
 * NUMBER_OF_SAMPLES = 2000  
@@ -73,13 +73,17 @@ The dataset.py and modules.py are support files including some support functions
     The training epochs.
 * BATCH_SIZE = 16  
     The training batch size.  
-#### &nbsp;&nbsp; 2. modules.py  
+#### 1.2 modules.py  
 * timesteps = 1000  
     The totla time steps of adding noise / denoising  
 
 The reason why I didn't use argument transmitting from python command is the predict function use some parameters imported from train.py. The predict.py will read the path of the checkpoint set in the train.py file. I will use the argument transmitting in the following version.  
 
-### &nbsp; Code Excution  
+#### 1.3 predict.py  
+* GIF_PATH = "./gif/"  
+    The path for saving the .gif file of generation process.
+
+### 2. Code Excution  
 After setting the parameters, open the Terminal (Command line) under this file folder, then type the command as follows:  
 * training model:
 ```
@@ -94,12 +98,33 @@ $ python predict.py
 
 ## Stable Diffusion  
 ---
-
-The modle of Stabel Diffusion is shown as follow:
+Stable Diffusion is an AI-generated text-to-image model that will empower billions of people to create stunning art within seconds. The structure of Stabel Diffusion is shown as follow:
 ![](/imgs/stable_diffusion.png)
+<p align='center'> Fig.1. Stable diffusion structure </p>    
 
-dd
+From the Fig.1 we can see the process of the diffusion model can be divided into two phase:  
+* Forward adding noise phase
+* Backward denoising phase
 
-dd
 
+### 1. Forward Adding Noise  
+The concept of diffusion is from the physics concept. In Physics, diffusion is defined as a process in which an isolated system tries to attain homogeneity by by altering the potential gradient in response to the introduction of a new element.
+
+Considering a picture in Fig.2, we gradually add a small amounts of random noise into the picture at a time. After hundreds of steps, the picture will become unrecognizable.
+
+![](/imgs/forward_noise.png)
+<p align='center'> Fig.2. Picture diffusion process </p> 
+
+This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $ x_0 $ as the original picture, $ x_t $ as the final unrecognized picture (random noise). We can define the process as :$$ q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI) $$ Here $ \beta $ follows a variance schedule of linier increase from 0.0001 to 0.02.  
+The process from $x_1$ to $x_t$ can be define as:$$q(x_{1:T}|x_0)=\prod_{{t=1}}^{T} q(x_t|x_{t-1}) $$
+
+However, this process of adding noise is inefficient as we must calculate the previous $x_{t-1}$ steps if we want to get a random picture in time $t$ .Here we introduce a new variable $ \alpha$ : $$ \alpha_t = 1-\beta_t $$ $$\overline \alpha_t = \prod_{s=1}^T\alpha_s $$ $$ $$
+
+### 2. Backward Denoising  
+
+
+For the backward phase, we use an Attantion U-NET to predict a noise picture in each step. The Conditioning block in the Fig.1 is where the attantion comes from in the U-Net. The block can be a transformer model or a word-to-vector model which can generate a vecor including some words information.
+
+However, this porject is using the OASIS brain dataset which concentrates on a single pattern of images, being hard to be described by some words. Thus, I use the step
+dd  
 ![](/imgs/ddpm64.gif)
