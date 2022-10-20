@@ -65,3 +65,8 @@ Further quality of reconstructed images by the model support this claim. Below a
 <img src="https://user-images.githubusercontent.com/69196526/196868245-22e648ec-2de4-4b9a-af9e-b98a257e3cd0.png" width="49%" alt="img8 predicted res"> <img src="https://user-images.githubusercontent.com/69196526/196869414-3324546a-187d-4f7e-a8f8-f01e65c64b7b.png" width="49%" alt="img9 predicted res">
 *Reconstructed version of the images*
 
+## Resources
+Long, X. (2020, 28th Aug). Image Super-Resolution using an Efficient Sub-Pixel CNN. Keras.io. Retrieved 20/10/2022 from https://keras.io/examples/vision/super_resolution_sub_pixel/#introduction
+
+Wenzhe, S., Caballero, J., Huszar, F., Totz, J., Aitken, A. P., Bishop, R., Rueckert, D., & Zehan, W. (2016). IEEE CONFERENCE ON COMPUTER VISION AND PATTERN RECOGNITION (CVPR). NEW YORK.
+
