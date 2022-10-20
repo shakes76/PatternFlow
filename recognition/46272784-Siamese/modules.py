@@ -12,6 +12,12 @@ from tensorflow.keras import layers, Model
 import matplotlib.pyplot as plt
 
 def generatePairs(ad, nc, batch=16):
+    """Generate a dataset of pairs (im1, im2, label)
+    Args:
+        ad: A dataset of AD brain images
+        nc: A dataset of NC brain images
+        batch (int, optional): The barch size of the new dataset. Defaults to 16.
+    """
     print('>> Begin pair generation')
     # DataGenerator for weak augmentation
     datagen = keras.Sequential([layers.experimental.preprocessing.RandomRotation(0.15),
@@ -79,6 +85,12 @@ def makeSiamese(cnn):
 
 
 def loss(mode=1, margin=1):
+    """Returns a loss function
+
+    Args:
+        mode (int, optional): 0: Contrastive loss, 1: Binary cross entropy . Defaults to 1.
+        margin (int, optional): Margin for contrastive loss. Defaults to 1.
+    """
     def contrastive_loss(y_true, y_pred):
         return tf.math.reduce_mean(
             y_true * tf.math.square(y_pred) + (1 - y_true) * tf.math.square(tf.math.maximum(margin - (y_pred), 0))
@@ -90,8 +102,10 @@ def loss(mode=1, margin=1):
         return keras.losses.BinaryCrossentropy()
 
 def visualize(img1, img2, labels, to_show=6, num_col=3, predictions=None, test=False):
-
-
+    """
+    Inspired by a keras tutorial: https://keras.io/examples/vision/siamese_contrastive/
+    Plots the pairs with their labels nicely
+    """
     num_row = to_show // num_col if to_show // num_col != 0 else 1
 
     to_show = num_row * num_col
@@ -124,13 +138,8 @@ def main():
     d = generatePairs(tr_a, tr_n)
     # visualize the data
     for img1, img2, label in d.take(1):
-        visualize(img1, img2, label, to_show=8, num_col=2)
+        visualize(img1, img2, label, to_show=4, num_col=2)
         break
-        
-    # cnn = makeCNN()
-    # print(cnn.summary())
-    # siamese = makeSiamese(cnn)
-    # print(siamese.summary())
 
 if __name__ == "__main__":
     main()
