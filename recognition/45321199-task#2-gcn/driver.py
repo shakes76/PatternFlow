@@ -1,6 +1,5 @@
 """
-    Driver/main script runner.
-    Executes the full process.
+    Driver/main script runner. Executes the full process.
 """
 
 

@@ -1,15 +1,25 @@
+"""
+    This file contains the class "Dataloader", which handles retrieving and
+    categorising the data.
+"""
+
+__author__ = "Lachlan Comino"
+
 import numpy as np
 import scipy.sparse as sp
-
 from sklearn.preprocessing import LabelBinarizer as lb
 import tensorflow as tf
 from tensorflow.keras import utils
 
 
-
-
 class DataLoader:
+    """
+        Class to hold all functionality for processing the data.
+    """
     def download_data(self):
+        """
+            Execute data retrieval.
+        """
         data_url = "https://graphmining.ai/datasets/ptg/facebook.npz"
         data_fname = "facebook.npz"
 
@@ -17,6 +27,10 @@ class DataLoader:
         print(f"Data saved at {self.data_dir}")
 
     def process_data(self):
+        """
+            Categorises the data so it's usable. Initialises a dictionary with
+            all the segments of data.
+        """
         # Unpack data into components
         with np.load(self.data_dir) as data:
             edges, features, labels = data.values()
@@ -82,6 +96,12 @@ class DataLoader:
         }
 
     def split_data(self, len_vertices):
+        """
+            @Params:
+                len_vertices: amount of features or nodes
+            @Returns: 
+                The ranges for the different subsets of data.
+        """
         train_range = range(len_vertices // 5)
         val_range = range(len_vertices // 5, 2 * len_vertices // 5)
         test_range = range(2 * len_vertices // 5, len_vertices)
@@ -89,6 +109,14 @@ class DataLoader:
     
     @staticmethod
     def adj_mat_repr(len_vertices, edges):
+        """
+            Creates the adjacency matrix representation of the graph.
+            @Params:
+                len_vertices: amount of features or nodes.
+                edges: edge list
+            @Returns
+                The adjacency matrix as a sparse tensor.
+        """
         A = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
                         shape=(len_vertices, len_vertices), dtype=np.float64)
 
@@ -101,7 +129,9 @@ class DataLoader:
         return tf.SparseTensor(indices, A_.data, A_.shape)
 
     def load_data(self):
+        """
+            Runs all processing for the DataLoader
+        """
         self.download_data()
         self.process_data()
         return self.processed_data
-            

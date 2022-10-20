@@ -1,3 +1,11 @@
+"""
+    This file contains the class "Predicter", which handles evaluation and 
+    subsequent statistics for the GCN model.
+"""
+
+__author__ = "Lachlan Comino"
+
+
 from train import Trainer
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +15,10 @@ from sklearn.manifold import TSNE
 
 
 class Predicter:
+    """
+        Class holding all functionality for making predictions or plots.
+        Initialises trainer as well.
+    """
     def __init__(self):
         self.trainer = Trainer()
         self.trainer.train()
@@ -21,11 +33,17 @@ class Predicter:
             os.mkdir(self.figs_dir)
 
     def run_all(self):
+        """
+            Run all plots/predictions.
+        """
         self.predict()
         self.tsne_plot()
         self.acc_loss_plots()
     
     def predict(self):
+        """
+            Loads the currently saved model and uses it to make the classification report.
+        """
         model = self.trainer.get_model()
         data = self.data
 
@@ -37,6 +55,9 @@ class Predicter:
         print(report)
 
     def tsne_plot(self):
+        """
+            Creates the TSNE plot and saves a .png in the figures folder.
+        """
         data = self.data
         tsne = TSNE(n_components=2).fit_transform(self.predictions)
         plt.figure(figsize=(10, 10))
@@ -53,6 +74,10 @@ class Predicter:
         plt.show()
 
     def acc_loss_plots(self):
+        """
+            Creates the acc/loss plots of the training history. Saves the respective .png's into
+            the figures directory.
+        """
         history = self.trainer.get_history()
 
         acc = history['acc']
