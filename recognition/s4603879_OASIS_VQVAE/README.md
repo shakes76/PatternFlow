@@ -111,3 +111,5 @@ python3 predict.py
 - VQ_VAE.ipynb: the jupyter/colab notebook showing all the code and outputs of building, trainging and testing the vqvae model.
 
 
+## Notes
+I build the model and trained it on google colab's notebook and rewrite the code into python files. For the convenience, I also upload the VQ_VAE.ipynb that has all the source code and output results.
