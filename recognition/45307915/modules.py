@@ -24,8 +24,6 @@ class ImprovedUNETModel():
         self.leakyAlpha = 1e-2
         self.dropoutRate = 0.3
         
-        self.model = self.modelArchitecture()
-        
     def contextModule(self, inputs, n_filters):
         """ Improved UNET Context Block
         
@@ -219,14 +217,3 @@ class ImprovedUNETModel():
         model = Model(inputs, outputs)
         
         return model
-
-    def getModel(self):
-        """
-        Gets the improved UNET model.
-
-
-        Return:
-            tf.keras.models.Model: CNN defined by Improved UNET architecture
-
-        """
-        return self.model
