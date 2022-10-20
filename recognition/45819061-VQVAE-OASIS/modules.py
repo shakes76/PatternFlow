@@ -6,8 +6,8 @@ from tensorflow.keras.layers import Input, Layer, ReLU, Add, Conv2D, Conv2DTrans
 import tensorflow_probability as tfp
 
 class VectorQuantizer(Layer):
-    def __init__(self, num_embeddings, embedding_dim, beta=0.25, name="VQ"):
-        super().__init__()
+    def __init__(self, num_embeddings, embedding_dim, beta=0.25, name="VQ", **kwargs):
+        super().__init__(**kwargs)
         self.num_embeddings = num_embeddings
         self.embedding_dim = embedding_dim
         self.beta = beta
@@ -91,7 +91,7 @@ class ResidualBlock(Layer):
         x = self.conv2(x)
         return Add()([inputs, x])
 
-def get_pixelcnn(input_shape, num_embeddings, filters=256, num_residual_blocks=2, num_pixelcnn_layers=2, **kwargs):
+def get_pixelcnn(input_shape, num_embeddings, filters=64, num_residual_blocks=2, num_pixelcnn_layers=2, **kwargs):
     pixelcnn_inputs = Input(shape=input_shape, dtype=tf.int32)
     onehot = tf.one_hot(pixelcnn_inputs, num_embeddings)
     x = PixelCNN(mask_type='A', filters=filters, kernel_size=7, activation='leaky_relu', padding='same')(onehot)
@@ -111,19 +111,20 @@ class VQVAE(tf.keras.Model):
         
         # Build encoder
         encoder_in = Input(shape=input_shape)
-        x1 = Conv2D(16, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
-        x2 = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(x1)
-        x3 = resblock(x2, residual_hiddens)
-        x4 = resblock(x3, residual_hiddens)
-        encoder_out = Conv2D(latent_dim, 1, padding="same")(x4)
+        x = Conv2D(32, 4, strides=2, activation='leaky_relu', padding='same')(encoder_in)
+        x = Conv2D(64, 4, strides=2, activation='leaky_relu', padding='same')(x)
+        x = resblock(x, residual_hiddens)
+        x = resblock(x, residual_hiddens)
+        encoder_out = Conv2D(latent_dim, 1, padding="same")(x)
         self.encoder = tf.keras.Model(encoder_in, encoder_out, name='encoder')
 
         # Build decoder
         decoder_in = Input(shape=self.encoder.output.shape[1:])
-        y1 = resblock(decoder_in, residual_hiddens)
-        y2 = resblock(y1, residual_hiddens)
-        y3 = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(y2)
-        decoder_out = Conv2DTranspose(1, 4, strides=2, activation='leaky_relu', padding='same')(y3)
+        y = resblock(decoder_in, residual_hiddens)
+        y = resblock(y, residual_hiddens)
+        y = Conv2DTranspose(64, 4, strides=2, activation='leaky_relu', padding='same')(y)
+        y = Conv2DTranspose(32, 4, strides=2, activation='leaky_relu', padding='same')(y)
+        decoder_out = Conv2DTranspose(1, 3, strides=1, activation='leaky_relu', padding='same')(y)
         self.decoder = tf.keras.Model(decoder_in, decoder_out, name='decoder')
 
         # Add VQ layer
@@ -132,7 +133,7 @@ class VQVAE(tf.keras.Model):
         #self.summary()
         
 
-    def call(self, x, training=False):
+    def call(self, x):
         x = self.encoder(x)
         quantized = self.vq_layer(x)
         return self.decoder(quantized)

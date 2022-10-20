@@ -8,10 +8,10 @@ from train import *
 
 VQVAE_DIR = "vqvae"
 PIXELCNN_DIR = "pixelcnn"
-LATENT_DIM = 32
-NUM_EMBEDDINGS = 64
-RESIDUAL_HIDDENS = 256
-EPOCHS = 50
+LATENT_DIM = 16
+NUM_EMBEDDINGS = 32
+RESIDUAL_HIDDENS = 64
+EPOCHS = 30
 BATCH_SIZE = 64
 DATA_DIR = 'data/keras_png_slices_data'
 TRAIN_DATA = DATA_DIR + '/keras_png_slices_train'
@@ -20,7 +20,6 @@ VALIDATE_DATA = DATA_DIR + '/keras_png_slices_validate'
 
 #model = tf.keras.models.load_model(VQVAE_DIR)
 #pixelcnn = tf.keras.models.load_model(PIXELCNN_DIR)
-
 
 x_train, x_test, x_validate = get_data(TRAIN_DATA, TEST_DATA, VALIDATE_DATA)
 model = train(x_train, x_test, x_validate, 

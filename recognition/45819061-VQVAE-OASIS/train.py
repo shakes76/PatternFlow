@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
 from modules import VQVAE, get_pixelcnn
+from tqdm import tqdm
 
 
 class VQVAETrainer (tf.keras.models.Model):
@@ -22,8 +23,7 @@ class VQVAETrainer (tf.keras.models.Model):
         return [
             self.total_loss_tracker,
             self.reconstruction_loss_tracker,
-            self.vq_loss_tracker,
-            self.ssim_tracker
+            self.vq_loss_tracker
         ]
 
     def train_step(self, x):
@@ -66,12 +66,11 @@ def train(x_train, x_test, x_validate, epochs=30, batch_size=16, out_dir='vqvae'
     data_variance = np.var(x_train)
 
     vqvae_trainer = VQVAETrainer(data_variance, **kwargs)
-    vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
+    vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam(3e-4))
     history = vqvae_trainer.fit(
         x=x_train, 
         epochs=epochs, 
         batch_size=batch_size, 
-        use_multiprocessing=True, 
         validation_data=(x_validate, x_validate), 
         shuffle=True, 
         validation_freq=1
@@ -113,15 +112,21 @@ def pixelcnn_train(model, x_train, x_test, x_validate, epochs=30, batch_size=16,
     encoder = model.get_layer("encoder")
     quantizer = model.get_layer("vector_quantizer")
 
-    encoded_training = encoder.predict(x_train)
-    flat_enc_training = encoded_training.reshape(-1, encoded_training.shape[-1])
-    codebook_indices_training = quantizer.get_code_indices(flat_enc_training)
-    codebook_indices_training = codebook_indices_training.numpy().reshape(encoded_training.shape[:-1])
+    codebook_indices_training = []
+    codebook_indices_validation = []
+    for i in tqdm(range(x_train.shape[0]//batch_size)):
+        encoded_training = encoder.predict(x_train[i*batch_size : (i+1)*batch_size], verbose=0)
+        x = encoded_training.reshape(-1, encoded_training.shape[-1])
+        x = quantizer.get_code_indices(x)
+        codebook_indices_training.extend(x.numpy().reshape(encoded_training.shape[:-1]))
+    for j in tqdm(range(x_validate.shape[0]//batch_size)):
+        encoded_validation = encoder.predict(x_validate[j*batch_size : (j+1)*batch_size], verbose=0)
+        x = encoded_validation.reshape(-1, encoded_validation.shape[-1])
+        x = quantizer.get_code_indices(x)
+        codebook_indices_validation.extend(x.numpy().reshape(encoded_validation.shape[:-1]))
 
-    encoded_validation = encoder.predict(x_validate)
-    flat_enc_validation = encoded_validation.reshape(-1, encoded_validation.shape[-1])
-    codebook_indices_validation = quantizer.get_code_indices(flat_enc_validation)
-    codebook_indices_validation = codebook_indices_validation.numpy().reshape(encoded_validation.shape[:-1])
+    codebook_indices_training = np.asarray(codebook_indices_training)
+    codebook_indices_validation = np.asarray(codebook_indices_validation)
 
 
     pixelcnn = get_pixelcnn(encoded_training.shape[1:-1], **kwargs)
