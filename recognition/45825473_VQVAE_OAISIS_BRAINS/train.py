@@ -5,13 +5,37 @@ from keras.callbacks import History
 from keras import layers
 from modules import VQVAETrainer, PixelConvLayer, ResidualBlock
 from dataset import get_image_slices
+from matplotlib import plot as plt
 import tensorflow_probability as tfp
 
 def train_vqvae(train_images):
+  """
+  Function that trains the VQVAE & Plots the respective losses as well as SSIM.
+  Note the total loss was moved to another plot as initial Values for the total loss
+  were significantly larger than the initial values for SSIM and reconstruction Loss.
+  """
   data_variance = np.var(train_images)
   vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=32) #Reduced num_embeddings to resolve memory errors
   vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-  vqvae_trainer.fit(train_images, epochs=10, batch_size=32) #Training for batch=32 and 30 epochs
+  vqvae_trainer.fit(train_images, epochs=75, batch_size=32) #Training for batch=32 and 30 epochs
+  
+  #Plott losses post training
+  loss = vqvae_trainer.history.history['loss']
+  reconstruction_loss = vqvae_trainer.history.history['reconstruction_loss']
+  epoch_ssim = vqvae_trainer.history.history['epoch_ssim']
+
+  epochs = range(75)
+  plt.plot(epochs, loss)
+  plt.xlabel("Number of Epochs")
+  plt.ylabel("Loss")
+  plt.title("Total loss ")
+  plt.show()
+  plt.xlabel("Number of Epochs")
+  plt.title("SSIM & Reconstruction Loss")
+  plt.gca().legend(('Reconstruction Loss','SSIM'))
+  plt.plot(epochs, reconstruction_loss, epochs, epoch_ssim )
+  plt.show()
+
   return vqvae_trainer
 
 def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images):
@@ -43,7 +67,7 @@ def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images
   pixel_cnn.compile(optimizer=keras.optimizers.Adam(3e-4),
       loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
       metrics=["accuracy"])
-  pixel_cnn.fit(x=codebook_indices, y=codebook_indices, batch_size=128, epochs=100, validation_split=0.05)
+  pixel_cnn.fit(x=codebook_indices, y=codebook_indices, batch_size=128, epochs=250, validation_split=0.05)
 
   inputs = layers.Input(shape=pixel_cnn.input_shape[1:])
   outputs = pixel_cnn(inputs, training=False)
@@ -54,7 +78,7 @@ def construct_and_train_pixelCNN(encoder, quantizer, vqvae_trainer, train_images
 
 def generate_probabilities_for_samples(pixel_cnn, sampler):
     # Creatation of an empty array of priors
-  batch = 10
+  batch = 32
   priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
   batch, rows, cols = priors.shape
   print(f"Prior shape: {priors.shape}") #Check the shape before appending
