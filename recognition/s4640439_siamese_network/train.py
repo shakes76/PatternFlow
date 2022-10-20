@@ -11,13 +11,14 @@ The model should be imported from “modules.py” and the data loader should be
 Make sure to plot the losses and metrics during training.
 
 """
-EPOCHS = 100
+EPOCHS = 40
 BATCH_SIZE = 32
 BUFFER_SIZE = 20000
+MARGIN = 0.2
 
 MODEL_SAVE_DIR = "E:/ADNI/models"
 
-def siamese_loss(x0, x1, y: int) -> float:
+def siamese_loss(x0, x1, label: int, margin: float) -> float:
     """
     Custom loss function for siamese network.
 
@@ -29,15 +30,20 @@ def siamese_loss(x0, x1, y: int) -> float:
     Vectors of different classes are punished for being close and rewarded for being far away.
 
     Parameters:
-        - x0 -- first vector
-        - x1 -- second vector
-        - y -- integer representing whether or not the two vectors are from the same class
+        - x0 -- batch of vectors
+        - x1 -- batch of vectors
+        - label -- whether or not the two vectors are from the same class. 1 = yes, 0 = no
 
     Returns:
         - loss value
     """
-    # TODO
-    return 0
+    dist = tf.reduce_sum(tf.square(x0 - x1), 1)
+    dist_sqrt = tf.sqrt(dist)
+
+    loss = label * tf.square(tf.maximum(0., margin - dist_sqrt)) + (1 - label) * dist
+    loss = 0.5 * tf.reduce_mean(loss)
+
+    return loss
 
 @tf.function
 def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
@@ -59,9 +65,9 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
 
         x0 = siamese(images1, training=True)
         x1 = siamese(images2, training=True)
-        y = int(same_class)
+        label = int(same_class)
 
-        loss = siamese_loss(x0, x1, y)
+        loss = siamese_loss(x0, x1, label, MARGIN)
     
         siamese_gradients = siamese_tape.gradient(\
             loss, siamese.trainable_variables)
@@ -100,7 +106,7 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
             i += 1
         
         epoch_elapsed = time.time() - epoch_start
-        print(f"Epoch {i} - training time: {epoch_elapsed}")
+        print(f"Epoch {epoch} - training time: {epoch_elapsed}")
     
     elapsed = time.time() - start
     print(f"Siamese Network Training Completed in {elapsed}")
@@ -123,7 +129,7 @@ def train_binary_classifier(model, siamese_model, pos_dataset, neg_dataset, epoc
             model.fit(transformed_neg, neg_labels)
 
         epoch_elapsed = time.time() - epoch_start
-        print(f"Epoch {i} - training time: {epoch_elapsed}") 
+        print(f"Epoch {epoch} - training time: {epoch_elapsed}") 
     
     elapsed = time.time() - start
     print(f"Binary Classifier Training Completed in {elapsed}")

@@ -44,15 +44,12 @@ def build_binary():
     This model needs to be a binary classifier that takes an output vector from 
     siamese model and converts it into a single value in the range [0,1]
     """
-
-    # TODO: define layers of model
-
     model = Sequential()
 
     model.add(Dense(32, input_shape=SIAMESE_OUTPUT_SHAPE, activation="relu"))
     model.add(Dense(8, activation="relu"))
     model.add(Dense(1, activation="sigmoid"))
 
-    model.compile(loss="binary_crossentropy", optimiser="adam", metrics=["accuracy"])
+    model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
     return model
