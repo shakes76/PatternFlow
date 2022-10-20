@@ -25,8 +25,8 @@ class OASISDataset(Dataset):
 
 
 def get_loaders():
-    batch_size = 4
-    num_workers = 1
+    batch_size = 32
+    num_workers = 2
 
     train_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_train"),
                               batch_size=batch_size, num_workers=num_workers, pin_memory=True)
