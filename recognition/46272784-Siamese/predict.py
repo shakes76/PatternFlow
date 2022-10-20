@@ -3,7 +3,6 @@ import os
 import sys
 sys.path.insert(1, os.getcwd())
 import modules
-import train
 from dataset import loadFile
 import random
 import tensorflow as tf
@@ -22,11 +21,15 @@ def predict(test_image, examples, siamese):
     ad_score = siamese([test_image, examples[0]], training=False)
     nc_score = siamese([test_image, examples[1]], training=False)
     if ad_score > nc_score:
-        print("Prediction: Alzheimer's disease")
+        return 1
     else:
-        print("Prediction: Normal")
+        return 0
         
-def main():
+def random_predict_one_shot(n=600):
+    """
+    Perform 1-shot image classification
+    """
+    count = 0
     siamese = modules.makeSiamese(modules.makeCNN())
     siamese.load_weights('siamese.h5')
     tr_a, tr_n, _, _, te_a, te_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
@@ -34,19 +37,26 @@ def main():
     tr_n = tr_n.unbatch()
     te_a = te_a.unbatch()
     te_n = te_n.unbatch()
-    print(te_a.take(1).as_numpy_iterator())
-    example = [tf.convert_to_tensor(list(tr_a.take(1).as_numpy_iterator())), tf.convert_to_tensor(list(tr_n.take(1).as_numpy_iterator()))]
-    # print(example)
-    if random.random() > 0.5:
-        # Give a positive image 
-        print('Known: AD')
-        img = tf.convert_to_tensor(list(te_a.take(1).as_numpy_iterator()))
-        predict(img, example, siamese)
-    else:
-        # Give a negative image 
-        print('Known: NC')
-        img = tf.convert_to_tensor(list(te_n.take(1).as_numpy_iterator()))
-        predict(img, example, siamese)
+    for i in range(n):
+        if i % 20 == 0:
+            print(">> Test {}".format(i))
+        # randomly select known images
+        example = [tf.convert_to_tensor(list(tr_a.take(1).as_numpy_iterator())), tf.convert_to_tensor(list(tr_n.take(1).as_numpy_iterator()))]
+        if random.random() > 0.5:
+            # Give a positive image 
+            img = tf.convert_to_tensor(list(te_a.take(1).as_numpy_iterator()))
+            if predict(img, example, siamese) == 1:
+                count += 1
+        else:
+            # Give a negative image 
+            img = tf.convert_to_tensor(list(te_n.take(1).as_numpy_iterator()))
+            if predict(img, example, siamese) == 0:
+                count += 1
+    return count / n
+        
+
+def main():
+    print(">> Test accuracy: {}".format(random_predict_one_shot()))
     
 if __name__ == '__main__':
     main()
