@@ -44,4 +44,5 @@ class Predictor:
             plt.imshow(test_masks[i], vmin=0, vmax=1)
             plt.axis('off')
             plt.title('Actual Mask')
-    
+
+        plt.savefig('predicted_samples.png')

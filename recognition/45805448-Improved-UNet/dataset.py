@@ -23,7 +23,7 @@ def load_dataset(filepath):
     Returns:
         a loaded dataset
     """
-    return tf.data.Dataset.load(filepath).cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    return tf.data.Dataset.load(filepath).prefetch(buffer_size=tf.data.AUTOTUNE)
 
 def load_image_dataset_from_directories(directories, image_size=(64, 64)):
     """
@@ -40,9 +40,9 @@ def load_image_dataset_from_directories(directories, image_size=(64, 64)):
     for dataset in datasets[1:]:
         image_dataset = image_dataset.concatenate(dataset)
 
-    return image_dataset.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    return image_dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
 
-def load_image_dataset_from_directory(directory, image_size=(64, 64), color_mode='rgb'):
+def load_image_dataset_from_directory(directory, image_size=(64, 64), batch_size=5, color_mode='rgb'):
     """
     Loads a set of images from a directory.
 
@@ -50,7 +50,7 @@ def load_image_dataset_from_directory(directory, image_size=(64, 64), color_mode
         dataset of images
     """
     return tf.keras.utils.image_dataset_from_directory(directory, labels=None, color_mode=color_mode, 
-                                    batch_size=6, image_size=image_size, shuffle=True, seed=69)
+                                    batch_size=batch_size, image_size=image_size, shuffle=True, seed=69)
 
 def preprocess_dataset(dataset, seed=420):
     """
@@ -89,6 +89,6 @@ def preprocess(images, masks):
     images_masks = augmentations(images_masks)
     # Return to normal shape
     images = images_masks[:,:,:,0:3]
-    masks = images_masks[:,:,:,3]
+    masks = images_masks[:,:,:,3:]
 
     return images, masks
