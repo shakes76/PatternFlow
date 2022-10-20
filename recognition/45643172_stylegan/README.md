@@ -54,6 +54,16 @@ The AdaIN layers involve first standardizing the output of feature map to a stan
 - numpy 1.23.1
 - good gpu, what I used is colab premium gpu.
 
+## OASIS brain dataset
+
+The Open Access Series of Imaging 's neuroimaging dataset of the brain.
+
+Below are some examples.
+
+![example 1](images/case_001_slice_14.nii.png)
+![example 2](images/case_001_slice_30.nii.png)
+![example 3](images/case_002_slice_11.nii.png)
+![example 4](images/case_009_slice_1.nii.png)
 
 ## References
 
@@ -64,6 +74,8 @@ https://machinelearningmastery.com/introduction-to-progressive-growing-generativ
 https://github.com/keras-team/keras-io
 
 https://github.com/NVlabs/stylegan
+
+http://www.oasis-brains.org/
 
 
 
