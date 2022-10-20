@@ -156,7 +156,56 @@ class VQVAETrainer(keras.models.Sequential):
     self.vq.update_state(sum(self.vqvae1.losses))
 
     return {
-    "loss": self.total.result(),
+    "total_loss": self.total.result(),
     "reconstruction_loss": self.reconstruction.result(),
     "vqvae_loss": self.vq.result(),
-    }     
+    }
+
+
+#######PIXELCNN#######
+
+# PixelCNN model from keras tutorial: https://keras.io/examples/generative/pixelcnn/
+
+class PixelConvLayer(layers.Layer):
+  """
+  This class creates a Conv2d layer with a mask applied, it uses a 3x3 convolution
+  with mask B
+  """
+  def __init__(self, mask_type, **kwargs):
+      super(PixelConvLayer, self).__init__()
+      self.mask_type = mask_type
+      self.conv = layers.Conv2D(**kwargs)
+
+  def build(self, input_shape):
+      #Building Conv2d layer
+      self.conv.build(input_shape)
+      # Use the initialized kernel to create the mask
+      kernel_shape = self.conv.kernel.get_shape()
+      self.mask = np.zeros(shape=kernel_shape)
+      self.mask[: kernel_shape[0] // 2, ...] = 1.0
+      self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+      if self.mask_type == "B":
+          self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+  def call(self, inputs):
+      self.conv.kernel.assign(self.conv.kernel * self.mask)
+      return self.conv(inputs)
+
+
+
+class ResidualBlock(keras.layers.Layer):
+  def __init__(self, filters, **kwargs):
+    """
+    This class creates a residual with a standard convolutional layer, followed by a convolutional layer
+    with mask, followed by a standard convolutional layer.
+    """
+    super(ResidualBlock, self).__init__(**kwargs)
+    self.conv1 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+    self.pixel_conv = PixelConvLayer(mask_type="B",filters=filters // 2,kernel_size=3,activation="relu",padding="same")
+    self.conv2 = keras.layers.Conv2D(filters=filters, kernel_size=1, activation="relu")
+
+  def call(self, inputs):
+    y = self.conv1(inputs)
+    y = self.pixel_conv(y)
+    y = self.conv2(y)
+    return keras.layers.add([inputs, y])
