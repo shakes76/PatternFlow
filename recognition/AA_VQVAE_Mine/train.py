@@ -10,8 +10,7 @@ import tensorflow as tf
 import dataset
 import modules
 
-modules.model.compile(optimizer='adam', loss='categorical_crossentropy' ,metrics=['accuracy'])
+modules.model.compile(optimizer='adam', loss='sparse_categorical_crossentropy' ,metrics=[modules.dice_similarity])
 
 results = modules.model.fit(dataset.train_generator , steps_per_epoch=dataset.train_steps ,epochs=10,
-                              validation_data=dataset.val_generator,validation_steps=dataset.val_steps, verbose=1,
-                              loss='sparse_categorical_crossentropy', optimizer='adam', metrics=[modules.dice_similarity])
+                              validation_data=dataset.val_generator,validation_steps=dataset.val_steps, verbose=1)
