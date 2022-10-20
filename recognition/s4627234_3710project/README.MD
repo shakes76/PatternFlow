@@ -55,16 +55,20 @@ All the convolution, context, element-wise-sum in encoding are integrated into t
 
 Part of upsampling, concatenate, and localization in decoding are integrated into the down_imp() function.
 
-context module:
+** context module: **
 Described by 2 convolution layers (all except the first one with stride 2) with a dropout layer (0.3) in between.
 
-Upsampling module: 
+** Upsampling module: **
 It consists of an upsampling layer and a convolution layer.
 
-localization module: 
+** localization module: **
 Completed by a 3x3 convolution and a 1x1 convolution.
 
 Instance normalization and Leaky reLU are used throughout the architecture. The model is compiled with dice coefficient loss and dice coefficient.
+
+
+### Dice Similarity Coefficient (DSC):
+is an ensemble similarity measure function, usually used to calculate the similarity of two samples. It is used as the loss function and validation segmentation image in this model.
 
 
 ## Install: 
@@ -88,31 +92,59 @@ When using this data for the first time, you need to use dataset.load_dataset(da
 
 !!! Always remember to use (data_reshape = False) if reshaped data already exists
 
-run predict.py to run the model
+run predict.py to run the model:
+(The specific code needs to be changed according to the specific device environment)
+```
+python3.9 predict.py
+```
 
-## Testing: 
+## Testing and Conclusion: 
+Train and test data are use on training and testing the model.
+
+Run for 10 epochs will get (this is a very low epochs value
+, please select more in train.py if wants a better result):
+
+### model DSC:
+
+![image](./images/DSC.png)
 
 
-## Conclusion:
+### model loss:
+
+![image](./images/loss.png)
+
+
+Evaluating the model through the val dataset, we can get the DSC data:
+tf.Tensor(0.83824617, shape=(), dtype=float32)
+
+The image folder contains the first 50 original images, predict mask , and ground truth comparison. You can also change the output image number by changing the number_list in predict.py.
+
+### Some example of images:
+![image](./images/output0.png)
+![image](./images/output2.png)
+![image](./images/output5.png)
+![image](./images/output10.png)
+![image](./images/output13.png)
+![image](./images/output37.png)
 
 
 
 ## Packages:
 os, cv2, skimage, tensorflow-macos_version_2.9.2
 
-Name: SimpleITK_version_2.2.0
+SimpleITK_version_2.2.0
 -- SimpleITK is a simplified interface to the Insight Toolkit (ITK) for image registration and segmentation
 (http://simpleitk.org/)
 
-Name: numpy_version_1.23.1
+numpy_version_1.23.1
 -- NumPy is the fundamental package for array computing with Python.
 (https://www.numpy.org)
 
-Name: pandas_version_1.4.4
+pandas_version_1.4.4
 -- Powerful data structures for data analysis, time series, and statistics
 (https://pandas.pydata.org)
 
-Name: matplotlib_version_3.5.2
+matplotlib_version_3.5.2
 -- Python plotting package
 (https://matplotlib.org)
 
@@ -120,11 +152,3 @@ Name: matplotlib_version_3.5.2
 ## Reference
 
 Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., &amp; Maier-Hein, K. H. (2018, February 28). Brain tumor segmentation and radiomics survival prediction: Contribution to the brats 2017 challenge. arXiv.org. Retrieved October 19, 2022, from https://arxiv.org/abs/1802.10508v1 
-
-
-
-
-use load_dataset(data_reshape = True) for first time of using this data
-always remember to remove data_reshape = True if there already exist the reshaped data
-
-change path_data to the correct folder path
