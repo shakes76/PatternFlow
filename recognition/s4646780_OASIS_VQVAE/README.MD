@@ -78,7 +78,7 @@ set was ignored as it does not serve a purpose in VQ-VAE or DCGAN.
 ### VQ-VAE
 The VQ-VAE was trained for 1500 epochs.  The reconstruction loss for the VQ-VAE is shown below:
 <br/><br/>
-![Reconstruction Error on VQ-VAE](./images/recon_error_me.PNG)
+![Reconstruction Error on VQ-VAE](./images/recon_error_me.png)
 <br/> <br/> We can see that the reconstruction error decreases but there are moments when there is a sharp drop in reconstruction
 loss followed by periods of steady fall. Training it for longer would likely reduce the reconstruction error but
 for our purposes, reconstruction errors around ~0.133 were sufficient. To see this is the case, we have plotted some
@@ -90,8 +90,25 @@ We can see that the reconstructed images match the original inputs very well. To
 `VisualiseVQVAE.mean_ssim_vqvae` function which gives an SSIM of **0.95815**.
 
 ### DCGAN
-One detail about training a DCGAN is that if the learning rate is not right then GANs can suffer from mode collapse
-in which the generator, 
+One detail about training a DCGAN is that if the learning rate is not right then GANs can suffer from various problems.
+Below are the experimental results for various GANs learning rates. All GAN models were trained for 50 epochs.
+#### LR = 0.003
+Below we see an example of mode collapse happening in DCGAN. Mode Collapse occurs when the learning rate is too high,
+and the generator only generates one or a tiny subset of the different modes. Even with 16 generated example, we see
+that they all look incredibly similar if not the same:
+<br/> <br/> 
+![](./images/mode_collapse.png)
+<br/> <br/> 
+
+#### LR = 0.00005
+Below we see that even after 50 iterations, the model has not converged and with such a small learning rate this is to
+be expected. It seems to be starting to produce something akin to a brain, but potentially 50 is not enough epochs with
+a learning rate of 0.00005. These are the generated images after the decoder output:
+<br/> <br/> 
+![](./images/lr_0.0005_fig.png)
+<br/> <br/> 
+
+#### LR = 0.0002
 Using a learning rate of 0.0002, gave the best results. Below, we can see the output produced by the generator after
 it has been discretised (using the `predictGAN.generate_discrete_indices` function): 
 <br/> <br/> 
