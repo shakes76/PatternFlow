@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu Oct 20 16:24:14 2022
+
+@author: eudre
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Oct  3 17:57:39 2022
 
 @author: eudre
@@ -10,9 +17,7 @@ import os
 import numpy as np
 import glob
 import cv2
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
-
 
 
 
@@ -20,61 +25,30 @@ H = 256
 W = 256
 
 
-# Use to delete superpixel image
-# =============================================================================
-# def delete_super():
-#     train_path ='C:/Users/eudre/test/ISIC-2017_Training_Data/'
-#     os.chdir(train_path)
-#     for fname in os.listdir(train_path):
-#         if fname.endswith('superpixels.png'):
-#             os.remove(fname)
-# 
-# =============================================================================
-def load_data(train_path, mask_path, split = 0.2):
-    images = sorted(glob.glob(train_path))
-    masks = sorted(glob.glob(mask_path))  
-    test_size = int(len(images) * split)
 
-    train_x, valid_x = train_test_split(images, test_size=test_size, random_state=42)
-    train_y, valid_y = train_test_split(masks, test_size=test_size, random_state=42)
+def read_images(inputs, channel):
+    inputs=tf.image.decode_png(inputs,channels=channel)
+    inputs=tf.image.resize(inputs,[H,W])
+    inputs=tf.round(inputs/255.0)
+    inputs=tf.cast(inputs,tf.float32)
+    return inputs
 
-    train_x, test_x = train_test_split(train_x, test_size=test_size, random_state=42)
-    train_y, test_y = train_test_split(train_y, test_size=test_size, random_state=42)
-   
-    return (train_x, train_y), (valid_x, valid_y), (test_x, test_y)
+def load_data(training, groundtruth):
+    
+    # Map out the dataset
+    training=tf.io.read_file(training)
+    training=read_images(training, 3)  
+    groundtruth=tf.io.read_file(groundtruth)
+    groundtruth=read_images(groundtruth, 1)   
+    return training, groundtruth
 
-def read_image(path):
-    path = path.decode()
-    x = cv2.imread(path, cv2.IMREAD_COLOR)  ## (H, W, 3)
-    x = cv2.resize(x, (W, H))
-    x = x/255.0
-    x = x.astype(np.float32)
-    return x                                ## (256, 256, 3)
-
-def read_mask(path):
-    path = path.decode()
-    x = cv2.imread(path, cv2.IMREAD_GRAYSCALE)  ## (H, W)
-    x = cv2.resize(x, (W, H))
-    x = x/255.0
-    x = x.astype(np.float32)                    ## (256, 256)
-    x = np.expand_dims(x, axis=-1)              ## (256, 256, 1)
-    return x
-
-def tf_parse(x, y):
-    def _parse(x, y):
-        x = read_image(x)
-        y = read_mask(y)
-        return x, y
-
-    x, y = tf.numpy_function(_parse, [x, y], [tf.float32, tf.float32])
-    x.set_shape([H, W, 3])
-    y.set_shape([H, W, 1])
-    return x, y
-
-def tf_dataset(X, Y, batch):
-    dataset = tf.data.Dataset.from_tensor_slices((X, Y))
-    dataset = dataset.map(tf_parse)
-    dataset = dataset.batch(batch)
-    dataset = dataset.prefetch(10)
-    return dataset
-
+def spilt_data(images, masks):
+    images = sorted(glob.glob(images))
+    masks = sorted(glob.glob(masks))  
+    all_dataset = tf.data.Dataset.from_tensor_slices((images,masks))
+    all_dataset = all_dataset.shuffle(len(images), reshuffle_each_iteration = False)
+    train = all_dataset.take(int(0.7*(len(images))))
+    test = all_dataset.take(int(0.15*(len(images))))
+    valid = all_dataset.take(int(0.15*(len(images))))
+    
+    return train, test, valid
