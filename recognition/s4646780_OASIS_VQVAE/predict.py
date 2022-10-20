@@ -13,39 +13,35 @@ class VisualiseVQVAE:
     def __init__(self, vqvae_model):
         self.vqvae = vqvae_model
 
-    def makegrid_reconstructed(self, test_dataloader):
-        """
-
-        :param test_dataloader:
-        :return:
-        """
-
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        test_real = next(iter(test_dataloader))  # continually load images from test set data loader
-        test_real = test_real[0]
-        test_real = test_real.to(device)
-        pre_conv = (self.vqvae.pre_vq_conv(self.vqvae.encoder(test_real))).expand((1, 64, 64, 64))  # encoder, reshape
-        _, test_quantized, _, _ = self.vqvae.vq_vae(pre_conv)
-        test_reconstructions = self.vqvae.decoder(test_quantized)
-
-        def show(img, image_type):
-            np_img = img.detach().numpy()
-            fig = plt.imshow(np.transpose(np_img, (1, 2, 0)), interpolation='nearest')
-            fig.axes.get_xaxis().set_visible(False)
-            fig.axes.get_yaxis().set_visible(False)
-            fig.set_title(image_type)
-
-        # show reconstructed images
-        show(make_grid(test_reconstructions.cpu(), nrow=4), "Reconstructed Image")
-        show(make_grid(test_real.cpu(), nrow=4), "Real Image")
-
     def real_codebook_reconstructed(self, test_dataloader):
         """
 
         :param test_dataloader:
         :return:
         """
-        pass
+        fig, axs = plt.subplots(5, 3, figsize=(10, 15))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        for i in range(0, 5):
+            test_real = next(iter(test_dataloader))  # load some from test dl
+            test_real = test_real[i]
+            test_real = test_real.to(device)
+            pre_conv = (self.vqvae.pre_vq_conv(self.vqvae.encoder(test_real))).expand((1, 64, 64, 64))
+            _, test_quantized, _, z = self.vqvae.vq_vae(pre_conv)
+            test_reconstructions = self.vqvae.decoder(test_quantized)
+            indices = z.view(64, 64)
+            indices = indices.to('cpu')
+            indices = indices.detach().numpy()
+
+            npimg = test_reconstructions.detach().numpy()[0]
+            axs[i, 0].imshow(np.squeeze(np.transpose(test_real, (1, 2, 0))), interpolation='nearest')
+            axs[i, 0].set_title('Original')
+            axs[i, 1].imshow(indices, interpolation='nearest')
+            axs[i, 1].set_title('Codebook')
+            axs[i, 2].imshow(np.squeeze(np.transpose(npimg, (1, 2, 0))), interpolation='nearest')
+            axs[i, 2].set_title('Reconstructed')
+
+        plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.4)
+        plt.show()
 
     def mean_ssim_vqvae(self, test_loader):
         """

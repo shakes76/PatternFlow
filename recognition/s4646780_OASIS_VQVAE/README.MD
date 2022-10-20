@@ -1,18 +1,16 @@
 # Generative Model using VQ-VAE + DCGAN
 The project involves the creation of a generative model using the OASIS brain image dataset. The 2 models used to generate
-the brains is a) VQ-VAE (Vector-Quantized Variationl Autoencoder) to learn the latent representation of the brain and 
+the brains is a) VQ-VAE (Vector-Quantized Variational Autoencoder) to learn the latent representation of the brain and 
 b) DCGAN to learn the distributions so that we can randomly sample from this distribution to generate novel brain 
 images.
 
 ## Usage Details
 ### Dependencies
-
 numpy==1.20.4
 tqdm==4.62.1
 opencv==8.3.6
 pytorch_msssim
 matplotlib == 3.4.2
-
 random
 os
 
@@ -71,7 +69,43 @@ Final Conv2d  | 1 | 3 | 1 | 1 | (16 x 256 x 256) | (1 x 256 x 256)
 The architecture for the generator was from [2]: <br/>
 ![Generator from original paper](./images/generator.PNG)
 
+The models described above are implemented in the following modules: 
+
 ## Results:
+For the input to VQ-VAE, it was the full grayscale image (pixel ranging from  0-255) and no pixel normalisation was 
+applied to the input images. The testing and training sets was not changed from the folders themselves, and the validation
+set was ignored as it does not serve a purpose in VQ-VAE or DCGAN.
+### VQ-VAE
+The VQ-VAE was trained for 1500 epochs.  The reconstruction loss for the VQ-VAE is shown below:
+<br/><br/>
+![Reconstruction Error on VQ-VAE](./images/recon_error_me.PNG)
+<br/> <br/> We can see that the reconstruction error decreases but there are moments when there is a sharp drop in reconstruction
+loss followed by periods of steady fall. Training it for longer would likely reduce the reconstruction error but
+for our purposes, reconstruction errors around ~0.133 were sufficient. To see this is the case, we have plotted some
+reconstructed images, codebook indices and actual images using the `VisualiseVQVAE.real_codebook_reconstructed` 
+function: <br/> <br/> 
+![](./images/OG_code_Recon.png)
+
+We can see that the reconstructed images match the original inputs very well. To test this we can use the 
+`VisualiseVQVAE.mean_ssim_vqvae` function which gives an SSIM of **0.95815**.
+
+### DCGAN
+One detail about training a DCGAN is that if the learning rate is not right then GANs can suffer from mode collapse
+in which the generator, 
+Using a learning rate of 0.0002, gave the best results. Below, we can see the output produced by the generator after
+it has been discretised (using the `predictGAN.generate_discrete_indices` function): 
+<br/> <br/> 
+![](./images/brain_index.png)
+<br/> <br/> 
+Passing these indices through the decoder gives the following novel image (using the 
+`predictGAN.generate_decoder_sample` function): 
+<br/> <br/> 
+![](./images/generated_brain_gan.png)
+<br/> <br/> 
+If we compare this generated sample with the test set to determine the average SSIM, we find that between the test
+set and the generated sample, the average SSIM is **0.631395** with **400/544** samples having an SSIM greater than 0.6. 
+(using the `predictGAN.mean_ssim_test_set` function).
+
 
 ## Bibliography
 [1] van den Oord, A., Vinyals, O., & Kavukcuoglu, K. (2017). Neural Discrete Representation Learning. CoRR, 
