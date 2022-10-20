@@ -24,9 +24,9 @@ According to the paper there are 3 key loss metrics associated with the VQVAE mo
 ### **VQVAE results**
 ---
 
-For the final results we chose to use 20 epochs for both models with their respective learning rates as these hyperparameters yielded the best results. The graph below shows the total, VQ loss and reconstruction loss. We observe that we get really great results within 2 epochs. That is high SSIM, but then this drops off in the next epoch but rises again to over 0.9 average SSIM by 20 epochs. We will run into the issue of overfitting the dataset as we only get incremental improvements after 20 epochs
+We initially started with fitting with a large codebook and small latent space but the VQVAE demonstrated some erratic loss behaviour after a few steps but it still eventually converged to high SSIM. However, we did some hyperparameter tuning and found that with a latent space of 32 and 64 embeddings yielded the best performance in SSIM score with the least amount of epochs. We obtain >0.6 SSIM within 2 epochs and gain incremental improvements subsequently
 
-<p align="center"><img src="./results/vq_loss_50.png" /></p>
+<p align="center"><img src="./results/vq_result_graph.png" /></p>
 
 <p align='center'> <strong>30 epochs</strong> </p>
 
@@ -42,19 +42,19 @@ For the final results we chose to use 20 epochs for both models with their respe
 
 PixelCNN is a generative model that uses convolutional and residual blocks to generate images by iteratively calculating the distribution of prior pixels to generate the probability of later pixels.
 
-The input image first gets passed through the convolutional layer which generates receptive fields to learn features for all pixels at the same time. We need to also use masks to restrict the connections between layers. For the initial layer we use mask 'A' to restrict connections to the pixels that have already been predicted. The subsequent layers will use mask 'B' to allow connections only from predicted layers to the current pixels. This ensures that we adhere to requirement of conditional independence of pixels. 
+We pass the input image into a convolutional layer which generates receptive fields to learn features for all pixels at the same time. We need to also use masks to restrict the connections between layers. For the initial layer we use mask 'A' to restrict connections to the pixels that have already been predicted and subsequent layers use mask 'B' to allow connections only from predicted layers to the current pixels. This ensures that we adhere to requirement of conditional independence of pixels. 
 
 Then we pass the initial convolution layer to residual blocks. These layers are essentially trying to learn the true output by learning the residuals of the true output. We achieve this by skipping the connections between layers. 
 
 <p align="center"><img src="./images/resid.png" height=300/></p>
 
-**Loss:** We use the Sparse Categorical Crossentropy loss to quantify the loss of each pixel
+**Loss:** We use the Sparse Categorical Crossentropy loss to quantify the loss of picking the discrete codebooks.
 
 uses convolutional layers to learn features for all pixels at the same time. We also use masks 'A' to restrict connections to the pixels that have already been predicted and 'B' to allow connections from predicted colours to current pixels as to adhere to the conditional independence of the pixels.
 
 ### **PixelCNN results**
 ---
-The following is the loss plot of the PixelCNN model. We notice that the loss decreases significantly in the beginning and only has incremental improvements after 20 epochs.
+We experimented with tuning the number of convolutional layers and residual blocks of our model to see if the model would perform better, but it resulted with marginal improvements. The most significant hyperparameter to tune for the PixelCNN is the VQVAE model and subsequently the codebook/embeddings as that is how the PixelCNN model is trained. As such we experimented with a few variations of the VQVAE model and found that latent space of 32 and 128 codebooks obtained the best generated samples. We observe that the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains; we are only able to roughly capture the shape of the brain and some details
 
 <p align="center"><img src="./results/pcnn_result_graph.png" /></p>
 
@@ -66,10 +66,12 @@ The following is the loss plot of the PixelCNN model. We notice that the loss de
 
 <p align='center'><img src="./results/generated_12.png"/></p>
 
-Observing the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains. However, we do get incremental improvements with hyperparameter tuning and training for more epochs. We found that a VQVAE model with less codebook/embedding space but a larger latent space yielded better results for the PixelCNN.
-
 ### **Data processing**
 There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset on COMP3710 blackboard the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for the train set and ~9000 images for the testing set. We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
+
+## **Scope for improvements**
+
+As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples. Similarly, we can also train the model for more epochs but we do have to be cautious of overfitting.
 
 # **Example usages**
 **Creating new VQVAE model**
@@ -80,7 +82,7 @@ vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=t
 **Loading existing model:** Initialise new VQVAE model from VQVAE_model class in modules.py and load the weights
 ```
 vq_trained = VQVAE_model(img_shape, train_var, latent_dim=latent_dim, no_embedding=embed_num)
-vq_trained = vq_trained.load_weights()
+vq_trained = vq_trained.load_weights('path to weights')
 
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, vq_trained=vq_trained, img_shape=img_shape, latent_dim=32, embed_num=32, result_path=result_path, vq_epoch=vq_epoch)
 ```
@@ -110,14 +112,9 @@ This project was completed with the following modules for which you should insta
 - numpy 1.23.3
 - matplotlib 3.5.3
 
-
 ### **References**
 - https://arxiv.org/pdf/1711.00937v2.pdf
 - https://arxiv.org/pdf/1601.06759v3.pdf
 - https://pedroferreiradacosta.github.io/post/auto_encoder/
 - https://keras.io/examples/generative/vq_vae/
 - https://keras.io/examples/generative/pixelcnn/
-
-
-Pull request pretty much straightforward list whats in each file medium sized 2 sentences ish
-

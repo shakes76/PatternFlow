@@ -77,6 +77,7 @@ def vq_train(train_data, test_data, train_var, result_path, vq_trained=None, img
     plt.legend(loc='upper right')
     plt.ylim([0,1])
     plt.xlabel('Epoch')
+    plt.ylabel('Losses')
     plt.savefig('{}/vq_result_graph.png'.format(result_path))
 
     #save weights to reuse
@@ -107,6 +108,7 @@ def pcnn_train(VQVAE, train_data, result_path, pcnn_trained=None, pcnn_epoch=pcn
     #Plot and save loss performance
     plt.plot(history.history['loss'], label='loss')
     plt.xlabel('Epoch')
+    plt.ylabel('Loss')
     plt.savefig('{}/pcnn_result_graph.png'.format(result_path))
 
     #save weights to reuse
