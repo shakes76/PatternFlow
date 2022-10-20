@@ -1,39 +1,35 @@
-"""
-Data loader for loading and preprocessing your data
-"""
 import os
-from torch.utils.data import Dataset, DataLoader
-import torchvision
+import numpy as np
+from PIL import Image
 
 
-class OASISDataset(Dataset):
-    def __init__(self, data_dir):
-        self.dir = data_dir
-        self.data = os.listdir(data_dir)
+def load_data(path, img_limit=False, want_var=False):
+    dataset = []
 
-        self.transform = torchvision.transforms.Compose([
-            torchvision.transforms.ToTensor(),
-        ])
+    for i, img in enumerate(os.listdir(path)):
+        if img_limit and i > img_limit:
+            break
+        else:
+            img = Image.open(f"{path}/{img}")
+            data = np.asarray(img, dtype=np.float16)
+            dataset.append(data)
 
-    def __len__(self):
-        return len(self.data)
+    dataset = np.array(dataset, dtype=np.float16)
 
-    def __getitem__(self, index):
-        image = torchvision.io.read_image(f"{self.dir}/{self.data[index]}")
-        # image = self.transform(image)
-        return image.float()
+    if want_var:
+        data_variance = np.var(dataset / 255.0)
+    else:
+        data_variance = None
+
+    dataset = np.expand_dims(dataset, -1)
+    dataset = (dataset / 255.0) - 0.5
+
+    return dataset, data_variance
 
 
-def get_loaders():
-    batch_size = 32
-    num_workers = 2
+def oasis_dataset(images):
+    train, variance = load_data("keras_png_slices_data/keras_png_slices_train", images, True)
+    test, _ = load_data("keras_png_slices_data/keras_png_slices_test", images)
+    validate, _ = load_data("keras_png_slices_data/keras_png_slices_validate", images)
 
-    train_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_train"),
-                              batch_size=batch_size, num_workers=num_workers, pin_memory=True)
-    test_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_test"),
-                             batch_size=batch_size, shuffle=True)
-    validation_loader = DataLoader(OASISDataset("data/keras_png_slices_data/keras_png_slices_validate"),
-                                   batch_size=batch_size, drop_last=True,
-                                   num_workers=num_workers, pin_memory=True)
-
-    return train_loader, test_loader, validation_loader
+    return train, test, validate, variance
