@@ -105,14 +105,15 @@ def train(train_ds, valid_ds, epochs, train_step, checkpoint_prefix, checkpoint,
     return info
 
 def main():
-    t_ad, t_nc, v_ad, v_nc = loadFile('F:/AI/COMP3710/data/AD_NC/')
-    td = modules.generatePairs(t_ad, t_nc)
-    vd = modules.generatePairs(v_ad, v_nc)
+    tr_a, tr_n, v_a, v_n, te_a, te_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    train_ds = modules.generatePairs(tr_a, tr_n)
+    valid_ds = modules.generatePairs(v_a, v_n)
+    test_ds = modules.generatePairs(te_a, te_n)
     opt = keras.optimizers.Adam(1e-4)
     siamese = modules.makeSiamese(modules.makeCNN())
     checkpoint_prefix, checkpoint = saveOption(opt, siamese)
     checkpoint.restore(tf.train.latest_checkpoint(r'F:\AI\COMP3710\PatternFlow\recognition\46272784-Siamese\Siamese_ckeckpoint'))
-    history = train(td, vd, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
+    history = train(train_ds, valid_ds, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
     
     # # results = siamese.evaluate(vd)
     # # print("test loss, test acc:", results)

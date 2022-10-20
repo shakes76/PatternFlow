@@ -5,6 +5,7 @@ sys.path.insert(1, os.getcwd())
 from dataset import loadFile
 
 import tensorflow as tf
+import tensorflow.keras.backend as K
 from tensorflow import data
 from tensorflow import keras
 from tensorflow.keras import layers, Model
@@ -38,12 +39,12 @@ def generatePairs(ad, nc, batch=16):
 
 def makeCNN():
     # This CNN is almost the same as the one presented in the paper 
-    input = layers.Input(shape=(224, 224, 1))
-    conv = layers.Conv2D(64, 10, activation='relu', name='c0', padding='same')(input)
+    input = layers.Input(shape=(64, 64, 1))
+    conv = layers.Conv2D(32, 10, activation='relu', name='c0', padding='same')(input)
     pool = layers.MaxPooling2D(2)(conv)
     norm = layers.BatchNormalization()(pool)
     
-    conv = layers.Conv2D(128, 7, activation='relu', name='c1', padding='same')(norm)
+    conv = layers.Conv2D(64, 8, activation='relu', name='c1', padding='same')(norm)
     pool = layers.MaxPooling2D(2)(conv)
     norm = layers.BatchNormalization()(pool)
     
@@ -52,12 +53,10 @@ def makeCNN():
     norm = layers.BatchNormalization()(pool)
     
     conv = layers.Conv2D(256, 4, activation='relu', name='c3', padding='same')(norm)
-    norm = layers.BatchNormalization()(conv)
     
-    flat = layers.Flatten(name='flat')(norm)
-    # dense = layers.Dense(4096, activation='sigmoid')(flat)
-    # dense = layers.Dense(1024, activation='sigmoid', name='d0', kernel_regularizer=tf.keras.regularizers.l2(1e-3))(flat)
-    out = layers.Dense(512, activation='sigmoid', name='out', kernel_regularizer=tf.keras.regularizers.l2(1e-3))(flat)
+    
+    flat = layers.Flatten(name='flat')(conv)
+    out = layers.Dense(256, activation='sigmoid', name='out')(flat)
     
     return Model(inputs=input, outputs=out, name='embeddingCNN')
     
@@ -65,14 +64,13 @@ def makeCNN():
 def makeSiamese(cnn):
     EPS = 1e-8
     
-    input_1 = layers.Input((224, 224, 1))
-    input_2 = layers.Input((224, 224, 1))
+    input_1 = layers.Input((64, 64, 1))
+    input_2 = layers.Input((64, 64, 1))
     
     tower_1 = cnn(input_1)
     tower_2 = cnn(input_2)
-    # Merging the two networks outputs (EPS is used to avoied 0 distance)
-    distance = lambda v: tf.math.sqrt(tf.math.maximum(tf.math.reduce_sum(tf.math.square(v[0] - v[1]), axis=1, keepdims=True), EPS))
-    merge_layer = layers.Lambda(distance)([tower_1, tower_2])
+    # Merging the two networks outputs (Distance: L1 norm)
+    merge_layer = layers.Lambda(lambda tensors: K.abs(tensors[0] - tensors[1]))([tower_1, tower_2])
     normal_layer = layers.BatchNormalization()(merge_layer)
     # 1 if same class, 0 if not
     output_layer = layers.Dense(1, activation="sigmoid", name='out2')(normal_layer)
@@ -80,15 +78,16 @@ def makeSiamese(cnn):
     return Model(inputs=[input_1, input_2], outputs=output_layer, name='Siamese')
 
 
-def loss(margin=1):
+def loss(mode=1, margin=1):
     def contrastive_loss(y_true, y_pred):
         return tf.math.reduce_mean(
             y_true * tf.math.square(y_pred) + (1 - y_true) * tf.math.square(tf.math.maximum(margin - (y_pred), 0))
         )
         
-    def crossentropy(y_true, y_pred):
-        tf.keras.losses.BinaryCrossentropy(y_true, y_pred)
-    return contrastive_loss
+    if mode == 0:
+        return contrastive_loss
+    else:
+        return keras.losses.BinaryCrossentropy()
 
 def visualize(img1, img2, labels, to_show=6, num_col=3, predictions=None, test=False):
 
@@ -121,8 +120,8 @@ def visualize(img1, img2, labels, to_show=6, num_col=3, predictions=None, test=F
     
 def main():
     # Code for testing the functions
-    t_a, t_n, v_a, v_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
-    d = generatePairs(t_a, t_n)
+    tr_a, tr_n, v_a, v_n, te_a, te_n = loadFile('F:/AI/COMP3710/data/AD_NC/')
+    d = generatePairs(tr_a, tr_n)
     # visualize the data
     for img1, img2, label in d.take(1):
         visualize(img1, img2, label, to_show=8, num_col=2)
