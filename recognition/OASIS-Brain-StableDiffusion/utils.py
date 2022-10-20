@@ -1,8 +1,4 @@
 import torch
-import torchvision
-import numpy as np
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 
 
 def get_noise_cadence():
@@ -14,7 +10,7 @@ def get_noise_cadence():
     """
     return torch.linspace(1e-4, 0.02, 1000)
 
-def add_noise(x, pos)
+def add_noise(x, pos):
     """
     Adds noise to tensor x through a noising timeline
 
@@ -25,13 +21,22 @@ def add_noise(x, pos)
     Returns:
         [type]: [description]
     """
-    beta = get_noise_cadence()
+    beta = get_noise_cadence().to("cuda")
     alpha = 1.0 - beta
     alpha_cumprod = torch.cumprod(alpha, dim=0)
-    sqrt_alpha_cumprod = torch.sqrt(alpha_cumprod[pos])[: None, None, None]
+    sqrt_alpha_cumprod = torch.sqrt(alpha_cumprod[pos])[:, None, None, None]
     sqrt_minus_alpha_cumprod = torch.sqrt(1 - alpha_cumprod[pos])[:, None, None, None]
     E = torch.randn_like(x)
     return sqrt_alpha_cumprod * x + sqrt_minus_alpha_cumprod * E, E
 
-def sample_pos(pos):
-    return torch.randint(low=1, high=1000, size=(pos,))
+def get_sample_pos(size):
+    """
+    Generates sampling tensor from input size and predefined sample range
+
+    Args:
+        size (int): size to time step
+
+    Returns:
+        Tensor: tensor full of random integers between 1 and 1000 with specified size
+    """
+    return torch.randint(low=1, high=1000, size=(size,))

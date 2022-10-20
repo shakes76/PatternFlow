@@ -3,7 +3,7 @@ import torchvision
 
 
 
-def load_dataset(path, image_size=128, batch_size=64):
+def load_dataset(path, image_size=64, batch_size=64):
     """
     Normalizes and loads images from a specified dataset into a dataloader
 
@@ -18,7 +18,7 @@ def load_dataset(path, image_size=128, batch_size=64):
     # define the transform used to normalize the input data
     transforms = torchvision.transforms.Compose(
         [
-        torchvision.transforms.Resize(image_size+(0.25*image_size)),
+        torchvision.transforms.Resize(image_size+round(0.25*image_size)),
         torchvision.transforms.RandomResizedCrop(image_size, scale=(0.8, 1.0)),
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
