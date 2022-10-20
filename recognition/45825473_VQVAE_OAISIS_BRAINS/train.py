@@ -5,7 +5,7 @@ from keras.callbacks import History
 from keras import layers
 from modules import VQVAETrainer, PixelConvLayer, ResidualBlock
 from dataset import get_image_slices
-from matplotlib import plot as plt
+from matplotlib import pyplot as plt
 import tensorflow_probability as tfp
 
 def train_vqvae(train_images):
