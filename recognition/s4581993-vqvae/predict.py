@@ -1,13 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import layers
+import tensorflow_probability as tfp
 
 from dataset import get_test_dataset, get_train_dataset
-from modules import VQVAETrainer
-from utils import models_directory, vqvae_weights_filename
+from modules import VQVAETrainer, get_pixelcnn
+from utils import models_directory, vqvae_weights_filename, pixelcnn_weights_filename
 
 # Load testing dataset
-test_ds = get_train_dataset()
+test_ds = get_test_dataset()
 
 # Create the model and load the weights
 train_ds = get_train_dataset()
@@ -53,3 +55,73 @@ for i in range(len(test_images)):
 plt.tight_layout()
 plt.show()
 
+# Load the PixelCNN model
+num_residual_blocks = 2
+num_pixelcnn_layers = 2
+
+# Encode an image to get the output shape
+# I'm sure there's a better way to do this, but the custom layers make it hard
+encoder = vqvae_trainer.vqvae.get_layer("encoder")
+quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+encoded_output = encoder.predict(train_ds[np.newaxis, 0])
+pixelcnn_input_shape = encoded_output.shape[1:-1]
+print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+
+pixel_cnn = get_pixelcnn(
+        num_residual_blocks,
+        num_pixelcnn_layers,
+        pixelcnn_input_shape,
+        vqvae_trainer.num_embeddings,
+)
+pixel_cnn.load_weights(models_directory + pixelcnn_weights_filename)
+
+# Generate new images with the PixelCNN model
+inputs = layers.Input(shape=pixel_cnn.input_shape[1:])
+outputs = pixel_cnn(inputs, training=False)
+categorical_layer = tfp.layers.DistributionLambda(tfp.distributions.Categorical)
+outputs = categorical_layer(outputs)
+sampler = tf.keras.Model(inputs, outputs)
+
+# Create an empty array of priors.
+batch = 4
+priors = np.zeros(shape=(batch,) + (pixel_cnn.input_shape)[1:])
+batch, rows, cols = priors.shape
+
+# Iterate over the priors because generation has to be done sequentially pixel by pixel.
+for row in range(rows):
+    for col in range(cols):
+        # Feed the whole array and retrieving the pixel value probabilities for the next
+        # pixel.
+        probs = sampler.predict(priors)
+        # Use the probabilities to pick pixel values and append the values to the priors.
+        priors[:, row, col] = probs[:, row, col]
+
+print(f"Prior shape: {priors.shape}")
+
+# Perform an embedding lookup.
+pretrained_embeddings = quantizer.embeddings
+priors_ohe = tf.one_hot(priors.astype("int32"), vqvae_trainer.num_embeddings).numpy()
+quantized = tf.matmul(
+    priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True
+)
+quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
+# Generate novel images.
+decoder = vqvae_trainer.vqvae.get_layer("decoder")
+generated_samples = decoder.predict(quantized)
+
+plt.figure(figsize=(8, batch * 4))
+plt.subplot(batch, 2, 1)
+plt.title("Code")
+plt.subplot(batch, 2, 2)
+plt.title("Generated Sample")
+
+for i in range(batch):
+    plt.subplot(batch, 2, i * 2 + 1)
+    plt.imshow(priors[i], cmap='gray')
+    plt.axis("off")
+
+    plt.subplot(batch, 2, i * 2 + 2)
+    plt.imshow(generated_samples[i].squeeze() + 0.5, cmap='gray')
+    plt.axis("off")
+plt.show()
