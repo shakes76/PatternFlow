@@ -26,6 +26,7 @@ def train(
     steps_per_epoch=5000,
     display_images=True,
 ):
+    style_gan = StyleGAN(start_res=4, target_res=128)
     opt_cfg = {"learning_rate": 1e-3, "beta_1": 0.0, "beta_2": 0.99, "epsilon": 1e-8}
 
     val_batch_size = 16
@@ -78,4 +79,8 @@ def train(
     plt.xlabel('epoch')
     plt.legend(['dis_loss', 'gen_loss'], loc='upper left')
     plt.show()
+
+if __name__ == "__main__":
+    tf.config.run_functions_eagerly(True)
+    train(steps_per_epoch=2000)
 

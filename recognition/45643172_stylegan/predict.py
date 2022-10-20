@@ -6,7 +6,7 @@ from train import *
 
 
 
-def predict(url, name):
+def predict(url, name, style_gan):
     weights_path = keras.utils.get_file(
         name,
         url,
@@ -28,4 +28,4 @@ def predict(url, name):
 
 
 if __name__ == "__main__":
-    predict(sys.argv[1], sys.argv[2])
+    predict(sys.argv[1], sys.argv[2], sys.argv[3])
