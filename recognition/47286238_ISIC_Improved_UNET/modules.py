@@ -54,7 +54,7 @@ class IUNET(nn.Module):
         ## Leaky ReLU
         self.lrelu = nn.LeakyReLU(negative_slope=1e-2)
 
-    def conv(self, filters_in, filters_out, stride):
+    def conv(self, filters_in, filters_out, stride) -> nn.Sequential:
         return nn.Sequential(
             nn.Conv2d(
                 filters_in, 
@@ -64,7 +64,7 @@ class IUNET(nn.Module):
             self.lrelu
         )
 
-    def context(self, filters):
+    def context(self, filters) -> nn.Sequential:
         """
         Context module as described by Isensee et al.
         """
@@ -89,5 +89,44 @@ class IUNET(nn.Module):
         returns segmentation for the image
         """
         ### Context Pathway
+        ### TODO: refactor???
+        # depth 1: 16 filters out
+        out = self.conv1(x)
+        residual = out
+        out = self.context1(out)
+        out = torch.add(residual, out) # elementwise sum
+        out1 = out
+
+        # depth 1: 32 filters out
+        out = self.conv2(x)
+        residual = out
+        out = self.context2(out)
+        out = torch.add(residual, out) # elementwise sum
+        out2 = out
+
+        # depth 3: 64 filters out
+        out = self.conv3(x)
+        residual = out
+        out = self.context3(out)
+        out = torch.add(residual, out) # elementwise sum
+        out3 = out
+
+        # depth 4: 128 filters out
+        out = self.conv4(x)
+        residual = out
+        out = self.context4(out)
+        out = torch.add(residual, out) # elementwise sum
+        out4 = out
+
+        # depth 5: 256 filters out
+        out = self.conv5(x)
+        residual = out
+        out = self.context5(out)
+        out = torch.add(residual, out) # elementwise sum
+        out5 = out
+
+        ### Localization Pathway
+        # TODO
+
         return None
         
