@@ -3,6 +3,7 @@ from modules import ImprovedUnetModel
 from utils import dice_similarity
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from predict import predictions, test_dsc
 
 def main():
 
@@ -17,13 +18,16 @@ def main():
     xtrain, xval, xtest = train_val_test_split(data, 0.8, 0.1)
     ytrain, yval, ytest = train_val_test_split(masks, 0.8, 0.1)
 
-    # Build compile and fit the model
+    # Build compile and fit the model (training and validating)
     unet = ImprovedUnetModel()
     unet.build_model()
     unet.model.compile(optimizer = tf.keras.optimizers.Adam(), loss = "binary_crossentropy", metrics = [dice_similarity])
     model = unet.model
     model.summary()
     metrics = model.fit(xtrain, ytrain, epochs = 30, validation_data = (xval, yval), batch_size = 64)
+
+    # Save the model to a path (saving)
+    model.save("/content/drive/MyDrive/UQ")
 
     # Plot the loss and the dice similarity coefficient of the model
     fig, (loss, dsc) = plt.subplots(2, sharex = True)
@@ -41,8 +45,11 @@ def main():
     fig.show()
     fig.savefig("Loss_DSC")
 
+    # Predict the test set (testing)
+    predictions(model, xtest, ytest)
 
-
+    # Prints the dice similarity coefficient of the test set
+    test_dsc(model, xtest, ytest)
 
     return
 
