@@ -94,7 +94,7 @@ def get_test_dataset() -> np.array:
     download_dataset()
     unzip_dataset()
 
-    test_ds = load_dataset(dataset_train_folder)
+    test_ds = load_dataset(dataset_test_folder)
     test_ds = preprocess_data(test_ds)
 
     return test_ds
