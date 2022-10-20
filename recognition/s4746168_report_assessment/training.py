@@ -52,8 +52,8 @@ unet_model.save("UNet_model")
 # Plotting the graph for dice coefficient
 plt.plot(unet_model.history.history['dice_coef'])
 plt.plot(unet_model.history.history['val_dice_coef'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
+plt.title('model dice coefficient')
+plt.ylabel('dice coefficient')
 plt.xlabel('epoch')
 plt.show()
 
