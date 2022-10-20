@@ -10,6 +10,12 @@ from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxP
 from tensorflow.keras.models import Model
 
 
+# Normalization block
+def BatchNorm(inputs):
+    x = BatchNormalization()(inputs)
+    return (Activation("relu")(x))
+
+
 """
 # A block which creates a double convolutional layer 
 def ConvDouble(x, filters):

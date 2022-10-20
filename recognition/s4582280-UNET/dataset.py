@@ -97,9 +97,6 @@ def full_load(path):
     return trainSet, testSet, validSet
 
 
-train_set = tf_dataset_conv(trainX, trainY, BATCHES)
-
-print(len(train_set))
 """
 # Data preprocessing
 def normalize(input_image, input_mask):
