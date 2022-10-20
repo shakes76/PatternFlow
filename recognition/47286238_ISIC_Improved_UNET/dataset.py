@@ -14,7 +14,7 @@ class Dataset(torch.utils.data.Dataset):
         Reports the size of the dataset
         Required in order to use DataLoader
         """
-        len_data = len([file for file in os.listdir(self.data_path)])
+        len_data = len([file for file in os.listdir(self.truth_path)])
         return len_data
 
     def __getitem__(self, key):
