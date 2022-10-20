@@ -5,22 +5,11 @@ from tensorflow.keras.preprocessing.image import img_to_array
 import matplotlib.pyplot as plt
 import numpy as np
 
-from train import get_lowres_image, plot_results, train
-
-def upscale_image(model, img):
-    out = model.predict(img)
-    
-    prediction = out
-    prediction *= 255.0
-    prediction = prediction.clip(0, 255)
-    print(prediction.shape)
-    prediction = prediction.reshape(200, 200)
-    return prediction
+from train import get_lowres_image, plot_results, train, upscale_image
 
 def predict():
     upscale_factor = 4
     model, test_ds = train(1)
-
     total_bicubic_psnr = 0.0
     total_test_psnr = 0.0
     for batch in test_ds.take(1):
