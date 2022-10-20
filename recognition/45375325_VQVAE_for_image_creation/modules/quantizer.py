@@ -16,7 +16,7 @@ class Quantizer(nn.Module):
         self.beta = beta
 
         self.embedding = nn.Embedding(self.num_embeddings, self.embedding_dim)
-        self.embedding.weight.data.uniform_(-1.0 / self.num_embeddings / self.num_embeddings)
+        self.embedding.weight.data.uniform_(-1.0 / self.num_embeddings, 1.0 / self.num_embeddings)
 
     def forward(self, z):
         """
@@ -31,31 +31,33 @@ class Quantizer(nn.Module):
         z_flattened = z.view(-1, self.embedding_dim)
 
         # z to embeddings e_j (z - e)^2 = z^2 + e^2 - 2e * z
-        d = torch.sum(z_flattened ** 2, dim=1, keepdim=True) + \
-            torch.sum(self.embedding.weight ** 2, dim=1) - 2 * \
-            torch.matmul(z_flattened, self.embedding.weight.t())
+        d = (torch.sum(z_flattened ** 2, dim=1, keepdim=True)
+             + torch.sum(self.embedding.weight ** 2, dim=1)
+             - 2 * torch.matmul(z_flattened, self.embedding.weight.t()))
 
         # calculate closest encodings
+        train_indices = torch.argmin(d, dim=1)
         min_encoding_indices = torch.argmin(d, dim=1).unsqueeze(1)
-        min_encodings = torch.zeros(
-            min_encoding_indices.shape[0], self.num_embeddings
-        ).to(DEVICE)
+        min_encodings = torch.zeros(min_encoding_indices.shape[0], self.num_embeddings, device=DEVICE)
         min_encodings.scatter_(1, min_encoding_indices, 1)
 
         # get quantized vectors
         z_q = torch.matmul(min_encodings, self.embedding.weight).view(z.shape)
 
         # compute embedding loss
-        loss = torch.mean((z_q.detach() - z) ** 2) + self.beta * torch.mean((z_q - z.detach()) ** 2)
+        embedding_loss = nn.functional.mse_loss(z_q.detach(), z)
+        q_latent_loss = nn.functional.mse_loss(z_q, z.detach())
+        loss = q_latent_loss + self.beta * embedding_loss
 
         # maintain gradients
         z_q = z + (z_q - z).detach()
-
-        # perplexity
-        mean_embeddings = torch.mean(min_encodings, dim=0)
-        perplexity = torch.exp(-torch.sum(mean_embeddings + torch.log(mean_embeddings + 1e-10)))
-
         # reshape quantized z to look like original input
-        z_q = z_q.permute(0, 3, 1, 2).contiguous()
 
-        return loss, z_q, perplexity, min_encodings, min_encoding_indices
+        return loss, z_q.permute(0, 3, 1, 2).contiguous(), min_encodings, train_indices
+
+    def get_quantized(self, x):
+        encoding_indices = x.unsqueeze(1)
+        encodings = torch.zeros(encoding_indices.shape[0], self.num_embeddings, device=DEVICE)
+        encodings.scatter_(1, encoding_indices, 1)
+        quantized = torch.matmul(encodings, self.embedding.weight).view(1, 64, 64, 64)
+        return quantized.permute(0, 3, 1, 2).contiguous()

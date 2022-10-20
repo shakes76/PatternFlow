@@ -1,5 +1,5 @@
 import torch.nn as nn
-from stack import ResidualStack
+from modules.stack import ResidualStack
 
 
 class Decoder(nn.Module):
@@ -9,21 +9,38 @@ class Decoder(nn.Module):
     given a latent sample z, maps to the original space
     """
 
-    def __init__(self, input_dim, latent_dim, num_residual_layers, num_stacked_layers):
+    def __init__(self, input_dim, between_latent_dim, latent_dim):
         super(Decoder, self).__init__()
         kernel = 4
         stride = 2
 
         self.inverse_conv_steps = nn.Sequential(
-            nn.ConvTranspose2d(
-                input_dim, latent_dim, kernel_size=kernel - 1, stride=stride - 1, padding=1
-            ),
-            ResidualStack(latent_dim, latent_dim, num_stacked_layers, num_residual_layers),
-            nn.ConvTranspose2d(
-                latent_dim, latent_dim // 2, kernel_size=kernel, stride=stride, padding=1
-            ),
-            nn.ReLU(),
-            nn.ConvTranspose2d(latent_dim // 2, 3, kernel_size=kernel, stride=stride, padding=1)
+            nn.Conv2d(in_channels=input_dim,
+                      out_channels=latent_dim,
+                      kernel_size=kernel - 1,
+                      stride=stride - 1,
+                      padding=1
+                      ),
+            ResidualStack(input_dim=latent_dim,
+                          between_latent_dim=between_latent_dim,
+                          latent_dim=latent_dim
+                          ),
+            ResidualStack(input_dim=latent_dim,
+                          between_latent_dim=between_latent_dim,
+                          latent_dim=latent_dim
+                          ),
+            nn.ConvTranspose2d(in_channels=latent_dim,
+                               out_channels=latent_dim//2,
+                               kernel_size=kernel,
+                               stride=stride,
+                               padding=1
+                               ),
+            nn.ConvTranspose2d(in_channels=latent_dim//2,
+                               out_channels=3,
+                               kernel_size=kernel,
+                               stride=stride,
+                               padding=1
+                               )
         )
 
     def forward(self, x):
