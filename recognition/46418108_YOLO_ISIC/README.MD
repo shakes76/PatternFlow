@@ -24,7 +24,7 @@ The following image shows the results from the training:
 <p align="center"><img src="./Results/model_summary.png" width="800"></p>
 
 ## Installation
-To use this repo, clone it and make sure all the dependencies are installed
+To use this repo, clone the repositry. The repo has the following dependencies so make sure they are installed except YOLOv5.
 
 ### Dependencies 
 - Python = 3.10.2
@@ -37,5 +37,51 @@ To use this repo, clone it and make sure all the dependencies are installed
 ## Usage
 Modules.py contains an interface for downloading YOLOv5 from GitHub. If it does not work then clone the YOLOv5 repo into the project folder. 
 
+To perform inference:
+```
+from predict import *
+model = load_model("path_to_best.pt")
+predict(model, "path_to_image")
+```
+Using the above code will perform inference on the given image. A folder called 'runs' will be created and the image will be saved there.
 
+To reproduce results clone this repositry and run the following script:
+```
+from train import *
+from modules import *
+from dataset import *
+
+get_yolo() // install yolov5
+install_requirements() // installs necessary requirements 
+move_data_file()
+
+train(16, 500, 24, "yolov5l.pt", "yolo_lesion_det")
+```
+If the train() function does not work run the following command in the terminal in the yolov5 directory:
+```
+python train.py --img 640 --batch 16 --epochs 500 --data data.yaml --weights yolov5l.pt --workers 24 --name yolo_lesion_det
+```
+To train on a new dataset, use Roboflow to label the images and then export to YOLOv5 PyTorch format. Rename the folder to Data. Within the folder, find data.yaml and change the first 3 lines to this:
+```
+train: ../Data/train/
+test: ../Data/test/
+val: ../Data/valid/
+```
+In a python script, have the following:
+```
+from train import *
+from modules import *
+from dataset import *
+
+get_yolo() // install yolov5
+install_requirements() // installs necessary requirements 
+move_data_file()
+
+train(batch_size, epochs, workers, weights, name)
+```
+If the train function does not work run the following in the terminal in the yolov5 directory:
+```
+python train.py --img image_size --batch batch_size --epochs epochs --data data.yaml --weights weights --workers workers --name name
+```
+Once the training has finished, the weights will be in yolov5/runs/name/weights/. These weights can then be used for inference. 
 ## References
