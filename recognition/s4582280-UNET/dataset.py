@@ -9,6 +9,31 @@ from os import listdir
 from PIL import Image
 from matplotlib import pyplot as plt
 
+""" Image Parameters """
+H = 256
+W = 256
+
+# Loads the isic dataset from the defined path and grabs all the image files
+def load_isic(path, split=0.25):
+    # Path to the masks being loaded
+    masks = (glob(os.path.join(path, "ISIC-2017_Training_Part1_GroundTruth", "*.png")))
+
+    # Path to the images being loaded
+    images = (glob(os.path.join(path, "ISIC-2017_Training_Data", "*.jpg")))
+
+    splitAmount = int(split * len(images))
+
+    # Generate a validation set for each image and mask
+    trainY, validY = train_test_split(masks, test_size=splitAmount, random_state=42)
+    trainX, validX = train_test_split(images, test_size=splitAmount, random_state=42)
+    # Generate the final training and test sets
+    trainY, testY = train_test_split(trainY, test_size=splitAmount, random_state=42)
+    trainX, testX = train_test_split(trainX, test_size=splitAmount, random_state=42)
+
+    # Return the final set
+    return (trainX, trainY), (testX, testY), (validX, validY)
+
+
 """
 # Data preprocessing
 def normalize(input_image, input_mask):
