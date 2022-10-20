@@ -5,8 +5,21 @@ The aim of this project is to prepare the 2000 lesion images inside the ISIC 201
 ## YOLO v5
 *You Only Look Once*, or YOLO is a real-time object detection neural network. It is known to be a fast performing, lightweight model and thus can be deployed on slower hardware to achieve reasonable performance. 
 
+# Loss Function
+[Loss Function of the YOLO model](Images/loss_func.jpg)
+
+
+## ISIC Challenge 2017 Dataset
+The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are known to be either unharmful, melanoma or seborrheic keratosis. The dataset has already split its data into individual training, validation and test datasets. The training data includes 2000 lesion images in JPEG format, along with the ground truth in PNG format. The validation set and test set includes 150 and 600 JPEG images respectively and, like the training data, includes the ground truth for each image. The dataset includes extra information such as the patients age and gender, these are not within the scope of the project and will not be encoded during training. 
+
+
+## Pre-processing
+
+
+## Running the Model
+The train was run in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s.
 When running the small version of the YOLO v5 model, the following model structure is shown:
-'''
+```
                  from  n    params  module                                  arguments                     
   0                -1  1      3520  models.common.Conv                      [3, 32, 6, 2, 2]              
   1                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]                
@@ -34,12 +47,7 @@ When running the small version of the YOLO v5 model, the following model structu
  23                -1  1   1182720  models.common.C3                        [512, 512, 1, False]          
  24      [17, 20, 23]  1     18879  models.yolo.Detect                      [2, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [128, 256, 512]]
 Model summary: 214 layers, 7025023 parameters, 7025023 gradients, 16.0 GFLOPs
-'''
-
-
-## ISIC Challenge 2017 Dataset
-The ISIC Challenge 2017 dataset has already split its data into individual training, validation and test datasets. The training data includes 2000 lesion images in JPEG format, along with the ground truth in PNG format. The validation set and test set includes 150 and 600 JPEG images respectively and like the training data, includes the ground truth for each image. The dataset includes extra information such as the patients age and gender, these are not within the scope of the project and will not be encoded during training. 
-
+```
 
 ## References
 https://challenge.isic-archive.com/data/#2017
