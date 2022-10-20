@@ -1,6 +1,8 @@
 from tensorflow import keras
 from keras import layers
 import tensorflow_probability as tfp
+import tensorflow as tf
+import numpy as np
 
 ################################################################
 # The following classes VectorQuantizer, VQVAE and VQVAETainer #
@@ -142,11 +144,12 @@ class VQVAETrainer(keras.models.Model):
         # Define the reconstuction and total loss variables to be printed during training
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = keras.metrics.Mean(name="reconstruction_loss")
+        self.epoch_ssim = keras.metrics.Mean(name="epoch_ssim")
 
     @property
     def metrics(self):
         return [self.total_loss_tracker,
-            self.reconstruction_loss_tracker]
+            self.reconstruction_loss_tracker, self.epoch_ssim]
 
     def train_step(self, x):
         with tf.GradientTape() as tape:
@@ -155,6 +158,10 @@ class VQVAETrainer(keras.models.Model):
             # Calculate the total and reconstruction losses
             reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance)
             total_loss = reconstruction_loss + sum(self.vqvae.losses)
+            ssim = 0
+            for index in range(x.shape[0]):
+              ssim += (tf.image.ssim(x[index, :, :, :], reconstructions[index, :, :, :], max_val=255))
+            avgssim = ssim / x.shape[0]
 
         # Application of backpropagation
         grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
@@ -163,10 +170,11 @@ class VQVAETrainer(keras.models.Model):
         # Update the loss variables
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.epoch_ssim.update_state(avgssim)
 
         # Print the loss results during the training
         return {"loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result()}
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(), "epoch_ssim": self.epoch_ssim.result()}
 
 class PixelConvLayer(layers.Layer):
     """
