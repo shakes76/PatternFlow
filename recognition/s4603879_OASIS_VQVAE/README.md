@@ -15,6 +15,9 @@ This repository is used to implement the vq-vae project of COMP3710, where a var
 - PIL 7.1.2
 - High End NVDIA GPU
 
+## Dataset
+This project makes use of the [OASIS Brains](https://www.oasis-brains.org/) dataset and it is split into the training, validation and testing datasets stored in seperated folders under the blackboard. There are around 20,000 preprocessed gray scaled images and they will be used to train and test the vq-vae model.
+
 ## Model
 ### Vector Quantized Latent Space
 Different from traditional variational autoencoders, VQ-VAE has the modified latent space with an additional vector quantized layer which makes use of a codebook. The output of the encoder is compared to the codebook columns(embeddings) and the we use the closest embedding whose L2 norm distance is the minimum will be chosen and we use one-hot encoding to do the quantization so as to achieve the minimum information losses. Then the quantized vector will be passed to the decoder as input and the decoder will reproduce the images. The codebook is learnt during the training process via gradient descent.
