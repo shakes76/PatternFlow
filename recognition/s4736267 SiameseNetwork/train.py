@@ -377,7 +377,7 @@ torch.save(training_loss, "training_loss_CLAS.pth")
 torch.save(validation_loss, "validation_loss_CLAS.pth")
 
 if training_clas==1:
-    torch.save(net.state_dict(), FILE_CLAS_UPDATE)
+    torch.save(net_clas.state_dict(), FILE_CLAS_UPDATE)
 
 print('=> ---- Finished Training Classifier---- ', flush=True)
 

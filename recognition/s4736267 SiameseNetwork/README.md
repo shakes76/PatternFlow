@@ -218,6 +218,7 @@ Further improvements for the SNN implementation would be
 * Implement of true 3D augmentation (not slice based)
 * Improving training time by using more efficent approaches in the net definitions
 * Introducing training strategies, to prevent strange behaviour [Figure 9]
+* Introducing deeper ResNet structure for SNN
 
 <p align="center">
     <img src=Picture/trainingbehav.png width="600" >
@@ -229,13 +230,27 @@ Further improvements for the SNN implementation would be
 
 
 ## Executing Code
-The main code to train, validate and test the model is stored in train.py. To be able to run, the python files modules.py, dataset.py, and the ADNI dataset have to be in the same root folder as train.py.
-* Important constants are defined in the top section of the file
-* Predict.py loads the pre-trained models and reruns the testing on the test set
-* Plotted images are stored in the root folder
+To execute the code the python files modules.py, dataset.py, and the ADNI dataset (\ADNI_AD_NC_2D\AD_NC\test\AD\388206_78.jpeg) have to be in the same folder.
++ train.py:
+ * Main code to train, validate and test the model
+ * Plotted images are stored in the folder of train.py
+ * Important constants are defined in the top section of the file
++ predict.py: 
+ * Loads the pre-trained models
+ * Reruns testing on the test set
+ * Plotted images are stored in the folder of predict.py	
++ modules.py
+ * Definiton of SNN and classifier net
+ * Definition of Loss functions
++ dataset.py
+ * Custom datasets 
+ * Custom dataloader to train, validate and test both models 
+ * Custom augmentation function
+
+
 
 ## Results
-The results are based on the last implementation of the SNN. 
+The results are based on the last implementation of the SNN. The SNN was trained for 300 epochs, while the classifier net was trained for 100 epochs.
 
 <p align="center">
     <img src=Picture/training_loss_snn.png width="600" >
@@ -250,10 +265,10 @@ The results are based on the last implementation of the SNN.
 <p align="center">
     <em> Figure 11: Loss during training epoch of training and validation set of classifier  </em>
 </p>
+
 The final accuracy could be improved but didnt peak the required 80%.
 
-> Test accuracy 78.35% with feautre vector
-> Test accuracy 78.35% with classifier
+>   ->Test Accuracy  : 0.78<br>
 
 Summarising the main problems facing during the implementation:
 * Different Dataset structures between training/validation and testing
