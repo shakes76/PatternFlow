@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
-from keras.utils import np_utils
+import tensorflow as tf
 from sklearn.preprocessing import LabelBinarizer, normalize
 
 def loadData(data):
@@ -11,13 +11,6 @@ def loadData(data):
 
     return edges, features, target
 
-data = loadData("facebook.npz")
-
-def normaliseAdjacency(adjacency):
-    adjacency += sp.eye(adjacency.shape[0])
-    degree = np.array(adjacency.sum(1))
-    d_hat = sp.diags(np.power(degree, -0.5).flatten())
-    return d_hat.dot(adjacency).dot(d_hat).tocoo()
 
 class DataProcess:
   def __init__(self):
@@ -49,28 +42,21 @@ class DataProcess:
     testLabels = self.target[testSplit]
     return trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask
 
-    return trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask
-
   def processing(self):
-    one_hot_labels = np_utils.to_categorical(self.target)
-    self.features = normalize(self.features)
-
+    labelsOneHot = tf.keras.utils.to_categorical(self.target, 4)
     adjMat = sp.coo_matrix(
             (np.ones(self.edges.shape[0]), 
             (self.edges[:, 0], self.edges[:, 1])),
-            shape=(self.target.shape[0], 
-            self.target.shape[0]),
-            dtype=np.float32
-        )
-
-    normalAdj = normaliseAdjacency(adjMat)
+            shape=(self.target.shape[0], self.target.shape[0]),
+            dtype=np.float32)
+    normalAdj = normalize(adjMat, norm='l1', axis=1)
 
     trainLabels, testLabels, validaLabels, trainMask, testMask, validaMask = self.splitData()
     trainLabels = LabelBinarizer().fit_transform(trainLabels)
     testLabels = LabelBinarizer().fit_transform(testLabels)
     validaLabels = LabelBinarizer().fit_transform(validaLabels)
-    
-    return self.features, one_hot_labels, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels, self.target, self.numNodes, self.numFeatures
+
+    return self.features, labelsOneHot, normalAdj, trainMask, validaMask, testMask, trainLabels, validaLabels, testLabels, self.target, self.numNodes, self.numFeatures
 
 
   def getData(self):
