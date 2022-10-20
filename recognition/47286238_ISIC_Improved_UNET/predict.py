@@ -41,7 +41,7 @@ if __name__ == "__main__":
         avg_loss = sum(losses)/len(losses)
         avg_dsc = sum(dscs)/len(dscs)
 
-        print(f"loss: {avg_loss}\tdsc: {avg_dsc}")
+        print(f"loss: {avg_loss:.2f}\tdsc: {avg_dsc:.2f}")
         
         # display first 4 predicted masks
         fig = plt.figure()
