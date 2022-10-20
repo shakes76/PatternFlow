@@ -30,15 +30,28 @@ def train(model, data, optimizer, writer, iter):
         writer.add_scalar('train_quantization', loss_vq.item(), iter)
 
         optimizer.step()
-        iter += 1
 
 
 def test(model, data, writer, iter):
-    pass
+    with torch.no_grad():
+        reconstruction_loss, vector_quant_loss = 0., 0.
+        for images in data:
+            images = images.to(device)
+            reconstruct, encoding, x_quantized = model(images)
+            reconstruction_loss += mse_loss(reconstruct, images)
+            vector_quant_loss += mse_loss(x_quantized, encoding)
+
+        reconstruction_loss = (reconstruction_loss/len(data))
+        vector_quant_loss = (vector_quant_loss/len(data))
+
+    writer.add_scalar('test_reconstruction', reconstruction_loss, iter)
+    writer.add_scalar('test_quantization', vector_quant_loss, iter)
 
 
 def run_epoch(model, train_data, test_data, optimizer, writer, iter):
+    print(f"training epoch {iter}")
     train(model, train_data, optimizer, writer, iter)
+    print(f"testing epoch {iter}")
     test(model, test_data, writer, iter)
 
 
@@ -53,7 +66,7 @@ def main():
 
     for epoch in range(3):
         run_epoch(model, train_loader, test_loader, optimizer, writer, iter)
-
+        iter += 1
         with open(f"{save_filename}/model_{epoch + 1}.pt", 'wb') as f:
             torch.save(model.state_dict(), f)
 
