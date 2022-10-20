@@ -3,7 +3,7 @@ from matplotlib.cbook import flatten
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Layer, ReLU, Add, Conv2D, Conv2DTranspose
-
+import tensorflow_probability as tfp
 
 class VectorQuantizer(Layer):
     def __init__(self, num_embeddings, embedding_dim, beta=0.25, name="VQ"):
@@ -71,7 +71,7 @@ class PixelCNN(Layer):
         self.mask = np.zeros(shape=kernel_shape)
         self.mask[:kernel_shape[0]//2, ...] = 1.0
         self.mask[kernel_shape[0]//2, kernel_shape[1]//2, ...] = 1.0
-        if self.mask = 'B':
+        if self.mask == 'B':
             self.mask[kernel_shape[0]//2, kernel_shape[1]//2, kernel_shape[1]//2, ...] = 1.0
 
     def call(self, inputs):
@@ -136,5 +136,9 @@ class VQVAE(tf.keras.Model):
         quantized = self.vq_layer(x)
         return self.decoder(quantized)
         
-
-        
+def get_pixelcnn_sampler(pixelcnn):
+    inputs = Input(shape=pixelcnn.input_shape[1:])
+    outputs = pixelcnn(inputs, training=False)
+    categorical_layer = tfp.layers.DistributionLambda(tfp.distributions.Categorical)
+    outputs = categorical_layer(outputs)
+    return tf.keras.Model(inputs, outputs)

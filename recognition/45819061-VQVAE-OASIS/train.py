@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
 from dataset import BATCH_SIZE, get_data
-from modules import VQVAE, PixelCNN, get_pixelcnn
+from modules import VQVAE, PixelCNN, get_pixelcnn, get_pixelcnn_sampler
 
 
 class VQVAETrainer (tf.keras.models.Model):
@@ -155,3 +155,34 @@ pixelcnn.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.Spar
 pixelcnn.fit(x=codebook_indices_training, y=codebook_indices_training, batch_size=BATCH_SIZE, epochs=30, validation_data=(codebook_indices_validation, codebook_indices_validation))
 
 
+sampler = get_pixelcnn_sampler(pixelcnn)
+
+prior_batch_size = 10
+priors = np.zeros(shape=(prior_batch_size,) + pixelcnn.input_shape[1:])
+batch, rows, cols = priors.shape
+
+for row in range(rows):
+    for col in range(cols):
+        probs = sampler.predict(priors)
+        priors[:, row, col] = probs[:, row, col]
+
+pretrained_embeddings = quantizer.embeddings
+prior_onehot = tf.one_hot(priors.astype("int32"), NUM_EMBEDDINGS).numpy()
+quantized = tf.matmul(prior_onehot.astype("float32"), pretrained_embeddings, transpose_b=True)
+quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
+# Generate novel images.
+decoder = vqvae_trainer.model.get_layer("decoder")
+generated_samples = decoder.predict(quantized)
+
+for i in range(batch):
+    plt.subplot(1, 2, 1)
+    plt.imshow(priors[i])
+    plt.title("Code")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated_samples[i].squeeze() + 0.5)
+    plt.title("Generated Sample")
+    plt.axis("off")
+    plt.show()
