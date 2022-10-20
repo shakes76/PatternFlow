@@ -42,6 +42,7 @@ class ADNI_dataset_utility:
         # create folder structure
         # parent_directory = os.getcwd()
 
+        # create folders for image data
         for folder_top in self.folders_top:
             path_top = os.path.join(self.parent_directory, folder_top)
             os.mkdir(path_top)
@@ -51,6 +52,11 @@ class ADNI_dataset_utility:
                 for folder_bottom in self.folders_bottom:
                     path_bottom = os.path.join(path_middle, folder_bottom)
                     os.mkdir(path_bottom)
+        
+        # create folder for checkpoint
+        path_checkpoint = os.path.join(self.parent_directory, "checkpoint")
+        os.mkdir(path_checkpoint)
+            
             
     def move_and_split_images(self):
         """ assumes new directory structure in place"""
