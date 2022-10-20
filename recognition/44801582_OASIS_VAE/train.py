@@ -91,6 +91,7 @@ if __name__ == "__main__":
         os.makedirs('./models')
 
     device = torch.device("cuda:0" if (torch.cuda.is_available()) else 'cpu')
+    print(device)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     save_filename = f"./models/{current_time}"
