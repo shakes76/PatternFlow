@@ -69,7 +69,7 @@ def main():
     fixed_grid = make_grid(fixed_images, nrow=8, range=(-1, 1), normalize=True)
     writer.add_image('original', fixed_grid, 0)
 
-    for epoch in range(3):
+    for epoch in range(20):
         run_epoch(model, train_loader, test_loader, optimizer, writer, epoch)
 
         with open(f"{save_filename}/model_{epoch + 1}.pt", 'wb') as f:
