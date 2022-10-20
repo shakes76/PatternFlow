@@ -2,6 +2,7 @@ from dataset import Dataset
 from modules import VAE
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import numpy as np
 
 # https://keras.io/examples/generative/vq_vae/#wrapping-up-the-training-loop-inside-vqvaetrainer
 class VQVAETrainer(tf.keras.models.Model):
@@ -62,4 +63,5 @@ num_embeddings = 128
 latent_dim = 32
 vae_trainer = VQVAETrainer(1, latent_dim, num_embeddings)
 vae_trainer.compile(optimizer = 'adam')
-vae_trainer.fit(data.train_data, epochs = 2, batch_size = 128)
+vae_trainer.fit(data.train_data, epochs = 5, batch_size = 128)
+trained_model = vae_trainer.vqvae
