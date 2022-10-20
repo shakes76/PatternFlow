@@ -12,15 +12,13 @@ TRAIN_SPLIT = 0.7
 VALID_SPLIT = 0.1
 TEST_SPLIT = 0.1
 
-PLOT_SAMPLES_PATH = 'pretraining_samples.png'
-
 class Trainer:
-    def __init__(self, images_path, masks_path, dataset_path, model_path, plot_samples_path):
+    def __init__(self, images_path, masks_path, dataset_path, model_path, plots_path):
         self.images_path = images_path
         self.masks_path = masks_path
         self.dataset_path = dataset_path
         self.model_path = model_path
-        self.plot_samples_path = plot_samples_path
+        self.plots_path = plots_path
 
         self.batch_size = None
         self.image_height = None
@@ -32,6 +30,7 @@ class Trainer:
         self.test_dataset = None
 
         self.model = None
+        self.history = None
 
     def load_data(self, image_size=IMAGE_SIZE, batch_size=BATCH_SIZE):
         images = load_image_dataset_from_directory(self.images_path, image_size=image_size, batch_size=batch_size)
@@ -57,23 +56,22 @@ class Trainer:
         self.valid_dataset = self.full_dataset.skip(train_size).take(valid_size)
         self.test_dataset = self.full_dataset.skip(train_size + valid_size).take(test_size)
 
+    def summarise_data(self):
         for batch in self.test_dataset.take(1):
             test_images, test_masks = batch[0], batch[1]
-            self.batch_size, self.image_height, self.image_width, _ = list(tf.shape(test_images))
-            print(f'Shape of input: {tf.shape(test_images)}')
-            print(f'Shape of output: {tf.shape(test_masks)}')
+            self.batch_size, self.image_height, self.image_width, _ = test_images.get_shape()
+            print(f'Training-Validation-Testing batch split: ' +
+                    f'{self.train_dataset.cardinality().numpy()}-' +
+                    f'{self.valid_dataset.cardinality().numpy()}-' +
+                    f'{self.test_dataset.cardinality().numpy()}')
+            print(f'Input shape: {tf.shape(test_images)}')
+            print(f'Output shape: {tf.shape(test_masks)}')
 
-        print(f'Training-Validation-Testing Batch Split: ' +
-                f'{self.train_dataset.cardinality().numpy()}-' +
-                f'{self.valid_dataset.cardinality().numpy()}-' +
-                f'{self.test_dataset.cardinality().numpy()}\n' +
-                f'Batch size: {self.batch_size}')
-
-    def output_samples(self):
+    def plot_data(self):
         for batch in self.test_dataset.take(1):
             test_images, test_masks = batch[0], tf.argmax(batch[1], axis=-1)
 
-            plt.figure(figsize=(10,10))
+            plt.figure(figsize=(8,8))
             for i in range(self.batch_size):
                 plt.subplot(self.batch_size, 2, i*2 + 1)
                 plt.imshow(test_images[i])
@@ -85,7 +83,8 @@ class Trainer:
                 plt.axis('off')
                 plt.title('Actual Mask')
 
-            plt.savefig(self.plot_samples_path)
+            plt.savefig(self.plots_path + '/preprocessed_samples.png')
+            print(f'Saved plot to {self.plots_path}/preprocessed_samples.png')
 
     def build_model(self):
         self.model = improved_unet((self.image_height, self.image_width, 3), self.batch_size)
@@ -94,21 +93,38 @@ class Trainer:
         print(self.model.summary())
 
     def train_model(self, epochs=EPOCHS):
-        self.model.fit(self.train_dataset, epochs=epochs, validation_data=self.valid_dataset, verbose=1)
+        self.history = self.model.fit(self.train_dataset, epochs=epochs, validation_data=self.valid_dataset, verbose=2)
+
+    def plot_model(self):
+        if not os.path.isdir(self.plots_path):
+            os.makedirs(self.plots_path)
+
+        for metric in ['accuracy', 'dice_coefficient']:
+            plt.figure(figsize=(8,8))
+            plt.title(f'Model {metric}')
+            plt.plot(self.history.history[metric])
+            plt.plot(self.history.history[f'val_{metric}'])
+            plt.xlabel('Epoch')
+            plt.ylabel(metric)
+            plt.legend(['training', 'validation'], loc='upper left')
+            plt.savefig(self.plots_path + f'/model_{metric}.png')
+            print(f'Saved plot to {self.plots_path}/model_{metric}.png')
 
     def load_model(self):
         if self.model == None:
             self.build_model()
-        self.model.load_weights(self.model_path)
+        self.model.load_weights(self.model_path + '/model')
 
     def save_model(self):
-        self.model.save_weights(self.model_path, overwrite=True)
+        if not os.path.isdir(self.model_path):
+            os.makedirs(self.model_path)
+        self.model.save_weights(self.model_path + '/model', overwrite=True)
 
 
-def train_isic_dataset(images_path='', masks_path='', dataset_path='', model_path='', plot_samples_path=PLOT_SAMPLES_PATH,
+def train_isic_dataset(images_path='', masks_path='', dataset_path='', model_path='', plots_path='',
                         override_dataset=False, override_samples=False, override_model=False):
     
-    trainer = Trainer(images_path, masks_path, dataset_path, model_path, plot_samples_path)
+    trainer = Trainer(images_path, masks_path, dataset_path, model_path, plots_path)
 
     if override_dataset or not os.path.isdir(trainer.dataset_path):
         trainer.load_data()
@@ -117,18 +133,19 @@ def train_isic_dataset(images_path='', masks_path='', dataset_path='', model_pat
         trainer.load_existing_data()
 
     trainer.split_data()
+    trainer.summarise_data()
 
-    if override_samples or not os.path.exists(trainer.plot_samples_path):
-        trainer.output_samples()
+    if override_samples or not os.path.isdir(trainer.plots_path):
+        trainer.plot_data()
 
     if override_model or not os.path.isdir(trainer.model_path):
         trainer.build_model()
         trainer.summarise_model()
         trainer.train_model()
         trainer.save_model()
+        trainer.plot_model()
     else:
         trainer.load_model()
-        trainer.summarise_model()
 
     return trainer
         

@@ -1,22 +1,22 @@
 import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from train import train_isic_dataset, PLOT_SAMPLES_PATH
-
-PLOT_PREDICTIONS_PATH = 'predicted_samples.png'
+from train import train_isic_dataset
 
 class Predictor:
-    def __init__(self, trainer, plot_predictions_path):
-        self.plot_predictions_path = plot_predictions_path
-
+    def __init__(self, trainer):
         self.trainer = trainer
 
     def evaluate_model(self):
-        self.trainer.model.evaluate(self.trainer.test_dataset, verbose=2)
+        loss, dice_coef = self.trainer.model.evaluate(self.trainer.test_dataset, verbose=2)
+        print(f'Model evaluation on test dataset: loss = {loss}, dice_coef = {dice_coef}')
 
     def output_predictions(self):
+        if not os.path.isdir(self.trainer.plots_path):
+            os.makedirs(self.trainer.plots_path)
+
         plt.figure(figsize=(8,8))
-        for batch in self.trainer.test_dataset.take(1):
+        for batch in self.trainer.test_dataset.shuffle(buffer_size=10).take(1):
             test_images, test_masks = batch[0], tf.argmax(batch[1], axis=-1)
             predicted_masks = tf.argmax(self.trainer.model.predict(test_images), axis=-1)
             for i in range(self.trainer.batch_size):
@@ -36,16 +36,14 @@ class Predictor:
                 plt.axis('off')
                 plt.title('Actual Mask')
 
-        plt.savefig(self.plot_predictions_path)
+        plt.savefig(self.trainer.plots_path + '/predicted_samples.png')
+        print(f'Saved plot to {self.trainer.plots_path}/predicted_samples.png')
 
-def predict_isic_dataset(trainer=None, images_path='', masks_path='', dataset_path='', model_path='', 
-                            plot_samples_path=PLOT_SAMPLES_PATH, plot_predictions_path=PLOT_PREDICTIONS_PATH,
-                            override_predictions=False):
+def predict_isic_dataset(trainer=None, images_path='', masks_path='', dataset_path='', model_path='', plots_path=''):
     if trainer is None:
-        trainer = train_isic_dataset(images_path, masks_path, dataset_path, model_path, plot_samples_path)
+        trainer = train_isic_dataset(images_path, masks_path, dataset_path, model_path, plots_path)
 
-    predictor = Predictor(trainer, plot_predictions_path)
+    predictor = Predictor(trainer)
     predictor.evaluate_model()
 
-    if override_predictions or not os.path.exists(predictor.plot_predictions_path):
-        predictor.output_predictions()
+    predictor.output_predictions()
