@@ -5,14 +5,17 @@ from numpy			import var
 from tensorflow		import keras
 
 LATENT_DIMENSION_SIZE	= 16
-NUM_EMBEDDINGS			= 128
+NUM_EMBEDDINGS			= 64
 BETA					= 0.25
-EPOCHS					= 1
+VQVAE_EPOCHS			= 1
+PCNN_EPOCHS				= 50
 # Based on GTX1660Ti Mobile
 BATCH_SIZE				= 128
-NO_RESIDS				= 2
-NO_PCNN_LAYERS			= 2
-OPTIMISER				= keras.optimizers.Adam()
+OPTIMISER				= keras.optimizers.Adam
+PCNN_OPT				= 3e-4
+LOSS					= keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+VALIDATION_SPLIT		= 0.1
+METRICS					= ["accuracy"]
 MODEL_PATH				= "vqvae.h5"
 PCNN_PATH				= "pixel_communist_news_network.h5"
 
@@ -26,8 +29,8 @@ def train_vqvae(train_set, train_vnce):
 	print(train_vnce)
 
 	trainer		= Trainer(train_vnce, LATENT_DIMENSION_SIZE, NUM_EMBEDDINGS, BETA)
-	trainer.compile(optimizer = OPTIMISER)
-	training	= trainer.fit(train_set, epochs = EPOCHS, batch_size = BATCH_SIZE)
+	trainer.compile(optimizer = OPTIMISER())
+	training	= trainer.fit(train_set, epochs = VQVAE_EPOCHS, batch_size = BATCH_SIZE)
 	vqvae		= trainer.vqvae
 
 	# In terms of testing and validating for the vqvae, we have no testing and validation for the vqvae
@@ -37,13 +40,21 @@ def train_vqvae(train_set, train_vnce):
 def main():
 	tr, te, va		= get_ttv()
 	vnce			= var(tr)
-	norm_train		= normalise(tr)
+	train			= normalise(tr)
 	test			= normalise(te)
-	vqvae, trainer	= train_vqvae(norm_train, vnce)
+	vqvae, trainer	= train_vqvae(train, vnce)
 	vqvae.save(MODEL_PATH)
-	encoded_out		= trainer.vqvae.get_layer("encoder").predict(test)
-	#flat_encs		= encoded_out.reshape(FLATTEN, encoded_outs.shape[:LAST])
-	pcnn			= build_pcnn(encoded_out.shape[1:-1], NO_RESIDS, NO_PCNN_LAYERS, trainer.n_embeds)
+	encoder			= trainer.vqvae.get_layer("encoder")
+	encoded_out		= encoder.predict(test)
+	encoded_out		= encoded_out[:len(encoded_out) // 2] # Nothing to see here
+	qtiser			= trainer.vqvae.get_layer("quantiser")
+	flat_encs		= encoded_out.reshape(FLAT, encoded_out.shape[FLAT])
+	print(f"CUNT {len(flat_encs)}")
+	codebooks		= qtiser.code_indices(flat_encs)
+	codebooks		= codebooks.numpy().reshape(encoded_out.shape[:-1])
+	pcnn			= build_pcnn(trainer, encoded_out)
+	pcnn.compile(optimizer = OPTIMISER(PCNN_OPT), loss = LOSS, metrics = METRICS)
+	pcnn_training	= pcnn.fit(x = codebooks, y = codebooks, batch_size = BATCH_SIZE, epochs = PCNN_EPOCHS, validation_split = VALIDATION_SPLIT)
 	pcnn.save(PCNN_PATH)
 
 if __name__ == "__main__":

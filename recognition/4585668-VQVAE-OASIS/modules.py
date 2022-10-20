@@ -10,10 +10,9 @@ Inspired by https://keras.io/examples/generative/vq_vae/
 import	tensorflow				as		tf
 from	tensorflow				import	keras
 from	tensorflow.keras		import	layers
-#rom	dataset					import	ENC_IN_SHAPE
 from	numpy					import	zeros
 
-FLATTEN				= -1
+FLAT				= -1
 STRIDES				= 2
 PCNN_STRIDES		= 1
 KERN_SIZE			= 3
@@ -28,6 +27,8 @@ PCNN_MID_KERN_SIZE	= 1
 KERN_INIT			= 1.0
 RESIDUAL_BLOCKS		= 2
 ENC_IN_SHAPE		= (80, 80, 1)
+NO_RESID_BLOCKS		= 2
+NO_PCNN_LAYERS		= 2
 
 class VectorQuantiser(layers.Layer):
 	"""
@@ -60,7 +61,7 @@ class VectorQuantiser(layers.Layer):
 		"""
 
 		in_shape	= tf.shape(x)
-		flat		= tf.reshape(x, [FLATTEN, self.embed_dim])
+		flat		= tf.reshape(x, [FLAT, self.embed_dim])
 		enc_ind		= self.code_indices(flat)
 		enc			= tf.one_hot(enc_ind, self.n_embeds)
 		qtised		= tf.matmul(enc, self.embeddings, transpose_b = True)
@@ -128,7 +129,7 @@ def build_vqvae(lat_dim, embeds, beta):
 	return	- the assembled VQVAE
 	"""
 
-	vq			= VectorQuantiser(embeds, lat_dim, beta, name = "vector_quantiser")
+	vq			= VectorQuantiser(embeds, lat_dim, beta, name = "quantiser")
 	enc			= encoder(lat_dim)
 	dec			= decoder(lat_dim)
 	ins			= keras.Input(shape = ENC_IN_SHAPE)
@@ -179,20 +180,20 @@ class Trainer(keras.models.Model):
 
 class PixelConvolution(layers.Layer):
 	"""Pixel convolutional layer for pixel cnn"""
-	def __init__(self, mask, **kwargs):
-		super().__init__()
-		self.mask = mask
-		self.conv = layers.Conv2D(**kwargs)
+	def __init__(self, mask_type, **kwargs):
+		super(PixelConvolution, self).__init__()
+		self.mask_type	= mask_type
+		self.conv		= layers.Conv2D(**kwargs)
 
 	def build(self, input_shape):
 		"""Construct the convolutional kernel"""
 		self.conv.build(input_shape)
 		kern_shape	= self.conv.kernel.get_shape()
 		self.mask	= zeros(shape = kern_shape)
-		self.mask[: kern_shape[0] // KERN_FACTOR, ...] =KERN_INIT
+		self.mask[: kern_shape[0] // KERN_FACTOR, ...] = KERN_INIT
 		self.mask[kern_shape[0] // KERN_FACTOR, : kern_shape[1] // KERN_FACTOR, ...] = KERN_INIT
-		if self.mask == "B":
-			self.mask[kernel_shape[0] // KERN_FACTOR, kern_shape[1] // KERN_FACTOR, ...] = KERN_INIT
+		if self.mask_type == "B":
+			self.mask[kern_shape[0] // KERN_FACTOR, kern_shape[1] // KERN_FACTOR, ...] = KERN_INIT
 
 	def call(self, inputs):
 		"""Forward computational handler"""
@@ -213,7 +214,7 @@ class ResidualBlock(layers.Layer):
 			filters = self.filters, kernel_size = CONV1_KERN_SIZE, activation="relu"
 		)
 		self.pixel_conv = PixelConvolution(
-			mask		= "B",
+			mask_type	= "B",
 			filters		= self.filters // FILTER_FACTOR,
 			kernel_size	= KERN_SIZE,
 			activation	= "relu",
@@ -234,27 +235,25 @@ class ResidualBlock(layers.Layer):
 		config.update({"filters": self.filters})
 		return config
 
-def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, n_embeds):
+def build_pcnn(trainer, enc_outs):
 	"""Construct the Pixel CNN
 
-	in_shape		- shape of PCNN inputs
-	no_resid_blocks	- the number of residual blocks within the PCNN
-	no_pcnn_layers	- the number of layers within the PCNN
-	n_embeds		- the number of embeddings in the VQVAE
+	TODO FIXME
 
 	return			- the assembled Pixel CNN
 	"""
 
+	in_shape	= enc_outs.shape[1:-1]
 	pcnn_ins	= keras.Input(shape = in_shape, dtype = tf.int32)
-	onehot		= tf.one_hot(pcnn_ins, n_embeds)
-	layer		= PixelConvolution(mask = "A", filters = NO_FILTERS, kernel_size = PCNN_IN_KERN_SIZE, activation = "relu", padding = "same")(onehot)
+	onehot		= tf.one_hot(pcnn_ins, trainer.n_embeds)
+	layer		= PixelConvolution(mask_type = "A", filters = NO_FILTERS, kernel_size = PCNN_IN_KERN_SIZE, activation = "relu", padding = "same")(onehot)
 
-	for _ in range(no_resid_blocks):
+	for _ in range(NO_RESID_BLOCKS):
 		layer = ResidualBlock(filters = NO_FILTERS)(layer)
 
-	for _ in range(no_pcnn_layers):
+	for _ in range(NO_PCNN_LAYERS):
 		layer = PixelConvolution(
-			mask		= "B",
+			mask_type	= "B",
 			filters		= NO_FILTERS,
 			kernel_size	= PCNN_MID_KERN_SIZE,
 			strides		= PCNN_STRIDES,
@@ -262,8 +261,7 @@ def build_pcnn(in_shape, no_resid_blocks, no_pcnn_layers, n_embeds):
 			padding		= "valid",
 		)(layer)
 
-	out		= layers.Conv2D(filters = n_embeds, kernel_size = PCNN_OUT_KERN_SIZE, strides = PCNN_STRIDES, padding = "valid")(layer)
+	out		= layers.Conv2D(filters = trainer.n_embeds, kernel_size = PCNN_OUT_KERN_SIZE, strides = PCNN_STRIDES, padding = "valid")(layer)
 	pcnn	= keras.Model(pcnn_ins, out)
-	pcnn.summary()
 
 	return pcnn
