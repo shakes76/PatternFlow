@@ -11,14 +11,8 @@ This package utilizes [YOLOv5](https://github.com/ultralytics/yolov5) to train a
 
 
 
-### Dependencies 
-- PyTorch
-- Pillow
-- Git
-- [YOLOv5](https://github.com/ultralytics/yolov5)
-- 
 ### Data
-
+For this task, the [ISIC 2017 Dataset](https://challenge.isic-archive.com/data/#2017) was used for training. The dataset contains 2000 images of lesions that are either melanoma or benign. YOLOv5 requires a specific format - that is it needs the images as well as labels. For this process, [Roboflow](https://roboflow.com/) was used as it simplifies the process of labelling the images. All the images were labelled and then exported to YOLOv5 PyTorch format. Since it would take a long time to label all 2000 images, around 300 images were selected and it was 90%, 5%, 5% split. Due to the fact that there are only 300 images, 90% was chosen so that there are more used in the training process. The results of the data preprocessing can be found in the Data folder.
 
 
 ### Results
@@ -30,7 +24,14 @@ The following image shows the results from the training:
 <p align="center"><img src="./Results/model_summary.png" width="800"></p>
 
 ## Installation
+To use this repo, clone it and make sure all the dependencies are installed
 
+### Dependencies 
+- Python = 3.10.2
+- PyTorch = latest version
+- Pillow = latest version
+- Git = latest version
+- [YOLOv5](https://github.com/ultralytics/yolov5)
 
 
 ## Usage
