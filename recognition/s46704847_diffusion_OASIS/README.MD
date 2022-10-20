@@ -155,12 +155,14 @@ The models are trained on the Google Colab pro with NVIDIA Tesla T4 15GB GPU. Th
     BATCH_SIZE = 64  
     EPOCHS = 50  
     ![](imgs/ddpm64.gif)
+    ![](imgs/ddpm64.jpg)
 
 * 128X128 Images  
     IMAGE_SIZE = (128, 128)  
     BATCH_SIZE = 16  
     EPOCHS = 100  
-    ![](imgs/ddpm128.gif)  
+    ![](imgs/ddpm128.gif)
+    ![](imgs/ddpm128.jpg)  
 
 * 256X256 Images  
     IMAGE_SIZE = (256, 256)  
