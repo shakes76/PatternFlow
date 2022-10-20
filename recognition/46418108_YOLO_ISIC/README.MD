@@ -6,6 +6,8 @@ This package utilizes [YOLOv5](https://github.com/ultralytics/yolov5) to train a
 ### Background
 In Australia, it is estimated that two out of three people will be diagnosed with skin cancer by the age of 70, and this amounts to nearly 2000 deaths due to skin cancer each year[2]. As such, Australia has one of the highest rates of skin cancer in the world[2]. Therefore, detecting skin cancer has never been more important, and the most common way right now is to go to a skin clinic and have a doctor look at it. The purpose of this repositry is to develop a model that can successfully detect if a lesion is benign or cancerous (melanoma).
 
+### Description
+The purpose of this repositry is to train a model on the ISIC 2017 Dataset, which is 2000 images of lesions which are either benign or melanoma. The model needs to detect where the lesion is and then determine which class it belongs to. 
 
 ### YOLOv5 Model Architecture
 This repositry uses YOLOv5, which as of right now, does not have a paper. On the GitHub page it states that there are not many changes since the previous version, so it can be assumed that the model architecture is similar to YOLOv4[1]:
