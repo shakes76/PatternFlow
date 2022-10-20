@@ -39,8 +39,11 @@ class IUNET(nn.Module):
         self.conv5 = self.conv(filter_size*8, filter_size*16, 2)
 
         ### Localization Pathway (decoder)
-        ## Upsampling Module
-        self.upsample = nn.Upsample(scale_factor=2)
+        ## Upsampling Modules
+        self.upsample5 = self.upsample(filter_size*16, filter_size*8)
+        self.upsample4 = self.upsample(filter_size*8, filter_size*4)
+        self.upsample3 = self.upsample(filter_size*4, filter_size*2)
+        self.upsample2 = self.upsample(filter_size*2, filter_size)
 
         ## TODO: Localization Module
         self.localization = nn.Sequential()
@@ -76,6 +79,15 @@ class IUNET(nn.Module):
             nn.Conv2d(filters, filters, bias=False),
             nn.InstanceNorm2d(filters),
             self.lrelu
+        )
+    
+    def upsample(self, filters_in, filters_out) -> nn.Sequential:
+        """ 
+        Upsample module as described by Isensee et al.
+        """
+        return nn.Sequential(
+            nn.Upsample(scale_factor=2),
+            self.conv(filters_in, filters_out, stride=1)
         )
 
     def forward(self, x):
