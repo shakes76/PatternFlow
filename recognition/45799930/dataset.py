@@ -11,12 +11,12 @@ as all their truth data.
 class DataSet:
 
     def __init__(self):
-        self.validate_filenames = None
-        self.validate_truth_filenames = None
-        self.testing_filenames = None
-        self.testing_truth_filenames = None
-        self.training_filenames = None
-        self.training_truth_filenames = None
+        self.validate = None
+        self.validate_truth = None
+        self.testing = None
+        self.testing_truth = None
+        self.training = None
+        self.training_truth = None
         self.download_dataset()
         self.image_shape = (256, 256)
 
@@ -41,19 +41,28 @@ class DataSet:
         validate_filenames = sorted(glob.glob('./ISIC-2017_Validation_Data/*.jpg'))
 
         # convert this into tensorflow array
-        self.training_truth_filenames = tf.data.Dataset.from_tensor_slices(training_truth_filenames)
-        self.training_filenames = tf.data.Dataset.from_tensor_slices(training_filenames)
-        self.testing_truth_filenames = tf.data.Dataset.from_tensor_slices(testing_truth_filenames)
-        self.testing_filenames = tf.data.Dataset.from_tensor_slices(testing_filenames)
-        self.validate_truth_filenames = tf.data.Dataset.from_tensor_slices(validate_truth_filenames)
-        self.validate_filenames = tf.data.Dataset.from_tensor_slices(validate_filenames)
+        training_truth_filenames = tf.data.Dataset.from_tensor_slices(training_truth_filenames)
+        training_filenames = tf.data.Dataset.from_tensor_slices(training_filenames)
+        testing_truth_filenames = tf.data.Dataset.from_tensor_slices(testing_truth_filenames)
+        testing_filenames = tf.data.Dataset.from_tensor_slices(testing_filenames)
+        validate_truth_filenames = tf.data.Dataset.from_tensor_slices(validate_truth_filenames)
+        validate_filenames = tf.data.Dataset.from_tensor_slices(validate_filenames)
+
+        # process the data so that we can change the information from
+        self.training_truth = training_truth_filenames.map(self.pre_process_truth)
+        self.training = training_filenames.map(self.pre_process_image)
+        self.testing_truth = testing_truth_filenames.map(self.pre_process_truth)
+        self.testing = testing_filenames.map(self.pre_process_image)
+        self.validate_truth = validate_truth_filenames.map(self.pre_process_truth)
+        self.validate = validate_filenames.map(self.pre_process_image)
+
         # Let's just check to make sure that the truth is the same length as their corresponding dataset
-        if len(self.training_filenames) != len(self.training_truth_filenames) or len(self.testing_filenames) != len(
-                self.testing_filenames) or len(self.validate_filenames) != len(self.validate_truth_filenames):
+        if len(self.training) != len(self.training_truth) or len(self.testing) != len(
+                self.testing) or len(self.validate) != len(self.validate_truth):
             return False
         return True
 
-    def pre_process(self, image, truth_image):
+    def pre_process_image(self, image):
         """
         Need to preprocess the data as all we have right now is a location of the image and truth
         image. Do this by reading the file, decoding the jpeg or png respectively. We check to
@@ -65,15 +74,18 @@ class DataSet:
         :return: a tuple containing the processed image and ground-truth image.
         """
         image = tf.io.read_file(image)
-        # todo: do i need to change the chanels? 0 is the number used in the jpeg
+        # todo: do i need to change the channels? 0 is the number used in the jpeg
         image = tf.io.decode_jpeg(image, channels=0)
         image = tf.image.resize(image, (256, 256))
         image = tf.cast(image, tf.float32) / 255.
 
+        return image
+
+    def pre_process_truth(self, truth_image):
         truth_image = tf.io.read_file(truth_image)
-        # todo: do i need to change the chanels? 0 is the number used in the jpeg
+        # todo: do i need to change the channels? 0 is the number used in the jpeg
         truth_image = tf.io.decode_png(truth_image, channels=0)
         truth_image = tf.image.resize(truth_image, (256, 256))
         truth_image = tf.cast(truth_image, tf.float32) / 255.
 
-        return image, truth_image
+        return truth_image
