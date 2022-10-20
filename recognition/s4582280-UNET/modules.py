@@ -51,9 +51,9 @@ def BuildResUnet(shape):
     b = ResidualBlock(e3, 512, strides=2)
 
     """ Decoder 1, 2, 3 """
-    d1 = DecoderBlock(b, s3, 256)
-    d2 = DecoderBlock(d1, s2, 128)
-    d3 = DecoderBlock(d2, s1, 64)
+    d1 = DecoderBlock(b, e3, 256)
+    d2 = DecoderBlock(d1, e2, 128)
+    d3 = DecoderBlock(d2, e1, 64)
 
     """ Classifier """
     outputs = Conv2D(1, 1, activation="sigmoid", padding="same")(d3)
