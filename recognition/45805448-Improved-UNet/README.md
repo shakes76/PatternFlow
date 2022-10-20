@@ -12,7 +12,7 @@ The [dataset used](https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_IS
 
 ### Image Segmentation using Improved UNet
 
-In 2017, [1] created the Improved UNet, which borrows from the original UNet architecture and applies the following changes:
+In 2017, [1] created their Improved UNet, which borrows from the original UNet architecture and applies the following changes:
 
 - customised data augmentation (standardisation and cropping)
 - using twice the number of filters in the localization pathway (upsampling half of the network)
@@ -68,8 +68,8 @@ All textual outputs of the project are printed to stdout and all figures are sav
 
 Datasets used:
 
-- ISIC images: https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_ISIC_Part1_Training_Data.zip
-- ISIC ground truths: https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_ISIC_Part1_Training_GroundTruth.zip
+- [ISIC images](https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_ISIC_Part1_Training_Data.zip)
+- [ISIC ground truths](https://isic-challenge-data.s3.amazonaws.com/2016/ISBI2016_ISIC_Part1_Training_GroundTruth.zip)
 
 Libraries used:
 
@@ -83,3 +83,5 @@ Trained on the Rangpur cluster managed by the University of Queensland
 ## References
 
 [[1]](https://arxiv.org/pdf/1802.10508) F. Isensee, P. Kickingereder, W. Wick, M. Bendszus, K. H. Maier-Hein, "Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge", (2017)
+
+[[2]](https://challenge.isic-archive.com/landing/2016/) ISIC Challenge, "ISIC 2016 Challenge", (2016)
