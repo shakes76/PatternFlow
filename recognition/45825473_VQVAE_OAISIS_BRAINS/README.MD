@@ -2,7 +2,7 @@
 
 ## VQVAE & its model architecture
 
-The model architecture for the VQVAE is based on the concept of an autoencoder that maintains a discrete latent space rather than continuous. Thus the VQVAE contains an encoder model that generally performs convolutions on the given input, a latent space where was inspired by the keras tutorial[1]. but ultimately adjusted and then hypertuned to suit the OASIS data set. This involved making the following adjustments:
+The model architecture for the VQVAE is based on the concept of an autoencoder that maintains a discrete latent space rather than continuous. Thus the VQVAE contains an encoder model that generally performs convolutions on the given input, a latent space where was inspired by the keras tutorial[1]. However the model ultimately adjusted in architecture and then hypertuned to suit the OASIS data set. This involved making the following adjustments:
 
 - Doubling the number of filters in the encoder layer and decoder layer of the VQVAE.
 - Doubling the number of filters in the PixelCNN layers.
