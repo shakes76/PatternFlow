@@ -232,20 +232,20 @@ Further improvements for the SNN implementation would be
 ## Executing Code
 To execute the code the python files modules.py, dataset.py, and the ADNI dataset (\ADNI_AD_NC_2D\AD_NC\test\AD\388206_78.jpeg) have to be in the same folder.
 + train.py:
- * Main code to train, validate and test the model
- * Plotted images are stored in the folder of train.py
- * Important constants are defined in the top section of the file
+  * Main code to train, validate and test the model
+  * Plotted images are stored in the folder of train.py
+  * Important constants are defined in the top section of the file
 + predict.py: 
- * Loads the pre-trained models
- * Reruns testing on the test set
- * Plotted images are stored in the folder of predict.py	
+  * Loads the pre-trained models
+  * Reruns testing on the test set
+  * Plotted images are stored in the folder of predict.py	
 + modules.py
- * Definiton of SNN and classifier net
- * Definition of Loss functions
+  * Definiton of SNN and classifier net
+  * Definition of Loss functions
 + dataset.py
- * Custom datasets 
- * Custom dataloader to train, validate and test both models 
- * Custom augmentation function
+  * Custom datasets 
+  * Custom dataloader to train, validate and test both models 
+  * Custom augmentation function
 
 
 
