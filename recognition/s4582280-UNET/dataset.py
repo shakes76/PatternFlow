@@ -3,6 +3,10 @@
 # Imports
 import numpy as np
 import os, shutil
+import tensorflow as tf
+from glob import glob
+from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
 from pathlib import Path
 from PIL import Image
 from os import listdir
@@ -12,6 +16,7 @@ from matplotlib import pyplot as plt
 """ Image Parameters """
 H = 256
 W = 256
+BATCHES = 4
 
 # Loads the isic dataset from the defined path and grabs all the image files
 def load_isic(path, split=0.25):
@@ -31,13 +36,61 @@ def load_isic(path, split=0.25):
     trainX, testX = train_test_split(trainX, test_size=splitAmount, random_state=42)
 
     trainX, trainY = shuffled(trainX, trainY)
-    
+    # Debug output
+    print("===Loaded the following data===")
+    print(f"Training: {len(trainX)} | {len(trainY)}")
+    print(f"Testing: {len(testX)} | {len(testY)}")
+    print(f"Validation: {len(validX)} | {len(validY)}")
+
     # Return the final set
     return (trainX, trainY), (testX, testY), (validX, validY)
 
+# Shuffles the x and y to be randomly ordered
 def shuffled(x, y):
     return shuffle(x, y, random_state=42)
 
+# converts a regular data to that of a tensorflow mapped dataset
+def tf_dataset_conv(X, Y, batches=4):
+    ds = tf.data.Dataset.from_tensor_slices((X, Y))
+    ds = ds.map(tf_parse)
+    ds = ds.batch(batches)
+    ds = ds.prefetch(batches*2)
+    return ds
+
+# TF dataset loading support functions -----------------
+def tf_parse(x, y):
+    def _parse(x, y):
+        return read_data(x, y)
+    x, y = tf.numpy_function(_parse, [x, y], [tf.float32, tf.float32])
+    x.set_shape([H, W, 3])
+    y.set_shape([H, W, 1])
+    return x, y
+
+def read_data(x, y):
+    paths = [x.decode(), y.decode()]
+    ret = [0, 0]
+    for i in range(len(ret)):
+        path = paths[i]
+        if i == 0:
+            x = cv2.imread(path, cv2.IMREAD_COLOR)
+        else:
+            x = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        x = cv2.resize(x, (W, H))
+        x = x/255.0
+        x = x.astype(np.float32)
+        if i == 1:
+            x = np.expand_dims(x, axis=-1)
+        ret[i] = x
+    return ret[0], ret[1]
+
+
+# ------------------------------------
+
+(trainX, trainY), (testX, testY), (validX, validY) = load_isic("./Data/")
+
+train_set = tf_dataset_conv(trainX, trainY, BATCHES)
+
+print(len(train_set))
 """
 # Data preprocessing
 def normalize(input_image, input_mask):
