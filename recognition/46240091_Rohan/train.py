@@ -8,3 +8,12 @@ def vqvae_training(training_data, data_variance, latent_dims = 16, num_embedding
     vqvae.compile(optimizer=keras.optimizers.Adam())
     history = vqvae.fit(training_data, epochs=VQVAE_EPOCHS, batch_size=VQVAE_BATCHSIZE)
     return vqvae, history
+
+
+def VQVAE_training_plot(vqvae_history):
+  plt.plot(vqvae_history.history['reconstruction_loss'])
+  plt.title('VQVAE Training Loss')
+  plt.ylabel('Loss')
+  plt.xlabel('Epoch')
+  plt.legend(['Reconstruction Loss'])
+  plt.show()
