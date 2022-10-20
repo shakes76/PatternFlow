@@ -23,7 +23,9 @@ class Patches(layers.Layer):
         self.patch_size = patch_size
 
     def call(self, images):
-        batch_size = tf.shape(images)[0]
+        batch_size = tf.shape(tf.convert_to_tensor([images]))[0]
+
+        # splits the image into patches of dimension patch_size x patch_size
         patches = tf.image.extract_patches(
             images=images,
             sizes=[1, self.patch_size, self.patch_size, 1],
@@ -31,6 +33,7 @@ class Patches(layers.Layer):
             rates=[1, 1, 1, 1],
             padding="VALID",
         )
+
         patch_dims = patches.shape[-1]
         patches = tf.reshape(patches, [batch_size, -1, patch_dims])
         return patches
@@ -44,3 +47,18 @@ def MLP(layer, layer_count, dropout):
         layer = layers.Dense(count, activation='GeLU')(layer)
         layer = layers.Dropout(dropout)(layer)
     return layer
+
+
+class PatchEncoder(layers.Layer):
+  def __init__(self, num_patches, projection_dim):
+    super(PatchEncoder, self).__init__()
+    self.num_patches = num_patches
+    self.projection = layers.Dense(units=projection_dim)
+    self.position_embedding = layers.Embedding(
+        input_dim=num_patches, output_dim=projection_dim
+    )
+
+  def call(self, patch):
+    positions = tf.range(start=0, limit=self.num_patches, delta=1)
+    encoded = self.projection(patch) + self.position_embedding(positions)
+    return encoded
