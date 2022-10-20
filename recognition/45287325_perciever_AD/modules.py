@@ -129,7 +129,7 @@ class Output(nn.Module):
 
 
 class Perciever(nn.Module):
-    def __init__(self, d_latents, n_latents, transformer_depth, n_cross_attends) -> None:
+    def __init__(self, n_latents, d_latents, transformer_depth, n_cross_attends) -> None:
         super(Perciever, self).__init__()
         self.depth = n_cross_attends
 
@@ -143,10 +143,11 @@ class Perciever(nn.Module):
         self.op = Output(d_latents)
 
 
-    def forward(self, latent, data):
-        x = latent
+    def forward(self, data):
+        b, _, _, _ = data.size()
+        x = torch.stack([self.latent for _ in range(b)])
         for i in range(self.depth):
-            x = self.ca[i](x, data)
+            x = self.ca[i](x, torch.flatten(data, start_dim=1)[:, :, None])
             x = self.lt[i](x)
         output = self.op(x)
         return output
