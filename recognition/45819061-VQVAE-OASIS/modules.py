@@ -58,6 +58,51 @@ def resblock(x, filters=256):
     out = Add()([x, skip])
     return ReLU()(out)
 
+
+class PixelCNN(Layer):
+    def __init__(self, mask_type, **kwargs):
+        super(PixelCNN, self).__init__()
+        self.mask_type = mask_type
+        self.conv = Conv2D(**kwargs)
+    
+    def build(self, input_shape):
+        self.conv.build(input_shape)
+        kernel_shape = self.conv.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[:kernel_shape[0]//2, ...] = 1.0
+        self.mask[kernel_shape[0]//2, kernel_shape[1]//2, ...] = 1.0
+        if self.mask = 'B':
+            self.mask[kernel_shape[0]//2, kernel_shape[1]//2, kernel_shape[1]//2, ...] = 1.0
+
+    def call(self, inputs):
+        self.conv.kernel.assign(self.conv.kernel * self.mask)
+        return self.conv(inputs)
+
+class ResidualBlock(Layer):
+    def __init__(self, filters):
+        super(ResidualBlock, self).__init__()
+        self.conv1 = Conv2D(filters=filters, kernel_size=1, activation='leaky_relu')
+        self.pixelcnn = PixelCNN(mask_type='B', filters=filters//2, kernel_size=3, activation='leaky_relu', padding='same')
+        self.conv2 = Conv2D(filters=filters, kernel_size=1, activation='leaky_relu')
+    
+    def call(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pixel_cnn(x)
+        x = self.conv2(x)
+        return Add([inputs, x])
+
+def get_pixelcnn(input_shape, num_embeddings, num_residual_blocks=2, num_pixelcnn_layers=2, **kwargs):
+    pixelcnn_inputs = Input(shape=input_shape)
+    onehot = tf.one_hot(pixelcnn_inputs, num_embeddings)
+    x = PixelCNN(mask_type='A', filters=128, kernel_size=7, activation='leaky_relu', padding='same')(onehot)
+    for _ in range(num_residual_blocks):
+        x = ResidualBlock(filters=128)
+    for _ in range(num_pixelcnn_layers):
+        x = PixelCNN(mask_type='B', filters=128, kernel_size=1, strides=1, activation='leaky_relu', padding='same')
+    out = Conv2D(filters=num_embeddings, kernel_size=1, strides=1, padding="valid")(x)
+    return tf.keras.Model(pixelcnn_inputs, out, name='pixelcnn')
+
+
 class VQVAE(tf.keras.Model):
     def __init__(self, latent_dim=32, num_embeddings=64, input_shape=(256, 256, 1), residual_hiddens=64):
         super().__init__()
