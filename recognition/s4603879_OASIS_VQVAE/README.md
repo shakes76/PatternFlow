@@ -105,5 +105,6 @@ python3 predict.py
 - predict.py: provide the usage and accuracy of the test dataset and show the examples and visualization of result.
 - /save_image: folder containing some predicted images.
 - /saved_model: the trained model is saved in the directory.
+- VQ_VAE.ipynb: the jupyter/colab notebook showing all the code and outputs of building, trainging and testing the vqvae model.
 
 
