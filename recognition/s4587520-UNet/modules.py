@@ -5,8 +5,8 @@ from torch import nn
 class UNet(nn.Module):
   def __init__(self):
     super().__init__()
-    self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3)
-    self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
+    self.conv16 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding="same")
+    self.conv32 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding="same")
     self.context16 = Context_Module(16)
     self.context32 = Context_Module(32)
     self.context64 = Context_Module(64)
@@ -28,19 +28,24 @@ class UNet(nn.Module):
 
   def forward(self, x):
     x = self.conv16(x)
+    print("After Conv16", x.size())
     x1 = self.context16(x)
     x = self.stride32(x1)
+    print(x.size())
     x2 = self.context32(x)
+    print(x2.size())
     x = self.stride64(x2)
     x3 = self.context64(x)
     x = self.stride128(x3)
     x4 = self.context128(x)
     x = self.stride256(x4)
     x = self.context256(x)
+    print("Before Upsample 128", x.size(), x4.size())
     x = self.upsample128(x, x4)
     x = self.local128(x)
     x = self.upsample64(x, x3)
     x5 = self.local64(x)
+    print("Before Upsample 128", x5.size(), x2.size())
     x = self.upsample32(x5, x2)
     x6 = self.local32(x)
     x = self.upsample16(x6, x1)
@@ -51,18 +56,17 @@ class UNet(nn.Module):
 
 
 #Context Module: 2 3x3 convs connected by 0.3 dropout, adds input after module
-#Leaky RelU activation with instance normalisation
 class Context_Module(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
       nn.InstanceNorm2d(output_filters),
       nn.LeakyReLU(negative_slope=0.01),
-      nn.Conv2d(output_filters, output_filters, kernel_size=3, padding=1),
+      nn.Conv2d(output_filters, output_filters, kernel_size=3, padding="same"),
       nn.Dropout(p=0.3),
       nn.InstanceNorm2d(output_filters),
       nn.LeakyReLU(negative_slope=0.01),
-      nn.Conv2d(output_filters, output_filters, kernel_size=3, padding=1)
+      nn.Conv2d(output_filters, output_filters, kernel_size=3, padding="same")
     )
 
   def forward(self, x):
@@ -76,14 +80,13 @@ class Upsampling_Module(nn.Module):
     super().__init__()
     self.stack = nn.Sequential(
       nn.UpsamplingNearest2d(scale_factor=2), #Padding value is applied in both directions on each dimensions
-      nn.Conv2d((2*output_filters), output_filters, kernel_size=3, padding=2)
+      nn.Conv2d((2*output_filters), output_filters, kernel_size=3, padding="same")
     )
 
   def forward(self, main, cat):
     #main is the signal to be processed and cat is the signal to be concatenated
     out = self.stack(main)
-    print(out.size())
-    print(cat.size())
+    out = simple_size_fix(out, cat)
     return torch.cat((out, cat), dim=1)
 
 #Performs a 3x3 conv with stride 2 at set output filters
@@ -91,7 +94,7 @@ class Stride2_Conv(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
-      nn.Conv2d(int(output_filters/2), output_filters, kernel_size=3, stride=2)
+      nn.Conv2d(int(output_filters/2), output_filters, kernel_size=3, stride=2, padding=1)
     )
 
   def forward(self, x):
@@ -103,8 +106,16 @@ class Localisation_Module(nn.Module):
   def __init__(self, output_filters):
     super().__init__()
     self.stack = nn.Sequential(
-        nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding=1),
+        nn.Conv2d(2*output_filters, 2*output_filters, kernel_size=3, padding="same"),
         nn.Conv2d(2*output_filters, output_filters, kernel_size=1)
     )
   def forward(self, x):
     return self.stack(x)
+
+
+#Fixes rounding errors
+def simple_size_fix(x, desired):
+  pad_width = desired.size(3) - x.size(3)
+  pad_height = desired.size(2) - x.size(2)
+  x = nn.functional.pad(x, [0, pad_width, 0, pad_height])
+  return x
