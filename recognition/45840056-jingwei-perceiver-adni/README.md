@@ -17,7 +17,7 @@ The model can achieve good results with only a few epochs of training (~5). Belo
 
 ![](figures/training.png)
 
-The first accuracy value is the validation set accuracy and the second is the testing set accuracy, both over 80%. The training time is quite quick at only 30 minutes for 24 epochs (trained on Nvidia GTX 1070). For training, validation and testing, I have split the data like so: 65% for training, 15% for validation and 20% for testing, this is because most of the data should go towards training with a small subset for validation and testing each. The testing set is always kept apart from the other two sets and never used for validation or training. This ensures that the validation set is never used for hyper-param tuning.
+The first accuracy value is the validation set accuracy and the second is the testing set accuracy, both over 80%. The training time is quite quick at only 30 minutes for 24 epochs (trained on Nvidia GTX 1070). For training, validation and testing, I have split the data like so: 65% for training, 15% for validation and 20% for testing. This is because most of the data should go towards training with a small subset for validation and testing each. The testing set is always kept apart from the other two sets and never used for validation or training. This ensures that the test set is never used for hyper-param tuning.
 
 ### Batch losses for the above training
 
