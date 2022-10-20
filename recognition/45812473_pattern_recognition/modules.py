@@ -14,8 +14,8 @@ class ImprovedUnetModel:
         self.filters = filters
         self.kernel = kernel
         self.model = None
-        self.dropout = 0.3 # Given in paper
-        self.alpha = 0.01 # Given in paper
+        self.dropout = 0.3
+        self.alpha = 0.01
         self.padding = "same"
         self.upsample = (2, 2)
 
@@ -125,3 +125,4 @@ class ImprovedUnetModel:
         model = Model(name = "ImprovedUnetModel", inputs = input_layer, outputs = output)
         self.model = model
         return
+        

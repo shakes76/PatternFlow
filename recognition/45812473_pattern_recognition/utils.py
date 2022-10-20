@@ -10,3 +10,4 @@ def dice_similarity(a, b):
     bot = tf.keras.backend.sum(a_flat) + tf.keras.backend.sum(b_flat)
     dsc = top/bot
     return dsc
+    

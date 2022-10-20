@@ -3,10 +3,10 @@ import tensorflow as tf
 from utils import dice_similarity
 import numpy
 
-"""
-Shows the first 5 predictions using the model and the test set
-"""
 def predictions(model, xtest, ytest):
+    """
+    Shows the first 5 predictions using the model and the test set
+    """
 
     # Predict the masks 
     predictions = model.predict(xtest)
@@ -44,13 +44,18 @@ def predictions(model, xtest, ytest):
     return
 
 def test_dsc(model, xtest, ytest):
+    """
+    Gives the dice similarity coefficient of the test set using the given model
+    """
+    # Make the predictions given the model
     predictions = model.predict(xtest)
 
+    # Get average dice similarity coefficient for all test set
     dsc = 0
     for i, prediction in enumerate(predictions):
         dsc += dice_similarity(ytest[i], prediction)
     dsc = dsc / predictions.shape[0]
     dsc = dsc.numpy()
-
     print("Dice similarity coefficient of the test set is", dsc)
+
     return

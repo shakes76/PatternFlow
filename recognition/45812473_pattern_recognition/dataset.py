@@ -2,7 +2,7 @@ import os
 import cv2
 import tensorflow as tf
 import numpy as np
-from tf.keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 
 def process_data(data_path, masks_path, image_size):
     """
@@ -47,10 +47,12 @@ def train_val_test_split(data, train, val):
     Creates a train, validation, test, split of the data
     train + val < 1 is a prerequisite
     """
+    # Gets indices of splits
     length = len(data)
     train_index = int(train * length)
     val_index = train_index + int(val * length)
 
+    # Splits the data
     training = data[ : train_index]
     validation = data[train_index : val_index]
     testing = data[val_index : ]
