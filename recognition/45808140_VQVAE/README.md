@@ -1,4 +1,4 @@
-# **VQVAE on ADNI dataset to generate new brain samples**
+# **VQVAE on ADNI dataset to generate new brain samples with PixelCNN**
 ## **Overview**
 This project aims to create a generative model for the ADNI dataset using VQVAE and PixelCNN. We use VQVAE to create discrete latent codebooks for which we will feed into PixelCNN to learn how to generate new codebook images that will decode into new brain images. We look to achieve this by getting at least 0.6 SSIM in the VQVAE model.
 
@@ -6,28 +6,25 @@ This project aims to create a generative model for the ADNI dataset using VQVAE 
 
 ## **VQVAE Model**
 ---
-<p align="center"><img src="./vqvae_model.png" /></p>
+<p align="center"><img src="./images/vqvae_model.png" /></p>
 
 The image above depicts the high-level structure of a VQVAE model which consists of an encoder, vector quantisation layer which includes the discrete latent space and codebook vectors and a decoder. 
 
 This is essentially an extension of the VAE model (image below) in which we feed input into the encoder to generate the latent vector representation then build out latent space by enforcing a uniform prior and determining the posterior for the latent space. Then we feed this through the decoder to reconstruct the image.
 
-<p align="center"><img src="./vae_model.png" height=500/></p>
+<p align="center"><img src="./images/vae_model.png" height=500/></p>
 
 With the VQVAE we incorporate the vector-quantisation layer and use discrete latent representation and a discrete codebook. The codebook stores the latent vectors associated with a corresponding index. We use this to quantise the autoencoder to compare the output of the encoder to the codebooks and the we decode closest codebook vector in euclidean distance to reconstruct the image.
 
 **Loss**
-<p align="center"><img src="./loss.png"/></p>
+<p align="center"><img src="./images/loss.png"/></p>
 
 According to the paper there are 3 key loss metrics associated with the VQVAE model: total loss, vector quantisation loss and the reconstruction loss. The total loss is the combined loss from the VQ layer and the reconstructions. There are 2 components for the VQ loss: commitment and codebook. The codebook loss is just the L2-norm error to move the embedding/codebook vectors and commitment loss is to ensure the encoder commits to a codebook as the codebooks do not learn as fast as the encoder. 
 
-check below
-
-we encode the input image then learn the discrete latent space which maps the embedding space then we deocode the image using the embedded codebooks. 
-
 ### **VQVAE results**
 ---
-The graph below shows the total, VQ loss and reconstruction loss. We observe that we get really great results within 2 epochs. That is high SSIM, but then this drops off in the next epoch but rises again to over 0.9 average SSIM by 20 epochs. We will run into the issue of overfitting the dataset as we only get incremental improvements after 20 epochs
+
+For the final results we chose to use 20 epochs for both models with their respective learning rates as these hyperparameters yielded the best results. The graph below shows the total, VQ loss and reconstruction loss. We observe that we get really great results within 2 epochs. That is high SSIM, but then this drops off in the next epoch but rises again to over 0.9 average SSIM by 20 epochs. We will run into the issue of overfitting the dataset as we only get incremental improvements after 20 epochs
 
 <p align="center"><img src="./results/vq_loss_50.png" /></p>
 
@@ -41,7 +38,7 @@ The graph below shows the total, VQ loss and reconstruction loss. We observe tha
 
 ## **PixelCNN Model**
 ---
-<p align="center"><img src="./pcnn_model.png" height=600 ></p>
+<p align="center"><img src="./images/pcnn_model.png" height=600 ></p>
 
 PixelCNN is a generative model that uses convolutional and residual blocks to generate images by iteratively calculating the distribution of prior pixels to generate the probability of later pixels.
 
@@ -49,7 +46,7 @@ The input image first gets passed through the convolutional layer which generate
 
 Then we pass the initial convolution layer to residual blocks. These layers are essentially trying to learn the true output by learning the residuals of the true output. We achieve this by skipping the connections between layers. 
 
-<p align="center"><img src="./resid.png" height=300/></p>
+<p align="center"><img src="./images/resid.png" height=300/></p>
 
 **Loss:** We use the Sparse Categorical Crossentropy loss to quantify the loss of each pixel
 
@@ -122,12 +119,5 @@ This project was completed with the following modules for which you should insta
 - https://keras.io/examples/generative/pixelcnn/
 
 
-
-Comments 
-
-can be slightly larger show high level models and describe a little can assume AI background
-
 Pull request pretty much straightforward list whats in each file medium sized 2 sentences ish
 
-
-<p>With this project we wanting generate new samples of brain images using VQVAE to create discrete latent codebooks for which we will then feed into a PixelCNN model to create the new images. We will use the ADNI dataset to train the VQVAE model to successfully encode and decode images with at least >0.6 SSIM. The model uses Vector-Quantisation (VQ) layer to learn the embedding space with L2-norm distances. Then we feed the resulting codebooks to train a PixelCNN model to generate new codebooks which will hopefully decode into new brains. It achieves this by taking the probability distribution of prior examples to learn the probability distribution of new samples. The output of this is used as a probability distribution from which new pixel values will be sampled to generate the desired image.</p>
