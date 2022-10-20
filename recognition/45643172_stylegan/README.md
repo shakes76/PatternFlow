@@ -67,6 +67,12 @@ Below are some examples.
 
 ## Executing Code
 
+### Files include
+
+- modules.py: The model itself, including the utility function discriminator and generator, etc.
+- train.py: All code for training the model.
+- predict.py: Take input and give visualisations of result with trained model.
+
 ### Train the model:
     python train.py 
 
@@ -78,7 +84,22 @@ where the [input_path] is the path of the input.
 
 ## Result
 
+### Training process
 
+It can be observed that with the gradual increase in resolution and continuous training, the resulting images become more and more stable.
+
+![process](images/training_process.png)
+
+
+
+
+### Final image with 64x64 resolution
+
+![final](images/64x64.png)
+
+### Losses
+
+![loss](images/loss_plot.jpg)
 
 
 ## References
