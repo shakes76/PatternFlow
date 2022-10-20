@@ -158,6 +158,7 @@ class VQVAETrainer(keras.models.Model):
             # Calculate the total and reconstruction losses
             reconstruction_loss = (tf.reduce_mean((x - reconstructions) ** 2) / self.train_variance)
             total_loss = reconstruction_loss + sum(self.vqvae.losses)
+            #Calculate batch SSIM for the epoch
             ssim = 0
             for index in range(x.shape[0]):
               ssim += (tf.image.ssim(x[index, :, :, :], reconstructions[index, :, :, :], max_val=255))

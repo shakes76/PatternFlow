@@ -38,8 +38,8 @@ The following is a plot of the overall loss per epoch when training the VQVAE
 ![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/TotalLoss.PNG)
 
 The following is a plot the highlights the reconstruction loss as well as the SSIM per epoch for the VQVAE. Note the orange line is the SSIM and the
-They appear proportionally inverse to each other as the closer the image is to the original representation in the test set, the higher SSIM value is
-and the lower the resulting reconstruction loss is.
+blue line is the reconstruction loss for the VQVAE based on the test images. They appear proportionally inverse to each other as the closer the image
+is to the original representation in the test set, the higher SSIM value is and the lower the resulting reconstruction loss is.
 
 ![image](https://raw.githubusercontent.com/Adam99115/PatternFlow/topic-recognition/recognition/45825473_VQVAE_OAISIS_BRAINS/images/SSIM_ReconstructionLoss.PNG)
 
