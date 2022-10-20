@@ -12,13 +12,13 @@ The input is passed through a sigmoid layer. While, in the referenced paper (“
 
 ## Dependencies
 
--Python = 3.9.13
--PyTorch = 1.12.1
--TorchVision = 0.13.1
--NumPy = 1.23.1
--CudaToolKit = 11.6.0
--tqdm = 4.64.1
--MatPlotLib = 3.5.2
+- Python = 3.9.13
+- PyTorch = 1.12.1
+- TorchVision = 0.13.1
+- NumPy = 1.23.1
+- CudaToolKit = 11.6.0
+- tqdm = 4.64.1
+- MatPlotLib = 3.5.2
 
 ## Reproducibility of Results
 
