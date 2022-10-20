@@ -30,9 +30,13 @@ def load_isic(path, split=0.25):
     trainY, testY = train_test_split(trainY, test_size=splitAmount, random_state=42)
     trainX, testX = train_test_split(trainX, test_size=splitAmount, random_state=42)
 
+    trainX, trainY = shuffled(trainX, trainY)
+    
     # Return the final set
     return (trainX, trainY), (testX, testY), (validX, validY)
 
+def shuffled(x, y):
+    return shuffle(x, y, random_state=42)
 
 """
 # Data preprocessing
