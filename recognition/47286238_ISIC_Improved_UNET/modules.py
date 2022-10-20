@@ -72,13 +72,9 @@ class IUNET(nn.Module):
         Context module as described by Isensee et al.
         """
         return nn.Sequential(
-            nn.Conv2d(filters, filters, bias=False),
-            nn.InstanceNorm2d(filters),
-            self.lrelu,
+            self.conv(filters, filters, stride=1),
             nn.Dropout2d(p=0.3),
-            nn.Conv2d(filters, filters, bias=False),
-            nn.InstanceNorm2d(filters),
-            self.lrelu
+            self.conv(filters, filters, stride=1),
         )
     
     def upsample(self, filters_in, filters_out) -> nn.Sequential:
