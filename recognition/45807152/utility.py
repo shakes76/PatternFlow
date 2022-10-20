@@ -3,7 +3,7 @@ from tensorflow.keras import backend as K
 import tensorflow as tf
 
 
-def dice_similarity(y_true, y_pred):
+def dice_coefficient(y_true, y_pred):
     """
     Dice coefficient calculation between two tensor samples.
     
