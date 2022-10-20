@@ -20,7 +20,8 @@ def dsc(mask, truth):
 
     # intersection = torch.where(a > 0.0, 0.0, b)
     intersection = a * b
-    return 2 * torch.sum(intersection) / (torch.sum(a) + torch.sum(b))
+    epsilon = 1e-8 # prevent division by zero error
+    return 2 * torch.sum(intersection) / (torch.sum(a) + torch.sum(b) + epsilon)
 
 def get_mask(predicted, threshold):
     """ 
@@ -52,7 +53,6 @@ def evaluate_model(model, loader, limit, batch_size):
             pred = get_mask(out[:,0,:,:], 0.5)
             dscs.append(dsc(pred, mask[:,0,:,:]))
 
-
             if batch_no >= limit/batch_size:
                 break
     model.train()
@@ -67,7 +67,6 @@ if __name__ == '__main__':
         print("CUDA not available for training! Aborting...")
     device = 'cuda'
 
-    # TODO: optimal batch size?
     batch_size = 1
     dataset_train = Dataset(
         data_path='data/training/data', 
@@ -79,12 +78,12 @@ if __name__ == '__main__':
         truth_path='data/validation/truth', 
         metadata_path='data/validation/data/ISIC-2017_Validation_Data_metadata.csv'
         )
-    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=False)
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
     dataloader_validation = torch.utils.data.DataLoader(dataset_validation, batch_size=batch_size, shuffle=False)
     
 
     learning_rate = 1e-3
-    num_epochs = 10
+    num_epochs = 15
 
     model = IUNET(3, 16).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -132,18 +131,18 @@ if __name__ == '__main__':
         validation_dsc_history.append(validation_dsc)
 
         epoch_end = time.time()
-        print(f"epoch [{i+1}/{num_epochs}] {epoch_end - epoch_start}\tloss: {epoch_loss}\tdsc: {epoch_dsc}\tval loss: {validation_loss}\tval dsc: {validation_dsc}")
+        print(f"epoch [{i+1}/{num_epochs}] {(epoch_end - epoch_start)/60}m\tloss: {epoch_loss}\tdsc: {epoch_dsc}\tval loss: {validation_loss}\tval dsc: {validation_dsc}")
 
     # save files
     torch.save(model.state_dict(), 'model.pt')
     with open('train_loss.pkl', 'wb') as f:
-        pickle.dump(loss_history)
+        pickle.dump(loss_history, f)
     with open('train_dsc.pkl', 'wb') as f:
-        pickle.dump(dsc_history)
+        pickle.dump(dsc_history, f)
     with open('validation_loss.pkl', 'wb') as f:
-        pickle.dump(validation_loss_history)
+        pickle.dump(validation_loss_history, f)
     with open('validation_dsc.pkl', 'wb') as f:
-        pickle.dump(validation_dsc_history)
+        pickle.dump(validation_dsc_history, f)
 
     end = time.time()
     print(f'Done in {end - start}s')
