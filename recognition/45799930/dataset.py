@@ -64,14 +64,12 @@ class DataSet:
 
     def pre_process_image(self, image):
         """
-        Need to preprocess the data as all we have right now is a location of the image and truth
-        image. Do this by reading the file, decoding the jpeg or png respectively. We check to
-        ensure that all the images are the same size. Then cast them to make sure in the same form
-        I cast both of them to make it easier for me.
+        Need to preprocess the data as all we have right now is a location of the image. Do this by reading the file,
+        decoding the jpeg. We check to ensure that all the images are the same size. Then cast them to make sure in the
+        same form I cast it to a float.
 
         :param image: the path to the image
-        :param truth_image: the path to the ground truth image.
-        :return: a tuple containing the processed image and ground-truth image.
+        :return: the processed image
         """
         image = tf.io.read_file(image)
         # todo: do i need to change the channels? 0 is the number used in the jpeg
@@ -82,6 +80,14 @@ class DataSet:
         return image
 
     def pre_process_truth(self, truth_image):
+        """
+        Need to preprocess the data as all we have right now is a location of the truth image. Do this by reading the
+        file, decoding the png. We check to ensure that all the images are the same size. Then cast them to make sure
+        in the same form I cast it to a float.
+        
+        :param truth_image: the path to the truth_image
+        :return: the processed truth image
+        """
         truth_image = tf.io.read_file(truth_image)
         # todo: do i need to change the channels? 0 is the number used in the jpeg
         truth_image = tf.io.decode_png(truth_image, channels=0)
