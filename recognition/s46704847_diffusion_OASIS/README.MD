@@ -145,7 +145,7 @@ For the backward phase, we use an Attantion U-NET to predict a noise picture in 
 However, this porject is using the OASIS brain dataset which concentrates on a single pattern of images, being hard to be described by some words. Thus, I use the time embedding attention to alter the word embedding attention in the U-Net, see Fig.4.
 
 ![](imgs/attention_unet.png)
-<p align='center'> <i>Fig.4. Attention U-Net</i> </p> 
+<p align='center'> Fig.4. <i>Attention U-Net</i> </p> 
 
 Now, we have the structure of the backward denoise Attention U-Net Model. We need to choose optimizer and loss fuction. We will use Adam optimizer with a initial learning rate of $1e-4$ .  
 
