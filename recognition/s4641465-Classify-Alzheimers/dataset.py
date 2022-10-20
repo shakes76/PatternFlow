@@ -5,10 +5,6 @@ import tensorflow.keras.utils
 from tensorflow.keras.preprocessing.image import array_to_img
 from tensorflow.keras.preprocessing.image import img_to_array
 import matplotlib.pyplot as plt
-     
-def scaling(input_image):
-    input_image = input_image / 255.0
-    return input_image
 
 def process_input(input, input_size):
     return tf.image.resize(input, [input_size, input_size], method="area")
@@ -49,6 +45,13 @@ def get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size):
         image_size=(crop_size, crop_size), 
         label_mode = None)
 
+    train_ds = train_ds.map(
+        lambda x: x / 255.0
+    )
+    
+    val_ds = val_ds.map(
+        lambda x: x / 255.0
+    )
 
     train_ds = train_ds.map(
         lambda x: (tf.image.resize(x, [input_size, input_size], method="area"), x)
@@ -66,11 +69,8 @@ def main():
 
     train_ds, val_ds, test_ds = get_datasets(train_path, test_path, 8, 4, 200)
 
-    for batch in train_ds.take(1):
-        plt.imshow(array_to_img(batch[0][0]))
-        plt.show()
-        plt.imshow(array_to_img(batch[1][0]))
-        plt.show()
+    batch = list(train_ds.take(1))[0]
+    
 
 if __name__ == "__main__":
     main()

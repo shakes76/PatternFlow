@@ -1,3 +1,4 @@
+import math
 from dataset import get_datasets
 from modules import get_model
 
@@ -12,6 +13,13 @@ from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 import PIL
 
+def upscale_image(model, img):
+    input = np.expand_dims(img, axis=0)
+    out = model.predict(input)
+    prediction = out[0]
+    prediction *= 255.0
+    prediction = prediction.clip(0, 255)
+    return prediction
 
 def train(epochs):
     train_path = "dataset\\train"
@@ -21,7 +29,6 @@ def train(epochs):
     upscale_factor = 4
     crop_size = 200
     train_ds, val_ds, test_ds = get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size)
-    print(train_ds.element_spec)
     checkpoint_filepath = "tmp\\checkpoint"
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
@@ -32,7 +39,23 @@ def train(epochs):
     save_best_only=True,
     )
     
-    
+    class ESPCNCallback(keras.callbacks.Callback):
+        def __init__(self):
+            super(ESPCNCallback, self).__init__()
+            self.test_img = get_lowres_image(list(test_ds.take(1))[0][0], upscale_factor)
+
+        # Store PSNR value in each epoch.
+        def on_epoch_begin(self, epoch, logs=None):
+            self.psnr = []
+
+        def on_epoch_end(self, epoch, logs=None):
+            print("Mean PSNR for epoch: %.2f" % (np.mean(self.psnr)))
+            if epoch % 20 == 0:
+                prediction = upscale_image(self.model, self.test_img)
+                plot_results(prediction, "epoch-" + str(epoch), "prediction")
+
+        def on_test_batch_end(self, batch, logs=None):
+            self.psnr.append(10 * math.log10(1 / logs["loss"]))
     
     model = get_model()
 
@@ -43,7 +66,7 @@ def train(epochs):
     )
 
     model.fit(
-        train_ds, epochs=epochs, callbacks = [model_checkpoint_callback],  validation_data=val_ds, verbose=2
+        train_ds, epochs=epochs, callbacks = [model_checkpoint_callback, ESPCNCallback()],  validation_data=val_ds, verbose=2
     )
 
     model.load_weights(checkpoint_filepath)
@@ -55,14 +78,13 @@ def plot_results(img, prefix, title):
     img_array = img_array.astype('float32') / 255.0
 
     fig, ax = plt.subplots()
-    im = ax.imshow(img_array[::-1], origin="lower", cmap="gray")
+    im = ax.imshow(img_array, origin="lower", cmap="gray")
     
     plt.title(title)
 
     plt.yticks(visible=False)
     plt.xticks(visible=False)
     plt.savefig(str(prefix) + "-" + title + ".png")
-    plt.show()
 
 def get_lowres_image(img, upscale_factor):
     return tf.image.resize(
