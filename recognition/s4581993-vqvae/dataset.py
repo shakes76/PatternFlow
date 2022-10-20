@@ -70,14 +70,14 @@ def load_dataset(folder: str) -> tf.data.Dataset:
     return ds
 
 # Scale the given image to a range of [-0.5, 0.5] and change it to 1 colour channel
-def _scale_image(image: tf.Tensor) -> tf.Tensor:
+def scale_image(image: tf.Tensor) -> tf.Tensor:
     image = image / 255 - 0.5
     image = tf.image.rgb_to_grayscale(image)
     return image
 
 # Preprocess the data
 def preprocess_data(dataset: tf.data.Dataset) -> np.array:
-    return np.asarray(list(dataset.unbatch().map(_scale_image)))
+    return np.asarray(list(dataset.unbatch().map(scale_image)))
 
 # Load and preprocess the training dataset
 def get_train_dataset() -> np.array:
