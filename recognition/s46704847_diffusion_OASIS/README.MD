@@ -116,8 +116,11 @@ Considering a picture in Fig.2, we gradually add a small amounts of random noise
 ![](imgs/forward_noise.png)
 <p align='center'> Fig.2. Picture diffusion process </p> 
 
-This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $ x_0 $ as the original picture, $ x_t $ as the final unrecognized picture (random noise). We can define the process as : $$ q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI) $$   Here $ \beta $ follows a variance schedule of linier increase from 0.0001 to 0.02.  
-The process from $x_1$ to $x_t$ can be define as:  $$q(x_{1:T}|x_0)=\prod_{{t=1}}^{T} q(x_t|x_{t-1}) $$  
+This process follows the Markov Chain which is a chain of events in which an event is only determined by the previous event. Here we denote $ x_0 $ as the original picture, $ x_t $ as the final unrecognized picture (random noise). We can define the process as :  
+$$ q(x_t|x_{t-1})=N(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_tI) $$   
+Here $ \beta $ follows a variance schedule of linier increase from 0.0001 to 0.02.  
+The process from $x_1$ to $x_t$ can be define as:  
+$$q(x_{1:T}|x_0)=\prod_{{t=1}}^{T} q(x_t|x_{t-1}) $$  
 
 However, this process of adding noise is inefficient as we must calculate the previous $x_{t-1}$ steps if we want to get a random picture in time $t$ .Here we introduce a new variable $ \alpha$ : $$ \alpha_t = 1-\beta_t $$ $$\overline \alpha_t = \prod_{s=1}^T\alpha_s $$ $$q(x_t|x_0)= N(x_t;\sqrt{\overline\alpha_t}x_0,(1-\overline\alpha_t)I) $$ Now, we can get $x_t$ from $x_0$ in one step of calculation.
 
