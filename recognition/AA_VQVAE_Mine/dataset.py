@@ -31,15 +31,7 @@ paths = [
     "ISIC-2017_Validation_Data",
     "ISIC-2017_Validation_Truth"
 ]
-'''
-for p in paths:
-    folder_fp = os.path.join(im_root, p)
-    for im_fn in os.listdir(folder_fp):
-        im_fp = os.path.join(folder_fp, im_fn)
-        new_im = os.path.join(folder_fp, im_fn)
-        im = Image.open(new_im).convert("L")
-        im.save(new_im)
-'''
+
 train_imgs = list((im_root / "ISIC-2017_Training_Data").glob("*.jpg"))
 train_labels = list((im_root / "ISIC-2017_Training_Truth").glob("*.png"))
 test_imgs = list((im_root / "ISIC-2017_Test_Data").glob("*.jpg"))
@@ -147,34 +139,11 @@ class DataGenerator(Sequence):
             
         return np.array(batch_imgs) ,np.array(batch_labels)
 
-train_generator = DataGenerator(train_pair+test_pair,class_map,b_size, dim=(img_w,img_h,3) ,shuffle=True)
+train_generator = DataGenerator(train_pair,class_map,b_size, dim=(img_w,img_h,3) ,shuffle=True)
 train_steps = train_generator.__len__()
 
-X,Y = train_generator.__getitem__(1)
-print(Y.shape)
+test_generator = DataGenerator(test_pair,class_map,b_size, dim=(img_w,img_h,3) ,shuffle=True)
+test_steps = test_generator.__len__()
 
 val_generator = DataGenerator(val_pair, class_map, batch_size=4, dim=(img_w,img_h,3) ,shuffle=True)
 val_steps = val_generator.__len__()
-
-
-print("no errors")
-
-
-'''
-
-import pickle
-
-# example, replace with your result
-filename = "resulta.pickle"
-with open(filename, "wb") as file:
-    pickle.dump(x_train, file)
-
-filename = "resultb.pickle"
-with open(filename, "wb") as file:
-    pickle.dump(data_variance, file)
-
-filename = "resultc.pickle"
-with open(filename, "wb") as file:
-    pickle.dump(x_test_scaled, file)
-
-'''
