@@ -12,11 +12,8 @@ class DataSet:
 
     def __init__(self):
         self.validate = None
-        self.validate_truth = None
         self.testing = None
-        self.testing_truth = None
         self.training = None
-        self.training_truth = None
         self.download_dataset()
         self.image_shape = (256, 256)
 
@@ -49,17 +46,21 @@ class DataSet:
         validate_filenames = tf.data.Dataset.from_tensor_slices(validate_filenames)
 
         # process the data so that we can change the information from
-        self.training_truth = training_truth_filenames.map(self.pre_process_truth)
-        self.training = training_filenames.map(self.pre_process_image)
-        self.testing_truth = testing_truth_filenames.map(self.pre_process_truth)
-        self.testing = testing_filenames.map(self.pre_process_image)
-        self.validate_truth = validate_truth_filenames.map(self.pre_process_truth)
-        self.validate = validate_filenames.map(self.pre_process_image)
+        training_truth = training_truth_filenames.map(self.pre_process_truth)
+        training = training_filenames.map(self.pre_process_image)
+        testing_truth = testing_truth_filenames.map(self.pre_process_truth)
+        testing = testing_filenames.map(self.pre_process_image)
+        validate_truth = validate_truth_filenames.map(self.pre_process_truth)
+        validate = validate_filenames.map(self.pre_process_image)
 
         # Let's just check to make sure that the truth is the same length as their corresponding dataset
-        if len(self.training) != len(self.training_truth) or len(self.testing) != len(
-                self.testing) or len(self.validate) != len(self.validate_truth):
+        if len(training) != len(training_truth) or len(testing) != len(
+                testing_truth) or len(validate) != len(validate_truth):
             return False
+
+        self.training = tf.data.Dataset.from_tensor_slices((training, training_truth))
+        self.testing = tf.data.Dataset.from_tensor_slices((testing, testing_truth))
+        self.validate = tf.data.Dataset.from_tensor_slices((validate, validate_truth))
         return True
 
     def pre_process_image(self, image):
@@ -84,7 +85,7 @@ class DataSet:
         Need to preprocess the data as all we have right now is a location of the truth image. Do this by reading the
         file, decoding the png. We check to ensure that all the images are the same size. Then cast them to make sure
         in the same form I cast it to a float.
-        
+
         :param truth_image: the path to the truth_image
         :return: the processed truth image
         """
