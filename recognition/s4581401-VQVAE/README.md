@@ -20,7 +20,9 @@ then generates new codebook samples which are decoded by the VQ-VAE to generate 
 ## Data Pre-Processing
 
 The ADNI dataset for Alzheimer's disease used was a preprocessed version 
-containing brain images from 2 classes (Alzheimer's and Non-Alzheimers). The dataset has the following directory structure:
+containing brain images from 2 classes (Alzheimer's and Non-Alzheimers). The dataset was obtained 
+at https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI 
+The dataset has the following directory structure:
 ```
 +-- ADNI_AC_NC_2D
 |   +-- AD_NC
@@ -52,10 +54,13 @@ to be between [0,1], which gave good performance.***
 The VQ-VAE model was trained for 30 epochs, and a steady decline in training and validation reconstruction loss was observed.
 The final obtained ***reconstruction loss for training and validation was 0.048 and 0.050 respectively.***
 
+<p align = "center"><img src = "./images/VQVAE_loss.png", height = 300></p>
+
 In each validation step, the mean SSIM between the input image and decoded output image was calculated. The mean SSIM quickly
 steadily increases as the epochs increase, ***achieving a final mean SSIM of 0.835 on the validation set.***
 
-- Include Image
+<p align = "center"><img src = "./images/VQVAE_meansim.png", height = 300></p>
+
 
 ### PixelCNN Training
 
@@ -64,7 +69,7 @@ steadily increases as the epochs increase, ***achieving a final mean SSIM of 0.8
 The PixelCNN was trained for 100 epochs, and a steady decrease in the loss was observed. After about 40 epochs, the loss
 seemed to have converged and the rate of decline slowed. 
  
-- Include Image
+<p align = "center"><img src = "./images/PixelCNN%20loss.png", height = 300></p>
 
 ***The final training loss was 0.6441 and the final validation loss was 0.6481.*** Interestingly, it was found that more complex 
 models with smaller loss did not always result in better generated images, but instead simpler models with smaller codebook 
@@ -76,11 +81,9 @@ sizes and number of embeddings performed better.
 Below are some example input images from the ADNI dataset, codebooks and decoded codebook images from the VQ-VAE model, 
 as well as the SSIM value between input and output images. 
 
-![!](./images/ReconstructedBrain.PNG)
+<p align = "center"><img src = "./images/ReconstructedBrain.PNG", height = 300></p>
 
-<p align = "center"><img src = "./images/ReconstructedBrain.PNG"></p>
-
-![!](./images/ReconstructedBrain2.PNG)
+<p align = "center"><img src = "./images/ReconstructedBrain2.PNG", height = 300></p>
 
 We find that after 30 epochs that the decoded images have an ***average SSIM of 0.823*** across the 9000 ADNI 
 test images (above is 0.6 SSIM threshold). Decoded images visually resemble the input images, indicating that the 
@@ -91,11 +94,11 @@ trained encoder and decoder are performing well.
 
 ***Discussion***
 
-- Include Image
+<p align = "center"><img src = "./images/Brain_04.PNG", height = 300></p>
 
 ***Discussion***
 
-- Include Image
+<p align = "center"><img src = "./images/Brain_05.PNG", height = 300></p>
 
 ## Improvements
 
