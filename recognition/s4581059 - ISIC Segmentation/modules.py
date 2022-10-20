@@ -7,8 +7,16 @@ from keras.models import Model
 relu = tf.keras.layers.LeakyReLU(alpha=1e-2)
 kernel_size = (3,3,3)
 
-def conv_block(input, num_filters):
-    conv_1 = Conv3D(num_filters, kernel_size)
+def conv_block(input, num_filters, connected):
+    if connected:
+        strides = (2, 2, 2)
+    else: 
+        strides = (1, 1, 1)
+
+    conv_1 = Conv3D(num_filters, kernel_size, strides=strides, padding="same", activation=relu)(input)
+    drop = Dropout(0.3)(conv_1)
+    conv_2 = Conv3D(num_filters, kernel_size, padding="same", activation=relu)(drop)
+    
 
 
 def model():
@@ -41,7 +49,6 @@ def model():
     block_3_dropout = Dropout(0.3)(block_3_conv_1)
     block_3_conv_2 = Conv3D(filters * 4, kernel_size, padding= "same", activation=relu)(block_3_dropout)
     add_block_3 = Add()([block_3_conv_1, block_3_conv_2])
-
     #128 filters
     block_4_conv_1 = Conv3D(filters * 8, kernel_size, strides=(2, 2, 2), padding= "same", activation=relu)(add_block_3)
     block_4_dropout = Dropout(0.3)(block_4_conv_1)
