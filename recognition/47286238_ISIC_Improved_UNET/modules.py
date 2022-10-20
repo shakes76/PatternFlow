@@ -39,8 +39,8 @@ class IUNET(nn.Module):
         self.conv5 = self.conv(filter_size*8, filter_size*16, 2)
 
         ### Localization Pathway (decoder)
-        ## TODO: Upsampling Module
-        self.upsampling = nn.Sequential()
+        ## Upsampling Module
+        self.upsample = nn.Upsample(scale_factor=2)
 
         ## TODO: Localization Module
         self.localization = nn.Sequential()
