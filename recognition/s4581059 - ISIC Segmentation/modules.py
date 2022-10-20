@@ -116,8 +116,8 @@ def model():
     seg_3 = Add()([seg_3, seg_2])
     #Last segmentation layer therefore no need to upscale
 
-    ##Dense Softmax
-    output = Conv2D(filters / 2, kernel_size, padding= "same", activation="softmax")(seg_3)
+    ##Softmax
+    output = Conv2D(2, kernel_size, padding= "same", activation="softmax")(seg_3)
     
     model = Model(input, output)
     return model   
