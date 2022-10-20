@@ -26,7 +26,7 @@ According to the paper there are 3 key loss metrics associated with the VQVAE mo
 
 We initially started with fitting with a large codebook and small latent space but the VQVAE demonstrated some erratic loss behaviour after a few steps but it still eventually converged to high SSIM. However, we did some hyperparameter tuning and found that with a latent space of 32 and 64 embeddings yielded the best performance in SSIM score with the least amount of epochs. We obtain >0.6 SSIM within 2 epochs and gain incremental improvements subsequently
 
-<p align="center"><img src="./results/vq_result_graph.png" /></p>
+<p align="center"><img src="./results/vq_result_graph.png"/></p>
 
 <p align='center'> <strong>30 epochs</strong> </p>
 
@@ -50,8 +50,6 @@ Then we pass the initial convolution layer to residual blocks. These layers are 
 
 **Loss:** We use the Sparse Categorical Crossentropy loss to quantify the loss of picking the discrete codebooks.
 
-uses convolutional layers to learn features for all pixels at the same time. We also use masks 'A' to restrict connections to the pixels that have already been predicted and 'B' to allow connections from predicted colours to current pixels as to adhere to the conditional independence of the pixels.
-
 ### **PixelCNN results**
 ---
 We experimented with tuning the number of convolutional layers and residual blocks of our model to see if the model would perform better, but it resulted with marginal improvements. The most significant hyperparameter to tune for the PixelCNN is the VQVAE model and subsequently the codebook/embeddings as that is how the PixelCNN model is trained. As such we experimented with a few variations of the VQVAE model and found that latent space of 32 and 128 codebooks obtained the best generated samples. We observe that the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains; we are only able to roughly capture the shape of the brain and some details
@@ -67,23 +65,56 @@ We experimented with tuning the number of convolutional layers and residual bloc
 <p align='center'><img src="./results/generated_12.png"/></p>
 
 ### **Data processing**
-There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset on COMP3710 blackboard the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for the train set and ~9000 images for the testing set. We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
+There is not much data pre-processing required for the ADNI dataset. Using the cleaned ADNI dataset from (https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI) the train and test data are already seperated accordingly so we will simply use those splits. There are ~20000 images for training and ~9000 images for testing. The following folder structure should be used for the data
+
+```
+|'root_path/'
+|       'train/'
+|           'images.png'               
+|               ...
+|       'test/'
+|           'images.png'
+|               ...
+```
+
+
+We also normalise the images by dividing the pixel intensity values by 255.0. This scales the data to be between (0, 1) to ensure that all the images have the same distribution. This in turn allows us to better understand the underlying structure/features of the images.
+
+
 
 ## **Scope for improvements**
 
 As can be seen, the decoded images from the generated samples are quite poor. We can improve on this by increasing the number of codebooks and increasing the size of the latent space. This would allow more spacing between classes as such we would have better performance in generating higher resolution samples. Similarly, we can also train the model for more epochs but we do have to be cautious of overfitting.
 
 # **Example usages**
-**Creating new VQVAE model**
+
+**Reading input data:**
+Where root_path is where your image data is following the folder structure described in data processing section.
+```
+(train_data, test_data, train_var) = load_data(root_path, batch_size)
+```
+
+**Creating new VQVAE model:** where image shape is the size of your inputs.
+```
+VQVAE = VQVAE_model(img_shape, train_var, latent_dim=32, no_embeddings=64)
+VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
+print(VQVAE.get_model().summary())
+```
+
+**Training model and plotting losses**
 ```
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, vq_trained=None, img_shape=img_shape, latent_dim=32, embed_num=32, result_path=result_path, vq_epoch=vq_epoch)
 ```
 
-**Loading existing model:** Initialise new VQVAE model from VQVAE_model class in modules.py and load the weights
+**Loading trained VQVAE:** Initialise new VQVAE model from VQVAE_model class in modules.py and load the weights
 ```
 vq_trained = VQVAE_model(img_shape, train_var, latent_dim=latent_dim, no_embedding=embed_num)
 vq_trained = vq_trained.load_weights('path to weights')
+VQVAE.compile(optimizer=keras.optimizers.Adam(learning_rate=2e-4))
+```
 
+**Training loaded model:** feed the VQVAE model with loaded weights into the vq_trained argument
+```
 vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, vq_trained=vq_trained, img_shape=img_shape, latent_dim=32, embed_num=32, result_path=result_path, vq_epoch=vq_epoch)
 ```
 
@@ -92,16 +123,46 @@ vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=t
 VQVAE_result(vqvae_trained, test_data)
 ```
 
-**Creating PixelCNN model**
+**Creating PixelCNN model:** using the trained VQVAE model
+```
+pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
+pcnn.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-4), loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True))
+```
 
-To load existing model perform the same steps but with PixelCNN class and then load weights and pass in the trained PixelCNN model into the pcnn_trained argument 
+**Training PixelCNN model and plotting losses:** 
 ```
 pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, pcnn_epoch=pcnn_epoch)
 ```
 
-**Generate new brain images**
+**Loading trained PixelCNN:** similar to loading weight for VQVAE
+```
+pcnn = PixelCNN(VQVAE.encoder.output.shape[1:-1], VQVAE)
+pcnn.load_weights('path to weights')
+pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=pcnn, pcnn_epoch=pcnn_epoch)
+```
+
+**Generate new brain images using PixelCNN**
 ```
 generate_PixelCNN(vqvae_trained, pcnn_trained, n=10)
+```
+
+## **Reproduce results**
+---
+```
+root_path = 'AD_NC'
+img_shape = 256
+vq_epoch = 20
+pcnn_epoch = 20
+batch_size = 32
+result_path = 'results'
+
+(train_data, test_data, train_var) = load_data(root_path, batch_size)
+
+vqvae_trained = vq_train(train_data=train_data, test_data=test_data, train_var=train_var, vq_trained=None, img_shape=img_shape, latent_dim=32, embed_num=64, result_path=result_path, vq_epoch=vq_epoch)
+VQVAE_result(vqvae_trained, test_data)
+
+pcnn_trained = pcnn_train(vqvae_trained, train_data, result_path, pcnn_trained=None, pcnn_epoch=pcnn_epoch)
+generate_PixelCNN(vqvae_trained, pcnn_trained, 10)
 ```
 
 ## **Dependencies**
