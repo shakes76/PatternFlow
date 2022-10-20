@@ -99,6 +99,8 @@ It can be observed that with the gradual increase in resolution and continuous t
 
 ### Losses
 Due to the limitation of the machine, I cannot use more epochs in the higher resolution case. However, from the limited data we can conclude that with continuous training, the loss of the generator discriminator converges.Note that the epochs number of each resolution of this chart is 2000
+
+
 ![loss](images/loss_plot.jpg)
 
 
