@@ -43,20 +43,24 @@ if __name__ == "__main__":
 
         print(f"loss: {avg_loss}\tdsc: {avg_dsc}")
         
-        # display first 3 predicted masks
+        # display first 4 predicted masks
         fig = plt.figure()
         loader = iter(dataloader_test)
-        for i in range(3):
+        for i in range(4):
             img, mask = next(loader)
             img = img.to(device)
 
             out = model(img)
-            out = out.to('cpu')[0].permute[1,2,0][:,:,0]
+            out = out.to('cpu')[0].permute(1,2,0)[:,:,0]
             pred = torch.where(out >= 0.5, 1.0, 0.0)
             
-            fig.add_subplot(3, 3, 1 + 3*i)
+            fig.add_subplot(4, 4, 1 + 4*i)
             plt.imshow(img.to('cpu')[0].permute(1,2,0))
-            fig.add_subplot(3, 3, 2 + 3*i)
+            fig.add_subplot(4, 4, 2 + 4*i)
             plt.imshow(mask.to('cpu')[0].permute(1,2,0))
-            fig.add_subplot(3, 3, 3 + 3*i)
+            fig.add_subplot(4, 4, 3 + 4*i)
+            plt.imshow(out)
+            fig.add_subplot(4, 4, 4 + 4*i)
             plt.imshow(pred)
+        plt.show()
+        plt.axis('off')
