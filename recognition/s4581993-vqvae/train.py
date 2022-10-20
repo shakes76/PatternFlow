@@ -5,8 +5,8 @@ import tensorflow as tf
 
 from dataset import get_train_dataset, get_test_dataset
 import modules
-from modules import VQVAETrainer
-from utils import models_directory, vqvae_weights_filename
+from modules import VQVAETrainer, get_pixelcnn
+from utils import models_directory, vqvae_weights_filename, pixelcnn_weights_filename
 
 # Get the datasets
 train_ds = get_train_dataset()
@@ -66,3 +66,48 @@ plt.xlabel('SSIM')
 plt.title('Structural similarity index measure')
 plt.annotate(f'Mean: %f' % avg_ssim, xy=(0.05, 0.95), xycoords='axes fraction')
 plt.show()
+# Set up the PixelCNN to generate images that imitate the code, to generate
+# new brains
+num_residual_blocks = 2
+num_pixelcnn_layers = 2
+
+# Encode an image to get the output shape
+# I'm sure there's a better way to do this, but the custom layers make it hard
+encoder = vqvae_trainer.vqvae.get_layer("encoder")
+quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+encoded_output = encoder.predict(train_ds[np.newaxis, 0])
+pixelcnn_input_shape = encoded_output.shape[1:-1]
+print(f"Input shape of the PixelCNN: {pixelcnn_input_shape}")
+
+pixel_cnn = get_pixelcnn(
+        num_residual_blocks,
+        num_pixelcnn_layers,
+        pixelcnn_input_shape,
+        vqvae_trainer.num_embeddings,
+)
+
+# Generate the codebook indices. Only do it on half the training set to avoid memory issues
+encoded_outputs = encoder.predict(train_ds[:len(train_ds) // 2], batch_size=128)
+flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+
+codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+print(f"Shape of the training data for PixelCNN: {codebook_indices.shape}")
+
+# Train the PixelCNN
+pixel_cnn.compile(
+    optimizer=keras.optimizers.Adam(3e-4),
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+pixel_cnn.fit(
+    x=codebook_indices,
+    y=codebook_indices,
+    batch_size=128,
+    epochs=30,
+    validation_split=0.1,
+)
+
+# Save the PixelCNN model
+pixel_cnn.save_weights(models_directory + pixelcnn_weights_filename)
+
