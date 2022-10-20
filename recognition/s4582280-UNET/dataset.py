@@ -9,6 +9,14 @@ from os import listdir
 from PIL import Image
 from matplotlib import pyplot as plt
 
+"""
+# Data preprocessing
+def normalize(input_image, input_mask):
+    # Normalize the pixel range values between [0:1]
+    img = tf.cast(input_image, dtype=tf.float32) / 255.0
+    input_mask -= 1
+    return img, input_mask
+
 # Reads the directory for images of a specified dimension and converts
 # To a stacked array of images
 # INPUT:
@@ -80,7 +88,7 @@ def load_isic(size=1):
     return tr_data, te_data, trt_data, tet_data
     
 # Test loading data and displaying
-"""
+
 tr, te = load_isic(size=0.05)
 
 plt.imshow(tr[0])

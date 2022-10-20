@@ -1,12 +1,16 @@
 # Modules.py
 # Contains code for UNET model components
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.utils import plot_model
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, UpSampling2D, Concatenate, Input, ZeroPadding2D
+from tensorflow.keras.models import Model
+
+
+"""
 # A block which creates a double convolutional layer 
 def ConvDouble(x, filters):
     x = layers.Conv2D(filters, 3, padding="same", activation="relu",
@@ -55,8 +59,8 @@ def BuildUNET():
     p9 = Upsample(p8, f1, 64)
 
     # Outputs
-    outputs = layers.Conv2D(3, 1, padding="same", activation="softmax")(p9)
+    outputs = layers.Conv2D(3, 1, padding="same", activation="relu")(p9)
     return tf.keras.Model(inputs, outputs, name="U-NET")
-
+"""
     
     
