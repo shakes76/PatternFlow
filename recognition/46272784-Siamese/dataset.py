@@ -11,6 +11,16 @@ def transform_images(img):
     return img
 
 def loadFile(dir, batch=16, size=(64, 64)):
+    """Loads images in a directory (and its sub-directory)
+
+    Args:
+        dir: The target directory
+        batch (int, optional): Batch size. Defaults to 16.
+        size (tuple, optional): Image size. Defaults to (64, 64).
+
+    Returns:
+        6 datasets cooresponds to: trainingAD, trainingNC, validationAD, validationNC, testAD, testNC
+    """
     print('>> Begin data loading')
     train_ad_dir = os.path.join(dir, 'train/AD')
     train_nc_dir = os.path.join(dir, 'train/NC')
@@ -20,7 +30,7 @@ def loadFile(dir, batch=16, size=(64, 64)):
     print('-Directory of the Training NC files is: {}'.format(train_nc_dir))
     print('-Directory of the Testing AD files is: {}'.format(test_ad_dir))
     print('-Directory of the Testing NC files is: {}'.format(test_nc_dir))
-    print('\n> 1/2 Loading Training Data...')
+    print('\n> 1/3 Loading Training Data...')
     train_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
                                                      label_mode = None,
@@ -40,7 +50,7 @@ def loadFile(dir, batch=16, size=(64, 64)):
                                                      image_size=size,
                                                      shuffle=True,
                                                      batch_size=batch)
-    print('\n> 2/2 Loading Validation Data...')
+    print('\n> 2/3 Loading Validation Data...')
     valid_ad_ds = utils.image_dataset_from_directory(train_ad_dir, 
                                                      labels = None,
                                                      label_mode = None,
@@ -59,6 +69,7 @@ def loadFile(dir, batch=16, size=(64, 64)):
                                                      image_size=size,
                                                      shuffle=True,
                                                      batch_size=batch)
+    print('\n> 3/3 Loading Test Data...')
     test_ad_ds = utils.image_dataset_from_directory(test_ad_dir, 
                                                      labels = None,
                                                      label_mode = None,
