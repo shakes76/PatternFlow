@@ -9,6 +9,9 @@ from tensorflow import keras
 import csv
 
 def saveOption(optimizer, siamese):
+    """
+    Setup the checkpoint directory
+    """
     checkpoint_dir = os.path.join(os.getcwd(), "Siamese_ckeckpoint")
     if not os.path.exists(checkpoint_dir):
         os.mkdir(checkpoint_dir)
@@ -40,7 +43,19 @@ def valid_step(pairs, siamese, test_acc_metric):
     test_acc_metric.update_state(y_true, y_pred)
     return lossValue
 
-def train(train_ds, valid_ds, epochs, train_step, checkpoint_prefix, checkpoint, optimizer, siamese):
+@tf.function
+def test_step(pairs, siamese, acc_metric):
+    y_true = pairs[2]
+    y_pred = siamese([pairs[0], pairs[1]], training=False)
+    lossValue = (modules.loss())(y_true, y_pred)
+    acc_metric.update_state(y_true, y_pred)
+    return lossValue
+
+def train(train_ds, valid_ds, test_ds, epochs, train_step, checkpoint_prefix, checkpoint, optimizer, siamese):
+    """
+    Training the siamese network.
+    Returns a dictionary of train/validation loss and accuracy
+    """
     # print(train_ds)
     info = {'train_loss': [],
             'train_accu': [],
@@ -101,7 +116,15 @@ def train(train_ds, valid_ds, epochs, train_step, checkpoint_prefix, checkpoint,
         writer = csv.writer(f)
         writer.writerow(row)
         f.close()
-
+        
+    # Test
+    for batch in test_ds:
+        _ = test_step(batch, siamese, acc_metric)
+    print('Test accu: {}'.format(acc_metric.result().numpy()))
+    acc_metric.reset_states()
+    
+    # Save the model
+    siamese.save("siamese.h5")
     return info
 
 def main():
@@ -113,7 +136,7 @@ def main():
     siamese = modules.makeSiamese(modules.makeCNN())
     checkpoint_prefix, checkpoint = saveOption(opt, siamese)
     checkpoint.restore(tf.train.latest_checkpoint(r'F:\AI\COMP3710\PatternFlow\recognition\46272784-Siamese\Siamese_ckeckpoint'))
-    history = train(train_ds, valid_ds, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
+    history = train(train_ds, valid_ds, test_ds, 10, train_step, checkpoint_prefix, checkpoint, opt, siamese)
     
     # # results = siamese.evaluate(vd)
     # # print("test loss, test acc:", results)
