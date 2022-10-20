@@ -1,11 +1,9 @@
-import tensorflow as tf
-from tensorflow import keras
 from keras.models import Model
 from keras.layers import Input, Conv2D, Add, concatenate, UpSampling2D, Dropout, BatchNormalization
 
 # Dense, Flatten,
 DROPOUT_PROB = 0.3
-INPUT_SHAPE = (256, 256, 1)
+INPUT_SHAPE = (256, 256, 3)
 
 
 def context_module(layer, num_filters):
@@ -71,7 +69,7 @@ def create_model(input_shape=INPUT_SHAPE):
     # First layer : 2 x 2D Convolutions, filter size 16,  with a 3x3 kernel size and a stride size of (2,2).
     encoder_layer1 = context_module(setup, 16)
     # element wise sum of pre context module and post context module.
-    sum1 = Add()([input, encoder_layer1])
+    sum1 = Add()([setup, encoder_layer1])
 
     # Do conv with stride of 2 to reduce the size of the model.
     pool1 = Conv2D(32, 3, 2, activation='relu', padding='same')(sum1)
@@ -138,15 +136,17 @@ def create_model(input_shape=INPUT_SHAPE):
 
     # Now do all the segmentation layers.
     seg_layer3 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer3)
+    seg_layer3 = UpSampling2D()(seg_layer3)
     seg_layer2 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer2)
     seg_layer1 = Conv2D(16, 3, activation='relu', padding='same')(decoder_layer1)
 
     # element wise sum of segmentation layers
     seg_sum_2 = Add()([seg_layer3, seg_layer2])
+    seg_sum_2 = UpSampling2D()(seg_sum_2)
     seg_sum_1 = Add()([seg_layer1, seg_sum_2])
 
-    # softmax to finish off 
-    # todo: should this filter size be 16?
-    output = Conv2D(16, 3, activation='softmax', padding='same')(seg_sum_1)
+    # softmax to finish off
+    # todo: should this filter size be 2?
+    output = Conv2D(2, 3, activation='softmax', padding='same')(seg_sum_1)
 
     return Model(inputs=input, outputs=output)
