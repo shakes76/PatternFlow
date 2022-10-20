@@ -40,3 +40,37 @@ class VQ(layers.Layer):
 
         quantized = x + tf.stop_gradient(quantized - x)
         return quantized
+
+    def get_indices(self, flattened):
+        # l2-normalised distance between input and codes
+        similarity = tf.matmul(flattened, self.embeds)
+        dists = (
+            tf.reduce_sum(flattened**2, axis=1, keepdims=True)
+            + tf.reduce_sum(self.embeds**2, axis=0)
+            - 2*similarity
+        )
+
+        # get best indices
+        encode_indices = tf.argmin(dists, axis=1)
+        return encode_indices
+
+def get_encoder(dim=16):
+    inputs = keras.Input(shape=(28, 28, 1))
+    x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(
+        inputs
+    )
+    x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
+    out = layers.Conv2D(dim, 1, padding="same")(x)
+    return keras.Model(inputs, out, name="encoder")
+
+
+def get_decoder(dim=16):
+    inputs = keras.Input(shape=get_encoder(dim).output.shape[1:])
+    x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(
+        inputs
+    )
+    x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
+    out = layers.Conv2DTranspose(1, 3, padding="same")(x)
+    return keras.Model(inputs, out, name="decoder")
+
+
