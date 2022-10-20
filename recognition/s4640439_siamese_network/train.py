@@ -12,7 +12,7 @@ Make sure to plot the losses and metrics during training.
 
 """
 EPOCHS = 40
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 BUFFER_SIZE = 20000
 MARGIN = 0.2
 
@@ -75,7 +75,7 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
         siamese_optimiser.apply_gradients(zip(
             siamese_gradients, siamese.trainable_variables))
 
-        return loss
+    return loss
 
 def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
     start = time.time()
@@ -84,8 +84,14 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
     for epoch in range(epochs):
         epoch_start = time.time()
 
-        i = 0
+        i = 1
         for pos_batch, neg_batch in zip(pos_dataset, neg_dataset):
+            if i % 20 == 0:
+              print("-----------------------")
+              print("Batch number", i, "complete")
+              print(f"{i} batches completed in {time.time() - epoch_start}")
+              print(f"Avg batch time: {(time.time() - epoch_start) / i}")
+
             # alternate between same-same training and same-diff training
             if i % 2 == 0:
                 # same training
@@ -122,8 +128,8 @@ def train_binary_classifier(model, siamese_model, pos_dataset, neg_dataset, epoc
             transformed_pos = siamese_model(pos_batch, training=False)
             transformed_neg = siamese_model(neg_batch, training=False)
 
-            pos_labels = tf.ones_like(transformed_pos)
-            neg_labels = tf.zeros_like(transformed_neg)
+            pos_labels = tf.ones_like(transformed_pos[1])
+            neg_labels = tf.zeros_like(transformed_neg[1])
 
             model.fit(transformed_pos, pos_labels)
             model.fit(transformed_neg, neg_labels)
@@ -141,22 +147,21 @@ def main():
 
     # convert to tensors
     train_data_pos = tf.data.Dataset.from_tensor_slices(training_data_positive
-        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE)
+        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE, drop_remainder=True)
     train_data_neg = tf.data.Dataset.from_tensor_slices(training_data_negative
-        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE)
+        ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE, drop_remainder=True)
 
     # build models
     siamese_model = build_siamese()
     binary_classifier = build_binary()
     
-    siamese_optimiser = tf.keras.optimizers.Adam(1.5e-4,0.5)
+    siamese_optimiser = tf.keras.optimizers.Adam(0.05)
 
     train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
     train_binary_classifier(binary_classifier, siamese_model, train_data_pos, train_data_neg, EPOCHS)
 
     siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
     binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))
-
 
 if __name__ == "__main__":
     main()
