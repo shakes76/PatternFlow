@@ -43,38 +43,29 @@ tf.random.set_seed(42)
 
 tf.config.list_physical_devices('GPU')
 """ Hyperparameters """
-batch_size = 4
-lr = 1e-4 ## (0.0001)
-num_epoch = 5
+batch_size = 32
+
+num_epoch = 50
 
 
-(train_x, train_y), (valid_x, valid_y), (test_x, test_y) = dataset.load_data(train_path, mask_path)
+(train_set), (valid_set), (test_set) = dataset.spilt_data(train_path, mask_path)
+
+training_set = train_set.map(dataset.load_data)
+validation_set=valid_set.map(dataset.load_data)
+test_set=test_set.map(dataset.load_data)
 
 
 
-train_dataset = dataset.tf_dataset(train_x, train_y, batch_size)
-valid_dataset = dataset.tf_dataset(valid_x, valid_y, batch_size)
-
-train_steps = len(train_x)//batch_size
-valid_steps = len(valid_x)//batch_size
-
-if len(train_x) % batch_size != 0:
-    train_steps += 1
-
-if len(valid_x) % batch_size != 0:
-    valid_steps += 1
 
 callbacks = [
     ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-7, verbose=1),
     TensorBoard(),
-    EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=False)
+    EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=False)
 ]
 
 model = model.modified_UNET((256,256,3))
 model.compile(optimizer='adam', loss=dice_coef_loss, metrics=['accuracy', dice_coef])
-model_history = model.fit(train_dataset,
-                      epochs=num_epoch,
-                      validation_data=valid_dataset,
-                      steps_per_epoch=train_steps,
-                      validation_steps=valid_steps,
-                      callbacks=callbacks)
+#Train the model
+model_history=model.fit(training_set.batch(batch_size), validation_data=validation_set.batch(batch_size), epochs=60, callbacks = callbacks)
+#Evaluate
+result=model.evaluate(test_set.batch(batch_size), verbose=1)
