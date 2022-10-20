@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 import torchvision
 import math
 
@@ -9,18 +10,21 @@ class ConvReluBlock(nn.Module):
     ConvReluBlock object consisting of a double convolution rectified
     linear layer used at every level of the UNET model
     """
-    def __init__(self, dim_in, dim_out):
+    def __init__(self, dim_in, dim_out, residual_connection=False):
         """
         Block class constructor to initialize the object
 
         Args:
             dim_in (int): number of channels in the input image
             dim_out (int): number of channels produced by the convolution
+            residual_connection (bool): true if this block has a residual connect, false otherwise
         """
         super(ConvReluBlock, self).__init__()
-        self.conv1 = nn.Conv2d(dim_in, dim_out, kernel_size=3)
+        self.residual_connection = residual_connection
+        self.conv1 = nn.Conv2d(dim_in, dim_out, kernel_size=3, padding=1, bias=False)
         self.conv2 = nn.Conv2d(dim_out, dim_out, kernel_size=3)
         self.relu = nn.ReLU()
+        self.gNorm = nn.GroupNorm(1, dim_out)
 
         self.positional_encoding = nn.Linear(32, dim_out)
 
@@ -37,20 +41,21 @@ class ConvReluBlock(nn.Module):
             Tensor: output tensor
         """
         # Block 1
-        x = self.conv1(x)
-        x = self.relu(x)
-
-        # Position Encoding
-        position = self.positional_encoding(position)
-        position = self.relu(position)
-
-        position = position[(...,) + (None,) * 2]
-        x = x + position
+        x1 = self.conv1(x)
+        x2 = self.gNorm(x1)
+        x3 = self.relu(x2)
 
         # Block 2
-        x = self.conv2(x)
-        x = self.relu(x)
-        return x
+        x4 = self.conv2(x3)
+        x5 = self.gNorm(x4)
+
+        # Handle Residuals
+        if (self.residual_connection):
+            x6 = F.relu(x + x5)
+        else:
+            x6 = x5
+    
+        return x6
 
 class EncoderBlock(nn.Module):
     """
