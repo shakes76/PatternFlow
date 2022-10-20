@@ -41,35 +41,38 @@ if __name__ == '__main__':
     device = 'cuda'
 
     # TODO: optimal batch size?
-    batch_size = 1
+    batch_size = 2
     dataset_train = Dataset(
-        data_path='data/validation/data', 
-        truth_path='data/validation/truth', 
-        metadata_path='data/validation/data/ISIC-2017_Validation_Data_metadata.csv'
+        data_path='data/training/data', 
+        truth_path='data/training/truth', 
+        metadata_path='data/training/data/ISIC-2017_Training_Data_metadata.csv'
         )
-    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size)
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
 
     learning_rate = 1e-3
-    num_epochs = 20
+    num_epochs = 1
 
     model = IUNET(3, 16).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_fn = torch.nn.MSELoss()
 
-    print('entering training loop')
-    for i in range(1):
-        for batch_no, (img, mask) in enumerate(dataloader_train):
-            img = img.to(device)
-            mask = mask.to(device)
+    # print('entering training loop')
+    # for i in range(num_epochs):
+    #     for batch_no, (img, mask) in enumerate(dataloader_train):
+    #         img = img.to(device)
+    #         mask = mask.to(device)
 
-            out = model(img)
-            loss = loss_fn(out[:,0,:,:], mask[:,0,:,:])
+    #         out = model(img)
+    #         loss = loss_fn(out[:,0,:,:], mask[:,0,:,:])
 
-            model.zero_grad()
-            loss.backward()
-            optimizer.step()
-            # print(batch_no)
-        print("epoch done!")
+    #         model.zero_grad()
+    #         loss.backward()
+    #         optimizer.step()
+    #         if batch_no == 500 / batch_size:
+    #             break
+    #     print("epoch done!")
+
+    torch.save(model.state_dict(), 'model.pt')
 
     end = time.time()
     print(f'Done in {end - start}s')
