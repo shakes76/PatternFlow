@@ -68,13 +68,14 @@ The structure of the model is given below.
 
 A few points to note,
  - latent vector z is passed through fully connected layers to generate w.
- - w is transformed and injected 2 times in each resolution block.
- - number of fully connected layers is 8, w and z have the same dimension.
- - Input of 'Synthesis network' is constant.
+ - w and z have the same dimension.
+ - w is injected 2 times in each resolution block.
+ - number of fully connected layers is 8.
+ - input of 'Synthesis network' is constant.
  - a noise vector is injected 2 times in each resolution block.
  - AdaIN takes 2 inputs, result of conv3x3 + noise and a style vector.
- - Loss function is the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability.
- - Model is trained progressively.
+ - loss function is the [<ins>Wasserstein Distance</ins>](https://arxiv.org/abs/1701.07875) for gradient stability.
+ - model is trained progressively.
 
 ### Model Variations
 Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
