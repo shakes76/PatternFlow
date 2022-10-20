@@ -67,6 +67,7 @@ The structure of the model is given below.
 </p>
 
 A few points to note,
+
  - latent vector z is passed through fully connected layers to generate w (see [<ins>here</ins>](modules.py#L180) and [<ins>here</ins>](modules.py#L210)).
  - w is transformed and injected 2 times in each resolution block (see [<ins>here</ins>](modules.py#L130)).
  - number of fully connected layers is 8, w and z have the same dimension.
@@ -77,7 +78,7 @@ A few points to note,
  - Model is trained progressively.
 
 ### Model Variations
-Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 1 appox) and is in grayscale so my model is a simplified version of StyleGAN, to avoid unnecessary complication which saves training time.
+Original paper aims to generate photo realistic images of resolution 1024 x 1024. The dimension of image in my training datasets is much smaller (256 x 256 appox.) and is in grayscale so my model is a simplified version (in terms of training configurations, not model structure) of StyleGAN, to avoid unnecessary complication, which saves training time.
 
 |                             | My Model           | Original       | Justification
 | -------------               | -------------      |-------------   |------------- 
