@@ -70,7 +70,7 @@ def fit_vqvae():
     plt.xticks(range(2, 21, 2), list(range(2, 21, 2)))
     plt.savefig('Loss.png')
 
-    print('Best SSIM:', best_ssim)
+    return best_ssim
 
 def fit_gan():
     try:
