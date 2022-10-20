@@ -69,7 +69,7 @@ steadily increases as the epochs increase, ***achieving a final mean SSIM of 0.8
 The PixelCNN was trained for 100 epochs, and a steady decrease in the loss was observed. After about 40 epochs, the loss
 seemed to have converged and the rate of decline slowed. 
  
-<p align = "center"><img src = "./images/PixelCNN%20loss.png", height = 300></p>
+<p align = "center"><img src = "./images/PixelCNNLossWhitebg.PNG", height = 300></p>
 
 ***The final training loss was 0.6441 and the final validation loss was 0.6481.*** Interestingly, it was found that more complex 
 models with smaller loss did not always result in better generated images, but instead simpler models with smaller codebook 
