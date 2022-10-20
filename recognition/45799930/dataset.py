@@ -18,8 +18,7 @@ class DataSet:
         self.training_filenames = None
         self.training_truth_filenames = None
         self.download_dataset()
-        self.image_width = 256
-        self.image_height = 256
+        self.image_shape = (256, 256)
 
     def download_dataset(self):
         """
@@ -54,6 +53,27 @@ class DataSet:
             return False
         return True
 
+    def pre_process(self, image, truth_image):
+        """
+        Need to preprocess the data as all we have right now is a location of the image and truth
+        image. Do this by reading the file, decoding the jpeg or png respectively. We check to
+        ensure that all the images are the same size. Then cast them to make sure in the same form
+        I cast both of them to make it easier for me.
 
-data = DataSet()
-print(type(data))
+        :param image: the path to the image
+        :param truth_image: the path to the ground truth image.
+        :return: a tuple containing the processed image and ground-truth image.
+        """
+        image = tf.io.read_file(image)
+        # todo: do i need to change the chanels? 0 is the number used in the jpeg
+        image = tf.io.decode_jpeg(image, channels=0)
+        image = tf.image.resize(image, (256, 256))
+        image = tf.cast(image, tf.float32) / 255.
+
+        truth_image = tf.io.read_file(truth_image)
+        # todo: do i need to change the chanels? 0 is the number used in the jpeg
+        truth_image = tf.io.decode_png(truth_image, channels=0)
+        truth_image = tf.image.resize(truth_image, (256, 256))
+        truth_image = tf.cast(truth_image, tf.float32) / 255.
+
+        return image, truth_image
