@@ -2,7 +2,7 @@ import os
 from tensorflow import keras
 import numpy as np
 
-SHAPE = (128,128)
+SHAPE = (64,64)
 
 def data_loader(dir_path, scale_flag):
     all_files = os.listdir(dir_path)

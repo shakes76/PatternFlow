@@ -21,7 +21,8 @@ def encoder(latent_dim=16):
   Encoder Network for VQVAE
   """
   model = keras.Sequential(name="encoder");
-  model.add(keras.Input(shape=(128, 128, 1)))
+  model.add(keras.Input(shape=(64, 64, 1)))
+  model.add(layers.Conv2D(16, 3, activation="relu", strides=2, padding="same"))
   model.add(layers.Conv2D(32, 3, activation="relu", strides=2, padding="same"))
   model.add(layers.Conv2D(64, 3, activation="relu", strides=2, padding="same"))
   model.add(layers.Conv2D(latent_dim, 1, padding="same"))
@@ -36,6 +37,7 @@ def decoder(latent_dim=16):
   model.add(keras.Input(shape=encoder().output.shape[1:]))
   model.add(layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same"))
   model.add(layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same"))
+  model.add(layers.Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same"))
   model.add(layers.Conv2DTranspose(1, 3, padding="same"))
   return model
 
@@ -105,7 +107,7 @@ def vqvae_model(latent_dim=16, num_embeddings=64):
   """
   encoder_model = encoder(latent_dim)
   decoder_model = decoder(latent_dim)
-  encoder_inputs = keras.Input(shape=(128, 128, 1))
+  encoder_inputs = keras.Input(shape=(64, 64, 1))
   vq_layer = VectorQuantizer(num_embeddings, latent_dim, name="vector_quantizer")
   vq_layer_inputs = encoder_model(encoder_inputs)
   decoder_inputs = vq_layer(vq_layer_inputs)
