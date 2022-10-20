@@ -27,11 +27,22 @@ In the first half of the network known as the "context aggregation pathway", the
 
 In the second half of the network known as the "localization pathway", the network upsamples back to the original image size, while localizing the samples by incorporating the features extracted at every intermediate level in the first half. Additionally, this Improved UNet utilises deep supervision by integrating the segmentation layers alongside some of the upsampling modules, introducing nonlinearity to the network. The upsampling and segmentation paths finally combine at the end to produce the final segmentation results.
 
-## Methods
+## Method
 
 ### Preprocessing
 
+In my implementation of the Improved UNet, I apply several augmentations to both the raw images and masks:
 
+- Resizing: the original dataset used images of size (767, 1022). I downscaled this to (192, 256) which is a close-enough "factor" of the original size, and guarantees the down/upsampling done in the network recovers the proper size of the image. This also reduces the training time for the model at relatively little cost of accuracy.
+- Normalization: both sets are divided by 255, but in the case of the masks the resulting tensor is rounded to integer values then one-hot encoded. This makes it easier for the model to do calculations on.
+- Random flipping: both sets have random horizontal and vertical flips applied. This generalises the orientation of the lesions.
+- Random cropping: both sets are padded by 8 pixels on each side then randomly cropped back to their original size. This generalises the location of the lesions.
+
+The randomisation is controlled between the two datasets by concatenating them along the channels axis. This ensures that the random augmentations on the images are duplicated on the corresponding masks.
+
+### Split Allocation
+
+The dataset was batched into groups of 5, while the original paper tried groups of 2. I also split the full dataset into training, validation, and testing datasets with a split of 7-1-1. I did this because the full dataset has 900 images, which meant my split was cleanly divided. The split roughly translates to 77.7%-11.1%-11.1%. I found this split to yield desirable results after running on the full dataset.
 
 ## Results
 
