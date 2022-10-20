@@ -21,6 +21,7 @@ if __name__ == '__main__':
     validation_dsc = [x.cpu() for x in validation_dsc]
     validation_loss = [x.item() for x in validation_loss]
     fig = plt.figure()
+    plt.title('Change in Dice Similarity Coefficient over Epochs')
     plt.plot(range(len(train_dsc)), train_dsc, label='Training DSC')
     plt.plot(range(len(train_dsc)), validation_dsc, label='Validation DSC')
     plt.xlabel('Epoch')
@@ -29,10 +30,11 @@ if __name__ == '__main__':
     plt.savefig('static/dsc_history.png')
 
     plt.clf()
+    plt.title('Change in DSC Loss over Epochs')
     plt.plot(range(len(train_loss)), train_loss, label='Training Loss')
     plt.plot(range(len(validation_loss)), validation_loss, label='Validation Loss')
     plt.xlabel('Epoch')
-    plt.ylabel('Loss')
+    plt.ylabel('DSC Loss')
     plt.legend()
     plt.savefig('static/loss_history.png')
     # plt.show()
