@@ -32,34 +32,34 @@ class UNet(nn.Module):
     
 
   def forward(self, x):
-    x = self.conv16(x)
-    x1 = self.context16(x)
-    x = self.stride32(x1)
-    x2 = self.context32(x)
-    x = self.stride64(x2)
-    x3 = self.context64(x)
-    x = self.stride128(x3)
-    x4 = self.context128(x)
-    x = self.stride256(x4)
-    x = self.context256(x)
-    x = self.upsample128(x, x4)
-    x = self.local128(x)
-    x = self.upsample64(x, x3)
-    x5 = self.local64(x)
-    x = self.upsample32(x5, x2)
-    x6 = self.local32(x)
-    x = self.upsample16(x6, x1)
-    x = self.conv32(x)
+    x = self.conv16(x).detach()
+    x1 = self.context16(x).detach()
+    x = self.stride32(x1).detach()
+    x2 = self.context32(x).detach()
+    x = self.stride64(x2).detach()
+    x3 = self.context64(x).detach()
+    x = self.stride128(x3).detach()
+    x4 = self.context128(x).detach()
+    x = self.stride256(x4).detach()
+    x = self.context256(x).detach()
+    x = self.upsample128(x, x4).detach()
+    x = self.local128(x).detach()
+    x = self.upsample64(x, x3).detach()
+    x5 = self.local64(x).detach()
+    x = self.upsample32(x5, x2).detach()
+    x6 = self.local32(x).detach()
+    x = self.upsample16(x6, x1).detach()
+    x = self.conv32(x).detach()
     
     #Segmentation Layers
-    x5 = self.seg64(x5)
-    x5 = simple_size_fix(self.upscale(x5), x6)
-    x6 = torch.add(self.seg32_a(x6), x5)
-    x6 = simple_size_fix(self.upscale(x6), x)
-    x = torch.add(self.seg32_b(x), x6)
+    x5 = self.seg64(x5).detach()
+    x5 = simple_size_fix(self.upscale(x5), x6).detach()
+    x6 = torch.add(self.seg32_a(x6), x5).detach()
+    x6 = simple_size_fix(self.upscale(x6), x).detach()
+    x = torch.add(self.seg32_b(x), x6).detach()
     
     #Output
-    x = self.softmax(x)
+    x = self.softmax(x).detach()
 
     return x
 
@@ -139,3 +139,4 @@ def simple_size_fix(x, desired):
   pad_height = desired.size(2) - x.size(2)
   x = nn.functional.pad(x, [0, pad_width, 0, pad_height])
   return x
+

@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 from dataset.py import ISIC_Dataset
 from modules.py import UNet
+
+#Import GPU
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 #Load Trained model and test dataset
-model = UNet()
+model = UNet().to(device)
 
 #TODO, Replace pathways with test dataset
 test_image_path = "./ISIC-2017_Training_Data"

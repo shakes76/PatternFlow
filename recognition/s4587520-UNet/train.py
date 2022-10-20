@@ -2,6 +2,9 @@
 from dataset.py import ISIC_Dataset
 from modules.py import UNet
 
+#Import GPU
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 #Load Training and Validation Data
 train_image_path = "./ISIC-2017_Training_Data"
 train_segmentation_path = "./ISIC-2017_Training_Part1_GroundTruth"
@@ -12,7 +15,7 @@ train_dataset = ISIC_Dataset(train_image_path, train_segmentation_path)
 train_dataset = ISIC_Dataset(valid_image_path, valid_segmentation_path)
 
 #Load model from file
-model = UNet()
+model = UNet().to(device)
 
 #Training Loop that records metrics
 
