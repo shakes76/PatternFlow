@@ -1,6 +1,7 @@
 # Run to perform training on Improved UNet model and generate metrics
 from dataset import ISIC_Dataset
 from modules import ImprovedUNet
+from predict import make_prediction
 from utility import dice_coefficient, IoU
 from config import *
 
@@ -60,10 +61,10 @@ def main():
 
     # Dice Coeficient vs Epoch
     plt.figure(1)
-    plt.plot(history.history['dice_coefficient'], label='Dice Coeficient')
-    plt.title("Dice Coeficient vs Training Epoch")
+    plt.plot(history.history['dice_coefficient'], label='Dice Coefficient')
+    plt.title("Dice Coefficient vs Training Epoch")
     plt.xlabel('Epoch')
-    plt.ylabel('Dice Coeficient')
+    plt.ylabel('Dice Coefficient')
     plt.legend(loc='lower right')
     plt.savefig("./figures/diceVsEpoch.png")
 
@@ -77,9 +78,10 @@ def main():
     plt.savefig("./figures/iouVsEpoch.png")
 
     # Utilise test set to make predictions for evaluation
-    make_predictions(model, test_x, test_y)
+    make_prediction(model, test_x, test_y, slice=(151, 161))
 
     return
+
 
 if __name__ == '__main__':
     main()
