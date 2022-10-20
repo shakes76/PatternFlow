@@ -2,6 +2,7 @@ import dataset
 import modules
 from datetime import datetime
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 
 class Trainer(tf.keras.models.Model):
@@ -13,14 +14,19 @@ class Trainer(tf.keras.models.Model):
 
         self.vqvae = modules.VQVAE(self.latent_dim, self.num_embeddings)
 
-        self.trackers = {
-            "total_loss": tf.keras.metrics.Mean(name="total_loss"),
-            "reconstruction_loss": tf.keras.metrics.Mean(name="reconstruction_loss"),
-            "vq_vae_loss": tf.keras.metrics.Mean(name="vqvae_loss")
-        }
+        self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(
+            name="reconstruction_loss"
+        )
+        self.vq_loss_tracker = tf.keras.metrics.Mean(name="vq_loss")
 
+    @property
     def metrics(self):
-        self.trackers.values()
+        return [
+            self.total_loss_tracker,
+            self.reconstruction_loss_tracker,
+            self.vq_loss_tracker,
+        ]
 
     def train_step(self, x):
         with tf.GradientTape() as tape:
@@ -32,11 +38,15 @@ class Trainer(tf.keras.models.Model):
         grads = tape.gradient(total_loss, self.vqvae.trainable_variables)
         self.optimizer.apply_gradients(zip(grads, self.vqvae.trainable_variables))
 
-        self.trackers["total_loss"].update_state(total_loss)
-        self.trackers["reconstruction_loss"].update_state(reconstruction_loss)
-        self.trackers["vq_vae_loss"].update_state(sum(self.vqvae.losses))
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.vq_loss_tracker.update_state(sum(self.vqvae.losses))
 
-        return self.trackers
+        return {
+            "loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "vqvae_loss": self.vq_loss_tracker.result(),
+        }
 
 
 def main():
@@ -45,6 +55,8 @@ def main():
     vqvae_trainer = Trainer(data_variance, latent_dim=16, num_embeddings=128)
     vqvae_trainer.compile(optimizer=tf.keras.optimizers.Adam())
     vqvae_trainer.vqvae.save(f"out/vqvae_model_{datetime.now().strftime('%H:%M:%S')}")
+
+    history = vqvae_trainer.fit(train_data, epochs=3, batch_size=4)
 
 
 if __name__ == "__main__":

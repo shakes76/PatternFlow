@@ -28,8 +28,8 @@ def load_data(path, img_limit=False, want_var=False):
 
 
 def oasis_dataset(images):
-    train, variance = load_data("keras_png_slices_data/keras_png_slices_train", images, True)
-    test, _ = load_data("keras_png_slices_data/keras_png_slices_test", images)
-    validate, _ = load_data("keras_png_slices_data/keras_png_slices_validate", images)
+    train, variance = load_data("/home/alon/Downloads/temp/keras_png_slices_data/keras_png_slices_train", images, True)
+    test, _ = load_data("/home/alon/Downloads/temp/keras_png_slices_data/keras_png_slices_test", images)
+    validate, _ = load_data("/home/alon/Downloads/temp/keras_png_slices_data/keras_png_slices_validate", images)
 
     return train, test, validate, variance
