@@ -36,4 +36,10 @@ To run the code of this implementation and reproduce the results, the following 
 
 Additionally, you will need the [ADNI Brain MRI 2D Dataset](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI) as well as to update the paths in the code to import the dataset and store the results of the training
 
+## Preprocessing
+No major pre-processing was required to use the [ADNI Brain MRI 2D Dataset](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI). The provided data is already split into train and test categories each with 21500 and 9000 images respectively. The train category was used as the training dataset and test category was used as the validation dataset with exception of a small section (32 images) which were separated to be used for testing and predictions after the training. 
+
+It's also important to mention that the data was imported as grayscale which eliminated the need for conversions from RGB to YUV formats and separating the Y channel for training and later reconverting the predicted images to RGB which was done in the original ESPCN paper since they dealt with coloured images rather than MRIs. 
+
+
 
