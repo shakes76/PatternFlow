@@ -6,7 +6,7 @@ Author: Jessica Sullivan
 
 Student id: 45799930
 
-Assignment: COMP3710 Report
+Assignment: COMP3710 Report Semester 2, 2022 
 
 ---
 
@@ -37,18 +37,15 @@ The algorithm is based upon the improved UNet structure. This
 
 ```commandline
 Tensorflow: 2.10.0
+Matplotlib: 3.5.3
 ```
 
 ### Address reproducibility:
 
-To ensure that the code can run, you will need to download the datasets - training data, validation data, and testing data. Also you will need to download the truth of each of those datasets, where you should download the one in the first row which have the binary masks in PNG format. Once downloaded these folders should be moved to the recognition/45799930 directory, keeping the same names that where made when created. Therefore the directories that should have been added are
+To ensure that the code can run, you will need to download the training dataset and the truth training dataset where you should download the one in the first row which have the binary masks in PNG format. These can be downloaded from [here](https://challenge.isic-archive.com/data/#2017). Once downloaded these folders should be moved to the recognition/45799930 directory, keeping the same names that where made when created. Therefore the directories that should have been added are:
 
-* ISIC-2017_Test_v2_Data
-* ISIC-2017_Test_v2_Part1_GroundTruth
 * ISIC-2017_Training_Data
 * ISIC-2017_Training_Part1_GroundTruth
-* ISIC-2017_Validation_Data
-* ISIC-2017_Validation_Part1_GroundTruth
 
 ---
 

@@ -1,6 +1,7 @@
 import glob
 import tensorflow as tf
-import matplotlib.pyplot as plt
+from sklearn.utils import shuffle
+from math import floor
 
 """
 Create a class to download and sort the ISIC data set. We shall download the training, test and validation data as well 
@@ -32,10 +33,15 @@ class DataSet:
         # that they are in the same order (truth and initial).
         training_truth_filenames = sorted(glob.glob('./ISIC-2017_Training_Part1_GroundTruth/*.png'))
         training_filenames = sorted(glob.glob('./ISIC-2017_Training_Data/*.jpg'))
-        testing_truth_filenames = sorted(glob.glob('./ISIC-2017_Test_v2_Part1_GroundTruth/*.png'))
-        testing_filenames = sorted(glob.glob('./ISIC-2017_Test_v2_Data/*.jpg'))
-        validate_truth_filenames = sorted(glob.glob('./ISIC-2017_Validation_Part1_GroundTruth/*.png'))
-        validate_filenames = sorted(glob.glob('./ISIC-2017_Validation_Data/*.jpg'))
+
+        train, truth = shuffle((training_filenames, training_truth_filenames))
+        length = len(train)
+        training_truth_filenames = truth[:floor(length * 0.8)]
+        training_filenames = train[:floor(length * 0.8)]
+        testing_truth_filenames = truth[floor(length * 0.8):floor(length * 0.9)]
+        testing_filenames = train[floor(length * 0.8):floor(length * 0.9)]
+        validate_truth_filenames = truth[floor(length * 0.9):]
+        validate_filenames = train[floor(length * 0.9):]
 
         # convert this into tensorflow array
         self.training = tf.data.Dataset.from_tensor_slices((training_filenames, training_truth_filenames))
@@ -73,3 +79,16 @@ class DataSet:
         truth_image = tf.image.resize(truth_image, (256, 256))
         truth_image = tf.cast(truth_image, tf.float32) / 255.
         return image, truth_image
+
+    def split_data(self, data, truths):
+        """
+
+        :param training_data:
+        :return:
+        """
+        length = len(data)
+        train_len = length * 0.8
+        val_test_len = length * 0.1
+        data, truths = tf.random.shuffle(data, truths)
+
+        # train, test, val = data.
