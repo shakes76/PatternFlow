@@ -180,4 +180,5 @@ The model did not converge well on the 256X256 size images. One possible reason 
 url: [https://ommer-lab.com/research/latent-diffusion-models/](https://ommer-lab.com/research/latent-diffusion-models/)  
 [3] Stable Diffusion. [(GitHub)](https://github.com/CompVis/stable-diffusion)  
 [4] Denoising Diffusion Probabilistic Models [(Paper)](https://arxiv.org/pdf/2006.11239.pdf)  
-[5] Denoising Diffusion Implicit Models [(Paper)](https://arxiv.org/pdf/2010.02502.pdf)
+[5] Denoising Diffusion Implicit Models [(Paper)](https://arxiv.org/pdf/2010.02502.pdf)  
+[6] Attention U-Net: Learning Where to Look for the Pancreas [(Paper)](https://arxiv.org/pdf/1804.03999.pdf)
