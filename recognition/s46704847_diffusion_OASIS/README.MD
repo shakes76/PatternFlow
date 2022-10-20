@@ -144,7 +144,7 @@ However, this porject is using the OASIS brain dataset which concentrates on a s
 
 Now, we have the structure of the backward denoise Attention U-Net Model. We need to choose optimizer and loss fuction. We will use Adam optimizer with a initial learning rate of $1e-4$ .  
 
-We calculate the loss between the predicted noise $\epsilon_0$ and the original noise $\epsilon$ by the following formula:$$Loss_{simplified}(\theta)=\mathbb{E}_{t,x_0,\epsilon}[||\epsilon-\epsilon_0(\sqrt{\overline\alpha_t}x_0+\sqrt{1-\overline\alpha_t}\epsilon,t)||^2]\qquad\epsilon\in{N(0, I)}$$  This loss function is the L1 loss between predicted noise and the original noise.  
+We calculate the loss between the predicted noise $\epsilon_0$ and the original noise $\epsilon$ by the following formula:   $$Loss_{simplified}(\theta)=\mathbb{E}_{t,x_0,\epsilon}[||\epsilon-\epsilon_0(\sqrt{\overline\alpha_t}x_0+\sqrt{1-\overline\alpha_t}\epsilon,t)||^2]\qquad \epsilon \in{N(0, I)}$$   This loss function is the L1 loss between predicted noise and the original noise.  
 <br>
 
 ## Results
