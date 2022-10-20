@@ -174,10 +174,8 @@ The model did not converge well on the 256X256 size images. One possible reason 
 <br> 
 
 ## Reference:  
-[1] Image generation with diffusion models using Keras and TensorFlow.  
- url:[https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac](https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac)  
-[2] High-Resolution Image Synthesis with Latent Diffusion Models.    
-url: [https://ommer-lab.com/research/latent-diffusion-models/](https://ommer-lab.com/research/latent-diffusion-models/)  
+[1] Image generation with diffusion models using Keras and TensorFlow. url:[https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac](https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac)  
+[2] High-Resolution Image Synthesis with Latent Diffusion Models. url: [https://ommer-lab.com/research/latent-diffusion-models/](https://ommer-lab.com/research/latent-diffusion-models/)  
 [3] Stable Diffusion. [(GitHub)](https://github.com/CompVis/stable-diffusion)  
 [4] Denoising Diffusion Probabilistic Models [(Paper)](https://arxiv.org/pdf/2006.11239.pdf)  
 [5] Denoising Diffusion Implicit Models [(Paper)](https://arxiv.org/pdf/2010.02502.pdf)  
