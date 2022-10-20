@@ -247,23 +247,30 @@ class UNet(nn.Module):
         Returns:
             Tensor: output tensor
         """
-        position = self.position_block(position)
-        encoder_blocks = self.unet_encoder(x, position)
-        out = self.unet_decoder(encoder_blocks[::-1][0], encoder_blocks[::-1][1:], position)
-        out = self.unet_head(out)
+        position = position.unsqueeze(-1).type(torch.float)
+        position = self.positional_embedding(position, self.pos_dim)
+
+        # Encoder forward step
+        x1 = self.in_layer(x)
+        x2 = self.encoder1(x1, position)
+        x2 = self.attention1(x2)
+        x3 = self.encoder2(x2, position)
+        x3 = self.attention2(x3)
+        x4 = self.encoder3(x3, position)
+        x4 = self.attention3(x4)
+
+        # Bottle neck forward step
+        x4 = self.b1(x4)
+        x4 = self.b2(x4)
+        x4 = self.b3(x4)
+
+        # Decoder forward step
+        x = self.decoder1(x4, x3, position)
+        x = self.attention4(x)
+        x = self.decoder2(x, x2, position)
+        x = self.attention5(x)
+        x = self.decoder3(x, x1, position)
+        x = self.attention6(x)
+        out = self.out_layer(x)
+
         return out
-
-class ResidualBlock(nn.Module):
-    def __init__(self, function):
-        super().__init__()
-        self.function = function
-
-    def forward(self, x):
-        return self.function(x) + x
-
-# unet = UNet()
-# print(unet)
-# x = torch.randn(5, 1, 256, 256)
-# print(len(x))
-# print("unet features")
-# print(unet(x, torch.Tensor([5, 1, 64, 128])).shape)
