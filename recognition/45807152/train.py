@@ -1,74 +1,85 @@
-import os
-from matplotlib import test
+# Run to perform training on Improved UNet model and generate metrics
+from dataset import ISIC_Dataset
+from modules import ImprovedUNet
+from utility import dice_coefficient, IoU
+from config import *
+
 import tensorflow as tf
-# import tensorflow.keras as keras
+import tensorflow.keras.backend as K
 import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
-
-from tensorflow.keras import datasets, layers, models
-
-data_path = "../../../ISIC_Data/ISIC-2017_Training_Data/*.jpg"
-mask_path = "../../../ISIC_Data/ISIC-2017_Training_Part1_GroundTruth/*.png"
-
-# new_img = tf.io.read_file("./TestImages/ISIC_0000000.jpg")
-# raw_image = tf.io.decode_jpeg(new_img, channels=3)
 
 
-def prepareData(filenames):
-    new_img = tf.io.read_file(filenames)
-    raw_image = tf.io.decode_jpeg(new_img, channels=3)
+def main():
+    """
+    Run training on Improved UNet model and generate metrics.
+    
+    ISIC 2017 lesion data will be used to generate segmentation masks.
+    """
+    # Image and mask file paths (update relative path where nessesary)
+    data_path = "../../../ISIC_Data/ISIC-2017_Training_Data/*.jpg"
+    mask_path = "../../../ISIC_Data/ISIC-2017_Training_Part1_GroundTruth/*.png"
 
-    # Resize
-    raw_image = tf.image.resize_with_pad(raw_image, 480, 480)
+    # Load data and split into train, validate and testing subsets
+    lesion_data = ISIC_Dataset(data_path, mask_path, IMAGE_HEIGHT, IMAGE_WIDTH)
+    train_split = 0.8   # 80% of images will be used for training
+    val_split = 0.1     # 10% of images will be used for validation
+    test_split = 0.1    # 10% of images will be reseverd for testing
+    (train_x, train_y), (val_x, val_y), (test_x, test_y) \
+        = lesion_data.get_data_splits(train_split, val_split, test_split)
 
-    # Normalise
-    raw_image = raw_image / 255.0
+    # Create UNet model
+    model = ImprovedUNet(IMAGE_HEIGHT, IMAGE_WIDTH, image_channels=3,
+                         filters=16, kernel_size=(3, 3))
+    model.build_model(summary=True)   # Print model summary to terminal
 
-    return raw_image
+    # Extract UNet model and compile
+    model = model.model
+    model.compile(optimizer=tf.keras.optimizers.Adam(),
+                  loss="binary_crossentropy",
+                  metrics=[dice_coefficient, IoU])
 
+    # Train model and save history
+    history = model.fit(x=train_x,
+                        y=train_y,
+                        epochs=TRAINING_EPOCHS,
+                        validation_data=(val_x, val_y),
+                        batch_size=64)
 
-def prepareMasks(filenames):
-    new_img = tf.io.read_file(filenames)
-    raw_image = tf.io.decode_png(new_img, channels=3)
+    # Save the model locally (tf file)
+    model.save("./trainedModel", save_format='tf')
 
-    # Resize
-    raw_image = tf.image.resize_with_pad(raw_image, 480, 480)
+    # Plot training metrics
+    # Loss vs Epoch
+    plt.figure(0)
+    plt.plot(history.history['loss'], label='Loss')
+    plt.title("Loss vs Training Epoch")
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(loc='upper right')
+    plt.savefig("./figures/lossVsEpoch.png")
 
-    # Normalise
-    raw_image = raw_image / 255.0
+    # Dice Coeficient vs Epoch
+    plt.figure(1)
+    plt.plot(history.history['dice_coefficient'], label='Dice Coeficient')
+    plt.title("Dice Coeficient vs Training Epoch")
+    plt.xlabel('Epoch')
+    plt.ylabel('Dice Coeficient')
+    plt.legend(loc='lower right')
+    plt.savefig("./figures/diceVsEpoch.png")
 
-    # Set image thresholds
-    raw_image = tf.where(raw_image > 0.5, 1.0, 0.0)
+    # IoU vs Epoch
+    plt.figure(2)
+    plt.plot(history.history['IoU'], label='IoU')
+    plt.title("IoU vs Training Epoch")
+    plt.xlabel('Epoch')
+    plt.ylabel('Intersection Over Union')
+    plt.legend(loc='lower right')
+    plt.savefig("./figures/iouVsEpoch.png")
 
-    return raw_image
+    # Utilise test set to make predictions for evaluation
+    make_predictions(model, test_x, test_y)
 
+    return
 
-ISIC_Data = tf.data.Dataset.list_files(data_path, shuffle=False)
-preData = ISIC_Data.map(prepareData)
-
-Mask_Data = tf.data.Dataset.list_files(mask_path, shuffle=False)
-preMasks = Mask_Data.map(prepareMasks)
-
-# for i in preData.take(1):
-#     plt.imshow(i.numpy())
-#     plt.show()
-
-# for j in preMasks.take(1):
-#     plt.imshow(j.numpy())
-#     plt.show()
-
-im = tf.io.read_file("../../../ISIC_Data/ISIC-2017_Training_Data/ISIC_0000000.jpg")
-box = np.array([0.1, 0.2, 0.5, 0.9])
-boxes = box.reshape([1, 1, 4])
-colours = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
-bbox = tf.image.draw_bounding_boxes(im, boxes, colours)
-
-# plt.figure(figsize=(1022, 767))
-# plt.imshow(images[i].numpy().astype("uint8"))
-# plt.title(class_names[labels[i]])
-# plt.axis("off")
-# # testTensor = tf.constant(4)
-# # # img = tf.io.decode_png(training_path)
-
-# # print(testTensor)
+if __name__ == '__main__':
+    main()
