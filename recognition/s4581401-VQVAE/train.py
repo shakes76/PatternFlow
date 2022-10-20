@@ -4,7 +4,6 @@ from dataset import *
 from modules import *
 import tensorflow_probability as tfp
 
-#Writing a wrapper function
 def codebook_wrapper_fn(encoder, embeddings):
     """
     The function encodes the images into codebook indices.
@@ -18,14 +17,14 @@ def codebook_wrapper_fn(encoder, embeddings):
     """
 
     def mapper(x):
-        #Get the encoded outputs and flatten them
+        # Get the encoded outputs and flatten them
         encoded_outputs = encoder(x)
 
         flat_enc_outputs = tf.reshape(
             encoded_outputs, [-1, tf.shape(encoded_outputs)[-1]])
 
         codebook_indices = embeddings.get_closest_index(flat_enc_outputs)
-        #Find nearest codebook indices
+        # Find nearest codebook indices
         codebook_indices = tf.reshape(
             codebook_indices, tf.shape(encoded_outputs)[:-1])
 
@@ -97,44 +96,42 @@ def pixel_cnn_training_plots(history2):
     plt.legend(loc='upper right')
     plt.show()
 
-#Constants / Hyperparameters
+# Constants / Hyperparameters
 val_split = 0.2
 img_height = 256
 img_width = 256
 batch_size = 32
-latent_dim = 128 #Keep larger for more dimensions in the latent space
-num_embeddings= 32 #Keep low so it is easier to train the pixelCNN
+latent_dim = 128 # Keep larger for more dimensions in the latent space
+num_embeddings= 32 # Keep low so it is easier to train the pixelCNN
 
-train_path = "AD_NC/train" #Path to the training data directory
-test_path = "AD_NC/test" #Path to the test data directory
-#Oasis dataset path
-#train_path = "keras_png_slices_data/keras_png_slices_train"
-#test_path = "keras_png_slices_data/keras_png_slices_test"
+# Path to the training and test data. Currently for ADNI dataset
+train_path = "AD_NC/train" # Path to the training data directory
+test_path = "AD_NC/test" # Path to the test data directory
 
-#Load in the training, validation and test data
+# Load in the training, validation and test data
 train_ds = load_train_data(train_path, img_height, img_width, batch_size, val_split)
 val_ds = load_validation_data(train_path, img_height, img_width, batch_size, val_split)
 test_ds = load_test_data(test_path, img_height, img_width, batch_size)
 
-data_var = find_data_var(train_ds) #Find the variance of the training data
+data_var = find_data_var(train_ds) # Find the variance of the training data
 
-#Initialising and compiling the model
+# Initialising and compiling the model
 vqvae_model = VQVAEModel(img_shape = (img_height, img_width, 3), embedding_num=num_embeddings, embedding_dim=latent_dim, beta=0.25, data_variance=data_var)
 vqvae_model.compile(optimizer=keras.optimizers.Adam())
 device = "/GPU:0" if len(tf.config.list_physical_devices('GPU')) else '/CPU:0'
 
-#Training the model
+# Training the model
 with tf.device("/GPU:0"):
   history = vqvae_model.fit(train_ds, epochs = 10, validation_data = val_ds, batch_size = batch_size)
 
-#Saving the weights. Put the path of where you want to store the weights as input
+# Saving the weights. Put the path of where you want to store the weights as input
 vqvae_model.save_weights("path to store weights")
 
-#Plotting code and results
+# Plotting code and results
 training_plots(history)
 
 # Training the PixelCNN.
-#Load in the data
+# Load in the data
 pixel_train_ds = load_train_data(train_path, img_height, img_width, batch_size, 0.8)
 pixel_val_ds = load_validation_data(train_path, img_height, img_width, batch_size, 0.05)
 codebook_mapper = codebook_wrapper_fn(
@@ -144,21 +141,20 @@ codebook_dataset = pixel_train_ds.map(codebook_mapper)
 codebook_val_dataset = pixel_val_ds.map(codebook_mapper)
 pixelcnn_input_shape = vqvae_model.get_encoder().output.shape[1:3]
 
-#Make and compile the model
+# Make and compile the model
 pixelcnn_model = PixelCNNModel(pixelcnn_input_shape, vqvae_model._embedding_num, 128, 2,2)
 pixelcnn_model.compile(optimizer=keras.optimizers.Adam(0.0003),
                        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                       #loss = tf.keras.losses.MeanSquaredError,
-                       metrics=["accuracy"],
+                       metrics=["accuracy"]
 )
 
-#Training the model
+# Training the model
 with tf.device("/GPU:0"):
   history2 = pixelcnn_model.fit(codebook_dataset, batch_size=64,epochs=100, validation_data = codebook_val_dataset)
 
-#Saving the weights. Put the path of where you want to store the weights as input
+# Saving the weights. Put the path of where you want to store the weights as input
 pixelcnn_model.save_weights("path to store weights")
 
-#Training error plots
+# Training error plots
 pixel_cnn_training_plots(history2)
 

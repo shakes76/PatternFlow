@@ -2,19 +2,6 @@ import tensorflow as tf
 import numpy as np
 from tensorflow import keras
 
-###
-#   References:
-# - https://keras.io/examples/generative/vq_vae/
-# - https://www.kaggle.com/code/ameroyer/keras-vq-vae-for-image-generation/notebook
-# - https://www.youtube.com/watch?v=VZFVUrYcig0
-# - https://arxiv.org/pdf/1711.00937.pdf
-# - https://keras.io/examples/generative/pixelcnn/
-# - https://arxiv.org/pdf/1606.05328.pdf
-# - https://arxiv.org/pdf/1601.06759v3.pdf
-# - https://towardsdatascience.com/auto-regressive-generative-models-pixelrnn-pixelcnn-32d192911173
-##
-
-
 class VectorQuantizerLayer(tf.keras.layers.Layer):
     """
     Custom layer to represent the discrete latent space used within the VQVAE model

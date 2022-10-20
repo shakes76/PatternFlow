@@ -1,4 +1,4 @@
-#Generative VQVAE using PixelCNN on the ADNI Dataset
+# Generative VQVAE using PixelCNN on the ADNI Dataset
 
 ## Overview
 
@@ -9,25 +9,28 @@ then generates new codebook samples which are decoded by the VQ-VAE to generate 
 
 ## Models
 
-###VQVAE
+### VQVAE
 
-###Pixel CNN
+### Pixel CNN
 
-##Data pre-processing
+## Data pre-processing
 
-##Training the model
-
-
-##Results
+## Training the model
 
 
-##Improvements
+## Results
 
 
-##Dependencies
+## Improvements
 
 
-##References
+## Dependencies
+- tensorflow >= 2.9.2
+- numpy >= 1.21.6
+- matplotlib >= 3.2.2
+- tensorflow_probability >= 0.16.0
+
+## References
 
 Tutorial referenced for understanding and creating the VQVAE Model
 - https://keras.io/examples/generative/vq_vae/
