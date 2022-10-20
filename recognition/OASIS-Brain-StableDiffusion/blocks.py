@@ -8,7 +8,7 @@ import math
 class ConvReluBlock(nn.Module):
     """
     ConvReluBlock object consisting of a double convolution rectified
-    linear layer used at every level of the UNET model
+    linear layer and a group normalization used at every level of the UNET model
     """
     def __init__(self, dim_in, dim_out, residual_connection=False):
         """
@@ -17,7 +17,7 @@ class ConvReluBlock(nn.Module):
         Args:
             dim_in (int): number of channels in the input image
             dim_out (int): number of channels produced by the convolution
-            residual_connection (bool): true if this block has a residual connect, false otherwise
+            residual_connection (bool, optional): true if this block has a residual connect, false otherwise. Defaults to False.
         """
         super(ConvReluBlock, self).__init__()
         self.residual_connection = residual_connection
@@ -26,16 +26,13 @@ class ConvReluBlock(nn.Module):
         self.relu = nn.ReLU()
         self.gNorm = nn.GroupNorm(1, dim_out)
 
-        self.positional_encoding = nn.Linear(32, dim_out)
-
-    def forward(self, x, position):
+    def forward(self, x):
         """
         Method to run an input tensor forward through the block
         and returns the resulting output tensor
 
         Args:
             x (Tensor): input tensor
-            position (Tensor): position tensor result of positional encoding
 
         Returns:
             Tensor: output tensor
@@ -59,159 +56,83 @@ class ConvReluBlock(nn.Module):
 
 class EncoderBlock(nn.Module):
     """
-    Encoder block consisting of 5 ConvReluBlocks each
-    followed by a max pooling layer
+    Encoder block consisting of a max pooling layer followed by 2 ConvReluBlocks
+    concatenated with the embedded position tensor
     """
-    def __init__(self, dim_in=1, dim_out=1024):
+    def __init__(self, dim_in, dim_out, emb_dim=256):
         """
         Encoder Block class constructor to initialize the object
 
         Args:
-            dim_in (int, optional): number of channels in the input image. Defaults to 3.
-            dim_out (int, optional): number of channels produced by the convolution. Defaults to 1024.
+            dim_in (int): number of channels in the input image.
+            dim_out (int): number of channels produced by the convolution.
+            emb_dim (int, optional): number of channels in the embedded layer. Defaults to 256.
         """
         super(EncoderBlock, self).__init__()
-        self.encoder_block1 = ConvReluBlock(dim_in, 64)
-        self.encoder_block2 = ConvReluBlock(64, 128)
-        self.encoder_block3 = ConvReluBlock(128, 256)
-        self.encoder_block4 = ConvReluBlock(256, 512)
-        self.encoder_block5 = ConvReluBlock(512, dim_out)
+        self.encoder_block1 = ConvReluBlock(dim_in, dim_in, residual_connection=True)
+        self.encoder_block2 = ConvReluBlock(dim_in, dim_out)
         self.pool = nn.MaxPool2d(2)
+        self.embedded_block = nn.Sequential(nn.ReLU(), nn.Linear(emb_dim, dim_out))
 
     def forward(self, x, position):
         """
         Method to run an input tensor forward through the encoder
-        and returns the resulting outputs from each encoder layer
+        and returns the resulting tensor
 
         Args:
             x (Tensor): input tensor
-            position (Tensor): position tensor result of positional encoding
+            position (Tensor): position tensor
 
         Returns:
-            List: list of output tensors from each layer 
+            Tensor: output tensor concatenated with the position tensor
         """
-        encoder_blocks = [] # list of encoder blocks output
-        # BLOCK 1 followed by max pooling
-        x = self.encoder_block1(x, position) 
-        encoder_blocks.append(x)
         x = self.pool(x)
-        # BLOCK 2 followed by max pooling
-        x = self.encoder_block2(x, position)
-        encoder_blocks.append(x)
-        x = self.pool(x)
-        # BLOCK 3 followed by max pooling
-        x = self.encoder_block3(x, position)
-        encoder_blocks.append(x)
-        x = self.pool(x)
-        # BLOCK 4 followed by max pooling
-        x = self.encoder_block4(x, position)
-        encoder_blocks.append(x)
-        x = self.pool(x)
-        # BLOCK 5 followed by max pooling
-        x = self.encoder_block5(x, position)
-        encoder_blocks.append(x)
-        x = self.pool(x)
-        return encoder_blocks
+        x = self.encoder_block1(x)
+        x = self.encoder_block2(x)
+        emb_x = self.embedded_block(position)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1])
+        return emb_x + x
 
 class DecoderBlock(nn.Module):
     """
-    Decoder block consisting of 4 up convolution blocks each
-    followed by a ConvReluBlock
+    Decoder block consisting of an upsample layer followed by 2 ConvReluBlocks
+    concatenated with the embedded position tensor
     """
-    def __init__(self, dim_in=1024, dim_out=64):
+    def __init__(self, dim_in, dim_out, emb_dim=256):
         """
         Decoder Block class constructor to initialize the object
 
         Args:
-            dim_in (int, optional): number of channels in the input image. Defaults to 1024.
-            dim_out (int, optional): number of channels produced by the convolution. Defaults to 64.
+            dim_in (int): number of channels in the input image.
+            dim_out (int): number of channels produced by the convolution.
+            emb_dim (int, optional): number of channels in the embedded layer. Defaults to 256. 
         """
         super(DecoderBlock, self).__init__()
-        self.upConv1 = nn.ConvTranspose2d(dim_in, 512, 2, 2)
-        self.upConv2 = nn.ConvTranspose2d(512, 256, 2, 2)
-        self.upConv3 = nn.ConvTranspose2d(256, 128, 2, 2)
-        self.upConv4 = nn.ConvTranspose2d(128, dim_out, 2, 2)
-        self.decoder_block1 = ConvReluBlock(dim_in, 512)
-        self.decoder_block2 = ConvReluBlock(512, 256)
-        self.decoder_block3 = ConvReluBlock(256, 128)
-        self.decoder_block4 = ConvReluBlock(128, dim_out)
+        self.upSample_block = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
+        self.decoder_block1 = ConvReluBlock(dim_in, dim_in, residual_connection=True)
+        self.decoder_block2 = ConvReluBlock(dim_in, dim_out)
+        self.embedded_block = nn.Sequential(nn.ReLU(), nn.Linear(emb_dim, dim_out))
+        self.embedded_block = nn.Sequential(nn.ReLU(), nn.Linear(emb_dim, dim_out))
 
-
-    def forward(self, x, encoder_blocks, position):
+    def forward(self, x, skip_tensor, position):
         """
         Method to run an input tensor forward through the decoder
-        and returns the output from all decoder layers
+        and returns the output tensor
 
         Args:
             x (Tensor): input tensor
-            encoder_blocks (List): list of output tensors from each layer of the encoder
+            skip_tensor (Tensor): tensor representing the skip connection from the encoder
             position (Tensor): position tensor result of positional encoding
 
         Returns:
-            Tensor: output tensor
+            Tensor: output tensor concatenated with the position tensor
         """
-        # BLOCK 1 including upConv and decoder block
-        x = self.upConv1(x)
-        encoder_feature = self.crop(encoder_blocks[0], x)
-        x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block1(x, position)
-        # BLOCK 2 including upConv and decoder block
-        x = self.upConv2(x)
-        encoder_feature = self.crop(encoder_blocks[1], x)
-        x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block2(x, position)
-        # BLOCK 3 including upConv and decoder block
-        x = self.upConv3(x)
-        encoder_feature = self.crop(encoder_blocks[2], x)
-        x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block3(x, position)
-        # BLOCK 4 including upConv and decoder block
-        x = self.upConv4(x)
-        encoder_feature = self.crop(encoder_blocks[3], x)
-        x = torch.cat([x, encoder_feature], dim=1)
-        x = self.decoder_block4(x, position)
-        return x
-
-    def crop(self, encoder_blocks, x):
-        """
-        Crops the given tensor around the encoded features
-
-        Args:
-            encoder_blocks (List): list of output tensors from each layer of the encoder
-            x (Tensor): input tensor to crop
-
-        Returns:
-            Tensor: cropped output tensor
-        """
-        _, _, H, W, = x.shape
-        encoder_blocks = torchvision.transforms.CenterCrop([H, W])(encoder_blocks)
-        return encoder_blocks
-
-#Transformer Architecture 
-#https://kazemnejad.com/blog/transformer_architecture_positional_encoding/
-class PositionalEmbeddingTransformerBlock(nn.Module):
-    def __init__(self, dim_in):
-        super().__init__()
-        self.dim_in = dim_in
-
-    # delete if it doesn't work
-    def forward2(self, timePos):
-        freq = 1.0 / (
-            10000 
-            ** (torch.arange(self.dim_in, device=timePos.device).float() / self.dim_in)
-        )
-        positional_encoding_a = torch.sin(timePos.repeat(1, self.dim_in // 2) * freq)
-        positional_encoding_b = torch.cos(timePos.repeat(1, self.dim_in // 2) * freq)
-        positional_encoding = torch.cat((positional_encoding_a, positional_encoding_b), dim=-1)
-        return positional_encoding
-    
-    # delete if it doesn't work
-    def forward(self, timePos):
-        embeddings = math.log(10000) / ((self.dim_in // 2) - 1)
-        embeddings = torch.exp(torch.arange(self.dim_in // 2, device=timePos.device) * -embeddings)
-        embeddings = timePos[:, None] * embeddings[None, :]
-        embeddings = torch.cat((embeddings.sin(), embeddings.cos()), dim=-1)
-        return embeddings
+        
+        x = self.upSample_block(x)
+        x = torch.cat([skip_tensor, x], dim=1)
+        x = self.decoder_block1(x)
+        x = self.decoder_block2(x)
+        emb_x = self.embedded_block(position)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1])
+        return emb_x + x
 
 class UNet(nn.Module):
     """
