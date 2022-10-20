@@ -3,6 +3,7 @@ from dataset import Dataset
 from modules import IUNET
 import matplotlib.pyplot as plt
 import time
+import pickle
 
 def dsc(mask, truth):
     """
@@ -83,7 +84,7 @@ if __name__ == '__main__':
     
 
     learning_rate = 1e-3
-    num_epochs = 6
+    num_epochs = 10
 
     model = IUNET(3, 16).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -94,6 +95,7 @@ if __name__ == '__main__':
     validation_dsc_history = []
     print('entering training loop')
     for i in range(num_epochs):
+        epoch_start = time.time()
         ## train model
         losses = []
         dscs = []
@@ -116,7 +118,7 @@ if __name__ == '__main__':
             model.zero_grad()
             loss.backward()
             optimizer.step()
-            if batch_no == 100 / batch_size:
+            if batch_no == 800 / batch_size:
                 break
 
         epoch_loss = sum(losses)/len(losses)
@@ -125,13 +127,23 @@ if __name__ == '__main__':
         dsc_history.append(epoch_dsc)
         
         ## evaluate over validation dataset
-        validation_loss, validation_dsc = evaluate_model(model, dataloader_validation, 10, 1)
+        validation_loss, validation_dsc = evaluate_model(model, dataloader_validation, 100, 1)
         validation_loss_history.append(validation_loss)
         validation_dsc_history.append(validation_dsc)
 
-        print(f"epoch [{i+1}/{num_epochs}]\tloss: {epoch_loss}\tdsc: {epoch_dsc}\tval loss: {validation_loss}\tval dsc: {validation_dsc}")
+        epoch_end = time.time()
+        print(f"epoch [{i+1}/{num_epochs}] {epoch_end - epoch_start}\tloss: {epoch_loss}\tdsc: {epoch_dsc}\tval loss: {validation_loss}\tval dsc: {validation_dsc}")
 
+    # save files
     torch.save(model.state_dict(), 'model.pt')
+    with open('train_loss.pkl', 'wb') as f:
+        pickle.dump(loss_history)
+    with open('train_dsc.pkl', 'wb') as f:
+        pickle.dump(dsc_history)
+    with open('validation_loss.pkl', 'wb') as f:
+        pickle.dump(validation_loss_history)
+    with open('validation_dsc.pkl', 'wb') as f:
+        pickle.dump(validation_dsc_history)
 
     end = time.time()
     print(f'Done in {end - start}s')
