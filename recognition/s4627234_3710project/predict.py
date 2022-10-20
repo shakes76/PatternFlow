@@ -50,40 +50,40 @@ for n in r:
 
 
 
-# analyse history of training the model
-def analyse_training_history(history):
-    """Plots the acuraccy and validation accuracy of the model as it trains."""
-    plt.figure(figsize=(10, 6))
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.ylim([0, 1])
-    plt.legend(loc='lower right')
-    plt.show()
-analyse_training_history(history)
+# # analyse history of training the model
+# def analyse_training_history(history):
+#     """Plots the acuraccy and validation accuracy of the model as it trains."""
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(history.history['accuracy'], label='accuracy')
+#     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Accuracy')
+#     plt.ylim([0, 1])
+#     plt.legend(loc='lower right')
+#     plt.show()
+# analyse_training_history(history)
 
-# plot some predictions
-def display_predictions(model, ds, n=1):
-    """Makes n predictions using the model and the given dataset and displays
-    these predictions."""
-    for image, mask in ds.take(n):
-        pred_mask = model.predict(image[tf.newaxis, ...])
-        pred_mask = tf.math.round(pred_mask)
-        display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
+# # plot some predictions
+# def display_predictions(model, ds, n=1):
+#     """Makes n predictions using the model and the given dataset and displays
+#     these predictions."""
+#     for image, mask in ds.take(n):
+#         pred_mask = model.predict(image[tf.newaxis, ...])
+#         pred_mask = tf.math.round(pred_mask)
+#         display([tf.squeeze(image), tf.squeeze(mask), tf.squeeze(pred_mask)])
 
-display_predictions(model, test_ds, n=3)
+# display_predictions(model, test_ds, n=3)
 
-# compute dice similarity coefficients predictions
-def compute_dice_coefficients(model, ds):
-    """Computes the average dice similarity coefficient for all predictions
-    made using the provided dataset."""
-    DCEs = []
-    for image, mask in ds:
-        pred_mask = model.predict(image[tf.newaxis, ...])
-        pred_mask = tf.math.round(pred_mask)
-        DCE = dice_coefficient(mask, pred_mask)
-        DCEs.append(DCE)
-    print("Average Dice Coefficient = ", sum(DCEs)/len(DCEs))
-    
-compute_dice_coefficients(model, test_ds)
+# # compute dice similarity coefficients predictions
+# def compute_dice_coefficients(model, ds):
+#     """Computes the average dice similarity coefficient for all predictions
+#     made using the provided dataset."""
+#     DCEs = []
+#     for image, mask in ds:
+#         pred_mask = model.predict(image[tf.newaxis, ...])
+#         pred_mask = tf.math.round(pred_mask)
+#         DCE = dice_coefficient(mask, pred_mask)
+#         DCEs.append(DCE)
+#     print("Average Dice Coefficient = ", sum(DCEs)/len(DCEs))
+
+# compute_dice_coefficients(model, test_ds)

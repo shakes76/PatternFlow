@@ -34,7 +34,7 @@ The ISIC package includes four folders, including Training, Testing, Validation 
 
 ## How it works:
 
-UNet:
+### UNet:
 The structure of U-Net is shown in the following figure, the left part can be regarded as an encoder (down), and the right part can be regarded as a decoder (up).
 
 ![image](./images/model256.png)
@@ -44,10 +44,27 @@ The encoder has four submodules, each submodule contains two convolution layers,
 The decoder consists of four sub-modules, and the resolution is sequentially increased by up-sampling operations until it is consistent with the resolution of the input image. The decoder uses two 3x3 un-padded convolutions and . After four up-sampling, a final 1x1 convolution with a sigmoid activation function is applied.
 
 
-Improved_UNet : 
+### Improved_UNet : 
+The algorithm is a modified version of UNet created by Isensee and colleagues, and below is the improved UNet graph. The UNet() and UNet_imp() functions in modules.py build the UNet model before and after improvement. The model is built according to the following UNet architecture, but changing the output "softmax" to "sigmoid" at the end so the output is a mask of one channel.
 
+![image](./images/model_imp.png)
 
+#### Important parts of improved UNet:
 
+All the convolution, context, element-wise-sum in encoding are integrated into the up_imp() function.
+
+Part of upsampling, concatenate, and localization in decoding are integrated into the down_imp() function.
+
+context module:
+Described by 2 convolution layers (all except the first one with stride 2) with a dropout layer (0.3) in between.
+
+Upsampling module: 
+It consists of an upsampling layer and a convolution layer.
+
+localization module: 
+Completed by a 3x3 convolution and a 1x1 convolution.
+
+Instance normalization and Leaky reLU are used throughout the architecture. The model is compiled with dice coefficient loss and dice coefficient.
 
 
 ## Install: 
@@ -98,6 +115,11 @@ Name: pandas_version_1.4.4
 Name: matplotlib_version_3.5.2
 -- Python plotting package
 (https://matplotlib.org)
+
+
+## Reference
+
+Isensee, F., Kickingereder, P., Wick, W., Bendszus, M., &amp; Maier-Hein, K. H. (2018, February 28). Brain tumor segmentation and radiomics survival prediction: Contribution to the brats 2017 challenge. arXiv.org. Retrieved October 19, 2022, from https://arxiv.org/abs/1802.10508v1 
 
 
 

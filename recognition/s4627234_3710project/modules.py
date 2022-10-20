@@ -48,17 +48,17 @@ def DSC_loss (y_true, y_pred):
 #-- normal UNet --#
 
 def down(x, filters):
-    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(x)
-    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
-    c = Concatenate()([x, c])
-    out = MaxPool2D((2, 2), (2, 2))(c)
-    return c, out
+    conv = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(x)
+    conv = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(conv)
+    conv = Concatenate()([x, conv])
+    out = MaxPool2D((2, 2), (2, 2))(conv)
+    return conv, out
 
 def up(x, skip, filters):
     us = UpSampling2D((2, 2))(x)
     concat = Concatenate()([us, skip])
-    c = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(concat)
-    out = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
+    conv = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(concat)
+    out = Conv2D(filters, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(conv)
     return out
 
 def UNet():
@@ -70,10 +70,10 @@ def UNet():
     c3, p3 = down(p2, f*4) 
     c4, p4 = down(p3, f*8) 
     
-    c = Conv2D(f*16, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(p4)
-    c = Conv2D(f*16, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(c)
+    conv = Conv2D(f*16, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(p4)
+    conv = Conv2D(f*16, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(conv)
     
-    u1 = up(c, c4, f*8) 
+    u1 = up(conv, c4, f*8) 
     u2 = up(u1, c3, f*4) 
     u3 = up(u2, c2, f*2) 
     u4 = up(u3, c1, f) 
@@ -105,19 +105,7 @@ def down_imp(input, filters, stride):
     conv = Conv2D(filters, (3, 3), strides = stride, padding = "same")(input)
     conv_module = down_context_module(conv, filters)
     add = Add()([conv, conv_module])
-    
     return add
-	
-
-def up_imp(input, adds, filter1, filter2):
-    """
-        decode module with 3x3 convolution
-    """
-    up = UpSampling2D((2, 2))(input)
-    up = Conv2D(filter1, (3, 3), padding = "same", activation = act)(up)
-    concat = Concatenate()([up, adds])
-    local = localization_module(concat, filter2, filter2)
-    return local
 	
 
 def localization_module(input, filter1, filter2):
@@ -129,5 +117,53 @@ def localization_module(input, filter1, filter2):
     conv2 = Conv2D(filter2, (1, 1), padding = "same", activation = act)(conv1)
     return conv2
 
+def up_imp(input, adds, filter1, filter2):
+    """
+        decode module with 3x3 convolution
+    """
+    # upsampling module
+    up = UpSampling2D((2, 2))(input)
+    up = Conv2D(filter1, (3, 3), padding = "same", activation = act)(up)
+    concat = Concatenate()([up, adds])
 
+    # localization module
+    local = localization_module(concat, filter2, filter2)
+    return local
+
+def UNet_imp():
+    
+    inputs = Input(shape=(256, 256, 3))
+    
+    # Encoder (down)
+    add1 = down_imp(inputs, 32, (1, 1)) # only first one with strides = (1, 1)
+    add2 = down_imp(add1, 32, (2, 2))
+    add3 = down_imp(add2, 64, (2, 2))
+    add4 = down_imp(add3, 128, (2, 2))
+    add5 = down_imp(add4, 256, (2, 2))
+    
+
+	# Decoder (up)
+    local1 = up_imp(add5, add4, 128, 128)
+
+    local2 = up_imp(local1, add3, 64, 64)
+    seg1 = Conv2D(3, (1, 1), padding = "same")(local2)
+    seg1 = UpSampling2D(size = (2, 2))(seg1)
+
+    local3 = up_imp(local2, add2, 32, 32)
+    seg2 = Conv2D(3, (1, 1), padding = "same")(local3)
+    seg_add_1 = Add()([seg1, seg2])
+    seg_add_1 = UpSampling2D(size = (2, 2))(seg_add_1)
+
+    up = UpSampling2D((2, 2))(local3) # up-sampling
+    up = Conv2D(16, (3, 3), padding = "same", activation = act)(up)
+
+    concat4 = Concatenate()([up, add1])
+    conv4 = Conv2D(32, (3, 3), padding = "same")(concat4)
+    seg3 = Conv2D(3, (1, 1), padding = "same")(conv4)
+    seg_add_2 = Add()([seg_add_1, seg3])
+    
+    outputs = Conv2D(3, (1, 1), activation = "sigmoid")(seg_add_2)
+    model = tf.keras.Model(inputs = inputs, outputs = outputs)
+    
+    return model
 
