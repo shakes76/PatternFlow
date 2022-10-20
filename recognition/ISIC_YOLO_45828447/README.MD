@@ -1,4 +1,4 @@
-# ISIC 2017 Melonoma (Lesion) Detection with YOLO v5
+# ISIC 2017 Melanoma (Lesion) Detection with YOLO v5
 ## Aim
 The aim of this project is to prepare the 2000 lesion images inside the ISIC 2017 challenge training dataset to train a YOLO v5 network that is capable of producing a suitable detection accuracy, with a Intersection Over Union of over 0.8 on the test set for detecting Melonoma.
 
@@ -6,6 +6,15 @@ The aim of this project is to prepare the 2000 lesion images inside the ISIC 201
 *You Only Look Once*, or YOLO is a real-time object detection neural network. It is known to be a fast performing, lightweight model and thus can be deployed on slower hardware to achieve reasonable performance. 
 
 ### How it works
+The architecture splits the input image in a *m* x *m* grid and generates 2 bounding boxes for each grid. 
+![Model Example](Images/model_example.jpeg)
+```
+Pr(Classi|Object)∗Pr(Object)∗IOU = Pr(Classi)∗IOU
+```
+### Model Architecture
+![Model Architecture](Images/architecture.jpg)
+### Model Choices
+![Model Comparison](Images/model_comparison.png)
 
 ### Loss Function
 ![Loss Function of the YOLO model](Images/loss_func.jpg)
@@ -14,23 +23,26 @@ The multi-part loss function above was used during training by the YOLO v5 model
 ## ISIC Challenge 2017 Dataset
 The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are known to be either unharmful, melanoma or seborrheic keratosis. The dataset has already split its data into individual training, validation and test datasets. The training data includes 2000 lesion images in JPEG format, along with the ground truth in PNG format. The validation set and test set includes 150 and 600 JPEG images respectively and, like the training data, includes the ground truth for each image. The dataset includes extra information such as the patients age and gender, these are not within the scope of the project and will not be encoded during training. 
 
-## Dependencies
+## Setting Up
+### Dependencies
 - Python -> 3.9
 - YOLOv5 from their GitHub Page and its associated dependencies
 - numpy
 - matplotlib
 - pillow (PIL)
 
+### File Structure
+
 
 ## Pre-processing
 The dataset downloaded from the ISIC website was then processed for training/test/validating as follows:
-- Resized both the skin images and segmentation (ground truth) to 640 x 640
+- Resized both the skin images and segmentation (ground truth) to 640 x 640 as per YOLOv5's default image size
 - Encoded the ground truth images to the YOLO v5 label structure for bounding boxes-> (label, center_x, center_y, width, height)
 - Split into training/validation/test folders in the same form as on the ISIC webpage (2000/150/600)
 
 ## Running the Model
-The train was run in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s.
-When running the small version of the YOLO v5 model, the following model structure is shown:
+The training was done in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s. No hyperparameters were inputted, meaning that default hyperparameters used to train the YOLOv5 neural network was used. 
+When running the small version of the YOLO v5 model, the following model architecture is shown:
 ```
                  from  n    params  module                                  arguments                     
   0                -1  1      3520  models.common.Conv                      [3, 32, 6, 2, 2]              
@@ -62,11 +74,27 @@ Model summary: 214 layers, 7025023 parameters, 7025023 gradients, 16.0 GFLOPs
 ```
 ## Accuracy Metrics
 ### Intersection over Union (IOU)
-
+![IOU](Images/iou_equation.png)
+The ratio between the intersection and the union of the predicted boxes and the ground truth boxes. 
 ### Mean Average Precision (mAP)
+
+## Results
+### YOLOv5s
+
+### YOLOv5m
+
+
+## Discussion
+Recommends more than 1500 images per class, and more than 10000 instances (labeled objects) per class
+Lack of background images, COCO has 1000 background images or about 1%
+Even spread of Melanoma positive images vs Non Melanoma, currently a lot of objects inside the images are not melanoma
 
 
 ## References
 https://challenge.isic-archive.com/data/#2017
 
 https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data
+
+https://github.com/ultralytics/yolov5/issues/5851
+
+https://towardsdatascience.com/yolo-you-only-look-once-real-time-object-detection-explained-492dc9230006
