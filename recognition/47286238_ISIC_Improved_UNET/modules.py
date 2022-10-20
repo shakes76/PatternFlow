@@ -23,17 +23,20 @@ class IUNET(nn.Module):
 
         ### Context Pathway (encoder)
         ## Initial 3x3 Convolution
-        self.initial_convolution = nn.Conv2d(
-            self.in_channels, 
-            self.filter_size, 
-            kernel_size=3, stride=1, padding=1, bias=False
-            )
+        self.conv1 = self.conv(in_channels, filter_size, 1)
 
-        ## TODO: Context Module
-        self.context_module = nn.Sequential()
+        ## Context Modules
+        self.context1 = self.context(filter_size)
+        self.context2 = self.context(filter_size*2)
+        self.context3 = self.context(filter_size*4)
+        self.context4 = self.context(filter_size*8)
+        self.context5 = self.context(filter_size*16)
 
-        ## TODO: 3x3 stride 2 convolution
-        self.context_conv = nn.Sequential()
+        ## 3x3 stride 2 convolutions
+        self.conv2 = self.conv(filter_size, filter_size*2, 2)
+        self.conv3 = self.conv(filter_size*2, filter_size*4, 2)
+        self.conv4 = self.conv(filter_size*4, filter_size*8, 2)
+        self.conv5 = self.conv(filter_size*8, filter_size*16, 2)
 
         ### Localization Pathway (decoder)
         ## TODO: Upsampling Module
@@ -48,6 +51,33 @@ class IUNET(nn.Module):
         ## Softmax
         self.softmax = nn.Softmax2d()
 
+        ## Leaky ReLU
+        self.lrelu = nn.LeakyReLU(negative_slope=1e-2)
+
+    def conv(self, filters_in, filters_out, stride):
+        return nn.Sequential(
+            nn.Conv2d(
+                filters_in, 
+                filters_out,
+                kernel_size=3, stride=stride, padding=1, bias=False),
+            nn.InstanceNorm2d(filters_out),
+            self.lrelu
+        )
+
+    def context(self, filters):
+        """
+        Context module as described by Isensee et al.
+        """
+        return nn.Sequential(
+            nn.Conv2d(filters, filters, bias=False),
+            nn.InstanceNorm2d(filters),
+            self.lrelu,
+            nn.Dropout2d(p=0.3),
+            nn.Conv2d(filters, filters, bias=False),
+            nn.InstanceNorm2d(filters),
+            self.lrelu
+        )
+
     def forward(self, x):
         """ 
         Generate predicted segmentation for given image
@@ -58,6 +88,6 @@ class IUNET(nn.Module):
             W: image width
         returns segmentation for the image
         """
-        # TODO:
+        ### Context Pathway
         return None
         
