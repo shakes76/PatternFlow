@@ -70,4 +70,12 @@ def train(
             if display_images:
                 images = style_gan({"z": val_z, "noise": val_noise, "alpha": 1.0})
                 plot_images(images, res_log2)
+    # plot the losses of discriminator and generator
+    plt.plot(style_gan.all_d_loss)
+    plt.plot(style_gan.all_g_loss)
+    plt.title('loss of training')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['dis_loss', 'gen_loss'], loc='upper left')
+    plt.show()
 
