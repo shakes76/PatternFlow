@@ -1,26 +1,19 @@
 # Section Navigation
-1. [Description of Algorithm](#description-of-algorithm)
+1. [Description of the Algorithm](#description-of-the-algorithm)
 2. [Problem It Solves](#problem-it-solves)
 3. [How It Works](#how-it-works)
-4. [Experiments & Results](#experiments-and-results)
-5. [Dependencies](#dependencies)
-6. [Reproducibility of Results](#reproducibility-of-results)
-7. [Example Inputs/Outputs](#example-inputs--outputs)
-8. [Plot of Algorithm](#plot-of-algorithm)
-9. [Image Pre-processing](#image-pre-processing)
-   - Preventing Data Leakage
-   - Cropping to Improve Computational Efficiency
-   - Expanding the Dataset with Augmentation
-10. [Training and Validation Splits](#training--validation-splits)
-11. [References](#references)
+4. [Image Pre-processing](#image-pre-processing)
+5. [Experiments & Results](#experiments-and-results)
+6. [Dependencies](#dependencies)
+7. [Reproducibility of Results](#reproducibility-of-results)
+8. [Training and Validation Splits](#training--validation-splits)
+9. [References](#references)
 
 
 
 # Vision Transformer for ADNI Images
 
-#description-of-algorithm
-## Description of Algorithm
-
+# Description of the Algorithm
 
 This is an implemention of a Vision Transformer (ViT) which follows as closely as possible the model presented by Dosovitskiy et al $^1$ in their 2021 paper *An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale*.     
 
@@ -220,13 +213,18 @@ Two approaches are taken with image augmentation.  The first is augmentaion with
 
 The second approach involves artificially enlarging the dataset with augmented image augmentations.  The Python package Augmentor was used to add augmented images.  The hyperparameter NUM_AUG_SAMPLES is set at a default value of 10,000 which is the number of augmented images to be added to the training set.  Thus when the ADNI_dataset_utility method add_augmented_images is called, the additional images are added to AD_NC_square/training.
 
+A sample image from the augmented dataset can be seen below.  Here the brain has been slightly rotated, skewed, and a patch of the image has been removed from a random location.
+
+![This is an image](./images/sample-aug.jpeg)
+
+
 [Back to Top](#section-navigation)
 
 
 
 # Experiments and Results
 
-The image datasets tackled by [$1$] included CIFAR-100 and Oxford Flowers-102.  These datasets are large and complex in that many possible labels exist for a single image in the dataset.  The models developed to classify these images were commensurately large and complex.  The smallest of these models (ViT-Base) has 86M trainable parameters and the largest(ViT Huge) has 632M parameters.  
+The image datasets tackled by [$1$] include CIFAR-100 and Oxford Flowers-102.  These datasets are large and complex in that many possible labels exist for a single image in the dataset.  The models developed to classify these images were commensurately large and complex.  The smallest of these models (ViT-Base) has 86M trainable parameters and the largest(ViT Huge) has 632M parameters.  
  
 Unfortunately the author of this project does not have the same computational resources as Google, Inc. and the models were commensurately scaled down.  However, the ADNI labels are binary - the image is either classified AD or NC, and for this reason it was hoped that a large complex model was not required.   That being said, the largest model tried here was by no means small (100M parameters).
 
@@ -298,6 +296,8 @@ One theory as to why improved results are so difficult here is that the data is 
 
 # Dependencies
 
+Two sets of dependencies are required.  The first is for creating the image preprocessing environment and the second is for creating the ViT environment.
+
 ### Image Preprocessing
 - augmentor
 - python 10
@@ -306,9 +306,9 @@ One theory as to why improved results are so difficult here is that the data is 
 - python 3.9
 - matplotlib
 - tensorflow 2.9
-- numpy
-- keras_cv
-- tensorflow_addons
+- numpy 1.21.5
+- keras_cv 0.3.3
+- tensorflow_addons 0.18.0
 
 [Back to Top](#section-navigation)
 
@@ -323,24 +323,6 @@ One theory as to why improved results are so difficult here is that the data is 
 
 ---
 
-# Example inputs / outputs
-- input: brain image?
-- output: test results?
-
-[Back to Top](#section-navigation)
-
----
-
-# Plot of Algorithm
-- training loss and accuracy?
-
-[Back to Top](#section-navigation)
-
----
-
-
-
----
 
 # Training & Validation Splits
 
