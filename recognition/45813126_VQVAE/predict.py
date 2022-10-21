@@ -1,5 +1,4 @@
 from train import data, trained_model
-import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
@@ -17,16 +16,14 @@ def show_subplot(original, reconstructed):
     plt.show()
 
 
-num_test_images = 100
-idx = np.random.choice(len(data.test_data), num_test_images)
-test_images = data.test_data[idx]
-reconstructions = trained_model.predict(test_images)
+# Use the trained model to predict the test images
+reconstructions = trained_model.predict(data.test_data)
 
+# Calculate the average ssim
 total_ssim_val = 0
-for test_image, reconstructed_image in zip(test_images, reconstructions):
+for test_image, reconstructed_image in zip(data.test_data, reconstructions):
     ssim = tf.image.ssim(test_image, reconstructed_image, max_val=1.0)
     total_ssim_val += ssim.numpy()
     #show_subplot(test_image, reconstructed_image)
-
-average_ssim = total_ssim_val / num_test_images
+average_ssim = total_ssim_val / len(data.test_data)
 print(average_ssim)
