@@ -112,9 +112,9 @@ It is clear that whilst they have the same architecture, the *m* version of the 
 
 After training, a .pt file which contained the nest weights of the model was created for each model. These are located for each model (yolov5s and yolov5m) under:
 
-'''
+```
 ./Trained/
-'''
+```
 
 ## Accuracy Metrics
 ### Intersection over Union (IOU)
