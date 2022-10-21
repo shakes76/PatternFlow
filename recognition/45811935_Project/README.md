@@ -86,9 +86,9 @@ The data was obtained from this link: https://cloudstor.aarnet.edu.au/plus/s/L6b
 
 ![VQ-VAE Model](ReducedResults/vqvaeModel.png)
 
-![VQ-VAE Model](ReducedResults/encoderModel.png)
+![Encoder Model](ReducedResults/encoderModel.png)
 
-![VQ-VAE Model](ReducedResults/decoderModel.png)
+![Decoder Model](ReducedResults/decoderModel.png)
 
 ![PixelCNN Model](ReducedResults/pixelModel.png)
 
