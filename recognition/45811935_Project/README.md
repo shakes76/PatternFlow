@@ -98,6 +98,14 @@ ADNI_AC_NC_2D
 It should be noted however that one merely requires a train and test folder, as discussed in
 [Usage](#usage).
 
+This data was normalised to a range of [0, 1], and shifted by a value of 0.5. No further 
+pre-processing was conducted.
+
+A 70/30 split was made on the training data to generate a validation set. This was done to allow 
+for hyperparameter tuning and independent SSIM calculations. The test set was generated to to 
+identify model generalisability of the VQ-VAE, through the calculation of SSIM values (for 
+individual reconstructions and a mean value across the entire test set).
+
 ## Final Model Architectures
 
 ![VQ-VAE Model](ReducedResults/vqvaeModel.png)
@@ -142,6 +150,10 @@ the top of the `train.py` file.
 
 To use the models pre-trained, simply refer to `predict.py`. All reconstructions and generations 
 of images is conducted here.
+
+To change any data pre-processing, please refer to `dataset.py`
+
+For all information on model/layer architecture, please refer to `modules.py`.
 
 ### Dependencies
 
