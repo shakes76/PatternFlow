@@ -7,7 +7,7 @@ brain dataset, from which, new discrete representations may be randomly generate
 PixelCNN. These new representations may be decoded by the VQ-VAE again, to generate entirely new 
 brain images.
 
-## Algorithms/Models
+## Algorithms/Models Background
 
 ### VQ-VAE
 
@@ -16,7 +16,7 @@ Autoencoders are an unsupervised deep learning model that learn a probability di
 latent space. The latent space refers to a reduced representation of the model inputs, from 
 which, (ideally) near-identical reconstructions of the input may be formed.
 
-The defining factor of a VQ-VAE, is that it essentially learns a discrete latent distribution 
+The defining factor of a VQ-VAE, is that it learns a *discrete* latent distribution 
 instead.
 
 This discrete representation is given by a collection of vectors known as a 'codebook', that 
@@ -24,10 +24,47 @@ are created via a Vector Quantization layer. These vectors are also known as emb
 the codebook/latent space also being known as an embedding space (see below).
 
 ![VQ-VAE Architecture](ReducedResults/VQVAEArchitecture.PNG)
+From [[1](#references)]
+
+This embedding space is initialised via a uniform distribution, and is learned during training 
+via the following loss function (defined in [[1](#references)]):
+
+$L = \log p(x|z_q(x)) + \|sg[z_e(x)] - e\|_2^2+\beta\|z_e(x)-sg[e]\|_2^2$, where:
+
+- $sg$ refers to the stop-gradient operator, which treats its input as a constant during forward 
+  computation, (i.e. stopping the computation of its gradient, as it would effectively be 0), 
+  hence detaching it from the computational graph.
+- $z_e(x)$ and $z_q(x)$ denote the encoded and decoded inputs (where $x$ is the input of the 
+  network)
+- $e$ denotes an embedding that is 'closest' (with respect to the Euclidean norm) to the encoded 
+  input
+
+The three terms of $L$ represent $3$ different losses, each for the different components of the 
+network.
+
+The left-most term simply denotes the reconstruction loss between the output and the input of 
+the network.
+
+The middle term reflects the 'distance' between the encoded input and the 'nearest' embedding.
+
+The last term attempts to 'commit' the encoder to the closest embedding.
+
+At this point, it is clear that while images may be re-constructed, with a constant uniform 
+prior, image generation appears infeasible. This is where the PixelCNN comes in.
 
 ### PixelCNN
+PixelCNN is an autoregressive neural network model. This essentially means it learns recursively.
+Specifically, it (starting from the top left pixel and working to the bottom right) predicts the 
+value of the next pixel, based on the values of the previous pixel.
 
-...
+To achieve this, 
+
+![VQ-VAE Architecture](ReducedResults/PixelCNNArchitecture.PNG)
+From [[1](#references)]
+
+![VQ-VAE Architecture](ReducedResults/maskTypes.png)
+
+From [[4](#references)]
 
 ## Dataset - ADNI Brain
 
@@ -70,14 +107,15 @@ To ensure correct dependencies are met, one may run the following command:
 > pip install -r requirements.txt
 
 ## References
-This project took influence from the original VQ-VAE paper, the PixelCNN Prior paper, and a 
-VQ-VAE + PixelCNN Keras tutorial (Links below).
+This project took influence from the original VQ-VAE paper, the PixelCNN Prior paper, a 
+VQ-VAE + PixelCNN Keras tutorial, and an article about PixelCNN (but only really foucssing on 
+the mask types section) (Links below).
 
-- https://arxiv.org/abs/1711.00937 - VQ-VAE Paper
-- https://arxiv.org/abs/1601.06759v3 - PixelCNN Paper
-- https://keras.io/examples/generative/vq_vae/ - Keras Tutorial
+- [1] https://arxiv.org/abs/1711.00937 - VQ-VAE Paper
+- [2] https://arxiv.org/abs/1601.06759v3 - PixelCNN Paper
+- [3] https://keras.io/examples/generative/vq_vae/ - Keras Tutorial
+- [4] https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1 - PixelCNN Article
 
-This is a very loose form a report. We dont need thorough analysis of results and experiments. When we mark your read me what we focus on  
 
 how much work you have done,
 
