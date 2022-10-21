@@ -67,13 +67,13 @@ def train(epochs):
         optimizer=optimizer, loss=loss_fn,
     )
 
-    model.fit(
+    history = model.fit(
         train_ds, epochs=epochs, callbacks = [model_checkpoint_callback, ESPCNCallback()],  validation_data=val_ds, verbose=2
     )
 
     model.load_weights(checkpoint_filepath)
 
-    return model, test_ds
+    return model, test_ds, history
 
 def plot_results(img, prefix, title):
     img_array = img_to_array(img)
@@ -86,7 +86,7 @@ def plot_results(img, prefix, title):
 
     plt.yticks(visible=False)
     plt.xticks(visible=False)
-    plt.savefig(str(prefix) + "-" + title + ".png")
+    plt.savefig("images/" + str(prefix) + "-" + title + ".png")
     # plt.show()
 
 def get_lowres_image(img, upscale_factor):
@@ -96,7 +96,8 @@ def get_lowres_image(img, upscale_factor):
     )
 
 def main():
-    train(100)
+    _, _, history = train(100)
+    # TODO stuff with history 
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 recognition/s4481540_Zhuoxiao_Chen/data/
 recognition/s4641465-Classify-Alzheimers/dataset/
+recognition/s4641465-Classify-Alzheimers/tmp/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

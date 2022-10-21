@@ -9,7 +9,7 @@ from train import get_lowres_image, plot_results, train, upscale_image
 
 def predict():
     upscale_factor = 4
-    model, test_ds = train(1)
+    model, test_ds, _ = train(1)
     total_bicubic_psnr = 0.0
     total_test_psnr = 0.0
     for batch in test_ds.take(1):
@@ -38,8 +38,8 @@ def predict():
             print("PSNR of predict and high resolution is %.4f" % test_psnr)
             
     
-    print("Avg. PSNR of lowres images is %.4f" % (total_bicubic_psnr / 8))
-    print("Avg. PSNR of reconstructions is %.4f" % (total_test_psnr / 8))
+    print("Avg. PSNR of lowres images is %.4f" % (total_bicubic_psnr / 32))
+    print("Avg. PSNR of reconstructions is %.4f" % (total_test_psnr / 32))
 
 def main():
     predict()
