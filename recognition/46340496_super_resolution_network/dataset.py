@@ -1,6 +1,5 @@
 import pathlib
 import tensorflow as tf
-import os
 
 import matplotlib.pyplot as plt
 
@@ -48,6 +47,7 @@ def creating_train_datasets():
 
     return train_ds, valid_ds
 
+# Creating the test dataset
 def creating_test_dataset():
 
     test_ds  = tf.keras.utils.image_dataset_from_directory(
@@ -60,22 +60,21 @@ def creating_test_dataset():
     )
     return test_ds
 
-# Rescaling
+# Scale from (0, 255) to (0, 1)
 def scaling(input_image):
     input_image = input_image / 255.0
     return input_image
 
-# Scale from (0, 255) to (0, 1)
+# Rescaling the datasets
 def mapping():
     train_ds_raw, valid_ds_raw = creating_train_datasets()
 
-    train_ds = train_ds_raw.map(scaling) # normalization layers for scaling maybe tf.rescaling
+    train_ds = train_ds_raw.map(scaling)
     valid_ds = valid_ds_raw.map(scaling)
 
     return train_ds, valid_ds
 
-test_ds = creating_test_dataset()
-
+# Mapping the low-resolution dataset to the target dataset
 def mapping_target():
 
     train_ds, valid_ds = mapping()
@@ -90,12 +89,3 @@ def mapping_target():
 
     return train_ds, valid_ds
 
-# train_ds, valid_ds = mapping_target()
-# # Visualise input and target
-# for batch in train_ds.take(1):
-#     for img in batch[0]:
-#         img_plot = plt.imshow(img)
-#         plt.show()
-#     for img in batch[1]:
-#         img_plot = plt.imshow(img)
-#         plt.show()
