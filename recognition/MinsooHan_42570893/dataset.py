@@ -120,10 +120,10 @@ def data_preprocessing():
     print("Creating images started")
     # Create the images
 
-    training_data = create_training_images()
-    training_ground_truth_data = create_training_ground_truth_images()
-    validation_data = create_validation_images()
-    validation_ground_truth_data = create_validation_ground_truth_images()
-    test_data = create_test_images()
-    test_ground_truth_data = create_test_ground_truth_images()
+    create_training_images()
+    create_training_ground_truth_images()
+    create_validation_images()
+    create_validation_ground_truth_images()
+    create_test_images()
+    create_test_ground_truth_images()
     print("Creating images ended")
