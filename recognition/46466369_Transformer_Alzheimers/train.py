@@ -58,7 +58,7 @@ def train_model(model):
                                 y=trainy,
                                 batch_size=BATCH_SIZE,
                                 epochs=NUM_EPOCH,
-                                validation_split=0.1,
+                                validation_split=0.2,
                                 callbacks=[callback])
 
     return (train_history)
