@@ -18,6 +18,7 @@ def run_model(features, adjacency_matrix, targets, tsne_plot=False):
         adjacency_matrix - coordinate format sparse tensor of graph adjacency matrix
         targets - 1d tensor of integers (0 - 3) representing politicians, government organisations, television shows and companies pages
     """
+
     num_pages = len(features)
     feature_dim = features.shape[1]
 
@@ -122,9 +123,14 @@ def plot_tsne_mapping(pred, targets):
     plt.figure(figsize=(8,8))
 
     color_map = np.argmax(targets, axis=1)
+
+    # Repeated for each class (4 times)
     for i in range(NUM_CLASSES):
+        # Each class has a different colour
         indices = np.where(color_map == i)
         indices = indices[0]
+
+        # Scatter the embeddings on the plot
         plt.scatter(pred_tsne[indices, 0], pred_tsne[indices, 1], label=i)
     plt.title("T-Distributed Stochastic Embedding Visualised")
     plt.legend()
