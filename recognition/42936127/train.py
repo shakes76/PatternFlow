@@ -1,43 +1,57 @@
 import numpy as np
-import matplotlib.pyplot as plpt
-
-from tensorflow import keras
-from tensorflow.keras import layers
-import tensorflow_datasets as tfds
-import tensorflow_probability as tfp
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+from PIL import Image
+import tensorflow_datasets as tfds
+import matplotlib.pyplot as plt
+seed = 123
+batch_size = 64
+img_height = 256
+img_width = 256
+image_shape = (img_height, img_width, 3)
 
 from modules import *
-from dataset import train_ds, val_ds
+from tools import *
 
-#assert isinstance(ds_train.keys(), dict) #
+load_model = True
 
-#tfds.show_examples(ds_train, builder.info)
-image_size = 256
-
-input_shape = (None, image_size, image_size, 3)
-
-
-#train_ds = np.asarray(list(train_ds.unbatch()))
-
-data_variance = tf.math.reduce_variance(train_ds)
-
-print("HEYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-print(data_variance)
-vqvae_trainer = VQVAETrainer(data_variance, latent_dim=16, num_embeddings=128, input_shape=input_shape)
-vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
-
-#np.asarray(list(dataset.unbatch()))
-
-vqvae_trainer.fit(
-    train_ds,
-    validation_data = val_ds,
-    epochs = 5
+train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
+    "keras_png_slices_data/slices/", 
+    labels = None,
+    validation_split = 0.3,
+    subset = "both",
+    seed = seed,
+    image_size = (img_height, img_width)
 )
 
+# train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
+#     "keras_png_slices_data/slices/", 
+#     labels = None,
+#     validation_split = 0.3,
+#     subset = "both",
+#     seed = seed,
+#     image_size = (img_height, img_width)
+# )
 
-print("all done")
 
-
-vqvae_trainer.vqvae.save_model("saved_models")
+# if(load_model):
+#     vqvae_trainer = VQVAETrainer(0.05, latent_dim=16, num_embeddings=128, image_shape = image_shape)
+#     vqvae_trainer.vqvae = keras.models.load_model("saved_models")
+#     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
+#     vqvae = vqvae_trainer.vqvae
+#     print("loaded model")
+# else:
+#     #data_variance = tf.math.reduce_variance(train_ds)
+#     vqvae_trainer = VQVAETrainer(0.05, latent_dim=16, num_embeddings=128, image_shape = image_shape)
+#     vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
+#     vqvae_trainer.fit(
+#         x = train_ds,
+#         validation_data = val_ds,
+#         epochs = 1,
+#         use_multiprocessing = True,
+#         verbose = 1
+#     )
+#     vqvae_trainer.vqvae.save("saved_models")
+#     vqvae = vqvae_trainer.vqvae
+#     print("trained and saved model")

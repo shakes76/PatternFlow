@@ -10,31 +10,13 @@ batch_size = 64
 img_height = 256
 img_width = 256
 
-dataset = tf.keras.utils.image_dataset_from_directory(
-    "keras_png_slices_data",
-
+train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
+    "keras_png_slices_data/slices/", 
     labels = None,
+    validation_split = 0.3,
+    subset = "both",
     seed = seed,
-    image_size= (img_height, img_width)
-    )
+    image_size = (img_height, img_width)
+)
 
-
-# def load_data():
-
-#     data_train = []
-#     for filename in os.listdir("keras_png_slices_data/slices/"):
-#         image_id:
-
-
-# def data_generator():
-
-
-#print("training and validation loaded")
-
-#class_names = dataset.class_names
-#print(class_names)
-
-#normalization_layer = tf.keras.layers.Rescaling(1./255)
-#normalization_layer = tf.keras.layers.Rescaling(1./127.5, offset=-1)
-#train_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
-#val_ds = val_ds.map(lambda x, y: (normalization_layer(x), y))
+#train_variance = tf.math.reduce_variance(train_ds)
