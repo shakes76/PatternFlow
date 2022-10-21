@@ -79,12 +79,11 @@ def data_loader():
         X_data.append(np.array(im))
         X_data_labels.append(0)
         im.close()
+    
     # Convert to numpy array
     X_data = np.array(X_data)
     X_data_labels = np.array(X_data_labels)
-    print(X_data.shape)
 
-    # Make validation set
     # Make validation set
     x_train, x_test, y_train, y_test = train_test_split(X_data, X_data_labels, test_size=0.2, random_state=8, shuffle=True)
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.25, random_state=8, shuffle=True)
@@ -108,4 +107,4 @@ def data_loader():
     x_test_1 = pairs_test[:, 0]
     x_test_2 = pairs_test[:, 1]
 
-    return (x_train_1, x_train_2), labels_train, (x_val_1, x_val_2), labels_val, (x_test_1, x_test_2), labels_test
+    return (x_train_1, x_train_2), labels_train, (x_val_1, x_val_2), labels_val, (x_test_1, x_test_2), labels_test, X_data, X_data_labels

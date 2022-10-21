@@ -29,6 +29,10 @@ Siamese Neural Networks (SNN) work by having a pair of CNNs that share the same 
 
 As a brief introduction, a Siamese network is a pair of Convolutional Neural Networks that share the same weights, and each producing a vector. Each network in the Siamese network is fed an image simultaneously, and from this image, each network will produce a single vector. With these vectors, which are sometimes also referred to as embeddings, a distance metric can be computed between them (such as L1 distance in my case), which can be used to determine the similarity between the images according to the Siamese network. Finally, the distance between the embeddings can be fed into a final sigmoidal function, which classifies whether the pairs of images belong to the same or different classes. We can then use this architecture to make predictions on whether a pair of images belong to the same class (i.e, are similar) or belong to separate classes (i.e, are dissimilar). We can then use the trained Siamese network's embedding CNN to classify individual images. Clearly, the problem this implementation is trying to solve is the detection of Alzheimer's in brain scans.
 
+## Usage
+
+The given files are intended to be used as is. It does not require any arguments, and `train.py` can be called as long as the dataset is in the correct directory structure. The only requirement for `predict.py` is that a model name 'Classifier_Model' is given in the same directory that the file is in. Both `dataset.py` and `modules.py` do not need to be called in order for `train.py` to work.
+
 ## Results
 
 Although several attempts and different architectures were created, the most successful one achieved a test accuracy of 83.51%, and the architecture that achieved this is given in the `modules.py` file. The training and validation accuracies and losses can be seen below.
@@ -51,4 +55,6 @@ This project has the following dependencies:
 * random
 
 ## References
-[1] 
+[1] https://keras.io/examples/vision/siamese_contrastive/ 
+
+[2] https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf

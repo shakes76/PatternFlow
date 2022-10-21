@@ -43,4 +43,4 @@ def siamese_model(input_shape):
     prediction = layers.Dense(1, activation="sigmoid")(normal_layer)
     siamese = keras.Model(inputs=[input_1, input_2], outputs=prediction)
 
-    return siamese
+    return siamese, embedding_network
