@@ -368,7 +368,6 @@ class PixelCNN(Model):
             Returns: outputs of this model
 
         """
-        inputs = tf.reshape(inputs, (64, 64, 32))
         inputs = tf.cast(inputs, dtype=tf.int32)
         inputs = tf.one_hot(inputs, self._num_encoded)
         hidden = self._pixel_A(inputs)
