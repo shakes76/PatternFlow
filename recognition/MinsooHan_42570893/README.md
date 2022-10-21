@@ -37,6 +37,22 @@ Firstly, we needed to resize all the images to 256 x 256 because the images of t
 This process has taken some time. And created data frames to store the excel files containing the names of the images. After that, loaded and generated the normalized images and masks of training, validation, and test data.
 
 ### Training
-After data preprocessing, we had train_x, train_y, validation_x, and validation_y. And loaded an improve U-net model that takes an image with 256 x 256 x 3 created by Input fucntion in Keras library. And we set the learning rate as 0.0005 and the decay rate as learning rate x 0.985 as the paper stated. And we compiled a model using Adam for optimization, and dice similarity loss wss used as a metric. And we fitted the model with train_x, train_y, validation_x, and validation_y. The batch size was 8, and 
+After data preprocessing, we had train_x, train_y, validation_x, and validation_y. And loaded an improve U-net model that takes an image with 256 x 256 x 3 created by Input fucntion in Keras library. And we set the learning rate as 0.0005 and the decay rate as learning rate x 0.985 as the paper stated. And we compiled a model using Adam for optimization, and dice similarity loss wss used as a metric. And we fitted the model with train_x, train_y, validation_x, and validation_y. The batch size was 8, and epochs was 300.
 
+### Results
 
+We achieved a dice similarity of 0.51.
+
+reference : https://arxiv.org/pdf/1606.04797v1.pdf
+
+![KakaoTalk_Snapshot_20221021_224451](https://user-images.githubusercontent.com/59554674/197198882-7c2e081a-90f5-4db8-9886-19d771081ea4.png)
+
+The images below are good cases and bad cases.
+#### Good results
+![Result_1](https://user-images.githubusercontent.com/59554674/197197864-a2404488-0146-4190-8e3e-35ded7f01f7f.png)
+![Result2](https://user-images.githubusercontent.com/59554674/197197901-ed236ae2-3b32-4811-8a2a-bc9b1f16d160.png)
+![Result3](https://user-images.githubusercontent.com/59554674/197197930-1021a9c5-31b7-4f7a-927a-2a42e103a797.png)
+
+#### Bad results
+![BadResult](https://user-images.githubusercontent.com/59554674/197198195-f4304b79-409e-40ef-bf39-ff10fe5f41a8.png)
+![BadResult2](https://user-images.githubusercontent.com/59554674/197198811-41bb423e-4ad1-45af-bef6-54296ea50c1b.png)
