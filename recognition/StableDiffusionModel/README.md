@@ -20,7 +20,7 @@ The implemented latent diffusion model can be broken down into two parts:
 
 For a broad overview of the model, see below (note that this implemnetaiton lacks the crossattention blocks and conditioning component, as the task involved only generating new images from the OASIS brain dataset)
 
-![ModelCard](images/ModelCard.png)
+![ModelCard](Images/ModelCard.png)
 
 Image from: https://arxiv.org/pdf/2112.10752.pdf
 
@@ -38,21 +38,21 @@ the upsampling part of the model would be reached. Similarly to the downsampling
 component, this would involve passing the data through a number of residual blocks, except that they would pass through an upsampling convolutional layer instead of a downsampling one at the end.
 
 The Autoencoder was trained against the mean-squared-error between its reconstructions of the input images and the output image. The loss can be seen below (note that since the task was to generate instances of data belonging to the original dataset, only training loss was recorded and used)
-![loss1](images/autoEncoderLoss.png)
+![loss1](Images/autoEncoderLoss.png)
 <br>
-![loss2](images/autoEncoderLoss2.png)
+![loss2](Images/autoEncoderLoss2.png)
 
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
-![aEExample](images/autoEncoderExample.png)
+![aEExample](Images/autoEncoderExample.png)
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
 
 For an illustration of the loss during the training process, see below:
-![UNetLoss](images/UNetLoss.png)
+![UNetLoss](Images/UNetLoss.png)
 
 For an illustration of the denoising process occuring on the latent space, see below:
-![LatentSpaceDenoising](images/DenoisingLatentSpace.png)
+![LatentSpaceDenoising](Images/DenoisingLatentSpace.png)
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
@@ -90,7 +90,7 @@ The following files are contained within this repo:
 > Contains code associated with the training of the models.
 
 
-## Reference:  
+## References:  
 1) https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac
 
 2) https://arxiv.org/pdf/2112.10752.pdf
