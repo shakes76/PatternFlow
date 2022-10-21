@@ -35,7 +35,7 @@ What files to look at, and what purpose they serve.
 Through the training process, I have logged the reconstruction loss, given by the difference between the original image from the dataset, $x$ and the reconstructed image which has been passed through the encoder, decoder and vector quantiser modules $\hat{x}=d(e(x))$. At the end of training, the reconstruction loss of the model is minimal, at $0.05%$ on the validation set.
 $$\mathcal{L}(x, \hat{x})=|x-\hat{x}|$$
 <p align="center">
-  <img style="width:40vw; background-color:white;" src="./images/reconstruction_loss.png"/>
+  <img style="width:40vw;" src="./images/loss.png"/>
 </p>
 Images fed into the model are of dimensionality $(\text{batchsize}, 256, 256, 1)$ and are taken from the OASIS brain dataset. Some sample images include those shown below:
 <p align="center">
@@ -84,4 +84,4 @@ Pillow==9.2.0
 
 |                   | Train       | Validate     | Test     |
 | ----------------- | ----------- | ------------ | -------- |
-| Number of Samples | 9,664 (86%) | 1,120  (10%) | 544 (4%) | 
+| Number of Samples | 9,664 (86%) | 1,120  (10%) | 544 (4%) |
