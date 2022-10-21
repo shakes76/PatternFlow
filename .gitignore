@@ -130,3 +130,20 @@ dmypy.json
 
 # no tracking mypy config file
 mypy.ini
+*.png
+recognition/s4641500/pirate/driver_script.ipynb
+recognition/ISICs_UNet/README.md
+recognition/XUE4645768/Readme.md
+recognition/s4641500/pirate/yes.py
+recognition/s4641500/pirate/train.py
+recognition/s4641500/pirate/predict.py
+recognition/s4641500/pirate/modules.py
+recognition/s4641500/pirate/dataset.py
+recognition/ISICs_UNet/README.md
+recognition/s4641500/keras_metadata.pb
+recognition/s4641500/saved model/model/keras_metadata.pb
+recognition/s4641500/saved model/model/saved_model.pb
+recognition/s4641500/saved model/model/variables/variables.data-00000-of-00001
+recognition/s4641500/pirate/VQVAE.py
+recognition/s4641500/pirate/pixelcnn.py
+recognition/ISICs_Unet/README.md

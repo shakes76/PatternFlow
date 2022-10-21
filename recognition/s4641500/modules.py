@@ -56,8 +56,8 @@ class VQ(layers.Layer):
     def get_config(self):
         config = super().get_config()
         config.update({
-            "embed_d": self.embed_d,
             "embed_n": self.embed_n,
+            "embed_d": self.embed_d,
             "beta": self.beta,
         })
         return config
@@ -72,6 +72,7 @@ class Train_VQVAE(keras.models.Model):
         self.total_loss = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss = keras.metrics.Mean(
             name="reconstruction_loss"
+
         )
         self.vq_loss = keras.metrics.Mean(name="vq_loss")
 
@@ -140,7 +141,7 @@ class PixelConvLayer(layers.Layer):
     def __init__(self, mask_type, **kwargs):
         super(PixelConvLayer, self).__init__()
         self.mask_type = mask_type
-        self.conv = layers.Conv2D(**kwargs)
+        self.conv = layers.Conv2D(filters = 128, kernel_size = 3, activation = "relu", padding = "same")
 
     def build(self, input):
         # initialize kernel variables

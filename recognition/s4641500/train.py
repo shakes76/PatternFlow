@@ -1,57 +1,27 @@
 from dataset import *
 from modules import *
 
-EPOCHS = 5
+EPOCHS = 1
+BATCH_SIZE = 128
+
+train_images, test_images, train_data, test_data, data_variance = load_dataset()
+vqvae_trainer = Train_VQVAE(data_variance, dim=16, embed_n=128)
+vqvae_trainer.compile(optimizer=keras.optimizers.Adam())
+vqvae_hist = vqvae_trainer.fit(train_data, epochs=EPOCHS, batch_size=128)
+
+encoded_out	= vqvae_trainer.vqvae.get_layer("encoder").predict(test_data)
+qtiser = vqvae_trainer.vqvae.get_layer("vector_quantizer")
+flat_encs = encoded_out.reshape(-1, encoded_out.shape[-1])
+codebooks = qtiser.get_code_indices(flat_encs)
+codebooks = codebooks.numpy().reshape(encoded_out.shape[:-1])
+pixel_cnn = get_pcnn(vqvae_trainer, encoded_out)
+pixel_cnn.compile(optimizer=keras.optimizers.Adam(3e-4),
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],)
+pcnn_training = pixel_cnn.fit(x = codebooks, y = codebooks, batch_size = 128, epochs = EPOCHS, validation_split = 0.1)
+pixel_cnn.save("pcnn.h5")
 
 
-def init_encoder_and_quantizer(model):
-    encoder = model.get_layer("encoder")
-    quantizer = model.get_layer("vector_quantizer")
-    return encoder, quantizer
-
-def flatten_outputs(train_data, encoder):
-    # flatten the encoder outputs
-    encoded_outputs = encoder.predict(train_data)
-    # reduce indices because my VRAM is insufficient
-    encoded_outputs = encoded_outputs[:len(encoded_outputs) // 2]
-    flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-    return encoded_outputs, flat_enc_outputs
-
-def init_train_vqvae():
-    # initialise and train
-    train_images, test_images, train_data, test_data, data_variance = load_dataset()
-
-    vqvae = Train_VQVAE(data_variance, dim=16, embed_n=128)
-    vqvae.compile(optimizer=keras.optimizers.Adam())
-    vqvae_hist = vqvae.fit(train_data, epochs=EPOCHS, batch_size=128)
-
-    vqvae_model = vqvae.vqvae
-    vqvae_model.save("vqvae.h5")
-
-    enc, quant = init_encoder_and_quantizer(vqvae_model)
-    
-    return flatten_outputs(train_data, enc) + (quant, vqvae)
-
-def init_train_pcnn(encoded_outputs, flat_enc_outputs, quant, vqvae):
-    # generate the codebook indices
-    codebook_indices = quant.get_code_indices(flat_enc_outputs)
-    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-    pcnn = get_pixelcnn(vqvae, encoded_outputs)
-
-    # compile PCNN model
-    pcnn.compile(optimizer=keras.optimizers.Adam(3e-4),
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=["accuracy"],)
-
-    # train PCNN model
-    pcnn_hist = pcnn.fit(x=codebook_indices, y=codebook_indices, 
-                    batch_size=128, epochs=EPOCHS, validation_split=0.2,)
-
-    pcnn.save("pcnn.h5")
-
-def main():
-    encoded_outputs, flat_enc_outputs, quant, vqvae = init_train_vqvae()
-    init_train_pcnn(encoded_outputs, flat_enc_outputs, quant, vqvae)
-
-if __name__ == "__main__":
-	main()
+vqvae = vqvae_trainer.vqvae
+vqvae.save("vqvae.h5")
+pixel_cnn.save("pcnn.h5")

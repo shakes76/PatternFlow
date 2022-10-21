@@ -29,13 +29,13 @@ def show_subplot(initial, reconstr):
     plt.show()
     return ssim 
 
-def reconstruct_images(n):
+def reconstruct_images(n, test_data, model):
     # select n random test images
     randx = np.random.choice(len(test_data), n)
     test_imgs = test_data[randx]
 
     # predictions on test images
-    reconstructions_test = trained_vqvae_model.predict(test_images)
+    reconstructions_test = model.predict(test_imgs)
 
     # sum of the SSIM of all resconstructed images
     total_ssim = 0.0
@@ -47,7 +47,7 @@ def reconstruct_images(n):
     
     return test_imgs
 
-def visualise_codes(test_imgs):
+def visualise_codes(test_imgs, codebook_indices):
     # visualise the orignal images and their discrete codes
     for i in range(len(test_imgs)):
         plt.subplot(1, 2, 1)
@@ -97,12 +97,13 @@ def prior_gen(pcnn, batch=10):
 
   return priors
 
-def show_novel_imgs(priors, vqvae, quant, encoded_outputs):
+def show_novel_imgs(priors, vqvae, quantizer, encoded_outputs):
     # embedding lookup.
-    pretrained_embeddings = quant.embeds
-    priors_ohe = tf.one_hot(priors.astype("int32"), vqvae.embed_n).numpy()
+    pretrained_embeddings = quantizer.embeds
+    priors_ohe = tf.one_hot(priors.astype("int32"), 64).numpy()
     quantized = tf.matmul(priors_ohe.astype("float32"), pretrained_embeddings, transpose_b=True)
     quantized = tf.reshape(quantized, (-1, *(encoded_outputs.shape[1:])))
+
 
     # generate images
     decoder = vqvae.vqvae.get_layer("decoder")
@@ -122,28 +123,37 @@ def show_novel_imgs(priors, vqvae, quant, encoded_outputs):
         plt.show()
 
 
+
 def main():
     train_images, test_images, train_data, test_data, variance = load_dataset()
     vqvae = keras.models.load_model("vqvae.h5", custom_objects = {"VQ": VQ})
-    pcnn = keras.models.load_model("pcnn.h5", custom_objects = {"PixelConvLayer": PixelConvLayer, "ResBlock": ResBlock})
     image_inds = r.choice(len(test_data), 8)
     images = test_data[image_inds]
 
     n = NUM_IMGS
-    ssim = reconstruct_images(n)
+    ssim = reconstruct_images(n, test_data, vqvae)
     avg_ssim = ssim / n
 
-    visualise_codes(test_imgs)
-    #plot_pcnn_loss(pcnn_hist)
-    #plot_pcnn_acc(pcnn_hist)
+    quantizer = vqvae.get_layer("vector_quantizer")
 
-    # generate the priors 
-    priors = generate_priors(pcnn)
+    encoded_outputs = vqvae.get_layer("encoder").predict(test_data)
+    # reduce indices because my VRAM is insufficient
+    encoded_outputs = encoded_outputs[:len(encoded_outputs) // 2]
+    flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
+
+    codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
+    codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
+
+
+    visualise_codes(images, codebook_indices)
+
+    pcnn = keras.models.load_model("pcnn.h5", custom_objects = {"PixelConvLayer": PixelConvLayer, "ResBlock": ResBlock})
+    
+    # generate the priors
+    priors = prior_gen(pcnn, batch=5)
     print(f"Prior shape: {priors.shape}")
     
-    show_novel_imgs(priors, vqvae, quant, encoded_outputs)
+    show_novel_imgs(priors, vqvae, quantizer, encoded_outputs)
 
 if __name__ == "__main__":
 	main()
-
-
