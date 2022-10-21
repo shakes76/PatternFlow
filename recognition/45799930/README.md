@@ -59,6 +59,8 @@ There was some pre-processing done on the data, to ensure that the images are do
 
 ### Training, Validation and Testing Splits
 
+As only the training data from the link provised was downloaded (and its corresponding truth values), the data with split into training, validation and testing sets. The ratio chosen was 80% of the data was allocated to training the data, 10% was allocated to validating the data, and the final 10% for testing the data. The initial dataset was shuffled (combined with the truth so that they are tsill at corespoding parts of their respective tensors) so that it was a random 80% of the data that was selected for the training, and the 10% allocated to the validation and testing data. This ratio was chosen as it is ideal to have as much data as possible to train the model so that the model can become as accurate as possible. 
+
 ---
 
 
