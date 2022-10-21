@@ -7,7 +7,7 @@
 6. [Reproducibility of Results](#reproducibility-of-results)
 7. [Example Inputs/Outputs](#example-inputs--outputs)
 8. [Plot of Algorithm](#plot-of-algorithm)
-9. [Pre-processing](#pre-processing)
+9. [Image Pre-processing](#image-pre-processing)
    - Preventing Data Leakage
    - Cropping to Improve Computational Efficiency
    - Expanding the Dataset with Augmentation
@@ -29,7 +29,7 @@ This is an implemention of a Vision Transformer (ViT) which follows as closely a
 
 This implemenaton of a ViT has been tailored for use with data from the Alzheimer's Disease Neuroimaging Initiative (ADNI).  This data was provided on the COMP3710 Blackboard site in a zip format.  It is unknown as to what extent this data matches that available directly from ADNI.
 
-The ADNI images are 240x256 greyscale jpeg files.  Details on image pre-processing and image directory structure can be found in the [Pre-processing](#pre-processing) section.  
+The ADNI images are 240x256 greyscale jpeg files.  Details on image pre-processing and image directory structure can be found in the [Image Pre-processing](#image-pre-processing) section.  
 
 *ViT Stage 1: Create Embedding Vectors from Input Images*
 
@@ -61,18 +61,14 @@ This Vision Transformer implementaion attempts to solve the problem of Alzheimer
 ---
 
 # How it Works
-The key steps for using this model are below.  
+The key steps for creating the ViT and using it with the ADNI data are:  
 
 1. **Download and unzip data** 
 2. **Create environment**
-3. **Prepare the data** 
-   - Create new folder structure
-   - Create validation and training from train to preclude leakage
-   - Augment?
-   - Crop the images
-4. **Update config.py**
-5. **run python train.py**
-6. **Load model weights and make predictions by running python predict.py** 
+3. **Image Pre-processing - utils.py** 
+4. **Update Hyperparamaters - config.py**
+5. **Train Model - train.py**
+6. **Load Model Weights and Make a Prediction on a Random Sample - predict.py** 
 
 Each of the steps above is now reviewed in more detail.
 
@@ -81,15 +77,34 @@ Each of the steps above is now reviewed in more detail.
 The ADNI images are received in a zip format.  Once extracted, the images are placed in the following file structure:
 
 ```bash
-├───test
-│   ├───AD
-│   └───NC
-├───train
-│   ├───AD
-│   └───NC
+├───ADNI_AD_NC_2D
+│   └───AD_NC
+│       ├───test
+│       │   ├───AD
+│       │   └───NC
+│       └───train
+│           ├───AD
+│           └───NC
+
+```
+It is of the uptmost importance that the AD_NC folder above (and its images) be relocated to the project directory.  The scripts for directory creation, validation split, image cropping, and image augmentation will not work if this is not done.
+
+Once the AD_NC folder has been relocated to the project folder the structure should look like this:
+
+
+```bash
+├───vit-transformer-s4630996
+│   ├───AD_NC
+│   │   ├───test
+│   │   │   ├───AD
+│   │   │   └───NC
+│   │   └───train
+│   │       ├───AD
+│   │       └───NC
+│   ├───images
+│   └───__pycache__
 ```
 The training set contains 19360 images, of which 9360 are AD (classified Alzheimers) and 10000 are NC v.  The test set contains 9000 images of which 4460 are AD  and 4540 are NC.  
-
 
 #### 2. <u>Create environment</u>
 
@@ -102,11 +117,42 @@ https://github.com/jeffheaton/t81_558_deep_learning/blob/master/install/manual_s
 A listing of required modules is provided below in [*Dependencies*](#dependencies).
 
 
+
+#### 3. <u>Image Pre-processing</u>
+
+The amount of image pre-processing is extensive and as a result it has been given its own section below or linked here [Image Pre-processing](#image-pre-processing).  
+
+
+#### 4. <u>Update config.py</u>
+
+The Python file config.py provides a single location for model hyperparameters to be modified.  Variables contained in config.py are imported into the Python modules where they are required.  Any modifications to the base model (such as a change in optimzer, change of model checkpoint path, etc.), may require the addition of new hyperparameters.
+
+For ease of identification all hyperparameters are capitalized.
+
+
+#### 5. <u>Train Model</u>
+
+The model can be trained by running "python train.py" from the Anaconda (or teminal) prompt.  Although this step appears simple there are a few things to remember to ensure this will work:
+- Ensure python is on your PATH variable 
+- Verify your Python 3 alias - for example if your Python alias is python3 then you would run "python3 train.py 
+- Ensure you are running the command from the folder "VIT-TRANSFORMER-S4630996" (this is where train.py is located)
+- Ensure the correct environment you created for the ViT has been activated
+
+At the end of each epoch, the model is evaluated against the validation set and a checkpoint callback saves the model with the lowest validation loss.  These model weights can be loaded and used to classify new data points (See next step, Load Model Weights and Make Predictions).
+
+
+#### 6. <u>Load Model Weights and Make a Prediction on a Random Sample</u>
+
+After step 5 above has been successfully completed the saved model weights can be loaded so that the model can be used in inference mode.  This can be done by running "python predict.py".  A single random sample from the ADNI test data is made and the image is displayed for the user.  After closing or saving the image the model makes a prediction for this sample and prints the results to the console.
+
+It is important to note that predict.py takes a random sample from the cropped (eg square) ADNI test data. If a user wishes to provide other test data then predict.py will need to be modified accordingly.
+
+
 [Back to Top](#section-navigation)
 
 ---
 
-# Figure / Visualizaton
+# Figures & Visualizaton
 
 - training loss and accuracy (best, anomolies)
   - validation accuracy above training accuracy
@@ -169,22 +215,26 @@ A listing of required modules is provided below in [*Dependencies*](#dependencie
 ---
 
 
-# Pre-processing
-1. create folders
-2. prevent leakage
-3. crop
-4. augment
+# Image Pre-processing
 
+   - Create new folder structure
+   - Create Validation Set
+   - Crop the images
+   - Augment the images
 
 The ADNI images are received in a zip format.  Extracted images are placed in the following file structure:
 
 ```bash
-├───test
-│   ├───AD
-│   └───NC
-├───train
-│   ├───AD
-│   └───NC
+├───vit-transformer-s4630996
+│   ├───AD_NC
+│   │   ├───test
+│   │   │   ├───AD
+│   │   │   └───NC
+│   │   └───train
+│   │       ├───AD
+│   │       └───NC
+│   ├───images
+│   └───__pycache__
 ```
 
 The test set contains 9000 images of which 4460 are AD and 4540 are NC.  The training set contains 19360 images, of which 9360 are AD and 10000 are NC.  
