@@ -28,8 +28,35 @@ Like the original UNET the Improved UNET is made up of encoding and decoding lay
 ## Training
 
 ### Optimiser and Loss Function
+The optimiser used for training was "the adam optimizer with an initial learning rate lrinit = 5 · 10−4, the following learning rate schedule: lrinit · 0.985epoch".
+
+For the loss function the dice coefficient for the true and predicted values was used.
+
+```
+def diceCoefficient(self, y_true, y_pred):
+        """
+        Dice Coefficient
+
+        Credit Karan Jakhar
+        https://karan-jakhar.medium.com/100-days-of-code-day-7-84e4918cb72c
+
+        Parameters:
+            y_true (tf.Tensor): true output
+            y_true (tf.Tensor): output predicted by model
+
+        Return:
+            tf.Tensor: Dice coefficient based on true output and prediction
+
+        """
+        y_true_f = K.flatten(y_true)
+        y_pred_f = K.flatten(y_pred)
+        intersection = K.sum(y_true_f * y_pred_f)
+        dice = (2. * intersection + 1.) / (K.sum(y_true_f) + K.sum(y_pred_f) + 1.)
+        return dice
+```
 
 ### Training Dice Coefficient and Loss
+The following graphs show the training Dice Coefficient Loss and Accuracy over 20 Epochs.
 ![Dice Coefficient Loss](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/diceCoefficientLoss.png)
 ![Dice Coefficient](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/diceCoefficient.png)
 
@@ -57,7 +84,7 @@ By decreasing the batch size the model was able to achieve a dice similarity coe
 ![Test data dice coefficient adjust batch size](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/TestDataDiceCoefficientDecreaseBatchSize.JPG)
 
 ## Predictions
-
+Using the model the following segmentation predictions were made from test set inputs.
 ![prediction1](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p1.png)
 ![prediction2](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p2.png)
 ![prediction3](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p3.png)
@@ -69,6 +96,7 @@ By decreasing the batch size the model was able to achieve a dice similarity coe
 ![prediction9](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p9.png)
 ![prediction10](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p10.png)
 ![prediction11](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p11.png)
+
 ## Usage
 
 ### Dependencies

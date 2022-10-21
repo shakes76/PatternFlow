@@ -14,6 +14,7 @@ class ImprovedUNETModel():
         """ Create a new Improved UNET Model instance.
         
         Described in the paper Brain Tumor Segmentation and Radiomics
+        https://arxiv.org/pdf/1802.10508v1.pdf
         
         Parameters:
             img_wdith (int): Image Width
