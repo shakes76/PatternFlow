@@ -21,7 +21,7 @@ for fname in os.listdir(os.path.join(__location__, data_path, "AD")):
     im.close()
 
 for fname in os.listdir(os.path.join(__location__, data_path,"NC")):
-    fpath = os.path.join(__location__, data_path, "AD", fname)
+    fpath = os.path.join(__location__, data_path, "NC", fname)
     im = Image.open(fpath)
     X_data.append(np.array(im))
     X_data_labels.append(0)

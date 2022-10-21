@@ -11,14 +11,14 @@ def siamese_model(input_shape):
 
     # CNN and Pooling layers
     input = layers.Input(input_shape)
-    x = layers.Conv2D(64, (10, 10), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(input)
+    x = layers.Conv2D(32, (10, 10), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(input)
     x = layers.MaxPooling2D()(x)
-    x = layers.Conv2D(128, (7, 7), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
+    x = layers.Conv2D(64, (7, 7), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
     x = layers.MaxPooling2D()(x)
-    x = layers.Conv2D(128, (4, 4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
+    x = layers.Conv2D(64, (4, 4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
     x = layers.MaxPooling2D()(x)
     x = tf.keras.layers.BatchNormalization()(x)
-    x = layers.Conv2D(256, (4, 4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
+    x = layers.Conv2D(128, (4, 4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(x)
     x = layers.Flatten()(x)
 
     # Produce 10 dimensional vector

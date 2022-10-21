@@ -17,8 +17,8 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 
-epochs = 50
-batch_size = 32
+epochs = 40
+batch_size = 36
 
 # Create siamese model
 siamese, embedding_network = siamese_model((240, 256, 1))
