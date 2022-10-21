@@ -37,6 +37,7 @@ The ISIC Challenge 2017 includes images of skin abnormalities, whereby they are 
 
 ### File Structure
 The files used for training on kaggle should be set out in the following file structure:
+
 ![File Structure](Images/file_struc.jpg)
 
 ## Pre-processing
@@ -46,7 +47,7 @@ The dataset downloaded from the ISIC website was then processed for training/tes
 - Split into training/validation/test folders in the same form as on the ISIC webpage (2000/150/600)
 
 ## Running the Model
-The training was done in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s. No hyperparameters were inputted, meaning that default hyperparameters used to train the YOLOv5 neural network was used. 
+The training was done in Kaggle, a machine learning based competition website with GPU cluster of Nvidia P100s. No hyperparameters files were inputted, meaning that default hyperparameters used to train the YOLOv5 neural network was used. 
 When running the small version of the YOLO v5 model, the following model architecture is shown:
 ```
                  from  n    params  module                                  arguments                     
@@ -107,11 +108,25 @@ When running the medium version of the YOLO v5 model, the following model archit
  24      [17, 20, 23]  1     28287  models.yolo.Detect                      [2, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [192, 384, 768]]
 Model summary: 291 layers, 20875359 parameters, 20875359 gradients, 48.2 GFLOPs
 ```
+It is clear that whilst they have the same architecture, the *m* version of the YOLOv5 has increased layer sizes over the *s* version.  
+
+After training, a .pt file which contained the nest weights of the model was created for each model. These are located for each model (yolov5s and yolov5m) under:
+
+'''
+./Trained/
+'''
+
 ## Accuracy Metrics
 ### Intersection over Union (IOU)
 ![IOU](Images/iou_equation.png)
-The ratio between the intersection and the union of the predicted boxes and the ground truth boxes. 
+
+The ratio between the intersection and the union of the predicted boxes and the ground truth boxes. This determines the accuracy of the bounding box drawn around the detected object.
+
 ### Mean Average Precision (mAP)
+The mAP is derived from the average precision, which is a summary of the precision-recall curve by taking the area under the curve evaluated at a certain IOU threshold. The precision and recall values can be a good indicator of a how well performing a model is, with higher precision and recall values being better.
+
+![mAP](Images/mAP.jpg)
+
 
 ## Results
 ### YOLOv5s
@@ -138,7 +153,7 @@ The following images are the output of the *detect.py* function, where a predict
 Recommends more than 1500 images per class, and more than 10000 instances (labeled objects) per class
 Lack of background images, COCO has 1000 background images or about 1%
 Even spread of Melanoma positive images vs Non Melanoma, currently a lot of objects inside the images are not melanoma
-Training on the Larger model may result in better results, however it could also reduce accuracy due to the relatively small sample of data
+Training on the Larger model may result in better results, however it could also reduce accuracy due to the relatively small sample size of the ISIC dataset due to overfitting.
 
 
 ## References
