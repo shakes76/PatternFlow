@@ -7,11 +7,11 @@ import tensorflow as tf
 from keras import backend as K
 
 
-path = "C:/Users/danie/Downloads/ISIC DATA/"
+_path = "C:/Users/danie/Downloads/ISIC DATA/"
 
 def train_model():
     #Load in data
-    images, masks = load_data(path)
+    images, masks = load_data(_path)
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = train_test_valid(images, masks)
 
     #Define model
@@ -37,7 +37,7 @@ def train_model():
         train_x, 
         train_y,
         batch_size=32,
-        epochs=2,
+        epochs=50,
         validation_data=(valid_x, valid_y),
         steps_per_epoch=12
     )

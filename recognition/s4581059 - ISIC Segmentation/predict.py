@@ -1,12 +1,10 @@
 #Shows example of trained model
 #Prints out results and provides visualisations 
 
-from json import load
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import random
 from keras import models
-from dataset import load_data
 
 from train import dice_similarity, train_model
 
