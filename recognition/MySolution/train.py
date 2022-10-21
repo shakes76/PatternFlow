@@ -3,6 +3,7 @@ from tensorflow import keras
 import tensorflow as tf
 import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
+from predict import *
 
 
 """
@@ -19,7 +20,7 @@ class Train:
         self.learning_rate = 0.001
         self.weight_decay = 0.0001
         self.batch_size = 64
-        self.num_epochs = 50
+        self.num_epochs = 10
         self.model = model
         self.train(self.model)
 
@@ -59,20 +60,22 @@ class Train:
         plt.plot(xs, history.history["val_loss"], label="val_loss")
         plt.xlabel('Epoch')
         plt.ylabel('loss')
-        plt.savefig("Final.jpg")
+        plt.savefig("Loss.jpg")
+        plt.imshow()
+        plt.show()
 
+        xs = range(self.num_epochs)
+        plt.figure()
+        plt.plot(xs, history.history["Accuracy"], label="Accuracy")
+        plt.plot(xs, history.history["val_Accuracy"], label="val_Accuracy")
+        plt.xlabel('Epoch')
+        plt.ylabel('accuracy')
+        plt.savefig("Accuracy.jpg")
+        plt.imshow()
+        plt.show()
 
-        # plt.plot(history.history['Accuracy'], label='accuracy')
-        # plt.plot(history.history['val_Accuracy'], label = 'val_accuracy')
-        # plt.plot(history.history['loss'], label = 'loss') 
-
-        # plt.xlabel('Epoch')
-        # plt.ylabel('Accuracy')
-        # plt.legend(loc='lower right')
-        # plt.savefig("Final.jpg")
-
-        test_loss, test_acc, *is_anything_else_being_returned = model.evaluate(np.load('X_test.npy'),  np.load('y_test.npy'),  verbose=2)
-        print(f"test_loss: {test_loss}")
-        print(f"test_acc: {test_acc}")
-        print(f"is_anything_else_being_returned: {is_anything_else_being_returned}")
+        Predict(model)
+        # test_loss, test_acc, *is_anything_else_being_returned = model.evaluate(np.load('X_test.npy'),  np.load('y_test.npy'),  verbose=2)
+        # print(f"test_loss: {test_loss}")
+        # print(f"test_acc: {test_acc}")
         return history
