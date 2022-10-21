@@ -19,9 +19,9 @@ The implemented latent diffusion model can be broken down into two parts:
   2. A Unet neural network trained to denoise the latent representation of input images
 
 For a broad overview of the model, see below (note that this implemnetaiton lacks the crossattention blocks and conditioning component, as the task involved only generating new images from the OASIS brain dataset)
-
-![ModelCard](Images/ModelCard.png)
-
+<br>
+![ModelCard](/recognition/StableDiffusionModel/Images/ModelCard.png)
+<br>
 Image from: https://arxiv.org/pdf/2112.10752.pdf
 
 ### The Autoencoder
@@ -38,21 +38,26 @@ the upsampling part of the model would be reached. Similarly to the downsampling
 component, this would involve passing the data through a number of residual blocks, except that they would pass through an upsampling convolutional layer instead of a downsampling one at the end.
 
 The Autoencoder was trained against the mean-squared-error between its reconstructions of the input images and the output image. The loss can be seen below (note that since the task was to generate instances of data belonging to the original dataset, only training loss was recorded and used)
-![loss1](Images/autoEncoderLoss.png)
 <br>
-![loss2](Images/autoEncoderLoss2.png)
-
+![loss1](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderLoss2.png)
+<br>
+![loss2](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderLoss.png)
+<br>
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
-![aEExample](Images/autoEncoderExample.png)
+<br>
+![aEExample](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderExample.png)
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
 
 For an illustration of the loss during the training process, see below:
-![UNetLoss](Images/UNetLoss.png)
+<br>
+![UNetLoss](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/UNetLoss.png)
+<br>
 
 For an illustration of the denoising process occuring on the latent space, see below:
-![LatentSpaceDenoising](Images/DenoisingLatentSpace.png)
+<br>
+![LatentSpaceDenoising](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/UNetLoss.png)
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
