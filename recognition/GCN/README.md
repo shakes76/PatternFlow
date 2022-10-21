@@ -1,24 +1,35 @@
-## Semi-Supervised MultiClass Node Classification with Graph Convolutional Networks (GCN) 
-#### Algorithm description 
-Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices. Multiclass node classification refers to when GCNs aggregate an NxF matrix expressing F features of N nodes in the graph, eventually outputting the predicted classes of the input nodes based on the learned relationships between them. This problem is semi-supervised, as only a proportion of the nodes that the model learns on are labelled. 
+c#### Algorithm description 
+Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices. Multiclass node classification refers to when GCNs use the learned relationships between its inputs to eventually outputting the predicted classes of the input nodes. This problem is semi-supervised, as only a portion of the nodes that the model learns on are labelled. 
 
+### The Problem
+The dataset used is the partially processed Facebook Large Page-Page Network dataset, a page-page graph representation of Facebook websites; nodes model Facebook pages, while edges represent the likes intersecting sites. This model aims to determine the Facebook defined labels for each of the websites: (0) Politicians, (1) Governmental Organizations, (3) Television Shows and (4) Companies, based on 128 feature vectors taken from the website descriptions associated with the site's purpose. There are 22470 nodes, and 171002 edges, with numerically labelled nodes. 
+
+
+### GCN vs CNN
 The aggregation performed by GCN is achieved through averaging neighbouring nodes' features. To calculate this, the feature values of each neighbouring node are required, along with the number of neighbouring nodes given a specific node to classify. Feature values can be obtained using the feature values matrix, while the number of neighbouring nodes can be obtained through using an adjacency matrix. The multiplication of these two matrices therefore provides an estimate of the total of all the features in a given neighbourhood. 
 
 #### Steps:
 ##### Preprocessing Adjacency Matrix & Row Normalisation 
 To learn features from the product of an adjacency matrix with node features, the network also needs to be identify the features of an input node-- this means that self loops needed to be added to the graph. Additionally, estimating the total value of the features in a given dataset must that highly connected graph nodes are overly represented in the adjacency matrix. As a result, the scaling of these input values to the network will be adversely impacted by the number of neighbours that they are connected to, resulting situations where the model gradient may vanish due to a smaller feature sum, or overblow as a result of highly large feature values. 
 
-Normalising the rows of the adjacency matrix to sum to 1 can help mitigate this issue, as this ensured that the product of the adjacency and feature matrices are now scaled between 0 and 1. This is performed by taking the inverse of the degree matrix's diagonal and multiplying it with the adjacency matrix. Operations performed between this normalised matrix and the feature matrix during training is mathematically equivalent to averaging neighbours. 
+Normalising the rows of the adjacency matrix to sum to 1 can help mitigate this issue, as this ensured that the product of the adjacency and feature matrices are now scaled between 0 and 1. This is performed by taking the inverse of the degree matrix's diagonal and multiplying it with the adjacency matrix. Operations performed between this normalised matrix and the feature matrix during training is mathematically equivalent to averaging the graph's neighbours. 
+
+Performing symmetric normalisation ensures that features can be weighted according to their importance. For example, a feature with an average degree 
 
 #### The problem to be solved 
 
 #### How GCNs work in this context
 
-#### Visualisation of GCN 
-
 
 #### Using this file 
+* Running train.py will train and test your model for the defined epochs, hidden layers and outputs selected. A run_training() function is responsible for performing these functions. If this is not desired, comment out the call to this function at the bottom of the file. 
+* Predict.py demonstrates an example of the GCN performing node classification on a subset of nodes in the graph. It also produces a tSNE plot of the emebeddings generated from this subset, as well as from the whole graph. 
+* Dataset.py will load and preprocess your inputs to provide normalised feature and adjacency matrices that are ready to be trained on. 
+* Modules.py defines a Net model that defines the GCN, which connects to three GCN Layers. 
+
+
 ##### Dependencies required
+* Python 3.8.12 used (though other versions may be suitable)
 * Pytorch 1.12
 * Networkx
 * NumPy 
@@ -36,6 +47,7 @@ Example inputs include loading in a subset of the given dataset and adjacency ma
 After 300 epochs of training, the following accuracy and loss curves are achieved. 
 
 ![Unknown-39](https://user-images.githubusercontent.com/86597504/197160327-f9185887-62ae-46b0-bdaf-67049310353e.png)
+
 ![Unknown-38](https://user-images.githubusercontent.com/86597504/197160334-ced94df3-c90b-45b9-9d43-88a223082ffb.png)
 
 
