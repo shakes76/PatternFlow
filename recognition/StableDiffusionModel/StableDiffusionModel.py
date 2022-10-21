@@ -13,19 +13,25 @@ import numpy as np
 from keras import layers
 from CustomLayers import *
 
-def sinusoidalTimeEmbedding(input):
-    frequencies = tf.exp(
-        tf.linspace(
-            tf.math.log(1.0),
-            tf.math.log(1000.0),
-            32 // 2,   # latentDim//2
-        )
-    )
-    embeddings = tf.concat(
-        [tf.sin(2.0 * math.pi * frequencies * input), tf.cos(2.0 * math.pi * frequencies * input)], axis=3
-    )
-    return embeddings
 
+
+class SinusodialTimeEmbedding(kr.layers.Layer) :
+    def __init__(self, dimension, maxPos = 10000):
+      super().__init__()
+
+      self.dimension = dimension
+      self.maxPos = maxPos
+
+    def call(self, input, training=True) :
+      # Casting to float to allow later operations (i.e. mult)
+      hDim = ((self.dim // 2) - 1)
+
+      x = tf.cast(input, tf.float32)
+      emb = tf.math.log(self.maxPos) / hDim
+      emb = tf.exp(tf.range(hDim, dtype=tf.float32) * -emb)
+      emb = x[:, None] * emb[None, :]
+
+      emb = tf.concat([tf.sin(emb), tf.cos(emb)], axis=-1)
 
 
 class UNetBlock(kr.layers.Layer) :
