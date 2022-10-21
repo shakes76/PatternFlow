@@ -21,6 +21,7 @@ math and os libraries are also used (Python 3.7.15)
 
 The code run with these libraries should produce similar results to those presented in this report. However, due to the nature of a neural network, there will be variations in exact training and testing scores.
 ## Usage
+To run the training code, first edit the relevent constants in `constants.py` eg. epochs, checkpoint location etc. Then run `train.py` to train the model. To produce the visualisations, run `predict.py`.
 ### Inputs
 The input into the model is a 64x64x1 image of an MRI.
 ### Outputs
