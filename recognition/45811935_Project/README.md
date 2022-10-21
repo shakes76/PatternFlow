@@ -57,7 +57,10 @@ PixelCNN is an autoregressive neural network model. This essentially means it le
 Specifically, it (starting from the top left pixel and working to the bottom right) predicts the 
 value of the next pixel, based on the values of the previous pixel.
 
-To achieve this, 
+To achieve this, two types of layers must be defined:
+
+1. Masked Convolutional Layer
+2. 
 
 ![VQ-VAE Architecture](ReducedResults/PixelCNNArchitecture.PNG)
 From [[1](#references)]
