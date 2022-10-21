@@ -9,3 +9,10 @@ This program is constructed from the following Python scripts:
 * modules.py contains the central architecture of the Unet network
 * train.py trains the UNet defined in modules.py on the data
 * predict.py used to evaluate the trained model
+
+For example, here is a proceesed image:
+![Processed image](C:/TechnoCore/2022/COMP3710/project/original.png?raw=true "Title")
+Here is the true segmentation:
+![True segmentation](C:/TechnoCore/2022/COMP3710/project/segmented.png?raw=true "Title")
+And here is the predicted segmentation:
+![Predicted segmentation](C:/TechnoCore/2022/COMP3710/project/segmented_prediction.png?raw=true "Title")
