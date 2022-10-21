@@ -11,7 +11,7 @@ Contains the source code of the components of the model. Each component is imple
 """
 Patch function
 Splits the image into patches of dimension (p_size, p_size).
-This is implemented as a layer
+This is implemented as a layer so it can be integrated into the model
 """
 class Patches(layers.Layer):
     def __init__(self, patch_size):
@@ -74,13 +74,13 @@ def create_vit_classifier(input_shape, train, patch_size, num_patches, projectio
         layers.RandomRotation(factor=0.02),
         layers.RandomZoom(height_factor=0.2, width_factor=0.2)],
         )
-    
+    # adapt the normalization layer to the training data
     data_augmentation.layers[0].adapt(train)
 
     augmented = data_augmentation(inputs)
-    
-    patches = Patches(patch_size)(augmented)
 
+    # patch and embed the images
+    patches = Patches(patch_size)(augmented)
     embedded = PatchEmbed(num_patches, projection_dim)(patches)
 
     """
@@ -98,10 +98,11 @@ def create_vit_classifier(input_shape, train, patch_size, num_patches, projectio
         mlp = MLP(norm2, transformer_units, dropout=0.5)
         embedded = layers.Add()([mlp, norm2])
 
+    # This representation section is required to flatten the data such that the MLP can operate on it
     representation = layers.LayerNormalization(epsilon=1e-6)(embedded)
     representation = layers.Flatten()(representation)
     representation = layers.Dropout(0.5)(representation)
-
+    
     restructured = MLP(representation, hidden_count=mlp_layer_counts)
     output = layers.Dense(num_classes, activation="softmax")(restructured)
     model = keras.Model(inputs=inputs, outputs=output)
