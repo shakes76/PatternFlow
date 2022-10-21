@@ -4,12 +4,10 @@ from modules import *
 from dataset import *
 import time
 import os
+from sklearn.decomposition import PCA
+import pandas as pd
+import matplotlib.pyplot as plt
 
-"""
-Containing the source code for training, validating, testing and saving your model. 
-The model should be imported from “modules.py” and the data loader should be imported from “dataset.py”
-Make sure to plot the losses and metrics during training.
-"""
 EPOCHS = 100
 BATCH_SIZE = 64
 BUFFER_SIZE = 20000
@@ -166,6 +164,52 @@ def train_binary_classifier(model, siamese_model, training_data_positive, traini
 
     return history
 
+def run_pca(siamese_model, training_data_positive, training_data_negative):
+    """
+    Run Principle Component Analysis on the Siamese Model Embeddings and plot the
+     two features with the highest variance.
+
+    Code adapted from https://towardsdatascience.com/pca-using-python-scikit-learn-e653f8989e60
+
+    Parameters:
+        - siamese_model -- The model with which to generate the embeddings to perform PCA on
+        - training_data_positive, training_data_negative -- raw image data as numpy arrays
+    """
+    
+    pos_labels = np.ones(training_data_positive.shape[0])
+    neg_labels = np.zeros(training_data_negative.shape[0])
+
+    pos_embeddings = siamese_model.predict(training_data_positive)
+    neg_embeddings = siamese_model.predict(training_data_negative)
+
+    embeddings = np.concatenate((pos_embeddings, neg_embeddings))
+    labels = np.concatenate((pos_labels, neg_labels))
+
+    pca = PCA(n_components=2)
+    principal_components = pca.fit_transform(embeddings)
+
+    principalDf = pd.DataFrame(data = principal_components
+             , columns = ['principal component 1', 'principal component 2'])
+    labelsDf = pd.DataFrame(labels, columns=["label"])
+    finalDf = pd.concat([principalDf, labelsDf], axis = 1)
+
+    # plot first two principal components
+    fig = plt.figure(figsize = (8,8))
+    ax = fig.add_subplot(1,1,1) 
+    ax.set_xlabel('Principal Component 1', fontsize = 15)
+    ax.set_ylabel('Principal Component 2', fontsize = 15)
+    ax.set_title('2 component PCA', fontsize = 20)
+    targets = [1.0, 0.0]
+    colors = ['r', 'g']
+    for target, color in zip(targets,colors):
+        indicesToKeep = finalDf['label'] == target
+        ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
+               , finalDf.loc[indicesToKeep, 'principal component 2']
+               , c = color
+               , s = 50)
+    ax.legend(targets)
+    ax.grid()
+
 def main():
     """
     Trains the models
@@ -195,11 +239,17 @@ def main():
 
     # train the models
     train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
+
+    # optionally, run principle component analysis on siamese model to assess embeddings
+    run_pca(siamese_model, training_data_positive, training_data_negative)
+
     train_binary_classifier(binary_classifier, siamese_model, training_data_positive, training_data_negative)
 
     # save the models
     siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
     binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))
+
+    
 
 if __name__ == "__main__":
     main()

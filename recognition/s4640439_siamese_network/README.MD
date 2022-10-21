@@ -45,6 +45,9 @@ If more time were available, I would try to train the Siamese Model using variou
 Requires Python version 3.9 or above (for type hinting)
 Requires tensorflow version 2.8.2 or above
 Requires numpy version 1.21.3 or above
+Requires matplotlib 3.4.3 or above
+Requires pandas 1.3.2 or above
+Requires scikit-learn 1.0.1 or above
 
 ### Dataset and Pre-processing
 Original dataset sourced from: [ADNI dataset for Alzheimer's disease](http://adni.loni.usc.edu/)
