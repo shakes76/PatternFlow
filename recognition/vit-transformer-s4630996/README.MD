@@ -2,7 +2,7 @@
 1. [Description of Algorithm](#description-of-algorithm)
 2. [Problem It Solves](#problem-it-solves)
 3. [How It Works](#how-it-works)
-4. [Figure/Visualization](#figure--visualizaton)
+4. [Experiments & Results](#experiments-and-results)
 5. [Dependencies](#dependencies)
 6. [Reproducibility of Results](#reproducibility-of-results)
 7. [Example Inputs/Outputs](#example-inputs--outputs)
@@ -152,68 +152,6 @@ It is important to note that predict.py takes a random sample from the cropped (
 
 ---
 
-# Figures & Visualizaton
-
-- training loss and accuracy (best, anomolies)
-  - validation accuracy above training accuracy
-  - good loss / accuracy plot, terrible test results
-  - stagnation
-  - sgd vs adam for same parameters
-- table of experiments
-
-- 
-
-<u></u>
-<u></u>
-<u></u>
-
- 
-[Back to Top](#section-navigation)
-
----
-
-# Dependencies
-
-### Image Preprocessing
-- augmentor
-- python 10
-
-### ViT
-- python 3.9
-- matplotlib
-- tensorflow 2.9
-- numpy
-- keras_cv
-- tensorflow_addons
-
-[Back to Top](#section-navigation)
-
----
-
-# Reproducibility of Results
-- initial selection of validation set
-- seed in image_dataset_from_directory
-- hyperparams --> obviously stochastic by nature
-
-[Back to Top](#section-navigation)
-
----
-
-# Example inputs / outputs
-- input: brain image?
-- output: test results?
-
-[Back to Top](#section-navigation)
-
----
-
-# Plot of Algorithm
-- training loss and accuracy?
-
-[Back to Top](#section-navigation)
-
----
-
 
 # Image Pre-processing
 
@@ -272,6 +210,124 @@ This is a grayscale image with the dimensions 256 x 240.
 
 
 [Back to Top](#section-navigation)
+
+
+
+# Experiments and Results
+
+The image datasets tackled by [$1$] included CIFAR-100 and Oxford Flowers-102.  These datasets are large and complex in that many possible labels exist for a single image in the dataset.  The models developed to classify these images were commensurately large and complex.  The smallest of these models (ViT-Base) has 86M trainable parameters and the largest(ViT Huge) has 632M parameters.  
+ 
+Unfortunately the author of this project does not have the same computational resources as Google, Inc. and the models were commensurately scaled down.  However, the ADNI labels are binary - the image is either classified AD or NC, and for this reason it was hoped that a large complex model was not required.   That being said, the largest model tried here was by no means small (100M parameters).
+
+Given the small size of the ADNI dataset, regularization and augmentation techniques were heavily relied upon.  These included dropout, rescaling, random flip, random rotate, random noise, and random brightness.
+
+Test accuracy percentages reported are based on an evaluation against the test set using model weights saved at epoch for which there was the lowest validation loss. 
+
+
+### Example Small Model Results
+|Optimizer|Learning Rate|Patch Size|Projection Dims| Encoder Heads/Layers | MLP Head Units | Params | 
+| :---: | :---: |  :---: | :--:| :--: | :--: | :--:| 
+| AdamW   |0.0005 | 16    | 80 | 4/8 | 320 |1.1M |
+
+![This is an image](./images/small-accuracy.png)
+![This is an image](./images/small-loss.png)
+
+Test Accuracy: 59.68%
+
+The smallest of the models achieves results on par with the largest model.  Here each patch is projected onto 80 dimensions.  The model appears to memorize the training set as training accuracy approaches 1.  However, after only a small number of training cycles the validation loss soars and it is clear the model is overfitting.  
+
+### Example Medium Model Results
+|Optimizer|Learning Rate|Patch Size|Projection Dims| Encoder Heads/Layers | MLP Head Units | Params | 
+| :---: | :---: |  :---: | :--:| :--: | :--: | :--:| 
+| SGD   |0.0005 | 16    | 256 | 6/8 | 1024 |15.1M |
+
+![This is an image](./images/medium-accuracy.png)
+![This is an image](./images/medium-loss.png)
+
+Test Accuracy: 55.09%
+
+The medium model achieves results that are little better than chance (50%).  An attempt to train this model using the AdamW optimizer was unsuccessful so a switch was made to Stochastic Gradient Descent.  Unfortunately despite attempting a wide range of learning rates, the validation loss and accuracy and loss using AdamW remained (essentially) stationary despite a prolonged (300 epochs) training period. 
+
+It is observed that the validation loss becomes increasingly erratic.  Validation accuracy, although somewhat less erratic, appears cyclically stationary.  It is unclear what dynamics are causing these  behaviours.
+
+
+### Example Large Model Results
+|Optimizer|Learning Rate|Patch Size|Projection Dims| Encoder Heads/Layers | MLP Head Units | Params | 
+| :---: | :---: |  :---: | :--:| :--: | :--: | :--:| 
+| SGD   |0.0005 | 14   | 768 | 6/6 | 3072 |101.9M |
+
+![This is an image](./images/big-accuracy.png)
+![This is an image](./images/big-loss.png)
+
+Test Accuracy: 59.88%
+
+Although shown here on a different x and y scale, the behavior for the large model seems similar to that of the medium model above. Training accuracy and loss steadily improves over time while validation results are erratic and inconsistent. 
+
+Although some overtraining appears to occur after epoch 40, a repeat attempt to train the model for only forty epochs achieved similar results.
+
+
+The results above represent just a small sample of the total number of experiements run. Although over 50 experiments in total were performed the results did not vary significantly.  No model seemed to outperform and results that did seem to be higher could not be repeated to obtain the same high result. 
+
+A larger sample of the experiments performed is found below.
+
+![This is an image](./images/experiments.png)
+
+It should be noted that the accuracy results listed here are a few percentage points higher than those reported above for the small/medium/large models.  These results were obtained prior to the data leakage issued identified when making the validation set (as discussed above in [Image Pre-processing](#image-pre-processing)).  After addressing the data-leakage problem, the higher test accuracy scores could not be replicated and there was very little variation in test accuracy results.
+
+These results are dissapointing in consideration of the repeated and detailed reviews of [1], the amount of hyperparameter tuning attempted, and the numerous consulations with course TAs who could not identify any obvious error in the model construction.  
+
+One theory as to why improved results are so difficult here is that the data is actually 3D but presented in a 2D fashion.  Each image appears to be a different "slice' of the brain (as indicated by the file name syntax of patientID_sliceNum).  For this reason hybrid CNN - Vit model architectures might prove to be more effective.  One such model might aggregate each patients's slices into channels so that each observation is actually 20 slices for the same patient (the dataset contains 20 images for each patient ID). Convolutions could then be learned to reduce each patient's 3D data into a set of 20 features each of which could be input into the ViT as a patch.
+
+
+
+ 
+[Back to Top](#section-navigation)
+
+---
+
+# Dependencies
+
+### Image Preprocessing
+- augmentor
+- python 10
+
+### ViT
+- python 3.9
+- matplotlib
+- tensorflow 2.9
+- numpy
+- keras_cv
+- tensorflow_addons
+
+[Back to Top](#section-navigation)
+
+---
+
+# Reproducibility of Results
+- initial selection of validation set
+- seed in image_dataset_from_directory
+- hyperparams --> obviously stochastic by nature
+
+[Back to Top](#section-navigation)
+
+---
+
+# Example inputs / outputs
+- input: brain image?
+- output: test results?
+
+[Back to Top](#section-navigation)
+
+---
+
+# Plot of Algorithm
+- training loss and accuracy?
+
+[Back to Top](#section-navigation)
+
+---
+
+
 
 ---
 
