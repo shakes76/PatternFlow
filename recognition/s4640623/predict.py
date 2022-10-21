@@ -17,7 +17,7 @@ def test(model, adj, features, target):
 
 # Load variables for testing
 data = dataset.load_data()
-train_ds, valid_ds, test_ds, features, target, edges = dataset.process_data(dataset)
+train_ds, valid_ds, test_ds, features, target, edges = dataset.process_data(data)
 model = train.model_init(features, data)
 adj = dataset.adj_matrix(data)
 test(model, adj, features, target)

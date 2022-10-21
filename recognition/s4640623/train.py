@@ -14,6 +14,10 @@ data = dataset.load_data()
 train_ds, valid_ds, test_ds, features, target, edges = dataset.process_data(data)
 adj = dataset.adj_matrix(data)
 
+# Plot the ground truths
+mapper = umap.UMAP().fit(data['features'])
+umap.plot.points(mapper, labels = data['target'])
+
 """Calculates how accuracy of output compared to the target"""
 def accuracy(output, target):
   preds = output.max(1)[1].type_as(target)
@@ -63,7 +67,3 @@ optimizer = optim.Adam(model.parameters(),
 epochs = 20
 for epoch in range(epochs):
   train(epoch)
-
-# Plot the ground truths
-mapper = umap.UMAP().fit(data['features'])
-umap.plot.points(mapper, labels = data['target'])

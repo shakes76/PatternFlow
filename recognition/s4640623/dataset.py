@@ -32,7 +32,7 @@ def process_data(dataset):
 
   return train_ds, valid_ds, test_ds, features, target, edges
 
-"""Normalise a given matrix"""
+"""Normalise a given matrix due to neighbour node quantities not being constant"""
 def normalise(mx):
   r_inv = np.power(np.array(mx.sum(1)), -1).flatten()
   r_inv[np.isinf(r_inv)] = 0.
