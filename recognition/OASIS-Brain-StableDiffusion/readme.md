@@ -198,6 +198,15 @@ Here are six Brain MRIs generated from this stable diffusion model
 ![Generated Brain Images](https://lh3.googleusercontent.com/pw/AL9nZEWOVw8GZ23W_Nn1bzlelZnFbdSNY1OtXRLf2EWPLUAf0EIg8Naw0rXTSUadluIzml-r91DJxK2BNYnNodYBzRSVtL9RLReduJayQ2dP9kGNSFuXGuFsG1LBycxD38to4LS8jNWgJiY5FmKTNbk08SpY=w398-h68-no?authuser=0 =796x136)
 To generate your own images, just run `python predict.py`in the terminal. Remember a model has to be trained, saved, and then its path has to be referenced appropriately in `predict.py`.
 
+## References
+
+- [Denoising Diffusion Probabilistic Models](https://arxiv.org/abs/2006.11239)
+- [Diffusion Models Beat GANs on Image Synthesis](https://arxiv.org/abs/2105.05233)
+- [High-Resolution Image Synthesis with Latent Diffusion Models](https://arxiv.org/abs/2112.10752)
+- [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
+- [The Annotated Diffusion Model](https://huggingface.co/blog/annotated-diffusion)
+
+
 ## Dependencies
 ```
 # Name                    Version                   Build  Channel
