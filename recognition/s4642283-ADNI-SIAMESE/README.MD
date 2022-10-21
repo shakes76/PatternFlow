@@ -1,4 +1,4 @@
-# A Siamese Network for Classifying Alzheimer's on the ADNI Dataset
+# A Classifier based on a Siamese Network for Classifying Alzheimer's on the ADNI Dataset
 
 Name: Matthew Shearer
 
@@ -37,7 +37,11 @@ As already explained, an SNN is a pair of CNNs with shared weights, with each CN
 
 The `train.py` file does not require any commandline arguments and can be called as long as the dataset is in the correct directory structure (which is necessary for the `dataset.py` file). The only requirement for `predict.py` is that a model name 'Classifier_Model' is given in the same directory that the file is in. Both `dataset.py` and `modules.py` do not need to be called in order for `train.py` to work. Following from the task sheet, `train.py` will train a model based on the architecture in `modules.py`, and will produce training and validation accuracy and loss plots, with a testing accuracy. A classifier will then be created using the embedded network in the SNN to classify images. Both the SNN and this classifier will be saved (with the classifier being the more important model).
 
-The `predict.py` will take a file path from the directory `predict.py` is in as an argument in the command line (which expects 'AD' and 'NC' child directories similar to the data structure shown above) and then use the classifier model in the same directory to make predictions on the data, with the final accuracy being printed out.
+The `predict.py` will take a file path from the directory `predict.py` is in as an argument in the command line (which expects 'AD' and 'NC' child directories similar to the data structure shown above) and then use the classifier model in the same directory to make predictions on the data (which is produced from `train.py`), with the final accuracy being printed out. As an example, I run predict.py on the command line as:
+
+```
+py predict.py ADNI_AD_NC_2D/AD_NC/test/
+```
 
 ## Results
 
@@ -46,7 +50,7 @@ Although several attempts and different architectures were created, the most suc
 ![Screenshot](images/acc.png)
 ![Screenshot](images/loss.png)
 
-Evidently, although it trained for 40 epochs, the architecture seems to reach around a 80% accuracy on the validation within 20 epochs, and doesn't increase much higher than that. We can also see that the validation loss doesn't really decrease after 22 epochs, and the model is clearly overfitting after ~22 epochs. Using the embedding layer from this architecture, the classification model achieved a 88.79% accuracy on the entire dataset. I have tried a lot to improve this, but I just can't seem to get it going better, although I think the most obvious route to improve it would be to battle overfitting better. A screenshot of the classifier's accuracy output can be seen below:
+Evidently, although it trained for 40 epochs, the architecture seems to reach around a 80% accuracy on the validation within 20 epochs, and doesn't increase much higher than that. We can also see that the validation loss doesn't really decrease after 22 epochs, and the model is clearly overfitting after ~22 epochs. Using the embedding layer from this architecture, the classification model achieved a 88.79% accuracy on the entire dataset. Although this is a very impressive result, I think the training accuracies and loss's are very inconsistent, but do tend to hang around the 60%-80% range. A screenshot of the classifier's accuracy output can be seen below:
 
 ![Screenshot](images/classifier_acc.png)
 
@@ -54,7 +58,7 @@ In addition to this, I've provided an example of the training output (note that 
 
 ![Screenshot](images/example_training.png)
 
-I'd also like to quickly mention (which is also slightly touched on in the reproducability section) that these results fluctuate quite a bit. I'm not certain why the model's loss and accuracy very so significantly, but over the several runs I've done with this architecture, the model will very regularly achieve a high training, validation and testing accuracies, with a classifier accuracy ranging from ~71% to ~88%.
+I'd also like to quickly mention (which is also slightly touched on in the reproducability section) that these results fluctuate quite a bit. I'm not certain why the model's loss and accuracy vary so significantly, but over the several runs I've done with this architecture, the model will very regularly achieve a high training, validation and testing accuracies, with a classifier accuracy ranging from ~71% to ~88%.
 
 ## Dependencies
 
@@ -70,7 +74,9 @@ This project has the following dependencies:
 
 ## Note on Hardware
 
-I should note that the code (and the results above) come from me executing this code in a google colab environment. I've tried running this code a number of different ways, but I find that there can be memory issues (but its hard to tell if it's just my machine, since I have very little free memory). Hence, if you attempt to run `train.py` but encounter memory issues, I highly encourage you to try training in google colab. Alternatively, I think you can decrease the batch size (which is quite high since I was, again, running in google colab) and increase epochs to try and get the same results but without having spatially-complex matrices during each iteration (and hence avoiding the memory issue), but I have not tried this.
+I should note that the code (and the results above) come from me executing this code in a google colab environment. I've tried running this code a number of different ways, but I find that there can be memory issues (but its hard to tell if it's just my machine, since I have very little free memory). Hence, if you attempt to run `train.py` but encounter memory issues, I highly encourage you to try training in google colab (specifically, I trained by copying all the code into the google colab session and removing imports between files, i.e, the code was all in a single cell). Alternatively, I think you can decrease the batch size (which is quite high since I was, again, running in google colab) and increase epochs to try and get the same results but without having spatially-complex matrices during each iteration (and hence avoiding the memory issue), but I have not tried this. 
+
+In any case, as long as the machine this code runs on does not encounter the OOM issue, the `train.py` file should work fine.
 
 ## Note on Reproducability
 
