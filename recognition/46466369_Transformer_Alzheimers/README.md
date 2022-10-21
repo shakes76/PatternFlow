@@ -8,6 +8,7 @@ Eric Shen
 | Alzheimer's | Normal |
 | --- | --- |
 | ![Alzheimer](./images/AD.jpeg) | ![Normal](./images/NC.jpeg) |
+
 Images of the human brain from the [ADNI](https://adni.loni.usc.edu/) dataset, as classified by a Visual Transformer.
 
 ## Project Aims
