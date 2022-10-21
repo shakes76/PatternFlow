@@ -1,1 +1,42 @@
-# Skin lesion segementation using an improved U-Net
+# ISIC 2017 Skin lesion segementation using an improved U-Net
+
+## Dataset
+ISIC2017 dataset can be found on the following link
+
+ISIC2017 dataset : https://challenge.isic-archive.com/data/#2017
+
+## Description of the algorithm
+![KakaoTalk_Snapshot_20221021_175510](https://user-images.githubusercontent.com/59554674/197143729-01160b28-8c62-4da2-b7b7-4b9041676450.png)
+
+We applied the network architecture as seen in the image above. The network architecture was referenced from 'Brain Tumor Segmentation and Radiomics
+Survival Prediction: Contribution to the BRATS 2017 Challenge' by Isensee, et al. The link will be shared below.
+
+Basically, this improved U-net is based on the existing U-net architectures. However, its core architecure inside the network is rather diffrent to the others.
+And the diffrences are that it has context, localization, and upsampling modules:
+
+Context module consists of: Two 3 x 3 convolutional layers and a dropout layer with rate 0.3.
+Localization module consists of: A 3 x 3 convolutional layer and a 1 x 1 convolutional layer. 
+Upsampling modules consists of: An upsampling layer and a 3 x 3 convolutional layer.
+
+In this architecture, there are two pathways, which are the context pathway(left) and the localization pathway(right).
+Through the context pathway, the U-net reduces the resolution of the feature maps by using the context module.
+Through the localiztion pathway, the U-net take features for the lower level to the higher level by using the localization module that upsampling the low resolution feature maps. After this, the concatenation between the upsampled features and the context aggregation in the same level is done.
+
+Finally, the output forms via element-wise sum between the concatenation above and the segmentation layers.
+
+link : https://arxiv.org/abs/1802.10508v1
+
+## Task
+
+Train a model for the image segmentation of skin lesion using the improved U-net architecture.
+
+## How it works
+
+### Data preprocessing
+Firstly, we need to resize all the images to 256 x 256 becauser the images of the dataset do not have the same size. And save all the resized images into new directories. Then, create blank arrays to store the resized training, validation, and test images and join the resized images to the blank arrays respectively.
+This process is going to take some time. And create data frames to store the excel files containing the names of the images. After that, load and generate the nomrmalized images and masks of training, validation, and test data.
+
+### Training
+After data preprocessing, we now have train_x, train_y, validation_x, and validation_y.
+
+
