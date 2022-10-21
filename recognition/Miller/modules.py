@@ -101,7 +101,7 @@ def encoder_component(latent_dimension):
     return tf.keras.Model(inputs, outputs, name="encoder")
 
 """
-Returns layered model for decoder architecture built from  tranposed convolutional layers. 
+Returns the model for decoder architecture built from  tranposed convolutional layers. 
 
 activations: ReLU advised as other activations are not optimal for encoder/decoder quantization architecture.
 e.g. Leaky ReLU activated models are difficult to train -> cause sporadic loss spikes that model struggles to recover from
@@ -114,7 +114,8 @@ def decoder_component(latent_dimension):
     outputs = tf.keras.layers.Conv2DTranspose(1, 3, padding="same")(layer)
     return tf.keras.Model(inputs, outputs, name="decoder")
 
-def build_model(embeddings_num=64, latent_dimension=16):
+# Build Model
+def build_model(embeddings_num, latent_dimension):
     vq_layer = VQ_layer(embeddings_num, latent_dimension, name="vector_quantizer")
     encoder = encoder_component(latent_dimension)
     decoder = decoder_component(latent_dimension)
@@ -124,11 +125,9 @@ def build_model(embeddings_num=64, latent_dimension=16):
     reconstructions = decoder(quantized_latents)
     return tf.keras.Model(inputs, reconstructions, name="vq_vae")
 
-build_model().summary()
-
 # Create a model instance and sets training paramters 
 class vqvae_model(tf.keras.models.Model):
-    def __init__(self, variance, latent_dimension=32, embeddings_num=128, **kwargs):
+    def __init__(self, variance, latent_dimension, embeddings_num, **kwargs):
         
         super(vqvae_model, self).__init__(**kwargs)
         self.latent_dimension = latent_dimension

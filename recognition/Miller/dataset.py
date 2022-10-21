@@ -1,13 +1,13 @@
 """
 dataset.py" containing the data loader for loading and preprocessing your data
+
+This was file utilises and modifies the fucntions found in https://github.com/shakes76/PatternFlow/tree/master/recognition/MySolution 
 """
 
 import tensorflow as tf
 import glob
 import numpy as np
 from matplotlib import image
-import random
-
 
 # Download the Oasis Data as zip file. Will need to extract it manually afterwards
 def download_oasis ():
