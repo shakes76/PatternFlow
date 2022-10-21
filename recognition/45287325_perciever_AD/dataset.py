@@ -8,8 +8,8 @@ def transform():
     """
     Transform that crops some of than blank space out of the images. 
     """
-    return transforms.Compose([transforms.Lambda(lambda x:  transforms.functional.crop(x, 0, 16, 240, 240)),
-                                transforms.Lambda(lambda x:  transforms.functional.rgb_to_grayscale(x)),
+    return transforms.Compose([transforms.Lambda(lambda x:  transforms.functional.rgb_to_grayscale(x)),
+                                transforms.RandomCrop(240),
                                 transforms.ToTensor(), 
                                 transforms.Lambda(lambda x: resize(x))])
 
