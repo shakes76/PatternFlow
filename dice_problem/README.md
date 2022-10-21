@@ -11,8 +11,8 @@ This program is constructed from the following Python scripts:
 * predict.py used to evaluate the trained model
 
 For example, here is a proceesed image:
-![Processed image](C:/TechnoCore/2022/COMP3710/project/original.png?raw=true "Title")
+![Processed image](https://github.com/Jaehaerys-III/PatternFlow/tree/topic-recognition/dice_problem/original.png?raw=true)
 Here is the true segmentation:
-![True segmentation](C:/TechnoCore/2022/COMP3710/project/segmented.png?raw=true "Title")
+![True segmentation](https://github.com/Jaehaerys-III/PatternFlow/tree/topic-recognition/dice_problem/segmented.png?raw=true)
 And here is the predicted segmentation:
-![Predicted segmentation](C:/TechnoCore/2022/COMP3710/project/segmented_prediction.png?raw=true "Title")
+![Predicted segmentation](https://github.com/Jaehaerys-III/PatternFlow/tree/topic-recognition/dice_problem/segmented_prediction.png?raw=true)
