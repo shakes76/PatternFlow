@@ -1,6 +1,6 @@
 # Image Segmentation of the ISIC dataset using Improved UNet
 
-by Jaleel Abdur-Raheem, 458054448
+by Jaleel Abdur-Raheem, 45805448
 
 ## Introduction
 
@@ -42,9 +42,27 @@ The randomisation is controlled between the two datasets by concatenating them a
 
 ### Split Allocation
 
-The dataset was batched into groups of 5, while the original paper tried groups of 2. I also split the full dataset into training, validation, and testing datasets with a split of 7-1-1. I did this because the full dataset has 900 images, which meant my split was cleanly divided. The split roughly translates to 77.7%-11.1%-11.1%. I found this split to yield desirable results after running on the full dataset.
+The dataset was batched into groups of 5, while the original paper tried groups of 2. I also split the full dataset into training, validation, and testing datasets with a split of 7-1-1. I did this because the full dataset has 900 images, which meant my split was cleanly divided. The split roughly translates to 77.7%-11.1%-11.1%. I found this split to yield desirable results after training & predicting on the full dataset.
+
+### Algorithm
+
+In my implementation, the network can be extended however many levels with any suitable number of segmentation layers along the localization pathway. However, I used the same number of filters, levels, and segmentation layers as the researchers in [1].
 
 ## Results
+
+After running model evaluation on the testing split of my dataset, I received the following outputs:
+
+```
+Model evaluation on test dataset: loss = 0.13993357121944427, dice_coef = 0.9171923398971558
+```
+
+| Image | Predicted | Actual |
+| :-: | :-: | :-: |
+| <img src="images/ti0.png" width="128" height="96"> | <img src="images/pm0.png" width="128" height="96"> | <img src="images/am0.png" width="128" height="96"> |
+| <img src="images/ti1.png" width="128" height="96"> | <img src="images/pm1.png" width="128" height="96"> | <img src="images/am1.png" width="128" height="96"> |
+| <img src="images/ti2.png" width="128" height="96"> | <img src="images/pm2.png" width="128" height="96"> | <img src="images/am2.png" width="128" height="96"> |
+| <img src="images/ti3.png" width="128" height="96"> | <img src="images/pm3.png" width="128" height="96"> | <img src="images/am3.png" width="128" height="96"> |
+| <img src="images/ti4.png" width="128" height="96"> | <img src="images/pm4.png" width="128" height="96"> | <img src="images/am4.png" width="128" height="96"> |
 
 ## Running the Project
 
@@ -78,7 +96,7 @@ Libraries used:
 - keras 2.10.0
 - matplotlib 3.6.1
 
-Trained on the Rangpur cluster managed by the University of Queensland
+Environment managed by Miniconda, trained on the Rangpur cluster managed by the University of Queensland
 
 ## References
 
