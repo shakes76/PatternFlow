@@ -6,12 +6,12 @@ This model takes upscaled (approximately by 4x) images from the ADNI Brain Datas
 
 
 
-![graph](images/graph.png)
+![graph](images/graph.png|500)
 ***
 
-![highres](images/0-highres.png)
-![lowres](images/0-lowres.png)
-![prediction](images/0-prediction.png)
+![highres](images/0-highres.png|200)
+![lowres](images/0-lowres.png|200)
+![prediction](images/0-prediction.png|200)
 
 
 How to use:
