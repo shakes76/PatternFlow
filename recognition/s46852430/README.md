@@ -10,6 +10,17 @@ TensorFlow 2.5.0
 matplotlib 3.4.3
 ISICs 2018 Challenge dataset
 
+# Predict
+
+![result](https://user-images.githubusercontent.com/56865527/197188339-b8a68342-88e8-424b-b529-72d9d1c105b1.png)
+predict result
+
+![loss](https://user-images.githubusercontent.com/56865527/197188394-5d42743b-ea11-4fd4-a21f-84208e60b6d1.png)
+loss plot
+
+<img width="838" alt="Loss_Coef" src="https://user-images.githubusercontent.com/56865527/197188975-8c44a614-f30c-46c7-9c61-698e1e98ca61.png">
+loss coefiecent
+
 # Model 
 ![model_plot](https://user-images.githubusercontent.com/56865527/197185218-dc1c81a0-1914-4328-955b-2c0e610299ec.png)
 
