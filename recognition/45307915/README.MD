@@ -28,9 +28,10 @@ Like the original UNET the Improved UNET is made up of encoding and decoding lay
 ## Training
 
 ### Optimiser and Loss Function
-The optimiser used for training was "the adam optimizer with an initial learning rate $lr_{init} = 5 · 10^{−4}$, the following learning rate schedule: $lr_{init} · 0.985epoch$".
+The optimiser used for training was "the adam optimizer with an initial learning rate $lr_{init} = 5 · 10^{−4}$, the following learning rate schedule: $lr_{init} · 0.985^{epoch}$".
 
-For the loss function the dice coefficient for the true and predicted values was used.
+For the loss function the dice coefficient for the true and predicted values was used. The dice score is defined as follows:
+$Dice = 2 |A∩B| / (|A|+|B|)$
 
 ```
 def diceCoefficient(self, y_true, y_pred):
