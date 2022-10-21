@@ -33,6 +33,7 @@ model = modules.create_vit_classifier(PATCH_SIZE,
                                 NUM_CLASSES,
                                 NUM_HEADS,
                                 TRANSFORMER_LAYERS,
+                                TRANSFORMER_UNITS,
                                 MLP_LAYER_COUNTS)
 
 train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
