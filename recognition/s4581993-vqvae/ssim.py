@@ -11,7 +11,7 @@ from utils import models_directory, vqvae_weights_filename
 
 # Make sure the trained weights exist
 if not os.path.isfile(models_directory + vqvae_weights_filename + ".index"):
-    print("Missing VQ-VAE training weights. Please run train.py", file=sys.stderr)
+    print("ERROR: Missing VQ-VAE training weights. Please run train.py", file=sys.stderr)
     exit(1)
 
 # Load the datasets

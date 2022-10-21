@@ -14,10 +14,10 @@ from utils import models_directory, vqvae_weights_filename, pixelcnn_weights_fil
 
 # Make sure the trained weights exist
 if not os.path.isfile(models_directory + vqvae_weights_filename + ".index"):
-    print("Missing VQ-VAE training weights. Please run train.py", file=sys.stderr)
+    print("ERROR: Missing VQ-VAE training weights. Please run train.py", file=sys.stderr)
     exit(1)
 if not os.path.isfile(models_directory + pixelcnn_weights_filename + ".index"):
-    print("Missing PixelCNN training weights. Please run train.py", file=sys.stderr)
+    print("ERROR: Missing PixelCNN training weights. Please run train.py", file=sys.stderr)
     exit(1)
 
 # Load testing dataset
@@ -98,7 +98,7 @@ def generate_codes(num_codes=4):
     return priors, quantized
 
 if __name__ == "__main__":
-    if sys.argv[1] == "reconstruct":
+    if len(sys.argv) > 2 and sys.argv[1] == "reconstruct":
         num_images = 4
         images = None
         encoded = None
@@ -158,7 +158,7 @@ if __name__ == "__main__":
             plt.axis("off")
         plt.tight_layout()
         plt.show()
-    elif sys.argv[1] == "generate":
+    elif len(sys.argv) > 2 and sys.argv[1] == "generate":
         num_generations = 4
         if len(sys.argv) >= 3:
             num_generations = int(sys.argv[2])
@@ -182,3 +182,9 @@ if __name__ == "__main__":
             plt.axis("off")
         plt.tight_layout()
         plt.show()
+    else:
+        print("\n\nERROR: Invalid arguments. Please run with one of the following options:\n" + \
+            "    predict.py reconstruct --random [num]\n" + \
+            "    predict.py reconstruct [filepath]\n" + \
+            "    predict.py generate [num]\n\n",
+              file=sys.stderr)
