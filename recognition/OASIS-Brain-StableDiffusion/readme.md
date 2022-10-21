@@ -47,7 +47,8 @@ As discussed above a modified U-Net was used to denoise the data in latent space
 
 A general U-Net is an encoder and decoder convolutional network with skip connections between each opposing block. It was originally created to produce image segmentation mapping which makes it the golden choice to use in a stable diffusion model.
 
-![Unet Diagram](https://www.researchgate.net/publication/334287825/figure/fig2/AS:778191392210944@1562546694325/The-architecture-of-Unet.ppm)Source: https://www.researchgate.net/figure/The-architecture-of-Unet_fig2_334287825
+![Unet Diagram](https://www.researchgate.net/publication/334287825/figure/fig2/AS:778191392210944@1562546694325/The-architecture-of-Unet.ppm)
+Source: https://www.researchgate.net/figure/The-architecture-of-Unet_fig2_334287825
 
 The U-Net implemented for this model is slightly different and consists of the following blocks.
 - `ConvReluBlock` - object consisting of a double convolution rectified linear layer and a group normalization
