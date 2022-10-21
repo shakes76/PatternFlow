@@ -5,6 +5,8 @@ Created on Fri Oct 14 13:33:35 2022
 @author: Danie
 """
 
+### REMEMBER TO REF::: https://medium.com/@vedantjumle/image-generation-with-diffusion-models-using-keras-and-tensorflow-9f60aae72ac
+
 import tensorflow.keras as kr
 import tensorflow as tf
 import matplotlib as plt
@@ -180,6 +182,57 @@ class UNetBlock(kr.layers.Layer) :
         #print(transformed)
 
         return (x,transformed)
+    
+class DiffusionModel(kr.Model) :
+    def __init__(self, betaMin = 0.0001, betaMax = 0.02, timeSteps = 200):
+        super().__init__()
+        self.betaSchedule = tf.linspace(betaMin, betaMax, timeSteps)
+        self.timeSteps = timeSteps
+        self.alpha = 1- self.betaSchedule
+        self.alphaHat = tf.math.cumprod(self.alpha, 0)
+        self.alphaHat = tf.concat((tf.convert_to_tensor([1.]), self.alphaHat[:-1]), axis=0)
+        self.sqrtAlphaHat = tf.math.sqrt(self.alphaHat)
+        self.sqrtAlphaHatCompliment = tf.math.sqrt(1-self.alphaHat)
+
+        self.unet = Unet()
+
+    def compile(self, **kwargs) :
+      super().compile(**kwargs)
+      self.lossMetric = tf.keras.metrics.Mean(name="loss")
+    
+    @property
+    def metrics(self):
+      super().metrics()
+      return [self.lossMetric]
+      
+
+
+    def addNoise(self, input, step) :
+        noise = tf.random.normal(shape=input.shape)
+        reshapedSAH = tf.reshape(self.sqrtAlphaHat[step], (-1, 1, 1, 1))
+        reshapedSAHC = tf.reshape(self.sqrtAlphaHatCompliment[step], (-1, 1, 1, 1))
+        noisedInput = reshapedSAH  * input + reshapedSAHC  * noise
+        
+        return noisedInput, noise
+
+    def generateTimeSteps(self, stepsGenerated):
+        return tf.random.uniform(shape=[stepsGenerated], minval=0, maxval=self.timeSteps, dtype=tf.int32)
+
+    def train_step(self, batch):
+      rand, timeStepRand = tf.random.uniform(minval = 0, maxval = 100000, dtype=tf.int32, size=(2,))
+      timeSteps = self.generateTimeSteps(timeStepRand, batch.shape[0])
+
+      noisedImage, noise = self.addNoise(rand, batch, timeSteps)
+      with tf.GradientTape() as tape:
+          prediction = self.unet(noisedImage, timeSteps)
+          loss = self.loss(noise, prediction)
+      
+      gradients = tape.gradient(loss, self.unet.trainable_variables)
+      self.optimizer.apply_gradients(zip(gradients, self.unet.trainable_variables))
+
+      self.lossMetric.update_state(loss)
+      return {"loss" : self.lossMetric.result()}
+    
     
 class Attention(kr.layers.Layer):
     def __init__(self, dim, heads=4, headDim=32):
