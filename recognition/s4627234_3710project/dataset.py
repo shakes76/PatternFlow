@@ -136,11 +136,11 @@ def load_dataset(data_reshape = False):
     train_csv = pd.read_csv(path_data + '/data_ISIC/ISIC-2017_Training_Data/ISIC-2017_Training_Data_metadata.csv')
     test_csv = pd.read_csv(path_data + '/data_ISIC/ISIC-2017_Test_v2_Data/ISIC-2017_Test_v2_Data_metadata.csv')
 
-    path_train = path_data + '/data_Reshaped256/Train/'
-    path_train_gt = path_data + '/data_Reshaped256/Train_GT/'
+    path_train = path_data + '/data_Reshaped/Train/'
+    path_train_gt = path_data + '/data_Reshaped/Train_GT/'
 
-    path_test = path_data + '/data_Reshaped256/Test/'
-    path_test_gt = path_data + '/data_Reshaped256/Test_GT/'
+    path_test = path_data + '/data_Reshaped/Test/'
+    path_test_gt = path_data + '/data_Reshaped/Test_GT/'
 
     train_x, train_y = load_data(train_csv, path_train, path_train_gt)
     test_x, test_y = load_data(test_csv, path_test, path_test_gt)
@@ -159,8 +159,8 @@ def load_val():
     val_csv = pd.read_csv(path_data + '/data_ISIC/ISIC-2017_Validation_Data/ISIC-2017_Validation_Data_metadata.csv')
 
 
-    path_val = path_data + '/data_Reshaped256/Val/'
-    path_val_gt = path_data + '/data_Reshaped256/Val_GT/'
+    path_val = path_data + '/data_Reshaped/Val/'
+    path_val_gt = path_data + '/data_Reshaped/Val_GT/'
 
     val_x, val_y = load_data(val_csv, path_val, path_val_gt)
 
