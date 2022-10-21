@@ -8,8 +8,6 @@ def get_model(upscale_factor=4, channels=1):
         "kernel_initializer": "Orthogonal",
         "padding": "same",
     }
-
-
     inputs = keras.Input(shape=(None, None, channels))
     x = layers.Conv2D(64, 5, **conv_args)(inputs)
     x = layers.Conv2D(64, 3, **conv_args)(x)

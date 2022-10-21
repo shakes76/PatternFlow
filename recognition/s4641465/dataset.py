@@ -52,17 +52,3 @@ def get_datasets(train_path, test_path, batch_size, upscale_factor, crop_size):
         lambda x: (tf.image.resize(x, [input_size, input_size], method="area"), x)
     )
     return train_ds, val_ds, test_ds
-
-
-
-def main():
-    train_path = "dataset\\train"
-    test_path = "dataset\\test"
-
-    train_ds, val_ds, test_ds = get_datasets(train_path, test_path, 8, 4, 200)
-
-    batch = list(train_ds.take(1))[0]
-    
-
-if __name__ == "__main__":
-    main()
