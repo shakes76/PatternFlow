@@ -48,17 +48,19 @@ class Trainer(tf.keras.models.Model):
         }
 
 
-def plot_losses(history, time):
+def plot_losses(history, time, name):
     plt.figure()
-    plt.plot(history.history["loss"], label='Combined Loss')
-    plt.plot(history.history["reconstruction_loss"], label='Reconstruction Loss')
-    plt.plot(history.history["vqvae_loss"], label='VQ VAE Loss')
+    for hist in history.history.keys():
+        if hist == "accuracy" or hist == "val_accuracy":
+            continue
+        plt.plot(history.history[hist], label=hist)
+
     plt.title('Loss vs Epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"out/{time}/training_loss_curves.png")
+    plt.savefig(f"out/{time}/training_loss_curves_{name}.png")
     plt.close()
 
 
@@ -102,7 +104,7 @@ def main():
     history = vqvae_trainer.fit(train_data, epochs=10, batch_size=batch_size)
 
     plot_reconstructions(vqvae_trainer.vqvae, test_data, time)
-    plot_losses(history, time)
+    plot_losses(history, time, "vq_vae")
 
     # PIXELCNN
     encoder = vqvae_trainer.vqvae.get_layer("encoder")
@@ -117,8 +119,9 @@ def main():
     pixel_cnn.compile(optimizer=tf.keras.optimizers.Adam(3e-4),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=["accuracy"])
-    pixel_cnn.fit(x=codebook_indices, y=codebook_indices, batch_size=batch_size,
-                  epochs=10, validation_split=0.2)
+    history = pixel_cnn.fit(x=codebook_indices, y=codebook_indices, batch_size=batch_size,
+                            epochs=10, validation_split=0.2)
+    plot_losses(history, time, "pixelcnn")
 
     trained_pixelcnn_model = pixel_cnn
     trained_pixelcnn_model.save(f"out/{time}/pixelcnn_model")
