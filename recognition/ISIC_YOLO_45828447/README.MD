@@ -150,10 +150,13 @@ The following images are the output of the *detect.py* function, where a predict
 ![Prediction Sample 3](Images/sample3.jpg)
 
 ## Discussion
-Recommends more than 1500 images per class, and more than 10000 instances (labeled objects) per class
-Lack of background images, COCO has 1000 background images or about 1%
-Even spread of Melanoma positive images vs Non Melanoma, currently a lot of objects inside the images are not melanoma
-Training on the Larger model may result in better results, however it could also reduce accuracy due to the relatively small sample size of the ISIC dataset due to overfitting.
+From the results of both models, it is clear that in its current state, it is much more capable of detecting non-melanoma cases, where as it struggles to detect positive-melanoma cases. With a mAP of over 60%, but only 40% in detecting melanoma cases, it is clear there are still ways to improve the model further. The training results also showed that towards the end of both models, after around 215 epochs, the validation mAP started to drop, this is likely due to overfitting of data due to the small number of samples provided in the training dataset. The YOLOv5 creators recommended to train the model with more than 1500 images per class, and more than 10000 instances (labeled objects) per class, and it is clear that the ISIC challenge dataset would not be sufficient in this case.
+
+Another reason that the model performed badly in detecting melanoma would be the uneven spread of Melanoma positive images vs Non Melanoma. Currently a lot of objects inside the entire dataset are not melanoma cases, with almost a 4:1 ratio of non-melanoma to melanoma cases. This would also support the results in that it was able to successfully detect a lot more of the non-melanoma cases.
+
+The IOU was calculated to be 0.8237 and 0.8357 for YOLOv5s and YOLOv5m respectively, a lot of the error came from sources where the ground truth had a extremely large area (almost the whole image), and the image itself contained nothing that was visibly distringuishable to the eye (no sign of any black spots or damaged tissue). Once again, this could prove to be a potential improvement to the dataset as the YOLOv5 was trained with COCO, which contained 1000 background images (1%) that had no classes within the image. Therefore, an increase in the number of background images during training should potentially improve this metric.
+
+Lastly, it is clear that the bigger the model, the better the results. Therefore, training on the Larger models (such as YOLOv5L etc) may result in even better results, however it could also reduce accuracy due to the relatively small sample size of the ISIC dataset due to overfitting.
 
 
 ## References
