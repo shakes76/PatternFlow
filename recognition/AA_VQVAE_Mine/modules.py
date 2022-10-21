@@ -31,16 +31,21 @@ def deconv_block(tensor, residual, nfilters, size=3, padding='same', strides=(2,
     block = conv_block(block, nfilters)
     return block
 
-def dice_similarity(real, pred):
+def dice_similarity(x, y):
     """
-    Simple implementation of the Dice Similarity formula from wikipedia
+    Returns:
+        int: dice coefficient
     """
-    real_flattened = tf.keras.backend.flatten(real)
-    pred_flattened = tf.keras.backend.flatten(pred)
-    numerator = 2 * (tf.keras.backend.sum(real_flattened*pred_flattened))
-    denominator = tf.keras.backend.sum(real_flattened) + tf.keras.backend.sum(pred_flattened)
+    return 2 * (tf.keras.backend.sum(tf.keras.backend.flatten(x) * tf.keras.backend.flatten(y)) + 1) / \
+           (tf.keras.backend.sum(tf.keras.backend.flatten(x) + tf.keras.backend.flatten(y)) + 1)
 
-    return numerator/denominator
+
+def dice_loss(x, y):
+    """
+    Returns:
+        int:  dice co-efficient loss
+    """
+    return 1 - dice_similarity(x, y)
 
 def Unet(h, w, filters):
 # down
