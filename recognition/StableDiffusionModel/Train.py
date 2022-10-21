@@ -197,6 +197,11 @@ if __name__ == "__main__":
     losses = []
     trainLoop(epochs = 50, encoder = autoEnc.buildEncoder(), losses = losses)
     
+    # Printing loss at end of each epoch
+    plt.pyplot.plot(losses[::150])
+    plt.pyplot.title("Unet Architecture Loss")
+    
+    
     
     
     
