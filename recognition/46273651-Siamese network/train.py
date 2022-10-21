@@ -19,7 +19,7 @@ TEST_AD_PATH = './AD_NC/test/AD'
 TEST_NC_PATH = './AD_NC/test/NC'
 
 # set the parameters of the input images
-INPUT_SHAPE = (60, 64)
+INPUT_SHAPE = (120, 128)
 COLOR_MODE = 'grayscale'
 
 # set the batch size and the training size
@@ -58,7 +58,7 @@ def main():
 
 
     # set up the callbacks to save the weights 
-    checkpoint_path = "training3/cp-{epoch:04d}.ckpt"
+    checkpoint_path = "training4/cp-{epoch:04d}.ckpt"
     checkpoint_dir = os.path.dirname(checkpoint_path)
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path, 
@@ -98,10 +98,10 @@ def main():
 
     else:
         # load the weights of the model
-        siamese.load_weights('training3/cp-0021.ckpt')
+        siamese.load_weights('training4/cp-0025.ckpt')
 
     # evaluate the model on the validation data
-    loss, accuracy = siamese.evaluate(test_dataset)
+    loss, accuracy = siamese.evaluate(validation_dataset)
 
     # visualize the the prediction of the model on the validation data
     if VISUALIZE:
