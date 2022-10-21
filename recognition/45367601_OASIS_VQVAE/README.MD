@@ -29,6 +29,7 @@ The PixelCNN model was described in "Conditional Image Generation with PixelCNN 
 <p align="center">
 <img src="./model_outputs/pixelCNN_sequence.png">
 </p>
+
 Source: https://towardsdatascience.com/autoregressive-models-pixelcnn-e30734ede0c1
 
 Critically, a standard convolutional kernal in the Conv2D layer considers all of the pixels surrounding the pixel to be generated, and therefore considers pixels which come after the new pixel. This issue is overcome through the use of masking. The first type of mask (type A) is used in the first convolutional layer of the network and considers only prior pixels. The second type (type B) is used in subsequent convolutional layers and considers both prior pixels and the newly generated pixel (i.e., accounts for the pixel prediction formed by the first layer). The below graphic descibes this.
