@@ -12,7 +12,7 @@ The VQ VAE aims to learn and understand discrete representations of the images p
 The VQ VAE model architecture is comprised of three main parts, an encoder, VQ layer and then a decoder. The encoder and decoder both contain three convolutional layers. The decoder is the same as the encoder, except reversing its operations. The general idea is as follows. First, the encoder takes some input data and encodes it into the latent vector representation. The VQ layer then takes this vector and selects embeddings based on distance and outputs a quantized vector of the same size. This quantized vector is then passed through the decoder and the decoder attempts to recreate the original input, which in this case is an MRI of a brain.
 
 ![Architecture](https://miro.medium.com/max/828/1*miNfFc9qT5PrS7ectJa_kw.png)
-
+Figure 1 [1]: Architecture of VQ VAE model
 
 ## Requirements
 
@@ -55,4 +55,4 @@ The following sets of images display the original test image (as downloaded) and
 
 
 ## References
-Image - https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337
+[1] Park, S. (2021) Architecture of VQ VAE model, An overview on VQ-VAE: Learning Discrete Representation Space. Available at: https://medium.com/analytics-vidhya/an-overview-on-vq-vae-learning-discrete-representation-space-8b7e56cc6337 (Accessed: October 21, 2022). 
