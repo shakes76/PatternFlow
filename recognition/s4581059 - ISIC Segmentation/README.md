@@ -41,29 +41,29 @@ The training validation split method can be manipulated as the split ratio is a 
 The training model uses 50 epoch to generate the model - the data for each can be found in epoch_data.txt
 The first 5 and the last 5 epochs data can be found below:
 
-    Epoch 1/50 <br>
-    loss: 0.6256 - dice_similarity: 0.6508 - val_loss: 0.5168 - val_dice_similarity: 0.7049 <br>
-    Epoch 2/50 <br> 
-    loss: 0.4605 - dice_similarity: 0.7796 - val_loss: 0.4462 - val_dice_similarity: 0.7777 <br>
-    Epoch 3/50 <br>
-    loss: 0.4510 - dice_similarity: 0.7699 - val_loss: 0.3956 - val_dice_similarity: 0.7892 <br>
-    Epoch 4/50 <br> 
-    loss: 0.4519 - dice_similarity: 0.7713 - val_loss: 0.3969 - val_dice_similarity: 0.8153 <br>
-    Epoch 5/50 <br>
-    loss: 0.3791 - dice_similarity: 0.8116 - val_loss: 0.3200 - val_dice_similarity: 0.8494 <br>
+    Epoch 1/50
+    loss: 0.6256 - dice_similarity: 0.6508 - val_loss: 0.5168 - val_dice_similarity: 0.7049
+    Epoch 2/50 
+    loss: 0.4605 - dice_similarity: 0.7796 - val_loss: 0.4462 - val_dice_similarity: 0.7777
+    Epoch 3/50
+    loss: 0.4510 - dice_similarity: 0.7699 - val_loss: 0.3956 - val_dice_similarity: 0.7892
+    Epoch 4/50 
+    loss: 0.4519 - dice_similarity: 0.7713 - val_loss: 0.3969 - val_dice_similarity: 0.8153 
+    Epoch 5/50 
+    loss: 0.3791 - dice_similarity: 0.8116 - val_loss: 0.3200 - val_dice_similarity: 0.8494
 
     ...
 
-    Epoch 46/50 <br>
-    loss: 0.1481 - dice_similarity: 0.9350 - val_loss: 0.1293 - val_dice_similarity: 0.9453 <br>
-    Epoch 47/50 <br>
-    loss: 0.1207 - dice_similarity: 0.9446 - val_loss: 0.1285 - val_dice_similarity: 0.9459 <br>
-    Epoch 48/50 <br>
-    loss: 0.1119 - dice_similarity: 0.9503 - val_loss: 0.1291 - val_dice_similarity: 0.9447 <br>
-    Epoch 49/50 <br>
-    loss: 0.1357 - dice_similarity: 0.9399 - val_loss: 0.1290 - val_dice_similarity: 0.9458 <br>
-    Epoch 50/50 <br>
-    loss: 0.1361 - dice_similarity: 0.9406 - val_loss: 0.1264 - val_dice_similarity: 0.9455 <br>
+    Epoch 46/50
+    loss: 0.1481 - dice_similarity: 0.9350 - val_loss: 0.1293 - val_dice_similarity: 0.9453
+    Epoch 47/50
+    loss: 0.1207 - dice_similarity: 0.9446 - val_loss: 0.1285 - val_dice_similarity: 0.9459
+    Epoch 48/50
+    loss: 0.1119 - dice_similarity: 0.9503 - val_loss: 0.1291 - val_dice_similarity: 0.9447
+    Epoch 49/50 
+    loss: 0.1357 - dice_similarity: 0.9399 - val_loss: 0.1290 - val_dice_similarity: 0.9458 
+    Epoch 50/50 
+    loss: 0.1361 - dice_similarity: 0.9406 - val_loss: 0.1264 - val_dice_similarity: 0.9455
 
 It is evident from the results above that the dice_similarity of the model well exceeds the target of 80% as it consistently holds and improves on 80% from epoch 5
 
