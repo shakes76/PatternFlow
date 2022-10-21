@@ -53,3 +53,8 @@ predict.py will then load the saved history & model from "saved_model", and auto
 ![TSNE](recognition\45321199-task#2-gcn\figures\TSNE.png)
 
 As seen in accuracy/loss, the model is closely fitted. This indicates that we have more than likely derived the full possible accuracy from the dataset (90%+). Extending or augmenting the dataset would therefore be the next step in improving the model's performance.
+
+## References
+Salama, K. (2021) Keras documentation: Node classification with Graph Neural Networks, Keras. Available at: https://keras.io/examples/graph/gnn_citations/ (Accessed: October 21, 2022). 
+
+Mayachita, I. (2020) Training graph convolutional networks on node classification task, Medium. Towards Data Science. Available at: https://towardsdatascience.com/graph-convolutional-networks-on-node-classification-2b6bbec1d042 (Accessed: October 21, 2022). 
