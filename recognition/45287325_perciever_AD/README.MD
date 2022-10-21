@@ -22,6 +22,7 @@ Using a batch size of 5, a learning rate of 0.005 and 10 epochs, the following r
 ### Training Accuracy
 ![train_acc3](https://user-images.githubusercontent.com/88659407/197135880-69704543-ba76-4a0d-9721-462740643834.png)
 
+This model trained generated a 49% accuracy on the test set, equivalent to randomly guessing on the classes.
 
 There were issues that arose related to the training of the model. Although the model trained, the loss did not really ever decrease meaningfully. This meant that the training set performance did not increase with the number of epochs. I played around with the parameters by increasing the model size but, due to the memory constraints of my laptop, increasing one parameter meant I had to decrease the others. 
 
@@ -30,7 +31,12 @@ I would be hopeful that longer training on a more powerful machine would help th
 ## Project Structure and Reproducability
 The code for loading the data is contained in **`dataset.py`**. The methods ``` train_data_loader``` and ``` test_data_loader`` both take a directory and a batch size as arguments. The directory must contain two folders, one names train and one named test. Within both of these, there needs to be two folders, one named AD and one named MC. These contain the respective images for both classes of brain scans. Note that the test/training splits were predefined in the provided data.
 
-In order to train the data, the script **`train.py`** should be run. This script contains various constants that the Perceiever takes as parameters. This includes the latent dimensions N and D as well as parameters for the depth of the Perceiever. It also includes training constants such as the batch size, learning rate and the number of epochs. This script saves the model in the path specified by MODEL_PATH. This should be altered as desired. 
+In order to train the data, the script **`train.py`** should be run. This script contains various constants that the Perceiever takes as parameters. This includes the latent dimensions N and D as well as parameters for the depth of the Perceiever. It also includes training constants such as the batch size, learning rate and the number of epochs. This script saves the model in the path specified by MODEL_PATH. This should be altered as desired. One thing to note is that the ```DIM_LATENTS``` constant must be a multiple of 4. 
+
+The script **`predict.py`** loads the testing data and then calculates the accuracy based on the test set. The model must be created using the same parameters that were used for testing. 
+
+### Versions
+The project uses pytorch version 1.12.1
 
 ## References
 <a id="1">[1]</a>
