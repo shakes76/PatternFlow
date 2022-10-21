@@ -1,10 +1,14 @@
 
-from cProfile import label
 import tensorflow as tf
 import numpy as np
 import os
 import cv2
 import random
+
+"""
+Note: All the code used in this file has been inspired by
+https://www.youtube.com/watch?v=j-3vuBynnOE
+"""
 
 """
 Class for loading data. This class will load all image data

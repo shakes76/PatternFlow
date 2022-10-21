@@ -6,6 +6,12 @@ from tensorflow.keras import layers
 from train import *
 from dataset import *
 
+
+"""
+Note: All the code used in this file has been inspired by
+https://keras.io/examples/vision/image_classification_with_vision_transformer/
+"""
+
 """
 Vision transformer class that contains all the model data
 """

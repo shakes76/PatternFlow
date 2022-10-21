@@ -7,6 +7,11 @@ from predict import *
 
 
 """
+Note: All the code used in this file has been inspired by
+https://keras.io/examples/vision/image_classification_with_vision_transformer/
+"""
+
+"""
 Class for training the model
 """
 class Train:
