@@ -16,7 +16,7 @@ I have also taken inspiration and advice from [This Kaggel U-Net implementation]
 ## Results
 The U-Net I have implemented has been very successful, getting these sound results on a test set after only 15 epochs:
 
-![2](Images\evaluation.png)
+![2](Images/evaluation.png)
 
 Which can be visualised:
 
