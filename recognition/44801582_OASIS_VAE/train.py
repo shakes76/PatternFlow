@@ -49,7 +49,6 @@ class Trainer(tf.keras.models.Model):
 
 
 def plot_losses(history, time):
-    num_epochs = len(history.history["loss"])
     plt.figure()
     plt.plot(history.history["loss"], label='Combined Loss')
     plt.plot(history.history["reconstruction_loss"], label='Reconstruction Loss')

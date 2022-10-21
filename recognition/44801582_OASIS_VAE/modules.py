@@ -89,7 +89,7 @@ class ResidBlock(keras.layers.Layer):
     def __init__(self, filters, **kwargs):
         super(ResidBlock, self).__init__(**kwargs)
         self.c1 = keras.layers.Conv2D(filters, 1, activation="relu")
-        self.mc = MaskedConvLayer(filters // 2, 3, activation="relu", padding="same")
+        self.mc = MaskedConvLayer(filters=filters // 2, kernel_size=3, activation="relu", padding="same")
         self.c2 = keras.layers.Conv2D(filters, 1, activation="relu")
 
     def call(self, inputs):
@@ -97,3 +97,21 @@ class ResidBlock(keras.layers.Layer):
         x = self.mc(x)
         x = self.c2(x)
         return keras.layers.add([inputs, x])
+
+
+def PixelCNN(latent_dim, num_embeddings, num_residual_blocks, num_pixelcnn_layers):
+    inputs = keras.Input(def_encoder(latent_dim).layers[-1].output_shape, dtype=tf.int32)
+    encoding = tf.one_hot(inputs, num_embeddings)
+    x = MaskedConvLayer(filters=128, kernel_size=7, activation="relu", padding="same")(encoding)
+
+    for _ in range(num_residual_blocks):
+        x = ResidBlock(128)(x)
+    for _ in range(num_pixelcnn_layers):
+        x = MaskedConvLayer(filters=128, kernel_size=1, activation="relu", padding="valid")(x)
+
+    output = keras.layers.Conv2D(num_embeddings, 1, 1, padding="valid")(x)
+    pixel_cnn = keras.Model(inputs, output)
+    pixel_cnn.summary()
+
+    return pixel_cnn
+
