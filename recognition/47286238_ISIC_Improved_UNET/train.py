@@ -119,6 +119,7 @@ if __name__ == '__main__':
             out = model(img)
 
             # calculate dsc loss
+            # loss = 1 - DSC(prediction, truth)
             loss = 1 - dsc(out[:,0,:,:], mask[:,0,:,:])
             losses.append(loss)
 
