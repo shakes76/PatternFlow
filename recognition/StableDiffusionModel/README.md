@@ -1,6 +1,7 @@
 # Stable Diffusion Implementation on the OASIS Brain MRI Dataset
 
 Student: Daniel Ju Lian Wong
+<br>
 Student ID: 46069340
 
 Diffusion Models are a relatively new generative model that operate by training a neural network to reverse a sequence of noise additions to some dataset. These models have shown a lot of promise with regards to image generation.
@@ -20,7 +21,7 @@ The implemented latent diffusion model can be broken down into two parts:
 
 For a broad overview of the model, see below (note that this implemnetaiton lacks the crossattention blocks and conditioning component, as the task involved only generating new images from the OASIS brain dataset)
 <br>
-![ModelCard](/recognition/StableDiffusionModel/Images/ModelCard.png)
+![ModelCard](recognition/StableDiffusionModel/StableDiffusionModel/Images/ModelCard.png)
 <br>
 Image from: https://arxiv.org/pdf/2112.10752.pdf
 
@@ -39,25 +40,25 @@ component, this would involve passing the data through a number of residual bloc
 
 The Autoencoder was trained against the mean-squared-error between its reconstructions of the input images and the output image. The loss can be seen below (note that since the task was to generate instances of data belonging to the original dataset, only training loss was recorded and used)
 <br>
-![loss1](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderLoss2.png)
+![loss1](recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderLoss2.png)
 <br>
-![loss2](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderLoss.png)
+![loss2](recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderLoss.png)
 <br>
 For an illustration of the latent space and reconstruction of the images using the autoencoder, see below:
 <br>
-![aEExample](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/AutoEncoderExample.png)
+![aEExample](recognition/StableDiffusionModel/StableDiffusionModel/Images/AutoEncoderExample.png)
 <br>
 ### The Diffusion model
 The diffusion model was constructed using a UNET architecture, comprised of Residual blocks and self-attention layers for better low-dimensional coherance. Skip connections were included between the layers of the UNET network.
 
 For an illustration of the loss during the training process, see below:
 <br>
-![UNetLoss](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/UNetLoss.png)
+![UNetLoss](recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)
 <br>
 
 For an illustration of the denoising process occuring on the latent space, see below:
 <br>
-![LatentSpaceDenoising](https://github.com/DanielJWong/PatternFlow/blob/master/recognition/StableDiffusionModel/Images/UNetLoss.png)
+![LatentSpaceDenoising](recognition/StableDiffusionModel/StableDiffusionModel/Images/UNetLoss.png)
 <br>
 
 ### Differences Between Implemented Model and Computer Vision Stable Diffusion
