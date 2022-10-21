@@ -63,6 +63,7 @@ def train(epochs):
 
     loss_fn = keras.losses.MeanSquaredError()
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
+    model.load_weights(checkpoint_filepath)
     model.compile(
         optimizer=optimizer, loss=loss_fn,
     )
@@ -71,7 +72,7 @@ def train(epochs):
         train_ds, epochs=epochs, callbacks = [model_checkpoint_callback, ESPCNCallback()],  validation_data=val_ds, verbose=2
     )
 
-    model.load_weights(checkpoint_filepath)
+    
 
     return model, test_ds, history
 
@@ -96,8 +97,20 @@ def get_lowres_image(img, upscale_factor):
     )
 
 def main():
-    _, _, history = train(100)
-    # TODO stuff with history 
+    epochs = 100
+    _, _, history = train(epochs)
+    print(history.history.keys())
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    xs = range(epochs)
+    plt.figure()
+    plt.plot(xs, loss, label = "loss")
+    plt.plot(xs, val_loss, label = "val_loss")
+    plt.title("Loss and Val_loss Over Time")
+    plt.legend()
+    plt.show()
+    plt.savefig("images/losses.png")
+
 
 if __name__ == "__main__":
     main()
