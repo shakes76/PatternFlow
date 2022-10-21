@@ -38,6 +38,14 @@ Data was split into sections Training, Testing and Validation as provided by the
 
 I was unable to complete the functionality as a result of the lack of training. [modules.py](modules.py) is a complete representation of UNet and [dataset.py](dataset.py) can load images for training, however [train.py](train.py) has no validation or testing.
 
+Training whole-batch on small datasets demonstrates no improvement. See [train.py](train.py) output below.
+
+![Small Dataset Training](./assets/small_batch_training.png)
+
+[predict.py](predict.py) shows that the UNet model has reasonable segmentation regardless of training.
+
+![Prediction Output](./assets/predict_output.png)
+
 ## Other
 Original commit log:
 ![Original Commit Log](./assets/original_commits.png)
