@@ -54,28 +54,6 @@ def reconstruct_oasis(vqvae_trainer, test_np):
 
     return encoded_outputs.shape
 
-# ====================================================
-# def plot_codes(vqvae_trainer, test_images):
-#     encoder = vqvae_trainer.vqvae.get_layer("encoder")
-#     quantizer = vqvae_trainer.vqvae.get_layer("vector_quantizer")
-
-#     encoded_outputs = encoder.predict(test_images)
-#     flat_enc_outputs = encoded_outputs.reshape(-1, encoded_outputs.shape[-1])
-#     codebook_indices = quantizer.get_code_indices(flat_enc_outputs)
-#     codebook_indices = codebook_indices.numpy().reshape(encoded_outputs.shape[:-1])
-
-#     for i in range(len(test_images)):
-#         plt.subplot(1, 2, 1)
-#         plt.imshow(test_images[i].squeeze() + 0.5)
-#         plt.title("Original")
-#         plt.axis("off")
-
-#         plt.subplot(1, 2, 2)
-#         plt.imshow(codebook_indices[i])
-#         plt.title("Code")
-#         plt.axis("off")
-#         plt.show()
-
 
 # ==================================================
 # This is test/predict using the Pixel model
@@ -130,9 +108,6 @@ def get_priors2(vqvae_trainer, pixel_cnn, encoder_output_shape):
     quantised = tf.matmul(priors_one_hot, embeddings, transpose_b=True)
     quantised = tf.reshape(quantised, (-1, *(encoder_output_shape[1:])))
 
-    # Generate novel images.
-    # decoder = vqvae_trainer.vqvae.get_layer("decoder")
-    # generated_samples = decoder.predict(quantised)
     return priors, quantised
 # ================
 # Perform an embedding lookup.

@@ -97,6 +97,8 @@ class PixelCNN(keras.Model):
         pixel_cnn = keras.Model(pixelcnn_inputs, out, name="pixel_cnn")
         return pixel_cnn
 
+    # below is a non-functioning attempt to improve batching performance 
+
     # def run_quantisation(self, image):
     #     '''
     #     performs quantisation to obtain the VQ representation of the supplied
