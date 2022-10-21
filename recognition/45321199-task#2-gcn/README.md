@@ -32,25 +32,25 @@ The entire process took roughly 1hr on an RTX 3060.
 The model structure in question is a typical GCN. Consisting of an input layer, 2 middle layers for additional complexity (relu), and an output layer (softmax).
 Parameters (adjustable constants at the top of modules.py & train.py), are currently set to what is believed to generate a steady learning rate per epoch.
 This resulted in the following model:
-![Model](recognition\45321199-task#2-gcn\figures\model.png)
+![Model](figures\model.png)
 
 This model was then trained for 3000 epochs:
-![Training](recognition\45321199-task#2-gcn\figures\training.png)
+![Training](figures\training.png)
 
 ## Results
 predict.py will then load the saved history & model from "saved_model", and automatically generate the following plots each run:
 
 ### Accuracy
-![Accuracy](recognition\45321199-task#2-gcn\figures\acc.png)
+![Accuracy](figures\acc.png)
 
 ### Loss
-![Loss](recognition\45321199-task#2-gcn\figures\loss.png)
+![Loss](figures\loss.png)
 
 ### Predictions
-![Predictions](recognition\45321199-task#2-gcn\figures\predictions.png)
+![Predictions](figures\predictions.png)
 
 ### TSNE Plot
-![TSNE](recognition\45321199-task#2-gcn\figures\TSNE.png)
+![TSNE](figures\TSNE.png)
 
 As seen in accuracy/loss, the model is closely fitted. This indicates that we have more than likely derived the full possible accuracy from the dataset (90%+). Extending or augmenting the dataset would therefore be the next step in improving the model's performance.
 
