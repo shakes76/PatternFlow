@@ -21,28 +21,27 @@ _Figure 1: Improved UNet Architecture[1]_
 
 The Improved U-Net model consists of three types of modules as seen in figure 1:
 ### Context Pathway
-  This pathway is designed to encode the input images into increasingly compact representations
-  as the network progresses. This is achieved through the use of 3x3 Convolutions and context modules.
+  This pathway is designed to encode the input images into more compact representations
+  as the network runs. This is achieved through the use of 3x3 Convolutions and context modules.
   The context module is described by 2 convolution layers with a dropout layer in between. 
-  These are residual blocks, a type of skip connection that learns the residual function 
+  These are residual blocks, a form of skip connection that learns the residual function 
   with reference to an input [2].
 
-### Localization Pathway
+### Localisation Pathway
   This pathway is designed to increase the dimensionality of the encoded image representation 
-  to produce high resolution segmentation through UpSampling modules and localization modules.
+  to produce high resolution segmentation through UpSampling modules and localisation modules.
 #### Upsampling Modules
-  Upsampling modules are placed after every localization module in the pathway. They are used to 
+  Upsampling modules are placed after every localisation module in the pathway. They are used to 
   upscale the resolution to encode it up to higher resolutions. It consists of an upsample layer 
   followed by a 3x3 convolution layer.
 ### Skip Connections
-  These connections are represented by the horizontal dashed lines in figure 1, skip connections 
-  are element-wise summations of 3x3 Convolutions and Context module outputs in the context Pathway.
-Skip Connections are concatenated into the corresponding network level in the Localization pathway.
-
-Localization modules are designed to re-introduce these skip connections into the network after the
-concatenation.
+  These connections are represented by the horizontal lines in figure 1, skip connections 
+  are element-wise summations of 3x3 Convolutions and Context module outputs from the context Pathway.
+Skip Connections are concatenated into the corresponding network level in the Localisation pathway.
+Localisation modules are designed to re-introduce these skips back into the network after the
+concatenation is complete.
 ### Segmentation 
-Segmentation is performed on multiple levels of the localization pathway and allows for segmented information
+Segmentation is performed on multiple levels of the localisation pathway and allows for segmented information
 from lower levels of the network to propagate into the higher levels through summation. Lower level layers
 are upsampled via a convolutional layer to allow for summation of different depths of layers.
 
@@ -55,10 +54,11 @@ _Figure 2: Predicted model for data sample from ISICs dataset_
 _Figure 3: Training and Validation Accuracy and Dice Coefficient during training_
 
 At the end of training, the model achieved a loss of 0.162, accuracy of 0.928, and a dice coefficient of 0.838.
-### Tuning of Hyper parameters~~~~
+### Tuning of Hyper parameters
 During training, various values of hyper parameters were tested in order to balance performance and the running time of 
 the algorithm with the best results coming from a batch size of 1 and learning rate of 0.001. 
-
+Using a spatialDropout2d instead of a usual dropout layer was found to produce much greater results as well as the introduction
+of Instance Normalisation modules.
 
 ## Dependencies
 - Tensorflow 2.9.2
@@ -69,7 +69,8 @@ the algorithm with the best results coming from a batch size of 1 and learning r
 ## Usage
 In order to run this algorithm, the above dependencies are required. In addition to this, the ISICs 2017 training, 
 validation, and test datasets must be unzipped and available locally. Altering the paths to the datasets and labels in 
-dataset.py will be required. Then run `python train.py` in a command line. Depending on the desired running time of the 
+dataset.py will be required. Then run `python train.py` in a command line. After the model is saved, running `python predict.py` will use the 
+built model to predict masks of the training set and display 3 random samples. Depending on the desired running time of the 
 algorithm, the values of EPOCHS, LEARNING_RATE, BATCH_SIZE in train.py may be altered.
 
 
