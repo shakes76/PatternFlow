@@ -11,8 +11,8 @@ The model should be imported from “modules.py” and the data loader should be
 Make sure to plot the losses and metrics during training.
 
 """
-EPOCHS = 40
-BATCH_SIZE = 128
+EPOCHS = 100
+BATCH_SIZE = 64
 BUFFER_SIZE = 20000
 MARGIN = 0.2
 
@@ -30,8 +30,7 @@ def siamese_loss(x0, x1, label: int, margin: float) -> float:
     Vectors of different classes are punished for being close and rewarded for being far away.
 
     Parameters:
-        - x0 -- batch of vectors
-        - x1 -- batch of vectors
+        - x0, x1 -- batch of vectors. Shape: (batch size, embedding size)
         - label -- whether or not the two vectors are from the same class. 1 = yes, 0 = no
 
     Returns:
@@ -55,7 +54,8 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
         - siamese -- the siamese network
         - siamese_optimiser -- the optimiser which will be used for backprop
         - images1, images2 -- batch of image data which is either positive or negative
-        - same_class -- flag representing whether the two sets of images are of the same class
+            shape: (batch size, width, height, number of channels)
+        - same_class -- bool flag representing whether the two sets of images are of the same class
 
     Returns:
         - loss value from this the training step
@@ -63,6 +63,7 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
     """
     with tf.GradientTape() as siamese_tape:
 
+        # convert images to embeddings
         x0 = siamese(images1, training=True)
         x1 = siamese(images2, training=True)
         label = int(same_class)
@@ -77,7 +78,19 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
 
     return loss
 
-def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
+def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs) -> None:
+    """
+    Trains the siamese model.
+
+    Alternates between training images of the same class then images of different classes.
+
+    Parameters:
+        - model -- the siamese model to train
+        - optimiser -- the optimiser used for back propogation
+        - pos_dataset, neg_dataset -- pre-batched tensorflow dataset
+        - epochs -- number of epochs to train for
+    """
+
     start = time.time()
     print("Beginning Siamese Network Training")
 
@@ -117,16 +130,29 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs):
     elapsed = time.time() - start
     print(f"Siamese Network Training Completed in {elapsed}")
 
-def train_binary_classifier(model, siamese_model, training_data_positive, training_data_negative):
+def train_binary_classifier(model, siamese_model, training_data_positive, training_data_negative) -> None:
+    """
+    Trains the binary classifier used to classify the images into one of the two classes.
+
+    Converts raw data to embeddings then fits the model.
+
+    Parameters:
+        - model -- the binary classification model to train
+        - siamese_model -- the pre-trained siamese model used to generate embeddings
+        - training_data_positive, training_data_negative -- raw image data
+    """
     start = time.time()
     print("Beginning Binary Classifier Training")
 
+    # generate labels - 1: positive, 0: negative
     pos_labels = np.ones(training_data_positive.shape[0])
     neg_labels = np.zeros(training_data_negative.shape[0])
 
+    # convert image data to embeddings
     pos_embeddings = siamese_model.predict(training_data_positive)
     neg_embeddings = siamese_model.predict(training_data_negative)
 
+    # merge positive and negative datasets
     embeddings = np.concatenate((pos_embeddings, neg_embeddings))
     labels = np.concatenate((pos_labels, neg_labels))
 
@@ -136,11 +162,20 @@ def train_binary_classifier(model, siamese_model, training_data_positive, traini
     print(f"Binary Classifier Training Completed in {elapsed}")
 
 def main():
+    """
+    Trains the models
+
+    Loads training data using dataset.py
+    Generates the models using modules.py
+    Uses functions defined above to train the models
+    Saves the models for later prediction
+    """
+
     # get training data
     training_data_positive = load_data(AD_TRAIN_PATH, "ad_train")
     training_data_negative = load_data(NC_TRAIN_PATH, "nc_train")
 
-    # convert to tensors
+    # convert to tensors for siamese training
     train_data_pos = tf.data.Dataset.from_tensor_slices(training_data_positive
         ).shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE, drop_remainder=True)
     train_data_neg = tf.data.Dataset.from_tensor_slices(training_data_negative
@@ -150,11 +185,14 @@ def main():
     siamese_model = build_siamese()
     binary_classifier = build_binary()
     
+    # create optimiser for siamese model
     siamese_optimiser = tf.keras.optimizers.Adam(0.05)
 
+    # train the models
     train_siamese_model(siamese_model, siamese_optimiser, train_data_pos, train_data_neg, EPOCHS)
     train_binary_classifier(binary_classifier, siamese_model, training_data_positive, training_data_negative)
 
+    # save the models
     siamese_model.save(os.path.join(MODEL_SAVE_DIR, "siamese_model.h5"))
     binary_classifier.save(os.path.join(MODEL_SAVE_DIR, "binary_model.h5"))
 

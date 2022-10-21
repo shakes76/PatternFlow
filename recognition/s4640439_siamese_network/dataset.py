@@ -13,12 +13,12 @@ AD_TRAIN_PATH = "E:/ADNI/AD_NC/train/AD/"
 NC_TEST_PATH = "E:/ADNI/AD_NC/test/NC/"
 NC_TRAIN_PATH = "E:/ADNI/AD_NC/train/NC/"
 
+PRE_PROC_DATA_SAVE_LOC = "E:/ADNI/Processed"
+
 # image constants
 WIDTH = 256
 HEIGHT = 240
 CHANNELS = 1
-
-PRE_PROC_DATA_SAVE_LOC = "E:/ADNI/Processed"
 
 def load_data(directory_path: str, prefix: str) -> np.ndarray:
   """
@@ -68,8 +68,3 @@ def load_data(directory_path: str, prefix: str) -> np.ndarray:
     data = np.load(save_path)
 
   return data
-
-#training_data_positive = load_data(AD_TRAIN_PATH, "ad_train")
-#training_data_negative = load_data(NC_TRAIN_PATH, "nc_train")
-#testing_data_positive = load_data(AD_TEST_PATH, "ad_test")
-#testing_data_negative = load_data(NC_TEST_PATH, "nc_test")
