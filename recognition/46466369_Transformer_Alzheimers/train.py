@@ -29,7 +29,7 @@ file_path = './checkpoint'
 
 train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
 
-model = modules.create_vit_classifier(PATCH_SIZE,
+vit_model = modules.create_vit_classifier(PATCH_SIZE,
                                 train,
                                 NUM_PATCHES,
                                 PROJECTION_DIM,
@@ -67,4 +67,5 @@ def test_model(model):
     _, accuracy = model.evaluate(test, testy)
     print(f'Test accuracy: {round(accuracy * 100, 2)}%')
 
-train_model(model)
+train_model(vit_model)
+test_model(vit_model)

@@ -23,15 +23,11 @@ The current best model trained reached 63% accuracy on the test set, with 75% te
 - `learning_rate` = 0.001
 - `weight_decay` = 0.0015
 - `batch_size` = 256
-- `num_epochs` = 100
-- `image_size` = 64
+- `num_epochs` = 50
+- `image_size` = 128
 - `transformer_layers` = 8
 
 The accuracy is as follows, where the orange line represents the validation stat and the blue line is the the results on the training data:
-
-![Accuracy](./images/lr001wd0015.png)
-
-Another model was trained with the same values but `image_size` = 128 and `num_epochs` = 50 instead:
 
 Accuracy:
 
