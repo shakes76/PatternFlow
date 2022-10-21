@@ -9,13 +9,17 @@ The use of deep learning and neural networks in medical imaging is a rapidly exp
 ## Vision Transformers
 Traditional Transformers make use of the self-attention mechanism to identify how multiple inputs interact with each other. Often abbreviated as ViT, Vision Transformers utilize the original Transformer architecture, but instead apply the attention mechanism to 2D images, which can then be used on classification problems.
 
-![Vision Transformer Architecture](/resources/vit.gif)
+<p align="center">
+    <img src="resources/vit.gif" alt="Vision Transformer Architecture">
+</p>
 
 2D image inputs can be passed into the ViT, and these will be split into smaller patches. These patches are then flattened to become 1D vectors (linear projections), before learnable class embeddings are added on. To preserve the ordering of the image patches, positional encodings can also be added on. These flattened patches embedded with class or positional embeddings are then passed into regular Transformer encoders, where relationships in the patches of image data are detected. A Multi-Layer Perceptron (MLP), which is a neural network that learns relationships, is finally used to classify inputs.
 
 The components in a Transformer Encoder are as follows:
 
-![Transformer Encoder](/resources/transformer_block.png)
+<p align="center">
+    <img src="resources/transformer_block.png" alt="Transformer Encoder">
+</p>
 
 Embedded patches are passed into a Normalization layer before the Multi-Head Attention Layer (which performs the self-attention mechanism mentioned). Outputs are then passed into a skip connection layer, followed by another Normalization layer and a MLP layer. Each ViT can have multiple of these Transformer Encoder blocks one after another to increase the complexity of the model.
 
@@ -117,7 +121,9 @@ The data loaded was also augmented before passing to the model for training and 
 
 An example of a loaded image is displayed below:
 
-![Example Loaded Data](/resources/brain_MRI.png)
+<p align="center">
+    <img src="resources/brain_MRI.png" alt="Loaded Brain MRI Image">
+</p>
 
 ## Vision Transformer Implementation
 ### Changes to Original Vision Transformer
@@ -127,25 +133,35 @@ The major differences are that Shifted Patch Tokenization and Local Self-Attenti
 
 Shifted Patch Tokenization works by shifting input images slightly either right or left, and also up or down. This helps to widen the receptive field of the Transformer and thus improve its ability in identifying the relationship between patches in the image.
 
-![Shifted Patch Tokenization](/resources/shifted_patch_tokenization.png)
+<p align="center">
+    <img src="resources/shifted_patch_tokenization.png" alt="Shifted Patch Tokenization">
+</p>
 
 Local Self-Attention is similar to the traditional Multi-Head Attention (MHA) layer, however an additional diagonal mask is applied to shift the ViT's attention towards inter-token relationships rather than its own tokens. A Learnable Temperature Scaling is also included for the model to learn the temperature of the Softmax layer in the MHA layer automatically, helping to either sharpen score distribution or attention distribution.
 
-![Local Self-Attention](/resources/locality_self_attention.png)
+<p align="center">
+    <img src="resources/locality_self_attention.png" alt="Local Self-Attention">
+</p>
 
 Additionally, the class token included in the Transformer Encoder from the original paper was also removed. An author from the original paper stated [here](https://github.com/google-research/vision_transformer/issues/61#issuecomment-802233921) that the class token is not important and unnecessary and thus, in our model, classification is done through the use of an MLP (Dense layers) which learn features.
 
 ### Vision Transformer Architecture
 After the initial input layer of the Vision Transformer, data is passed into a the `PatchLayer` layer, which splits the images into patches with height and width of the `PATCH_SIZE` constant. In this layer, Shifted Patch Tokenization is also applied to the inputted images before patching. The original image split into patches becomes:
 
-![MRI Patches](/resources/brain_patches.png)
+<p align="center">
+    <img src="resources/brain_patches.png" alt="MRI Patches">
+</p>
 
 The images which have Shifted Patch Tokenization applied and are patched become:
 
-![MRI Patches LEFT UP](/resources/brain_left_up.png)
-![MRI Patches LEFT DOWN](/resources/brain_left_down.png)
-![MRI Patches RIGHT UP](/resources/brain_right_up.png)
-![MRI Patches RIGHT DOWN](/resources/brain_right_down.png)
+<p align="middle" float="left">
+    <img src="resources/brain_left_up.png" alt="MRI Patches LEFT UP" width=49%>
+    <img src="resources/brain_left_down.png" alt="MRI Patches LEFT DOWN" width=49%>
+</p>
+<p align="middle" float="left">
+    <img src="resources/brain_right_up.png" alt="MRI Patches RIGHT UP" width=49%>
+    <img src="resources/brain_right_down.png" alt="MRI Patches RIGHT DOWN" width=49%>
+</p>
 
 From here, these images are flattened into vectors before being passed to the `EmbedPatch` layer, which is used for embedding patch positions to the flattened vectors. After patches have been encoded with their positions, the vectors are passed into the Transformer blocks. Within the Transformer blocks, an architecture similar to the original is followed, except Locality Self-Attention is applied together with the Multi-Head Attention layer, rather than just the Multi-Head Attention layer itself. Following the Transformer encoder blocks, MLP layers are used to learn features and to make the final classification (since the class token is no longer being used).
 
@@ -171,12 +187,19 @@ MLP_HEAD_UNITS = [256, 128]
 ```
 These parameters give the model a total of 53,123,460 trainable parameters. The loss and accuracy plots of training and validation for this model were as follows:
 
-![Model 1 Accuracy Plot](/resources/model1_accuracy.png)
-![Model 1 Loss Plot](/resources/model1_losses.png)
+<p align="center">
+    <img src="resources/model1_accuracy.png" alt="Model 1 Accuracy Plot">
+</p>
+
+<p align="center">
+    <img src="resources/model1_losses.png" alt="Model 1 Loss Plot">
+</p>
 
 The confusion matrix of the test set is shown below. 0 represents brains which have Alzheimer's Disease, while 1 represents brains with Normal Cognitive function.
 
-![Model 1 Confusion Matrix](/resources/model1_confusion_matrix.png)
+<p align="center">
+    <img src="resources/model1_confusion_matrix.png" alt="Model 1 Confusion Matrix">
+</p>
 
 From the plots above, it is evident that the model is greatly overfitting in only 10 epochs. When training the model for more epochs, overfitting would worsen. Evaluating the test set on this model resulted in a 64.73% accuracy, not meeting the 80% accuracy goal.
 
@@ -197,9 +220,17 @@ MLP_HEAD_UNITS = [64, 32]
 ```
 This combination of settings gives 3,445,764 trainable parameters. The model's complexity was decreased significantly to make it more difficult for the model to overfit on the training set. This model yielded a testing accuracy of 64.53%. The loss and accuracy curves, and confusion matrix are displayed below.
 
-![Model 2 Accuracy](/resources/model2_accuracy.png)
-![Model 2 Loss](/resources/model2_losses.png)
-![Model 2 Confusion Matrix](/resources/model2_confusion_matrix.png)
+<p align="center">
+    <img src="resources/model2_accuracy.png" alt="Model 2 Accuracy">
+</p>
+
+<p align="center">
+    <img src="resources/model2_losses.png" alt="Model 2 Loss Plot">
+</p>
+
+<p align="center">
+    <img src="resources/model2_confusion_matrix.png" alt="Model 2 Confusion Matrix">
+</p>
 
 From the plots, it is evident that overfitting is still not being handled, with results being very similar to those from before. The confusion matrix also clearly shows that the accuracy on the testing dataset has not improved (and has decreased by 0.2%).
 
@@ -221,9 +252,17 @@ MLP_HEAD_UNITS = [16, 8]
 ```
 This model has only 90,418 trainable parameters and resulted in a testing accuracy of 60.63%. The plots of accuracy and loss, and confusion matrix are displayed below.
 
-![Model 3 Accuracy](/resources//model3_accuracy.png)
-![Model 3 Loss](/resources/model3_losses.png)
-![Model 3 Confusion Matrix](/resources/model3_confusion_matrix.png)
+<p align="center">
+    <img src="resources/model3_accuracy.png" alt="Model 3 Accuracy">
+</p>
+
+<p align="center">
+    <img src="resources/model3_losses.png" alt="Model 3 Loss Plot">
+</p>
+
+<p align="center">
+    <img src="resources/model3_confusion_matrix.png" alt="Model 3 Confusion Matrix">
+</p>
 
 Again, the model exhibits clear signs of overfitting. This smaller model also yielded a 4.1% decrease in accuracy from the initial Model 1. Therefore, it was concluded that training on models which were less complex would not fix the overfitting issue and would result in greater decreases in testing accuracy.
 
