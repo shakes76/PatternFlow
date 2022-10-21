@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import backend as K
 
 import modules
 import dataset
@@ -20,88 +21,106 @@ IMAGE_HEIGHT = 192
 IMAGE_WIDTH = 256
 
 BATCH_SIZE = 32
-
 INIT_LEARNING_RATE = 5e-4
 EPOCHS = 20
 
-def batchData(train, test, validate):
-    """
-    Batches the training, testing and validation datasets
-
-    Parameters:
-        train (tf.Dataset): A (img_height, img_width, 1) tensor containing the training data
-        test (tf.Dataset): A (img_height, img_width, 1) tensor containing the testing data
-        validate (tf.Dataset): A (img_height, img_width, 1) tensor containing the validation data
-
-    Return:
-        (tf.Dataset, tf.Dataset, tf.Dataset): 3 (img_height, img_width, 1) tensors containing ????
-
-    """
-    train_batch = train.batch(BATCH_SIZE)
-    test_batch = test.batch(BATCH_SIZE)
-    validate_batch = validate.batch(BATCH_SIZE)
-    return train_batch, test_batch, validate_batch
-
-def diceCoefficient(y_true, y_pred):
-    """
-    Dice Coefficient
-
-    Parameters:
-        y_true (tf.Tensor): true output
-        y_true (tf.Tensor): output predicted by model
-
-    Return:
-        tf.Tensor: Dice coefficient based on true output and prediction
-
-    """
-    y_true_f = tf.keras.backend.flatten(y_true)
-    y_pred_f = tf.keras.backend.flatten(y_pred)
-    intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
-    dice = (2. * intersection) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_true_f))
-    return dice
-
-def diceLoss(y_true, y_pred):
-    """
-    Dice loss function
-
-    Parameters:
-        y_true (tf.Tensor): true output
-        y_true (tf.Tensor): output predicted by model
-
-    Return:
-        tf.Tensor: Dice coefficient to be used as a loss function 
-
-    """
-    return 1 - diceCoefficient(y_true, y_pred)
-
-def plotResults(history):
-    """
-    Plots Dice Coefficient and Dice Coefficient Loss vs Epoch.
-    For both training and validation.
-
-    Parameters:
-        history (History): record of training and validation metrics
-
-    """
-    modelHistory = history.history
+class ModelTrainer():
     
-    #Loss plots
-    plt.plot(modelHistory['loss'])
-    plt.plot(modelHistory['val_loss'])
-    plt.title('Dice Coefficient Loss')
-    plt.ylabel('Loss (%)')
-    plt.xlabel('Epoch')
-    plt.legend(['Training', 'Validation'], loc='upper right')
-    plt.show()
+    def __init__(self, batch_size=BATCH_SIZE, learning_rate=INIT_LEARNING_RATE, epochs=EPOCHS):
+        """
+        
+        """
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+
+    def diceCoefficient(self, y_true, y_pred):
+        """
+        Dice Coefficient
+
+        Parameters:
+            y_true (tf.Tensor): true output
+            y_true (tf.Tensor): output predicted by model
+
+        Return:
+            tf.Tensor: Dice coefficient based on true output and prediction
+
+        """
+        y_true_f = K.flatten(y_true)
+        y_pred_f = K.flatten(y_pred)
+        intersection = K.sum(y_true_f * y_pred_f)
+        dice = (2. * intersection + 1.) / (K.sum(y_true_f) + K.sum(y_pred_f) + 1.)
+        return dice
     
-    #Accuracy plots
-    plt.plot(modelHistory['diceCoefficient'])
-    plt.plot(modelHistory['val_diceCoefficient'])
-    plt.title('Dice Coefficient')
-    plt.ylabel('DSC')
-    plt.xlabel('Epoch')
-    plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.show()
+    def diceLoss(self, y_true, y_pred):
+        """
+        Dice loss function
+
+        Parameters:
+            y_true (tf.Tensor): true output
+            y_true (tf.Tensor): output predicted by model
+
+        Return:
+            tf.Tensor: Dice coefficient to be used as a loss function 
+
+        """
+        return 1 - self.diceCoefficient(y_true, y_pred)
+
+    def plotResults(self, history):
+        """
+        Plots Dice Coefficient and Dice Coefficient Loss vs Epoch.
+        For both training and validation.
+
+        Parameters:
+            history (History): record of training and validation metrics
+
+        """
+        modelHistory = history.history
+
+        #Loss plots
+        plt.plot(modelHistory['loss'])
+        plt.plot(modelHistory['val_loss'])
+        plt.title('Dice Coefficient Loss')
+        plt.ylabel('Loss (%)')
+        plt.xlabel('Epoch')
+        plt.legend(['Training', 'Validation'], loc='upper right')
+        plt.show()
+
+        #Accuracy plots
+        plt.plot(modelHistory['diceCoefficient'])
+        plt.plot(modelHistory['val_diceCoefficient'])
+        plt.title('Dice Coefficient')
+        plt.ylabel('DSC')
+        plt.xlabel('Epoch')
+        plt.legend(['Training', 'Validation'], loc='upper left')
+        plt.show()
+        
+    def trainModel(self, train_dataset, test_dataset, validate_dataset, model):
+        """
+        ???????
+
+        Parameters:
+            ?????? (??????): ??????
+            
+        Return:
+            ??????: ?????
+
+        """
+        
+        # Batch the data
+        train_batch = train_dataset.batch(self.batch_size)
+        test_batch = test_dataset.batch(self.batch_size)
+        validate_batch = validate_dataset.batch(self.batch_size)
+        
+        adamOptimizer = Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=adamOptimizer, loss=self.diceLoss, metrics=[self.diceCoefficient])
+        
+        results = model.fit(train_batch, epochs=self.epochs, validation_data=validate_batch)
+        
+        self.plotResults(results)
+        
+        return model
+
 
 def main():
 
@@ -109,19 +128,13 @@ def main():
     dataLoader = DataLoader()
     train_dataset, test_dataset, validate_dataset = dataLoader.loadData()
     
-    train_batched, test_batched, validate_batched = batchData(train_dataset, test_dataset, validate_dataset)
-    
     # Generate the model
     improvedUNETModel = ImprovedUNETModel()
     model = improvedUNETModel.modelArchitecture()
     
-    adamOptimizer = Adam(learning_rate=INIT_LEARNING_RATE)
-    model.compile(optimizer=adamOptimizer, loss=diceLoss, metrics=[diceCoefficient])
-    
-    results = model.fit(train_batched, epochs=EPOCHS, validation_data=validate_batched)
-
-    plotResults(results)
-
+    # Train the model
+    t = ModelTrainer()
+    model = t.trainModel(train_dataset, test_dataset, validate_dataset, model)
 
 if __name__ == "__main__":
     main()

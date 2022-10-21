@@ -2,12 +2,15 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv2D, LeakyReLU, Dropout, Add, UpSampling2D, Concatenate, Activation
 from tensorflow.keras.models import Model
 
-import tensorflow_addons as tf
+import tensorflow_addons as tfa
 from tensorflow_addons.layers import InstanceNormalization
+
+IMAGE_HEIGHT = 192
+IMAGE_WIDTH = 256
 
 class ImprovedUNETModel():
     
-    def __init__(self, img_width, img_height):
+    def __init__(self, img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
         """ Create a new Improved UNET Model instance.
         
         Described in the paper Brain Tumor Segmentation and Radiomics
@@ -161,6 +164,7 @@ class ImprovedUNETModel():
         x = self.upsamplingModule(localisation, n_filters / 2)
         
         return localisation, x
+    
         
     def modelArchitecture(self):
         """ Defines Improved UNET model network
@@ -172,7 +176,7 @@ class ImprovedUNETModel():
 
         """
         
-        inputs = Input(shape=(self.img_height,self.img_width,1))
+        inputs = Input(shape=(self.img_height,self.img_width,3))
 
         # Stack 5 encoders, doubling number of filter in each block.
         # Saving a skip connection for each
@@ -215,5 +219,7 @@ class ImprovedUNETModel():
         outputs = Activation('sigmoid')(secondSum)
         
         model = Model(inputs, outputs)
+        
+#         model.summary()
         
         return model

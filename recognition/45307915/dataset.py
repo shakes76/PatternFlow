@@ -18,7 +18,7 @@ class DataLoader():
                  test_images_path=TEST_IMAGES_PATH, test_masks_path=TEST_MASKS_PATH,
                  validate_images_path=VALIDATE_IMAGES_PATH, validate_masks_path=VALIDATE_MASKS_PATH, 
                  img_width=IMAGE_WIDTH, img_height=IMAGE_HEIGHT):
-        """ Create a new Yolo Model instance.
+        """ Create a new Data Loader instance to load in the training, testing and validation data
         
         Parameters:
             images_path (str): Path of the dataset images
@@ -50,7 +50,7 @@ class DataLoader():
 
         """
         raw = tf.io.read_file(filenames)
-        images = tf.io.decode_jpeg(raw, channels=1)
+        images = tf.io.decode_jpeg(raw, channels=3)
 
         #resize images
         images = tf.image.resize(images, [self.img_height, self.img_width])
