@@ -69,7 +69,7 @@ class DataSet:
         """
         image = tf.io.read_file(image)
         # todo: do i need to change the channels? 0 is the number used in the jpeg
-        image = tf.io.decode_jpeg(image, channels=0)
+        image = tf.io.decode_jpeg(image, channels=3)
         image = tf.image.resize(image, (256, 256))
         image = tf.cast(image, tf.float32) / 255.
 
