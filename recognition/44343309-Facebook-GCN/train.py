@@ -89,7 +89,7 @@ class ModelTrainer:
         
         plt.plot(epochRange, self.trainAcc, 'r', label='Training Accuracy')
         plt.plot(epochRange, self.valAcc, 'g', label='Validation Accuracy')
-        plt.title('Training and validation accuracy')
+        plt.title('Training and Validation Accuracy')
         plt.legend()
 
         plt.figure()
