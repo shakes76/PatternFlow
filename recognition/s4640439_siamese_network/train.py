@@ -9,7 +9,6 @@ import os
 Containing the source code for training, validating, testing and saving your model. 
 The model should be imported from “modules.py” and the data loader should be imported from “dataset.py”
 Make sure to plot the losses and metrics during training.
-
 """
 EPOCHS = 100
 BATCH_SIZE = 64
@@ -17,6 +16,7 @@ BUFFER_SIZE = 20000
 MARGIN = 0.2
 
 MODEL_SAVE_DIR = "E:/ADNI/models"
+
 
 def siamese_loss(x0, x1, label: int, margin: float) -> float:
     """
@@ -30,7 +30,7 @@ def siamese_loss(x0, x1, label: int, margin: float) -> float:
     Vectors of different classes are punished for being close and rewarded for being far away.
 
     Parameters:
-        - x0, x1 -- batch of vectors. Shape: (batch size, embedding size)
+        - x0, x1 -- tensor batch of vectors. Shape: (batch size, embedding size)
         - label -- whether or not the two vectors are from the same class. 1 = yes, 0 = no
 
     Returns:
@@ -43,6 +43,7 @@ def siamese_loss(x0, x1, label: int, margin: float) -> float:
     loss = 0.5 * tf.reduce_mean(loss)
 
     return loss
+
 
 @tf.function
 def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
@@ -77,6 +78,7 @@ def train_step(siamese, siamese_optimiser, images1, images2, same_class: bool):
             siamese_gradients, siamese.trainable_variables))
 
     return loss
+
 
 def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs) -> None:
     """
@@ -130,6 +132,7 @@ def train_siamese_model(model, optimiser, pos_dataset, neg_dataset, epochs) -> N
     elapsed = time.time() - start
     print(f"Siamese Network Training Completed in {elapsed}")
 
+
 def train_binary_classifier(model, siamese_model, training_data_positive, training_data_negative) -> None:
     """
     Trains the binary classifier used to classify the images into one of the two classes.
@@ -156,10 +159,12 @@ def train_binary_classifier(model, siamese_model, training_data_positive, traini
     embeddings = np.concatenate((pos_embeddings, neg_embeddings))
     labels = np.concatenate((pos_labels, neg_labels))
 
-    model.fit(embeddings, labels, epochs=EPOCHS, batch_size=BATCH_SIZE)
+    history = model.fit(embeddings, labels, epochs=EPOCHS, batch_size=BATCH_SIZE)
     
     elapsed = time.time() - start
     print(f"Binary Classifier Training Completed in {elapsed}")
+
+    return history
 
 def main():
     """

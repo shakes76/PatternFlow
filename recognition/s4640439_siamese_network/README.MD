@@ -15,6 +15,7 @@ and testing splits of the data.
 
 ## How the Algorithm Works
 
+
 ## Results
 Unfortunately, as of the current version, this implementation has failed to construct a suitable classifier.
 
@@ -49,4 +50,8 @@ Requires numpy version 1.21.3 or above
 Original dataset sourced from: [ADNI dataset for Alzheimer's disease](http://adni.loni.usc.edu/)
 Pre-processed dataset (used in this project) available from: [UQ Blackboard](https://cloudstor.aarnet.edu.au/plus/s/L6bbssKhUoUdTSI)
 
-### Example Usage
+### Instructions
+1. Run dataset.py - being sure to adjust path constants to match your personal setup
+2. Run modules.py - adjusting image size and embedding shape as necessary
+3. Run train.py - being sure to change the model save directory constant to where you would like to save your models
+4. Run predict.py - being sure to change the path names for the test data

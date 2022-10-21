@@ -8,11 +8,6 @@ ALPHA = 0.2
 
 SIAMESE_OUTPUT_SHAPE = (512,)
 
-"""
-Containing the source code of the components of your model. 
-Each component must be implementated as a class or a function.
-"""
-
 def build_siamese():
     """
     Generate Siamese model

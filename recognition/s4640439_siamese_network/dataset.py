@@ -3,10 +3,6 @@ from PIL import Image
 import os
 import time
 
-"""
-Containing the data loader for loading and preprocessing your data.
-"""
-
 # Data has already been separated into training and test data
 AD_TEST_PATH = "E:/ADNI/AD_NC/test/AD/"
 AD_TRAIN_PATH = "E:/ADNI/AD_NC/train/AD/"
@@ -68,3 +64,17 @@ def load_data(directory_path: str, prefix: str) -> np.ndarray:
     data = np.load(save_path)
 
   return data
+
+def main():
+	"""
+	Performs the first loading and pre-processing of the data.
+	
+	load_data() function saves the data to avoid these computations needing to be re-computed.
+	"""
+	training_data_positive = load_data(AD_TRAIN_PATH, "ad_train")
+    training_data_negative = load_data(NC_TRAIN_PATH, "nc_train")
+	test_data_positive = load_data(AD_TRAIN_PATH, "ad_test")
+    test_data_negative = load_data(NC_TRAIN_PATH, "nc_test")
+
+if __name__ == "__main__":
+	main()
