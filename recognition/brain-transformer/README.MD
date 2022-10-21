@@ -110,7 +110,7 @@ In an attempt to improve generalisability, tuning of the hyperparameters was exp
 The model performed no better than random guessing on the test set with an accuracy of 50%.
 
 ## Final Model
-Based on the empirical findings above, a final attempt at producing a model capable of generalising well on the test dataset was attempted.
+Based on the empirical findings above, a final attempt at producing a model capable of generalising well on the test dataset was attempted. No data augmentation was applied and the number of epochs was increased and the model seemed to be fitting well on the training and validation set with accuracy reaching just below 90% for both.
 |Parameter| Description |
 |---|---|
 |dim   |512|
@@ -128,5 +128,14 @@ Based on the empirical findings above, a final attempt at producing a model capa
 - Training Loss Plot
 ![](images/loss.png)
 
-Ultimately, the best performance that was achieved within this project failed to break past 61% test set accuracy. 
+Ultimately, the best performance that was achieved within this project failed to break past 61% test set accuracy. This is typically an indication of overfitting, but the validation set shows a steady increase during training. This leads to two possible conclusions:
+Firstly,  since the both the training and validation sets are drawn from the same pool, there exists data leakage within the two sets, hence the model is simply overfitting to the training set while producing good validation accuracy.
+Or secondly, there is very limited domain transfer between the training set and the test set so the model strugles to attain good performance on the test set. This is likely the more probably conclusion as the model is still capable of performing marginally better than random guessing.
 
+
+# References
+
+- https://pytorch.org/
+- https://numpy.org/
+- https://github.com/lucidrains/vit-pytorch 
+- https://ai.googleblog.com/2020/12/transformers-for-image-recognition-at.html
