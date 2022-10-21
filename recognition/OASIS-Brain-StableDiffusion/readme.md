@@ -1,3 +1,5 @@
+<h1>OASIS Brain MRI Stable Diffusion</h1>
 
+<p> Jonathan Allen (s4640736) </p>
 <h2> Model Description </h2>
 Stable Diffusion is a deep learning image generation model. Unlike other diffusion models that denoise in pixel space, Stable Diffusion uses a Latent Diffusion Model (LDM) to add and remove noise in the latent space, making it more time and space efficient. An Encoder is used to transform images into the latent space, while a Decoder is used to transform the latent space back into pixel space. In the model, each denoising step is performed by a modified U-Net architecture consisting of cross attention and positional embedding. The cross attention increases the segmentation accuracy by enhancing prominent regions of the image and suppressing irrelevant regions. The positional embedding allows the model to know what noising or denoising step it is on, vital to add and remove the correct amount of noise to an image, as the basic U-Net architecture does not allow for this. For more information on the model used and for the mathematics behind it please read this [paper](https://arxiv.org/pdf/2112.10752.pdf).
