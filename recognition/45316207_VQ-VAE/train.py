@@ -112,8 +112,9 @@ class ProgressImagesCallback(keras.callbacks.Callback):
     A custom callback for saving training progeress images
     """
 
-    def __init__(self, train_data):
+    def __init__(self, train_data, validate_data):
         self.train_data = train_data
+        self.validate_data = validate_data
 
     def save_progress_image(self, epoch):
         """
@@ -156,7 +157,7 @@ class ProgressImagesCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         self.save_progress_image(epoch)
         
-        similarity = utils.get_model_ssim(self.model.vqvae, test_data)
+        similarity = utils.get_model_ssim(self.model.vqvae, self.validate_data)
         self.model.ssim_history.append(similarity)
         print(f"ssim: {similarity}")
 
@@ -171,7 +172,7 @@ def train_vqvae():
     # ---------------------------------------------------------------------------- #
     NUM_TRAINING_EXAMPLES = None
 
-    TRAINING_EPOCHS = 2
+    TRAINING_EPOCHS = 20
     BATCH_SIZE = 128
 
     NUM_LATENT_DIMS = 16
@@ -201,7 +202,7 @@ def train_vqvae():
     # ---------------------------------------------------------------------------- #
     print("Training model...")
     # Run training, plotting losses and metrics throughout
-    history = vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE, callbacks=[ProgressImagesCallback(train_data)])
+    history = vqvae_trainer.fit(train_data, epochs=TRAINING_EPOCHS, batch_size=BATCH_SIZE, callbacks=[ProgressImagesCallback(train_data, validate_data)])
 
 
     # ---------------------------------------------------------------------------- #
@@ -238,7 +239,7 @@ def train_pixelcnn():
     NUM_PIXELCNN_LAYERS = 2
     
     BATCH_SIZE = 128
-    NUM_EPOCHS = 2
+    NUM_EPOCHS = 60
     VALIDATION_SPLIT = 0.1
 
     reuse_codebook_indices = True
