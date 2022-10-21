@@ -102,7 +102,7 @@ class ModelTrainer:
 
     """
     predictResults(): generates predictions from the test set of data using keras's model prediction
-    returns: classifications of the test set data using the trained model
+    returns: classifications of the test set data using the trained model and labels/classes masked with the test dataset mask
     """
     def predictResults(self):
         return self.model.predict([self.features, self.adjacency], batch_size=self.numNodes), self.labels[self.testMask]
