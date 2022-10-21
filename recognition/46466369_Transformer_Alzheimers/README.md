@@ -18,20 +18,37 @@ This project aims to classify images of the brain from the ADNI dataset as eithe
 
 The model takes images as input, breaking it up into flattened patches which are then fed into a transformer encoder. Each of these patches are given a position embedding to retain information about order. The transformer encoder uses an attention mechanism to retain information about previously viewed data, and is in theory capable of keeping this memory of extremely large sets of data. This allows the model to learn to associate certain patches of an image with others, based on factors such as their positioning. After being run through the transformer encoder, the output is fed to a MLP which classifies the image.
 
+## Results
+The current best model trained reached 63% accuracy on the test set, with 75% testing accuracy and 71% validation accuracy. This was achieved using the following parameters:
+- `learning_rate` = 0.001
+- `weight_decay` = 0.0015
+- `batch_size` = 256
+- `num_epochs` = 100
+- `image_size` = 64
+- `transformer_layers` = 8
+
+The accuracy is as follows, where the orange line represents the validation stat and the blue line is the the results on the training data:
+
+![Accuracy](./images/lr001wd0015.png)
+
+Another model was trained with the same values but `image_size` = 128 and `num_epochs` = 50 instead:
+
+Accuracy:
+
+![Accuracy](./images/lr001wd0015img128.png)
+
+Loss:
+
+![Accuracy](./images/lr001wd0015img128loss.png)
 
 
 ## Requirements
-tensorflow 2.10.0
-
-keras 2.10.0
-
-Pillow 9.0.1
-
-tensorflow-addons 0.18.0
-
-zipp 3.8.1
-
-matplotlib 3.5.1
+- tensorflow 2.10.0
+- keras 2.10.0
+- Pillow 9.0.1
+- tensorflow-addons 0.18.0
+- zipp 3.8.1
+- matplotlib 3.5.1
 
 ## Installation & Usage
 
