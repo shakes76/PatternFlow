@@ -69,7 +69,7 @@ class ImprovedUNET(tf.keras.Model):
         # Segmentation layer for deep supervision
         return Conv2D(filters / 2, 1, strides=1, padding="same", activation="relu")(norm)
 
-    def data_pipeline(self, input_size=(256, 256, 3), filter_size=64):
+    def data_pipe_line(self, input_size=(256, 256, 3), filter_size=64):
         """
         Builds Improved Unet model
 

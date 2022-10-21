@@ -48,9 +48,14 @@ are upsampled via a convolutional layer to allow for summation of different dept
 
 
 ## Results
+The algorithm was run for 30 epochs with an initial filter size of 64 and a batch size of 1. 
+![](Images/results.png)
+_Figure 2: Predicted model for data sample from ISICs dataset_
+![](Images/results2.png)
+_Figure 3: Training and Validation Accuracy and Dice Coefficient during training_
 
-
-### Tuning of Hyper parameters
+At the end of training, the model achieved a loss of 0.162, accuracy of 0.928, and a dice coefficient of 0.838.
+### Tuning of Hyper parameters~~~~
 During training, various values of hyper parameters were tested in order to balance performance and the running time of 
 the algorithm with the best results coming from a batch size of 1 and learning rate of 0.001. 
 

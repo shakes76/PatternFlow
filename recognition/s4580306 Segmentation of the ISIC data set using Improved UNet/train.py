@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from modules import *
 from dataset import *
 
-LEARNING_RATE = 1e-3
-BATCH_SIZE = 16
+LEARNING_RATE = 0.001
+BATCH_SIZE = 1
 EPOCHS = 30
 
 
