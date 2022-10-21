@@ -21,3 +21,10 @@ In the recognition folder, you will find many recognition problems solved includ
 * Classification
 etc.
 
+For example, here is a proceesed image:
+![Processed image](C:/TechnoCore/2022/COMP3710/project/original.png?raw=true "Title")
+Here is the true segmentation:
+![True segmentation](C:/TechnoCore/2022/COMP3710/project/segmented.png?raw=true "Title")
+And here is the predicted segmentation:
+![Predicted segmentation](C:/TechnoCore/2022/COMP3710/project/segmented_prediction.png?raw=true "Title")
+
