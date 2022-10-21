@@ -41,7 +41,7 @@ We observe that the obtained results are great as we successfully recapture the 
 
 ## **PixelCNN Model**
 
-<p align="center"><img src="./images/pcnn_model.png" height=600 ></p>
+<p align="center"><img src="./images/pcnn_model.png" height=400 ></p>
 
 PixelCNN is a generative model that uses convolutional and residual blocks to generate images by iteratively calculating the distribution of prior pixels to generate the probability of later pixels.
 
@@ -55,11 +55,13 @@ Then we pass the initial convolution layer to residual blocks. These layers are 
 
 ### **PixelCNN results**
 ---
-We experimented with tuning the number of convolutional layers and residual blocks of our model to see if the model would perform better, but it resulted with marginal improvements. The most significant hyperparameter to tune for the PixelCNN is the VQVAE model and subsequently the codebook/embeddings as that is how the PixelCNN model is trained. As such we experimented with a few variations of the VQVAE model and found that latent space of 32 and 128 codebooks obtained the best generated samples. We observe that the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains; we are only able to roughly capture the shape of the brain and some details
+We experimented with tuning the number of convolutional layers and residual blocks of our model to see if the model would perform better, but it resulted with marginal improvements. The most significant hyperparameter to tune for the PixelCNN is the VQVAE model and subsequently the codebook/embeddings as that is how the PixelCNN model is trained. As such we experimented with a few variations of the VQVAE model and found that latent space of 32 and 128 codebooks obtained the best generated samples. 
 <p align='center'> <strong>PCNN model structure</strong> </p>
 <p align="center"><img src="./images/pcnn_keras.png"/></p>
 <p align='center'> <strong>Loss plot</strong> </p>
 <p align="center"><img src="./results/pcnn_20.png" /></p>
+
+We observe that the reconstructions that we obtain from the generative samples are not the best compared to the real ADNI brains; we are only able to roughly capture the shape of the brain and some details. This is because we only trained for limited number of epochs due to resource and time constraints and will be discussed in detail in the scope for improvement section.
 
 <p align='center'><img src="./results/generated_3.png"/></p>
 
