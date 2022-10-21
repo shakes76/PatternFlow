@@ -36,11 +36,15 @@ During this run, a SSIM sample of 0.9147026308620341 was generated, this can be 
 
 ### Steps for reproducing
 1. Setup a new conda environment with the dependancies listed above.
-2. Download the dataset from 
+2. Download the dataset from https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA (This is a preprocessed set from the OASIS dataset, it also includes segmentation masks but that isn't necessary for us)
+3. Extract the dataset into a folder labelled data in the 44801582_OASIS_VAE directory
+4. Use train.py to train vqvae or pixelcnn
+5. Use prediction.py to generate new brains (default run uses samples provided, adjustment is needed if you want to use your own model results)
 
+## How to improve on these results (and issues)
+First thing is that the current implementation of dataset is not great. It loads everything into a numpy array which is super space intensive and makes training crash unless you limit the input data size. This needs updating as it would improve training process dramatically.
 
-
-## How to improve on these results
+The pixelCNN and VQVAE could both be improved, model wise they are not very complex implementations of their base form, better performance is possible.
 
 ## Resources
 [1] https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73
