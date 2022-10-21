@@ -112,7 +112,7 @@ def get_structural_similarity(model, dataset):
 
 
 def main():
-    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(1000)
+    (train_data, validate_data, test_data, data_variance) = dataset.oasis_dataset(500)
     time = datetime.now().strftime('%H:%M:%S')
 
     num_embeddings = 128
