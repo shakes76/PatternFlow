@@ -6,7 +6,6 @@ Inspired by https://keras.io/examples/generative/vq_vae/
 
 # Name collisions in imports :((( have to spell out exact model paths and clog up the code
 
-#import	tensorflow_probability	as		tfp
 import	tensorflow				as		tf
 from	tensorflow				import	keras
 from	tensorflow.keras		import	layers

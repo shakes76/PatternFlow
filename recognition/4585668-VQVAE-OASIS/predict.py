@@ -50,7 +50,7 @@ def compare(originals, recons):
 
 	return ssims
 
-def validate_vqvae(vqvae, test)
+def validate_vqvae(vqvae, test):
 	"""Evaluate how well the VQVAE performed using a test set
 
 	vqvae	- the trained VQVAE

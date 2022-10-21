@@ -12,8 +12,8 @@ from tensorflow			import keras
 LATENT_DIMENSION_SIZE	= 8
 NUM_EMBEDDINGS			= 64
 BETA					= 0.25
-VQVAE_EPOCHS			= 30
-PCNN_EPOCHS				= 50
+VQVAE_EPOCHS			= 100
+PCNN_EPOCHS				= 100
 # Based on GTX1660Ti Mobile
 BATCH_SIZE				= 128
 OPTIMISER				= keras.optimizers.Adam
@@ -22,7 +22,7 @@ LOSS					= keras.losses.SparseCategoricalCrossentropy(from_logits = True)
 VALIDATION_SPLIT		= 0.1
 METRICS					= ["accuracy"]
 MODEL_PATH				= "vqvae.h5"
-PCNN_PATH				= "pixel_communist_news_network.h5"
+PCNN_PATH				= "pcnn.h5"
 LOC						= "upper right"
 
 def train_vqvae(train_set, train_vnce):
