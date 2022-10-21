@@ -1,24 +1,53 @@
-Vector Quantized Variational Auto-encoder(VQ VAE Model)
-Oasis Brain Data Set
-This program creates a create a generative model of the OASIS brain data set that has a “reasonably clear image” and a Structured Similarity (SSIM) of over 0.6.
+# Vector Quantized Variational Auto-encoder(VQ VAE Model)
 
-Description of VQ VAE Algorithm:
-A standard VAE (encoder->decoder) uses a continous latent space that was sampled using gaussain distribution; this makes it hard to leatn continuous distribution with a gradient descent. In comparison, VQ VAE (encoder-> VQ layer-> decoder) ues discrete latent space; and consists of three parts:
+In this report, a generative model of the Vector Quantized Variational AutoEncoder (VQ VAE) was used to generate reconstructed images of the OASIS brain data set that are "reasonably clear" and have a Structured Similarity (SSIM) of over 0.6. The VQ VAE was adapted using tensorflow keras.
 
-1. Encoder -> Convolutional network to downsample the features of an image
+#### Description of VQ VAE Algorithm
+![](https://miro.medium.com/max/1400/1*yRdNe3xi4f3KV6ULW7yArA.png)
+>Figure 1: Graphical representation of a VQ-VAE network.
 
-2. Latent space -> Discrete "codebook" that describes the latent space. 
-    codebook consists of n latent embedding vectors of dimension D each
-    each code represents the distance between each embedding and encoded output+
+A standard VAE (encoder->decoder) uses a continous latent space that is sampled using gaussain distribution; this makes it hard to learn a continuous distribution with a gradient descent. In comparison, VQ VAE uses a discrete latent space; and consists of three parts as seen above:
 
-VQ VAES:
-    disccrete latent space
-    optimised by using discrete "codbook" -> made by discreting dist between continuous embedding and encoded outputs, the ndiscrete codewords sent to decoder which trained to generate reconstructered samples.
+1. Encoder:
+    * Convolutional network to downsample the features of an image
+2. Latent Space:
+    * Codebook consists of n latent embedding vectors of dimension D each
+    * Each code represents the distance between each embedding and encoded output (euclidean distance) ->outputs embeded vector
+    * feed closest encoder output to codebook as input to decoder
+3. Decoder:
+    * Convolutional network to upsample and gnerate reconstructed samples.
 
-    Generative model based on VAE. 
-    Aims to make latent space discrete using VQ techniques
+#### ==============Oasis Brain Data Set==============
+![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRl7czOsj3uzWRQ6NT2ofed7QBsKiqrUq6Bsw&usqp=CAU)
+>Figure 2: Comparison of an image stored in the train vs test data sets
 
-    cons: loses the "easy latent sampling" propery of VAES. 2 stage training required to learn fitting categorical prior
-    + training objective not correspond to bound on log-likelihood amnymore
+The Oasis MRI Dataset cobtains 9664 training images, 544 test images and 1120 validation images.  An example of train and test data is shown above. The images are preloaded into a file location and from there extracted into processing for use.
 
+##### Data Pre-Processing
 
+Before the data was used, it was normalised through residual extration and rescaling. This makes it easier to compare the distributions with different means and scales to maintain the shape of the distribution. 
+
+## ==============Training==============
+
+The three data groups - train, test, and validate are split 0.85/0.1/0.05. The training set contains the most images so the model has enough information to learn from to produce accurate reconstructions later. The test set is used to validate these reconstructions. The validation set is not required, as the model is judged by the quality of the reconstructons on the test set. The model is trained with ... epochs on a batch size of 128.
+*insert image
+
+## ==============Results==============
+
+The reconstructed images achieved a mean Structured Similarity of ...
+*Inerset image
+## Dependencies
+* Python 3.7
+* TensorFlow 2.6.0
+* Numpy 1.19.5
+* matplotlib 3.2.2
+* Pillow 7.1.2
+* os
+* Pre-processed OASIS MRI dataset (accessible at https://cloudstor.aarnet.edu.au/plus/s/n5aZ4XX1WBKp6HZ/download).
+
+## References
+[1] A. v. d. Oord, O. Vinyals, and K. Kavukcuoglu, 2018. Neural Discrete Representation Learning. [Online]. Available at: https://arxiv.org/pdf/1711.00937.pdf.
+
+[2] Paul, S., 2021. Keras documentation: Vector-Quantized Variational Autoencoders. [online] Keras.io. Available at: https://keras.io/examples/generative/vq_vae/.
+
+[3] https://github.com/shakes76/PatternFlow/tree/master/recognition/MySolution

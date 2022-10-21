@@ -193,3 +193,5 @@ class VQVAETRAINER(tf.keras.models.Model):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "vqvae_loss": self.vq_loss_tracker.result(),
         }
+
+

@@ -8,6 +8,9 @@ import tensorflow as tf
 import glob
 import numpy as np
 from matplotlib import image
+import os
+from PIL import Image
+
 
 # Download the Oasis Data as zip file. Will need to extract it manually afterwards
 def download_oasis ():
@@ -19,8 +22,8 @@ def download_oasis ():
   
 # Loads the training images (non segmented) from given path and returns an numpy array of arrays
 def load_training (path):
+    
     image_list = []
-
     # Iterate through all paths and convert to 'png'
     for filename in glob.glob(path + '/*.png'): 
         # Read an image from the given filename into an array
@@ -32,11 +35,13 @@ def load_training (path):
 
     # Create an numpy array to hold all the array turned images
     train_set = np.array(image_list, dtype=np.float32)
+       
+  
     return train_set
 
 # Normalizes training images and adds 4th dimention 
 def process_training (data_set):
-
+    
     """ Residual Extraction -> Useful for comparing distributions with different means but similar shapes"""
     # Calculate the residuals of the data - each residual is dist from each distribution mean which is now zero
     data_set = (data_set - np.mean(data_set)) / np.std(data_set)
