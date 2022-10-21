@@ -21,7 +21,7 @@ IMG1_PATH = './AD_NC/test/AD'
 IMG2_PATH = './AD_NC/test/NC'
 
 # The shape of the images 
-INPUT_SHAPE = (60, 64)
+INPUT_SHAPE = (120, 128)
 COLOR_MODE = 'grayscale'
 
 def main():
@@ -39,9 +39,7 @@ def main():
     siamese.compile(optimizer=tf.keras.optimizers.Adam(0.00006))
 
     # load the weights of the model
-    checkpoint_path = "training3/cp-{epoch:04d}.ckpt"
-    checkpoint_dir = os.path.dirname(checkpoint_path)
-    siamese.load_weights('training3/cp-0021.ckpt')
+    siamese.load_weights('training4/cp-0025.ckpt')
 
     # load the data
     dataset1 = dataset.load_data(IMG1_PATH, INPUT_SHAPE, COLOR_MODE)
