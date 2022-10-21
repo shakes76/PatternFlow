@@ -12,16 +12,15 @@ Available: https://challenge.isic-archive.com/data/#2017
 
 ![Improved UNET Model Architecture](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/IUNET_Architecture.JPG)
 
-### Context Module
+Components of the improved UNET Architecture are as follows.
 
-
-### Upsampling Module
-
-
-### Localisation Module
-
-
-### Segmentation Layer
+- Leaky ReLU - "leaky ReLU nonlinearities with a negative slope of 10−2 for all feature map computing convolutions"
+- Instance Normalisation - "replace the traditional batch with instance normalization"
+- Context Module - "Each context module is in fact a pre-activation residual block with two 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between."
+- Upsampling Module - "This is achieved by first upsampling the low resolution feature maps, which is done by means of a simple upscale that repeats the feature voxels twice in each spatial dimension, followed by a 3x3x3 convolution"
+- Localisation Module - "A localization module consists of a 3x3x3 convolution followed by a 1x1x1 convolution that halves the number of feature maps."
+- Skip Connection - Like the original UNET the improved UNET makes use of skip connections
+- Segmentation Layer - These are 3x3 convolutions with a single output filter. These segments are summed to form the final network output.
 
 ## Training
 
@@ -51,10 +50,11 @@ model.compile(optimizer=adamOptimizer, loss=self.diceLoss, metrics=[self.diceCoe
 This resulted in a slight increase in the dice similarity coefficient.
 ![Test data dice coefficient adjust learning rate](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/TestDataDiceCoefficientLearningRate.JPG)
 
-By decreaseing the training batch size the model was able to achieve a dice similarity coefficient greater than 0.8 for the test set.
+By decreasing the batch size the model was able to achieve a dice similarity coefficient greater than 0.8 for the test set.
 ![Test data dice coefficient adjust batch size](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/TestDataDiceCoefficientDecreaseBatchSize.JPG)
 
 ## Predictions
+
 ![prediction1](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p1.png)
 ![prediction2](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p2.png)
 ![prediction3](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p3.png)
