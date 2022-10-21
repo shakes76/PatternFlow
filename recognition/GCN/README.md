@@ -1,4 +1,5 @@
-c#### Algorithm description 
+## Semi-Supervised Node Classification on Facebook Page-Page Using GCNs
+#### Algorithm description 
 Graph Convolutional Neural Networks aim to learn a pattern of signals in a given graph, given a feature matrix for the graph, and a representative structure of the graph as an adjacency matrix. GCNs are used in contexts where relationships in data cannot be mapped linearly, instead representing structure through adjacency matrices, and feature information through feature matrices. Multiclass node classification refers to when GCNs use the learned relationships between its inputs to eventually outputting the predicted classes of the input nodes. This problem is semi-supervised, as only a portion of the nodes that the model learns on are labelled. 
 
 ### The Problem
@@ -16,16 +17,12 @@ Normalising the rows of the adjacency matrix to sum to 1 can help mitigate this 
 
 Performing symmetric normalisation ensures that features can be weighted according to their importance. For example, a feature with an average degree 
 
-#### The problem to be solved 
-
-#### How GCNs work in this context
-
 
 #### Using this file 
 * Running train.py will train and test your model for the defined epochs, hidden layers and outputs selected. A run_training() function is responsible for performing these functions. If this is not desired, comment out the call to this function at the bottom of the file. 
 * Predict.py demonstrates an example of the GCN performing node classification on a subset of nodes in the graph. It also produces a tSNE plot of the emebeddings generated from this subset, as well as from the whole graph. 
 * Dataset.py will load and preprocess your inputs to provide normalised feature and adjacency matrices that are ready to be trained on. 
-* Modules.py defines a Net model that defines the GCN, which connects to three GCN Layers. 
+* Modules.py defines a Net model that defines the GCN, which connects to three GCN Layers. Each layer uses relu activation functions, with a final softmax layer for assigning probabilities to each of the classes. 
 
 
 ##### Dependencies required
@@ -40,6 +37,8 @@ Performing symmetric normalisation ensures that features can be weighted accordi
 
 ##### Preprocessing Steps 
 ###### Train/Validation/Test Splits 
+Training sets were split into 60%, leaving 20% for testing, and 20% for validation. This helped ensure that the validation set used to select the best performing model was to be just as representative of a random subset used to test the data with. 
+
 #### Example Inputs 
 Example inputs include loading in a subset of the given dataset and adjacency matrix (must be square). The model will return the classification of the input nodes, along with a tSNE plot of the neighbourhood embeddings, coloured by their ground truth labels. 
 
@@ -64,5 +63,8 @@ The following result is achieved as a result of plotting the model embeddings vi
 1. The readme file should contain a title, a description of the algorithm and the problem that it solves (approximately a paragraph), how it works in a paragraph and a figure/visualisation.
 2. It should also list any dependencies required, including versions and address reproduciblility of results, if applicable.
 3. provide example inputs, outputs and plots of your algorithm
-4. The read me file should be properly formatted using GitHub markdown
-5. Describe any specific pre-processing you have used with references if any. Justify your training, validation and testing splits of the data.
+5. Describe any specific pre-processing you have used with references if any.
+
+#### Sources: 
+https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book-Chapter_5-GNNs.pdf
+https://snap.stanford.edu/data/facebook-large-page-page-network.html
