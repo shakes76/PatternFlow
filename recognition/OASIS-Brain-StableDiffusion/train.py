@@ -1,4 +1,3 @@
-from matplotlib import test
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
@@ -53,6 +52,18 @@ def train(device, lr, train_path, test_path, model, epochs, batch_size):
     save_loss_data(tracked_loss, test_loss)
 
 def test_model(model, test_path, batch_size, device):
+    """
+    Test loop to test the model against test data
+
+    Args:
+        model (Module): model to test
+        test_path (string): path to the test data
+        batch_size (int): batch size
+        device (string): device to use
+
+    Returns:
+        List: index of loss of the model against the test data
+    """
     test_dataloader = load_dataset(test_path, batch_size=batch_size)
     dataloader_length = len(test_dataloader)
 
