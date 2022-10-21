@@ -48,7 +48,7 @@ def train(device, lr, train_path, test_path, model, epochs, batch_size):
         print("Current Loss ==> {}".format(epoch_loss/dataloader_length))
         test_loss.append(test_model(model, test_path, batch_size, device))
 
-    torch.save(model.state_dict(), "./model/")
+    torch.save(model.state_dict(), "model")
     save_loss_data(tracked_loss, test_loss)
 
 def test_model(model, test_path, batch_size, device):
@@ -89,7 +89,7 @@ def main():
     train_path = r".\OASIS-Brain-Data\training_data"
     test_path = r".\OASIS-Brain-Data\test_data"
     model = UNet().to(device)
-    batch_size = 2
+    batch_size = 12
     epochs = 200
 
     # start training
