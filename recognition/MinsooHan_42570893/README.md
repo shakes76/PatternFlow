@@ -24,7 +24,7 @@ Through the localiztion pathway, the U-net take features for the lower level to 
 
 Finally, the output forms via element-wise sum between the concatenation above and the segmentation layers.
 
-link : https://arxiv.org/abs/1802.10508v1
+reference : https://arxiv.org/abs/1802.10508v1
 
 ## Task
 
@@ -33,7 +33,7 @@ Train a model for the image segmentation of skin lesion using the improved U-net
 ## How it works
 
 ### Data preprocessing
-Firstly, we needed to resize all the images to 256 x 256 because the images of the dataset ddi not have the same size. And saved all the resized images into new directories. Then, created blank arrays to store the resized training, validation, and test images and joined the resized images to the blank arrays respectively.
+Firstly, we needed to resize all the images to 256 x 256 because the images of the dataset did not have the same size. And saved all the resized images into new directories. Then, created blank arrays to store the resized training, validation, and test images and joined the resized images to the blank arrays respectively.
 This process has taken some time. And created data frames to store the excel files containing the names of the images. After that, loaded and generated the normalized images and masks of training, validation, and test data.
 
 ### Training
@@ -56,3 +56,11 @@ The images below are good cases and bad cases.
 #### Bad results
 ![BadResult](https://user-images.githubusercontent.com/59554674/197198195-f4304b79-409e-40ef-bf39-ff10fe5f41a8.png)
 ![BadResult2](https://user-images.githubusercontent.com/59554674/197198811-41bb423e-4ad1-45af-bef6-54296ea50c1b.png)
+
+## Environment
+OS : Windows10
+Python : 3.7
+Cuda : 10.1
+Tensorflow: 2.1.0
+
+
