@@ -1,3 +1,6 @@
+"""
+Driver script for training the VQVAE and PixelCNN models.
+"""
 import os
 import random
 import numpy as np
@@ -33,12 +36,11 @@ print(f"                             Train VQVAE                                
 print(f"========================================================================")
 vqvae = VQVAE(variance, latent_dimensions, num_embeddings)
 vqvae.compile(optimizer=keras.optimizers.Adam())
-vqvae.fit(x_train, epochs=vqvae_epochs, batch_size=batch_size)
+vqvae.fit(x_test, epochs=vqvae_epochs, batch_size=batch_size)
 
 # Evaluate
 test_images, reconstructed = compare_reconstructions(vqvae, x_test, 10)
-# tf.keras.models.save_model(model=vqvae, filepath="./model_weights/vqvae")
-vqvae.save("vqvae", "./model_weights/vqvae", save_format="tf")
+vqvae.save("vqvae", "./vqvae", save_format="tf")
 
 # Train PixelCNN
 print(f"========================================================================")
@@ -59,8 +61,7 @@ pixel_cnn.compile(
     loss=SparseCategoricalCrossentropy(from_logits=True),
     metrics=["accuracy"],
 )
-print(pixel_cnn.summary())
-pixel_cnn.fit(x=code_indices, y=code_indices, batch_size=64, epochs=n_epochs, validation_split=0.1)
-pixel_cnn.save("./model_weights/pixel_cnn")
 
-# tf.keras.models.save(model=pixel_cnn, filepath="./model_weights/pixel_cnn")
+pixel_cnn.fit(x=code_indices, y=code_indices, batch_size=64, epochs=n_epochs, validation_split=0.1)
+print(pixel_cnn.summary())
+pixel_cnn.save("./pixel_cnn")
