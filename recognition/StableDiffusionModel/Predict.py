@@ -52,8 +52,8 @@ if True:
     newInput = kr.Input((32, 32, 1))
     decoder = kr.models.Model(newInput, autoEnc.decoder(newInput)) 
 
-    for i in tqdm(range(timesteps-1)):
-        t = np.expand_dims(np.array(timesteps-i-1, np.int32), 0)
+    for i in tqdm(range(TIME_STEPS-1)):
+        t = np.expand_dims(np.array(TIME_STEPS-i-1, np.int32), 0)
         predictedNoise = unet(x, t)
         x = denoise(x, predictedNoise, t)
         imageList.append(np.squeeze(np.squeeze(x, 0),-1))
