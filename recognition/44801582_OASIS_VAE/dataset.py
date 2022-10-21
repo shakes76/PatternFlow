@@ -11,10 +11,10 @@ def load_data(path, img_limit=False, want_var=False):
             break
         else:
             img = Image.open(f"{path}/{img}")
-            data = np.asarray(img, dtype=np.float16)
+            data = np.asarray(img)
             dataset.append(data)
 
-    dataset = np.array(dataset, dtype=np.float16)
+    dataset = np.array(dataset)
 
     if want_var:
         data_variance = np.var(dataset / 255.0)
