@@ -15,39 +15,51 @@ A CNN module that used to extract the feature from the input images.
 """
 embedding_model = tf.keras.Sequential(
     [
-        keras.Input(shape=(60, 64, 1)),
-        layers.Conv2D(32, (8,8), strides =1, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
-        layers.MaxPooling2D(pool_size=(6, 6), strides=1),
-        layers.Conv2D(64, (6,6), strides =1, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
-        layers.MaxPooling2D(pool_size=(4, 4), strides=1),
-        layers.Conv2D(128, (4,4), strides =1, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
-        layers.MaxPooling2D(pool_size=(2, 2), strides=1),
-        layers.Conv2D(128, (4,4), strides =1, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
-
+        keras.Input(shape=(120, 128, 1)),
+        layers.Conv2D(32, (10,10), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(64, (7,7), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(128, (4,4), activation="relu", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
 
         layers.Flatten(),
-        layers.Dense(256, activation="sigmoid", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
+        layers.Dense(64, activation="sigmoid", kernel_regularizer=tf.keras.regularizers.l2(1e-3)),
     ],
     name="embedding"
 )
 
 
+
+def euclidean_distance(vects):
+    """Find the Euclidean distance between two vectors.
+
+    Arguments:
+        vects: List containing two tensors of same length.
+
+    Returns:
+        Tensor containing euclidean distance
+        (as floating point value) between vectors.
+    """
+
+    x, y = vects
+    sum_square = tf.math.reduce_sum(tf.math.square(x - y), axis=1, keepdims=True)
+    return tf.math.sqrt(tf.math.maximum(sum_square, tf.keras.backend.epsilon()))
+
+
 """
 A Siamese network that takes 2 images as input and learns a shared embedding across them.
-The output of the network is a number between [0,1] based on L1 distances of the input.
+The output of the network is a number between [0,1] based on L2 distances of the input.
 """
-import tensorflow.keras.backend as K
-
-input_1 = layers.Input(name="pair_x", shape=(60, 64, 1))
-input_2 =layers.Input(name="pair_y", shape=(60, 64, 1))
+input_1 = layers.Input(name="pair_x", shape=(120, 128, 1))
+input_2 =layers.Input(name="pair_y", shape=(120, 128, 1))
 
 tower_1 = embedding_model(input_1)
 tower_2 = embedding_model(input_2)
 
-merge_layer = tf.keras.layers.Lambda(lambda tensors: K.abs(tensors[0] - tensors[1]))([tower_1, tower_2])
+merge_layer = layers.Lambda(euclidean_distance)([tower_1, tower_2])
 output_layer = layers.Dense(1, activation="sigmoid", kernel_regularizer=tf.keras.regularizers.l2(1e-3))(merge_layer)
 siamese = keras.Model(inputs=[input_1, input_2], outputs=output_layer)
-
+siamese.summary()
 
 
 class SiameseModel(keras.Model):
@@ -150,7 +162,7 @@ def classifier():
     embedding_model.trainable = False
 
     model =  tf.keras.Sequential([
-                tf.keras.layers.InputLayer(input_shape=(60, 64, 1)),
+                tf.keras.layers.InputLayer(input_shape=(120, 128, 1)),
                 embedding_model,
 
                 tf.keras.layers.Dense(2, activation='softmax')
