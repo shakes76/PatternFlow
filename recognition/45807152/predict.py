@@ -31,7 +31,7 @@ def make_prediction(model, test_x, test_y, slice=(0, 1)):
         ax2.set_title("Ground Truth Mask")
         ax2.axis("off")
         # Plot lesion regions (axis 2)
-        ax2.imshow(tf.argmax(test_y[i], axis=2), cmap='gray')  
+        ax2.imshow(tf.argmax(test_y[i], axis=2), cmap='gray')
 
         # Get metrics
         pred_dice = np.around(dice_coefficient(
