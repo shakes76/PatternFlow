@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 
 
 class VectorQuantizer(keras.layers.Layer):
@@ -65,3 +66,20 @@ def VQVAE(latent_dim=16, num_embeddings=64):
     quantized = vq_layer(encoded)
     reconstructions = decoder(quantized)
     return keras.Model(inputs, reconstructions, name="vq_vae")
+
+
+class MaskedConvLayer(keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super(MaskedConvLayer, self).__init__()
+        self.convolution = keras.layers.Conv2D(**kwargs)
+
+    def build(self, input_shape):
+        self.convolution.build(input_shape)
+        kernel_shape = self.convolution.kernel.get_shape()
+        self.mask = np.zeros(shape=kernel_shape)
+        self.mask[: kernel_shape[0] // 2, ...] = 1.0
+        self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+
+    def call(self, inputs):
+        self.convolution.kernel.assign(self.convolution.kernel * self.mask)
+        return self.convolution(inputs)
