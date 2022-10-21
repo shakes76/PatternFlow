@@ -115,15 +115,24 @@ The ratio between the intersection and the union of the predicted boxes and the 
 
 ## Results
 ### YOLOv5s
-mAP of 61.7% overall
-83.6% in detecting non melanoma cases
-39.9% in detecting melanoma cases
-IOU - 0.8237
+The results of training on the YOLOv5s model with 300 epochs are as follows:
+- mAP of 61.7% overall
+- 83.6% in detecting non melanoma cases
+- 39.9% in detecting melanoma cases
+- IOU - 0.8237
+![Training Metric v5s](Images/train_300_yolov5s.png)
 ### YOLOv5m
-mAP of 63.2% overall
-84.9% in detecting non melanoma cases
-41.6% in detecting melanoma cases
-IOU - 0.8357
+The results of training on the YOLOv5m model with 300 epochs are as follows:
+- mAP of 63.2% overall
+- 84.9% in detecting non melanoma cases
+- 41.6% in detecting melanoma cases
+- IOU - 0.8357
+![Training Metric v5m](Images/train_300_yolov5m.png)
+### Sample Predictions
+The following images are the output of the *detect.py* function, where a prediction is made on the class of the object detected:
+![Prediction Sample 1](Images/sample1.jpg)
+![Prediction Sample 2](Images/sample2.jpg)
+![Prediction Sample 3](Images/sample3.jpg)
 
 ## Discussion
 Recommends more than 1500 images per class, and more than 10000 instances (labeled objects) per class
