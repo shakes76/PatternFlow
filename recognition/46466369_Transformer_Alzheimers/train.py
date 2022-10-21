@@ -13,7 +13,7 @@ NUM_PATCHES = (IMAGE_SIZE // PATCH_SIZE) ** 2
 INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 3)
 BATCH_SIZE = 256
 LEARNING_RATE = 0.001
-WEIGHT_DECAY = 0.0001
+WEIGHT_DECAY = 0.0015
 NUM_EPOCH = 100
 NUM_HEADS = 4
 NUM_CLASSES = 2
@@ -27,7 +27,12 @@ MLP_LAYER_COUNTS = [2048, 1024]
 
 file_path = './checkpoint'
 
+
+
+train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
+
 model = modules.create_vit_classifier(PATCH_SIZE,
+                                train,
                                 NUM_PATCHES,
                                 PROJECTION_DIM,
                                 NUM_CLASSES,
@@ -35,8 +40,6 @@ model = modules.create_vit_classifier(PATCH_SIZE,
                                 TRANSFORMER_LAYERS,
                                 TRANSFORMER_UNITS,
                                 MLP_LAYER_COUNTS)
-
-train, trainy, test, testy = dataset.load_dataset(IMAGE_SIZE)
 
 def train_model(model):
     
@@ -65,3 +68,5 @@ def test_model(model):
     model.load_weights(file_path)
     _, accuracy = model.evaluate(test, testy)
     print(f'Test accuracy: {round(accuracy * 100, 2)}%')
+
+train_model(model)

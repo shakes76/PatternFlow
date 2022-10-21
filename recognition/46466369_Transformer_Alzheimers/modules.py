@@ -2,10 +2,6 @@ import tensorflow as tf
 import numpy as np
 from tensorflow import keras
 from keras import layers
-import tensorflow_addons as tfa
-import dataset
-import train
-import predict
 
 """
 modules.py
@@ -68,11 +64,23 @@ class PatchEmbed(layers.Layer):
     encoded = self.projection(patch) + self.position_embedding(positions)
     return encoded
 
-def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes, num_heads, transformer_layers, transformer_units, mlp_layer_counts):
+def create_vit_classifier(input_shape, train, patch_size, num_patches, projection_dim, num_classes, num_heads, transformer_layers, transformer_units, mlp_layer_counts):
     inputs = layers.Input(shape=input_shape)
-    # Create patches.
-    patches = Patches(patch_size)(inputs)
-    # Encode patches with their embedded position
+
+    # data augmentation added to further prevent overfitting
+    data_augmentation = keras.Sequential([
+        layers.Normalization(),
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(factor=0.02),
+        layers.RandomZoom(height_factor=0.2, width_factor=0.2)],
+        )
+    
+    data_augmentation.layers[0].adapt(train)
+
+    augmented = data_augmentation(inputs)
+    
+    patches = Patches(patch_size)(augmented)
+
     embedded = PatchEmbed(num_patches, projection_dim)(patches)
 
     """
