@@ -57,7 +57,8 @@ def main():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend(loc='upper right')
-    plt.savefig("./figures/lossVsEpoch.png")
+    # Save plot with a tight boarder
+    plt.savefig("./figures/lossVsEpoch.png", bbox_inches='tight')
 
     # Dice Coeficient vs Epoch
     plt.figure(1)
@@ -66,7 +67,8 @@ def main():
     plt.xlabel('Epoch')
     plt.ylabel('Dice Coefficient')
     plt.legend(loc='lower right')
-    plt.savefig("./figures/diceVsEpoch.png")
+    # Save plot with a tight boarder
+    plt.savefig("./figures/diceVsEpoch.png", bbox_inches='tight')
 
     # IoU vs Epoch
     plt.figure(2)
@@ -75,7 +77,8 @@ def main():
     plt.xlabel('Epoch')
     plt.ylabel('Intersection Over Union')
     plt.legend(loc='lower right')
-    plt.savefig("./figures/iouVsEpoch.png")
+    # Save plot with a tight boarder
+    plt.savefig("./figures/iouVsEpoch.png", bbox_inches='tight')
 
     # Utilise test set to make predictions for evaluation
     make_prediction(model, test_x, test_y, slice=(151, 161))
