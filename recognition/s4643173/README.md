@@ -22,7 +22,7 @@ As mentioned earlier, the encoder network outputs discrete codes instead of cont
 In the current implementation, the encoder network consists of two convolutional layers (with ReLU activations) and two ResNet blocks. Conversely, the decoder network contains two deconvolutional (conv transpose) layers (with tanh activation for the last layer) instead. After some experimenting it was found that initialising the weights, using Glorot initialisation with uniform distribution, of the convolutional layers showed better results.
 
 ## DCGAN Architecture
-The discriminator is made up of strided convolution layers with LeakyReLU activations and takes an image representation of the codebook indices as input and outputs a probability that the input the real data. The generator is made up of deconvolutional layers with ReLU activations and takes as input a latent vector that is drawn from a standard normal distribution and outputs the generated image representation of the codebook indices.
+The discriminator is made up of strided convolution layers with LeakyReLU activations and takes an image representation of the codebook indices as input and outputs a probability that the input is the real data. The generator is made up of deconvolutional layers with ReLU activations and takes as input a latent vector that is drawn from a standard normal distribution and outputs the generated image representation of the codebook indices.
 
 ## Results
 The VQ-VAE model was trained for 20 epochs with the batch size of 32, and the DCGAN model was trained for 40 epochs with the same batch size, both using the Adam optimiser with learning rate 3e-4 and 2e-4 respectively. 
@@ -49,7 +49,7 @@ The VQ-VAE model achieved a maximum Structed Similarity Index Measure (SSIM) of 
 
 The generated codebook indices from DCGAN model: 
 
-![image](images/Fake Indices.png)
+![image](images/Fake_Indices.png)
 
 The generated image:
 
