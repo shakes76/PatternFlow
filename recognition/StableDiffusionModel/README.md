@@ -21,7 +21,7 @@ The implemented latent diffusion model can be broken down into two parts:
 
 For a broad overview of the model, see below (note that this implemnetaiton lacks the crossattention blocks and conditioning component, as the task involved only generating new images from the OASIS brain dataset)
 <br>
-![ModelCard](Images/ModelCard.png)
+![ModelCard](Images/ModelCard.PNG)
 <br>
 Image from: https://arxiv.org/pdf/2112.10752.pdf
 
