@@ -1,5 +1,6 @@
 # Improved UNET - Segmentation of ISIC Dataset
-Paragraph about ISIC dataset and what this project is
+The ISIC challenge is an international effort to improve melanoma diagnosis, one of the deadliest forms of skin cancer. Early detection greatly increases the chances of survival for melanoma victims. The ISIC have published datasets for the community to further computer vision research.
+By using a neural network a model can be trained to segment the melanoma within a skin image. This project shows the use of an Improved UNET to achieve this.
 
 ## ISIC Dataset
 The ISIC dataset contains a set of skin lesion images and their respective segmentation masks. The 2017 dataset used was already split into training, testing and validation sets.
@@ -9,9 +10,11 @@ Due to all the images in the set being different sizes they were all resized. Th
 ![Training Image](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/image.png)
 ![Training Mask](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/mask.png)
 
-Available: https://challenge.isic-archive.com/data/#2017
+Available at https://challenge.isic-archive.com/data/#2017
 
 ## Improved UNET Model Architecture
+
+The following UNET model was proposed in the Brain Tumor Segmentation and Radiomics paper. [1]
 
 ![Improved UNET Model Architecture](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/IUNET_Architecture.JPG)
 
@@ -28,7 +31,7 @@ Like the original UNET the Improved UNET is made up of encoding and decoding lay
 ## Training
 
 ### Optimiser and Loss Function
-The optimiser used for training was "the adam optimizer with an initial learning rate $lr_{init} = 5 · 10^{−4}$, the following learning rate schedule: $lr_{init} · 0.985^{epoch}$".
+The optimiser used for training was "the adam optimizer with an initial learning rate $lr_{init} = 5 · 10^{−4}$, the following learning rate schedule: $lr_{init} · 0.985^{epoch}$ ". [1]
 
 For the loss function the dice coefficient for the true and predicted values was used. The dice score is defined as follows:
 $Dice = 2 |A∩B| / (|A|+|B|)$
@@ -66,6 +69,7 @@ Initially, the structure layed out in the paper was followed for model training.
 
 ![Test data dice coefficient original](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/TestDataDiceCoefficientOriginal.JPG)
 
+Through testing the following adjustments were found to make a difference.
 First, the learning rate scheduler which was used as per the paper was removed.
 ```
 results = model.fit(train_batch, epochs=self.epochs, validation_data=validate_batch,
