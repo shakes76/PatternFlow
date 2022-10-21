@@ -20,3 +20,34 @@ The recognition solution is implemented using TensorFlow _(version 2.9.1)_ and d
 * **train.py** - used to trin the Improved UNet model on the 2017 ISIC data. Provides useful plots, metrics and prediction comparisons to evaluate segmentation performance.
 * **predict.py** - contains functions to predict segmentation mask from a trained model. Provides comparison plots to ground truth.
 * **utility.py** - contains metric calculations used when training, validating and testing the Improved UNet model.
+
+Through the training pipeline, firstly, the ISIC images and masks are loaded into the _dataset_ and preprocessing is performed. 
+### Data Preprocessing
+In this case, preprocessing consisted of **resizing** the images to _width=128_, _height=128_ and _channels=3_. Due to the non-uniform nature of each image, the resizing was performed with padding to ensure no features were lost. The ground truth segmentation masks were also resized to dimensions of _width=128_, _height=128_ and _channels=1_ (black and white input image).
+
+After the data was resized, each image was normalised such that its values ranged between _[0, 1]_.
+
+Finally, one-hot encoding with 2 classes was mapped to the processed masks to formulate a mask shape of _(128, 128, 2)_ where the last 2 channels represeted the boolean segmentation of a lesion or non-lesion pixel.
+
+### Dataset Splitting
+The preprocessed dataset was then split into training, validation and testing subsets. This was done so in a _80/10/10_ breakdown to ensure adequate data to train the model with. Ideally, the split would be closer to _70/20/10_ however this could result in diminished training given the relativly small dataset of 2000 images.
+
+### The Algorithm Model
+The _modules.py_ file is then utilised to load in a Improved UNet Model with the resized image dimensions, 16 filters and a kernel size of 3x3. These configuration parameters were established within the [Improved UNet research paper](https://arxiv.org/pdf/1802.10508v1.pdf).
+
+The model is then built by following the architecture identified and shown above with a vertical depth approach. The input layer is specified to be the dimensions of the input data images and the output layer is designed to be the same shape as the one-hot encoded lesion masks. For more information and model layer explation, please see comments within _[modules.py](./modules.py)_.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
