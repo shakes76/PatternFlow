@@ -1,20 +1,16 @@
-Requirements
-1. The readme file should contain a title, a description of the algorithm and the problem that it solves
-(approximately a paragraph), how it works in a paragraph and a figure/visualisation.
-2. It should also list any dependencies required, including versions and address reproduciblility of results,
-if applicable.
-3. provide example inputs, outputs and plots of your algorithm
-4. The read me file should be properly formatted using GitHub markdown
-5. Describe any specific pre-processing you have used with references if any. Justify your training, validation
-and testing splits of the data.
-
 # Siamese Networks for Alzheimer's Disease Classification Using MRI Images
 
 ## Description and Problem
-
+This project aims to use ADNI brain MRI images to classify Alzheimer's disease. Using raw images, the algorithm outputs a prediction of whether or not the pictured brain has Alzheimer's disease. This is done using a combination of a Siamese Neural Network and a Binary Classifier Neural Netowrk.
 
 ## How the Algorithm Works
+Siamese Networks are essentially a slightly modified version of a CNN. How they work is, you pass two images samples into the model, one after the other. The model transforms these images into vector embeddings. Then, a distance is computed between these vectors, using one of potentially many distance metrics. Ideally, two images of the same class are very close in distance and images of different classes are very far in distance. The loss function and optimiser then work to update the weightings to move towards the ideal behaviour.
 
+After the Siamese Network is trained, you then have a transformer which converts images to vector embeddings, keeping similar images close in distance together.
+
+You then use these embeddings to train a dense layered Binary Classifier.
+
+With luck, your Binary Classifier can then be used to accurately predict images by first converting test images to embeddings, and then classifying them into either a positive or negative class.
 
 ## Results
 Unfortunately, as of the current version, this implementation has failed to construct a suitable classifier.
@@ -38,7 +34,7 @@ Techniques attempted include:
 * Changing structure of model - size of convolutions, number of convolutions, strides, max padding
 * Changing the margin in the loss function in the range (0.1, 0.5)
 
-If more time were available, I would try to train the Siamese Model using various other loss functions instead, for example Triplet Loss.
+If more time were available, I would try to train the Siamese Model using various other loss functions instead, for example Triplet Loss. Additionally, I also would have liked to try different distance metrics for the embeddings.
 
 ## Running the Code
 ### Dependencies
