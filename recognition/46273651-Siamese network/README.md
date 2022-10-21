@@ -105,3 +105,5 @@ Both the “train.py” and “predict.py” are runnable
 ## References
 
 [1] G. Koch, R. Zemel, R. Salakhutdinov et al., “Siamese neural networks for one-shot image recognition,” in ICML deep learning workshop, vol. 2. Lille, 2015, p. 0
+[2] Image similarity estimation using a Siamese Network with a triplet loss https://keras.io/examples/vision/siamese_network/
+[3] Image similarity estimation using a Siamese Network with a contrastive loss https://keras.io/examples/vision/siamese_contrastive/
