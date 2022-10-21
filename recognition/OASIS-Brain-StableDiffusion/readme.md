@@ -77,48 +77,48 @@ return  x6
 ```
 ### EncoderBlock
 ```python
-x  =  self.pool(x) 				#nn.MaxPool2d()
+x  =  self.pool(x) 		#nn.MaxPool2d()
 x  =  self.encoder_block1(x) 	#ConvReluBlock()
 x  =  self.encoder_block2(x) 	#ConvReluBlock()
 emb_x  =  self.embedded_block(position)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1]) #nn.ReLU() followed by nn.Linear()
-return  x  +  emb_x 			#positional embedding, emb_x, is added in at every step
+return  x  +  emb_x 		#positional embedding, emb_x, is added in at every step
 ```
 
 ### DecoderBlock
 ```python
-x  =  self.upSample_block(x) 				#nn.Upsample()
+x  =  self.upSample_block(x) 			#nn.Upsample()
 x  =  torch.cat([skip_tensor, x], dim=1) 	#Adding in the skip connections from encoder
-x  =  self.decoder_block1(x) 				#ConvReluBlock()
-x  =  self.decoder_block2(x) 				#ConvReluBlock()
+x  =  self.decoder_block1(x) 			#ConvReluBlock()
+x  =  self.decoder_block2(x) 			#ConvReluBlock()
 emb_x  =  self.embedded_block(position)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1]) #nn.ReLU() followed by nn.Linear()
-return  emb_x  +  x 						#positional embedding, emb_x, is added in at every step
+return  emb_x  +  x 				#positional embedding, emb_x, is added in at every step
 ```
 ### UNet
 ```python
 position  =  position.unsqueeze(-1).type(torch.float)
 position  =  self.positional_embedding(position, self.pos_dim)
-# Encoder forward step										# in --> out (Tensor Size)
-x1  =  self.in_layer(x) 				#ConvReluBlock() 	# 3 --> 64
+# Encoder forward step							# in --> out (Tensor Size)
+x1  =  self.in_layer(x) 			#ConvReluBlock() 	# 3 --> 64
 x2  =  self.encoder1(x1, position) 		#EncoderBlock()		# 64 --> 128
-x2  =  self.attention1(x2) 				#AttentionBlock()	# 128 --> 32
+x2  =  self.attention1(x2) 			#AttentionBlock()	# 128 --> 32
 x3  =  self.encoder2(x2, position) 		#EncoderBlock()		# 128 --> 256
-x3  =  self.attention2(x3)				#AttentionBlock()	# 256 --> 16
+x3  =  self.attention2(x3)			#AttentionBlock()	# 256 --> 16
 x4  =  self.encoder3(x3, position) 		#EncoderBlock()		# 256 --> 256
-x4  =  self.attention3(x4) 				#AttentionBlock()	# 256 --> 8
+x4  =  self.attention3(x4) 			#AttentionBlock()	# 256 --> 8
  
-# Bottle neck forward step									# in --> out (Tensor Size)
-x4  =  self.b1(x4) 						#ConvReluBlock()	# 256 --> 512
-x4  =  self.b2(x4) 						#ConvReluBlock()	# 512 --> 512
-x4  =  self.b3(x4) 						#ConvReluBlock()	# 512 --> 256
+# Bottle neck forward step						# in --> out (Tensor Size)
+x4  =  self.b1(x4) 				#ConvReluBlock()	# 256 --> 512
+x4  =  self.b2(x4) 				#ConvReluBlock()	# 512 --> 512
+x4  =  self.b3(x4) 				#ConvReluBlock()	# 512 --> 256
 
-# Decoder forward step										# in --> out (Tensor Size)
-x  =  self.decoder1(x4, x3, position)	#DecoderBlock() 	# 512 --> 128
-x  =  self.attention4(x) 				#AttentionBlock()	# 128 --> 16
-x  =  self.decoder2(x, x2, position) 	#DecoderBlock()		# 256 --> 64
-x  =  self.attention5(x) 				#AttentionBlock()	# 64 --> 32
-x  =  self.decoder3(x, x1, position) 	#DecoderBlock()		# 128 --> 64
-x  =  self.attention6(x) 				#AttentionBlock()	# 64 --> 64
-out  =  self.out_layer(x) 				#nn.Conv2d()		# 64 --> 3
+# Decoder forward step							# in --> out (Tensor Size)
+x  =  self.decoder1(x4, x3, position)		#DecoderBlock() 	# 512 --> 128
+x  =  self.attention4(x) 			#AttentionBlock()	# 128 --> 16
+x  =  self.decoder2(x, x2, position) 		#DecoderBlock()		# 256 --> 64
+x  =  self.attention5(x) 			#AttentionBlock()	# 64 --> 32
+x  =  self.decoder3(x, x1, position) 		#DecoderBlock()		# 128 --> 64
+x  =  self.attention6(x) 			#AttentionBlock()	# 64 --> 64
+out  =  self.out_layer(x) 			#nn.Conv2d()		# 64 --> 3
 
 return  out
 ```
