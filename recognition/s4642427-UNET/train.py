@@ -32,17 +32,16 @@ def diceLoss(y_true, y_pred):
 #TODO need to graph the dice Loss and metric
 def train(dset_path, mask_path):
     DL = Dataloader(dset_path, mask_path)
-    X_train, Y_train, X_test, Y_test = DL.get_XY_split()
+    X_train, Y_train, X_test, Y_test, X_val, Y_val = DL.get_XY_split()
 
     callbacks = [
-        EarlyStopping(patience=10, verbose=1),
-        ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.00001, verbose=1),
-        ModelCheckpoint('model-tgs-salt.h5', verbose=1, save_best_only=True, save_weights_only=True)
-    ]
+    EarlyStopping(patience=10, verbose=1),
+    ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.00001, verbose=1),
+    ModelCheckpoint('model-tgs-salt.h5', verbose=1, save_best_only=True, save_weights_only=True)
+]
 
-    model = unet()
+    model = Unet()
     model.compile(optimizer=Adam(), loss=diceLoss, metrics=["accuracy", diceCoefficient])
 
-    # We chose batch_size=16 because google collab screams at my for batch_size = 32
-    results = model.fit(X_train, Y_train, batch_size=16, epochs=30,validation_data=(X_test, Y_test), callbacks=callbacks)
-    return results, X_test, Y_test
+    results = model.fit(X_train, Y_train, batch_size=16, epochs=25,validation_data=(X_val, Y_val), callbacks=callbacks)
+    return model, results, X_val, Y_val
