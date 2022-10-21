@@ -1,6 +1,6 @@
 # Classifying Alzheimer's Disease Diagnoses Using Vision Trainsformer
 
-This project attempts to classify the [ADNI](https://adni.loni.usc.edu/) brain dataset into AD (Alzheimer's Disease) and NC (Normal Cognitive). It uses the Vision Transformer network (ViT) as proposed by the paper [An Image is Worth 16x16 Words](http://arxiv.org/abs/2010.11929). The original paper is implemented with JAX, but I used Tensorflow, so I used the implementation by [Saptashwa Bhattacharyya](https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093). The dataset was split into 3 groups: 21000 images for training, 6000 for validation, and 3000 for testing. Results were somewhat dissapointing, as I only achieved a validation accuracy of 61.79%, and a testing accuracy of __%. I even tried multiple different preprocessing techniques, but these only made the accuracy worse.
+This project attempts to classify the [ADNI](https://adni.loni.usc.edu/) brain dataset into AD (Alzheimer's Disease) and NC (Normal Cognitive). It uses the Vision Transformer network (ViT) as proposed by the paper [An Image is Worth 16x16 Words](http://arxiv.org/abs/2010.11929). The original paper is implemented with JAX, but I used Tensorflow, so I used the implementation by [Saptashwa Bhattacharyya](https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093). The dataset was split into 3 groups: 21000 images for training, 6000 for validation, and 3000 for testing. Results were somewhat dissapointing, as I only achieved a validation accuracy of 61.79%, and a testing accuracy of 57.04%. I even tried multiple different preprocessing techniques, but these only made the accuracy worse.
 
 ## Vision Transformer
 
@@ -24,21 +24,29 @@ I attempted several different preprocessing methods to improve accuracy, but onl
 
 At first, I used patches that were 32X32 pixels. However, the height of the images was 240 pixels, which does not divide evenly into 32. To fix this, I cropped the top and bottom 8 pixels using the `Cropping2D` layer, giving a new height of 224. This had the added benefit to lowering the number of pixels the model had to process.
 
+![Simple crop](images/simple_crop.png)
+
 #### Tracked Crop
 
 I noticed that about half of each image was just a black background, and the position of the brain varied from image to image. By getting the average position of every non-black pixel, I obtained the 'centre' of each brain, then cropped around that. This was implemented in a custom Keras layer called `TrackCrop`.
+
+![Tracked crop](images/track_crop.png)
 
 #### Normalisation
 
 To normalise the data, I used the layer `Normalization`, which calculates the mean and variance of the entire dataset. This is, however, quite slow, so I used the function `adapt()` to calculate the values in advance, then saved them to a text file.
 
+![Normalisation](images/normalisation.png)
+
 #### Data Augmentation
 
 To minimise overfitting, I attempted data augmentation. I used the layers `RandomTranslation` and `RandomZoom`, and filled empty space with black.
 
+![Data augmentation](images/augmented.png)
+
 ## Training
 
-As per the [Medium Article](https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093), I started with a learning rate of 0.002, and decreased it using the `ReduceLROnPlateau`. Training was done on a Nvidia V100, using the UQ Getafix cluster, ran for 120 epochs, with a batch size of 32. The following hyperparameters were used:
+As per the [Medium Article](https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093), I started with a learning rate of 0.002, and decreased it using the `ReduceLROnPlateau` function. Training was done on a Nvidia V100, using the UQ Getafix cluster, ran for 120 epochs, with a batch size of 32. The following hyperparameters were used:
 
 * Transformer Layers - 6
 * Patch Size - 16
@@ -55,6 +63,10 @@ Training took over an hour. Training loss was 0.3520, and accuracy was 84.37%. V
 ![Training, validation loss and accuracy](images/loss_acc.png)
 
 ## Testing
+
+Testing accuracy was 57.04%, and testing loss was 1.1585.
+
+![Predictions](images/predictions.png)
 
 ## Running The Model
 
@@ -89,9 +101,9 @@ Parameters are stored in `config.yaml`, which can be modified to change the mode
 
 To train the model, run
 
-'''
+```
 python train.py
-'''
+```
 
 The loss accuracy graph will be stored in `/images`, and the model weights will be stored in the data directory.
 
@@ -99,8 +111,8 @@ The loss accuracy graph will be stored in `/images`, and the model weights will 
 
 After the model has been trained, run
 
-'''
+```
 python predict.py
-'''
+```
 
 to generate testing information. Graphs and images will be stored in `/images`.
