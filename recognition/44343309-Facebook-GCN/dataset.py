@@ -21,7 +21,7 @@ def loadData(data):
     return edges, features, target
 
 """
-DataProcess Class: a class to load and process the data input into a usable format
+DataProcess: a class to load and process the data input into a usable format
 """
 class DataProcess:
   def __init__(self, path):
@@ -42,6 +42,7 @@ class DataProcess:
     # 10% each for test and validation
     numTestValid = int(self.numNodes*0.1)
 
+    # splits the train labels according the specified split
     trainLabels = self.target[:numTrain]
     testLabels = self.target[numTrain:numTrain + numTestValid]
     validaLabels = self.target[numTrain + numTestValid:numTrain + 2 * numTestValid]

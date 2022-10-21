@@ -12,7 +12,7 @@ import os
 from sklearn.manifold import TSNE
 
 """
-ModelTrainer(): class to house model training functions
+ModelTrainer: class to house model training functions
 """
 class ModelTrainer:
     """
