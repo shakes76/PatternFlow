@@ -8,3 +8,5 @@ Eric Shen
 This project aims to classify images of the brain from the ADNI dataset as either exhibiting Alzheimer's disease or not. This was implemented using a Visual Transformer (ViT) model, based on the architecture defined in [this paper](https://arxiv.org/pdf/2010.11929.pdf "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale").
 
 ## Model Architecture
+![Model Architecture](/PatternFlow/recognition/46466369_Transformer_Alzheimers/images/vit_model_architecture.png "ViT model architecture from the above paper")
+

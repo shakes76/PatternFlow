@@ -42,20 +42,19 @@ class Patches(layers.Layer):
 Multilayer perceptron (MLP)
 Multiple (n = layer_count) dense layers with dropout
 """
-def MLP(layer, layer_count, dropout):
-    for count in layer_count:
-        layer = layers.Dense(count, activation='GeLU')(layer)
+def MLP(layer, layer_counts, dropout):
+    for count in layer_counts:
+        layer = layers.Dense(count, activation=tf.keras.activations.gelu)(layer)
         layer = layers.Dropout(dropout)(layer)
     return layer
-
 
 """
 A patch encoder is required to retain the image order information. We map the flattened patches to projection_dim through a dense layer.
 In addition, we embed the position of the patch in the image with an embedding layer.
 """
-class PatchEncoder(layers.Layer):
+class PatchEmbed(layers.Layer):
   def __init__(self, num_patches, projection_dim):
-    super(PatchEncoder, self).__init__()
+    super(PatchEmbed, self).__init__()
     self.num_patches = num_patches
     self.projection = layers.Dense(units=projection_dim)
     self.position_embedding = layers.Embedding(
@@ -69,22 +68,26 @@ class PatchEncoder(layers.Layer):
     encoded = self.projection(patch) + self.position_embedding(positions)
     return encoded
 
-def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes):
+def create_vit_classifier(input_shape, patch_size, num_patches, projection_dim, num_classes, num_heads, mlp_layer_counts):
     inputs = layers.Input(shape=input_shape)
     # Create patches.
     patches = Patches(patch_size)(inputs)
-    # Encode patches.
-    encoded_patches = PatchEncoder(num_patches, projection_dim)(patches)
+    # Encode patches with their embedded position
+    embedded = PatchEmbed(num_patches, projection_dim)(patches)
 
     """
     Feed transformer encoder from ViT paper:
-    embedded patches -> norm -> multi-head attention -> norm -> mlp
-
+    embedded patches -> norm (layer) -> multi-head attention --(+ encoded)--> norm (layer) -> mlp
     Classify with softmax:
-    mlp -> output(softmax)
+    mlp --(+ norm2)--> output(softmax)
     """
-
-    output = layers.Dense(num_classes, activation="softmax")
-    # Create the Keras model.
+    norm1 = layers.LayerNormalization(epsilon=0.001)(embedded)
+    # multi_attention needs 2D input since we are applying it to 2D data.
+    multi_attention = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim, dropout=0.1)(norm1, norm1)
+    addembed = layers.Add()([multi_attention, embedded])
+    norm2 = layers.LayerNormalization(epsilon=0.001)(addembed)
+    mlp = MLP(norm2, mlp_layer_counts, dropout=0.5)
+    addnorm = layers.Add()([mlp, norm2])
+    output = layers.Dense(num_classes, activation="softmax")(addnorm)
     model = keras.Model(inputs=inputs, outputs=output)
     return model
