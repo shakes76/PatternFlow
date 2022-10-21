@@ -1,4 +1,5 @@
 import torch
+import csv
 
 
 def get_noise_cadence():
@@ -19,7 +20,7 @@ def add_noise(x, pos):
         pos (int): Position in the noising process to sample beta
 
     Returns:
-        [type]: [description]
+        Tensor: input tensor with noise added to it
     """
     beta = get_noise_cadence().to("cuda")
     alpha = 1.0 - beta
@@ -40,3 +41,21 @@ def get_sample_pos(size):
         Tensor: tensor full of random integers between 1 and 1000 with specified size
     """
     return torch.randint(low=1, high=1000, size=(size,))
+
+def save_loss_data(tracked_loss, test_loss):
+    """
+    Save training and testing loss data to csv file
+
+    Args:
+        tracked_loss (List): list of training loss values
+        test_loss (List): list of testing loss values
+    """
+    # Save loss values
+    train_loss_file = open("Epoch Loss.csv", 'w')
+    writer = csv.writer(train_loss_file)
+    writer.writerows(tracked_loss)
+
+    # Save test values
+    test_loss_file = open("Test Loss.csv", 'w')
+    writer = csv.writer(test_loss_file)
+    writer.writerows(test_loss)
