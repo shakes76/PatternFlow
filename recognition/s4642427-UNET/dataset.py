@@ -14,6 +14,7 @@ class Dataloader:
             self.split = split
 
     def load_image_path(self):
+        # We get a list of paths to every image and mask
         input_img_paths = sorted(
             [
                 os.path.join(self.img_folder, fname)
@@ -34,6 +35,7 @@ class Dataloader:
         X = np.zeros((len(img_paths), self.IMG_WIDTH, self.IMG_HEIGHT, 3), dtype=np.float32)
         Y = np.zeros((len(mask_paths), self.IMG_WIDTH, self.IMG_HEIGHT, 1), dtype=np.float32)
 
+        # Normalize the data and turn them into arrays
         for i in range(len(img_paths)):
             img = img_paths[i]
             img = load_img(img, color_mode="rgb", target_size=(self.IMG_WIDTH, self.IMG_HEIGHT)) 
@@ -46,6 +48,7 @@ class Dataloader:
             Y[i] = mask.astype('float32') / 255
         return X,Y
 
+    # Training / Test / Validation splits
     def split_data(self, img_paths, X, Y):
         train_test_split = int(len(img_paths)*self.split)
         X_train = X[:train_test_split]

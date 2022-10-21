@@ -42,11 +42,13 @@ def conv_block(inputs, num_filters):
 
     return x
 
+# Downsample the resolution of the images
 def contraction(inputs, num_filters):
     x = conv_block(inputs, num_filters)
     p = MaxPool2D((2, 2))(x)
     return x, p
 
+# Upsample the resolution of the images, but decrease the feature maps
 def expansion(inputs, skip_features, num_filters):
     x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(inputs)
     x = Concatenate()([x, skip_features])

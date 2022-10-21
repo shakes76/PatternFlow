@@ -27,6 +27,7 @@ def train(dset_path, mask_path):
     DL = Dataloader(dset_path, mask_path)
     X_train, Y_train, X_test, Y_test, X_val, Y_val = DL.get_XY_split()
 
+    # We want our trainer to lower the learning rate when it starts slowing down, and to save the best weights
     callbacks = [
     EarlyStopping(patience=10, verbose=1),
     ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.00001, verbose=1),

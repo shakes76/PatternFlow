@@ -10,14 +10,15 @@ def predict(model, results, X_test, Y_test):
 
     print("Dice Coefficient", eval[2])
 
+    # LOSS GRAPH
     plt.plot(results.history['loss'])
     plt.plot(results.history['val_loss'])
-
     plt.title("Loss (Blue) & Val_loss (Orange)")
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
 
+    # DICE COEFFICIENT GRAPH
     plt.plot(results.history['diceCoefficient'])
     plt.plot(results.history['val_diceCoefficient'])
     plt.title("Dice Coefficient (blue) & Val Dice Coefficient (orange)")
@@ -25,7 +26,7 @@ def predict(model, results, X_test, Y_test):
     plt.ylabel('Dice Coefficient')
     plt.show()
 
-    # Plot the original image, ground truth and result from the network.
+    # Plot input image, mask and predicted mask
     for i in range(20,25):
         
         plt.figure(figsize=(10,10))
