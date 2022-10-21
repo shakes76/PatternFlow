@@ -1,9 +1,6 @@
 import tensorflow as tf
 from keras import layers
 
-from dataset import get_data_preprocessing
-from utils import Params
-
 ##### generate patches 
 class generate_patch(layers.Layer):
     def __init__(self, patch_size):
@@ -137,10 +134,3 @@ def build_ViT(preprocessing, image_size, transformer_layers, patch_size, hidden_
 
     final_model = tf.keras.Model(inputs = inputs, outputs = logits)
     return final_model
-
-if __name__ == "__main__":
-    p = Params()
-    train_ds, test_ds, preprocessing = get_data_preprocessing(p.batch_size(), p.image_size(), p.cropped_image_size(), p.cropped_pos(), p.data_dir())
-    model = build_ViT(preprocessing, p.image_size(), p.transformer_layers(), p.patch_size(), p.hidden_size(), p.num_heads(), p.mlp_dim(), p.num_classes(), p.dropout(), p.emb_dropout())
-
-    model.summary()
