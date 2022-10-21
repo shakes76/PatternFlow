@@ -25,16 +25,15 @@ N_OUTPUT = 4
 # load in adjacency matrix, features, labels and indices
 adj_mtrx, node_features, labels, train_ids, val_ids, test_ids = preprocess()
 
-# sample a node 
-sample_adj = adj_mtrx[0, 0]
-sample_features = node_features[0]
+# sample a node & subset of adj matrx
+sample_adj = adj_mtrx[0:10, 0:10]
+sample_features = node_features[0:10, :]
 
 # construct model & evaluate
 model = Net(node_features.shape[1], N_HID, N_OUTPUT)
 model.load_state_dict(torch.load(MODEL_PATH))
 model.eval()
 
-# add node embeddings and 
-node_embeddings = model(torch.FloatTensor(np.asmatrix(sample_features)), 
-                        torch.from_numpy(np.asmatrix(sample_adj)))
+# add node embeddings and evaluate:
+node_embeddings = model((sample_features), (sample_adj))
 test_gcn(node_embeddings, test=False)

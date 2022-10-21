@@ -30,7 +30,7 @@ def rownormalise(inp):
 def preprocess():
   data = np.load(PATH)
   lst = data.files
-  features, target = ((data['features'])[0:1, 0:1]), (data['target'][0:2])
+  features, target = (data['features']), (data['target'])
 
   #Initialize the graph
   G = nx.Graph(name='G')

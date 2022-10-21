@@ -12,8 +12,8 @@ from modules import Net
 import torch.optim as optim
 
 MODEL_PATH = '/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt'
-N_EPOCHS = 5
-N_HID = 4
+N_EPOCHS = 300
+N_HID = 20
 N_OUTPUT = 4
 
 # Load data
@@ -112,15 +112,21 @@ def run_training(training=True):
 
 # test GCN if in testing mode- else, predict on passed inputs
 def test_gcn(input_gcn, labels=[], test=True):
+    label_dict = {0:"politicians", 
+                  1:"governmental organizations", 
+                  2: "television shows", 
+                  3:"companies"}
     if test:
         loss_fn = nn.CrossEntropyLoss()
         loss_test = loss_fn(input_gcn, labels)
         acc_test = pred_accuracy(input_gcn, labels)
         print("Test set results:",
-            "loss= {:.4f}".format(loss_test.item()),
-            "accuracy= {:.4f}".format(acc_test.item()))
+            f"loss= {loss_test.item()}), accuracy= {(acc_test.item())}")
 
-    print(f"Predicted class is: {input_gcn.max(1)[1]}") 
+    print(f"Predicted nodes are:")
+    for i in range(len(input_gcn.max(1)[1])):
+      node = input_gcn.max(1)[1][i].item()
+      print(f"{i}. {node}- {label_dict[node]}")
 
 def plot_tsne(embeddings, labels):
     tsne = TSNE(n_components=2)
