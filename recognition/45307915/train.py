@@ -20,7 +20,7 @@ VALIDATE_MASKS_PATH = "./ISIC-2017_Validation_Part1_GroundTruth/*.png"
 IMAGE_HEIGHT = 192
 IMAGE_WIDTH = 256
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 INIT_LEARNING_RATE = 5e-4
 EPOCHS = 20
 
@@ -43,9 +43,6 @@ class ModelTrainer():
         """
         Dice Coefficient
 
-        Credit to Karan Jakhar for the following Dice Coefficient function
-        https://karan-jakhar.medium.com/100-days-of-code-day-7-84e4918cb72c
-
         Parameters:
             y_true (tf.Tensor): true output
             y_true (tf.Tensor): output predicted by model
@@ -63,8 +60,6 @@ class ModelTrainer():
     def diceLoss(self, y_true, y_pred):
         """
         Dice loss function
-
-        1 - Dice Coefficient
 
         Parameters:
             y_true (tf.Tensor): true output
@@ -134,7 +129,6 @@ class ModelTrainer():
         self.plotResults(results)
         
         return model
-
 
 def main():
 

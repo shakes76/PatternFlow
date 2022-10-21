@@ -14,7 +14,6 @@ class ImprovedUNETModel():
         """ Create a new Improved UNET Model instance.
         
         Described in the paper Brain Tumor Segmentation and Radiomics
-        https://arxiv.org/pdf/1802.10508v1.pdf
         
         Parameters:
             img_wdith (int): Image Width
@@ -33,9 +32,6 @@ class ImprovedUNETModel():
         
         "Each context module is in fact a pre-activation residual block with two
         3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between"
-        
-        Batch normalisation layers were added
-        Leaky ReLU activations were used
 
         Parameters:
             inputs (tf.Tensor): Tensor inputted into the module
@@ -106,7 +102,7 @@ class ImprovedUNETModel():
     def segmentationLayer(self, inputs, n_filters):
         """ Improved UNET Segmentation Layer
         
-        1x1 Convolution layer
+        A 1x1 convolution layer
 
         Parameters:
             inputs (tf.Tensor): Tensor inputted into the layer 
