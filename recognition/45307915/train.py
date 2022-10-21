@@ -5,8 +5,8 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 
-import modules
-import dataset
+from modules import ImprovedUNETModel
+from dataset import DataLoader
 
 TRAIN_IMAGES_PATH = "./ISIC-2017_Training_Data/*.jpg"
 TRAIN_MASKS_PATH = "./ISIC-2017_Training_Part1_GroundTruth/*.png"

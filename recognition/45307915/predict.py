@@ -3,9 +3,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-import modules
-import dataset
-import train
+from modules import ImprovedUNETModel
+from dataset import DataLoader
+from train import ModelTrainer
 
 BATCH_SIZE = 32
 
