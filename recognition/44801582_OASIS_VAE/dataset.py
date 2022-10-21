@@ -27,7 +27,7 @@ def load_data(path, img_limit=False, want_var=False):
     return dataset, data_variance
 
 
-def oasis_dataset(images):
+def oasis_dataset(images= False):
     train, variance = load_data("data/keras_png_slices_data/keras_png_slices_train", images, True)
     test, _ = load_data("data/keras_png_slices_data/keras_png_slices_test", images)
     validate, _ = load_data("data/keras_png_slices_data/keras_png_slices_validate", images)
