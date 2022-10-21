@@ -1,7 +1,19 @@
 # StyleGAN Implementation
-:wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022 :+1:. 
+:wave: This StyleGAN implementation is submitted as a response to one of the assessments of COMP3710 of The University of Queensland (UQ), semester 2, 2022. 
 
 The task is "generative model of one of the OASIS brain, ADNI brain or the OAI AKOA knee data set using a variant of StyleGAN".
+
+## Other Results
+
+### Generated images of the three datasets
+<p align="center">
+    <kbd><img src="asset/samples.png"></dbd>
+</p>
+
+### Bilinear interpolation
+<p align="center">
+    <kbd><img src="asset/bilinear_interpolation.png" width="800"></dbd>
+</p>
 
 ## Development Environment
  - Python version: 3.8.13
@@ -115,24 +127,8 @@ Both discriminator and generator converged well in the lower dimensions, but flu
     <kbd><img src="asset/loss_plot.png" width="550">
 </p>
 
-## Other Results
-
-### Generated images of the three datasets.
-<p align="center">
-    <kbd><img src="asset/samples.png"></dbd>
-</p>
-
-### Bilinear interpolation.
-<p align="center">
-    <kbd><img src="asset/bilinear_interpolation.png" width="800"></dbd>
-</p>
-
 ## How to play with `predict.py`?
-Once trained, `predict.py` can be used to load trained models and generate above images. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly set before running below command. 
-
-:boom: Trained models that generated above images can be found [<ins>here</ins>](https://drive.google.com/file/d/15CD1oabf8B_Zu1d4a4ixl2ns-zfg1OIv/view?usp=sharing).
-
-```python predict.py```
+Once trained, `predict.py` can be used to load trained models and generate above images by running **`python predict.py`**. It supports two types of image generations, nxn random images and bilinear interpolation as shown above. Make sure below parameters are properly configured. 
 
 When then program finishes running, the generated images can be found in the specified folder.
 
@@ -143,9 +139,11 @@ When then program finishes running, the generated images can be found in the spe
 output_res = (256, 256)          # output resolution of generated images
 n = 9                            # number of samples to generate, squre of an integer
 steps = 10                       # steps of interpolation
-ckpt = r'path of ckpts'          # path of checkpoint files, ex: r'C:\OASIS.ckpt'
+ckpt = r'path of ckpts'          # path of checkpoint files, ex: r'D:\ckpts\OASIS.ckpt'
 folder = r'path to save images'  # path of folder the generated images to be saved
 ```
+
+:boom: **Trained models that generated above images can be found [<ins>here</ins>](https://drive.google.com/file/d/15CD1oabf8B_Zu1d4a4ixl2ns-zfg1OIv/view?usp=sharing).**
 
 ## Reference
 * A Style-Based GANs, 2019. [<ins>https://arxiv.org/abs/1812.04948</ins>](https://arxiv.org/abs/1812.04948)
