@@ -14,10 +14,12 @@ import matplotlib.pyplot as plt
 import PIL
 
 def upscale_image(model, img):
+    # The model takes a 4 dimensional array with shape (Batch, x, y, channels)
+    # the img has shape (x, y, channels) so needs to be expanded
     input = np.expand_dims(img, axis=0)
     out = model.predict(input)
+    # Now the output needs to go back to having the shape it had before
     prediction = out[0]
-    prediction *= 255.0
     prediction = prediction.clip(0, 255)
     return prediction
 
@@ -32,11 +34,11 @@ def train(epochs):
     checkpoint_filepath = "tmp\\checkpoint"
 
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_filepath,
-    save_weights_only=True,
-    monitor="loss",
-    mode="min",
-    save_best_only=True,
+        filepath=checkpoint_filepath,
+        save_weights_only=True,
+        monitor="loss",
+        mode="min",
+        save_best_only=True,
     )
     
     class ESPCNCallback(keras.callbacks.Callback):
@@ -85,6 +87,7 @@ def plot_results(img, prefix, title):
     plt.yticks(visible=False)
     plt.xticks(visible=False)
     plt.savefig(str(prefix) + "-" + title + ".png")
+    # plt.show()
 
 def get_lowres_image(img, upscale_factor):
     return tf.image.resize(
