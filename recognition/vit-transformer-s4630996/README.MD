@@ -315,9 +315,14 @@ Two sets of dependencies are required.  The first is for creating the image prep
 ---
 
 # Reproducibility of Results
-- initial selection of validation set
-- seed in image_dataset_from_directory
-- hyperparams --> obviously stochastic by nature
+
+The final results produced by the ViT are stochastic in nature and influenced by the following sources of randomness:
+
+- The initial selection of a validation set
+- Shuffling of dataset when data is loaded (keras.preprocessing.image_dataset_from_directory)
+- Backpropogation and the stochastic gradient descent algorithm
+
+The code includes generation of random seeds to remove stochasticity from the creation of the validation set and the shuffling of the input data.  
 
 [Back to Top](#section-navigation)
 
