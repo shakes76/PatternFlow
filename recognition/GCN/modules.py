@@ -17,7 +17,7 @@ class GNNLayer(Module):
     # multiply features and weights
     support = torch.mm(features, self.weight)
     # perform matrix multiplication on sparse adjacency matrix and weighted features to average over neighbours
-    output = torch.spmm(torch.t(adj), support)
+    output = torch.spmm(adj, support)
     # apply activation function over the top 
     output = F.relu(output)
     return output
