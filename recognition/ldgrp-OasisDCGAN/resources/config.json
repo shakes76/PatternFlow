@@ -1,0 +1,11 @@
+{
+    "image_size": 128,
+    "kernel_size": 5,
+    "generator_lr": 6e-05,
+    "discriminator_lr": 4e-05,
+    "epochs": 50,
+    "input_dir": "input128",
+    "output_dir": "output7",
+    "checkpoint_freq": 10,
+    "batch_size": 128
+}
