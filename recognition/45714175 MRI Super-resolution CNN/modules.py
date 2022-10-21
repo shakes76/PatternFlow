@@ -3,9 +3,11 @@ modules.py
 Contains function to return the model of the super-resolution CNN
 """
 
+from turtle import width
 import tensorflow as tf
 import numpy as np
 import math
+from predict import predict
 
 def get_model():
     """Returns super resolution CNN model"""
@@ -28,7 +30,8 @@ def get_model():
 class ESPCNCallback(tf.keras.callbacks.Callback):
     def __init__(self, testImage):
         super(ESPCNCallback, self).__init__()
-        self.testImage = testImage.resize((testImage[0] // 4, testImage[1] // 4), method="guassian")
+        # downsample image
+        self.testImage = testImage.resize((240 // 4, 256 // 4), method="gaussian")
 
     def on_epoch_begin(self, epoch, logs=None):
         """Initialise PSNR array"""
@@ -38,7 +41,7 @@ class ESPCNCallback(tf.keras.callbacks.Callback):
         """Compute and display PSNR metric"""
         psnrMean = np.mean(self.psnr)
         print("Mean PSNR for epoch: %.2f" % (psnrMean))
-        # TO DO: predictions
+        predict(self.model, self.testImage, epoch)
 
     def on_test_batch_end(self, batch, logs=None):
         """Append psnr metrics to array"""

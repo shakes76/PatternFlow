@@ -29,7 +29,7 @@ def getTraining(datasetPath):
     training = training.map(lambda x: x / 255.0)
 
     # Downsample and add targets
-    training = training.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="guassian"), x))
+    training = training.map(lambda x: (tf.image.resize(x, (240 // 4, 256 // 4), method="gaussian"), x))
     return training
 
 def getValidation(datasetPath):
@@ -52,8 +52,6 @@ def getTest(datasetPath):
 
     normalisedData = training.map(lambda x: x / 255.0)
     return normalisedData
-
-
 
 def preview_data(dataset):
     """Function to construct a matplotlib figure to preview 
