@@ -7,9 +7,8 @@ import dataset
 import modules
 
 
-
-
 def main():
+    # load data and model
     val_x, val_y = dataset.load_val()
     model = tf.keras.models.load_model('imp_unet_model.h5', 
                 custom_objects={'DSC': modules.DSC, 'DSC_loss': modules.DSC_loss})    

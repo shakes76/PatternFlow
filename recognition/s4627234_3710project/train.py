@@ -15,7 +15,6 @@ def training(data_reshape = False):
         model, history: return the model and trained history of data
     """
     train_x, train_y, test_x, test_y = dataset.load_dataset(data_reshape)
-    # print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
 
     model = modules.UNet_imp()
 
@@ -23,7 +22,7 @@ def training(data_reshape = False):
     model.compile(optimizer = Adam(0.0005), loss = modules.DSC_loss, metrics=['accuracy', modules.DSC])
 
     history = model.fit(train_x, train_y,  validation_data= (test_x, test_y),
-                            batch_size=8,shuffle='True',epochs=20)
+                            batch_size=8,shuffle='True',epochs=50)
 
     return model, history
 
@@ -35,7 +34,7 @@ def plot_data(history, type):
         history (keras.callbacks.History): history of training model
         type (string): decide acc or loss
     """
-    plt.figure(figsiz = (10, 5))
+    plt.figure(figsize = (10, 5))
 
     if type == 'acc': add = 'DSC'
     else: add = 'loss'
@@ -46,7 +45,7 @@ def plot_data(history, type):
     plt.legend(loc='lower right')
     plt.xlabel('Epochs')
     plt.ylabel('' + add)
-    plt.savefig('./img/'+ add +'.png')
+    plt.savefig('./images/'+ add +'.png')
     plt.show()
 
 
