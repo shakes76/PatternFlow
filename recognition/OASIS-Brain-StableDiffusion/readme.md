@@ -25,6 +25,7 @@ This project is built using Python3.10.6 and PyTorch1.12.1.
 The OASIS Brain MRI dataset is the data this model was trained against. 
 This data can be found [here](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA). 
 Example MRI slice from the dataset
+
 ![Brain MRI](https://lh3.googleusercontent.com/pw/AL9nZEViraVfAx4nNjNFk7ga3r2QBN5zKUvgXMg7C-OvQLNKJN_mnTjKSrS4PmHYn5VZlt0ZUenfr15Bym4h08bWUF6XhivR0WwOXxGN1IJM2C7_oxYpSskmnNR9tzFdSVWPNmuhdTFF24qV4DDC4qrnkUx2=s256-no?authuser=0)
 
 Source: [OASIS Brain MRI dataset](https://cloudstor.aarnet.edu.au/plus/s/tByzSZzvvVh0hZA)
