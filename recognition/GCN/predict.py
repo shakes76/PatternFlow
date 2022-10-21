@@ -18,7 +18,7 @@ from train import test_gcn
 from train import plot_tsne
 from dataset import preprocess
 
-MODEL_PATH = "/Users/maryamkhan/Documents/UNI/2022/SEM2/COMP3710/PatternFlow/recognition/GCN/best_model.pt"
+MODEL_PATH = "./best_model.pt"
 N_HID = 20
 N_OUTPUT = 4
 
