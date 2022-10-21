@@ -8,18 +8,6 @@ from tensorflow.keras import backend as K
 from modules import ImprovedUNETModel
 from dataset import DataLoader
 
-TRAIN_IMAGES_PATH = "./ISIC-2017_Training_Data/*.jpg"
-TRAIN_MASKS_PATH = "./ISIC-2017_Training_Part1_GroundTruth/*.png"
-
-TEST_IMAGES_PATH = "./ISIC-2017_Test_v2_Data/*.jpg"
-TEST_MASKS_PATH = "./ISIC-2017_Test_v2_Part1_GroundTruth/*.png"
-
-VALIDATE_IMAGES_PATH = "./ISIC-2017_Validation_Data/*.jpg"
-VALIDATE_MASKS_PATH = "./ISIC-2017_Validation_Part1_GroundTruth/*.png"
-
-IMAGE_HEIGHT = 192
-IMAGE_WIDTH = 256
-
 BATCH_SIZE = 16
 INIT_LEARNING_RATE = 5e-4
 EPOCHS = 20

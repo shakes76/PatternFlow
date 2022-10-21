@@ -7,7 +7,7 @@ from modules import ImprovedUNETModel
 from dataset import DataLoader
 from train import ModelTrainer
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 
 class ModelPredictor():
     
