@@ -1,5 +1,6 @@
 # Improved UNET - Segmentation of ISIC Dataset
 The ISIC challenge is an international effort to improve melanoma diagnosis, one of the deadliest forms of skin cancer. Early detection greatly increases the chances of survival for melanoma victims. The ISIC have published datasets for the community to further computer vision research.
+
 By using a neural network a model can be trained to segment the melanoma within a skin image. This project shows the use of an Improved UNET to achieve this.
 
 ## ISIC Dataset
@@ -103,6 +104,13 @@ Using the model the following segmentation predictions were made from test set i
 ![prediction11](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/p11.png)
 
 ## Usage
+To use, first ensure all dependencies are downloaded.
+
+Download the 2017 ISIC dataset and place training, testing, and validation image and mask sets in the working directory.
+
+By running ```train.py``` an Improved UNET model will be trained on the training data, and validated on the validation data. The batch size, learning rate and number of epochs for the model can be adjusted within the ```train.py``` file.
+
+By running ```predict.py``` predictions will be made on a test dataset using the trained model.
 
 ### Dependencies
 - Python: 3.7.15
