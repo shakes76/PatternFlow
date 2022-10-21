@@ -18,6 +18,7 @@ def get_data(batch_size, image_size, data_dir):
         batch_size=batch_size,
         image_size=image_size)
 
+        # Sets the dataset to prefetch the next batch while the current batch is training.
         ds.prefetch(tf.data.AUTOTUNE)
 
         return ds
@@ -28,6 +29,9 @@ def get_data(batch_size, image_size, data_dir):
 
     return train_ds, test_ds, valid_ds
 
+"""
+An unused custom layer that gets the centre of the brain and crops around it.
+"""
 class TrackCrop(layers.Layer):
     def __init__(self, cropped_image_size):
         super(TrackCrop, self).__init__()
@@ -43,9 +47,11 @@ class TrackCrop(layers.Layer):
     def call(self, inputs):
         _, size_y, size_x, _ = inputs.shape
 
+        # Finds centre by getting the average position of every non-black pixel
         non_black = tf.cast(inputs != 0.0, tf.int32)
         count = tf.reduce_sum(non_black, axis=[1,2,3])
 
+        # The meshgrid represents the x and y indices of the matrix
         X, Y = tf.meshgrid(range(size_x), range(size_y))
         X = tf.reshape(X, (size_y, size_x, 1))
         Y = tf.reshape(Y, (size_y, size_x, 1))
@@ -53,6 +59,7 @@ class TrackCrop(layers.Layer):
         x = tf.cast(tf.reduce_sum(X * non_black, axis=[1,2,3]) / count, tf.int32)
         y = tf.cast(tf.reduce_sum(Y * non_black, axis=[1,2,3]) / count, tf.int32)
 
+        # Prevents the crop from going off the edge of the image
         H = tf.math.maximum(y - self.cropped_image_size[0]//2, 0)
         W = tf.math.maximum(x - self.cropped_image_size[1]//2, 0)
 
@@ -62,14 +69,17 @@ class TrackCrop(layers.Layer):
         return tf.map_fn(self.crop, (inputs, H, W))[0]
 
 def get_normalisation(preprocessing, train_ds, test_ds, valid_ds):
+    # If the normalisation text file exists, read from it and used its mean and variance
     try:
         with open("normalisation.txt", "r") as f:
             data = f.read().split()
         
         mean = float(data[0])
         var = float(data[1])
+    # If the normalisation text file does not exist, calculate it and write it to the file
     except OSError:
         print("Mean and variance not calculated. Calculating now...")
+        # Want the mean and variance of the entire dataset, so need to combine all three splits together
         ds = train_ds.concatenate(test_ds).concatenate(valid_ds)
         ds = ds.map(lambda input,tag : input)
         ds = ds.map(lambda item : preprocessing(item))
@@ -97,6 +107,7 @@ def get_data_preprocessing(batch_size=32, image_size=(256, 256), cropped_image_s
 
     preprocessing = get_normalisation(preprocessing, train_ds, test_ds, valid_ds)
 
+    # Data augmentation. Is not used as it did not improve accuracy
     """preprocessing = keras.Sequential([
         preprocessing,
         layers.RandomTranslation(0.0, (-0.2,0.0), fill_mode='constant'),

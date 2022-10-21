@@ -1,6 +1,12 @@
 import tensorflow as tf
 from keras import layers
 
+"""
+This implementation is adapted from the implementation by Saptashwa Bhattacharyya
+Medium Article: https://towardsdatascience.com/understand-and-implement-vision-transformer-with-tensorflow-2-0-f5435769093
+Github: https://github.com/suvoooo/Learn-TensorFlow/blob/master/ViT_TensorFlow/Understand%26Implement_VIT_TensorFlow.ipynb
+"""
+
 ##### generate patches 
 class generate_patch(layers.Layer):
     def __init__(self, patch_size):

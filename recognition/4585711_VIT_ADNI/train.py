@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 
 from utils import init_model
 
+'''
+Function that plots loss and accuracy over time.
+'''
 def plot_loss(history, p):
       acc = history.history['accuracy']
       val_acc = history.history['val_accuracy']
@@ -30,6 +33,7 @@ def plot_loss(history, p):
 if __name__ == "__main__":
       train_ds, test_ds, valid_ds, preprocessing, model, p = init_model()
 
+      # This reduces the learning rate when loss starts to plateau.
       reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8,
                               patience=5, min_lr=1e-5, verbose=1)
 
@@ -39,4 +43,5 @@ if __name__ == "__main__":
 
       plot_loss(history, p)
 
+      # Saves weights so they can be reused during prediction.
       model.save_weights(p.data_dir() + "checkpoints/my_checkpoint")

@@ -55,6 +55,9 @@ def plot_predictions(test_case, ground_truth, prediction, image_size, image_dir)
 
     plt.savefig(image_dir + "predictions.png")
 
+'''
+Calculates each example of preprocessing, then displays the before and after side-by-side.
+'''
 def generate_preprocessing_images(test_case, p):
     test_case = tf.expand_dims(test_case, 0)
 
@@ -68,6 +71,10 @@ def generate_preprocessing_images(test_case, p):
         test_case, preprocessing(test_case), p.image_size(), p.cropped_image_size(),
         p.image_dir(), "track_crop")
 
+    # This is a cheat. The processed and unprocessed images are the same
+    # because they look the same after normalisation anyway.
+    # It was just easier since it doesn't really matter as long as
+    # it looks correct.
     plot_preprocessing(
         test_case, test_case, p.image_size(), p.image_size(),
         p.image_dir(), "normalisation")
@@ -76,6 +83,8 @@ def generate_preprocessing_images(test_case, p):
         RandomTranslation(0.0, (-0.2,0.0), fill_mode='constant'),
         RandomZoom((-0.05, 0.1), fill_mode='constant')
     ])
+    # Data augmentation only runs during training,
+    # so training is set to True.
     plot_preprocessing(
         test_case, preprocessing(test_case, training=True), p.image_size(), p.image_size(),
         p.image_dir(), "augmented")
@@ -97,7 +106,7 @@ def plot_examples(test_case, image_size, image_dir):
 
 def generate_patches_image(test_case, preprocessing, p):
     test_case = tf.expand_dims(test_case, 0)
-    
+
     patch_size = p.patch_size()
 
     patches = preprocessing(test_case)
@@ -105,6 +114,8 @@ def generate_patches_image(test_case, preprocessing, p):
     n_row = int(patches.shape[1] / patch_size)
     n_col = int(patches.shape[2] / patch_size)
 
+    # generate_patch isn't actually used in the model,
+    # it's only for generating visualisations like this.
     patches = generate_patch(patch_size)(patches)[0]
 
     plt.figure(figsize=(1.0 * n_col, 1.0 * n_row))
@@ -119,20 +130,29 @@ def generate_patches_image(test_case, preprocessing, p):
 if __name__ == "__main__":
     train_ds, test_ds, valid_ds, preprocessing, model, p = init_model()
 
+    # Load the weights obtained from training.
     model.load_weights(p.data_dir() + "checkpoints/my_checkpoint")
 
-    """result = model.evaluate(test_ds)
+    # Evaluate testing accuracy.
+    result = model.evaluate(test_ds)
     print("Test loss:", result[0])
-    print("Test Accuracy:", result[1])"""
+    print("Test Accuracy:", result[1])
 
+    # This gets one batch from the test dataset. As shuffle is on,
+    # the batch it chooses will be random.
     test_case, ground_truth = iter(test_ds).next()
 
+    '''
+    Theses functions generate the images used in README.MD
+    '''
     generate_preprocessing_images(test_case[0], p)
 
     generate_patches_image(test_case[0], preprocessing, p)
 
     plot_examples(test_case, p.image_size(), p.image_dir())
 
+    # The predictions are on-hot encoded, so use np.argmax to convert them to indicies.
+    # 0 for AD, 1 for NC
     prediction = model(test_case).numpy()
     prediction = np.argmax(prediction, axis=-1)
     ground_truth = np.argmax(ground_truth.numpy(), axis=-1)

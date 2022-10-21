@@ -8,6 +8,9 @@ import tensorflow as tf
 from dataset import get_data_preprocessing
 from modules import build_ViT
 
+'''
+Class that reads parameters from config.yaml
+'''
 class Params():
     def __init__(self, file="config.yaml"):
         with open(file, 'r') as f:
@@ -29,6 +32,11 @@ class Params():
     def epochs(self): return self.yaml["epochs"]
     def learning_rate(self): return self.yaml["learning_rate"]
 
+'''
+I had an issue where the gpu kept running out of memory.
+I found that this function fixed that issue.
+It is taken from https://www.tensorflow.org/guide/gpu
+'''
 def configure_gpus():
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:

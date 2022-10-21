@@ -10,7 +10,7 @@ The ViT first splits the image into a grid of patches to be processed individual
 
 ![Patches example](images/patches.png)
 
-Now that the image is split into patches, the network does not know the location of each patch. So, a trainable vector with information about the location of each patch is embedded into the now-flattened patch. The embedded patches are then fed into the transformer itself. Transformers (not just ViTs) use a mechanism called attention which can be trained to adjust the weights based on input, unlike a traditional network where the weights are fixed after training. This is what allows ViTs to outperform CNNs on large datasets. After the transformer encoder, the data is fed into a basic MLP, which classifies the image.
+Now that the image is split into patches, the network does not know the location of each patch. So, a trainable vector with information about the location of each patch is embedded into the now-flattened patchs. The embedded patches are then fed into the transformer itself. Transformers (not just ViTs) use a mechanism called attention which can be trained to adjust the weights based on input, unlike a traditional network where the weights are fixed after training. This is what allows ViTs to outperform CNNs on large datasets. After the transformer encoder, the data is fed into a basic MLP, which classifies the image.
 
 ![Transformer encoder](images/the-transformer-block-vit.png)
 
