@@ -12,8 +12,7 @@ class VQVAETrainer(tf.keras.models.Model):
         self.latent_dim = latent_dim
         self.num_embeddings = num_embeddings
 
-        vae = VAE(self.num_embeddings, self.latent_dim)
-        self.vqvae = vae.generate_model()
+        self.vqvae = VAE(self.num_embeddings, self.latent_dim).model
 
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(
@@ -59,6 +58,7 @@ class VQVAETrainer(tf.keras.models.Model):
 # Load data
 data = Dataset()
 
+# Train model
 num_embeddings = 128
 latent_dim = 32
 vae_trainer = VQVAETrainer(1, latent_dim, num_embeddings)

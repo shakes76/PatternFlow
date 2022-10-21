@@ -54,30 +54,12 @@ class VectorQuantizer(tf.keras.layers.Layer):
 
 class VAE:
     def __init__(self, num_embeddings, latent_dim, beta = 0.25):
-        # Variables
+        """ Initalise variables and create the model """
         self.num_embeddings = num_embeddings
         self.latent_dim = latent_dim
         self.beta = beta
 
-    def encoder(self):
-        inputs = tf.keras.Input(shape = (256, 256, 1))
-        outputs = tf.keras.layers.Conv2D(32, 3, activation = "relu", strides = 2, padding = "same")(inputs)
-        outputs = tf.keras.layers.Conv2D(64, 3, activation = "relu", strides = 2, padding = "same")(outputs)
-        outputs = tf.keras.layers.Conv2D(self.latent_dim, 1, padding = "same")(outputs)
-        model = tf.keras.Model(inputs, outputs, name = "encoder")
-        return model, model.output.shape[1:]
-
-    def vq_layer(self):
-        return VectorQuantizer(self.num_embeddings, self.latent_dim, self.beta, name = "vector_quantizer")
-
-    def decoder(self, encoder_output_shape):
-        inputs = tf.keras.Input(shape = encoder_output_shape)
-        outputs = tf.keras.layers.Conv2DTranspose(64, 3, activation = "relu", strides = 2, padding = "same")(inputs)
-        outputs = tf.keras.layers.Conv2DTranspose(32, 3, activation = "relu", strides = 2, padding = "same")(outputs)
-        outputs = tf.keras.layers.Conv2DTranspose(1, 3, padding = "same")(outputs)
-        return tf.keras.Model(inputs, outputs, name = "decoder")
-    
-    def generate_model(self):
+        # Create model
         encoder_model, encoder_output_shape = self.encoder()
         vq_layer_model = self.vq_layer()
         decoder_model = self.decoder(encoder_output_shape)
@@ -87,4 +69,25 @@ class VAE:
         outputs = vq_layer_model(outputs)
         outputs = decoder_model(outputs)
 
-        return tf.keras.Model(inputs, outputs, name = "VQ_VAE_model")
+        self.model = tf.keras.Model(inputs, outputs, name = "VQ_VAE_model")
+
+    def encoder(self):
+        """ Create encoder model """
+        inputs = tf.keras.Input(shape = (256, 256, 1))
+        outputs = tf.keras.layers.Conv2D(32, 3, activation = "relu", strides = 2, padding = "same")(inputs)
+        outputs = tf.keras.layers.Conv2D(64, 3, activation = "relu", strides = 2, padding = "same")(outputs)
+        outputs = tf.keras.layers.Conv2D(self.latent_dim, 1, padding = "same")(outputs)
+        model = tf.keras.Model(inputs, outputs, name = "encoder")
+        return model, model.output.shape[1:]
+
+    def vq_layer(self):
+        """ Create VQ layer model """
+        return VectorQuantizer(self.num_embeddings, self.latent_dim, self.beta, name = "vector_quantizer")
+
+    def decoder(self, encoder_output_shape):
+        """ Create decoder model """
+        inputs = tf.keras.Input(shape = encoder_output_shape)
+        outputs = tf.keras.layers.Conv2DTranspose(64, 3, activation = "relu", strides = 2, padding = "same")(inputs)
+        outputs = tf.keras.layers.Conv2DTranspose(32, 3, activation = "relu", strides = 2, padding = "same")(outputs)
+        outputs = tf.keras.layers.Conv2DTranspose(1, 3, padding = "same")(outputs)
+        return tf.keras.Model(inputs, outputs, name = "decoder")
