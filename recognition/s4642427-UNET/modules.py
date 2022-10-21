@@ -1,9 +1,7 @@
 from keras.models import Model
-from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, BatchNormalization, Conv2DTranspose, concatenate
-from keras.layers import Input, Activation, SeparableConv2D, BatchNormalization, UpSampling2D
-from keras.layers.core import Dropout, Lambda
+from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, BatchNormalization, Conv2DTranspose, Concatenate
+from keras.layers import Input, Activation, BatchNormalization
 from keras.layers.convolutional import Conv2D, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D
 import tensorflow as tf
 
 
