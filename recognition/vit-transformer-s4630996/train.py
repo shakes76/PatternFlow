@@ -21,6 +21,7 @@ from tensorflow import keras
 import tensorflow_addons as tfa
 from modules import vit_classifier
 from dataset import import_data
+import matplotlib.pyplot as plt
 from config import *
 
 ##############################   IMPORT DATA  ###################################
@@ -75,6 +76,36 @@ history = vit_classifier.fit(
 vit_classifier.load_weights(checkpoint_filepath)
 _, accuracy, = vit_classifier.evaluate(x=data_test)
 print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+
+
+# plot results - loss
+val_acc = history.history["val_loss"]
+train_acc = history.history["loss"]
+epochs = range(1, NUM_EPOCHS + 1)
+plt.plot(epochs, val_acc, "b-", label="Validation loss")
+plt.plot(epochs, train_acc, "b--", label="Training loss")   
+plt.title("Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+# plt.savefig("./plots/loss.png")
+plt.savefig(r"C:\Users\lovet\Documents\COMP3710\Report\plots\loss.png")
+plt.show()
+
+
+# plot results - accuracy
+val_acc = history.history["val_accuracy"]
+train_acc = history.history["accuracy"]
+epochs = range(1, NUM_EPOCHS + 1)
+plt.plot(epochs, val_acc, "b-", label="Validation accuracy")
+plt.plot(epochs, train_acc, "b--", label="Training accuracy")
+plt.title("Accuracy")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+# plt.savefig("./plots/accuracy.png")
+plt.savefig(r"C:\Users\lovet\Documents\COMP3710\Report\plots\accuracy.png")
+plt.show()
 
 
 # if __name__ == "__main__":
