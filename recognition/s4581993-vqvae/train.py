@@ -28,22 +28,22 @@ v_loss = history.history["vqvae_loss"]
 
 plt.figure(figsize=(8, 12))
 plt.subplot(3, 1, 1)
-plt.plot(loss)
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.title('Loss')
-
-plt.subplot(3, 1, 2)
 plt.plot(r_loss)
 plt.ylabel('Reconstruction Loss')
 plt.title('Reconstruction Loss')
 plt.xlabel('Epoch')
 
-plt.subplot(3, 1, 3)
+plt.subplot(3, 1, 2)
 plt.plot(v_loss)
 plt.ylabel('VQ-VAE Loss')
 plt.title('VQ-VAE Loss')
 plt.xlabel('Epoch')
+
+plt.subplot(3, 1, 3)
+plt.plot(loss)
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.title('Total Loss')
 
 plt.tight_layout()
 plt.show()
@@ -79,7 +79,7 @@ pixel_cnn.compile(
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     metrics=["accuracy"],
 )
-pixel_cnn.fit(
+history = pixel_cnn.fit(
     x=codebook_indices,
     y=codebook_indices,
     batch_size=128,
@@ -90,3 +90,29 @@ pixel_cnn.fit(
 # Save the PixelCNN model
 pixel_cnn.save_weights(models_directory + pixelcnn_weights_filename)
 
+# Plot the loss and accuracy of the PixelCNN
+training_loss = history.history["loss"]
+training_accuracy = history.history["accuracy"]
+val_loss = history.history["val_loss"]
+val_accuracy = history.history["val_accuracy"]
+
+plt.figure(figsize=(8, 12))
+plt.subplot(2, 1, 1)
+plt.title("PixelCNN Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.plot(training_loss)
+plt.plot(val_loss)
+plt.legend(["Training Loss", "Validation Loss"])
+
+plt.subplot(2, 1, 2)
+plt.title("PixelCNN Accuracy")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy (%)")
+plt.plot(training_accuracy)
+plt.plot(val_accuracy)
+plt.ylim([0,1.0])
+plt.legend(["Training Accuracy", "Validation Accuracy"])
+
+plt.tight_layout()
+plt.show()
