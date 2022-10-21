@@ -40,6 +40,8 @@ Main difference for this environment is that this script was created using the n
 
 To use this model for other datasets, place your data inside the data folder following pytorch documentation for producing a dataset using [ImageFolder](https://pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html#torchvision.datasets.ImageFolder).
 
+If you want to make use of the current model seen in this readme skip the training and saving cells and simply load the model. After that run all the cells in order to see results. If you wish to maintain the saved model and save a new one for your other datasets then adjust the name that the model is saved under and run the save model cell.
+
 ***
 
 ## Training
@@ -103,7 +105,11 @@ Unfortunately we were unable to get the pixel cnn working in time and as such do
 
 ## Future improvements
 
-Obviously it would be great if there were a working pixel cnn for generating new images to truly test the VQ-VAE and see its limitations. The 
+Obviously it would be great if there were a working pixel cnn for generating new images to truly test the VQ-VAE and see its limitations.
+
+The VQ-VAE could possible by trained for longer to see an increase in quality of reconstructions possibly giving the higher details.
+
+There are certainly further optimisations possible throughout this project including supplying a less bloated environment file to work with.
 
 ## Sources
 

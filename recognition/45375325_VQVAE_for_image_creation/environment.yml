@@ -21,22 +21,31 @@ dependencies:
   - beautifulsoup4=4.11.1=pyha770c72_0
   - bleach=5.0.1=pyhd8ed1ab_0
   - blinker=1.5=pyhd8ed1ab_0
+  - blosc=1.21.1=hd414afc_3
   - brotli=1.0.9=h1c322ee_7
   - brotli-bin=1.0.9=h1c322ee_7
   - brotlipy=0.7.0=py39hb18efdd_1004
+  - brunsli=0.1=h9f76cd9_0
   - bzip2=1.0.8=h3422bc3_4
   - c-ares=1.18.1=h3422bc3_0
+  - c-blosc2=2.4.2=h303ed30_0
   - ca-certificates=2022.9.24=h4653dfc_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
   - cachetools=5.2.0=pyhd8ed1ab_0
   - certifi=2022.9.24=pyhd8ed1ab_0
   - cffi=1.15.1=py39h04d3946_0
+  - cfitsio=4.1.0=hd4f5c17_0
+  - charls=2.3.4=hbdafb3b_0
   - charset-normalizer=2.1.1=pyhd8ed1ab_0
   - click=8.1.3=py39h2804cbe_0
+  - cloudpickle=2.2.0=pyhd8ed1ab_0
   - contourpy=1.0.5=py39haaf3ac1_0
   - cryptography=38.0.1=py39haa0b8cc_0
   - cycler=0.11.0=pyhd8ed1ab_0
+  - cytoolz=0.12.0=py39h9eb174b_0
+  - dask-core=2022.10.0=pyhd8ed1ab_1
+  - dav1d=1.0.0=he4db4b2_1
   - debugpy=1.6.3=py39h3c22d25_0
   - decorator=5.1.1=pyhd8ed1ab_0
   - defusedxml=0.7.1=pyhd8ed1ab_0
@@ -55,6 +64,7 @@ dependencies:
   - fonttools=4.37.4=py39h02fc5c5_0
   - freetype=2.12.1=hd633e50_0
   - frozenlist=1.3.1=py39h4eb3d34_0
+  - fsspec=2022.10.0=pyhd8ed1ab_0
   - gast=0.5.3=pyhd8ed1ab_0
   - gettext=0.19.8.1=h0186832_1009
   - giflib=5.2.1=h27ca646_2
@@ -69,6 +79,8 @@ dependencies:
   - hdf5=1.12.2=nompi_h8968d4b_100
   - icu=70.1=h6b3803e_0
   - idna=3.4=pyhd8ed1ab_0
+  - imagecodecs=2022.9.26=py39h6bc43d6_0
+  - imageio=2.22.0=pyhfa7a67d_0
   - importlib-metadata=4.11.4=py39h2804cbe_0
   - importlib_resources=5.10.0=pyhd8ed1ab_0
   - ipykernel=6.16.0=pyh736e0ef_0
@@ -81,6 +93,7 @@ dependencies:
   - jupyter_client=7.3.5=pyhd8ed1ab_0
   - jupyter_core=4.11.1=py39h2804cbe_0
   - jupyterlab_pygments=0.2.2=pyhd8ed1ab_0
+  - jxrlib=1.1=h27ca646_2
   - keras=2.8.0=pyhd8ed1ab_0
   - keras-preprocessing=1.1.2=pyhd8ed1ab_0
   - kiwisolver=1.4.4=py39hab5e169_0
@@ -88,6 +101,8 @@ dependencies:
   - lame=3.100=h1a8c8d9_1003
   - lcms2=2.12=had6a04f_0
   - lerc=4.0.0=h9a09cb3_0
+  - libaec=1.0.6=hbdafb3b_0
+  - libavif=0.10.1=he4db4b2_1
   - libblas=3.9.0=16_osxarm64_openblas
   - libbrotlicommon=1.0.9=h1c322ee_7
   - libbrotlidec=1.0.9=h1c322ee_7
@@ -120,7 +135,9 @@ dependencies:
   - libxcb=1.13=h9b22ae9_1004
   - libxml2=2.10.2=ha9542bf_1
   - libzlib=1.2.12=h03a7124_4
+  - libzopfli=1.0.3=h9f76cd9_0
   - llvm-openmp=14.0.4=hd125106_0
+  - locket=1.0.0=pyhd8ed1ab_0
   - lz4-c=1.9.3=hbdafb3b_1
   - markdown=3.4.1=pyhd8ed1ab_0
   - markupsafe=2.1.1=py39hb18efdd_1
@@ -148,6 +165,7 @@ dependencies:
   - packaging=21.3=pyhd8ed1ab_0
   - pandocfilters=1.5.0=pyhd8ed1ab_0
   - parso=0.8.3=pyhd8ed1ab_0
+  - partd=1.3.0=pyhd8ed1ab_0
   - pexpect=4.8.0=pyh9f0ad1d_2
   - pickleshare=0.7.5=py_1003
   - pillow=9.2.0=py39he45c975_2
@@ -176,12 +194,15 @@ dependencies:
   - python_abi=3.9=2_cp39
   - pytorch=1.13.0.dev20220901=py3.9_0
   - pyu2f=0.1.5=pyhd8ed1ab_0
+  - pywavelets=1.3.0=py39h43ea957_1
+  - pyyaml=6.0=py39hb18efdd_4
   - pyzmq=24.0.1=py39h0553236_0
   - re2=2022.06.01=h9a09cb3_0
   - readline=8.1.2=h46ed386_0
   - requests=2.28.1=pyhd8ed1ab_1
   - requests-oauthlib=1.3.1=pyhd8ed1ab_0
   - rsa=4.9=pyhd8ed1ab_0
+  - scikit-image=0.19.3=py39h533cade_1
   - scipy=1.9.1=py39h737da60_0
   - send2trash=1.8.0=pyhd8ed1ab_0
   - setuptools=65.4.1=pyhd8ed1ab_0
@@ -201,7 +222,9 @@ dependencies:
   - termcolor=2.0.1=pyhd8ed1ab_1
   - terminado=0.16.0=pyhd1c38e8_0
   - testpath=0.6.0=pyhd8ed1ab_0
+  - tifffile=2022.10.10=pyhd8ed1ab_0
   - tk=8.6.12=he1e0b03_0
+  - toolz=0.12.0=pyhd8ed1ab_0
   - torchaudio=0.13.0.dev20220901=py39_cpu
   - torchvision=0.14.0.dev20220901=py39_cpu
   - tornado=6.2=py39h9eb174b_0
@@ -221,10 +244,13 @@ dependencies:
   - xorg-libxau=1.0.9=h27ca646_0
   - xorg-libxdmcp=1.1.3=h27ca646_0
   - xz=5.2.6=h57fd34a_0
+  - yaml=0.2.5=h3422bc3_2
   - yarl=1.7.2=py39hb18efdd_2
   - zeromq=4.3.4=hbdafb3b_1
+  - zfp=1.0.0=h7b19444_1
   - zipp=3.9.0=pyhd8ed1ab_0
   - zlib=1.2.12=h03a7124_4
+  - zlib-ng=2.0.6=he4db4b2_0
   - zstd=1.5.2=h8128057_4
   - pip:
     - appdirs==1.4.4
@@ -252,8 +278,6 @@ dependencies:
     - pyee==8.2.2
     - pyppeteer==1.0.2
     - pytz==2022.2.1
-    - pywavelets==1.3.0
-    - pyyaml==6.0
     - scikit-learn==1.1.2
     - seaborn==0.11.2
     - sklearn==0.0
