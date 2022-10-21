@@ -61,7 +61,7 @@ Loss                       |  Dice Coefficient         |  Intersection Over Unio
 :-------------------------:|:-------------------------:|:-------------------------:
 ![Loss vs Epoch](./figures/lossVsEpoch.png)   | ![Dice vs Epoch](./figures/diceVsEpoch.png) | ![IoU vs Epoch](./figures/iouVsEpoch.png)
 
-To evaluate the performance against 'unseen' data, the model was made to predict the segmentation mask from the test subset images. Below is the resulting comparisons between the original image, ground truth segmentation mask and the segmentation prediction. The dice coefficient and IoU metric for each prediction is also noted.
+To evaluate the performance against 'unseen' data, the model was made to predict the segmentation mask from the test subset images. Below are the resulting comparisons between the original image, ground truth segmentation mask and the segmentation prediction. The dice coefficient and IoU metric for each prediction is also noted.
 
 Prediction Evaluation      
 :-------------------------:
@@ -71,7 +71,23 @@ Prediction Evaluation
 ![Loss vs Epoch](./figures/testComparison154.png)
 ![Loss vs Epoch](./figures/testComparison155.png)
 
+As you can see, from visual inspection, the model has successfully segmented the image into lesion and non-lesion regions. Furthermore, the above examples all have dice coefficient of **_>0.95_** and IoU of **__>0.91__**. This is greater than our dice coefficient target of _0.8_ indicating successful and adequate training.
 
+### Reproducibility of Results
+From experimental testing, these results have been very replicable and indicate a foundationally strong CNN model.
+
+## Dependencies
+The following dependencies are required:
+* TensorFlow _(version 2.9.1)_
+* matplotlib _(version 3.5.3)_
+* glob _(version 3.5)_
+* numpy _(version 1.22.4)_
+
+## References
+* Brain Tumor Segmentation and Radiomics Survival Prediction: Contribution to the BRATS 2017 Challenge (https://arxiv.org/abs/1802.10508)
+* Sørensen–Dice coefficient (https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient)
+* Jaccard Index (https://en.wikipedia.org/wiki/Jaccard_index)
+* Detection of Skin Cancer Based on Skin Lesion Images Using Deep Learning (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9324455/)
 
 
 
