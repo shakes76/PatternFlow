@@ -17,11 +17,11 @@ from config import *
 data_augmentation = keras.Sequential(
     [
         layers.Rescaling(scale=1./255),
-        layers.RandomFlip("horizontal"),
-        layers.RandomRotation(factor=(-0.15, 0.15)),
-        layers.RandomTranslation(height_factor=(-0.1, 0.1), width_factor=(-0.1, 0.1)),
-        layers.RandomBrightness(factor=(0.6), value_range=(0., 1.)),
-        layers.GaussianNoise(stddev=0.5)
+        # layers.RandomFlip("horizontal"),
+        # layers.RandomRotation(factor=(-0.15, 0.15)),
+        # layers.RandomTranslation(height_factor=(-0.1, 0.1), width_factor=(-0.1, 0.1)),
+        # layers.RandomBrightness(factor=(0.6), value_range=(0., 1.)),
+        # layers.GaussianNoise(stddev=0.5)
     ],
     name="data_augmentation",
 )

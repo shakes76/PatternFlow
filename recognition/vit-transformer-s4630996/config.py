@@ -5,7 +5,7 @@ MODEL HYPERPARAMETERS and data import paths
 import os
 
 # data
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 IMAGE_SIZE = 240  # We'll resize input images to this size
 NUM_CLASS = 2
 INPUT_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 1)
@@ -26,7 +26,7 @@ MLP_HEAD_UNITS = [256]  # Size of the dense layers of the final classifier
 VALIDATION_SPLIT = 0.1
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0001
-NUM_EPOCHS = 2
+NUM_EPOCHS = 25
 DROPOUTS = {"mha": 0.2, "encoder_mlp": 0.2, "mlp_head": 0.5}
 
 # for image augmentation

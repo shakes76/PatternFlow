@@ -29,9 +29,9 @@ parent_directory = os.getcwd()
 checkpoint_filepath = os.path.join(parent_directory, "checkpoint")
 
 # draw a sample from test data
-test_NC_filenames = os.listdir(r"AD_NC\test\NC")
+test_NC_filenames = os.listdir(r"AD_NC_square\test\AD")
 x_sample_file = random.sample(test_NC_filenames, 1)[0]
-x_sample_path = r"AD_NC\test\NC\{}".format(x_sample_file)
+x_sample_path = r"AD_NC_square\test\AD\{}".format(x_sample_file)
 
 # open and display the image
 x_image = Image.open(x_sample_path)
@@ -40,13 +40,18 @@ plt.show()
 
 # convert the image to a numpy array
 x_data = np.asarray(x_image)
+x_data = np.reshape(x_data, newshape=(-1, 240, 240, 1))
 
 # load the model weights
+parent_directory = os.getcwd()
+checkpoint_filepath = os.path.join(parent_directory, "checkpoint", "checkpoint.hdf5")
 vit_classifier.load_weights(checkpoint_filepath)
 
-# make a prediction
-print(vit_classifier.predict(x_data))
+# obtain prediction
+prediction = np.argmax(vit_classifier.predict(x_data)[0])
 
-
-# _, accuracy, = vit_classifier.evaluate(x=data_test)
-# print(f"Test accuracy: {round(accuracy * 100, 2)}%")
+# if index 0 prediction is Alzheimers and if index is 1 prediction is normal cognition
+if prediction == 0:
+    print("Prediction is Alzheimer's Disease for this sample.")
+else:
+    print("Prediction is normal cognition for this sample.")

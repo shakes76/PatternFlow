@@ -10,6 +10,7 @@ import tensorflow_addons as tfa
 from modules import vit_classifier
 from dataset import import_data
 import matplotlib.pyplot as plt
+import os
 from config import *
 
 ##############################   IMPORT DATA  ###################################
@@ -40,7 +41,8 @@ vit_classifier.compile(
 )
 
 # create checkpoint callback
-checkpoint_filepath = "C:\\Users\\lovet\\Documents\\COMP3710\\Report\\adni\\checkpoint2\\"
+parent_directory = os.getcwd()
+checkpoint_filepath = os.path.join(parent_directory, "checkpoint", "checkpoint.hdf5")
 checkpoint_callback = keras.callbacks.ModelCheckpoint(
     checkpoint_filepath,
     monitor="val_loss",
