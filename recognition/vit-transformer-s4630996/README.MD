@@ -341,37 +341,18 @@ The ADNI data came pre-split into a test and training set.  A validation split o
 
 # References
 
-$^1$ An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale
+$^1$ Alexy Dosovitsky, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uzszkoreit, Neil Houlsby. *An Image is Worth 16x16 Words: Transformers For Image Recognition at Scale*, Google Research, Brain Team 2021. 
+https://arxiv.org/abs/2010.11929
+
 
 $^2$ https://adni.loni.usc.edu/
 
-$^3$ Vaswania Attention is all you need
+$^3$ Ashish Vaswania, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Illia Polosukhin. *Attention is All You Need*. 2017.
+https://arxiv.org/abs/1706.03762
 
 $^4$ https://www.mayoclinic.org/diseases-conditions/alzheimers-disease/symptoms-causes/syc-20350447
 
-Class token impl:
-https://dzlab.github.io/notebooks/tensorflow/vision/classification/2021/10/01/vision_transformer.html
-
-Class token impl:
-https://medium.com/geekculture/vision-transformer-tensorflow-82ef13a9279
-
-
-ViT architecture
-https://keras.io/examples/vision/image_classification_with_vision_transformer/
-
-$n_{1}$
 
 [Back to Top](#section-navigation)
  
  ---
-
-To do:
-
-footnotes? 
-
-[^2].
-
-[^2]: 
-
-model summary from tensorflow
-
