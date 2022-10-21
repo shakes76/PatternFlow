@@ -2,6 +2,9 @@
 Paragraph about ISIC dataset and what this project is
 
 ## ISIC Dataset
+The ISIC dataset contains a set of skin lesion images and their respective segmentation masks. The 2017 dataset used was already split into training, testing and validation sets.
+
+Due to all the images in the set being different sizes they were all resized. The skin lesion images were resized to (256, 256, 3), keeping their colour channels. The segmentation masks were resized to (256, 256, 1), reducing to a single colour channel. Thresholding was then completed on the segmentation masks, pixels with a value >0.5 were set to 1, and all other pixels set to 0.
 
 ![Training Image](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/image.png)
 ![Training Mask](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/mask.png)
@@ -12,13 +15,13 @@ Available: https://challenge.isic-archive.com/data/#2017
 
 ![Improved UNET Model Architecture](https://github.com/ryanjohnson08/45307915/blob/topic-recognition/recognition/45307915/images/IUNET_Architecture.JPG)
 
-Components of the improved UNET Architecture are as follows.
+Like the original UNET the Improved UNET is made up of encoding and decoding layers. Components of the improved UNET Architecture are as follows.
 
-- Leaky ReLU - "leaky ReLU nonlinearities with a negative slope of 10−2 for all feature map computing convolutions"
-- Instance Normalisation - "replace the traditional batch with instance normalization"
-- Context Module - "Each context module is in fact a pre-activation residual block with two 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between."
-- Upsampling Module - "This is achieved by first upsampling the low resolution feature maps, which is done by means of a simple upscale that repeats the feature voxels twice in each spatial dimension, followed by a 3x3x3 convolution"
-- Localisation Module - "A localization module consists of a 3x3x3 convolution followed by a 1x1x1 convolution that halves the number of feature maps."
+- Leaky ReLU - "leaky ReLU nonlinearities with a negative slope of 10−2 for all feature map computing convolutions" [1]
+- Instance Normalisation - "replace the traditional batch with instance normalization" [1]
+- Context Module - "Each context module is in fact a pre-activation residual block with two 3x3x3 convolutional layers and a dropout layer (pdrop = 0.3) in between." [1]
+- Upsampling Module - "This is achieved by first upsampling the low resolution feature maps, which is done by means of a simple upscale that repeats the feature voxels twice in each spatial dimension, followed by a 3x3x3 convolution" [1]
+- Localisation Module - "A localization module consists of a 3x3x3 convolution followed by a 1x1x1 convolution that halves the number of feature maps." [1]
 - Skip Connection - Like the original UNET the improved UNET makes use of skip connections
 - Segmentation Layer - These are 3x3 convolutions with a single output filter. These segments are summed to form the final network output.
 
